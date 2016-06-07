@@ -42,6 +42,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputText;
@@ -87,6 +88,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private static final String STYLE_SEARCH_BY = STYLE_SEARCH_PREFIX + "by";
   private static final String STYLE_SEARCH_BOX = STYLE_SEARCH_PREFIX + "box";
   private static final String STYLE_SEARCH_COMMAND = STYLE_SEARCH_PREFIX + "command";
+  private static final String STYLE_SEARCH_REMAINDER = STYLE_SEARCH_PREFIX + "remainder";
 
   private static final String STYLE_ITEM_PANEL = STYLE_PREFIX + "item-panel";
   private static final String STYLE_ITEM_TABLE = STYLE_PREFIX + "item-table";
@@ -97,6 +99,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private static final String STYLE_HEADER_CELL_SUFFIX = "label";
   private static final String STYLE_CELL_SUFFIX = "cell";
+  private static final String STYLE_CELL_BOLD = "-bold";
 
   private static final String STYLE_ID_PREFIX = STYLE_PREFIX + "id-";
 
@@ -134,6 +137,9 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private static final List<String> SEARCH_COLUMNS = Lists.newArrayList(COL_ITEM_NAME,
       COL_ITEM_ARTICLE, COL_ITEM_TYPE, COL_ITEM_GROUP, COL_CATEGORY);
+
+  private static final List<ItemPrice> PRICE_COLUMNS = Lists.newArrayList(ItemPrice.SALE,
+      ItemPrice.PRICE_1, ItemPrice.PRICE_2, ItemPrice.PRICE_3, ItemPrice.PRICE_4);
 
   private static Filter buildFilter(String by, String query) {
     Filter filter = null;
@@ -228,6 +234,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private ChangeHandler quantityChangeHandler;
   private boolean isOrder;
+  private CheckBox cb;
 
   public ItemsPicker() {
     super(STYLE_CONTAINER);
@@ -252,10 +259,18 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     return addHandler(handler, SelectionEvent.getType());
   }
 
+  public boolean getRemainderValue() {
+    return cb.isChecked();
+  }
+
   public void show(IsRow row, Element target) {
     lastRow = DataUtils.cloneRow(row);
 
     isOrder = setIsOrder(row);
+
+    if (!isOrder) {
+      cb.setVisible(false);
+    }
 
     warehouseFrom = getWarehouseFrom(row);
     itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, row);
@@ -276,10 +291,19 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private Widget createSearch() {
     Flow panel = new Flow(STYLE_SEARCH_PANEL);
 
+    cb = new CheckBox(Localized.dictionary().withoutRemainder());
+    cb.addStyleName(STYLE_SEARCH_REMAINDER);
+    panel.add(cb);
+
     final ListBox searchBy = new ListBox();
     searchBy.addStyleName(STYLE_SEARCH_BY);
 
+    final ListBox searchBy2 = new ListBox();
+    searchBy2.addStyleName(STYLE_SEARCH_BY);
+    searchBy2.addStyleName(STYLE_SEARCH_BY + "-2");
+
     searchBy.addItem(BeeConst.STRING_EMPTY, BeeConst.STRING_ASTERISK);
+    searchBy2.addItem(BeeConst.STRING_EMPTY, BeeConst.STRING_ASTERISK);
     String label;
 
     for (String column : SEARCH_COLUMNS) {
@@ -290,8 +314,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       }
 
       searchBy.addItem(label, column);
+      searchBy2.addItem(label, column);
     }
     searchBy.addItem(Localized.dictionary().captionId(), COL_ITEM);
+    searchBy2.addItem(Localized.dictionary().captionId(), COL_ITEM);
 
     panel.add(searchBy);
 
@@ -306,8 +332,24 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
         if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
           String query = BeeUtils.trim(searchBox.getValue());
           if (!BeeUtils.isEmpty(query)) {
-            doSearch(searchBy.getValue(), query);
+            doSearch(Lists.newArrayList(searchBy.getValue()), Lists.newArrayList(query));
           }
+        }
+      }
+    });
+
+    final InputText searchBox2 = new InputText();
+    DomUtils.setSearch(searchBox2);
+    searchBox2.setMaxLength(20);
+    searchBox2.addStyleName(STYLE_SEARCH_BOX);
+    searchBox2.addStyleName(STYLE_SEARCH_BOX + "-2");
+    searchBox2.addKeyDownHandler(new KeyDownHandler() {
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          doSearch(Lists.newArrayList(searchBy.getValue(), searchBy2.getValue()), Lists
+              .newArrayList(BeeUtils.trim(searchBox.getValue()),
+                  BeeUtils.trim(searchBox2.getValue())));
         }
       }
     });
@@ -319,30 +361,47 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     searchCommand.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        doSearch(searchBy.getValue(), BeeUtils.trim(searchBox.getValue()));
+        doSearch(Lists.newArrayList(searchBy.getValue(), searchBy2.getValue()), Lists
+            .newArrayList(BeeUtils.trim(searchBox.getValue()),
+                BeeUtils.trim(searchBox2.getValue())));
       }
     });
 
     panel.add(searchCommand);
+    panel.add(searchBy2);
+    panel.add(searchBox2);
 
     return panel;
   }
 
-  private void doSearch(String by, String query) {
+  private void doSearch(List<String> byList, List<String> queryList) {
     Filter filter = null;
-    boolean ok;
+    boolean ok = false;
 
-    if (BeeUtils.isEmpty(query) || Operator.CHAR_ANY.equals(query)) {
-      ok = true;
+    if (byList.size() != queryList.size()) {
+      return;
+    }
 
-    } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
-      BeeKeeper.getScreen().notifyWarning(
-          BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
-      ok = false;
+    for (int i = 0; i < queryList.size(); i++) {
+      String by = byList.get(i);
+      String query = queryList.get(i);
 
-    } else {
-      filter = buildFilter(by, query);
-      ok = true;
+      if (BeeUtils.isEmpty(query) || Operator.CHAR_ANY.equals(query)) {
+        ok = true;
+
+      } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
+        BeeKeeper.getScreen().notifyWarning(
+            BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
+        ok = false;
+
+      } else {
+        if (filter == null) {
+          filter = buildFilter(by, query);
+        } else {
+          filter = Filter.and(filter, buildFilter(by, query));
+        }
+        ok = true;
+      }
     }
 
     if (ok) {
@@ -627,7 +686,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     table.setText(r, c++, Localized.dictionary().article(),
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
-    for (ItemPrice ip : ItemPrice.values()) {
+    for (ItemPrice ip : PRICE_COLUMNS) {
       table.setText(r, c, ip.getCaption(),
           (ip == itemPrice) ? STYLE_SELECTED_PRICE_HEADER_CELL : STYLE_PRICE_HEADER_CELL);
 
@@ -666,7 +725,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     EnumMap<ItemPrice, Integer> priceIndexes = new EnumMap<>(ItemPrice.class);
     EnumMap<ItemPrice, Integer> currencyIndexes = new EnumMap<>(ItemPrice.class);
 
-    for (ItemPrice ip : ItemPrice.values()) {
+    for (ItemPrice ip : PRICE_COLUMNS) {
       priceIndexes.put(ip, items.getColumnIndex(ip.getPriceColumn()));
       currencyIndexes.put(ip, items.getColumnIndex(ip.getCurrencyNameAlias()));
     }
@@ -686,15 +745,30 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       table.setText(r, c++, DataUtils.join(items.getColumns(), item, groupIndexes,
           BeeConst.STRING_EOL), STYLE_GROUP_PREFIX + STYLE_CELL_SUFFIX);
 
-      table.setText(r, c++, item.getString(nameIndex),
-          STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
+      if (isOrder) {
+        int notMnfctIdx = items.getColumnIndex(COL_ITEM_NOT_MANUFACTURED);
+        if (!BeeConst.isUndef(notMnfctIdx)) {
+          Boolean notMnfct = item.getBoolean(notMnfctIdx);
+          if (BeeUtils.unbox(notMnfct)) {
+            table.setText(r, c++, item.getString(nameIndex),
+                STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX + STYLE_CELL_BOLD);
+          } else {
+            table.setText(r, c++, item.getString(nameIndex),
+                STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
+          }
+        }
+      } else {
+        table.setText(r, c++, item.getString(nameIndex),
+            STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
+      }
+
       table.setText(r, c++, item.getString(articleIndex),
           STYLE_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
 
       ItemPrice defPrice = selectedPrices.containsKey(item.getId())
           ? selectedPrices.get(item.getId()) : itemPrice;
 
-      for (ItemPrice ip : ItemPrice.values()) {
+      for (ItemPrice ip : PRICE_COLUMNS) {
         String html = renderPrice(item, priceIndexes.get(ip), currencyIndexes.get(ip));
 
         if (html == null) {
