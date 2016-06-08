@@ -18,6 +18,7 @@ import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -26,6 +27,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.html.builder.Document;
@@ -35,6 +37,8 @@ import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.transport.TransportConstants.ShipmentRequestStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.TextConstant;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -201,7 +205,26 @@ public class ShipmentRequestsWorker {
         (event, locality) -> Endpoint.sendToAll(new ModificationMessage(event)),
         VIEW_SHIPMENT_REQUESTS);
 
-    return RestResponse.ok(Localized.dictionary().ok());
+    TextConstant constant = TextConstant.SUMBMITTED_REQUEST_CONTENT;
+
+    BeeRowSet rowSet =
+        qs.getViewData(VIEW_TEXT_CONSTANTS, Filter.equals(COL_TEXT_CONSTANT, constant));
+
+    String localizedContent =
+        Localized.column(COL_TEXT_CONTENT, data.get(COL_USER_LOCALE).toString().replace("\"", ""));
+
+    String text;
+
+    if (DataUtils.isEmpty(rowSet)) {
+      text = constant.getDefaultContent();
+    } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, rowSet.getColumns()))) {
+      text = rowSet.getString(0, COL_TEXT_CONTENT);
+    } else {
+      text = BeeUtils.notEmpty(rowSet.getString(0, localizedContent),
+          rowSet.getString(0, COL_TEXT_CONTENT));
+    }
+
+    return RestResponse.ok(text);
   }
 
   private BeeRowSet buildRowSet(BeeView view, JsonObject json) throws BeeException {

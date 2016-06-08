@@ -719,7 +719,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
               }
               (startup == null ? queue.remove(0) : startup).run();
             };
-            messages.add(0, loc.errors());
+            messages.add(0, loc.trNewValues());
           } else {
             onConfirm = onSuccess;
           }
