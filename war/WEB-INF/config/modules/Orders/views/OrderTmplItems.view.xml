@@ -60,6 +60,6 @@
     </SimpleJoin>
     
     <SimpleColumn name="Discount" />
-    <SimpleColumn name="Sale" />
+    <SimpleColumn name="InvisibleDiscount" />
   </Columns>
 </View>

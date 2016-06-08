@@ -19,6 +19,7 @@
       <SimpleJoin name="Warehouse" joinType="LEFT">
         <SimpleColumn alias="WarehouseCode" name="Code" />
       </SimpleJoin>
+      <SimpleColumn name="Notes" />
     </SimpleJoin>
 
     <SimpleColumn name="Date" />
@@ -42,6 +43,11 @@
     <SimpleColumn name="CompletedQty" />
     <SimpleColumn name="ResRemainder" />
     <SimpleColumn name="Price" />
+    <SimpleColumn name="Discount" />
+
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
 
     <SimpleJoin name="Order" joinType="LEFT">
       <ExternalJoin source="OrderChildInvoices" name="Order" joinType="LEFT">

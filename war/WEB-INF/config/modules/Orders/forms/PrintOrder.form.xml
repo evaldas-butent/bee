@@ -3,13 +3,14 @@
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY section1 "margin-top: 15px;">
   <!ENTITY bold "font-weight:bold;">
+  <!ENTITY size "font-size:12px;">
   <!ENTITY footer "position: absolute; bottom: 5px; display: inline-block;">
   <!ENTITY form "PrintOrder">
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" name="&form;" disabledActions="save"
   height="80" heightUnit="%" caption="=order" width="80" widthUnit="%">
-  <FlowPanel style="padding: 10px; background-color: white; font-size:10px;"
+   <FlowPanel style="padding: 10px; background-color: white; font-size:10px;"
     contentEditable="true">
 
     <css id="&form;">
@@ -22,7 +23,9 @@
     
     <FlowPanel
       style="height:80px; background-color:#d6d6d6; position:relative;">
-      <Image url="file/251" style="height:80px; float:right;" />
+      <FlowPanel>
+        <Image url="file/251" style="height:80px; float:right;" />
+      </FlowPanel>
       <Label
         style="font-size:large; font-weight:bold; position:absolute; bottom:0;"
         text="Užsakymas" />
@@ -46,7 +49,7 @@
       <Label text="Rekvizitai:" />
     </FlowPanel>
 
-    <Table kind="controls" style="width:100%; &section;">
+    <Table kind="controls" style="width:100%; &section; &size;">
       <row>
         <cell>
           <Label html="PARDAVĖJAS:" style="font-weight: bold; margin-left:10px;" />
@@ -124,7 +127,7 @@
           <properties name="+" />
         </Label>
         <Label text="Atidavimo data">
-          <properties name="SupplierTerm" />
+          <properties name="Atidavimo data" />
         </Label>
         <Label text="Pastabos">
           <properties name="Note" />
@@ -187,7 +190,7 @@
             <renderToken source="ManagerPhone" prefix="Tel: " />
           </TextLabel>
           <TextLabel source="Manager">
-            <renderToken source="ManagerMObile" prefix="Mob: " />
+            <renderToken source="ManagerMobile" prefix="Mob: " />
           </TextLabel>
           <TextLabel source="Manager">
             <renderToken source="ManagerEmail" prefix="El. paštas: " />

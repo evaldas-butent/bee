@@ -31,9 +31,9 @@
         <InputText source="CheckNo" />
       </row>
       <row>
-        <Label class="bee-required" text="=trdInvoicePrefix" style="&lbl2;" />
-        <DataSelector source="SaleSeries" upperCase="true"
-          style="width:5em; margin-right: 4px;" required="true" />
+        <Label text="=trdInvoicePrefix" style="&lbl2;" name="SeriesLabel" />
+        <DataSelector source="SaleSeries" name="Series" upperCase="true"
+          style="width:5em; margin-right: 4px;" />
 
         <Label text="=trdInvoiceNo" style="&lbl2;" />
         <InputText source="InvoiceNo" />

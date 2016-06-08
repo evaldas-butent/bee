@@ -3,6 +3,7 @@
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY section1 "margin-top: 15px;">
   <!ENTITY bold "font-weight:bold;">
+  <!ENTITY size "font-size:12px;">
   <!ENTITY footer "position: absolute; bottom: 5px; display: inline-block;">
   <!ENTITY form "PrintOrderProforma">
 ]>
@@ -13,7 +14,7 @@
   name="&form;" caption="=trdProformaInvoice"
   disabledActions="save" height="90" heightUnit="%" width="60" widthUnit="%"
   >
-  <FlowPanel style="padding: 10px; background-color: white;"
+  <FlowPanel style="padding: 10px; background-color: white; font-size:10px;"
     contentEditable="true">
 
     <css id="&form;">
@@ -26,7 +27,9 @@
     
     <FlowPanel
       style="height:80px; background-color:#d6d6d6; position:relative;">
-      <Image url="images/Hettich.png" style="height:80px; float:right;" />
+      <FlowPanel>
+        <Image url="file/251" style="height:80px; float:right;" />
+      </FlowPanel>
       <TextLabel
         style="font-size:large; font-weight:bold; position:absolute; bottom:0;">
         <render>
@@ -37,7 +40,7 @@
     <FlowPanel style="height:40px; position:relative; &section;">
       <DateTimeLabel format="DATE_FULL" source="Date"
         style="position:absolute; bottom:0; right:0;" />
-      <Image url="images/Hetlita.png" style="height:30px;" />
+      <Image url="file/252" style="height:30px;" />
     </FlowPanel>
     <FlowPanel
       style="&section; background-color:#d6d6d6; border-top: 2px solid black;">
@@ -52,7 +55,7 @@
       <Label text="Rekvizitai:" />
     </FlowPanel>
 
-    <Table kind="controls" style="width:100%; &section;">
+    <Table kind="controls" style="width:100%; &section; &size;">
       <row>
         <cell>
           <Label html="PARDAVĖJAS:" style="font-weight: bold; margin-left:10px;" />
@@ -91,8 +94,11 @@
         <Label text="Kiekis">
           <properties name="Quantity" />
         </Label>
-        <Label text="Kaina LTL, su PVM">
-          <properties name="PriceWithVatLTL" />
+        <Label text="Nuolaida">
+          <properties name="Discount" />
+        </Label>
+        <Label text="Kaina EUR, be PVM">
+          <properties name="Price" />
         </Label>
         <Label text="Kaina EUR, su PVM">
           <properties name="PriceWithVat" />
@@ -139,6 +145,12 @@
         </FlowPanel>
       </row>
     </Table>
+
+    <FlowPanel style="&section;">
+      <TextLabel source="Notes" style="margin-top:5px;">
+        <renderToken source="Notes" prefix="Pastabos: " />
+      </TextLabel>
+    </FlowPanel>
 
     <Label style="font-size:10px; &section;"
       text="Sąskaita išankstiniam apmokėjimui galioja 30 dienų. Apmokėjus šią sąskaitą prašome mus informuoti." />

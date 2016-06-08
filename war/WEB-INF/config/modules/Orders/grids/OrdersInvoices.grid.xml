@@ -24,7 +24,7 @@
     <DataColumn name="CheckNo" />
     <DataColumn name="CustomerName" />
     <DataColumn name="PayerName" />
-    <RelColumn name="Manager" />
+    <RelColumn name="Manager" renderColumns= "ManagerFirstName ManagerLastName" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
     <DataColumn name="Term" />
