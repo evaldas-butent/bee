@@ -149,6 +149,17 @@ public final class TransportConstants {
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
+    },
+    SUMBMITTED_REQUEST_CONTENT {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trRequestSubmittedContent();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "Your request has been received. Will contact You soon!";
+      }
     };
 
     public String getDefaultContent() {
