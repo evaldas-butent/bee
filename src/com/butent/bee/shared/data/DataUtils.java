@@ -38,7 +38,6 @@ import java.util.Set;
 
 public final class DataUtils {
 
-  public static final String STATE_NAMESPACE = "http://www.butent.com/state";
   public static final String TABLE_NAMESPACE = "http://www.butent.com/table";
   public static final String VIEW_NAMESPACE = "http://www.butent.com/view";
   public static final String EXPRESSION_NAMESPACE = "http://www.butent.com/expression";
@@ -81,11 +80,6 @@ public final class DataUtils {
     if (!BeeConst.isUndef(index) && !rowSet.isEmpty()) {
       BeeUtils.addAllNotNull(target, rowSet.getDistinctLongs(index));
     }
-  }
-
-  public static long assertId(Long id) {
-    Assert.isTrue(isId(id), "invalid row id");
-    return id;
   }
 
   public static String buildIdList(BeeRowSet rowSet) {
