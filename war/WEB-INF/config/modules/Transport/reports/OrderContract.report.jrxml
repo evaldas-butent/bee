@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-06-07T09:04:19 -->
+<!-- 2016-06-08T14:16:13 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" whenResourceMissingType="Error" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -392,7 +392,7 @@
 									<textElement markup="html">
 										<font size="8" isBold="false"/>
 									</textElement>
-									<textFieldExpression><![CDATA["<b>" + $F{Notes} + ":</b> " + BeeUtils.joinItems($F{Address}, $F{PostIndex}, $F{CityName}, $F{CountryName})]]></textFieldExpression>
+									<textFieldExpression><![CDATA["<b>" + $F{Notes} + "</b> " + BeeUtils.joinItems($F{Address}, $F{PostIndex}, $F{CityName}, $F{CountryName})]]></textFieldExpression>
 								</textField>
 							</jr:listContents>
 						</jr:list>
@@ -499,7 +499,7 @@
 			<frame>
 				<reportElement x="0" y="10" width="555" height="10" uuid="331548ab-3b08-421f-87d9-392e3cff06f4"/>
 				<box>
-					<topPen lineWidth="1.0"/>
+					<topPen lineWidth="0.5"/>
 				</box>
 				<textField isStretchWithOverflow="true">
 					<reportElement x="160" y="0" width="195" height="10" uuid="a83f5128-2700-492b-b120-8685172a7189"/>
@@ -845,11 +845,14 @@
 				</textField>
 			</frame>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="55" y="5" width="500" height="10" uuid="8543f084-416a-4533-bca4-619684d333d5"/>
-				<textElement markup="none">
+				<reportElement positionType="Float" x="0" y="5" width="555" height="10" uuid="8543f084-416a-4533-bca4-619684d333d5"/>
+				<box>
+					<topPen lineWidth="0.5"/>
+				</box>
+				<textElement markup="html">
 					<font size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[BeeUtils.join("\n", $R{note1}, $P{Notes})]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>" + $V{d}.note() + ":</b> " + BeeUtils.join("<br>", $R{note1}, $P{Notes})]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="0" y="40" width="555" height="10" uuid="b1bdb30a-f8b3-4842-a7d3-486e98cad8ba"/>
@@ -948,13 +951,6 @@
 					<font size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{termsAndConditions}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="5" width="55" height="10" uuid="6449c924-c94f-44e5-9b56-336d27f38c30"/>
-				<textElement>
-					<font size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{d}.note() + ":"]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>
