@@ -96,8 +96,7 @@ public class OrderForm extends PrintFormInterceptor {
         updateStatus(form, OrdersStatus.PREPARED);
         form.setEnabled(true);
         ((ListBox) form.getWidgetBySource(COL_ORDERS_STATUS)).setEditing(false);
-        RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_ORDERS, (BeeRow) row);
-        form.refresh();
+        update();
       }
     });
 
@@ -301,7 +300,9 @@ public class OrderForm extends PrintFormInterceptor {
 
                       @Override
                       public void onSuccess(Integer result) {
-                        updateWarehouse(newValue);
+                        getActiveRow().setValue(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE),
+                            newValue);
+                        update();
                       }
                     });
               }
@@ -309,9 +310,11 @@ public class OrderForm extends PrintFormInterceptor {
           });
           return false;
         } else if (!Objects.equals(getActiveRow().getInteger(Data.getColumnIndex(VIEW_ORDERS,
-            COL_ORDERS_STATUS)), OrdersStatus.APPROVED.ordinal())
+            COL_ORDERS_STATUS)), OrdersStatus.APPROVED.ordinal()) && newValue != oldValue
             && DataUtils.hasId(getActiveRow())) {
-          updateWarehouse(newValue);
+          getActiveRow().setValue(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE),
+              newValue);
+          update();
           return false;
         }
         return true;
@@ -422,24 +425,18 @@ public class OrderForm extends PrintFormInterceptor {
     form.refreshBySource(COL_ORDERS_STATUS);
   }
 
-  private void updateWarehouse(String newValue) {
-
+  private void update() {
     FormView form = getFormView();
 
-    int idxColId = form.getDataIndex(COL_WAREHOUSE);
-    List<BeeColumn> cols =
-        Data.getColumns(form.getViewName(),
-            Lists.newArrayList(COL_WAREHOUSE));
-    List<String> newValues = Lists.newArrayList(newValue);
-    List<String> oldValues =
-        Lists.newArrayList(form.getOldRow().getString(idxColId));
+    BeeRowSet rowSet =
+        DataUtils.getUpdated(form.getViewName(), form.getDataColumns(), form.getOldRow(),
+            getActiveRow(), form.getChildrenForUpdate());
 
-    Queries.update(VIEW_ORDERS, getActiveRowId(), form.getOldRow()
-        .getVersion(), cols, oldValues, newValues, null, new RowCallback() {
+    Queries.updateRow(rowSet, new RowCallback() {
 
       @Override
-      public void onSuccess(BeeRow r) {
-        RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), r);
+      public void onSuccess(BeeRow result) {
+        RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
         form.refresh();
       }
     });
@@ -474,8 +471,8 @@ public class OrderForm extends PrintFormInterceptor {
       @Override
       public void onSuccess(int value) {
         RowEditor.openForm(reports[value],
-            Data.getDataInfo(getFormView().getViewName()), getActiveRowId(), Opener.MODAL, null,
-            new PrintOrdersInterceptor(true, OrderForm.this));
+            Data.getDataInfo(getFormView().getViewName()), Filter.compareId(row.getId()),
+            Opener.MODAL, null, new PrintOrdersInterceptor(true, OrderForm.this));
       }
     };
 

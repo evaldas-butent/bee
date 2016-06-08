@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.orders;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -20,14 +21,14 @@ import com.butent.bee.client.modules.trade.PrintInvoiceInterceptor;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -145,17 +146,32 @@ public class PrintOrdersInterceptor extends PrintInvoiceInterceptor {
             public void accept(SimpleRowSet data) {
               switch (typeTable) {
 
-                case "InvoiceItems":
-                  double qtyTotal = BeeConst.DOUBLE_ZERO;
+                case "OrderItems":
+                  double discountTotal = 0.0D;
+                  double quantity;
+                  double price;
+                  double discount;
 
-                  for (SimpleRow sr : data) {
-                    Double qty = BeeUtils.unbox(sr.getDouble(COL_TRADE_ITEM_QUANTITY));
-                    qtyTotal += qty;
+                  for (SimpleRow r : data) {
+                    quantity = BeeUtils.unbox(r.getDouble(COL_TRADE_ITEM_QUANTITY));
+                    price = BeeUtils.unbox(r.getDouble(COL_TRADE_ITEM_PRICE));
+                    discount = BeeUtils.unbox(r.getDouble(COL_TRADE_DISCOUNT));
+
+                    discountTotal += discount * quantity * price / 100.0D;
                   }
 
-                  Widget wQty = form.getWidgetByName(COL_TRADE_TOTAL_ITEMS_QUANTITY);
-                  if (wQty instanceof Label) {
-                    wQty.getElement().setInnerText(BeeUtils.toString(qtyTotal));
+                  NumberFormat formater = NumberFormat.getFormat("0.00");
+                  Widget wDiscount = form.getWidgetByName("DiscountTotal");
+
+                  if (wDiscount != null && discountTotal > 0.0D) {
+                    wDiscount.getElement().setInnerText(formater.format(discountTotal));
+                  } else {
+                    Widget wDiscountLbl1 = form.getWidgetByName("DiscountLabel");
+                    Widget wDiscountCrc = form.getWidgetByName("DiscountCurrency");
+                    if (wDiscountLbl1 != null && wDiscountCrc != null) {
+                      StyleUtils.setDisplay(wDiscountLbl1, Display.NONE);
+                      StyleUtils.setDisplay(wDiscountCrc, Display.NONE);
+                    }
                   }
 
                   break;

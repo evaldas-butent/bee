@@ -223,7 +223,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
           GridFactory.getGridInterceptor(TradeConstants.GRID_SALES),
           options, PresenterCallback.SHOW_IN_NEW_TAB);
     } else if (ClassifierConstants.COL_COMPANY_NAME.equals(event.getColumnId())) {
-      RowEditor.open(ClassifierConstants.VIEW_COMPANIES, activeRow.getLong(idxCompany),
+      RowEditor.open(ClassifierConstants.VIEW_COMPANIES, activeRow.getId(),
           Opener.NEW_TAB);
     }
   }
