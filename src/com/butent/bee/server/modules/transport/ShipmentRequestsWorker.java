@@ -210,8 +210,7 @@ public class ShipmentRequestsWorker {
     BeeRowSet rowSet =
         qs.getViewData(VIEW_TEXT_CONSTANTS, Filter.equals(COL_TEXT_CONSTANT, constant));
 
-    String localizedContent =
-        Localized.column(COL_TEXT_CONTENT, data.get(COL_USER_LOCALE).toString().replace("\"", ""));
+    String localizedContent = CrudWorker.getValue(data, COL_USER_LOCALE);
 
     String text;
 
