@@ -86,16 +86,20 @@ public final class OrdersConstants {
   public static final String COL_ORDER_ITEM = "OrderItem";
   public static final String COL_COMPLETED_QTY = "CompletedQty";
   public static final String COL_SUPPLIER_TERM = "SupplierTerm";
+  public static final String COL_INVISIBLE_DISCOUNT = "InvisibleDiscount";
 
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
   public static final String PRP_COMPLETED_INVOICES = "CompletedInvoices";
+  public static final String PRP_SUPPLIER_TERM = "SupplierTerm";
 
+  public static final String PRM_AUTO_RESERVATION = "AutoReservation";
   public static final String PRM_UPDATE_ITEMS_PRICES = "UpdateItemsPrices";
   public static final String PRM_IMPORT_ERP_ITEMS_TIME = "ImportERPItemsTime";
   public static final String PRM_IMPORT_ERP_STOCKS_TIME = "ImportERPStocksTime";
   public static final String PRM_EXPORT_ERP_RESERVATIONS_TIME = "ExportERPReservationsTime";
   public static final String PRM_DEFAULT_SALE_OPERATION = "DefaultSaleOperation";
   public static final String PRM_CLEAR_RESERVATIONS_TIME = "ClearReservationsTime";
+  public static final String PRM_MANAGER_DISCOUNT = "ManagerDiscount";
 
   private OrdersConstants() {
   }

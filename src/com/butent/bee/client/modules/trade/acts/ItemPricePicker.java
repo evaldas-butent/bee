@@ -4,6 +4,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.i18n.client.NumberFormat;
 
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.Money;
@@ -21,11 +25,13 @@ import com.butent.bee.shared.html.builder.elements.Select;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ItemPricePicker extends AbstractCellRenderer {
 
@@ -84,6 +90,18 @@ public class ItemPricePicker extends AbstractCellRenderer {
 
     if (!gridView.isRowEditable(row, gridView)) {
       return;
+    }
+
+    if (Objects.equals(gridView.getViewName(), VIEW_ORDER_ITEMS)) {
+      Double unpack = row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_UNPACKING));
+      Double qty =
+          row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS,
+              TradeConstants.COL_TRADE_ITEM_QUANTITY));
+
+      if (unpack != null) {
+        value =
+            BeeUtils.toString(Double.valueOf(value) + BeeUtils.unbox(unpack) / BeeUtils.unbox(qty));
+      }
     }
 
     Queries.updateCellAndFire(gridView.getViewName(), rowId, row.getVersion(),
@@ -173,6 +191,9 @@ public class ItemPricePicker extends AbstractCellRenderer {
         price = null;
       }
 
+      if (!BeeKeeper.getUser().isAdministrator()) {
+        select.disabled();
+      }
       select.appendChild(option);
     }
 
