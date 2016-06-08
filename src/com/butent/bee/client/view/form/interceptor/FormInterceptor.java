@@ -25,7 +25,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
 
 import java.util.List;
-import java.util.Set;
 
 public interface FormInterceptor extends WidgetInterceptor, HasGridView, HandlesStateChange,
     HasDomain, HasActiveRow, HasViewName, EditEndEvent.Handler {
@@ -49,10 +48,6 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   void beforeStateChange(State state, boolean modal);
 
   boolean focusSource(String source);
-
-  Set<Action> getDisabledActions(Set<Action> defaultActions);
-
-  Set<Action> getEnabledActions(Set<Action> defaultActions);
 
   FormView getFormView();
 

@@ -259,7 +259,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       this.filterManager = null;
     }
 
-    this.menu = new GridMenu(gridDescription, uiOptions);
+    this.menu = new GridMenu(gridDescription, uiOptions, gridInterceptor);
 
     if (!BeeUtils.isEmpty(gridDescription.getFavorite())) {
       favorite.addAll(NameUtils.toList(gridDescription.getFavorite()));

@@ -5,9 +5,12 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.ui.Relation;
+
+import java.util.Set;
 
 public interface WidgetInterceptor extends HasCaption, HasWidgetSupplier {
 
@@ -27,6 +30,10 @@ public interface WidgetInterceptor extends HasCaption, HasWidgetSupplier {
   DateTime getDateTimeValue(String source);
 
   JustDate getDateValue(String source);
+
+  Set<Action> getDisabledActions(Set<Action> defaultActions);
+
+  Set<Action> getEnabledActions(Set<Action> defaultActions);
 
   Integer getIntegerValue(String source);
 
