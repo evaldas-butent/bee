@@ -209,6 +209,10 @@ public class UserInfo implements HasInfo {
     return getBooleanSetting(COL_COMMENTS_LAYOUT);
   }
 
+  public boolean hasAuthoritah() {
+    return isLoggedIn() && userData.hasAuthoritah();
+  }
+
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }
