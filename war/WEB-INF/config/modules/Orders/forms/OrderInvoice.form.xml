@@ -2,10 +2,14 @@
 <!DOCTYPE Form [
   <!ENTITY inp "width: 15em;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+<f:Form
+  xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+
   name="OrderInvoice" viewName="Sales" caption="=trdInvoice" showRowId="true"
   width="840" height="600" readOnly="true">
-  <f:properties reports="PrintOrderInvoice, PrintOrderProforma" />
+  <f:properties jasperReports="PrintOrderInvoice:Sąskaita, PrintOrderProforma:Išankstinė sąskaita" />
   <FlowPanel class="flexBox-vertical">
     <br />
     <Table kind="controls">
@@ -23,8 +27,8 @@
 
       <row>
         <Label for="SaleSeries" />
-        <DataSelector source="SaleSeries" upperCase="true"
-          style="width: 7em;" />
+        <DataSelector source="SaleSeries" upperCase="true" name="Series"
+          style="width: 7em;" disablable="false" />
 
         <Label for="InvoiceNo" />
         <InputText source="InvoiceNo" />

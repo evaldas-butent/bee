@@ -9,7 +9,7 @@
   
   name="OrderSales" viewName="OrderSales" flexGrow="1" renderMode="full"
   newRowCaption="=newItem" filter="!(Completed) OR Completed != Quantity"
-  disabledActions="add" >
+  disabledActions="add" paging="false" initialRowSetSize="-1">
   <g:columns>
     <SelectionColumn name="Select" width="20" />
     <DataColumn name="Date" readOnly="true" />
@@ -21,7 +21,7 @@
 
     <DataColumn name="Article" />
 
-    <DataColumn name="CompletedQty">
+    <DataColumn name="CompletedQty" scale="3">
       <editable>
         <ui:expression>cell.value &gt; 0</ui:expression>
       </editable>
@@ -38,9 +38,24 @@
     <DataColumn name="UnitName" caption="=unitShort"
       flexGrow="0" />
 
-    <DataColumn name="Price" visible="true" readOnly="true" >
-      <footer expression="row.Quantity * row.Price" />
-    </DataColumn>
+    <CalcColumn name="Price1" type="double" label="=price"
+      format="#.#####">
+      <render>
+        <ui:expression>row.VatPlus ? row.VatPercent ? ((row.Price *
+          row.CompletedQty + row.Price * row.CompletedQty * row.Vat / 100) - (row.Price *
+          row.CompletedQty + row.Price * row.CompletedQty * row.Vat / 100) * row.Discount / 100)/row.CompletedQty :
+          (row.Price * row.CompletedQty + row.Vat) - (row.Price * row.CompletedQty + row.Vat) *
+          row.Discount / 100 /row.CompletedQty : row.Price - row.Price * row.Discount / 100
+        </ui:expression>
+      </render>
+      <footer
+        expression="(row.VatPlus ? row.VatPercent ? ((row.Price *
+          row.CompletedQty + row.Price * row.CompletedQty * row.Vat / 100) - (row.Price *
+          row.CompletedQty + row.Price * row.CompletedQty * row.Vat / 100) * row.Discount / 100)/row.CompletedQty :
+          (row.Price * row.CompletedQty + row.Vat) - (row.Price * row.CompletedQty + row.Vat) *
+          row.Discount / 100 /row.CompletedQty : row.Price - row.Price * row.Discount / 100) * row.CompletedQty"
+        format="#.##" />
+    </CalcColumn>
 
     <RelColumn name="Currency" readOnly="true" />
   </g:columns>

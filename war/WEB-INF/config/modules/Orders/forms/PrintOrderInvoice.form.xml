@@ -3,6 +3,7 @@
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY section1 "margin-top: 15px;">
   <!ENTITY bold "font-weight:bold;">
+  <!ENTITY size "font-size:12px;">
   <!ENTITY footer "position: absolute; bottom: 5px; display: inline-block;">
   <!ENTITY form "PrintOrderInvoice">
 ]>
@@ -10,7 +11,7 @@
   xmlns:ui="http://www.butent.com/ui" name="&form;" caption="=trdInvoice"
   disabledActions="save" height="90" heightUnit="%" width="60"
   widthUnit="%">
-  <FlowPanel style="padding: 10px; background-color: white;"
+  <FlowPanel style="padding: 10px; background-color: white; font-size: 10px;"
     contentEditable="true">
     
     <css id="&form;">
@@ -22,7 +23,9 @@
     </css>
     
     <FlowPanel style="position:relative; &section;">
-      <Image url="images/Hetlita.png" style="position:absolute; right:0; height:30px;" />
+      <FlowPanel>
+        <Image url="file/252" style="position:absolute; right:0; height:30px;" />
+      </FlowPanel>
       <FlowPanel style="text-align:center; font-size:medium;">
         <Label text="PVM SĄSKAITA - FAKTŪRA" />
         <TextLabel style="&bold;" source="InvoiceNo">
@@ -33,7 +36,7 @@
       </FlowPanel>
     </FlowPanel>
 
-    <Table kind="controls" style="width:100%; &section;">
+    <Table kind="controls" style="width:100%; &section; &size;">
       <row>
         <cell style="vertical-align: top;">
           <Label html="Tiekėjas" />
@@ -74,13 +77,16 @@
         <Label text="Kaina EUR, be PVM">
           <properties name="Price" />
         </Label>
+        <Label text="Nuolaida">
+          <properties name="Discount" />
+        </Label>
         <Label text="Suma">
           <properties name="Amount" />
         </Label>
         <Label />
       </row>
       <row>
-        <cell colSpan="3" style="vertical-align: top;">
+        <cell colSpan="4" style="vertical-align: top;">
           <Label text="Iš viso" style="text-align: right;" />
         </cell>
         <cell style="text-align:right; vertical-align: top;">
@@ -123,6 +129,12 @@
         </FlowPanel>
       </row>
     </Table>
+
+    <FlowPanel style="&section;">
+      <TextLabel source="Notes" style="margin-top:5px;">
+        <renderToken source="Notes" prefix="Pastabos: " />
+      </TextLabel>
+    </FlowPanel>
 
     <Table kind="controls">
       <row>
