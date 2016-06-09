@@ -931,6 +931,9 @@
   overflow: auto;
   background-color: white;
 }
+.bee-form-CompanyPerson input[class="bee-SimpleCheckBox bee-RemindEmail"] {
+  display: inherit !important;
+}
 
 .bee-required:after {
   content: "*";

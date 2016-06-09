@@ -40,7 +40,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -53,7 +52,6 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -188,10 +186,6 @@ class PersonForm extends AbstractFormInterceptor {
           return null;
         }
       });
-    } else if ((BeeUtils.same(name, ClassifierConstants.COL_REMIND_EMAIL)
-        || BeeUtils.same(name, ClassifierConstants.COL_EMAIL_INVOICES))
-        && widget instanceof InputBoolean) {
-      ((InputBoolean) widget).setVisible(false);
     }
   }
 

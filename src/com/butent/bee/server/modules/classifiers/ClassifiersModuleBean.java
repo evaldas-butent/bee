@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.classifiers;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -20,6 +21,8 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
@@ -49,6 +52,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -106,7 +110,8 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -264,7 +269,12 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    String module = getModule().getName();
+
+    List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createBoolean(module, PRM_OVERDUE_INVOICES, false, false));
+
+    return params;
   }
 
   @Override
@@ -360,6 +370,47 @@ public class ClassifiersModuleBean implements BeeModule {
             } catch (AddressException ex) {
               event.addErrorMessage(BeeUtils.joinWords("Wrong address ", email, ": ",
                   ex.getMessage()));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setItemRemainders(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_ITEMS)) {
+          Map<Long, IsRow> indexedRows = new HashMap<>();
+          BeeRowSet rowSet = event.getRowset();
+          List<Long> ids = rowSet.getRowIds();
+
+          Map<Long, Double> resReminders =
+              getReminders(ids, TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+          Map<Long, Double> wrhReminders =
+              getReminders(ids, VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER);
+
+          for (BeeRow row : rowSet.getRows()) {
+            Long id = row.getId();
+
+            if (DataUtils.isId(id)) {
+              indexedRows.put(id, row);
+              row.setProperty(COL_RESERVED_REMAINDER, resReminders.get(id));
+              row.setProperty(PROP_WAREHOUSE_REMAINDER, wrhReminders.get(id));
+            }
+          }
+          if (!indexedRows.isEmpty()) {
+            BeeView view = sys.getView(VIEW_ITEM_REMAINDERS);
+            SqlSelect query = view.getQuery(usr.getCurrentUserId());
+
+            query.setWhere(SqlUtils.and(query.getWhere(), SqlUtils.inList(view.getSourceAlias(),
+                COL_ITEM, indexedRows.keySet())));
+
+            for (SimpleRow row : qs.getData(query)) {
+              IsRow r = indexedRows.get(row.getLong(COL_ITEM));
+
+              if (r != null) {
+                r.setProperty(COL_WAREHOUSE_REMAINDER + row.getValue(ALS_WAREHOUSE_CODE),
+                    row.getValue(COL_WAREHOUSE_REMAINDER));
+              }
             }
           }
         }
@@ -763,6 +814,82 @@ public class ClassifiersModuleBean implements BeeModule {
     });
   }
 
+  /**
+   * Returns map based collection of company and e-mail address'es list. This collection formed from
+   * data source table of Contacts where has relation of Companies table. It must also be not empty
+   * the RemindEmail field in Contacts data source table.
+   *
+   * This collection using send reports or documents over e-mail liked with company Id.
+   *
+   * @param companyIds List of company Id's using to filter company email of contacts.
+   * @return collection of company contact e-mails where key of map is companyId and value of map is
+   *         collection of email address.
+   * @throws BeeRuntimeException throws if collection {@code companyIds} is empty or null.
+   */
+  public Multimap<Long, String> getCompaniesRemindEmailAddresses(
+      List<Long> companyIds) {
+
+    Assert.notEmpty(companyIds);
+
+    Multimap<Long, String> emails = HashMultimap.create();
+
+    SqlSelect select = new SqlSelect();
+    select.addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY);
+    select.addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS);
+    select.addFrom(TBL_COMPANIES);
+    select.addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT));
+    select.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL));
+    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+        companyIds),
+        SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
+
+    SimpleRowSet companiesEmails = qs.getData(select);
+
+    select = new SqlSelect();
+    select.addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY);
+    select.addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS);
+    select.addFrom(TBL_COMPANIES);
+    select.addFromLeft(TBL_COMPANY_CONTACTS, sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS,
+        COL_COMPANY));
+    select.addFromLeft(TBL_CONTACTS, sys
+        .joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT));
+    select.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL));
+    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+        companyIds),
+        SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
+
+    SimpleRowSet companiesOtherEmails = qs.getData(select);
+
+    select = new SqlSelect();
+    select.addField(TBL_COMPANY_PERSONS, COL_COMPANY, COL_COMPANY);
+    select.addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS);
+    select.addFrom(TBL_COMPANY_PERSONS);
+    select.addFromLeft(TBL_CONTACTS, sys
+        .joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT));
+    select.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL));
+    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANY_PERSONS, COL_COMPANY, companyIds),
+        SqlUtils.notNull(TBL_CONTACTS, COL_REMIND_EMAIL)));
+
+    SimpleRowSet companyPersonsEmails = qs.getData(select);
+
+    for (String[] row : companiesEmails.getRows()) {
+      Long companyId = BeeUtils.toLong(row[companiesEmails.getColumnIndex(COL_COMPANY)]);
+      emails.put(companyId, row[companiesEmails.getColumnIndex(COL_EMAIL)]);
+    }
+
+    for (String[] row : companiesOtherEmails.getRows()) {
+      Long companyId = BeeUtils.toLong(row[companiesOtherEmails.getColumnIndex(COL_COMPANY)]);
+      emails.put(companyId, row[companiesOtherEmails.getColumnIndex(COL_EMAIL)]);
+    }
+
+    for (String[] row : companyPersonsEmails.getRows()) {
+      Long companyId = BeeUtils.toLong(row[companyPersonsEmails.getColumnIndex(COL_COMPANY)]);
+      emails.put(companyId, row[companyPersonsEmails.getColumnIndex(COL_EMAIL)]);
+    }
+
+    return emails;
+  }
+
   public void initActionReminderTimer() {
     Timer actionReminderTimer = null;
 
@@ -1019,29 +1146,34 @@ public class ClassifiersModuleBean implements BeeModule {
     if (!DataUtils.isId(companyId)) {
       return ResponseObject.error("Wrong company ID");
     }
-    SimpleRow row = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
-        .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
-        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-        .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
-        .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
-        .addFields(TBL_COMPANY_BANK_ACCOUNTS, COL_BANK_ACCOUNT)
-        .addField(TBL_BANKS, COL_BANK_NAME, COL_BANK)
-        .addFields(TBL_BANKS, COL_BANK_CODE, COL_SWIFT_CODE)
-        .addFrom(TBL_COMPANIES)
-        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-        .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-        .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
-        .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
-        .addFromLeft(TBL_COMPANY_BANK_ACCOUNTS,
-            sys.joinTables(TBL_COMPANY_BANK_ACCOUNTS, TBL_COMPANIES, COL_DEFAULT_BANK_ACCOUNT))
-        .addFromLeft(TBL_BANKS, sys.joinTables(TBL_BANKS, TBL_COMPANY_BANK_ACCOUNTS, COL_BANK))
-        .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
+    SimpleRow row =
+        qs.getRow(new SqlSelect()
+            .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+            .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE)
+            .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, COL_PHONE, COL_MOBILE, COL_FAX)
+            .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+            .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+            .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+            .addFields(TBL_COMPANY_BANK_ACCOUNTS, COL_BANK_ACCOUNT)
+            .addField(TBL_BANKS, COL_BANK_NAME, COL_BANK)
+            .addFields(TBL_BANKS, COL_BANK_CODE, COL_SWIFT_CODE)
+            .addFrom(TBL_COMPANIES)
+            .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+            .addFromLeft(TBL_COMPANY_TYPES,
+                sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+            .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
+            .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+            .addFromLeft(TBL_COMPANY_BANK_ACCOUNTS,
+                sys.joinTables(TBL_COMPANY_BANK_ACCOUNTS, TBL_COMPANIES, COL_DEFAULT_BANK_ACCOUNT))
+            .addFromLeft(TBL_BANKS, sys.joinTables(TBL_BANKS, TBL_COMPANY_BANK_ACCOUNTS, COL_BANK))
+            .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
 
     Dictionary constants = Localizations.getDictionary(SupportedLocale.parse(locale));
 
     Map<String, String> translations = new HashMap<>();
     translations.put(COL_COMPANY_NAME, constants.company());
+    translations.put(ALS_COMPANY_TYPE, constants.companyStatus());
     translations.put(COL_COMPANY_CODE, constants.companyCode());
     translations.put(COL_COMPANY_VAT_CODE, constants.companyVATCode());
     translations.put(COL_ADDRESS, constants.address());
@@ -1954,6 +2086,54 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     return userSettings;
+  }
+
+  private Map<Long, Double> getReminders(List<Long> ids, String source, String field) {
+
+    Map<Long, Double> reminders = new HashMap<>();
+    Map<Long, Double> invoices = new HashMap<>();
+
+    if (!BeeUtils.isEmpty(ids)) {
+      SqlSelect select = new SqlSelect()
+          .addFields(source, COL_ITEM)
+          .addSum(source, field)
+          .addFrom(source)
+          .setWhere(SqlUtils.inList(source, COL_ITEM, ids))
+          .addGroup(source, COL_ITEM);
+
+      if (source == TBL_ORDER_ITEMS) {
+        SqlSelect slcInvoices =
+            new SqlSelect()
+                .addFields(TBL_SALE_ITEMS, COL_ITEM)
+                .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+                .addFrom(TBL_SALE_ITEMS)
+                .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                .setWhere(
+                    SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_ITEM, ids), SqlUtils.isNull(
+                        TBL_SALES, COL_TRADE_EXPORTED)))
+                .addGroup(TBL_SALE_ITEMS, COL_ITEM);
+
+        for (SimpleRow row : qs.getData(slcInvoices)) {
+          invoices.put(row.getLong(COL_ITEM), BeeUtils
+              .unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY)));
+        }
+
+        for (SimpleRow row : qs.getData(select)) {
+          if (invoices.containsKey(row.getLong(COL_ITEM))) {
+            reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field))
+                + BeeUtils.unbox(invoices.get(row.getLong(COL_ITEM))));
+          } else {
+            reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+          }
+        }
+      } else {
+        for (SimpleRow row : qs.getData(select)) {
+          reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+        }
+      }
+    }
+
+    return reminders;
   }
 
   @Timeout
