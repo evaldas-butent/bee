@@ -54,6 +54,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_DISCOUNTS = "Discounts";
 
+  public static final String TBL_ITEM_REMAINDERS_TMP = "ItemRemaindersTmp";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
@@ -123,6 +125,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_INFORMATION_SOURCE = "InformationSource";
   public static final String COL_COMPANY_PRICE_NAME = "PriceName";
   public static final String COL_COMPANY_DISCOUNT_PERCENT = "DiscountPercent";
+  public static final String COL_COMPANY_TOLERATED_DAYS = "ToleratedDays";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
@@ -180,6 +183,7 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_MIN_TERM = "MinTerm";
   public static final String COL_ITEM_LINK = "Link";
   public static final String COL_ITEM_NOT_MANUFACTURED = "NotManufactured";
+  public static final String COL_ITEM_REMAINDER_ID = "Id";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
@@ -321,6 +325,8 @@ public final class ClassifierConstants {
   public static final String QR_PERSON = "qrPerson";
 
   public static final long DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_HOUR;
+
+  public static final String PRM_OVERDUE_INVOICES = "OverdueInvoices";
 
   public static void register() {
     EnumUtils.register(ItemPrice.class);

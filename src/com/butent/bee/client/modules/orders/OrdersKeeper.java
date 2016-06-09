@@ -21,13 +21,11 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -70,13 +68,16 @@ public final class OrdersKeeper {
   public static void register() {
     FormFactory.registerFormInterceptor(COL_ORDER, new OrderForm());
     FormFactory.registerFormInterceptor("OrderInvoice", new OrderInvoiceForm());
+    FormFactory.registerFormInterceptor("NewOrderInvoice", new NewOrderInvoiceForm());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_SALES, new OrderInvoiceBuilder());
-    GridFactory.registerGridInterceptor(VIEW_ORDERS_INVOICES, new InvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_ORDERS_INVOICES, new OrdersInvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_ORDER_TMPL_ITEMS, new OrderTmplItemsGrid());
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new OrdersGrid());
 
     SelectorEvent.register(new OrdersSelectorHandler());
+
+    OrdersObserver.register();
   }
 
   private OrdersKeeper() {
@@ -122,6 +123,7 @@ public final class OrdersKeeper {
 
         table.addStyleName(STYLE_ITEMS_TABLE);
 
+        NumberFormat priceFormater = NumberFormat.getFormat("0.00000");
         NumberFormat formater = NumberFormat.getFormat("0.00");
 
         String currency = null;
@@ -132,6 +134,7 @@ public final class OrdersKeeper {
         double rate = 0;
         double currVatTotal = 0;
         double currSumTotal = 0;
+        double discountTotal = 0;
 
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
         int ordinal = 0;
@@ -148,13 +151,8 @@ public final class OrdersKeeper {
           double qty = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY));
           qtyTotal += qty;
           double price = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_PRICE));
-          double discount = BeeConst.DOUBLE_ZERO;
-
-          if (BeeUtils.same(viewName, VIEW_ORDERS)) {
-            discount = BeeUtils.unbox(row.getDouble(COL_TRADE_DISCOUNT));
-            formater = NumberFormat.getFormat("0.0000");
-          }
-
+          double discount = BeeUtils.unbox(row.getDouble(COL_TRADE_DISCOUNT));
+          discountTotal += discount * qty * price / 100;
           double sum = qty * price - discount * qty * price / 100;
           double currSum = 0;
           double vat = BeeUtils.unbox(row.getDouble(COL_TRADE_VAT));
@@ -174,7 +172,6 @@ public final class OrdersKeeper {
             }
             sum -= vat;
           }
-          sum = BeeUtils.round(sum, 2);
           sumTotal += sum;
           vatTotal += vat;
 
@@ -183,7 +180,7 @@ public final class OrdersKeeper {
               rateCurrency = row.getValue(COL_RATE_CURRENCY);
               rate = BeeUtils.unbox(row.getDouble(COL_CURRENCY_RATE));
             }
-            currSum = BeeUtils.round(sum * rate, 2);
+            currSum = sum * rate;
             currSumTotal += currSum;
             currVatTotal += vat * rate;
           }
@@ -205,7 +202,7 @@ public final class OrdersKeeper {
                   value = BeeUtils.toString(qty);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_ITEM_PRICE)) {
-                  value = formater.format(sum / qty);
+                  value = priceFormater.format(sum / qty);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_VAT)) {
                   value = row.getValue(fld);
@@ -213,6 +210,9 @@ public final class OrdersKeeper {
                   if (value != null && vatInPercents) {
                     value = BeeUtils.removeTrailingZeros(value) + "%";
                   }
+                } else if (BeeUtils.same(fld, COL_TRADE_DISCOUNT)) {
+                  value = formater.format(discount);
+
                 } else if (BeeUtils.same(fld, COL_TRADE_AMOUNT)) {
                   value = formater.format(sum);
 
@@ -232,21 +232,21 @@ public final class OrdersKeeper {
                   value = BeeUtils.toString(rate, 7);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_PRICE_WITH_VAT)) {
-                  value = formater.format((sum + vat) / qty);
+                  value = priceFormater.format((sum + vat) / qty);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_AMAOUNT_WITH_VAT)) {
                   value = formater.format(sum + vat);
 
                 } else if (BeeUtils.same(fld, COL_RESERVED_REMAINDER)) {
-                  value = formater.format(reserved);
+                  value = reserved == 0 ? "" : priceFormater.format(reserved);
 
                 } else if (BeeUtils.same(fld, COL_SUPPLIER_TERM)) {
-                  if (reserved == 0 && reserved - totRem == 0) {
+                  if (reserved == 0 && totRem == 0) {
                     if (row.getDate(COL_SUPPLIER_TERM) == null) {
                       DateTime date = row.getDateTime(ProjectConstants.COL_DATES_START_DATE);
                       int weekDay = date.getDow();
 
-                      if (weekDay < 4) {
+                      if (weekDay < 3) {
                         value = new JustDate(date.getDate().getDays() + 9 - weekDay).toString();
                       } else {
                         value = new JustDate(date.getDate().getDays() + 16 - weekDay).toString();
@@ -310,8 +310,6 @@ public final class OrdersKeeper {
           table.getRowFormatter().addStyleName(i, STYLE_ITEMS_HEADER);
         }
         if (footer) {
-          vatTotal = BeeUtils.round(vatTotal, 2);
-          currVatTotal = BeeUtils.round(currVatTotal, 2);
 
           int x = table.getRowCount() - 1;
 
@@ -342,6 +340,9 @@ public final class OrdersKeeper {
 
               } else if (BeeUtils.same(fld, COL_RATE_VAT + COL_TOTAL)) {
                 value = formater.format(currVatTotal);
+
+              } else if (BeeUtils.same(fld, COL_TRADE_DISCOUNT + COL_TOTAL)) {
+                value = formater.format(discountTotal);
 
               } else if (BeeUtils.same(fld, COL_RATE_TOTAL)) {
                 value = formater.format(currSumTotal + currVatTotal);
