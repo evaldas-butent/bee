@@ -257,7 +257,6 @@ public final class ButentWS {
     } catch (Exception e) {
       throw BeeException.error(e);
     }
-    LogUtils.getRootLogger().info(answer);
     answer = getNode(answer).getTextContent();
 
     return answer;

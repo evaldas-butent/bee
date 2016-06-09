@@ -19,6 +19,7 @@ public class WSDocument {
     private String vatPercent;
     private String article;
     private String note;
+    private String discount;
 
     private WSDocumentItem(String itemId, String quantity) {
       this.itemId = itemId;
@@ -27,6 +28,10 @@ public class WSDocument {
 
     public void setArticle(String article) {
       this.article = article;
+    }
+
+    public void setDiscount(String discount) {
+      this.discount = discount;
     }
 
     public void setNote(String note) {
@@ -55,6 +60,8 @@ public class WSDocument {
   private String number;
   private String invoicePrefix;
   private String invoiceNumber;
+
+  private String checkNo;
 
   private JustDate term;
 
@@ -103,6 +110,7 @@ public class WSDocument {
           .append(XmlUtils.tag("preke", item.itemId))
           .append(XmlUtils.tag("kiekis", item.quantity))
           .append(XmlUtils.tag("artikulas", item.article))
+          .append(XmlUtils.tag("kitas_dok2", checkNo))
           .append(XmlUtils.tag("pastaba", item.note));
 
       if (!BeeUtils.isEmpty(item.price)) {
@@ -113,10 +121,20 @@ public class WSDocument {
               .append(XmlUtils.tag("pvm", item.vat))
               .append(XmlUtils.tag("pvm_p_md", item.vatPercent));
         }
+
+        if (!BeeUtils.isEmpty(item.discount)) {
+          sb.append(XmlUtils.tag("nuolaida", item.discount));
+          sb.append(XmlUtils.tag("nuol_p_md", "%"));
+
+        }
       }
       sb.append("</row>");
     }
     return sb.append("</VFPData>").toString();
+  }
+
+  public void setCheckNo(String checkNo) {
+    this.checkNo = checkNo;
   }
 
   public void setCurrency(String currency) {

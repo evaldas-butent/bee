@@ -48,6 +48,12 @@
   color: black;
 }
 
+.bee-ta-picker-search-remainder{
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+}
+
 .bee-ta-picker-item-panel,
 .bee-ta-return-items-wrapper,
 .bee-ta-import-items-wrapper {
