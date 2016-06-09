@@ -133,7 +133,7 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
     final int vatPrcIndex = rowSet.getColumnIndex(COL_TRADE_VAT_PERC);
 
     final int vatPrcItemIdx = items.getColumnIndex(COL_TRADE_VAT_PERC);
-    final int vatPrcDefaultIdx = items.getNumberOfColumns() - 5;
+    final int vatPrcDefaultIdx = items.getNumberOfColumns() - 1;
     final int vatItemIdx = items.getColumnIndex(COL_TRADE_VAT);
 
     Map<Long, Double> quantities = new HashMap<>();
