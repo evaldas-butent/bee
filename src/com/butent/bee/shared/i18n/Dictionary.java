@@ -3591,6 +3591,8 @@ public interface Dictionary {
 
   default String personTabNo() {return g("personTabNo");}
 
+  default String personTabNoShort() {return g("personTabNoShort");}
+
   default String personUnemployment() {return g("personUnemployment");}
 
   default String persons() {return g("persons");}
@@ -6005,9 +6007,9 @@ public interface Dictionary {
 
   default String workScheduleActualShort() {return g("workScheduleActualShort");}
 
-  default String workScheduleHolidaysInclusiveShort() {return g("workScheduleHolidaysInclusiveShort");}
-
   default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
+
+  default String workScheduleHolidaysInclusiveShort() {return g("workScheduleHolidaysInclusiveShort");}
 
   default String workSchedulePlanned() {return g("workSchedulePlanned");}
 
