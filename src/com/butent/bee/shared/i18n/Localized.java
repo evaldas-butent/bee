@@ -105,7 +105,7 @@ public final class Localized {
     }
   }
 
-  public static void setGlossary(Map<String, String> glossary) {
+  public static synchronized void setGlossary(Map<String, String> glossary) {
     if (BeeUtils.isEmpty(glossary)) {
       logger.severe("glossary is empty");
 

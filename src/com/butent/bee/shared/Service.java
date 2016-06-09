@@ -121,6 +121,7 @@ public final class Service {
   public static final String L10N_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "l10n_";
 
   public static final String PREPARE_DICTIONARY = L10N_SERVICE_PREFIX + "prepare_dictionary";
+  public static final String CUSTOMIZE_DICTIONARY = L10N_SERVICE_PREFIX + "customize_dictionary";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
