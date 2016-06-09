@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY section "margin-top: 5px;">
+    <!ENTITY section1 "margin-top: 15px;">
+    <!ENTITY bold "font-weight:bold;">
+    <!ENTITY size "font-size:12px;">
+    <!ENTITY footer "position: absolute; bottom: 5px; display: inline-block;">
+    <!ENTITY form "PrintProformaOrder">
+    ]>
+<f:Form
+    xmlns="http://www.butent.com/widget"
+    xmlns:f="http://www.butent.com/form"
+    xmlns:ui="http://www.butent.com/ui"
+    name="&form;" caption="=trdProformaInvoice"
+    disabledActions="save" height="90" heightUnit="%" width="60" widthUnit="%"
+>
+  <FlowPanel style="padding: 10px; background-color: white; font-size:10px;"
+             contentEditable="true">
+
+    <css id="&form;">
+      .&form;-bank .BankAccount:before {content:"a.s: ";}
+      .&form;-bank .BankAccount:after {content:", ";}
+      .&form;-bank .BankCode:before {content:", ";}
+      .&form;-bank .BankCode:after {content:" ";}
+      .&form;-bank .SWIFTCode:before {content:"SWIFT: ";}
+    </css>
+
+    <FlowPanel
+        style="height:80px; background-color:#d6d6d6; position:relative;">
+      <FlowPanel>
+        <Image url="file/251" style="height:80px; float:right;" />
+      </FlowPanel>
+      <TextLabel
+          style="font-size:large; font-weight:bold; position:absolute; bottom:0;">
+        <render>
+          <ui:expression>'Sąskaita išankstiniam apmokėjimui'</ui:expression>
+        </render>
+      </TextLabel>
+    </FlowPanel>
+    <FlowPanel style="height:40px; position:relative; &section;">
+      <DateTimeLabel format="DATE_FULL" source="StartDate"
+                     style="position:absolute; bottom:0; right:0;" />
+      <Image url="file/252" style="height:30px;" />
+    </FlowPanel>
+    <FlowPanel
+        style="&section; background-color:#d6d6d6; border-top: 2px solid black;">
+      <FlowPanel style="text-align:right;">
+        <Label text="Dok.Nr. " style="display:inline;" />
+        <TextLabel style="display:inline;" source="Series">
+          <renderToken source="SeriesName" prefix=" "
+                       suffix=" " />
+          <renderToken source="Number" />
+        </TextLabel>
+      </FlowPanel>
+      <Label text="Rekvizitai:" />
+    </FlowPanel>
+
+    <Table kind="controls" style="width:100%; &section; &size;">
+      <row>
+        <cell>
+          <Label html="PARDAVĖJAS:" style="font-weight: bold; margin-left:10px;" />
+        </cell>
+        <cell style="vertical-align:top;">
+          <Label html="PIRKĖJAS:" style="font-weight: bold;" />
+        </cell>
+      </row>
+      <row>
+        <FlowPanel style="vertical-align:top;margin-left:10px;" >
+          <FlowPanel name="Supplier" />
+          <Label name="BankAccount" class="&form;-bank" />
+        </FlowPanel>
+        <FlowPanel name="Company" style="vertical-align:top;" />
+      </row>
+    </Table>
+
+    <Label style="&section1; font-weight:bold;"
+           text="*Tiekimo terminas galioja apmokėjus išankstinę sąskaitą jos išrašymo dieną. Kitais atvejais 1 - 1,5 savaitės,
+      arba pagal susitarimą." />
+    <Label style="background-color:#d6d6d6; border-top: 2px solid black;"
+           text="Prekių sąrašas:" />
+
+    <Table kind="controls" name="InvoiceDetails" style="&section1; width:100%">
+      <properties content="OrderItems" />
+      <row>
+        <Label text="Kodas">
+          <properties name="Article" />
+        </Label>
+        <Label text="Pavadinimas">
+          <properties name="Name" />
+        </Label>
+        <Label text="Vnt.">
+          <properties name="Unit" />
+        </Label>
+        <Label text="Kiekis">
+          <properties name="Quantity" />
+        </Label>
+        <Label text="Nuolaida">
+          <properties name="Discount" />
+        </Label>
+        <Label text="Kaina EUR, be PVM">
+          <properties name="Price" />
+        </Label>
+        <Label text="Kaina EUR, su PVM">
+          <properties name="PriceWithVat" />
+        </Label>
+        <Label text="Suma EUR, su PVM">
+          <properties name="AmountWithVat" />
+        </Label>
+        <Label text="Tiekimo terminas">
+          <properties name="SupplierTerm" />
+        </Label>
+        <Label text="Nuoroda">
+          <properties name="Link" />
+        </Label>
+      </row>
+      <row>
+        <cell colSpan="6">
+          <FlowPanel style="text-align: right;">
+            <Label text="Viso EUR, be PVM:" />
+            <Label text="PVM 21%:" />
+            <Label text="Mokėjimo suma EUR:" style="&bold;" />
+            <Label name="DiscountLabel" text="Nuolaida:" />
+          </FlowPanel>
+        </cell>
+        <FlowPanel style="text-align:right;">
+          <Label>
+            <properties name="AmountTotal" />
+          </Label>
+          <Label>
+            <properties name="VatTotal" />
+          </Label>
+          <Label style="&bold;">
+            <properties name="Total" />
+          </Label>
+          <Label name="DiscountTotal" />
+        </FlowPanel>
+        <FlowPanel>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label style="&bold;">
+            <properties name="Currency" />
+          </Label>
+          <Label name="DiscountCurrency">
+            <properties name="Currency" />
+          </Label>
+        </FlowPanel>
+      </row>
+    </Table>
+
+    <FlowPanel style="&section;">
+      <TextLabel source="Notes" style="margin-top:5px;">
+        <renderToken source="Notes" prefix="Pastabos: " />
+      </TextLabel>
+    </FlowPanel>
+
+    <Label style="font-size:10px; &section;"
+           text="Sąskaita išankstiniam apmokėjimui galioja 30 dienų. Apmokėjus šią sąskaitą prašome mus informuoti." />
+
+    <Table kind="controls">
+      <row>
+        <FlowPanel>
+          <Label text="Sąskaitą išrašė:" />
+          <TextLabel source="Manager" style="margin-top:5px;">
+            <renderToken source="ManagerFirstName" prefix=" " />
+            <renderToken source="ManagerLastName" />
+            <renderToken source="ManagerPosition" prefix=", " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerPhone" prefix="Tel: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerMobile" prefix="Mob: " />
+          </TextLabel>
+          <TextLabel source="Manager">
+            <renderToken source="ManagerEmail" prefix="El. paštas: " />
+          </TextLabel>
+        </FlowPanel>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>
