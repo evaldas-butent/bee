@@ -354,8 +354,13 @@ public final class RowFactory {
       FormWidget widgetType = dataInfo.hasRelation(column.getId())
           ? FormWidget.DATA_SELECTOR : FormFactory.getWidgetType(column);
       Element input = doc.createElement(widgetType.getTagName());
+
       input.setAttribute(UiConstants.ATTR_SOURCE, column.getId());
       input.setAttribute(UiConstants.ATTR_CLASS, STYLE_NEW_ROW_INPUT);
+
+      if (widgetType == FormWidget.CHECK_BOX) {
+        input.setAttribute(UiConstants.ATTR_HTML, BeeConst.STRING_MINUS);
+      }
 
       inputCell.appendChild(input);
       row.appendChild(inputCell);
