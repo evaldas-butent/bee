@@ -22,9 +22,6 @@
     
     <FlowPanel
       style="height:80px; background-color:#d6d6d6; position:relative;">
-      <FlowPanel>
-        <Image url="file/251" style="height:80px; float:right;" />
-      </FlowPanel>
       <Label
         style="font-size:large; font-weight:bold; position:absolute; bottom:0;"
         text="Komercinis pasiūlymas" />
@@ -32,7 +29,6 @@
     <FlowPanel style="height:40px; position:relative; &section;">
       <DateTimeLabel format="DATE_FULL" source="StartDate"
         style="position:absolute; bottom:0; right:0;" />
-      <Image url="file/252" style="height:30px;" />
     </FlowPanel>
 
     <FlowPanel

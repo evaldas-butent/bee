@@ -23,9 +23,6 @@
     </css>
     
     <FlowPanel style="position:relative; &section;">
-      <FlowPanel>
-        <Image url="file/252" style="position:absolute; right:0; height:30px;" />
-      </FlowPanel>
       <FlowPanel style="text-align:center; font-size:medium;">
         <Label text="PVM SĄSKAITA - FAKTŪRA" />
         <TextLabel style="&bold;" source="InvoiceNo">

@@ -278,12 +278,6 @@
         </textElement>
         <textFieldExpression><![CDATA[new java.util.Date(BeeUtils.toLong($P{Date}))]]></textFieldExpression>
       </textField>
-      <image>
-        <reportElement x="420" y="0" width="135" height="30" uuid="64172b7e-1296-4a8c-a92a-74717db465d5">
-          <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-        </reportElement>
-        <imageExpression><![CDATA["file/241209"]]></imageExpression>
-      </image>
     </band>
   </title>
   <pageHeader>
