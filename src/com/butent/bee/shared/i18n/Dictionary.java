@@ -4150,6 +4150,8 @@ public interface Dictionary {
 
   default String scheduledStartingTime() {return g("scheduledStartingTime");}
 
+  default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
+
   default String search() {return g("search");}
 
   default String searchQueryRestriction(Object p0) {

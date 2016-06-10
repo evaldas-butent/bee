@@ -55,6 +55,7 @@
 
     <SimpleColumn name="Style" />
     <SimpleColumn name="MenuHide" />
+    <SimpleColumn name="ShowNewMessagesNotifier" />
   </Columns>
   
   <Order>
