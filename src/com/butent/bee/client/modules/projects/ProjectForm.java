@@ -237,11 +237,12 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       setEnabled(owner, true);
     }
 
-    if ((ProjectsHelper.isProjectUser(form, row) || ProjectsHelper.isProjectOwner(form, row))
-        && tasks != null && !(isProjectApproved(form, row) || isProjectSuspended(form, row))) {
-      setEnabled(tasks, true);
-      setEnabled(serviceObjects, true);
-    }
+    /* required patch to master */
+    boolean canCreate = (ProjectsHelper.isProjectUser(form, row) || ProjectsHelper.isProjectOwner(form, row))
+            && tasks != null && !(isProjectApproved(form, row) || isProjectSuspended(form, row));
+
+    setEnabled(tasks, canCreate);
+    setEnabled(serviceObjects, canCreate);
 
     lockedValidations.clear();
     auditSilentFields.clear();

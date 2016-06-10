@@ -33,8 +33,15 @@
 
   <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
     sortBy="OwnerLastName OwnerFirstName" minWidth="100" />
+  <!-- @since paradis allow users to task templates { -->
   <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
-    sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" />
+    sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" >
+    <dynStyle>
+      <ui:class>bee-crm-task-alien</ui:class>
+      <ui:expression>row.Template</ui:expression>
+    </dynStyle>
+  </RelColumn>
+  <!-- }-->
 
   <RelColumn name="Project" visible="true" renderColumns="ProjectName" />
 
