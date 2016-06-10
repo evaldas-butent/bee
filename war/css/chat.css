@@ -562,3 +562,74 @@
   transform: rotateX(0deg) rotateY(-60deg) rotateZ(0deg);
   box-shadow: 5px 1px 0 #BBB, 9px 2px 0 #BBB, 12px 3px 0 #BBB, 15px 4px 0 #BBB, 0 7px 20px #999;
 }
+.bee-Chat-notifier-messages {
+  position: absolute;
+  background-color: #414142;
+  color: white;
+  width: 400px;
+}
+.bee-Chats-notifier-popup {
+  background-color: transparent;
+  border: 1px solid #ccc;
+}
+.bee-Chats-notifier {
+  background-color: #f7f7f7;
+  height: 61px;
+}
+.bee-Chats-notifier:hover  .bee-Chats-notifier-close-btn {
+ display : block;
+}
+.bee-Chats-notifier-close-btn {
+    color: #414142;
+    line-height: 20px;
+    position: absolute;
+    right: 5px;
+    font-weight: bold;
+    font-size: 20px;
+    display: none;
+}
+
+.bee-Chats-notifier-close-btn:hover {
+  cursor: pointer;
+  color: orangered;
+}
+.bee-Chats-notifier-last-message{
+  font-style: italic;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.bee-Chats-notifier-last-message-action {
+  color: #f7f7f7;
+  animation: shake .5s ease-in-out;
+}
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-10px);
+  }
+
+  40% {
+    transform: translateX(10px);
+  }
+
+  60% {
+    transform: translateX(-10px);
+  }
+
+  80% {
+    transform: translateX(10px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.bee-Chats-notifier-border{
+    border: 1px solid #ccc;
+}
