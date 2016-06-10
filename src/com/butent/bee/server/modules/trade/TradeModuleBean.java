@@ -460,12 +460,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   private ResponseObject getDocumentTypeCaptionAndFilter(RequestInfo reqInfo) {
     Long typeId = reqInfo.getParameterLong(COL_DOCUMENT_TYPE);
     if (!DataUtils.isId(typeId)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DOCUMENT_TYPE);
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_DOCUMENT_TYPE);
     }
 
     BeeRowSet typeData = qs.getViewData(VIEW_TRADE_DOCUMENT_TYPES, Filter.compareId(typeId));
     if (DataUtils.isEmpty(typeData)) {
-      return ResponseObject.error(reqInfo.getService(), typeId, "not found");
+      return ResponseObject.error(reqInfo.getLabel(), typeId, "not found");
     }
 
     BeeRow typeRow = typeData.getRow(0);
@@ -576,17 +576,17 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   private ResponseObject getTradeDocumentData(RequestInfo reqInfo) {
     Long docId = reqInfo.getParameterLong(Service.VAR_ID);
     if (!DataUtils.isId(docId)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_ID);
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), Service.VAR_ID);
     }
 
     String itemViewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     if (BeeUtils.isEmpty(itemViewName)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_VIEW_NAME);
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), Service.VAR_VIEW_NAME);
     }
 
     String itemRelation = reqInfo.getParameter(Service.VAR_COLUMN);
     if (BeeUtils.isEmpty(itemRelation)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_COLUMN);
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), Service.VAR_COLUMN);
     }
 
     Set<Long> companyIds = DataUtils.parseIdSet(reqInfo.getParameter(VIEW_COMPANIES));
@@ -852,7 +852,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   private ResponseObject tryPhaseTransition(RequestInfo reqInfo) {
     BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
     if (DataUtils.isEmpty(newRowSet)) {
-      return ResponseObject.error(reqInfo.getService(), "content not available");
+      return ResponseObject.error(reqInfo.getLabel(), "content not available");
     }
 
     BeeRow newRow = newRowSet.getRow(0);
@@ -860,7 +860,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     BeeRowSet oldRowSet = qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.compareId(docId));
     if (DataUtils.isEmpty(oldRowSet)) {
-      return ResponseObject.error(reqInfo.getService(), "row", docId, "not found");
+      return ResponseObject.error(reqInfo.getLabel(), "row", docId, "not found");
     }
 
     BeeRow oldRow = oldRowSet.getRow(0);
@@ -871,10 +871,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         newRow.getInteger(newRowSet.getColumnIndex(COL_TRADE_DOCUMENT_PHASE)));
 
     if (newPhase == null) {
-      return ResponseObject.error(reqInfo.getService(), docId, "new phase not specified");
+      return ResponseObject.error(reqInfo.getLabel(), docId, "new phase not specified");
     }
     if (newPhase == oldPhase) {
-      return ResponseObject.warning(reqInfo.getService(), docId, "phase not changed");
+      return ResponseObject.warning(reqInfo.getLabel(), docId, "phase not changed");
     }
 
     boolean oldStock = oldPhase != null && oldPhase.modifyStock();
@@ -890,7 +890,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       String errorMessage = verifyPhaseTransition(docId, operationType, warehouseFrom, warehouseTo,
           newStock);
       if (!BeeUtils.isEmpty(errorMessage)) {
-        return ResponseObject.error(reqInfo.getService(), docId, errorMessage);
+        return ResponseObject.error(reqInfo.getLabel(), docId, errorMessage);
       }
 
       ResponseObject response = doPhaseTransition(docId, operationType, warehouseFrom, warehouseTo,
@@ -942,9 +942,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           }
         }
         break;
+
+      default:
+        response = ResponseObject.error("phase transition: unknown operation type", operationType);
     }
 
-    return ResponseObject.emptyResponse();
+    return response;
   }
 
   private ResponseObject adoptItems(IsCondition itemCondition, Long warehouseFrom) {
@@ -1138,8 +1141,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     if (operationType == null) {
       return "operation type not specified";
     }
-    if (toStock && EnumUtils.in(operationType, OperationType.PURCHASE, OperationType.TRANSFER)
-        && !DataUtils.isId(warehouseTo)) {
+    if (toStock && operationType.producesStock() && !DataUtils.isId(warehouseTo)) {
       return "warehouse-receiver not specified";
     }
 

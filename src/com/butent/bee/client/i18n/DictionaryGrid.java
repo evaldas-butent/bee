@@ -84,6 +84,7 @@ public class DictionaryGrid extends AbstractGridInterceptor {
       if (locale != null) {
         ParameterList params = BeeKeeper.getRpc().createParameters(Service.CUSTOMIZE_DICTIONARY);
         params.addQueryItem(VAR_LOCALE, locale.getLanguage());
+        params.setSummary(column.getId());
 
         BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
           @Override
