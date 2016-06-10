@@ -61,9 +61,9 @@ public final class ChatPopup extends Popup {
 
     int ww = Window.getClientWidth();
     if (ranges.isEmpty()) {
-      if(openFromLeftCorner){
+      if (openFromLeftCorner) {
         return ww - width;
-      }else{
+      } else {
         return 0;
       }
     }
@@ -78,10 +78,10 @@ public final class ChatPopup extends Popup {
         int upper = range.upperEndpoint() + 1;
 
         if (upper - lower >= width) {
-          if(openFromLeftCorner) {
+          if (openFromLeftCorner) {
             int margin = (upper >= ww) ? 0 : MARGIN_X;
             return Math.max(upper - width - margin, lower);
-          }else {
+          } else {
             return Math.min(upper - width, lower + MARGIN_X);
           }
         }
@@ -145,7 +145,8 @@ public final class ChatPopup extends Popup {
     }
   }
 
-  private static void open(IdentifiableWidget widget, boolean minimized, boolean openFromLeftCorner) {
+  private static void open(IdentifiableWidget widget, boolean minimized,
+      boolean openFromLeftCorner) {
     if (!(widget instanceof ChatView)) {
       return;
     }
