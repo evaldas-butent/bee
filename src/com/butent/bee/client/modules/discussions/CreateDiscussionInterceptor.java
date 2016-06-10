@@ -49,6 +49,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
@@ -522,6 +523,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           @Override
           public void onSuccess(BeeRow discussFile) {
             consumer.accept(FileStoreMode.NEW);
+            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS_FILES, discussFile);
           }
         });
 
