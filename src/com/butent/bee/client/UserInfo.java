@@ -47,6 +47,7 @@ public class UserInfo implements HasInfo {
   private BeeRowSet settings;
 
   private boolean openInNewTab;
+  private boolean showNewMessagesNotifier;
 
   private int clickSensitivityMillis;
   private int clickSensitivityDistance;
@@ -441,6 +442,10 @@ public class UserInfo implements HasInfo {
     return styleId;
   }
 
+  public boolean showNewMessagesNotifier() {
+    return showNewMessagesNotifier;
+  }
+
   private void setClickSensitivityDistance(int clickSensitivityDistance) {
     this.clickSensitivityDistance = clickSensitivityDistance;
   }
@@ -471,6 +476,7 @@ public class UserInfo implements HasInfo {
 
   private void updateFields() {
     setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
+    setShowNewMessagesNotifier(getBooleanSetting(COL_SHOW_NEW_MESSAGES_NOTIFIER));
 
     setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS, BeeConst.UNDEF));
     setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE, BeeConst.UNDEF));
@@ -481,5 +487,9 @@ public class UserInfo implements HasInfo {
 
   private void updateStyle(String css) {
     DomUtils.setText(getStyleId(), css);
+  }
+
+  public void setShowNewMessagesNotifier(boolean showNewMessagesNotifier) {
+    this.showNewMessagesNotifier = showNewMessagesNotifier;
   }
 }

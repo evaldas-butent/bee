@@ -119,6 +119,9 @@
                 style="width: 60px;" summarize="true" />
             </row>
           </Table>
+         <br/>
+         <CheckBox source="ShowNewMessagesNotifier" summarize="true" />
+         <br/>
         </FlowPanel>
       </page>
 
