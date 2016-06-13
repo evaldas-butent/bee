@@ -306,6 +306,15 @@ public final class TaskConstants {
       return caption;
     }
 
+    public static boolean in(int event, TaskEvent... events) {
+      for (TaskEvent te : events) {
+        if (te.ordinal() == event) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     public String getCommandLabel() {
       return commandLabel;
     }
@@ -753,6 +762,7 @@ public final class TaskConstants {
   public static final String ALS_PROJECT_OWNER = "ProjectOwner";
   public static final String ALS_PROJECT_STATUS = "ProjectStatus";
   public static final String ALS_REMINDER_NAME = "ReminderName";
+  public static final String ALS_LAST_BREAK_EVENT = "LastBreakEvent";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
 
