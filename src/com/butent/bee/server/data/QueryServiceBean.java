@@ -568,6 +568,15 @@ public class QueryServiceBean {
     return getLong(query);
   }
 
+  public Long getLongById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
+
+    return getLong(query);
+  }
+
   public Long[] getLongColumn(IsQuery query) {
     return getSingleColumn(query).getLongColumn(0);
   }

@@ -57,12 +57,7 @@ public final class DataUtils {
 
   private static BeeLogger logger = LogUtils.getLogger(DataUtils.class);
 
-  private static final Predicate<Long> IS_ID = new Predicate<Long>() {
-    @Override
-    public boolean apply(Long input) {
-      return isId(input);
-    }
-  };
+  private static final Predicate<Long> IS_ID = DataUtils::isId;
 
   private static final char ID_LIST_SEPARATOR = ',';
 
@@ -521,6 +516,24 @@ public final class DataUtils {
     return row.getDouble(getColumnIndex(columnId, columns));
   }
 
+  public static Double getDoubleQuietly(IsRow row, int index) {
+    if (row == null) {
+      return null;
+
+    } else if (index == ID_INDEX) {
+      return (double) row.getId();
+
+    } else if (index == VERSION_INDEX) {
+      return (double) row.getVersion();
+
+    } else if (row.isIndex(index)) {
+      return row.getDouble(index);
+
+    } else {
+      return null;
+    }
+  }
+
   public static long getId(IsRow row) {
     return (row == null) ? BeeConst.LONG_UNDEF : row.getId();
   }
@@ -547,6 +560,24 @@ public final class DataUtils {
 
   public static Long getLong(List<? extends IsColumn> columns, IsRow row, String columnId) {
     return row.getLong(getColumnIndex(columnId, columns));
+  }
+
+  public static Long getLongQuietly(IsRow row, int index) {
+    if (row == null) {
+      return null;
+
+    } else if (index == ID_INDEX) {
+      return row.getId();
+
+    } else if (index == VERSION_INDEX) {
+      return row.getVersion();
+
+    } else if (row.isIndex(index)) {
+      return row.getLong(index);
+
+    } else {
+      return null;
+    }
   }
 
   public static int getMaxInitialRowSetSize() {
@@ -697,7 +728,7 @@ public final class DataUtils {
     } else if (index == VERSION_INDEX) {
       return BeeUtils.toString(row.getVersion());
 
-    } else if (index >= 0 && index < row.getNumberOfCells()) {
+    } else if (row.isIndex(index)) {
       return row.getString(index);
 
     } else {
