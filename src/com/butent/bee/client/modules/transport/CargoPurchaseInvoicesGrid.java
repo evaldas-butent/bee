@@ -41,6 +41,8 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
   private String operation;
   private Long operation2Id;
   private String operation2;
+  private Long operation3Id;
+  private String operation3;
   private Button joinAction = new Button("Apjungti", this);
 
   @Override
@@ -56,6 +58,12 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
         operationId = opId;
         operation = opName;
         presenter.getHeader().addCommandItem(joinAction);
+      }
+    });
+    Global.getRelationParameter(PRM_PURCHASE_OPERATION, (op3Id, op3Name) -> {
+      if (DataUtils.isId(op3Id)) {
+        operation3Id = op3Id;
+        operation3 = op3Name;
       }
     });
     super.afterCreatePresenter(presenter);
@@ -82,14 +90,15 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
       joinAction.setVisible(false);
       List<String> cols = Arrays.asList(COL_TRADE_NUMBER, COL_TRADE_OPERATION, COL_TRADE_SUPPLIER,
           COL_TRADE_SUPPLIER + "Name", COL_TRADE_CURRENCY, COL_TRADE_CURRENCY + "Name",
-          COL_TRADE_NOTES);
+          COL_OPERATION_WAREHOUSE_TO, COL_OPERATION_WAREHOUSE_TO + "Code", COL_TRADE_NOTES);
 
       Queries.getRowSet(getViewName(), cols, Filter.idIn(ids), new Queries.RowSetCallback() {
         @Override
         public void onSuccess(BeeRowSet result) {
           joinAction.setVisible(true);
 
-          for (String col : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CURRENCY}) {
+          for (String col : new String[] {
+              COL_TRADE_SUPPLIER, COL_OPERATION_WAREHOUSE_TO, COL_TRADE_CURRENCY}) {
             int idx = result.getColumnIndex(col);
 
             if (result.getDistinctStrings(idx).size() > 1) {
@@ -122,6 +131,10 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
               newRow.setValue(dataInfo.getColumnIndex(col),
                   BeeUtils.joinItems(result.getDistinctStrings(result.getColumnIndex(col))));
             }
+          }
+          if (DataUtils.isId(operation3Id)) {
+            newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION), operation3Id);
+            newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION + "Name"), operation3);
           }
           RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
               newRow, Modality.ENABLED, null, new InvoiceForm(null), null, new RowCallback() {
