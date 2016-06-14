@@ -68,7 +68,7 @@ public class ChatGrid extends AbstractGridInterceptor {
 
   @Override
   public void onActiveRowChange(ActiveRowChangeEvent event) {
-    if(event.getRowValue() != null) {
+    if (event.getRowValue() != null) {
       long chatId = event.getRowValue().getId();
       if (DataUtils.isId(chatId)) {
         chatsFlowWidget.clear();
