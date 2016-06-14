@@ -28,7 +28,7 @@
 
 .bee-Chats-popup {
   background-color: white;
-  border: 1px solid #ccc;
+  border: 1px solid #b4b4b4;
   margin-top: 10px
 }
 
@@ -62,7 +62,7 @@
   -webkit-align-items: flex-start;
   -ms-flex-align: start;
   padding-bottom: 5px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #e3e3e3;
   cursor: pointer;
 }
 
@@ -103,11 +103,11 @@
 }
 
 .bee-ChatsItem-presenceIcon.bee-Presence-online {
-  color: green;
+  color: #6bae45;
 }
 
 .bee-ChatsItem-presenceIcon.bee-Presence-idle {
-  color: deepskyblue;
+  color: #1eb2d8;
 }
 
 .bee-ChatsItem-presenceIcon.bee-Presence-away {
@@ -119,7 +119,7 @@
 }
 
 .bee-ChatsItem-mainPanel {
-  color: #414142;
+  color: black;
   width: 260px;
   overflow: hidden;
 }
@@ -145,7 +145,8 @@
 
 .bee-ChatsItem-nameLabel,
 .bee-ChatsItem-userName {
-  font-size: 14pt;
+  font-size: 14px;
+  color: #414142
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -155,6 +156,7 @@
   display: inline-block;
   margin-right: 4px;
   font-size: 14pt;
+  color: #414142;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -162,7 +164,8 @@
 
 .bee-ChatsItem-maxTime {
   margin-left: 1em;
-  font-size: 10pt;
+  font-size: 10px;
+  color: #414142;
 }
 
 .bee-ChatsItem-infoPanel {
@@ -170,7 +173,7 @@
 }
 
 .bee-ChatsItem-lastMessage {
-  font-size: 12pt;
+  font-size: 12px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
