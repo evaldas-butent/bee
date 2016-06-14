@@ -2193,6 +2193,7 @@
 .bee-Photo-embedded {
   max-width: 100%;
   max-height: 100%;
+  border-radius: 50%;
 }
 
 .bee-HtmlEditor-canvas {
@@ -3396,7 +3397,7 @@ textarea,
 }
 
 .bee-OnlineUsersCount {
-  background-color: #63a140;
+  background-color: #6bae45;
   color: white;
   width: 15px;
   height: 15px;
@@ -3444,17 +3445,20 @@ textarea,
 }
 .bee-PopupUsersLabel {
   font-size: 14px;
+  color: #414142;
   white-space: nowrap;
+  margin-left: -10px;
 }
 .bee-PopupUsersPresence {
-  font-size: large;
+  font-size: 14px;
   cursor: default;
+  margin: -25px -20px 0px -15px;
 }
 .bee-PopupUsersPresence.bee-Presence-online {
-  color: green;
+  color: #6bae45;
 }
 .bee-PopupUsersPresence.bee-Presence-idle {
-  color: deepskyblue;
+  color: #1eb2d8;
 }
 .bee-PopupUsersPresence.bee-Presence-away {
   color: hotpink;
@@ -3733,10 +3737,10 @@ textarea,
 }
 
 .bee-UserPresenceIcon.bee-Presence-online {
-  color: lightgreen;
+  color: #6bae45;
 }
 .bee-UserPresenceIcon.bee-Presence-idle {
-  color: powderblue;
+  color: #1eb2d8;
   cursor: default;
 }
 .bee-UserPresenceIcon.bee-Presence-away {
