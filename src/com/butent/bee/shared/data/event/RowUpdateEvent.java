@@ -121,7 +121,7 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
 
   @Override
   public String serialize() {
-    Object[] arr = new Object[] {getViewName(), getRow(), refreshChildren()};
+    Object[] arr = new Object[] {getViewName(), getRow(), Codec.pack(refreshChildren())};
     return Codec.beeSerialize(arr);
   }
 

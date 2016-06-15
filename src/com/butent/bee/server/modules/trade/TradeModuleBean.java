@@ -390,10 +390,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       @Subscribe
       @AllowConcurrentEvents
       public void modifyTradeStock(ViewModifyEvent event) {
-        if (event.isTarget(VIEW_TRADE_DOCUMENT_ITEMS)) {
-          List<BeeColumn> columns;
-          BeeRow row;
+        List<BeeColumn> columns;
+        BeeRow row;
 
+        if (event.isTarget(VIEW_TRADE_DOCUMENT_ITEMS)) {
           if (event instanceof ViewInsertEvent) {
             columns = ((ViewInsertEvent) event).getColumns();
             row = ((ViewInsertEvent) event).getRow();
@@ -462,6 +462,54 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           }
 
         } else if (event.isTarget(VIEW_TRADE_DOCUMENTS)) {
+          if (event instanceof ViewUpdateEvent) {
+            columns = ((ViewUpdateEvent) event).getColumns();
+            row = ((ViewUpdateEvent) event).getRow();
+
+            int index = DataUtils.getColumnIndex(COL_TRADE_WAREHOUSE_TO, columns);
+            if (row != null && !BeeConst.isUndef(index)) {
+              Long warehouse = row.getLong(index);
+
+              if (event.isBefore()) {
+                Set<Long> itemIds = getTradeDocumentStockItemsWithoutWarehouse(row.getId());
+
+                if (!BeeUtils.isEmpty(itemIds)) {
+                  if (DataUtils.isId(warehouse)) {
+                    event.setUserObject(DataUtils.buildIdList(itemIds));
+                  } else {
+                    event.addErrorMessage("warehouse required for items");
+                    event.addErrorMessage(DataUtils.buildIdList(itemIds));
+                  }
+                }
+
+              } else if (event.isAfter() && DataUtils.isId(warehouse)
+                  && (event.getUserObject() instanceof String)) {
+
+                Set<Long> itemIds = DataUtils.parseIdSet((String) event.getUserObject());
+                if (!BeeUtils.isEmpty(itemIds)) {
+                  SqlUpdate update = new SqlUpdate(TBL_TRADE_STOCK)
+                      .addConstant(COL_STOCK_WAREHOUSE, warehouse)
+                      .setWhere(SqlUtils.inList(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, itemIds));
+
+                  ResponseObject response = qs.updateDataWithResponse(update);
+                  if (response.hasErrors()) {
+                    event.addErrors(response);
+                  } else {
+                    Endpoint.refreshViews(VIEW_TRADE_STOCK);
+                  }
+                }
+              }
+            }
+
+          } else if (event instanceof ViewDeleteEvent) {
+            Set<Long> ids = ((ViewDeleteEvent) event).getIds();
+
+            if (event.isBefore() && !BeeUtils.isEmpty(ids)) {
+              if (hasChildren(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, ids))) {
+                event.addErrorMessage("think of the children");
+              }
+            }
+          }
         }
       }
     });
@@ -1325,34 +1373,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return phase != null && phase.modifyStock();
   }
 
-  private boolean modifyItemStock(Collection<Long> itemIds) {
-    boolean modify = false;
-
-    if (!BeeUtils.isEmpty(itemIds)) {
-      SqlSelect query = new SqlSelect().setDistinctMode(true)
-          .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE)
-          .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
-          .addFromInner(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
-              TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
-          .setWhere(sys.idInList(TBL_TRADE_DOCUMENT_ITEMS, itemIds));
-
-      Set<Integer> values = qs.getIntSet(query);
-
-      if (!BeeUtils.isEmpty(values)) {
-        for (Integer value : values) {
-          TradeDocumentPhase phase = EnumUtils.getEnumByIndex(TradeDocumentPhase.class, value);
-
-          if (phase != null && phase.modifyStock()) {
-            modify = true;
-            break;
-          }
-        }
-      }
-    }
-
-    return modify;
-  }
-
   private ResponseObject onTradeItemQuantityUpdate(long itemId, Double newQty) {
     if (!BeeUtils.isPositive(newQty)) {
       return ResponseObject.error("invalid quantity", newQty);
@@ -1660,5 +1680,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     return refresh ? ResponseObject.response(Action.REFRESH) : ResponseObject.emptyResponse();
+  }
+
+  private Set<Long> getTradeDocumentStockItemsWithoutWarehouse(long docId) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM)
+        .addFrom(TBL_TRADE_STOCK)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+            TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docId),
+            SqlUtils.isNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE)));
+
+    return qs.getLongSet(query);
   }
 }
