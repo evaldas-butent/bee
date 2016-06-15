@@ -542,6 +542,17 @@ public class QueryServiceBean {
     return getSingleColumn(query).getIntColumn(0);
   }
 
+  public Set<Integer> getIntSet(IsQuery query) {
+    Set<Integer> result = new HashSet<>();
+
+    Integer[] arr = getIntColumn(query);
+    if (arr != null && arr.length > 0) {
+      Collections.addAll(result, arr);
+    }
+
+    return result;
+  }
+
   public String getLocalizedValue(String tblName, String fldName, String fldValue, Locale locale) {
     if (BeeUtils.isEmpty(fldValue) || Objects.isNull(locale)) {
       return null;

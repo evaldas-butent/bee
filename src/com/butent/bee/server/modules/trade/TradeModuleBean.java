@@ -63,6 +63,7 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -441,6 +442,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             }
 
           } else if (event instanceof ViewDeleteEvent) {
+            Set<Long> ids = ((ViewDeleteEvent) event).getIds();
+
+            if (!BeeUtils.isEmpty(ids)) {
+              if (event.isBefore()) {
+                ResponseObject responseObject = onDeleteTradeItems(ids);
+
+                if (responseObject != null) {
+                  event.addErrors(responseObject);
+                  event.setUserObject(responseObject.getResponse());
+                }
+
+              } else if (event.isAfter()) {
+                if (Action.REFRESH.equals(event.getUserObject())) {
+                  Endpoint.refreshViews(VIEW_TRADE_STOCK);
+                }
+              }
+            }
           }
 
         } else if (event.isTarget(VIEW_TRADE_DOCUMENTS)) {
@@ -1307,6 +1325,34 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return phase != null && phase.modifyStock();
   }
 
+  private boolean modifyItemStock(Collection<Long> itemIds) {
+    boolean modify = false;
+
+    if (!BeeUtils.isEmpty(itemIds)) {
+      SqlSelect query = new SqlSelect().setDistinctMode(true)
+          .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE)
+          .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+          .addFromInner(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+              TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+          .setWhere(sys.idInList(TBL_TRADE_DOCUMENT_ITEMS, itemIds));
+
+      Set<Integer> values = qs.getIntSet(query);
+
+      if (!BeeUtils.isEmpty(values)) {
+        for (Integer value : values) {
+          TradeDocumentPhase phase = EnumUtils.getEnumByIndex(TradeDocumentPhase.class, value);
+
+          if (phase != null && phase.modifyStock()) {
+            modify = true;
+            break;
+          }
+        }
+      }
+    }
+
+    return modify;
+  }
+
   private ResponseObject onTradeItemQuantityUpdate(long itemId, Double newQty) {
     if (!BeeUtils.isPositive(newQty)) {
       return ResponseObject.error("invalid quantity", newQty);
@@ -1569,5 +1615,50 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject onDeleteTradeItems(Collection<Long> itemIds) {
+    boolean refresh = false;
+
+    for (Long itemId : itemIds) {
+      if (DataUtils.isId(itemId)) {
+        if (qs.sqlExists(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT, itemId)) {
+          return ResponseObject.error("item", itemId, "has children");
+        }
+
+        SqlSelect query = new SqlSelect()
+            .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PARENT)
+            .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+            .setWhere(SqlUtils.and(sys.idEquals(TBL_TRADE_DOCUMENT_ITEMS, itemId),
+                SqlUtils.notNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT)));
+
+        SimpleRow row = qs.getRow(query);
+        if (row != null) {
+          Long parent = row.getLong(COL_TRADE_ITEM_PARENT);
+          Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+
+          if (DataUtils.isId(parent) && BeeUtils.nonZero(qty)) {
+            SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
+                .addExpression(COL_STOCK_QUANTITY,
+                    SqlUtils.plus(SqlUtils.field(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), qty))
+                .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
+
+            ResponseObject response = qs.updateDataWithResponse(stockUpdate);
+            if (response.hasErrors()) {
+              return response;
+            }
+
+            refresh = true;
+          }
+        }
+      }
+    }
+
+    if (!refresh) {
+      refresh = qs.sqlExists(TBL_TRADE_STOCK,
+          SqlUtils.inList(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, itemIds));
+    }
+
+    return refresh ? ResponseObject.response(Action.REFRESH) : ResponseObject.emptyResponse();
   }
 }
