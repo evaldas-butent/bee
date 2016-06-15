@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="OrdEcRegistrations" source="OrdEcRegistrations" module="Orders"
+  caption="=ecRegistrations" newRowCaption="=ecRegistrationNew"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Type" />
+
+    <SimpleColumn name="CompanyType" />
+    <SimpleJoin joinType="LEFT" name="CompanyType">
+      <SimpleColumn alias="CompanyTypeName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CompanyName" />
+    <SimpleColumn name="CompanyCode" />
+    <SimpleColumn name="VatCode" />
+
+    <SimpleColumn name="PersonCode" />
+
+    <SimpleColumn name="FirstName" />
+    <SimpleColumn name="LastName" />
+
+    <SimpleColumn name="Email" />
+    <SimpleColumn name="Phone" />
+
+    <SimpleColumn name="City" />
+    <SimpleColumn name="Address" />
+    <SimpleColumn name="PostIndex" />
+
+    <SimpleColumn name="Country" />
+
+    <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Language" />
+
+    <SimpleColumn name="Host" />
+    <SimpleColumn name="Agent" />
+    
+    <SimpleColumn name="NotVATPayer" />
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

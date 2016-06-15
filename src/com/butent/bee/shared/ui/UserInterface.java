@@ -244,6 +244,43 @@ public enum UserInterface implements HasCaption {
     public String getTitle() {
       return TITLE;
     }
+  },
+
+  ORDERS { /* ordinal 7 */
+    @Override
+    public String getCaption() {
+      return "OrdersEc";
+    }
+
+    @Override
+    public Collection<Component> getComponents() {
+      return EnumSet.of(Component.DATA_INFO, Component.AUTOCOMPLETE, Component.USERS);
+    }
+
+    @Override
+    public List<Meta> getMeta() {
+      return Lists.newArrayList(new Meta().name("gwt:property").content("screen=ordss"));
+    }
+
+    @Override
+    public List<String> getScripts() {
+      return Lists.newArrayList("ecsettings");
+    }
+
+    @Override
+    public String getShortName() {
+      return "ord";
+    }
+
+    @Override
+    public List<String> getStyleSheets() {
+      return Lists.newArrayList(MAIN_STYLE_SHEET, EcConstants.CLIENT_STYLE_SHEET);
+    }
+
+    @Override
+    public String getTitle() {
+      return TITLE;
+    }
   };
 
   public enum Component {

@@ -2140,6 +2140,8 @@ public interface Dictionary {
 
   default String ecNothingToOrder() {return g("ecNothingToOrder");}
 
+  default String ecNotVATPayer() {return g("ecNotVATPayer");}
+
   default String ecNoveltyBanner() {return g("ecNoveltyBanner");}
 
   default String ecNoveltyItems() {return g("ecNoveltyItems");}
