@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.butent.bee.client.presenter.Presenter;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -251,6 +252,25 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     save(result);
   }
 
+  /*
+  * @since paradis
+  * save ordinal critera
+  */
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    FormView form = getFormView();
+    if (form == null) {
+      return super.beforeAction(action,presenter);
+    }
+
+    if (Action.SAVE.equals(action) && !DataUtils.isNewRow(form.getActiveRow())
+            && form.validate(form, true) ) {
+      save(form.getActiveRow());
+    }
+
+    return super.beforeAction(action, presenter);
+  }
+
   @Override
   public FormInterceptor getInstance() {
     return new ServiceObjectForm();
@@ -335,9 +355,9 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
-    if (event.isEmpty()) {
-      save(getActiveRow());
-    }
+//    if (BeeUtils.isEmpty(event.getColumns())) {
+//      save(getActiveRow());
+//    }
   }
 
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {

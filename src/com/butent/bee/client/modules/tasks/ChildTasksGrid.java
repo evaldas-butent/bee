@@ -123,7 +123,14 @@ class ChildTasksGrid extends TasksGrid {
       return;
     }
 
-    setEnabled(form, formRow);
+//    setEnabled(form, formRow);
+    /**
+     * required patch to master
+     */
+    if (!gridView.isEnabled() || !getGridPresenter().getMainView().isEnabled()
+            || !ProjectsHelper.isProjectOwner(form, formRow)) {
+      return;
+    }
 
     String prop = formRow.getProperty(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY);
     int status = BeeUtils.unbox(formRow.getInteger(form.getDataIndex(
@@ -230,6 +237,9 @@ class ChildTasksGrid extends TasksGrid {
               public void onSuccess(BeeRow createdTask) {
                 Queries.deleteRowAndFire(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY,
                     templateId);
+                DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS);
+                DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECT_STAGES);
+                getGridPresenter().handleAction(Action.REFRESH);
               }
             });
           }
@@ -329,6 +339,13 @@ class ChildTasksGrid extends TasksGrid {
     }
   }
 
+  /**
+   * Required patch to master
+   * @since paradis add users in template tasks
+   * @param form
+   * @param formRow
+     */
+  @Deprecated
   private void setEnabled(FormView form, IsRow formRow) {
     if (form == null && formRow == null) {
       return;

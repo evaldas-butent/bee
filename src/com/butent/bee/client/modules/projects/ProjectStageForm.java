@@ -96,6 +96,8 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
       ProjectsKeeper.createTemplateTasks(form, row, COL_PROJECT_STAGE, wTasksGrid, null);
     }
 
+    /* require patch to master */
+    wTasksGrid.setEnabled(form.isEnabled());
   }
 
   @Override
