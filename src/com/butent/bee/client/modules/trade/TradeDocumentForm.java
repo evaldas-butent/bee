@@ -113,7 +113,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
                     BeeRow r = BeeRow.restore(response.getResponseAsString());
 
-                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), r);
+                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), r, true);
                     DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_STOCK);
                   }
                 }
