@@ -1,6 +1,7 @@
 package com.butent.bee.shared.modules.orders;
 
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -37,6 +38,11 @@ public final class OrdersConstants {
       }
     };
 
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.dictionary());
+    }
+
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }
@@ -46,6 +52,7 @@ public final class OrdersConstants {
     EnumUtils.register(OrdersStatus.class);
   }
 
+  // Orders
   public static final String SVC_GET_TEMPLATE_ITEMS = "GetTemplateItems";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_NEXT_NUMBER = "GetNextNumber";
@@ -100,6 +107,34 @@ public final class OrdersConstants {
   public static final String PRM_DEFAULT_SALE_OPERATION = "DefaultSaleOperation";
   public static final String PRM_CLEAR_RESERVATIONS_TIME = "ClearReservationsTime";
   public static final String PRM_MANAGER_DISCOUNT = "ManagerDiscount";
+
+  // E-Commerce
+  public static final String NAME_PREFIX = "ord-ec";
+
+  public static final String VIEW_ORD_EC_REGISTRATIONS = "OrdEcRegistrations";
+
+  public static final String COL_REGISTRATION_DATE = "Date";
+  public static final String COL_REGISTRATION_TYPE = "Type";
+  public static final String COL_REGISTRATION_BRANCH = "Branch";
+  public static final String COL_REGISTRATION_COMPANY_NAME = "CompanyName";
+  public static final String COL_REGISTRATION_COMPANY_CODE = "CompanyCode";
+  public static final String COL_REGISTRATION_COMPANY_TYPE = "CompanyType";
+  public static final String COL_REGISTRATION_NOT_VAT_PAYER = "NotVATPayer";
+  public static final String COL_REGISTRATION_VAT_CODE = "VatCode";
+  public static final String COL_REGISTRATION_PERSON_CODE = "PersonCode";
+  public static final String COL_REGISTRATION_FIRST_NAME = "FirstName";
+  public static final String COL_REGISTRATION_LAST_NAME = "LastName";
+  public static final String COL_REGISTRATION_EMAIL = "Email";
+  public static final String COL_REGISTRATION_PHONE = "Phone";
+  public static final String COL_REGISTRATION_CITY = "City";
+  public static final String COL_REGISTRATION_ADDRESS = "Address";
+  public static final String COL_REGISTRATION_POST_INDEX = "PostIndex";
+  public static final String COL_REGISTRATION_COUNTRY = "Country";
+  public static final String COL_REGISTRATION_ACTIVITY = "Activity";
+  public static final String COL_REGISTRATION_NOTES = "Notes";
+  public static final String COL_REGISTRATION_LANGUAGE = "Language";
+  public static final String COL_REGISTRATION_HOST = "Host";
+  public static final String COL_REGISTRATION_AGENT = "Agent";
 
   private OrdersConstants() {
   }

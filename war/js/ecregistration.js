@@ -39,4 +39,18 @@ function onSelectType(tp) {
   if (personCodeInput) {
     personCodeInput.disabled = !person;
   }
+
+  var vatPayerInput = document.getElementById("NotVATPayer-field");
+  if (vatPayerInput) {
+    vatPayerInput.className = person ? hide : show;
+  }
+
+  var companyType = document.getElementById("CompanyType-field");
+  if (companyType) {
+    companyType.className = person ? hide : show;
+  }
+  var companyTypeInput = document.getElementById("CompanyType-input");
+  if (companyTypeInput) {
+    companyTypeInput.disabled = person;
+  }
 }
