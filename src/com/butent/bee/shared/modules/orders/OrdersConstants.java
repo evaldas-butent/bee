@@ -63,9 +63,12 @@ public final class OrdersConstants {
   public static final String SVC_GET_FILTERED_INVOICES = "GetFilteredInvoices";
   public static final String SVC_GET_ERP_STOCKS = "GetERPStocks";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
+  public static final String SVC_CREATE_CLIENT = "CreateClient";
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";
+
+  public static final String FORM_ORD_EC_REGISTRATION = "OrdEcRegistration";
 
   public static final String VIEW_ORDERS = "Orders";
   public static final String VIEW_ORDERS_INVOICES = "OrdersInvoices";

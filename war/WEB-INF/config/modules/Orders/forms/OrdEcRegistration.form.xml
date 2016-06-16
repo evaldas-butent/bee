@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY area "width: 100&#37;; height: 40px;">
+    <!ENTITY colLabel "text-align: right; padding-left: 1em; padding-right: 1em; width: 120px;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="OrdEcRegistration" viewName="OrdEcRegistrations" caption="=ecRegistration"
+>
+  <FlowPanel>
+
+    <Table kind="controls" style="border-collapse: collapse; margin-top: 2ex; margin-left: 1em;"
+           cellStyle="vertical-align: top; padding-bottom: 4px;">
+      <col index="0" cellStyle="&colLabel;" />
+      <col index="2" cellStyle="&colLabel;" />
+
+      <row>
+        <Label for="Type" visible="true" />
+        <ListBox source="Type" visible="true" />
+        <Label for="CompanyType" visible="true" />
+        <DataSelector source="CompanyType" visible="true" />
+      </row>
+
+      <row>
+        <Label for="FirstName" visible="true" />
+        <InputText source="FirstName" visible="true" />
+        <Label for="LastName" visible="true" />
+        <InputText source="LastName" visible="true" />
+      </row>
+
+      <row>
+        <Label for="CompanyName" />
+        <InputText source="CompanyName" />
+        <Label for="CompanyCode" />
+        <InputText source="CompanyCode" />
+      </row>
+
+      <row>
+        <Label for="VatCode" />
+        <InputText source="VATCode" />
+        <Label for="PersonCode" />
+        <InputText source="PersonCode" />
+      </row>
+
+      <row>
+        <Label for="Email" visible="true" />
+        <InputText source="Email" visible="true" />
+        <Label for="Phone" visible="true" />
+        <InputText source="Phone" visible="true" />
+      </row>
+
+      <row>
+        <Label for="Country" />
+        <InputText source="Country" />
+        <Label for="City" visible="true" />
+        <InputText source="City" visible="true" />
+      </row>
+
+      <row>
+        <Label for="Address" visible="true" />
+        <InputText source="Address" visible="true" />
+        <Label for="PostIndex" visible="true" />
+        <InputText source="PostIndex" visible="true" />
+      </row>
+
+      <row>
+        <Label for="Notes" />
+        <InputArea source="Notes" style="width: 250px; height: 60px;" />
+        <CheckBox source="NotVATPayer" />
+      </row>
+
+      <row>
+        <Label for="Host" />
+        <InputArea source="Host" style="&area;" />
+        <Label for="Agent" />
+        <InputArea source="Agent" style="width: 250px; height: 60px;" />
+      </row>
+
+      <row>
+        <Label for="Date" />
+        <InputDateTime source="Date" />
+        <Label for="Language" />
+        <ListBox source="Language" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

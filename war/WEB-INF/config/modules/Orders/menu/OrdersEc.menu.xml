@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+       name="OrdersEc" label="=ecMenu" order="40" parent="Orders" module="Orders"
+>
+  <Item name="OrdEcRegistrations" label="=ecRegistrations" service="grid" parameters="OrdEcRegistrations" />
+</Entry>

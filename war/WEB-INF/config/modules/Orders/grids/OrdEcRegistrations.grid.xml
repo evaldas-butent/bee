@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="OrdEcRegistrations" viewName="OrdEcRegistrations" caption="=ecRegistrations"
+>
+  <g:columns>
+    <DataColumn name="Date" visible="true" />
+
+    <DataColumn name="Type" visible="true" />
+    <RelColumn name="CompanyType" visible="true" />
+
+    <DataColumn name="FirstName" visible="true" />
+    <DataColumn name="LastName" visible="true" />
+
+    <DataColumn name="CompanyName" visible="true" />
+    <DataColumn name="CompanyCode" />
+
+    <DataColumn name="NotVATPayer" />
+    <DataColumn name="VatCode" />
+
+    <DataColumn name="PersonCode" />
+
+    <DataColumn name="Email" />
+    <DataColumn name="Phone" />
+
+    <DataColumn name="City" />
+    <DataColumn name="Address" />
+    <DataColumn name="PostIndex" />
+
+    <DataColumn name="Country" />
+
+    <DataColumn name="Notes" />
+
+    <DataColumn name="Language" />
+
+    <DataColumn name="Host" />
+    <DataColumn name="Agent" />
+  </g:columns>
+</g:Grid>
