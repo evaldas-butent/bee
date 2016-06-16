@@ -493,6 +493,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         BeeUtils.toIntOrNull(reqInfo.getParameter(COL_USER_INTERFACE)));
 
     String companyName = BeeUtils.notEmpty(reqInfo.getParameter(ALS_COMPANY_NAME), login);
+    String companyType = BeeUtils.notEmpty(reqInfo.getParameter(COL_COMPANY_TYPE), login);
     String companyCode = reqInfo.getParameter(ALS_COMPANY_CODE);
     String vatCode = reqInfo.getParameter(COL_COMPANY_VAT_CODE);
     String exchangeCode = reqInfo.getParameter(COL_COMPANY_EXCHANGE_CODE);
@@ -522,6 +523,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     if (company == null) {
       SqlInsert insCompany = new SqlInsert(TBL_COMPANIES)
           .addConstant(COL_COMPANY_NAME, companyName)
+          .addConstant(COL_COMPANY_TYPE, companyType)
           .addNotEmpty(COL_COMPANY_CODE, companyCode)
           .addNotEmpty(COL_COMPANY_VAT_CODE, vatCode)
           .addNotEmpty(COL_COMPANY_EXCHANGE_CODE, exchangeCode);

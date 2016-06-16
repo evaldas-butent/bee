@@ -3481,6 +3481,8 @@ public interface Dictionary {
 
   default String ordQtyIsTooBig() {return g("ordQtyIsTooBig");}
 
+  default String ordRegistrationCommandCreate() {return g("ordRegistrationCommandCreate");}
+
   default String ordResNotIncrease() {return g("ordResNotIncrease");}
 
   default String ordResQtyIsTooBig() {return g("ordResQtyIsTooBig");}
