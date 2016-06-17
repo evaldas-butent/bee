@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.orders.ec;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gwt.user.client.ui.Panel;
 
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
@@ -10,6 +11,7 @@ import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.widget.ItemDetails;
 import com.butent.bee.client.ui.AutocompleteProvider;
@@ -24,6 +26,9 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
@@ -56,9 +61,14 @@ public final class OrdEcKeeper {
     cartList.addToCart(ecItem, quantity);
   }
 
+  public static void addPictureCellHandlers(AbstractCell<?> cell, String primaryStyle) {
+    Assert.notNull(cell);
+    pictures.addCellHandlers(cell, primaryStyle);
+  }
+
   public static void closeView(IdentifiableWidget view) {
     BeeKeeper.getScreen().closeWidget(view);
-    // showPromo(true);
+    showPromo(true);
   }
 
   public static ParameterList createArgs(String method) {
@@ -279,6 +289,41 @@ public final class OrdEcKeeper {
 
   public static boolean showGlobalSearch() {
     return Settings.getBoolean("showGlobalSearch");
+  }
+
+  public static void showPromo(final boolean checkView) {
+    ParameterList params = createArgs(SVC_GET_PROMO);
+
+    List<RowInfo> cachedBannerInfo = pictures.getCachedBannerInfo();
+    if (!BeeUtils.isEmpty(cachedBannerInfo)) {
+      params.addDataItem(EcConstants.VAR_BANNERS, Codec.beeSerialize(cachedBannerInfo));
+    }
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        dispatchMessages(response);
+
+        if (response.hasResponse()) {
+          String banner = response.getResponseAsString();
+          if (!BeeUtils.isEmpty(banner)) {
+            pictures.setBanners(BeeRowSet.restore(banner));
+          }
+        }
+
+        if (checkView && BeeKeeper.getScreen().getActiveWidget() instanceof Panel) {
+          return;
+        }
+        if (DataUtils.isEmpty(pictures.getBanners())) {
+          return;
+        }
+
+        resetActiveCommand();
+        OrdEcBanner widget = new OrdEcBanner(pictures.getBanners());
+
+        BeeKeeper.getScreen().show(widget);
+      }
+    });
   }
 
   static void doCommand(OrdEcCommandWidget commandWidget) {

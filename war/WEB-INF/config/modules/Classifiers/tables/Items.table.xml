@@ -75,7 +75,7 @@
     <Text name="Description" label="=description" />
     <Text name="Notes" label="=notes" />
 
-    <Boolean name="Included" label="=included" />
+    <Boolean name="NotIncluded" label="=notIncluded" />
     <Integer name="MinQuantity" label="=minQuantity" />
 
     <Text name="Link" label="=link" />

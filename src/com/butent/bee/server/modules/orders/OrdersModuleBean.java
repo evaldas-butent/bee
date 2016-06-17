@@ -49,14 +49,17 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
@@ -223,6 +226,14 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       case SVC_GET_SHOPPING_CARTS:
         response = getShoppingCarts();
+        break;
+
+      case SVC_UPLOAD_BANNERS:
+        response = uploadBanners(reqInfo);
+        break;
+
+      case SVC_GET_PROMO:
+        response = getPromo(reqInfo);
         break;
 
       default:
@@ -1570,6 +1581,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
+  private ResponseObject uploadBanners(RequestInfo reqInfo) {
+    String picture = reqInfo.getParameter(COL_BANNER_PICTURE);
+    if (BeeUtils.isEmpty(picture)) {
+      return ResponseObject.parameterNotFound(SVC_UPLOAD_BANNERS, COL_BANNER_PICTURE);
+    }
+
+    return qs.insertDataWithResponse(new SqlInsert(TBL_ORD_EC_BANNERS)
+        .addConstant(COL_BANNER_PICTURE, picture));
+  }
+
   // E-Commerce
 
   private ResponseObject clearConfiguration(RequestInfo reqInfo) {
@@ -1653,6 +1674,19 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     String unitName = "UnitName";
 
+    SqlSelect categoryQuery = new SqlSelect()
+        .addFields(TBL_ITEM_CATEGORY_TREE, sys.getIdName(TBL_ITEM_CATEGORY_TREE))
+        .addFrom(TBL_ITEM_CATEGORY_TREE)
+        .setWhere(SqlUtils.notNull(TBL_ITEM_CATEGORY_TREE, COL_CATEGORY_INCLUDED));
+
+    Set<Long> categories = qs.getLongSet(categoryQuery);
+
+    IsCondition categoryCondition =
+        SqlUtils.or(SqlUtils.inList(TBL_ITEMS, COL_ITEM_TYPE, categories), SqlUtils.inList(
+            TBL_ITEMS, COL_ITEM_GROUP, categories), SqlUtils.in(TBL_ITEMS,
+            sys.getIdName(TBL_ITEMS), VIEW_ITEM_CATEGORIES, COL_ITEM, SqlUtils.inList(
+                VIEW_ITEM_CATEGORIES, COL_CATEGORY, categories)));
+
     SqlSelect itemsQuery =
         new SqlSelect()
             .addFields(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM_ARTICLE, COL_ITEM_NAME,
@@ -1660,7 +1694,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             .addField(TBL_UNITS, COL_UNIT_NAME, unitName)
             .addFrom(TBL_ITEMS)
             .addFromLeft(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
-            .setWhere(condition);
+            .setWhere(SqlUtils.and(condition, categoryCondition, SqlUtils.isNull(TBL_ITEMS,
+                COL_ITEM_NOT_INCLUDED)));
 
     SimpleRowSet itemData = qs.getData(itemsQuery);
 
@@ -1778,6 +1813,40 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     } else {
       return ResponseObject.response(items).setSize(items.size());
     }
+  }
+
+  private BeeRowSet getBanners(List<RowInfo> cachedBanners) {
+    DateTimeValue now = new DateTimeValue(TimeUtils.nowMinutes());
+
+    Filter filter = Filter.and(
+        Filter.or(Filter.isNull(EcConstants.COL_BANNER_SHOW_AFTER),
+            Filter.isLessEqual(EcConstants.COL_BANNER_SHOW_AFTER, now)),
+        Filter.or(Filter.isNull(EcConstants.COL_BANNER_SHOW_BEFORE),
+            Filter.isMore(EcConstants.COL_BANNER_SHOW_BEFORE, now)));
+
+    BeeRowSet rowSet = qs.getViewData(TBL_ORD_EC_BANNERS, filter);
+    boolean changed;
+
+    if (DataUtils.isEmpty(rowSet)) {
+      changed = !cachedBanners.isEmpty();
+
+    } else if (cachedBanners.size() != rowSet.getNumberOfRows()) {
+      changed = true;
+
+    } else {
+      changed = false;
+
+      for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+        RowInfo rowInfo = cachedBanners.get(i);
+        BeeRow row = rowSet.getRow(i);
+
+        if (rowInfo.getId() != row.getId() || rowInfo.getVersion() != row.getVersion()) {
+          changed = true;
+          break;
+        }
+      }
+    }
+    return changed ? rowSet : null;
   }
 
   private ResponseObject getCategories() {
@@ -1908,6 +1977,25 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       logger.severe("client not available for user", usr.getCurrentUser());
     }
     return id;
+  }
+
+  private ResponseObject getPromo(RequestInfo reqInfo) {
+    List<RowInfo> cachedBanners = new ArrayList<>();
+
+    String param = reqInfo.getParameter(EcConstants.VAR_BANNERS);
+    if (!BeeUtils.isEmpty(param)) {
+      String[] arr = Codec.beeDeserializeCollection(param);
+      if (arr != null) {
+        for (int i = 0; i < arr.length; i++) {
+          cachedBanners.add(RowInfo.restore(arr[i]));
+        }
+      }
+    }
+
+    BeeRowSet banners = getBanners(cachedBanners);
+
+    String banner = (banners == null) ? null : Codec.beeSerialize(banners);
+    return ResponseObject.response(banner);
   }
 
   private ResponseObject getShoppingCarts() {

@@ -14,6 +14,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.OrdEcCart;
 import com.butent.bee.shared.modules.orders.ec.OrdEcCartItem;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
@@ -48,14 +49,14 @@ public class OrdEcCartList extends HtmlTable {
         sb.append(item.getEcItem().getName()).append(BeeUtils.space(3));
 
         int quantity = item.getQuantity();
-        double price = item.getEcItem().getPrice();
+        String price = EcUtils.formatCents(item.getEcItem().getPrice());
 
         sb.append(quantity).append(" x ").append(price);
         sb.append(BeeConst.CHAR_EOL);
       }
 
-      sb.append(Localized.getConstants().ecShoppingCartTotal()).append(BeeConst.CHAR_SPACE);
-      sb.append(String.valueOf(cart.totalCents())).append(BeeConst.CHAR_SPACE);
+      sb.append(Localized.dictionary().ecShoppingCartTotal()).append(BeeConst.CHAR_SPACE);
+      sb.append(EcUtils.formatCents(cart.totalCents())).append(BeeConst.CHAR_SPACE);
       sb.append(EcConstants.CURRENCY);
 
       return sb.toString();
@@ -85,8 +86,8 @@ public class OrdEcCartList extends HtmlTable {
 
     if (cartItem != null) {
       BeeKeeper.getScreen().notifyInfo(
-          Localized.getMessages()
-              .ecUpdateCartItem(Localized.getConstants().ecShoppingCartMainShort(),
+          Localized.dictionary()
+              .ecUpdateCartItem(Localized.dictionary().ecShoppingCartMainShort(),
                   ecItem.getName(), cartItem.getQuantity()));
 
       refresh();
@@ -129,7 +130,7 @@ public class OrdEcCartList extends HtmlTable {
 
   public boolean removeFromCart(OrdEcItem ecItem) {
     if (getCart().remove(ecItem)) {
-      BeeKeeper.getScreen().notifyInfo(Localized.getMessages()
+      BeeKeeper.getScreen().notifyInfo(Localized.dictionary()
           .ecRemoveCartItem(getCart().getCaption(), ecItem.getName()));
 
       refresh();

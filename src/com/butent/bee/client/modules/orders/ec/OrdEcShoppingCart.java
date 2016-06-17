@@ -249,7 +249,7 @@ public class OrdEcShoppingCart extends Split {
   }
 
   private static Widget renderPrice(OrdEcCartItem item) {
-    return new Label(String.valueOf(item.getEcItem().getPrice()));
+    return new Label(EcUtils.formatCents(item.getEcItem().getPrice()));
   }
 
   private Widget renderQuantity(final OrdEcCartItem item) {
@@ -344,7 +344,7 @@ public class OrdEcShoppingCart extends Split {
 
   private static String renderTotal(OrdEcCart cart) {
     return BeeUtils.joinWords(Localized.dictionary().ecShoppingCartTotal(),
-        String.valueOf(cart.totalCents()), EcConstants.CURRENCY);
+        EcUtils.formatCents(cart.totalCents()), EcConstants.CURRENCY);
   }
 
   private void updateQuantity(OrdEcCartItem item, int value) {
