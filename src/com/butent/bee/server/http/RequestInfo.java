@@ -211,6 +211,10 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return id;
   }
 
+  public String getLabel() {
+    return BeeUtils.notEmpty(getSubService(), getService());
+  }
+
   @Override
   public String getOptions() {
     return options;

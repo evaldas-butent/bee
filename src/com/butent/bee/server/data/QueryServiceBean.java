@@ -542,6 +542,17 @@ public class QueryServiceBean {
     return getSingleColumn(query).getIntColumn(0);
   }
 
+  public Set<Integer> getIntSet(IsQuery query) {
+    Set<Integer> result = new HashSet<>();
+
+    Integer[] arr = getIntColumn(query);
+    if (arr != null && arr.length > 0) {
+      Collections.addAll(result, arr);
+    }
+
+    return result;
+  }
+
   public String getLocalizedValue(String tblName, String fldName, String fldValue, Locale locale) {
     if (BeeUtils.isEmpty(fldValue) || Objects.isNull(locale)) {
       return null;
@@ -564,6 +575,15 @@ public class QueryServiceBean {
         .addFields(tableName, fieldName)
         .addFrom(tableName)
         .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
+
+    return getLong(query);
+  }
+
+  public Long getLongById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
 
     return getLong(query);
   }

@@ -1405,7 +1405,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     if (DataUtils.sameId(getActiveRow(), newRow)) {
       setActiveRow(newRow);
-      refreshData(false, false);
+      refreshData(event.refreshChildren(), false);
     }
   }
 

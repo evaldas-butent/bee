@@ -946,7 +946,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     }
   }
 
-  private void setOldValue(String oldValue) {
+  public void setOldValue(String oldValue) {
     this.oldValue = oldValue;
   }
 

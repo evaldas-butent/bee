@@ -364,6 +364,7 @@
       <xs:enumeration value="reset_settings" />
       <xs:enumeration value="rights" />
       <xs:enumeration value="save" />
+      <xs:enumeration value="move" />
     </xs:restriction>
   </xs:simpleType>
 

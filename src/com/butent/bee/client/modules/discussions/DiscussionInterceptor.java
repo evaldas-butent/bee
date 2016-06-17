@@ -651,7 +651,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (!DataUtils.isNewRow(row) && relations != null) {
-      relations.requery(row.getId());
+      relations.requery(null, row.getId());
       relations.refresh();
     }
   }

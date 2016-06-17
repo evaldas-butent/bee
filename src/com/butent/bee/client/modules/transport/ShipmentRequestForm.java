@@ -70,7 +70,6 @@ import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -199,21 +198,27 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       }
     } else if (action == Action.SAVE) {
       IsRow row = getActiveRow();
+      Dictionary dic = Localized.dictionary();
 
       if (BeeUtils.unbox(row.getBoolean(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)))) {
         String value = row.getString(getDataIndex(COL_CARGO_VALUE));
         if (BeeUtils.isEmpty(value)) {
-          getFormView().notifySevere(BeeUtils.join(" ", Localized.dictionary().valuation(),
-              Localized.dictionary().valueRequired()));
+          getFormView().notifySevere(BeeUtils.join(" ", dic.valuation(), dic.valueRequired()));
           return false;
         }
 
         Long currency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
         if (!DataUtils.isId(currency)) {
-          getFormView().notifySevere(BeeUtils.join(" ", Localized.dictionary().currency(),
-              Localized.dictionary().valueRequired()));
+          getFormView().notifySevere(BeeUtils.join(" ", dic.currency(), dic.valueRequired()));
           return false;
         }
+      }
+
+      if (!checkValidation()) {
+        getFormView().notifySevere(
+            dic.allValuesCannotBeEmpty() + " (" + BeeUtils.join(",", dic.height(), dic.width(),
+                dic.length(), dic.trRequestCargoLdm()) + ")");
+        return false;
       }
     }
     return super.beforeAction(action, presenter);
@@ -354,6 +359,26 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         data.put(viewName, ((CompoundFilter) data.get(viewName)).add(flt));
       }
     }
+  }
+
+  private boolean checkValidation() {
+    IsRow row = getActiveRow();
+
+    if (BeeUtils.unbox(row.getBoolean(getDataIndex(COL_CARGO_PARTIAL)))
+        || BeeUtils.unbox(row.getBoolean(getDataIndex(COL_CARGO_OUTSIZED)))) {
+
+      boolean valid = false;
+
+      for (String source : new String[] {
+          COL_CARGO_HEIGHT, COL_CARGO_LENGTH, COL_CARGO_WIDTH, COL_CARGO_LDM}) {
+        if (!BeeUtils.isEmpty(row.getString(getDataIndex(source)))) {
+          valid = true;
+          break;
+        }
+      }
+      return valid;
+    }
+    return true;
   }
 
   private void doConfirm(List<String> messages, Runnable onConfirm) {
@@ -720,7 +745,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
               }
               (startup == null ? queue.remove(0) : startup).run();
             };
-            messages.add(0, loc.errors());
+            messages.add(0, loc.trNewValues());
           } else {
             onConfirm = onSuccess;
           }

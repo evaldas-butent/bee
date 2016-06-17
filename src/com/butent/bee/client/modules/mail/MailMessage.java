@@ -548,7 +548,7 @@ public class MailMessage extends AbstractFormInterceptor {
               !BeeKeeper.getUser().isAdministrator()
                   && (mailPanel == null || !mailPanel.getCurrentAccount().isPrivate()));
 
-          relations.requery(row.getLong(COL_MESSAGE));
+          relations.requery(null, row.getLong(COL_MESSAGE));
         }
         placeId = row.getLong(COL_PLACE);
         folderId = row.getLong(COL_FOLDER);

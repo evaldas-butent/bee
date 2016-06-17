@@ -108,7 +108,7 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     if (event.hasView(VIEW_TRADE_DOCUMENT_TYPES)
         && BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TRADE))) {
 
-      BeeKeeper.getMenu().loadMenu(() -> registerDocumentViews());
+      BeeKeeper.getMenu().loadMenu(TradeKeeper::registerDocumentViews);
     }
   }
 

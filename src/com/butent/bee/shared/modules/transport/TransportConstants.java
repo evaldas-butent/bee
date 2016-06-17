@@ -149,6 +149,17 @@ public final class TransportConstants {
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
+    },
+    SUMBMITTED_REQUEST_CONTENT {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trRequestSubmittedContent();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "Your request has been received. Will contact You soon!";
+      }
     };
 
     public String getDefaultContent() {
@@ -509,6 +520,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_LENGTH = "Length";
   public static final String COL_CARGO_WIDTH = "Width";
   public static final String COL_CARGO_HEIGHT = "Height";
+  public static final String COL_CARGO_OUTSIZED = "Outsized";
   public static final String COL_CARGO_PARTIAL = "Partial";
   public static final String COL_CARGO_PALETTES = "Palettes";
   public static final String COL_CARGO_VALUE = "Value";

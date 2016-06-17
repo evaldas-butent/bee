@@ -696,7 +696,7 @@ public class GridLoaderBean {
       case AUTO:
         if (view.hasColumn(source)) {
           if (view.isColReadOnly(source)
-              || colType.equals(ColType.DATA) && view.getColumnLevel(source) > 0
+              || colType.equals(ColType.DATA) && !view.isColEditable(source)
               || !usr.canEditColumn(viewName, source)) {
             columnDescription.setReadOnly(true);
           }
@@ -1039,9 +1039,9 @@ public class GridLoaderBean {
         if (!filterComponentElements.isEmpty()) {
           List<FilterComponent> filterComponents = new ArrayList<>();
 
-          for (Element componentlement : filterComponentElements) {
+          for (Element componentElement : filterComponentElements) {
             FilterComponent component =
-                FilterComponent.create(XmlUtils.getAttributes(componentlement));
+                FilterComponent.create(XmlUtils.getAttributes(componentElement));
             if (component != null) {
               filterComponents.add(component);
             }
