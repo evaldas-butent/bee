@@ -1497,6 +1497,7 @@ public final class CliWorker {
           case DISCUSS_LIST:
           case DRIVER_TIME_BOARD:
           case EDIT_EC_CONTACTS:
+          case EDIT_ORD_EC_CONTACTS:
           case EDIT_TERMS_OF_DELIVERY:
           case ENSURE_CATEGORIES_AND_OPEN_GRID:
           case FORM:

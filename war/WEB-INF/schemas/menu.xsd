@@ -46,6 +46,7 @@
       <xs:enumeration value="ensure_categories_and_open_grid" />
       <xs:enumeration value="edit_terms_of_delivery" />
       <xs:enumeration value="edit_ec_contacts" />
+      <xs:enumeration value="edit_ord_ec_contacts" />
       <xs:enumeration value="freight_exchange" />
       <xs:enumeration value="shipping_schedule" />
       <xs:enumeration value="driver_time_board" />

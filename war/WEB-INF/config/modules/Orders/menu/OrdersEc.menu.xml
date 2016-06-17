@@ -4,7 +4,7 @@
        name="OrdersEc" label="=ecMenu" order="40" parent="Orders" module="Orders"
 >
   <Item name="OrdEcRegistrations" label="=ecRegistrations" service="grid" parameters="OrdEcRegistrations" />
-  <Item name="OrdEcContacts" label="=ecContacts" service="edit_ec_contacts" />
+  <Item name="OrdEcContacts" label="=ecContacts" service="edit_ord_ec_contacts" />
   <Item name="OrdEcMailParameters" label="=ecMailParameters" service="grid"
     parameters="OrdEcMailParameters" separator="true" />
 </Entry>

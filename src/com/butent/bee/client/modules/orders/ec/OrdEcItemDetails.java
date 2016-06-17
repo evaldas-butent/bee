@@ -1,23 +1,23 @@
 package com.butent.bee.client.modules.orders.ec;
 
-    import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.Widget;
 
-    import com.butent.bee.client.BeeKeeper;
-    import com.butent.bee.client.grid.HtmlTable;
-    import com.butent.bee.client.layout.Flow;
-    import com.butent.bee.client.layout.Simple;
-    import com.butent.bee.client.layout.TabbedPages;
-    import com.butent.bee.client.modules.ec.EcStyles;
-    import com.butent.bee.client.modules.ec.EcWidgetFactory;
-    import com.butent.bee.client.style.StyleUtils;
-    import com.butent.bee.client.widget.CustomDiv;
-    import com.butent.bee.client.widget.Label;
-    import com.butent.bee.client.widget.Link;
-    import com.butent.bee.shared.Consumer;
-    import com.butent.bee.shared.i18n.Localized;
-    import com.butent.bee.shared.modules.ec.EcConstants;
-    import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
-    import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.modules.ec.EcStyles;
+import com.butent.bee.client.modules.ec.EcWidgetFactory;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Link;
+import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class OrdEcItemDetails extends Flow {
 
@@ -163,7 +163,7 @@ public class OrdEcItemDetails extends Flow {
     return widget;
   }
 
-  public OrdEcItemDetails(OrdEcItem item) {
+  public OrdEcItemDetails(OrdEcItem item, boolean allowAddToCart) {
     super(EcStyles.name(STYLE_PRIMARY, "panel"));
 
     int screenWidth = BeeKeeper.getScreen().getWidth();
@@ -197,13 +197,15 @@ public class OrdEcItemDetails extends Flow {
       add(info);
     }
 
-    Widget addToCart = renderAddToCart(item);
-    if (addToCart != null) {
-      StyleUtils.makeAbsolute(addToCart);
-      StyleUtils.setRight(addToCart, 0);
-      StyleUtils.setTop(addToCart, heightMargin);
+    if (allowAddToCart) {
+      Widget addToCart = renderAddToCart(item);
+      if (addToCart != null) {
+        StyleUtils.makeAbsolute(addToCart);
+        StyleUtils.setRight(addToCart, 0);
+        StyleUtils.setTop(addToCart, heightMargin);
 
-      add(addToCart);
+        add(addToCart);
+      }
     }
 
     Widget itemDataTabs = renderTabbedPages(item);

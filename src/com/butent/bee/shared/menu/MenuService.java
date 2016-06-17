@@ -9,6 +9,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -67,7 +68,9 @@ public enum MenuService {
   @XmlEnumValue("edit_ec_contacts")
   EDIT_EC_CONTACTS(EnumSet.of(RightsState.VIEW, RightsState.EDIT),
       EcConstants.VIEW_CONFIGURATION),
-
+  @XmlEnumValue("edit_ord_ec_contacts")
+  EDIT_ORD_EC_CONTACTS(EnumSet.of(RightsState.VIEW, RightsState.EDIT),
+      OrdersConstants.VIEW_ORD_EC_CONFIGURATION),
   @XmlEnumValue("freight_exchange")
   FREIGHT_EXCHANGE(RightsState.VIEW,
       Sets.newHashSet(TransportConstants.VIEW_ORDERS, TransportConstants.VIEW_ORDER_CARGO)),

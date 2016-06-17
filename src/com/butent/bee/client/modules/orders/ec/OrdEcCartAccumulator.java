@@ -3,12 +3,17 @@ package com.butent.bee.client.modules.orders.ec;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
@@ -17,6 +22,9 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
 
 public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandlers {
 
@@ -32,18 +40,34 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
 
   private final InputInteger input;
 
-  private final String article;
+  private final long itemId;
 
   public OrdEcCartAccumulator(final OrdEcItem item, int quantity) {
     super(STYLE_PANEL);
 
-    this.article = item.getArticle();
+    this.itemId = item.getId();
 
     int row = 0;
     int col = 0;
 
     this.input = new InputInteger();
     input.setValue(quantity);
+
+    input.addKeyDownHandler(new KeyDownHandler() {
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          int value = input.getIntValue();
+
+          if (value > 0 && DomUtils.isInView(input)) {
+            OrdEcKeeper.addToCart(item, value);
+            input.setValue(0);
+
+            onAddToCart();
+          }
+        }
+      }
+    });
 
     setWidgetAndStyle(row, col++, input, STYLE_INPUT);
 
@@ -78,7 +102,25 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
     Image cart = new Image(EcUtils.imageUrl("shoppingcart_add.png"));
     cart.setAlt("cart");
 
+    cart.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        int value = input.getIntValue();
+        if (value > 0) {
+          OrdEcKeeper.addToCart(item, value);
+          input.setValue(0);
+
+          onAddToCart();
+        }
+      }
+    });
+
     setWidgetAndStyle(row, col++, cart, STYLE_ADD);
+
+    int count = OrdEcKeeper.getQuantityInCart(itemId);
+    if (count > 0) {
+      renderCount(count);
+    }
   }
 
   @Override
@@ -90,8 +132,8 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
     input.setFocus(true);
   }
 
-  public String getArticleId() {
-    return article;
+  public long getItemId() {
+    return itemId;
   }
 
   public InputInteger getInput() {
@@ -113,6 +155,24 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
     } else {
       setWidgetAndStyle(row, col, widget, STYLE_COUNT);
       getCellFormatter().setColSpan(row, col, getCellCount(0));
+    }
+  }
+
+  private void onAddToCart() {
+    int count = OrdEcKeeper.getQuantityInCart(itemId);
+    renderCount(count);
+
+    if (UiHelper.isModal(this) && BeeKeeper.getScreen().getScreenPanel() != null) {
+      Collection<? extends OrdEcCartAccumulator> accumulators =
+          UiHelper.getChildren(BeeKeeper.getScreen().getScreenPanel(), getClass());
+
+      if (!BeeUtils.isEmpty(accumulators)) {
+        for (OrdEcCartAccumulator accumulator : accumulators) {
+          if (accumulator.itemId == itemId) {
+            accumulator.renderCount(count);
+          }
+        }
+      }
     }
   }
 }

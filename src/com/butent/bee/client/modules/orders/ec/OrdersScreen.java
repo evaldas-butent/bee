@@ -78,6 +78,17 @@ public class OrdersScreen extends ScreenImpl {
         Localized.dictionary().ordSearchByItemCategory(), Type.LABEL));
 
     container.add(searchBy);
+
+    Horizontal carts = new Horizontal();
+    EcStyles.add(carts, "carts");
+
+    Image image = new Image(EcUtils.imageUrl("cart.png"));
+    EcStyles.add(image, "cartPicture");
+
+    carts.add(image);
+    carts.add(OrdEcKeeper.getCartlist());
+
+    container.add(carts);
   }
 
   private static Widget createCommandWidget(String service, String html, Type type) {
@@ -167,6 +178,16 @@ public class OrdersScreen extends ScreenImpl {
   @Override
   public UserInterface getUserInterface() {
     return UserInterface.ORDERS;
+  }
+
+  @Override
+  public void onLoad() {
+    if (OrdEcKeeper.showGlobalSearch()) {
+      OrdEcKeeper.getSearchBox().setFocus(true);
+    }
+
+    // EcKeeper.showPromo(true);
+    OrdEcKeeper.restoreShoppingCarts();
   }
 
   @Override
