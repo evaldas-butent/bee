@@ -3489,6 +3489,10 @@ public interface Dictionary {
 
   default String ordResRemainder() {return g("ordResRemainder");}
 
+  default String ordSearchByItemArticle() {return g("ordSearchByItemArticle");}
+
+  default String ordSearchByItemCategory() {return g("ordSearchByItemCategory");}
+
   default String ordSend() {return g("ordSend");}
 
   default String ordSent() {return g("ordSent");}

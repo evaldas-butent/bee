@@ -9,6 +9,8 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
@@ -18,7 +20,9 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.administration.PasswordService;
+import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
+import com.butent.bee.client.modules.orders.ec.OrdEcCommandWidget.Type;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.AutocompleteProvider;
@@ -31,6 +35,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.ui.UserInterface;
@@ -62,7 +67,17 @@ public class OrdersScreen extends ScreenImpl {
     EcStyles.add(label, styleName, "label");
     searchBy.add(label);
 
+    searchBy.add(createCommandWidget(SVC_EC_SEARCH_BY_ITEM_ARTICLE,
+        Localized.dictionary().ordSearchByItemArticle(), Type.LABEL));
+    searchBy.add(createCommandWidget(SVC_EC_SEARCH_BY_ITEM_CATEGORY,
+        Localized.dictionary().ordSearchByItemCategory(), Type.LABEL));
+
     container.add(searchBy);
+  }
+
+  private static Widget createCommandWidget(String service, String html, Type type) {
+    OrdEcCommandWidget commandWidget = new OrdEcCommandWidget(service, html, type);
+    return commandWidget.getWidget();
   }
 
   public OrdersScreen() {
@@ -183,7 +198,8 @@ public class OrdersScreen extends ScreenImpl {
 
   @Override
   protected IdentifiableWidget initCenter() {
-    return new CustomDiv();
+
+    return new OrdEcItemPanel();
   }
 
   @Override
@@ -199,6 +215,7 @@ public class OrdersScreen extends ScreenImpl {
     Widget logo = createLogo(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
+        EcKeeper.showPromo(false);
       }
     });
 
@@ -230,7 +247,7 @@ public class OrdersScreen extends ScreenImpl {
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initSouth() {
     Flow panel = new Flow(EcStyles.name("ProgressPanel"));
-    panel.add(createCopyright(BeeConst.CSS_CLASS_PREFIX + "ord-ec-"));
+    panel.add(createCopyright(BeeConst.CSS_CLASS_PREFIX + "ec-"));
     setProgressPanel(panel);
 
     return Pair.of(panel, 18);
@@ -257,13 +274,13 @@ public class OrdersScreen extends ScreenImpl {
   private Widget createGlobalSearch() {
     String styleName = "GlobalSearch";
 
-    final InputText input = new InputText();
+    final InputText input = OrdEcKeeper.getSearchBox();
 
     DomUtils.setSearch(input);
     DomUtils.setPlaceholder(input, Localized.dictionary().ecGlobalSearchPlaceholder());
     EcStyles.add(input, styleName, "input");
 
-    AutocompleteProvider.enableAutocomplete(input, OrdersConstants.NAME_PREFIX + styleName);
+    AutocompleteProvider.enableAutocomplete(input, EcConstants.NAME_PREFIX + styleName);
 
     input.addKeyDownHandler(new KeyDownHandler() {
       @Override
@@ -274,6 +291,7 @@ public class OrdersScreen extends ScreenImpl {
           case KeyCodes.KEY_ENTER:
             String query = BeeUtils.trim(input.getValue());
             if (!BeeUtils.isEmpty(query)) {
+              OrdEcKeeper.doGlobalSearch(query, input);
             }
             break;
 
@@ -300,6 +318,7 @@ public class OrdersScreen extends ScreenImpl {
       public void onClick(ClickEvent event) {
         String query = BeeUtils.trim(input.getValue());
         if (!BeeUtils.isEmpty(query)) {
+          OrdEcKeeper.doGlobalSearch(query, input);
         }
       }
     });

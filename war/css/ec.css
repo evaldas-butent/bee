@@ -340,6 +340,7 @@
 .bee-ec-ItemList-table {
   border-collapse: collapse;
   table-layout: fixed;
+  margin: auto;
 }
 .bee-ec-ItemList-header td {
   text-align: center;
@@ -491,8 +492,7 @@
   border: 1px solid #ccc;
 }
 .bee-ec-ItemPanel-categories-wrapper {
-  margin-bottom: 2ex;
-  margin-right: 1em;
+  margin: 2ex;
 }
 .bee-ec-ItemPanel-categories-caption {
   font-weight: bold;

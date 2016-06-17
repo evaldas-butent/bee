@@ -14,11 +14,13 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -44,6 +46,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -52,9 +55,11 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
@@ -103,6 +108,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   FileStorageBean fs;
   @EJB
   TradeModuleBean trd;
+  @EJB
+  DataEditorBean deb;
+  @EJB
+  UserServiceBean usr;
 
   @Resource
   TimerService timerService;
@@ -161,6 +170,27 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       case SVC_GET_CREDIT_INFO:
         response = getCreditInfo(reqInfo);
+        break;
+
+      case SVC_EC_SEARCH_BY_ITEM_ARTICLE:
+        response = searchByItemArticle(Operator.STARTS, reqInfo);
+        break;
+
+      case SVC_EC_SEARCH_BY_ITEM_CATEGORY:
+        response = searchByCategory(reqInfo);
+        break;
+
+      case SVC_GET_PICTURES:
+        Set<Long> articles = DataUtils.parseIdSet(reqInfo.getParameter(COL_ITEM));
+        response = getPictures(articles);
+        break;
+
+      case SVC_GET_CATEGORIES:
+        response = getCategories();
+        break;
+
+      case SVC_GLOBAL_SEARCH:
+        response = doGlobalSearch(reqInfo);
         break;
 
       default:
@@ -1506,5 +1536,207 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     return ResponseObject.emptyResponse();
+  }
+
+  // E-Commerce
+
+  private ResponseObject getPictures(Set<Long> items) {
+    if (BeeUtils.isEmpty(items)) {
+      return ResponseObject.parameterNotFound(SVC_GET_PICTURES, COL_ITEM);
+    }
+
+    SqlSelect graphicsQuery = new SqlSelect()
+        .addFields("ItemGraphics", COL_ITEM, "Picture")
+        .addFrom("ItemGraphics")
+        .setWhere(SqlUtils.inList("ItemGraphics", COL_ITEM, items));
+
+    SimpleRowSet graphicsData = qs.getData(graphicsQuery);
+
+    if (DataUtils.isEmpty(graphicsData)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    List<String> pictures = Lists.newArrayListWithExpectedSize(graphicsData.getNumberOfRows() * 2);
+    for (SimpleRow row : graphicsData) {
+      pictures.add(row.getValue(COL_ITEM));
+      pictures.add(row.getValue("Picture"));
+    }
+
+    return ResponseObject.response(pictures).setSize(pictures.size() / 2);
+  }
+
+  private ResponseObject didNotMatch(String query) {
+    return ResponseObject.warning(usr.getDictionary().ecSearchDidNotMatch(query));
+  }
+
+  private static IsCondition getArticleCondition(String article, Operator defOperator) {
+    if (BeeUtils.isEmpty(article)) {
+      return null;
+    }
+    Operator operator;
+    String value;
+
+    if (article.contains(Operator.CHAR_ANY) || article.contains(Operator.CHAR_ONE)) {
+      operator = Operator.MATCHES;
+      value = article.trim().toUpperCase();
+
+    } else if (BeeUtils.isPrefixOrSuffix(article, BeeConst.CHAR_EQ)) {
+      operator = Operator.EQ;
+      value = BeeUtils.removePrefixAndSuffix(article, BeeConst.CHAR_EQ).trim().toUpperCase();
+
+    } else {
+      operator = BeeUtils.nvl(defOperator, Operator.CONTAINS);
+      value = EcUtils.normalizeCode(article);
+
+      if (operator == Operator.STARTS) {
+        value += Operator.CHAR_ANY;
+        operator = Operator.MATCHES;
+      }
+      if (BeeUtils.length(value) < MIN_SEARCH_QUERY_LENGTH) {
+        return null;
+      }
+    }
+
+    return SqlUtils.compare(TBL_ITEMS, COL_ITEM_ARTICLE, operator, value);
+  }
+
+  private List<OrdEcItem> getItems(IsCondition condition) {
+    List<OrdEcItem> items = new ArrayList<>();
+
+    String unitName = "UnitName";
+
+    SqlSelect itemsQuery =
+        new SqlSelect()
+            .addFields(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM_ARTICLE, COL_ITEM_NAME,
+                COL_ITEM_PRICE)
+            .addField(TBL_UNITS, COL_UNIT_NAME, unitName)
+            .addFrom(TBL_ITEMS)
+            .addFromLeft(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+            .setWhere(condition);
+
+    SimpleRowSet itemData = qs.getData(itemsQuery);
+
+    if (!DataUtils.isEmpty(itemData)) {
+
+      for (SimpleRow row : itemData) {
+        OrdEcItem item = new OrdEcItem();
+
+        if (!BeeUtils.isEmpty(row.getValue(COL_ITEM_ARTICLE))) {
+          item.setArticle(row.getValue(COL_ITEM_ARTICLE));
+        }
+        item.setId(row.getLong(sys.getIdName(TBL_ITEMS)));
+        item.setName(row.getValue(COL_ITEM_NAME));
+        if (BeeUtils.isPositive(row.getDouble(COL_ITEM_PRICE))) {
+          item.setPrice(row.getDouble(COL_ITEM_PRICE));
+        }
+        item.setUnit(row.getValue(unitName));
+
+        items.add(item);
+      }
+    }
+
+    return items;
+  }
+
+  private ResponseObject searchByItemArticle(Operator defOperator, RequestInfo reqInfo) {
+    String article = reqInfo.getParameter(VAR_QUERY);
+
+    if (BeeUtils.isEmpty(article)) {
+      return ResponseObject.parameterNotFound(SVC_EC_SEARCH_BY_ITEM_ARTICLE, VAR_QUERY);
+    }
+
+    IsCondition articleCondition = getArticleCondition(article, defOperator);
+
+    if (articleCondition == null) {
+      return ResponseObject
+          .error(EcUtils.normalizeCode(article),
+              usr.getDictionary().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
+    }
+
+    List<OrdEcItem> items = getItems(articleCondition);
+    if (items.isEmpty()) {
+      return didNotMatch(article);
+    } else {
+      return ResponseObject.response(items).setSize(items.size());
+    }
+  }
+
+  private ResponseObject searchByCategory(RequestInfo reqInfo) {
+    String category = reqInfo.getParameter(VAR_QUERY);
+
+    if (BeeUtils.isEmpty(category)) {
+      return ResponseObject
+          .parameterNotFound(SVC_EC_SEARCH_BY_ITEM_CATEGORY, VAR_QUERY);
+    }
+
+    IsCondition categoryCondition =
+        SqlUtils.or(SqlUtils.equals(TBL_ITEMS, COL_ITEM_TYPE, category), SqlUtils.equals(TBL_ITEMS,
+            COL_ITEM_GROUP, category), SqlUtils.in(TBL_ITEMS, sys.getIdName(TBL_ITEMS),
+            VIEW_ITEM_CATEGORIES, COL_ITEM, SqlUtils.equals(
+                VIEW_ITEM_CATEGORIES, COL_CATEGORY, category)));
+
+    List<OrdEcItem> items = getItems(categoryCondition);
+    if (items.isEmpty()) {
+      return didNotMatch(category);
+    } else {
+      return ResponseObject.response(items).setSize(items.size());
+    }
+  }
+
+  private ResponseObject getCategories() {
+    String idName = sys.getIdName(TBL_ITEM_CATEGORY_TREE);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_ITEM_CATEGORY_TREE, idName, COL_CATEGORY_PARENT,
+            COL_CATEGORY_NAME)
+        .addFrom(TBL_ITEM_CATEGORY_TREE)
+        .addOrder(TBL_ITEM_CATEGORY_TREE, idName);
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      String msg = TBL_ITEM_CATEGORY_TREE + ": data not available";
+      logger.warning(msg);
+      return ResponseObject.error(msg);
+    }
+
+    int rc = data.getNumberOfRows();
+    int cc = data.getNumberOfColumns();
+
+    String[] arr = new String[rc * cc];
+    int i = 0;
+
+    for (String[] row : data.getRows()) {
+      for (int j = 0; j < cc; j++) {
+        arr[i * cc + j] = row[j];
+      }
+      i++;
+    }
+
+    return ResponseObject.response(arr).setSize(rc);
+  }
+
+  private ResponseObject doGlobalSearch(RequestInfo reqInfo) {
+    String query = reqInfo.getParameter(VAR_QUERY);
+
+    if (BeeUtils.isEmpty(query)) {
+      return ResponseObject.parameterNotFound(SVC_GLOBAL_SEARCH, VAR_QUERY);
+    }
+
+    IsCondition condition;
+
+    if (BeeUtils.isEmpty(BeeUtils.parseDigits(query))) {
+      condition = SqlUtils.contains(TBL_ITEMS, COL_ITEM_NAME, query);
+
+    } else {
+      condition = SqlUtils.or(SqlUtils.contains(TBL_ITEMS, COL_ITEM_NAME, query),
+          SqlUtils.contains(TBL_ITEMS, COL_ITEM_ARTICLE, query));
+    }
+
+    List<OrdEcItem> items = getItems(condition);
+    if (items.isEmpty()) {
+      return didNotMatch(query);
+    } else {
+      return ResponseObject.response(items).setSize(items.size());
+    }
   }
 }
