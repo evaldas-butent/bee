@@ -3195,6 +3195,8 @@ public interface Dictionary {
 
   default String minute() {return g("minute");}
 
+  default String minQuantity() {return g("minQuantity");}
+
   default String mobile() {return g("mobile");}
 
   default String modifications() {return g("modifications");}
@@ -3472,6 +3474,8 @@ public interface Dictionary {
   default String ordFreeRemainder() {return g("ordFreeRemainder");}
 
   default String ordMaxDiscount() {return g("ordMaxDiscount");}
+
+  default String ordMinQuantity() {return g("ordMinQuantity");}
 
   default String ordOverdueInvoices() {return g("ordOverdueInvoices");}
 

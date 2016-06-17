@@ -1690,7 +1690,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     SqlSelect itemsQuery =
         new SqlSelect()
             .addFields(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM_ARTICLE, COL_ITEM_NAME,
-                COL_ITEM_PRICE, COL_ITEM_DESCRIPTION, COL_ITEM_LINK)
+                COL_ITEM_PRICE, COL_ITEM_DESCRIPTION, COL_ITEM_LINK, COL_ITEM_MIN_QUANTITY)
             .addField(TBL_UNITS, COL_UNIT_NAME, unitName)
             .addFrom(TBL_ITEMS)
             .addFromLeft(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
@@ -1740,6 +1740,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         if (!BeeUtils.isEmpty(link)) {
           item.setLink(link);
         }
+
+        int minQuantity = BeeUtils.unbox(row.getInt(COL_ITEM_MIN_QUANTITY));
+        item.setMinQuantity(minQuantity);
+
         items.add(item);
       }
     }

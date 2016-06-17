@@ -120,6 +120,15 @@ public class OrdEcItemDetails extends Flow {
     return widget;
   }
 
+  private static Widget renderPictures(OrdEcItem item) {
+    OrdEcItemPicture widget = new OrdEcItemPicture(item.getCaption());
+    EcStyles.add(widget, STYLE_PRIMARY, "picture");
+
+    OrdEcKeeper.setBackgroundPicture(item.getId(), widget);
+
+    return widget;
+  }
+
   private static Widget renderRemainders(final OrdEcItem item) {
     if (item == null || BeeUtils.isEmpty(item.getRemainder())) {
       return null;
@@ -159,6 +168,11 @@ public class OrdEcItemDetails extends Flow {
     Widget remainders = renderRemainders(item);
     if (remainders != null) {
       widget.add(remainders, Localized.dictionary().ecItemDetailsRemainders(), null, null);
+    }
+
+    Widget pictures = renderPictures(item);
+    if (pictures != null) {
+      widget.add(pictures, Localized.dictionary().pictures(), null, null);
     }
 
     return widget;
