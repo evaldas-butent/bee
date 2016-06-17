@@ -265,8 +265,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       }
     }
 
-    public Boolean isEditable() {
-      return editable;
+    public boolean isEditable() {
+      if (editable == null) {
+        return !isReadOnly() && !isHidden() && getLevel() <= 0;
+      } else {
+        return editable;
+      }
     }
 
     public boolean isHidden() {
@@ -402,17 +406,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
 
-    boolean ro = info.isReadOnly();
-    column.setReadOnly(ro);
+    column.setReadOnly(info.isReadOnly());
+    column.setEditable(info.isEditable());
 
-    int level = info.getLevel();
-    column.setLevel(level);
-
-    Boolean editable = info.isEditable();
-    if (editable == null) {
-      editable = !ro && level <= 0;
-    }
-    column.setEditable(editable);
+    column.setLevel(info.getLevel());
 
     column.setDefaults(info.getDefaults());
 
@@ -928,7 +925,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         && Objects.isNull(getColumnSource(colName));
   }
 
-  public Boolean isColEditable(String colName) {
+  public boolean isColEditable(String colName) {
     return getColumnInfo(colName).isEditable();
   }
 

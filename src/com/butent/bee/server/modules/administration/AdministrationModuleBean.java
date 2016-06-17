@@ -843,7 +843,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     for (ViewColumn col : view.getViewColumns()) {
       if (!col.isHidden() && !col.isReadOnly()
-          && (col.getLevel() == 0 || BeeUtils.unbox(col.getEditable()))
+          && (col.getLevel() == 0 || col.isEditable())
           && BeeUtils.isEmpty(view.getColumnLocale(col.getName()))) {
 
         String als = view.getColumnSource(col.getName());
