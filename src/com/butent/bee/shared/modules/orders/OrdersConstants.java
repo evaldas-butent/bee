@@ -63,7 +63,6 @@ public final class OrdersConstants {
   public static final String SVC_GET_FILTERED_INVOICES = "GetFilteredInvoices";
   public static final String SVC_GET_ERP_STOCKS = "GetERPStocks";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
-  public static final String SVC_CREATE_CLIENT = "CreateClient";
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";
@@ -112,7 +111,17 @@ public final class OrdersConstants {
   public static final String PRM_MANAGER_DISCOUNT = "ManagerDiscount";
 
   // E-Commerce
+  public static final String SVC_CREATE_CLIENT = "CreateClient";
+  public static final String SVC_EC_SEARCH_BY_ITEM_ARTICLE = "SearchByItemArticle";
+  public static final String SVC_EC_SEARCH_BY_ITEM_CATEGORY = "SearchByItemCategory";
+  public static final String SVC_GET_PICTURES = "GetPictures";
+  public static final String SVC_GET_CATEGORIES = "GetCategories";
+  public static final String SVC_GLOBAL_SEARCH = "GlobalSearch";
+
   public static final String NAME_PREFIX = "ord-ec";
+  public static final String CATEGORY_ID_SEPARATOR = ",";
+  public static final String VAR_QUERY = "Query";
+  public static final int MIN_SEARCH_QUERY_LENGTH = 3;
 
   public static final String VIEW_ORD_EC_REGISTRATIONS = "OrdEcRegistrations";
 
