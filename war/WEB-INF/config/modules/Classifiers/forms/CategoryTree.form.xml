@@ -20,6 +20,21 @@
             <InputText source="Name" style="width: 300px;" />
           </row>
 
+          <row>
+            <Label for="Name2" />
+            <InputText source="Name2" style="width: 300px;" />
+          </row>
+
+          <row>
+            <Label for="Name3" />
+            <InputText source="Name3" style="width: 300px;" />
+          </row>
+
+          <row>
+            <Label />
+            <CheckBox source="Included" />
+          </row>
+
           <row data="Departments">
             <Label for="Department" />
             <DataSelector source="Department" renderColumns="DepartmentName"

@@ -6,10 +6,14 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Name2" />
+    <SimpleColumn name="Name3" />
     <SimpleColumn name="Parent" />
     <SimpleJoin joinType="LEFT" name="Parent">
       <SimpleColumn name="Name" alias="ParentName" />
     </SimpleJoin>
+
+    <SimpleColumn name="Included" />
 
     <SimpleJoin name="Dimensions" joinType="LEFT">
       <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />

@@ -264,6 +264,21 @@
         <ChildGrid name="CompanyProjects" relColumn="Company" paging="true" />
       </page>
 
+      <page>
+        <text>=ecModule</text>
+        <FlowPanel style="margin:5px;">
+          <Table kind="controls">
+            <row>
+              <Label style="&lbl;" for="EcManager" />
+              <DataSelector source="EcManager" summarize="true" />
+              <Label style="&lbl;" for="EcWarehouse" />
+              <DataSelector source="EcWarehouse" summarize="true" />
+              <CheckBox source="EcShowRemainder" style="margin-left: 25px;" />
+            </row>
+          </Table>
+        </FlowPanel>
+      </page>
+
       <page data="Orders">
         <text>=offers</text>
         <ChildGrid name="CompanyOrders" relColumn="Company" />

@@ -131,6 +131,8 @@
 
     <SimpleColumn name="Description" />
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Included" />
+    <SimpleColumn name="MinQuantity" />
     <SimpleColumn name="Link" />
   </Columns>
 

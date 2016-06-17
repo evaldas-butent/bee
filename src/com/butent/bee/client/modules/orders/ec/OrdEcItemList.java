@@ -12,6 +12,7 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -22,6 +23,7 @@ import java.util.List;
 public class OrdEcItemList extends Flow {
 
   private static final String STYLE_PRIMARY = "ItemList";
+  private static final String STYLE_WAREHOUSE = "warehouse";
 
   private static final String STYLE_HEADER_ROW = EcStyles.name(STYLE_PRIMARY, "header");
   private static final String STYLE_ITEM_ROW = EcStyles.name(STYLE_PRIMARY, "item");
@@ -30,13 +32,17 @@ public class OrdEcItemList extends Flow {
   private static final String STYLE_INFO = EcStyles.name(STYLE_PRIMARY, "info");
   private static final String STYLE_QUANTITY = EcStyles.name(STYLE_PRIMARY, "quantity");
   private static final String STYLE_PRICE = EcStyles.name(STYLE_PRIMARY, "price");
+  private static final String STYLE_STOCK = EcStyles.name(STYLE_PRIMARY, "stock");
 
   private static final String STYLE_ITEM_NAME = EcStyles.name(STYLE_PRIMARY, "name");
 
   private static final int PAGE_SIZE = 50;
 
+  Dictionary lc = Localized.dictionary();
+
   private final HtmlTable table;
   private final Button moreWidget;
+  private String stockLabel;
 
   private final List<OrdEcItem> data = new ArrayList<>();
 
@@ -62,6 +68,8 @@ public class OrdEcItemList extends Flow {
       }
     });
     add(moreWidget);
+
+    this.stockLabel = OrdEcKeeper.getStockLabel();
   }
 
   public void render(List<OrdEcItem> items) {
@@ -85,6 +93,41 @@ public class OrdEcItemList extends Flow {
         EcStyles.add(caption, STYLE_PRIMARY, "caption");
         table.setWidget(row, col, caption);
       }
+
+      Label photo = new Label(lc.photo());
+      EcStyles.add(photo, STYLE_PRIMARY, "photoLabel");
+      table.setWidget(row, col++, photo);
+
+      Label article = new Label(lc.article());
+      EcStyles.add(article, STYLE_PRIMARY, "articleLabel");
+      table.setWidget(row, col++, article);
+
+      Label name = new Label(lc.name());
+      EcStyles.add(name, STYLE_PRIMARY, "nameLabel");
+      table.setWidget(row, col++, name);
+
+      Label unit = new Label(lc.unitShort());
+      EcStyles.add(unit, STYLE_PRIMARY, "unitLabel");
+      table.setWidget(row, col++, unit);
+
+      Label price = new Label(lc.price());
+      EcStyles.add(price, STYLE_PRIMARY, "priceLabel");
+      table.setWidget(row, col++, price);
+
+      if (hasWarehouse()) {
+        Label wrh = new Label(stockLabel);
+        EcStyles.add(wrh, STYLE_PRIMARY, STYLE_WAREHOUSE);
+        table.setWidget(row, col++, wrh);
+
+      } else {
+        Label wrh = new Label("S1");
+        EcStyles.add(wrh, STYLE_PRIMARY, STYLE_WAREHOUSE);
+        table.setWidget(row, col++, wrh);
+      }
+
+      Label quantity = new Label(lc.quantity());
+      EcStyles.add(quantity, STYLE_PRIMARY, "quantityLabel");
+      table.setWidget(row, col++, quantity);
 
       table.getRowFormatter().addStyleName(row, STYLE_HEADER_ROW);
 
@@ -154,6 +197,11 @@ public class OrdEcItemList extends Flow {
     }
     col++;
 
+    Label itemStock = new Label(item.getRemainder());
+    itemStock.addStyleName(STYLE_STOCK);
+    table.setWidgetAndStyle(row, col, itemStock, STYLE_STOCK);
+    col++;
+
     OrdEcCartAccumulator accumulator = new OrdEcCartAccumulator(item, 1);
     table.setWidgetAndStyle(row, col++, accumulator, STYLE_QUANTITY);
 
@@ -179,5 +227,9 @@ public class OrdEcItemList extends Flow {
         StyleUtils.hideDisplay(moreWidget);
       }
     }
+  }
+
+  private boolean hasWarehouse() {
+    return !BeeUtils.isEmpty(stockLabel);
   }
 }

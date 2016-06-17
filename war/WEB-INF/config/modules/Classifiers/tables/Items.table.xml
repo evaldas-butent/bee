@@ -74,7 +74,10 @@
 
     <Text name="Description" label="=description" />
     <Text name="Notes" label="=notes" />
-    
+
+    <Boolean name="Included" label="=included" />
+    <Integer name="MinQuantity" label="=minQuantity" />
+
     <Text name="Link" label="=link" />
   </Fields>
 

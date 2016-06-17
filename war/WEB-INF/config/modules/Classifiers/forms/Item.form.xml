@@ -26,6 +26,8 @@
 
         <Label for="Group" />
         <DataSelector source="Group" />
+
+        <CheckBox source="Included" style="margin-left: 20px;" />
       </row>
 
       <row>
@@ -70,7 +72,10 @@
         <InputText source="Attribute" >
           &foritem;
         </InputText>
-        
+
+        <Label for="MinQuantity" />
+        <InputInteger source="MinQuantity" style="width: 80px;" />
+
         <CheckBox source="NotManufactured" text="=notManufactured" >
           &foritem;
         </CheckBox>
