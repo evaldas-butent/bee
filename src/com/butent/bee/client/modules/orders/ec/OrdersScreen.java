@@ -55,6 +55,11 @@ public class OrdersScreen extends ScreenImpl {
     EcStyles.add(info, panelStyle);
     EcStyles.add(info, panelStyle, "info");
 
+    info.add(createCommandWidget(EcConstants.SVC_FINANCIAL_INFORMATION,
+        Localized.dictionary().ecFinancialInformation(), Type.LINK));
+    info.add(createCommandWidget(EcConstants.SVC_SHOW_CONTACTS,
+        Localized.dictionary().ecContacts(), Type.LINK));
+
     container.add(info);
 
     String styleName = "searchBy";

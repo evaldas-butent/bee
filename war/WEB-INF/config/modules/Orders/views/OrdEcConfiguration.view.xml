@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-      name="OrdEcMailParameters" source="OrdEcMailParameters" module="Orders"
+    name="OrdEcConfiguration" source="OrdEcConfiguration" module="Orders"
+    caption="=settings"
 >
   <Columns>
+    <SimpleColumn name="ContactsUrl" />
+    <SimpleColumn name="ContactsHtml" />
+
     <SimpleColumn name="MailAccount" />
     <SimpleJoin name="MailAccount" joinType="LEFT">
       <SimpleColumn name="Description" alias="AccountDescription" />

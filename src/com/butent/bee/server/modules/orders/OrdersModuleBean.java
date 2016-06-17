@@ -198,6 +198,22 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         response = getClientWarehouse(reqInfo);
         break;
 
+      case SVC_GET_CONFIGURATION:
+        response = getConfiguration();
+        break;
+
+      case SVC_SAVE_CONFIGURATION:
+        response = saveConfiguration(reqInfo);
+        break;
+
+      case SVC_CLEAR_CONFIGURATION:
+        response = clearConfiguration(reqInfo);
+        break;
+
+      case SVC_FINANCIAL_INFORMATION:
+        response = getFinancialInformation(getCurrentClientId());
+        break;
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -1545,6 +1561,22 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   // E-Commerce
 
+  private ResponseObject clearConfiguration(RequestInfo reqInfo) {
+    String column = reqInfo.getParameter(Service.VAR_COLUMN);
+    if (BeeUtils.isEmpty(column)) {
+      return ResponseObject.parameterNotFound(SVC_CLEAR_CONFIGURATION, Service.VAR_COLUMN);
+    }
+
+    if (updateConfiguration(column, null)) {
+      return ResponseObject.response(column);
+    } else {
+      String message = BeeUtils.joinWords(SVC_CLEAR_CONFIGURATION, column,
+          "cannot clear configuration");
+      logger.severe(message);
+      return ResponseObject.error(message);
+    }
+  }
+
   private ResponseObject getPictures(Set<Long> items) {
     if (BeeUtils.isEmpty(items)) {
       return ResponseObject.parameterNotFound(SVC_GET_PICTURES, COL_ITEM);
@@ -1613,7 +1645,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     SqlSelect itemsQuery =
         new SqlSelect()
             .addFields(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM_ARTICLE, COL_ITEM_NAME,
-                COL_ITEM_PRICE)
+                COL_ITEM_PRICE, COL_ITEM_DESCRIPTION, COL_ITEM_LINK)
             .addField(TBL_UNITS, COL_UNIT_NAME, unitName)
             .addFrom(TBL_ITEMS)
             .addFromLeft(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
@@ -1653,11 +1685,41 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           }
         }
 
+        String description = row.getValue(COL_ITEM_DESCRIPTION);
+        if (!BeeUtils.isEmpty(description)) {
+          item.setDescription(description);
+        }
+
+        String link = row.getValue(COL_ITEM_LINK);
+        if (!BeeUtils.isEmpty(link)) {
+          item.setLink(link);
+        }
         items.add(item);
       }
     }
 
     return items;
+  }
+
+  private ResponseObject saveConfiguration(RequestInfo reqInfo) {
+    String column = reqInfo.getParameter(Service.VAR_COLUMN);
+    if (BeeUtils.isEmpty(column)) {
+      return ResponseObject.parameterNotFound(SVC_SAVE_CONFIGURATION, Service.VAR_COLUMN);
+    }
+
+    String value = reqInfo.getParameter(Service.VAR_VALUE);
+    if (BeeUtils.isEmpty(value)) {
+      return ResponseObject.parameterNotFound(SVC_SAVE_CONFIGURATION, Service.VAR_VALUE);
+    }
+
+    if (updateConfiguration(column, value)) {
+      return ResponseObject.response(column);
+    } else {
+      String message = BeeUtils.joinWords(SVC_SAVE_CONFIGURATION, column,
+          "cannot save configuration");
+      logger.severe(message);
+      return ResponseObject.error(message);
+    }
   }
 
   private ResponseObject searchByItemArticle(Operator defOperator, RequestInfo reqInfo) {
@@ -1739,6 +1801,31 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(arr).setSize(rc);
   }
 
+  private ResponseObject getConfiguration() {
+    BeeRowSet rowSet = qs.getViewData(VIEW_ORD_EC_CONFIGURATION);
+    if (rowSet == null) {
+      return ResponseObject.error("cannot read", VIEW_ORD_EC_CONFIGURATION);
+    }
+
+    Map<String, String> result = new HashMap<>();
+    if (rowSet.isEmpty()) {
+      for (BeeColumn column : rowSet.getColumns()) {
+        result.put(column.getId(), null);
+      }
+    } else {
+      BeeRow row = rowSet.getRow(0);
+      for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
+        result.put(rowSet.getColumnId(i), row.getString(i));
+      }
+    }
+
+    return ResponseObject.response(result);
+  }
+
+  private ResponseObject getFinancialInformation(Long clientId) {
+    return ResponseObject.emptyResponse();
+  }
+
   private ResponseObject doGlobalSearch(RequestInfo reqInfo) {
     String query = reqInfo.getParameter(VAR_QUERY);
     Long companyId = reqInfo.getParameterLong(COL_COMAPNY);
@@ -1798,6 +1885,20 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return null;
   }
 
+  private Long getCurrentClientId() {
+    Long id =
+        qs.getLong(new SqlSelect().addFrom(TBL_COMPANY_PERSONS)
+            .addFields(TBL_COMPANY_PERSONS, COL_COMAPNY)
+            .setWhere(
+                SqlUtils.equals(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), usr
+                    .getCompanyPerson(usr.getCurrentUserId()))));
+
+    if (!DataUtils.isId(id)) {
+      logger.severe("client not available for user", usr.getCurrentUser());
+    }
+    return id;
+  }
+
   private Pair<Map<Long, Integer>, Boolean> getStocks(Long[] itemIds, Long companyId) {
 
     Map<Long, Integer> stocks = new HashMap<>();
@@ -1817,5 +1918,33 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       }
     }
     return Pair.of(stocks, warehouseData.getB());
+  }
+
+  private boolean updateConfiguration(String column, String value) {
+    BeeRowSet rowSet = qs.getViewData(VIEW_ORD_EC_CONFIGURATION);
+
+    if (DataUtils.isEmpty(rowSet)) {
+      if (BeeUtils.isEmpty(value)) {
+        return true;
+      } else {
+        SqlInsert ins = new SqlInsert(VIEW_ORD_EC_CONFIGURATION).addConstant(column, value);
+
+        ResponseObject response = qs.insertDataWithResponse(ins);
+        return !response.hasErrors();
+      }
+
+    } else {
+      String oldValue = rowSet.getString(0, column);
+      if (BeeUtils.equalsTrimRight(value, oldValue)) {
+        return true;
+      } else {
+        SqlUpdate upd = new SqlUpdate(VIEW_ORD_EC_CONFIGURATION).addConstant(column, value);
+        upd.setWhere(SqlUtils.equals(VIEW_ORD_EC_CONFIGURATION, sys
+            .getIdName(VIEW_ORD_EC_CONFIGURATION), rowSet.getRow(0).getId()));
+
+        ResponseObject response = qs.updateDataWithResponse(upd);
+        return !response.hasErrors();
+      }
+    }
   }
 }
