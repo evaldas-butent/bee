@@ -15,6 +15,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -27,6 +28,7 @@ public final class OrdEcKeeper {
 
   private static final OrdEcPictures pictures = new OrdEcPictures();
   private static OrdEcCommandWidget activeCommand;
+  private static String stockLabel;
   private static final InputText searchBox = new InputText();
 
   public static ParameterList createArgs(String method) {
@@ -46,6 +48,7 @@ public final class OrdEcKeeper {
 
     ParameterList params = createArgs(SVC_GLOBAL_SEARCH);
     params.addDataItem(VAR_QUERY, query);
+    params.addDataItem(ClassifierConstants.COL_COMPANY, BeeKeeper.getUser().getCompany());
 
     requestItems(SVC_GLOBAL_SEARCH, params, new Consumer<List<OrdEcItem>>() {
       @Override
@@ -68,6 +71,10 @@ public final class OrdEcKeeper {
     }
   }
 
+  public static String getStockLabel() {
+    return stockLabel;
+  }
+
   public static void register() {
   }
 
@@ -75,7 +82,14 @@ public final class OrdEcKeeper {
     Assert.notNull(panel);
     Assert.notNull(items);
 
-    panel.render(items);
+    ensureStockLabel(new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        if (BeeUtils.isTrue(input)) {
+          panel.render(items);
+        }
+      }
+    });
   }
 
   public static void requestItems(String service, ParameterList params,
@@ -110,6 +124,7 @@ public final class OrdEcKeeper {
 
     ParameterList params = createArgs(service);
     params.addDataItem(VAR_QUERY, query);
+    params.addDataItem(ClassifierConstants.COL_COMPANY, BeeKeeper.getUser().getCompany());
 
     requestItems(service, params, callback);
   }
@@ -168,6 +183,25 @@ public final class OrdEcKeeper {
     }
 
     return items;
+  }
+
+  private static void ensureStockLabel(Consumer<Boolean> callback) {
+    ParameterList params = createArgs(SVC_GET_CLIENT_STOCK_LABELS);
+    params.addDataItem(ClassifierConstants.COL_COMPANY, BeeKeeper.getUser().getCompany());
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        OrdEcKeeper.dispatchMessages(response);
+
+        if (!BeeUtils.isEmpty(response.getResponseAsString())) {
+          stockLabel = response.getResponseAsString();
+          callback.accept(true);
+        } else {
+          callback.accept(true);
+        }
+      }
+    });
   }
 
   private static void resetActiveCommand() {

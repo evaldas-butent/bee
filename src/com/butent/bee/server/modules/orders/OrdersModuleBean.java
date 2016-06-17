@@ -35,6 +35,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -191,6 +192,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       case SVC_GLOBAL_SEARCH:
         response = doGlobalSearch(reqInfo);
+        break;
+
+      case SVC_GET_CLIENT_STOCK_LABELS:
+        response = getClientWarehouse(reqInfo);
         break;
 
       default:
@@ -1600,7 +1605,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return SqlUtils.compare(TBL_ITEMS, COL_ITEM_ARTICLE, operator, value);
   }
 
-  private List<OrdEcItem> getItems(IsCondition condition) {
+  private List<OrdEcItem> getItems(IsCondition condition, Long companyId) {
     List<OrdEcItem> items = new ArrayList<>();
 
     String unitName = "UnitName";
@@ -1618,6 +1623,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     if (!DataUtils.isEmpty(itemData)) {
 
+      Pair<Map<Long, Integer>, Boolean> stocks =
+           getStocks(itemData.getLongColumn(sys.getIdName(TBL_ITEMS)), companyId);
+
       for (SimpleRow row : itemData) {
         OrdEcItem item = new OrdEcItem();
 
@@ -1631,6 +1639,20 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         }
         item.setUnit(row.getValue(unitName));
 
+        Long itemId = row.getLong(sys.getIdName(TBL_ITEMS));
+
+        if (BeeUtils.unbox(stocks.getB())) {
+          if (stocks.getA().containsKey(itemId)) {
+            item.setRemainder(stocks.getA().get(itemId).toString());
+          }
+        } else {
+          if (stocks.getA().containsKey(itemId) && BeeUtils.isPositive(stocks.getA().get(itemId))) {
+            item.setRemainder(usr.getDictionary().is());
+          } else {
+            item.setRemainder(usr.getDictionary().isNot());
+          }
+        }
+
         items.add(item);
       }
     }
@@ -1640,6 +1662,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   private ResponseObject searchByItemArticle(Operator defOperator, RequestInfo reqInfo) {
     String article = reqInfo.getParameter(VAR_QUERY);
+    Long companyId = reqInfo.getParameterLong(COL_COMAPNY);
 
     if (BeeUtils.isEmpty(article)) {
       return ResponseObject.parameterNotFound(SVC_EC_SEARCH_BY_ITEM_ARTICLE, VAR_QUERY);
@@ -1653,7 +1676,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
               usr.getDictionary().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
     }
 
-    List<OrdEcItem> items = getItems(articleCondition);
+    List<OrdEcItem> items = getItems(articleCondition, companyId);
     if (items.isEmpty()) {
       return didNotMatch(article);
     } else {
@@ -1663,6 +1686,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   private ResponseObject searchByCategory(RequestInfo reqInfo) {
     String category = reqInfo.getParameter(VAR_QUERY);
+    Long companyId = reqInfo.getParameterLong(COL_COMAPNY);
 
     if (BeeUtils.isEmpty(category)) {
       return ResponseObject
@@ -1675,7 +1699,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             VIEW_ITEM_CATEGORIES, COL_ITEM, SqlUtils.equals(
                 VIEW_ITEM_CATEGORIES, COL_CATEGORY, category)));
 
-    List<OrdEcItem> items = getItems(categoryCondition);
+    List<OrdEcItem> items = getItems(categoryCondition, companyId);
     if (items.isEmpty()) {
       return didNotMatch(category);
     } else {
@@ -1717,6 +1741,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   private ResponseObject doGlobalSearch(RequestInfo reqInfo) {
     String query = reqInfo.getParameter(VAR_QUERY);
+    Long companyId = reqInfo.getParameterLong(COL_COMAPNY);
 
     if (BeeUtils.isEmpty(query)) {
       return ResponseObject.parameterNotFound(SVC_GLOBAL_SEARCH, VAR_QUERY);
@@ -1732,11 +1757,65 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           SqlUtils.contains(TBL_ITEMS, COL_ITEM_ARTICLE, query));
     }
 
-    List<OrdEcItem> items = getItems(condition);
+    List<OrdEcItem> items = getItems(condition, companyId);
     if (items.isEmpty()) {
       return didNotMatch(query);
     } else {
       return ResponseObject.response(items).setSize(items.size());
     }
+  }
+
+  private ResponseObject getClientWarehouse(RequestInfo reqInfo) {
+
+    Long companyId = reqInfo.getParameterLong(COL_COMAPNY);
+    Pair<Long, Boolean> warehouseData = getClientWarehouseId(companyId);
+
+    if (DataUtils.isId(warehouseData.getA())) {
+
+      SqlSelect qry = new SqlSelect()
+          .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+          .addFrom(TBL_WAREHOUSES)
+          .setWhere(sys.idEquals(TBL_WAREHOUSES, warehouseData.getA()));
+
+      String warehouseCode = qs.getValue(qry);
+      return ResponseObject.response(warehouseCode);
+    }
+
+    return ResponseObject.emptyResponse();
+  }
+
+  private Pair<Long, Boolean> getClientWarehouseId(Long companyId) {
+    if (DataUtils.isId(companyId)) {
+
+      SqlSelect query = new SqlSelect()
+          .addFields(TBL_COMPANIES, COL_EC_WAREHOUSE, COL_EC_SHOW_REMAINDER)
+          .addFrom(TBL_COMPANIES).setWhere(sys.idEquals(TBL_COMPANIES, companyId));
+
+      SimpleRowSet srs = qs.getData(query);
+
+      return Pair.of(srs.getLong(0, COL_EC_WAREHOUSE), srs.getBoolean(0, COL_EC_SHOW_REMAINDER));
+    }
+    return null;
+  }
+
+  private Pair<Map<Long, Integer>, Boolean> getStocks(Long[] itemIds, Long companyId) {
+
+    Map<Long, Integer> stocks = new HashMap<>();
+    Pair<Long, Boolean> warehouseData = getClientWarehouseId(companyId);
+
+    if (DataUtils.isId(warehouseData.getA())) {
+
+      SqlSelect select = new SqlSelect()
+          .addFields(VIEW_ITEM_REMAINDERS, COL_ITEM, COL_WAREHOUSE_REMAINDER)
+          .addFrom(VIEW_ITEM_REMAINDERS)
+          .setWhere(SqlUtils.and(SqlUtils
+              .inList(VIEW_ITEM_REMAINDERS, COL_ITEM, Arrays.asList(itemIds)), SqlUtils
+              .equals(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE, warehouseData.getA())));
+
+      for (SimpleRow row : qs.getData(select)) {
+        stocks.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getInt(COL_WAREHOUSE_REMAINDER)));
+      }
+    }
+    return Pair.of(stocks, warehouseData.getB());
   }
 }

@@ -399,6 +399,7 @@
       <xs:enumeration value="Orders" />
       <xs:enumeration value="OrderChildInvoices" />
       <xs:enumeration value="OrdEcRegistrations" />
+      <xs:enumeration value="OrdEcMailParameters" />
       <xs:enumeration value="OrdersInvoices" />
       <xs:enumeration value="OrderItems" />
       <xs:enumeration value="OrderSales" />

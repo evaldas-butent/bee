@@ -4,4 +4,6 @@
        name="OrdersEc" label="=ecMenu" order="40" parent="Orders" module="Orders"
 >
   <Item name="OrdEcRegistrations" label="=ecRegistrations" service="grid" parameters="OrdEcRegistrations" />
+  <Item name="OrdEcMailParameters" label="=ecMailParameters" service="grid"
+    parameters="OrdEcMailParameters" separator="true" />
 </Entry>

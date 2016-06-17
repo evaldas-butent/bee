@@ -119,7 +119,26 @@
     <SimpleJoin name="DiscountParent" joinType="LEFT">
       <SimpleColumn name="Name" alias="DiscountParentName" />
     </SimpleJoin>
-    
+
+    <SimpleColumn name="EcShowRemainder" />
+
+    <SimpleColumn name="EcManager" />
+    <SimpleJoin name="EcManager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="EcWarehouse" />
+    <SimpleJoin name="EcWarehouse" joinType="LEFT">
+      <SimpleColumn name="Code" alias="WarehouseCode" />
+      <SimpleColumn name="Name" alias="WarehouseName" />
+    </SimpleJoin>
+
     <SimpleColumn name="PriceName" />
     
     <SimpleColumn name="Notes" />

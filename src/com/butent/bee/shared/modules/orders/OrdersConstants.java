@@ -117,6 +117,7 @@ public final class OrdersConstants {
   public static final String SVC_GET_PICTURES = "GetPictures";
   public static final String SVC_GET_CATEGORIES = "GetCategories";
   public static final String SVC_GLOBAL_SEARCH = "GlobalSearch";
+  public static final String SVC_GET_CLIENT_STOCK_LABELS = "GetClientStockLabel";
 
   public static final String NAME_PREFIX = "ord-ec";
   public static final String CATEGORY_ID_SEPARATOR = ",";

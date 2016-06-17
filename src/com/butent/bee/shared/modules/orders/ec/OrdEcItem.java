@@ -2,10 +2,9 @@ package com.butent.bee.shared.modules.orders.ec;
 
 import com.google.common.base.Splitter;
 
-import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -15,16 +14,16 @@ import java.util.Collection;
 public class OrdEcItem implements BeeSerializable, HasCaption {
 
   private enum Serial {
-    ID, ARTICLE, NAME, PRICE, DESCRIPTION, UNIT
+    ID, ARTICLE, NAME, PRICE, DESCRIPTION, UNIT, REMAINDER
   }
 
   public static final Splitter CATEGORY_SPLITTER =
-      Splitter.on(CATEGORY_ID_SEPARATOR).trimResults().omitEmptyStrings();
+      Splitter.on(EcConstants.CATEGORY_ID_SEPARATOR).trimResults().omitEmptyStrings();
 
   public static String joinCategories(Collection<Long> categories) {
     StringBuilder sb = new StringBuilder();
     for (Long category : categories) {
-      sb.append(category).append(CATEGORY_ID_SEPARATOR);
+      sb.append(category).append(EcConstants.CATEGORY_ID_SEPARATOR);
     }
     return sb.toString();
   }
@@ -41,6 +40,7 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
   private double price;
   private String description;
   private String unit;
+  private String remainder;
 
   @Override
   public void deserialize(String s) {
@@ -79,6 +79,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
         case UNIT:
           setUnit(value);
           break;
+
+        case REMAINDER:
+          setRemainder(value);
+          break;
       }
     }
   }
@@ -112,6 +116,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
     return unit;
   }
 
+  public String getRemainder() {
+    return remainder;
+  }
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -143,6 +151,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
         case UNIT:
           arr[i++] = unit;
           break;
+
+        case REMAINDER:
+          arr[i++] = remainder;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -170,5 +182,9 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
 
   public void setUnit(String unit) {
     this.unit = unit;
+  }
+
+  public void setRemainder(String remainder) {
+    this.remainder = remainder;
   }
 }
