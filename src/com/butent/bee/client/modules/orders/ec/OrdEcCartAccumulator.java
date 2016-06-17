@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
@@ -24,7 +25,9 @@ import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandlers {
 
@@ -60,10 +63,14 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
           int value = input.getIntValue();
 
           if (value > 0 && DomUtils.isInView(input)) {
-            OrdEcKeeper.addToCart(item, value);
-            input.setValue(0);
+            if (item.getMinQuantity() > value) {
+              showQuantityWarning(item);
+            } else {
+              OrdEcKeeper.addToCart(item, value);
+              input.setValue(0);
 
-            onAddToCart();
+              onAddToCart();
+            }
           }
         }
       }
@@ -107,10 +114,14 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
       public void onClick(ClickEvent event) {
         int value = input.getIntValue();
         if (value > 0) {
-          OrdEcKeeper.addToCart(item, value);
-          input.setValue(0);
+          if (item.getMinQuantity() > value) {
+            showQuantityWarning(item);
+          } else {
+            OrdEcKeeper.addToCart(item, value);
+            input.setValue(0);
 
-          onAddToCart();
+            onAddToCart();
+          }
         }
       }
     });
@@ -156,6 +167,14 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
       setWidgetAndStyle(row, col, widget, STYLE_COUNT);
       getCellFormatter().setColSpan(row, col, getCellCount(0));
     }
+  }
+
+  private void showQuantityWarning(OrdEcItem item) {
+    List<String> msgs = new ArrayList<>();
+
+    msgs.add(Localized.dictionary().ordMinQuantity());
+    msgs.add(Localized.dictionary().minQuantity() + ": " + item.getMinQuantity());
+    Global.showError(item.getName(), msgs);
   }
 
   private void onAddToCart() {

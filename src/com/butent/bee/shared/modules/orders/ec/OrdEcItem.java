@@ -15,7 +15,7 @@ import java.util.Collection;
 public class OrdEcItem implements BeeSerializable, HasCaption {
 
   private enum Serial {
-    ID, ARTICLE, NAME, PRICE, DESCRIPTION, UNIT, REMAINDER, LINK
+    ID, ARTICLE, NAME, PRICE, DESCRIPTION, UNIT, REMAINDER, LINK, MIN_QUANTITY
   }
 
   public static final Splitter CATEGORY_SPLITTER =
@@ -43,6 +43,7 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
   private String unit;
   private String remainder;
   private String link;
+  private int minQuantity;
 
   @Override
   public void deserialize(String s) {
@@ -71,7 +72,7 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
           break;
 
         case PRICE:
-          setPrice(BeeUtils.toDouble(value));
+          setPrice(Double.valueOf(value));
           break;
 
         case DESCRIPTION:
@@ -88,6 +89,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
 
         case LINK:
           setLink(value);
+          break;
+
+        case MIN_QUANTITY:
+          setMinQuantity(BeeUtils.toInt(value));
           break;
       }
     }
@@ -130,6 +135,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
     return link;
   }
 
+  public int getMinQuantity() {
+    return minQuantity;
+  }
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -169,6 +178,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
         case LINK:
           arr[i++] = link;
           break;
+
+        case MIN_QUANTITY:
+          arr[i++] = minQuantity;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -204,5 +217,9 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
 
   public void setLink(String link) {
     this.link = link;
+  }
+
+  public void setMinQuantity(int minQuantity) {
+    this.minQuantity = minQuantity;
   }
 }
