@@ -141,6 +141,7 @@ public final class ClassifierConstants {
   public static final String COL_CATEGORY = "Category";
   public static final String COL_CATEGORY_NAME = "Name";
   public static final String COL_CATEGORY_PARENT = "Parent";
+  public static final String COL_CATEGORY_INCLUDED = "Included";
 
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
@@ -185,6 +186,7 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_NOT_MANUFACTURED = "NotManufactured";
   public static final String COL_ITEM_REMAINDER_ID = "Id";
   public static final String COL_ITEM_DESCRIPTION = "Description";
+  public static final String COL_ITEM_NOT_INCLUDED = "NotIncluded";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";

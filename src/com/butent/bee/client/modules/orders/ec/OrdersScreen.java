@@ -186,7 +186,7 @@ public class OrdersScreen extends ScreenImpl {
       OrdEcKeeper.getSearchBox().setFocus(true);
     }
 
-    // EcKeeper.showPromo(true);
+    OrdEcKeeper.showPromo(true);
     OrdEcKeeper.restoreShoppingCarts();
   }
 
@@ -241,7 +241,7 @@ public class OrdersScreen extends ScreenImpl {
     Widget logo = createLogo(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
-        EcKeeper.showPromo(false);
+        OrdEcKeeper.showPromo(false);
       }
     });
 

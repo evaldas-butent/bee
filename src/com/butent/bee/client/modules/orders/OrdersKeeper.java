@@ -20,6 +20,7 @@ import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.orders.ec.OrdEcBannerGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.orders.ec.OrdEcRegistrationForm;
 import com.butent.bee.client.modules.trade.TradeKeeper;
@@ -76,6 +77,7 @@ public final class OrdersKeeper {
     GridFactory.registerGridInterceptor(VIEW_ORDERS_INVOICES, new OrdersInvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_ORDER_TMPL_ITEMS, new OrderTmplItemsGrid());
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new OrdersGrid());
+    GridFactory.registerGridInterceptor(TBL_ORD_EC_BANNERS, new OrdEcBannerGrid());
 
     SelectorEvent.register(new OrdersSelectorHandler());
 

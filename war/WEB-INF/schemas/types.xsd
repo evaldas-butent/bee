@@ -397,6 +397,7 @@
       <xs:enumeration value="Objects" />
       <xs:enumeration value="ObjectSalaryFund" />
       <xs:enumeration value="Orders" />
+      <xs:enumeration value="OrdEcBanners" />
       <xs:enumeration value="OrderChildInvoices" />
       <xs:enumeration value="OrdEcRegistrations" />
       <xs:enumeration value="OrdEcConfiguration" />

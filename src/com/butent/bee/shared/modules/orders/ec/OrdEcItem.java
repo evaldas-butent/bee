@@ -5,6 +5,7 @@ import com.google.common.base.Splitter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -37,7 +38,7 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
   private long id;
   private String article;
   private String name;
-  private double price;
+  private int price;
   private String description;
   private String unit;
   private String remainder;
@@ -105,7 +106,7 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
     return getName();
   }
 
-  public double getPrice() {
+  public int getPrice() {
     return price;
   }
 
@@ -181,8 +182,8 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
     this.article = article;
   }
 
-  public void setPrice(double price) {
-    this.price = price;
+  public void setPrice(Double price) {
+    this.price = EcUtils.toCents(price);
   }
 
   public void setDescription(String description) {

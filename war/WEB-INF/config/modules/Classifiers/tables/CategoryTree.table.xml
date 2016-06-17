@@ -10,7 +10,7 @@
     <String name="Name3" precision="60" label="=itemName3" />
     <Relation name="Parent" relation="CategoryTree" label="=category" />
 
-    <Boolean name="Included" label="=included" />
+    <Boolean name="Included" label="=ecModule" />
 
     <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
       label="=dimensions" />

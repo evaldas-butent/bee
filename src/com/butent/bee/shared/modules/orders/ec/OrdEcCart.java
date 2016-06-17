@@ -83,7 +83,7 @@ public class OrdEcCart implements BeeSerializable {
   }
 
   public String getCaption() {
-    return Localized.getConstants().ecShoppingCart();
+    return Localized.dictionary().ecShoppingCart();
   }
 
   public int getQuantity(long itemId) {
@@ -137,8 +137,8 @@ public class OrdEcCart implements BeeSerializable {
     this.comment = comment;
   }
 
-  public double totalCents() {
-    double total = 0;
+  public int totalCents() {
+    int total = 0;
     for (OrdEcCartItem item : items) {
       total += item.getQuantity() * item.getEcItem().getPrice();
     }

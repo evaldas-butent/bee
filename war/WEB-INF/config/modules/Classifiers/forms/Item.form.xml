@@ -27,7 +27,7 @@
         <Label for="Group" />
         <DataSelector source="Group" />
 
-        <CheckBox source="Included" style="margin-left: 20px;" />
+        <CheckBox source="NotIncluded" style="margin-left: 20px;" />
       </row>
 
       <row>

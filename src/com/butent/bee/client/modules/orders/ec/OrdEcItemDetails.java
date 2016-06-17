@@ -16,6 +16,7 @@ import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -46,7 +47,7 @@ public class OrdEcItemDetails extends Flow {
     int colValue = 1;
     int colCurrency = 2;
 
-    double price = item.getPrice();
+    int price = item.getPrice();
 
     String pfx;
 
@@ -54,7 +55,7 @@ public class OrdEcItemDetails extends Flow {
       pfx = stylePrefix + "price-";
 
       table.setText(row, colLabel, Localized.dictionary().ecClientPrice(), pfx + STYLE_LABEL);
-      table.setText(row, colValue, String.valueOf(price), pfx + STYLE_VALUE);
+      table.setText(row, colValue, EcUtils.formatCents(price), pfx + STYLE_VALUE);
       table.setText(row, colCurrency, EcConstants.CURRENCY, pfx + STYLE_CURRENCY);
 
       EcStyles.markPrice(table.getRow(row));

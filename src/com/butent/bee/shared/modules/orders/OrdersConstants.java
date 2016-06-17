@@ -124,6 +124,8 @@ public final class OrdersConstants {
   public static final String SVC_FINANCIAL_INFORMATION = "FinancialInformation";
   public static final String SVC_UPDATE_SHOPPING_CART = "UpdateShoppingCart";
   public static final String SVC_GET_SHOPPING_CARTS = "GetShoppingCarts";
+  public static final String SVC_UPLOAD_BANNERS = "UploadBanners";
+  public static final String SVC_GET_PROMO = "GetPromo";
 
   public static final String NAME_PREFIX = "ord-ec";
   public static final String CATEGORY_ID_SEPARATOR = ",";
@@ -131,6 +133,7 @@ public final class OrdersConstants {
   public static final int MIN_SEARCH_QUERY_LENGTH = 3;
 
   public static final String TBL_ORD_EC_SHOPPING_CARTS = "OrdEcShoppingCarts";
+  public static final String TBL_ORD_EC_BANNERS = "OrdEcBanners";
 
   public static final String VIEW_ORD_EC_REGISTRATIONS = "OrdEcRegistrations";
   public static final String VIEW_ORD_EC_CONFIGURATION = "OrdEcConfiguration";
@@ -162,6 +165,8 @@ public final class OrdersConstants {
   public static final String COL_SHOPPING_CART_CLIENT = "Client";
   public static final String COL_SHOPPING_CART_ITEM = "Item";
   public static final String COL_SHOPPING_CART_QUANTITY = "Quantity";
+
+  public static final String COL_BANNER_PICTURE = "Picture";
 
   private OrdersConstants() {
   }

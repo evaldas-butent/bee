@@ -14,6 +14,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -196,10 +197,10 @@ public class OrdEcItemList extends Flow {
     }
     col++;
 
-    double price = item.getPrice();
+    int price = item.getPrice();
 
     if (price > 0) {
-      Label itemPrice = new Label(String.valueOf(price));
+      Label itemPrice = new Label(EcUtils.formatCents(price));
       itemPrice.addStyleName(STYLE_PRICE);
       table.setWidgetAndStyle(row, col, itemPrice, STYLE_PRICE);
     }
