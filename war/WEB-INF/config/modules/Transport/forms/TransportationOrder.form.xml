@@ -8,7 +8,7 @@
         name="TransportationOrder" viewName="TransportationOrders" caption="=trOrder"
         showRowId="true" width="70" widthUnit="%" height="80" heightUnit="%"
 >
-  <f:properties jasperReports="OrderContract" />
+  <f:properties jasperReports="OrderContract_lt:LT, OrderContract_en:EN, OrderContract_ru:RU" />
 
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls">

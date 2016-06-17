@@ -22,6 +22,8 @@
     <DataColumn name="Cmr" caption="CMR" renderColumns="CmrName CmrNumber" />
     <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
 
+    <DataColumn name="MultipleSegments" editInPlace="true" />
+
     <DataColumn name="TripPercent" minValue="0" editInPlace="true" />
     <PropColumn name="Income" type="decimal" caption="=income" format="#.00" />
 

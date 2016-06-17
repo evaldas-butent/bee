@@ -23,6 +23,8 @@
         </SimpleJoin>
       </SimpleJoin>
 
+      <SimpleColumn name="MultipleSegments" editable="true" />
+
       <SimpleColumn name="Description" />
       <SimpleColumn name="Weight" />
       <SimpleColumn name="Volume" />
@@ -46,7 +48,7 @@
       <IdColumn name="Handling" hidden="true" />
 
       <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
-      
+
       <SimpleColumn name="EmptyKilometers" />
       <SimpleColumn name="LoadedKilometers" />
       <SimpleColumn name="Weight" alias="CargoWeight" />
