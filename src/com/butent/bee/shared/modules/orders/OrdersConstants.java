@@ -122,11 +122,15 @@ public final class OrdersConstants {
   public static final String SVC_CLEAR_CONFIGURATION = "ClearConfiguration";
   public static final String SVC_SAVE_CONFIGURATION = "SaveConfiguration";
   public static final String SVC_FINANCIAL_INFORMATION = "FinancialInformation";
+  public static final String SVC_UPDATE_SHOPPING_CART = "UpdateShoppingCart";
+  public static final String SVC_GET_SHOPPING_CARTS = "GetShoppingCarts";
 
   public static final String NAME_PREFIX = "ord-ec";
   public static final String CATEGORY_ID_SEPARATOR = ",";
   public static final String VAR_QUERY = "Query";
   public static final int MIN_SEARCH_QUERY_LENGTH = 3;
+
+  public static final String TBL_ORD_EC_SHOPPING_CARTS = "OrdEcShoppingCarts";
 
   public static final String VIEW_ORD_EC_REGISTRATIONS = "OrdEcRegistrations";
   public static final String VIEW_ORD_EC_CONFIGURATION = "OrdEcConfiguration";
@@ -153,6 +157,11 @@ public final class OrdersConstants {
   public static final String COL_REGISTRATION_LANGUAGE = "Language";
   public static final String COL_REGISTRATION_HOST = "Host";
   public static final String COL_REGISTRATION_AGENT = "Agent";
+
+  public static final String COL_SHOPPING_CART_CREATED = "Created";
+  public static final String COL_SHOPPING_CART_CLIENT = "Client";
+  public static final String COL_SHOPPING_CART_ITEM = "Item";
+  public static final String COL_SHOPPING_CART_QUANTITY = "Quantity";
 
   private OrdersConstants() {
   }

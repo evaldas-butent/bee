@@ -181,7 +181,7 @@ public class OrdEcItemList extends Flow {
       itemName.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          OrdEcKeeper.openItem(item);
+          OrdEcKeeper.openItem(item, true);
         }
       });
 

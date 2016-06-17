@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.orders;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
@@ -60,6 +61,7 @@ import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+import com.butent.bee.shared.modules.orders.ec.OrdEcCartItem;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -81,6 +83,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -212,6 +215,14 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       case SVC_FINANCIAL_INFORMATION:
         response = getFinancialInformation(getCurrentClientId());
+        break;
+
+      case SVC_UPDATE_SHOPPING_CART:
+        response = updateShoppingCart(reqInfo);
+        break;
+
+      case SVC_GET_SHOPPING_CARTS:
+        response = getShoppingCarts();
         break;
 
       default:
@@ -1899,6 +1910,50 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return id;
   }
 
+  private ResponseObject getShoppingCarts() {
+    Long client = getCurrentClientId();
+    if (client == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_ORD_EC_SHOPPING_CARTS, COL_SHOPPING_CART_CREATED,
+            COL_SHOPPING_CART_ITEM, COL_SHOPPING_CART_QUANTITY)
+        .addFrom(TBL_ORD_EC_SHOPPING_CARTS)
+        .setWhere(SqlUtils.equals(TBL_ORD_EC_SHOPPING_CARTS, COL_SHOPPING_CART_CLIENT, client))
+        .addOrder(TBL_ORD_EC_SHOPPING_CARTS, COL_SHOPPING_CART_CREATED));
+
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    Set<Long> items = Sets.newHashSet(data.getLongColumn(COL_SHOPPING_CART_ITEM));
+
+    IsCondition condition = sys.idInList(TBL_ITEMS, items);
+
+    List<OrdEcItem> ecItems = getItems(condition, client);
+    if (ecItems.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    }
+
+    List<OrdEcCartItem> result = new ArrayList<>();
+
+    for (SimpleRow row : data) {
+      Long itemId = row.getLong(COL_SHOPPING_CART_ITEM);
+
+      for (OrdEcItem ecItem : ecItems) {
+        if (Objects.equals(itemId, ecItem.getId())) {
+          OrdEcCartItem cartItem =
+              new OrdEcCartItem(ecItem, row.getInt(COL_SHOPPING_CART_QUANTITY));
+          result.add(cartItem);
+          break;
+        }
+      }
+    }
+
+    return ResponseObject.response(result);
+  }
+
   private Pair<Map<Long, Integer>, Boolean> getStocks(Long[] itemIds, Long companyId) {
 
     Map<Long, Integer> stocks = new HashMap<>();
@@ -1946,5 +2001,48 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         return !response.hasErrors();
       }
     }
+  }
+
+  private ResponseObject updateShoppingCart(RequestInfo reqInfo) {
+
+    Long itemId =
+        BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SHOPPING_CART_ITEM));
+    if (!DataUtils.isId(itemId)) {
+      return ResponseObject.parameterNotFound(SVC_UPDATE_SHOPPING_CART, COL_SHOPPING_CART_ITEM);
+    }
+
+    Integer quantity =
+        BeeUtils.toIntOrNull(reqInfo.getParameter(COL_SHOPPING_CART_QUANTITY));
+    if (quantity == null) {
+      return ResponseObject.parameterNotFound(SVC_UPDATE_SHOPPING_CART, COL_SHOPPING_CART_QUANTITY);
+    }
+
+    Long client = getCurrentClientId();
+    if (!DataUtils.isId(client)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    IsCondition where =
+        SqlUtils.equals(TBL_ORD_EC_SHOPPING_CARTS, COL_SHOPPING_CART_CLIENT, client,
+            COL_SHOPPING_CART_ITEM, itemId);
+
+    if (BeeUtils.isPositive(quantity)) {
+      if (qs.sqlExists(TBL_ORD_EC_SHOPPING_CARTS, where)) {
+        qs.updateData(new SqlUpdate(TBL_ORD_EC_SHOPPING_CARTS)
+            .addConstant(COL_SHOPPING_CART_QUANTITY, quantity)
+            .setWhere(where));
+      } else {
+        qs.insertData(new SqlInsert(TBL_ORD_EC_SHOPPING_CARTS)
+            .addConstant(COL_SHOPPING_CART_CREATED, System.currentTimeMillis())
+            .addConstant(COL_SHOPPING_CART_CLIENT, client)
+            .addConstant(COL_SHOPPING_CART_ITEM, itemId)
+            .addConstant(COL_SHOPPING_CART_QUANTITY, quantity));
+      }
+
+    } else {
+      qs.updateData(new SqlDelete(TBL_ORD_EC_SHOPPING_CARTS).setWhere(where));
+    }
+
+    return ResponseObject.response(itemId);
   }
 }

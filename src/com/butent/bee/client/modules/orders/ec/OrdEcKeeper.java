@@ -29,6 +29,8 @@ import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.orders.ec.OrdEcCart;
+import com.butent.bee.shared.modules.orders.ec.OrdEcCartItem;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -46,8 +48,18 @@ public final class OrdEcKeeper {
   private static String stockLabel;
   private static final InputText searchBox = new InputText();
   private static final Map<String, String> configuration = new HashMap<>();
+  private static final OrdEcCartList cartList = new OrdEcCartList();
 
   private static final String KEY_EC_CONTACTS = MenuService.EDIT_EC_CONTACTS.name().toLowerCase();
+
+  public static void addToCart(OrdEcItem ecItem, int quantity) {
+    cartList.addToCart(ecItem, quantity);
+  }
+
+  public static void closeView(IdentifiableWidget view) {
+    BeeKeeper.getScreen().closeWidget(view);
+    // showPromo(true);
+  }
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.ORDERS, method);
@@ -100,6 +112,10 @@ public final class OrdEcKeeper {
     });
   }
 
+  public static OrdEcCart getCart() {
+    return cartList.getCart();
+  }
+
   public static List<OrdEcItem> getResponseItems(ResponseObject response) {
     if (response == null) {
       return new ArrayList<>();
@@ -112,10 +128,25 @@ public final class OrdEcKeeper {
     return stockLabel;
   }
 
-  public static void openItem(final OrdEcItem item) {
+  public static int getQuantityInCart(long itemId) {
+    return cartList.getQuantity(itemId);
+  }
+
+  public static void openCart() {
+
+    OrdEcCart cart = getCart();
+    OrdEcShoppingCart widget = new OrdEcShoppingCart(cart);
+
+    resetActiveCommand();
+    searchBox.clearValue();
+
+    BeeKeeper.getScreen().show(widget);
+  }
+
+  public static void openItem(final OrdEcItem item, boolean allowAddToCart) {
     Assert.notNull(item);
 
-    OrdEcItemDetails widget = new OrdEcItemDetails(item);
+    OrdEcItemDetails widget = new OrdEcItemDetails(item, allowAddToCart);
 
     DialogBox dialog = DialogBox.create(item.getName(),
         EcStyles.name(ItemDetails.STYLE_PRIMARY, "dialog"));
@@ -127,8 +158,38 @@ public final class OrdEcKeeper {
     dialog.cascade();
   }
 
+  public static void persistCartItem(OrdEcCartItem cartItem) {
+    Assert.notNull(cartItem);
+    persistCartItem(cartItem.getEcItem().getId(), cartItem.getQuantity());
+  }
+
+  public static OrdEcCart refreshCart() {
+    cartList.refresh();
+    return getCart();
+  }
+
+  public static void restoreShoppingCarts() {
+    BeeKeeper.getRpc().makeGetRequest(createArgs(SVC_GET_SHOPPING_CARTS), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse()) {
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (arr != null) {
+
+            for (String s : arr) {
+              OrdEcCartItem cartItem = OrdEcCartItem.restore(s);
+              cartList.getCart().add(cartItem.getEcItem(), cartItem.getQuantity());
+            }
+          }
+          cartList.refresh();
+        }
+      }
+    });
+  }
+
   public static void register() {
-    MenuService.EDIT_EC_CONTACTS.setHandler(new MenuHandler() {
+    MenuService.EDIT_ORD_EC_CONTACTS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         editEcContacts(null);
@@ -141,6 +202,13 @@ public final class OrdEcKeeper {
         editEcContacts(callback);
       }
     });
+  }
+
+  public static OrdEcCart removeFromCart(OrdEcItem ecItem) {
+    if (cartList.removeFromCart(ecItem)) {
+      persistCartItem(ecItem.getId(), 0);
+    }
+    return getCart();
   }
 
   public static void renderItems(final OrdEcItemPanel panel, final List<OrdEcItem> items) {
@@ -228,6 +296,10 @@ public final class OrdEcKeeper {
       activeCommand = commandWidget;
       activeCommand.activate();
     }
+  }
+
+  static OrdEcCartList getCartlist() {
+    return cartList;
   }
 
   static void getConfiguration(final Consumer<Map<String, String>> callback) {
@@ -340,6 +412,15 @@ public final class OrdEcKeeper {
   private static void editEcContacts(ViewCallback callback) {
     editConfigurationHtml(KEY_EC_CONTACTS, Localized.dictionary().ecContacts(),
         EcConstants.COL_CONFIG_CONTACTS_URL, EcConstants.COL_CONFIG_CONTACTS_HTML, callback);
+  }
+
+  private static void persistCartItem(long itemId, int quantity) {
+    ParameterList params = createArgs(SVC_UPDATE_SHOPPING_CART);
+
+    params.addDataItem(COL_SHOPPING_CART_ITEM, itemId);
+    params.addDataItem(COL_SHOPPING_CART_QUANTITY, quantity);
+
+    BeeKeeper.getRpc().makeRequest(params);
   }
 
   private static void resetActiveCommand() {
