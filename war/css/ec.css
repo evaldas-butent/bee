@@ -934,11 +934,22 @@
 }
 
 .bee-ec-ItemDetails-info-brand-container,
-.bee-ec-ItemDetails-info-description {
+.bee-ec-ItemDetails-info-description,
+.bee-ec-ItemDetails-info-link-container {
   margin-top: 5px;
 }
 .bee-ec-ItemDetails-info-description {
   white-space: pre-line;
+}
+
+.bee-ec-ItemDetails-info-link-container {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+}
+
+.bee-ec-ItemDetails-info-link {
+  padding-left: 1em;
 }
 
 .bee-ec-ItemDetails-info-criteria-wrapper {

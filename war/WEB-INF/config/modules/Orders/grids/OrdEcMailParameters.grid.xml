@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-        name="OrdEcMailParameters" viewName="OrdEcMailParameters" caption="=ecMailParameters"
+        name="OrdEcMailParameters" viewName="OrdEcConfiguration" caption="=ecMailParameters"
         minNumberOfRows="1" maxNumberOfRows="1" flexGrow="1" flexShrink="1" flexBasis="100"
         disabledActions="filter"
 >

@@ -118,6 +118,10 @@ public final class OrdersConstants {
   public static final String SVC_GET_CATEGORIES = "GetCategories";
   public static final String SVC_GLOBAL_SEARCH = "GlobalSearch";
   public static final String SVC_GET_CLIENT_STOCK_LABELS = "GetClientStockLabel";
+  public static final String SVC_GET_CONFIGURATION = "GetConfiguration";
+  public static final String SVC_CLEAR_CONFIGURATION = "ClearConfiguration";
+  public static final String SVC_SAVE_CONFIGURATION = "SaveConfiguration";
+  public static final String SVC_FINANCIAL_INFORMATION = "FinancialInformation";
 
   public static final String NAME_PREFIX = "ord-ec";
   public static final String CATEGORY_ID_SEPARATOR = ",";
@@ -125,6 +129,7 @@ public final class OrdersConstants {
   public static final int MIN_SEARCH_QUERY_LENGTH = 3;
 
   public static final String VIEW_ORD_EC_REGISTRATIONS = "OrdEcRegistrations";
+  public static final String VIEW_ORD_EC_CONFIGURATION = "OrdEcConfiguration";
 
   public static final String COL_REGISTRATION_DATE = "Date";
   public static final String COL_REGISTRATION_TYPE = "Type";

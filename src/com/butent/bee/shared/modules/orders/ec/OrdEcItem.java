@@ -14,7 +14,7 @@ import java.util.Collection;
 public class OrdEcItem implements BeeSerializable, HasCaption {
 
   private enum Serial {
-    ID, ARTICLE, NAME, PRICE, DESCRIPTION, UNIT, REMAINDER
+    ID, ARTICLE, NAME, PRICE, DESCRIPTION, UNIT, REMAINDER, LINK
   }
 
   public static final Splitter CATEGORY_SPLITTER =
@@ -41,6 +41,7 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
   private String description;
   private String unit;
   private String remainder;
+  private String link;
 
   @Override
   public void deserialize(String s) {
@@ -83,6 +84,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
         case REMAINDER:
           setRemainder(value);
           break;
+
+        case LINK:
+          setLink(value);
+          break;
       }
     }
   }
@@ -120,6 +125,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
     return remainder;
   }
 
+  public String getLink() {
+    return link;
+  }
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -155,6 +164,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
         case REMAINDER:
           arr[i++] = remainder;
           break;
+
+        case LINK:
+          arr[i++] = link;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -186,5 +199,9 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
 
   public void setRemainder(String remainder) {
     this.remainder = remainder;
+  }
+
+  public void setLink(String link) {
+    this.link = link;
   }
 }

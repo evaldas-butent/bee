@@ -177,6 +177,14 @@ public class OrdEcItemList extends Flow {
     if (!BeeUtils.isEmpty(name)) {
       Label itemName = new Label(name);
       itemName.addStyleName(STYLE_ITEM_NAME);
+
+      itemName.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          OrdEcKeeper.openItem(item);
+        }
+      });
+
       table.setWidgetAndStyle(row, col, itemName, STYLE_INFO);
     }
     col++;

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-       name="OrdEcMailParameters"
-       idName="EcMailParameterID"
+       name="OrdEcConfiguration"
+       idName="ConfigurationID"
 >
   <Fields>
+    <String name="ContactsUrl" precision="200" />
+    <Text name="ContactsHtml" />
+
     <Relation name="MailAccount" relation="Accounts" cascade="SET_NULL" label="=ecMailAccount" />
   </Fields>
 </Table>
