@@ -238,6 +238,7 @@ public final class ClassifierConstants {
 
   public static final String COL_EC_SHOW_REMAINDER = "EcShowRemainder";
   public static final String COL_EC_WAREHOUSE = "EcWarehouse";
+  public static final String COL_EC_MANAGER = "EcManager";
 
   public static final String COL_RELATION_TYPE = "RelationType";
   public static final String COL_RELATION_TYPE_NAME = "Name";

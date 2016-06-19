@@ -27,6 +27,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -53,19 +54,28 @@ import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+import com.butent.bee.shared.modules.orders.ec.OrdEcCart;
 import com.butent.bee.shared.modules.orders.ec.OrdEcCartItem;
+import com.butent.bee.shared.modules.orders.ec.OrdEcFinInfo;
+import com.butent.bee.shared.modules.orders.ec.OrdEcInvoice;
+import com.butent.bee.shared.modules.orders.ec.OrdEcInvoiceItem;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
+import com.butent.bee.shared.modules.orders.ec.OrdEcOrder;
+import com.butent.bee.shared.modules.orders.ec.OrdEcOrderItem;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
@@ -119,6 +129,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   DataEditorBean deb;
   @EJB
   UserServiceBean usr;
+  @EJB
+  MailModuleBean mail;
 
   @Resource
   TimerService timerService;
@@ -234,6 +246,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       case SVC_GET_PROMO:
         response = getPromo(reqInfo);
+        break;
+
+      case SVC_SUBMIT_ORDER:
+        response = submitOrder(reqInfo);
         break;
 
       default:
@@ -1712,8 +1728,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         }
         item.setId(row.getLong(sys.getIdName(TBL_ITEMS)));
         item.setName(row.getValue(COL_ITEM_NAME));
-        if (BeeUtils.isPositive(row.getDouble(COL_ITEM_PRICE))) {
-          item.setPrice(row.getDouble(COL_ITEM_PRICE));
+
+        Double price = row.getDouble(COL_ITEM_PRICE);
+        if (BeeUtils.isPositive(price)) {
+          item.setPrice(price);
         }
         item.setUnit(row.getValue(unitName));
 
@@ -1906,8 +1924,161 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(result);
   }
 
+  @SuppressWarnings("unchecked")
   private ResponseObject getFinancialInformation(Long clientId) {
-    return ResponseObject.emptyResponse();
+
+    OrdEcFinInfo finInfo = new OrdEcFinInfo();
+    if (!DataUtils.isId(clientId)) {
+      return ResponseObject.response(finInfo);
+    }
+
+    if (DataUtils.isId(clientId)) {
+      ResponseObject response = trd.getCreditInfo(clientId);
+
+      if (!response.hasErrors()) {
+
+        Map<String, Object> creditInfo = (Map<String, Object>) response.getResponse();
+
+        if (creditInfo.size() > 0) {
+
+          double limit = (double) creditInfo.get(COL_COMPANY_CREDIT_LIMIT);
+          finInfo.setCreditLimit(limit);
+
+          double debt = (double) creditInfo.get(VAR_DEBT);
+          finInfo.setDebt(debt);
+
+          double maxedOut = (double) creditInfo.get(VAR_OVERDUE);
+          finInfo.setOverdue(maxedOut);
+        }
+
+        BeeRowSet orderData = qs.getViewData(VIEW_ORDERS,
+            Filter.equals(COL_COMPANY, clientId),
+            new Order(COL_START_DATE, false));
+
+        if (!DataUtils.isEmpty(orderData)) {
+          int startDateIndex = orderData.getColumnIndex(COL_START_DATE);
+          int statusIndex = orderData.getColumnIndex(COL_ORDERS_STATUS);
+
+          int mfIndex = orderData.getColumnIndex(EcConstants.ALS_ORDER_MANAGER_FIRST_NAME);
+          int mlIndex = orderData.getColumnIndex(EcConstants.ALS_ORDER_MANAGER_LAST_NAME);
+
+          int commentIndex = orderData.getColumnIndex(ClassifierConstants.COL_NOTES);
+          String unitName = "UnitName";
+
+          SqlSelect itemQuery = new SqlSelect()
+              .addFields(TBL_ORDER_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE)
+              .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_ARTICLE)
+              .addField(TBL_UNITS, COL_UNIT_NAME, unitName)
+              .addFrom(TBL_ORDER_ITEMS)
+              .addFromInner(TBL_ITEMS,
+                  sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+              .addFromLeft(TBL_UNITS,
+                  sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+              .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
+
+          for (BeeRow orderRow : orderData) {
+            OrdEcOrder order = new OrdEcOrder();
+
+            order.setOrderId(orderRow.getId());
+            order.setDate(orderRow.getDateTime(startDateIndex));
+            order.setStatus(orderRow.getInteger(statusIndex));
+            order.setManager(BeeUtils.joinWords(orderRow.getString(mfIndex),
+                orderRow.getString(mlIndex)));
+            order.setComment(orderRow.getString(commentIndex));
+
+            itemQuery.setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER,
+                orderRow.getId()));
+            SimpleRowSet itemData = qs.getData(itemQuery);
+
+            if (!DataUtils.isEmpty(itemData)) {
+              for (SimpleRow itemRow : itemData) {
+                OrdEcOrderItem item = new OrdEcOrderItem();
+
+                item.setItemId(itemRow.getLong(COL_ITEM));
+                item.setName(itemRow.getValue(COL_ITEM_NAME));
+                item.setArticle(itemRow.getValue(COL_ITEM_ARTICLE));
+                item.setQuantity(itemRow.getInt(COL_TRADE_ITEM_QUANTITY));
+                item.setPrice(itemRow.getDouble(COL_ITEM_PRICE));
+                item.setUnit(itemRow.getValue(COL_UNIT_NAME));
+
+                order.getItems().add(item);
+              }
+            }
+            finInfo.getOrders().add(order);
+          }
+        }
+
+        BeeRowSet invoiceData = qs.getViewData(VIEW_SALES,
+            Filter.equals(COL_TRADE_CUSTOMER, clientId),
+            new Order(COL_TRADE_DATE, false));
+
+        if (!DataUtils.isEmpty(invoiceData)) {
+
+          int dateIndex = invoiceData.getColumnIndex(COL_TRADE_DATE);
+          int seriesIndex = invoiceData.getColumnIndex(COL_TRADE_INVOICE_PREFIX);
+          int numberIndex = invoiceData.getColumnIndex(COL_TRADE_INVOICE_NO);
+          int amountIndex = invoiceData.getColumnIndex(COL_TRADE_AMOUNT);
+          int debtIndex = invoiceData.getColumnIndex(VAR_DEBT);
+          int termIndex = invoiceData.getColumnIndex(COL_TRADE_TERM);
+          int paidIndex = invoiceData.getColumnIndex(COL_TRADE_PAID);
+          int paymentIndex = invoiceData.getColumnIndex(COL_TRADE_PAYMENT_TIME);
+          int currencyIndex = invoiceData.getColumnIndex(ALS_CURRENCY_NAME);
+          int mfIndex = invoiceData.getColumnIndex(EcConstants.ALS_ORDER_MANAGER_FIRST_NAME);
+          int mlIndex = invoiceData.getColumnIndex(EcConstants.ALS_ORDER_MANAGER_LAST_NAME);
+
+          String unitName = "UnitName";
+
+          SqlSelect saleItemQuery = new SqlSelect()
+              .addFields(TBL_SALE_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE)
+              .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_ARTICLE)
+              .addField(TBL_UNITS, COL_UNIT_NAME, unitName)
+              .addFrom(TBL_SALE_ITEMS)
+              .addFromInner(TBL_ITEMS,
+                  sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
+              .addFromLeft(TBL_UNITS,
+                  sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+              .addOrder(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS));
+
+          for (BeeRow row : invoiceData) {
+            OrdEcInvoice invoice = new OrdEcInvoice();
+
+            invoice.setInvoiceId(Long.valueOf(row.getId()));
+            invoice.setDate(row.getDateTime(dateIndex));
+            invoice.setSeries(row.getString(seriesIndex));
+            invoice.setNumber(row.getString(numberIndex));
+            invoice.setAmount(row.getDouble(amountIndex));
+            invoice.setDebt(row.getDouble(debtIndex));
+            invoice.setTerm(row.getDate(termIndex));
+            invoice.setPaid(row.getDouble(paidIndex));
+            invoice.setPaymentTime(row.getDateTime(paymentIndex));
+            invoice.setCurrency(row.getString(currencyIndex));
+            invoice.setManager(BeeUtils.joinWords(row.getString(mfIndex), row.getString(mlIndex)));
+
+            saleItemQuery.setWhere(SqlUtils.equals(TBL_SALE_ITEMS, COL_SALE, row.getId()));
+            SimpleRowSet saleItemData = qs.getData(saleItemQuery);
+
+            if (!DataUtils.isEmpty(saleItemData)) {
+              for (SimpleRow itemRow : saleItemData) {
+                OrdEcInvoiceItem item = new OrdEcInvoiceItem();
+
+                item.setItemId(itemRow.getLong(COL_ITEM));
+                item.setName(itemRow.getValue(COL_ITEM_NAME));
+                item.setArticle(itemRow.getValue(COL_ITEM_ARTICLE));
+                item.setQuantity(itemRow.getInt(COL_TRADE_ITEM_QUANTITY));
+                item.setPrice(itemRow.getDouble(COL_ITEM_PRICE));
+                item.setUnit(itemRow.getValue(COL_UNIT_NAME));
+
+                invoice.getItems().add(item);
+              }
+            }
+            finInfo.getInvoices().add(invoice);
+          }
+        }
+      }
+    }
+    int size = finInfo.getOrders().size() + finInfo.getInvoices().size();
+
+    return ResponseObject.response(finInfo).setSize(size);
   }
 
   private ResponseObject doGlobalSearch(RequestInfo reqInfo) {
@@ -1973,14 +2144,21 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     Long id =
         qs.getLong(new SqlSelect().addFrom(TBL_COMPANY_PERSONS)
             .addFields(TBL_COMPANY_PERSONS, COL_COMAPNY)
-            .setWhere(
-                SqlUtils.equals(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), usr
-                    .getCompanyPerson(usr.getCurrentUserId()))));
+            .setWhere(SqlUtils.equals(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), usr
+                .getCompanyPerson(usr.getCurrentUserId()))));
 
     if (!DataUtils.isId(id)) {
       logger.severe("client not available for user", usr.getCurrentUser());
     }
     return id;
+  }
+
+  private SimpleRow getCurrentClientInfo(String... fields) {
+    return qs.getRow(new SqlSelect().addFrom(TBL_COMPANY_PERSONS).addFields(TBL_COMPANIES, fields)
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
+        .setWhere(SqlUtils.equals(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), usr
+            .getCurrentUserId())));
   }
 
   private ResponseObject getPromo(RequestInfo reqInfo) {
@@ -2000,6 +2178,25 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     String banner = (banners == null) ? null : Codec.beeSerialize(banners);
     return ResponseObject.response(banner);
+  }
+
+  private Long getSenderAccountId(Long manager) {
+    Long accountId = null;
+
+    if (DataUtils.isId(manager)) {
+      accountId = qs.getLong(new SqlSelect()
+          .addFields(MailConstants.TBL_ACCOUNTS, sys.getIdName(MailConstants.TBL_ACCOUNTS))
+          .addFrom(MailConstants.TBL_ACCOUNTS)
+          .setWhere(SqlUtils.equals(MailConstants.TBL_ACCOUNTS, COL_USER, manager)));
+    }
+    if (!DataUtils.isId(accountId)) {
+      accountId = qs.getLong(new SqlSelect()
+          .addFields(MailConstants.TBL_ACCOUNTS, sys.getIdName(MailConstants.TBL_ACCOUNTS))
+          .addFrom(MailConstants.TBL_ACCOUNTS)
+          .addFromInner(VIEW_ORD_EC_CONFIGURATION, sys.joinTables(MailConstants.TBL_ACCOUNTS,
+              VIEW_ORD_EC_CONFIGURATION, EcConstants.COL_CONFIG_MAIL_ACCOUNT)));
+    }
+    return accountId;
   }
 
   private ResponseObject getShoppingCarts() {
@@ -2065,6 +2262,87 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       }
     }
     return Pair.of(stocks, warehouseData.getB());
+  }
+
+  private ResponseObject submitOrder(RequestInfo reqInfo) {
+    String serializedCart = reqInfo.getParameter(EcConstants.VAR_CART);
+    if (BeeUtils.isEmpty(serializedCart)) {
+      return ResponseObject.parameterNotFound(SVC_SUBMIT_ORDER, EcConstants.VAR_CART);
+    }
+
+    boolean copyByMail = reqInfo.hasParameter(EcConstants.VAR_MAIL);
+
+    Long currency = prm.getRelation(AdministrationConstants.PRM_CURRENCY);
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.parameterNotFound(SVC_SUBMIT_ORDER,
+          AdministrationConstants.PRM_CURRENCY);
+    }
+
+    OrdEcCart cart = OrdEcCart.restore(serializedCart);
+    if (cart == null || cart.isEmpty()) {
+      String message = BeeUtils.joinWords(SVC_SUBMIT_ORDER, "cart deserialization failed");
+      logger.severe(message);
+      return ResponseObject.error(message);
+    }
+
+    String colClientId = sys.getIdName(TBL_COMPANIES);
+    SimpleRow clientInfo = getCurrentClientInfo(colClientId, COL_EC_MANAGER);
+    if (clientInfo == null) {
+      String message = BeeUtils.joinWords(SVC_SUBMIT_ORDER, "client not found for user",
+          usr.getCurrentUserId());
+      logger.severe(message);
+      return ResponseObject.error(message);
+    }
+
+    SqlInsert insOrder = new SqlInsert(TBL_ORDERS);
+
+    insOrder.addConstant(COL_ORDERS_STATUS, OrdersStatus.NEW.ordinal());
+    insOrder.addConstant(COL_START_DATE, TimeUtils.nowMillis());
+    insOrder.addConstant(COL_COMPANY, clientInfo.getLong(colClientId));
+    Long manager = clientInfo.getLong(COL_EC_MANAGER);
+    if (manager != null) {
+      insOrder.addConstant(COL_TRADE_MANAGER, manager);
+    }
+
+    if (!BeeUtils.isEmpty(cart.getComment())) {
+      insOrder.addConstant(ClassifierConstants.COL_NOTES, cart.getComment());
+    }
+
+    ResponseObject response = qs.insertDataWithResponse(insOrder);
+    if (response.hasErrors() || !response.hasResponse(Long.class)) {
+      return response;
+    }
+
+    Long orderId = (Long) response.getResponse();
+
+    for (OrdEcCartItem cartItem : cart.getItems()) {
+      SqlInsert insItem = new SqlInsert(TBL_ORDER_ITEMS);
+
+      insItem.addConstant(COL_ORDER, orderId);
+      insItem.addConstant(COL_ITEM, cartItem.getEcItem().getId());
+      insItem.addConstant(COL_TRADE_DATE, TimeUtils.nowMillis());
+      insItem.addConstant(COL_TRADE_ITEM_QUANTITY, cartItem.getQuantity());
+      insItem.addConstant(COL_ITEM_PRICE, cartItem.getEcItem().getPrice() / 100d);
+      LogUtils.getRootLogger().info("Andriuxa " + cartItem.getEcItem().getPrice());
+      LogUtils.getRootLogger().info("Andriuxa1 " + cartItem.getEcItem().getPrice() / 100d);
+      insItem.addConstant(COL_ITEM_CURRENCY, currency);
+
+      ResponseObject itemResponse = qs.insertDataWithResponse(insItem);
+      if (itemResponse.hasErrors()) {
+        return itemResponse;
+      }
+    }
+
+    qs.updateData(new SqlDelete(TBL_ORD_EC_SHOPPING_CARTS)
+        .setWhere(SqlUtils.equals(TBL_ORD_EC_SHOPPING_CARTS,
+            COL_SHOPPING_CART_CLIENT, clientInfo.getLong(colClientId))));
+
+    /*
+     * ResponseObject mailResponse = mailOrder(orderId, true);
+     * response.addMessagesFrom(mailResponse);
+     */
+
+    return response;
   }
 
   private boolean updateConfiguration(String column, String value) {

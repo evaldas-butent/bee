@@ -24,6 +24,8 @@ public abstract class OrdEcView extends Flow {
     } else if (EcConstants.SVC_SHOW_CONTACTS.equals(service)) {
       ecView = new OrdEcHtmlViewer(Localized.dictionary().ecContacts(), COL_CONFIG_CONTACTS_URL,
           COL_CONFIG_CONTACTS_HTML);
+    } else if (EcConstants.SVC_FINANCIAL_INFORMATION.equals(service)) {
+      ecView = new OrdEcFinancialInfo();
     }
 
     if (ecView != null) {

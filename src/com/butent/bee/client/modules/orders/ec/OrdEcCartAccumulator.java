@@ -169,7 +169,7 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
     }
   }
 
-  private void showQuantityWarning(OrdEcItem item) {
+  private static void showQuantityWarning(OrdEcItem item) {
     List<String> msgs = new ArrayList<>();
 
     msgs.add(Localized.dictionary().ordMinQuantity());

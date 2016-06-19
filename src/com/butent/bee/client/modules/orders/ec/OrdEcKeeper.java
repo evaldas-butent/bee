@@ -178,6 +178,14 @@ public final class OrdEcKeeper {
     return getCart();
   }
 
+  public static void resetCart() {
+    OrdEcCart cart = getCart();
+    if (cart != null) {
+      cart.reset();
+      cartList.refresh();
+    }
+  }
+
   public static void restoreShoppingCarts() {
     BeeKeeper.getRpc().makeGetRequest(createArgs(SVC_GET_SHOPPING_CARTS), new ResponseCallback() {
       @Override
