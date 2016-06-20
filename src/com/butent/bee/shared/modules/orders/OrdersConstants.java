@@ -156,6 +156,7 @@ public final class OrdersConstants {
   public static final String SVC_SAVE_ORDER = "SaveOrder";
   public static final String SVC_EC_OPEN_SHOPPING_CART = "OpenShoppingCart";
   public static final String SVC_EC_CLEAN_SHOPPING_CART = "CleanShoppingCart";
+  public static final String SVC_EC_GET_DOCUMENTS = "GetDocuments";
 
   public static final String NAME_PREFIX = "ord-ec";
   public static final String CATEGORY_ID_SEPARATOR = ",";

@@ -1,8 +1,11 @@
 package com.butent.bee.client.modules.orders.ec;
 
+import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
+
+import static com.butent.bee.client.modules.orders.ec.OrdEcKeeper.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -12,19 +15,25 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcWidgetFactory;
+import com.butent.bee.client.modules.orders.OrdersKeeper;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OrdEcItemDetails extends Flow {
@@ -122,6 +131,10 @@ public class OrdEcItemDetails extends Flow {
     return container;
   }
 
+  private static void renderDocuments(Long itemId, Consumer<Multimap<String, Pair<String, String>>> consumer) {
+    OrdEcKeeper.getDocuments(itemId, consumer);
+  }
+
   private static Widget renderPicture(OrdEcItem item, int width, int height) {
     OrdEcItemPicture widget = new OrdEcItemPicture(item.getCaption());
     EcStyles.add(widget, STYLE_PRIMARY, "picture");
@@ -205,6 +218,26 @@ public class OrdEcItemDetails extends Flow {
     if (pictures != null) {
       widget.add(pictures, Localized.dictionary().pictures(), null, null);
     }
+
+    renderDocuments(item.getId(), new Consumer<Multimap<String, Pair<String, String>>>() {
+      @Override
+      public void accept(Multimap<String, Pair<String, String>> input) {
+        if (input.size() > 0) {
+          for (String key : input.keySet()) {
+            final String stylePrefix = EcStyles.name(STYLE_PRIMARY, "documents-");
+            Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
+            for (Pair<String, String> pair : input.get(key)) {
+              Flow flow = new Flow();
+              Link link = new Link(pair.getA(), FileUtils.getUrl(Long.valueOf(pair.getB()),
+                  pair.getA()));
+              flow.add(link);
+              container.add(flow);
+            }
+            widget.add(container, key, null, null);
+          }
+        }
+      }
+    });
 
     return widget;
   }

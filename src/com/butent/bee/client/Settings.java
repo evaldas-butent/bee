@@ -236,6 +236,10 @@ public final class Settings {
     return getBoolean("showUserPresence");
   }
 
+  public static boolean showUserSignature() {
+    return getBoolean("showUserSignature");
+  }
+
   public static boolean showUserPhoto() {
     return getBoolean("showUserPhoto");
   }

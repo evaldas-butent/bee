@@ -5,5 +5,6 @@ var BeeSettings = {
   "showGlobalSearch": true,
   "showLogout": true,
   "showItemSuppliers": false,
-  "webSocketUrl": "-"
+  "webSocketUrl": "-",
+  "showUserSignature": true
 };

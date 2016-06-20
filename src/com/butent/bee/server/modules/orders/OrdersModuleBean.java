@@ -1,6 +1,8 @@
 package com.butent.bee.server.modules.orders;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
@@ -75,6 +77,8 @@ import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Tr;
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -285,6 +289,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       case SVC_EC_CLEAN_SHOPPING_CART:
         response = cleanShoppingCart();
+        break;
+
+      case SVC_EC_GET_DOCUMENTS:
+        response = getDocuments(reqInfo);
         break;
 
       default:
@@ -2281,6 +2289,50 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
         .setWhere(SqlUtils.equals(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), usr
             .getCompanyPerson(usr.getCurrentUserId()))));
+  }
+
+  private ResponseObject getDocuments (RequestInfo reqInfo) {
+    Long itemId = reqInfo.getParameterLong(COL_ITEM);
+    if (!DataUtils.isId(itemId)) {
+      return ResponseObject.parameterNotFound(SVC_EC_GET_DOCUMENTS, COL_ITEM);
+    }
+
+    SqlSelect select = new SqlSelect()
+        .addFields(DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_NAME,
+            "EN", "LV", "FI", "RU", "DE")
+        .addFields(DocumentConstants.VIEW_DOCUMENT_FILES, COL_CAPTION, COL_FILE)
+        .addFrom(DocumentConstants.TBL_DOCUMENTS)
+        .addFromLeft(DocumentConstants.VIEW_DOCUMENT_TYPES, sys.joinTables(
+            DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.TBL_DOCUMENTS,
+            DocumentConstants.COL_DOCUMENT_TYPE))
+        .addFromLeft(DocumentConstants.VIEW_DOCUMENT_FILES, sys.joinTables(
+            DocumentConstants.TBL_DOCUMENTS, DocumentConstants.VIEW_DOCUMENT_FILES,
+            DocumentConstants.COL_DOCUMENT))
+        .setWhere(SqlUtils.and(SqlUtils.in(DocumentConstants.TBL_DOCUMENTS,
+            sys.getIdName(DocumentConstants.TBL_DOCUMENTS), new SqlSelect()
+                .addFields(TBL_RELATIONS, DocumentConstants.COL_DOCUMENT).addFrom(TBL_RELATIONS)
+                .setWhere(SqlUtils.equals(TBL_RELATIONS, COL_ITEM, itemId))),
+            SqlUtils.notNull(DocumentConstants.TBL_DOCUMENTS, DocumentConstants.COL_DOCUMENT_TYPE),
+            SqlUtils.notNull(DocumentConstants.VIEW_DOCUMENT_FILES, COL_FILE)));
+
+    Multimap<String, Pair<String, String>> documents = HashMultimap.create();
+
+    String locale = usr.getLocale().toString().toUpperCase();
+    if (Objects.equals(locale, "LT")) {
+      locale = "Name";
+    }
+
+    for (SimpleRow row : qs.getData(select)) {
+      String type = row.getValue(locale);
+
+      if (BeeUtils.isEmpty(type)) {
+        type = row.getValue("Name");
+      }
+
+      documents.put(type, Pair.of(row.getValue(COL_CAPTION), row.getValue(COL_FILE)));
+    }
+
+    return ResponseObject.response(documents.asMap());
   }
 
   private ResponseObject getNotSubmittedOrders() {

@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.orders.ec;
 
 import com.google.common.cache.Cache;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.gwt.user.client.ui.Panel;
@@ -29,10 +30,12 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
@@ -46,6 +49,8 @@ import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+
+import org.apache.commons.collections.MultiMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -392,6 +397,27 @@ public final class OrdEcKeeper {
     } else {
       callback.accept(configuration);
     }
+  }
+
+  static void getDocuments (Long itemId, Consumer<Multimap<String, Pair<String, String>>> consumer) {
+    ParameterList params = createArgs(SVC_EC_GET_DOCUMENTS);
+    params.addDataItem(ClassifierConstants.COL_ITEM, itemId);
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (!response.hasErrors()) {
+          Multimap<String, Pair<String, String>> documents = HashMultimap.create();
+          Map<String, String> map = Codec.deserializeMap(response.getResponseAsString());
+          for (String key : map.keySet()) {
+            for(String value : Codec.beeDeserializeCollection(map.get(key))) {
+              documents.put(key, Pair.restore(value));
+            }
+          }
+          consumer.accept(documents);
+        }
+      }
+    });
   }
 
   static InputText getSearchBox() {

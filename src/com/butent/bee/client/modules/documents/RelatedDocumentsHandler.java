@@ -4,12 +4,16 @@ import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
+import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
@@ -24,10 +28,16 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Arrays;
 
 public class RelatedDocumentsHandler extends AbstractGridInterceptor {
 
@@ -75,29 +85,58 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
       }
     }
 
-    RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
-      @Override
-      public void onSuccess(final BeeRow result) {
-        final long docId = result.getId();
+    if (parentRow != null
+        && BeeUtils.same(parentForm.getFormName(), ClassifierConstants.COL_ITEM)) {
+      Dictionary dic = Localized.dictionary();
 
-        presenter.getGridView().ensureRelId(new IdCallback() {
-          @Override
-          public void onSuccess(Long relId) {
-            Queries.insert(AdministrationConstants.VIEW_RELATIONS,
-                Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
-                    Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
-                Queries.asList(docId, relId), null, new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow row) {
-                    presenter.handleAction(Action.REFRESH);
-                    ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
-                  }
-                });
-          }
-        });
-      }
-    });
+      Global.choice(null, dic.chooseDocumentSource(),
+          Arrays.asList(dic.documents(), dic.documentNew()), new ChoiceCallback() {
+            @Override
+            public void onSuccess(int value) {
+              switch (value) {
+                case 0:
+                  final UnboundSelector us = UnboundSelector.create(Relation.create(
+                      VIEW_DOCUMENTS, Arrays.asList(COL_DOCUMENT_NAME, COL_DOCUMENT_TYPE_NAME)));
 
+                  Global.inputWidget(dic.documents(), us, new InputCallback() {
+                    @Override
+                    public void onSuccess() {
+                      presenter.getGridView().ensureRelId(new IdCallback() {
+                        @Override
+                        public void onSuccess(Long relId) {
+                          Queries.insert(AdministrationConstants.VIEW_RELATIONS,
+                              Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+                                  Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
+                              Queries.asList(us.getRelatedId(), relId), null, new RowCallback() {
+                                @Override
+                                public void onSuccess(BeeRow row) {
+                                  presenter.handleAction(Action.REFRESH);
+                                  ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+                                }
+                              });
+                        }
+                      });
+                    }
+
+                    @Override
+                    public String getErrorMessage() {
+                      if (!DataUtils.isId(us.getRelatedId())) {
+                        return Localized.dictionary().valueRequired();
+                      }
+                      return InputCallback.super.getErrorMessage();
+                    }
+                  });
+                  break;
+                case 1:
+                  createDocument(presenter, info, docRow);
+                  break;
+              }
+            }
+          });
+      return false;
+    }
+
+    createDocument(presenter, info, docRow);
     return false;
   }
 
@@ -122,5 +161,30 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
         });
       }
     }
+  }
+
+  private void createDocument (final GridPresenter presenter, DataInfo info, BeeRow docRow) {
+    RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
+      @Override
+      public void onSuccess(final BeeRow result) {
+        final long docId = result.getId();
+
+        presenter.getGridView().ensureRelId(new IdCallback() {
+          @Override
+          public void onSuccess(Long relId) {
+            Queries.insert(AdministrationConstants.VIEW_RELATIONS,
+                Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+                    Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
+                Queries.asList(docId, relId), null, new RowCallback() {
+                  @Override
+                  public void onSuccess(BeeRow row) {
+                    presenter.handleAction(Action.REFRESH);
+                    ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+                  }
+                });
+          }
+        });
+      }
+    });
   }
 }
