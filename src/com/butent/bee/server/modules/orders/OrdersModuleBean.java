@@ -1861,17 +1861,20 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   private ResponseObject searchByCategory(RequestInfo reqInfo) {
     String category = reqInfo.getParameter(VAR_QUERY);
     Long companyId = reqInfo.getParameterLong(COL_COMAPNY);
+    IsCondition categoryCondition = null;
 
     if (BeeUtils.isEmpty(category)) {
       return ResponseObject
           .parameterNotFound(SVC_EC_SEARCH_BY_ITEM_CATEGORY, VAR_QUERY);
     }
 
-    IsCondition categoryCondition =
-        SqlUtils.or(SqlUtils.equals(TBL_ITEMS, COL_ITEM_TYPE, category), SqlUtils.equals(TBL_ITEMS,
-            COL_ITEM_GROUP, category), SqlUtils.in(TBL_ITEMS, sys.getIdName(TBL_ITEMS),
-            VIEW_ITEM_CATEGORIES, COL_ITEM, SqlUtils.equals(
-                VIEW_ITEM_CATEGORIES, COL_CATEGORY, category)));
+    if (BeeUtils.isLong(category)) {
+      categoryCondition =
+          SqlUtils.or(SqlUtils.equals(TBL_ITEMS, COL_ITEM_TYPE, category), SqlUtils.equals(
+              TBL_ITEMS, COL_ITEM_GROUP, category), SqlUtils.in(TBL_ITEMS,
+              sys.getIdName(TBL_ITEMS), VIEW_ITEM_CATEGORIES, COL_ITEM, SqlUtils.equals(
+                  VIEW_ITEM_CATEGORIES, COL_CATEGORY, category)));
+    }
 
     List<OrdEcItem> items = getItems(categoryCondition, companyId);
     if (items.isEmpty()) {
@@ -1922,6 +1925,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         .addFields(TBL_ITEM_CATEGORY_TREE, idName, COL_CATEGORY_PARENT,
             COL_CATEGORY_NAME)
         .addFrom(TBL_ITEM_CATEGORY_TREE)
+        .setWhere(SqlUtils.notNull(TBL_ITEM_CATEGORY_TREE, COL_CATEGORY_INCLUDED))
         .addOrder(TBL_ITEM_CATEGORY_TREE, idName);
 
     SimpleRowSet data = qs.getData(query);
@@ -2136,11 +2140,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     IsCondition condition;
 
     if (BeeUtils.isEmpty(BeeUtils.parseDigits(query))) {
-      condition = SqlUtils.contains(TBL_ITEMS, COL_ITEM_NAME, query);
+      condition =
+          SqlUtils.or(SqlUtils.contains(TBL_ITEMS, COL_ITEM_NAME, query), SqlUtils.contains(
+              TBL_ITEMS, COL_ITEM_NAME_2, query), SqlUtils.contains(TBL_ITEMS, COL_ITEM_NAME_3,
+              query));
 
     } else {
-      condition = SqlUtils.or(SqlUtils.contains(TBL_ITEMS, COL_ITEM_NAME, query),
-          SqlUtils.contains(TBL_ITEMS, COL_ITEM_ARTICLE, query));
+      condition =
+          SqlUtils.or(SqlUtils.or(SqlUtils.contains(TBL_ITEMS, COL_ITEM_NAME, query), SqlUtils
+              .contains(TBL_ITEMS, COL_ITEM_NAME_2, query), SqlUtils.contains(TBL_ITEMS,
+              COL_ITEM_NAME_3, query)), SqlUtils.contains(TBL_ITEMS, COL_ITEM_ARTICLE, query));
     }
 
     List<OrdEcItem> items = getItems(condition, companyId);
@@ -2271,7 +2280,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         .addFromLeft(TBL_COMPANIES,
             sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
         .setWhere(SqlUtils.equals(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), usr
-            .getCurrentUserId())));
+            .getCompanyPerson(usr.getCurrentUserId()))));
   }
 
   private ResponseObject getNotSubmittedOrders() {
@@ -2683,7 +2692,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     String colClientId = sys.getIdName(TBL_COMPANIES);
-    SimpleRow clientInfo = getCurrentClientInfo(colClientId, COL_EC_MANAGER);
+    SimpleRow clientInfo = getCurrentClientInfo(colClientId, COL_EC_MANAGER, COL_EC_WAREHOUSE);
     if (clientInfo == null) {
       String message = BeeUtils.joinWords(SVC_SUBMIT_ORDER, "client not found for user",
           usr.getCurrentUserId());
@@ -2694,10 +2703,11 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     SqlInsert insOrder = new SqlInsert(TBL_ORDERS);
 
     insOrder.addConstant(COL_ORDERS_STATUS, OrdersStatus.NEW.ordinal());
+    insOrder.addConstant(COL_SOURCE, "Ec");
     insOrder.addConstant(COL_START_DATE, TimeUtils.nowMillis());
     insOrder.addConstant(COL_COMPANY, clientInfo.getLong(colClientId));
 
-    Long contact = usr.getCurrentUserId();
+    Long contact = usr.getCompanyPerson(usr.getCurrentUserId());
     if (contact != null) {
       insOrder.addConstant(COL_CONTACT, contact);
     }
@@ -2705,6 +2715,11 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     Long manager = clientInfo.getLong(COL_EC_MANAGER);
     if (manager != null) {
       insOrder.addConstant(COL_TRADE_MANAGER, manager);
+    }
+
+    Long warehouse = clientInfo.getLong(COL_EC_WAREHOUSE);
+    if (warehouse != null) {
+      insOrder.addConstant(COL_WAREHOUSE, warehouse);
     }
 
     if (!BeeUtils.isEmpty(cart.getComment())) {
@@ -2726,8 +2741,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       insItem.addConstant(COL_TRADE_DATE, TimeUtils.nowMillis());
       insItem.addConstant(COL_TRADE_ITEM_QUANTITY, cartItem.getQuantity());
       insItem.addConstant(COL_ITEM_PRICE, cartItem.getEcItem().getPrice() / 100d);
-      LogUtils.getRootLogger().info("Andriuxa " + cartItem.getEcItem().getPrice());
-      LogUtils.getRootLogger().info("Andriuxa1 " + cartItem.getEcItem().getPrice() / 100d);
       insItem.addConstant(COL_ITEM_CURRENCY, currency);
 
       ResponseObject itemResponse = qs.insertDataWithResponse(insItem);
