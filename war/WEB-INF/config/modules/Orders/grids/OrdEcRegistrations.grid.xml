@@ -35,5 +35,12 @@
 
     <DataColumn name="Host" />
     <DataColumn name="Agent" />
+
+    <DataColumn name="Registered" />
   </g:columns>
+
+  <g:predefinedFilter name="ord_ec_registrations_active" label="=registered" initial="true">
+    <g:column name="Registered" emptyValues="true" />
+  </g:predefinedFilter>
+
 </g:Grid>

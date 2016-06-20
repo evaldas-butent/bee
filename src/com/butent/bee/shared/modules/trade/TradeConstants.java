@@ -147,6 +147,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_VAT = "Vat";
   public static final String COL_TRADE_VAT_PERC = "VatPercent";
 
+  public static final String COL_TRADE_MAX_DISCOUNT = "MaxDiscount";
   public static final String COL_TRADE_DISCOUNT = "Discount";
 
   public static final String COL_TRADE_ITEM_ORDINAL = "Ordinal";

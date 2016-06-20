@@ -94,6 +94,8 @@
       <SimpleColumn name="Name" alias="Currency10Name" />
     </SimpleJoin>
 
+    <SimpleColumn name="MaxDiscount" />
+
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
 

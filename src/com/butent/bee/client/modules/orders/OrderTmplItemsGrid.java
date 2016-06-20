@@ -133,8 +133,9 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
     final int vatPrcIndex = rowSet.getColumnIndex(COL_TRADE_VAT_PERC);
 
     final int vatPrcItemIdx = items.getColumnIndex(COL_TRADE_VAT_PERC);
-    final int vatPrcDefaultIdx = items.getNumberOfColumns() - 1;
+    final int vatPrcDefaultIdx = items.getNumberOfColumns() - 5;
     final int vatItemIdx = items.getColumnIndex(COL_TRADE_VAT);
+    final int maxDiscountItemIndex = items.getColumnIndex(COL_TRADE_MAX_DISCOUNT);
 
     Map<Long, Double> quantities = new HashMap<>();
     Map<Long, ItemPrice> priceNames = new HashMap<>();
@@ -147,6 +148,9 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
 
         row.setValue(tmplIndex, parentRow.getId());
         row.setValue(itemIndex, item.getId());
+
+        row.setValue(discountIndex, item.getDouble(maxDiscountItemIndex));
+        row.setValue(invisibleDiscountIndex, item.getDouble(maxDiscountItemIndex));
 
         row.setValue(qtyIndex, qty);
 
@@ -187,24 +191,28 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
 
                 if (pair != null) {
                   Double price = pair.getA();
-                  Double percent = pair.getB();
+                  double percent = BeeUtils.unbox(pair.getB());
                   if (BeeUtils.isPositive(price)) {
                     row.setValue(priceIndex,
                         Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
                   }
 
-                  if (BeeUtils.isDouble(percent)) {
-                    if (BeeUtils.nonZero(percent)) {
-                      row.setValue(discountIndex, percent);
-                      row.setValue(invisibleDiscountIndex, percent);
-                    } else {
-                      row.clearCell(discountIndex);
-                      row.setValue(invisibleDiscountIndex, 0);
+                  if (BeeUtils.nonZero(percent)) {
+                    double maxDiscount = BeeUtils.unbox(row.getDouble(discountIndex));
+                    if (percent > maxDiscount && maxDiscount !=0) {
+                      percent = maxDiscount;
                     }
+                    row.setValue(discountIndex, percent);
+                    row.setValue(invisibleDiscountIndex, percent);
+                  } else {
+                    row.clearCell(discountIndex);
+                    row.setValue(invisibleDiscountIndex, 0);
                   }
+                } else {
+                  row.clearCell(discountIndex);
+                  row.setValue(invisibleDiscountIndex, 0);
                 }
               }
-
               Queries.insertRows(rowSet);
             }
           });

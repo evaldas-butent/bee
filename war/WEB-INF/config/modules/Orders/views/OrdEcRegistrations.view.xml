@@ -40,6 +40,7 @@
     <SimpleColumn name="Agent" />
     
     <SimpleColumn name="NotVATPayer" />
+    <SimpleColumn name="Registered" />
   </Columns>
   <Order>
     <OrderBy column="Date" />
