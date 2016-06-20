@@ -120,7 +120,7 @@ public class OrdersEcServlet extends LoginServlet {
     Div container = div().addClass(REG_STYLE_VAT_PREFIX + "container");
 
     Input input = input().addClass(REG_STYLE_VAT_PREFIX + "input").type(Type.CHECK_BOX)
-        .name(name).value(1);
+        .name(name).id(name).value(1).onChange("onSelectVAT()");
 
     Span span = span().addClass(REG_STYLE_VAT_PREFIX + "text")
         .text(constants.ecNotVATPayer());
@@ -247,7 +247,7 @@ public class OrdersEcServlet extends LoginServlet {
         registrationField(constants.country(), COL_REGISTRATION_COUNTRY, false),
         registrationField(constants.city(), COL_REGISTRATION_CITY, true),
         registrationField(constants.address(), COL_REGISTRATION_ADDRESS, true),
-        registrationField(constants.postIndex(), COL_REGISTRATION_POST_INDEX, true));
+        registrationField(constants.postIndex(), COL_REGISTRATION_POST_INDEX, false));
 
     doc.getBody().append(
         div().addClass(REG_STYLE_PREFIX + "panel").append(

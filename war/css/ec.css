@@ -98,6 +98,10 @@
   margin-right: 5px;
 }
 
+.bee-ec-Command-GetNotSubmittedOrders {
+  margin-left: 50px;
+}
+
 .bee-ec-commandPanel-searchBy {
   left: 160px;
   bottom: 0;
@@ -931,7 +935,6 @@
   overflow: auto;
 }
 
-.bee-ec-ItemDetails-info-container,
 .bee-ec-ItemDetails-remainders-container,
 .bee-ec-ItemDetails-oeNumbers-container,
 .bee-ec-ItemDetails-suppliers-container,
@@ -955,6 +958,9 @@
 }
 .bee-ec-ItemDetails-info-description {
   white-space: pre-line;
+  width: 380px;
+  height: 270px;
+  overflow: auto;
 }
 
 .bee-ec-ItemDetails-info-link-container {
