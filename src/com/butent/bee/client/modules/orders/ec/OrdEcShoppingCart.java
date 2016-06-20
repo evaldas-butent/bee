@@ -61,6 +61,7 @@ public class OrdEcShoppingCart extends Split {
   private static final String STYLE_ARTICLE = STYLE_ITEM_PREFIX + "code";
   private static final String STYLE_QUANTITY = STYLE_ITEM_PREFIX + "quantity";
   private static final String STYLE_PRICE = STYLE_ITEM_PREFIX + "price";
+  private static final String STYLE_LACK = STYLE_ITEM_PREFIX + "lack";
   private static final String STYLE_REMOVE = STYLE_ITEM_PREFIX + "remove";
 
   private static final String STYLE_PANEL = "-panel";
@@ -72,13 +73,16 @@ public class OrdEcShoppingCart extends Split {
   private static final int COL_ARTICLE = 2;
   private static final int COL_QUANTITY = 3;
   private static final int COL_PRICE = 4;
-  private static final int COL_REMOVE = 5;
+  private static final int COL_LACK = 5;
+  private static final int COL_REMOVE = 6;
 
   private static final int SIZE_NORTH = 32;
   private static final int SIZE_SOUTH = 180;
 
   private final HtmlTable itemTable = new HtmlTable(STYLE_ITEMS + "-table");
   private final CustomDiv totalWidget = new CustomDiv(STYLE_PRIMARY + "-total");
+
+  private static InputArea inputComment;
 
   public OrdEcShoppingCart(OrdEcCart cart) {
     super(0);
@@ -89,6 +93,10 @@ public class OrdEcShoppingCart extends Split {
     initCenter();
 
     renderItems(cart.getItems());
+  }
+
+  private void doSave() {
+    OrdEcKeeper.saveOrder(inputComment.getValue(), this, null);
   }
 
   private void doSubmit(boolean copyByMail) {
@@ -161,6 +169,16 @@ public class OrdEcShoppingCart extends Split {
     });
     panel.add(submitWidget);
 
+    Button saveWidget = new Button(Localized.dictionary().actionSave());
+    saveWidget.addStyleName(STYLE_PRIMARY + "-save");
+    saveWidget.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        doSave();
+      }
+    });
+    panel.add(saveWidget);
+
     addSouth(panel, SIZE_SOUTH);
   }
 
@@ -175,20 +193,20 @@ public class OrdEcShoppingCart extends Split {
     label.addStyleName(STYLE_COMMENT + STYLE_LABEL);
     panel.add(label);
 
-    final InputArea input = new InputArea();
-    input.addStyleName(STYLE_COMMENT + STYLE_INPUT);
+    inputComment = new InputArea();
+    inputComment.addStyleName(STYLE_COMMENT + STYLE_INPUT);
 
     if (!BeeUtils.isEmpty(cart.getComment())) {
-      input.setValue(BeeUtils.trim(cart.getComment()));
+      inputComment.setValue(BeeUtils.trim(cart.getComment()));
     }
-    input.addBlurHandler(new BlurHandler() {
+    inputComment.addBlurHandler(new BlurHandler() {
       @Override
       public void onBlur(BlurEvent event) {
-        cart.setComment(Strings.emptyToNull(BeeUtils.trim(input.getValue())));
+        cart.setComment(Strings.emptyToNull(BeeUtils.trim(inputComment.getValue())));
       }
     });
 
-    panel.add(input);
+    panel.add(inputComment);
 
     return panel;
   }
@@ -216,6 +234,11 @@ public class OrdEcShoppingCart extends Split {
     Widget priceWidget = renderPrice(item);
     if (priceWidget != null) {
       itemTable.setWidgetAndStyle(row, COL_PRICE, priceWidget, STYLE_PRICE);
+    }
+
+    Widget lackWidget = renderLack(item);
+    if (lackWidget != null) {
+      itemTable.setWidgetAndStyle(row, COL_LACK, lackWidget, STYLE_REMOVE);
     }
 
     Widget removeWidget = renderRemove(item);
@@ -250,6 +273,10 @@ public class OrdEcShoppingCart extends Split {
       priceLabel.addStyleName(STYLE_PRICE + STYLE_LABEL);
       itemTable.setWidget(row, COL_PRICE, priceLabel);
 
+      Label lackLabel = new Label(Localized.dictionary().ordLack());
+      lackLabel.addStyleName(STYLE_LACK + STYLE_LABEL);
+      itemTable.setWidget(row, COL_LACK, lackLabel);
+
       Label removeLabel = new Label(Localized.dictionary().ecShoppingCartRemove());
       removeLabel.addStyleName(STYLE_REMOVE + STYLE_LABEL);
       itemTable.setWidget(row, COL_REMOVE, removeLabel);
@@ -271,6 +298,18 @@ public class OrdEcShoppingCart extends Split {
         OrdEcKeeper.setBackgroundPictures(pictureWidgets);
       }
     }
+  }
+
+  private static Widget renderLack(OrdEcCartItem item) {
+    String remainder = item.getEcItem().getRemainder();
+    Label label = new Label();
+    if (!BeeUtils.isEmpty(remainder)) {
+      int lack = item.getQuantity() - BeeUtils.toInt(remainder);
+      if (lack > 0) {
+        label.setHtml(BeeUtils.toString(lack));
+      }
+    }
+    return label;
   }
 
   private static Widget renderName(final OrdEcCartItem item) {
@@ -396,8 +435,17 @@ public class OrdEcShoppingCart extends Split {
 
     OrdEcCart cart = OrdEcKeeper.refreshCart();
     updateTotal(cart);
+    updateLack(cart);
 
     OrdEcKeeper.persistCartItem(item);
+  }
+
+  private void updateLack(OrdEcCart cart) {
+    if (cart != null) {
+      for (int i = 1; i < itemTable.getRowCount(); i++) {
+        itemTable.setWidget(i, COL_LACK, renderLack(cart.getItems().get(i - 1)));
+      }
+    }
   }
 
   private void updateTotal(OrdEcCart cart) {

@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="OrdEcShoppingCarts"
-  idName="ShoppingCartID"
-  >
+       name="NotSubmittedOrders"
+       idName="NotSubmittedOrderID"
+>
   <Fields>
+    <DateTime name="Date" notNull="true" />
     <DateTime name="Created" notNull="true" defExpr="CURRENT_TIME" />
+    <String name="Name"  precision="30" />
     <Relation name="Client" relation="Users" notNull="true" cascade="DELETE" />
     <Relation name="Item" relation="Items" notNull="true" cascade="DELETE" />
     <Integer name="Quantity" notNull="true" />
+    <Text name="Comment" />
   </Fields>
+
+  <Constraints>
+    <Unique fields="Name Client Item" />
+  </Constraints>
 </Table>

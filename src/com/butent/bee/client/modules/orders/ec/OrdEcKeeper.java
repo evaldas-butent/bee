@@ -7,10 +7,12 @@ import com.google.gwt.user.client.ui.Panel;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.widget.ItemDetails;
@@ -22,6 +24,7 @@ import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
@@ -34,6 +37,7 @@ import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.ec.OrdEcCart;
 import com.butent.bee.shared.modules.orders.ec.OrdEcCartItem;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
@@ -186,7 +190,7 @@ public final class OrdEcKeeper {
     }
   }
 
-  public static void restoreShoppingCarts() {
+  public static void restoreShoppingCarts(Consumer<Boolean> consumer) {
     BeeKeeper.getRpc().makeGetRequest(createArgs(SVC_GET_SHOPPING_CARTS), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -201,6 +205,10 @@ public final class OrdEcKeeper {
             }
           }
           cartList.refresh();
+
+          if (consumer != null && cartList.getCart().getItems().size() > 0) {
+            consumer.accept(true);
+          }
         }
       }
     });
@@ -467,6 +475,10 @@ public final class OrdEcKeeper {
         EcConstants.COL_CONFIG_CONTACTS_URL, EcConstants.COL_CONFIG_CONTACTS_HTML, callback);
   }
 
+  public static void openShoppinCart(Consumer<Boolean> consumer) {
+    restoreShoppingCarts(consumer);
+  }
+
   private static void persistCartItem(long itemId, int quantity) {
     ParameterList params = createArgs(SVC_UPDATE_SHOPPING_CART);
 
@@ -484,5 +496,42 @@ public final class OrdEcKeeper {
   }
 
   private OrdEcKeeper() {
+  }
+
+  public static void saveOrder(String comment, Object object, Consumer<Boolean> consumer) {
+    Global.inputString(Localized.dictionary().ordShoppingCartName(), new StringCallback() {
+
+      @Override
+      public void onSuccess(String value) {
+        if (!BeeUtils.isEmpty(value)) {
+          ParameterList params = OrdEcKeeper.createArgs(OrdersConstants.SVC_SAVE_ORDER);
+          params.addDataItem(COL_SHOPPING_CART_NAME, value);
+          params.addDataItem(COL_SHOPPING_CART_COMMENT, comment);
+
+          BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+
+            @Override
+            public void onResponse(ResponseObject response) {
+              OrdEcKeeper.dispatchMessages(response);
+
+              if (!response.hasErrors()) {
+                OrdEcKeeper.resetCart();
+                if (object instanceof OrdEcShoppingCart) {
+                  OrdEcKeeper.closeView((OrdEcShoppingCart) object);
+                } else if (object instanceof NotSubmittedOrders) {
+                  OrdEcKeeper.closeView((NotSubmittedOrders) object);
+                }
+
+                if (consumer != null) {
+                  consumer.accept(true);
+                }
+              }
+            }
+          });
+        } else {
+          super.setRequired(true);
+        }
+      }
+    }, BeeConst.CSS_CLASS_PREFIX + "ec-saveOrder");
   }
 }

@@ -151,6 +151,11 @@ public final class OrdersConstants {
   public static final String SVC_UPLOAD_BANNERS = "UploadBanners";
   public static final String SVC_GET_PROMO = "GetPromo";
   public static final String SVC_SUBMIT_ORDER = "SubmitOrder";
+  public static final String SVC_MAIL_ORDER = "MailOrder";
+  public static final String SVC_EC_GET_NOT_SUBMITTED_ORDERS = "GetNotSubmittedOrders";
+  public static final String SVC_SAVE_ORDER = "SaveOrder";
+  public static final String SVC_EC_OPEN_SHOPPING_CART = "OpenShoppingCart";
+  public static final String SVC_EC_CLEAN_SHOPPING_CART = "CleanShoppingCart";
 
   public static final String NAME_PREFIX = "ord-ec";
   public static final String CATEGORY_ID_SEPARATOR = ",";
@@ -159,6 +164,7 @@ public final class OrdersConstants {
 
   public static final String TBL_ORD_EC_SHOPPING_CARTS = "OrdEcShoppingCarts";
   public static final String TBL_ORD_EC_BANNERS = "OrdEcBanners";
+  public static final String TBL_NOT_SUBMITTED_ORDERS = "NotSubmittedOrders";
 
   public static final String VIEW_ORD_EC_REGISTRATIONS = "OrdEcRegistrations";
   public static final String VIEW_ORD_EC_CONFIGURATION = "OrdEcConfiguration";
@@ -187,9 +193,11 @@ public final class OrdersConstants {
   public static final String COL_REGISTRATION_AGENT = "Agent";
 
   public static final String COL_SHOPPING_CART_CREATED = "Created";
+  public static final String COL_SHOPPING_CART_NAME = "Name";
   public static final String COL_SHOPPING_CART_CLIENT = "Client";
   public static final String COL_SHOPPING_CART_ITEM = "Item";
   public static final String COL_SHOPPING_CART_QUANTITY = "Quantity";
+  public static final String COL_SHOPPING_CART_COMMENT = "Comment";
 
   public static final String COL_BANNER_PICTURE = "Picture";
 

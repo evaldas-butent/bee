@@ -26,6 +26,8 @@ public abstract class OrdEcView extends Flow {
           COL_CONFIG_CONTACTS_HTML);
     } else if (EcConstants.SVC_FINANCIAL_INFORMATION.equals(service)) {
       ecView = new OrdEcFinancialInfo();
+    } else if (SVC_EC_GET_NOT_SUBMITTED_ORDERS.equals(service)) {
+      ecView = new NotSubmittedOrders();
     }
 
     if (ecView != null) {
