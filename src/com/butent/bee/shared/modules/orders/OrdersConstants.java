@@ -36,11 +36,34 @@ public final class OrdersConstants {
       public String getCaption(Dictionary constants) {
         return constants.prjStatusApproved();
       }
+    },
+    NEW {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.ecOrderStatusNew();
+      }
     };
 
     @Override
     public String getCaption() {
       return getCaption(Localized.dictionary());
+    }
+
+    public static OrdersStatus get(Integer status) {
+      if (status != null && status >= 0 && status < values().length) {
+        return values()[status];
+      } else {
+        return null;
+      }
+    }
+
+    public static boolean in(int status, OrdersStatus... statuses) {
+      for (OrdersStatus st : statuses) {
+        if (st.ordinal() == status) {
+          return true;
+        }
+      }
+      return false;
     }
 
     public boolean is(Integer status) {
@@ -86,6 +109,7 @@ public final class OrdersConstants {
   public static final String ALS_PAYER_EMAIL = "PayerEmail";
 
   public static final String COL_END_DATE = "EndDate";
+  public static final String COL_START_DATE = "StartDate";
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDERS_STATUS = "Status";
   public static final String COL_RESERVED_REMAINDER = "ResRemainder";
@@ -126,6 +150,7 @@ public final class OrdersConstants {
   public static final String SVC_GET_SHOPPING_CARTS = "GetShoppingCarts";
   public static final String SVC_UPLOAD_BANNERS = "UploadBanners";
   public static final String SVC_GET_PROMO = "GetPromo";
+  public static final String SVC_SUBMIT_ORDER = "SubmitOrder";
 
   public static final String NAME_PREFIX = "ord-ec";
   public static final String CATEGORY_ID_SEPARATOR = ",";

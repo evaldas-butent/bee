@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.orders.ec;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -13,6 +14,9 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
@@ -28,10 +32,12 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.ec.OrdEcCart;
 import com.butent.bee.shared.modules.orders.ec.OrdEcCartItem;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -85,6 +91,37 @@ public class OrdEcShoppingCart extends Split {
     renderItems(cart.getItems());
   }
 
+  private void doSubmit(boolean copyByMail) {
+    OrdEcCart cart = OrdEcKeeper.getCart();
+    if (cart == null || cart.isEmpty()) {
+      return;
+    }
+
+    final String amount = EcUtils.formatCents(cart.totalCents());
+
+    ParameterList params = OrdEcKeeper.createArgs(OrdersConstants.SVC_SUBMIT_ORDER);
+    if (copyByMail) {
+      params.addQueryItem(EcConstants.VAR_MAIL, 1);
+    }
+    params.addDataItem(EcConstants.VAR_CART, cart.serialize());
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        OrdEcKeeper.dispatchMessages(response);
+
+        if (response.hasResponse(Long.class)) {
+          OrdEcKeeper.resetCart();
+          OrdEcKeeper.closeView(OrdEcShoppingCart.this);
+
+          Global.showInfo(Localized.dictionary().ecOrderSubmitted(),
+              Lists.newArrayList(Localized.dictionary().ecOrderId(response.getResponseAsString()),
+                  Localized.dictionary().ecOrderTotal(amount, EcConstants.CURRENCY)));
+        }
+      }
+    });
+  }
+
   private void initCenter() {
     Simple wrapper = new Simple(itemTable);
     wrapper.addStyleName(STYLE_ITEMS + "-wrapper");
@@ -119,6 +156,7 @@ public class OrdEcShoppingCart extends Split {
     submitWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
+        doSubmit(copyByMail.getValue());
       }
     });
     panel.add(submitWidget);
