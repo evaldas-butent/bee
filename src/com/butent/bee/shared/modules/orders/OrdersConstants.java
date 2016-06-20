@@ -168,6 +168,7 @@ public final class OrdersConstants {
 
   public static final String VIEW_ORD_EC_REGISTRATIONS = "OrdEcRegistrations";
   public static final String VIEW_ORD_EC_CONFIGURATION = "OrdEcConfiguration";
+  public static final String VIEW_ORD_EC_ORDERS = "OrdEcOrders";
 
   public static final String COL_REGISTRATION_DATE = "Date";
   public static final String COL_REGISTRATION_TYPE = "Type";

@@ -1,8 +1,11 @@
 package com.butent.bee.client.modules.orders.ec;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -11,14 +14,18 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcWidgetFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Link;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public class OrdEcItemDetails extends Flow {
 
@@ -30,6 +37,11 @@ public class OrdEcItemDetails extends Flow {
   private static final String STYLE_LABEL = "label";
   private static final String STYLE_VALUE = "value";
   private static final String STYLE_CURRENCY = "currency";
+  private static final String STYLE_ITEM_GALLERY = BeeConst.CSS_CLASS_PREFIX + "Gallery-";
+  private static final String STYLE_ITEM_GALLERY_IMAGE = STYLE_ITEM_GALLERY + "image";
+  private static final String STYLE_ITEM_GALLERY_PICTURE = STYLE_ITEM_GALLERY + "picture";
+  private static final String STYLE_ITEM_GALLERY_PANEL = STYLE_ITEM_GALLERY_PICTURE + "-panel";
+  private static final String STYLE_OPEN = EcStyles.name("ItemPicture-") + "open";
 
   private static Widget renderAddToCart(OrdEcItem item) {
     String stylePrefix = EcStyles.name(STYLE_PRIMARY, "addToCart-");
@@ -121,12 +133,31 @@ public class OrdEcItemDetails extends Flow {
   }
 
   private static Widget renderPictures(OrdEcItem item) {
-    OrdEcItemPicture widget = new OrdEcItemPicture(item.getCaption());
-    EcStyles.add(widget, STYLE_PRIMARY, "picture");
+    Flow panel = new Flow(STYLE_ITEM_GALLERY_PANEL);
+    List<String> pictures = OrdEcKeeper.getPictures().getIfPresent(item.getId());
 
-    OrdEcKeeper.setBackgroundPicture(item.getId(), widget);
+    if (pictures != null) {
+      if (pictures.size() > 0) {
+        for (int i = 0; i < pictures.size(); i++) {
+          Flow flow = new Flow(STYLE_ITEM_GALLERY_PICTURE);
+          Image image = new Image(pictures.get(i));
+          image.addStyleName(STYLE_ITEM_GALLERY_IMAGE);
 
-    return widget;
+          image.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              Image biggerImg = new Image(image.getUrl());
+              biggerImg.addStyleName(STYLE_OPEN);
+              Global.showModalWidget(biggerImg);
+            }
+          });
+
+          flow.add(image);
+          panel.add(flow);
+        }
+      }
+    }
+    return panel;
   }
 
   private static Widget renderRemainders(final OrdEcItem item) {

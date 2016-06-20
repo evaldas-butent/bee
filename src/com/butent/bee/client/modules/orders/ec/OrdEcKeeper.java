@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.orders.ec;
 
+import com.google.common.cache.Cache;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.gwt.user.client.ui.Panel;
 
@@ -128,6 +130,10 @@ public final class OrdEcKeeper {
 
   public static OrdEcCart getCart() {
     return cartList.getCart();
+  }
+
+  public static Cache<Long, ImmutableList<String>> getPictures() {
+    return pictures.getPictures();
   }
 
   public static List<OrdEcItem> getResponseItems(ResponseObject response) {
@@ -266,6 +272,8 @@ public final class OrdEcKeeper {
           List<OrdEcItem> items = getResponseItems(response);
           if (!items.isEmpty()) {
             callback.accept(items);
+          } else {
+            BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
           }
         }
       }

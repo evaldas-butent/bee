@@ -6,5 +6,10 @@
   >
   <Fields>
     <String name="Name" precision="100" notNull="true" unique="true" label="=documentType" />
+    <String name="EN" precision="100" label="EN" />
+    <String name="RU" precision="100" label="RU" />
+    <String name="FI" precision="100" label="FI" />
+    <String name="LV" precision="100" label="LV" />
+    <String name="DE" precision="100" label="DE" />
   </Fields>
 </Table>

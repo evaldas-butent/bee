@@ -6,6 +6,11 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="EN" />
+    <SimpleColumn name="RU" />
+    <SimpleColumn name="FI" />
+    <SimpleColumn name="LV" />
+    <SimpleColumn name="DE" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

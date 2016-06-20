@@ -39,6 +39,10 @@ import java.util.Set;
 
 class OrdEcPictures {
 
+  public Cache<Long, ImmutableList<String>> getPictures() {
+    return cache;
+  }
+
   private static boolean hasPictures(ResponseObject response) {
     return response != null && !response.hasErrors() && response.hasResponse()
         && !response.hasResponse(String.class);

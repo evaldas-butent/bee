@@ -145,6 +145,8 @@ public final class ClassifierConstants {
 
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
+  public static final String COL_ITEM_NAME_2 = "Name2";
+  public static final String COL_ITEM_NAME_3 = "Name3";
   public static final String COL_ITEM_ARTICLE = "Article";
   public static final String COL_ITEM_ATTRIBUTE = "Attribute";
   public static final String COL_ITEM_BARCODE = "Barcode";

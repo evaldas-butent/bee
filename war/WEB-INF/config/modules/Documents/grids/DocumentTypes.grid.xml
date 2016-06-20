@@ -6,5 +6,10 @@
   >
   <g:columns>
     <DataColumn name="Name" source="Name" caption="=documentType" minWidth="200" visible="true" />
+    <DataColumn name="EN" source="EN" minWidth="200" visible="true" />
+    <DataColumn name="FI" source="FI" minWidth="200" visible="true" />
+    <DataColumn name="RU" source="RU" minWidth="200" visible="true" />
+    <DataColumn name="LV" source="LV" minWidth="200" visible="true" />
+    <DataColumn name="DE" source="DE" minWidth="200" visible="true" />
   </g:columns>
 </g:Grid>
