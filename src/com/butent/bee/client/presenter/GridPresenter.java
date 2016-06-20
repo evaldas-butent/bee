@@ -140,7 +140,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
             @Override
             public void onFailure(String... reason) {
-              showFailure("Error deleting row", reason);
+              showFailure(Localized.dictionary().deleteRowError(), reason);
             }
 
             @Override
@@ -167,7 +167,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
             @Override
             public void onFailure(String... reason) {
-              showFailure("Error deleting rows", reason);
+              showFailure(Localized.dictionary().deleteRowsError(), reason);
             }
 
             @Override
