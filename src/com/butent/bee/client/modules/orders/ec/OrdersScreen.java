@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
@@ -259,7 +260,7 @@ public class OrdersScreen extends ScreenImpl {
     createCommands(panel);
 
     Widget userContainer = createUserContainer();
-    EcStyles.add(userContainer, "UserContainer");
+    userContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserContainer");
 
     panel.add(userContainer);
 

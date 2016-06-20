@@ -19,6 +19,7 @@
     <SimpleColumn name="Discussion" />
     <SimpleColumn name="ServiceObject" />
     <SimpleColumn name="Message" />
+    <SimpleColumn name="Item" />
 
     <SimpleColumn name="Project" />
     <SimpleJoin name="Project" joinType="LEFT">

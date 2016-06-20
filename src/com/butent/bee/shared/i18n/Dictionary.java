@@ -671,6 +671,8 @@ public interface Dictionary {
 
   default String chooseContactSource() {return g("chooseContactSource");}
 
+  default String chooseDocumentSource() {return g("chooseDocumentSource");}
+
   default String chooseFiles() {return g("chooseFiles");}
 
   default String chooseLanguage() {return g("chooseLanguage");}

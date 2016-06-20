@@ -42,6 +42,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.menu.MenuCommand;
+import com.butent.bee.client.modules.administration.PasswordService;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
@@ -848,6 +849,13 @@ public class ScreenImpl implements Screen {
       Flow presenceContainer = new Flow(BeeConst.CSS_CLASS_PREFIX + "UserPresenceContainer");
       userContainer.add(presenceContainer);
       setUserPresenceContainer(presenceContainer);
+    }
+
+    if (Settings.showUserSignature()) {
+      Label signature = new Label(BeeUtils.trim(BeeKeeper.getUser().getUserSign()));
+      signature.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserSignature");
+      signature.addClickHandler(event -> PasswordService.change());
+      userContainer.add(signature);
     }
 
     if (Settings.showLogout()) {
