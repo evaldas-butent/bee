@@ -359,7 +359,8 @@
 .bee-ec-finInfo-order-data:nth-child(odd),
 .bee-ec-finInfo-order-item-data:nth-child(odd),
 .bee-ec-finInfo-invoice-data:nth-child(odd),
-.bee-ec-finInfo-unsupplied-data:nth-child(odd) {
+.bee-ec-finInfo-unsupplied-data:nth-child(odd),
+.bee-ec-notSubmittedOrder-order-data:nth-child(odd) {
   background-color: #f5f5f5;
 }
 .bee-ec-ItemList-item:nth-child(even),
@@ -367,7 +368,8 @@
 .bee-ec-finInfo-order-data:nth-child(even),
 .bee-ec-finInfo-order-item-data:nth-child(even),
 .bee-ec-finInfo-invoice-data:nth-child(even),
-.bee-ec-finInfo-unsupplied-data:nth-child(even) {
+.bee-ec-finInfo-unsupplied-data:nth-child(even),
+.bee-ec-notSubmittedOrder-order-data:nth-child(even) {
   background-color: #ebebeb;
 }
 
@@ -856,6 +858,17 @@
   top: 35px;
 }
 
+.bee-ec-shoppingCart-save {
+  position: absolute;
+  top: 140px;
+  margin-left: 11em;
+  font-size: medium;
+  margin-top: 8px;
+  background-image: url(../images/ec/red_background.png);
+  height: 32px;
+  color: white
+}
+
 .bee-ec-shoppingCart-submit {
   position: absolute;
   top: 140px;
@@ -1120,7 +1133,8 @@
   background-color: #dfd;
 }
 
-.bee-ec-finInfo-order-number {
+.bee-ec-finInfo-order-number,
+.bee-ec-notSubmittedOrder-order-name {
   text-decoration: underline;
   cursor: pointer;
 }

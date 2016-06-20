@@ -76,6 +76,8 @@ public class OrdersScreen extends ScreenImpl {
         Localized.dictionary().ordSearchByItemArticle(), Type.LABEL));
     searchBy.add(createCommandWidget(SVC_EC_SEARCH_BY_ITEM_CATEGORY,
         Localized.dictionary().ordSearchByItemCategory(), Type.LABEL));
+    searchBy.add(createCommandWidget(SVC_EC_GET_NOT_SUBMITTED_ORDERS,
+        Localized.dictionary().ordNotSubmittedOrders(), Type.LABEL));
 
     container.add(searchBy);
 
@@ -187,7 +189,7 @@ public class OrdersScreen extends ScreenImpl {
     }
 
     OrdEcKeeper.showPromo(true);
-    OrdEcKeeper.restoreShoppingCarts();
+    OrdEcKeeper.restoreShoppingCarts(null);
   }
 
   @Override

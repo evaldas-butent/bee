@@ -3473,9 +3473,13 @@ public interface Dictionary {
 
   default String ordFreeRemainder() {return g("ordFreeRemainder");}
 
+  default String ordLack() {return g("ordLack");}
+
   default String ordMaxDiscount() {return g("ordMaxDiscount");}
 
   default String ordMinQuantity() {return g("ordMinQuantity");}
+
+  default String ordNotSubmittedOrders() {return g("ordNotSubmittedOrders");}
 
   default String ordOverdueInvoices() {return g("ordOverdueInvoices");}
 
@@ -3493,6 +3497,8 @@ public interface Dictionary {
 
   default String ordResRemainder() {return g("ordResRemainder");}
 
+  default String ordSaveShoppingCart() {return g("ordSaveShoppingCart");}
+
   default String ordSearchByItemArticle() {return g("ordSearchByItemArticle");}
 
   default String ordSearchByItemCategory() {return g("ordSearchByItemCategory");}
@@ -3500,6 +3506,8 @@ public interface Dictionary {
   default String ordSend() {return g("ordSend");}
 
   default String ordSent() {return g("ordSent");}
+
+  default String ordShoppingCartName() {return g("ordShoppingCartName");}
 
   default String ordSupplierTerm() {return g("ordSupplierTerm");}
 
