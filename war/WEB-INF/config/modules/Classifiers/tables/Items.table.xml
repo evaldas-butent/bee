@@ -53,6 +53,8 @@
     <Numeric name="Price10" precision="15" scale="5" label="=price10" />
     <Relation name="Currency10" relation="Currencies" label="=currency10" />
 
+    <Numeric name="MaxDiscount" precision="7" scale="3" label="=maxDiscount" />
+
     <Boolean name="Vat" label="=vat" defValue="true" />
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />
 

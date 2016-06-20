@@ -50,6 +50,8 @@
       <SimpleColumn name="Price10" alias="ItemPrice10" />
       <SimpleColumn name="Currency10" alias="ItemCurrency10" />
 
+      <SimpleColumn name="MaxDiscount" />
+
       <SimpleColumn name="PackageUnits" />
       <SimpleColumn name="Attribute" />
     </SimpleJoin>

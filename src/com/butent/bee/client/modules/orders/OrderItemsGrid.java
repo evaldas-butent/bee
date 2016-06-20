@@ -82,7 +82,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
   Long orderForm;
   private OrderItemsPicker picker;
   private Flow invoice = new Flow();
-  private Double managerDiscount;
+  private double managerDiscount;
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
@@ -106,7 +106,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
       @Override
       public void accept(String input) {
-        managerDiscount = BeeUtils.toDoubleOrNull(input);
+        managerDiscount = BeeUtils.unbox(BeeUtils.toDoubleOrNull(input));
       }
     });
 
@@ -309,19 +309,26 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
                 break;
 
               case COL_TRADE_DISCOUNT:
-                if (BeeUtils.isPositive(managerDiscount)) {
-                  double invisibleDiscount = BeeUtils.unbox(row.getDouble(
-                      Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_INVISIBLE_DISCOUNT)))
-                      + managerDiscount.doubleValue();
+                double invisibleDiscount = BeeUtils.unbox(row.getDouble(
+                    Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_INVISIBLE_DISCOUNT)))
+                    + managerDiscount;
 
-                  double discount = BeeUtils.unbox(newValue);
+                double maxDiscount = BeeUtils.unbox(row.getDouble(Data.getColumnIndex(
+                    VIEW_ORDER_ITEMS, COL_TRADE_MAX_DISCOUNT)));
 
-                  if (discount > invisibleDiscount) {
-                    getGridPresenter().getGridView().notifySevere(
-                        Localized.dictionary().ordMaxDiscount() + ": " + invisibleDiscount + "%");
+                if (maxDiscount != 0) {
+                  invisibleDiscount = maxDiscount;
+                } else if (managerDiscount == 0) {
+                  invisibleDiscount = 0;
+                }
 
-                    return false;
-                  }
+                double discount = BeeUtils.unbox(newValue);
+
+                if (discount > invisibleDiscount && invisibleDiscount != 0) {
+                  getGridPresenter().getGridView().notifySevere(
+                      Localized.dictionary().ordMaxDiscount() + ": " + invisibleDiscount + "%");
+
+                  return false;
                 }
                 cols = Lists.newArrayList(cv.getColumn());
                 oldValues = Lists.newArrayList(cv.getOldValue());
@@ -636,6 +643,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     final int vatItemIdx = items.getColumnIndex(COL_TRADE_VAT);
     final int attributeIdx = items.getColumnIndex(COL_ITEM_ATTRIBUTE);
     final int pckgUnitsIdx = items.getColumnIndex(COL_ITEM_PACKAGE_UNITS);
+    final int maxDiscountItemIndex = items.getColumnIndex(COL_TRADE_MAX_DISCOUNT);
 
     Map<Long, Double> quantities = new HashMap<>();
     Map<Long, ItemPrice> priceNames = new HashMap<>();
@@ -649,6 +657,9 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
         row.setValue(ordIndex, parentRow.getId());
         row.setValue(itemIndex, item.getId());
+
+        row.setValue(discountIndex, item.getDouble(maxDiscountItemIndex));
+        row.setValue(invisibleDiscountIndex, item.getDouble(maxDiscountItemIndex));
 
         if (BeeUtils.isDouble(freeRem)) {
           if (qty > freeRem) {
@@ -713,24 +724,28 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
                       BeeUtils.unbox(pair.getA())
                           + BeeUtils.unbox(row.getDouble(unpackingIdx))
                           / BeeUtils.unbox(row.getDouble(qtyIndex));
-                  Double percent = pair.getB();
+                  double percent = BeeUtils.unbox(pair.getB());
                   if (BeeUtils.isPositive(price)) {
                     row.setValue(priceIndex,
                         Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
                   }
 
-                  if (BeeUtils.isDouble(percent)) {
-                    if (BeeUtils.nonZero(percent)) {
-                      row.setValue(discountIndex, percent);
-                      row.setValue(invisibleDiscountIndex, percent);
-                    } else {
-                      row.clearCell(discountIndex);
-                      row.setValue(invisibleDiscountIndex, 0);
+                  if (BeeUtils.nonZero(percent)) {
+                    double maxDiscount = BeeUtils.unbox(row.getDouble(discountIndex));
+                    if (percent > maxDiscount && maxDiscount !=0) {
+                      percent = maxDiscount;
                     }
+                    row.setValue(discountIndex, percent);
+                    row.setValue(invisibleDiscountIndex, percent);
+                  } else {
+                    row.clearCell(discountIndex);
+                    row.setValue(invisibleDiscountIndex, 0);
                   }
+                } else {
+                  row.clearCell(discountIndex);
+                  row.setValue(invisibleDiscountIndex, 0);
                 }
               }
-
               Queries.insertRows(rowSet);
             }
           });
@@ -757,6 +772,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     final int itemIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM);
     final int priceIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_ITEM_PRICE);
     final int discountIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_DISCOUNT);
+    final int maxDiscountIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_MAX_DISCOUNT);
     final int unpackingIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_UNPACKING);
 
     if (parentGrid == null) {
@@ -805,6 +821,13 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
                 Double percent = pair.getB();
                 Double oldPrice = row.getDouble(priceIndex);
                 Double discount = row.getDouble(discountIndex);
+
+                double maxDiscount = BeeUtils.unbox(row.getDouble(maxDiscountIndex));
+                if (maxDiscount != 0) {
+                  if (BeeUtils.unbox(percent) > maxDiscount) {
+                    percent = maxDiscount;
+                  }
+                }
 
                 List<String> oldValues =
                     Lists.newArrayList(oldPrice == null ? null : oldPrice.toString(),

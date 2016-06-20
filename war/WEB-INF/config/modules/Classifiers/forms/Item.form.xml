@@ -225,6 +225,13 @@
           <row>
             <Label for="ExternalCode" />
             <InputText source="ExternalCode" summarize="true" />
+
+            <Label for="MaxDiscount">
+              &foritem;
+            </Label>
+            <InputText source="MaxDiscount" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputText>
           </row>
 
           <row>

@@ -193,6 +193,7 @@ public final class OrdersConstants {
   public static final String COL_REGISTRATION_LANGUAGE = "Language";
   public static final String COL_REGISTRATION_HOST = "Host";
   public static final String COL_REGISTRATION_AGENT = "Agent";
+  public static final String COL_REGISTRATION_REGISTERED= "Registered";
 
   public static final String COL_SHOPPING_CART_CREATED = "Created";
   public static final String COL_SHOPPING_CART_NAME = "Name";

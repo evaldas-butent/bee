@@ -7,7 +7,9 @@ import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
+import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -16,6 +18,8 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -100,6 +104,17 @@ public class OrdEcRegistrationForm extends AbstractFormInterceptor {
           public void onSuccess(Long result) {
             if (getFormView().isInteractive()) {
               getHeaderView().clearCommandPanel();
+
+              Queries.update(VIEW_ORD_EC_REGISTRATIONS, Filter.compareId(getActiveRowId()),
+                  COL_REGISTRATION_REGISTERED, "t", new Queries.IntCallback() {
+                    @Override
+                    public void onSuccess(Integer result) {
+                      final String msgLogin = Localized.dictionary().userLogin() + ": " + login.trim();
+                      final String msgPswd = Localized.dictionary().password() + ": " + password.trim();
+
+                      NewMailMessage.create(email, null, msgLogin + " " + msgPswd, null, null);
+                    }
+                  });
             }
           }
         });

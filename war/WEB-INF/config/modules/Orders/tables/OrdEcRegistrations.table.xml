@@ -35,5 +35,6 @@
     <Text name="Agent" label="=userAgent" />
     
     <Boolean name="NotVATPayer" label="=ecNotVATPayer" />
+    <Boolean name="Registered" label="=registered" />
   </Fields>
 </Table>
