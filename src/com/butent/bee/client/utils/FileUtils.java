@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -64,6 +65,7 @@ public final class FileUtils {
   private static final BeeLogger logger = LogUtils.getLogger(FileUtils.class);
 
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
+  private static final double BYTES_IN_MB = 1048576;
 
   public static void commitFiles(Collection<? extends FileInfo> files, final String viewName,
       final String parentColumn, final Long parentId, final String fileColumn,
@@ -287,8 +289,10 @@ public final class FileUtils {
       long size = fileInfo.getSize();
 
       if (size > maxSize) {
+        NumberFormat formater = NumberFormat.getFormat("0.00");
         errors.add(BeeUtils.join(BeeConst.STRING_COLON + BeeConst.STRING_SPACE, fileInfo.getName(),
-            Localized.dictionary().fileSizeExceeded(size, maxSize)));
+            Localized.dictionary().fileSizeExceeded(formater.format(size / BYTES_IN_MB),
+                formater.format(maxSize / BYTES_IN_MB))));
       } else {
         result.add(fileInfo);
       }

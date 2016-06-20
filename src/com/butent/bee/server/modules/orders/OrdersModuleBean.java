@@ -2756,7 +2756,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     insOrder.addConstant(COL_ORDERS_STATUS, OrdersStatus.NEW.ordinal());
     insOrder.addConstant(COL_SOURCE, "Ec");
-    insOrder.addConstant(COL_START_DATE, TimeUtils.nowMillis());
+    insOrder.addConstant(COL_START_DATE, TimeUtils.nowMinutes());
     insOrder.addConstant(COL_COMPANY, clientInfo.getLong(colClientId));
 
     Long contact = usr.getCompanyPerson(usr.getCurrentUserId());

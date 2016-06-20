@@ -533,6 +533,55 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         return response;
       }
       company = response.getResponseAsLong();
+
+      if (DataUtils.isId(company)) {
+        SqlInsert companyContact = new SqlInsert(TBL_CONTACTS)
+            .addNotEmpty(COL_ADDRESS, address)
+            .addNotEmpty(COL_POST_INDEX, postIndex)
+            .addNotEmpty(COL_PHONE, phone)
+            .addNotEmpty(COL_MOBILE, mobile)
+            .addNotEmpty(COL_FAX, fax);
+
+        Long country = null;
+
+        if (!BeeUtils.isEmpty(countryName)) {
+          country = qs.getId(TBL_COUNTRIES, COL_COUNTRY_NAME, countryName);
+
+          if (!DataUtils.isId(country)) {
+            country = qs.insertData(new SqlInsert(TBL_COUNTRIES)
+                .addConstant(COL_COUNTRY_NAME, countryName));
+          }
+          companyContact.addConstant(COL_COUNTRY, country);
+        }
+
+        if (!BeeUtils.isEmpty(cityName)) {
+          Long city;
+
+          if (DataUtils.isId(country)) {
+            city = qs.getId(TBL_CITIES, COL_CITY_NAME, cityName, COL_COUNTRY, country);
+
+            if (!DataUtils.isId(city)) {
+              city = qs.insertData(new SqlInsert(TBL_CITIES)
+                  .addConstant(COL_CITY_NAME, cityName)
+                  .addConstant(COL_COUNTRY, country));
+            }
+          } else {
+            city = qs.getId(TBL_CITIES, COL_CITY_NAME, cityName);
+          }
+          if (DataUtils.isId(city)) {
+            companyContact.addConstant(COL_CITY, city);
+          }
+        }
+
+        Long contact = qs.insertDataWithResponse(companyContact).getResponseAsLong();
+        if (DataUtils.isId(contact)) {
+          SqlUpdate companyUpdate = new SqlUpdate(TBL_COMPANIES)
+              .addConstant(COL_CONTACT, contact)
+              .setWhere(sys.idEquals(TBL_COMPANIES, company));
+
+          qs.updateData(companyUpdate);
+        }
+      }
     }
 
     SqlInsert insPerson = new SqlInsert(TBL_PERSONS)
@@ -579,53 +628,6 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       if (position != null) {
         cpRow.setValue(DataUtils.getColumnIndex(COL_POSITION, cpColumns), position);
       }
-    }
-    Long country = null;
-
-    if (!BeeUtils.isEmpty(countryName)) {
-      country = qs.getId(TBL_COUNTRIES, COL_COUNTRY_NAME, countryName);
-
-      if (!DataUtils.isId(country)) {
-        country = qs.insertData(new SqlInsert(TBL_COUNTRIES)
-            .addConstant(COL_COUNTRY_NAME, countryName));
-      }
-      cpRow.setValue(DataUtils.getColumnIndex(COL_COUNTRY, cpColumns), country);
-    }
-
-    if (!BeeUtils.isEmpty(cityName)) {
-      Long city;
-
-      if (DataUtils.isId(country)) {
-        city = qs.getId(TBL_CITIES, COL_CITY_NAME, cityName, COL_COUNTRY, country);
-
-        if (!DataUtils.isId(city)) {
-          city = qs.insertData(new SqlInsert(TBL_CITIES)
-              .addConstant(COL_CITY_NAME, cityName)
-              .addConstant(COL_COUNTRY, country));
-        }
-      } else {
-        city = qs.getId(TBL_CITIES, COL_CITY_NAME, cityName);
-      }
-      if (DataUtils.isId(city)) {
-        cpRow.setValue(DataUtils.getColumnIndex(COL_CITY, cpColumns), city);
-      }
-    }
-
-    if (!BeeUtils.isEmpty(address)) {
-      cpRow.setValue(DataUtils.getColumnIndex(COL_ADDRESS, cpColumns), address);
-    }
-    if (!BeeUtils.isEmpty(postIndex)) {
-      cpRow.setValue(DataUtils.getColumnIndex(COL_POST_INDEX, cpColumns), postIndex);
-    }
-
-    if (!BeeUtils.isEmpty(phone)) {
-      cpRow.setValue(DataUtils.getColumnIndex(COL_PHONE, cpColumns), phone);
-    }
-    if (!BeeUtils.isEmpty(mobile)) {
-      cpRow.setValue(DataUtils.getColumnIndex(COL_MOBILE, cpColumns), mobile);
-    }
-    if (!BeeUtils.isEmpty(fax)) {
-      cpRow.setValue(DataUtils.getColumnIndex(COL_FAX, cpColumns), fax);
     }
 
     BeeRowSet cpRowSet = DataUtils.createRowSetForInsert(VIEW_COMPANY_PERSONS, cpColumns, cpRow);

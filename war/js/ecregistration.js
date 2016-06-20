@@ -54,3 +54,25 @@ function onSelectType(tp) {
     companyTypeInput.disabled = person;
   }
 }
+
+function onSelectVAT() {
+  var checkBox = document.getElementById("NotVATPayer");
+  if (checkBox) {
+    var value = checkBox.checked;
+    var className = "bee-ec-registration-required";
+
+    var vatCode = document.getElementById("VatCode-label");
+    if (vatCode) {
+      if (value) {
+        vatCode.classList.remove(className);
+      } else {
+        vatCode.classList.add(className);
+      }
+    }
+
+    var vatCodeInput = document.getElementById("VatCode-input");
+    if (vatCodeInput) {
+      vatCodeInput.required = !value;
+    }
+  }
+}

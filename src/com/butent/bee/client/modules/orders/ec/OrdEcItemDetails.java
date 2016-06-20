@@ -100,17 +100,17 @@ public class OrdEcItemDetails extends Flow {
       }
 
       if (!BeeUtils.isEmpty(item.getDescription())) {
-        Flow flow = new Flow(stylePrefix + "description");
+        Flow descContainer = new Flow(stylePrefix + "description-" + STYLE_CONTAINER);
 
         CustomDiv descriptionLabel = new CustomDiv();
         descriptionLabel.setHtml(Localized.dictionary().description());
-        flow.add(descriptionLabel);
+        descContainer.add(descriptionLabel);
 
-        CustomDiv descriptionWidget = new CustomDiv();
+        CustomDiv descriptionWidget = new CustomDiv(stylePrefix + "description");
         descriptionWidget.setHtml(item.getDescription());
-        flow.add(descriptionWidget);
+        descContainer.add(descriptionWidget);
 
-        container.add(flow);
+        container.add(descContainer);
       }
 
       if (!BeeUtils.isEmpty(item.getLink())) {
