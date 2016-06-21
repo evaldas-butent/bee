@@ -1,0 +1,84 @@
+package com.butent.bee.client.modules.trade;
+
+import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.Widget;
+
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
+import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.utils.BeeUtils;
+
+public abstract class CustomInvoiceForm extends PrintFormInterceptor {
+
+  private String operationId;
+  private String operation2Id;
+
+  @Override
+  public void afterCreate(FormView form) {
+    Global.getParameter(PRM_ACCUMULATION_OPERATION,
+        opId -> operationId = opId);
+
+    Global.getParameter(PRM_ACCUMULATION2_OPERATION,
+        opId -> operation2Id = opId);
+
+    super.afterCreate(form);
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      FormFactory.WidgetDescriptionCallback callback) {
+
+    if (widget instanceof ChildGrid
+        && BeeUtils.inListSame(name, TBL_PURCHASE_ITEMS, TBL_SALE_ITEMS)) {
+
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public void onEditStart(EditStartEvent event) {
+          if (!BeeUtils.same(event.getColumnId(), COL_TRADE_ITEM_ORDINAL)) {
+            event.consume();
+          } else {
+            super.onEditStart(event);
+          }
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+      });
+    }
+    super.afterCreateWidget(name, widget, callback);
+  }
+
+  @Override
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+    if (!BeeUtils.inList(getStringValue(COL_TRADE_OPERATION), operationId, operation2Id)) {
+      for (String col : new String[] {COL_TRADE_INVOICE_NO, COL_TRADE_TERM}) {
+        Widget widget = getFormView().getWidgetBySource(col);
+
+        if (widget instanceof Editor && BeeUtils.isEmpty(((Editor) widget).getValue())) {
+          getFormView().notifySevere(Data.getColumnLabel(getViewName(), col),
+              Localized.dictionary().valueRequired());
+
+          ((Editor) widget).setFocus(true);
+          event.consume();
+          return;
+        }
+      }
+    }
+    super.onReadyForInsert(listener, event);
+  }
+}

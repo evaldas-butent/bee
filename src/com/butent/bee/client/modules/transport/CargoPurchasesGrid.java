@@ -53,7 +53,7 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
     int numberIdx = info.getColumnIndex(COL_NUMBER);
 
     for (BeeRow row : data.getRows()) {
-      orders.add(row.getString(order));
+      orders.add(BeeUtils.nvl(row.getString(order), ""));
 
       Long id = row.getLong(suplId);
       if (DataUtils.isId(id)) {

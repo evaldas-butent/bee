@@ -25,14 +25,14 @@
       <row>
         <Label for="InvoicePrefix" />
         <InputText source="InvoicePrefix" upperCase="true" style="width:7em" />
-        <InlineLabel for="InvoiceNo" class="bee-required" />
-        <InputText source="InvoiceNo" required="true" />
+        <InlineLabel for="InvoiceNo" />
+        <InputText source="InvoiceNo" />
       </row>
       <row>
         <Label for="Supplier" class="bee-required" />
         <DataSelector source="Supplier" required="true" />
-        <Label for="Term" class="bee-required" />
-        <InputDate source="Term" style="width:10em;" required="true" />
+        <Label for="Term" />
+        <InputDate source="Term" style="width:10em;" />
       </row>
       <row>
         <cell colSpan="3">

@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
@@ -15,6 +16,7 @@ import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
 import com.butent.bee.server.data.DataEventHandler;
+import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -390,6 +392,22 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 COL_TRADE_SALE_SERIES));
           }
         }
+        if (event.isBefore() && event instanceof ViewInsertEvent
+            && Objects.equals(sys.getViewSource(event.getTargetName()), TBL_PURCHASES)) {
+
+          List<BeeColumn> cols = ((ViewInsertEvent) event).getColumns();
+          IsRow row = ((ViewInsertEvent) event).getRow();
+          int numberIdx = DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols);
+
+          if (BeeConst.isUndef(numberIdx)) {
+            cols.add(new BeeColumn(COL_TRADE_INVOICE_NO));
+            row.addValue(null);
+            numberIdx = row.getNumberOfCells() - 1;
+
+            row.setValue(numberIdx,
+                Invocation.locateRemoteBean(IdGeneratorBean.class).getId(TBL_PURCHASES) + 1);
+          }
+        }
       }
 
       @Subscribe
@@ -732,6 +750,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .addFields(table, idName, COL_TRADE_PAID)
           .addFrom(table)
           .setWhere(SqlUtils.and(SqlUtils.notNull(table, COL_TRADE_EXPORTED),
+              SqlUtils.notEqual(table, COL_TRADE_OPERATION,
+                  prm.getRelation(TransportConstants.PRM_ACCUMULATION_OPERATION)),
+              SqlUtils.notEqual(table, COL_TRADE_OPERATION,
+                  prm.getRelation(TransportConstants.PRM_ACCUMULATION2_OPERATION)),
               SqlUtils.or(SqlUtils.isNull(table, COL_TRADE_PAID),
                   SqlUtils.less(table, COL_TRADE_PAID, SqlUtils.field(table, COL_TRADE_AMOUNT))))));
 

@@ -72,7 +72,7 @@ public class CargoSalesGrid extends InvoiceBuilder {
       if (DataUtils.isId(id)) {
         currencies.put(id, row.getString(currName));
       }
-      orders.add(row.getString(order));
+      orders.add(BeeUtils.nvl(row.getString(order), ""));
       vehicles.add(BeeUtils.join("/", row.getString(vehicle), row.getString(trailer),
           row.getString(forwarderVehicle)));
       drivers.add(BeeUtils.joinItems(row.getString(driver), row.getString(forwarderDriver)));
