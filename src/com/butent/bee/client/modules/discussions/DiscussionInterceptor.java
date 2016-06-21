@@ -274,7 +274,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final int COMMENT_ROW_PADDING_FACTOR = 2;
   private static final int MAX_COMMENT_ROW_PADDING_LEFT = COMMENT_ROW_PADDING_FACTOR * 5;
   private static final String DEFAULT_PHOTO = "images/bs-logo.png";
-  private static final DiscussionEvent [] FIRE_GLOBAL_EVENTS  = {
+  private static final DiscussionEvent[] FIRE_GLOBAL_EVENTS  = {
           DiscussionEvent.CREATE, DiscussionEvent.ACTIVATE, DiscussionEvent.DEACTIVATE,
           DiscussionEvent.CLOSE, DiscussionEvent.COMMENT,
           DiscussionEvent.REPLY, DiscussionEvent.MARK, DiscussionEvent.MODIFY
@@ -803,7 +803,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         if (data != null) {
           onResponse(data);
 
-          if (event != null && DiscussionEvent.in(event.ordinal(), FIRE_GLOBAL_EVENTS)) {
+          if (DiscussionEvent.in(event.ordinal(), FIRE_GLOBAL_EVENTS)) {
             DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DISCUSSIONS);
           } else {
             DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_DISCUSSIONS);
@@ -992,12 +992,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     panel.clear();
 
     if (discussParams == null) {
-      Global.showError("Error getting parrameters ");
+      Global.showError("Error getting parameters ");
       return;
     }
 
     if (discussParams.isEmpty()) {
-      Global.showError("Error getting parrameters ");
+      Global.showError("Error getting parameters ");
       return;
     }
 

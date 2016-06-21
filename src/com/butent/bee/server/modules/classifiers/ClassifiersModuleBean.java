@@ -193,7 +193,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Override
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
-    ResponseObject response = null;
+    ResponseObject response;
 
     if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
       response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)),
@@ -1719,7 +1719,7 @@ public class ClassifiersModuleBean implements BeeModule {
     return BeeUtils.joinOptions(COL_DISCOUNT_PRICE, pp.getA(), COL_DISCOUNT_PERCENT, pp.getB());
   }
 
-  private IsCondition getCompanyActionsFilter(Long user, int remindBefore) {
+  private static IsCondition getCompanyActionsFilter(Long user, int remindBefore) {
     JustDate today = new JustDate();
     long nowInHours = new DateTime().getTime() / TimeUtils.MILLIS_PER_HOUR;
 
