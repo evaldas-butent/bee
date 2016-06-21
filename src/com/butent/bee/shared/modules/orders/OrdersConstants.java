@@ -89,6 +89,7 @@ public final class OrdersConstants {
 
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";
+  public static final String TBL_ORD_EC_USAGE = "OrdEcUsage";
 
   public static final String FORM_ORD_EC_REGISTRATION = "OrdEcRegistration";
 

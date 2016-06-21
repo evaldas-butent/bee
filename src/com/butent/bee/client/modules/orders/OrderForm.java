@@ -33,6 +33,7 @@ import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
@@ -54,6 +55,7 @@ import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.DateTime;
@@ -74,6 +76,26 @@ public class OrderForm extends PrintFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new OrderForm();
+  }
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (BeeUtils.same(editableWidget.getColumnId(), COL_COMPANY)) {
+      editableWidget.addCellValidationHandler(new Handler() {
+        @Override
+        public Boolean validateCell(CellValidateEvent event) {
+          if (!event.sameValue()) {
+            Data.clearCell(VIEW_ORDERS, getActiveRow(), "Object");
+            Data.clearCell(VIEW_ORDERS, getActiveRow(), COL_COMPANY_OBJECT_NAME);
+            Data.clearCell(VIEW_ORDERS, getActiveRow(), COL_COMPANY_OBJECT_ADDRESS);
+
+            getFormView().refreshBySource("Object");
+          }
+          return true;
+        }
+      });
+    }
+    super.afterCreateEditableWidget(editableWidget, widget);
   }
 
   @Override
@@ -124,6 +146,14 @@ public class OrderForm extends PrintFormInterceptor {
               return;
             }
 
+            String series = row.getString(Data.getColumnIndex(VIEW_ORDERS,
+                TradeConstants.COL_SERIES));
+            if (Objects.equals(row.getInteger(Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS)),
+                OrdersStatus.NEW.ordinal()) && BeeUtils.isEmpty(series)) {
+                getFormView().notifySevere(Localized.dictionary().trdSeries() + " "
+                    + Localized.dictionary().valueRequired());
+                return;
+            }
             ParameterList params = OrdersKeeper.createSvcArgs(SVC_FILL_RESERVED_REMAINDERS);
             params.addDataItem(COL_ORDER, row.getId());
             params.addDataItem(COL_WAREHOUSE, form.getLongValue(COL_WAREHOUSE));
@@ -209,6 +239,10 @@ public class OrderForm extends PrintFormInterceptor {
     } else {
       caption = isOrder
           ? Localized.dictionary().order() : Localized.dictionary().offer();
+
+      if (Objects.equals(status, OrdersStatus.NEW.ordinal())) {
+        caption = Localized.dictionary().ordEcOrder();
+      }
     }
 
     if (!BeeUtils.isEmpty(caption)) {
@@ -228,6 +262,8 @@ public class OrderForm extends PrintFormInterceptor {
         header.addCommandItem(approve);
       } else if (Objects.equals(status, OrdersStatus.SENT.ordinal())) {
         header.addCommandItem(cancel);
+        header.addCommandItem(approve);
+      } else if (Objects.equals(status, OrdersStatus.NEW.ordinal())) {
         header.addCommandItem(approve);
       }
     } else if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())
@@ -354,10 +390,19 @@ public class OrderForm extends PrintFormInterceptor {
       Long warehouse = getActiveRow().getLong(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE));
       Long company = getActiveRow().getLong(Data.getColumnIndex(VIEW_ORDERS, COL_COMPANY));
       Integer status = getActiveRow().getInteger(statusIdx);
+      Long series = getActiveRow().getLong(getDataIndex(TradeConstants.COL_SERIES));
 
       if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())) {
         if (!BeeUtils.isPositive(warehouse)) {
           getFormView().notifySevere(Localized.dictionary().warehouse() + " "
+              + Localized.dictionary().valueRequired());
+          return false;
+        }
+      }
+
+      if (Objects.equals(status, OrdersStatus.NEW.ordinal())) {
+        if (!BeeUtils.isPositive(series)) {
+          getFormView().notifySevere(Localized.dictionary().trdSeries() + " "
               + Localized.dictionary().valueRequired());
           return false;
         }

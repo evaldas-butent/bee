@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -219,6 +220,34 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
 
           if (relatedRow != null) {
             applyOrderTemplate(relatedRow, form);
+          }
+        }
+        break;
+
+      case VIEW_COMPANY_OBJECTS:
+        if (event.isOpened()) {
+          FormView form = ViewHelper.getForm(event.getSelector());
+
+          if (form != null) {
+            Long company = form.getLongValue(COL_COMPANY);
+            Filter filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;
+
+            event.getSelector().setAdditionalFilter(filter);
+          }
+
+        }
+        if (event.getRelatedRow() != null) {
+          FormView form = ViewHelper.getForm(event.getSelector());
+
+          if (form.getActiveRow() != null && !DataUtils.isId(form.getLongValue(COL_COMPANY))) {
+
+            Long company = Data.getLong(relatedViewName, event.getRelatedRow(), COL_COMPANY);
+            form.getActiveRow().setValue(form.getDataIndex(COL_COMPANY), company);
+
+            String name = Data.getString(relatedViewName, event.getRelatedRow(), ALS_COMPANY_NAME);
+            form.getActiveRow().setValue(form.getDataIndex(ALS_COMPANY_NAME), name);
+
+            form.refreshBySource(COL_COMPANY);
           }
         }
         break;

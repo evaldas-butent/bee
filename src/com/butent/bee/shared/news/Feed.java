@@ -13,6 +13,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -189,6 +190,42 @@ public enum Feed implements HasLocalizedCaption {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.feedEcRegistrations();
+    }
+  },
+
+  ORD_EC_ORDERS(ModuleAndSub.of(Module.ORDERS), OrdersConstants.TBL_ORDERS,
+      OrdersConstants.VIEW_ORDERS,
+      Lists.newArrayList(ALS_COMPANY_NAME), null) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.feedOrdEcOrders();
+    }
+  },
+
+  ORD_EC_ORDERS_MY(ModuleAndSub.of(Module.ORDERS), OrdersConstants.TBL_ORDERS,
+      OrdersConstants.VIEW_ORDERS,
+      Lists.newArrayList(ALS_COMPANY_NAME), null) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.feedOrdEcOrdersMy();
+    }
+  },
+
+  ORDERS(ModuleAndSub.of(Module.ORDERS), OrdersConstants.TBL_ORDERS,
+      OrdersConstants.VIEW_ORDERS,
+      Lists.newArrayList(ALS_COMPANY_NAME), null) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.feedOrders();
+    }
+  },
+
+  ORDERS_MY(ModuleAndSub.of(Module.ORDERS), OrdersConstants.TBL_ORDERS,
+      OrdersConstants.VIEW_ORDERS,
+      Lists.newArrayList(ALS_COMPANY_NAME), null) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.feedOrdersMy();
     }
   },
 

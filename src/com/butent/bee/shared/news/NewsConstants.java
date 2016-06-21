@@ -9,6 +9,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -133,6 +134,8 @@ public final class NewsConstants {
     observedColumns.put(TradeConstants.TBL_PURCHASES, TransportConstants.COL_DATE);
     observedColumns.put(TradeConstants.TBL_PURCHASES, TransportConstants.COL_NUMBER);
     observedColumns.put(TradeConstants.TBL_PURCHASES, TransportConstants.COL_EXPORTED);
+
+    observedColumns.put(OrdersConstants.TBL_ORDERS, EcConstants.COL_ORDER_STATUS);
   }
 
   private static void initUsageTables() {
@@ -176,6 +179,9 @@ public final class NewsConstants {
 
     usageTables.put(ProjectConstants.TBL_PROJECTS,
         ProjectConstants.TBL_PROJECT_USAGE);
+
+    usageTables.put(OrdersConstants.TBL_ORDERS,
+        OrdersConstants.TBL_ORD_EC_USAGE);
   }
 
   private NewsConstants() {

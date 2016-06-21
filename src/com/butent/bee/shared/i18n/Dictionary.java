@@ -2495,6 +2495,14 @@ public interface Dictionary {
 
   default String feedNew() {return g("feedNew");}
 
+  default String feedOrdEcOrders() {return g("feedOrdEcOrders");}
+
+  default String feedOrdEcOrdersMy() {return g("feedOrdEcOrdersMy");}
+
+  default String feedOrders() {return g("feedOrders");}
+
+  default String feedOrdersMy() {return g("feedOrdersMy");}
+
   default String feedPersons() {return g("feedPersons");}
 
   default String feedRequestsAll() {return g("feedRequestsAll");}
@@ -3468,6 +3476,10 @@ public interface Dictionary {
   default String ordCreditLimitEmpty() {return g("ordCreditLimitEmpty");}
 
   default String ordDebtExceedsCreditLimit() {return g("ordDebtExceedsCreditLimit");}
+
+  default String ordEcOrder() {return g("ordEcOrder");}
+
+  default String ordEcOrders() {return g("ordEcOrders");}
 
   default String ordEmptyFreeRemainder() {return g("ordEmptyFreeRemainder");}
 

@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="Orders" viewName="Orders" caption="=orders"
-  filter="Status=0 or Status=4"
+  filter="(Status=0 OR Status=4) AND Source!=Ec"
   >
   <g:columns>
     <RelColumn name="Type" visible="true" />
@@ -14,6 +14,8 @@
     <DataColumn name="Number" visible="true" />
     
     <RelColumn name="Warehouse" visible="true" />
+
+    <RelColumn name="Object" renderColumns="ObjectName" />
 
     <DataColumn name="CompanyName" visible="true" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
