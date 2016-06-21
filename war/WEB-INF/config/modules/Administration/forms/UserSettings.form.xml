@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY timeStep "30">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
-  
+
   name="UserSettings" viewName="UserSettings" caption="=userProfile"
   width="700" height="80" heightUnit="%"
   >
@@ -11,7 +14,7 @@
     <Table kind="controls">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
-      
+
       <row>
         <Label for="Login" />
         <TextLabel source="Login" class="bee-output" style="min-width: 150px;" />
@@ -58,11 +61,9 @@
           <br module="Calendar" />
           <Table kind="controls" cellStyle="padding-right: 5px;" module="Calendar">
             <row>
-              <CheckBox source="MailCompanyActions" summarize="true" />
-            </row>
-            <row>
-              <Label text="=crmRTRemindBefore" style="text-align: right;" />
-              <InputInteger source="CompanyActionRemindBefore" style="width: 50px;">
+              <Label for="CompanyActionRemindBefore" style="text-align: right;" />
+              <InputInteger source="CompanyActionRemindBefore" style="width: 80px;"
+                            placeholder="2" summarize="true">
                 <validation>
                   <ui:function>
                     if (cell.newValue > 0 || cell.newValue == null) {
@@ -76,14 +77,15 @@
               <Label text="=unitHourShort" />
             </row>
             <row module="Tasks">
-                <CheckBox name="MailTasksSummary" source="MailTasksSummary" summarize="true" />
-                <InputTimeOfDay name="TasksMailingTime" source="TasksMailingTime" style="width: 80px;"/>
-                <Label text="=unitHourShort" />
+              <Label for="TasksMailingTime" />
+              <InputTimeOfDay name="TasksMailingTime" source="TasksMailingTime" step="&timeStep;"
+                              placeholder="8:00" style="width: 80px;" summarize="true" />
+              <Label text="=unitHourShort" />
             </row>
           </Table>
         </FlowPanel>
       </page>
-      
+
       <page>
         <text>=userInterface</text>
         <FlowPanel style="padding-left: 2em;">
@@ -97,7 +99,7 @@
 
           <Table kind="controls">
             <col index="0" cellStyle="padding-right: 6px;" />
-       
+
             <row>
               <Label for="UiTheme" />
               <DataSelector source="UiTheme" summarize="true" />
@@ -124,19 +126,16 @@
                 style="width: 60px;" summarize="true" />
             </row>
           </Table>
-         <br/>
-         <CheckBox source="ShowNewMessagesNotifier" summarize="true" />
-         <br/>
         </FlowPanel>
       </page>
 
       <page for="Style">
         <text>CSS</text>
         <SimplePanel>
-          <InputArea source="Style" class="occupy-1" style="font-family: monospace;" 
+          <InputArea source="Style" class="occupy-1" style="font-family: monospace;"
             summarize="true" />
         </SimplePanel>
       </page>
-    </TabbedPages>     
+    </TabbedPages>
   </FlowPanel>
-</f:Form>  
+</f:Form>

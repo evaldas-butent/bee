@@ -10,8 +10,6 @@
     <Boolean name="MailAssignedTasks" label="=crmMailAssignedTasks" />
     <Boolean name="MailNewDiscussions" label="=discussMailNewDiscussions" />
     <Boolean name="MailNewAnnouncements" label="=discussMailNewAnnouncements" />
-    <Boolean name="MailCompanyActions" label="=calMailPlannedActions" />
-    <Boolean name="MailTasksSummary" label="=crmMailTasksSummary" />
 
     <Boolean name="OpenInNewTab" label="=openInNewTab" />
 
@@ -22,13 +20,13 @@
     <Integer name="ClickSensitivityMillis" label="=clickSensitivityMillis" />
     <Integer name="ClickSensitivityDistance" label="=clickSensitivityDistance" />
 
-    <Integer name="CompanyActionRemindBefore" label="=crmRTRemindBefore" />
+    <Integer name="CompanyActionRemindBefore" label="=calMailPlannedActions" />
     <Integer name="NewsRefreshIntervalSeconds" label="=newsRefreshIntervalSeconds" />
     <Integer name="LoadingStateDelayMillis" label="=loadingStateDelayMillis" />
 
     <Relation name="UiTheme" relation="UiThemes" label="=uiTheme" />
 
-    <String name="TasksMailingTime" precision="10" />
+    <String name="TasksMailingTime" precision="10" label="=crmMailTasksSummary"/>
 
     <Text name="Style" label="=style" />
 

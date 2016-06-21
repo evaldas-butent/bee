@@ -32,8 +32,6 @@
     <SimpleColumn name="MailAssignedTasks" />
     <SimpleColumn name="MailNewDiscussions" />
     <SimpleColumn name="MailNewAnnouncements" />
-    <SimpleColumn name="MailCompanyActions" />
-    <SimpleColumn name="MailTasksSummary" />
     <SimpleColumn name="TasksMailingTime" />
 
     <SimpleColumn name="OpenInNewTab" />
