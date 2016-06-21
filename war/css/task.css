@@ -202,18 +202,6 @@ td.bee-crm-taskDialog-filesLabelCell{
   background-image: linear-gradient(to bottom, #4D90FE, #4787ED);  
 }
 
-.bee-crm-Mode-new,
-.bee-crm-Mode-upd {
-  width: 3px;
-  height: 100%;
-}
-.bee-crm-Mode-new {
-  background-color: #1ca5c7;
-}
-.bee-crm-Mode-upd {
-  background-color: #ffb300;
-}
-
 .bee-crm-taskEvent-col-Photo {
   width: 2.5em;
   height: 2.5em;
