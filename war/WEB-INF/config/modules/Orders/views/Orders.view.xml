@@ -21,6 +21,12 @@
       <SimpleColumn name="Name" alias="WarehouseName" />
     </SimpleJoin>
 
+    <SimpleColumn name="Object" />
+    <SimpleJoin joinType="LEFT" name="Object">
+      <SimpleColumn name="ObjectName" />
+      <SimpleColumn name="ObjectAddress" />
+    </SimpleJoin>
+
     <SimpleColumn name="Series" />
     <SimpleJoin joinType="LEFT" name="Series">
       <SimpleColumn name="SeriesName" />

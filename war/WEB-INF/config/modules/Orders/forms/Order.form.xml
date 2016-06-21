@@ -58,6 +58,12 @@
         <DataSelector source="Manager" editSource="ManagerPerson" renderColumns="ManagerFirstName ManagerLastName"
           newRowEnabled="false" style="&inpw;" />
       </row>
+
+      <row>
+        <Label for="Object" style="&lbl;"/>
+        <DataSelector source="Object" choiceColumns="CompanyName ObjectName ObjectAddress"
+                      newRowEnabled="false" renderColumns="ObjectName" style="&inpw;" />
+      </row>
     </Table>
     <br />
     <TabbedPages style="height: 480px;" name="TabbedPages" >

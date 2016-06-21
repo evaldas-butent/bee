@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-        name="OrdEcOrders" viewName="Orders" caption="=orders"
-        filter="Status=5"
->
+  name="OrdEcOrders" viewName="Orders" caption="=ordEcOrders" disabledActions="add"
+        filter="Status=5 AND (Manager={u} OR !(Manager))"
+  >
   <g:columns>
     <RelColumn name="Type" visible="true" />
     <DataColumn name="Status" visible="true" />
@@ -17,7 +17,7 @@
 
     <DataColumn name="CompanyName" visible="true" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
-               choiceColumns="FirstName LastName CompanyName" />
+      choiceColumns="FirstName LastName CompanyName" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
   </g:columns>
 </g:Grid>
