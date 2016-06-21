@@ -16,6 +16,35 @@ import java.util.Map;
 
 public class DateTimeFormat {
 
+  /**
+   * PredefinedFormat is enum for date/time formatting patterns which formats and parses dates or
+   * time in a language-independent manner.
+   *
+   * The date/time formatting patterns, allows for formatting
+   * (i.e., date → text), parsing (text → date), and normalization. The date is represented as a
+   * AbstractDate object or as the milliseconds since January 1, 1970, 00:00:00 GMT.
+   *
+   * PredefinedFormat provides many patterns for obtaining default date/time formatters based on the
+   * default or a given locale and a number of formatting styles.
+   * The formatting styles include FULL, LONG, MEDIUM, and SHORT. More detail and examples of using
+   * these styles are provided in the enum descriptions.
+   * <p>
+   * PredefinedFormat helps you to format and parse dates for any locale.
+   * Your code can be completely independent of the locale conventions for months, days of the week,
+   * or even the calendar format: lunar vs. solar.
+   * <p>
+   * Use getFormat method to get the normal date format for that country. There are other static
+   * factory methods available.  You can pass in different options to this factory method to control
+   * the length of the result; from SHORT to MEDIUM to LONG to FULL.
+   * The exact result depends on the locale, but generally:
+   * <p>
+   * SHORT is completely numeric, such as 12.13.52 or 3:30pm <br />
+   * MEDIUM is longer, such as Jan 12, 1952 <br />
+   * LONG is longer, such as January 12, 1952 or 3:30:32pm <br />
+   * FULL is pretty completely specified, such as Tuesday, April 12, 1952 AD or 3:30:42pm PST. <br/>
+   * You can also set the time zone on the format if you wish.
+   *
+   */
   public enum PredefinedFormat {
     ISO_8601,
     RFC_2822,
@@ -31,9 +60,72 @@ public class DateTimeFormat {
     TIME_SHORT,
 
     DATE_TIME_FULL,
+    /**
+     * Format time with fields (ordinal of fields depends from locale).
+     * {@code
+     * years (number),
+     * month (text),
+     * day (number),
+     * hours (number),
+     * minutes (number),
+     * seconds (number),
+     * UTC time zone (text).
+     * }
+     * Examples:
+     * English version: January 12, 1952 3:30:32pm UTC-3
+     * Lithuanian version: 1952 m. sausio 12 d. 15:30:32 UTC-3
+     */
     DATE_TIME_LONG,
+
+    /**
+     * Format time with fields (ordinal of fields depends from locale).
+     * {@code
+     * years (number),
+     * month (text, short notation),
+     * day (number),
+     * hours (number),
+     * minutes (number),
+     * seconds (number),
+     * }
+     *
+     * Examples:
+     * English version: Jan 12, 1952 3:30:32pm
+     * Lithuanian version: 1952 m. saus. 12 15:30:32
+     */
     DATE_TIME_MEDIUM,
+    /**
+     * Format time with fields (ordinal of fields depends from locale).
+     * {@code
+     * years (number),
+     * month (text, short notation),
+     * day (number),
+     * hours (number),
+     * minutes (number),
+     * seconds (number),
+     * }
+     *
+     * Examples:
+     * English version: Jan 12, 1952 3:30:32pm
+     * Lithuanian version: 1952 m. saus. 12 15:30:32
+     */
     DATE_TIME_SHORT,
+
+    /**
+     * Format time with fields (ordinal of fields depends from locale).
+     * {@code
+     * years (number),
+     * month (number),
+     * day (number),
+     * hours (number),
+     * minutes (number),
+     * seconds (number),
+     * }
+     *
+     * Examples:
+     * English version: 12.13.52 3:30:32pm
+     * Lithuanian version: 1952-12-13 15:30:32
+     */
+    DATE_SHORT_TIME_MEDIUM,
 
     DAY,
     HOUR_MINUTE,
@@ -130,6 +222,9 @@ public class DateTimeFormat {
         break;
       case DATE_TIME_SHORT:
         pattern = dtfi.dateTimeShort(dtfi.timeFormatShort(), dtfi.dateFormatShort());
+        break;
+      case DATE_SHORT_TIME_MEDIUM:
+        pattern = dtfi.dateTime(dtfi.timeFormatMedium(), dtfi.dateFormatShort());
         break;
       case DAY:
         pattern = dtfi.formatDay();
