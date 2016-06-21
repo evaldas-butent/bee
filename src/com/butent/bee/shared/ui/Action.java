@@ -39,7 +39,8 @@ public enum Action implements BeeSerializable, HasCaption {
   RESET_SETTINGS(FontAwesome.TIMES_CIRCLE_O, Localized.dictionary().actionResetSettings(),
       "resetSettings", false),
   RIGHTS(FontAwesome.EYE, Localized.dictionary().rights(), "rights", true),
-  SAVE(FontAwesome.SAVE, Localized.dictionary().actionSave(), "save", true);
+  SAVE(FontAwesome.SAVE, Localized.dictionary().actionSave(), "save", true),
+  MOVE(FontAwesome.ARROWS, Localized.dictionary().actionMove(), "move", true);
 
   public static final Set<Action> NO_ACTIONS = new HashSet<>();
 

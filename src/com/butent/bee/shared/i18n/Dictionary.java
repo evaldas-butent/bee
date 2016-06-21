@@ -1399,7 +1399,11 @@ public interface Dictionary {
 
   default String deleteRecordQuestion() {return g("deleteRecordQuestion");}
 
+  default String deleteRowError() {return g("deleteRowError");}
+
   default String deleteRowQuestion() {return g("deleteRowQuestion");}
+
+  default String deleteRowsError() {return g("deleteRowsError");}
 
   default String deleteSelectedRow() {return g("deleteSelectedRow");}
 
@@ -4146,6 +4150,8 @@ public interface Dictionary {
   default String scheduledStartingDate() {return g("scheduledStartingDate");}
 
   default String scheduledStartingTime() {return g("scheduledStartingTime");}
+  
+  default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
 
   default String search() {return g("search");}
 
@@ -4883,6 +4889,8 @@ public interface Dictionary {
 
   default String trNewTrip() {return g("trNewTrip");}
 
+  default String trNewValues() {return g("trNewValues");}
+
   default String trNewVehicle() {return g("trNewVehicle");}
 
   default String trNewVehicleModel() {return g("trNewVehicleModel");}
@@ -5116,6 +5124,8 @@ public interface Dictionary {
   default String trRequestStatusNew() {return g("trRequestStatusNew");}
 
   default String trRequestStatusRejected() {return g("trRequestStatusRejected");}
+
+  default String trRequestSubmittedContent() {return g("trRequestSubmittedContent");}
 
   default String trRequestTemplate() {return g("trRequestTemplate");}
 

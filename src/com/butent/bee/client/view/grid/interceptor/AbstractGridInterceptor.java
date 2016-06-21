@@ -52,6 +52,7 @@ import com.butent.bee.shared.ui.Relation;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractGridInterceptor implements GridInterceptor {
 
@@ -264,8 +265,18 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public Set<Action> getDisabledActions(Set<Action> defaultActions) {
+    return defaultActions;
+  }
+
+  @Override
   public Collection<DynamicColumnIdentity> getDynamicColumns(GridView gridView, String dynGroup) {
     return null;
+  }
+
+  @Override
+  public Set<Action> getEnabledActions(Set<Action> defaultActions) {
+    return defaultActions;
   }
 
   @Override

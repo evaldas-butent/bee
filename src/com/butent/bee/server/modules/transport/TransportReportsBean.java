@@ -679,8 +679,6 @@ public class TransportReportsBean {
     Long currency = reqInfo.getParameterLong(COL_CURRENCY);
     boolean woVat = BeeUtils.toBoolean(reqInfo.getParameter(COL_TRADE_VAT));
 
-    HasConditions clause = SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION));
-
     ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
 
     String trucks = SqlUtils.uniqueName();
@@ -698,6 +696,7 @@ public class TransportReportsBean {
     String plannedDailyCosts = "Planned" + dailyCosts;
     String plannedRoadCosts = "Planned" + roadCosts;
 
+    HasConditions clause = SqlUtils.and();
     clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_TRIPS,
         sys.getIdName(TBL_TRIPS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_TRIP));
     clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_NO));
@@ -708,11 +707,33 @@ public class TransportReportsBean {
     clause.add(report.getCondition(SqlUtils.field(trucks, COL_VEHICLE_NUMBER), COL_VEHICLE));
     clause.add(report.getCondition(SqlUtils.field(trailers, COL_VEHICLE_NUMBER), COL_TRAILER));
 
+    HasConditions cargoClause = SqlUtils.and();
+    cargoClause.add(report.getCondition(TBL_ORDERS, COL_ORDER_NO));
+    cargoClause.add(report.getCondition(SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE),
+        COL_ORDER + COL_ORDER_DATE));
+    cargoClause.add(report.getCondition(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME),
+        COL_CUSTOMER));
+    cargoClause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_ORDER_CARGO,
+        sys.getIdName(TBL_ORDER_CARGO)), SqlConstants.SqlDataType.STRING, 20, 0), COL_CARGO));
+    cargoClause.add(report.getCondition(TBL_ORDER_CARGO, COL_CARGO_PARTIAL));
+
+    if (clause.isEmpty()) {
+      clause.add(SqlUtils.in(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
+          new SqlSelect().setDistinctMode(true)
+              .addFields(TBL_CARGO_TRIPS, COL_TRIP)
+              .addFrom(TBL_CARGO_TRIPS)
+              .addFromLeft(TBL_ORDER_CARGO,
+                  sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+              .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+              .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
+              .setWhere(cargoClause)));
+    }
     SqlSelect query = new SqlSelect()
         .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
         .addFields(TBL_TRIPS, COL_TRIP_STATUS, COL_TRIP_DATE, COL_TRIP_NO, COL_TRIP_ROUTE)
         .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM),
-            SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE)), COL_TRIP_DATE_FROM)
+            SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE),
+                TimeUtils.MILLIS_PER_DAY), TimeUtils.MILLIS_PER_DAY)), COL_TRIP_DATE_FROM)
         .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
             SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)), COL_TRIP_DATE_TO)
         .addField(trucks, COL_VEHICLE_NUMBER, COL_VEHICLE)
@@ -733,7 +754,7 @@ public class TransportReportsBean {
             sys.joinTables(TBL_VEHICLES, trucks, TBL_TRIPS, COL_VEHICLE))
         .addFromLeft(TBL_VEHICLES, trailers,
             sys.joinTables(TBL_VEHICLES, trailers, TBL_TRIPS, COL_TRAILER))
-        .setWhere(clause);
+        .setWhere(clause.add(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION)));
 
     String tmp = qs.sqlCreateTemp(query);
 
@@ -940,10 +961,8 @@ public class TransportReportsBean {
           .setFrom(query, als, SqlUtils.joinUsing(tmp, als, COL_TRIP)));
     }
     // Cargo info
-    String orderDate = COL_ORDER + COL_ORDER_DATE;
-
     boolean cargoRequired = report.requiresField(COL_ORDER_NO)
-        || report.requiresField(orderDate) || report.requiresField(COL_CUSTOMER)
+        || report.requiresField(COL_ORDER + COL_ORDER_DATE) || report.requiresField(COL_CUSTOMER)
         || report.requiresField(COL_ORDER_MANAGER) || report.requiresField(COL_CARGO)
         || report.requiresField(COL_CARGO_PARTIAL);
 
@@ -953,18 +972,9 @@ public class TransportReportsBean {
               .addFields(tmp, COL_TRIP)
               .addFrom(tmp));
 
-      clause.clear();
-      clause.add(report.getCondition(TBL_ORDERS, COL_ORDER_NO));
-      clause.add(report.getCondition(SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE), orderDate));
-      clause.add(report.getCondition(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME),
-          COL_CUSTOMER));
-      clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(tmpPercents, COL_CARGO),
-          SqlConstants.SqlDataType.STRING, 20, 0), COL_CARGO));
-      clause.add(report.getCondition(TBL_ORDER_CARGO, COL_CARGO_PARTIAL));
-
       query = new SqlSelect()
           .addFields(TBL_ORDERS, COL_ORDER_NO)
-          .addField(TBL_ORDERS, COL_ORDER_DATE, orderDate)
+          .addField(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER + COL_ORDER_DATE)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER)
           .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
               SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
@@ -980,7 +990,7 @@ public class TransportReportsBean {
           .addFromLeft(TBL_COMPANY_PERSONS,
               sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
           .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-          .setWhere(clause);
+          .setWhere(cargoClause);
 
       for (String column : qs.getData(new SqlSelect()
           .addAllFields(tmp)

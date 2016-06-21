@@ -40,7 +40,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       WidgetDescriptionCallback callback) {
 
     if (BeeUtils.same(name, COL_TRADE_DOCUMENT_PHASE) && widget instanceof TabBar) {
-      ((TabBar) widget).addBeforeSelectionHandler(event -> onPhaseTransition(event));
+      ((TabBar) widget).addBeforeSelectionHandler(this::onPhaseTransition);
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -113,7 +113,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
                     BeeRow r = BeeRow.restore(response.getResponseAsString());
 
-                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), r);
+                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), r, true);
                     DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_STOCK);
                   }
                 }
