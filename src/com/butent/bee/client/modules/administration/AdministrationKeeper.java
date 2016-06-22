@@ -35,6 +35,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Preloader;
 
 import java.util.List;
+import java.util.Objects;
 
 public final class AdministrationKeeper {
 
@@ -142,7 +143,12 @@ public final class AdministrationKeeper {
   }
 
   private static void onDataSelector(SelectorEvent event) {
-    if (event.isOpened() && event.hasRelatedView(VIEW_USERS)) {
+    String viewName = event.getRelatedViewName();
+
+    if (event.isOpened() && Objects.equals(Data.getViewTable(viewName), TBL_USERS)
+        && Data.containsColumn(viewName, COL_USER_BLOCK_FROM)
+        && Data.containsColumn(viewName, COL_USER_BLOCK_UNTIL)) {
+
       DateTimeValue now = new DateTimeValue(TimeUtils.nowMinutes());
 
       event.getSelector().getOracle().setResponseFilter(Filter.or(
@@ -151,7 +157,7 @@ public final class AdministrationKeeper {
               Filter.isMore(COL_USER_BLOCK_FROM, now)),
           Filter.and(Filter.notNull(COL_USER_BLOCK_UNTIL),
               Filter.isLess(COL_USER_BLOCK_UNTIL, now))
-          ));
+      ));
     }
   }
 
