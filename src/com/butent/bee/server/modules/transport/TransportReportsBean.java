@@ -31,6 +31,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -537,11 +538,15 @@ public class TransportReportsBean {
               .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
               .setWhere(cargoClause)));
     }
+    TimeZone tz = TimeZone.getDefault();
+
     SqlSelect query = new SqlSelect()
         .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
         .addFields(TBL_TRIPS, COL_TRIP_STATUS, COL_TRIP_DATE, COL_TRIP_NO, COL_TRIP_ROUTE)
         .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM),
-            SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE),
+            SqlUtils.multiply(SqlUtils.divide(
+                SqlUtils.plus(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE),
+                    tz.getRawOffset() + tz.getDSTSavings()),
                 TimeUtils.MILLIS_PER_DAY), TimeUtils.MILLIS_PER_DAY)), COL_TRIP_DATE_FROM)
         .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
             SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)), COL_TRIP_DATE_TO)
