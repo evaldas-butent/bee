@@ -4,7 +4,7 @@
 
   name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
   flexGrow="1" order="AssessmentID desc"
-  enableCopy="- Assessment Cargo *Status *Date Number Manager ExpensesRegistered, Log"
+  enableCopy="- Assessment OrderNo Cargo CargoHandling *Status *Date Number Manager ExpensesRegistered, Log"
   filter="Status"
   >
   <g:columns>
@@ -14,6 +14,7 @@
     <DataColumn name="Date" width="110" />
     <DataColumn name="OrderNo" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+    <RelColumn name="Department" />
     <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
 

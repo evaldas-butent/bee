@@ -8,6 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
@@ -23,6 +24,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -41,6 +43,13 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, COL_TRADE_DOCUMENT_PHASE) && widget instanceof TabBar) {
       ((TabBar) widget).addBeforeSelectionHandler(this::onPhaseTransition);
+
+    } else if (BeeUtils.same(name, COL_TRADE_OPERATION) && widget instanceof DataSelector) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isOpened()) {
+          event.getSelector().setAdditionalFilter(getOperationFilter());
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -49,6 +58,22 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new TradeDocumentForm();
+  }
+
+  private Filter getOperationFilter() {
+    if (DataUtils.isId(getActiveRowId())) {
+      OperationType operationType = getOperationType();
+      TradeDocumentPhase phase = getPhase();
+
+      if (operationType != null && phase != null && phase.modifyStock()) {
+        return Filter.equals(COL_OPERATION_TYPE, operationType);
+      }
+    }
+    return null;
+  }
+
+  private OperationType getOperationType() {
+    return EnumUtils.getEnumByIndex(OperationType.class, getIntegerValue(COL_OPERATION_TYPE));
   }
 
   private TradeDocumentPhase getPhase() {

@@ -13,13 +13,18 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AbstractRowModeRenderer;
 import com.butent.bee.client.render.AttachmentRenderer;
+import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -31,6 +36,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -57,6 +63,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
 
   private static final int DEFAULT_STAR_COUNT = 3;
   private static final String NAME_STAR = "Star";
+  private static final String NAME_MODE = "Mode";
 
   private final DiscussionsListType type;
   private final UserInfo currentUser;
@@ -66,6 +73,35 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     this.type = type;
     this.currentUser = BeeKeeper.getUser();
     this.discussionAdminLogin = "";
+  }
+
+  @Override
+  public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn) {
+
+    if (BeeUtils.same(columnName, NAME_MODE) && column instanceof HasCellRenderer) {
+      ((HasCellRenderer) column).setRenderer(new AbstractRowModeRenderer() {
+
+        @Override
+        public boolean hasUserProperty(IsRow row, Long userId) {
+          return row.hasPropertyValue(PROP_USER, userId);
+        }
+
+        @Override
+        public Long getLastUpdate(IsRow row, Long userId) {
+          return Data.getLong(VIEW_DISCUSSIONS, row, ALS_LAST_COMMENT_PUBLISH_TIME);
+
+        }
+
+        @Override
+        public Long getLastAccess(IsRow row, Long userId) {
+          return row.getPropertyLong(PROP_LAST_ACCESS, userId);
+        }
+      });
+    }
+
+    return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
   }
 
   @Override

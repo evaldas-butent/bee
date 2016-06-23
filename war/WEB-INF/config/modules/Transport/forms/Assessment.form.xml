@@ -3,7 +3,7 @@
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
   <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:120px; padding-top:1px; white-space:nowrap;">
+  <!ENTITY labelLeft "&inline; width:120px; padding-top:1px;">
   <!ENTITY labelRight "&labelLeft; width:60px; text-align:right; margin-right:10px;">
   <!ENTITY input "&inline; width:10em;">
 ]>
@@ -14,7 +14,7 @@
   name="Assessment" viewName="Assessments" showRowId="true"
         width="70" widthUnit="%" height="80" heightUnit="%"
   >
-  <f:properties jasperReports="LogisticsOrderContract_lt:LT, LogisticsOrderContract_en:EN, LogisticsOrderContract_ru:RU" />
+  <f:properties jasperReports="LogisticsOrderContract" />
 
   <FlowPanel style="padding: 10px 2px 2px 10px; height:calc(100% - 15px);"
              class="flexBox-vertical bee-tr-assessment-form">
@@ -22,21 +22,23 @@
       <FlowPanel style="&section;">
         <Label for="Status" style="&labelLeft;" />
         <FlowPanel name="Status" style="&input; font-weight:bold;" />
-        <Label for="OrderNo" style="&labelRight; width:120px;" />
-        <InputText source="OrderNo" style="&input;" readOnly="true" />
+        <Label for="Customer" style="&labelRight; width:120px;" />
+        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName"
+                      choiceColumns="Name TypeName" style="&input; width:200px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
         <Label for="Date" style="&labelLeft;" />
         <InputDateTime source="Date" style="&input;" />
-        <Label for="Customer" style="&labelRight; width:120px;" />
-        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName"
-            choiceColumns="Name TypeName" style="&input; width:200px;" />
-      </FlowPanel>
-      <FlowPanel style="&section;">
-        <Label for="CustomerPerson" style="&labelRight; width:120px; margin-left:10em; padding-left:120px;" />
+        <Label for="CustomerPerson" style="&labelRight; width:120px;" />
         <DataSelector source="CustomerPerson" style="&input; width:200px;"
           choiceColumns="FirstName LastName CompanyName" renderColumns="PersonFirstName PersonLastName"
           options="Customer" />
+      </FlowPanel>
+      <FlowPanel style="&section;">
+        <Label for="OrderNo" style="&labelLeft;" />
+        <InputText source="OrderNo" style="&input;" readOnly="true" />
+        <Label for="Payer" style="&labelRight; width:120px;" />
+        <DataSelector source="Payer" style="&input; width:200px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">

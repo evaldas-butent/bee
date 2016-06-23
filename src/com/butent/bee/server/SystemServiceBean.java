@@ -240,16 +240,16 @@ public class SystemServiceBean {
 
     long start = System.currentTimeMillis();
 
-    String loc = BeeUtils.right(reportName, 3);
+    String lng = Localized.extractLanguage(reportName);
     Locale locale;
     String repName;
 
-    if (BeeUtils.isPrefix(loc, "_")) {
-      repName = BeeUtils.removeSuffix(reportName, loc);
-      locale = new Locale(BeeUtils.removePrefix(loc, "_"));
-    } else {
+    if (BeeUtils.isEmpty(lng)) {
       repName = reportName;
       locale = usr.getLocale();
+    } else {
+      repName = Localized.removeLanguage(reportName);
+      locale = new Locale(lng);
     }
     String reportFile = ui.getReport(repName);
 

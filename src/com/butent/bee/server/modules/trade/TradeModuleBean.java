@@ -505,9 +505,19 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           } else if (event instanceof ViewDeleteEvent) {
             Set<Long> ids = ((ViewDeleteEvent) event).getIds();
 
-            if (event.isBefore() && !BeeUtils.isEmpty(ids)) {
-              if (hasChildren(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, ids))) {
-                event.addErrorMessage("think of the children");
+            if (!BeeUtils.isEmpty(ids)) {
+              if (event.isBefore()) {
+                ResponseObject responseObject = onDeleteTradeDocuments(ids);
+
+                if (responseObject != null) {
+                  event.addErrors(responseObject);
+                  event.setUserObject(responseObject.getResponse());
+                }
+
+              } else if (event.isAfter()) {
+                if (Action.REFRESH.equals(event.getUserObject())) {
+                  Endpoint.refreshViews(VIEW_TRADE_STOCK);
+                }
               }
             }
           }
@@ -1316,9 +1326,16 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   private boolean hasChildren(IsCondition itemCondition) {
-    return qs.sqlExists(TBL_TRADE_DOCUMENT_ITEMS,
-        SqlUtils.in(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT,
-            TBL_TRADE_DOCUMENT_ITEMS, sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS), itemCondition));
+    String alias = SqlUtils.uniqueName();
+
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, alias,
+            SqlUtils.join(alias, COL_TRADE_ITEM_PARENT,
+                TBL_TRADE_DOCUMENT_ITEMS, sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS)))
+        .setWhere(itemCondition);
+
+    return qs.sqlCount(query) > 0;
   }
 
   private ResponseObject commitRow(String viewName, List<BeeColumn> columns, BeeRow oldRow,
@@ -1678,6 +1695,57 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     if (!refresh) {
       refresh = qs.sqlExists(TBL_TRADE_STOCK,
           SqlUtils.inList(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, itemIds));
+    }
+
+    return refresh ? ResponseObject.response(Action.REFRESH) : ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject onDeleteTradeDocuments(Collection<Long> docIds) {
+    boolean refresh = false;
+
+    for (Long docId : docIds) {
+      if (DataUtils.isId(docId)) {
+        if (hasChildren(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docId))) {
+          return ResponseObject.error("document", docId, "has children");
+        }
+
+        SqlSelect query = new SqlSelect()
+            .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PARENT)
+            .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+            .setWhere(SqlUtils.and(
+                SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docId),
+                SqlUtils.notNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT)));
+
+        SimpleRow row = qs.getRow(query);
+        if (row != null) {
+          Long parent = row.getLong(COL_TRADE_ITEM_PARENT);
+          Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+
+          if (DataUtils.isId(parent) && BeeUtils.nonZero(qty)) {
+            SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
+                .addExpression(COL_STOCK_QUANTITY,
+                    SqlUtils.plus(SqlUtils.field(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), qty))
+                .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
+
+            ResponseObject response = qs.updateDataWithResponse(stockUpdate);
+            if (response.hasErrors()) {
+              return response;
+            }
+
+            refresh = true;
+          }
+        }
+      }
+    }
+
+    if (!refresh) {
+      SqlSelect query = new SqlSelect()
+          .addFrom(TBL_TRADE_STOCK)
+          .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+              TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
+          .setWhere(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docIds));
+
+      refresh = qs.sqlCount(query) > 0;
     }
 
     return refresh ? ResponseObject.response(Action.REFRESH) : ResponseObject.emptyResponse();
