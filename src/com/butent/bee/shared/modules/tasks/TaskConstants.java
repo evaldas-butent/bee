@@ -19,15 +19,117 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Main Task module constants of DataSource and UI objects.
+ */
 public final class TaskConstants {
 
+  /**
+   * Workflow or process of tasks handling and validation helper class.
+   *
+   * <p>
+   *     There main data types defined the task workflow process:
+   *     <ul>
+   *         <li>Task Executor - defines Executor data field related with Users data structure.</li>
+   *         <li>Task Owner - defines Owner data field related with Users data structure.</li>
+   *         <li>Task Observers - defines set of TaskUsers data structure related with Tasks and
+   *         Users structures.</li>
+   *         <li>Task status - defines numeric Status data field assigned with {@code TaskStatus}
+   *         enumeration.</li>
+   *     </ul>
+   * </p>
+   *
+   * <p>
+   *     All fields related with Users data structure comparing with current loggined system user.
+   *     By these data types combining conditions for user do actions with task. <br/>
+   *     Workflow example: current system user is owner of task. Task has status "finished". User
+   *     can "approve" or "return of execution" task
+   *
+   * </p>
+   *
+   * <p>
+   *     {@code
+   *     Long currentUserId = BeeKeeper.getUser.getUserId(); // Current logged user id
+   *     } <br/>
+   *     {@code
+   *     Long ownerId = getTaskOwnerId(); // Returns owner user id of task
+   *     } <br/>
+   *     {@code
+   *     Long executorId = getTaskExecutorId(); // Returns executor user id of task;
+   *     } <br/>
+   *     {@code
+   *     TaskStatus status = getTaskStatus(); // Returns task status enum value
+   *     } <br/> <br />
+
+   *     {@code
+   *     TaskWorkflowAction canApprove = canTaskWorkflowAction.grouped(WorkflowOperation.AND,
+   *     } <br/> &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.canOwner(), TaskWorkflowAction.hasStatus(TaskStatus.COMPLETED));
+   *     } <br /> <br />
+   *
+   *     {@code
+   *     TaskWorkflowAction canReturnExecute = TaskWorkflowAction.grouped(WorkflowOperation.AND,
+   *     } <br/> &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.canOwner(),
+   *     } <br/> &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.grouped(WorkflowOperation.OR,
+   *     }
+   *
+   *     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.hasStatus(TaskStatus.SUSPENDED),
+   *     }
+   *     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *        TaskWorkflowAction.hasStatus(TaskStatus.CANCELED),
+   *     }
+   *     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *         TaskWorkflowAction.hasStatus(TaskStatus.COMPLETED),
+   *     }
+   *     <br/> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code
+   *       TaskWorkflowAction.hasStatus(TaskStatus.APPROVED))));
+   *     } <br /> <br />
+   *
+   *     {@code
+   *       if (canApprove.canExecute(currentUserId == executorId, currentUserId == ownerId,
+   *     } <br />  &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code  false, false,  status)
+   *     } { <br /> &nbsp;&nbsp;
+   *     {@code
+   *      // create UI controls of task approving...
+   *     } <br/> }&nbsp;&nbsp;&nbsp;&nbsp; <br/> <br />
+   *
+   *     {@code
+   *       if (canReturnExecute.canExecute(currentUserId == executorId, currentUserId == ownerId,
+   *     } <br />  &nbsp;&nbsp;&nbsp;&nbsp;
+   *     {@code  false, false,  status)
+   *     } { <br /> &nbsp;&nbsp;
+   *     {@code
+   *      // create UI controls of task return execution...
+   *     } <br/> }&nbsp;&nbsp;&nbsp;&nbsp;
+   *
+   * </p>
+   */
   protected static final class TaskWorkflowAction {
+
+      /**
+       * List of logical operations for building task workflow conditions.
+       */
     public enum WorkflowOperation {
       OR,
       AND;
     }
 
     private enum WorkflowRole {
+      /**
+       * This role method {@code isValid}  always returns false value. <br />
+       * The action of task never be created in UI by this role.
+       */
       HIDDEN {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -35,6 +137,11 @@ public final class TaskConstants {
           return false;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code isOwner} parameter of
+       * this method will be true. <br />
+       */
       OWNER {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -42,6 +149,11 @@ public final class TaskConstants {
           return isOwner;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code isExecutor} parameter
+       * of this method will be true. <br />
+       */
       EXECUTOR {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -49,6 +161,11 @@ public final class TaskConstants {
           return isExecutor;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code isObserver} parameter
+       * of this method will be true. <br />
+       */
       OBSERVER {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -56,6 +173,11 @@ public final class TaskConstants {
           return isObserver;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code isUser} parameter
+       * of this method will be true. <br />
+       */
       USER {
         @Override
         boolean isValid(boolean isExecutor, boolean isOwner, boolean isObserver, boolean isUser,
@@ -63,6 +185,11 @@ public final class TaskConstants {
           return isUser;
         }
       },
+
+      /**
+       * This role method {@code isValid} returns true value then the {@code hasValidStatus}
+       * parameter of this method will be true. <br />
+       */
       TASK_STATUS {
 
         @Override
@@ -246,9 +373,10 @@ public final class TaskConstants {
     COMPLETE(Localized.dictionary().crmTaskStatusCompleted(),
         Localized.dictionary().crmActionFinish(),
         FontAwesome.CHECK_CIRCLE_O,
-        TaskWorkflowAction.grouped(WorkflowOperation.OR,
-            TaskWorkflowAction.canExecutor(),
-            TaskWorkflowAction.canOwner(),
+        TaskWorkflowAction.grouped(WorkflowOperation.AND,
+            TaskWorkflowAction.grouped(WorkflowOperation.OR,
+                TaskWorkflowAction.canExecutor(),
+                TaskWorkflowAction.canOwner()),
             TaskWorkflowAction.grouped(WorkflowOperation.OR,
                 TaskWorkflowAction.hasStatus(TaskStatus.VISITED),
                 TaskWorkflowAction.hasStatus(TaskStatus.NOT_VISITED),
@@ -304,6 +432,15 @@ public final class TaskConstants {
     @Override
     public String getCaption() {
       return caption;
+    }
+
+    public static boolean in(int event, TaskEvent... events) {
+      for (TaskEvent te : events) {
+        if (te.ordinal() == event) {
+          return true;
+        }
+      }
+      return false;
     }
 
     public String getCommandLabel() {
@@ -753,6 +890,7 @@ public final class TaskConstants {
   public static final String ALS_PROJECT_OWNER = "ProjectOwner";
   public static final String ALS_PROJECT_STATUS = "ProjectStatus";
   public static final String ALS_REMINDER_NAME = "ReminderName";
+  public static final String ALS_LAST_BREAK_EVENT = "LastBreakEvent";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
 

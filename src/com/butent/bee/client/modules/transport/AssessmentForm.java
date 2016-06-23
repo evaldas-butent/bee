@@ -29,7 +29,6 @@ import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
@@ -177,42 +176,39 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
         @Override
         public void onSuccess() {
-          presenter.getGridView().ensureRelId(new IdCallback() {
-            @Override
-            public void onSuccess(Long assessment) {
-              BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
+          presenter.getGridView().ensureRelId(assessment -> {
+            BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
 
-              for (String col : new String[] {
-                  COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
-                  COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG,
-                  "LogCount", "Finished", "FinishedCount"}) {
-                newRow.clearCell(form.getDataIndex(col));
-              }
-              if (isRequest()) {
-                newRow.setValue(form.getDataIndex(COL_ASSESSMENT_STATUS),
-                    AssessmentStatus.NEW.ordinal());
-                newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
-              } else {
-                newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.ACTIVE.ordinal());
-              }
-              newRow.setValue(form.getDataIndex(COL_ASSESSMENT), assessment);
-              newRow.setValue(form.getDataIndex(COL_ORDER_MANAGER), user.getNormalizedValue());
-              newRow.setValue(form.getDataIndex(COL_DEPARTMENT), department.get());
-              newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
-
-              Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
-                  form.getDataColumns(), newRow), new RpcCallback<RowInfo>() {
-                @Override
-                public void onSuccess(RowInfo result) {
-                  Queries.getRow(presenter.getViewName(), result.getId(), new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow res) {
-                      presenter.getGridView().getGrid().insertRow(res, true);
-                    }
-                  });
-                }
-              });
+            for (String col : new String[] {
+                COL_ORDER_NO, COL_DATE, COL_CARGO, COL_CARGO_HANDLING, COL_ASSESSMENT_STATUS,
+                COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG,
+                "LogCount", "Finished", "FinishedCount"}) {
+              newRow.clearCell(form.getDataIndex(col));
             }
+            if (isRequest()) {
+              newRow.setValue(form.getDataIndex(COL_ASSESSMENT_STATUS),
+                  AssessmentStatus.NEW.ordinal());
+              newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
+            } else {
+              newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.ACTIVE.ordinal());
+            }
+            newRow.setValue(form.getDataIndex(COL_ASSESSMENT), assessment);
+            newRow.setValue(form.getDataIndex(COL_ORDER_MANAGER), user.getNormalizedValue());
+            newRow.setValue(form.getDataIndex(COL_DEPARTMENT), department.get());
+            newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
+
+            Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
+                form.getDataColumns(), newRow), new RpcCallback<RowInfo>() {
+              @Override
+              public void onSuccess(RowInfo result) {
+                Queries.getRow(presenter.getViewName(), result.getId(), new RowCallback() {
+                  @Override
+                  public void onSuccess(BeeRow res) {
+                    presenter.getGridView().getGrid().insertRow(res, true);
+                  }
+                });
+              }
+            });
           });
         }
       });
@@ -777,7 +773,16 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   @Override
-  public void afterRefresh(FormView formView, IsRow row) {
+  public boolean beforeAction(Action action, final Presenter presenter) {
+    if (action == Action.SAVE && !isNewRow()
+        && handleSaveAction(() -> presenter.handleAction(action))) {
+      return false;
+    }
+    return super.beforeAction(action, presenter);
+  }
+
+  @Override
+  public void beforeRefresh(FormView formView, IsRow row) {
     if (form == null) {
       return;
     }
@@ -918,15 +923,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   @Override
-  public boolean beforeAction(Action action, final Presenter presenter) {
-    if (action == Action.SAVE && !isNewRow()
-        && handleSaveAction(() -> presenter.handleAction(action))) {
-      return false;
-    }
-    return super.beforeAction(action, presenter);
-  }
-
-  @Override
   public FormInterceptor getPrintFormInterceptor() {
     return new AssessmentPrintForm() {
       @Override
@@ -1042,7 +1038,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             }
             form = formView;
             updateDepartment(form, form.getActiveRow(), null);
-            afterRefresh(form, form.getActiveRow());
+            form.refresh();
           }
         });
   }

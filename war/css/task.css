@@ -202,18 +202,6 @@ td.bee-crm-taskDialog-filesLabelCell{
   background-image: linear-gradient(to bottom, #4D90FE, #4787ED);  
 }
 
-.bee-crm-Mode-new,
-.bee-crm-Mode-upd {
-  width: 3px;
-  height: 100%;
-}
-.bee-crm-Mode-new {
-  background-color: #1ca5c7;
-}
-.bee-crm-Mode-upd {
-  background-color: #ffb300;
-}
-
 .bee-crm-taskEvent-col-Photo {
   width: 2.5em;
   height: 2.5em;
@@ -417,4 +405,36 @@ td.bee-crm-taskDialog-filesLabelCell{
   font-size: 23px;
   color: #484849;
   font-weight: lighter;
+}
+
+.bee-crm-task-lateKind-late, .bee-crm-task-lateKind-opening, .bee-crm-task-lateKind-endgame,
+.bee-crm-task-lateKind-scheduled {
+  font-weight: bolder;
+  padding: 4px 0 4px 0;
+  text-align: right;
+}
+
+.bee-crm-task-lateKind-late {
+  color: red;
+  border: 1px solid;
+}
+
+.bee-crm-task-lateKind-opening {
+  color: green;
+}
+
+.bee-crm-task-lateKind-endgame {
+   color: orange;
+}
+
+.bee-crm-task-lateKind-scheduled {
+  color: yellow;
+}
+
+.bee-crm-task-break {
+  text-decoration: line-through;
+}
+
+.bee-crm-task-break .bee-misc-Slack-label {
+  text-decoration: line-through;
 }

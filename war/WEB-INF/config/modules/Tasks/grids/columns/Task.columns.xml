@@ -24,7 +24,21 @@
 
   <DataColumn name="Status" visible="true" />
   <CalcColumn name="Slack" type="string" cellType="html"
-    width="60" caption="=crmTaskDelayPlannedShort" />
+    width="60" caption="=crmTaskDelayPlannedShort" >
+    <dynStyle>
+      <ui:class>bee-crm-task-break</ui:class>
+      <ui:expression>
+        row.Status == 3 || row.Status == 4 || row.Status == 5 || row.Status == 6
+      </ui:expression>
+    </dynStyle>
+
+    <dynStyle>
+      <ui:class>bee-crm-task-progress</ui:class>
+      <ui:expression>
+        !(row.Status == 3 || row.Status == 4 || row.Status == 5 || row.Status == 6)
+      </ui:expression>
+    </dynStyle>
+  </CalcColumn>
 
   <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
     sortBy="OwnerLastName OwnerFirstName" minWidth="100" />
