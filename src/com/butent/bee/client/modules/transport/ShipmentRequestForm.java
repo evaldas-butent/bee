@@ -556,7 +556,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     BeeColumn column = Data.getColumn(TBL_ORDERS, COL_ORDER_NO);
 
     if (column.hasDefaults()) {
-      orderNo = BeeUtils.join("-", column.getDefaults().getB(), orderNo);
+      orderNo = BeeUtils.parenthesize(column.getDefaults().getB() + orderNo);
     }
     return orderNo;
   }

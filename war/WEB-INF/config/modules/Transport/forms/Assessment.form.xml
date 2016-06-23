@@ -22,21 +22,23 @@
       <FlowPanel style="&section;">
         <Label for="Status" style="&labelLeft;" />
         <FlowPanel name="Status" style="&input; font-weight:bold;" />
-        <Label for="OrderNo" style="&labelRight; width:120px;" />
-        <InputText source="OrderNo" style="&input;" readOnly="true" />
+        <Label for="Customer" style="&labelRight; width:120px;" />
+        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName"
+                      choiceColumns="Name TypeName" style="&input; width:200px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
         <Label for="Date" style="&labelLeft;" />
         <InputDateTime source="Date" style="&input;" />
-        <Label for="Customer" style="&labelRight; width:120px;" />
-        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName"
-            choiceColumns="Name TypeName" style="&input; width:200px;" />
-      </FlowPanel>
-      <FlowPanel style="&section;">
-        <Label for="CustomerPerson" style="&labelRight; width:120px; margin-left:10em; padding-left:120px;" />
+        <Label for="CustomerPerson" style="&labelRight; width:120px;" />
         <DataSelector source="CustomerPerson" style="&input; width:200px;"
           choiceColumns="FirstName LastName CompanyName" renderColumns="PersonFirstName PersonLastName"
           options="Customer" />
+      </FlowPanel>
+      <FlowPanel style="&section;">
+        <Label for="OrderNo" style="&labelLeft;" />
+        <InputText source="OrderNo" style="&input;" readOnly="true" />
+        <Label for="Payer" style="&labelRight; width:120px;" />
+        <DataSelector source="Payer" style="&input; width:200px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
