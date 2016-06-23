@@ -3,7 +3,7 @@
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
   <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:120px; padding-top:1px; white-space:nowrap;">
+  <!ENTITY labelLeft "&inline; width:120px; padding-top:1px;">
   <!ENTITY labelRight "&labelLeft; width:60px; text-align:right; margin-right:10px;">
   <!ENTITY input "&inline; width:10em;">
 ]>

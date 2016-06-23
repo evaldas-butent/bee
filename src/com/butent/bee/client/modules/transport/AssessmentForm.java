@@ -777,7 +777,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         }
         form = formView;
         updateDepartment(form, form.getActiveRow(), null);
-        beforeRefresh(form, form.getActiveRow());
+        form.refresh();
       }
     });
   }
