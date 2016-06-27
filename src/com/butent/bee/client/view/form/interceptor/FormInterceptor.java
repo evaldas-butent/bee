@@ -2,6 +2,7 @@ package com.butent.bee.client.view.form.interceptor;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.presenter.Presenter;
@@ -58,6 +59,8 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
 
   BeeRowSet getRowSet();
+
+  Widget getWidgetByName(String name);
 
   boolean hasFooter(int rowCount);
 
