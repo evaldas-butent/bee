@@ -22,8 +22,14 @@ public class OrdEcItemPanel extends Flow {
 
   private OrdEcItemList itemWrapper;
 
-  public OrdEcItemPanel() {
+  private boolean byCategory;
+  private String service;
+  private String query;
+
+  public OrdEcItemPanel(boolean byCategory, String service) {
     super(EcStyles.name(STYLE_PRIMARY));
+    this.byCategory = byCategory;
+    this.service = service;
   }
 
   @Override
@@ -34,6 +40,10 @@ public class OrdEcItemPanel extends Flow {
       items.clear();
       selectedCategories.clear();
     }
+  }
+
+  public void setQuery(String query) {
+    this.query = query;
   }
 
   public void render(List<OrdEcItem> ecItems) {
@@ -49,7 +59,7 @@ public class OrdEcItemPanel extends Flow {
 
     Flow itemsFlow = new Flow(EcStyles.name(STYLE_ITEMS, STYLE_WRAPPER));
 
-    this.itemWrapper = new OrdEcItemList(items);
+    this.itemWrapper = new OrdEcItemList(items, byCategory, service, query);
     EcStyles.add(itemWrapper, STYLE_ITEMS, STYLE_WRAPPER);
     itemsFlow.add(itemWrapper);
 

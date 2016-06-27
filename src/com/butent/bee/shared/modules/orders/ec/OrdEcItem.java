@@ -14,7 +14,7 @@ import java.util.Collection;
 public class OrdEcItem implements BeeSerializable, HasCaption {
 
   private enum Serial {
-    ID, ARTICLE, NAME, PRICE, DESCRIPTION, UNIT, REMAINDER, LINK, MIN_QUANTITY
+    ID, ARTICLE, NAME, DEFAULT_PRICE, PRICE, DESCRIPTION, UNIT, REMAINDER, LINK, MIN_QUANTITY
   }
 
   public static final Splitter CATEGORY_SPLITTER =
@@ -37,6 +37,7 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
   private long id;
   private String article;
   private String name;
+  private int defPrice;
   private int price;
   private String description;
   private String unit;
@@ -68,6 +69,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
 
         case NAME:
           setName(value);
+          break;
+
+        case DEFAULT_PRICE:
+          setDefPrice(BeeUtils.toInt(value));
           break;
 
         case PRICE:
@@ -108,6 +113,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
   @Override
   public String getCaption() {
     return getName();
+  }
+
+  public int getDefPrice() {
+    return defPrice;
   }
 
   public int getPrice() {
@@ -158,6 +167,10 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
           arr[i++] = name;
           break;
 
+        case DEFAULT_PRICE:
+          arr[i++] = defPrice;
+          break;
+
         case PRICE:
           arr[i++] = price;
           break;
@@ -192,6 +205,14 @@ public class OrdEcItem implements BeeSerializable, HasCaption {
 
   public void setArticle(String article) {
     this.article = article;
+  }
+
+  private void setDefPrice(int defPrice) {
+    this.defPrice = defPrice;
+  }
+
+  public void setDefPrice(Double defPrice) {
+    this.defPrice = BeeUtils.isDouble(defPrice) ? BeeUtils.round(defPrice * 100) : 0;
   }
 
   public void setPrice(Double price) {

@@ -12,6 +12,7 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcUtils;
@@ -19,7 +20,9 @@ import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class OrdEcItemList extends Flow {
 
@@ -45,10 +48,18 @@ public class OrdEcItemList extends Flow {
   private final Button moreWidget;
   private String stockLabel;
 
-  private final List<OrdEcItem> data = new ArrayList<>();
+  private boolean byCategory;
+  private String service;
+  private String query;
+  private int clickedTimes = 0;
 
-  public OrdEcItemList(List<OrdEcItem> items) {
+  private final Set<OrdEcItem> data = new HashSet<>();
+
+  public OrdEcItemList(List<OrdEcItem> items, boolean byCategory, String service, String query) {
     this();
+    this.byCategory = byCategory;
+    this.service = service;
+    this.query = query;
     render(items);
   }
 
@@ -73,14 +84,13 @@ public class OrdEcItemList extends Flow {
     this.stockLabel = OrdEcKeeper.getStockLabel();
   }
 
+  public void setQuery(String query) {
+    this.query = query;
+  }
+
   public void render(List<OrdEcItem> items) {
     if (!table.isEmpty()) {
       table.clear();
-    }
-    StyleUtils.hideDisplay(moreWidget);
-
-    if (!data.isEmpty()) {
-      data.clear();
     }
 
     if (!BeeUtils.isEmpty(items)) {
@@ -137,20 +147,13 @@ public class OrdEcItemList extends Flow {
       int pageSize = (items.size() > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : items.size();
 
       row++;
-      for (OrdEcItem item : items) {
-        if (row > pageSize) {
-          break;
-        }
+      for (OrdEcItem item : data) {
 
         OrdEcItemPicture pictureWidget = new OrdEcItemPicture(item.getCaption());
 
         renderItem(row++, item, pictureWidget);
 
         pictureWidgets.put(item.getId(), pictureWidget);
-      }
-
-      if (pageSize < items.size()) {
-        StyleUtils.unhideDisplay(moreWidget);
       }
 
       if (!pictureWidgets.isEmpty()) {
@@ -218,24 +221,16 @@ public class OrdEcItemList extends Flow {
   }
 
   private void showMoreItems() {
-    int pageStart = table.getRowCount() - 1;
-    int more = data.size() - pageStart;
+    clickedTimes++;
 
-    if (more > 0) {
+    OrdEcKeeper.searchItems(byCategory, service, query, clickedTimes,
+        new Consumer<List<OrdEcItem>>() {
+          @Override
+          public void accept(List<OrdEcItem> input) {
+            render(input);
+          }
+        });
 
-      int pageSize = (more > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : more;
-
-      for (int i = pageStart; i < pageStart + pageSize; i++) {
-        OrdEcItem item = data.get(i);
-
-        OrdEcItemPicture pictureWidget = new OrdEcItemPicture(item.getCaption());
-        renderItem(i + 1, item, pictureWidget);
-      }
-
-      if (pageSize >= more) {
-        StyleUtils.hideDisplay(moreWidget);
-      }
-    }
   }
 
   private boolean hasWarehouse() {

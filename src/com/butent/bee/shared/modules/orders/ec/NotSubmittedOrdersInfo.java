@@ -9,7 +9,7 @@ import com.butent.bee.shared.utils.Codec;
 public class NotSubmittedOrdersInfo implements BeeSerializable {
 
   private enum Serial {
-    NAME, DATE, AMOUNT, COMMENT
+    NAME, DATE, COMMENT
   }
 
   public static NotSubmittedOrdersInfo restore(String s) {
@@ -21,7 +21,6 @@ public class NotSubmittedOrdersInfo implements BeeSerializable {
   private String name;
   private String comment;
   private DateTime date;
-  private double amount;
 
   public NotSubmittedOrdersInfo() {
     super();
@@ -46,10 +45,6 @@ public class NotSubmittedOrdersInfo implements BeeSerializable {
           setDate(DateTime.restore(value));
           break;
 
-        case AMOUNT:
-          setAmount(BeeUtils.toDouble(value));
-          break;
-
         case COMMENT:
           setComment(value);
           break;
@@ -63,10 +58,6 @@ public class NotSubmittedOrdersInfo implements BeeSerializable {
 
   public DateTime getDate() {
     return date;
-  }
-
-  public double getAmount() {
-    return amount;
   }
 
   public String getComment() {
@@ -89,10 +80,6 @@ public class NotSubmittedOrdersInfo implements BeeSerializable {
           arr[i++] = getDate();
           break;
 
-        case AMOUNT:
-          arr[i++] = getAmount();
-          break;
-
         case COMMENT:
           arr[i++] = getComment();
           break;
@@ -107,10 +94,6 @@ public class NotSubmittedOrdersInfo implements BeeSerializable {
 
   public void setDate(DateTime date) {
     this.date = date;
-  }
-
-  public void setAmount(double amount) {
-    this.amount = amount;
   }
 
   public void setComment(String comment) {
