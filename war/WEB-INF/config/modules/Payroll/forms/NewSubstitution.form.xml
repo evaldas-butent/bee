@@ -23,11 +23,11 @@
     </row>
 
     <row>
-      <Label for="DateFrom" />
-      <InputDate name="DateFrom" source="DateFrom" style="&w2;" />
+      <Label for="DateFrom" class="bee-required" />
+      <InputDate name="DateFrom" source="DateFrom" style="&w2;" required="true" visible="true" />
 
-      <Label for="DateUntil" />
-      <InputDate name="DateUntil" source="DateUntil" style="&w2;" />
+      <Label for="DateUntil" class="bee-required" />
+      <InputDate name="DateUntil" source="DateUntil" style="&w2;" required="true" visible="true" />
     </row>
 
     <row class="bee-new-substitution-employee">
