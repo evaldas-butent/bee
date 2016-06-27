@@ -54,6 +54,8 @@ public final class PayrollKeeper {
         new WorkScheduleForm(WorkScheduleKind.PLANNED));
     FormFactory.registerFormInterceptor(FORM_TIME_SHEET,
         new WorkScheduleForm(WorkScheduleKind.ACTUAL));
+
+    FormFactory.registerFormInterceptor(FORM_NEW_SUBSTITUTION, new NewSubstitutionForm());
   }
 
   private PayrollKeeper() {
