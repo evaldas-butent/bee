@@ -152,4 +152,17 @@
       </page>
     </TabbedPages>
   </FlowPanel>
-</f:Form>  
+  <f:rowValidation>
+    <ui:function>
+      if (!row.StartDateTime || !row.EndDateTime) {
+        return null;
+      }
+
+      if (row.StartDateTime &lt; row.EndDateTime) {
+        return null;
+      } else {
+        return $wnd.Bee_maybeTranslate("=calPlannedEndDateMustBeGreater");
+      }
+    </ui:function>
+  </f:rowValidation>
+</f:Form>

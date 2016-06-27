@@ -22,7 +22,7 @@
     <DataColumn name="Scheduled" />
 
     <DataColumn name="Message" maxWidth="200" />
-    <DataColumn name="Sent" readOnly="true" />
+    <DataColumn name="Sent" readOnly="true" format="DATE_SHORT_TIME_MEDIUM"/>
     <DataColumn name="Error" readOnly="true" visible="false" />
   </g:columns>
 </g:Grid>
