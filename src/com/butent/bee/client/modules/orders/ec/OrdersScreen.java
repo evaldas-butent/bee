@@ -227,8 +227,7 @@ public class OrdersScreen extends ScreenImpl {
 
   @Override
   protected IdentifiableWidget initCenter() {
-
-    return new OrdEcItemPanel();
+    return new OrdEcItemPanel(false, null);
   }
 
   @Override

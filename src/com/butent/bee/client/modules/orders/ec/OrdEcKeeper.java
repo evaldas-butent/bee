@@ -17,6 +17,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.cell.AbstractCell;
+import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.widget.ItemDetails;
 import com.butent.bee.client.ui.AutocompleteProvider;
@@ -41,6 +42,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.ec.OrdEcCart;
@@ -100,6 +102,7 @@ public final class OrdEcKeeper {
     ParameterList params = createArgs(SVC_GLOBAL_SEARCH);
     params.addDataItem(VAR_QUERY, query);
     params.addDataItem(ClassifierConstants.COL_COMPANY, BeeKeeper.getUser().getCompany());
+    params.addDataItem("Clicked", 0);
 
     requestItems(SVC_GLOBAL_SEARCH, params, new Consumer<List<OrdEcItem>>() {
       @Override
@@ -107,7 +110,8 @@ public final class OrdEcKeeper {
         AutocompleteProvider.retainValue(inputWidget);
         resetActiveCommand();
 
-        OrdEcItemPanel widget = new OrdEcItemPanel();
+        OrdEcItemPanel widget = new OrdEcItemPanel(false, SVC_GLOBAL_SEARCH);
+        widget.setQuery(query);
         BeeKeeper.getScreen().show(widget);
         renderItems(widget, items);
       }
@@ -155,6 +159,34 @@ public final class OrdEcKeeper {
 
   public static int getQuantityInCart(long itemId) {
     return cartList.getQuantity(itemId);
+  }
+
+  public static void maybeRecalculatePrices(OrdEcItem item, int quantity, Consumer<Boolean> consumer) {
+    Map<String, Long> options = new HashMap<>();
+    Map<Long, Double> quantities = new HashMap<>();
+    Map<Long, ItemPrice> priceNames = new HashMap<>();
+
+    quantities.put(item.getId(), new Double(quantity));
+    options.put(ClassifierConstants.COL_DISCOUNT_COMPANY, BeeKeeper.getUser().getCompany());
+
+    ClassifierKeeper.getPricesAndDiscounts(options, quantities.keySet(), quantities, priceNames,
+        new Consumer<Map<Long, Pair<Double, Double>>>() {
+          @Override
+          public void accept(Map<Long, Pair<Double, Double>> result) {
+            Pair<Double, Double> prices = result.get(item.getId());
+
+            if (prices != null && BeeUtils.isDouble(prices.getA())
+                && BeeUtils.isDouble(prices.getB())) {
+              item.setPrice(prices.getA() - prices.getA() * prices.getB() / 100.0);
+            } else {
+              item.setPrice((double) item.getDefPrice() / 100);
+            }
+
+            if (consumer != null) {
+              consumer.accept(true);
+            }
+          }
+        });
   }
 
   public static void openCart() {
@@ -285,7 +317,7 @@ public final class OrdEcKeeper {
     });
   }
 
-  public static void searchItems(boolean byCategory, String service, String query,
+  public static void searchItems(boolean byCategory, String service, String query, int clickedTimes,
       final Consumer<List<OrdEcItem>> callback) {
 
     if (!byCategory) {
@@ -296,6 +328,7 @@ public final class OrdEcKeeper {
 
     ParameterList params = createArgs(service);
     params.addDataItem(VAR_QUERY, query);
+    params.addDataItem("Clicked", clickedTimes);
     params.addDataItem(ClassifierConstants.COL_COMPANY, BeeKeeper.getUser().getCompany());
 
     requestItems(service, params, callback);

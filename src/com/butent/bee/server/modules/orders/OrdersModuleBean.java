@@ -30,6 +30,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.news.ExtendedUsageQueryProvider;
@@ -160,6 +161,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   MailModuleBean mail;
   @EJB
   NewsBean news;
+  @EJB
+  ClassifiersModuleBean cmb;
 
   @Resource
   TimerService timerService;
@@ -1809,7 +1812,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return SqlUtils.compare(TBL_ITEMS, COL_ITEM_ARTICLE, operator, value);
   }
 
-  private List<OrdEcItem> getItems(IsCondition condition, Long companyId) {
+  private List<OrdEcItem> getItems(IsCondition condition, Long companyId, Integer clicked) {
+
     List<OrdEcItem> items = new ArrayList<>();
 
     String unitName = "UnitName";
@@ -1837,7 +1841,17 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             .setWhere(SqlUtils.and(condition, categoryCondition, SqlUtils.isNull(TBL_ITEMS,
                 COL_ITEM_NOT_INCLUDED)));
 
+    if (clicked != null) {
+      int offset = clicked * 50;
+      int limit = 50;
+
+      itemsQuery.setOffset(offset);
+      itemsQuery.setLimit(limit);
+    }
+
+
     SimpleRowSet itemData = qs.getData(itemsQuery);
+    Pair<Long, Boolean> warehouse = getClientWarehouseId(companyId);
 
     if (!DataUtils.isEmpty(itemData)) {
 
@@ -1854,9 +1868,21 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         item.setName(row.getValue(COL_ITEM_NAME));
 
         Double price = row.getDouble(COL_ITEM_PRICE);
-        if (BeeUtils.isPositive(price)) {
+
+        Pair<Double, Double> prices = (Pair<Double, Double>) cmb.getPriceAndDiscount(companyId,
+            item.getId(), null, warehouse.getA(), null, 1.0, null, null, null, 0).getResponse();
+
+        if (prices != null && BeeUtils.isDouble(prices.getA()) && BeeUtils.isDouble(prices.getB())) {
+          price = prices.getA();
+          Double discount = prices.getB();
+
+          item.setPrice(price - price * discount / 100.0);
+          item.setDefPrice(price - price * discount / 100.0);
+        } else if (BeeUtils.isPositive(price)) {
           item.setPrice(price);
+          item.setDefPrice(price);
         }
+
         item.setUnit(row.getValue(unitName));
 
         Long itemId = row.getLong(sys.getIdName(TBL_ITEMS));
@@ -1917,6 +1943,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   private ResponseObject searchByItemArticle(Operator defOperator, RequestInfo reqInfo) {
     String article = reqInfo.getParameter(VAR_QUERY);
     Long companyId = reqInfo.getParameterLong(COL_COMAPNY);
+    Integer clicked = reqInfo.getParameterInt("Clicked");
 
     if (BeeUtils.isEmpty(article)) {
       return ResponseObject.parameterNotFound(SVC_EC_SEARCH_BY_ITEM_ARTICLE, VAR_QUERY);
@@ -1930,7 +1957,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
               usr.getDictionary().searchQueryRestriction(MIN_SEARCH_QUERY_LENGTH));
     }
 
-    List<OrdEcItem> items = getItems(articleCondition, companyId);
+    List<OrdEcItem> items = getItems(articleCondition, companyId, clicked);
     if (items.isEmpty()) {
       return didNotMatch(article);
     } else {
@@ -1942,6 +1969,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String category = reqInfo.getParameter(VAR_QUERY);
     Long companyId = reqInfo.getParameterLong(COL_COMAPNY);
     IsCondition categoryCondition = null;
+    Integer clicked = reqInfo.getParameterInt("Clicked");
 
     if (BeeUtils.isEmpty(category)) {
       return ResponseObject
@@ -1956,7 +1984,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
                   VIEW_ITEM_CATEGORIES, COL_CATEGORY, category)));
     }
 
-    List<OrdEcItem> items = getItems(categoryCondition, companyId);
+    List<OrdEcItem> items = getItems(categoryCondition, companyId, clicked);
     if (items.isEmpty()) {
       return didNotMatch(category);
     } else {
@@ -2212,6 +2240,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   private ResponseObject doGlobalSearch(RequestInfo reqInfo) {
     String query = reqInfo.getParameter(VAR_QUERY);
     Long companyId = reqInfo.getParameterLong(COL_COMAPNY);
+    Integer clicked = reqInfo.getParameterInt("Clicked");
 
     if (BeeUtils.isEmpty(query)) {
       return ResponseObject.parameterNotFound(SVC_GLOBAL_SEARCH, VAR_QUERY);
@@ -2232,7 +2261,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
               COL_ITEM_NAME_3, query)), SqlUtils.contains(TBL_ITEMS, COL_ITEM_ARTICLE, query));
     }
 
-    List<OrdEcItem> items = getItems(condition, companyId);
+    List<OrdEcItem> items = getItems(condition, companyId, clicked);
     if (items.isEmpty()) {
       return didNotMatch(query);
     } else {
@@ -2416,21 +2445,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         new SqlSelect()
             .addFields(TBL_NOT_SUBMITTED_ORDERS, COL_SHOPPING_CART_NAME, COL_TRADE_DATE,
                 COL_SHOPPING_CART_COMMENT)
-            .addSum(SqlUtils.multiply(SqlUtils.field(TBL_NOT_SUBMITTED_ORDERS,
-                COL_SHOPPING_CART_QUANTITY), SqlUtils.field(TBL_ITEMS, COL_ITEM_PRICE)), "Amount")
             .addFrom(TBL_NOT_SUBMITTED_ORDERS)
             .addFromLeft(TBL_ITEMS,
                 sys.joinTables(TBL_ITEMS, TBL_NOT_SUBMITTED_ORDERS, COL_ITEM))
             .setWhere(SqlUtils.equals(TBL_NOT_SUBMITTED_ORDERS,
-                COL_SHOPPING_CART_CLIENT, user))
-            .addGroup(TBL_NOT_SUBMITTED_ORDERS, COL_SHOPPING_CART_NAME, COL_TRADE_DATE,
-                COL_SHOPPING_CART_COMMENT);
+                COL_SHOPPING_CART_CLIENT, user));
 
     for (SimpleRow row : qs.getData(select)) {
       NotSubmittedOrdersInfo info = new NotSubmittedOrdersInfo();
 
       info.setName(row.getValue(COL_SHOPPING_CART_NAME));
-      info.setAmount(BeeUtils.unbox(row.getDouble("Amount")));
       info.setDate(row.getDateTime(COL_TRADE_DATE));
       info.setComment(row.getValue(COL_SHOPPING_CART_COMMENT));
 
@@ -2495,11 +2519,13 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       return ResponseObject.emptyResponse();
     }
 
+    Pair<Long, Boolean> warehouse = getClientWarehouseId(getCurrentUserCompany());
+
     Set<Long> items = Sets.newHashSet(data.getLongColumn(COL_SHOPPING_CART_ITEM));
 
     IsCondition condition = sys.idInList(TBL_ITEMS, items);
 
-    List<OrdEcItem> ecItems = getItems(condition, getCurrentUserCompany());
+    List<OrdEcItem> ecItems = getItems(condition, getCurrentUserCompany(), null);
     if (ecItems.isEmpty()) {
       return ResponseObject.emptyResponse();
     }
@@ -2511,6 +2537,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       for (OrdEcItem ecItem : ecItems) {
         if (Objects.equals(itemId, ecItem.getId())) {
+          Pair<Double, Double> prices = (Pair<Double, Double>) cmb.getPriceAndDiscount(
+              getCurrentUserCompany(), itemId, null, warehouse.getA(), null, (double)
+                  row.getInt(COL_SHOPPING_CART_QUANTITY), null, null,
+              null, 0).getResponse();
+
+          if (prices != null && BeeUtils.isDouble(prices.getA()) && BeeUtils.isDouble(prices.getB())) {
+            Double discount = prices.getB();
+            ecItem.setPrice(prices.getA() - prices.getA() * discount / 100.0);
+          }
+
           OrdEcCartItem cartItem =
               new OrdEcCartItem(ecItem, row.getInt(COL_SHOPPING_CART_QUANTITY));
           result.add(cartItem);

@@ -25,7 +25,7 @@ public class SearchByArticle extends OrdEcView implements SelectionHandler<Input
     this.service = service;
     this.selectorCaption = selectorCaption;
 
-    this.itemPanel = new OrdEcItemPanel();
+    this.itemPanel = new OrdEcItemPanel(false, service);
   }
 
   @Override
@@ -34,10 +34,11 @@ public class SearchByArticle extends OrdEcView implements SelectionHandler<Input
 
     final InputText editor = event.getSelectedItem();
 
-    OrdEcKeeper.searchItems(false, service, BeeUtils.trim(editor.getValue()),
+    OrdEcKeeper.searchItems(false, service, BeeUtils.trim(editor.getValue()), 0,
         new Consumer<List<OrdEcItem>>() {
           @Override
           public void accept(List<OrdEcItem> input) {
+            itemPanel.setQuery(BeeUtils.trim(editor.getValue()));
             AutocompleteProvider.retainValue(editor);
             OrdEcKeeper.renderItems(itemPanel, input);
           }

@@ -46,13 +46,11 @@ public class NotSubmittedOrders extends OrdEcView {
 
   private static final String STYLE_ORDER_DATE = STYLE_PREFIX_ORDER + "date";
   private static final String STYLE_ORDER_NAME = STYLE_PREFIX_ORDER + "name";
-  private static final String STYLE_ORDER_AMOUNT = STYLE_PREFIX_ORDER + "amount";
   private static final String STYLE_ORDER_COMMENT = STYLE_PREFIX_ORDER + "comment";
 
   private static final int ORDER_DATE_COL = 0;
   private static final int ORDER_NAME_COL = 1;
-  private static final int ORDER_AMOUNT_COL = 2;
-  private static final int ORDER_COMMENT_COL = 3;
+  private static final int ORDER_COMMENT_COL = 2;
 
   private static void openShoppingCart(String cartName) {
     ParameterList params = OrdEcKeeper.createArgs(SVC_EC_OPEN_SHOPPING_CART);
@@ -94,9 +92,6 @@ public class NotSubmittedOrders extends OrdEcView {
 
     table.setWidgetAndStyle(row, ORDER_NAME_COL, renderHeader(Localized.dictionary().name()),
         STYLE_ORDER_NAME + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
-
-    table.setWidgetAndStyle(row, ORDER_AMOUNT_COL, renderHeader(Localized.dictionary()
-        .ecOrderAmount()), STYLE_ORDER_AMOUNT + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
 
     table.setWidgetAndStyle(row, ORDER_COMMENT_COL, renderHeader(Localized.dictionary()
         .comment()), STYLE_ORDER_COMMENT + BeeConst.STRING_MINUS + STYLE_SUFFIX_LABEL);
@@ -157,9 +152,6 @@ public class NotSubmittedOrders extends OrdEcView {
       });
 
       table.setWidgetAndStyle(row, ORDER_NAME_COL, nameWidget, STYLE_ORDER_NAME);
-
-      widget = new Label(EcUtils.formatCents(BeeUtils.round(info.getAmount() * 100)));
-      table.setWidgetAndStyle(row, ORDER_AMOUNT_COL, widget, STYLE_ORDER_AMOUNT);
 
       if (!BeeUtils.isEmpty(info.getComment())) {
         widget = new Label(info.getComment());

@@ -32,6 +32,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -345,7 +346,14 @@ public class OrdEcShoppingCart extends Split {
           case KeyCodes.KEY_ENTER:
             int value = input.getIntValue();
             if (value > 0 && DomUtils.isInView(input) && item.getQuantity() != value) {
-              updateQuantity(item, value);
+              OrdEcKeeper.maybeRecalculatePrices(item.getEcItem(), value, new Consumer<Boolean>() {
+                @Override
+                public void accept(Boolean input) {
+                  OrdEcCart cart = OrdEcKeeper.refreshCart();
+                  updatePrice(cart);
+                  updateQuantity(item, value);
+                }
+              });
             }
             break;
 
@@ -369,9 +377,16 @@ public class OrdEcShoppingCart extends Split {
       @Override
       public void onClick(ClickEvent event) {
         int value = item.getQuantity() + 1;
-
         input.setValue(value);
-        updateQuantity(item, value);
+
+        OrdEcKeeper.maybeRecalculatePrices(item.getEcItem(), value, new Consumer<Boolean>() {
+          @Override
+          public void accept(Boolean input) {
+            OrdEcCart cart = OrdEcKeeper.refreshCart();
+            updatePrice(cart);
+            updateQuantity(item, value);
+          }
+        });
       }
     });
     spin.add(plus);
@@ -386,7 +401,15 @@ public class OrdEcShoppingCart extends Split {
 
         if (value > 0) {
           input.setValue(value);
-          updateQuantity(item, value);
+
+          OrdEcKeeper.maybeRecalculatePrices(item.getEcItem(), value, new Consumer<Boolean>() {
+            @Override
+            public void accept(Boolean input) {
+              OrdEcCart cart = OrdEcKeeper.refreshCart();
+              updatePrice(cart);
+              updateQuantity(item, value);
+            }
+          });
         }
       }
     });
@@ -444,6 +467,15 @@ public class OrdEcShoppingCart extends Split {
     if (cart != null) {
       for (int i = 1; i < itemTable.getRowCount(); i++) {
         itemTable.setWidget(i, COL_LACK, renderLack(cart.getItems().get(i - 1)));
+      }
+    }
+  }
+
+  private void updatePrice(OrdEcCart cart) {
+    if (cart != null) {
+      for (int i = 1; i < itemTable.getRowCount(); i++) {
+        itemTable.setWidgetAndStyle(i, COL_PRICE, renderPrice(cart.getItems().get(i - 1)),
+            STYLE_PRICE);
       }
     }
   }

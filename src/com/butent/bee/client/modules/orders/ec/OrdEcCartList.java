@@ -12,6 +12,7 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
@@ -82,18 +83,21 @@ public class OrdEcCartList extends HtmlTable {
   }
 
   public void addToCart(OrdEcItem ecItem, int quantity) {
-    OrdEcCartItem cartItem = cart.add(ecItem, quantity);
 
-    if (cartItem != null) {
-      BeeKeeper.getScreen().notifyInfo(
-          Localized.dictionary()
-              .ecUpdateCartItem(Localized.dictionary().ecShoppingCartMainShort(),
-                  ecItem.getName(), cartItem.getQuantity()));
-
-      refresh();
-
-      OrdEcKeeper.persistCartItem(cartItem);
-    }
+    OrdEcKeeper.maybeRecalculatePrices(ecItem, quantity, new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        OrdEcCartItem cartItem = cart.add(ecItem, quantity);
+        if (cartItem != null) {
+          BeeKeeper.getScreen().notifyInfo(
+              Localized.dictionary()
+                  .ecUpdateCartItem(Localized.dictionary().ecShoppingCartMainShort(),
+                      ecItem.getName(), cartItem.getQuantity()));
+          refresh();
+          OrdEcKeeper.persistCartItem(cartItem);
+        }
+      }
+    });
   }
 
   public OrdEcCart getCart() {

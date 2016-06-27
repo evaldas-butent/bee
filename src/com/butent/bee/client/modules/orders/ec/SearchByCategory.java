@@ -57,7 +57,7 @@ public class SearchByCategory extends OrdEcView implements SelectionHandler<Tree
   public SearchByCategory(String service) {
     super();
     this.service = service;
-    this.itemPanel = new OrdEcItemPanel();
+    this.itemPanel = new OrdEcItemPanel(true, service);
   }
 
   @Override
@@ -168,14 +168,13 @@ public class SearchByCategory extends OrdEcView implements SelectionHandler<Tree
     itemPanel.clear();
     final TreeItem treeItem = event.getSelectedItem();
 
-    String query = "query";
-    if (BeeUtils.isPositive(categoryById.get(treeItem.getId()))) {
-      query = categoryById.get(treeItem.getId()).toString();
-    }
+    Long id = categoryById.get(treeItem.getId());
+    String query = BeeUtils.isPositive(id) ? id.toString() : "query";
 
-    OrdEcKeeper.searchItems(true, service, query, new Consumer<List<OrdEcItem>>() {
+    OrdEcKeeper.searchItems(true, service, query, 0, new Consumer<List<OrdEcItem>>() {
       @Override
       public void accept(List<OrdEcItem> input) {
+        itemPanel.setQuery(query);
         OrdEcKeeper.renderItems(itemPanel, input);
       }
     });

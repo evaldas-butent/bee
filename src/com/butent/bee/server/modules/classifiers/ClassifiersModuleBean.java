@@ -254,7 +254,19 @@ public class ClassifiersModuleBean implements BeeModule {
       }
 
     } else if (BeeUtils.same(svc, SVC_GET_PRICE_AND_DISCOUNT)) {
-      response = getPriceAndDiscount(reqInfo);
+      Long company = reqInfo.getParameterLong(COL_DISCOUNT_COMPANY);
+      Long item = reqInfo.getParameterLong(COL_DISCOUNT_ITEM);
+      Long operation = reqInfo.getParameterLong(COL_DISCOUNT_OPERATION);
+      Long warehouse = reqInfo.getParameterLong(COL_DISCOUNT_WAREHOUSE);
+      Long time = reqInfo.getParameterLong(Service.VAR_TIME);
+      Double qty = reqInfo.getParameterDouble(Service.VAR_QTY);
+      Long unit = reqInfo.getParameterLong(COL_DISCOUNT_UNIT);
+      Long currency = reqInfo.getParameterLong(COL_DISCOUNT_CURRENCY);
+      ItemPrice defPriceName = EnumUtils.getEnumByIndex(ItemPrice.class,
+          reqInfo.getParameterInt(COL_DISCOUNT_PRICE_NAME));
+      int explain = BeeUtils.unbox(reqInfo.getParameterInt(Service.VAR_EXPLAIN));
+      response = getPriceAndDiscount(company, item, operation, warehouse, time, qty, unit, currency,
+          defPriceName, explain);
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
@@ -1328,40 +1340,29 @@ public class ClassifiersModuleBean implements BeeModule {
     }
   }
 
-  private ResponseObject getPriceAndDiscount(RequestInfo reqInfo) {
-    Long company = reqInfo.getParameterLong(COL_DISCOUNT_COMPANY);
+  public ResponseObject getPriceAndDiscount(Long company, Long item, Long operation,
+      Long warehouse, Long time, Double qty, Long unit, Long currency, ItemPrice defPriceName,
+      int explain) {
     if (company == null) {
       return ResponseObject.parameterNotFound(SVC_GET_PRICE_AND_DISCOUNT, COL_DISCOUNT_COMPANY);
     }
 
-    Long item = reqInfo.getParameterLong(COL_DISCOUNT_ITEM);
     if (!DataUtils.isId(item)) {
       return ResponseObject.parameterNotFound(SVC_GET_PRICE_AND_DISCOUNT, COL_DISCOUNT_ITEM);
     }
 
-    Long operation = reqInfo.getParameterLong(COL_DISCOUNT_OPERATION);
-    Long warehouse = reqInfo.getParameterLong(COL_DISCOUNT_WAREHOUSE);
-
-    Long time = reqInfo.getParameterLong(Service.VAR_TIME);
     if (!BeeUtils.isPositive(time)) {
       time = System.currentTimeMillis();
     }
 
-    Double qty = reqInfo.getParameterDouble(Service.VAR_QTY);
-    Long unit = reqInfo.getParameterLong(COL_DISCOUNT_UNIT);
-
-    Long currency = reqInfo.getParameterLong(COL_DISCOUNT_CURRENCY);
     if (!DataUtils.isId(currency)) {
       currency = prm.getRelation(PRM_CURRENCY);
     }
 
-    ItemPrice defPriceName = EnumUtils.getEnumByIndex(ItemPrice.class,
-        reqInfo.getParameterInt(COL_DISCOUNT_PRICE_NAME));
     if (defPriceName == null) {
       defPriceName = ItemPrice.SALE;
     }
 
-    int explain = BeeUtils.unbox(reqInfo.getParameterInt(Service.VAR_EXPLAIN));
     if (explain > 0) {
       explain(SVC_GET_PRICE_AND_DISCOUNT,
           BeeUtils.joinOptions(COL_DISCOUNT_COMPANY, company, COL_DISCOUNT_ITEM, item,
