@@ -85,12 +85,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class DiscussionInterceptor extends AbstractFormInterceptor {
 
@@ -289,6 +284,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private Label displayInBoardLabel;
   private Disclosure relationsDisclosure;
   private Disclosure descriptionDisclosure;
+  private DiscussModeRenderer modeRenderer = new DiscussModeRenderer();
+  private final Map<Long, Widget> lastComment = new HashMap<>();
+  private final Map<Long, Long> lastAccess = new HashMap<>();
 
   DiscussionInterceptor() {
     super();
@@ -502,6 +500,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
+    lastComment.remove(newRow.getId());
+  }
+
+  @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     IsRow oldRow = event.getOldRow();
     IsRow newRow = event.getNewRow();
@@ -620,6 +623,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
+    setLastAccess(row.getId(), modeRenderer.getLastAccess(row, userId));
     ensureMembersSelector(form, row);
     BeeRow visitedRow = DataUtils.cloneRow(row);
 
@@ -757,6 +761,22 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     });
   }
 
+  private Widget getLastComment(long discussId) {
+    return lastComment.get(discussId) != null ? lastComment.get(discussId) : null;
+  }
+
+  private void setLastComment(long discussId, Widget w) {
+    lastComment.put(discussId, w);
+  }
+
+  private Long getLastAccess(long discussId) {
+    return lastAccess.get(discussId) != null ? lastAccess.get(discussId) : null;
+  }
+
+  private void setLastAccess(long discussId, Long access) {
+    lastAccess.put(discussId, BeeUtils.max(access, getLastAccess(discussId)));
+  }
+
   private void sendRequest(ParameterList params, final DiscussionEvent event) {
     RpcCallback<ResponseObject> callback = new RpcCallback<ResponseObject>() {
 
@@ -800,6 +820,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     container.addStyleName(STYLE_COMMENT_ROW);
     container.addStyleName(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
 
+    Long lastCommentId = formRow.getPropertyLong(PROP_LAST_COMMENT);
+
+    if (DataUtils.isId(lastCommentId) && lastCommentId == commentRow.getId()) {
+      setLastComment(formRow.getId(), container);
+    }
+
     if (paddingLeft * COMMENT_ROW_PADDING_FACTOR <= MAX_COMMENT_ROW_PADDING_LEFT) {
       container.getElement().getStyle().setPaddingLeft(paddingLeft * COMMENT_ROW_PADDING_FACTOR,
           Unit.EM);
@@ -836,6 +862,14 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (publishTime != null) {
       colPublisher.add(createCommentCell(COL_PUBLISH_TIME,
               DiscussionHelper.renderDateTime(publishTime)));
+
+      if (BeeUtils.isMore(publishTime.getTime(), getLastAccess(formRow.getId()))) {
+        container.addStyleName(STYLE_COMMENT_ROW + PROP_LAST_COMMENT);
+      } else {
+        container.removeStyleName(STYLE_COMMENT_ROW + PROP_LAST_COMMENT);
+      }
+    } else {
+      container.removeStyleName(STYLE_COMMENT_ROW + PROP_LAST_COMMENT);
     }
 
     container.add(colPublisher);
@@ -993,8 +1027,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (panel.getWidgetCount() > 0 && DomUtils.isVisible(form.getElement())) {
-      final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
-      Scheduler.get().scheduleDeferred(() -> DomUtils.scrollIntoView(last.getElement()));
+      final Widget last = getLastComment(formRow.getId()) != null ? getLastComment(formRow.getId())
+              : null;
+      if (last != null) {
+        Scheduler.get().scheduleDeferred(() -> DomUtils.scrollIntoView(last.getElement()));
+      }
     }
 
   }
@@ -1402,6 +1439,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
 
     FormView form = getFormView();
+    setLastAccess(data.getId(), modeRenderer.getLastAccess(data, userId));
 
     String comments = data.getProperty(PROP_COMMENTS);
 
@@ -1410,6 +1448,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       showCommentsAndMarks(form, form.getActiveRow(), BeeRowSet.restore(comments), files);
     }
 
+    form.updateRow(data, true);
   }
 
   private static void renderFiles(List<FileInfo> files, Flow container) {

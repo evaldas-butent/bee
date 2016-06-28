@@ -19,7 +19,6 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.render.AbstractRowModeRenderer;
 import com.butent.bee.client.render.AttachmentRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
@@ -80,24 +79,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       EditableColumn editableColumn) {
 
     if (BeeUtils.same(columnName, NAME_MODE) && column instanceof HasCellRenderer) {
-      ((HasCellRenderer) column).setRenderer(new AbstractRowModeRenderer() {
-
-        @Override
-        public boolean hasUserProperty(IsRow row, Long userId) {
-          return row.hasPropertyValue(PROP_USER, userId);
-        }
-
-        @Override
-        public Long getLastUpdate(IsRow row, Long userId) {
-          return Data.getLong(VIEW_DISCUSSIONS, row, ALS_LAST_COMMENT_PUBLISH_TIME);
-
-        }
-
-        @Override
-        public Long getLastAccess(IsRow row, Long userId) {
-          return row.getPropertyLong(PROP_LAST_ACCESS, userId);
-        }
-      });
+      ((HasCellRenderer) column).setRenderer(new DiscussModeRenderer());
     }
 
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
