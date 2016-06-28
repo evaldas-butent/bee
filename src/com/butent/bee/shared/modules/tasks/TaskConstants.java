@@ -494,6 +494,15 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusNotVisited();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_NOT_VISITED + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_NOT_VISITED;
+        }
+      }
     },
 
     /**
@@ -506,6 +515,15 @@ public final class TaskConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusActive();
+      }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_ACTIVE + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_ACTIVE;
+        }
       }
     },
 
@@ -522,6 +540,11 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusScheduled();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        return null;
+      }
     },
 
     /**
@@ -535,6 +558,15 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusSuspended();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_SUSPENDED + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_SUSPENDED;
+        }
+      }
     },
 
     /**
@@ -547,6 +579,11 @@ public final class TaskConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCompleted();
+      }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        return TASK_STATUS_STYLE_COMPLETED;
       }
     },
 
@@ -562,6 +599,11 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusApproved();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        return null;
+      }
     },
 
     /**
@@ -575,6 +617,11 @@ public final class TaskConstants {
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusCanceled();
       }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        return TASK_STATUS_STYLE_CACELED;
+      }
     },
 
     /**
@@ -586,6 +633,15 @@ public final class TaskConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusVisited();
+      }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_VISITED + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_VISITED;
+        }
       }
     },
 
@@ -599,6 +655,15 @@ public final class TaskConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.crmTaskStatusNotScheduled();
+      }
+
+      @Override
+      public String getStyleName(boolean differentBorder) {
+        if (differentBorder) {
+          return TASK_STATUS_STYLE_NOT_SCHEDULED + TASK_STATUS_STYLE_WITH_BORDER;
+        } else {
+          return TASK_STATUS_STYLE_NOT_SCHEDULED;
+        }
       }
     };
 
@@ -614,6 +679,13 @@ public final class TaskConstants {
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }
+
+    /**
+     * Method used for rendering css elements according to task status.
+     * @param differentBorder - indicates then different elements style is needed.
+     * @return css class name.
+     */
+    public abstract String getStyleName(boolean differentBorder);
   }
 
   public enum ToDoVisibility implements HasCaption {
@@ -967,6 +1039,16 @@ public final class TaskConstants {
   public static final String PRM_START_OF_WORK_DAY = "StartOfWorkDay";
   public static final String PRM_DEFAULT_DBA_TEMPLATE = "DefaultDBATemplate";
   public static final String PRM_DEFAULT_DBA_DOCUMENT_TYPE = "DefaultDBADocumentType";
+
+  public static final String TASK_STATUS_STYLE = "bee-header-caption_state";
+  public static final String TASK_STATUS_STYLE_NOT_VISITED = TASK_STATUS_STYLE + "_not_visited";
+  public static final String TASK_STATUS_STYLE_ACTIVE = TASK_STATUS_STYLE + "_active";
+  public static final String TASK_STATUS_STYLE_SUSPENDED = TASK_STATUS_STYLE + "_suspended";
+  public static final String TASK_STATUS_STYLE_COMPLETED = TASK_STATUS_STYLE + "_completed";
+  public static final String TASK_STATUS_STYLE_CACELED = TASK_STATUS_STYLE + "_canceled";
+  public static final String TASK_STATUS_STYLE_VISITED = TASK_STATUS_STYLE + "_visited";
+  public static final String TASK_STATUS_STYLE_NOT_SCHEDULED = TASK_STATUS_STYLE + "_not_scheduled";
+  public static final String TASK_STATUS_STYLE_WITH_BORDER = "_with_border";
 
   private TaskConstants() {
   }
