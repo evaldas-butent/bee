@@ -708,7 +708,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             COL_TRADE_CURRENCY, COL_INCOME_DATE, currency);
 
     String vatAlias = "Vat_" + SqlUtils.uniqueName();
-
     String priceAlias = "Price_" + SqlUtils.uniqueName();
     IsExpression priceExch =
         ExchangeUtils.exchangeFieldTo(query, TBL_ORDER_ITEMS,
@@ -2863,7 +2862,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     SqlInsert insOrder = new SqlInsert(TBL_ORDERS);
 
     insOrder.addConstant(COL_ORDERS_STATUS, OrdersStatus.NEW.ordinal());
-    insOrder.addConstant(COL_SOURCE, "Ec");
     insOrder.addConstant(COL_START_DATE, TimeUtils.nowMinutes());
     insOrder.addConstant(COL_COMPANY, clientInfo.getLong(colClientId));
 

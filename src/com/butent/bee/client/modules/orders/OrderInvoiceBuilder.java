@@ -247,19 +247,8 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
         if (DataUtils.isId(t)) {
           newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), t);
           newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), u);
-          Queries.getValue(TBL_TRADE_OPERATIONS, t, COL_OPERATION_CASH_REGISTER_NO,
-              new RpcCallback<String>() {
-
-                @Override
-                public void onSuccess(String result) {
-                  newRow
-                      .setValue(targetInfo.getColumnIndex(COL_OPERATION_CASH_REGISTER_NO), result);
-                  getInvoiceItems(data, newRow);
-                }
-              });
-        } else {
-          getInvoiceItems(data, newRow);
         }
+        getInvoiceItems(data, newRow);
       }
     });
   }

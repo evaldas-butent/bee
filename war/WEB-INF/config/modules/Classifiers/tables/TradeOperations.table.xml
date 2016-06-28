@@ -18,8 +18,6 @@
     <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
     <Relation name="WarehouseTo" relation="Warehouses" label="=trdWarehouseTo" />
 
-    <String name="CashRegisterNo" precision="50" label="=trdCashRegisterNo" />
-
     <Boolean name="IsDefault" label="=trdOperationDefault" />
 
     <String name="Background" precision="100" label="=backgroundColor" />

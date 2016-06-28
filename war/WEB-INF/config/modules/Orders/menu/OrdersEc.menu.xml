@@ -3,7 +3,7 @@
 
        name="OrdersEc" label="=ecMenu" order="40" parent="Orders" module="Orders"
 >
-  <Item name="OrdEcOrders" label="=ecOrders" service="grid" parameters="OrdEcOrders" />
+  <Item name="OrdEcOrders" label="=ordEcOrders" service="grid" parameters="OrdEcOrders" />
   <Item name="OrdEcRegistrations" label="=ecRegistrations" service="grid" parameters="OrdEcRegistrations" />
   <Item name="OrdEcContacts" label="=ecContacts" service="edit_ord_ec_contacts" />
   <Item name="OrdEcBanners" label="=ecBanners" service="grid" parameters="OrdEcBanners"

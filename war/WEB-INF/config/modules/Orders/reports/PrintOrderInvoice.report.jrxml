@@ -96,8 +96,6 @@
   <parameter name="PositionName" class="java.lang.String"/>
   <parameter name="ManagerPhone" class="java.lang.String"/>
   <parameter name="ManagerMobile" class="java.lang.String"/>
-  <parameter name="CashRegisterNo" class="java.lang.String"/>
-  <parameter name="CheckNo" class="java.lang.String"/>
   <parameter name="SupplierCityName" class="java.lang.String"/>
   <parameter name="SupplierCountryName" class="java.lang.String"/>
   <parameter name="CustomerCityName" class="java.lang.String"/>
@@ -699,35 +697,6 @@
             <font fontName="DejaVu Sans" size="6"/>
           </textElement>
           <textFieldExpression><![CDATA["(vardas, pavardė, pareigos, parašas)"]]></textFieldExpression>
-        </textField>
-        <textField>
-          <reportElement positionType="Float" x="0" y="44" width="120" height="14" uuid="8820e5a6-16bc-4168-9a7a-29f0495a84c9">
-            <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-            <printWhenExpression><![CDATA[$P{CashRegisterNo} != null]]></printWhenExpression>
-          </reportElement>
-          <textElement>
-            <font fontName="DejaVu Sans" size="8"/>
-          </textElement>
-          <textFieldExpression><![CDATA["Kasos kvito išdavimo data: "]]></textFieldExpression>
-        </textField>
-        <textField isStretchWithOverflow="true" pattern="yyyy.MM.dd" isBlankWhenNull="true">
-          <reportElement positionType="Float" x="120" y="44" width="75" height="14" uuid="dc641941-c03b-4a66-92a7-d1687b24b5b4">
-            <printWhenExpression><![CDATA[$P{CashRegisterNo} != null]]></printWhenExpression>
-          </reportElement>
-          <textElement>
-            <font size="8"/>
-          </textElement>
-          <textFieldExpression><![CDATA[new java.util.Date(BeeUtils.toLong($P{Date}))]]></textFieldExpression>
-        </textField>
-        <textField>
-          <reportElement positionType="Float" x="195" y="44" width="360" height="14" uuid="bed49dfd-62f1-4362-97c9-488fb62efea6">
-            <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-            <printWhenExpression><![CDATA[$P{CashRegisterNo} != null]]></printWhenExpression>
-          </reportElement>
-          <textElement>
-            <font fontName="DejaVu Sans" size="8"/>
-          </textElement>
-          <textFieldExpression><![CDATA["Kasos aparato Nr.: " + $P{CashRegisterNo} + (($P{CheckNo} == null) ? " " : (" Kvito Nr.: " + $P{CheckNo}))]]></textFieldExpression>
         </textField>
         <textField isStretchWithOverflow="true" isBlankWhenNull="true">
           <reportElement positionType="Float" x="280" y="0" width="100" height="14" uuid="a582e8fe-8efb-414f-bf0e-f6f7a29f8640">

@@ -189,7 +189,7 @@ public class OrdersScreen extends ScreenImpl {
       OrdEcKeeper.getSearchBox().setFocus(true);
     }
 
-    OrdEcKeeper.showPromo(true);
+    OrdEcKeeper.showPromo(false);
     OrdEcKeeper.restoreShoppingCarts(null);
   }
 

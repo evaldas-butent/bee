@@ -1091,8 +1091,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_NO,
-            COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER,
-            COL_TRADE_CHECK_NO)
+            COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
         .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
@@ -1207,10 +1206,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
       doc.setCurrency(invoice.getValue(COL_CURRENCY));
       doc.setManager(invoice.getValue(PayrollConstants.COL_TAB_NUMBER));
-
-      if (invoices.hasColumn(COL_TRADE_CHECK_NO)) {
-        doc.setCheckNo(invoice.getValue(COL_TRADE_CHECK_NO));
-      }
 
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)

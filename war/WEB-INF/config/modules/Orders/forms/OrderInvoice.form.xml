@@ -20,9 +20,6 @@
       <row>
         <Label for="Date" />
         <InputDateTime source="Date" visible="true" />
-        
-        <Label for="CheckNo" />
-        <InputText source="CheckNo" />
       </row>
 
       <row>

@@ -13,8 +13,6 @@
     <RelColumn name="WarehouseFrom" />
     <RelColumn name="WarehouseTo" />
 
-    <DataColumn name="CashRegisterNo" />
-
     <DataColumn name="IsDefault" />
 
     <DataColumn name="Background" updateMode="row">
