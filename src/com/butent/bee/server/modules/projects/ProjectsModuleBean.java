@@ -108,6 +108,12 @@ public class ProjectsModuleBean implements BeeModule {
                 ProjectConstants.ALS_OWNER_FIRST_NAME,
                 ProjectConstants.ALS_OWNER_LAST_NAME, ClassifierConstants.ALS_COMPANY_NAME),
                 query));
+
+    List<SearchResult> pfSr = qs.getSearchResults(VIEW_PROJECT_FILES,
+        Filter.anyContains(Sets.newHashSet(AdministrationConstants.COL_FILE_CAPTION,
+            AdministrationConstants.ALS_FILE_NAME), query));
+    result.addAll(pfSr);
+
     result.addAll(tasksSr);
 
     return result;

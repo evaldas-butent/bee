@@ -1,9 +1,14 @@
 package com.butent.bee.client.modules.service;
 
+import com.google.common.collect.Lists;
+
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
@@ -15,6 +20,8 @@ import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -23,6 +30,18 @@ import com.butent.bee.shared.rights.Module;
 public final class ServiceKeeper {
 
   public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "svc-";
+
+  private static class RowTransformHandler implements RowTransformEvent.Handler {
+    @Override
+    public void onRowTransform(RowTransformEvent event) {
+      if (event.hasView(VIEW_SERVICE_FILES)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_SERVICE_FILES), event.getRow(),
+            Lists.newArrayList(COL_SERVICE_OBJECT, AdministrationConstants.COL_FILE_CAPTION,
+                AdministrationConstants.ALS_FILE_TYPE),
+            BeeConst.STRING_SPACE));
+      }
+    }
+  }
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.SERVICE, method);
@@ -46,6 +65,22 @@ public final class ServiceKeeper {
     FormFactory.registerFormInterceptor("ServiceDefect", new ServiceDefectForm());
 
     SelectorEvent.register(new SelectorHandler());
+
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
+
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionEvent.Handler() {
+      @Override
+      public void onRowAction(RowActionEvent event) {
+        if (event.isEditRow() && event.hasView(VIEW_SERVICE_FILES)) {
+          event.consume();
+          if (event.hasRow() && event.getOpener() != null) {
+            Long objectId = Data.getLong(event.getViewName(), event.getRow(), COL_SERVICE_OBJECT);
+            RowEditor.open(VIEW_SERVICE_OBJECTS, objectId, event.getOpener());
+          }
+        }
+      }
+    });
+
 
     TimeBoard.ensureStyleSheet();
 

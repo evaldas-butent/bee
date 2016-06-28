@@ -70,6 +70,10 @@ public final class DocumentConstants {
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
   public static final String COL_FILE_CAPTION = "Caption";
+  public static final String COL_FILE_DESCRIPTION = "Description";
+  public static final String COL_FILE_COMMENT = "Comment";
+  public static final String COL_FILE_OWNER_FIRST_NAME = "OwnerFirstName";
+  public static final String COL_FILE_OWNER_LAST_NAME = "OwnerLastName";
   public static final String COL_DOCUMENT_TYPE_NAME = "Name";
 
   public static final String ALS_CATEGORY_NAME = "CategoryName";

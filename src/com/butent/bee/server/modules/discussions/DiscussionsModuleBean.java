@@ -46,6 +46,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
@@ -137,9 +138,20 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    return qs.getSearchResults(VIEW_DISCUSSIONS,
+    List<SearchResult> result = new ArrayList<>();
+    result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS,
         Filter.anyContains(Sets.newHashSet(COL_SUBJECT, COL_DESCRIPTION, ALS_OWNER_FIRST_NAME,
-            ALS_OWNER_LAST_NAME), query));
+            ALS_OWNER_LAST_NAME), query)));
+
+    result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS_FILES, Filter.and(
+        Filter.anyContains(Sets.newHashSet(AdministrationConstants.COL_FILE_CAPTION,
+            AdministrationConstants.ALS_FILE_NAME, COL_COMMENT_TEXT), query),
+        Filter.in(COL_COMMENT, VIEW_DISCUSSIONS_COMMENTS, COL_DISCUSSION_COMMENT_ID,
+            Filter.or(Filter.isNull(COL_DELETED),
+                Filter.isEqual(COL_DELETED, BooleanValue.FALSE))))));
+
+    return result;
+
   }
 
   @Override

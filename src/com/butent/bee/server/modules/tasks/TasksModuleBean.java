@@ -190,6 +190,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
         Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION, ALS_COMPANY_NAME), query));
     result.addAll(rtSr);
 
+    List<SearchResult> tfSr = qs.getSearchResults(VIEW_TASK_FILES,
+        Filter.anyContains(Sets.newHashSet(AdministrationConstants.COL_FILE_CAPTION,
+            AdministrationConstants.ALS_FILE_NAME), query));
+    result.addAll(tfSr);
+
     return result;
   }
 

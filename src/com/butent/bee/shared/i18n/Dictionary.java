@@ -1649,6 +1649,8 @@ public interface Dictionary {
 
   default String discussion() {return g("discussion");}
 
+  default String discussionFiles() {return g("discussionFiles");}
+
   default String discussions() {return g("discussions");}
 
   default String displayInBoard() {return g("displayInBoard");}
@@ -3821,6 +3823,8 @@ public interface Dictionary {
 
   default String prjExpenses() {return g("prjExpenses");}
 
+  default String prjFiles() {return g("prjFiles");}
+
   default String prjFilterActive() {return g("prjFilterActive");}
 
   default String prjFilterAll() {return g("prjFilterAll");}
@@ -4306,6 +4310,8 @@ public interface Dictionary {
   default String svcNewObject() {return g("svcNewObject");}
 
   default String svcObject() {return g("svcObject");}
+
+  default String svcObjectFiles() {return g("svcObjectFiles");}
 
   default String svcObjects() {return g("svcObjects");}
 
