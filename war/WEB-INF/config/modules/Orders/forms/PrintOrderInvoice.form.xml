@@ -185,26 +185,6 @@
         <Label html="(vardas, pavardė, pareigos ir parašas)" />
         <Label html="(vardas, pavardė, pareigos ir parašas)" style="text-decoration:overline;" />
       </row>
-      <row>
-        <TextLabel source="CashRegisterNo" style="&section1; white-space:pre-wrap;">
-          <render>
-            <ui:function>
-              if (row.CashRegisterNo) {
-              var dt = new Date(row.Date);
-              var checkNo = "";
-              if (row.CheckNo) {
-                checkNo = " Kvito Nr.: " + row.CheckNo;
-              }
-              return "Kasos kvito išdavimo data: " + dt.getFullYear()
-              + "." + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
-              + "." + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate() 
-              + "   Kasos aparato Nr.: " + row.CashRegisterNo + checkNo;
-              }
-              return null;
-            </ui:function>
-          </render>
-        </TextLabel>
-      </row>
     </Table>
   </FlowPanel>
 </f:Form>

@@ -665,8 +665,6 @@ public interface Dictionary {
 
   default String chatsShowAll() {return g("chatsShowAll");}
 
-  default String checkNo() {return g("checkNo");}
-
   default String chief() {return g("chief");}
 
   default String chooseContactSource() {return g("chooseContactSource");}
@@ -3459,6 +3457,8 @@ public interface Dictionary {
 
   default String ordAskApprove() {return g("ordAskApprove");}
 
+  default String ordAskEcApprove() {return g("ordAskEcApprove");}
+
   default String ordAskCancel() {return g("ordAskCancel");}
 
   default String ordAskChangeWarehouse() {return g("ordAskChangeWarehouse");}
@@ -5597,8 +5597,6 @@ public interface Dictionary {
   default String trdAmountByRate() {return g("trdAmountByRate");}
 
   default String trdAmountWoVat() {return g("trdAmountWoVat");}
-
-  default String trdCashRegisterNo() {return g("trdCashRegisterNo");}
 
   default String trdCustomer() {return g("trdCustomer");}
 

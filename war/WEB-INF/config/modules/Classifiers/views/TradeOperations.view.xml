@@ -23,8 +23,6 @@
       <SimpleColumn alias="WarehouseToCode" name="Code" />
       <SimpleColumn alias="WarehouseToName" name="Name" />
     </SimpleJoin>
-
-    <SimpleColumn name="CashRegisterNo" />
     
     <SimpleColumn name="IsDefault" />
 

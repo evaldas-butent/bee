@@ -7,7 +7,6 @@
     <SimpleColumn name="Operation" />
     <SimpleJoin name="Operation" joinType="LEFT">
       <SimpleColumn name="OperationName" />
-      <SimpleColumn name="CashRegisterNo" />
     </SimpleJoin>
 
     <SimpleColumn name="WarehouseFrom" />
@@ -21,8 +20,6 @@
     </SimpleJoin>
     <SimpleColumn name="InvoiceNo" />
     <SimpleColumn name="Term" />
-
-    <SimpleColumn name="CheckNo" />
     
     <SimpleColumn name="Vehicle" />
     <SimpleColumn name="Driver" />

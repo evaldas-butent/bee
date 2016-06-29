@@ -23,7 +23,7 @@
     <String name="Phone" precision="50" notNull="true" label="=phone" />
     <String name="City" precision="30" notNull="true" label="=city" />
     <String name="Address" precision="100" notNull="true" label="=address" />
-    <String name="PostIndex" precision="20" notNull="true" label="=postIndex" />
+    <String name="PostIndex" precision="20" label="=postIndex" />
 
     <String name="Country" precision="60" label="=country" />
 

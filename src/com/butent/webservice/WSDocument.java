@@ -61,8 +61,6 @@ public class WSDocument {
   private String invoicePrefix;
   private String invoiceNumber;
 
-  private String checkNo;
-
   private JustDate term;
 
   private String supplier;
@@ -110,7 +108,6 @@ public class WSDocument {
           .append(XmlUtils.tag("preke", item.itemId))
           .append(XmlUtils.tag("kiekis", item.quantity))
           .append(XmlUtils.tag("artikulas", item.article))
-          .append(XmlUtils.tag("kitas_dok2", checkNo))
           .append(XmlUtils.tag("pastaba", item.note));
 
       if (!BeeUtils.isEmpty(item.price)) {
@@ -131,10 +128,6 @@ public class WSDocument {
       sb.append("</row>");
     }
     return sb.append("</VFPData>").toString();
-  }
-
-  public void setCheckNo(String checkNo) {
-    this.checkNo = checkNo;
   }
 
   public void setCurrency(String currency) {

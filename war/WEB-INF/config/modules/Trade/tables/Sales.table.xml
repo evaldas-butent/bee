@@ -13,8 +13,6 @@
     <String name="InvoicePrefix" precision="10" label="=trdInvoicePrefix" /> <!--TODO: remove-->
     <String name="InvoiceNo" precision="20" label="=trdInvoiceNo" />
 
-    <String name="CheckNo" precision="20" label="=checkNo" />
-
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />
     <Relation name="Payer" relation="Companies" label="=trdPayer" />

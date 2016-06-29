@@ -136,7 +136,10 @@ public class OrderForm extends PrintFormInterceptor {
     Button approve = new Button(loc.ordApprove(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Global.confirm(loc.ordAskApprove(), new ConfirmationCallback() {
+        String msg = Objects.equals(getStatus(), OrdersStatus.NEW.ordinal())
+            ? loc.ordAskEcApprove() : loc.ordAskApprove();
+
+        Global.confirm(msg, new ConfirmationCallback() {
           @Override
           public void onConfirm() {
             String id = row.getString(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE));
@@ -460,6 +463,10 @@ public class OrderForm extends PrintFormInterceptor {
             }
           }
         });
+  }
+
+  private Integer getStatus () {
+    return getActiveRow().getInteger(getDataIndex(COL_ORDERS_STATUS));
   }
 
   private static void updateStatus(FormView form, OrdersStatus status) {

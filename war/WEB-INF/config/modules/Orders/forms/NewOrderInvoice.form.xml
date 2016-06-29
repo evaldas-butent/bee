@@ -26,9 +26,6 @@
       <row>
         <Label text="=trdDate" class="bee-required" style="&lbl2; width:143px;" />
         <InputDateTime source="Date" style="width:11em;" />
-        
-        <Label for="CheckNo" style="&lbl2;" />
-        <InputText source="CheckNo" />
       </row>
       <row>
         <Label text="=trdInvoicePrefix" style="&lbl2;" name="SeriesLabel" />
