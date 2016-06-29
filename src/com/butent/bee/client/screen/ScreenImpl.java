@@ -120,6 +120,7 @@ public class ScreenImpl implements Screen {
 
   private static final String STYLE_POPUP_USERS = BeeConst.CSS_CLASS_PREFIX + "PopupUsers";
   private static final String STYLE_POPUP_PRESENCE = BeeConst.CSS_CLASS_PREFIX + "PresenceChange";
+  private static final String STYLE_POPUP_USERS_LABEL = STYLE_POPUP_USERS + "Label";
 
   private static final int NORTH_HEIGHT = 112;
   private static final int MENU_HEIGHT = 50;
@@ -1249,11 +1250,6 @@ public class ScreenImpl implements Screen {
           int c = 0;
           table.setWidget(r, c++, img);
 
-          Label label = new Label(user.getUserSign());
-          label.addStyleName(STYLE_POPUP_USERS + "Label");
-
-          table.setWidget(r, c++, label);
-
           Presence presence = Global.getUsers().getPresenceBySession(session);
           if (presence != null) {
             FaLabel presenceWidget = new FaLabel(presence.getIcon(), presence.getStyleName());
@@ -1263,6 +1259,10 @@ public class ScreenImpl implements Screen {
             table.setWidget(r, c, presenceWidget);
           }
           c++;
+          Label label = new Label(user.getUserSign());
+          label.addStyleName(STYLE_POPUP_USERS_LABEL);
+
+          table.setWidget(r, c++, label);
 
           if (Global.getChatManager().isEnabled()) {
             FaLabel chat = new FaLabel(FontAwesome.COMMENT_O, STYLE_POPUP_USERS + "Chat");

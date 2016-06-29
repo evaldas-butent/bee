@@ -18,7 +18,7 @@ public final class PayrollConstants {
       public String getCaption(Dictionary dictionary) {
         return dictionary.objectStatusActive();
       }
-    };
+    }
   }
 
   public enum WorkScheduleKind implements HasLocalizedCaption {
@@ -41,6 +41,11 @@ public final class PayrollConstants {
       @Override
       public String getTccColumnName() {
         return COL_TC_WS_PLANNED;
+      }
+
+      @Override
+      public boolean isExtensionEnabled() {
+        return true;
       }
 
       @Override
@@ -71,6 +76,11 @@ public final class PayrollConstants {
       }
 
       @Override
+      public boolean isExtensionEnabled() {
+        return false;
+      }
+
+      @Override
       public boolean isSubstitutionEnabled() {
         return true;
       }
@@ -85,6 +95,8 @@ public final class PayrollConstants {
     }
 
     public abstract String getTccColumnName();
+
+    public abstract boolean isExtensionEnabled();
 
     public abstract boolean isSubstitutionEnabled();
   }
@@ -140,6 +152,7 @@ public final class PayrollConstants {
 
   public static final String COL_DATE_OF_EMPLOYMENT = "DateOfEmployment";
   public static final String COL_DATE_OF_DISMISSAL = "DateOfDismissal";
+  public static final String COL_DEPARTMENT = "Department";
 
   public static final String COL_WORK_SCHEDULE_KIND = "Kind";
   public static final String COL_WORK_SCHEDULE_DATE = "Date";
@@ -187,6 +200,8 @@ public final class PayrollConstants {
   public static final String ALS_TR_FROM = "TrTimeFrom";
   public static final String ALS_TR_UNTIL = "TrTimeUntil";
   public static final String ALS_TR_DURATION = "TrDuration";
+
+  public static final String ALS_TR_USAGE = "TrUsage";
 
   public static final String GRID_TIME_CARD_CHANGES = "TimeCardChanges";
 

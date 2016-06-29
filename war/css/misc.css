@@ -460,3 +460,15 @@
   margin-left: 10px;
   width: calc(50% - 10px);
 }
+
+.bee-row-Mode-new,
+.bee-row-Mode-upd {
+  width: 3px;
+  height: 100%;
+}
+.bee-row-Mode-new {
+  background-color: #1ca5c7;
+}
+.bee-row-Mode-upd {
+  background-color: #ffb300;
+}

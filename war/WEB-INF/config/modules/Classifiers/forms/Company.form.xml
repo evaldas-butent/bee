@@ -204,9 +204,11 @@
             </row>
             <row>
               <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />
-              <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
-                targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
-                label="=companyRelationType" data="CompRelTypeStore" summarize="true" />
+              <cell colSpan="2">
+                <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
+                  targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
+                  label="=companyRelationType" data="CompRelTypeStore" summarize="true" />
+              </cell>
               <Label style="&lbl;" for="CompanyRelationTypeState" />
               <DataSelector source="CompanyRelationTypeState" summarize="true" />
             </row>

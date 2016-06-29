@@ -30,20 +30,28 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
-import com.butent.bee.client.output.ReportUtils;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -60,7 +68,9 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -83,14 +93,52 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
   private Button registerCommand = new Button(loc.register(), clickEvent -> onRegister());
 
-  private Button contractCommand = new Button(loc.trContract(), clickEvent -> sendContract());
-
   private Button confirmCommand = new Button(loc.trRequestStatusConfirmed(),
       clickEvent -> onConfirm());
 
   private Button blockCommand = new Button(loc.ipBlockCommand(), event -> onBlock());
 
   private Button lostCommand = new Button(loc.trRequestStatusLost(), clickEvent -> onLoss(true));
+
+  private static final String NAME_VALUE_LABEL = "ValueLabel";
+  private static final String NAME_INCOTERMS = "Incoterms";
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (BeeUtils.same(editableWidget.getColumnId(), COL_QUERY_FREIGHT_INSURANCE)) {
+
+      editableWidget.addCellValidationHandler(event -> {
+        styleRequiredField(event.getNewValue());
+        return true;
+      });
+    }
+    super.afterCreateEditableWidget(editableWidget, widget);
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+    if (BeeUtils.same(name, NAME_INCOTERMS) && widget instanceof FaLabel) {
+      ((FaLabel) widget).addClickHandler(event -> {
+        String suffix = Localized.dictionary().languageTag();
+
+        switch (suffix) {
+          case "lt":
+          case "ru":
+            break;
+          default:
+            suffix = "en";
+        }
+        Image image = new Image(Paths.buildPath(Paths.IMAGE_DIR, name + "_" + suffix + ".png"));
+        StyleUtils.setWidth(image, BeeKeeper.getScreen().getWidth() * 0.8, CssUnit.PX);
+        StyleUtils.setHeight(image, BeeKeeper.getScreen().getHeight() * 0.5, CssUnit.PX);
+
+        Global.showModalWidget(image);
+      });
+    }
+
+    super.afterCreateWidget(name, widget, callback);
+  }
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
@@ -103,23 +151,21 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
     renderOrderId();
 
-    boolean registered = DataUtils.isId(row.getLong(form.getDataIndex(COL_COMPANY_PERSON)));
-
     Widget widget = form.getWidgetByName(COL_REGISTRATION_REGISTER);
 
     if (widget != null) {
-      widget.setVisible(!registered);
+      widget.setVisible(!isRegistered());
 
     }
     widget = form.getWidgetByName(COL_COMPANY_PERSON);
 
     if (widget != null) {
-      widget.setVisible(registered);
+      widget.setVisible(isRegistered());
     }
     if (DataUtils.isNewRow(row)) {
       return;
     }
-    header.setCaption(registered ? loc.trRequest() : loc.trRequestUnregistered());
+    header.setCaption(isRegistered() ? loc.trRequest() : loc.trRequestUnregistered());
 
     Integer status = row.getInteger(form.getDataIndex(COL_QUERY_STATUS));
 
@@ -127,10 +173,9 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       header.addCommandItem(mailCommand);
 
       if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
-        if (!registered) {
+        if (!isRegistered()) {
           header.addCommandItem(registerCommand);
-        } else {
-          header.addCommandItem(contractCommand);
+        } else if (!ShipmentRequestStatus.REJECTED.is(status)) {
           header.addCommandItem(confirmCommand);
         }
         header.addCommandItem(lostCommand);
@@ -145,6 +190,41 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   }
 
   @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.PRINT) {
+      if (!isRegistered() || isSelfService()
+          || ShipmentRequestStatus.LOST.is(getIntegerValue(COL_QUERY_STATUS))) {
+        return false;
+      }
+    } else if (action == Action.SAVE) {
+      IsRow row = getActiveRow();
+      Dictionary dic = Localized.dictionary();
+
+      if (BeeUtils.unbox(row.getBoolean(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)))) {
+        String value = row.getString(getDataIndex(COL_CARGO_VALUE));
+        if (BeeUtils.isEmpty(value)) {
+          getFormView().notifySevere(BeeUtils.join(" ", dic.valuation(), dic.valueRequired()));
+          return false;
+        }
+
+        Long currency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
+        if (!DataUtils.isId(currency)) {
+          getFormView().notifySevere(BeeUtils.join(" ", dic.currency(), dic.valueRequired()));
+          return false;
+        }
+      }
+
+      if (!checkValidation()) {
+        getFormView().notifySevere(
+            dic.allValuesCannotBeEmpty() + " (" + BeeUtils.join(",", dic.height(), dic.width(),
+                dic.length(), dic.trRequestCargoLdm()) + ")");
+        return false;
+      }
+    }
+    return super.beforeAction(action, presenter);
+  }
+
+  @Override
   public void beforeRefresh(FormView form, IsRow row) {
     if (!DataUtils.isNewRow(row)) {
       Integer status = row.getInteger(form.getDataIndex(COL_QUERY_STATUS));
@@ -153,6 +233,8 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
           && !ShipmentRequestStatus.CONFIRMED.is(status)
           && (!isSelfService() || ShipmentRequestStatus.NEW.is(status)));
     }
+    styleRequiredField(row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)));
+
     super.beforeRefresh(form, row);
   }
 
@@ -180,13 +262,80 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
     SelfServiceUtils.setDefaultPerson(form, newRow, COL_COMPANY_PERSON);
     SelfServiceUtils.setDefaultExpeditionType(form, newRow, COL_QUERY_EXPEDITION);
-    SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_CARGO_SHIPPING_TERM);
+    SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_SHIPPING_TERM);
 
     newRow.setValue(form.getDataIndex(COL_USER_LOCALE),
         SupportedLocale.getByLanguage(SupportedLocale.normalizeLanguage(loc.languageTag()))
             .ordinal());
 
     super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  @Override
+  protected Consumer<FileInfo> getReportCallback() {
+    Consumer<FileInfo> callback = null;
+
+    if (!ShipmentRequestStatus.CONFIRMED.is(getIntegerValue(COL_QUERY_STATUS))) {
+      callback = fileInfo -> Queries.getRowSet(VIEW_TEXT_CONSTANTS, null,
+          Filter.equals(COL_TEXT_CONSTANT, TextConstant.CONTRACT_MAIL_CONTENT),
+          new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              String text;
+              String localizedContent = Localized.column(COL_TEXT_CONTENT,
+                  EnumUtils.getEnumByIndex(SupportedLocale.class, getIntegerValue(COL_USER_LOCALE))
+                      .getLanguage());
+
+              if (DataUtils.isEmpty(result)) {
+                text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
+              } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
+                  result.getColumns()))) {
+                text = result.getString(0, COL_TEXT_CONTENT);
+              } else {
+                text = BeeUtils.notEmpty(result.getString(0, localizedContent),
+                    result.getString(0, COL_TEXT_CONTENT));
+              }
+              sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
+                  ? null : text.replace("{CONTRACT_PATH}",
+                  "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
+            }
+          });
+    }
+    return callback;
+  }
+
+  @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    SelfServiceUtils.getCargos(Filter.compareId(getLongValue(COL_CARGO)),
+        cargoInfo -> dataConsumer.accept(new BeeRowSet[] {cargoInfo}));
+  }
+
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, Long> companies = new HashMap<>();
+    companies.put(COL_CUSTOMER, getLongValue(COL_COMPANY));
+    companies.put(COL_COMPANY, BeeKeeper.getUser().getCompany());
+
+    String orderNo = getOrderNo(getActiveRow());
+
+    super.getReportParameters(defaultParameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.put(COL_ORDER_NO, orderNo);
+          defaultParameters.putAll(companiesInfo);
+          parametersConsumer.accept(defaultParameters);
+        }));
+  }
+
+  @Override
+  protected String[] getReports() {
+    String[] reports = super.getReports();
+
+    if (!ArrayUtils.isEmpty(reports) && BeeUtils.unbox(getBooleanValue(COL_EXPEDITION_LOGISTICS))) {
+      for (int i = 0; i < reports.length; i++) {
+        reports[i] = COL_EXPEDITION_LOGISTICS + reports[i];
+      }
+    }
+    return reports;
   }
 
   private static void checkOrphans(Map<String, String> relations, Map<String, String> views,
@@ -210,6 +359,26 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         data.put(viewName, ((CompoundFilter) data.get(viewName)).add(flt));
       }
     }
+  }
+
+  private boolean checkValidation() {
+    IsRow row = getActiveRow();
+
+    if (BeeUtils.unbox(row.getBoolean(getDataIndex(COL_CARGO_PARTIAL)))
+        || BeeUtils.unbox(row.getBoolean(getDataIndex(COL_CARGO_OUTSIZED)))) {
+
+      boolean valid = false;
+
+      for (String source : new String[] {
+          COL_CARGO_HEIGHT, COL_CARGO_LENGTH, COL_CARGO_WIDTH, COL_CARGO_LDM}) {
+        if (!BeeUtils.isEmpty(row.getString(getDataIndex(source)))) {
+          valid = true;
+          break;
+        }
+      }
+      return valid;
+    }
+    return true;
   }
 
   private void doConfirm(List<String> messages, Runnable onConfirm) {
@@ -246,9 +415,17 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         onConfirm.run();
       }
       Queries.insert(VIEW_ORDERS, Data.getColumns(VIEW_ORDERS,
-          Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER)),
+          Arrays.asList(COL_CUSTOMER, COL_CUSTOMER + COL_PERSON, COL_ORDER_MANAGER,
+              COL_EXPEDITION, COL_SHIPPING_TERM, COL_ORDER_NOTES, COL_VEHICLE, COL_DRIVER,
+              COL_ORDER_NO)),
           Arrays.asList(row.getString(form.getDataIndex(COL_COMPANY)),
-              row.getString(form.getDataIndex(COL_COMPANY_PERSON)), BeeUtils.toString(manager)),
+              row.getString(form.getDataIndex(COL_COMPANY_PERSON)), BeeUtils.toString(manager),
+              row.getString(form.getDataIndex(COL_EXPEDITION)),
+              row.getString(form.getDataIndex(COL_SHIPPING_TERM)),
+              row.getString(form.getDataIndex(COL_ORDER_NOTES)),
+              row.getString(form.getDataIndex(COL_VEHICLE)),
+              row.getString(form.getDataIndex(COL_DRIVER)),
+              getOrderNo(row)),
           null, new RowInsertCallback(VIEW_ORDERS) {
             @Override
             public void onSuccess(BeeRow order) {
@@ -370,8 +547,27 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         });
   }
 
+  private static String getOrderNo(IsRow row) {
+    String orderNo = BeeUtils.toString(row.getId());
+    BeeColumn column = Data.getColumn(TBL_ORDERS, COL_ORDER_NO);
+
+    if (column.hasDefaults()) {
+      orderNo = BeeUtils.parenthesize(column.getDefaults().getB() + orderNo);
+    }
+    return orderNo;
+  }
+
+  private boolean isRegistered() {
+    return DataUtils.isId(getLongValue(COL_COMPANY_PERSON));
+  }
+
   private static boolean isSelfService() {
     return Objects.equals(BeeKeeper.getScreen().getUserInterface(), UserInterface.SELF_SERVICE);
+  }
+
+  private void styleRequiredField(String value) {
+    getFormView().getWidgetByName(NAME_VALUE_LABEL).setStyleName(StyleUtils.NAME_REQUIRED,
+        !BeeUtils.isEmpty(value));
   }
 
   private void onAnswer() {
@@ -549,7 +745,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
               }
               (startup == null ? queue.remove(0) : startup).run();
             };
-            messages.add(0, loc.errors());
+            messages.add(0, loc.trNewValues());
           } else {
             onConfirm = onSuccess;
           }
@@ -688,36 +884,6 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         ((HasWidgets) widget).add(label);
       }
     }
-  }
-
-  private void sendContract() {
-    Map<String, String> params = new HashMap<>();
-    getReportParameters(params::putAll);
-
-    ReportUtils.showReport(REP_CONTRACT, fileInfo ->
-        Queries.getRowSet(VIEW_TEXT_CONSTANTS, null, Filter.equals(COL_TEXT_CONSTANT,
-            TextConstant.CONTRACT_MAIL_CONTENT), new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            String text;
-            String localizedContent = Localized.column(COL_TEXT_CONTENT,
-                EnumUtils.getEnumByIndex(SupportedLocale.class, getIntegerValue(COL_USER_LOCALE))
-                    .getLanguage());
-
-            if (DataUtils.isEmpty(result)) {
-              text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
-            } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
-                result.getColumns()))) {
-              text = result.getString(0, COL_TEXT_CONTENT);
-            } else {
-              text = BeeUtils.notEmpty(result.getString(0, localizedContent),
-                  result.getString(0, COL_TEXT_CONTENT));
-            }
-            sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-                ? null : text.replace("{contract_path}",
-                "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
-          }
-        }), params);
   }
 
   private void sendMail(ShipmentRequestStatus status, String subject, String content,

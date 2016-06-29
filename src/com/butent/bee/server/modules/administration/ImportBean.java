@@ -134,7 +134,7 @@ public class ImportBean {
         BeeView view = sys.getView(viewName);
 
         for (ViewColumn col : view.getViewColumns()) {
-          if (col.isHidden() || col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
+          if (col.isHidden() || col.isReadOnly() || !col.isEditable()
               && BeeUtils.isPositive(col.getLevel())) {
             continue;
           }

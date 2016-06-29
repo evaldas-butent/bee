@@ -468,18 +468,6 @@ public class SystemBean {
         && (viewCache.containsKey(BeeUtils.normalize(viewName)) || isTable(viewName));
   }
 
-  public String joinExtField(HasFrom<?> query, String tblName, String tblAlias, String fldName) {
-    Assert.notNull(query);
-    BeeTable table = getTable(tblName);
-    BeeField field = table.getField(fldName);
-
-    if (!field.isExtended()) {
-      logger.warning("Field is not extended:", tblName, fldName);
-      return null;
-    }
-    return table.joinExtField(query, tblAlias, field);
-  }
-
   public IsCondition joinTables(String tblName, String dstTable, String dstField) {
     return joinTables(tblName, null, dstTable, dstField);
   }

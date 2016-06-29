@@ -4,6 +4,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.HasRowId;
@@ -32,11 +33,12 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
   private static final Type<Handler> TYPE = new Type<>();
 
   public static void fire(FiresModificationEvents eventManager, String viewName, BeeRow row) {
-    Assert.notNull(eventManager);
-    Assert.notEmpty(viewName);
-    Assert.notNull(row);
+    fire(eventManager, viewName, row, false);
+  }
 
-    eventManager.fireModificationEvent(new RowUpdateEvent(viewName, row), Locality.ENTANGLED);
+  public static void fire(FiresModificationEvents eventManager, String viewName, BeeRow row,
+      boolean refreshChildren) {
+    createAndFire(eventManager, viewName, row, refreshChildren);
   }
 
   public static HandlerRegistration register(EventBus eventBus, Handler handler) {
@@ -45,12 +47,25 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
     return eventBus.addHandler(TYPE, handler);
   }
 
+  private static void createAndFire(FiresModificationEvents eventManager, String viewName,
+      BeeRow row, boolean refreshChildren) {
+
+    Assert.notNull(eventManager);
+    Assert.notEmpty(viewName);
+    Assert.notNull(row);
+
+    eventManager.fireModificationEvent(new RowUpdateEvent(viewName, row, refreshChildren),
+        Locality.ENTANGLED);
+  }
+
   private String viewName;
   private BeeRow row;
+  private boolean refreshChildren;
 
-  private RowUpdateEvent(String viewName, BeeRow row) {
+  private RowUpdateEvent(String viewName, BeeRow row, boolean refreshChildren) {
     this.viewName = viewName;
     this.row = row;
+    this.refreshChildren = refreshChildren;
   }
 
   RowUpdateEvent() {
@@ -59,10 +74,11 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 2);
+    Assert.lengthEquals(arr, 3);
 
     this.viewName = arr[0];
     this.row = BeeRow.restore(arr[1]);
+    this.refreshChildren = Codec.unpack(arr[2]);
   }
 
   @Override
@@ -99,9 +115,13 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
     return BeeUtils.same(view, getViewName());
   }
 
+  public boolean refreshChildren() {
+    return refreshChildren;
+  }
+
   @Override
   public String serialize() {
-    Object[] arr = new Object[] {getViewName(), getRow()};
+    Object[] arr = new Object[] {getViewName(), getRow(), Codec.pack(refreshChildren())};
     return Codec.beeSerialize(arr);
   }
 
@@ -111,7 +131,8 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
       return BeeUtils.joinWords(getKind(), getViewName(), "row is null");
     } else {
       return BeeUtils.joinWords(getKind(), getViewName(), getRowId(), getRow().getVersion(),
-          getRow().getValues(), getRow().getShadow());
+          getRow().getValues(), getRow().getShadow(),
+          refreshChildren() ? "refresh children" : BeeConst.STRING_EMPTY);
     }
   }
 

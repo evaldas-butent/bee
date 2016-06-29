@@ -26,7 +26,7 @@ public abstract class AbstractSlackRenderer extends AbstractCellRenderer {
   private static final String STYLE_BAR = STYLE_PREFIX + "bar";
   private static final String STYLE_LABEl = STYLE_PREFIX + "label";
 
-  protected static String format(SlackKind kind, String label) {
+  protected static String createSlackBar(SlackKind kind, String label) {
     Div bar = new Div().addClass(STYLE_BAR).addClass(kind.getStyleName());
     if (!BeeUtils.isEmpty(label)) {
       bar.appendChild(new Div().addClass(STYLE_LABEl).text(label));
@@ -52,7 +52,7 @@ public abstract class AbstractSlackRenderer extends AbstractCellRenderer {
     }
   }
 
-  public static String getLabel(long minutes) {
+  public static String getFormatedTimeLabel(long minutes) {
     if (minutes <= 0L) {
       return BeeConst.STRING_ZERO;
 

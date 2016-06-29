@@ -78,7 +78,7 @@ public class ProjectSlackRenderer extends AbstractSlackRenderer {
       }
 
       long minutes = getMinutes(kind, start, finish, now);
-      String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getLabel(minutes);
+      String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getFormatedTimeLabel(minutes);
 
       XStyle style = new XStyle();
       XFont font;
@@ -159,8 +159,8 @@ public class ProjectSlackRenderer extends AbstractSlackRenderer {
         return BeeConst.STRING_EMPTY;
       }
 
-      String label = getLabel(minutes);
-      return format(kind, label);
+      String label = getFormatedTimeLabel(minutes);
+      return createSlackBar(kind, label);
     }
   }
 }

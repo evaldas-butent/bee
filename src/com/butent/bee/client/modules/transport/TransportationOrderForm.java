@@ -20,6 +20,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -41,7 +42,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -72,40 +72,8 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
 
   @Override
   protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
-    Queries.getRowSet(VIEW_ORDER_CARGO, null, Filter.equals(COL_ORDER, getActiveRowId()),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet cargo) {
-            List<Long> cargoIds = cargo.getRowIds();
-            int handlingIdx = cargo.getColumnIndex(COL_CARGO_HANDLING);
-
-            Queries.getRowSet(VIEW_CARGO_HANDLING, null, Filter.or(Filter.any(COL_CARGO, cargoIds),
-                Filter.idIn(cargo.getDistinctLongs(handlingIdx))),
-                new Queries.RowSetCallback() {
-                  @Override
-                  public void onSuccess(BeeRowSet handling) {
-                    cargo.addColumn(ValueType.TEXT, null, TBL_CARGO_PLACES);
-                    int placesIdx = cargo.getColumnIndex(TBL_CARGO_PLACES);
-                    int cargoIdx = handling.getColumnIndex(COL_CARGO);
-
-                    for (BeeRow cargoRow : cargo) {
-                      BeeRowSet currentHandling = new BeeRowSet(handling.getViewName(),
-                          handling.getColumns());
-
-                      for (BeeRow handlingRow : handling) {
-                        if (Objects.equals(handlingRow.getId(), cargoRow.getLong(handlingIdx))
-                            || Objects.equals(handlingRow.getLong(cargoIdx), cargoRow.getId())) {
-
-                          currentHandling.addRow(DataUtils.cloneRow(handlingRow));
-                        }
-                      }
-                      cargoRow.setValue(placesIdx, currentHandling.serialize());
-                    }
-                    dataConsumer.accept(new BeeRowSet[] {cargo});
-                  }
-                });
-          }
-        });
+    SelfServiceUtils.getCargos(Filter.equals(COL_ORDER, getActiveRowId()),
+        cargoInfo -> dataConsumer.accept(new BeeRowSet[] {cargoInfo}));
   }
 
   @Override
@@ -122,26 +90,10 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
     companies.put(ClassifierConstants.COL_COMPANY, BeeKeeper.getUser().getCompany());
 
     super.getReportParameters(defaultParameters ->
-        Queries.getRowSet(ClassifierConstants.VIEW_COMPANIES, null, Filter.idIn(companies.values()),
-            new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                for (BeeRow row : result) {
-                  for (Map.Entry<String, Long> entry : companies.entrySet()) {
-                    if (Objects.equals(row.getId(), entry.getValue())) {
-                      for (BeeColumn column : result.getColumns()) {
-                        String value = DataUtils.getString(result, row, column.getId());
-
-                        if (!BeeUtils.isEmpty(value)) {
-                          defaultParameters.put(entry.getKey() + column.getId(), value);
-                        }
-                      }
-                    }
-                  }
-                }
-                parametersConsumer.accept(defaultParameters);
-              }
-            }));
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+          parametersConsumer.accept(defaultParameters);
+        }));
   }
 
   @Override

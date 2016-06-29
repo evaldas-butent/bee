@@ -20,7 +20,9 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -63,8 +65,8 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
             RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
                 row, Opener.MODAL, null, getPrintFormInterceptor());
           } else {
-            RowEditor.openForm(form.getName(), Data.getDataInfo(viewName), row.getId(),
-                Opener.MODAL, null, getPrintFormInterceptor());
+            RowEditor.openForm(form.getName(), Data.getDataInfo(viewName),
+                Filter.compareId(row.getId()), Opener.MODAL, null, getPrintFormInterceptor());
           }
         };
         final Holder<Integer> counter = Holder.of(0);
@@ -139,7 +141,6 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         params.put(column.getId(), value);
       }
     }
-    params.put("ID", BeeUtils.toString(getActiveRowId()));
     parametersConsumer.accept(params);
   }
 
@@ -173,11 +174,24 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
       reps.add(rep);
       caps.add(cap);
     }
-    Consumer<String> consumer = report -> print((parameters, data) ->
-        ReportUtils.showReport(report, getReportCallback(), parameters, data));
+    Consumer<String> consumer = report -> {
+      if (BeeUtils.isEmpty(Localized.extractLanguage(report))) {
+        List<String> locales = new ArrayList<>();
 
+        for (SupportedLocale locale : SupportedLocale.values()) {
+          locales.add(BeeUtils.notEmpty(locale.getCaption(), locale.getLanguage()));
+        }
+        Global.choice(Localized.dictionary().chooseLanguage(), null, locales,
+            idx -> print((parameters, data) -> ReportUtils.showReport(Localized.setLanguage(report,
+                SupportedLocale.values()[idx].getLanguage()), getReportCallback(), parameters,
+                data)));
+      } else {
+        print((parameters, data) ->
+            ReportUtils.showReport(report, getReportCallback(), parameters, data));
+      }
+    };
     if (reps.size() > 1) {
-      Global.choice(null, Localized.dictionary().choosePrintingForm(), caps,
+      Global.choice(Localized.dictionary().choosePrintingForm(), null, caps,
           idx -> consumer.accept(reps.get(idx)));
     } else {
       consumer.accept(reps.get(0));

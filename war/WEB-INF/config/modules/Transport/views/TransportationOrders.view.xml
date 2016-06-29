@@ -11,7 +11,6 @@
     <SimpleColumn name="Status" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="OrderNo" />
-    <SimpleColumn name="Notes" />
 
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
@@ -75,6 +74,10 @@
     <SimpleJoin joinType="LEFT" name="ShippingTerm">
       <SimpleColumn name="Name" alias="ShippingTermName" />
     </SimpleJoin>
+
+    <SimpleColumn name="Vehicle" />
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="Notes" />
 
     <ExternalJoin source="OrderCargo" name="Order" joinType="LEFT">
       <HiddenColumn name="Description" />

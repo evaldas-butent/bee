@@ -5,7 +5,6 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="TradeDocument" viewName="TradeDocuments"
@@ -48,8 +47,8 @@
 
       <row>
         <Label for="Operation" />
-        <DataSelector source="Operation" renderColumns="OperationName" newRowEnabled="false"
-          style="&inpw;" visible="true" />
+        <DataSelector name="Operation" source="Operation" renderColumns="OperationName"
+                      newRowEnabled="false" style="&inpw;" visible="true" />
 
         <Label for="Status" />
         <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"

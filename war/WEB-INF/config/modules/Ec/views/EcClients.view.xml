@@ -28,7 +28,7 @@
           <SimpleColumn name="Mobile" editable="true" />
           <SimpleColumn name="Fax" editable="true" />
 
-          <SimpleColumn name="Email" alias="EmailId" />
+          <SimpleColumn name="Email" alias="EmailId" editable="true" />
           <SimpleJoin name="Email" joinType="LEFT">
             <SimpleColumn name="Email" />
           </SimpleJoin>

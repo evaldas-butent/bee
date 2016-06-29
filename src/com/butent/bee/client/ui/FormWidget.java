@@ -80,7 +80,6 @@ import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.Audio;
-import com.butent.bee.client.widget.Video;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Canvas;
 import com.butent.bee.client.widget.CustomDiv;
@@ -124,6 +123,7 @@ import com.butent.bee.client.widget.Summary;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.client.widget.Video;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
@@ -147,6 +147,7 @@ import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
@@ -1766,7 +1767,7 @@ public enum FormWidget {
         if (BeeUtils.allEmpty(upFace, downFace)) {
           widget = new Toggle();
         } else {
-          widget = new Toggle(upFace, downFace);
+          widget = new Toggle(Localized.maybeTranslate(upFace), Localized.maybeTranslate(downFace));
         }
         break;
 
@@ -1832,8 +1833,8 @@ public enum FormWidget {
         Element editForm = XmlUtils.getFirstChildElement(element, "form");
 
         widget = new TreeContainer(attributes.get(UiConstants.ATTR_CAPTION),
-            editForm == null || BeeUtils.toBoolean(attributes.get("hideActions")),
-            treeViewName, treeFavoriteName);
+            editForm != null ? Action.parse(attributes.get(FormDescription.ATTR_DISABLED_ACTIONS))
+                : EnumSet.allOf(Action.class), treeViewName, treeFavoriteName);
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
             treeViewName, attributes.get("parentColumn"),

@@ -26,6 +26,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
+import com.butent.bee.shared.ui.ColumnRelation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
@@ -214,7 +215,7 @@ public class GridLoaderBean {
     return editor;
   }
 
-  private static Relation getRelation(Element element) {
+  private static Relation getRelation(Element element, Map<String, String> attributes) {
     Assert.notNull(element);
 
     RendererDescription rowRenderer = null;
@@ -251,8 +252,8 @@ public class GridLoaderBean {
             renderer, render, tokens));
       }
     }
-    return Relation.create(XmlUtils.getAttributes(element), selectorColumns, rowRenderer,
-        rowRender, rowRenderTokens);
+
+    return Relation.create(attributes, selectorColumns, rowRenderer, rowRender, rowRenderTokens);
   }
 
   private static RendererDescription getRenderer(Element element, EditorDescription editor) {
@@ -326,11 +327,8 @@ public class GridLoaderBean {
     return result;
   }
 
-  private static void xmlToColumn(Element src, ColumnDescription dst) {
-    Assert.notNull(src);
-    Assert.notNull(dst);
-
-    Map<String, String> attributes = XmlUtils.getAttributes(src);
+  private static void xmlToColumn(Element src, Map<String, String> attributes,
+      ColumnDescription dst) {
 
     if (!attributes.isEmpty()) {
       boolean hasFlexibility = false;
@@ -597,19 +595,23 @@ public class GridLoaderBean {
 
       } else if (isColumnVisible(view, colType, colName, columnElement)) {
         ColumnDescription column = new ColumnDescription(colType, colName);
-        xmlToColumn(columnElement, column);
+
+        Map<String, String> attributes = XmlUtils.getAttributes(columnElement);
+        xmlToColumn(columnElement, attributes, column);
 
         if (ColType.RELATED.equals(colType)) {
-          column.setRelation(getRelation(columnElement));
+          column.setRelation(getRelation(columnElement, attributes));
 
         } else if (ColType.AUTO.equals(colType)) {
           Relation relation =
               Relation.create(columnElement.getAttribute(UiConstants.ATTR_VIEW_NAME),
                   Lists.newArrayList(columnElement.getAttribute("viewColumn")));
 
-          relation.setAttributes(XmlUtils.getAttributes(columnElement));
-
+          relation.setAttributes(attributes);
           column.setRelation(relation);
+
+        } else {
+          column.setColumnRelation(ColumnRelation.maybeCreate(attributes));
         }
 
         if (initColumn(view, column)) {
@@ -694,7 +696,7 @@ public class GridLoaderBean {
       case AUTO:
         if (view.hasColumn(source)) {
           if (view.isColReadOnly(source)
-              || colType.equals(ColType.DATA) && view.getColumnLevel(source) > 0
+              || colType.equals(ColType.DATA) && !view.isColEditable(source)
               || !usr.canEditColumn(viewName, source)) {
             columnDescription.setReadOnly(true);
           }
@@ -1037,9 +1039,9 @@ public class GridLoaderBean {
         if (!filterComponentElements.isEmpty()) {
           List<FilterComponent> filterComponents = new ArrayList<>();
 
-          for (Element componentlement : filterComponentElements) {
+          for (Element componentElement : filterComponentElements) {
             FilterComponent component =
-                FilterComponent.create(XmlUtils.getAttributes(componentlement));
+                FilterComponent.create(XmlUtils.getAttributes(componentElement));
             if (component != null) {
               filterComponents.add(component);
             }

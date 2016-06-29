@@ -7,6 +7,8 @@ name="Trade" label="=trade" order="90" module="Trade"
 
   <Item name="TradeStock" label="=trdStock" service="grid" parameters="TradeStock" separator="true"
     order="10" />
+  <Item name="RebuildTradeStock" label="=rebuildTradeStockCaption" service="rebuild_trade_stock"
+        separator="true" order="15" module="Administration" />
 
   <Item name="TradeActNames" label="=tradeActNames" service="grid"
     parameters="TradeActNames" separator="true" order="40" module="Trade.Acts" />
