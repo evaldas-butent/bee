@@ -12,6 +12,7 @@ import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_CATEGORY_NAME;
 
 import com.butent.bee.server.Invocation;
+import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -114,6 +115,8 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
   NewsBean news;
   @EJB
   MailModuleBean mail;
+  @EJB
+  ChatBean chat;
 
   @Resource
   TimerService timerService;
@@ -565,7 +568,8 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
 
   private void sendExpiredDocumentsReminders(Long documentId) {
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_DOCUMENTS, COL_DOCUMENT_USER, COL_DOCUMENT_DATE, COL_DOCUMENT_EXPIRES,
+        .addFields(TBL_DOCUMENTS, sys.getIdName(TBL_DOCUMENTS), COL_DOCUMENT_USER,
+            COL_DOCUMENT_DATE, COL_DOCUMENT_EXPIRES,
             COL_DOCUMENT_NAME, COL_DOCUMENT_NUMBER, COL_REGISTRATION_NUMBER)
         .addField(ClassifierConstants.TBL_COMPANIES,
             ClassifierConstants.COL_COMPANY_NAME, ALS_DOCUMENT_COMPANY_NAME)
@@ -646,6 +650,10 @@ public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
     if (mailResponse.hasErrors()) {
       logger.severe(TIMER_REMIND_DOCUMENT_END, "mail error - canceled");
     }
+
+    Map<String, String> linkData = new HashMap<>();
+    linkData.put(VIEW_DOCUMENTS, dRow.getValue(sys.getIdName(TBL_DOCUMENTS)));
+    chat.putMessage(mail.styleMailHeader(headerCaption), userId, linkData);
   }
 
   private ResponseObject copyDocumentData(Long data) {

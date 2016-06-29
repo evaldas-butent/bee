@@ -10,6 +10,7 @@ import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
+import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
 import com.butent.bee.server.modules.classifiers.TimerBuilder;
 import com.butent.bee.shared.html.builder.Document;
@@ -287,6 +288,8 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
   ParamHolderBean prm;
   @EJB
   ClassifiersModuleBean cmb;
+  @EJB
+  ChatBean chat;
 
   @EJB
   NewsBean news;
@@ -769,12 +772,13 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
   }
 
 
-  private Set<String> getAppointmentAttendeeEmails(Long appointmentId) {
+  private SimpleRowSet getAppointmentAttendeeEmails(Long appointmentId) {
     if (!DataUtils.isId(appointmentId)) {
-      return new HashSet<>();
+      return null;
     }
     SqlSelect select = new SqlSelect()
             .addFields(TBL_EMAILS, COL_EMAIL)
+            .addFields(TBL_USERS, sys.getIdName(TBL_USERS))
             .addFrom(TBL_APPOINTMENT_ATTENDEES)
             .addFromLeft(TBL_ATTENDEES,
                     sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
@@ -784,9 +788,11 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
                     sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
             .addFromInner(TBL_EMAILS,
                     sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .addFromInner(TBL_USERS,
+                    sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
             .setWhere(SqlUtils.equals(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appointmentId));
 
-    return qs.getValueSet(select);
+    return qs.getData(select);
   }
 
   private SimpleRow getAppointmentRemindData(Long reminderId) {
@@ -808,9 +814,10 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
                     SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
                     ALS_CONTACT_PERSON)
             .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, ALS_OWNER_EMAIL)
-            .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
+            .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE, COL_REMINDER_TYPE)
             .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD, COL_REMINDER_TEMPLATE,
                     COL_REMINDER_TEMPLATE_CAPTION)
+            .addFields(TBL_USERS, sys.getIdName(TBL_USERS))
             .addFrom(TBL_APPOINTMENTS)
             .addFromLeft(TBL_APPOINTMENT_TYPES,
                     sys.joinTables(TBL_APPOINTMENT_TYPES, TBL_APPOINTMENTS, COL_APPOINTMENT_TYPE))
@@ -1687,6 +1694,10 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
       if (BeeUtils.isEmpty(error) && BeeUtils.isEmpty(template)) {
         error = "No reminder message specified";
       }
+
+      SimpleRowSet recipientsRowSet =
+          getAppointmentAttendeeEmails(data.getLong(sys.getIdName(TBL_APPOINTMENTS)));
+
       if (BeeUtils.isEmpty(error)) {
         ReminderMethod method = EnumUtils.getEnumByIndex(ReminderMethod.class,
             data.getInt(COL_REMINDER_METHOD));
@@ -1694,8 +1705,10 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
         if (method == ReminderMethod.EMAIL) {
           String email = data.getValue(ALS_OWNER_EMAIL);
 
-          Set<String> emails =
-                  getAppointmentAttendeeEmails(data.getLong(sys.getIdName(TBL_APPOINTMENTS)));
+          Set<String> emails = new HashSet<>();
+          if (recipientsRowSet != null) {
+            Collections.addAll(emails, recipientsRowSet.getColumn(COL_EMAIL));
+          }
           if (!BeeUtils.isEmpty(email)) {
             emails.add(email);
           }
@@ -1705,7 +1718,8 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
           }
 
           List<String> exclCols = Lists.newArrayList(ALS_OWNER_EMAIL, COL_APPOINTMENT, COL_MESSAGE,
-                  COL_REMINDER_METHOD, COL_REMINDER_TEMPLATE, COL_REMINDER_TEMPLATE_CAPTION);
+                  COL_REMINDER_METHOD, COL_REMINDER_TEMPLATE, COL_REMINDER_TEMPLATE_CAPTION,
+                  sys.getIdName(TBL_USERS), COL_REMINDER_TYPE);
           Map<String, String> labels = CalendarHelper.getAppointmentReminderDataLabels(dic, idName);
           Map<String, ValueType> format = CalendarHelper.getAppointmentReminderDataTypes(idName);
           Map<String, String> enumKeys =  CalendarHelper.getAppointmentReminderDataEnumKeys();
@@ -1715,8 +1729,10 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
                   labels, format, enumKeys, exclCols, BeeConst.STRING_EMPTY,
                   template, usr.getCurrentUserId());
 
+          String contentLines = content.buildLines();
+
           for (String recipient : emails) {
-            error = sendAppointmentReminderEmail(recipient, subject, content.buildLines());
+            error = sendAppointmentReminderEmail(recipient, subject, contentLines);
 
             if (!BeeUtils.isEmpty(error)) {
               break;
@@ -1726,6 +1742,29 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
           error = "Unsupported reminder method: " + method;
         }
       }
+
+      if (DataUtils.isId(data.getValue(COL_REMINDER_TYPE))) {
+        Set<String> userIds = new HashSet<>();
+        if (recipientsRowSet != null) {
+          Collections.addAll(userIds, recipientsRowSet.getColumn(sys.getIdName(TBL_USERS)));
+        }
+        userIds.add(data.getValue(sys.getIdName(TBL_USERS)));
+
+        for (String user : userIds) {
+          Long userId = BeeUtils.toLong(user);
+          Map<String, String> linkData = new HashMap<>();
+          linkData.put(VIEW_APPOINTMENTS, data.getValue(sys.getIdName(TBL_APPOINTMENTS)));
+          if (DataUtils.isId(userId)) {
+            chat.putMessage(
+                BeeUtils.joinWords(usr.getDictionary(userId).event(), data.getValue(COL_SUMMARY),
+                    usr.getDictionary(userId).scheduledStartingTime(),
+                    data.getDateTime(COL_START_DATE_TIME).toCompactString()),
+                userId,
+                linkData);
+          }
+        }
+      }
+
       if (!BeeUtils.isEmpty(error)) {
         logger.severe(error);
       }

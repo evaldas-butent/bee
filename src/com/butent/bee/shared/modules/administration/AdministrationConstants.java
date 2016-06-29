@@ -368,6 +368,7 @@ public final class AdministrationConstants {
   public static final String COL_OPEN_IN_NEW_TAB = "OpenInNewTab";
   public static final String COL_WORKSPACE_CONTINUE = "WorkspaceContinue";
   public static final String COL_SHOW_NEW_MESSAGES_NOTIFIER = "ShowNewMessagesNotifier";
+  public static final String COL_ASSISTANT = "Assistant";
   public static final String COL_LAST_WORKSPACE = "LastWorkspace";
 
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
