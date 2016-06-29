@@ -255,6 +255,17 @@
   width: 250px;
   margin-bottom: 10px;
 }
+.bee-mail-SearchPanel .bee-mail-SearchDateFrom, .bee-mail-SearchPanel .bee-mail-SearchDateTo {
+  display: inline;
+  margin-bottom: 10px;
+  width: 118px;
+}
+.bee-mail-SearchDateFrom {
+  margin-right: 5px;
+}
+.bee-mail-SearchDateTo {
+  margin-left: 5px;
+}
 .bee-mail-SearchStarred, .bee-mail-SearchUnread, .bee-mail-SearchAttachments {
   display: block;
   margin-bottom: 5px;
