@@ -34,6 +34,9 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Preloader;
 
+import java.util.List;
+import java.util.Objects;
+
 public final class AdministrationKeeper {
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
@@ -78,12 +81,15 @@ public final class AdministrationKeeper {
         new UserFeedsInterceptor(BeeKeeper.getUser().getUserId()),
         GridOptions.forCurrentUserFilter(NewsConstants.COL_UF_USER));
 
+    List<String> userChoiceColumns = Lists.newArrayList(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME,
+        ALS_COMPANY_NAME, ALS_POSITION_NAME);
+
     GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
         UniqueChildInterceptor.forUsers(Localized.dictionary().userGroupAddMembers(),
-            COL_UG_GROUP, COL_UG_USER));
+            COL_UG_GROUP, COL_UG_USER, null, userChoiceColumns));
     GridFactory.registerGridInterceptor(GRID_ROLE_USERS,
         UniqueChildInterceptor.forUsers(Localized.dictionary().roleAddUsers(),
-            COL_ROLE, COL_USER));
+            COL_ROLE, COL_USER, null, userChoiceColumns));
 
     GridFactory.registerGridInterceptor(GRID_THEME_COLORS,
         new UniqueChildInterceptor(Localized.dictionary().newThemeColors(),
@@ -129,7 +135,7 @@ public final class AdministrationKeeper {
 
     RightsForm.register();
 
-    SelectorEvent.register(event -> onDataSelector(event));
+    SelectorEvent.register(AdministrationKeeper::onDataSelector);
   }
 
   public static void setCompany(Long company) {
@@ -137,7 +143,12 @@ public final class AdministrationKeeper {
   }
 
   private static void onDataSelector(SelectorEvent event) {
-    if (event.isOpened() && event.hasRelatedView(VIEW_USERS)) {
+    String viewName = event.getRelatedViewName();
+
+    if (event.isOpened() && Objects.equals(Data.getViewTable(viewName), TBL_USERS)
+        && Data.containsColumn(viewName, COL_USER_BLOCK_FROM)
+        && Data.containsColumn(viewName, COL_USER_BLOCK_UNTIL)) {
+
       DateTimeValue now = new DateTimeValue(TimeUtils.nowMinutes());
 
       event.getSelector().getOracle().setResponseFilter(Filter.or(
@@ -146,7 +157,7 @@ public final class AdministrationKeeper {
               Filter.isMore(COL_USER_BLOCK_FROM, now)),
           Filter.and(Filter.notNull(COL_USER_BLOCK_UNTIL),
               Filter.isLess(COL_USER_BLOCK_UNTIL, now))
-          ));
+      ));
     }
   }
 

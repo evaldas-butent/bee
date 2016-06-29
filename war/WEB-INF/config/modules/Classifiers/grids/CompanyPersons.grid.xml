@@ -3,19 +3,27 @@
   xmlns:ui="http://www.butent.com/ui"
   
   name="CompanyPersons" viewName="CompanyPersons" caption="=companyPersons"
-  flexGrow="1" favorite="FirstName LastName"
+  favorite="FirstName LastName"
   >
   <g:columns>
-    <RelColumn name="Person" visible="true" filterSupplier="value" />
-    <RelColumn name="Company" visible="true" filterSupplier="value" />
-    <RelColumn name="Department" />    
-    <RelColumn name="Position" />
+    <RelColumn name="Person" visible="true" filterSupplier="value" sortBy="LastName FirstName" flexGrow="1" />
+    <RelColumn name="Company" visible="true" filterSupplier="value" flexGrow="1" />
+
+    <RelColumn name="Department" flexGrow="1" />
+    <RelColumn name="Position" flexGrow="1" />
+
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
-    <DataColumn name="Fax" />
-    <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" />
+    <DataColumn name="Fax" visible="false" />
+    <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" flexGrow="1" />
+
     <DataColumn name="DateOfDismissal" searchBy="DateOfDismissal" filterOptions="empty">
       <style><bodyStyle><ui:inline>color:red</ui:inline></bodyStyle></style>
     </DataColumn>
+
+    <DataColumn name="TabNumber" label="=personTabNoShort" module="Payroll"
+      editSource="CompanyPersonID" editTarget="CompanyPerson" editViewName="Employees" />
+    <DataColumn name="Login" label="=user" module="Administration" editViewName="Users"
+      editSource="CompanyPersonID" editTarget="CompanyPerson" editPopup="true" />
   </g:columns>
 </g:Grid>

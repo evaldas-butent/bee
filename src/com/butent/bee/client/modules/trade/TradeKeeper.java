@@ -4,8 +4,10 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
@@ -36,8 +38,10 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -95,6 +99,8 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     registerDocumentViews();
     BeeKeeper.getBus().registerDataHandler(INSTANCE, false);
 
+    MenuService.REBUILD_TRADE_STOCK.setHandler(p -> rebuildStock());
+
     if (ModuleAndSub.of(Module.TRADE, SubModule.ACTS).isEnabled()) {
       TradeActKeeper.register();
     }
@@ -108,7 +114,7 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     if (event.hasView(VIEW_TRADE_DOCUMENT_TYPES)
         && BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TRADE))) {
 
-      BeeKeeper.getMenu().loadMenu(() -> registerDocumentViews());
+      BeeKeeper.getMenu().loadMenu(TradeKeeper::registerDocumentViews);
     }
   }
 
@@ -133,6 +139,26 @@ public final class TradeKeeper implements HandlesAllDataEvents {
         }
       }
     });
+  }
+
+  private static void rebuildStock() {
+    Global.confirm(Localized.dictionary().rebuildTradeStockCaption(), Icon.WARNING,
+        Collections.singletonList(Localized.dictionary().rebuildTradeStockQuestion()),
+        Localized.dictionary().actionUpdate(), Localized.dictionary().cancel(),
+        () -> {
+          final long startTime = System.currentTimeMillis();
+
+          BeeKeeper.getRpc().makeRequest(createArgs(SVC_REBUILD_STOCK), new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              if (!response.hasErrors()) {
+                BeeKeeper.getScreen().notifyInfo(
+                    Localized.dictionary().rebuildTradeStockNotification(),
+                    TimeUtils.elapsedSeconds(startTime));
+              }
+            }
+          });
+        });
   }
 
   private static void registerDocumentViews() {

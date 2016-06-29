@@ -56,6 +56,12 @@
       <AggregateColumn alias="CommentCount" aggregate="COUNT_DISTINCT"
         name="PublishTime" />
     </ExternalJoin>
+    
+    <ExternalJoin name="Discussion" source="DiscussionsUsers" joinType="LEFT" filter="DiscussionUser = {u}">
+      <HiddenColumn name="User" alias="DiscussionUser"></HiddenColumn>
+      <SimpleColumn name="Star"/>
+      <SimpleColumn name="LastAccess"/>
+    </ExternalJoin>
   </Columns>
 
   <Order>

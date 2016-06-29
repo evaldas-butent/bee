@@ -108,6 +108,7 @@ public final class DiscussionsConstants {
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
   public static final String ALS_OWNER_PHOTO = "OwnerPhoto";
   public static final String ALS_LAST_COMMET = "LastComment";
+  public static final String ALS_LAST_COMMENT_PUBLISH_TIME = "LastCommentPublishTime";
   public static final String ALS_FILES_COUNT = "FilesCount";
   public static final String ALS_RELATIONS_COUNT = "RelCount";
   public static final String ALS_TOPIC_NAME = "TopicName";
@@ -171,7 +172,6 @@ public final class DiscussionsConstants {
   public static final String PROP_DESCRIPTION = "Description";
   public static final String PROP_FILES = "Files";
   public static final String PROP_LAST_ACCESS = "LastAccess";
-  public static final String PROP_LAST_PUBLISH = "LastPublish";
   public static final String PROP_LAST_COMMENT = "LastComment";
   public static final String PROP_LAST_COMMENT_DATA = "LastCommentData";
   public static final String PROP_MEMBERS = "Members";

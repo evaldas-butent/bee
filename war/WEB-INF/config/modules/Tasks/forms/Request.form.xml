@@ -11,7 +11,7 @@
 <f:Form xmlns="http://www.butent.com/widget" 
         xmlns:f="http://www.butent.com/form"
 
-  name="Request" viewName="Requests" caption="=crmRequest" width="1024">
+  name="Request" viewName="Requests" caption="=crmRequest" width="1024" showRowId="true" >
   <SplitPanel splitterSize="1" style="margin:5px;" name="Split">
     <west size="640">
       <TabbedPages resizable="false" name="TabbedPages">

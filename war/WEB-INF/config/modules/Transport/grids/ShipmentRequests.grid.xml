@@ -5,9 +5,9 @@
         caption="=trRequestsUnregistered"
         filter="!(CompanyPerson)"
         disabledActions="add"
-    >
+>
   <g:columns>
-    <IdColumn name="ID" width="40" />
+    <DataColumn name="OrderNo" />
     <DataColumn name="Date" />
     <DataColumn name="Status" />
 
@@ -45,6 +45,8 @@
     <DataColumn name="Logistics" />
     <RelColumn name="ShippingTerm" />
 
+    <DataColumn name="CargoNotes" />
+
     <DataColumn name="CustomsBrokerage" />
     <DataColumn name="FreightInsurance" />
 
@@ -61,9 +63,7 @@
     <DataColumn name="Value" />
     <RelColumn name="ValueCurrency" />
 
-    <RelColumn name="Manager" />
-
-    <DataColumn name="Notes" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
     <DataColumn name="LossReason" />
     <DataColumn name="Host" />
     <DataColumn name="Agent" />

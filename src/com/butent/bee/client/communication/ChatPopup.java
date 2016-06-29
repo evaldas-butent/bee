@@ -44,10 +44,14 @@ public final class ChatPopup extends Popup {
   private static final int MARGIN_X = 20;
 
   private static int getLeft(String ignoreId, int width) {
+    return getLeft(ignoreId, width, true);
+  }
+
+  private static int getLeft(String ignoreId, int width, boolean openFromLeftCorner) {
     IntRangeSet ranges = new IntRangeSet();
 
     for (Popup popup : getVisiblePopups()) {
-      if (popup.getWidget() instanceof ChatView && !DomUtils.idEquals(popup, ignoreId)) {
+      if (!DomUtils.idEquals(popup, ignoreId)) {
         int left = popup.getAbsoluteLeft();
         int right = popup.getElement().getAbsoluteRight();
 
@@ -57,7 +61,11 @@ public final class ChatPopup extends Popup {
 
     int ww = Window.getClientWidth();
     if (ranges.isEmpty()) {
-      return ww - width;
+      if (openFromLeftCorner) {
+        return ww - width;
+      } else {
+        return 0;
+      }
     }
 
     List<Range<Integer>> free = ranges.complement(0, ww - 1).asList();
@@ -70,8 +78,12 @@ public final class ChatPopup extends Popup {
         int upper = range.upperEndpoint() + 1;
 
         if (upper - lower >= width) {
-          int margin = (upper >= ww) ? 0 : MARGIN_X;
-          return Math.max(upper - width - margin, lower);
+          if (openFromLeftCorner) {
+            int margin = (upper >= ww) ? 0 : MARGIN_X;
+            return Math.max(upper - width - margin, lower);
+          } else {
+            return Math.min(upper - width, lower + MARGIN_X);
+          }
         }
       }
     }
@@ -80,11 +92,15 @@ public final class ChatPopup extends Popup {
   }
 
   public static void openMinimized(IdentifiableWidget chatView) {
-    open(chatView, true);
+    open(chatView, true, true);
   }
 
   public static void openNormal(IdentifiableWidget chatView) {
-    open(chatView, false);
+    open(chatView, false, true);
+  }
+
+  public static void openNormal(IdentifiableWidget chatView, boolean openFromLeftCorner) {
+    open(chatView, false, openFromLeftCorner);
   }
 
   private static String getSizeKey(ChatView chatView) {
@@ -129,7 +145,8 @@ public final class ChatPopup extends Popup {
     }
   }
 
-  private static void open(IdentifiableWidget widget, boolean minimized) {
+  private static void open(IdentifiableWidget widget, boolean minimized,
+      boolean openFromLeftCorner) {
     if (!(widget instanceof ChatView)) {
       return;
     }
@@ -149,7 +166,7 @@ public final class ChatPopup extends Popup {
     }
 
     chatPopup.setPopupPositionAndShow((width, height) -> {
-      int left = getLeft(chatPopup.getId(), width);
+      int left = getLeft(chatPopup.getId(), width, openFromLeftCorner);
       int top;
 
       if (BeeConst.isUndef(left)) {

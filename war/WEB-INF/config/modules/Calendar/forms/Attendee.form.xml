@@ -1,38 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY label "position: absolute; left: 20px; width:130px;">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
-  
+
   name="Attendee" viewName="Attendees" caption="=calAttendee" width="640" height="300">
 
   <FlowPanel>
-    <InputText source="Name" caption="=calAttendeeName" style="width: 340px;" d:size="100" d:unit="px"
-       d:rootStyle="position: absolute; left: 20px; top: 20px;" />
+    <Label for="Name" text="=calAttendeeName" style="&label; top: 20px;" />
+    <InputText source="Name" style="width: 340px; position: absolute; left: 150px; top: 20px;"
+               d:size="100" d:unit="px" />
     <InputInteger source="Ordinal" caption="=ordinal" style="width: 60px;" d:size="60" d:unit="px"
-       d:rootStyle="position: absolute; left: 500px; top: 20px;" />
+                  d:rootStyle="position: absolute; left: 500px; top: 20px;" />
 
-    <DataSelector source="TypeName" caption="=calAttendeeType" style="width: 180px;" d:size="100" d:unit="px"
-       d:rootStyle="position: absolute; left: 20px; top: 60px;" />
+    <Label for="AttendeeType" text="=calAttendeeType" style="&label; top: 60px;" />
+    <DataSelector source="AttendeeType"
+                  style="width: 180px; position: absolute; left: 150px; top: 60px;"
+                  d:size="100" d:unit="px" >
+      <renderToken source="TypeName" />
+    </DataSelector>
     <InputText source="Location" caption="=location" style="width: 180px;" d:size="80" d:unit="px"
-       d:rootStyle="position: absolute; left: 360px; top: 60px;" />
+               d:rootStyle="position: absolute; left: 360px; top: 60px;" />
 
-    <DataSelector source="CompanyPerson" caption="=responsiblePerson" style="width: 180px;"
-        d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 100px;">
+    <Label for="CompanyPerson" text="=responsiblePerson" style="&label; top: 100px;" />
+    <DataSelector source="CompanyPerson"
+                  style="width: 180px; position: absolute; left: 150px; top: 100px;"
+                  d:size="100" d:unit="px">
       <renderToken source="FirstName" />
       <renderToken source="LastName" />
       <renderToken source="CompanyName" prefix=", " />
-    </DataSelector>   
+    </DataSelector>
 
     <Radio source="Transparency" vertical="false"
-       style="position: absolute; left: 356px; top: 100px" />
+           style="position: absolute; left: 356px; top: 100px" />
 
-    <DataSelector source="Color" renderColumns="ColorName" caption="=color" style="width: 180px;"
-       d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 140px;" />
+    <Label for="Color" text="=color" style="&label; top: 140px;" />
+    <DataSelector source="Color" renderColumns="ColorName"
+                  style="width: 180px; position: absolute; left: 150px; top: 140px;"
+                  d:size="100" d:unit="px" />
     <DataSelector source="Style" caption="=style" style="width: 180px;" d:size="80" d:unit="px"
-      d:rootStyle="position: absolute; left: 360px; top: 140px;" />
+                  d:rootStyle="position: absolute; left: 360px; top: 140px;" />
 
-    <Label text="=description" style="position: absolute; left: 20px; top: 180px;" />
+    <Label for="Description" text="=description" style="&label; top: 180px;" />
     <InputArea source="Description" visibleLines="3"
-       style="width: 500px; position: absolute; left: 122px; top: 180px;" />
+               style="width: 472px; position: absolute; left: 150px; top: 180px;" />
   </FlowPanel>
-</f:Form>  
+</f:Form>

@@ -57,6 +57,10 @@ public interface IsRow extends HasCustomProperties {
 
   boolean isEditable();
 
+  default boolean isIndex(int index) {
+    return index >= 0 && index < getNumberOfCells();
+  }
+
   boolean isNull(int index);
 
   boolean isRemovable();

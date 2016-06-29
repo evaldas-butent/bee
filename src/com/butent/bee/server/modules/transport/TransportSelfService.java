@@ -220,7 +220,7 @@ public class TransportSelfService extends LoginServlet {
         org.w3c.dom.Element node = (org.w3c.dom.Element) lists.item(i);
         String[] id = BeeUtils.split(node.getAttribute("id"), '-');
 
-        if (ArrayUtils.length(id) == 2) {
+        if (ArrayUtils.length(id) > 1) {
           String tbl = id[0];
           String fld = id[1];
 
@@ -245,6 +245,10 @@ public class TransportSelfService extends LoginServlet {
               order = Order.ascending(fld);
             }
             BeeRowSet rs = qs.getViewData(tbl, filter, order, columns);
+
+            if (Objects.equals(tag, "select")) {
+              node.appendChild(form.createElement("option"));
+            }
             for (int j = 0; j < rs.getNumberOfRows(); j++) {
               org.w3c.dom.Element opt = form.createElement("option");
               String value = rs.getString(j, fld);

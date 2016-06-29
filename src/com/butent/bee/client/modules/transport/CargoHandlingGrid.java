@@ -1,11 +1,13 @@
 package com.butent.bee.client.modules.transport;
 
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CARGO_HANDLING;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
@@ -67,6 +69,29 @@ public class CargoHandlingGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new CargoHandlingGrid();
+  }
+
+  @Override
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+    if (parentRow != null && gridView.isEmpty()) {
+      for (String prefix : new String[] {VAR_LOADING, VAR_UNLOADING}) {
+        for (String col : new String[] {
+            COL_PLACE_DATE, COL_PLACE_ADDRESS, COL_PLACE_POST_INDEX, COL_PLACE_COMPANY,
+            COL_PLACE_CONTACT, COL_PLACE_CITY, ALS_CITY_NAME, COL_PLACE_COUNTRY, ALS_COUNTRY_NAME,
+            "CountryCode", COL_NOTE, COL_NUMBER}) {
+
+          newRow.setValue(gridView.getDataIndex(prefix + col),
+              parentRow.getString(Data.getColumnIndex(parentView, prefix + col)));
+        }
+      }
+      for (String col : new String[] {
+          COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS, COL_ROUTE_WEIGHT}) {
+
+        newRow.setValue(gridView.getDataIndex(col),
+            parentRow.getString(Data.getColumnIndex(parentView, col)));
+      }
+    }
+    return super.onStartNewRow(gridView, oldRow, newRow);
   }
 
   @Override

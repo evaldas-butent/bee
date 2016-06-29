@@ -14,8 +14,9 @@
     <DataColumn name="Hours" caption="=unitHours" />
     <DataColumn name="Minutes" caption="=unitMinutes" />
 
-    <DataColumn name="Caption" caption="=reminderCaption" />
-    <DataColumn name="Template" caption="=reminderTemplate" minWidth="200" whiteSpace="pre-wrap" />
+    <DataColumn name="Caption" caption="=reminderCaption" required="true"/>
+    <DataColumn name="Template" caption="=reminderTemplate" minWidth="200" whiteSpace="pre-wrap"
+                required="true"/>
     
     <DataColumn name="Description" caption="=description" whiteSpace="pre-wrap" />
   </g:columns>

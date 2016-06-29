@@ -210,7 +210,7 @@ public class TransportModuleBean implements BeeModule {
 
     List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
         Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-            COL_NUMBER, ALS_CARGO_CMR_NUMBER, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+            COL_NUMBER, ALS_CARGO_CMR_NUMBER, ALS_CARGO_NOTES, COL_CARGO_DIRECTIONS,
             ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
             ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
             ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
@@ -568,13 +568,11 @@ public class TransportModuleBean implements BeeModule {
             }
 
             BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
-                Filter.equals(COL_TEXT_CONSTANT, status));
+                Filter.equals(COL_TEXT_CONSTANT, constant));
 
-            String localizedContent =
-                Localized.column(COL_TEXT_CONTENT,
-                    EnumUtils.getEnumByIndex(SupportedLocale.class,
-                        info.getInteger(0, COL_USER_LOCALE))
-                        .getLanguage());
+            String localizedContent = Localized.column(COL_TEXT_CONTENT,
+                EnumUtils.getEnumByIndex(SupportedLocale.class, info.getInteger(0, COL_USER_LOCALE))
+                    .getLanguage());
             String text;
 
             if (DataUtils.isEmpty(data)) {
@@ -586,7 +584,8 @@ public class TransportModuleBean implements BeeModule {
               text = BeeUtils.notEmpty(data.getString(0, localizedContent),
                   data.getString(0, COL_TEXT_CONTENT));
             }
-            cb.asynchronousCall(() -> mail.sendMail(accountId, email, null, text));
+            cb.asynchronousCall(() -> mail.sendMail(accountId, email, null,
+                text.replace("{CONTRACT_ID}", BeeUtils.toString(event.getRow().getId()))));
           }
         }
       }
@@ -920,20 +919,16 @@ public class TransportModuleBean implements BeeModule {
 
   @Schedule(persistent = false)
   private void checkRequestStatus() {
-    DateTime date = TimeUtils.startOfDay(1);
-
-    SqlSelect query =
-        new SqlSelect()
-            .addField(TBL_SHIPMENT_REQUESTS, sys.getIdName(TBL_SHIPMENT_REQUESTS), "id")
-            .addField(TBL_SHIPMENT_REQUESTS, sys.getVersionName(TBL_SHIPMENT_REQUESTS), "version")
-            .addFields(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS)
-            .addFrom(TBL_SHIPMENT_REQUESTS)
-            .addFromInner(TBL_ORDER_CARGO,
-                sys.joinTables(TBL_ORDER_CARGO, TBL_SHIPMENT_REQUESTS, COL_CARGO))
-            .setWhere(
-                SqlUtils.and(SqlUtils.not(SqlUtils.inList(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS,
-                    ShipmentRequestStatus.CONFIRMED, ShipmentRequestStatus.LOST)),
-                    SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, date)));
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_SHIPMENT_REQUESTS, sys.getIdName(TBL_SHIPMENT_REQUESTS), "id")
+        .addField(TBL_SHIPMENT_REQUESTS, sys.getVersionName(TBL_SHIPMENT_REQUESTS), "version")
+        .addFields(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS)
+        .addFrom(TBL_SHIPMENT_REQUESTS)
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_SHIPMENT_REQUESTS, COL_CARGO))
+        .setWhere(SqlUtils.and(SqlUtils.not(SqlUtils.inList(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS,
+            ShipmentRequestStatus.CONFIRMED, ShipmentRequestStatus.LOST)),
+            SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, TimeUtils.startOfDay(1))));
 
     SimpleRowSet expired = qs.getData(query.copyOf()
         .addFromInner(TBL_CARGO_HANDLING,
@@ -1436,7 +1431,7 @@ public class TransportModuleBean implements BeeModule {
     }
     if (!BeeUtils.isEmpty(text)) {
       cb.asynchronousCall(() -> mail.sendMail(accountId, email, null,
-          text.replace("{login}", login).replace("{password}", password)));
+          text.replace("{LOGIN}", login).replace("{PASSWORD}", password)));
     }
     return resp;
   }

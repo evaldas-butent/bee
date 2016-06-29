@@ -52,7 +52,7 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
     RowUpdateEvent.Handler, HasActiveRow {
 
   enum DeleteMode {
-    CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
+    CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI, DENY
   }
 
   void afterCreate(GridView gridView);

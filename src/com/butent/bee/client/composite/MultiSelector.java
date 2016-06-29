@@ -691,7 +691,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       }
 
       Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
-      RowEditor.openForm(getEditForm(), getOracle().getDataInfo(), rowId, opener, rowCallback);
+      RowEditor.openForm(getEditForm(), getOracle().getDataInfo(), Filter.compareId(rowId), opener,
+          rowCallback);
 
     } else {
       BeeRow row = getOracle().getCachedRow(rowId);
@@ -745,8 +746,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     }
 
     Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
-    RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()), sourceId, opener,
-        rowCallback);
+    RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()),
+        Filter.compareId(sourceId), opener, rowCallback);
   }
 
   private Flow getContainer() {
@@ -945,7 +946,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     }
   }
 
-  private void setOldValue(String oldValue) {
+  public void setOldValue(String oldValue) {
     this.oldValue = oldValue;
   }
 

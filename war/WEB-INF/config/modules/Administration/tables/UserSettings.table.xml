@@ -33,5 +33,6 @@
     <Text name="Style" label="=style" />
     
     <Boolean name="MenuHide" />
+    <Boolean name="ShowNewMessagesNotifier" label="=showNewMessagesNotifier" />
   </Fields>
 </Table>

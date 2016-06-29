@@ -53,7 +53,7 @@
       <Label name="IncomeLabel" for="Income" class="bee-required"
              style="&labelRight; margin-left:30px;" />
       <DataSelector name="Income" source="Income" style="&inline; width:70px;"
-                    editEnabled="false" required="true"
+                    newRowEnabled="false" editEnabled="false" required="true"
                     choiceColumns="ServiceName Amount CurrencyName" />
     </FlowPanel>
 

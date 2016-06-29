@@ -1399,7 +1399,11 @@ public interface Dictionary {
 
   default String deleteRecordQuestion() {return g("deleteRecordQuestion");}
 
+  default String deleteRowError() {return g("deleteRowError");}
+
   default String deleteRowQuestion() {return g("deleteRowQuestion");}
+
+  default String deleteRowsError() {return g("deleteRowsError");}
 
   default String deleteSelectedRow() {return g("deleteSelectedRow");}
 
@@ -2422,6 +2426,13 @@ public interface Dictionary {
   default String exporting() {return g("exporting");}
 
   default String expression() {return g("expression");}
+
+  default String extendWorkSchedule(Object year, Object month) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{year}", year);
+    _m.put("{month}", month);
+    return Localized.format(g("extendWorkSchedule"), _m);
+  }
 
   default String externalCode() {return g("externalCode");}
 
@@ -3480,9 +3491,9 @@ public interface Dictionary {
   default String payrollEarnings() {return g("payrollEarnings");}
 
   default String payrollEarningsForHolidays() {return g("payrollEarningsForHolidays");}
-  
+
   default String payrollEarningsTotal() {return g("payrollEarningsTotal");}
-  
+
   default String payrollEarningsWithoutHolidays() {return g("payrollEarningsWithoutHolidays");}
 
   default String period() {return g("period");}
@@ -3498,6 +3509,8 @@ public interface Dictionary {
   default String personContact() {return g("personContact");}
 
   default String personContacts() {return g("personContacts");}
+
+  default String personContactsTML() {return g("personContactsTML");}
 
   default String personDateOfDismissal() {return g("personDateOfDismissal");}
 
@@ -3515,6 +3528,8 @@ public interface Dictionary {
 
   default String personTabNo() {return g("personTabNo");}
 
+  default String personTabNoShort() {return g("personTabNoShort");}
+
   default String personUnemployment() {return g("personUnemployment");}
 
   default String persons() {return g("persons");}
@@ -3528,6 +3543,8 @@ public interface Dictionary {
   default String picture() {return g("picture");}
 
   default String pictures() {return g("pictures");}
+
+  default String places() {return g("places");}
 
   default String plan() {return g("plan");}
 
@@ -3856,6 +3873,8 @@ public interface Dictionary {
 
   default String prjStages() {return g("prjStages");}
 
+  default String prjStagesTML() {return g("prjStagesTML");}
+
   default String prjStatusActive() {return g("prjStatusActive");}
 
   default String prjStatusApproved() {return g("prjStatusApproved");}
@@ -3865,6 +3884,8 @@ public interface Dictionary {
   default String prjStatusSuspended() {return g("prjStatusSuspended");}
 
   default String prjTeam() {return g("prjTeam");}
+
+  default String prjTeamTML() {return g("prjTeamTML");}
 
   default String prjTemplate() {return g("prjTemplate");}
 
@@ -3954,6 +3975,12 @@ public interface Dictionary {
 
   default String reasons() {return g("reasons");}
 
+  default String rebuildTradeStockCaption() {return g("rebuildTradeStockCaption");}
+
+  default String rebuildTradeStockNotification() {return g("rebuildTradeStockNotification");}
+
+  default String rebuildTradeStockQuestion() {return g("rebuildTradeStockQuestion");}
+
   default String received() {return g("received");}
 
   default String recipient() {return g("recipient");}
@@ -3977,6 +4004,8 @@ public interface Dictionary {
   default String registration() {return g("registration");}
 
   default String relatedInformation() {return g("relatedInformation");}
+
+  default String relatedMessages() {return g("relatedMessages");}
 
   default String relatedTo() {return g("relatedTo");}
 
@@ -4181,6 +4210,10 @@ public interface Dictionary {
   default String shipper() {return g("shipper");}
 
   default String shippingSchedule() {return g("shippingSchedule");}
+
+  default String showAvailableEmployees() {return g("showAvailableEmployees");}
+
+  default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
 
   default String signDate() {return g("signDate");}
 
@@ -4444,6 +4477,8 @@ public interface Dictionary {
   default String timeRange() {return g("timeRange");}
 
   default String timeRangeCode() {return g("timeRangeCode");}
+
+  default String timeRangeUsage() {return g("timeRangeUsage");}
 
   default String timeRanges() {return g("timeRanges");}
 
@@ -4872,6 +4907,8 @@ public interface Dictionary {
 
   default String trNewTrip() {return g("trNewTrip");}
 
+  default String trNewValues() {return g("trNewValues");}
+
   default String trNewVehicle() {return g("trNewVehicle");}
 
   default String trNewVehicleModel() {return g("trNewVehicleModel");}
@@ -5054,6 +5091,8 @@ public interface Dictionary {
 
   default String trRequestCustomsBrokerage() {return g("trRequestCustomsBrokerage");}
 
+  default String trRequestCustomsBrokeragePlaceholder() {return g("trRequestCustomsBrokeragePlaceholder");}
+
   default String trRequestDate() {return g("trRequestDate");}
 
   default String trRequestDeliveryDate() {return g("trRequestDeliveryDate");}
@@ -5065,6 +5104,8 @@ public interface Dictionary {
   default String trRequestExpeditionType() {return g("trRequestExpeditionType");}
 
   default String trRequestFreightInsurance() {return g("trRequestFreightInsurance");}
+
+  default String trRequestFreightInsurancePlaceholder() {return g("trRequestFreightInsurancePlaceholder");}
 
   default String trRequestLostMailContent() {return g("trRequestLostMailContent");}
 
@@ -5101,6 +5142,8 @@ public interface Dictionary {
   default String trRequestStatusNew() {return g("trRequestStatusNew");}
 
   default String trRequestStatusRejected() {return g("trRequestStatusRejected");}
+
+  default String trRequestSubmittedContent() {return g("trRequestSubmittedContent");}
 
   default String trRequestTemplate() {return g("trRequestTemplate");}
 
@@ -5853,9 +5896,18 @@ public interface Dictionary {
 
   default String workScheduleActualShort() {return g("workScheduleActualShort");}
 
-  default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
+  default String workScheduleExtension(Object fromyear, Object frommonth, Object toyear, Object tomonth) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{fromyear}", fromyear);
+    _m.put("{frommonth}", frommonth);
+    _m.put("{toyear}", toyear);
+    _m.put("{tomonth}", tomonth);
+    return Localized.format(g("workScheduleExtension"), _m);
+  }
 
   default String workScheduleHolidaysInclusiveShort() {return g("workScheduleHolidaysInclusiveShort");}
+
+  default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
 
   default String workSchedulePlanned() {return g("workSchedulePlanned");}
 

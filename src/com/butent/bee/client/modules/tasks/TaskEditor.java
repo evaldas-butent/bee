@@ -53,6 +53,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.render.AbstractSlackRenderer;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -61,18 +62,12 @@ import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.widget.*;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.InputArea;
-import com.butent.bee.client.widget.InternalLink;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
@@ -138,10 +133,14 @@ class TaskEditor extends ProductSupportInterceptor {
   private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
   private static final String STYLE_DURATION_CELL = "Cell";
   private static final String STYLE_PHOTO = "Photo";
+  private static final String STYLE_TASK = CRM_STYLE_PREFIX + "task-";
+  private static final String STYLE_TASK_LATE_KIND = STYLE_TASK + "lateKind-";
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
   private static final String NAME_PRIVATE_TASK = "PrivateTask";
+  private static final String NAME_LATE_INDICATOR = "LateIndicator";
+
   private Map<String, Pair<Long, String>> dbaParameters = Maps.newConcurrentMap();
 
   private static final String NAME_TASK_TREE = "TaskTree";
@@ -607,6 +606,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private final long userId;
   private MultiSelector observers;
+  private TextLabel lateIndicator;
   private List<Long> projectUsers;
 
   Split split;
@@ -673,7 +673,10 @@ class TaskEditor extends ProductSupportInterceptor {
           }
         }
       });
+    } else if (BeeUtils.same(name, NAME_LATE_INDICATOR) && widget instanceof TextLabel) {
+      lateIndicator = (TextLabel) widget;
     }
+
     super.afterCreateWidget(name, widget, callback);
   }
 
@@ -750,6 +753,39 @@ class TaskEditor extends ProductSupportInterceptor {
     }
 
     header.addCommandItem(setMenuLabel());
+
+    TaskSlackRenderer renderer = new TaskSlackRenderer(form.getDataColumns());
+    Pair<AbstractSlackRenderer.SlackKind, Long> data = renderer.getMinutes(row);
+    setLateIndicatorHtml(data);
+    setTaskStatusStyle(header, form, row, data);
+  }
+
+  private static void setTaskStatusStyle(HeaderView header, FormView form, IsRow row,
+      Pair<AbstractSlackRenderer.SlackKind, Long> slackData) {
+    for (TaskStatus taskStatusStyle : TaskStatus.values()) {
+      if (taskStatusStyle.getStyleName(true) != null) {
+        header.removeStyleName(taskStatusStyle.getStyleName(true));
+      }
+      if (taskStatusStyle.getStyleName(false) != null) {
+        header.removeStyleName(taskStatusStyle.getStyleName(false));
+      }
+    }
+
+    TaskStatus taskStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
+        row.getInteger(form.getDataIndex(COL_STATUS)));
+    String styleName;
+    if (slackData != null && slackData.getA() != null) {
+      styleName = taskStatus.getStyleName(slackData.getA().equals(
+          AbstractSlackRenderer.SlackKind.LATE));
+    } else {
+      styleName = taskStatus.getStyleName(false);
+    }
+
+    if (!BeeUtils.isEmpty(styleName)) {
+      header.addStyleName(TASK_STATUS_STYLE);
+      header.addStyleName(styleName);
+    }
+
   }
 
   @Override
@@ -757,6 +793,7 @@ class TaskEditor extends ProductSupportInterceptor {
     if (isExecutor()) {
       setEnabledRelations();
     }
+    setLateIndicatorHtml(null);
     super.beforeRefresh(form, row);
   }
 
@@ -823,6 +860,9 @@ class TaskEditor extends ProductSupportInterceptor {
         DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECT_STAGES);
         if (data != null) {
           RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
+          if (DataUtils.isId(Data.getLong(VIEW_TASKS, data, ProjectConstants.COL_PROJECT))) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS);
+          }
 
           if (TaskUtils.hasRelations(oldRow) || TaskUtils.hasRelations(data)) {
             DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
@@ -2091,6 +2131,40 @@ class TaskEditor extends ProductSupportInterceptor {
       split.addWest(taskWidget, size == null ? 650 : size);
       StyleUtils.autoHeight(taskWidget.getElement());
       split.updateCenter(taskEventsWidget);
+    }
+  }
+
+  private void setLateIndicatorHtml(Pair<AbstractSlackRenderer.SlackKind, Long> data) {
+    if (lateIndicator == null) {
+      return;
+    }
+
+    String text = BeeConst.STRING_EMPTY;
+
+    if (data != null) {
+      if (!data.bEquals(0L)) {
+        text = BeeUtils.parenthesize(AbstractSlackRenderer.getFormatedTimeLabel(data.getB()));
+      }
+
+      setLateIndicatorStyle(data.getA());
+    } else {
+      setLateIndicatorStyle(null);
+    }
+
+    lateIndicator.setHtml(text + BeeConst.HTML_NBSP);
+  }
+
+  private void setLateIndicatorStyle(AbstractSlackRenderer.SlackKind kind) {
+    if (lateIndicator == null) {
+      return;
+    }
+
+    for (AbstractSlackRenderer.SlackKind k : AbstractSlackRenderer.SlackKind.values()) {
+      lateIndicator.removeStyleName(STYLE_TASK_LATE_KIND + k.toString().toLowerCase());
+    }
+
+    if (kind != null) {
+      lateIndicator.addStyleName(STYLE_TASK_LATE_KIND + kind.toString().toLowerCase());
     }
   }
 

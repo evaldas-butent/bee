@@ -144,7 +144,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Override
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
-    ResponseObject response = null;
+    ResponseObject response;
 
     if (BeeUtils.isPrefix(svc, DISCUSSIONS_PREFIX)) {
       response = doDiscussionEvent(BeeUtils.removePrefix(svc, DISCUSSIONS_PREFIX), reqInfo);
@@ -241,30 +241,6 @@ public class DiscussionsModuleBean implements BeeModule {
 
             row.setProperty(PROP_LAST_ACCESS, userId, discussUserRow.getValue(accessIndex));
             row.setProperty(PROP_STAR, userId, discussUserRow.getValue(starIndex));
-          }
-
-          SqlSelect discussionsEvents = new SqlSelect()
-              .addFields(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION)
-              .addMax(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME)
-              .addFrom(TBL_DISCUSSIONS_COMMENTS)
-              .addGroup(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION);
-
-          if (!discussionsIds.isEmpty()) {
-            discussionsEvents.setWhere(SqlUtils.inList(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION,
-                discussionsIds));
-          }
-
-          SimpleRowSet discussEventsData = qs.getData(discussionsEvents);
-          discussIndex = discussEventsData.getColumnIndex(COL_DISCUSSION);
-          int publishIndex = discussEventsData.getColumnIndex(COL_PUBLISH_TIME);
-
-          for (SimpleRow discussEventRow : discussEventsData) {
-            long discussionId = discussEventRow.getLong(discussIndex);
-            BeeRow row = rowSet.getRowById(discussionId);
-
-            if (discussEventRow.getValue(publishIndex) != null) {
-              row.setProperty(PROP_LAST_PUBLISH, discussEventRow.getValue(publishIndex));
-            }
           }
 
           Map<Long, Integer> markCounts = getDiscussionsMarksCount(discussionsIds);
@@ -534,7 +510,6 @@ public class DiscussionsModuleBean implements BeeModule {
     Set<Long> oldMembers = DataUtils.parseIdSet(reqInfo.getParameter(VAR_DISCUSSION_USERS));
     switch (event) {
       case CREATE:
-        discussionId = BeeConst.UNDEF;
         Map<String, String> properties = discussRow.getProperties();
 
         if (properties == null) {
@@ -580,7 +555,7 @@ public class DiscussionsModuleBean implements BeeModule {
         if (!response.hasErrors()) {
           for (long memberId : members) {
             if (memberId != currentUser) {
-              response = createDiscussionUser(discussionId, memberId, now, true);
+              response = createDiscussionUser(discussionId, memberId, null, true);
               if (response.hasErrors()) {
                 break;
               }
@@ -639,9 +614,7 @@ public class DiscussionsModuleBean implements BeeModule {
       case DEACTIVATE:
         break;
       case VISIT:
-        if (oldMembers.contains(currentUser)) {
-          response = registerDiscussionVisit(discussionId, currentUser, now);
-        }
+        response = registerDiscussionVisit(discussionId, currentUser, now);
 
         if (response == null || !response.hasErrors()) {
           response =
@@ -656,6 +629,7 @@ public class DiscussionsModuleBean implements BeeModule {
       case MARK:
       case MODIFY:
       case REPLY:
+
         if (!BeeUtils.isEmpty(commentText)) {
           response =
               commitDiscussionComment(discussionId, currentUser, parentComment, commentText, now);
@@ -673,6 +647,10 @@ public class DiscussionsModuleBean implements BeeModule {
 
         if ((response == null || !response.hasErrors()) && DataUtils.isId(markId)) {
           response = doMark(discussionId, markedComment, markId, currentUser);
+        }
+
+        if (response == null || !response.hasErrors()) {
+          response = registerDiscussionVisit(discussionId, currentUser, now);
         }
 
         if (response == null || !response.hasErrors()) {
@@ -916,8 +894,7 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     if (!rs.isEmpty()) {
-      ResponseObject resp = ResponseObject.response(rs);
-      return resp;
+      return ResponseObject.response(rs);
     }
 
     return ResponseObject.emptyResponse();
@@ -971,7 +948,7 @@ public class DiscussionsModuleBean implements BeeModule {
           new JustDate(BeeUtils
               .toLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)]));
 
-      if (availableDays.contains(Integer.valueOf(date.getDoy()))) {
+      if (availableDays.contains(date.getDoy())) {
         String[] birthdaysRow = new String[] {
             BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)], upRow[up.getColumnIndex(
                 COL_LAST_NAME)]),
@@ -1200,9 +1177,7 @@ public class DiscussionsModuleBean implements BeeModule {
       select.setWhere(SqlUtils.sqlFalse());
     }
 
-    SimpleRowSet rs = qs.getData(select);
-
-    return rs;
+    return qs.getData(select);
   }
 
   private List<Long> getDiscussionMembers(long discussionId) {
@@ -1305,12 +1280,23 @@ public class DiscussionsModuleBean implements BeeModule {
     IsCondition where =
         SqlUtils.and(
             SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId,
-                AdministrationConstants.COL_USER, userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS,
-                COL_MEMBER, new Integer(1)));
+                AdministrationConstants.COL_USER, userId));
 
-    return qs.updateDataWithResponse(new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(
+    int updated = qs.updateData(new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(
         COL_LAST_ACCESS, mills)
         .setWhere(where));
+
+    if (updated != 0) {
+      return ResponseObject.response(updated);
+    }
+
+    SqlInsert insert = new SqlInsert(TBL_DISCUSSIONS_USERS)
+        .addConstant(COL_DISCUSSION, discussionId)
+        .addConstant(AdministrationConstants.COL_USER, userId)
+        .addConstant(COL_MEMBER, null)
+        .addConstant(COL_LAST_ACCESS, mills);
+
+    return qs.insertDataWithResponse(insert);
   }
 
   private static SimpleRowSet sortBirhdaysList(SimpleRowSet birthdays) {

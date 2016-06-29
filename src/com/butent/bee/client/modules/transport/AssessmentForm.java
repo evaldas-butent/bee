@@ -10,8 +10,6 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HasHandlers;
@@ -31,14 +29,12 @@ import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -50,7 +46,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.layout.TabbedPages;
-import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -75,8 +71,8 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
@@ -145,13 +141,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
       final UnboundSelector user = UnboundSelector.create(relation,
           Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
-      user.addSelectorHandler(new SelectorEvent.Handler() {
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          if (event.isChanged()) {
-            department.set(Data.getLong(event.getRelatedViewName(), event.getRelatedRow(),
-                COL_DEPARTMENT));
-          }
+      user.addSelectorHandler(event -> {
+        if (event.isChanged()) {
+          department.set(Data.getLong(event.getRelatedViewName(), event.getRelatedRow(),
+              COL_DEPARTMENT));
         }
       });
       container.setText(0, 0, loc.manager(), StyleUtils.NAME_REQUIRED);
@@ -174,41 +167,38 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
         @Override
         public void onSuccess() {
-          presenter.getGridView().ensureRelId(new IdCallback() {
-            @Override
-            public void onSuccess(Long assessment) {
-              BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
+          presenter.getGridView().ensureRelId(assessment -> {
+            BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
 
-              for (String col : new String[] {
-                  COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
-                  COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG}) {
-                newRow.clearCell(form.getDataIndex(col));
-              }
-              if (isRequest()) {
-                newRow.setValue(form.getDataIndex(COL_ASSESSMENT_STATUS),
-                    AssessmentStatus.NEW.ordinal());
-                newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
-              } else {
-                newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.ACTIVE.ordinal());
-              }
-              newRow.setValue(form.getDataIndex(COL_ASSESSMENT), assessment);
-              newRow.setValue(form.getDataIndex(COL_ORDER_MANAGER), user.getNormalizedValue());
-              newRow.setValue(form.getDataIndex(COL_DEPARTMENT), department.get());
-              newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
-
-              Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
-                  form.getDataColumns(), newRow), new RpcCallback<RowInfo>() {
-                @Override
-                public void onSuccess(RowInfo result) {
-                  Queries.getRow(presenter.getViewName(), result.getId(), new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow res) {
-                      presenter.getGridView().getGrid().insertRow(res, true);
-                    }
-                  });
-                }
-              });
+            for (String col : new String[] {
+                COL_ORDER_NO, COL_DATE, COL_CARGO, COL_CARGO_HANDLING, COL_ASSESSMENT_STATUS,
+                COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG}) {
+              newRow.clearCell(form.getDataIndex(col));
             }
+            if (isRequest()) {
+              newRow.setValue(form.getDataIndex(COL_ASSESSMENT_STATUS),
+                  AssessmentStatus.NEW.ordinal());
+              newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
+            } else {
+              newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.ACTIVE.ordinal());
+            }
+            newRow.setValue(form.getDataIndex(COL_ASSESSMENT), assessment);
+            newRow.setValue(form.getDataIndex(COL_ORDER_MANAGER), user.getNormalizedValue());
+            newRow.setValue(form.getDataIndex(COL_DEPARTMENT), department.get());
+            newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
+
+            Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
+                form.getDataColumns(), newRow), new RpcCallback<RowInfo>() {
+              @Override
+              public void onSuccess(RowInfo result) {
+                Queries.getRow(presenter.getViewName(), result.getId(), new RowCallback() {
+                  @Override
+                  public void onSuccess(BeeRow res) {
+                    presenter.getGridView().getGrid().insertRow(res, true);
+                  }
+                });
+              }
+            });
           });
         }
       });
@@ -274,7 +264,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       String oldLog = Data.getString(view, row, COL_ASSESSMENT_LOG);
 
                       Queries.update(view, row.getId(), row.getVersion(), Data.getColumns(view,
-                              Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
+                          Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
                           Lists.newArrayList(BeeUtils.toString(status.ordinal()), oldLog),
                           Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
@@ -460,22 +450,13 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           }
         }, null);
       } else {
-        Global.confirm(confirmationQuestion, new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            save(null);
-          }
-        });
+        Global.confirm(confirmationQuestion, () -> save(null));
       }
     }
 
-    public void save(final String notes) {
-      ScheduledCommand command = new ScheduledCommand() {
-        @Override
-        public void execute() {
-          update(notes);
-        }
-      };
+    public void save(String notes) {
+      ScheduledCommand command = () -> update(notes);
+
       if (!handleSaveAction(command)) {
         command.execute();
       }
@@ -615,18 +596,21 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       expensesRegistered.addValueChangeHandler(this);
 
     } else if (widget instanceof TabbedPages) {
-      ((TabbedPages) widget)
-          .addSelectionHandler(new SelectionHandler<Pair<Integer, SelectionOrigin>>() {
-            @Override
-            public void onSelection(SelectionEvent<Pair<Integer, SelectionOrigin>> event) {
-              onValueChange(null);
-            }
-          });
+      ((TabbedPages) widget).addSelectionHandler(event -> onValueChange(null));
     }
   }
 
   @Override
-  public void afterRefresh(FormView formView, IsRow row) {
+  public boolean beforeAction(Action action, final Presenter presenter) {
+    if (action == Action.SAVE && !isNewRow()
+        && handleSaveAction(() -> presenter.handleAction(action))) {
+      return false;
+    }
+    return super.beforeAction(action, presenter);
+  }
+
+  @Override
+  public void beforeRefresh(FormView formView, IsRow row) {
     if (form == null) {
       return;
     }
@@ -659,22 +643,13 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         FaLabel lbl = new FaLabel(FontAwesome.COMMENT_O, true);
         lbl.getElement().getStyle().setMarginLeft(5, Unit.PX);
         lbl.getElement().getStyle().setCursor(Cursor.POINTER);
-        lbl.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            Global.showInfo(log);
-          }
-        });
+        lbl.addClickHandler(event -> Global.showInfo(log));
         statusLabel.add(lbl);
       }
     }
     if (executor && !newRecord) {
-      header.addCommandItem(new Button(loc.trWriteEmail(), new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          sendMail();
-        }
-      }));
+      header.addCommandItem(new Button(loc.trWriteEmail(), event -> sendMail()));
+
       if (request) {
         if (AssessmentStatus.NEW.is(status)) {
           header.addCommandItem(reqAnswered);
@@ -720,19 +695,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
     onValueChange(null);
     refreshTotals();
-  }
-
-  @Override
-  public boolean beforeAction(final Action action, final Presenter presenter) {
-    if (action == Action.SAVE && !isNewRow() && handleSaveAction(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        presenter.handleAction(action);
-      }
-    })) {
-      return false;
-    }
-    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -815,7 +777,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         }
         form = formView;
         updateDepartment(form, form.getActiveRow(), null);
-        afterRefresh(form, form.getActiveRow());
+        form.refresh();
       }
     });
   }
@@ -848,12 +810,31 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
   }
 
+  @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    SelfServiceUtils.getCargos(Filter.compareId(getLongValue(COL_CARGO)),
+        cargoInfo -> dataConsumer.accept(new BeeRowSet[] {cargoInfo}));
+  }
+
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, Long> companies = new HashMap<>();
+    companies.put(COL_CUSTOMER, getLongValue(COL_CUSTOMER));
+    companies.put(COL_COMPANY, BeeKeeper.getUser().getCompany());
+
+    super.getReportParameters(defaultParameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+          parametersConsumer.accept(defaultParameters);
+        }));
+  }
+
   private static String buildLog(String caption, String value, String oldLog) {
     return BeeUtils.join("\n\n",
         TimeUtils.nowMinutes().toCompactString() + " " + caption + "\n" + value, oldLog);
   }
 
-  private boolean handleSaveAction(final ScheduledCommand action) {
+  private boolean handleSaveAction(ScheduledCommand action) {
     final int logIdx = form.getDataIndex(COL_ASSESSMENT_LOG);
     final String oldLog = form.getOldRow().getString(logIdx);
     String newLog = form.getActiveRow().getString(logIdx);
@@ -960,7 +941,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     String total = form.getWidgetByName(VAR_INCOME + VAR_TOTAL).getElement().getInnerText();
     table.setText(c, 0, Localized.maybeTranslate("=customerPrice"));
     table.setText(c, 1, BeeUtils.joinWords(total, form.getStringValue("CurrencyName")));
-    c++;
 
     Queries.getRowSet(VIEW_ASSESSMENTS, Lists.newArrayList(COL_CARGO),
         Filter.equals(COL_ASSESSMENT, getActiveRowId()), new RowSetCallback() {
@@ -1007,7 +987,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       }
                     }
                     NewMailMessage.create(BeeUtils.notEmpty(form.getStringValue("PersonEmail"),
-                            form.getStringValue("CustomerEmail")), null,
+                        form.getStringValue("CustomerEmail")), null,
                         Document.get().createBRElement().getString() + table.toString(),
                         null, null);
                   }

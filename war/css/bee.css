@@ -1326,11 +1326,8 @@
 
 .bee-NewRow-labelCell {
   vertical-align: top;
-}
-.bee-NewRow-label {
-  padding-top: 1px;
-  padding-left: 1em;
-  padding-right: 1em;
+  padding: 5px 10px 10px 30px;
+  text-align: right;
 }
 .bee-NewRow-inputCell {
   padding-right: 1em;
@@ -1981,6 +1978,9 @@
 .bee-Filters-initial-checked {
   background-color: #1eb2d8;
 }
+.bee-GridFilter-child .bee-Filters-initial {
+  display: none;
+}
 
 .bee-Filters-label {
   min-width: 120px;
@@ -2193,6 +2193,7 @@
 .bee-Photo-embedded {
   max-width: 100%;
   max-height: 100%;
+  border-radius: 50%;
 }
 
 .bee-HtmlEditor-canvas {
@@ -2634,7 +2635,9 @@
   -webkit-flex: 1;
   -ms-flex: 1;
   max-height: 60px;
-  overflow: auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-weight: normal;
   font-size: 20px;
   cursor: pointer;
@@ -3394,7 +3397,7 @@ textarea,
 }
 
 .bee-OnlineUsersCount {
-  background-color: #63a140;
+  background-color: #6bae45;
   color: white;
   width: 15px;
   height: 15px;
@@ -3414,7 +3417,8 @@ textarea,
   background-color: white;
   border: 1px solid #b4b4b4;
   max-height: 70vh;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .bee-PopupUsersContent {
@@ -3430,6 +3434,9 @@ textarea,
 .bee-PopupUsersContent tr td {
   padding: 5px 10px;
 }
+.bee-PopupUsersContent tr td:last-of-type {
+  padding-right: 20px;
+}
 
 .bee-PopupUsersPhoto {
   max-width: 40px;
@@ -3438,17 +3445,20 @@ textarea,
 }
 .bee-PopupUsersLabel {
   font-size: 14px;
+  color: #414142;
   white-space: nowrap;
+  margin-left: -10px;
 }
 .bee-PopupUsersPresence {
-  font-size: large;
+  font-size: 14px;
   cursor: default;
+  margin: -25px -20px 0px -15px;
 }
 .bee-PopupUsersPresence.bee-Presence-online {
-  color: green;
+  color: #6bae45;
 }
 .bee-PopupUsersPresence.bee-Presence-idle {
-  color: deepskyblue;
+  color: #1eb2d8;
 }
 .bee-PopupUsersPresence.bee-Presence-away {
   color: hotpink;
@@ -3727,10 +3737,10 @@ textarea,
 }
 
 .bee-UserPresenceIcon.bee-Presence-online {
-  color: lightgreen;
+  color: #6bae45;
 }
 .bee-UserPresenceIcon.bee-Presence-idle {
-  color: powderblue;
+  color: #1eb2d8;
   cursor: default;
 }
 .bee-UserPresenceIcon.bee-Presence-away {

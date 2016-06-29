@@ -73,7 +73,8 @@ public class InitializationBean {
     usr.initIpFilters();
 
     Collection<SupportedLocale> customizedLocales = loc.customizeGlossaries();
-    if (BeeUtils.contains(customizedLocales, SupportedLocale.USER_DEFAULT)) {
+    if (BeeUtils.contains(customizedLocales, SupportedLocale.USER_DEFAULT)
+        || BeeUtils.contains(customizedLocales, SupportedLocale.DICTIONARY_DEFAULT)) {
       Localized.setGlossary(Localizations.getGlossary(SupportedLocale.USER_DEFAULT));
     }
 
