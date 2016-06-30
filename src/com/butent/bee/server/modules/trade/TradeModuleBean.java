@@ -755,8 +755,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           .setWhere(SqlUtils.and(SqlUtils.notNull(table, COL_TRADE_EXPORTED),
               SqlUtils.notEqual(table, COL_TRADE_OPERATION,
                   prm.getRelation(TransportConstants.PRM_ACCUMULATION_OPERATION)),
-              SqlUtils.notEqual(table, COL_TRADE_OPERATION,
-                  prm.getRelation(TransportConstants.PRM_ACCUMULATION2_OPERATION)),
               SqlUtils.or(SqlUtils.isNull(table, COL_TRADE_PAID),
                   SqlUtils.less(table, COL_TRADE_PAID, SqlUtils.field(table, COL_TRADE_AMOUNT))))));
 

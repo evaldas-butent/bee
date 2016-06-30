@@ -41,30 +41,20 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
   private String operation;
   private Long operation2Id;
   private String operation2;
-  private Long operation3Id;
-  private String operation3;
   private Button joinAction = new Button("Apjungti", this);
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     Global.getRelationParameter(PRM_ACCUMULATION_OPERATION, (opId, opName) -> {
       if (DataUtils.isId(opId)) {
-        Global.getRelationParameter(PRM_ACCUMULATION2_OPERATION, (op2Id, op2Name) -> {
-          if (DataUtils.isId(op2Id)) {
-            operation2Id = op2Id;
-            operation2 = op2Name;
-          }
-        });
         operationId = opId;
         operation = opName;
         presenter.getHeader().addCommandItem(joinAction);
       }
     });
-    Global.getRelationParameter(PRM_PURCHASE_OPERATION, (op3Id, op3Name) -> {
-      if (DataUtils.isId(op3Id)) {
-        operation3Id = op3Id;
-        operation3 = op3Name;
-      }
+    Global.getRelationParameter(PRM_PURCHASE_OPERATION, (op2Id, op2Name) -> {
+      operation2Id = op2Id;
+      operation2 = op2Name;
     });
     super.afterCreatePresenter(presenter);
   }
@@ -108,9 +98,8 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
             }
           }
           for (Long op : result.getDistinctLongs(result.getColumnIndex(COL_TRADE_OPERATION))) {
-            if (!BeeUtils.in(op, operationId, operation2Id)) {
-              view.notifyWarning("Apjungti leidžiama tik dokumentus su operacijomis", operation,
-                  operation2);
+            if (!Objects.equals(op, operationId)) {
+              view.notifyWarning("Apjungti leidžiama tik dokumentus su operacija", operation);
               return;
             }
           }
@@ -132,9 +121,9 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
                   BeeUtils.joinItems(result.getDistinctStrings(result.getColumnIndex(col))));
             }
           }
-          if (DataUtils.isId(operation3Id)) {
-            newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION), operation3Id);
-            newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION + "Name"), operation3);
+          if (DataUtils.isId(operation2Id)) {
+            newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION), operation2Id);
+            newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_OPERATION + "Name"), operation2);
           }
           RowFactory.createRow(dataInfo.getNewRowForm(), dataInfo.getNewRowCaption(), dataInfo,
               newRow, Modality.ENABLED, null, new InvoiceForm(null), null, new RowCallback() {

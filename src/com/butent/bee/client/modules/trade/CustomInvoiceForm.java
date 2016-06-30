@@ -4,7 +4,7 @@ import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.PRM_ACCUMULATION_OPERATION;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -21,19 +21,15 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Objects;
+
 public abstract class CustomInvoiceForm extends PrintFormInterceptor {
 
   private String operationId;
-  private String operation2Id;
 
   @Override
   public void afterCreate(FormView form) {
-    Global.getParameter(PRM_ACCUMULATION_OPERATION,
-        opId -> operationId = opId);
-
-    Global.getParameter(PRM_ACCUMULATION2_OPERATION,
-        opId -> operation2Id = opId);
-
+    Global.getParameter(PRM_ACCUMULATION_OPERATION, opId -> operationId = opId);
     super.afterCreate(form);
   }
 
@@ -65,7 +61,7 @@ public abstract class CustomInvoiceForm extends PrintFormInterceptor {
 
   @Override
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-    if (!BeeUtils.inList(getStringValue(COL_TRADE_OPERATION), operationId, operation2Id)) {
+    if (!Objects.equals(getStringValue(COL_TRADE_OPERATION), operationId)) {
       for (String col : new String[] {COL_TRADE_INVOICE_NO, COL_TRADE_TERM}) {
         Widget widget = getFormView().getWidgetBySource(col);
 
