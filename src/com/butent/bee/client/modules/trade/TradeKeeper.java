@@ -21,6 +21,7 @@ import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -41,6 +42,7 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -151,10 +153,26 @@ public final class TradeKeeper implements HandlesAllDataEvents {
           BeeKeeper.getRpc().makeRequest(createArgs(SVC_REBUILD_STOCK), new ResponseCallback() {
             @Override
             public void onResponse(ResponseObject response) {
-              if (!response.hasErrors()) {
-                BeeKeeper.getScreen().notifyInfo(
+              List<String> messages = new ArrayList<>();
+
+              if (response.hasMessages()) {
+                for (ResponseMessage responseMessage : response.getMessages()) {
+                  messages.add(responseMessage.getMessage());
+                }
+              }
+
+              if (response.hasErrors()) {
+                Global.showError(Localized.dictionary().rebuildTradeStockCaption(), messages);
+
+              } else {
+                if (!messages.isEmpty()) {
+                  messages.add(BeeConst.STRING_EMPTY);
+                }
+                messages.add(BeeUtils.joinWords(
                     Localized.dictionary().rebuildTradeStockNotification(),
-                    TimeUtils.elapsedSeconds(startTime));
+                    TimeUtils.elapsedSeconds(startTime)));
+
+                Global.showInfo(Localized.dictionary().rebuildTradeStockCaption(), messages);
               }
             }
           });

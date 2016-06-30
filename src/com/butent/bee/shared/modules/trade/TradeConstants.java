@@ -207,6 +207,8 @@ public final class TradeConstants {
 
   public static final String FORM_TRADE_DOCUMENT = "TradeDocument";
 
+  public static final int MAX_STOCK_DEPTH = 1_000;
+
   private TradeConstants() {
   }
 }
