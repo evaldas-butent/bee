@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.eventsboard.EventsBoard;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -40,8 +42,10 @@ import java.util.Set;
 class ProjectEventsHandler extends EventsBoard {
   private static final Dictionary LC = Localized.dictionary();
   private static final String STYLE_PREFIX = ProjectsKeeper.STYLE_PREFIX + "Events-";
+  private static final String STYLE_NEW_COMMENT =  ProjectsKeeper.STYLE_PREFIX + "Event-row-new";
 
   private final Set<Action> enabledActions = Sets.newHashSet(Action.REFRESH);
+  private Long lastAccess;
 
   @Override
   public String getCaption() {
@@ -223,12 +227,36 @@ class ProjectEventsHandler extends EventsBoard {
       return;
     }
 
-    Flow rowCell = createEventRowCell(cell, COL_EVENT_PROPERTIES, null);
+    Flow rowCell = createEventRowCell(cell, COL_EVENT_PROPERTIES, null, false);
     rowCell.add(createCellHtmlItem(COL_EVENT_PROPERTIES, html));
 
     for (Widget w : links) {
       rowCell.add(w);
     }
+  }
+
+  @Override
+  protected void afterCreateEventRow(BeeRowSet rs, BeeRow row, Flow eventRow) {
+    super.afterCreateEventRow(rs, row, eventRow);
+
+    DateTime publishTime = row.getDateTime(rs.getColumnIndex(COL_PUBLISH_TIME));
+    if (lastAccess != null && publishTime != null
+        && !BeeKeeper.getUser().getUserId().equals(row.getLong(rs.getColumnIndex(COL_PUBLISHER)))) {
+      if (BeeUtils.unbox(lastAccess) < publishTime.getTime()) {
+        eventRow.addStyleName(STYLE_NEW_COMMENT);
+      } else {
+        eventRow.removeStyleName(STYLE_NEW_COMMENT);
+      }
+
+    } else {
+      eventRow.removeStyleName(STYLE_NEW_COMMENT);
+    }
+
+  }
+
+  @Override
+  protected void afterCreateEventRows() {
+    setLastAccess(System.currentTimeMillis());
   }
 
   @Override
@@ -274,6 +302,10 @@ class ProjectEventsHandler extends EventsBoard {
   @Override
   protected String getPublishTimeColumnName() {
     return COL_PUBLISH_TIME;
+  }
+
+  protected void setLastAccess(Long lastAccess) {
+    this.lastAccess = lastAccess;
   }
 
 }

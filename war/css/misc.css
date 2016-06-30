@@ -399,7 +399,7 @@
 
 .bee-EventsBoard-content {
   overflow: auto;
-  height: calc(100% - 35px);
+  height: calc(100% - 50px);
   width: 100%;
 }
 
@@ -418,7 +418,6 @@
   min-width: 150px;
   vertical-align: top;
   overflow: auto;
-  max-height: 9em;
 }
 
 .bee-EventsBoard-content-col-PublisherPhoto {
@@ -426,9 +425,6 @@
   height: 3.5em;
   max-width: 2.5em;
   min-width: 2.5em;
-  align-self: center;
-  -webkit-align-self: center;
-  -ms-flex-item-align: center;
 }
 
 .bee-EventsBoard-content-Photo {
@@ -444,7 +440,9 @@
 }
 
 .bee-EventsBoard-content-EventNote {
-  white-space: pre-wrap;
+   white-space: pre-wrap;
+   width: 100%;
+   margin-top: 10px;
 }
 
 .bee-EventsBoard-content-col.bee-EventsBoard-content-col-EventNote.bee-prj-Events-EventNote {
@@ -453,6 +451,32 @@
 
 .bee-EventsBoard-content-col.bee-EventsBoard-content-col-EventFiles.bee-prj-Events-content-col-EventFiles {
   width: calc(100% - 10px);
+}
+
+.bee-EventsBoard-content-EventPublisher {
+  font-weight: bolder;
+}
+
+.bee-EventsBoard-content-col-PublisherInfo {
+  display: -webkit-flex;
+}
+
+.bee-EventsBoard-content-EventPublisher, .bee-EventsBoard-content-EventPublished,
+.bee-EventsBoard-content-EventType {
+  padding-right: 10px;
+}
+
+.bee-EventsBoard-content-Properties, .bee-EventsBoard-content-col-EventFiles {
+  margin-top: 10px;
+}
+
+.bee-EventsBoard-content-Properties {
+  font-style: italic;
+  font-weight: bold;
+}
+
+.bee-EventsBoard-content-EventPublished {
+  color: #c5c5c5
 }
 
 .bee-rtc-local,

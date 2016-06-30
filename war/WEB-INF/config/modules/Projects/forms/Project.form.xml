@@ -14,6 +14,7 @@
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
   name="Project" viewName="Projects"
   caption="=project" width="950" widthUnit="px" height="95" heightUnit="%" favorite="Name" >
   <FlowPanel>
@@ -203,4 +204,7 @@
       </page>
    </TabbedPages>
    </FlowPanel>
+  <f:rowMessage>
+    <ui:expression>row.Name</ui:expression>
+  </f:rowMessage>
 </f:Form>

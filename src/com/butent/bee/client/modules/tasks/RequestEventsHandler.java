@@ -81,7 +81,7 @@ public class RequestEventsHandler extends EventsBoard {
       return;
     }
 
-    Flow rowCell = createEventRowCell(cell, COL_EVENT_PROPERTIES, null);
+    Flow rowCell = createEventRowCell(cell, COL_EVENT_PROPERTIES, null, false);
 
     if (Objects.equals(pairedData.get(0), "0")) {
       rowCell.add(createLinkedTask(prop));
