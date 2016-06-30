@@ -60,6 +60,7 @@ public final class TradeConstants {
       "getTradeDocumentTypeCaptionAndFilter";
 
   public static final String SVC_DOCUMENT_PHASE_TRANSITION = "TradeDocumentPhaseTransition";
+  public static final String SVC_REBUILD_STOCK = "RebuildStock";
 
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";

@@ -184,6 +184,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else if (BeeUtils.same(svc, SVC_DOCUMENT_PHASE_TRANSITION)) {
       response = tryPhaseTransition(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_REBUILD_STOCK)) {
+      response = rebuildStock();
+
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
       logger.warning(msg);
@@ -1865,5 +1868,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             SqlUtils.isNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE)));
 
     return qs.getLongSet(query);
+  }
+
+  private ResponseObject rebuildStock() {
+    return ResponseObject.emptyResponse();
   }
 }

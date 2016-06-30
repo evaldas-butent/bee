@@ -755,7 +755,37 @@ class TaskEditor extends ProductSupportInterceptor {
     header.addCommandItem(setMenuLabel());
 
     TaskSlackRenderer renderer = new TaskSlackRenderer(form.getDataColumns());
-    setLateIndicatorHtml(renderer.getMinutes(row));
+    Pair<AbstractSlackRenderer.SlackKind, Long> data = renderer.getMinutes(row);
+    setLateIndicatorHtml(data);
+    setTaskStatusStyle(header, form, row, data);
+  }
+
+  private static void setTaskStatusStyle(HeaderView header, FormView form, IsRow row,
+      Pair<AbstractSlackRenderer.SlackKind, Long> slackData) {
+    for (TaskStatus taskStatusStyle : TaskStatus.values()) {
+      if (taskStatusStyle.getStyleName(true) != null) {
+        header.removeStyleName(taskStatusStyle.getStyleName(true));
+      }
+      if (taskStatusStyle.getStyleName(false) != null) {
+        header.removeStyleName(taskStatusStyle.getStyleName(false));
+      }
+    }
+
+    TaskStatus taskStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
+        row.getInteger(form.getDataIndex(COL_STATUS)));
+    String styleName;
+    if (slackData != null && slackData.getA() != null) {
+      styleName = taskStatus.getStyleName(slackData.getA().equals(
+          AbstractSlackRenderer.SlackKind.LATE));
+    } else {
+      styleName = taskStatus.getStyleName(false);
+    }
+
+    if (!BeeUtils.isEmpty(styleName)) {
+      header.addStyleName(TASK_STATUS_STYLE);
+      header.addStyleName(styleName);
+    }
+
   }
 
   @Override

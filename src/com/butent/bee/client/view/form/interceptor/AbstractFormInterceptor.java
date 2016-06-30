@@ -210,6 +210,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public Widget getWidgetByName(String name) {
+    return (getFormView() == null) ? null : getFormView().getWidgetByName(name);
+  }
+
+  @Override
   public boolean hasFooter(int rowCount) {
     return true;
   }

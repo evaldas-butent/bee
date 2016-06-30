@@ -3510,6 +3510,8 @@ public interface Dictionary {
 
   default String personContacts() {return g("personContacts");}
 
+  default String personContactsTML() {return g("personContactsTML");}
+
   default String personDateOfDismissal() {return g("personDateOfDismissal");}
 
   default String personDateOfEmployment() {return g("personDateOfEmployment");}
@@ -3541,6 +3543,8 @@ public interface Dictionary {
   default String picture() {return g("picture");}
 
   default String pictures() {return g("pictures");}
+
+  default String places() {return g("places");}
 
   default String plan() {return g("plan");}
 
@@ -3869,6 +3873,8 @@ public interface Dictionary {
 
   default String prjStages() {return g("prjStages");}
 
+  default String prjStagesTML() {return g("prjStagesTML");}
+
   default String prjStatusActive() {return g("prjStatusActive");}
 
   default String prjStatusApproved() {return g("prjStatusApproved");}
@@ -3878,6 +3884,8 @@ public interface Dictionary {
   default String prjStatusSuspended() {return g("prjStatusSuspended");}
 
   default String prjTeam() {return g("prjTeam");}
+
+  default String prjTeamTML() {return g("prjTeamTML");}
 
   default String prjTemplate() {return g("prjTemplate");}
 
@@ -3967,6 +3975,12 @@ public interface Dictionary {
 
   default String reasons() {return g("reasons");}
 
+  default String rebuildTradeStockCaption() {return g("rebuildTradeStockCaption");}
+
+  default String rebuildTradeStockNotification() {return g("rebuildTradeStockNotification");}
+
+  default String rebuildTradeStockQuestion() {return g("rebuildTradeStockQuestion");}
+
   default String received() {return g("received");}
 
   default String recipient() {return g("recipient");}
@@ -3990,6 +4004,8 @@ public interface Dictionary {
   default String registration() {return g("registration");}
 
   default String relatedInformation() {return g("relatedInformation");}
+
+  default String relatedMessages() {return g("relatedMessages");}
 
   default String relatedTo() {return g("relatedTo");}
 
@@ -4150,8 +4166,6 @@ public interface Dictionary {
   default String scheduledStartingDate() {return g("scheduledStartingDate");}
 
   default String scheduledStartingTime() {return g("scheduledStartingTime");}
-  
-  default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
 
   default String search() {return g("search");}
 
@@ -4196,6 +4210,10 @@ public interface Dictionary {
   default String shipper() {return g("shipper");}
 
   default String shippingSchedule() {return g("shippingSchedule");}
+
+  default String showAvailableEmployees() {return g("showAvailableEmployees");}
+
+  default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
 
   default String signDate() {return g("signDate");}
 
