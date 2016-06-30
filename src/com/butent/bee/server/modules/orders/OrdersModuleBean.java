@@ -2440,15 +2440,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     List<NotSubmittedOrdersInfo> carts = new ArrayList<>();
     Long user = usr.getCurrentUserId();
 
-    SqlSelect select =
-        new SqlSelect()
-            .addFields(TBL_NOT_SUBMITTED_ORDERS, COL_SHOPPING_CART_NAME, COL_TRADE_DATE,
-                COL_SHOPPING_CART_COMMENT)
-            .addFrom(TBL_NOT_SUBMITTED_ORDERS)
-            .addFromLeft(TBL_ITEMS,
-                sys.joinTables(TBL_ITEMS, TBL_NOT_SUBMITTED_ORDERS, COL_ITEM))
-            .setWhere(SqlUtils.equals(TBL_NOT_SUBMITTED_ORDERS,
-                COL_SHOPPING_CART_CLIENT, user));
+    SqlSelect select = new SqlSelect()
+        .addFields(TBL_NOT_SUBMITTED_ORDERS, COL_SHOPPING_CART_NAME, COL_TRADE_DATE,
+            COL_SHOPPING_CART_COMMENT)
+        .addFrom(TBL_NOT_SUBMITTED_ORDERS)
+        .addFromLeft(TBL_ITEMS,
+            sys.joinTables(TBL_ITEMS, TBL_NOT_SUBMITTED_ORDERS, COL_ITEM))
+        .setWhere(SqlUtils.equals(TBL_NOT_SUBMITTED_ORDERS,
+            COL_SHOPPING_CART_CLIENT, user))
+        .addGroup(TBL_NOT_SUBMITTED_ORDERS, COL_SHOPPING_CART_NAME, COL_TRADE_DATE,
+            COL_SHOPPING_CART_COMMENT);
 
     for (SimpleRow row : qs.getData(select)) {
       NotSubmittedOrdersInfo info = new NotSubmittedOrdersInfo();
