@@ -1733,6 +1733,8 @@ public interface Dictionary {
 
   default String documentDescription() {return g("documentDescription");}
 
+  default String documentExpireReminderMailSubject() {return g("documentExpireReminderMailSubject");}
+
   default String documentExpires() {return g("documentExpires");}
 
   default String documentFileCaption() {return g("documentFileCaption");}

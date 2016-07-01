@@ -5,7 +5,11 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
+import static com.butent.bee.shared.html.builder.Factory.td;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_CATEGORY_NAME;
 
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeTable;
@@ -21,10 +25,13 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
+import com.butent.bee.server.modules.classifiers.TimerBuilder;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlInsert;
@@ -34,6 +41,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -45,10 +54,17 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.html.Tags;
+import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.Element;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RegulatedWidget;
@@ -69,13 +85,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Singleton;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 
-@Stateless
+@Singleton
+@Lock(LockType.READ)
 @LocalBean
-public class DocumentsModuleBean implements BeeModule {
+public class DocumentsModuleBean extends TimerBuilder implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(DocumentsModuleBean.class);
 
@@ -89,6 +112,11 @@ public class DocumentsModuleBean implements BeeModule {
   DataEditorBean deb;
   @EJB
   NewsBean news;
+  @EJB
+  MailModuleBean mail;
+
+  @Resource
+  TimerService timerService;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -150,6 +178,11 @@ public class DocumentsModuleBean implements BeeModule {
   @Override
   public String getResourcePath() {
     return getModule().getName();
+  }
+
+  @Override
+  public TimerService getTimerService() {
+    return timerService;
   }
 
   @Override
@@ -393,6 +426,29 @@ public class DocumentsModuleBean implements BeeModule {
               Codec.beeSerialize(states.keySet()));
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void updateTimers(DataEvent.ViewModifyEvent event) {
+        if (event.isAfter(TBL_DOCUMENTS)) {
+          if (event instanceof DataEvent.ViewUpdateEvent) {
+            DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_DOCUMENT_EXPIRES)) {
+              createOrUpdateTimers(TIMER_REMIND_DOCUMENT_END, TBL_DOCUMENTS, ev.getRow().getId());
+            }
+          } else if (event instanceof DataEvent.ViewDeleteEvent) {
+            for (long id : ((DataEvent.ViewDeleteEvent) event).getIds()) {
+              createOrUpdateTimers(TIMER_REMIND_DOCUMENT_END, TBL_DOCUMENTS, id);
+            }
+          } else if (event instanceof DataEvent.ViewInsertEvent) {
+            DataEvent.ViewInsertEvent ev = (DataEvent.ViewInsertEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_DOCUMENT_EXPIRES)) {
+              createOrUpdateTimers(TIMER_REMIND_DOCUMENT_END, TBL_DOCUMENTS,
+                  ((DataEvent.ViewInsertEvent) event).getRow().getId());
+            }
+          }
+        }
+      }
     });
 
     news.registerUsageQueryProvider(Feed.DOCUMENTS, new UsageQueryProvider() {
@@ -424,6 +480,172 @@ public class DocumentsModuleBean implements BeeModule {
         return query;
       }
     });
+
+    buildTimers(TIMER_REMIND_DOCUMENT_END);
+
+  }
+
+  @Override
+  public void onTimeout(String timerInfo) {
+    if (BeeUtils.isPrefix(timerInfo, TIMER_REMIND_DOCUMENT_END)) {
+      logger.info("expired document reminder timeout", timerInfo);
+      Long documentId =
+          BeeUtils.toLong(BeeUtils.removePrefix(timerInfo, TIMER_REMIND_DOCUMENT_END));
+
+      if (DataUtils.isId(documentId)
+          && DataUtils.isId(mail.getSenderAccountId(TIMER_REMIND_DOCUMENT_END))) {
+        sendExpiredDocumentsReminders(documentId);
+      }
+    }
+  }
+
+  @Override
+  protected List<Timer> createTimers(String timerIdentifier, IsCondition wh) {
+    List<Timer> timersList = new ArrayList<>();
+    if (BeeUtils.same(timerIdentifier, TIMER_REMIND_DOCUMENT_END)) {
+      String docIdColumn = sys.getIdName(TBL_DOCUMENTS);
+
+      SimpleRowSet data = qs.getData(new SqlSelect()
+      .addFields(TBL_DOCUMENTS, sys.getIdName(TBL_DOCUMENTS), COL_DOCUMENT_EXPIRES)
+      .addFrom(TBL_DOCUMENTS)
+      .setWhere(SqlUtils.and(wh,
+          SqlUtils.notNull(TBL_DOCUMENTS, COL_DOCUMENT_EXPIRES),
+          SqlUtils.moreEqual(TBL_DOCUMENTS,
+              COL_DOCUMENT_EXPIRES, TimeUtils.today(DOCUMENT_EXPIRATION_MIN_DAYS)))));
+
+      for (SimpleRowSet.SimpleRow row : data) {
+        Long timerId = row.getLong(docIdColumn);
+
+        DateTime expDate = TimeUtils.toDateTimeOrNull(row.getValue(COL_DOCUMENT_EXPIRES));
+        DateTime timerTime;
+
+        if (TimeUtils.isMeq(
+                        TimeUtils.goMonth(expDate, -1), new DateTime(System.currentTimeMillis()))) {
+          timerTime = TimeUtils.goMonth(expDate, -1);
+
+        } else {
+          TimeUtils.addDay(expDate, -DOCUMENT_EXPIRATION_MIN_DAYS);
+          timerTime = expDate;
+        }
+
+        if (timerTime == null) {
+          continue;
+        }
+
+        if (timerTime.getTime() > System.currentTimeMillis()) {
+          Timer timer = getTimerService().createSingleActionTimer(timerTime.getJava(),
+              new TimerConfig(timerIdentifier + timerId, false));
+
+          logger.info("Created timer:", timerTime, timer.getInfo());
+
+          if (timer != null) {
+            timersList.add(timer);
+          }
+        }
+      }
+    }
+
+    return timersList;
+  }
+
+  @Override
+  protected Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
+                                                                String viewName, Long relationId) {
+    if (BeeUtils.same(timerIdentifier, TIMER_REMIND_DOCUMENT_END)
+        && BeeUtils.same(viewName, TBL_DOCUMENTS)) {
+      IsCondition wh = SqlUtils.equals(TBL_DOCUMENTS,  sys.getIdName(TBL_DOCUMENTS), relationId);
+      List<String> timerIdentifiersIds = new ArrayList<>();
+      timerIdentifiersIds.add(timerIdentifier + relationId);
+      return Pair.of(wh, timerIdentifiersIds);
+
+    }
+
+    return null;
+  }
+
+  private void sendExpiredDocumentsReminders(Long documentId) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_DOCUMENTS, COL_DOCUMENT_USER, COL_DOCUMENT_DATE, COL_DOCUMENT_EXPIRES,
+            COL_DOCUMENT_NAME, COL_DOCUMENT_NUMBER, COL_REGISTRATION_NUMBER)
+        .addField(ClassifierConstants.TBL_COMPANIES,
+            ClassifierConstants.COL_COMPANY_NAME, ALS_DOCUMENT_COMPANY_NAME)
+        .addField(ClassifierConstants.TBL_COMPANY_TYPES,
+            ClassifierConstants.COL_COMPANY_TYPE_NAME, ALS_TYPE_NAME)
+        .addFrom(TBL_DOCUMENTS)
+        .addFromLeft(ClassifierConstants.TBL_COMPANIES,
+            sys.joinTables(ClassifierConstants.TBL_COMPANIES, TBL_DOCUMENTS, COL_DOCUMENT_COMPANY))
+        .addFromLeft(ClassifierConstants.TBL_COMPANY_TYPES,
+            sys.joinTables(ClassifierConstants.TBL_COMPANY_TYPES, ClassifierConstants.TBL_COMPANIES,
+                ClassifierConstants.COL_COMPANY_TYPE))
+        .setWhere(sys.idEquals(TBL_DOCUMENTS, documentId));
+
+    Long senderAccountId = mail.getSenderAccountId(TIMER_REMIND_DOCUMENT_END);
+
+    SimpleRowSet data = qs.getData(query);
+    if (data.getNumberOfRows() > 0 && DataUtils.isId(senderAccountId)) {
+      formAndSendExpiredDocument(data.getRow(0), senderAccountId);
+    }
+  }
+
+  private void formAndSendExpiredDocument(SimpleRow dRow, Long senderAccountId) {
+    Document doc = new Document();
+
+    Long userId = dRow.getLong(COL_DOCUMENT_USER);
+    Dictionary dic = usr.getDictionary(userId);
+
+    doc.getHead().append(meta().encodingDeclarationUtf8());
+
+    Div panel = div();
+    doc.getBody().append(panel);
+
+    Tbody fields = tbody().append(
+        tr().append(
+            td().text(dic.documentName()),
+            td().text(dRow.getValue(COL_DOCUMENT_NAME))),
+        tr().append(
+            td().text(dic.company()),
+            td().text(BeeUtils.joinWords(dRow.getValue(ALS_DOCUMENT_COMPANY_NAME),
+                dRow.getValue(ALS_TYPE_NAME)))),
+        tr().append(
+            td().text(dic.documentDate()),
+            td().text(TimeUtils.renderCompact(dRow.getDateTime(COL_DOCUMENT_DATE)))),
+        tr().append(
+            td().text(dic.documentExpires()),
+            td().text(TimeUtils.renderCompact(dRow.getDateTime(COL_DOCUMENT_EXPIRES)))),
+        tr().append(
+            td().text(dic.documentNumber()),
+            td().text(dRow.getValue(COL_DOCUMENT_NUMBER))),
+        tr().append(
+            td().text(dic.documentRegistrationNumberShort()),
+            td().text(dRow.getValue(COL_REGISTRATION_NUMBER))));
+
+    List<Element> cells = fields.queryTag(Tags.TD);
+    for (Element cell : cells) {
+      if (cell.index() == 0) {
+        cell.setPaddingRight(1, CssUnit.EM);
+        cell.setFontWeight(FontWeight.BOLDER);
+      }
+    }
+
+    panel.append(table().append(fields));
+
+    String content = doc.buildLines();
+    String headerCaption = BeeUtils.joinWords(dic.document(),
+        dRow.getValue(COL_DOCUMENT_NAME));
+
+    String recipientEmail;
+    if (userId != null && usr.isActive(userId)) {
+      recipientEmail = usr.getUserEmail(userId, false);
+    } else {
+      recipientEmail = mail.getSenderAccountEmail(senderAccountId);
+    }
+
+    ResponseObject mailResponse = mail.sendStyledMail(senderAccountId, recipientEmail,
+        dic.documentExpireReminderMailSubject(), content, headerCaption);
+
+    if (mailResponse.hasErrors()) {
+      logger.severe(TIMER_REMIND_DOCUMENT_END, "mail error - canceled");
+    }
   }
 
   private ResponseObject copyDocumentData(Long data) {
