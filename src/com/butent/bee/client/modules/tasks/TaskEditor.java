@@ -8,8 +8,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasEnabled;
@@ -21,7 +19,6 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -44,8 +41,6 @@ import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dialog.ReminderDialog;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.logical.MutationEvent;
-import com.butent.bee.client.event.logical.MutationEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Direction;
@@ -64,7 +59,6 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.*;
-import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -186,13 +180,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
       for (final Long extTaskId : extTasks) {
         InternalLink url = new InternalLink(BeeUtils.toString(extTaskId));
-        url.addClickHandler(new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent arg0) {
-            RowEditor.open(VIEW_TASKS, extTaskId, Opener.NEW_TAB);
-          }
-        });
+        url.addClickHandler(arg0 -> RowEditor.open(VIEW_TASKS, extTaskId, Opener.NEW_TAB));
 
         ((Flow) widget).add(url);
       }
@@ -466,13 +454,7 @@ class TaskEditor extends ProductSupportInterceptor {
         FaLabel createTask = new FaLabel(TaskEvent.CREATE.getCommandIcon());
         createTask.addStyleName(STYLE_EVENT_CREATE_TASK);
         createTask.setTitle(TaskEvent.CREATE.getCommandLabel());
-        createTask.addClickHandler(new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent arg0) {
-            doCreate(row.getId(), taskRow);
-          }
-        });
+        createTask.addClickHandler(arg0 -> doCreate(row.getId(), taskRow));
 
         row1.add(createTask);
       }
@@ -491,13 +473,7 @@ class TaskEditor extends ProductSupportInterceptor {
           Column.CREATEDOC));
       fileGroup.addFiles(files);
 
-      fileGroup.setDocCreator(new Consumer<FileInfo>() {
-
-        @Override
-        public void accept(FileInfo fileInfo) {
-          createDocument(fileInfo, taskRow);
-        }
-      });
+      fileGroup.setDocCreator(fileInfo -> createDocument(fileInfo, taskRow));
       fileContainer.setWidget(fileGroup);
       row3.add(fileContainer);
       body.add(row3);
@@ -562,12 +538,7 @@ class TaskEditor extends ProductSupportInterceptor {
     if (panel.getWidgetCount() > 1 && DomUtils.isVisible(form.getElement())
         && !readBoolean(NAME_ORDER)) {
       final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
-      Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-        @Override
-        public void execute() {
-          DomUtils.scrollIntoView(last.getElement());
-        }
-      });
+      Scheduler.get().scheduleDeferred(() -> DomUtils.scrollIntoView(last.getElement()));
     }
   }
 
@@ -625,8 +596,8 @@ class TaskEditor extends ProductSupportInterceptor {
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
-    if (action == Action.SAVE && maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg))) {
-      return false;
+    if (action == Action.SAVE) {
+      return !maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg));
     }
     return true;
   }
@@ -663,16 +634,12 @@ class TaskEditor extends ProductSupportInterceptor {
 
     } else if (BeeUtils.same(name, "Split") && widget instanceof Split) {
       split = (Split) widget;
-      split.addMutationHandler(new Handler() {
+      split.addMutationHandler(event -> {
+        int size = split.getDirectionSize(Direction.WEST);
 
-        @Override
-        public void onMutation(MutationEvent event) {
-          int size = split.getDirectionSize(Direction.WEST);
-
-          String key = getStorageKey(NAME_TASK_TREE);
-          if (size > 0 && !BeeUtils.isEmpty(key)) {
-            BeeKeeper.getStorage().set(key, size);
-          }
+        String key = getStorageKey(NAME_TASK_TREE);
+        if (size > 0 && !BeeUtils.isEmpty(key)) {
+          BeeKeeper.getStorage().set(key, size);
         }
       });
     } else if (BeeUtils.same(name, NAME_LATE_INDICATOR) && widget instanceof TextLabel) {
@@ -726,12 +693,9 @@ class TaskEditor extends ProductSupportInterceptor {
 
     final FaLabel createDocument = new FaLabel(FontAwesome.FILE_O);
     createDocument.setTitle(Localized.dictionary().documentNew());
-    createDocument.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        createDocument.setEnabled(false);
-        ensureDefaultDBAParameters(createDocument, row);
-      }
+    createDocument.addClickHandler(event -> {
+      createDocument.setEnabled(false);
+      ensureDefaultDBAParameters(createDocument, row);
     });
 
     if (BeeKeeper.getUser().canCreateData(DocumentConstants.VIEW_DOCUMENTS)) {
@@ -749,12 +713,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
       IdentifiableWidget button = icon != null ? new FaLabel(icon) : new Button(label);
 
-      ((HasClickHandlers) button).addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent e) {
-          doEvent(event);
-        }
-      });
+      ((HasClickHandlers) button).addClickHandler(e -> doEvent(event));
 
       if (button instanceof FaLabel) {
         ((FaLabel) button).setTitle(label);
@@ -972,13 +931,7 @@ class TaskEditor extends ProductSupportInterceptor {
                 ((FileGroup) fileWidget).addFile(file);
               }
             }
-            ((FileGroup) fileWidget).setDocCreator(new Consumer<FileInfo>() {
-
-              @Override
-              public void accept(FileInfo fileInfo) {
-                createDocument(fileInfo, row);
-              }
-            });
+            ((FileGroup) fileWidget).setDocCreator(fileInfo -> createDocument(fileInfo, row));
           }
         }
 
@@ -1143,16 +1096,7 @@ class TaskEditor extends ProductSupportInterceptor {
       return;
     }
 
-    form.addCellValidationHandler(NAME_PRIVATE_TASK, new CellValidateEvent.Handler() {
-
-      @Override
-      public Boolean validateCell(CellValidateEvent event) {
-        if (isOwner()) {
-          return true;
-        }
-        return false;
-      }
-    });
+    form.addCellValidationHandler(NAME_PRIVATE_TASK, event -> isOwner());
   }
 
   private ParameterList createParams(TaskEvent event, BeeRow newRow, String comment) {
@@ -1347,24 +1291,21 @@ class TaskEditor extends ProductSupportInterceptor {
         TimeUtils.nowMinutes());
     final String cid = dialog.addComment(false);
 
-    dialog.addAction(Localized.dictionary().crmTaskConfirm(), new ScheduledCommand() {
-      @Override
-      public void execute() {
+    dialog.addAction(Localized.dictionary().crmTaskConfirm(), () -> {
 
-        DateTime approved = dialog.getDateTime(did);
-        if (approved == null) {
-          showError(Localized.dictionary().crmEnterConfirmDate());
-          return;
-        }
-
-        BeeRow newRow = getNewRow(TaskStatus.APPROVED);
-        newRow.setValue(getFormView().getDataIndex(COL_APPROVED), approved);
-
-        ParameterList params = createParams(TaskEvent.APPROVE, newRow, dialog.getComment(cid));
-
-        sendRequest(params, TaskEvent.APPROVE);
-        dialog.close();
+      DateTime approved = dialog.getDateTime(did);
+      if (approved == null) {
+        showError(Localized.dictionary().crmEnterConfirmDate());
+        return;
       }
+
+      BeeRow newRow = getNewRow(TaskStatus.APPROVED);
+      newRow.setValue(getFormView().getDataIndex(COL_APPROVED), approved);
+
+      ParameterList params = createParams(TaskEvent.APPROVE, newRow, dialog.getComment(cid));
+
+      sendRequest(params, TaskEvent.APPROVE);
+      dialog.close();
     });
 
     dialog.display();
@@ -1376,22 +1317,19 @@ class TaskEditor extends ProductSupportInterceptor {
 
     final String cid = dialog.addComment(true);
 
-    dialog.addAction(Localized.dictionary().crmTaskCancel(), new ScheduledCommand() {
-      @Override
-      public void execute() {
+    dialog.addAction(Localized.dictionary().crmTaskCancel(), () -> {
 
-        String comment = dialog.getComment(cid);
-        if (BeeUtils.isEmpty(comment)) {
-          showError(Localized.dictionary().crmEnterComment());
-          return;
-        }
-
-        ParameterList params = createParams(TaskEvent.CANCEL, getNewRow(TaskStatus.CANCELED),
-            comment);
-
-        sendRequest(params, TaskEvent.CANCEL);
-        dialog.close();
+      String comment = dialog.getComment(cid);
+      if (BeeUtils.isEmpty(comment)) {
+        showError(Localized.dictionary().crmEnterComment());
+        return;
       }
+
+      ParameterList params = createParams(TaskEvent.CANCEL, getNewRow(TaskStatus.CANCELED),
+          comment);
+
+      sendRequest(params, TaskEvent.CANCEL);
+      dialog.close();
     });
 
     dialog.display();
@@ -1405,30 +1343,27 @@ class TaskEditor extends ProductSupportInterceptor {
     final String fid = dialog.addFileCollector();
     Map<String, String> durIds = setDurations(dialog);
 
-    dialog.addAction(Localized.dictionary().actionSave(), new ScheduledCommand() {
-      @Override
-      public void execute() {
+    dialog.addAction(Localized.dictionary().actionSave(), () -> {
 
-        String comment = dialog.getComment(cid);
-        String time = dialog.getTime(durIds.get(COL_DURATION));
-        Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
+      String comment = dialog.getComment(cid);
+      String time = dialog.getTime(durIds.get(COL_DURATION));
+      Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
 
-        if (BeeUtils.allEmpty(comment, time)) {
-          showError(Localized.dictionary().crmEnterCommentOrDuration());
-          return;
-        }
+      if (BeeUtils.allEmpty(comment, time)) {
+        showError(Localized.dictionary().crmEnterCommentOrDuration());
+        return;
+      }
 
-        if (!BeeUtils.isEmpty(time) && !DataUtils.isId(type)) {
-          showError(Localized.dictionary().crmEnterDurationType());
-          return;
-        }
+      if (!BeeUtils.isEmpty(time) && !DataUtils.isId(type)) {
+        showError(Localized.dictionary().crmEnterDurationType());
+        return;
+      }
 
-        ParameterList params = createParams(TaskEvent.COMMENT, comment);
+      ParameterList params = createParams(TaskEvent.COMMENT, comment);
 
-        if (setDurationParams(dialog, durIds, params)) {
-          sendRequest(params, TaskEvent.COMMENT, dialog.getFiles(fid));
-          dialog.close();
-        }
+      if (setDurationParams(dialog, durIds, params)) {
+        sendRequest(params, TaskEvent.COMMENT, dialog.getFiles(fid));
+        dialog.close();
       }
     });
 
@@ -1447,45 +1382,42 @@ class TaskEditor extends ProductSupportInterceptor {
             .nowMinutes());
     durIds.put(COL_DURATION_DATE, dd);
 
-    dialog.addAction(Localized.dictionary().crmActionFinish(), new ScheduledCommand() {
-      @Override
-      public void execute() {
+    dialog.addAction(Localized.dictionary().crmActionFinish(), () -> {
 
-        DateTime completed = dialog.getDateTime(dd);
-        String time = dialog.getTime(durIds.get(COL_DURATION));
-        Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
+      DateTime completed = dialog.getDateTime(dd);
+      String time = dialog.getTime(durIds.get(COL_DURATION));
+      Long type = dialog.getSelector(durIds.get(COL_DURATION_TYPE)).getRelatedId();
 
-        if (completed == null) {
-          showError(Localized.dictionary().crmEnterCompleteDate());
-          return;
-        }
+      if (completed == null) {
+        showError(Localized.dictionary().crmEnterCompleteDate());
+        return;
+      }
 
-        if (!BeeUtils.isEmpty(time) && !DataUtils.isId(type)) {
-          showError(Localized.dictionary().crmEnterDurationType());
-          return;
-        }
+      if (!BeeUtils.isEmpty(time) && !DataUtils.isId(type)) {
+        showError(Localized.dictionary().crmEnterDurationType());
+        return;
+      }
 
-        String comment = dialog.getComment(cid);
+      String comment = dialog.getComment(cid);
 
-        TaskStatus status;
-        TaskEvent event;
+      TaskStatus status;
+      TaskEvent event;
 
-        if (isOwner() && isExecutor()) {
-          status = TaskStatus.APPROVED;
-          event = TaskEvent.APPROVE;
-        } else {
-          status = TaskStatus.COMPLETED;
-          event = TaskEvent.COMPLETE;
-        }
-        BeeRow newRow = getNewRow(status);
-        newRow.setValue(getFormView().getDataIndex(COL_COMPLETED), completed);
+      if (isOwner() && isExecutor()) {
+        status = TaskStatus.APPROVED;
+        event = TaskEvent.APPROVE;
+      } else {
+        status = TaskStatus.COMPLETED;
+        event = TaskEvent.COMPLETE;
+      }
+      BeeRow newRow = getNewRow(status);
+      newRow.setValue(getFormView().getDataIndex(COL_COMPLETED), completed);
 
-        ParameterList params = createParams(event, newRow, comment);
+      ParameterList params = createParams(event, newRow, comment);
 
-        if (setDurationParams(dialog, durIds, params)) {
-          sendRequest(params, event, dialog.getFiles(fid));
-          dialog.close();
-        }
+      if (setDurationParams(dialog, durIds, params)) {
+        sendRequest(params, event, dialog.getFiles(fid));
+        dialog.close();
       }
     });
 
@@ -1683,54 +1615,51 @@ class TaskEditor extends ProductSupportInterceptor {
 
     final String cid = dialog.addComment(false);
 
-    dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), new ScheduledCommand() {
-      @Override
-      public void execute() {
+    dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), () -> {
 
-        DateTime newStart = getDateTime(COL_START_TIME);
-        DateTime oldEnd = getDateTime(COL_FINISH_TIME);
+      DateTime newStart = getDateTime(COL_START_TIME);
+      DateTime oldEnd = getDateTime(COL_FINISH_TIME);
 
-        DateTime newEnd = dialog.getDateTime(endId);
+      DateTime newEnd = dialog.getDateTime(endId);
 
-        if (newEnd == null) {
-          showError(Localized.dictionary().crmEnterFinishDate());
-          return;
-        }
-
-        if (Objects.equals(newEnd, oldEnd)) {
-          showError(Localized.dictionary().crmTermNotChanged());
-          return;
-        }
-
-        if (TimeUtils.isLeq(newEnd, newStart)) {
-          showError(Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
-          return;
-        }
-
-        DateTime now = TimeUtils.nowMinutes();
-        if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
-          Global.showError("Time travel not supported",
-              Collections.singletonList(Localized.dictionary().crmFinishDateMustBeGreaterThan()
-                  + " " + now.toCompactString()));
-          return;
-        }
-
-        BeeRow newRow = getNewRow();
-        if (newStart != null) {
-          newRow.setValue(getFormView().getDataIndex(COL_START_TIME), newStart);
-        }
-        if (!Objects.equals(newEnd, oldEnd)) {
-          newRow.setValue(getFormView().getDataIndex(COL_FINISH_TIME), newEnd);
-        }
-
-        ParameterList params = createParams(TaskEvent.EXTEND, newRow, dialog.getComment(cid));
-        if (oldEnd != null && !Objects.equals(newEnd, oldEnd)) {
-          params.addDataItem(VAR_TASK_FINISH_TIME, oldEnd.getTime());
-        }
-
-        sendRequest(params, TaskEvent.EXTEND);
-        dialog.close();
+      if (newEnd == null) {
+        showError(Localized.dictionary().crmEnterFinishDate());
+        return;
       }
+
+      if (Objects.equals(newEnd, oldEnd)) {
+        showError(Localized.dictionary().crmTermNotChanged());
+        return;
+      }
+
+      if (TimeUtils.isLeq(newEnd, newStart)) {
+        showError(Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
+        return;
+      }
+
+      DateTime now = TimeUtils.nowMinutes();
+      if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
+        Global.showError("Time travel not supported",
+            Collections.singletonList(Localized.dictionary().crmFinishDateMustBeGreaterThan()
+                + " " + now.toCompactString()));
+        return;
+      }
+
+      BeeRow newRow = getNewRow();
+      if (newStart != null) {
+        newRow.setValue(getFormView().getDataIndex(COL_START_TIME), newStart);
+      }
+      if (!Objects.equals(newEnd, oldEnd)) {
+        newRow.setValue(getFormView().getDataIndex(COL_FINISH_TIME), newEnd);
+      }
+
+      ParameterList params = createParams(TaskEvent.EXTEND, newRow, dialog.getComment(cid));
+      if (oldEnd != null && !Objects.equals(newEnd, oldEnd)) {
+        params.addDataItem(VAR_TASK_FINISH_TIME, oldEnd.getTime());
+      }
+
+      sendRequest(params, TaskEvent.EXTEND);
+      dialog.close();
     });
 
     dialog.display(endId);
@@ -1759,53 +1688,50 @@ class TaskEditor extends ProductSupportInterceptor {
     final String cid = dialog.addComment(true);
     final String fid = dialog.addFileCollector();
 
-    dialog.addAction(Localized.dictionary().crmActionForward(), new ScheduledCommand() {
-      @Override
-      public void execute() {
+    dialog.addAction(Localized.dictionary().crmActionForward(), () -> {
 
-        DataSelector selector = dialog.getSelector(sid);
+      DataSelector selector = dialog.getSelector(sid);
 
-        Long newUser = selector.getRelatedId();
-        if (newUser == null) {
-          showError(Localized.dictionary().crmEnterExecutor());
-          return;
-        }
-        if (Objects.equals(newUser, oldUser)) {
-          showError(Localized.dictionary().crmSelectedSameExecutor());
-          return;
-        }
-
-        String comment = dialog.getComment(cid);
-        if (BeeUtils.isEmpty(comment)) {
-          showError(Localized.dictionary().crmEnterComment());
-          return;
-        }
-
-        BeeRow newRow = getNewRow();
-        RelationUtils.updateRow(Data.getDataInfo(VIEW_TASKS), COL_EXECUTOR, newRow,
-            Data.getDataInfo(VIEW_USERS), selector.getRelatedRow(), true);
-
-        TaskStatus newStatus = TaskStatus.NOT_VISITED;
-
-        /** Forward task itself */
-        if (Objects.equals(newUser, userId)) {
-          newStatus = TaskStatus.VISITED;
-        }
-
-        newRow.setValue(getDataIndex(COL_STATUS), newStatus.ordinal());
-
-        if (dialog.isChecked(obs)) {
-          List<Long> obsUsers = DataUtils.parseIdList(newRow.getProperty(PROP_OBSERVERS));
-          if (!obsUsers.contains(oldUser)) {
-            obsUsers.add(oldUser);
-            newRow.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(obsUsers));
-          }
-        }
-
-        ParameterList params = createParams(TaskEvent.FORWARD, newRow, comment);
-        sendRequest(params, TaskEvent.FORWARD, dialog.getFiles(fid));
-        dialog.close();
+      Long newUser = selector.getRelatedId();
+      if (newUser == null) {
+        showError(Localized.dictionary().crmEnterExecutor());
+        return;
       }
+      if (Objects.equals(newUser, oldUser)) {
+        showError(Localized.dictionary().crmSelectedSameExecutor());
+        return;
+      }
+
+      String comment = dialog.getComment(cid);
+      if (BeeUtils.isEmpty(comment)) {
+        showError(Localized.dictionary().crmEnterComment());
+        return;
+      }
+
+      BeeRow newRow = getNewRow();
+      RelationUtils.updateRow(Data.getDataInfo(VIEW_TASKS), COL_EXECUTOR, newRow,
+          Data.getDataInfo(VIEW_USERS), selector.getRelatedRow(), true);
+
+      TaskStatus newStatus = TaskStatus.NOT_VISITED;
+
+      /** Forward task itself */
+      if (Objects.equals(newUser, userId)) {
+        newStatus = TaskStatus.VISITED;
+      }
+
+      newRow.setValue(getDataIndex(COL_STATUS), newStatus.ordinal());
+
+      if (dialog.isChecked(obs)) {
+        List<Long> obsUsers = DataUtils.parseIdList(newRow.getProperty(PROP_OBSERVERS));
+        if (!obsUsers.contains(oldUser)) {
+          obsUsers.add(oldUser);
+          newRow.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(obsUsers));
+        }
+      }
+
+      ParameterList params = createParams(TaskEvent.FORWARD, newRow, comment);
+      sendRequest(params, TaskEvent.FORWARD, dialog.getFiles(fid));
+      dialog.close();
     });
 
     dialog.display();
@@ -1831,21 +1757,18 @@ class TaskEditor extends ProductSupportInterceptor {
 
     final String cid = dialog.addComment(false);
 
-    dialog.addAction(Localized.dictionary().crmTaskReturnExecution(), new ScheduledCommand() {
-      @Override
-      public void execute() {
+    dialog.addAction(Localized.dictionary().crmTaskReturnExecution(), () -> {
 
-        TaskStatus newStatus = isExecutor() ? TaskStatus.VISITED : TaskStatus.NOT_VISITED;
+      TaskStatus newStatus = isExecutor() ? TaskStatus.VISITED : TaskStatus.NOT_VISITED;
 
-        BeeRow newRow = getNewRow(newStatus);
-        newRow.clearCell(getFormView().getDataIndex(COL_COMPLETED));
-        newRow.clearCell(getFormView().getDataIndex(COL_APPROVED));
+      BeeRow newRow = getNewRow(newStatus);
+      newRow.clearCell(getFormView().getDataIndex(COL_COMPLETED));
+      newRow.clearCell(getFormView().getDataIndex(COL_APPROVED));
 
-        ParameterList params = createParams(TaskEvent.RENEW, newRow, dialog.getComment(cid));
+      ParameterList params = createParams(TaskEvent.RENEW, newRow, dialog.getComment(cid));
 
-        sendRequest(params, TaskEvent.RENEW);
-        dialog.close();
-      }
+      sendRequest(params, TaskEvent.RENEW);
+      dialog.close();
     });
 
     dialog.display();
@@ -1866,22 +1789,19 @@ class TaskEditor extends ProductSupportInterceptor {
 
     final String cid = dialog.addComment(true);
 
-    dialog.addAction(Localized.dictionary().crmActionSuspend(), new ScheduledCommand() {
-      @Override
-      public void execute() {
+    dialog.addAction(Localized.dictionary().crmActionSuspend(), () -> {
 
-        String comment = dialog.getComment(cid);
-        if (BeeUtils.isEmpty(comment)) {
-          showError(Localized.dictionary().crmEnterComment());
-          return;
-        }
-
-        ParameterList params = createParams(TaskEvent.SUSPEND, getNewRow(TaskStatus.SUSPENDED),
-            comment);
-
-        sendRequest(params, TaskEvent.SUSPEND);
-        dialog.close();
+      String comment = dialog.getComment(cid);
+      if (BeeUtils.isEmpty(comment)) {
+        showError(Localized.dictionary().crmEnterComment());
+        return;
       }
+
+      ParameterList params = createParams(TaskEvent.SUSPEND, getNewRow(TaskStatus.SUSPENDED),
+          comment);
+
+      sendRequest(params, TaskEvent.SUSPEND);
+      dialog.close();
     });
 
     dialog.display();
@@ -1936,19 +1856,11 @@ class TaskEditor extends ProductSupportInterceptor {
           }
         };
 
-    Global.getRelationParameter(PRM_DEFAULT_DBA_TEMPLATE, new BiConsumer<Long, String>() {
-      @Override
-      public void accept(Long id, String name) {
-        paramHolder.accept(PRM_DEFAULT_DBA_TEMPLATE, Pair.of(id, name));
-      }
-    });
+    Global.getRelationParameter(PRM_DEFAULT_DBA_TEMPLATE, (id, name)
+            -> paramHolder.accept(PRM_DEFAULT_DBA_TEMPLATE, Pair.of(id, name)));
 
-    Global.getRelationParameter(PRM_DEFAULT_DBA_DOCUMENT_TYPE, new BiConsumer<Long, String>() {
-      @Override
-      public void accept(Long id, String name) {
-        paramHolder.accept(PRM_DEFAULT_DBA_DOCUMENT_TYPE, Pair.of(id, name));
-      }
-    });
+    Global.getRelationParameter(PRM_DEFAULT_DBA_DOCUMENT_TYPE, (id, name)
+            -> paramHolder.accept(PRM_DEFAULT_DBA_DOCUMENT_TYPE, Pair.of(id, name)));
   }
 
   private DateTime getDateTime(String colName) {
@@ -2063,22 +1975,19 @@ class TaskEditor extends ProductSupportInterceptor {
         Lists.newArrayList(COL_TASK, COL_TASK_EVENT, COL_FILE, COL_CAPTION));
 
     for (final FileInfo fileInfo : files) {
-      FileUtils.uploadFile(fileInfo, new Callback<Long>() {
-        @Override
-        public void onSuccess(Long result) {
-          List<String> values = Lists.newArrayList(BeeUtils.toString(taskId),
-              BeeUtils.toString(teId), BeeUtils.toString(result), fileInfo.getCaption());
+      FileUtils.uploadFile(fileInfo, result -> {
+        List<String> values = Lists.newArrayList(BeeUtils.toString(taskId),
+            BeeUtils.toString(teId), BeeUtils.toString(result), fileInfo.getCaption());
 
-          Queries.insert(VIEW_TASK_FILES, columns, values, null, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow row) {
-              counter.set(counter.get() + 1);
-              if (counter.get() == files.size()) {
-                requeryEvents(taskId);
-              }
+        Queries.insert(VIEW_TASK_FILES, columns, values, null, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow row) {
+            counter.set(counter.get() + 1);
+            if (counter.get() == files.size()) {
+              requeryEvents(taskId);
             }
-          });
-        }
+          }
+        });
       });
     }
   }
@@ -2190,58 +2099,50 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private FaLabel setMenuLabel() {
     FaLabel menu = new FaLabel(FontAwesome.NAVICON);
-    menu.addClickHandler(new ClickHandler() {
+    menu.addClickHandler(arg0 -> {
+      final HtmlTable tb = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "GridMenu-table");
+      FaLabel commentLbl = getCommentsLabelInfo();
+      FaLabel orderLbl = getOrderLabelInfo();
 
-      @Override
-      public void onClick(ClickEvent arg0) {
-        final HtmlTable tb = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "GridMenu-table");
-        FaLabel commentLbl = getCommentsLabelInfo();
-        FaLabel orderLbl = getOrderLabelInfo();
+      tb.setWidget(0, 0, commentLbl);
+      tb.setText(0, 1, commentLbl.getTitle());
+      tb.setWidget(1, 0, orderLbl);
+      tb.setText(1, 1, orderLbl.getTitle());
 
-        tb.setWidget(0, 0, commentLbl);
-        tb.setText(0, 1, commentLbl.getTitle());
-        tb.setWidget(1, 0, orderLbl);
-        tb.setText(1, 1, orderLbl.getTitle());
+      tb.addClickHandler(ev -> {
+        Element targetElement = EventUtils.getEventTargetElement(ev);
+        TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+        int index = rowElement.getRowIndex();
 
-        tb.addClickHandler(new ClickHandler() {
+        switch (index) {
+          case 0:
+            BeeKeeper.getUser().setCommentsLayout(!isDefaultLayout);
+            isDefaultLayout = !isDefaultLayout;
+            UiHelper.closeDialog(tb);
+            setCommentsLayout();
+            break;
 
-          @Override
-          public void onClick(ClickEvent ev) {
-            Element targetElement = EventUtils.getEventTargetElement(ev);
-            TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
-            int index = rowElement.getRowIndex();
-
-            switch (index) {
-              case 0:
-                BeeKeeper.getUser().setCommentsLayout(!isDefaultLayout);
-                isDefaultLayout = !isDefaultLayout;
-                UiHelper.closeDialog(tb);
-                setCommentsLayout();
-                break;
-
-              case 1:
-                if (readBoolean(NAME_ORDER)) {
-                  BeeKeeper.getStorage().remove(getStorageKey(NAME_ORDER));
-                  getActiveRow().removeProperty(PROP_DESCENDING);
-                } else {
-                  BeeKeeper.getStorage().set(getStorageKey(NAME_ORDER), true);
-                  getActiveRow().setProperty(PROP_DESCENDING, BeeConst.INT_TRUE);
-                }
-
-                UiHelper.closeDialog(tb);
-                doEvent(TaskEvent.REFRESH);
-                break;
-
-              default:
+          case 1:
+            if (readBoolean(NAME_ORDER)) {
+              BeeKeeper.getStorage().remove(getStorageKey(NAME_ORDER));
+              getActiveRow().removeProperty(PROP_DESCENDING);
+            } else {
+              BeeKeeper.getStorage().set(getStorageKey(NAME_ORDER), true);
+              getActiveRow().setProperty(PROP_DESCENDING, BeeConst.INT_TRUE);
             }
-          }
-        });
 
-        Popup popup = new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "GridMenu-popup");
-        popup.setWidget(tb);
-        popup.setHideOnEscape(true);
-        popup.showRelativeTo(menu.getElement());
-      }
+            UiHelper.closeDialog(tb);
+            doEvent(TaskEvent.REFRESH);
+            break;
+
+          default:
+        }
+      });
+
+      Popup popup = new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "GridMenu-popup");
+      popup.setWidget(tb);
+      popup.setHideOnEscape(true);
+      popup.showRelativeTo(menu.getElement());
     });
 
     return menu;
