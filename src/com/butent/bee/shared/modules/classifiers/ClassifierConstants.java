@@ -14,6 +14,7 @@ public final class ClassifierConstants {
   public static final String SVC_GET_PRICE_AND_DISCOUNT = "GetPriceAndDiscount";
 
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
+  public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
 
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
@@ -177,8 +178,8 @@ public final class ClassifierConstants {
   public static final String COL_WEBSITE = "Website";
   public static final String COL_NOTES = "Notes";
   public static final String COL_REMIND_EMAIL = "RemindEmail";
-  public static final String COL_REMIND_ACTIONS = "MailCompanyActions";
   public static final String COL_REMIND_ACTION_BEFORE = "CompanyActionRemindBefore";
+  public static final String COL_TASKS_MAILING_TIME = "TasksMailingTime";
   public static final String COL_EMAIL_INVOICES = "EmailInvoices";
 
   public static final String COL_CITY = "City";
@@ -299,6 +300,7 @@ public final class ClassifierConstants {
   public static final String QR_PERSON = "qrPerson";
 
   public static final long DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_HOUR;
+  public static final long DEFAULT_REMIND_TASKS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
 
   public static void register() {
     EnumUtils.register(ItemPrice.class);
