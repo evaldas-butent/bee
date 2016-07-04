@@ -6,7 +6,10 @@
   <Relation renderColumns="Name TypeName" />
   <Columns>
     <SimpleColumn name="Name" />
+
     <SimpleColumn name="Name2" />
+    <SimpleColumn name="TypeName2" />
+
     <SimpleColumn name="Code" />
     <SimpleColumn name="VATCode" />
 

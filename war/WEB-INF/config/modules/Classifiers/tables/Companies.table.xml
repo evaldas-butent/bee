@@ -7,7 +7,10 @@
   <Fields>
     <Relation name="Owner" relation="Companies" />
     <String name="Name" precision="100" notNull="true" unique="true" label="=companyName" />
+
     <String name="Name2" precision="100" label="Pavadinimas2" />
+    <String name="TypeName2" precision="10" label="Statusas2" />
+
     <String name="Code" precision="30" unique="true" label="=companyCode" />
     <String name="VATCode" precision="30" label="=companyVATCode" />
 

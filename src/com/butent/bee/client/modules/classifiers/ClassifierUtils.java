@@ -94,8 +94,7 @@ public final class ClassifierUtils {
                       String value = DataUtils.getString(rowSet, row, column.getId());
 
                       if (!BeeUtils.isEmpty(value)) {
-                        params.put(entry.getKey() + BeeUtils.removeSuffix(column.getId(), "2"),
-                            value);
+                        params.put(entry.getKey() + column.getId(), value);
                       }
                     }
                   }

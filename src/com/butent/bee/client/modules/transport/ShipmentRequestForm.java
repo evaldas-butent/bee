@@ -30,6 +30,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -324,6 +325,23 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
           defaultParameters.putAll(companiesInfo);
           parametersConsumer.accept(defaultParameters);
         }));
+  }
+
+  @Override
+  protected void print(String report) {
+    if (SupportedLocale.getByLanguage(Localized.extractLanguage(report)) != SupportedLocale.LT) {
+      getReportParameters(parameters -> {
+        for (String key : parameters.keySet()) {
+          if (BeeUtils.isSuffix(key, "2")) {
+            parameters.put(BeeUtils.removeSuffix(key, "2"), parameters.get(key));
+          }
+        }
+        getReportData(data ->
+            ReportUtils.showReport(report, getReportCallback(), parameters, data));
+      });
+    } else {
+      super.print(report);
+    }
   }
 
   @Override

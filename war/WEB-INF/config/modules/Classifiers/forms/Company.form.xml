@@ -175,7 +175,7 @@
               <cell colSpan="3">
                 <ChildSelector name="RecipientsGroup" viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
                   targetRelColumn="Company" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
-                  choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true" 
+                  choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true"
                   filter="Creator {u} or Visibility = 0" />
               </cell>
             </row>
@@ -203,14 +203,16 @@
             </row>
             <row>
               <Label text="Pavadinimas2" style="&lbl;" />
-              <cell colSpan="3">
-                <InputText source="Name2" style="width: 338px;" summarize="true" />
+              <cell colSpan="2">
+                <InputText source="Name2" style="width: 300px;" summarize="true" />
               </cell>
+              <Label style="&lbl;" for="TypeName2" />
+              <InputText source="TypeName2" style="width: 80px;" summarize="true" />
             </row>
             <row>
               <Label text="Adresas2" style="&lbl;" />
               <cell colSpan="3">
-                <InputText source="Address2" style="width: 338px;" summarize="true" />
+                <InputText source="Address2" style="width: 400px;" summarize="true" />
               </cell>
             </row>
           </Table>

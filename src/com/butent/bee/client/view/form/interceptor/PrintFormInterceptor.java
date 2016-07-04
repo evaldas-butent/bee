@@ -13,7 +13,6 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
@@ -148,8 +147,10 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     return BeeUtils.split(getFormView().getProperty("jasperReports"), BeeConst.CHAR_COMMA);
   }
 
-  protected void print(BiConsumer<Map<String, String>, BeeRowSet[]> consumer) {
-    getReportParameters(parameters -> getReportData(data -> consumer.accept(parameters, data)));
+  protected void print(String report) {
+    getReportParameters(parameters ->
+        getReportData(data ->
+            ReportUtils.showReport(report, getReportCallback(), parameters, data)));
   }
 
   private boolean printJasperReport() {
@@ -181,13 +182,10 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         for (SupportedLocale locale : SupportedLocale.values()) {
           locales.add(BeeUtils.notEmpty(locale.getCaption(), locale.getLanguage()));
         }
-        Global.choice(Localized.dictionary().chooseLanguage(), null, locales,
-            idx -> print((parameters, data) -> ReportUtils.showReport(Localized.setLanguage(report,
-                SupportedLocale.values()[idx].getLanguage()), getReportCallback(), parameters,
-                data)));
+        Global.choice(Localized.dictionary().chooseLanguage(), null, locales, idx ->
+            print(Localized.setLanguage(report, SupportedLocale.values()[idx].getLanguage())));
       } else {
-        print((parameters, data) ->
-            ReportUtils.showReport(report, getReportCallback(), parameters, data));
+        print(report);
       }
     };
     if (reps.size() > 1) {
