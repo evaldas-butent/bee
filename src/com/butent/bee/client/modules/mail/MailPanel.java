@@ -55,11 +55,12 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
@@ -86,7 +87,6 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -366,7 +366,7 @@ public class MailPanel extends AbstractFormInterceptor {
     private final Simple folderContainer = new Simple();
     private InputText searchWidget;
     private FaLabel searchOptions;
-    private final JustDate defaultFrom = TimeUtils.today(-365);
+    private final DateTime defaultFrom = new DateTime(TimeUtils.today(-365));
 
     private SearchPanel() {
       setStyleName(CSS_SEARCH_PREFIX + "Panel");
@@ -391,14 +391,14 @@ public class MailPanel extends AbstractFormInterceptor {
       criteria.put(COL_SUBJECT, subject);
 
       add(new Label(loc.period()));
-      InputDate dateFrom = new InputDate();
+      InputDateTime dateFrom = new InputDateTime();
       dateFrom.addStyleName(CSS_SEARCH_PREFIX + "DateFrom");
       DomUtils.setPlaceholder(dateFrom, defaultFrom.toString());
       add(dateFrom);
       criteria.put(Service.VAR_FROM, dateFrom);
 
-      add(new InlineLabel("-"));
-      InputDate dateTo = new InputDate();
+      add(new CustomSpan(CSS_SEARCH_PREFIX + "DateSeparator"));
+      InputDateTime dateTo = new InputDateTime();
       dateTo.addStyleName(CSS_SEARCH_PREFIX + "DateTo");
       add(dateTo);
       criteria.put(Service.VAR_TO, dateTo);

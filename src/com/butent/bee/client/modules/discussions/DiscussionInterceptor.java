@@ -35,7 +35,6 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.mail.Relations;
@@ -86,12 +85,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class DiscussionInterceptor extends AbstractFormInterceptor {
 
@@ -273,7 +267,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private static final int INITIAL_COMMENT_ROW_PADDING_LEFT = 0;
   private static final int COMMENT_ROW_PADDING_FACTOR = 2;
   private static final int MAX_COMMENT_ROW_PADDING_LEFT = COMMENT_ROW_PADDING_FACTOR * 5;
-  private static final String DEFAULT_PHOTO = "images/bs-logo.png";
   private static final DiscussionEvent[] FIRE_GLOBAL_EVENTS  = {
           DiscussionEvent.CREATE, DiscussionEvent.ACTIVATE, DiscussionEvent.DEACTIVATE,
           DiscussionEvent.CLOSE, DiscussionEvent.COMMENT,
@@ -291,6 +284,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   private Label displayInBoardLabel;
   private Disclosure relationsDisclosure;
   private Disclosure descriptionDisclosure;
+  private DiscussModeRenderer modeRenderer = new DiscussModeRenderer();
+  private final Map<Long, Widget> lastComment = new HashMap<>();
+  private final Map<Long, Long> lastAccess = new HashMap<>();
 
   DiscussionInterceptor() {
     super();
@@ -372,7 +368,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, ALS_OWNER_PHOTO) && widget instanceof Image) {
       discussOwnerPhoto = (Image) widget;
-      discussOwnerPhoto.setUrl(DEFAULT_PHOTO);
+      discussOwnerPhoto.setUrl(PhotoRenderer.DEFAULT_PHOTO_IMAGE);
     }
 
     if (BeeUtils.same(name, VIEW_DISCUSSIONS_MARK_TYPES) && widget instanceof Flow) {
@@ -402,11 +398,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           return;
         }
 
-        final Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
         final Long owner = row.getLong(form.getDataIndex(COL_OWNER));
 
-        setEnabled(form, row, isEventEnabled(form, row, DiscussionEvent.MODIFY, status, owner,
-            discussParameters.get(PRM_DISCUSS_ADMIN)));
+        setEnabled(form, row, isEventEnabled(form, row, DiscussionEvent.MODIFY,
+                DiscussionHelper.getStatus(row), owner, discussParameters.get(PRM_DISCUSS_ADMIN)));
       });
     }
 
@@ -436,17 +431,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return;
     }
 
-    final Integer status = row.getInteger(form.getDataIndex(COL_STATUS));
     final Long owner = row.getLong(form.getDataIndex(COL_OWNER));
-    String caption;
-
-    if (!DiscussionsUtils.isAnnouncement(form, row)) {
-      caption = Localized.dictionary().discussion() + ":";
-    } else {
-      caption = Localized.dictionary().announcement() + ":";
-    }
-
-    header.setCaption(caption);
+    DiscussionHelper.setFormCaption(form, row);
 
     final Map<String, String> discussParameters = DiscussionsUtils.getDiscussionsParameters(row);
     header.clearCommandPanel();
@@ -456,18 +442,27 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return;
     }
 
+    boolean modifyEnabled = false;
+    String adminLogin = discussParameters.get(PRM_DISCUSS_ADMIN);
+
     for (final DiscussionEvent event : DiscussionEvent.values()) {
       String label = event.getCommandLabel();
 
-      if (!BeeUtils.isEmpty(label) && isEventEnabled(form, row, event, status, owner,
-          discussParameters.get(PRM_DISCUSS_ADMIN))) {
-        header.addCommandItem((IdentifiableWidget) createEventButton(form, row, event,
-            discussParameters.get(PRM_DISCUSS_ADMIN)));
+      boolean enabled = isEventEnabled(form, row, event,
+              DiscussionHelper.getStatus(row), owner, adminLogin);
+
+      if (event == DiscussionEvent.MODIFY) {
+        modifyEnabled = enabled;
+      }
+
+      if (!BeeUtils.isEmpty(label) && enabled) {
+        header.addCommandItem((IdentifiableWidget)
+                DiscussionHelper.renderAction(event, null,
+                        mouseEvent -> doEvent(form, row, event, adminLogin)));
       }
     }
 
-    setEnabled(form, row, isEventEnabled(form, row, DiscussionEvent.MODIFY, status, owner,
-        discussParameters.get(PRM_DISCUSS_ADMIN)));
+    setEnabled(form, row, modifyEnabled);
 
     if (membersSelector != null) {
       membersSelector.setEnabled(!BeeUtils.unbox(row.getBoolean(form.getDataIndex(
@@ -494,7 +489,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       if (DataUtils.isId(row.getLong(form.getDataIndex(ALS_OWNER_PHOTO)))) {
         discussOwnerPhoto.setUrl(PhotoRenderer.getUrl(form.getLongValue(ALS_OWNER_PHOTO)));
       } else {
-        discussOwnerPhoto.setUrl(DEFAULT_PHOTO);
+        discussOwnerPhoto.setUrl(PhotoRenderer.DEFAULT_PHOTO_IMAGE);
       }
     }
   }
@@ -502,6 +497,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new DiscussionInterceptor();
+  }
+
+  @Override
+  public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
+    lastComment.remove(newRow.getId());
   }
 
   @Override
@@ -563,7 +563,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         validTo = TimeUtils.parseTime(validToVal);
       }
 
-      if (!validateDates(validFrom, validTo, event)) {
+      if (!DiscussionHelper.validateDates(validFrom, validTo, event.getCallback())) {
         return;
       }
     }
@@ -606,10 +606,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     boolean maybeAdmin = false;
     Map<String, String> parameters = DiscussionsUtils.getDiscussionsParameters(row);
     if (!BeeUtils.isEmpty(parameters)) {
-      maybeAdmin = isAdmin(parameters.get(PRM_DISCUSS_ADMIN));
+      maybeAdmin = DiscussionHelper.isDiscussionAdmin(parameters.get(PRM_DISCUSS_ADMIN));
     }
 
-    if (!isOwner(getFormView(), row) && !isMember(userId, getFormView(), row) && !maybeAdmin
+    if (!DiscussionHelper.isOwner(row) && !isMember(userId, getFormView(), row) && !maybeAdmin
         && !isPublic(getFormView(), row)) {
       getFormView().getViewPresenter().handleAction(Action.CLOSE);
       BeeKeeper.getScreen().notifySevere(Localized.dictionary().discussPrivateDiscussion());
@@ -623,6 +623,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
+    setLastAccess(row.getId(), modeRenderer.getLastAccess(row, userId));
     ensureMembersSelector(form, row);
     BeeRow visitedRow = DataUtils.cloneRow(row);
 
@@ -677,29 +678,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return false;
   }
 
-  private Widget createEventButton(final FormView form, final IsRow row,
-      final DiscussionEvent event, final String adminLogin) {
-
-    FontAwesome icon = event.getCommandIcon();
-    String label = event.getCommandLabel();
-
-    Widget cmd;
-
-    if (icon != null) {
-      cmd = new FaLabel(icon);
-      cmd.setTitle(label);
-    } else {
-      cmd = new Button(label);
-      cmd.setTitle(label);
-    }
-
-    if (cmd instanceof HasClickHandlers) {
-      ((HasClickHandlers) cmd).addClickHandler(mouseEvent -> doEvent(form, row, event, adminLogin));
-    }
-
-    return cmd;
-  }
-
   private void createMarkPanel(final Flow flowWidget, final FormView form, final IsRow formRow,
       final Long commentId) {
     flowWidget.clear();
@@ -708,7 +686,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return;
     }
 
-    final Integer status = formRow.getInteger(form.getDataIndex(COL_STATUS));
     final Long owner = formRow.getLong(form.getDataIndex(COL_OWNER));
 
     BeeRowSet markTypes = DiscussionsUtils.getMarkTypes(formRow);
@@ -716,7 +693,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (markTypes != null) {
       flowWidget.clear();
       if (!markTypes.isEmpty()) {
-        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, status, markTypes);
+        showDiscussionMarkData(flowWidget, form, formRow, commentId, owner, markTypes);
       }
     }
   }
@@ -764,11 +741,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return row;
   }
 
-  private static boolean isOwner(FormView form, IsRow row) {
-    return BeeKeeper.getUser().getUserId() == BeeUtils.unbox(row.getLong(form.getDataIndex(
-        COL_OWNER)));
-  }
-
   private static void sendRequest(ParameterList params,
       final RpcCallback<ResponseObject> callback) {
 
@@ -787,6 +759,22 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         }
       }
     });
+  }
+
+  private Widget getLastComment(long discussId) {
+    return lastComment.get(discussId) != null ? lastComment.get(discussId) : null;
+  }
+
+  private void setLastComment(long discussId, Widget w) {
+    lastComment.put(discussId, w);
+  }
+
+  private Long getLastAccess(long discussId) {
+    return lastAccess.get(discussId) != null ? lastAccess.get(discussId) : null;
+  }
+
+  private void setLastAccess(long discussId, Long access) {
+    lastAccess.put(discussId, BeeUtils.max(access, getLastAccess(discussId)));
   }
 
   private void sendRequest(ParameterList params, final DiscussionEvent event) {
@@ -827,11 +815,16 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         commentRow.getLong(DataUtils.getColumnIndex(COL_PUBLISHER, columns)));
 
     Long ownerId = formRow.getLong(getFormView().getDataIndex(COL_OWNER));
-    Integer statusId = formRow.getInteger(getFormView().getDataIndex(COL_STATUS));
 
     Flow container = new Flow();
     container.addStyleName(STYLE_COMMENT_ROW);
     container.addStyleName(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+
+    Long lastCommentId = formRow.getPropertyLong(PROP_LAST_COMMENT);
+
+    if (DataUtils.isId(lastCommentId) && lastCommentId == commentRow.getId()) {
+      setLastComment(formRow.getId(), container);
+    }
 
     if (paddingLeft * COMMENT_ROW_PADDING_FACTOR <= MAX_COMMENT_ROW_PADDING_LEFT) {
       container.getElement().getStyle().setPaddingLeft(paddingLeft * COMMENT_ROW_PADDING_FACTOR,
@@ -867,8 +860,16 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         commentRow.getDateTime(DataUtils.getColumnIndex(COL_PUBLISH_TIME, columns));
 
     if (publishTime != null) {
-      colPublisher.add(createCommentCell(COL_PUBLISH_TIME, Format.getDefaultDateTimeFormat()
-          .format(publishTime)));
+      colPublisher.add(createCommentCell(COL_PUBLISH_TIME,
+              DiscussionHelper.renderDateTime(publishTime)));
+
+      if (BeeUtils.isMore(publishTime.getTime(), getLastAccess(formRow.getId()))) {
+        container.addStyleName(STYLE_COMMENT_ROW + PROP_LAST_COMMENT);
+      } else {
+        container.removeStyleName(STYLE_COMMENT_ROW + PROP_LAST_COMMENT);
+      }
+    } else {
+      container.removeStyleName(STYLE_COMMENT_ROW + PROP_LAST_COMMENT);
     }
 
     container.add(colPublisher);
@@ -897,14 +898,14 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     colActions.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS);
 
     if (!deleted
-        && isEventEnabled(getFormView(), formRow, DiscussionEvent.REPLY, statusId, ownerId,
-            false)) {
+        && isEventEnabled(getFormView(), formRow, DiscussionEvent.REPLY,
+            DiscussionHelper.getStatus(formRow), ownerId, false)) {
       renderReply(formRow, commentRow, colActions);
     }
 
     if (!deleted
-        && isEventEnabled(getFormView(), formRow, DiscussionEvent.COMMENT_DELETE, statusId,
-            ownerId, false, discussAdmin,
+        && isEventEnabled(getFormView(), formRow, DiscussionEvent.COMMENT_DELETE,
+            DiscussionHelper.getStatus(formRow), ownerId, false, discussAdmin,
             isCommentOwner && BeeUtils.toBoolean(allowDelOwnComments))) {
       renderTrash(commentRow, colActions);
     }
@@ -955,8 +956,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
 
       if (isPublic != null) {
-        isPublic.setEnabled(isOwner(form, row));
-        isPublic.setVisible(isOwner(form, row));
+        isPublic.setEnabled(DiscussionHelper.isOwner(row));
+        isPublic.setVisible(DiscussionHelper.isOwner(row));
 
       }
     } else {
@@ -966,7 +967,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (relationsDisclosure != null) {
       relationsDisclosure.setVisible(enabled
           || (hasRelData || !BeeUtils.isEmpty(DataUtils.parseIdList(row
-              .getProperty(PROP_MEMBERS))) || isOwner(form, row)));
+              .getProperty(PROP_MEMBERS))) || DiscussionHelper.isOwner(row)));
     }
 
     if (descriptionDisclosure != null) {
@@ -1026,15 +1027,17 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (panel.getWidgetCount() > 0 && DomUtils.isVisible(form.getElement())) {
-      final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
-      Scheduler.get().scheduleDeferred(() -> DomUtils.scrollIntoView(last.getElement()));
+      final Widget last = getLastComment(formRow.getId()) != null ? getLastComment(formRow.getId())
+              : null;
+      if (last != null) {
+        Scheduler.get().scheduleDeferred(() -> DomUtils.scrollIntoView(last.getElement()));
+      }
     }
 
   }
 
   private void showDiscussionMarkData(final Flow flowWidget, final FormView form,
-      final IsRow formRow, final Long commentId, final Long owner, final Integer status,
-      final BeeRowSet result) {
+      final IsRow formRow, final Long commentId, final Long owner, final BeeRowSet result) {
 
     final SimpleRowSet markData = DiscussionsUtils.getMarkData(formRow);
 
@@ -1049,8 +1052,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     boolean enabled =
-        isEventEnabled(form, formRow, DiscussionEvent.MARK, status, owner, false)
-            && !DiscussionsUtils.hasOneMark(userId, commentId, markData);
+        isEventEnabled(form, formRow, DiscussionEvent.MARK, DiscussionHelper.getStatus(formRow),
+                owner, false) && !DiscussionsUtils.hasOneMark(userId, commentId, markData);
 
     int i = 0;
     for (IsRow markRow : result.getRows()) {
@@ -1238,7 +1241,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void doEdit(FormView form, IsRow row) {
     String formName =
-        DiscussionsUtils.isAnnouncement(form, row) ? FORM_NEW_ANNOUNCEMENT : FORM_NEW_DISCUSSION;
+        DiscussionHelper.isAnnouncement(form, row) ? FORM_NEW_ANNOUNCEMENT : FORM_NEW_DISCUSSION;
 
     RowEditor.openForm(formName, form.getViewName(), row, Opener.MODAL,
         new RowCallback() {
@@ -1255,7 +1258,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void doEvent(FormView form, IsRow row, DiscussionEvent event, String adminLogin) {
-    if (!isEventEnabled(form, row, event, getStatus(), getOwner(), adminLogin)) {
+    if (!isEventEnabled(form, row, event, DiscussionHelper.getStatus(row), getOwner(),
+            adminLogin)) {
       showError(Localized.dictionary().actionNotAllowed());
     }
 
@@ -1314,7 +1318,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     if (isPublic != null) {
-      isPublic.setEnabled(BeeUtils.unbox(publicValue) || isOwner(form, row));
+      isPublic.setEnabled(BeeUtils.unbox(publicValue) || DiscussionHelper.isOwner(row));
     }
 
     if (BeeUtils.isTrue(publicValue)) {
@@ -1350,43 +1354,42 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return getLong(COL_OWNER);
   }
 
-  private Integer getStatus() {
-    return getFormView().getActiveRow().getInteger(getFormView().getDataIndex(COL_STATUS));
-  }
-
-  private boolean isEventEnabled(FormView form, IsRow row, DiscussionEvent event, Integer status,
-      Long owner, String adminLogin) {
+  private boolean isEventEnabled(FormView form, IsRow row, DiscussionEvent event,
+                                 DiscussionStatus status,  Long owner, String adminLogin) {
     return isEventEnabled(form, row, event, status, owner, true, adminLogin, false);
   }
 
-  private boolean isEventEnabled(FormView form, IsRow row, DiscussionEvent event, Integer status,
-      Long owner, boolean showInHeader) {
+  private boolean isEventEnabled(FormView form, IsRow row, DiscussionEvent event,
+                                 DiscussionStatus status,  Long owner, boolean showInHeader) {
     return isEventEnabled(form, row, event, status, owner, showInHeader, "", false);
   }
 
-  private boolean isEventEnabled(FormView form, IsRow row, DiscussionEvent event, Integer status,
-      Long owner, boolean showInHeader, String adminLogin, boolean allowDelOwnComments) {
+  private boolean isEventEnabled(FormView form, IsRow row, DiscussionEvent event,
+                                 DiscussionStatus status, Long owner, boolean showInHeader,
+                                 String adminLogin, boolean allowDelOwnComments) {
 
     if (event == null || status == null || owner == null
-        || (!isMember(userId, form, row) && !isPublic(form, row) && !isAdmin(adminLogin))) {
+        || (!isMember(userId, form, row) && !isPublic(form, row)
+            && !DiscussionHelper.isDiscussionAdmin(adminLogin))) {
 
       return false;
     }
 
     switch (event) {
       case ACTIVATE:
-        return (DiscussionStatus.in(status, DiscussionStatus.INACTIVE) && isAdmin(adminLogin))
+        return (DiscussionStatus.in(status, DiscussionStatus.INACTIVE)
+                && DiscussionHelper.isDiscussionAdmin(adminLogin))
             || (DiscussionStatus.in(status, DiscussionStatus.CLOSED, DiscussionStatus.INACTIVE)
-            && (isOwner(form, row) || isAdmin(adminLogin)));
+            && (DiscussionHelper.isOwner(row) || DiscussionHelper.isDiscussionAdmin(adminLogin)));
       case CLOSE:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
-            && (isOwner(form, row) || isAdmin(adminLogin));
+            && (DiscussionHelper.isOwner(row) || DiscussionHelper.isDiscussionAdmin(adminLogin));
       case COMMENT:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE);
       case COMMENT_DELETE:
         return !showInHeader
             && DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
-            && (isAdmin(adminLogin) || allowDelOwnComments);
+            && (DiscussionHelper.isDiscussionAdmin(adminLogin) || allowDelOwnComments);
       case CREATE:
       case CREATE_MAIL:
         return false;
@@ -1399,7 +1402,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         boolean hasComments =
             BeeUtils.isPositive(row.getInteger(form.getDataIndex(COL_COMMENT_COUNT)));
         boolean hasMarks = BeeUtils.isPositiveInt(row.getProperty(PROP_MARK_COUNT));
-        return (isOwner(form, row) || isAdmin(adminLogin)) && !(hasComments || hasMarks);
+        return (DiscussionHelper.isOwner(row) || DiscussionHelper.isDiscussionAdmin(adminLogin))
+                && !(hasComments || hasMarks);
       case REPLY:
         return DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && !showInHeader;
@@ -1410,13 +1414,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     return false;
-  }
-
-  private static boolean isAdmin(String loginName) {
-    if (BeeUtils.isEmpty(loginName)) {
-      return false;
-    }
-    return BeeUtils.same(loginName, BeeKeeper.getUser().getLogin());
   }
 
   private static boolean isMember(Long user, FormView form, IsRow row) {
@@ -1442,6 +1439,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
 
     FormView form = getFormView();
+    setLastAccess(data.getId(), modeRenderer.getLastAccess(data, userId));
 
     String comments = data.getProperty(PROP_COMMENTS);
 
@@ -1450,6 +1448,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       showCommentsAndMarks(form, form.getActiveRow(), BeeRowSet.restore(comments), files);
     }
 
+    form.updateRow(data, true);
   }
 
   private static void renderFiles(List<FileInfo> files, Flow container) {
@@ -1518,62 +1517,31 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       Flow container) {
     Long photo =
         commentRow.getLong(DataUtils.getColumnIndex(COL_PHOTO, commentColumns));
-    Image image = new Image(DataUtils.isId(photo) ? PhotoRenderer.getUrl(photo) : DEFAULT_PHOTO);
+    Image image = new Image(DataUtils.isId(photo) ? PhotoRenderer.getUrl(photo)
+            : PhotoRenderer.DEFAULT_PHOTO_IMAGE);
     image.addStyleName(STYLE_COMMENT + STYLE_PHOTO);
     container.add(image);
 
   }
 
   private void renderReply(final IsRow formRow, IsRow commentRow, Flow container) {
-    String label = DiscussionEvent.REPLY.getCommandLabel();
-    FontAwesome icon = DiscussionEvent.REPLY.getCommandIcon();
-
-    Widget widgetReply;
-
-    if (icon != null) {
-      widgetReply = new FaLabel(icon);
-      widgetReply.setTitle(label);
-    } else {
-      widgetReply = new Button(label);
-      widgetReply.setTitle(label);
-    }
-    widgetReply.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-    widgetReply.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
-    widgetReply.setTitle(Localized.dictionary().discussActionReply());
 
     final long commentId = commentRow.getId();
 
-    if (widgetReply instanceof HasClickHandlers) {
-      ((HasClickHandlers) widgetReply).addClickHandler(event -> doComment(formRow, commentId));
-    }
+    DiscussionHelper.renderAction(DiscussionEvent.REPLY, container,
+            event -> doComment(formRow, commentId), DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS,
+            STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_REPLY);
 
-    container.add(widgetReply);
+
   }
 
   private void renderTrash(IsRow commentRow, Flow container) {
-    String label = DiscussionEvent.COMMENT_DELETE.getCommandLabel();
-    FontAwesome icon = DiscussionEvent.COMMENT_DELETE.getCommandIcon();
 
-    Widget widgetTrash;
-
-    if (icon != null) {
-      widgetTrash = new FaLabel(icon);
-      widgetTrash.setTitle(label);
-    } else {
-      widgetTrash = new Button(label);
-      widgetTrash.setTitle(label);
-    }
-
-    widgetTrash.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS);
-    widgetTrash.addStyleName(STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
-    widgetTrash.setTitle(Localized.dictionary().actionDelete());
     final long commentId = commentRow.getId();
 
-    if (widgetTrash instanceof HasClickHandlers) {
-      ((HasClickHandlers) widgetTrash).addClickHandler(event -> doCommentDelete(commentId));
-    }
-
-    container.add(widgetTrash);
+    DiscussionHelper.renderAction(DiscussionEvent.COMMENT_DELETE, container,
+            event -> doCommentDelete(commentId), DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS,
+            STYLE_COMMENT_COL + STYLE_ACTIONS + STYLE_TRASH);
   }
 
   private void requeryComments(final long discussionId) {
@@ -1627,42 +1595,5 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         });
       });
     }
-  }
-
-  private static boolean validateDates(Long from, Long to,
-      final SaveChangesEvent event) {
-    long now = System.currentTimeMillis();
-
-    if (from == null && to == null) {
-      event.getCallback().onFailure(
-          BeeUtils.joinWords(Localized.dictionary().displayInBoard(), Localized.dictionary()
-              .enterDate()));
-      return false;
-    }
-
-    if (from == null && to != null) {
-      if (to >= now) {
-        return true;
-      }
-    }
-
-    if (from != null && to == null) {
-      if (from <= now) {
-        return true;
-      }
-    }
-
-    if (from != null && to != null) {
-      if (from <= to) {
-        return true;
-      } else {
-        event.getCallback().onFailure(
-            BeeUtils.joinWords(Localized.dictionary().displayInBoard(),
-                Localized.dictionary().crmFinishDateMustBeGreaterThanStart()));
-        return false;
-      }
-    }
-
-    return true;
   }
 }

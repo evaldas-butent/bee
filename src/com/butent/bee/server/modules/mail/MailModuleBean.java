@@ -63,7 +63,6 @@ import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -624,8 +623,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       String sender = params.get(COL_SENDER);
       String recipient = params.get(MailConstants.COL_ADDRESS);
       String subject = params.get(COL_SUBJECT);
-      JustDate dateFrom = TimeUtils.toDateOrNull(params.get(Service.VAR_FROM));
-      JustDate dateTo = TimeUtils.toDateOrNull(params.get(Service.VAR_TO));
+      DateTime dateFrom = TimeUtils.toDateTimeOrNull(params.get(Service.VAR_FROM));
+      DateTime dateTo = TimeUtils.toDateTimeOrNull(params.get(Service.VAR_TO));
       String content = params.get(COL_CONTENT);
 
       SqlSelect query = new SqlSelect().setDistinctMode(true)
