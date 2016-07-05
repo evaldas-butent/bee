@@ -59,6 +59,11 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
+import com.butent.bee.shared.modules.mail.MailConstants.RuleAction;
+import com.butent.bee.shared.modules.mail.MailConstants.RuleCondition;
+import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
@@ -859,6 +864,77 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
         return new SqlSelect().addConstant(0, "dummy").setWhere(SqlUtils.sqlFalse());
       }
+    });
+
+    BeeView.registerConditionProvider(FILTER_MAIL_REPORT, new BeeView.ConditionProvider() {
+
+      @Override
+      public IsCondition getCondition(BeeView view, List<String> args) {
+        if (view == null) {
+          return null;
+        }
+
+        String aSndrEmails = SqlUtils.uniqueName();
+        String aRecpEmails = SqlUtils.uniqueName();
+
+        SqlSelect query = new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES))
+            .addFrom(TBL_MESSAGES)
+            .addFromLeft(TBL_PARTS, sys.joinTables(TBL_MESSAGES, TBL_PARTS, COL_MESSAGE))
+            .addFromLeft(TBL_EMAILS, aSndrEmails, sys.joinTables(TBL_EMAILS, aSndrEmails,
+                TBL_MESSAGES,
+                MailConstants.COL_SENDER))
+            .addFromLeft(TBL_RECIPIENTS, sys.joinTables(TBL_MESSAGES, TBL_RECIPIENTS,
+                COL_MESSAGE))
+            .addFromLeft(TBL_EMAILS, aRecpEmails, sys.joinTables(TBL_EMAILS, aRecpEmails,
+                TBL_RECIPIENTS,
+                MailConstants.COL_ADDRESS))
+            .addFromLeft(TBL_PLACES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
+            .addFromLeft(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
+            .addFromLeft(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS,
+                MailConstants.COL_ACCOUNT));
+
+        HasConditions clause = SqlUtils.and();
+
+        clause.add(SqlUtils.isNull(MailConstants.TBL_ACCOUNTS,
+            MailConstants.COL_ACCOUNT_PRIVATE));
+
+        for (int i = 0; i < args.size() - 1; i += 2) {
+          String key = args.get(i);
+          String value = args.get(i + 1);
+
+          if (BeeUtils.isEmpty(key) || BeeUtils.isEmpty(value)) {
+            continue;
+          }
+
+          switch (key) {
+            case MailConstants.COL_SENDER_EMAIL:
+              clause.add(SqlUtils.contains(aSndrEmails, COL_EMAIL, value));
+              break;
+            case MailConstants.COL_RECIPIENT_EMAIL:
+              clause.add(SqlUtils.contains(aRecpEmails, COL_EMAIL, value));
+              break;
+            case MailConstants.COL_SUBJECT:
+              clause.add(SqlUtils.contains(TBL_MESSAGES, COL_SUBJECT, value));
+              break;
+            case MailConstants.COL_CONTENT:
+              clause.add(SqlUtils.contains(TBL_PARTS, COL_CONTENT, value));
+              break;
+            case MailConstants.COL_ATTACHMENT_COUNT:
+              clause.add(SqlUtils.more(TBL_MESSAGES, COL_ATTACHMENT_COUNT, BeeConst.STRING_ZERO));
+              break;
+            case Service.VAR_FROM:
+              clause.add(SqlUtils.moreEqual(TBL_MESSAGES, COL_DATE, value));
+              break;
+            case Service.VAR_TO:
+              clause.add(SqlUtils.lessEqual(TBL_MESSAGES, COL_DATE, value));
+              break;
+          }
+        }
+
+        return SqlUtils.in(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES), query.setWhere(clause));
+      }
+
     });
   }
 

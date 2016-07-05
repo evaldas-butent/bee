@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Columns xmlns="http://www.butent.com/view">
+  <IdColumn name="Message" />
+  <SimpleColumn name="Date" />
+  <SimpleColumn name="Subject" />
+  <SimpleColumn name="AttachmentCount" />
+
+  <SimpleJoin name="Sender" joinType="LEFT">
+    <SimpleColumn name="Email" alias="SenderEmail" label="=mailSender" />
+  </SimpleJoin>
+</Columns>

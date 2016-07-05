@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY lbl "width: 80px; margin: auto 10px auto 25px; text-align: right;">
+  <!ENTITY idt "width: 240px;">
+  <!ENTITY it "width: 240px;">
+  <!ENTITY topStyle "margin-top: 10px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+  name="MailReport" caption="=mails">
+  <FlowPanel class="flexBox-vertical">
+
+    <FlowPanel class="flexBox-horizontal" style="&topStyle;">
+      <Label text="=mailFrom" style="&lbl;" />
+      <InputText name="MailFrom" style="&it;" />
+
+      <Label text="=mailTo" style="&lbl;" />
+      <InputText name="MailTo" style="&it;" />
+    </FlowPanel>
+
+    <FlowPanel class="flexBox-horizontal" style="&topStyle;">
+      <Label text="=mailSubject" style="&lbl;" />
+      <InputText name="MailSubject" style="&it;" />
+
+      <Label text="=keywords" style="&lbl;" />
+      <InputText name="MailKeywords" style="&it;" />
+    </FlowPanel>
+
+    <FlowPanel class="flexBox-horizontal" style="&topStyle;">
+      <Label text="=dateFrom" style="&lbl;" />
+      <InputDateTime name="StartDate" style="&idt;" />
+
+      <Label text="=dateTo" style="&lbl;" />
+      <InputDateTime name="EndDate" style="&idt;" />
+    </FlowPanel>
+
+    <FlowPanel class="flexBox-horizontal" style="&topStyle;">
+      <CheckBox name="MailHasAttachments" style="margin: auto 10px auto 90px;"/>
+      <Label text="=mailHasAttachments" />
+    </FlowPanel>
+    <br/>
+    <FlowPanel name="DataContainer" class="flexible"
+      style="position: relative; min-height: 150px; overflow: auto;" />
+  </FlowPanel>
+</f:Form>
