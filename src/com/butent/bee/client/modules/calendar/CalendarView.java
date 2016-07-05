@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
+import com.butent.bee.client.modules.calendar.event.CopyEvent;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.event.UpdateEvent;
 import com.butent.bee.shared.Pair;
@@ -76,6 +77,10 @@ public abstract class CalendarView {
   }
 
   public abstract Pair<DateTime, Long> resolveCoordinates(int x, int y);
+
+  public void copyAppointment(Appointment appointment, DateTime newStart, DateTime newEnd) {
+    CopyEvent.fire(getCalendarWidget(), appointment, newStart, newEnd);
+  }
 
   public void updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,
       int oldColumnIndex, int newColumnIndex) {

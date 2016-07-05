@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.calendar.dnd;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -28,7 +30,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MonthMoveController implements MoveEvent.Handler {
+public class MonthMoveController implements MoveEvent.Handler, Event.NativePreviewHandler {
 
   private static final int START_SENSITIVITY_PIXELS = 3;
 
@@ -36,6 +38,8 @@ public class MonthMoveController implements MoveEvent.Handler {
   private static final int HEIGHT_RESERVE_PIXELS = 3;
 
   private static final int SELECTED_TODO = -2;
+
+  private boolean copying;
 
   private final MonthView monthView;
 
@@ -59,10 +63,13 @@ public class MonthMoveController implements MoveEvent.Handler {
   private int selectedRow = BeeConst.UNDEF;
   private int selectedColumn = BeeConst.UNDEF;
 
+  private Element sourceWidget;
+
   private final Map<String, String> overflow = new HashMap<>();
 
   public MonthMoveController(MonthView monthView) {
     this.monthView = monthView;
+    Event.addNativePreviewHandler(this);
   }
 
   @Override
@@ -104,8 +111,18 @@ public class MonthMoveController implements MoveEvent.Handler {
       updatePosition();
 
     } else if (event.isFinished()) {
+
+      if (sourceWidget != null) {
+        sourceWidget.removeFromParent();
+        sourceWidget = null;
+      }
+
       if (getItemWidget() != null) {
-        drop();
+        if (copying) {
+          copyAppointment();
+        } else {
+          drop();
+        }
         setItemWidget(null);
 
         if (!overflow.isEmpty()) {
@@ -166,6 +183,17 @@ public class MonthMoveController implements MoveEvent.Handler {
     monthView.getCalendarWidget().refresh(false);
   }
 
+  private void copyAppointment() {
+    CalendarItem item = getItemWidget().getItem();
+    Appointment itemCopy  = (Appointment) item.copy();
+
+    JustDate date = monthView.getCellDate(getSelectedRow(), getSelectedColumn());
+    DateTime start = TimeUtils.combine(date, item.getStartTime());
+    DateTime end = new DateTime(start.getTime() + item.getDuration());
+    monthView.copyAppointment(itemCopy, start, end);
+
+  }
+
   private int getHeaderHeight() {
     return headerHeight;
   }
@@ -216,6 +244,26 @@ public class MonthMoveController implements MoveEvent.Handler {
 
   private int getTodoWidth() {
     return todoWidth;
+  }
+
+  @Override
+  public void onPreviewNativeEvent(Event.NativePreviewEvent event) {
+    NativeEvent ne = event.getNativeEvent();
+    if (getItemWidget() != null) {
+
+      if (ne.getCtrlKey() && getItemWidget().getItem().getItemType().equals(ItemType.APPOINTMENT)) {
+        this.copying = true;
+        if (getItemWidget() != null) {
+          getItemWidget().addStyleName(CalendarStyleManager.COPY);
+        }
+
+      } else {
+        this.copying = false;
+        if (getItemWidget() != null) {
+          getItemWidget().removeStyleName(CalendarStyleManager.COPY);
+        }
+      }
+    }
   }
 
   private void setItemWidget(ItemWidget itemWidget) {
@@ -280,6 +328,12 @@ public class MonthMoveController implements MoveEvent.Handler {
     setItemWidget(widget);
 
     Widget target = widget.getParent();
+
+    if (sourceWidget == null) {
+      sourceWidget = CalendarUtils.createSourceElement(getItemWidget());
+      target.getElement().appendChild(sourceWidget);
+    }
+
     CalendarPanel panel = CalendarUtils.getCalendarPanel(widget);
 
     setTargetLeft(target.getElement().getAbsoluteLeft());
