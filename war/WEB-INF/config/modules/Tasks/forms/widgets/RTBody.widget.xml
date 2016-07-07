@@ -120,8 +120,15 @@
       <Label for="RemindAt" />
       <InputTimeOfDay source="RemindAt" step="&timeStep;" style="&tod;" />
     </row>
+
+    <row>
+      <Label />
+      <CheckBox source="CopyByMail" text="=mailNotify" />
+      <Label />
+      <CheckBox source="PrivateTask" text="=crmTaskPrivate"/>
+    </row>
   </Table>
   
-  <CheckBox source="CopyByMail" text="=mailNotify" />
+
   
 </FlowPanel>
