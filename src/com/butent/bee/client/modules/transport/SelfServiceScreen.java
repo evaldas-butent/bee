@@ -93,7 +93,7 @@ public class SelfServiceScreen extends ScreenImpl {
     super.start(userData);
 
     Data.setVisibleViews(Sets.newHashSet(VIEW_SHIPMENT_REQUESTS, VIEW_CARGO_HANDLING,
-        VIEW_SHIPMENT_REQUEST_FILES, VIEW_CARGO_INVOICES));
+        VIEW_CARGO_FILES, VIEW_CARGO_INVOICES));
 
     Data.setReadOnlyViews(Collections.singleton(VIEW_CARGO_INVOICES));
 

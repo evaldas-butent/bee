@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="ShipmentRequestFiles" source="ShipmentRequestFiles" module="Transport.SelfService"
-  caption="=files"
-  >
+      name="CargoFiles" source="CargoFiles" module="Transport.SelfService" caption="=files"
+>
   <Columns>
-    <SimpleColumn name="ShipmentRequest" />
+    <SimpleColumn name="Cargo" />
 
     <SimpleColumn name="File" />
     <SimpleJoin name="File" joinType="LEFT">

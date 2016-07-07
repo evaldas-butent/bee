@@ -513,7 +513,7 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void getFileIcons(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_SHIPMENT_REQUEST_FILES)) {
+        if (event.isAfter(VIEW_CARGO_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
         }
       }

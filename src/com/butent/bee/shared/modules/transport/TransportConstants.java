@@ -420,6 +420,7 @@ public final class TransportConstants {
   public static final String VIEW_CARGO_CREDIT_INVOICES = "CargoCreditInvoices";
   public static final String VIEW_CARGO_PURCHASE_INVOICES = "CargoPurchaseInvoices";
   public static final String VIEW_CARGO_INCOMES = "CargoIncomes";
+  public static final String VIEW_CARGO_FILES = "CargoFiles";
 
   public static final String VIEW_CARGO_TYPES = "CargoTypes";
   public static final String VIEW_CARGO_GROUPS = "CargoGroups";
@@ -455,7 +456,6 @@ public final class TransportConstants {
   public static final String VIEW_ASSESSMENT_EXECUTORS = "AssessmentExecutors";
 
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
-  public static final String VIEW_SHIPMENT_REQUEST_FILES = "ShipmentRequestFiles";
 
   public static final String VIEW_TEXT_CONSTANTS = "TextConstants";
 
