@@ -1239,6 +1239,12 @@ public interface Dictionary {
 
   default String crmTaskOutOfObservers() {return g("crmTaskOutOfObservers");}
 
+  default String crmTaskOwnerCanNotBe(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("crmTaskOwnerCanNotBe"), _m);
+  }
+
   default String crmTaskParameters() {return g("crmTaskParameters");}
 
   default String crmTaskPriority() {return g("crmTaskPriority");}

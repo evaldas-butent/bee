@@ -41,6 +41,7 @@ import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dialog.ReminderDialog;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Direction;
@@ -60,7 +61,7 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.*;
 import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.edit.*;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
@@ -70,19 +71,14 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.RelationUtils;
-import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
@@ -122,27 +118,41 @@ class TaskEditor extends ProductSupportInterceptor {
   private static final String STYLE_EVENT_ROW_NEW = STYLE_EVENT_ROW + "-new";
   private static final String STYLE_EVENT_COL = STYLE_EVENT + "col-";
   private static final String STYLE_EVENT_COL_ROW = STYLE_EVENT_COL + "row";
+
   private static final String STYLE_EVENT_FLEX = STYLE_EVENT + "flex";
   private static final String STYLE_EVENT_CREATE_TASK = STYLE_EVENT + "createTask";
   private static final String STYLE_EVENT_FILES = STYLE_EVENT + "files";
-
   private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
   private static final String STYLE_DURATION_CELL = "Cell";
+
   private static final String STYLE_PHOTO = "Photo";
   private static final String STYLE_TASK = CRM_STYLE_PREFIX + "task-";
   private static final String STYLE_TASK_LATE_KIND = STYLE_TASK + "lateKind-";
-
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
   private static final String NAME_OBSERVERS = "Observers";
+
   private static final String NAME_PRIVATE_TASK = "PrivateTask";
   private static final String NAME_LATE_INDICATOR = "LateIndicator";
-
-  private Map<String, Pair<Long, String>> dbaParameters = Maps.newConcurrentMap();
-
   private static final String NAME_TASK_TREE = "TaskTree";
   private static final String NAME_ORDER = "TaskEventsOrder";
 
-  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
+  private final long userId;
+
+  private IdentifiableWidget taskWidget;
+  private IdentifiableWidget taskEventsWidget;
+
+  private Split split;
+
+  private MultiSelector observersSelector;
+  private DataSelector ownerSelector;
+  private DataSelector stagesSelector;
+
+  private TextLabel lateIndicator;
+
+  private List<Long> projectUsers;
+  private Map<String, Pair<Long, String>> dbaParameters = Maps.newConcurrentMap();
+
+  private boolean isDefaultLayout;
 
   private static void addDurationCell(HtmlTable display, int row, int col, String value,
       String style) {
@@ -382,11 +392,9 @@ class TaskEditor extends ProductSupportInterceptor {
     String photoUrl;
 
     Long photo = row.getLong(DataUtils.getColumnIndex(COL_PHOTO, columns));
-    if (!DataUtils.isId(photo)) {
-      photoUrl = DEFAULT_PHOTO_IMAGE;
-    } else {
-      photoUrl = PhotoRenderer.getUrl(photo);
-    }
+
+    photoUrl = DataUtils.isId(photo) ? PhotoRenderer.getUrl(photo)
+            : PhotoRenderer.DEFAULT_PHOTO_IMAGE;
 
     Image image = new Image(photoUrl);
     image.addStyleName(STYLE_EVENT + STYLE_PHOTO);
@@ -577,17 +585,6 @@ class TaskEditor extends ProductSupportInterceptor {
     }
   }
 
-  private final long userId;
-  private MultiSelector observers;
-  private TextLabel lateIndicator;
-  private List<Long> projectUsers;
-
-  Split split;
-  com.google.gwt.xml.client.Element west;
-  IdentifiableWidget taskWidget;
-  IdentifiableWidget taskEventsWidget;
-  private boolean isDefaultLayout;
-
   TaskEditor() {
     super();
     this.isDefaultLayout = BeeKeeper.getUser().getCommentsLayout();
@@ -595,29 +592,16 @@ class TaskEditor extends ProductSupportInterceptor {
   }
 
   @Override
-  public boolean beforeAction(Action action, Presenter presenter) {
-    if (action == Action.SAVE) {
-      return !maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg));
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    super.afterCreateEditableWidget(editableWidget, widget);
+
+    if (BeeUtils.same(editableWidget.getColumnId(), COL_OWNER) && widget instanceof DataSelector) {
+      ownerSelector = (DataSelector) widget;
+      ownerSelector.addSelectorHandler(this::changeTaskOwner);
+    } else if (BeeUtils.same(editableWidget.getColumnId(), ProjectConstants.COL_PROJECT_STAGE)
+            && widget instanceof DataSelector) {
+      stagesSelector = (DataSelector) widget;
     }
-    return true;
-  }
-
-  @Override
-  public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
-
-    if (BeeUtils.same(name, "Split")) {
-      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_TASK_TREE));
-
-      if (BeeUtils.isPositive(size)) {
-
-        west = XmlUtils.getFirstChildElement(description, Direction.WEST.name().toLowerCase());
-
-        if (west != null) {
-          west.setAttribute(UiConstants.ATTR_SIZE, size.toString());
-        }
-      }
-    }
-    return super.beforeCreateWidget(name, description);
   }
 
   @Override
@@ -625,7 +609,7 @@ class TaskEditor extends ProductSupportInterceptor {
       WidgetDescriptionCallback callback) {
 
     if (BeeUtils.same(name, NAME_OBSERVERS) && widget instanceof MultiSelector) {
-      observers = (MultiSelector) widget;
+      observersSelector = (MultiSelector) widget;
     } else if (BeeUtils.same(name, "TabbedPages") && widget instanceof TabbedPages) {
       taskWidget = widget;
 
@@ -694,7 +678,7 @@ class TaskEditor extends ProductSupportInterceptor {
     final FaLabel createDocument = new FaLabel(FontAwesome.FILE_O);
     createDocument.setTitle(Localized.dictionary().documentNew());
     createDocument.addClickHandler(event -> {
-      createDocument.setEnabled(false);
+      setEnabled(createDocument, false);
       ensureDefaultDBAParameters(createDocument, row);
     });
 
@@ -704,8 +688,8 @@ class TaskEditor extends ProductSupportInterceptor {
 
     for (final TaskEvent event : TaskEvent.values()) {
 
-      if (!event.canExecute(getExecutor(), getOwner(), getObservers(), EnumUtils.getEnumByIndex(
-          TaskStatus.class, status))) {
+      if (!event.canExecute(getExecutor(), getOwner(), getObserversSelector(),
+              EnumUtils.getEnumByIndex(TaskStatus.class, status))) {
         continue;
       }
       String label = event.getCommandLabel();
@@ -737,6 +721,33 @@ class TaskEditor extends ProductSupportInterceptor {
     Pair<AbstractSlackRenderer.SlackKind, Long> data = renderer.getMinutes(row);
     setLateIndicatorHtml(data);
     setTaskStatusStyle(header, form, row, data);
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.SAVE) {
+      return !maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg));
+    }
+    return true;
+  }
+
+  @Override
+  public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
+
+    if (BeeUtils.same(name, "Split")) {
+      Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_TASK_TREE));
+
+      if (BeeUtils.isPositive(size)) {
+
+        com.google.gwt.xml.client.Element west = XmlUtils.getFirstChildElement(description,
+                Direction.WEST.name().toLowerCase());
+
+        if (west != null) {
+          west.setAttribute(UiConstants.ATTR_SIZE, size.toString());
+        }
+      }
+    }
+    return super.beforeCreateWidget(name, description);
   }
 
   private static void setTaskStatusStyle(HeaderView header, FormView form, IsRow row,
@@ -783,8 +794,11 @@ class TaskEditor extends ProductSupportInterceptor {
 
   @Override
   public boolean isRowEditable(IsRow row) {
-    return row != null && (BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)))
-        || BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_EXECUTOR))));
+    return row != null
+            && (BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)))
+            || BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_EXECUTOR)))
+            || BeeKeeper.getUser().is(row.getLong(getDataIndex(ALS_PROJECT_OWNER)))
+            || BeeKeeper.getUser().isAdministrator());
   }
 
   @Override
@@ -868,7 +882,7 @@ class TaskEditor extends ProductSupportInterceptor {
     TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
         row.getInteger(form.getDataIndex(COL_STATUS)));
 
-    form.setEnabled(Objects.equals(owner, userId));
+    setEnabled(form, Objects.equals(owner, userId));
 
     TaskStatus newStatus = oldStatus;
 
@@ -943,60 +957,6 @@ class TaskEditor extends ProductSupportInterceptor {
       }
     });
     return false;
-  }
-
-  private static void setProjectStagesFilter(FormView form, IsRow row) {
-    int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
-    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
-    /* int idxTaskState = form.getDataIndex(COL_STATUS); */
-    int idxProjectStatus = form.getDataIndex(ALS_PROJECT_STATUS);
-
-    if (BeeConst.isUndef(idxProjectOwner)) {
-      return;
-    }
-
-    if (BeeConst.isUndef(idxProject)) {
-      return;
-    }
-
-    Widget wProjectStage = form.getWidgetBySource(ProjectConstants.COL_PROJECT_STAGE);
-
-    if (wProjectStage instanceof DataSelector) {
-      ((DataSelector) wProjectStage).setEnabled(false);
-    } else {
-      return;
-    }
-
-    /*
-     * if (BeeConst.isUndef(idxTaskState)) { return; }
-     */
-
-    if (BeeConst.isUndef(idxProjectStatus)) {
-      return;
-    }
-
-    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
-    long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
-    long projectId = BeeUtils.unbox(row.getLong(idxProject));
-    /* int state = BeeUtils.unbox(row.getInteger(idxTaskState)); */
-    int projectStatus = BeeUtils.unbox(row.getInteger(idxProjectStatus));
-
-    if (currentUser != projectOwner) {
-      return;
-    }
-
-    /*
-     * if (TaskStatus.SCHEDULED.ordinal() != state) { return; }
-     */
-
-    if (ProjectStatus.APPROVED.ordinal() == projectStatus) {
-      return;
-    }
-
-    ((DataSelector) wProjectStage).getOracle().setAdditionalFilter(
-        Filter.equals(ProjectConstants.COL_PROJECT, projectId), true);
-    ((DataSelector) wProjectStage).setEnabled(true);
-
   }
 
   public void createDocument(final FileInfo fileInfo, final IsRow row) {
@@ -1082,6 +1042,14 @@ class TaskEditor extends ProductSupportInterceptor {
     }
   }
 
+  private static void addObserver(FormView form, IsRow row, Long userId) {
+    Set<Long> observers = DataUtils.parseIdSet(row.getProperty(PROP_OBSERVERS));
+
+    observers.add(userId);
+    row.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
+    form.refreshBySource(PROP_OBSERVERS);
+  }
+
   private static BeeRowSet getEvents(IsRow row) {
     if (!BeeUtils.isEmpty(row.getProperty(PROP_EVENTS))) {
       return BeeRowSet.restore(row.getProperty(PROP_EVENTS));
@@ -1090,13 +1058,75 @@ class TaskEditor extends ProductSupportInterceptor {
     return Data.createRowSet(VIEW_TASK_EVENTS);
   }
 
+  private static FaLabel getOrderLabelInfo() {
+    FaLabel label =
+            readBoolean(NAME_ORDER) ? new FaLabel(FontAwesome.SORT_NUMERIC_ASC) : new FaLabel(
+                    FontAwesome.SORT_NUMERIC_DESC);
+    label.setTitle(readBoolean(NAME_ORDER) ? Localized.dictionary().crmTaskCommentsAsc()
+            : Localized.dictionary().crmTaskCommentsDesc());
+
+    return label;
+  }
+
+  private static void resetField(FormView form, IsRow oldRow, IsRow newRow, String column) {
+    DataInfo tasksView = Data.getDataInfo(VIEW_TASKS);
+    int idxColumn = form.getDataIndex(column);
+
+    if (BeeConst.isUndef(idxColumn)) {
+      return;
+    }
+
+    newRow.setValue(idxColumn, oldRow.getValue(idxColumn));
+
+    for (ViewColumn col : tasksView.getDescendants(column, true)) {
+      int idxCol = form.getDataIndex(col.getName());
+
+      if (BeeConst.isUndef(idxCol)) {
+        continue;
+      }
+
+
+      newRow.setValue(idxCol, oldRow.getValue(idxCol));
+    }
+
+
+
+    form.refreshBySource(column);
+  }
+
+  private static void setEnabled(HasEnabled widget, boolean enabled) {
+    if (widget == null) {
+      return;
+    }
+
+    widget.setEnabled(enabled);
+  }
+
+  private static void setSelectorFilter(DataSelector selector, Filter filter) {
+    if (selector == null) {
+      return;
+    }
+
+    selector.getOracle().setAdditionalFilter(filter, true);
+  }
+
+
   private void createCellValidationHandler(FormView form, IsRow row) {
 
     if (form == null || row == null) {
       return;
     }
 
-    form.addCellValidationHandler(NAME_PRIVATE_TASK, event -> isOwner());
+    form.addCellValidationHandler(NAME_PRIVATE_TASK, event -> {
+      boolean canModify = isOwner();
+      IsRow oldRow = form.getOldRow();
+      int idxOwner = form.getDataIndex(COL_OWNER);
+
+      if (oldRow != null && !BeeConst.isUndef(idxOwner)) {
+        canModify = canModify || Objects.equals(userId, oldRow.getLong(idxOwner));
+      }
+      return canModify;
+    });
   }
 
   private ParameterList createParams(TaskEvent event, BeeRow newRow, String comment) {
@@ -1539,8 +1569,8 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private void doEvent(TaskEvent event) {
 
-    if (!event.canExecute(getExecutor(), getOwner(), getObservers(), EnumUtils.getEnumByIndex(
-        TaskStatus.class, getStatus()))) {
+    if (!event.canExecute(getExecutor(), getOwner(), getObserversSelector(),
+            EnumUtils.getEnumByIndex(TaskStatus.class, getStatus()))) {
       showError(Localized.dictionary().actionNotAllowed());
       return;
     }
@@ -1714,7 +1744,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
       TaskStatus newStatus = TaskStatus.NOT_VISITED;
 
-      /** Forward task itself */
+      /* Forward task itself */
       if (Objects.equals(newUser, userId)) {
         newStatus = TaskStatus.VISITED;
       }
@@ -1817,16 +1847,6 @@ class TaskEditor extends ProductSupportInterceptor {
     return label;
   }
 
-  private static FaLabel getOrderLabelInfo() {
-    FaLabel label =
-        readBoolean(NAME_ORDER) ? new FaLabel(FontAwesome.SORT_NUMERIC_ASC) : new FaLabel(
-            FontAwesome.SORT_NUMERIC_DESC);
-    label.setTitle(readBoolean(NAME_ORDER) ? Localized.dictionary().crmTaskCommentsAsc()
-        : Localized.dictionary().crmTaskCommentsDesc());
-
-    return label;
-  }
-
   private void ensureDefaultDBAParameters(final HasEnabled widget, final IsRow row) {
     if (row == null && dbaParameters == null) {
       return;
@@ -1851,7 +1871,7 @@ class TaskEditor extends ProductSupportInterceptor {
             added++;
             if (added >= MAX_PARAM_COUNT) {
               createDocument(null, row, true);
-              widget.setEnabled(true);
+              setEnabled(widget, true);
             }
           }
         };
@@ -1885,7 +1905,7 @@ class TaskEditor extends ProductSupportInterceptor {
     return row;
   }
 
-  private List<Long> getObservers() {
+  private List<Long> getObserversSelector() {
     return DataUtils.parseIdList(getFormView().getActiveRow().getProperty(PROP_OBSERVERS));
   }
 
@@ -1904,10 +1924,6 @@ class TaskEditor extends ProductSupportInterceptor {
   private boolean isExecutor() {
     return Objects.equals(userId, getExecutor());
   }
-
-  // private boolean isObserver() {
-  // return getObservers().contains(userId);
-  // }
 
   private boolean isOwner() {
     return Objects.equals(userId, getOwner());
@@ -2148,15 +2164,11 @@ class TaskEditor extends ProductSupportInterceptor {
     return menu;
   }
 
-  private void setProjectUsers(List<Long> projectUsers) {
-    this.projectUsers = projectUsers;
-  }
-
-  private void setProjectUsersFilter(final FormView form, IsRow row) {
+  private void setProjectStagesFilter(FormView form, IsRow row) {
     int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
     int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
-
-    setProjectUsers(null);
+    /* int idxTaskState = form.getDataIndex(COL_STATUS); */
+    int idxProjectStatus = form.getDataIndex(ALS_PROJECT_STATUS);
 
     if (BeeConst.isUndef(idxProjectOwner)) {
       return;
@@ -2166,16 +2178,64 @@ class TaskEditor extends ProductSupportInterceptor {
       return;
     }
 
-    final long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
-    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+    setEnabled(stagesSelector, false);
 
-    if (!DataUtils.isId(projectId)) {
+    if (BeeConst.isUndef(idxProjectStatus)) {
       return;
     }
 
-    if (observers != null) {
-      observers.setEnabled(false);
+    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
+    long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+    /* int state = BeeUtils.unbox(row.getInteger(idxTaskState)); */
+    int projectStatus = BeeUtils.unbox(row.getInteger(idxProjectStatus));
+
+    if (currentUser != projectOwner) {
+      return;
     }
+
+    if (ProjectStatus.APPROVED.ordinal() == projectStatus) {
+      return;
+    }
+
+    setSelectorFilter(stagesSelector, Filter.equals(ProjectConstants.COL_PROJECT, projectId));
+    setEnabled(stagesSelector, true);
+  }
+
+  private void setProjectUsers(List<Long> projectUsers) {
+    this.projectUsers = projectUsers;
+  }
+
+  private void setProjectUsersFilter(final FormView form, IsRow row) {
+    int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
+    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+    int idxTaskStatus = form.getDataIndex(COL_STATUS);
+    setProjectUsers(null);
+
+    if (BeeConst.isUndef(idxProjectOwner) || BeeConst.isUndef(idxProject)
+            || BeeConst.isUndef(idxTaskStatus)) {
+      return;
+    }
+
+    final long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+    int taskStatus = BeeUtils.unbox(row.getInteger(idxTaskStatus));
+    boolean validStatus = !TaskStatus.in(taskStatus, TaskStatus.APPROVED, TaskStatus.CANCELED,
+            TaskStatus.COMPLETED, TaskStatus.SUSPENDED);
+
+    boolean canChangeOwner = (isOwner() || BeeKeeper.getUser().isAdministrator())
+            && validStatus;
+
+
+    setEnabled(ownerSelector, canChangeOwner);
+
+    if (!DataUtils.isId(projectId)) {
+      setSelectorFilter(ownerSelector, null);
+      return;
+    }
+
+    setEnabled(observersSelector, false);
+    setEnabled(ownerSelector, canChangeOwner || (projectOwner == userId && validStatus));
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(COL_USER), Filter.isEqual(
@@ -2199,11 +2259,10 @@ class TaskEditor extends ProductSupportInterceptor {
           }
         }
 
-        if (observers != null) {
-          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-          observers.setEnabled(true);
-        }
+        Filter projectTeamFilter = Filter.idIn(userIds);
 
+        setSelectorFilter(observersSelector, projectTeamFilter);
+        setSelectorFilter(ownerSelector, projectTeamFilter);
         setProjectUsers(userIds);
       }
     });
@@ -2212,9 +2271,50 @@ class TaskEditor extends ProductSupportInterceptor {
   private void setEnabledRelations() {
     for (String relation : TaskUtils.TASK_RELATIONS) {
       MultiSelector selector = getMultiSelector(getFormView(), relation);
-      if (selector != null) {
-        selector.setEnabled(true);
-      }
+      setEnabled(selector, true);
     }
+  }
+
+  private void changeTaskOwner(SelectorEvent event) {
+    if (!event.isChanged() || event.getRelatedRow() == null) {
+      return;
+    }
+
+    FormView form = getFormView();
+
+    if (form == null) {
+      return;
+    }
+
+    IsRow row = form.getActiveRow();
+    IsRow oldRow = form.getOldRow();
+
+
+    if (row == null || DataUtils.isNewRow(form.getActiveRow())) {
+      return;
+    }
+
+
+    Long newOwner = event.getValue();
+    Boolean taskPrivate = row.getBoolean(form.getDataIndex(COL_PRIVATE_TASK));
+    UserData userData = Global.getUsers().getUserData(newOwner);
+
+    if (userData == null && oldRow != null) {
+      resetField(form, oldRow, row, COL_OWNER);
+      return;
+    }
+
+    if (!userData.canEditData(VIEW_TASKS)) {
+      form.notifySevere(Localized.dictionary().crmTaskOwnerCanNotBe(userData.getLogin()));
+
+      if (oldRow != null) {
+        resetField(form, oldRow, row, COL_OWNER);
+      }
+    } else if (userData.canEditData(VIEW_TASKS) && BeeUtils.isTrue(taskPrivate) && oldRow != null) {
+      Long oldOwner = oldRow.getLong(form.getDataIndex(COL_OWNER));
+      addObserver(form, row, oldOwner);
+    }
+
+    form.refresh();
   }
 }
