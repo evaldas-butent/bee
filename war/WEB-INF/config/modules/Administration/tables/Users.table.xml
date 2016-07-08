@@ -9,13 +9,11 @@
 
     <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" unique="true"
       label="=companyPerson" />
-    
+
     <Enum name="Interface" key="UserInterface" label="=userInterface" />
-    
+
     <DateTime name="BlockAfter" label="=blockAfter" />
     <DateTime name="BlockBefore" label="=blockBefore" />
-    
-    <Long name="EmployerId" label="Tab.Nr." />
   </Fields>
 
   <Indexes>

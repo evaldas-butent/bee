@@ -1279,7 +1279,7 @@ public class TransportModuleBean implements BeeModule {
         String value = BeeUtils.join("\n", row.getValue(COL_ADDITIONAL_ROUTE),
             BeeUtils.unbox(row.getBoolean(COL_SHOW_ADDITIONAL_ROUTE))
                 ? BeeUtils.join("-", row.getValue(ALS_LOADING_COUNTRY_CODE)
-                    + " (" + ALS_LOADING_COUNTRY_NAME + ")",
+                    + " (" + row.getValue(ALS_LOADING_COUNTRY_NAME) + ")",
                 row.getValue(ALS_UNLOADING_COUNTRY_CODE)
                     + " (" + row.getValue(ALS_UNLOADING_COUNTRY_NAME) + ")")
                 : null);
