@@ -12,7 +12,6 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -76,6 +75,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportUtils;
 import com.butent.bee.shared.news.Feed;
@@ -1051,21 +1051,22 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addExpr(TradeModuleBean.getVatExpression(TBL_TRIP_COSTS), "pvm_suma")
         .addExpr(TradeModuleBean.getWithoutVatExpression(TBL_TRIP_COSTS), "suma_be_pvm")
         .addField(TBL_VEHICLES, "ExternalCode", "car_id")
-        .addExpr(SqlUtils.nvl(SqlUtils.field("alsEmployees", COL_TAB_NUMBER),
-            SqlUtils.field(TBL_EMPLOYEES, COL_TAB_NUMBER)), "tab_nr")
+        .addExpr(SqlUtils.nvl(SqlUtils.field("alsEmployees", PayrollConstants.COL_TAB_NUMBER),
+            SqlUtils.field(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)),
+            "tab_nr")
         .addFields("subq", "dienpinigiai")
         .addFrom(TBL_TRIP_COSTS)
         .addFromInner(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_COSTS, COL_TRIP))
         .addFromLeft(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, TBL_TRIPS, COL_VEHICLE))
         .addFromLeft(TBL_TRIP_DRIVERS, sys.joinTables(TBL_TRIP_DRIVERS, TBL_TRIPS, COL_MAIN_DRIVER))
         .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
-        .addFromLeft(TBL_EMPLOYEES,
-            SqlUtils.joinUsing(TBL_DRIVERS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
+        .addFromLeft(PayrollConstants.TBL_EMPLOYEES,
+            SqlUtils.joinUsing(TBL_DRIVERS, PayrollConstants.TBL_EMPLOYEES, COL_COMPANY_PERSON))
         .addFromLeft(TBL_TRIP_DRIVERS, "alsTripDrivers",
             sys.joinTables(TBL_TRIP_DRIVERS, "alsTripDrivers", TBL_TRIP_COSTS, COL_DRIVER))
         .addFromLeft(TBL_DRIVERS, "alsDrivers",
             sys.joinTables(TBL_DRIVERS, "alsDrivers", "alsTripDrivers", COL_DRIVER))
-        .addFromLeft(TBL_EMPLOYEES, "alsEmployees",
+        .addFromLeft(PayrollConstants.TBL_EMPLOYEES, "alsEmployees",
             SqlUtils.joinUsing("alsEmployees", "alsDrivers", COL_COMPANY_PERSON))
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRIP_COSTS, COL_COSTS_ITEM))
         .addFromInner(TBL_CURRENCIES,
@@ -3400,12 +3401,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
             SqlUtils.field(TBL_PERSONS, COL_LAST_NAME)), COL_FIRST_NAME)
         .addField(TBL_PERSONS, COL_CONTACT, COL_PERSON + COL_CONTACT)
-        .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
-        .addField(TBL_EMPLOYEES, sys.getIdName(TBL_EMPLOYEES), COL_EMPLOYEE)
+        .addFields(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)
+        .addField(PayrollConstants.TBL_EMPLOYEES, sys.getIdName(PayrollConstants.TBL_EMPLOYEES),
+            PayrollConstants.COL_EMPLOYEE)
         .addFrom(TBL_COMPANY_PERSONS)
         .addFromInner(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-        .addFromLeft(TBL_EMPLOYEES,
-            sys.joinTables(TBL_COMPANY_PERSONS, TBL_EMPLOYEES, COL_COMPANY_PERSON))
+        .addFromLeft(PayrollConstants.TBL_EMPLOYEES,
+            sys.joinTables(TBL_COMPANY_PERSONS, PayrollConstants.TBL_EMPLOYEES, COL_COMPANY_PERSON))
         .setWhere(SqlUtils.equals(TBL_COMPANY_PERSONS, COL_COMPANY, company)));
 
     int emplNew = 0;
@@ -3419,23 +3421,23 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     try {
       for (SimpleRow row : rs) {
         tabNr = row.getValue("CODE");
-        SimpleRow info = employees.getRowByKey(COL_TAB_NUMBER, tabNr);
+        SimpleRow info = employees.getRowByKey(PayrollConstants.COL_TAB_NUMBER, tabNr);
 
         if (info == null) {
           info = employees.getRowByKey(COL_FIRST_NAME,
               BeeUtils.joinWords(row.getValue("NAME"), row.getValue("SURNAME")));
 
           if (info != null) {
-            Long id = info.getLong(COL_EMPLOYEE);
+            Long id = info.getLong(PayrollConstants.COL_EMPLOYEE);
 
             if (DataUtils.isId(id)) {
-              qs.updateData(new SqlUpdate(TBL_EMPLOYEES)
-                  .addConstant(COL_TAB_NUMBER, tabNr)
-                  .setWhere(sys.idEquals(TBL_EMPLOYEES, id)));
+              qs.updateData(new SqlUpdate(PayrollConstants.TBL_EMPLOYEES)
+                  .addConstant(PayrollConstants.COL_TAB_NUMBER, tabNr)
+                  .setWhere(sys.idEquals(PayrollConstants.TBL_EMPLOYEES, id)));
             } else {
-              qs.insertData(new SqlInsert(TBL_EMPLOYEES)
+              qs.insertData(new SqlInsert(PayrollConstants.TBL_EMPLOYEES)
                   .addConstant(COL_COMPANY_PERSON, info.getLong(COL_COMPANY_PERSON))
-                  .addConstant(COL_TAB_NUMBER, tabNr));
+                  .addConstant(PayrollConstants.COL_TAB_NUMBER, tabNr));
             }
           }
         }
@@ -3453,9 +3455,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               .addConstant(COL_COMPANY, company)
               .addConstant(COL_PERSON, person));
 
-          qs.insertData(new SqlInsert(TBL_EMPLOYEES)
+          qs.insertData(new SqlInsert(PayrollConstants.TBL_EMPLOYEES)
               .addConstant(COL_COMPANY_PERSON, companyPerson)
-              .addConstant(COL_TAB_NUMBER, tabNr));
+              .addConstant(PayrollConstants.COL_TAB_NUMBER, tabNr));
           emplNew++;
         } else {
           person = info.getLong(COL_PERSON);
@@ -3514,7 +3516,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               ctx.setRollbackOnly();
               sys.eventError(historyId, null,
                   ArrayUtils.join(BeeConst.STRING_EOL, response.getErrors()),
-                  BeeUtils.join(": ", COL_TAB_NUMBER, tabNr));
+                  BeeUtils.join(": ", PayrollConstants.COL_TAB_NUMBER, tabNr));
               return;
             }
             emailId = response.getResponseAsLong();
@@ -3556,8 +3558,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         qs.updateData(new SqlUpdate(TBL_COMPANY_PERSONS)
             .addConstant(COL_DEPARTMENT, departments.get(department))
             .addConstant(COL_POSITION, positions.get(position))
-            .addConstant(COL_DATE_OF_EMPLOYMENT, TimeUtils.parseDate(row.getValue("DIRBA_NUO")))
-            .addConstant(COL_DATE_OF_DISMISSAL, TimeUtils.parseDate(row.getValue("DISMISSED")))
+            .addConstant(PayrollConstants.COL_DATE_OF_EMPLOYMENT,
+                TimeUtils.parseDate(row.getValue("DIRBA_NUO")))
+            .addConstant(PayrollConstants.COL_DATE_OF_DISMISSAL,
+                TimeUtils.parseDate(row.getValue("DISMISSED")))
             .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, companyPerson)));
 
         if (DataUtils.isId(driverPosition) && Objects
@@ -3574,12 +3578,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     } catch (Throwable e) {
       ctx.setRollbackOnly();
-      sys.eventError(historyId, e, BeeUtils.join(": ", COL_TAB_NUMBER, tabNr));
+      sys.eventError(historyId, e, BeeUtils.join(": ", PayrollConstants.COL_TAB_NUMBER, tabNr));
       return;
     }
     sys.eventEnd(historyId, "OK", deptNew > 0 ? companyDepartments + ": +" + deptNew : null,
         posNew > 0 ? TBL_POSITIONS + ": +" + posNew : null,
-        (emplNew + emplUpd) > 0 ? TBL_EMPLOYEES + ":" + (emplNew > 0 ? " +" + emplNew : "")
+        (emplNew + emplUpd) > 0
+            ? PayrollConstants.TBL_EMPLOYEES + ":" + (emplNew > 0 ? " +" + emplNew : "")
             + (emplUpd > 0 ? " " + emplUpd : "") : null,
         drvNew > 0 ? TBL_DRIVERS + ": +" + drvNew : null, cardsInfo);
   }
@@ -3596,10 +3601,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     SimpleRowSet drivers = qs.getData(new SqlSelect()
         .addField(TBL_DRIVERS, sys.getIdName(TBL_DRIVERS), COL_DRIVER)
-        .addFields(TBL_EMPLOYEES, COL_TAB_NUMBER)
+        .addFields(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)
         .addFrom(TBL_DRIVERS)
-        .addFromInner(TBL_EMPLOYEES,
-            SqlUtils.joinUsing(TBL_DRIVERS, TBL_EMPLOYEES, COL_COMPANY_PERSON)));
+        .addFromInner(PayrollConstants.TBL_EMPLOYEES,
+            SqlUtils.joinUsing(TBL_DRIVERS, PayrollConstants.TBL_EMPLOYEES, COL_COMPANY_PERSON)));
 
     Map<String, Long> absenceTypes = getReferences(TBL_ABSENCE_TYPES, COL_ABSENCE_NAME);
 
@@ -3617,8 +3622,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             .setWhere(SqlUtils.equals(TBL_DRIVER_ABSENCE, COL_COSTS_EXTERNAL_ID, id)));
         continue;
       }
-      Long driver = BeeUtils.toLongOrNull(drivers.getValueByKey(COL_TAB_NUMBER, tabNumber,
-          COL_DRIVER));
+      Long driver = BeeUtils.toLongOrNull(drivers.getValueByKey(PayrollConstants.COL_TAB_NUMBER,
+          tabNumber, COL_DRIVER));
 
       if (!DataUtils.isId(driver)) {
         continue;
