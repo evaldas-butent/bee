@@ -87,6 +87,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -479,9 +480,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                 SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)))
         .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, userId),
             SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)),
-            SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
-                SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
-                    MessageFlag.SEEN.getMask()), 0)))));
+            SqlUtils.equals(SqlUtils.bitAnd(SqlUtils.nvl(SqlUtils.field(TBL_PLACES,
+                COL_FLAGS), 0), MessageFlag.SEEN.getMask()), 0))));
   }
 
   @Override
@@ -623,6 +623,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       String sender = params.get(COL_SENDER);
       String recipient = params.get(MailConstants.COL_ADDRESS);
       String subject = params.get(COL_SUBJECT);
+      DateTime dateFrom = TimeUtils.toDateTimeOrNull(params.get(Service.VAR_FROM));
+      DateTime dateTo = TimeUtils.toDateTimeOrNull(params.get(Service.VAR_TO));
       String content = params.get(COL_CONTENT);
 
       SqlSelect query = new SqlSelect().setDistinctMode(true)
@@ -631,24 +633,46 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           .addFromInner(TBL_MESSAGES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE));
 
       HasConditions clause = SqlUtils.and();
+      HasConditions subClause = SqlUtils.and();
+
+      Function<String, IsExpression> xpr = col ->
+          SqlUtils.field(view.getColumnSource(col), view.getColumnField(col));
 
       if (DataUtils.isId(folderId)) {
-        clause.add(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId));
+        clause.add(SqlUtils.equals(xpr.apply(COL_FOLDER), folderId));
+        subClause.add(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId));
       } else {
+        clause.add(SqlUtils.equals(xpr.apply(COL_ACCOUNT), accountId));
+        subClause.add(SqlUtils.equals(TBL_FOLDERS, COL_ACCOUNT, accountId));
         query.addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER));
-        clause.add(SqlUtils.equals(TBL_FOLDERS, COL_ACCOUNT, accountId));
+      }
+      if (Objects.nonNull(dateFrom)) {
+        clause.add(SqlUtils.moreEqual(xpr.apply(COL_DATE), dateFrom));
+        subClause.add(SqlUtils.moreEqual(TBL_MESSAGES, COL_DATE, dateFrom));
+      }
+      if (Objects.nonNull(dateTo)) {
+        clause.add(SqlUtils.lessEqual(xpr.apply(COL_DATE), dateTo));
+        subClause.add(SqlUtils.lessEqual(TBL_MESSAGES, COL_DATE, dateTo));
       }
       if (BeeUtils.toBoolean(params.get(MessageFlag.SEEN.name()))) {
-        clause.add(SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
-            SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
-                MessageFlag.SEEN.getMask()), 0)));
+        clause.add(SqlUtils.equals(SqlUtils.bitAnd(SqlUtils.nvl(xpr.apply(COL_FLAGS), 0),
+            MessageFlag.SEEN.getMask()), 0));
+        subClause.add(SqlUtils.equals(SqlUtils.bitAnd(SqlUtils.nvl(SqlUtils.field(TBL_PLACES,
+            COL_FLAGS), 0), MessageFlag.SEEN.getMask()), 0));
       }
       if (BeeUtils.toBoolean(params.get(MessageFlag.FLAGGED.name()))) {
-        clause.add(SqlUtils.more(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
-            MessageFlag.FLAGGED.getMask()), 0));
+        clause.add(SqlUtils.positive(SqlUtils.bitAnd(xpr.apply(COL_FLAGS),
+            MessageFlag.FLAGGED.getMask())));
+        subClause.add(SqlUtils.positive(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
+            MessageFlag.FLAGGED.getMask())));
       }
       if (BeeUtils.toBoolean(params.get(TBL_ATTACHMENTS))) {
-        clause.add(SqlUtils.more(TBL_MESSAGES, COL_ATTACHMENT_COUNT, 0));
+        clause.add(SqlUtils.positive(xpr.apply(COL_ATTACHMENT_COUNT)));
+        subClause.add(SqlUtils.positive(TBL_MESSAGES, COL_ATTACHMENT_COUNT));
+      }
+      if (!BeeUtils.isEmpty(subject)) {
+        clause.add(SqlUtils.contains(xpr.apply(COL_SUBJECT), subject));
+        subClause.add(SqlUtils.contains(TBL_MESSAGES, COL_SUBJECT, subject));
       }
       if (BeeUtils.anyNotEmpty(sender, content)) {
         query.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_MESSAGES, COL_SENDER))
@@ -657,14 +681,16 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                     SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())));
 
         if (!BeeUtils.isEmpty(sender)) {
-          clause.add(SqlUtils.or(SqlUtils.contains(TBL_EMAILS, COL_EMAIL_ADDRESS, sender),
+          clause.add(SqlUtils.or(SqlUtils.contains(xpr.apply(COL_SENDER + COL_EMAIL_ADDRESS),
+              sender), SqlUtils.contains(xpr.apply(COL_SENDER + COL_EMAIL_LABEL), sender)));
+          subClause.add(SqlUtils.or(SqlUtils.contains(TBL_EMAILS, COL_EMAIL_ADDRESS, sender),
               SqlUtils.contains(TBL_ADDRESSBOOK, COL_EMAIL_LABEL, sender)));
         }
       }
-      String alsMails = SqlUtils.uniqueName();
-      String alsBook = SqlUtils.uniqueName();
-
       if (BeeUtils.anyNotEmpty(recipient, content)) {
+        String alsMails = SqlUtils.uniqueName();
+        String alsBook = SqlUtils.uniqueName();
+
         query.addFromLeft(TBL_RECIPIENTS,
             sys.joinTables(TBL_MESSAGES, TBL_RECIPIENTS, COL_MESSAGE))
             .addFromLeft(TBL_EMAILS, alsMails,
@@ -674,31 +700,29 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                     SqlUtils.equals(alsBook, COL_USER, usr.getCurrentUserId())));
 
         if (!BeeUtils.isEmpty(recipient)) {
-          clause.add(SqlUtils.or(SqlUtils.contains(alsMails, COL_EMAIL_ADDRESS, recipient),
+          subClause.add(SqlUtils.or(SqlUtils.contains(alsMails, COL_EMAIL_ADDRESS, recipient),
               SqlUtils.contains(alsBook, COL_EMAIL_LABEL, recipient)));
         }
-      }
-      if (!BeeUtils.isEmpty(subject)) {
-        clause.add(SqlUtils.contains(TBL_MESSAGES, COL_SUBJECT, subject));
-      }
-      if (!BeeUtils.isEmpty(content)) {
-        query.addFromLeft(TBL_PARTS, sys.joinTables(TBL_MESSAGES, TBL_PARTS, COL_MESSAGE));
-        HasConditions cl = SqlUtils.or();
+        if (!BeeUtils.isEmpty(content)) {
+          query.addFromLeft(TBL_PARTS, sys.joinTables(TBL_MESSAGES, TBL_PARTS, COL_MESSAGE));
+          HasConditions cl = SqlUtils.or();
 
-        if (BeeUtils.isEmpty(sender)) {
-          cl.add(SqlUtils.contains(TBL_EMAILS, COL_EMAIL_ADDRESS, content))
-              .add(SqlUtils.contains(TBL_ADDRESSBOOK, COL_EMAIL_LABEL, content));
+          if (BeeUtils.isEmpty(subject)) {
+            cl.add(SqlUtils.contains(TBL_MESSAGES, COL_SUBJECT, content));
+          }
+          if (BeeUtils.isEmpty(sender)) {
+            cl.add(SqlUtils.contains(TBL_EMAILS, COL_EMAIL_ADDRESS, content))
+                .add(SqlUtils.contains(TBL_ADDRESSBOOK, COL_EMAIL_LABEL, content));
+          }
+          if (BeeUtils.isEmpty(recipient)) {
+            cl.add(SqlUtils.contains(alsMails, COL_EMAIL_ADDRESS, content))
+                .add(SqlUtils.contains(alsBook, COL_EMAIL_LABEL, content));
+          }
+          subClause.add(cl.add(SqlUtils.fullText(TBL_PARTS, COL_CONTENT + "FTS", content)));
         }
-        if (BeeUtils.isEmpty(recipient)) {
-          cl.add(SqlUtils.contains(alsMails, COL_EMAIL_ADDRESS, content))
-              .add(SqlUtils.contains(alsBook, COL_EMAIL_LABEL, content));
-        }
-        if (BeeUtils.isEmpty(subject)) {
-          cl.add(SqlUtils.contains(TBL_MESSAGES, COL_SUBJECT, content));
-        }
-        clause.add(cl.add(SqlUtils.fullText(TBL_PARTS, COL_CONTENT + "FTS", content)));
+        clause.add(SqlUtils.in(TBL_PLACES, sys.getIdName(TBL_PLACES), query.setWhere(subClause)));
       }
-      return SqlUtils.in(TBL_PLACES, sys.getIdName(TBL_PLACES), query.setWhere(clause));
+      return clause;
     });
 
     QueryServiceBean.registerViewDataProvider(VIEW_USER_EMAILS, new ViewDataProvider() {
@@ -825,9 +849,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                     SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)))
             .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, userId),
                 SqlUtils.equals(TBL_ACCOUNT_USERS, COL_USER, userId)),
-                SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
-                    SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
-                        MessageFlag.SEEN.getMask()), 0))));
+                SqlUtils.equals(SqlUtils.bitAnd(SqlUtils.nvl(SqlUtils.field(TBL_PLACES,
+                    COL_FLAGS), 0), MessageFlag.SEEN.getMask()), 0)));
       }
 
       @Override

@@ -11,7 +11,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
@@ -26,14 +25,12 @@ class RowTransformHandler implements RowTransformEvent.Handler {
     if (event.hasView(VIEW_DISCUSSIONS)) {
       event.setResult(BeeUtils.joinWords(DataUtils.join(getDiscussionsViewInfo(), event.getRow(),
           discussionColumns, BeeConst.STRING_SPACE), getDiscussionOwner(event.getRow()),
-          getDiscussionStatus(event.getRow())));
+          getDiscussionStatusCaption(event.getRow())));
     }
   }
 
-  private String getDiscussionStatus(BeeRow row) {
-    DiscussionStatus status =
-        EnumUtils.getEnumByIndex(DiscussionStatus.class, row.getInteger(getDiscussionsViewInfo()
-            .getColumnIndex(COL_STATUS)));
+  private String getDiscussionStatusCaption(BeeRow row) {
+    DiscussionStatus status = DiscussionHelper.getStatus(row);
     return (status == null) ? null : status.getCaption();
   }
 

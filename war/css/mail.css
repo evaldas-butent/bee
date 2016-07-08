@@ -252,8 +252,16 @@
   padding: 10px;
 }
 .bee-mail-SearchPanel .bee-InputText {
-  width: 250px;
+  width: 265px;
   margin-bottom: 10px;
+}
+.bee-mail-SearchPanel .bee-mail-SearchDateFrom, .bee-mail-SearchPanel .bee-mail-SearchDateTo {
+  display: inline;
+  margin-bottom: 10px;
+  width: 127px;
+}
+.bee-mail-SearchDateSeparator:before {
+  content: " - ";
 }
 .bee-mail-SearchStarred, .bee-mail-SearchUnread, .bee-mail-SearchAttachments {
   display: block;

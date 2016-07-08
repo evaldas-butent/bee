@@ -4,8 +4,10 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
@@ -19,6 +21,7 @@ import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -36,8 +39,11 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -95,6 +101,8 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     registerDocumentViews();
     BeeKeeper.getBus().registerDataHandler(INSTANCE, false);
 
+    MenuService.REBUILD_TRADE_STOCK.setHandler(p -> rebuildStock());
+
     if (ModuleAndSub.of(Module.TRADE, SubModule.ACTS).isEnabled()) {
       TradeActKeeper.register();
     }
@@ -133,6 +141,42 @@ public final class TradeKeeper implements HandlesAllDataEvents {
         }
       }
     });
+  }
+
+  private static void rebuildStock() {
+    Global.confirm(Localized.dictionary().rebuildTradeStockCaption(), Icon.WARNING,
+        Collections.singletonList(Localized.dictionary().rebuildTradeStockQuestion()),
+        Localized.dictionary().actionUpdate(), Localized.dictionary().cancel(),
+        () -> {
+          final long startTime = System.currentTimeMillis();
+
+          BeeKeeper.getRpc().makeRequest(createArgs(SVC_REBUILD_STOCK), new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              List<String> messages = new ArrayList<>();
+
+              if (response.hasMessages()) {
+                for (ResponseMessage responseMessage : response.getMessages()) {
+                  messages.add(responseMessage.getMessage());
+                }
+              }
+
+              if (response.hasErrors()) {
+                Global.showError(Localized.dictionary().rebuildTradeStockCaption(), messages);
+
+              } else {
+                if (!messages.isEmpty()) {
+                  messages.add(BeeConst.STRING_EMPTY);
+                }
+                messages.add(BeeUtils.joinWords(
+                    Localized.dictionary().rebuildTradeStockNotification(),
+                    TimeUtils.elapsedSeconds(startTime)));
+
+                Global.showInfo(Localized.dictionary().rebuildTradeStockCaption(), messages);
+              }
+            }
+          });
+        });
   }
 
   private static void registerDocumentViews() {

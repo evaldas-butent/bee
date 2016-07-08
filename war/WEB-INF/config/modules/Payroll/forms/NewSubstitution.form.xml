@@ -12,13 +12,36 @@
   <Table kind="controls">
     <col index="0" kind="label" />
     <col index="2" kind="label" />
-    
+
+    <row>
+      <Label for="SubstituteFor" class="bee-required" />
+      <cell colSpan="3">
+        <DataSelector name="SubstituteFor" source="SubstituteFor" renderColumns="ForFirstName ForLastName"
+          choiceColumns="FirstName LastName CompanyName" filter="!(DateOfDismissal)"
+          style="&w1;" required="true" newRowEnabled="false" visible="true" />
+      </cell>
+    </row>
+
+    <row>
+      <Label for="DateFrom" class="bee-required" />
+      <InputDate name="DateFrom" source="DateFrom" style="&w2;" required="true" visible="true" />
+
+      <Label for="DateUntil" class="bee-required" />
+      <InputDate name="DateUntil" source="DateUntil" style="&w2;" required="true" visible="true" />
+    </row>
+
+    <row class="bee-new-substitution-employee">
+      <cell colSpan="3">
+        <CheckBox name="ShowAvailableEmployees" text="=showAvailableEmployees"/>
+      </cell>
+    </row>
+
     <row class="bee-new-substitution-employee">
       <Label for="Employee" />
-      <cell colSpan="3">
-        <DataSelector source="Employee" renderColumns="FirstName LastName"
-          choiceColumns="FirstName LastName CompanyName" filter="!(DateOfDismissal)"
-          style="&w1;" newRowEnabled="false" visible="true" />
+      <cell colSpan="5">
+        <DataSelector name="Employee" source="Employee" renderColumns="FirstName LastName"
+          choiceColumns="FirstName LastName CompanyName Mobile PersonAddress"
+          style="&w1;" newRowEnabled="false" visible="true" caching="local" />
       </cell>
     </row>
 
@@ -29,23 +52,6 @@
           choiceColumns="LocationName CompanyName" filter="Status 1"
           style="&w1;" newRowEnabled="false" visible="true" />
       </cell>
-    </row>
-
-    <row>
-      <Label for="SubstituteFor" class="bee-required" />
-      <cell colSpan="3">
-        <DataSelector source="SubstituteFor" renderColumns="ForFirstName ForLastName"
-          choiceColumns="FirstName LastName CompanyName" filter="!(DateOfDismissal)"
-          style="&w1;" required="true" newRowEnabled="false" visible="true" />
-      </cell>
-    </row>
-
-    <row>
-      <Label for="DateFrom" />
-      <InputDate source="DateFrom" style="&w2;" />
-
-      <Label for="DateUntil" />
-      <InputDate source="DateUntil" style="&w2;" />
     </row>
     
     <row>

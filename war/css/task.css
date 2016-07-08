@@ -438,3 +438,74 @@ td.bee-crm-taskDialog-filesLabelCell{
 .bee-crm-task-break .bee-misc-Slack-label {
   text-decoration: line-through;
 }
+
+.bee-header-caption_state_not_visited:before {
+  background: #FFFF00;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_not_visited_with_border:before {
+  background: #FFFF00;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state_active:before {
+  background: #5BC0DE;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_active_with_border:before {
+  background: #5BC0DE;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state_suspended:before {
+  background: #EA7F77;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_suspended_with_border:before {
+  background: #EA7F77;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state_completed:before {
+  background: #63A140;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_canceled:before {
+  background: #DF691A;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_visited:before {
+  background: #F1992B;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_visited_with_border:before {
+  background: #F1992B;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state_not_scheduled:before {
+  background: #F0AD4E;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_not_scheduled_with_border:before {
+  background: #F0AD4E;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state:before{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  content: " ";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translate(0, -50%);
+}

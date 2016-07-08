@@ -291,11 +291,11 @@
     <TabbedPages style="height:300px;">
       <page>
         <text>=files</text>
-        <ChildGrid name="ShipmentRequestFiles" relColumn="ShipmentRequest" />
+        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" />
       </page>
       <page>
         <text>=mails</text>
-        <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" paging="true" />
+        <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" />
       </page>
       <page>
         <text>=trOrderCargoServices</text>

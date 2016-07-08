@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-06-23T14:57:38 -->
+<!-- 2016-06-30T14:40:25 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" whenResourceMissingType="Error" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -18,6 +18,7 @@
 	<subDataset name="CargoHandling" whenResourceMissingType="Error" uuid="9f8814a6-b092-4537-b8fb-cac4ca1e4590">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 		<parameter name="d" class="com.butent.bee.shared.i18n.Dictionary"/>
+		<parameter name="qs" class="com.butent.bee.server.data.QueryServiceBean"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -56,6 +57,7 @@
 		<sortField name="DefaultBankAccount" order="Descending"/>
 	</subDataset>
 	<subDataset name="CompanyContacts" whenResourceMissingType="Error" uuid="74f496fd-b1c5-4919-8f26-1275905e21c6">
+		<parameter name="qs" class="com.butent.bee.server.data.QueryServiceBean"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -173,12 +175,9 @@
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						</reportElement>
 						<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-							<datasetRun subDataset="CompanyBankAccounts" uuid="7e61ed8f-c304-4c31-8449-53c8c4c327e4">
+							<datasetRun subDataset="CompanyBankAccounts" uuid="cb9a08d1-55aa-46d1-8842-ee4607bf65c2">
 								<datasetParameter name="d">
 									<datasetParameterExpression><![CDATA[$V{d}]]></datasetParameterExpression>
-								</datasetParameter>
-								<datasetParameter name="REPORT_LOCALE">
-									<datasetParameterExpression><![CDATA[$P{REPORT_LOCALE}]]></datasetParameterExpression>
 								</datasetParameter>
 								<datasetParameter name="REPORT_RESOURCE_BUNDLE">
 									<datasetParameterExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}]]></datasetParameterExpression>
@@ -387,7 +386,10 @@
 							<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
 						</reportElement>
 						<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-							<datasetRun subDataset="CompanyContacts" uuid="76e5bf24-4c0f-469b-a907-45f27a7b6681">
+							<datasetRun subDataset="CompanyContacts" uuid="31e80495-aa83-4cf5-a4da-f29886baf832">
+								<datasetParameter name="qs">
+									<datasetParameterExpression><![CDATA[$V{qs}]]></datasetParameterExpression>
+								</datasetParameter>
 								<dataSourceExpression><![CDATA[new RsDataSource(BeeRowSet.restore($P{CustomerCompanyContacts}))]]></dataSourceExpression>
 							</datasetRun>
 							<jr:listContents height="10" width="275">
@@ -396,7 +398,7 @@
 									<textElement markup="html">
 										<font size="8" isBold="false"/>
 									</textElement>
-									<textFieldExpression><![CDATA["<b>" + $F{Notes} + "</b> " + BeeUtils.joinItems($F{Address}, $F{PostIndex}, $F{CityName}, $F{CountryName})]]></textFieldExpression>
+									<textFieldExpression><![CDATA["<b>" + $F{Notes} + "</b><br>" + BeeUtils.joinItems($F{Address}, $F{PostIndex}, BeeUtils.notEmpty($P{qs}.getLocalizedValue("Cities", "Name", $F{CityName}, $P{REPORT_LOCALE}), $F{CityName}), BeeUtils.notEmpty($P{qs}.getLocalizedValue("Countries", "Name", $F{CountryName}, $P{REPORT_LOCALE}), $F{CountryName}))]]></textFieldExpression>
 								</textField>
 							</jr:listContents>
 						</jr:list>
@@ -557,9 +559,12 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="CargoHandling" uuid="399b5049-906c-4596-9d97-f1aca225fe4e">
+					<datasetRun subDataset="CargoHandling" uuid="4f9f3ad3-df7c-48db-8fa9-8d78f66d9ee1">
 						<datasetParameter name="d">
 							<datasetParameterExpression><![CDATA[$V{d}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="qs">
+							<datasetParameterExpression><![CDATA[$V{qs}]]></datasetParameterExpression>
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[new RsDataSource(BeeRowSet.restore($F{CargoPlaces}))]]></dataSourceExpression>
 					</datasetRun>
@@ -592,7 +597,7 @@
 								<textElement>
 									<font size="7"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$P{d}.cargoLoadingPlace() + ": " + BeeUtils.joinItems($F{LoadingAddress}, $F{LoadingPostIndex}, $F{LoadingCityName}, $F{LoadingCountryName})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$P{d}.cargoLoadingPlace() + ": " + BeeUtils.joinItems($F{LoadingAddress}, $F{LoadingPostIndex}, BeeUtils.notEmpty($P{qs}.getLocalizedValue("Cities", "Name", $F{LoadingCityName}, $P{REPORT_LOCALE}), $F{LoadingCityName}), BeeUtils.notEmpty($P{qs}.getLocalizedValue("Countries", "Name", $F{LoadingCountryName}, $P{REPORT_LOCALE}), $F{LoadingCountryName}))]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true">
 								<reportElement positionType="Float" x="0" y="18" width="195" height="9" isRemoveLineWhenBlank="true" uuid="6a5619fe-4101-445d-849f-e7b084fa8f15">
@@ -647,7 +652,7 @@
 								<textElement>
 									<font size="7"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$P{d}.cargoUnloadingPlace() + ": " + BeeUtils.joinItems($F{UnloadingAddress}, $F{UnloadingPostIndex}, $F{UnloadingCityName}, $F{UnloadingCountryName})]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$P{d}.cargoUnloadingPlace() + ": " + BeeUtils.joinItems($F{UnloadingAddress}, $F{UnloadingPostIndex}, BeeUtils.notEmpty($P{qs}.getLocalizedValue("Cities", "Name", $F{UnloadingCityName}, $P{REPORT_LOCALE}), $F{UnloadingCityName}), BeeUtils.notEmpty($P{qs}.getLocalizedValue("Countries", "Name", $F{UnloadingCountryName}, $P{REPORT_LOCALE}), $F{UnloadingCountryName}))]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true">
 								<reportElement positionType="Float" x="0" y="18" width="195" height="9" isRemoveLineWhenBlank="true" uuid="a01bda99-a941-409f-86ce-954575063992">

@@ -296,8 +296,8 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASE_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_ERP_TRIP_COSTS, new ERPTripCostsGrid());
 
-    GridFactory.registerGridInterceptor(VIEW_SHIPMENT_REQUEST_FILES,
-        new FileGridInterceptor(COL_SHIPMENT_REQUEST, AdministrationConstants.COL_FILE,
+    GridFactory.registerGridInterceptor(VIEW_CARGO_FILES,
+        new FileGridInterceptor(COL_CARGO, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     if (!BeeKeeper.getUser().isAdministrator()) {

@@ -71,6 +71,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -387,6 +388,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     FormView form = getFormView();
     BeeRow oldRow = DataUtils.cloneRow(form.getOldRow());
     BeeRow row = DataUtils.cloneRow(form.getActiveRow());
+    List<Long> mails = new ArrayList<>();
 
     Long manager = row.getLong(form.getDataIndex(COL_QUERY_MANAGER));
     Holder<String> department = Holder.absent();
@@ -403,6 +405,13 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
               department.set(result);
             }
           });
+      Widget grid = getWidgetByName("RelatedMessages");
+
+      if (grid instanceof ChildGrid) {
+        for (IsRow mail : ((ChildGrid) grid).getGridView().getRowData()) {
+          mails.add(Data.getLong("RelatedMessages", mail, MailConstants.COL_MESSAGE));
+        }
+      }
     }
     messages.add(loc.trCommandCreateNewOrder());
 
@@ -452,6 +461,19 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
                                 SelfServiceUtils.update(form,
                                     DataUtils.getUpdated(form.getViewName(), form.getDataColumns(),
                                         oldRow, row, null));
+
+                                if (!BeeUtils.isEmpty(mails)) {
+                                  BeeRowSet rs = new BeeRowSet(TBL_RELATIONS,
+                                      Data.getColumns(TBL_RELATIONS, Arrays.asList(COL_ASSESSMENT,
+                                          MailConstants.COL_MESSAGE)));
+
+                                  for (Long message : mails) {
+                                    BeeRow row = rs.addEmptyRow();
+                                    row.setValue(0, assessment.getId());
+                                    row.setValue(1, message);
+                                  }
+                                  Queries.insertRows(rs);
+                                }
                               }
                             });
                       }
@@ -762,8 +784,12 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     comment.setWidth("100%");
     comment.setVisibleLines(4);
 
-    UnboundSelector reason = UnboundSelector.create(TBL_LOSS_REASONS,
+    Relation relation = Relation.create(TBL_LOSS_REASONS,
         Collections.singletonList(COL_LOSS_REASON_NAME));
+
+    relation.disableNewRow();
+    relation.disableEdit();
+    UnboundSelector reason = UnboundSelector.create(relation);
 
     reason.addSelectorHandler(event -> {
       if (event.isChanged()) {

@@ -59,6 +59,7 @@ public final class TradeConstants {
       "getTradeDocumentTypeCaptionAndFilter";
 
   public static final String SVC_DOCUMENT_PHASE_TRANSITION = "TradeDocumentPhaseTransition";
+  public static final String SVC_REBUILD_STOCK = "RebuildStock";
 
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
@@ -205,6 +206,8 @@ public final class TradeConstants {
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
 
   public static final String FORM_TRADE_DOCUMENT = "TradeDocument";
+
+  public static final int MAX_STOCK_DEPTH = 1_000;
 
   private TradeConstants() {
   }

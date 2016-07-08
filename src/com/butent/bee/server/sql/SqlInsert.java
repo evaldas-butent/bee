@@ -87,6 +87,15 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
     return getReference();
   }
 
+  public SqlInsert addFields(Collection<String> fields) {
+    Assert.state(BeeUtils.isEmpty(data));
+
+    for (String fld : fields) {
+      addField(fld);
+    }
+    return getReference();
+  }
+
   public SqlInsert addNotEmpty(String field, String value) {
     if (BeeUtils.isEmpty(value)) {
       return getReference();

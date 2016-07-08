@@ -257,6 +257,7 @@
       <xs:enumeration value="CalExecutorGroups" />
       <xs:enumeration value="CargoCreditSales" />
       <xs:enumeration value="CargoExpenses" />
+      <xs:enumeration value="CargoFiles" />
       <xs:enumeration value="CargoGroups" />
       <xs:enumeration value="CargoHandling" />
       <xs:enumeration value="CargoIncomes" />
@@ -491,7 +492,6 @@
       <xs:enumeration value="ServiceSettings" />
       <xs:enumeration value="ServiceTree" />
       <xs:enumeration value="ServiceTypes" />
-      <xs:enumeration value="ShipmentRequestFiles" />
       <xs:enumeration value="ShipmentRequests" />
       <xs:enumeration value="ShippingTerms" />
       <xs:enumeration value="Signatures" />

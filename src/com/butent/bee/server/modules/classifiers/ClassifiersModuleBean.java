@@ -100,6 +100,11 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 
 import java.awt.*;
@@ -798,7 +803,11 @@ public class ClassifiersModuleBean implements BeeModule {
         }
 
         if (BeeUtils.isEmpty(row.getValue(i))) {
-          tr.append(td());
+          Td td = td();
+          tr.append(td);
+          td.setBorderWidth("1px");
+          td.setBorderStyle(BorderStyle.SOLID);
+          td.setBorderColor("black");
           continue;
         }
 
@@ -826,7 +835,6 @@ public class ClassifiersModuleBean implements BeeModule {
           default:
             value = BeeUtils.nvl(row.getValue(i), BeeConst.STRING_EMPTY);
         }
-
 
         Td td = td();
         tr.append(td);
@@ -1976,10 +1984,9 @@ public class ClassifiersModuleBean implements BeeModule {
 
   private Map<Long, Integer> getRemindActionsUserSettings() {
     Map<Long, Integer> userSettings = Maps.newHashMap();
-    Filter isSetReminder = Filter.notNull(COL_REMIND_ACTIONS);
     Filter timeIsSet = Filter.isPositive(COL_REMIND_ACTION_BEFORE);
 
-    BeeRowSet rows = qs.getViewData(VIEW_USER_SETTINGS, Filter.and(isSetReminder, timeIsSet));
+    BeeRowSet rows = qs.getViewData(VIEW_USER_SETTINGS, timeIsSet);
 
     for (IsRow row : rows) {
       Long userId = row.getLong(rows.getColumnIndex(COL_USER));
