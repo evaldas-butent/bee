@@ -148,9 +148,16 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
   }
 
   protected void print(String report) {
-    getReportParameters(parameters ->
-        getReportData(data ->
-            ReportUtils.showReport(report, getReportCallback(), parameters, data)));
+    getReportParameters(parameters -> {
+      if (SupportedLocale.getByLanguage(Localized.extractLanguage(report)) != SupportedLocale.LT) {
+        for (String key : parameters.keySet()) {
+          if (BeeUtils.isSuffix(key, "2")) {
+            parameters.put(BeeUtils.removeSuffix(key, "2"), parameters.get(key));
+          }
+        }
+      }
+      getReportData(data -> ReportUtils.showReport(report, getReportCallback(), parameters, data));
+    });
   }
 
   private boolean printJasperReport() {

@@ -61,7 +61,8 @@ public abstract class CustomInvoiceForm extends PrintFormInterceptor {
 
   @Override
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-    if (!Objects.equals(getStringValue(COL_TRADE_OPERATION), operationId)) {
+    if (Objects.equals(Data.getViewTable(getViewName()), TBL_PURCHASES)
+        && !Objects.equals(getStringValue(COL_TRADE_OPERATION), operationId)) {
       for (String col : new String[] {COL_TRADE_INVOICE_NO, COL_TRADE_TERM}) {
         Widget widget = getFormView().getWidgetBySource(col);
 
