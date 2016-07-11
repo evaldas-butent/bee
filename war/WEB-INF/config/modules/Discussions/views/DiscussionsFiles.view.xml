@@ -2,11 +2,14 @@
 <View xmlns="http://www.butent.com/view"
 
   name="DiscussionsFiles"
-  source="DiscussionsFiles"
+  source="DiscussionsFiles" caption="=discussionFiles"
   >
   <Columns>
     <SimpleColumn name="Discussion" />
     <SimpleColumn name="Comment" />
+    <SimpleJoin name="Comment" joinType="LEFT">
+      <SimpleColumn  name="CommentText" />
+    </SimpleJoin>
 
     <SimpleColumn name="File" />
     <SimpleJoin name="File" joinType="LEFT">

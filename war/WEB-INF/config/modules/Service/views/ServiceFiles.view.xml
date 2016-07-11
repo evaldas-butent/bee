@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="ServiceFiles" source="ServiceFiles" module="Service"
-  caption="=files"
+  caption="=svcObjectFiles"
   >
   <Columns>
     <SimpleColumn name="ServiceObject" />

@@ -18,8 +18,11 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
@@ -148,6 +151,19 @@ public final class DocumentsHandler {
                 COL_DOCUMENT_SENT_NUMBER, COL_DESCRIPTION, ClassifierConstants.COL_FIRST_NAME,
                 ClassifierConstants.COL_LAST_NAME, ClassifierConstants.ALS_POSITION_NAME, "Notes"),
             BeeConst.STRING_SPACE));
+      } else if (event.hasView(VIEW_DOCUMENT_FILES)) {
+        event.setResult(BeeUtils.joinWords(
+            Data.getString(event.getViewName(), event.getRow(), COL_FILE_CAPTION),
+            Data.getString(event.getViewName(), event.getRow(), COL_FILE_DESCRIPTION),
+            Data.getString(event.getViewName(), event.getRow(), COL_FILE_COMMENT),
+            Format.getDefaultDateTimeFormat().format(Data.getDateTime(event.getViewName(),
+                event.getRow(), COL_FILE_DATE)),
+            Data.getString(event.getViewName(), event.getRow(),
+                AdministrationConstants.ALS_FILE_NAME),
+            Data.getString(event.getViewName(), event.getRow(),
+                AdministrationConstants.ALS_FILE_TYPE),
+            Data.getString(event.getViewName(), event.getRow(), COL_FILE_OWNER_FIRST_NAME),
+            Data.getString(event.getViewName(), event.getRow(), COL_FILE_OWNER_LAST_NAME)));
       }
     }
 
@@ -220,6 +236,21 @@ public final class DocumentsHandler {
             GridFactory.openGrid("NewsDocuments", null, gridOptions, callback);
           }
         });
+
+
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionEvent.Handler() {
+      @Override
+      public void onRowAction(RowActionEvent event) {
+        if (event.isEditRow() && event.hasView(VIEW_DOCUMENT_FILES)) {
+          event.consume();
+
+          if (event.hasRow() && event.getOpener() != null) {
+            Long documentId = Data.getLong(event.getViewName(), event.getRow(), COL_DOCUMENT);
+            RowEditor.open(VIEW_DOCUMENTS, documentId, event.getOpener());
+          }
+        }
+      }
+    });
   }
 
   static void copyDocumentData(Long dataId, final IdCallback callback) {

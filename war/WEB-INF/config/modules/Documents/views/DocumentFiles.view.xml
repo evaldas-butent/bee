@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="DocumentFiles" source="DocumentFiles"
-  caption="=files"
+  caption="=trdDocumentFiles"
   >
   <Columns>
     <SimpleColumn name="Document" />

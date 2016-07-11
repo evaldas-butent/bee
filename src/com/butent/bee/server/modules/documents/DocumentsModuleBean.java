@@ -92,10 +92,19 @@ public class DocumentsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    return qs.getSearchResults(VIEW_DOCUMENTS,
+    List<SearchResult> result = new ArrayList<>();
+
+    result.addAll(qs.getSearchResults(VIEW_DOCUMENTS,
         Filter.anyContains(Sets.newHashSet(COL_DOCUMENT_NUMBER, COL_REGISTRATION_NUMBER,
             COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
-            ALS_PLACE_NAME, ALS_STATUS_NAME, ALS_DOCUMENT_COMPANY_NAME), query));
+            ALS_PLACE_NAME, ALS_STATUS_NAME, ALS_DOCUMENT_COMPANY_NAME), query)));
+
+    result.addAll(qs.getSearchResults(VIEW_DOCUMENT_FILES,
+        Filter.anyContains(Sets.newHashSet(AdministrationConstants.ALS_FILE_NAME,
+            COL_FILE_CAPTION, COL_FILE_DESCRIPTION, COL_FILE_COMMENT), query)));
+
+    return result;
+
   }
 
   @Override
