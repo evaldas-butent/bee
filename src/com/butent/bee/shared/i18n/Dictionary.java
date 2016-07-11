@@ -5257,6 +5257,8 @@ public interface Dictionary {
 
   default String trRequestDate() {return g("trRequestDate");}
 
+  default String trRequestDateTitle() {return g("trRequestDateTitle");}
+
   default String trRequestDeliveryDate() {return g("trRequestDeliveryDate");}
 
   default String trRequestDeliveryDateAndTime() {return g("trRequestDeliveryDateAndTime");}
