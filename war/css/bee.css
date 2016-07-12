@@ -1519,6 +1519,134 @@
   background-color: #e7e7e7;
 }
 
+.bee-MessageBox-decide,
+.bee-MessageBox-delete,
+.bee-MessageBox-confirm {
+  min-width:360px;
+  min-height:215px;
+  max-height:430px;
+}
+
+.bee-MessageBox-decide .bee-Dialog-header,
+.bee-MessageBox-delete .bee-Dialog-header,
+.bee-MessageBox-confirm .bee-Dialog-header{
+  padding: 0 15px 0 15px;
+  height: 45px;
+}
+
+.bee-MessageBox-decide .bee-Dialog-caption,
+.bee-MessageBox-delete .bee-Dialog-caption,
+.bee-MessageBox-confirm .bee-Dialog-caption{
+  font-size: 16pt;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bee-MessageBox-decide .bee-Dialog-header .bee-Dialog-action,
+.bee-MessageBox-delete .bee-Dialog-header .bee-Dialog-action,
+.bee-MessageBox-confirm .bee-Dialog-header .bee-Dialog-action {
+  margin-right: 0;
+}
+
+.bee-MessageBox-decide .bee-Dialog-content,
+.bee-MessageBox-delete .bee-Dialog-content,
+.bee-MessageBox-confirm .bee-Dialog-content {
+  margin: 4px 0 15px 0;
+  font-size: 14px;
+  width: 100%;
+}
+.bee-MessageBox-decide .bee-MessageBox-icon-cell,
+.bee-MessageBox-delete .bee-MessageBox-icon-cell,
+.bee-MessageBox-confirm .bee-MessageBox-icon-cell {
+  width: 80px;
+}
+.bee-MessageBox-decide .bee-MessageBox-icon,
+.bee-MessageBox-delete .bee-MessageBox-icon,
+.bee-MessageBox-confirm .bee-MessageBox-icon {
+  padding: 4px;
+  font-size: 80px;
+  color: whitesmoke;
+  text-align: center;
+  max-width: 80px;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-icon,
+.bee-MessageBox-confirm .bee-MessageBox-icon {
+  color: #E3E3E3;
+}
+
+.bee-MessageBox-delete .bee-MessageBox-icon {
+  color:  #cc0000;
+}
+
+
+.bee-MessageBox-decide .bee-MessageBox-buttonGroup,
+.bee-MessageBox-delete .bee-MessageBox-buttonGroup,
+.bee-MessageBox-confirm .bee-MessageBox-buttonGroup {
+  margin: auto;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-message,
+.bee-MessageBox-delete .bee-MessageBox-message,
+.bee-MessageBox-confirm .bee-MessageBox-message {
+  padding-top: 10px;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-message-cell,
+.bee-MessageBox-delete .bee-MessageBox-message-cell,
+.bee-MessageBox-confirm .bee-MessageBox-message-cell {
+  padding: 5px 0 0 0;
+  max-height: 305px;
+  display: inline-block;
+  overflow: scroll;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-message tr:last-child,
+.bee-MessageBox-delete .bee-MessageBox-message tr:last-child,
+.bee-MessageBox-confirm .bee-MessageBox-message tr:last-child {
+  color: #414142;
+  font-weight: bold;
+  font-size: 14pt;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-message,
+.bee-MessageBox-delete .bee-MessageBox-message,
+.bee-MessageBox-confirm .bee-MessageBox-message {
+  margin-left: 0px;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-button,
+.bee-MessageBox-delete .bee-MessageBox-button,
+.bee-MessageBox-confirm .bee-MessageBox-button {
+  min-width: 60px;
+  min-height: 32px;
+  height: 100%;
+  text-transform: uppercase;
+  font-weight: bold;
+  margin: 4px;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button,
+.bee-MessageBox-confirm .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button {
+    color: white;
+    background-color: #6bae45;
+}
+
+.bee-MessageBox-delete .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button {
+    color: white;
+    background-color:  #cc0000
+}
+
+.bee-MessageBox-decide .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button:hover,
+.bee-MessageBox-confirm .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button:hover {
+    background-color: #63a140;
+}
+
+.bee-MessageBox-delete .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button:hover {
+    background-color: #c0392b;
+}
+
 .bee-MessageBox-message-cell {
   padding-bottom: 12px;
 }
