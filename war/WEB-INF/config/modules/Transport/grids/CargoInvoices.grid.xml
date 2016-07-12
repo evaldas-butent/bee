@@ -10,7 +10,9 @@
 >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
-    <IdColumn name="ID" caption="=trdInvoiceId" />
+    <IdColumn name="ID" caption="=trdInvoiceId" >
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </IdColumn>
     <DataColumn name="Date" />
     <DataColumn name="Number" />
     <RelColumn name="Operation" />
@@ -18,13 +20,20 @@
                 searchBy="InvoicePrefix InvoiceNo" />
     <RelColumn name="Customer" filterSupplier="value" />
     <RelColumn name="Payer" filterSupplier="value" />
-    <DataColumn name="Amount" />
+    <DataColumn name="Amount" >
+      <footer aggregate="sum" />
+    </DataColumn>
     <DataColumn name="CurrencyName" />
     <DataColumn name="Term" />
 
     <DataColumn name="PaymentTime" />
-    <DataColumn name="Paid" />
-    <DataColumn name="Debt" format="0.00" />
+    <DataColumn name="Paid" >
+      <footer aggregate="sum" />
+    </DataColumn>
+
+    <DataColumn name="Debt" format="0.00" >
+      <footer aggregate="sum" format="0.00"/>
+    </DataColumn>
 
     <DataColumn name="Vehicle" />
     <DataColumn name="Driver" />
