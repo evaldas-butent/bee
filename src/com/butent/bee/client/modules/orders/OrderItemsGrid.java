@@ -262,6 +262,9 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
                       Localized.dictionary().minValue() + " 1");
                   return false;
                 }
+                IsRow parentRow = ViewHelper.getFormRow(getGridPresenter().getMainView());
+                int status = parentRow.getInteger(Data.getColumnIndex(VIEW_ORDERS,
+                    COL_ORDERS_STATUS));
 
                 int updIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
                 double updValue = BeeUtils.unbox(row.getDouble(updIndex));
@@ -272,6 +275,10 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
                   updValue = newValue;
                 } else {
                   updValue += freeRem;
+                }
+
+                if (OrdersStatus.APPROVED.ordinal() != status) {
+                  updValue = 0;
                 }
 
                 cols = Lists.newArrayList(cv.getColumn(), updColumn);
