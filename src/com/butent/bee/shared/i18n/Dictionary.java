@@ -5225,6 +5225,8 @@ public interface Dictionary {
 
   default String trRequestCargoWidth() {return g("trRequestCargoWidth");}
 
+  default String trRequestCommonTerms() {return g("trRequestCommonTerms");}
+
   default String trRequestConfirmedMailContent() {return g("trRequestConfirmedMailContent");}
 
   default String trRequestCustomer() {return g("trRequestCustomer");}

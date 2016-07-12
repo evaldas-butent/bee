@@ -160,6 +160,17 @@ public final class TransportConstants {
       public String getDefaultContent() {
         return "Your request has been received. Will contact You soon!";
       }
+    },
+    REQUEST_COMMON_TERMS {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trRequestCommonTerms();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "";
+      }
     };
 
     public String getDefaultContent() {
@@ -329,6 +340,7 @@ public final class TransportConstants {
   public static final String SVC_GET_TRIP_INFO = "GetTripInfo";
   public static final String SVC_GET_VEHICLE_BUSY_DATES = "GetVehicleBusyDates";
   public static final String SVC_GET_DRIVER_BUSY_DATES = "GetDriverBusyDates";
+  public static final String SVC_GET_TEXT_CONSTANT = "GetTextConstant";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
