@@ -10,7 +10,9 @@
 >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
-    <IdColumn name="ID" caption="=trdInvoiceId" />
+    <IdColumn name="ID" caption="=trdInvoiceId" >
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </IdColumn>
     <DataColumn name="Date" />
     <DataColumn name="Number" label="Užsakymų ID" />
     <RelColumn name="Operation" filterSupplier="list" />
@@ -18,10 +20,14 @@
                 searchBy="InvoicePrefix InvoiceNo" />
     <RelColumn name="Customer" />
     <RelColumn name="Payer" />
-    <DataColumn name="Amount" />
+    <DataColumn name="Amount" >
+      <footer aggregate="sum" />
+    </DataColumn>
     <DataColumn name="CurrencyName" filterSupplier="list" />
 
-    <PropColumn name="Vat" type="decimal" caption="PVM suma" format="#.##" />
+    <PropColumn name="Vat" type="decimal" caption="PVM suma" format="#.##" >
+      <footer aggregate="sum" format="#.##"/>
+    </PropColumn>
     <PropColumn name="WithoutVat" type="decimal" caption="Be PVM" format="#.##" horizontalAlignment="right">
       <render>
         <ui:function>
@@ -32,6 +38,7 @@
           }
         </ui:function>
       </render>
+      <footer aggregate="sum" format="#.##"/>
     </PropColumn>
 
     <DataColumn name="Term" />
@@ -39,8 +46,13 @@
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" filterSupplier="list" />
 
     <DataColumn name="PaymentTime" />
-    <DataColumn name="Paid" />
-    <DataColumn name="Debt" format="0.00" />
+    <DataColumn name="Paid" >
+      <footer aggregate="sum" />
+    </DataColumn>
+
+    <DataColumn name="Debt" format="0.00" >
+      <footer aggregate="sum" format="0.00"/>
+    </DataColumn>
 
     <DataColumn name="Vehicle" />
     <DataColumn name="Driver" />
