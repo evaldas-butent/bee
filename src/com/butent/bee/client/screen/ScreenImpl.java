@@ -11,11 +11,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Bee;
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
-import com.butent.bee.client.Screen;
-import com.butent.bee.client.Settings;
+import com.butent.bee.client.*;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -74,7 +70,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -108,19 +103,12 @@ public class ScreenImpl implements Screen {
   private static Flow flowEmailContainer = new Flow();
   private static Flow flowOnlineEmailSize = new Flow();
 
-  private static final String DEFAULT_PHOTO_IMAGE = "images/defaultUser.png";
-
   public static final HtmlTable NOTIFICATION_CONTENT = new HtmlTable(BeeConst.CSS_CLASS_PREFIX
       + "NotificationBar-Content");
 
   private static final String STYLE_COMMAND = BeeConst.CSS_CLASS_PREFIX + "MainCommandPanelItem";
 
-  private static final String STYLE_USERS_COUNT = BeeConst.CSS_CLASS_PREFIX + "OnlineUsersCount";
-  private static final String STYLE_USERS_ICON = BeeConst.CSS_CLASS_PREFIX + "OnlineUsersIcon";
-
-  private static final String STYLE_POPUP_USERS = BeeConst.CSS_CLASS_PREFIX + "PopupUsers";
   private static final String STYLE_POPUP_PRESENCE = BeeConst.CSS_CLASS_PREFIX + "PresenceChange";
-  private static final String STYLE_POPUP_USERS_LABEL = STYLE_POPUP_USERS + "Label";
 
   private static final int NORTH_HEIGHT = 112;
   private static final int MENU_HEIGHT = 50;
@@ -528,15 +516,11 @@ public class ScreenImpl implements Screen {
     }
 
     if (getUserPhotoContainer() != null) {
-      getUserPhotoContainer().clear();
-      final Image image;
-
       Long photoFile = userData.getPhotoFile();
-      if (DataUtils.isId(photoFile)) {
-        image = new Image(PhotoRenderer.getUrl(photoFile));
-      } else {
-        image = new Image(DEFAULT_PHOTO_IMAGE);
-      }
+
+      getUserPhotoContainer().clear();
+      final Image image = new Image(DataUtils.isId(photoFile) ? PhotoRenderer.getUrl(photoFile)
+          : PhotoRenderer.DEFAULT_PHOTO_IMAGE);
 
       image.setAlt(userData.getLogin());
       image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
@@ -1217,98 +1201,13 @@ public class ScreenImpl implements Screen {
   }
 
   private static Flow onlineUsers() {
-    Flow container = new Flow(STYLE_COMMAND);
-
-    CustomDiv countWidget = new CustomDiv(STYLE_USERS_COUNT);
-    StyleUtils.setEmptiness(countWidget, true);
-    container.add(countWidget);
-
-    FaLabel iconWidget = new FaLabel(FontAwesome.USER, STYLE_USERS_ICON);
-    StyleUtils.setEmptiness(iconWidget, true);
-    container.add(iconWidget);
-
-    iconWidget.addClickHandler(ev -> {
-      Set<String> sessions = Global.getUsers().getAllSessions();
-
-      if (sessions.size() > 0) {
-        HtmlTable table = new HtmlTable(STYLE_POPUP_USERS + "Content");
-        int r = 0;
-
-        for (String session : sessions) {
-          UserData user =
-              Global.getUsers().getUserData(Global.getUsers().getUserIdBySession(session));
-
-          Image img;
-          if (user.hasPhoto()) {
-            img = new Image(PhotoRenderer.getUrl(user.getPhotoFile()));
-          } else {
-            img = new Image(DEFAULT_PHOTO_IMAGE);
-          }
-
-          img.addStyleName(STYLE_POPUP_USERS + "Photo");
-
-          int c = 0;
-          table.setWidget(r, c++, img);
-
-          Presence presence = Global.getUsers().getPresenceBySession(session);
-          if (presence != null) {
-            FaLabel presenceWidget = new FaLabel(presence.getIcon(), presence.getStyleName());
-            presenceWidget.addStyleName(STYLE_POPUP_USERS + "Presence");
-            presenceWidget.setTitle(presence.getCaption());
-
-            table.setWidget(r, c, presenceWidget);
-          }
-          c++;
-          Label label = new Label(user.getUserSign());
-          label.addStyleName(STYLE_POPUP_USERS_LABEL);
-
-          table.setWidget(r, c++, label);
-
-          if (Global.getChatManager().isEnabled()) {
-            FaLabel chat = new FaLabel(FontAwesome.COMMENT_O, STYLE_POPUP_USERS + "Chat");
-            chat.setTitle(Localized.dictionary().chat());
-
-            chat.addClickHandler(event -> {
-              UiHelper.closeDialog(table);
-              Global.getChatManager().chatWithUser(user.getUserId());
-            });
-
-            table.setWidget(r, c, chat);
-          }
-          c++;
-
-          DomUtils.setDataIndex(table.getRow(r), user.getPerson());
-          r++;
-        }
-
-        if (r > 0) {
-          table.addClickHandler(arg -> {
-            Element targetElement = EventUtils.getEventTargetElement(arg);
-            TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
-            Long id = DomUtils.getDataIndexLong(rowElement);
-
-            if (DataUtils.isId(id)) {
-              UiHelper.closeDialog(table);
-              RowEditor.open(ClassifierConstants.VIEW_PERSONS, id, Opener.NEW_TAB);
-            }
-          });
-
-          Popup popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP_USERS);
-
-          popup.setWidget(table);
-          popup.setHideOnEscape(true);
-
-          popup.showRelativeTo(iconWidget.getElement());
-        }
-      }
-    });
-
-    return container;
+    return OnlineUsers.createWidget(STYLE_COMMAND);
   }
 
   @Override
   public void updateUserCount(int count) {
-    Element countElement = Selectors.getElementByClassName(getScreenPanel(), STYLE_USERS_COUNT);
+    Element countElement = Selectors.getElementByClassName(getScreenPanel(),
+        OnlineUsers.STYLE_USERS_COUNT);
 
     if (countElement != null) {
       String text = (count > 0) ? BeeUtils.toString(count) : BeeConst.STRING_EMPTY;
@@ -1317,7 +1216,8 @@ public class ScreenImpl implements Screen {
       StyleUtils.setEmptiness(countElement, count <= 0);
     }
 
-    Element iconElement = Selectors.getElementByClassName(getScreenPanel(), STYLE_USERS_ICON);
+    Element iconElement = Selectors.getElementByClassName(getScreenPanel(),
+        OnlineUsers.STYLE_USERS_ICON);
     if (iconElement != null) {
       StyleUtils.setEmptiness(iconElement, count <= 0);
     }
@@ -1513,13 +1413,9 @@ public class ScreenImpl implements Screen {
     exitContainer.add(signature);
     exitContainer.add(exit);
 
-    Image image;
     Long photoFileName = BeeKeeper.getUser().getUserData().getPhotoFile();
-    if (DataUtils.isId(photoFileName)) {
-      image = new Image(PhotoRenderer.getUrl(photoFileName));
-    } else {
-      image = new Image(DEFAULT_PHOTO_IMAGE);
-    }
+    Image image = new Image(DataUtils.isId(photoFileName) ? PhotoRenderer.getUrl(photoFileName)
+        : PhotoRenderer.DEFAULT_PHOTO_IMAGE);
 
     image.setAlt(BeeKeeper.getUser().getLogin());
     image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
