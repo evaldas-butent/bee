@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table
+    xmlns="http://www.butent.com/table"
+    name="ItemSuppliers" idName="ItemSupplierID"
+>
+  <Fields>
+    <Relation name="Item" relation="Items" notNull="true" cascade="DELETE" />
+    <Relation name="Supplier" relation="Companies" notNull="true" label="=supplier" />
+    <Date name="DateFrom" label="=dateFrom" />
+    <Date name="DateTo" label="=dateTo" />
+    <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
+              label="=currency" />
+    <Numeric name="Price" precision="15" scale="5" label="=price" />
+    <Numeric name="Unpacking" precision="15" scale="3" label="=unpacking" />
+    <Text name="Notes" label="=notes" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Item Supplier DateFrom DateTo" />
+  </Constraints>
+</Table>
