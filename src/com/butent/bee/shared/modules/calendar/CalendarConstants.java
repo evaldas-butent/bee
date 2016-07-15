@@ -331,6 +331,9 @@ public final class CalendarConstants {
   public static final String COL_MINUTES = "Minutes";
   public static final String COL_SCHEDULED = "Scheduled";
 
+  public static final String COL_ALIAS_DEF_HOURS = "defHours";
+  public static final String COL_ALIAS_DEL_MINUTES = "defMinutes";
+
   public static final String COL_MESSAGE = "Message";
   public static final String COL_SENT = "Sent";
   public static final String COL_ERROR = "Error";
