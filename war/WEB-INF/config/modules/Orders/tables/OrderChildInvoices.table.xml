@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="OrderChildInvoices"
+       idName="OrderChildInvoiceID"
+>
+  <Fields>
+    <Relation name="Order" relation="Orders" notNull="true" />
+    <Relation name="Sale" notNull="true" editable="true" unique="true" relation="Sales" cascade="DELETE" />
+  </Fields>
+</Table>

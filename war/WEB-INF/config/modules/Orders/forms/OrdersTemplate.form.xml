@@ -15,8 +15,8 @@
       </row>
 
       <row>
-        <Label for="Series" style="&lbl;" />
-        <DataSelector source="Series" newRowEnabled="true" style="width: &inpw;" />
+        <Label for="Series" style="&lbl;" class="bee-required" />
+        <DataSelector source="Series" newRowEnabled="true" style="width: &inpw;" required="true" />
 
         <Label for="Number" visible="true" style="&lbl;" />
         <InputText source="Number" style="&inpw;" visible="true" />
