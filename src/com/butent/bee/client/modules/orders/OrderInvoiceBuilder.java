@@ -39,7 +39,7 @@ public class OrderInvoiceBuilder extends InvoiceBuilder {
 
   @Override
   public String getTargetView() {
-    return VIEW_ORDERS_INVOICES;
+    return VIEW_ORDER_CHILD_INVOICES;
   }
 
   @Override

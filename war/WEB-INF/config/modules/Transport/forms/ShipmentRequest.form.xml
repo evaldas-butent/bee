@@ -244,7 +244,12 @@
           <Label for="LDM" />
           <InputDecimal source="LDM" style="&decimal;" />
           <text />
-          <CheckBox source="Partial" />
+          <Toggle source="Partial" upFace="=full" downFace="=partial" />
+        </row>
+
+        <row>
+          <Label for="LoadedKilometers" name="LoadedKilometersLabel"/>
+          <InputDecimal source="LoadedKilometers" style="&decimal;" />
         </row>
       </Table>
     </Details>
