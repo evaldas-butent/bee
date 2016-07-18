@@ -36,6 +36,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.JsonUtils;
+import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
@@ -102,6 +103,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   private Button lostCommand = new Button(loc.trRequestStatusLost(), clickEvent -> onLoss(true));
 
   private static final String NAME_VALUE_LABEL = "ValueLabel";
+  private static final String NAME_LOADED_KILOMETERS_LABEL = "LoadedKilometersLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
 
   @Override
@@ -109,8 +111,16 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     if (BeeUtils.same(editableWidget.getColumnId(), COL_QUERY_FREIGHT_INSURANCE)) {
 
       editableWidget.addCellValidationHandler(event -> {
-        styleRequiredField(event.getNewValue());
+        styleRequiredField(NAME_VALUE_LABEL, event.getNewValue() != null);
         return true;
+      });
+    } else if (BeeUtils.same(editableWidget.getColumnId(), COL_CARGO_PARTIAL)) {
+      editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
+        @Override
+        public Boolean validateCell(CellValidateEvent event) {
+          styleRequiredField(NAME_LOADED_KILOMETERS_LABEL, event.getNewValue() == null);
+          return true;
+        }
       });
     }
     super.afterCreateEditableWidget(editableWidget, widget);
@@ -205,12 +215,24 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         String value = row.getString(getDataIndex(COL_CARGO_VALUE));
         if (BeeUtils.isEmpty(value)) {
           getFormView().notifySevere(BeeUtils.join(" ", dic.valuation(), dic.valueRequired()));
+          getFormView().focus(COL_CARGO_VALUE);
           return false;
         }
 
         Long currency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
         if (!DataUtils.isId(currency)) {
           getFormView().notifySevere(BeeUtils.join(" ", dic.currency(), dic.valueRequired()));
+          getFormView().focus(COL_CARGO_VALUE_CURRENCY);
+          return false;
+        }
+      }
+
+      if (!BeeUtils.unbox(row.getBoolean(getDataIndex(COL_CARGO_PARTIAL)))) {
+        String value = row.getString(getDataIndex(COL_LOADED_KILOMETERS));
+        if (BeeUtils.isEmpty(value)) {
+          getFormView().notifySevere(BeeUtils.join(" ", dic.trLoadedKilometers(),
+              dic.valueRequired()));
+          getFormView().focus(COL_LOADED_KILOMETERS);
           return false;
         }
       }
@@ -234,7 +256,10 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
           && !ShipmentRequestStatus.CONFIRMED.is(status)
           && (!isSelfService() || ShipmentRequestStatus.NEW.is(status)));
     }
-    styleRequiredField(row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)));
+    styleRequiredField(NAME_VALUE_LABEL, row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE))
+        != null);
+    styleRequiredField(NAME_LOADED_KILOMETERS_LABEL, row.getString(getDataIndex(COL_CARGO_PARTIAL))
+        == null);
 
     super.beforeRefresh(form, row);
   }
@@ -587,9 +612,13 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     return Objects.equals(BeeKeeper.getScreen().getUserInterface(), UserInterface.SELF_SERVICE);
   }
 
-  private void styleRequiredField(String value) {
-    getFormView().getWidgetByName(NAME_VALUE_LABEL).setStyleName(StyleUtils.NAME_REQUIRED,
-        !BeeUtils.isEmpty(value));
+  private void styleRequiredField(String name, boolean value) {
+    Widget label =  getFormView().getWidgetByName(name);
+    if (label == null) {
+      return;
+    }
+
+    label.setStyleName(StyleUtils.NAME_REQUIRED, value);
   }
 
   private void onAnswer() {
