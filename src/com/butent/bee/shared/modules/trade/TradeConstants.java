@@ -159,6 +159,7 @@ public final class TradeConstants {
   public static final String COL_OPERATION_WAREHOUSE_FROM = "WarehouseFrom";
   public static final String COL_OPERATION_WAREHOUSE_TO = "WarehouseTo";
   public static final String COL_OPERATION_DEFAULT = "IsDefault";
+  public static final String COL_OPERATION_CASH_REGISTER_NO = "CashRegisterNo";
 
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
