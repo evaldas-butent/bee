@@ -70,6 +70,7 @@ public final class ClassifierConstants {
   public static final String VIEW_ITEM_CATEGORY_TREE = "CategoryTree";
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
   public static final String VIEW_ITEM_REMAINDERS = "ItemRemainders";
+  public static final String VIEW_ITEM_SUPPLIERS = "ItemSuppliers";
 
   public static final String VIEW_COUNTRIES = "Countries";
   public static final String VIEW_CITIES = "Cities";
@@ -152,6 +153,20 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_CURRENCY_2 = "Currency2";
   public static final String COL_ITEM_PRICE_3 = "Price3";
   public static final String COL_ITEM_CURRENCY_3 = "Currency3";
+  public static final String COL_ITEM_PRICE_4 = "Price4";
+  public static final String COL_ITEM_CURRENCY_4 = "Currency4";
+  public static final String COL_ITEM_PRICE_5 = "Price5";
+  public static final String COL_ITEM_CURRENCY_5 = "Currency5";
+  public static final String COL_ITEM_PRICE_6 = "Price6";
+  public static final String COL_ITEM_CURRENCY_6 = "Currency6";
+  public static final String COL_ITEM_PRICE_7 = "Price7";
+  public static final String COL_ITEM_CURRENCY_7 = "Currency7";
+  public static final String COL_ITEM_PRICE_8 = "Price8";
+  public static final String COL_ITEM_CURRENCY_8 = "Currency8";
+  public static final String COL_ITEM_PRICE_9 = "Price9";
+  public static final String COL_ITEM_CURRENCY_9 = "Currency9";
+  public static final String COL_ITEM_PRICE_10 = "Price10";
+  public static final String COL_ITEM_CURRENCY_10 = "Currency10";
   public static final String COL_ITEM_TYPE = "Type";
   public static final String COL_ITEM_GROUP = "Group";
   public static final String COL_ITEM_WEIGHT = "Weight";
@@ -160,6 +175,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_DPW = "DaysPerWeek";
   public static final String COL_ITEM_MIN_TERM = "MinTerm";
   public static final String COL_ITEM_LINK = "Link";
+  public static final String COL_ITEM_NOT_MANUFACTURED = "NotManufactured";
+  public static final String COL_ITEM_REMAINDER_ID = "Id";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";

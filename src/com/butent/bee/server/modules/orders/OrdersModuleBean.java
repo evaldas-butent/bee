@@ -25,6 +25,7 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -131,6 +132,12 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         response = fillReservedRemainders(reqInfo);
         break;
 
+      case SVC_GET_ERP_STOCKS:
+        Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_DATA));
+        getERPStocks(ids);
+        response = ResponseObject.emptyResponse();
+        break;
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -149,7 +156,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       getERPItems();
     }
     if (cb.isParameterTimer(timer, PRM_IMPORT_ERP_STOCKS_TIME)) {
-      getERPStocks();
+      getERPStocks(null);
     }
     if (cb.isParameterTimer(timer, PRM_EXPORT_ERP_RESERVATIONS_TIME)) {
       exportReservations();
@@ -161,10 +168,11 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createNumber(module, PRM_CLEAR_RESERVATIONS_TIME, false, null),
-        BeeParameter.createNumber(module, PRM_IMPORT_ERP_ITEMS_TIME, false, null),
-        BeeParameter.createNumber(module, PRM_IMPORT_ERP_STOCKS_TIME, false, null),
-        BeeParameter.createNumber(module, PRM_EXPORT_ERP_RESERVATIONS_TIME, false, null),
+        BeeParameter.createBoolean(module, PRM_UPDATE_ITEMS_PRICES),
+        BeeParameter.createNumber(module, PRM_CLEAR_RESERVATIONS_TIME),
+        BeeParameter.createNumber(module, PRM_IMPORT_ERP_ITEMS_TIME),
+        BeeParameter.createNumber(module, PRM_IMPORT_ERP_STOCKS_TIME),
+        BeeParameter.createNumber(module, PRM_EXPORT_ERP_RESERVATIONS_TIME),
         BeeParameter.createRelation(module, PRM_DEFAULT_SALE_OPERATION, false,
             VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME));
 
@@ -478,36 +486,52 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     SqlSelect select =
         new SqlSelect()
-            .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
-            .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
-            .addSum(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER, ALS_TOTAL_AMOUNT)
-            .addFrom(TBL_ORDER_ITEMS)
-            .addFromLeft(TBL_ITEMS,
-                sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
-            .addFromLeft(TBL_ORDERS,
-                sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
-            .addFromLeft(TBL_WAREHOUSES,
-                sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
-            .addGroup(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
-            .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
-            .setWhere(
-                SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS, OrdersStatus.APPROVED
-                    .ordinal()), SqlUtils.positive(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)));
+            .addFields(ALS_RESERVATIONS, COL_ITEM_EXTERNAL_CODE, COL_WAREHOUSE_CODE)
+            .addSum(ALS_RESERVATIONS, COL_RESERVED_REMAINDER, ALS_TOTAL_AMOUNT)
+            .addGroup(ALS_RESERVATIONS, COL_ITEM_EXTERNAL_CODE)
+            .addGroup(ALS_RESERVATIONS, COL_WAREHOUSE_CODE)
+            .addFrom(
+                new SqlSelect()
+                    .setUnionAllMode(true)
+                    .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+                    .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+                    .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
+                    .addFrom(TBL_ORDER_ITEMS)
+                    .addFromLeft(TBL_ITEMS,
+                        sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+                    .addFromLeft(TBL_ORDERS,
+                        sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
+                    .addFromLeft(TBL_WAREHOUSES,
+                        sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
+                    .setWhere(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+                        OrdersStatus.APPROVED.ordinal())).addUnion(
+                        new SqlSelect()
+                            .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+                            .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+                            .addField(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY,
+                                COL_RESERVED_REMAINDER)
+                            .addFrom(VIEW_ORDER_CHILD_INVOICES)
+                            .addFromLeft(TBL_ORDERS,
+                                sys.joinTables(TBL_ORDERS, VIEW_ORDER_CHILD_INVOICES, COL_ORDER))
+                            .addFromLeft(TBL_WAREHOUSES,
+                                sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
+                            .addFromLeft(TBL_SALES,
+                                sys.joinTables(TBL_SALES, VIEW_ORDER_CHILD_INVOICES, COL_SALE))
+                            .addFromLeft(TBL_SALE_ITEMS,
+                                sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                            .addFromLeft(TBL_ITEMS,
+                                sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM)).setWhere(
+                                SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED))),
+                ALS_RESERVATIONS);
 
     SimpleRowSet rs = qs.getData(select);
 
     if (rs.getNumberOfRows() > 0) {
-      for (SimpleRow sr : rs) {
-        try {
-          ButentWS.connect(remoteAddress, remoteLogin, remotePassword).importItemReservation(
-              sr.getValue(COL_WAREHOUSE_CODE), sr.getLong(COL_ITEM_EXTERNAL_CODE),
-              sr.getDouble(ALS_TOTAL_AMOUNT));
-
-        } catch (BeeException e) {
-          logger.error(e);
-          sys.eventEnd(sys.eventStart(PRM_EXPORT_ERP_RESERVATIONS_TIME), "ERROR", e.getMessage());
-          continue;
-        }
+      try {
+        ButentWS.connect(remoteAddress, remoteLogin, remotePassword).importItemReservation(rs);
+      } catch (BeeException e) {
+        logger.error(e);
+        sys.eventEnd(sys.eventStart(PRM_EXPORT_ERP_RESERVATIONS_TIME), "ERROR", e.getMessage());
       }
     }
   }
@@ -570,6 +594,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         units.put(row.getValue(COL_UNIT_NAME), row.getLong(COL_UNIT));
       }
 
+      boolean updatePrc = BeeUtils.unbox(prm.getBoolean(PRM_UPDATE_ITEMS_PRICES));
+
       for (SimpleRow row : rs) {
 
         String type = row.getValue("TIPAS");
@@ -584,6 +610,13 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         currenciesMap.put("VAL_1", row.getValue("VAL_1"));
         currenciesMap.put("VAL_2", row.getValue("VAL_2"));
         currenciesMap.put("VAL_3", row.getValue("VAL_3"));
+        currenciesMap.put("VAL_4", row.getValue("VAL_4"));
+        currenciesMap.put("VAL_5", row.getValue("VAL_5"));
+        currenciesMap.put("VAL_6", row.getValue("VAL_6"));
+        currenciesMap.put("VAL_7", row.getValue("VAL_7"));
+        currenciesMap.put("VAL_8", row.getValue("VAL_8"));
+        currenciesMap.put("VAL_9", row.getValue("VAL_9"));
+        currenciesMap.put("VAL_10", row.getValue("VAL_10"));
 
         if (!articles.contains(article) && !externalCodes.contains(exCode)) {
 
@@ -619,31 +652,102 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
               .addConstant(COL_ITEM_PRICE_1, row.getDouble("KAINA_1"))
               .addConstant(COL_ITEM_PRICE_2, row.getDouble("KAINA_2"))
               .addConstant(COL_ITEM_PRICE_3, row.getDouble("KAINA_3"))
+              .addConstant(COL_ITEM_PRICE_4, row.getDouble("KAINA_4"))
+              .addConstant(COL_ITEM_PRICE_5, row.getDouble("KAINA_5"))
+              .addConstant(COL_ITEM_PRICE_6, row.getDouble("KAINA_6"))
+              .addConstant(COL_ITEM_PRICE_7, row.getDouble("KAINA_7"))
+              .addConstant(COL_ITEM_PRICE_8, row.getDouble("KAINA_8"))
+              .addConstant(COL_ITEM_PRICE_9, row.getDouble("KAINA_9"))
+              .addConstant(COL_ITEM_PRICE_10, row.getDouble("KAINA_10"))
               .addConstant(COL_ITEM_GROUP, typesGroups.get(group))
               .addConstant(COL_ITEM_TYPE, typesGroups.get(type))
               .addConstant(COL_ITEM_CURRENCY, currencies.get(currenciesMap.get("PARD_VAL")))
               .addConstant(COL_ITEM_COST_CURRENCY, currencies.get(currenciesMap.get("SAV_VAL")))
               .addConstant(COL_ITEM_CURRENCY_1, currencies.get(currenciesMap.get("VAL_1")))
               .addConstant(COL_ITEM_CURRENCY_2, currencies.get(currenciesMap.get("VAL_2")))
-              .addConstant(COL_ITEM_CURRENCY_3, currencies.get(currenciesMap.get("VAL_3"))));
+              .addConstant(COL_ITEM_CURRENCY_3, currencies.get(currenciesMap.get("VAL_3")))
+              .addConstant(COL_ITEM_CURRENCY_4, currencies.get(currenciesMap.get("VAL_4")))
+              .addConstant(COL_ITEM_CURRENCY_5, currencies.get(currenciesMap.get("VAL_5")))
+              .addConstant(COL_ITEM_CURRENCY_6, currencies.get(currenciesMap.get("VAL_6")))
+              .addConstant(COL_ITEM_CURRENCY_7, currencies.get(currenciesMap.get("VAL_7")))
+              .addConstant(COL_ITEM_CURRENCY_8, currencies.get(currenciesMap.get("VAL_8")))
+              .addConstant(COL_ITEM_CURRENCY_9, currencies.get(currenciesMap.get("VAL_9")))
+              .addConstant(COL_ITEM_CURRENCY_10, currencies.get(currenciesMap.get("VAL_10")))
+              .addConstant(COL_TRADE_VAT, true)
+              .addConstant(COL_TRADE_VAT_PERC, prm.getInteger(PRM_VAT_PERCENT)));
 
           if (!response.hasErrors()) {
             externalCodes.add(exCode);
             articles.add(article);
           }
+        } else if (updatePrc) {
+          SqlUpdate update = new SqlUpdate(TBL_ITEMS)
+              .addConstant(COL_ITEM_PRICE, row.getDouble("PARD_KAINA"))
+              .addConstant(COL_ITEM_COST, row.getDouble("SAVIKAINA"))
+              .addConstant(COL_ITEM_PRICE_1, row.getDouble("KAINA_1"))
+              .addConstant(COL_ITEM_PRICE_2, row.getDouble("KAINA_2"))
+              .addConstant(COL_ITEM_PRICE_3, row.getDouble("KAINA_3"))
+              .addConstant(COL_ITEM_PRICE_4, row.getDouble("KAINA_4"))
+              .addConstant(COL_ITEM_PRICE_5, row.getDouble("KAINA_5"))
+              .addConstant(COL_ITEM_PRICE_6, row.getDouble("KAINA_6"))
+              .addConstant(COL_ITEM_PRICE_7, row.getDouble("KAINA_7"))
+              .addConstant(COL_ITEM_PRICE_8, row.getDouble("KAINA_8"))
+              .addConstant(COL_ITEM_PRICE_9, row.getDouble("KAINA_9"))
+              .addConstant(COL_ITEM_PRICE_10, row.getDouble("KAINA_10"))
+              .addConstant(COL_ITEM_CURRENCY, currencies.get(currenciesMap.get("PARD_VAL")))
+              .addConstant(COL_ITEM_COST_CURRENCY, currencies.get(currenciesMap.get("SAV_VAL")))
+              .addConstant(COL_ITEM_CURRENCY_1, currencies.get(currenciesMap.get("VAL_1")))
+              .addConstant(COL_ITEM_CURRENCY_2, currencies.get(currenciesMap.get("VAL_2")))
+              .addConstant(COL_ITEM_CURRENCY_3, currencies.get(currenciesMap.get("VAL_3")))
+              .addConstant(COL_ITEM_CURRENCY_4, currencies.get(currenciesMap.get("VAL_4")))
+              .addConstant(COL_ITEM_CURRENCY_5, currencies.get(currenciesMap.get("VAL_5")))
+              .addConstant(COL_ITEM_CURRENCY_6, currencies.get(currenciesMap.get("VAL_6")))
+              .addConstant(COL_ITEM_CURRENCY_7, currencies.get(currenciesMap.get("VAL_7")))
+              .addConstant(COL_ITEM_CURRENCY_8, currencies.get(currenciesMap.get("VAL_8")))
+              .addConstant(COL_ITEM_CURRENCY_9, currencies.get(currenciesMap.get("VAL_9")))
+              .addConstant(COL_ITEM_CURRENCY_10, currencies.get(currenciesMap.get("VAL_10")))
+              .setWhere(SqlUtils.equals(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE, exCode));
+
+          qs.updateData(update);
         }
       }
     }
   }
 
-  private void getERPStocks() {
+  private void getERPStocks(Set<Long> ids) {
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet rs = null;
+    SqlSelect select = null;
+    SimpleRowSet srs = null;
+
+    if (!BeeUtils.isEmpty(ids)) {
+      select = new SqlSelect()
+          .setDistinctMode(true)
+          .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+          .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
+          .addFrom(TBL_SALES)
+          .addFromInner(TBL_SALE_ITEMS, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+          .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
+          .setWhere(sys.idInList(TBL_SALES, ids));
+    }
 
     try {
-      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks();
+
+      if (!BeeUtils.isEmpty(ids)) {
+        srs = qs.getData(select);
+        String[] codeList = srs.getColumn(COL_ITEM_EXTERNAL_CODE);
+        for (String code : codeList) {
+          if (rs == null) {
+            rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks(code);
+          } else {
+            rs.append(ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks(code));
+          }
+        }
+      } else {
+        rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks("");
+      }
 
     } catch (BeeException e) {
       logger.error(e);
@@ -672,34 +776,87 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         warehouses.put(row.getValue(COL_WAREHOUSE_CODE), row.getLong(COL_WAREHOUSE));
       }
 
+      String tmp = SqlUtils.temporaryName();
+      qs.updateData(new SqlCreate(tmp)
+          .addLong(COL_ITEM, true)
+          .addLong(COL_WAREHOUSE, true)
+          .addDecimal(COL_WAREHOUSE_REMAINDER, 12, 3, false)
+          .addLong(COL_ITEM_REMAINDER_ID, false));
+
+      SqlInsert insert = new SqlInsert(tmp)
+          .addFields(COL_ITEM, COL_WAREHOUSE, COL_WAREHOUSE_REMAINDER);
+      int tot = 0;
+
       for (SimpleRow row : rs) {
         String exCode = row.getValue("PREKE");
         String warehouse = row.getValue("SANDELIS");
         String stock = row.getValue("LIKUTIS");
 
         if (externalCodes.containsKey(exCode) && warehouses.containsKey(warehouse)) {
-          SqlUpdate update =
-              new SqlUpdate(VIEW_ITEM_REMAINDERS)
-                  .addConstant(COL_WAREHOUSE_REMAINDER, stock)
-                  .setWhere(
-                      SqlUtils.equals(VIEW_ITEM_REMAINDERS, COL_ITEM, externalCodes.get(exCode),
-                          COL_WAREHOUSE, warehouses.get(warehouse)));
+          insert.addValues(externalCodes.get(exCode), warehouses.get(warehouse), stock);
 
-          int updatedRows = qs.updateData(update);
-
-          if (updatedRows == 0) {
-            SqlInsert insert = new SqlInsert(VIEW_ITEM_REMAINDERS)
-                .addConstant(COL_ITEM, externalCodes.get(exCode))
-                .addConstant(COL_WAREHOUSE, warehouses.get(warehouse))
-                .addConstant(COL_WAREHOUSE_REMAINDER, stock);
-
+          if (++tot % 1e4 == 0) {
             qs.insertData(insert);
+            insert.resetValues();
           }
         }
       }
+
+      if (tot % 1e4 > 0) {
+        if (!insert.isEmpty()) {
+          qs.insertData(insert);
+        }
+      }
+
+      SqlUpdate updateTmp =
+          new SqlUpdate(tmp)
+              .addExpression(COL_ITEM_REMAINDER_ID,
+                  SqlUtils.field(VIEW_ITEM_REMAINDERS, sys.getIdName(VIEW_ITEM_REMAINDERS)))
+              .setFrom(VIEW_ITEM_REMAINDERS, SqlUtils.joinUsing(VIEW_ITEM_REMAINDERS, tmp, COL_ITEM,
+                  COL_WAREHOUSE));
+
+      qs.updateData(updateTmp);
+
+      SqlUpdate updateRem =
+          new SqlUpdate(VIEW_ITEM_REMAINDERS)
+              .addExpression(COL_WAREHOUSE_REMAINDER,
+                  SqlUtils.field(tmp, COL_WAREHOUSE_REMAINDER))
+              .setFrom(tmp, sys.joinTables(VIEW_ITEM_REMAINDERS, tmp, COL_ITEM_REMAINDER_ID))
+              .setWhere(SqlUtils.or(SqlUtils.notEqual(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER,
+                  SqlUtils.field(tmp, COL_WAREHOUSE_REMAINDER)), SqlUtils.isNull(
+                      VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER)));
+
+      qs.updateData(updateRem);
+
+      SqlUpdate updRem = new SqlUpdate(VIEW_ITEM_REMAINDERS)
+          .addConstant(COL_WAREHOUSE_REMAINDER, null);
+
+      IsCondition whereCondition;
+      if (BeeUtils.isEmpty(ids)) {
+        whereCondition =
+            SqlUtils.not(SqlUtils.in(VIEW_ITEM_REMAINDERS, sys.getIdName(VIEW_ITEM_REMAINDERS), new
+                SqlSelect().addFields(tmp, COL_ITEM_REMAINDER_ID)
+                    .addFrom(tmp)));
+      } else {
+        whereCondition =
+            SqlUtils.and(SqlUtils.not(SqlUtils.in(VIEW_ITEM_REMAINDERS, sys
+                .getIdName(VIEW_ITEM_REMAINDERS), new SqlSelect().addFields(tmp,
+                COL_ITEM_REMAINDER_ID).addFrom(tmp))),
+                SqlUtils.inList(VIEW_ITEM_REMAINDERS, COL_ITEM,
+                    Lists.newArrayList(srs.getLongColumn(COL_ITEM))));
+      }
+      updRem.setWhere(whereCondition);
+      qs.updateData(updRem);
+
+      qs.loadData(VIEW_ITEM_REMAINDERS, new SqlSelect().setLimit(10000).addFields(
+          tmp, COL_ITEM, COL_WAREHOUSE, COL_WAREHOUSE_REMAINDER)
+          .addFrom(tmp).setWhere(SqlUtils.isNull(tmp,
+              COL_ITEM_REMAINDER_ID)).addOrder(tmp, COL_ITEM, COL_WAREHOUSE));
+
+      qs.sqlDropTemp(tmp);
+
     }
   }
-
   private Set<Long> getOrderItems(Long targetId, String source, String column) {
     if (DataUtils.isId(targetId)) {
       return qs.getLongSet(new SqlSelect()
