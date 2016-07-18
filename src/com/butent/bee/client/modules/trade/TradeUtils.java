@@ -24,8 +24,6 @@ import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
-import com.butent.bee.client.render.ProvidesGridColumnRenderer;
-import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
@@ -57,8 +55,6 @@ public final class TradeUtils {
   private static final String COL_RATE_VAT = COL_CURRENCY_RATE + COL_TRADE_VAT;
   private static final String COL_RATE_TOTAL = COL_CURRENCY_RATE + COL_TOTAL;
   private static final String COL_RATE_CURRENCY = COL_CURRENCY_RATE + COL_CURRENCY;
-
-  private static ProvidesGridColumnRenderer totalRenderer;
 
   public static void amountEntry(IsRow row, String viewName) {
     Totalizer totalizer = new Totalizer(Data.getColumns(viewName));
@@ -359,13 +355,6 @@ public final class TradeUtils {
         total.getElement().setInnerText(response.getResponseAsString());
       }
     });
-  }
-
-  public static void registerTotalRenderer(String gridName, String columnName) {
-    if (totalRenderer == null) {
-      totalRenderer = new TotalRenderer.Provider();
-    }
-    RendererFactory.registerGcrProvider(gridName, columnName, totalRenderer);
   }
 
   private TradeUtils() {

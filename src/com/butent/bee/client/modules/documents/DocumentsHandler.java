@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -23,7 +22,6 @@ import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -187,7 +185,6 @@ public final class DocumentsHandler {
 
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
 
-    TradeUtils.registerTotalRenderer(VIEW_DOCUMENT_ITEMS, VAR_TOTAL);
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     MenuService.DOCUMENTS.setHandler(new MenuHandler() {
