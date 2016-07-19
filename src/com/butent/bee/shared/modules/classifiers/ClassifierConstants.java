@@ -307,6 +307,7 @@ public final class ClassifierConstants {
 
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";
+  public static final String PROP_WAREHOUSE_REMAINDER = "WarehouseRemainder";
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
