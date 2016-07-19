@@ -24,6 +24,8 @@ import com.butent.bee.shared.utils.*;
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
@@ -352,6 +354,47 @@ public class ClassifiersModuleBean implements BeeModule {
             } catch (AddressException ex) {
               event.addErrorMessage(BeeUtils.joinWords("Wrong address ", email, ": ",
                   ex.getMessage()));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setItemRemainders(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_ITEMS) && usr.isModuleVisible(ModuleAndSub.of(Module.ORDERS))) {
+          Map<Long, IsRow> indexedRows = new HashMap<>();
+          BeeRowSet rowSet = event.getRowset();
+          List<Long> ids = rowSet.getRowIds();
+
+          Map<Long, Double> resReminders =
+              getReminders(ids, TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+          Map<Long, Double> wrhReminders =
+              getReminders(ids, VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER);
+
+          for (BeeRow row : rowSet.getRows()) {
+            Long id = row.getId();
+
+            if (DataUtils.isId(id)) {
+              indexedRows.put(id, row);
+              row.setProperty(COL_RESERVED_REMAINDER, resReminders.get(id));
+              row.setProperty(PROP_WAREHOUSE_REMAINDER, wrhReminders.get(id));
+            }
+          }
+          if (!indexedRows.isEmpty()) {
+            BeeView view = sys.getView(VIEW_ITEM_REMAINDERS);
+            SqlSelect query = view.getQuery(usr.getCurrentUserId());
+
+            query.setWhere(SqlUtils.and(query.getWhere(), SqlUtils.inList(view.getSourceAlias(),
+                COL_ITEM, indexedRows.keySet())));
+
+            for (SimpleRow row : qs.getData(query)) {
+              IsRow r = indexedRows.get(row.getLong(COL_ITEM));
+
+              if (r != null) {
+                r.setProperty(COL_WAREHOUSE_REMAINDER + row.getValue(ALS_WAREHOUSE_CODE),
+                    row.getValue(COL_WAREHOUSE_REMAINDER));
+              }
             }
           }
         }
@@ -1998,6 +2041,54 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     return userSettings;
+  }
+
+  private Map<Long, Double> getReminders(List<Long> ids, String source, String field) {
+
+    Map<Long, Double> reminders = new HashMap<>();
+    Map<Long, Double> invoices = new HashMap<>();
+
+    if (!BeeUtils.isEmpty(ids)) {
+      SqlSelect select = new SqlSelect()
+          .addFields(source, COL_ITEM)
+          .addSum(source, field)
+          .addFrom(source)
+          .setWhere(SqlUtils.inList(source, COL_ITEM, ids))
+          .addGroup(source, COL_ITEM);
+
+      if (source == TBL_ORDER_ITEMS) {
+        SqlSelect slcInvoices =
+            new SqlSelect()
+                .addFields(TBL_SALE_ITEMS, COL_ITEM)
+                .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+                .addFrom(TBL_SALE_ITEMS)
+                .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                .setWhere(
+                    SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_ITEM, ids), SqlUtils.isNull(
+                        TBL_SALES, COL_TRADE_EXPORTED)))
+                .addGroup(TBL_SALE_ITEMS, COL_ITEM);
+
+        for (SimpleRow row : qs.getData(slcInvoices)) {
+          invoices.put(row.getLong(COL_ITEM), BeeUtils
+              .unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY)));
+        }
+
+        for (SimpleRow row : qs.getData(select)) {
+          if (invoices.containsKey(row.getLong(COL_ITEM))) {
+            reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field))
+                + BeeUtils.unbox(invoices.get(row.getLong(COL_ITEM))));
+          } else {
+            reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+          }
+        }
+      } else {
+        for (SimpleRow row : qs.getData(select)) {
+          reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+        }
+      }
+    }
+
+    return reminders;
   }
 
   @Schedule(hour = "*/1", persistent = false)
