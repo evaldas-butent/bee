@@ -24,6 +24,7 @@
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
+      <renderer type="total" />
     </CalcColumn>
 
     <DataColumn name="Number" caption="=number" />

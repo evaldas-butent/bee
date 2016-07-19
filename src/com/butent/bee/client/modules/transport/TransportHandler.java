@@ -6,7 +6,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -22,15 +21,12 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.modules.trade.InvoiceForm;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
-import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.render.ProvidesGridColumnRenderer;
-import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -249,41 +245,10 @@ public final class TransportHandler {
         new TransportDocumentsGrid(COL_TRANSPORTATION_ORDER));
     GridFactory.registerGridInterceptor("TripDocuments", new TransportDocumentsGrid(COL_TRIP));
 
-    ProvidesGridColumnRenderer provider = new CargoPlaceRenderer.Provider();
-    String loading = "Loading";
-    String unloading = "Unloading";
-
-    RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, unloading, provider);
-    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, loading, provider);
-    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, unloading, provider);
-    RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, unloading, provider);
-    RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, unloading, provider);
-    RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, unloading, provider);
-    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
-    RendererFactory.registerGcrProvider(TBL_ASSESSMENT_FORWARDERS, loading, provider);
-    RendererFactory.registerGcrProvider(TBL_ASSESSMENT_FORWARDERS, unloading, provider);
-
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
         ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_CARGO_TYPES, COL_CARGO_TYPE_COLOR,
         ColorStyleProvider.createDefault(VIEW_CARGO_TYPES));
-
-    TradeUtils.registerTotalRenderer(TBL_TRIP_COSTS, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(TBL_CARGO_INCOMES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(TBL_CARGO_EXPENSES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_SALES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_SALES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_PURCHASES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_TRIP_PURCHASES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
-    TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_ERP_TRIP_COSTS, VAR_TOTAL);
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_SALES, new CargoSalesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_SALES, new CargoCreditSalesGrid());

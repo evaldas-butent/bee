@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="ProjectFiles"
-  source="ProjectFiles"
+  source="ProjectFiles" caption="=prjFiles"
   >
   <Columns>
     <SimpleColumn name="Project" />

@@ -41,5 +41,6 @@
     <String name="RemindAt" precision="10" label="=crmRTRemindAt" />
     
     <Boolean name="CopyByMail" label="=mailNotify" />
+    <Boolean name="PrivateTask" />
   </Fields>
 </Table>

@@ -44,6 +44,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -52,6 +53,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -75,10 +77,17 @@ public class ServiceModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
+    List<SearchResult> result = new ArrayList<>();
     Set<String> columns = Sets.newHashSet(ALS_SERVICE_CATEGORY_NAME, COL_SERVICE_ADDRESS,
         ALS_SERVICE_CUSTOMER_NAME, ALS_SERVICE_CONTRACTOR_NAME);
 
-    return qs.getSearchResults(VIEW_SERVICE_OBJECTS, Filter.anyContains(columns, query));
+    result.addAll(qs.getSearchResults(VIEW_SERVICE_OBJECTS, Filter.anyContains(columns, query)));
+
+    result.addAll(qs.getSearchResults(VIEW_SERVICE_FILES,
+        Filter.anyContains(Sets.newHashSet(AdministrationConstants.COL_FILE_CAPTION,
+            AdministrationConstants.ALS_FILE_NAME), query)));
+
+    return result;
   }
 
   @Override

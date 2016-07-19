@@ -5,7 +5,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.FlagRenderer;
-import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -15,7 +14,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.LinkedHashMap;
@@ -24,23 +22,15 @@ import java.util.Map;
 
 public class CargoPlaceRenderer extends AbstractCellRenderer {
 
-  public static class Provider implements ProvidesGridColumnRenderer {
-    @Override
-    public AbstractCellRenderer getRenderer(String columnName,
-        List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
-        CellSource cellSource) {
-      return new CargoPlaceRenderer(dataColumns, columnName);
-    }
-  }
-
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "places-";
 
   final Map<String, Pair<Integer, String>> data = new LinkedHashMap<>();
   private final FlagRenderer flagRenderer;
   private final int postIndex;
 
-  public CargoPlaceRenderer(List<? extends IsColumn> columns, String prefix) {
+  public CargoPlaceRenderer(List<? extends IsColumn> columns, String options) {
     super(null);
+    String prefix = BeeUtils.nvl(options, BeeConst.STRING_EMPTY);
 
     data.put(COL_PLACE_DATE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_DATE, columns),
         Localized.dictionary().date()));
@@ -66,7 +56,7 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
 
     int codeIndex = DataUtils.getColumnIndex(prefix + "CountryCode", columns);
 
-    if (codeIndex != BeeConst.UNDEF) {
+    if (!BeeConst.isUndef(codeIndex)) {
       flagRenderer = new FlagRenderer(CellSource.forColumn(columns.get(codeIndex), codeIndex));
     } else {
       flagRenderer = null;
@@ -83,7 +73,7 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
     for (String item : data.keySet()) {
       Pair<Integer, String> itemInfo = data.get(item);
 
-      if (itemInfo.getA() != BeeConst.UNDEF) {
+      if (!BeeConst.isUndef(itemInfo.getA())) {
         String txt = row.getString(itemInfo.getA());
 
         if (!BeeUtils.isEmpty(txt)) {
@@ -102,7 +92,7 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
             table.setHtml(r, 1, txt);
 
           } else if (BeeUtils.same(item, COL_PLACE_CITY)) {
-            if (postIndex != BeeConst.UNDEF) {
+            if (!BeeConst.isUndef(postIndex)) {
               txt = BeeUtils.joinItems(txt, row.getString(postIndex));
             }
             table.setHtml(r, 1, txt);

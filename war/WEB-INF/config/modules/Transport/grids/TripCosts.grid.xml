@@ -27,6 +27,7 @@
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
+      <renderer type="total" />
     </CalcColumn>
     <CalcColumn name="Ratio" type="string" caption="Pokytis" horizontalAlignment="right">
       <render>

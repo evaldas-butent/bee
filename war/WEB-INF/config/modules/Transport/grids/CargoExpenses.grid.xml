@@ -23,6 +23,7 @@
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
+      <renderer type="total" />
     </CalcColumn>
 
     <RelColumn name="Supplier" renderColumns="SupplierName SupplierTypeName" choiceColumns="Name TypeName"/>

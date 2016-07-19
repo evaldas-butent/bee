@@ -7,6 +7,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.modules.trade.DiscountRenderer;
 import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.VatRenderer;
+import com.butent.bee.client.modules.transport.CargoPlaceRenderer;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -278,6 +279,10 @@ public final class RendererFactory {
 
       case TOKEN:
         logger.severe("renderer", type.name(), "not supported");
+        break;
+
+      case PLACE:
+        renderer = new CargoPlaceRenderer(dataColumns, description.getOptions());
         break;
     }
 

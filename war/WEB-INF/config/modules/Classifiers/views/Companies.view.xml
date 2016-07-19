@@ -85,6 +85,7 @@
     </SimpleJoin>
     <SimpleColumn name="CreditDays" />
     <SimpleColumn name="SupplierCreditDays" />
+    <SimpleColumn name="ToleratedDays" />
 
     <SimpleColumn name="FinancialState" />
     <SimpleJoin joinType="LEFT" name="FinancialState">
