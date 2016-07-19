@@ -14,6 +14,7 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -23,6 +24,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlCreate;
@@ -37,6 +39,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -68,6 +71,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -82,7 +86,6 @@ import javax.ejb.TimerService;
 public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   private static BeeLogger logger = LogUtils.getLogger(OrdersModuleBean.class);
-  Map<Long, Double> itemsRemainders;
 
   @EJB
   QueryServiceBean qs;
@@ -92,6 +95,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   ParamHolderBean prm;
   @EJB
   ConcurrencyBean cb;
+  @EJB
+  TradeModuleBean trd;
 
   @Resource
   TimerService timerService;
@@ -124,10 +129,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         response = createInvoiceItems(reqInfo);
         break;
 
-      case SVC_GET_NEXT_NUMBER:
-        response = getNextNumber(reqInfo);
-        break;
-
       case SVC_FILL_RESERVED_REMAINDERS:
         response = fillReservedRemainders(reqInfo);
         break;
@@ -136,6 +137,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_DATA));
         getERPStocks(ids);
         response = ResponseObject.emptyResponse();
+        break;
+
+      case SVC_GET_CREDIT_INFO:
+        response = getCreditInfo(reqInfo);
         break;
 
       default:
@@ -206,7 +211,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       @Subscribe
       @AllowConcurrentEvents
       public void setFreeRemainder(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_ORDER_ITEMS) && event.hasData()
+        if ((event.isAfter(VIEW_ORDER_ITEMS) || event.isAfter(VIEW_ORDER_SALES)) && event.hasData()
             && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
 
           BeeRowSet rowSet = event.getRowset();
@@ -217,11 +222,19 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             int ordIndex = rowSet.getColumnIndex(COL_ORDER);
             Long order = rowSet.getRow(0).getLong(ordIndex);
 
-            Map<Long, Double> freeRemainders = totReservedRemainders(itemIds, order, null);
+            Map<Long, Double> freeRemainders = getFreeRemainders(itemIds, order, null);
+            Map<Long, Double> compInvoices = getCompletedInvoices(order);
 
             for (BeeRow row : rowSet) {
               row.setProperty(PRP_FREE_REMAINDER, BeeUtils.toString(freeRemainders.get(row
                   .getLong(itemIndex))));
+
+              Long key = Long.valueOf(row.getId());
+              if (BeeUtils.isPositive(compInvoices.get(key))) {
+                row.setProperty(PRP_COMPLETED_INVOICES, compInvoices.get(key));
+              } else {
+                row.setProperty(PRP_COMPLETED_INVOICES, BeeConst.DOUBLE_ZERO);
+              }
             }
           }
         }
@@ -229,26 +242,40 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void fillOrderNumber(ViewInsertEvent event) {
-        if (event.isBefore(TBL_ORDERS) && !DataUtils.contains(event.getColumns(), COL_TA_NUMBER)) {
-          BeeView view = sys.getView(VIEW_ORDERS);
+      public void fillOrderNumber(DataEvent.ViewModifyEvent event) {
+        if (event.isBefore()
+            && Objects.equals(sys.getViewSource(event.getTargetName()), TBL_ORDERS)) {
+          List<BeeColumn> cols;
+          IsRow row;
           Long series = null;
 
-          for (int i = 0; i < event.getColumns().size(); i++) {
-            switch (event.getColumns().get(i).getId()) {
-              case COL_TA_SERIES:
-                series = event.getRow().getLong(i);
-                break;
-            }
+          if (event instanceof ViewInsertEvent) {
+            cols = ((ViewInsertEvent) event).getColumns();
+            row = ((ViewInsertEvent) event).getRow();
+          } else if (event instanceof DataEvent.ViewUpdateEvent) {
+            cols = ((DataEvent.ViewUpdateEvent) event).getColumns();
+            row = ((DataEvent.ViewUpdateEvent) event).getRow();
+          } else {
+            return;
           }
 
-          if (DataUtils.isId(series)) {
-            BeeColumn column = view.getBeeColumn(COL_TA_NUMBER);
-            String number = getNextNumber(series, column.getPrecision(), COL_TA_NUMBER);
+          int seriesIdx = DataUtils.getColumnIndex(COL_TA_SERIES, cols);
 
-            if (!BeeUtils.isEmpty(number)) {
-              event.addValue(column, new TextValue(number));
+          if (!BeeConst.isUndef(seriesIdx)) {
+            series = row.getLong(seriesIdx);
+          }
+          if (DataUtils.isId(series)) {
+            int numberIdx = DataUtils.getColumnIndex(COL_TA_NUMBER, cols);
+
+            if (BeeConst.isUndef(numberIdx)) {
+              cols.add(new BeeColumn(COL_TA_NUMBER));
+              row.addValue(null);
+              numberIdx = row.getNumberOfCells() - 1;
+
+            } else if (!BeeUtils.isEmpty(row.getString(numberIdx))) {
+              return;
             }
+            row.setValue(numberIdx, qs.getNextNumber(TBL_ORDERS, COL_TA_NUMBER, null, null));
           }
         }
       }
@@ -285,7 +312,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       return ResponseObject.emptyResponse();
     }
 
-    Map<Long, Double> totRemainders = totReservedRemainders(items.getRowIds(), null, warehouse);
+    Map<Long, Double> freeRemainders = getFreeRemainders(items.getRowIds(), null, warehouse);
+    Map<Long, Double> wrhRemainders = getWarehouseReminders(items.getRowIds(), warehouse);
 
     SqlSelect query =
         new SqlSelect()
@@ -305,11 +333,17 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     for (BeeRow row : items) {
       Long itemId = row.getId();
 
-      Double res = totRemainders.get(itemId);
+      Double free = freeRemainders.get(itemId);
+      double wrhReminder = BeeConst.DOUBLE_ZERO;
+
+      if (wrhRemainders.size() > 0) {
+        wrhReminder = BeeUtils.unbox(wrhRemainders.get(itemId));
+      }
+
       row.setValue(row.getNumberOfCells() - 4, code);
-      row.setValue(row.getNumberOfCells() - 3, itemsRemainders.get(itemId));
-      row.setValue(row.getNumberOfCells() - 2, res);
-      row.setValue(row.getNumberOfCells() - 1, itemsRemainders.get(itemId) - res);
+      row.setValue(row.getNumberOfCells() - 3, wrhReminder);
+      row.setValue(row.getNumberOfCells() - 2, free);
+      row.setValue(row.getNumberOfCells() - 1, wrhReminder - free);
     }
 
     return ResponseObject.response(items);
@@ -534,6 +568,30 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         sys.eventEnd(sys.eventStart(PRM_EXPORT_ERP_RESERVATIONS_TIME), "ERROR", e.getMessage());
       }
     }
+  }
+
+  private ResponseObject getCreditInfo(RequestInfo reqInfo) {
+    Long orderId = BeeUtils.toLongOrNull(reqInfo.getParameter(VIEW_ORDERS));
+
+    if (!DataUtils.isId(orderId)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    SqlSelect select = new SqlSelect()
+        .addFields(VIEW_ORDERS, COL_COMPANY)
+        .addFrom(VIEW_ORDERS)
+        .setWhere(SqlUtils.equals(VIEW_ORDERS, sys.getIdName(VIEW_ORDERS), orderId));
+
+    Long companyId = qs.getLong(select);
+
+    if (DataUtils.isId(companyId)) {
+      ResponseObject response = trd.getCreditInfo(companyId);
+
+      if (!response.hasErrors()) {
+        return response;
+      }
+    }
+    return ResponseObject.emptyResponse();
   }
 
   private void getERPItems() {
@@ -868,82 +926,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
   }
 
-  private ResponseObject getNextNumber(RequestInfo reqInfo) {
-    Long seriesId = reqInfo.getParameterLong(COL_SERIES);
-    String columnName = reqInfo.getParameter(Service.VAR_COLUMN);
-    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
-
-    if (!DataUtils.isId(seriesId) || BeeUtils.isEmpty(columnName) || BeeUtils.isEmpty(viewName)) {
-      logger.warning("Missing one of parameter (seriesId, columnName, viewname)", seriesId,
-          columnName, viewName);
-      return ResponseObject.emptyResponse();
-    }
-
-    DataInfo viewData = sys.getDataInfo(viewName);
-
-    if (viewData == null) {
-      return ResponseObject.emptyResponse();
-    }
-
-    BeeColumn col = viewData.getColumn(columnName);
-
-    if (col == null) {
-      return ResponseObject.emptyResponse();
-    }
-
-    return ResponseObject.response(getNextNumber(seriesId, col.getPrecision(), columnName));
-  }
-
-  private String getNextNumber(long series, int maxLength, String column) {
-    IsCondition where = SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_SERIES, series),
-        SqlUtils.notNull(TBL_ORDERS, column));
-
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_ORDERS, column)
-        .addFrom(TBL_ORDERS)
-        .setWhere(where);
-
-    String[] values = qs.getColumn(query);
-
-    long max = 0;
-    BigInteger bigMax = null;
-
-    if (!ArrayUtils.isEmpty(values)) {
-      for (String value : values) {
-        if (BeeUtils.isDigit(value)) {
-          if (BeeUtils.isLong(value)) {
-            max = Math.max(max, BeeUtils.toLong(value));
-
-          } else {
-            BigInteger big = new BigInteger(value);
-
-            if (bigMax == null || BeeUtils.isLess(bigMax, big)) {
-              bigMax = big;
-            }
-          }
-        }
-      }
-    }
-
-    BigInteger big = new BigInteger(BeeUtils.toString(max));
-    if (bigMax != null) {
-      big = big.max(bigMax);
-    }
-
-    String number = big.add(BigInteger.ONE).toString();
-
-    Integer length = prm.getInteger(PRM_TA_NUMBER_LENGTH);
-    if (BeeUtils.isPositive(length) && length > number.length()) {
-      number = BeeUtils.padLeft(number, length, BeeConst.CHAR_ZERO);
-    }
-
-    if (maxLength > 0 && number.length() > maxLength) {
-      number = number.substring(number.length() - maxLength);
-    }
-
-    return number;
-  }
-
   private ResponseObject getTemplateItems(RequestInfo reqInfo) {
     Long templateId = reqInfo.getParameterLong(COL_TEMPLATE);
     if (!DataUtils.isId(templateId)) {
@@ -990,8 +972,94 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
   }
 
-  private Map<Long, Double> totReservedRemainders(List<Long> itemIds, Long order, Long whId) {
-    Long warehouseId;
+  private Map<Long, Double> getCompletedInvoices(Long order) {
+    Map<Long, Double> complInvoices = new HashMap<>();
+
+    SqlSelect select =
+        new SqlSelect()
+            .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+            .addFields(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS))
+            .addFrom(VIEW_ORDER_CHILD_INVOICES)
+            .addFromLeft(TBL_ORDERS,
+                sys.joinTables(TBL_ORDERS, VIEW_ORDER_CHILD_INVOICES, COL_ORDER))
+            .addFromInner(TBL_ORDER_ITEMS,
+                sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
+            .addFromLeft(TBL_SALES,
+                sys.joinTables(TBL_SALES, VIEW_ORDER_CHILD_INVOICES, COL_SALE))
+            .addFromInner(TBL_SALE_ITEMS,
+                sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+            .setWhere(
+                SqlUtils.and(SqlUtils.equals(VIEW_ORDER_CHILD_INVOICES, COL_ORDER, order), SqlUtils
+                    .joinUsing(TBL_ORDER_ITEMS, TBL_SALE_ITEMS, COL_ITEM)))
+            .addGroup(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
+
+    SimpleRowSet rs = qs.getData(select);
+
+    if (rs.getNumberOfRows() > 0) {
+      for (SimpleRow row : rs) {
+        complInvoices.put(row.getLong(sys.getIdName(TBL_ORDER_ITEMS)), row
+            .getDouble(COL_TRADE_ITEM_QUANTITY));
+      }
+    }
+    return complInvoices;
+  }
+
+  private Map<Long, Double> getAllRemainders(List<Long> ids) {
+
+    Map<Long, Double> reminders = new HashMap<>();
+    Map<Long, Double> resRemainders = new HashMap<>();
+    Map<Long, Double> invoices = new HashMap<>();
+    Map<Long, Double> wrhRemainders = getWarehouseReminders(ids, null);
+
+    if (!BeeUtils.isEmpty(ids)) {
+      SqlSelect selectReminders = new SqlSelect()
+          .addFields(TBL_ORDER_ITEMS, COL_ITEM)
+          .addSum(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
+          .addFrom(TBL_ORDER_ITEMS)
+          .setWhere(SqlUtils.inList(TBL_ORDER_ITEMS, COL_ITEM, ids))
+          .addGroup(TBL_ORDER_ITEMS, COL_ITEM);
+
+      SqlSelect slcInvoices = new SqlSelect()
+          .addFields(TBL_SALE_ITEMS, COL_ITEM)
+          .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+          .addFrom(TBL_SALE_ITEMS)
+          .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+          .setWhere(SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_ITEM, ids), SqlUtils.isNull(
+              TBL_SALES, COL_TRADE_EXPORTED)))
+          .addGroup(TBL_SALE_ITEMS, COL_ITEM);
+
+      for (SimpleRow row : qs.getData(slcInvoices)) {
+        invoices.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY)));
+      }
+
+      for (SimpleRow row : qs.getData(selectReminders)) {
+        resRemainders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(COL_RESERVED_REMAINDER)));
+      }
+
+      for (Long itemId : ids) {
+        double wrhRemainder = BeeUtils.unbox(wrhRemainders.get(itemId));
+        double remainder = BeeUtils.unbox(resRemainders.get(itemId));
+        double invoice = BeeUtils.unbox(invoices.get(itemId));
+
+        reminders.put(itemId, wrhRemainder - remainder - invoice);
+      }
+    }
+
+    return reminders;
+  }
+
+  private Long getWarehouse(Long orderId) {
+    SqlSelect select = new SqlSelect()
+        .addFields(TBL_ORDERS, COL_WAREHOUSE)
+        .addFrom(TBL_ORDERS)
+        .setWhere(sys.idEquals(TBL_ORDERS, orderId));
+
+    return qs.getLong(select);
+  }
+
+  private Map<Long, Double> getFreeRemainders(List<Long> itemIds, Long order, Long whId) {
+    Long warehouseId = null;
+
     if (whId == null) {
       SqlSelect query = new SqlSelect()
           .addFields(TBL_ORDERS, COL_WAREHOUSE)
@@ -1004,46 +1072,88 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     Map<Long, Double> totRemainders = new HashMap<>();
-    itemsRemainders = new HashMap<>();
+
+    if (warehouseId == null) {
+      return getAllRemainders(itemIds);
+    }
 
     for (Long itemId : itemIds) {
-      SqlSelect qry =
-          new SqlSelect()
-              .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
-              .addFrom(TBL_ORDERS)
-              .addFromLeft(TBL_ORDER_ITEMS,
-                  SqlUtils.join(TBL_ORDER_ITEMS, COL_ORDER, TBL_ORDERS, sys.getIdName(TBL_ORDERS)))
-              .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_WAREHOUSE, warehouseId),
-                  SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS, OrdersStatus.APPROVED.ordinal()),
-                  SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId)));
+      SqlSelect qry = new SqlSelect()
+          .addSum(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
+          .addFrom(TBL_ORDERS)
+          .addFromLeft(TBL_ORDER_ITEMS,
+              SqlUtils.join(TBL_ORDER_ITEMS, COL_ORDER, TBL_ORDERS, sys.getIdName(TBL_ORDERS)))
+          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_WAREHOUSE, warehouseId),
+              SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS, OrdersStatus.APPROVED.ordinal()),
+              SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId)))
+          .addGroup(TBL_ORDER_ITEMS, COL_ITEM);
 
-      SimpleRowSet srs = qs.getData(qry);
-      Double totRes = BeeConst.DOUBLE_ZERO;
+      Double totRes = qs.getDouble(qry);
 
-      for (SimpleRow sr : srs) {
-        if (BeeUtils.isDouble(sr.getDouble(COL_RESERVED_REMAINDER))) {
-          totRes += sr.getDouble(COL_RESERVED_REMAINDER);
-        }
+      if (totRes == null) {
+        totRes = BeeConst.DOUBLE_ZERO;
+      }
+
+      SqlSelect invoiceQry = new SqlSelect()
+          .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+          .addFrom(VIEW_ORDER_CHILD_INVOICES)
+          .addFromLeft(TBL_SALES,
+              sys.joinTables(TBL_SALES, VIEW_ORDER_CHILD_INVOICES, COL_SALE))
+          .addFromLeft(TBL_SALE_ITEMS, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_SALES, COL_TRADE_WAREHOUSE_FROM, warehouseId),
+              SqlUtils.equals(TBL_SALE_ITEMS, COL_ITEM, itemId), SqlUtils.isNull(TBL_SALES,
+                  COL_TRADE_EXPORTED)))
+          .addGroup(TBL_SALE_ITEMS, COL_ITEM);
+
+      Double totInvc = qs.getDouble(invoiceQry);
+
+      if (totInvc == null) {
+        totInvc = BeeConst.DOUBLE_ZERO;
       }
 
       SqlSelect q = new SqlSelect()
           .addFields(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER)
           .addFrom(VIEW_ITEM_REMAINDERS)
-          .setWhere(
-              SqlUtils.and(SqlUtils.equals(VIEW_ITEM_REMAINDERS, COL_ITEM, itemId), SqlUtils
-                  .equals(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE, warehouseId)));
+          .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_ITEM_REMAINDERS, COL_ITEM, itemId),
+              SqlUtils.equals(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE, warehouseId), SqlUtils.notNull(
+                  VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER)));
 
       if (BeeUtils.isDouble(qs.getDouble(q))) {
         Double rem = qs.getDouble(q);
-        totRemainders.put(itemId, rem - totRes);
-        itemsRemainders.put(itemId, rem);
+        totRemainders.put(itemId, rem - totRes - totInvc);
       } else {
         totRemainders.put(itemId, BeeConst.DOUBLE_ZERO);
-        itemsRemainders.put(itemId, BeeConst.DOUBLE_ZERO);
       }
     }
 
     return totRemainders;
+  }
+
+  private Map<Long, Double> getWarehouseReminders (List<Long> ids, Long warehouse) {
+    Map<Long, Double> result = new HashMap<>();
+
+    SqlSelect selectWrhReminders = new SqlSelect();
+
+    if (DataUtils.isId(warehouse)) {
+      selectWrhReminders
+          .addFields(VIEW_ITEM_REMAINDERS, COL_ITEM, COL_WAREHOUSE_REMAINDER)
+          .addFrom(VIEW_ITEM_REMAINDERS)
+          .setWhere(SqlUtils.and(SqlUtils.inList(VIEW_ITEM_REMAINDERS, COL_ITEM, ids),
+              SqlUtils.equals(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE, warehouse)));
+    } else {
+      selectWrhReminders
+          .addFields(VIEW_ITEM_REMAINDERS, COL_ITEM)
+          .addSum(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER)
+          .addFrom(VIEW_ITEM_REMAINDERS)
+          .setWhere(SqlUtils.inList(VIEW_ITEM_REMAINDERS, COL_ITEM, ids))
+          .addGroup(VIEW_ITEM_REMAINDERS, COL_ITEM);
+    }
+
+    for (SimpleRow row : qs.getData(selectWrhReminders)) {
+      result.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(COL_WAREHOUSE_REMAINDER)));
+    }
+
+    return result;
   }
 
   private ResponseObject fillReservedRemainders(RequestInfo reqInfo) {
@@ -1066,7 +1176,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     SimpleRowSet srs = qs.getData(itemsQry);
     Map<Long, Double> rem =
-        totReservedRemainders(Arrays.asList(srs.getLongColumn(COL_ITEM)), null, warehouseId);
+        getFreeRemainders(Arrays.asList(srs.getLongColumn(COL_ITEM)), null, warehouseId);
 
     for (SimpleRow sr : srs) {
       Double resRemainder = BeeConst.DOUBLE_ZERO;
