@@ -133,6 +133,9 @@ public final class ClassifierConstants {
 
   public static final String COL_DATE_OF_BIRTH = "DateOfBirth";
 
+  public static final String COL_DATE_FROM = "DateFrom";
+  public static final String COL_DATE_TO = "DateTo";
+
   public static final String COL_CATEGORY = "Category";
   public static final String COL_CATEGORY_NAME = "Name";
   public static final String COL_CATEGORY_PARENT = "Parent";
@@ -140,6 +143,7 @@ public final class ClassifierConstants {
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
   public static final String COL_ITEM_ARTICLE = "Article";
+  public static final String COL_ITEM_ATTRIBUTE = "Attribute";
   public static final String COL_ITEM_BARCODE = "Barcode";
   public static final String COL_ITEM_IS_SERVICE = "IsService";
   public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
@@ -147,6 +151,7 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_CURRENCY = "Currency";
   public static final String COL_ITEM_COST = "Cost";
   public static final String COL_ITEM_COST_CURRENCY = "CostCurrency";
+  public static final String COL_ITEM_PACKAGE_UNITS = "PackageUnits";
   public static final String COL_ITEM_PRICE_1 = "Price1";
   public static final String COL_ITEM_CURRENCY_1 = "Currency1";
   public static final String COL_ITEM_PRICE_2 = "Price2";

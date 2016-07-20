@@ -181,7 +181,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createNumber(module, PRM_IMPORT_ERP_STOCKS_TIME),
         BeeParameter.createNumber(module, PRM_EXPORT_ERP_RESERVATIONS_TIME),
         BeeParameter.createRelation(module, PRM_DEFAULT_SALE_OPERATION, false,
-            VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME));
+            VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME),
+        BeeParameter.createNumber(module, PRM_MANAGER_DISCOUNT));
 
     return params;
   }
@@ -317,16 +318,19 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     Map<Long, Double> freeRemainders = getFreeRemainders(items.getRowIds(), null, warehouse);
     Map<Long, Double> wrhRemainders = getWarehouseReminders(items.getRowIds(), warehouse);
 
-    SqlSelect query =
-        new SqlSelect()
-            .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
-            .addFrom(TBL_WAREHOUSES)
-            .setWhere(
-                SqlUtils.equals(TBL_WAREHOUSES, sys.getIdName(TBL_WAREHOUSES), warehouse));
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addFrom(TBL_WAREHOUSES)
+        .setWhere(SqlUtils.equals(TBL_WAREHOUSES, sys.getIdName(TBL_WAREHOUSES), warehouse));
 
     String code = qs.getValue(query);
+    Integer defaultVAT = prm.getInteger(PRM_VAT_PERCENT);
 
     BeeView remView = sys.getView(VIEW_ITEM_REMAINDERS);
+    items.addColumn(ValueType.NUMBER, COL_TRADE_SUPPLIER);
+    items.addColumn(ValueType.NUMBER, COL_UNPACKING);
+    items.addColumn(ValueType.DATE, COL_DATE_TO);
+    items.addColumn(ValueType.NUMBER, COL_DEFAULT_VAT);
     items.addColumn(remView.getBeeColumn(ALS_WAREHOUSE_CODE));
     items.addColumn(remView.getBeeColumn(COL_WAREHOUSE_REMAINDER));
     items.addColumn(ValueType.NUMBER, PRP_FREE_REMAINDER);
@@ -335,13 +339,26 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     for (BeeRow row : items) {
       Long itemId = row.getId();
 
+      SqlSelect suppliersQry = new SqlSelect()
+          .addFields(VIEW_ITEM_SUPPLIERS, COL_TRADE_SUPPLIER, COL_UNPACKING, COL_DATE_TO)
+          .addFrom(VIEW_ITEM_SUPPLIERS)
+          .setWhere(SqlUtils.equals(VIEW_ITEM_SUPPLIERS, COL_ITEM, itemId));
+
+      SimpleRowSet suppliers = qs.getData(suppliersQry);
+
+      if (suppliers.getNumberOfRows() > 0) {
+        row.setValue(row.getNumberOfCells() - 8, suppliers.getLong(0, COL_TRADE_SUPPLIER));
+        row.setValue(row.getNumberOfCells() - 7, suppliers.getDouble(0, COL_UNPACKING));
+        row.setValue(row.getNumberOfCells() - 6, suppliers.getDate(0, COL_DATE_TO));
+      }
+
       Double free = freeRemainders.get(itemId);
       double wrhReminder = BeeConst.DOUBLE_ZERO;
 
       if (wrhRemainders.size() > 0) {
         wrhReminder = BeeUtils.unbox(wrhRemainders.get(itemId));
       }
-
+      row.setValue(row.getNumberOfCells() - 5, defaultVAT);
       row.setValue(row.getNumberOfCells() - 4, code);
       row.setValue(row.getNumberOfCells() - 3, wrhReminder);
       row.setValue(row.getNumberOfCells() - 2, free);
@@ -369,6 +386,11 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter);
+    items.addColumn(ValueType.NUMBER, COL_DEFAULT_VAT);
+
+    for (BeeRow row : items) {
+      row.setValue(row.getNumberOfCells() - 1, prm.getInteger(PRM_VAT_PERCENT));
+    }
 
     if (DataUtils.isEmpty(items)) {
       logger.debug(reqInfo.getService(), "no items found", filter);
