@@ -9,10 +9,11 @@
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
     <String name="Article" precision="30" label="=article" />
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=trdQuantity" />
-    <Numeric name="Price" precision="12" scale="2" label="=trdPrice" />
+    <Numeric name="Price" precision="12" scale="5" label="=trdPrice" />
     <Boolean name="VatPlus" label="=vatPlus" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="=vatPercent" />
+    <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
     <Text name="Note" label="=trdNote" />
     <Relation name="Parent" relation="PurchaseItems" />
     <Numeric name="Ordinal" precision="2" label="=ordinal" />
@@ -28,13 +29,14 @@ BEGIN
   ELSE
     _id:=NEW."Sale";
   END IF;
-
-  UPDATE "Sales" SET "Amount"=(SELECT SUM("Quantity"*"Price"+
-        CASE WHEN "VatPlus" IS NULL OR "Vat" IS NULL THEN 0
-             WHEN "VatPercent" IS NOT NULL THEN "Quantity"*"Price"/100*"Vat"
-             ELSE "Vat" END)
-      FROM "SaleItems" WHERE "Sale"=_id)
-    WHERE "SaleID"=_id;
+  UPDATE "Sales" SET "Amount"=(SELECT
+    SUM(("Quantity"*"Price"-"Quantity"*"Price"/100*COALESCE("Discount", 0))+
+      CASE WHEN "VatPlus" IS NULL OR "Vat" IS NULL THEN 0
+           WHEN "VatPercent" IS NOT NULL
+             THEN ("Quantity"*"Price"-"Quantity"*"Price"/100*COALESCE("Discount", 0))/100* "Vat"
+           ELSE "Vat" END)
+    FROM "SaleItems" WHERE "Sale"=_id)
+  WHERE "SaleID"=_id;
   RETURN NULL;
 END;
         ]]>
