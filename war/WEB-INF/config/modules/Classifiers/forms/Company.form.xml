@@ -258,6 +258,11 @@
         <ChildGrid name="CompanyProjects" relColumn="Company" paging="true" />
       </page>
 
+      <page data="Orders">
+        <text>=offers</text>
+        <ChildGrid name="CompanyOrders" relColumn="Company" />
+      </page>
+
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>

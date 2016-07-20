@@ -45,6 +45,7 @@ import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -199,14 +200,6 @@ public class OrderForm extends AbstractFormInterceptor {
       form.setEnabled(false);
     }
 
-    if (BeeUtils.isEmpty(row
-        .getString(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE)))) {
-      row.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE),
-          parentGrid.getGridName());
-      form.getOldRow().setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE),
-          parentGrid.getGridName());
-    }
-
     Widget child = form.getWidgetByName(VIEW_ORDER_CHILD_INVOICES);
 
     if (child != null) {
@@ -266,6 +259,42 @@ public class OrderForm extends AbstractFormInterceptor {
       }
       return true;
     });
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+
+    GridView parentGrid = getGridView();
+    if (parentGrid == null) {
+      return;
+    }
+
+    if (BeeUtils.isEmpty(newRow.getString(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE)))) {
+      String gridName = GRID_COMPANY_ORDERS.equals(parentGrid.getGridName()) ? GRID_OFFERS
+          : parentGrid.getGridName();
+
+      newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
+      oldRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
+    }
+
+    if (GRID_OFFERS.equals(parentGrid.getGridName())) {
+      int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
+      int endDateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
+
+      if (Objects.equals(OrdersStatus.PREPARED.ordinal(), newRow.getInteger(statusIdx))) {
+        DateTime now = TimeUtils.nowMillis();
+        int year = now.getYear();
+        int month = now.getMonth() + 3;
+
+        if (month > 12) {
+          year++;
+          month = month - 12;
+        }
+        newRow.setValue(endDateIdx, new DateTime(year, month, now.getDom()));
+      }
+    }
+
+    super.onStartNewRow(form, oldRow, newRow);
   }
 
   @Override
