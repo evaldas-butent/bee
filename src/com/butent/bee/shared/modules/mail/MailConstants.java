@@ -249,7 +249,6 @@ public final class MailConstants {
 
   public static final String COL_RULE = "Rule";
   public static final String COL_RULE_ACTIVE = "Active";
-  public static final String COL_RULE_ORDINAL = "Ordinal";
   public static final String COL_RULE_CONDITION = "Condition";
   public static final String COL_RULE_CONDITION_OPTIONS = "ConditionOptions";
   public static final String COL_RULE_ACTION = "Action";
