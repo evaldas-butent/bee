@@ -9,6 +9,8 @@ import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.client.Global;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
@@ -21,12 +23,9 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.grid.column.CalculatedColumn;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
-import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.acts.ItemPricePicker;
-import com.butent.bee.client.modules.trade.acts.QuantityReader;
 import com.butent.bee.client.modules.transport.InvoiceCreator;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
@@ -49,14 +48,18 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,10 +70,20 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
   Long orderForm;
   private OrderItemsPicker picker;
   private Flow invoice = new Flow();
+  private Double managerDiscount;
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().addCommandItem(invoice);
+
+    Global.getParameter(PRM_MANAGER_DISCOUNT, new Consumer<String>() {
+
+      @Override
+      public void accept(String input) {
+        managerDiscount = BeeUtils.toDoubleOrNull(input);
+      }
+    });
+
     super.afterCreatePresenter(presenter);
   }
 
@@ -103,6 +116,16 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     }
 
     IsRow parentRow = ViewHelper.getFormRow(gridView);
+    FormView parentForm = ViewHelper.getForm(gridView);
+
+    if (parentRow == null || parentForm == null) {
+      return;
+    }
+
+    DataSelector wrhSelector = (DataSelector) parentForm.getWidgetBySource(COL_WAREHOUSE);
+    if (wrhSelector != null) {
+      wrhSelector.setEnabled(checkIsWarehouseEditable());
+    }
 
     List<ColumnInfo> predefinedColumns = gridView.getGrid().getPredefinedColumns();
     List<Integer> visibleColumns = gridView.getGrid().getVisibleColumns();
@@ -123,15 +146,12 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
         }
       }
 
-      int freeRemIndex = BeeConst.UNDEF;
       int resRemIndex = BeeConst.UNDEF;
 
       for (int i = 0; i < predefinedColumns.size(); i++) {
         ColumnInfo columnInfo = predefinedColumns.get(i);
 
-        if (columnInfo.is(PRP_FREE_REMAINDER)) {
-          freeRemIndex = i;
-        } else if (columnInfo.is(COL_RESERVED_REMAINDER)) {
+        if (columnInfo.is(COL_RESERVED_REMAINDER)) {
           resRemIndex = i;
         }
       }
@@ -139,16 +159,12 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
       showColumns.addAll(visibleColumns);
 
       int pos = (unitPosition == qtyPosition + 1) ? unitPosition : qtyPosition;
-      if (!BeeConst.isUndef(freeRemIndex) && !showColumns.contains(freeRemIndex)) {
-        showColumns.add(pos + 1, freeRemIndex);
-      }
-      if (!BeeConst.isUndef(freeRemIndex) && !showColumns.contains(resRemIndex)) {
+      if (!BeeConst.isUndef(resRemIndex) && !showColumns.contains(resRemIndex)) {
         showColumns.add(pos + 2, resRemIndex);
       }
     } else {
       for (int index : visibleColumns) {
-        if (!predefinedColumns.get(index).is(PRP_FREE_REMAINDER)
-            && !predefinedColumns.get(index).is(COL_RESERVED_REMAINDER)) {
+        if (!predefinedColumns.get(index).is(COL_RESERVED_REMAINDER)) {
           showColumns.add(index);
         }
       }
@@ -256,16 +272,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
         ItemPricePicker ipp = new ItemPricePicker(cellSource, dataColumns, null);
         ((HasCellRenderer) column).setRenderer(ipp);
 
-      } else {
-        AbstractCellRenderer renderer = ((CalculatedColumn) column).getRenderer();
-        if (renderer instanceof TotalRenderer) {
-          configureRenderer(dataColumns, (TotalRenderer) renderer);
-        }
       }
-    }
-
-    if (footer != null && footer.getRowEvaluator() instanceof TotalRenderer) {
-      configureRenderer(dataColumns, (TotalRenderer) footer.getRowEvaluator());
     }
 
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
@@ -274,6 +281,20 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
   @Override
   public GridInterceptor getInstance() {
     return new OrderItemsGrid();
+  }
+
+  @Override
+  public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
+      Collection<RowInfo> selectedRows, DeleteMode defMode) {
+
+    Long complInvc = activeRow.getPropertyLong(PRP_COMPLETED_INVOICES);
+
+    if (BeeUtils.isPositive(complInvc)) {
+      getGridView().notifySevere(Localized.dictionary().rowIsNotRemovable());
+      return DeleteMode.CANCEL;
+    } else {
+      return DeleteMode.SINGLE;
+    }
   }
 
   @Override
@@ -299,25 +320,6 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     super.onParentRow(event);
   }
 
-  private static void configureRenderer(List<? extends IsColumn> dataColumns,
-      TotalRenderer renderer) {
-
-    int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_QUANTITY, dataColumns);
-
-    QuantityReader quantityReader = new QuantityReader(index);
-
-    renderer.getTotalizer().setQuantityFunction(quantityReader);
-  }
-
-  private Double getDefaultDiscount() {
-    IsRow row = getGridView().getActiveRow();
-    if (row == null) {
-      row = BeeUtils.getLast(getGridView().getRowData());
-    }
-
-    return (row == null) ? null : row.getDouble(getDataIndex(COL_TRADE_DISCOUNT));
-  }
-
   private OrderItemsPicker ensurePicker() {
     if (picker == null) {
       picker = new OrderItemsPicker();
@@ -335,25 +337,21 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
           IsRow parentRow = (form == null) ? null : form.getActiveRow();
 
           if (DataUtils.idEquals(parentRow, result)) {
-            ItemPrice itemPrice = null;
-
-            String ip = rowSet.getTableProperty(PRP_ITEM_PRICE);
-            if (BeeUtils.isDigit(ip)) {
-              itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
-            }
-
-            addItems(parentRow, form.getDataColumns(), itemPrice, getDefaultDiscount(), rowSet);
+            addItems(parentRow, form.getDataColumns(), rowSet);
           }
         }
       });
     }
   }
 
-  private void addItems(IsRow parentRow, List<BeeColumn> parentColumns, ItemPrice defPrice,
-      Double discount, BeeRowSet items) {
+  private void addItems(IsRow parentRow, List<BeeColumn> parentColumns, BeeRowSet items) {
 
-    List<String> colNames = Lists.newArrayList(COL_ORDER, COL_TA_ITEM,
-        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_RESERVED_REMAINDER);
+    List<String> colNames =
+        Lists.newArrayList(COL_ORDER, COL_TA_ITEM,
+            COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT,
+            COL_INVISIBLE_DISCOUNT, COL_RESERVED_REMAINDER, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
+            COL_TRADE_SUPPLIER, COL_UNPACKING);
+
     final BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
     final int ordIndex = rowSet.getColumnIndex(COL_ORDER);
@@ -362,16 +360,26 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     final int resRemIndex = rowSet.getColumnIndex(COL_RESERVED_REMAINDER);
     final int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
     final int discountIndex = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
+    final int invisibleDiscountIndex = rowSet.getColumnIndex(COL_INVISIBLE_DISCOUNT);
+    final int vatIdx = rowSet.getColumnIndex(COL_TRADE_VAT);
+    final int supplierIdx = rowSet.getColumnIndex(COL_TRADE_SUPPLIER);
+    final int unpackingIdx = rowSet.getColumnIndex(COL_UNPACKING);
+    final int vatPrcIndex = rowSet.getColumnIndex(COL_TRADE_VAT_PERC);
+    final int vatPrcItemIdx = items.getColumnIndex(COL_TRADE_VAT_PERC);
+    final int vatPrcDefaultIdx = items.getNumberOfColumns() - 5;
+    final int vatItemIdx = items.getColumnIndex(COL_TRADE_VAT);
+    final int attributeIdx = items.getColumnIndex(COL_ITEM_ATTRIBUTE);
+    final int pckgUnitsIdx = items.getColumnIndex(COL_ITEM_PACKAGE_UNITS);
 
     Map<Long, Double> quantities = new HashMap<>();
     Map<Long, ItemPrice> priceNames = new HashMap<>();
 
     for (BeeRow item : items) {
-      Double qty = BeeUtils.toDoubleOrNull(item.getProperty(PRP_QUANTITY));
-      Double freeRem = BeeUtils.toDoubleOrNull(item.getProperty(PRP_FREE_REMAINDER));
+      Double qty = BeeUtils.toDouble(item.getProperty(PRP_QUANTITY));
+      Double freeRem = BeeUtils.toDouble(item.getProperty(PRP_FREE_REMAINDER));
 
       if (BeeUtils.isDouble(qty)) {
-        BeeRow row = DataUtils.createEmptyRow(rowSet.getNumberOfColumns());
+        final BeeRow row = DataUtils.createEmptyRow(rowSet.getNumberOfColumns());
 
         row.setValue(ordIndex, parentRow.getId());
         row.setValue(itemIndex, item.getId());
@@ -387,26 +395,25 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
         quantities.put(item.getId(), qty);
 
-        ItemPrice itemPrice = defPrice;
-
-        String ip = item.getProperty(PRP_ITEM_PRICE);
-        if (BeeUtils.isDigit(ip)) {
-          itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
-        }
-
-        if (itemPrice != null) {
-          Double price = item.getDouble(items.getColumnIndex(itemPrice.getPriceColumn()));
-          if (BeeUtils.isDouble(price)) {
-            row.setValue(priceIndex, Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
+        if (BeeUtils.isPositive(item.getLong(items.getNumberOfColumns() - 8))) {
+          row.setValue(supplierIdx, item.getLong(items.getNumberOfColumns() - 8));
+          if (BeeUtils.isPositive(item.getDouble(items.getNumberOfColumns() - 7))) {
+            if (maybeInsertSupplier(item, attributeIdx, pckgUnitsIdx, qty, item.getDate(items
+                .getNumberOfColumns() - 6))) {
+              row.setValue(unpackingIdx, item.getDouble(items.getNumberOfColumns() - 7));
+            }
           }
-
-          priceNames.put(item.getId(), itemPrice);
         }
 
-        if (BeeUtils.nonZero(discount)) {
-          row.setValue(discountIndex, discount);
-        }
+        if (BeeUtils.unbox(item.getBoolean(vatItemIdx))) {
 
+          if (BeeUtils.unbox(item.getInteger(vatPrcItemIdx)) > 0) {
+            row.setValue(vatIdx, item.getInteger(vatPrcItemIdx));
+          } else {
+            row.setValue(vatIdx, item.getInteger(vatPrcDefaultIdx));
+          }
+          row.setValue(vatPrcIndex, true);
+        }
         rowSet.addRow(row);
       }
     }
@@ -436,7 +443,10 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
                 Pair<Double, Double> pair = input.get(row.getLong(itemIndex));
 
                 if (pair != null) {
-                  Double price = pair.getA();
+                  double price =
+                      BeeUtils.unbox(pair.getA())
+                          + BeeUtils.unbox(row.getDouble(unpackingIdx))
+                          / BeeUtils.unbox(row.getDouble(qtyIndex));
                   Double percent = pair.getB();
                   if (BeeUtils.isPositive(price)) {
                     row.setValue(priceIndex,
@@ -446,8 +456,10 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
                   if (BeeUtils.isDouble(percent)) {
                     if (BeeUtils.nonZero(percent)) {
                       row.setValue(discountIndex, percent);
+                      row.setValue(invisibleDiscountIndex, percent);
                     } else {
                       row.clearCell(discountIndex);
+                      row.setValue(invisibleDiscountIndex, 0);
                     }
                   }
                 }
@@ -460,5 +472,41 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     } else if (!rowSet.isEmpty()) {
       Queries.insertRows(rowSet);
     }
+  }
+
+  private boolean checkIsWarehouseEditable() {
+
+    if (!getGridView().isEmpty()) {
+      for (IsRow row : getGridView().getRowData()) {
+        if (BeeUtils.isPositive(Double.valueOf(row.getProperty(PRP_COMPLETED_INVOICES)))) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private boolean maybeInsertSupplier(BeeRow item, int attributeIdx, int pckgUnitsIdx,
+      Double qty, JustDate dateTo) {
+    String attribute = item.getString(attributeIdx);
+    Double pckgUnits = item.getDouble(pckgUnitsIdx);
+
+    if (BeeUtils.isEmpty(attribute) && BeeUtils.isPositive(pckgUnits) && BeeUtils.isPositive(qty)) {
+      if (BeeUtils.isMore(pckgUnits, qty) || qty.intValue() % pckgUnits.intValue() != 0) {
+        if (dateTo == null) {
+          return true;
+        } else {
+          IsRow parentRow = ViewHelper.getFormRow(getGridPresenter().getMainView());
+          JustDate orderDate =
+              new JustDate(parentRow.getDateTime(Data.getColumnIndex(VIEW_ORDERS,
+                  ProjectConstants.COL_DATES_START_DATE)));
+
+          if (orderDate.compareTo(dateTo) == -1 || orderDate.compareTo(dateTo) == 0) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 }

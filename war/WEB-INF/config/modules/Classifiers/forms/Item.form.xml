@@ -2,8 +2,8 @@
 <!DOCTYPE Form[
   <!ENTITY foritem "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.IsService</ui:expression></dynStyle>">
   <!ENTITY forservice "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.IsService</ui:expression></dynStyle>">
-  <!ENTITY pricescale "2">
-  <!ENTITY costscale "2">
+  <!ENTITY pricescale "4">
+  <!ENTITY costscale "4">
   <!ENTITY pricestyle "width: 120px;">
   <!ENTITY currencystyle "width: 50px;">
 ]>
@@ -13,7 +13,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Item" viewName="Items" caption="=item"
-  width="700" height="720"
+  width="820" height="720"
   >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin-top: 1ex;">
@@ -176,7 +176,8 @@
         <Table kind="controls" style="margin-top: 1ex;">
           <col index="0" kind="label" />
           <col index="2" kind="label" />
-      
+          <col index="4" kind="label" />
+
           <row>
             <Label for="Name2" />
             <cell colSpan="3">
@@ -282,7 +283,37 @@
         <text>=manufacturers</text>
         <ChildGrid name="ItemManufacturers" relColumn="Item" class="occupy-1" summarize="true" />
       </page>
-      
+
+      <page data="Orders">
+        <text>=orders</text>
+        <Table kind="controls" style="margin-top: 1ex;">
+          <col index="0" kind="label" />
+          <col index="2" kind="label" />
+
+          <row>
+            <Label for="Attribute" >
+              &foritem;
+            </Label>
+            <InputText source="Attribute" >
+              &foritem;
+            </InputText>
+
+            <Label for="PackageUnits">
+              &foritem;
+            </Label>
+            <InputDecimal source="PackageUnits" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+
+          <row>
+            <CheckBox source="NotManufactured" text="=notManufactured" >
+              &foritem;
+            </CheckBox>
+          </row>
+        </Table>
+      </page>
+
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>

@@ -274,7 +274,6 @@ public class OrderForm extends AbstractFormInterceptor {
           : parentGrid.getGridName();
 
       newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
-      oldRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
     }
 
     if (GRID_OFFERS.equals(parentGrid.getGridName())) {

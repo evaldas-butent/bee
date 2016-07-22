@@ -351,6 +351,8 @@ public final class AdministrationConstants {
   public static final String COL_CONFIG_OBJECT = "ObjectName";
   public static final String COL_CONFIG_DATA = "ObjectData";
 
+  public static final String COL_DEFAULT_VAT = "DefaultVat";
+
   public static final String COL_MENU_HIDE = "MenuHide";
   public static final String COL_COMMENTS_LAYOUT = "CommentsLayout";
 
