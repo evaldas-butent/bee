@@ -67,8 +67,11 @@ public final class OrdersConstants {
   public static final String VIEW_ORDER_TMPL_ITEMS = "OrderTmplItems";
   public static final String VIEW_ORDER_SALES = "OrderSales";
 
+  public static final String FORM_NEW_ORDER_INVOICE = "NewOrderInvoice";
+
   public static final String GRID_COMPANY_ORDERS = "CompanyOrders";
   public static final String GRID_OFFERS = "Offers";
+  public static final String GRID_ORDERS_INVOICES = "OrdersInvoices";
 
   public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
   public static final String ALS_CONTACT_EMAIL = "ContactEmail";
@@ -103,6 +106,7 @@ public final class OrdersConstants {
   public static final String PRM_DEFAULT_SALE_OPERATION = "DefaultSaleOperation";
   public static final String PRM_CLEAR_RESERVATIONS_TIME = "ClearReservationsTime";
   public static final String PRM_MANAGER_DISCOUNT = "ManagerDiscount";
+  public static final String PRM_CHECK_DEBT = "CheckDebt";
 
   private OrdersConstants() {
   }

@@ -30,9 +30,10 @@ public final class OrdersKeeper {
   public static void register() {
     FormFactory.registerFormInterceptor(COL_ORDER, new OrderForm());
     FormFactory.registerFormInterceptor("OrderInvoice", new OrderInvoiceForm());
+    FormFactory.registerFormInterceptor(FORM_NEW_ORDER_INVOICE, new NewOrderInvoiceForm());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_SALES, new OrderInvoiceBuilder());
-    GridFactory.registerGridInterceptor("OrdersInvoices", new OrdersInvoicesGrid());
+    GridFactory.registerGridInterceptor(GRID_ORDERS_INVOICES, new OrdersInvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_ORDER_TMPL_ITEMS, new OrderTmplItemsGrid());
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new OrdersGrid());
 
