@@ -19,7 +19,6 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.modules.calendar.CalendarHelper;
-import com.butent.bee.shared.utils.*;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
