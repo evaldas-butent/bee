@@ -343,7 +343,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       SimpleRowSet suppliers = qs.getData(suppliersQry);
 
-      if (suppliers.getNumberOfRows() > 0) {
+      if (suppliers.getNumberOfRows() == 1) {
         row.setValue(row.getNumberOfCells() - 8, suppliers.getLong(0, COL_TRADE_SUPPLIER));
         row.setValue(row.getNumberOfCells() - 7, suppliers.getDouble(0, COL_UNPACKING));
         row.setValue(row.getNumberOfCells() - 6, suppliers.getDate(0, COL_DATE_TO));

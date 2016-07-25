@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.orders;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
@@ -36,6 +38,7 @@ import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
@@ -49,6 +52,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
@@ -73,6 +77,20 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.getHeader().clearCommandPanel();
+    FaLabel reCalculate = new FaLabel(FontAwesome.CALCULATOR);
+    reCalculate.addStyleName(BeeConst.CSS_CLASS_PREFIX + "reCalculate");
+    reCalculate.setTitle(Localized.dictionary().taRecalculatePrices());
+
+    reCalculate.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+        recalculatePrices();
+      }
+    });
+
+    presenter.getHeader().addCommandItem(reCalculate);
     presenter.getHeader().addCommandItem(invoice);
 
     Global.getParameter(PRM_MANAGER_DISCOUNT, new Consumer<String>() {
@@ -471,6 +489,121 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     } else if (!rowSet.isEmpty()) {
       Queries.insertRows(rowSet);
     }
+  }
+
+  private void recalculatePrices() {
+
+    GridView gridView = getGridView();
+    if (gridView == null || gridView.isEmpty()) {
+      return;
+    }
+
+    Map<Long, Double> quantities = new HashMap<>();
+    Map<String, Long> options = new HashMap<>();
+    Map<Long, ItemPrice> test = new HashMap<>();
+    GridView parentGrid = getGridView();
+    FormView parentForm = null;
+
+    final int qtyIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY);
+    final int itemIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM);
+    final int priceIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_ITEM_PRICE);
+    final int discountIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_DISCOUNT);
+    final int unpackingIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_UNPACKING);
+
+    if (parentGrid == null) {
+      return;
+    }
+
+    parentForm = ViewHelper.getForm(parentGrid.asWidget());
+
+    Long company = parentForm.getLongValue(COL_COMPANY);
+    if (DataUtils.isId(company)) {
+      options.put(COL_DISCOUNT_COMPANY, parentForm.getLongValue(COL_COMPANY));
+    }
+
+    Long warehouse = parentForm.getLongValue(COL_WAREHOUSE);
+    if (DataUtils.isId(warehouse)) {
+      options.put(COL_DISCOUNT_WAREHOUSE, warehouse);
+    }
+
+    DateTime startDate = parentForm.getDateTimeValue("StartDate");
+    if (startDate != null) {
+      options.put(Service.VAR_TIME, startDate.getTime());
+    }
+
+    for (IsRow row : getGridView().getRowData()) {
+      quantities.put(row.getLong(itemIdx), row.getDouble(qtyIdx));
+    }
+
+    ClassifierKeeper.getPricesAndDiscounts(options, quantities.keySet(), quantities,
+        test,
+        new Consumer<Map<Long, Pair<Double, Double>>>() {
+
+          @Override
+          public void accept(Map<Long, Pair<Double, Double>> input) {
+
+            for (IsRow row : getGridView().getRowData()) {
+              Pair<Double, Double> pair = input.get(row.getLong(itemIdx));
+
+              if (pair != null) {
+                List<BeeColumn> cols =
+                    Data.getColumns(getViewName(), Lists.newArrayList(COL_TRADE_ITEM_PRICE,
+                        COL_TRADE_DISCOUNT, COL_INVISIBLE_DISCOUNT));
+
+                double price =
+                    BeeUtils.unbox(pair.getA()) + BeeUtils.unbox(row.getDouble(unpackingIdx))
+                        / BeeUtils.unbox(row.getDouble(qtyIdx));
+                Double percent = pair.getB();
+                Double oldPrice = row.getDouble(priceIndex);
+                Double discount = row.getDouble(discountIndex);
+
+                List<String> oldValues =
+                    Lists.newArrayList(oldPrice == null ? null : oldPrice.toString(),
+                        discount == null ? null : discount.toString(), discount == null ? "0"
+                            : discount.toString());
+
+                List<String> newValues =
+                    Lists.newArrayList(String.valueOf(price), percent == null ? null : percent
+                        .toString(), percent == null ? "0" : percent.toString());
+
+                Queries.update(getViewName(), row.getId(), row.getVersion(), cols, oldValues,
+                    newValues, null, new RowUpdateCallback(getViewName()));
+              }
+            }
+          }
+        });
+  }
+
+  private static double calculatePrice(BeeRow row, Double newUnpacking, Double oldUnpacking,
+      Double newQty) {
+    double newPrice = BeeConst.DOUBLE_ZERO;
+
+    if (row == null) {
+      return newPrice;
+    }
+
+    double price =
+        BeeUtils.unbox(row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM_PRICE)));
+    double qty = BeeUtils.unbox(row
+        .getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)));
+
+    if (oldUnpacking != null) {
+      if (newUnpacking == null) {
+        newPrice = price - BeeUtils.unbox(oldUnpacking) / BeeUtils.unbox(qty);
+      } else {
+        newPrice = price - BeeUtils.unbox(oldUnpacking) / BeeUtils.unbox(qty)
+            + BeeUtils.unbox(newUnpacking) / BeeUtils.unbox(newQty);
+      }
+    } else {
+      if (newUnpacking != null) {
+        newPrice = price - BeeUtils.unbox(oldUnpacking) / BeeUtils.unbox(qty)
+            + BeeUtils.unbox(newUnpacking) / BeeUtils.unbox(newQty);
+      } else {
+        newPrice = price;
+      }
+    }
+
+    return newPrice;
   }
 
   private boolean checkIsWarehouseEditable() {
