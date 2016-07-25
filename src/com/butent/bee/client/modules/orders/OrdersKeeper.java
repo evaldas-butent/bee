@@ -6,7 +6,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.rights.Module;
 

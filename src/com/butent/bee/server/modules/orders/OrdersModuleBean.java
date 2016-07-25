@@ -45,9 +45,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -59,12 +57,10 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -968,6 +964,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     }
   }
+
   private Set<Long> getOrderItems(Long targetId, String source, String column) {
     if (DataUtils.isId(targetId)) {
       return qs.getLongSet(new SqlSelect()
@@ -1086,7 +1083,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       }
 
       for (SimpleRow row : qs.getData(selectReminders)) {
-        resRemainders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(COL_RESERVED_REMAINDER)));
+        resRemainders.put(row.getLong(COL_ITEM),
+            BeeUtils.unbox(row.getDouble(COL_RESERVED_REMAINDER)));
       }
 
       for (Long itemId : ids) {
@@ -1182,7 +1180,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return totRemainders;
   }
 
-  private Map<Long, Double> getWarehouseReminders (List<Long> ids, Long warehouse) {
+  private Map<Long, Double> getWarehouseReminders(List<Long> ids, Long warehouse) {
     Map<Long, Double> result = new HashMap<>();
 
     SqlSelect selectWrhReminders = new SqlSelect();

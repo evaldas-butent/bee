@@ -58,7 +58,6 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputText;

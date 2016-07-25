@@ -299,8 +299,8 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
               Map<String, String> params = new HashMap<>();
 
               params.put(Service.VAR_TABLE, Data.getViewTable(getViewName()));
-              params.put(COL_SALE, row.getLong(Data.getColumnIndex(VIEW_ORDER_CHILD_INVOICES, COL_SALE))
-                  .toString());
+              params.put(COL_SALE,
+                  row.getLong(Data.getColumnIndex(VIEW_ORDER_CHILD_INVOICES, COL_SALE)).toString());
               params.put(Service.VAR_DATA, Codec.beeSerialize(idsQty));
               params.put(COL_CURRENCY, row.getString(dataInfo.getColumnIndex(COL_CURRENCY)));
 

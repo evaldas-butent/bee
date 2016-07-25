@@ -13,8 +13,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;

@@ -56,7 +56,6 @@ import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;

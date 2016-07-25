@@ -39,7 +39,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.HashMap;
 import java.util.List;
