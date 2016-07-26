@@ -27,6 +27,7 @@ import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -185,9 +186,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     if (cb.isParameterTimer(timer, PRM_EXPORT_ERP_RESERVATIONS_TIME)) {
       exportReservations();
     }
-    if (cb.isParameterTimer(timer, PRM_AUTO_RESERVATION)) {
-      autoReservation();
-    }
   }
 
   @Override
@@ -202,8 +200,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createNumber(module, PRM_EXPORT_ERP_RESERVATIONS_TIME, false, null),
         BeeParameter.createRelation(module, PRM_DEFAULT_SALE_OPERATION, false,
             VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME),
-        BeeParameter.createNumber(module, PRM_MANAGER_DISCOUNT, false, null),
-        BeeParameter.createNumber(module, PRM_AUTO_RESERVATION, false, null));
+        BeeParameter.createNumber(module, PRM_MANAGER_DISCOUNT, false, null));
 
     return params;
   }
@@ -229,7 +226,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     cb.createIntervalTimer(this.getClass(), PRM_IMPORT_ERP_ITEMS_TIME);
     cb.createIntervalTimer(this.getClass(), PRM_IMPORT_ERP_STOCKS_TIME);
     cb.createIntervalTimer(this.getClass(), PRM_EXPORT_ERP_RESERVATIONS_TIME);
-    cb.createIntervalTimer(this.getClass(), PRM_AUTO_RESERVATION);
 
     sys.registerDataEventHandler(new DataEventHandler() {
 
@@ -931,27 +927,27 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     SqlSelect select = null;
     SimpleRowSet srs = null;
 
-    if (ids != null) {
+    if (!BeeUtils.isEmpty(ids)) {
       select = new SqlSelect()
-          .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE, sys.getIdName(TBL_ITEMS))
+          .setDistinctMode(true)
+          .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+          .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
           .addFrom(TBL_SALES)
-          .addFromLeft(TBL_SALE_ITEMS, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
-          .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
+          .addFromInner(TBL_SALE_ITEMS, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+          .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
           .setWhere(sys.idInList(TBL_SALES, ids));
     }
 
     try {
 
-      if (ids != null) {
+      if (!BeeUtils.isEmpty(ids)) {
         srs = qs.getData(select);
         String[] codeList = srs.getColumn(COL_ITEM_EXTERNAL_CODE);
-        for (int i = 0; i < codeList.length; i++) {
-          if (i == 0) {
-            rs =
-                ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks(codeList[i]);
+        for (String code : codeList) {
+          if (rs == null) {
+            rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks(code);
           } else {
-            rs.append(ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks(
-                codeList[i]));
+            rs.append(ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getStocks(code));
           }
         }
       } else {
@@ -985,44 +981,54 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         warehouses.put(row.getValue(COL_WAREHOUSE_CODE), row.getLong(COL_WAREHOUSE));
       }
 
+      String tmp = SqlUtils.temporaryName();
+      qs.updateData(new SqlCreate(tmp)
+          .addLong(COL_ITEM, true)
+          .addLong(COL_WAREHOUSE, true)
+          .addDecimal(COL_WAREHOUSE_REMAINDER, 12, 3, false)
+          .addLong(COL_ITEM_REMAINDER_ID, false));
+
+      SqlInsert insert = new SqlInsert(tmp)
+          .addFields(COL_ITEM, COL_WAREHOUSE, COL_WAREHOUSE_REMAINDER);
+      int tot = 0;
+
       for (SimpleRow row : rs) {
         String exCode = row.getValue("PREKE");
         String warehouse = row.getValue("SANDELIS");
         String stock = row.getValue("LIKUTIS");
 
         if (externalCodes.containsKey(exCode) && warehouses.containsKey(warehouse)) {
-          SqlInsert insert = new SqlInsert(TBL_ITEM_REMAINDERS_TMP)
-              .addConstant(COL_ITEM, externalCodes.get(exCode))
-              .addConstant(COL_WAREHOUSE, warehouses.get(warehouse))
-              .addConstant(COL_WAREHOUSE_REMAINDER, stock);
+          insert.addValues(externalCodes.get(exCode), warehouses.get(warehouse), stock);
 
+          if (++tot % 1e4 == 0) {
+            qs.insertData(insert);
+            insert.resetValues();
+          }
+        }
+      }
+
+      if (tot % 1e4 > 0) {
+        if (!insert.isEmpty()) {
           qs.insertData(insert);
         }
       }
 
       SqlUpdate updateTmp =
-          new SqlUpdate(TBL_ITEM_REMAINDERS_TMP)
+          new SqlUpdate(tmp)
               .addExpression(COL_ITEM_REMAINDER_ID,
                   SqlUtils.field(VIEW_ITEM_REMAINDERS, sys.getIdName(VIEW_ITEM_REMAINDERS)))
-              .setFrom(
-                  VIEW_ITEM_REMAINDERS,
-                  SqlUtils.joinUsing(VIEW_ITEM_REMAINDERS, TBL_ITEM_REMAINDERS_TMP, COL_ITEM,
-                      COL_WAREHOUSE));
+              .setFrom(VIEW_ITEM_REMAINDERS, SqlUtils.joinUsing(VIEW_ITEM_REMAINDERS, tmp, COL_ITEM,
+                  COL_WAREHOUSE));
 
       qs.updateData(updateTmp);
 
       SqlUpdate updateRem =
           new SqlUpdate(VIEW_ITEM_REMAINDERS)
               .addExpression(COL_WAREHOUSE_REMAINDER,
-                  SqlUtils.field(TBL_ITEM_REMAINDERS_TMP, COL_WAREHOUSE_REMAINDER))
-              .setFrom(
-                  TBL_ITEM_REMAINDERS_TMP,
-                  sys.joinTables(VIEW_ITEM_REMAINDERS, TBL_ITEM_REMAINDERS_TMP,
-                      COL_ITEM_REMAINDER_ID))
-              .setWhere(
-                  SqlUtils.or(SqlUtils.notEqual(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER,
-                      SqlUtils.field(
-                          TBL_ITEM_REMAINDERS_TMP, COL_WAREHOUSE_REMAINDER)), SqlUtils.isNull(
+                  SqlUtils.field(tmp, COL_WAREHOUSE_REMAINDER))
+              .setFrom(tmp, sys.joinTables(VIEW_ITEM_REMAINDERS, tmp, COL_ITEM_REMAINDER_ID))
+              .setWhere(SqlUtils.or(SqlUtils.notEqual(VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER,
+                  SqlUtils.field(tmp, COL_WAREHOUSE_REMAINDER)), SqlUtils.isNull(
                       VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER)));
 
       qs.updateData(updateRem);
@@ -1031,31 +1037,33 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           .addConstant(COL_WAREHOUSE_REMAINDER, null);
 
       IsCondition whereCondition;
-      if (ids == null) {
+      if (BeeUtils.isEmpty(ids)) {
         whereCondition =
             SqlUtils.not(SqlUtils.in(VIEW_ITEM_REMAINDERS, sys.getIdName(VIEW_ITEM_REMAINDERS), new
-                SqlSelect().addFields(TBL_ITEM_REMAINDERS_TMP, COL_ITEM_REMAINDER_ID)
-                    .addFrom(TBL_ITEM_REMAINDERS_TMP)));
+                SqlSelect().addFields(tmp, COL_ITEM_REMAINDER_ID)
+                    .addFrom(tmp)));
       } else {
         whereCondition =
             SqlUtils.and(SqlUtils.not(SqlUtils.in(VIEW_ITEM_REMAINDERS, sys
-                .getIdName(VIEW_ITEM_REMAINDERS), new SqlSelect().addFields(
-                TBL_ITEM_REMAINDERS_TMP,
-                COL_ITEM_REMAINDER_ID).addFrom(TBL_ITEM_REMAINDERS_TMP))),
+                .getIdName(VIEW_ITEM_REMAINDERS), new SqlSelect().addFields(tmp,
+                COL_ITEM_REMAINDER_ID).addFrom(tmp))),
                 SqlUtils.inList(VIEW_ITEM_REMAINDERS, COL_ITEM,
-                    Lists.newArrayList(srs.getLongColumn(sys.getIdName(TBL_ITEMS)))));
+                    Lists.newArrayList(srs.getLongColumn(COL_ITEM))));
       }
       updRem.setWhere(whereCondition);
       qs.updateData(updRem);
 
       qs.loadData(VIEW_ITEM_REMAINDERS, new SqlSelect().setLimit(10000).addFields(
-          TBL_ITEM_REMAINDERS_TMP, COL_ITEM, COL_WAREHOUSE, COL_WAREHOUSE_REMAINDER)
-          .addFrom(TBL_ITEM_REMAINDERS_TMP).setWhere(SqlUtils.isNull(TBL_ITEM_REMAINDERS_TMP,
-              COL_ITEM_REMAINDER_ID)).addOrder(TBL_ITEM_REMAINDERS_TMP, COL_ITEM, COL_WAREHOUSE));
+          tmp, COL_ITEM, COL_WAREHOUSE, COL_WAREHOUSE_REMAINDER)
+          .addFrom(tmp).setWhere(SqlUtils.isNull(tmp,
+              COL_ITEM_REMAINDER_ID)).addOrder(tmp, COL_ITEM, COL_WAREHOUSE));
 
-      qs.updateData(new SqlDelete(TBL_ITEM_REMAINDERS_TMP).setWhere(SqlUtils.notNull(
-          TBL_ITEM_REMAINDERS_TMP, sys.getIdName(TBL_ITEM_REMAINDERS_TMP))));
+      qs.sqlDropTemp(tmp);
 
+    }
+
+    if (BeeUtils.isEmpty(ids)) {
+      autoReservation();
     }
   }
 

@@ -246,7 +246,16 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
                   if (!BeeUtils.isEmpty(banks)) {
                     defaultParameters.put(COL_TRADE_SUPPLIER + COL_BANK, banks);
                   }
-                  parametersConsumer.accept(defaultParameters);
+
+                  Queries.getRowCount(VIEW_SALE_ITEMS,
+                      Filter.and(Filter.equals(COL_SALE, getActiveRowId()),
+                          Filter.notNull(COL_TRADE_DISCOUNT)), new IntCallback() {
+                        @Override
+                        public void onSuccess(Integer result) {
+                          defaultParameters.put(COL_TRADE_DISCOUNT, result.toString());
+                          parametersConsumer.accept(defaultParameters);
+                        }
+                      });
                 }
               });
             }
