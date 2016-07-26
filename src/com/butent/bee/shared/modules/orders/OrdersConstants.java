@@ -97,6 +97,7 @@ public final class OrdersConstants {
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
   public static final String PRP_COMPLETED_INVOICES = "CompletedInvoices";
   public static final String PRP_SUPPLIER_TERM = "SupplierTerm";
+  public static final String PRP_AMOUNT_WO_VAT = "AmountWoVAT";
 
   public static final String PRM_AUTO_RESERVATION = "AutoReservation";
   public static final String PRM_UPDATE_ITEMS_PRICES = "UpdateItemsPrices";

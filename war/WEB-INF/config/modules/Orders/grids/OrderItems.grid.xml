@@ -85,6 +85,9 @@
     <DataColumn name="VatPercent" width="20" sortable="false"
       caption="%" format="%" carry="true" />
 
+    <PropColumn name="AmountWoVAT" type="double" label="=trdAmountWoVat" visible="true" scale="2"
+                format="0.00"/>
+
     <CalcColumn name="Total" type="decimal" caption="=trdAmount"
       scale="2">
       <style>
