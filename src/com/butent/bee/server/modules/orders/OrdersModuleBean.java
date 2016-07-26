@@ -53,6 +53,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
@@ -225,6 +226,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             Map<Long, Double> freeRemainders = getFreeRemainders(itemIds, order, null);
             Map<Long, Double> compInvoices = getCompletedInvoices(order);
 
+            Totalizer totalizer = new Totalizer(rowSet.getColumns());
+
             for (BeeRow row : rowSet) {
               row.setProperty(PRP_FREE_REMAINDER, BeeUtils.toString(freeRemainders.get(row
                   .getLong(itemIndex))));
@@ -235,6 +238,11 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
               } else {
                 row.setProperty(PRP_COMPLETED_INVOICES, BeeConst.DOUBLE_ZERO);
               }
+
+              double total = BeeUtils.unbox(totalizer.getTotal(row));
+              double vat = BeeUtils.unbox(totalizer.getVat(row));
+
+              row.setProperty(PRP_AMOUNT_WO_VAT, total - vat);
             }
           }
         }
