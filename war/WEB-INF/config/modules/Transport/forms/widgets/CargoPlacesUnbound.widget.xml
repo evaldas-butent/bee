@@ -4,7 +4,7 @@
     <!ENTITY inline "display:inline;">
     <!ENTITY inp "width:150px;">
     ]>
-<FlowPanel xmlns="http://www.butent.com/widget">
+<FlowPanel xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui">
   <Table kind="controls">
     <row>
       <cell colSpan="2" style="padding-top:0;">
@@ -35,10 +35,14 @@
     <row>
       <Label text="=city" style="&lbl1;" class="bee-required" />
       <UnboundSelector name="LoadingCity" viewName="Cities" valueSource="Name"
-                       choiceColumns="Name CountryName" required="true" />
+                       choiceColumns="Name NameEn NameRu CountryName" required="true" >
+        <ui:rowRenderer type="join" separator="/" />
+      </UnboundSelector>
       <Label text="=city" style="&lbl1;" class="bee-required" />
       <UnboundSelector name="UnloadingCity" viewName="Cities" valueSource="Name"
-                       choiceColumns="Name CountryName" required="true" />
+                       choiceColumns="Name NameEn NameRu CountryName" required="true" >
+        <ui:rowRenderer type="join" separator="/" />
+    </UnboundSelector>
     </row>
     <row>
       <Label text="=postIndex" style="&lbl1;" class="bee-required" />
@@ -51,10 +55,14 @@
     <row>
       <Label text="=country" style="&lbl1;" class="bee-required" />
       <UnboundSelector name="LoadingCountry" viewName="Countries" valueSource="Name"
-                       required="true" />
+                       required="true" choiceColumns="Name NameEn NameRu"  >
+        <ui:rowRenderer type="join" separator="/" />
+      </UnboundSelector>
       <Label text="=country" style="&lbl1;" class="bee-required" />
       <UnboundSelector name="UnloadingCountry" viewName="Countries" valueSource="Name"
-                       required="true" />
+                       required="true" choiceColumns="Name NameEn NameRu"  >
+        <ui:rowRenderer type="join" separator="/" />
+      </UnboundSelector>
     </row>
     <row>
       <Label text="=personContact" style="&lbl1;" />

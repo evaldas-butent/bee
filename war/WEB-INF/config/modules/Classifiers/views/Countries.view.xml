@@ -11,6 +11,8 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="Name2" />
     <SimpleColumn name="Name3" />
+    <SimpleColumn alias="NameEn" name="Name" locale="en"/>
+    <SimpleColumn alias="NameRu" name="Name" locale="ru" />
     <SimpleColumn name="Code" />
     <SimpleColumn name="EUMember" />
   </Columns>
