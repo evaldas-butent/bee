@@ -23,7 +23,6 @@ import javax.ejb.*;
  * Stores, updates, removes and cancels timers which are saved in registry.
  * For timers creation  - method buildTimers must be called.
  */
-@Lock(LockType.READ)
 public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
 
     private static BeeLogger logger = LogUtils.getLogger(TimerBuilder.class);

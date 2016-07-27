@@ -872,47 +872,32 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   public ResponseObject sendMail(Long accountId, String to, String subject, String content) {
-    return sendMail(accountId, new String[] {to}, subject, content);
+    return sendMail(accountId, new String[] {to}, null, null, subject, content, null, false);
   }
 
-  public ResponseObject sendMail(Long accountId, String[] to, String subject, String content) {
+  public ResponseObject sendMail(Long accountId, String[] to, String[] cc, String[] bcc,
+      String subject, String content, Map<Long, String> attachments, boolean storeInSentFolder) {
+
     MailAccount account = mail.getAccount(accountId);
+    MimeMessage message;
+
     try {
-      sendMail(account, to, null, null, subject, content, null, null);
+      message = sendMail(account, to, cc, bcc, subject, content, attachments, null);
     } catch (MessagingException ex) {
       logger.error(ex, account.getTransportProtocol(), account.getTransportHost(),
           account.getTransportLogin());
       return ResponseObject.error(account.getTransportProtocol(), ex.getMessage());
     }
-    return ResponseObject.emptyResponse();
-  }
-
-  public MimeMessage sendMail(MailAccount account, String[] to, String[] cc, String[] bcc,
-      String subject, String content, Map<Long, String> attachments, String inReplyTo)
-      throws MessagingException {
-
-    Transport transport = null;
-    MimeMessage message = null;
-
-    try {
-      message = buildMessage(account, to, cc, bcc, subject, content, attachments, inReplyTo);
-      Address[] recipients = message.getAllRecipients();
-
-      if (recipients == null || recipients.length == 0) {
-        throw new MessagingException("No recipients");
-      }
-      transport = account.connectToTransport();
-      transport.sendMessage(message, recipients);
-    } finally {
-      if (transport != null) {
-        try {
-          transport.close();
-        } catch (MessagingException e) {
-          logger.warning(e);
-        }
+    if (storeInSentFolder) {
+      try {
+        return ResponseObject.response(storeMessage(account, message, account.getSentFolder()));
+      } catch (MessagingException ex) {
+        logger.error(ex, account.getStoreProtocol(), account.getStoreHost(),
+            account.getStoreLogin(), account.getSentFolder().getName());
+        return ResponseObject.error(account.getStoreProtocol(), ex.getMessage());
       }
     }
-    return message;
+    return ResponseObject.emptyResponse();
   }
 
   private void applyRules(Message message, long placeId, MailAccount account,
@@ -1748,6 +1733,34 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return c;
   }
 
+  private MimeMessage sendMail(MailAccount account, String[] to, String[] cc, String[] bcc,
+      String subject, String content, Map<Long, String> attachments, String inReplyTo)
+      throws MessagingException {
+
+    Transport transport = null;
+    MimeMessage message = null;
+
+    try {
+      message = buildMessage(account, to, cc, bcc, subject, content, attachments, inReplyTo);
+      Address[] recipients = message.getAllRecipients();
+
+      if (recipients == null || recipients.length == 0) {
+        throw new MessagingException("No recipients");
+      }
+      transport = account.connectToTransport();
+      transport.sendMessage(message, recipients);
+    } finally {
+      if (transport != null) {
+        try {
+          transport.close();
+        } catch (MessagingException e) {
+          logger.warning(e);
+        }
+      }
+    }
+    return message;
+  }
+
   private void sendNewsletter() {
     int count = prm.getInteger(PRM_SEND_NEWSLETTERS_COUNT);
     Long accountId = getSenderAccountId(PRM_DEFAULT_ACCOUNT);
@@ -1793,18 +1806,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                     .getValue(CalendarConstants.COL_CAPTION));
               }
             }
-
-            MailAccount account = mail.getAccount(accountId);
-            String subject = sr.getValue(COL_SUBJECT);
-            String content = sr.getValue(COL_CONTENT);
-
-            try {
-              MimeMessage message = sendMail(account, null, emailSet.getColumn(COL_EMAIL), null,
-                  subject, content, attachments, null);
-              storeMessage(account, message, account.getSentFolder());
-            } catch (MessagingException e) {
-              logger.error(e);
-            }
+            sendMail(accountId, null, emailSet.getColumn(COL_EMAIL), null, sr.getValue(COL_SUBJECT),
+                sr.getValue(COL_CONTENT), attachments, true);
 
             for (Long email : emailSet.getLongColumn("EmailId")) {
               SqlUpdate update =
