@@ -180,6 +180,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_DEFAULT_SALE_OPERATION, false,
             VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME),
         BeeParameter.createNumber(module, PRM_MANAGER_DISCOUNT),
+        BeeParameter.createRelation(module, PRM_MANAGER_WAREHOUSE, true, VIEW_WAREHOUSES,
+            COL_WAREHOUSE_CODE),
         BeeParameter.createBoolean(module, PRM_CHECK_DEBT));
 
     return params;

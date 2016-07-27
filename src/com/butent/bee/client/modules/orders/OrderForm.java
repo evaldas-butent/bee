@@ -33,6 +33,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -264,36 +265,46 @@ public class OrderForm extends AbstractFormInterceptor {
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
 
-    GridView parentGrid = getGridView();
-    if (parentGrid == null) {
-      return;
-    }
-
-    if (BeeUtils.isEmpty(newRow.getString(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE)))) {
-      String gridName = GRID_COMPANY_ORDERS.equals(parentGrid.getGridName()) ? GRID_OFFERS
-          : parentGrid.getGridName();
-
-      newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
-    }
-
-    if (GRID_OFFERS.equals(parentGrid.getGridName())) {
-      int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
-      int endDateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
-
-      if (Objects.equals(OrdersStatus.PREPARED.ordinal(), newRow.getInteger(statusIdx))) {
-        DateTime now = TimeUtils.nowMillis();
-        int year = now.getYear();
-        int month = now.getMonth() + 3;
-
-        if (month > 12) {
-          year++;
-          month = month - 12;
+    Global.getRelationParameter(PRM_MANAGER_WAREHOUSE, new BiConsumer<Long, String>() {
+      @Override
+      public void accept(Long aLong, String s) {
+        GridView parentGrid = getGridView();
+        if (parentGrid == null) {
+          return;
         }
-        newRow.setValue(endDateIdx, new DateTime(year, month, now.getDom()));
-      }
-    }
 
-    super.onStartNewRow(form, oldRow, newRow);
+        if (BeeUtils.isEmpty(newRow.getString(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE)))) {
+          String gridName = GRID_COMPANY_ORDERS.equals(parentGrid.getGridName()) ? GRID_OFFERS
+              : parentGrid.getGridName();
+
+          newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
+        }
+
+        if (GRID_OFFERS.equals(parentGrid.getGridName())) {
+          int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
+          int endDateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
+
+          if (Objects.equals(OrdersStatus.PREPARED.ordinal(), newRow.getInteger(statusIdx))) {
+            DateTime now = TimeUtils.nowMillis();
+            int year = now.getYear();
+            int month = now.getMonth() + 3;
+
+            if (month > 12) {
+              year++;
+              month = month - 12;
+            }
+            newRow.setValue(endDateIdx, new DateTime(year, month, now.getDom()));
+          }
+        }
+
+        newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE), aLong);
+        newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, ALS_WAREHOUSE_CODE), s);
+
+        getFormView().refreshBySource(COL_WAREHOUSE);
+
+        OrderForm.super.onStartNewRow(form, oldRow, newRow);
+      }
+    });
   }
 
   @Override
