@@ -109,6 +109,7 @@ public final class OrdersConstants {
   public static final String PRM_CLEAR_RESERVATIONS_TIME = "ClearReservationsTime";
   public static final String PRM_MANAGER_DISCOUNT = "ManagerDiscount";
   public static final String PRM_CHECK_DEBT = "CheckDebt";
+  public static final String PRM_NOTIFY_ABOUT_DEBTS = "NotifyAboutDebts";
 
   private OrdersConstants() {
   }
