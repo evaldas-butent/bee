@@ -642,7 +642,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
   }
 
   @Override
-  protected Pair<IsCondition, String> getConditionAndTimerIdForUpdate(String timerIdentifier,
+  protected Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
                                                                       Pair<String, Long> idInfo) {
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_TASKS_SUMMARY)) {
       IsCondition wh = null;
@@ -665,7 +665,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
         wh = SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId);
       }
 
-      return Pair.of(wh, timerIdentifier + userId);
+      List timerIdentifiersIds = new ArrayList<String>();
+      timerIdentifiersIds.add(timerIdentifier + userId);
+      return Pair.of(wh, timerIdentifiersIds);
     }
     return null;
   }
