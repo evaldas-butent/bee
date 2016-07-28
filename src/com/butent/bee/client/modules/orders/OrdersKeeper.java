@@ -19,7 +19,7 @@ public final class OrdersKeeper {
 
   /**
    * Creates rpc parameters of orders module.
-   * 
+   *
    * @param method name of method.
    * @return rpc parameters to call queries of server-side.
    */
@@ -34,6 +34,9 @@ public final class OrdersKeeper {
     FormFactory.registerFormInterceptor(COL_ORDER, new OrderForm());
     FormFactory.registerFormInterceptor("OrderInvoice", new OrderInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_NEW_ORDER_INVOICE, new NewOrderInvoiceForm());
+
+    FormFactory.registerFormInterceptor(TBL_CONF_PRICELIST, new ConfPricelistForm());
+    FormFactory.registerFormInterceptor(FORM_CONF_OPTION, new ConfOptionForm());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_SALES, new OrderInvoiceBuilder());
     GridFactory.registerGridInterceptor(GRID_ORDERS_INVOICES, new OrdersInvoicesGrid());

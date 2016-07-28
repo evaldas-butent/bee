@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="ConfGroups" source="ConfGroups"
+      caption="=optionGroups"
+>
+  <Columns>
+    <SimpleColumn name="GroupName" />
+    <SimpleColumn name="Required" />
+  </Columns>
+  <Order>
+    <OrderBy column="GroupName" />
+  </Order>
+</View>

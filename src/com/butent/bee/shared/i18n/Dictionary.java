@@ -587,6 +587,10 @@ public interface Dictionary {
 
   default String captionPid() {return g("captionPid");}
 
+  default String car() {return g("car");}
+
+  default String carDealers() {return g("carDealers");}
+
   default String cargo() {return g("cargo");}
 
   default String cargoChangeOfPallets() {return g("cargoChangeOfPallets");}
@@ -805,6 +809,8 @@ public interface Dictionary {
 
   default String companyVATCode() {return g("companyVATCode");}
 
+  default String configuration() {return g("configuration");}
+
   default String constant() {return g("constant");}
 
   default String contact() {return g("contact");}
@@ -954,11 +960,13 @@ public interface Dictionary {
   default String crmMailAssignedTasks() {return g("crmMailAssignedTasks");}
 
   default String crmMailTaskSubject() {return g("crmMailTaskSubject");}
-  
+
+  default String crmMailTasksSummary() {return g("crmMailTasksSummary");}
+
   default String crmMailTasksSummarySubject() {return g("crmMailTasksSummarySubject");}
-  
+
   default String crmMailTasksSummaryText() {return g("crmMailTasksSummaryText");}
-  
+
   default String crmNewDurationType() {return g("crmNewDurationType");}
 
   default String crmNewRecurringTask() {return g("crmNewRecurringTask");}
@@ -1198,7 +1206,7 @@ public interface Dictionary {
   default String crmTaskForwarding() {return g("crmTaskForwarding");}
 
   default String crmTaskForwardingForExecution() {return g("crmTaskForwardingForExecution");}
-  
+
   default String crmTaskLabelDelayedHours() {return g("crmTaskLabelDelayedHours");}
 
   default String crmTaskLabelLate() {return g("crmTaskLabelLate");}
@@ -2641,6 +2649,8 @@ public interface Dictionary {
 
   default String from() {return g("from");}
 
+  default String full() {return g("full");}
+
   default String goods() {return g("goods");}
 
   default String greatest() {return g("greatest");}
@@ -3440,6 +3450,14 @@ public interface Dictionary {
 
   default String operator() {return g("operator");}
 
+  default String option() {return g("option");}
+
+  default String optionGroup() {return g("optionGroup");}
+
+  default String optionGroups() {return g("optionGroups");}
+
+  default String options() {return g("options");}
+
   default String ordApprove() {return g("ordApprove");}
 
   default String ordApproved() {return g("ordApproved");}
@@ -4001,6 +4019,8 @@ public interface Dictionary {
 
   default String prmAutoReservation() {return g("prmAutoReservation");}
 
+  default String prmCheckDebt() {return g("prmCheckDebt");}
+
   default String prmClearReservationsTime() {return g("prmClearReservationsTime");}
 
   default String prmDefaultSaleOperation() {return g("prmDefaultSaleOperation");}
@@ -4040,6 +4060,10 @@ public interface Dictionary {
   default String prmSQLMessagesORACLE() {return g("prmSQLMessagesORACLE");}
 
   default String prmSQLMessagesPOSTGRESQL() {return g("prmSQLMessagesPOSTGRESQL");}
+
+  default String prmSendNewslettersCount() {return g("prmSendNewslettersCount");}
+
+  default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
 
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
 
@@ -4175,6 +4199,8 @@ public interface Dictionary {
 
   default String requestUpdatingQuestion() {return g("requestUpdatingQuestion");}
 
+  default String required() {return g("required");}
+
   default String resource() {return g("resource");}
 
   default String responsibilities() {return g("responsibilities");}
@@ -4186,6 +4212,8 @@ public interface Dictionary {
   default String responsiblePerson() {return g("responsiblePerson");}
 
   default String responsiblePersons() {return g("responsiblePersons");}
+
+  default String restrictions() {return g("restrictions");}
 
   default String result() {return g("result");}
 
@@ -4340,6 +4368,8 @@ public interface Dictionary {
   default String sorry() {return g("sorry");}
 
   default String sort() {return g("sort");}
+
+  default String specification() {return g("specification");}
 
   default String specifyCondition() {return g("specifyCondition");}
 
@@ -5877,6 +5907,8 @@ public interface Dictionary {
   default String userSettings() {return g("userSettings");}
 
   default String users() {return g("users");}
+
+  default String validUntil() {return g("validUntil");}
 
   default String valuation() {return g("valuation");}
 

@@ -214,6 +214,7 @@
       <xs:enumeration value="Service" />
       <xs:enumeration value="Administration" />
       <xs:enumeration value="Orders" />
+      <xs:enumeration value="Orders.CarDealers" />
       <xs:enumeration value="Payroll" />
     </xs:restriction>
   </xs:simpleType>
@@ -290,6 +291,9 @@
       <xs:enumeration value="CompanyTypes" />
       <xs:enumeration value="CompanyUsers" />
       <xs:enumeration value="CompRelTypeStore" />
+      <xs:enumeration value="ConfGroups" />
+      <xs:enumeration value="ConfOptions" />
+      <xs:enumeration value="ConfPricelist" />
       <xs:enumeration value="Configuration" />
       <xs:enumeration value="CostCenters" />
       <xs:enumeration value="Countries" />
