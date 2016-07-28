@@ -3,11 +3,14 @@ package com.butent.bee.client.modules.orders;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Client-side projects module handler.
@@ -39,7 +42,14 @@ public final class OrdersKeeper {
 
     SelectorEvent.register(new OrdersSelectorHandler());
 
-    OrdersObserver.register();
+    Global.getParameter(PRM_NOTIFY_ABOUT_DEBTS, new Consumer<String>() {
+      @Override
+      public void accept(String input) {
+        if (BeeUtils.toBoolean(input)) {
+          OrdersObserver.register();
+        }
+      }
+    });
   }
 
   private OrdersKeeper() {
