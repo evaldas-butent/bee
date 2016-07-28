@@ -67,22 +67,14 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
       WidgetDescriptionCallback callback) {
 
     if (BeeUtils.same(name, COL_TRADE_OPERATION)) {
-      ((DataSelector) widget).addSelectorHandler(new Handler() {
-
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          Global.getParameter(PRM_CHECK_DEBT, new Consumer<String>() {
-            @Override
-            public void accept(String input) {
-              if (Boolean.valueOf(input)) {
-                if (event.isOpened()) {
-                  getInfoAboutCompany(event, Holder.of(4), null, null);
-                }
+      ((DataSelector) widget).addSelectorHandler(event -> Global.getParameter(PRM_CHECK_DEBT,
+          input -> {
+            if (Boolean.valueOf(input)) {
+              if (event.isOpened()) {
+                getInfoAboutCompany(event, Holder.of(4), null, null);
               }
             }
-          });
-        }
-      });
+          }));
     } else if (BeeUtils.same(name, NAME_SERIES_LABEL)) {
       seriesLabel = (Label) widget;
       seriesLabel.setStyleName(StyleUtils.NAME_REQUIRED, true);
@@ -100,19 +92,24 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
 
     event.consume();
 
-    Global.getParameter(PRM_CHECK_DEBT, new Consumer<String>() {
-      @Override
-      public void accept(String input) {
-        if (Boolean.valueOf(input)) {
-          if (!isProforma()) {
-            final Holder<Integer> holder = Holder.of(4);
-            getInfoAboutCompany(null, holder, listener, event);
-          } else {
-            listener.fireEvent(event);
-          }
+    Global.getParameter(PRM_CHECK_DEBT, input -> {
+      if (Boolean.valueOf(input)) {
+        if (!isProforma()) {
+          final Holder<Integer> holder = Holder.of(4);
+          getInfoAboutCompany(null, holder, listener, event);
         } else {
           listener.fireEvent(event);
         }
+      } else {
+        if (Data.isNull(VIEW_ORDER_CHILD_INVOICES, getActiveRow(), COL_TRADE_SALE_SERIES)
+            && !isProforma()) {
+          getFormView().notifySevere(
+              Localized.dictionary().trdInvoicePrefix() + " "
+                  + Localized.dictionary().valueRequired());
+          return;
+        }
+
+        listener.fireEvent(event);
       }
     });
   }
@@ -122,13 +119,9 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
       return;
     }
 
-    form.addCellValidationHandler(COL_SALE_PROFORMA, new CellValidateEvent.Handler() {
-
-      @Override
-      public Boolean validateCell(CellValidateEvent event) {
-        getSeriesRequired(event.getNewValue());
-        return true;
-      }
+    form.addCellValidationHandler(COL_SALE_PROFORMA, event -> {
+      getSeriesRequired(event.getNewValue());
+      return true;
     });
   }
 

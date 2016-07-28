@@ -79,7 +79,7 @@
     <TabbedPages class="flexible">
       <page>
         <text>=goods</text>
-        <ChildGrid name="SaleItems" relColumn="Sale" source="Sale" />
+        <ChildGrid name="SaleItems" relColumn="Sale" />
       </page>
 
       <page>

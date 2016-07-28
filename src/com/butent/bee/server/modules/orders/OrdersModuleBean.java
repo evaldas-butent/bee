@@ -649,7 +649,13 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         qs.updateData(update);
       }
     }
+    if (!response.hasErrors()) {
+      SqlInsert si = new SqlInsert(VIEW_ORDER_CHILD_INVOICES)
+          .addConstant(COL_ORDER, data.getRow(0).getLong(COL_ORDER))
+          .addConstant(COL_SALE, saleId);
 
+      qs.insertData(si);
+    }
     return response;
   }
 
