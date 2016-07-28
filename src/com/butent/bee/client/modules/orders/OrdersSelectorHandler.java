@@ -26,7 +26,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -117,14 +116,11 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
             GridView gridView = ViewHelper.getChildGrid(form, TBL_ORDER_ITEMS);
 
             if (gridView != null) {
-              gridView.ensureRelId(new IdCallback() {
-                @Override
-                public void onSuccess(Long result) {
-                  if (DataUtils.isId(result) && DataUtils.idEquals(form.getActiveRow(), result)) {
-                    if (data.containsKey(VIEW_ORDER_TMPL_ITEMS)) {
-                      addTemplateChildren(TBL_ORDER_ITEMS, form.getActiveRow(),
-                          data.get(VIEW_ORDER_TMPL_ITEMS));
-                    }
+              gridView.ensureRelId(result -> {
+                if (DataUtils.isId(result) && DataUtils.idEquals(form.getActiveRow(), result)) {
+                  if (data.containsKey(VIEW_ORDER_TMPL_ITEMS)) {
+                    addTemplateChildren(TBL_ORDER_ITEMS, form.getActiveRow(),
+                        data.get(VIEW_ORDER_TMPL_ITEMS));
                   }
                 }
               });
@@ -159,7 +155,6 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
 
     int ordIndex = orderItems.getColumnIndex(COL_ORDER);
     int qtyIndex = orderItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
-    int dateIndex = orderItems.getColumnIndex(COL_TRADE_DATE);
 
     boolean qtyNullable = BeeConst.isUndef(qtyIndex)
         ? true : orderItems.getColumn(qtyIndex).isNullable();
@@ -177,7 +172,6 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
       if (!qtyNullable && ordItem.isNull(qtyIndex)) {
         ordItem.setValue(qtyIndex, 0);
       }
-      ordItem.setValue(dateIndex, TimeUtils.nowMillis().getDate());
 
       orderItems.addRow(ordItem);
     }

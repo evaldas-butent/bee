@@ -436,19 +436,21 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         .addFields(TBL_ITEMS, COL_ITEM_ARTICLE)
         .addFrom(TBL_ORDER_ITEMS)
         .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
         .setWhere(where);
 
     IsExpression vatExch =
-        ExchangeUtils.exchangeFieldTo(query, TBL_ORDER_ITEMS, COL_TRADE_VAT,
-            COL_TRADE_CURRENCY, COL_INCOME_DATE, currency);
+        ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_VAT),
+        SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_CURRENCY), SqlUtils.field(TBL_ORDERS,
+                COL_DATES_START_DATE), SqlUtils.constant(currency));
 
     String vatAlias = "Vat_" + SqlUtils.uniqueName();
 
     String priceAlias = "Price_" + SqlUtils.uniqueName();
     IsExpression priceExch =
-        ExchangeUtils.exchangeFieldTo(query, TBL_ORDER_ITEMS,
-            COL_TRADE_ITEM_PRICE, COL_TRADE_CURRENCY,
-            COL_INCOME_DATE, currency);
+        ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_ITEM_PRICE),
+            SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_CURRENCY), SqlUtils.field(TBL_ORDERS,
+                COL_DATES_START_DATE), SqlUtils.constant(currency));
 
     query.addExpr(priceExch, priceAlias)
         .addExpr(vatExch, vatAlias)
