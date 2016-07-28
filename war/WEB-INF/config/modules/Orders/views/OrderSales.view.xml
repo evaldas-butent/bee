@@ -22,7 +22,6 @@
       <SimpleColumn name="Notes" />
     </SimpleJoin>
 
-    <SimpleColumn name="Date" />
     <SimpleColumn name="Unpacking" />
 
     <SimpleColumn name="Item" />
