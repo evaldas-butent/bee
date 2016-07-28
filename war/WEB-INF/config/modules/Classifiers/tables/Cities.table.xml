@@ -5,7 +5,7 @@
   idName="CityID"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" label="=city" translatable="true" />
+    <String name="Name" precision="60" notNull="true" label="=city" translatable="true" />
     <Relation name="Country" relation="Countries" notNull="true" label="=country" />
   </Fields>
 
