@@ -2882,6 +2882,8 @@ public interface Dictionary {
 
   default String mailAccount() {return g("mailAccount");}
 
+  default String mailAccountNotFound() {return g("mailAccountNotFound");}
+
   default String mailAccountRules() {return g("mailAccountRules");}
 
   default String mailAccountSettings() {return g("mailAccountSettings");}
@@ -2974,6 +2976,8 @@ public interface Dictionary {
 
   default String mailMessageSent() {return g("mailMessageSent");}
 
+  default String mailMessageSentCount() {return g("mailMessageSentCount");}
+
   default String mailMessageWasNotSent() {return g("mailMessageWasNotSent");}
 
   default String mailMessages(Object p0) {
@@ -3033,6 +3037,8 @@ public interface Dictionary {
   default String mailPublic() {return g("mailPublic");}
 
   default String mailQuestionSaveToDraft() {return g("mailQuestionSaveToDraft");}
+
+  default String mailRecipientAddressNotFound() {return g("mailRecipientAddressNotFound");}
 
   default String mailRecipientType() {return g("mailRecipientType");}
 
@@ -4296,6 +4302,10 @@ public interface Dictionary {
   default String selectionColumnLabel() {return g("selectionColumnLabel");}
 
   default String send() {return g("send");}
+
+  default String sendReminder() {return g("sendReminder");}
+
+  default String sendReminderMail() {return g("sendReminderMail");}
 
   default String separator() {return g("separator");}
 
@@ -5687,6 +5697,8 @@ public interface Dictionary {
   default String trdOperationsShort() {return g("trdOperationsShort");}
 
   default String trdOverdue() {return g("trdOverdue");}
+
+  default String trdOverdueInDays() {return g("trdOverdueInDays");}
 
   default String trdPaid() {return g("trdPaid");}
 

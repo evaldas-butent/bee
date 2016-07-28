@@ -301,6 +301,9 @@
       <xs:enumeration value="CurrencyRates" />
       <xs:enumeration value="CustomConfig" />
       <xs:enumeration value="DataCriteria" />
+      <xs:enumeration value="Debts" />
+      <xs:enumeration value="DebtReminderTemplates" />
+      <xs:enumeration value="DebtReports" />
       <xs:enumeration value="DeliveryMethods" />
       <xs:enumeration value="Departments" />
       <xs:enumeration value="DepartmentEmployees" />

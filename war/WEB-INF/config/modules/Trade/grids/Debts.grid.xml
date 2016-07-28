@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:ui="http://www.butent.com/ui"
+        name="Debts" viewName="Debts" disabledActions="add delete" readOnly="true"
+        filter="Debt > 0" caption="=trdDebts">
+
+  <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+    <DataColumn name="CustomerCode" caption="=companyCode" label="=companyCode" searchBy="CustomerCode PayerCode" >
+      <render>
+        <ui:function>
+          return row.Payer ? row.PayerCode : row.CustomerCode;
+        </ui:function>
+      </render>
+    </DataColumn>
+    <DataColumn name="Customer" caption="=company" label="=company" searchBy="CustomerName PayerName">
+      <render>
+        <ui:function>
+          var name = row.Payer ? row.PayerName : row.CustomerName;
+          type = row.Payer ? row.PayerTypeName : row.CustomerTypeName;
+
+          return type ? name + ' ' + type : name;
+        </ui:function>
+      </render>
+    </DataColumn>
+    <CalcColumn name="FinancialState" type="string"
+                caption="=financialState" label="=financialState" searchBy="FinancialStateName PayerFinancialStateName" >
+      <render>
+        <ui:function>
+          return row.Payer ? row.PayerFinancialStateName : row.FinancialStateName;
+        </ui:function>
+      </render>
+    </CalcColumn>
+    <RelColumn name="SaleSeries" />
+    <DataColumn name="InvoiceNo" />
+    <RelColumn name="Manager" />
+    <DataColumn name="Date" />
+    <DataColumn name="Term" caption="=trdTerm" label="=trdTerm" />
+    <DataColumn name="DaysForPayment" caption="=trdDaysForPayment"
+                label="=trdDaysForPayment" autoFit="true">
+      <renderToken source="DaysForPayment" suffix=" d." />
+    </DataColumn>
+    <CalcColumn name="Overdue" type="string" caption="=trdInvoiceOverdue"
+                label="=trdInvoiceOverdue" autoFit="true">
+      <render>
+        <ui:function>
+          var diff = 0,
+          start = 0;
+          end = new Date();
+          days = 0,
+          text = '';
+
+          if (row.Term != null) {
+          start = row.Term;
+          } else if (row.Date != null) {
+          start = row.Date;
+          } else {
+          return null;
+          }
+
+          diff = start - end.getTime();
+
+          days = parseInt(diff / 1000 / 60 / 60 / 24, 10);
+
+          text = days + ' ' + $wnd.Bee_maybeTranslate('=dayShort');
+          return text;
+        </ui:function>
+      </render>
+    </CalcColumn>
+
+    <DataColumn name="Amount" />
+    <DataColumn name="CurrencyName" />
+    <DataColumn name="PaymentTime" />
+    <DataColumn name="Paid" />
+    <DataColumn name="Debt" />
+    <CalcColumn name="AppointmentsCount" type="integer"
+                sortBy="AppointmentsCount" caption="=calListOfActions" label="=calListOfActions">
+      <style>
+        <bodyStyle>
+          <ui:class>bee-ActionCellLink</ui:class>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:function>
+          return row.Payer ? row.PayerAppointmentsCount : row.AppointmentsCount;
+        </ui:function>
+      </render>
+    </CalcColumn>
+    <CalcColumn name="LastAppointment" caption="=calLastActionDate"
+                label="=calLastActionDate" type="datetime">
+      <render>
+        <ui:function>
+          return row.Payer ? row.PayerLastAppointment : row.LastAppointment;
+        </ui:function>
+      </render>
+    </CalcColumn>
+  </g:columns>
+</g:Grid>
