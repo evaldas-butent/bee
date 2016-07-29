@@ -2,8 +2,8 @@
 <!DOCTYPE Form[
   <!ENTITY foritem "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.IsService</ui:expression></dynStyle>">
   <!ENTITY forservice "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.IsService</ui:expression></dynStyle>">
-  <!ENTITY pricescale "2">
-  <!ENTITY costscale "2">
+  <!ENTITY pricescale "4">
+  <!ENTITY costscale "4">
   <!ENTITY pricestyle "width: 120px;">
   <!ENTITY currencystyle "width: 50px;">
 ]>
@@ -13,7 +13,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Item" viewName="Items" caption="=item"
-  width="700" height="720"
+  width="820" height="720"
   >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin-top: 1ex;">
@@ -83,6 +83,8 @@
             <col index="2" cellStyle="padding-left: 6px;" />
             <col index="3" kind="label" />
             <col index="5" cellStyle="padding-left: 6px;" />
+            <col index="6" kind="label" />
+            <col index="8" cellStyle="padding-left: 6px;" />
 
             <row>
               <Label for="Price" />
@@ -96,27 +98,71 @@
                 style="&pricestyle;" summarize="true" />
               <DataSelector source="CostCurrency" for="Cost" newRowEnabled="false"
                 editEnabled="false" style="&currencystyle;" />
-            </row>
 
-            <row>
               <Label for="Price1" />
               <InputDecimal source="Price1" currencySource="Currency1" scale="&pricescale;"
                 style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency1" for="Price1" newRowEnabled="false"
                 editEnabled="false" style="&currencystyle;" />
+            </row>
 
+            <row>
               <Label for="Price2" />
               <InputDecimal source="Price2" currencySource="Currency2" scale="&pricescale;"
                 style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency2" for="Price2" newRowEnabled="false"
                 editEnabled="false" style="&currencystyle;" />
-            </row>
 
-            <row>
               <Label for="Price3" />
               <InputDecimal source="Price3" currencySource="Currency3" scale="&pricescale;"
                 style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency3" for="Price3" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+
+              <Label for="Price4" />
+              <InputDecimal source="Price4" currencySource="Currency4" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency4" for="Price4" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+            </row>
+
+            <row>
+              <Label for="Price5" />
+              <InputDecimal source="Price5" currencySource="Currency5" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency5" for="Price5" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+
+              <Label for="Price6" />
+              <InputDecimal source="Price6" currencySource="Currency6" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency6" for="Price6" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+
+              <Label for="Price7" />
+              <InputDecimal source="Price7" currencySource="Currency7" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency7" for="Price7" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+            </row>
+
+            <row>
+              <Label for="Price8" />
+              <InputDecimal source="Price8" currencySource="Currency8" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency8" for="Price8" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+
+              <Label for="Price9" />
+              <InputDecimal source="Price9" currencySource="Currency9" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency9" for="Price9" newRowEnabled="false"
+                editEnabled="false" style="&currencystyle;" />
+
+              <Label for="Price10" />
+              <InputDecimal source="Price10" currencySource="Currency10" scale="&pricescale;"
+                style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency10" for="Price10" newRowEnabled="false"
                 editEnabled="false" style="&currencystyle;" />
             </row>
           </Table>
@@ -130,7 +176,8 @@
         <Table kind="controls" style="margin-top: 1ex;">
           <col index="0" kind="label" />
           <col index="2" kind="label" />
-      
+          <col index="4" kind="label" />
+
           <row>
             <Label for="Name2" />
             <cell colSpan="3">
@@ -222,11 +269,51 @@
         </SimplePanel>
       </page>
 
-      <page module="Orders">
+      <page data="Orders">
         <text>=tcdRemainders</text>
-        <ChildGrid name="ItemRemainders" relColumn="Item" />
+        <ChildGrid name="ItemRemainders" relColumn="Item" class="occupy-1" summarize="true" />
       </page>
-      
+
+      <page>
+        <text>=suppliers</text>
+        <ChildGrid name="ItemSuppliers" relColumn="Item" class="occupy-1" summarize="true" />
+      </page>
+
+      <page>
+        <text>=manufacturers</text>
+        <ChildGrid name="ItemManufacturers" relColumn="Item" class="occupy-1" summarize="true" />
+      </page>
+
+      <page data="Orders">
+        <text>=orders</text>
+        <Table kind="controls" style="margin-top: 1ex;">
+          <col index="0" kind="label" />
+          <col index="2" kind="label" />
+
+          <row>
+            <Label for="Attribute" >
+              &foritem;
+            </Label>
+            <InputText source="Attribute" >
+              &foritem;
+            </InputText>
+
+            <Label for="PackageUnits">
+              &foritem;
+            </Label>
+            <InputDecimal source="PackageUnits" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+
+          <row>
+            <CheckBox source="NotManufactured" text="=notManufactured" >
+              &foritem;
+            </CheckBox>
+          </row>
+        </Table>
+      </page>
+
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>

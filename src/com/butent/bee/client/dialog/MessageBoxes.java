@@ -575,6 +575,7 @@ public class MessageBoxes {
 
     popup.setWidget(widget);
 
+    popup.focusOnOpen(widget);
     popup.showRelativeTo(target);
   }
 

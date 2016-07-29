@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfRestrictions"
+       idName="RestrictionID"
+>
+  <Fields>
+    <Relation name="BranchOption" relation="ConfBranchOptions" notNull="true" cascade="DELETE" />
+    <Relation name="Option" relation="ConfOptions" notNull="true" />
+    <Boolean name="Denied" />
+  </Fields>
+  <Constraints>
+    <Unique fields="BranchOption Option" />
+  </Constraints>
+</Table>

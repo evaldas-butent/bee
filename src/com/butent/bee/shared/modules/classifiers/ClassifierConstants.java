@@ -15,6 +15,7 @@ public final class ClassifierConstants {
 
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
   public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
+  public static final String TIMER_REMIND_CALENDAR_EVENTS = "timer_remind_calendar_events";
 
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
@@ -124,6 +125,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_INFORMATION_SOURCE = "InformationSource";
   public static final String COL_COMPANY_PRICE_NAME = "PriceName";
   public static final String COL_COMPANY_DISCOUNT_PERCENT = "DiscountPercent";
+  public static final String COL_COMPANY_TOLERATED_DAYS = "ToleratedDays";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
@@ -133,6 +135,9 @@ public final class ClassifierConstants {
 
   public static final String COL_DATE_OF_BIRTH = "DateOfBirth";
 
+  public static final String COL_DATE_FROM = "DateFrom";
+  public static final String COL_DATE_TO = "DateTo";
+
   public static final String COL_CATEGORY = "Category";
   public static final String COL_CATEGORY_NAME = "Name";
   public static final String COL_CATEGORY_PARENT = "Parent";
@@ -140,6 +145,7 @@ public final class ClassifierConstants {
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
   public static final String COL_ITEM_ARTICLE = "Article";
+  public static final String COL_ITEM_ATTRIBUTE = "Attribute";
   public static final String COL_ITEM_BARCODE = "Barcode";
   public static final String COL_ITEM_IS_SERVICE = "IsService";
   public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
@@ -147,6 +153,7 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_CURRENCY = "Currency";
   public static final String COL_ITEM_COST = "Cost";
   public static final String COL_ITEM_COST_CURRENCY = "CostCurrency";
+  public static final String COL_ITEM_PACKAGE_UNITS = "PackageUnits";
   public static final String COL_ITEM_PRICE_1 = "Price1";
   public static final String COL_ITEM_CURRENCY_1 = "Currency1";
   public static final String COL_ITEM_PRICE_2 = "Price2";
@@ -307,6 +314,7 @@ public final class ClassifierConstants {
 
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";
+  public static final String PROP_WAREHOUSE_REMAINDER = "WarehouseRemainder";
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";

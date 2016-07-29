@@ -9,8 +9,6 @@
 
     <SimpleColumn name="Order" />
 
-    <SimpleColumn name="Date" />
-
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
@@ -82,5 +80,7 @@
     <SimpleColumn name="Discount" />
     <SimpleColumn name="InvisibleDiscount" />
     <SimpleColumn name="Note" />
+
+    <SimpleColumn name="Object" />
   </Columns>
 </View>

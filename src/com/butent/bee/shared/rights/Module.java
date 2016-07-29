@@ -147,7 +147,7 @@ public enum Module implements HasLocalizedCaption {
     }
   },
 
-  ORDERS {
+  ORDERS(SubModule.CAR_DEALERS) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.orders();
@@ -155,7 +155,7 @@ public enum Module implements HasLocalizedCaption {
 
     @Override
     public String getStyleSheet(SubModule subModule) {
-      return null;
+      return "orders";
     }
   },
 

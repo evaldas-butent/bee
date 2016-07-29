@@ -25,7 +25,7 @@ public class FileInfo implements HasInfo, HasCaption, BeeSerializable, AutoClose
 
   @Override
   public void close() {
-    if (isTemporary()) {
+    if (isTemporary() && !BeeUtils.isEmpty(getPath())) {
       LogUtils.getRootLogger().debug("File deleted:", getId(), getPath(), getFile().delete());
     }
   }

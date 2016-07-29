@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfDimensions"
+       idName="DimensionID"
+>
+  <Fields>
+    <Relation name="Branch" relation="ConfPricelist" notNull="true" cascade="DELETE"
+              label="=configuration" />
+    <Relation name="Group" relation="ConfGroups" notNull="true" label="=group" />
+    <Numeric name="Ordinal" precision="3" label="=ordinal" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Branch Group" />
+  </Constraints>
+</Table>

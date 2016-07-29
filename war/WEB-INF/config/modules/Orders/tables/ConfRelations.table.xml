@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfRelations"
+       idName="RelationID"
+>
+  <Fields>
+    <Relation name="BranchBundle" relation="ConfBranchBundles" notNull="true" cascade="DELETE" />
+    <Relation name="BranchOption" relation="ConfBranchOptions" notNull="true" cascade="DELETE" />
+    <Integer name="Price" label="=price" />
+  </Fields>
+  <Constraints>
+    <Unique fields="BranchBundle BranchOption" />
+  </Constraints>
+</Table>

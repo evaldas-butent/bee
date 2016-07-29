@@ -78,12 +78,11 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
@@ -113,11 +112,21 @@ import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
-import javax.ejb.*;
+import javax.ejb.EJB;
+import javax.ejb.EJBContext;
+import javax.ejb.LocalBean;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Schedule;
+import javax.ejb.Singleton;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 
 @Singleton
+@Lock(LockType.READ)
 @LocalBean
-public class TasksModuleBean extends TimerBuilder implements BeeModule  {
+public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
   private static final String COL_DELAYED_HOURS = "DelayedHours";
   private static BeeLogger logger = LogUtils.getLogger(TasksModuleBean.class);
@@ -433,14 +442,14 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
           if (event instanceof DataEvent.ViewUpdateEvent) {
             DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
             if (DataUtils.contains(ev.getColumns(), COL_USER_BLOCK_FROM)
-                    || DataUtils.contains(ev.getColumns(), COL_USER_BLOCK_UNTIL)) {
+                || DataUtils.contains(ev.getColumns(), COL_USER_BLOCK_UNTIL)) {
               createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY,
-                      Pair.of(TBL_USERS, ev.getRow().getId()));
+                  Pair.of(TBL_USERS, ev.getRow().getId()));
             }
           } else if (event instanceof DataEvent.ViewDeleteEvent) {
             for (long id : ((DataEvent.ViewDeleteEvent) event).getIds()) {
               createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY,
-                      Pair.of(TBL_USERS, id));
+                  Pair.of(TBL_USERS, id));
             }
           }
         }
@@ -451,11 +460,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
 
             if (DataUtils.contains(ev.getColumns(), COL_TASKS_MAILING_TIME)) {
               createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY,
-                      Pair.of(TBL_USER_SETTINGS, ev.getRow().getId()));
+                  Pair.of(TBL_USER_SETTINGS, ev.getRow().getId()));
             }
           } else if (event instanceof DataEvent.ViewInsertEvent) {
             createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY, Pair.of(TBL_USER_SETTINGS,
-                    ((DataEvent.ViewInsertEvent) event).getRow().getId()));
+                ((DataEvent.ViewInsertEvent) event).getRow().getId()));
           }
         }
       }
@@ -561,13 +570,13 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
   @Override
   public void onTimeout(String timerInfo) {
     if (BeeUtils.isPrefix(timerInfo, TIMER_REMIND_TASKS_SUMMARY)) {
-        Long userId = BeeUtils.toLong(BeeUtils.removePrefix(timerInfo, TIMER_REMIND_TASKS_SUMMARY));
+      Long userId = BeeUtils.toLong(BeeUtils.removePrefix(timerInfo, TIMER_REMIND_TASKS_SUMMARY));
 
-        if (DataUtils.isId(userId)
-                && usr.isActive(userId)
-                && DataUtils.isId(mail.getSenderAccountId(TIMER_REMIND_TASKS_SUMMARY))
-                && !TimeUtils.isWeekend(TimeUtils.today())) {
-          sendTasksSummaryReminder(userId);
+      if (DataUtils.isId(userId)
+          && usr.isActive(userId)
+          && DataUtils.isId(mail.getSenderAccountId(TIMER_REMIND_TASKS_SUMMARY))
+          && !TimeUtils.isWeekend(TimeUtils.today())) {
+        sendTasksSummaryReminder(userId);
       }
     }
   }
@@ -579,34 +588,34 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_TASKS_SUMMARY)) {
       Value currentTime = Value.getValue(System.currentTimeMillis());
       SimpleRowSet data = qs.getData(new SqlSelect()
-              .addFields(TBL_USER_SETTINGS, COL_USER, COL_TASKS_MAILING_TIME)
-              .addFrom(TBL_USER_SETTINGS)
-              .addFromInner(TBL_USERS, sys.joinTables(TBL_USERS, TBL_USER_SETTINGS, COL_USER))
+          .addFields(TBL_USER_SETTINGS, COL_USER, COL_TASKS_MAILING_TIME)
+          .addFrom(TBL_USER_SETTINGS)
+          .addFromInner(TBL_USERS, sys.joinTables(TBL_USERS, TBL_USER_SETTINGS, COL_USER))
 
-              .setWhere(SqlUtils.and(wh,
-                      SqlUtils.notNull(TBL_USER_SETTINGS, COL_TASKS_MAILING_TIME),
-                      SqlUtils.or(
-                              SqlUtils.and(
-                                      SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_FROM),
-                                      SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_UNTIL)
-                              ),
-                              SqlUtils.and(
-                                      SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_FROM),
-                                      SqlUtils.more(TBL_USERS, COL_USER_BLOCK_FROM, currentTime)
-                              ),
-                              SqlUtils.and(
-                                      SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_UNTIL),
-                                      SqlUtils.less(TBL_USERS, COL_USER_BLOCK_UNTIL, currentTime)
-                              )
-                      )
-              ))
+          .setWhere(SqlUtils.and(wh,
+              SqlUtils.notNull(TBL_USER_SETTINGS, COL_TASKS_MAILING_TIME),
+              SqlUtils.or(
+                  SqlUtils.and(
+                      SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_FROM),
+                      SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_UNTIL)
+                  ),
+                  SqlUtils.and(
+                      SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_FROM),
+                      SqlUtils.more(TBL_USERS, COL_USER_BLOCK_FROM, currentTime)
+                  ),
+                  SqlUtils.and(
+                      SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_UNTIL),
+                      SqlUtils.less(TBL_USERS, COL_USER_BLOCK_UNTIL, currentTime)
+                  )
+              )
+          ))
       );
 
       for (SimpleRowSet.SimpleRow row : data) {
         Long timerId = row.getLong(COL_USER);
         DateTime timerTime = null;
         DateTime reminderTime = TimeUtils.toDateTimeOrNull(
-                TimeUtils.parseTime(row.getValue(COL_TASKS_MAILING_TIME)));
+            TimeUtils.parseTime(row.getValue(COL_TASKS_MAILING_TIME)));
 
         if (reminderTime == null) {
           continue;
@@ -628,7 +637,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
 
         if (timerTime != null && timerId != null) {
           Timer timer = getTimerService().createIntervalTimer(timerTime.getJava(),
-                  TimeUtils.MILLIS_PER_DAY, new TimerConfig(timerIdentifier + timerId, false));
+              TimeUtils.MILLIS_PER_DAY, new TimerConfig(timerIdentifier + timerId, false));
 
           logger.info("Created timer:", timerTime, timer.getInfo());
 
@@ -642,8 +651,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
   }
 
   @Override
-  protected Pair<IsCondition, String> getConditionAndTimerIdForUpdate(String timerIdentifier,
-                                                                      Pair<String, Long> idInfo) {
+  protected Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
+      Pair<String, Long> idInfo) {
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_TASKS_SUMMARY)) {
       IsCondition wh = null;
       String idName = idInfo.getA();
@@ -651,9 +660,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
 
       if (BeeUtils.same(idName, TBL_USER_SETTINGS)) {
         SimpleRowSet data = qs.getData(new SqlSelect()
-                .addFields(TBL_USER_SETTINGS, COL_USER)
-                .addFrom(TBL_USER_SETTINGS)
-                .setWhere(sys.idEquals(TBL_USER_SETTINGS, idInfo.getB())));
+            .addFields(TBL_USER_SETTINGS, COL_USER)
+            .addFrom(TBL_USER_SETTINGS)
+            .setWhere(sys.idEquals(TBL_USER_SETTINGS, idInfo.getB())));
         if (data.getRows() != null && data.getRows().size() > 0) {
           userId = data.getRow(0).getLong(COL_USER);
         }
@@ -665,7 +674,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
         wh = SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId);
       }
 
-      return Pair.of(wh, timerIdentifier + userId);
+      List timerIdentifiersIds = new ArrayList<String>();
+      timerIdentifiersIds.add(timerIdentifier + userId);
+      return Pair.of(wh, timerIdentifiersIds);
     }
     return null;
   }
@@ -1494,7 +1505,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
       String compFullName =
           companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
-                  ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
+              ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
 
       SqlSelect companyTimesQuery = new SqlSelect()
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
@@ -2038,7 +2049,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
           (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_FIRST_NAME))
               ? usersListSet.getValue(i, COL_FIRST_NAME) : "") + " "
               + (!BeeUtils.isEmpty(usersListSet.getValue(i, COL_LAST_NAME))
-                  ? usersListSet.getValue(i, COL_LAST_NAME) : "");
+              ? usersListSet.getValue(i, COL_LAST_NAME) : "");
 
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
 
@@ -3027,8 +3038,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
                     SqlUtils.or(
                         SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskConstants.TaskStatus.ACTIVE),
                         SqlUtils.equals(TBL_TASKS, COL_STATUS, TaskConstants.TaskStatus.VISITED)),
-                        SqlUtils.notNull(TBL_TASKS, COL_START_TIME),
-                        SqlUtils.notNull(TBL_TASKS, COL_FINISH_TIME)))
+                    SqlUtils.notNull(TBL_TASKS, COL_START_TIME),
+                    SqlUtils.notNull(TBL_TASKS, COL_FINISH_TIME)))
             .addOrder(TBL_TASKS, COL_SUMMARY, COL_TASK_ID);
 
     SimpleRowSet data = qs.getData(query);
@@ -3082,7 +3093,6 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
     DateTime now = new DateTime();
     long nowTime = now.getTime();
 
-
     String[] columns = tasks.getColumnNames();
     SimpleRowSet lateTasks = new SimpleRowSet(columns);
 
@@ -3098,7 +3108,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
         long finishTime = BeeUtils.unbox(row.getLong(tasks.getColumnIndex(COL_FINISH_TIME)));
         if ((finishTime - nowTime) < 0) {
           lateCount++;
-          long  diff = (nowTime - finishTime) / TimeUtils.MILLIS_PER_HOUR;
+          long diff = (nowTime - finishTime) / TimeUtils.MILLIS_PER_HOUR;
           row.setValue(COL_DELAYED_HOURS, BeeUtils.toString(diff));
           lateTasks.addRow(row.getValues());
         }

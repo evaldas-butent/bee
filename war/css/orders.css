@@ -1,0 +1,26 @@
+.bee-reCalculate.bee-reCalculate {
+  margin-right: 30px;
+}
+
+.bee-reserved-orders-header td {
+  text-align: center;
+  padding: 3px 5px;
+  font-weight: bold;
+}
+
+.bee-reserved-orders-info td {
+  text-align: center;
+  padding: 3px 5px;
+}
+
+.bee-reserved-orders-table {
+  border-collapse: collapse;
+}
+.bee-reserved-orders-table td {
+  border: 1px solid #ddd;
+}
+
+.bee-reserved-orders-id-cell:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}

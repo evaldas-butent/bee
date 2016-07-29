@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Parameters" source="Parameters" module="Administration"
+  name="Parameters" source="Parameters" module="*"
   caption="=parameters" readOnly="true"
   >
   <Columns>

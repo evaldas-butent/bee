@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
+        xmlns:f="http://www.butent.com/form"
 
-  name="ExtendedReport"
-  >
+        name="ExtendedReport"
+>
   <FlowPanel class="flexBox-vertical" style="height:100%;">
-    <br/>
+    <br />
     <FlowPanel class="flexBox-horizontal">
-      <FlowPanel class="flexible">
+      <FlowPanel class="flexible" style="overflow:hidden;">
         <HorizontalPanel>
           <Label text="=currency" />
           <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name"
-            newRowEnabled="false" editPopup="true" style="width:80px;" />
+                           newRowEnabled="false" editPopup="true" style="width:80px;" />
 
           <CheckBox name="Vat" text="=trdAmountWoVat" />
         </HorizontalPanel>
 
-        <Disclosure open="false">
+        <Disclosure open="false" style="overflow:auto;">
           <Label text="=layout" />
-          <FlowPanel name="LayoutContainer" style="overflow:auto;" />
+          <FlowPanel name="LayoutContainer" />
         </Disclosure>
 
         <Disclosure open="true">
@@ -36,7 +36,7 @@
       </FieldSet>
     </FlowPanel>
 
-    <br/>
+    <br />
     <FlowPanel name="DataContainer" class="flexible" style="overflow:auto;" />
   </FlowPanel>
 </f:Form>

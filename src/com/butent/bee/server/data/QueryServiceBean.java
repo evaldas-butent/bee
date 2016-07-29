@@ -343,6 +343,15 @@ public class QueryServiceBean {
     return getSingleValue(query).getBoolean(0, 0);
   }
 
+  public Boolean getBooleanById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
+
+    return getBoolean(query);
+  }
+
   public List<byte[]> getBytesColumn(SqlSelect query) {
     Assert.state(query.getFields().size() == 1, "Only one column allowed");
 

@@ -678,7 +678,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Field", getColumnField(col), "Type", getColumnType(col), "Locale", getColumnLocale(col),
           "Aggregate Function", getColumnAggregate(col), "Hidden", isColHidden(col),
           "Read Only", isColReadOnly(col), "Editable", isColEditable(col),
-          "Level", getColumnLevel(col),
+          "Not Null", !isColNullable(col), "Level", getColumnLevel(col),
           "Expression", Objects.nonNull(getColumnExpression(col)) ? getColumnExpression(col)
               .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col),

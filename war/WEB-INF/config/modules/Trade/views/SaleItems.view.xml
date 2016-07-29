@@ -19,6 +19,7 @@
     <SimpleColumn name="VatPlus" />
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
+    <SimpleColumn name="Discount" />
     <SimpleColumn name="Note" />
     <SimpleColumn name="Parent" />
     <SimpleColumn name="Ordinal" />

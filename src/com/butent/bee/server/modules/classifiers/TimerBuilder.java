@@ -23,7 +23,6 @@ import javax.ejb.*;
  * Stores, updates, removes and cancels timers which are saved in registry.
  * For timers creation  - method buildTimers must be called.
  */
-@Lock(LockType.READ)
 public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
 
     private static BeeLogger logger = LogUtils.getLogger(TimerBuilder.class);
@@ -40,7 +39,17 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
         String timerInfo = (String) timer.getInfo();
         logger.info("Starting timer", timerInfo);
         onTimeout(timerInfo);
-        logger.info("End timer", timerInfo, "Next timeout", timer.getNextTimeout());
+        try {
+          logger.info("End timer", timerInfo, "Next timeout", timer.getNextTimeout());
+        } catch (NoMoreTimeoutsException noMoreTimeoutsExceptions) {
+          logger.info("End timer", timerInfo);
+          for (String timerIdentifier : registry.keySet()) {
+            if (BeeUtils.isPrefix(timerInfo, timerIdentifier)) {
+              registry.get(timerIdentifier).removeAll(timerInfo);
+              break;
+            }
+          }
+        }
     }
 
     /**
@@ -70,7 +79,7 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
      */
     @Lock(LockType.WRITE)
     protected void createOrUpdateTimers(String timerIdentifier, Pair<String, Long> idInfo) {
-        Collection<Timer> timers = null;
+        Collection<Timer> timers = new ArrayList<>();
         IsCondition wh = null;
 
         if (idInfo == null && registry.containsKey(timerIdentifier)) {
@@ -78,13 +87,15 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
                 registry.get(timerIdentifier).clear();
 
         } else if (idInfo != null) {
-            Pair<IsCondition,  String> whAndTimersId =
+            Pair<IsCondition,  List<String>> whAndTimersId =
                     getConditionAndTimerIdForUpdate(timerIdentifier, idInfo);
 
             if (whAndTimersId != null) {
                 wh = whAndTimersId.getA();
                 if (registry.get(timerIdentifier) != null) {
-                    timers = registry.get(timerIdentifier).removeAll(whAndTimersId.getB());
+                  for (String timerId : whAndTimersId.getB()) {
+                    timers.addAll(registry.get(timerIdentifier).removeAll(timerId));
+                  }
                 }
             }
         }
@@ -127,7 +138,7 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
      * @param idInfo info for timer id which will be deleted and condition to find updatable timers.
      * @return removable timer id and filter to query updatable timers.
      */
-    protected abstract Pair<IsCondition, String> getConditionAndTimerIdForUpdate(
+    protected abstract Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(
             String timerIdentifier, Pair<String, Long> idInfo);
 
     private boolean isRegistered(Timer timer) {
