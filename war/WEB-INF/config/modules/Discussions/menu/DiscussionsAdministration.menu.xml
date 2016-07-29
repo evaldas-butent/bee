@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="DiscussionsAdministration" label="=discussAdministration" order="99" parent="Discussions" separator="true"
+name="DiscussionsAdministration" label="=settings" order="99" parent="Discussions" separator="true"
 >
    <!--  <Item name="DiscussisonParameters" label="=discussParameters" service="form" parameters="DiscussionsSettings" separator="true" /> -->
     <Item name="MarkTypes" label="=discussMarkTypes" service="grid" parameters="DiscussMarkTypes" />
