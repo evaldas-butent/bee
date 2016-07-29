@@ -1493,6 +1493,12 @@ public interface Dictionary {
 
   default String discountDateTo() {return g("discountDateTo");}
 
+  default String discountFromAmount() {return g("discountFromAmount");}
+
+  default String discountFromPrice() {return g("discountFromPrice");}
+
+  default String discountMode() {return g("discountMode");}
+
   default String discountNew() {return g("discountNew");}
 
   default String discountNote() {return g("discountNote");}
@@ -2636,6 +2642,8 @@ public interface Dictionary {
   default String financialStateName() {return g("financialStateName");}
 
   default String firstName() {return g("firstName");}
+
+  default String footer() {return g("footer");}
 
   default String foreground() {return g("foreground");}
 
@@ -4045,7 +4053,9 @@ public interface Dictionary {
 
   default String prmManagerDiscount() {return g("prmManagerDiscount");}
 
-  default String prmMaxUploadFileSize() {return g("prmMaxUploadFileSize");}
+  default String prmManagerWarehouse() {return g("prmManagerWarehouse");}
+
+  default String prmNotifyAboutDebts() {return g("prmNotifyAboutDebts");}
 
   default String prmOverdueInvoices() {return g("prmOverdueInvoices");}
 
@@ -5629,6 +5639,10 @@ public interface Dictionary {
 
   default String trdDebt() {return g("trdDebt");}
 
+  default String trdDebtReports() {return g("trdDebtReports");}
+
+  default String trdDebts() {return g("trdDebts");}
+
   default String trdDocument() {return g("trdDocument");}
 
   default String trdDocumentFiles() {return g("trdDocumentFiles");}
@@ -5759,6 +5773,12 @@ public interface Dictionary {
   default String trdQuantity() {return g("trdQuantity");}
 
   default String trdRemainders() {return g("trdRemainders");}
+
+  default String trdRemindTemplateFirstParagraph() {return g("trdRemindTemplateFirstParagraph");}
+
+  default String trdRemindTemplateLastParagraph() {return g("trdRemindTemplateLastParagraph");}
+
+  default String trdReminderTemplates() {return g("trdReminderTemplates");}
 
   default String trdSaleItems() {return g("trdSaleItems");}
 
@@ -5941,6 +5961,12 @@ public interface Dictionary {
   default String vat() {return g("vat");}
 
   default String vatAmount() {return g("vatAmount");}
+
+  default String vatMode() {return g("vatMode");}
+
+  default String vatModeInclusive() {return g("vatModeInclusive");}
+
+  default String vatModePlus() {return g("vatModePlus");}
 
   default String vatPercent() {return g("vatPercent");}
 
