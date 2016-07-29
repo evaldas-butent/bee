@@ -41,6 +41,9 @@
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
 
   <g:columns>
+    <DataColumn name="DocumentVatMode" />
+    <DataColumn name="DocumentDiscountMode" />
+
     <DataColumn name="Notes" />
   </g:columns>
 </g:Grid>

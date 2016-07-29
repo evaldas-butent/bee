@@ -10,6 +10,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -48,6 +49,8 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       ((DataSelector) widget).addSelectorHandler(event -> {
         if (event.isOpened()) {
           event.getSelector().setAdditionalFilter(getOperationFilter());
+        } else if (event.isChanged()) {
+          onOperationChange(event.getRelatedRow());
         }
       });
     }
@@ -93,6 +96,16 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     }
 
     return BeeUtils.joinItems(s1, getStringValue(COL_OPERATION_NAME));
+  }
+
+  private void onOperationChange(IsRow operationRow) {
+    if (operationRow != null) {
+      getFormView().updateCell(COL_TRADE_DOCUMENT_VAT_MODE,
+          Data.getString(VIEW_TRADE_OPERATIONS, operationRow, COL_OPERATION_VAT_MODE));
+
+      getFormView().updateCell(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
+          Data.getString(VIEW_TRADE_OPERATIONS, operationRow, COL_OPERATION_DISCOUNT_MODE));
+    }
   }
 
   private void onPhaseTransition(BeforeSelectionEvent<Integer> event) {

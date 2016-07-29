@@ -38,6 +38,9 @@
     <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
       label="=dimensions" />
 
+    <Enum name="DocumentVatMode" key="TradeVatMode" label="=vatMode" />
+    <Enum name="DocumentDiscountMode" key="TradeDiscountMode" label="=discountMode" />
+
     <Text name="Notes" label="=trdNotes" />
   </Fields>
 </Table>

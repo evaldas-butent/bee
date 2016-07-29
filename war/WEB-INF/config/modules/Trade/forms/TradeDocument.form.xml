@@ -97,6 +97,14 @@
         <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
           newRowEnabled="false" style="width: 5em;" />
       </row>
+
+      <row>
+        <Label for="DocumentVatMode" />
+        <ListBox source="DocumentVatMode" />
+
+        <Label for="DocumentDiscountMode" />
+        <ListBox source="DocumentDiscountMode" />
+      </row>
     </Table>
 
     <br/>

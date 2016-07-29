@@ -170,6 +170,8 @@ public final class TradeConstants {
   public static final String COL_OPERATION_TYPE = "OperationType";
   public static final String COL_OPERATION_KIND = "Kind";
   public static final String COL_OPERATION_PRICE = "Price";
+  public static final String COL_OPERATION_VAT_MODE = "OperationVatMode";
+  public static final String COL_OPERATION_DISCOUNT_MODE = "OperationDiscountMode";
   public static final String COL_OPERATION_WAREHOUSE_FROM = "WarehouseFrom";
   public static final String COL_OPERATION_WAREHOUSE_TO = "WarehouseTo";
   public static final String COL_OPERATION_DEFAULT = "IsDefault";
@@ -186,6 +188,8 @@ public final class TradeConstants {
   public static final String COL_TRADE_DOCUMENT_STATUS = "Status";
   public static final String COL_TRADE_DOCUMENT_NUMBER_1 = "Number1";
   public static final String COL_TRADE_DOCUMENT_NUMBER_2 = "Number2";
+  public static final String COL_TRADE_DOCUMENT_VAT_MODE = "DocumentVatMode";
+  public static final String COL_TRADE_DOCUMENT_DISCOUNT_MODE = "DocumentDiscountMode";
 
   public static final String COL_TRADE_DOCUMENT = "TradeDocument";
   public static final String COL_TRADE_DOCUMENT_ITEM = "TradeDocumentItem";

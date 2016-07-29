@@ -95,6 +95,9 @@
       <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     </SimpleJoin>
 
+    <SimpleColumn name="DocumentVatMode" />
+    <SimpleColumn name="DocumentDiscountMode" />
+
     <SimpleColumn name="Notes" />
   </Columns>
 
