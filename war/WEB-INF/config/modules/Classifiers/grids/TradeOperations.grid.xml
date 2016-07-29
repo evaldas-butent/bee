@@ -10,6 +10,9 @@
     <DataColumn name="Kind" module="Trade.Acts" minWidth="100" />
     <DataColumn name="Price" minWidth="100" />
 
+    <DataColumn name="OperationVatMode" />
+    <DataColumn name="OperationDiscountMode" />
+
     <RelColumn name="WarehouseFrom" />
     <RelColumn name="WarehouseTo" />
 
