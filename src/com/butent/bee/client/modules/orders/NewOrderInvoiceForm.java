@@ -16,18 +16,15 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -261,7 +258,8 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
                             return;
                           }
 
-                          if (Data.isNull(VIEW_ORDER_CHILD_INVOICES, activeRow, COL_TRADE_SALE_SERIES)) {
+                          if (Data.isNull(VIEW_ORDER_CHILD_INVOICES, activeRow,
+                              COL_TRADE_SALE_SERIES)) {
                             getFormView().notifySevere(
                                 Localized.dictionary().trdInvoicePrefix() + " "
                                     + Localized.dictionary().valueRequired());

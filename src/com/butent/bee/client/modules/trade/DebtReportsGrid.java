@@ -11,18 +11,15 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
@@ -251,8 +248,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         }
 
         if (response.hasResponse() && response.getResponse() instanceof String) {
-          getGridPresenter().getGridView().notifyInfo(
-              new String[] {(String) response.getResponse()});
+          getGridPresenter().getGridView().notifyInfo(response.getResponseAsString());
         }
 
         if (Popup.getActivePopup() != null) {
