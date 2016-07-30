@@ -65,44 +65,44 @@ import java.util.TreeMap;
 
 public class SpecificationBuilder implements InputCallback {
 
-  private static class Branch {
+  private static final class Branch {
     private final Long id;
     private final Option option;
     private final List<Branch> childs = new ArrayList<>();
     private Branch parent;
     private Configuration configuration;
 
-    public Branch(Long id, Option option) {
+    private Branch(Long id, Option option) {
       this.id = id;
       this.option = option;
     }
 
-    public void addChild(Branch child) {
+    private void addChild(Branch child) {
       child.parent = this;
       childs.add(child);
     }
 
-    public List<Branch> getChilds() {
+    private List<Branch> getChilds() {
       return childs;
     }
 
-    public Configuration getConfiguration() {
+    private Configuration getConfiguration() {
       return configuration;
     }
 
-    public Long getId() {
+    private Long getId() {
       return id;
     }
 
-    public Option getOption() {
+    private Option getOption() {
       return option;
     }
 
-    public Branch getParent() {
+    private Branch getParent() {
       return parent;
     }
 
-    public void setConfiguration(Configuration configuration) {
+    private void setConfiguration(Configuration configuration) {
       this.configuration = configuration;
     }
   }

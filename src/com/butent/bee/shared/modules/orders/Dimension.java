@@ -76,8 +76,8 @@ public class Dimension implements BeeSerializable, Comparable<Dimension> {
     return Codec.beeSerialize(Arrays.asList(id, name, required));
   }
 
-  public Dimension setRequired(Boolean required) {
-    this.required = BeeUtils.unbox(required);
+  public Dimension setRequired(Boolean req) {
+    this.required = BeeUtils.unbox(req);
     return this;
   }
 
