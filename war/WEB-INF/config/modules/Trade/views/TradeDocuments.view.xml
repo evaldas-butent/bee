@@ -88,7 +88,7 @@
       <SimpleColumn name="TabNumber" alias="ManagerTabNumber" />
     </SimpleJoin>
 
-    <SimpleColumn name="Discount" />
+    <SimpleColumn name="DocumentDiscount" />
     <SimpleColumn name="PriceName" />
 
     <SimpleJoin name="Dimensions" joinType="LEFT">

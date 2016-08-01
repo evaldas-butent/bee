@@ -34,16 +34,16 @@
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
       sortBy="ManagerLastName ManagerFirstName" />
 
-    <DataColumn name="Discount" />
+    <DataColumn name="DocumentDiscount" />
     <DataColumn name="PriceName" carry="true" />
+
+    <DataColumn name="DocumentVatMode" carry="true" />
+    <DataColumn name="DocumentDiscountMode" carry="true" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
 
   <g:columns>
-    <DataColumn name="DocumentVatMode" carry="true" />
-    <DataColumn name="DocumentDiscountMode" carry="true" />
-
     <DataColumn name="Notes" />
   </g:columns>
 </g:Grid>

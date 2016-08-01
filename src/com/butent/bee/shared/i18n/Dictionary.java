@@ -1497,6 +1497,8 @@ public interface Dictionary {
 
   default String discountFromPrice() {return g("discountFromPrice");}
 
+  default String discountIsPercent() {return g("discountIsPercent");}
+
   default String discountMode() {return g("discountMode");}
 
   default String discountNew() {return g("discountNew");}
@@ -5961,6 +5963,8 @@ public interface Dictionary {
   default String vat() {return g("vat");}
 
   default String vatAmount() {return g("vatAmount");}
+
+  default String vatIsPercent() {return g("vatIsPercent");}
 
   default String vatMode() {return g("vatMode");}
 

@@ -2,6 +2,7 @@
 <!DOCTYPE Form[
   <!ENTITY inpw "width: 16em;">
   <!ENTITY inpdt "width: 10em;">
+  <!ENTITY inpsh "width: 10em;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -26,7 +27,7 @@
         <InputDateTime source="Date" style="&inpdt;" visible="true" />
 
         <Label for="Series" />
-        <InputText source="Series" upperCase="true" style="width: &inpdt;" />
+        <InputText source="Series" upperCase="true" style="width: &inpsh;" />
 
         <Label for="Number" />
         <InputText source="Number" style="&inpw;" />
@@ -90,8 +91,8 @@
         <Label for="PriceName" />
         <ListBox source="PriceName" />
 
-        <Label for="Discount" />
-        <InputDecimal source="Discount" style="&inpdt;" />
+        <Label for="DocumentDiscount" />
+        <InputDecimal source="DocumentDiscount" style="&inpsh;" />
 
         <Label for="Currency" />
         <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
