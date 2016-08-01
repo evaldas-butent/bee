@@ -723,3 +723,19 @@
 .bee-cal-Panel .status-completed {
   background-image: repeating-linear-gradient(330deg, rgba(211,211,211,1) 10px, rgba(211,211,211,0) 20px);
 }
+
+.bee-cal .copy {
+ opacity: 1;
+}
+
+.bee-cal .source {
+  outline: #aaa dashed 2px;
+}
+
+.bee-cal-MonthView .copy {
+  outline: none;
+}
+
+.bee-cal-MonthView .source {
+  outline: #aaa dashed 2px;
+}

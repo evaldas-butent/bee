@@ -3,6 +3,8 @@ package com.butent.bee.client.modules.calendar.dnd;
 import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -27,7 +29,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class DayMoveController implements MoveEvent.Handler {
+public class DayMoveController implements MoveEvent.Handler, Event.NativePreviewHandler {
 
   private static final int START_SENSITIVITY_PIXELS = 3;
 
@@ -40,6 +42,8 @@ public class DayMoveController implements MoveEvent.Handler {
 
   private JustDate date;
   private int columnCount;
+
+  private boolean copying;
 
   private ItemWidget itemWidget;
   private int relativeLeft;
@@ -67,12 +71,15 @@ public class DayMoveController implements MoveEvent.Handler {
   private int selectedColumn = BeeConst.UNDEF;
   private int selectedMinutes = BeeConst.UNDEF;
 
+  private Element sourceWidget;
+
   private int maxTop;
 
   public DayMoveController(CalendarView calendarView, Element scrollArea) {
     super();
     this.calendarView = calendarView;
     this.scrollArea = scrollArea;
+    Event.addNativePreviewHandler(this);
   }
 
   @Override
@@ -128,8 +135,17 @@ public class DayMoveController implements MoveEvent.Handler {
         setPositioner(null);
       }
 
+      if (sourceWidget != null) {
+        sourceWidget.removeFromParent();
+        sourceWidget = null;
+      }
+
       if (getItemWidget() != null) {
-        drop();
+        if (copying) {
+          copyAppointment();
+        } else {
+          drop();
+        }
         setItemWidget(null);
       }
     }
@@ -174,6 +190,13 @@ public class DayMoveController implements MoveEvent.Handler {
     }
 
     calendarView.getCalendarWidget().refresh(false);
+  }
+
+  private void copyAppointment() {
+    CalendarItem item = getItemWidget().getItem();
+    Appointment itemCopy  = (Appointment) item.copy();
+    Range<DateTime> range = getRange(getSelectedColumn(), getSelectedMinutes());
+    calendarView.copyAppointment(itemCopy, range.lowerEndpoint(), range.upperEndpoint());
   }
 
   private ItemWidget getItemWidget() {
@@ -298,6 +321,26 @@ public class DayMoveController implements MoveEvent.Handler {
     }
   }
 
+  @Override
+  public void onPreviewNativeEvent(Event.NativePreviewEvent event) {
+    NativeEvent ne = event.getNativeEvent();
+    if (getItemWidget() != null) {
+
+      if (ne.getCtrlKey() && getItemWidget().getItem().getItemType().equals(ItemType.APPOINTMENT)) {
+        this.copying = true;
+        if (getItemWidget() != null) {
+          getItemWidget().addStyleName(CalendarStyleManager.COPY);
+        }
+
+      } else {
+        this.copying = false;
+        if (getItemWidget() != null) {
+          getItemWidget().removeStyleName(CalendarStyleManager.COPY);
+        }
+      }
+    }
+  }
+
   private void setItemWidget(ItemWidget itemWidget) {
     this.itemWidget = itemWidget;
   }
@@ -384,6 +427,12 @@ public class DayMoveController implements MoveEvent.Handler {
     setItemWidget(widget);
 
     Widget target = widget.getParent();
+
+    if (sourceWidget == null) {
+      sourceWidget = CalendarUtils.createSourceElement(getItemWidget());
+      target.getElement().appendChild(sourceWidget);
+    }
+
     CalendarPanel panel = CalendarUtils.getCalendarPanel(widget);
 
     setColumnWidth(CalendarUtils.getColumnWidth(target, getColumnCount()));
