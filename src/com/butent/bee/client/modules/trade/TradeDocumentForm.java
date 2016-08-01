@@ -100,6 +100,9 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
   private void onOperationChange(IsRow operationRow) {
     if (operationRow != null) {
+      getFormView().updateCell(COL_TRADE_DOCUMENT_PRICE_NAME,
+          Data.getString(VIEW_TRADE_OPERATIONS, operationRow, COL_OPERATION_PRICE));
+
       getFormView().updateCell(COL_TRADE_DOCUMENT_VAT_MODE,
           Data.getString(VIEW_TRADE_OPERATIONS, operationRow, COL_OPERATION_VAT_MODE));
 

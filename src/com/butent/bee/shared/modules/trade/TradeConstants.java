@@ -188,6 +188,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_DOCUMENT_STATUS = "Status";
   public static final String COL_TRADE_DOCUMENT_NUMBER_1 = "Number1";
   public static final String COL_TRADE_DOCUMENT_NUMBER_2 = "Number2";
+  public static final String COL_TRADE_DOCUMENT_PRICE_NAME = "PriceName";
   public static final String COL_TRADE_DOCUMENT_VAT_MODE = "DocumentVatMode";
   public static final String COL_TRADE_DOCUMENT_DISCOUNT_MODE = "DocumentDiscountMode";
 
