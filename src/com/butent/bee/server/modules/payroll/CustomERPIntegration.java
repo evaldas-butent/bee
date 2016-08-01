@@ -23,6 +23,8 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants.ObjectStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -302,7 +304,7 @@ abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTim
               .setWhere(sys.idEquals(TBL_PERSONS, person)));
 
           qs.updateData(new SqlUpdate(TBL_COMPANY_PERSONS)
-              .addConstant(COL_DEPARTMENT, departments.get(department))
+              .addConstant(AdministrationConstants.COL_DEPARTMENT, departments.get(department))
               .addConstant(COL_POSITION, positions.get(position))
               .addConstant(COL_DATE_OF_EMPLOYMENT, TimeUtils.parseDate(row.getValue("DIRBA_NUO")))
               .addConstant(COL_DATE_OF_DISMISSAL, TimeUtils.parseDate(row.getValue("DISMISSED")))

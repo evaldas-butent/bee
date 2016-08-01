@@ -6,7 +6,8 @@
   <HorizontalPanel style="margin: 2ex 1em;">
     <Label text="=object" style="padding-right: 1em;" />
     <UnboundSelector viewName="Locations" renderColumns="LocationName CompanyName"
-      newRowEnabled="false" editPopup="true" style="width: 400px;" />
+      newRowEnabled="false" editPopup="true" style="width: 400px;" filter="Manager = {u}
+      OR !(Manager)" />
   </HorizontalPanel>
     
   <FlowPanel name="Schedule" class="flexible" style="overflow: auto;" />
