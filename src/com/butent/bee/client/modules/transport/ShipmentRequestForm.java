@@ -563,7 +563,20 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     BeeRow oldRow = DataUtils.cloneRow(form.getOldRow());
     BeeRow row = DataUtils.cloneRow(form.getActiveRow());
 
-    messages.add(loc.trCommandCreateNewUser());
+    Dictionary dic = Localized.dictionary();
+
+    messages.add(BeeUtils.join(": ", dic.client(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_NAME))));
+    messages.add(BeeUtils.join(": ", dic.companyCode(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CODE))));
+    messages.add(BeeUtils.join(": ", dic.companyVATCode(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_VAT_CODE))));
+    messages.add(BeeUtils.join(": ", dic.address(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_ADDRESS))));
+    messages.add(BeeUtils.join(": ", dic.postIndex(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_POST_INDEX))));
+    messages.add(BeeUtils.join(": ", dic.trRegistrationContact(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT))));
 
     String login = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_EMAIL));
     String password;
@@ -577,8 +590,11 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     } else {
       password = null;
     }
+
+    messages.add(loc.trCommandCreateNewUser());
+
     Global.confirm(loc.register(), Icon.QUESTION, messages,
-        Localized.dictionary().actionCreate(), Localized.dictionary().actionCancel(), () -> {
+        dic.actionCreate(), dic.actionCancel(), () -> {
           Map<String, String> companyInfo = new HashMap<>();
 
           for (String col : new String[] {

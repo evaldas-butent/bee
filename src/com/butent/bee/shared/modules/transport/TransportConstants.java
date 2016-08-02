@@ -834,6 +834,7 @@ public final class TransportConstants {
   public static final String COL_QUERY_CUSTOMER_COUNTRY = "CustomerCountry";
   public static final String COL_QUERY_CUSTOMER_CITY = "CustomerCity";
   public static final String COL_QUERY_CUSTOMER_ADDRESS = "CustomerAddress";
+  public static final String COL_QUERY_CUSTOMER_POST_INDEX = "CustomerPostIndex";
   public static final String COL_QUERY_CUSTOMER_PHONE = "CustomerPhone";
   public static final String COL_QUERY_CUSTOMER_FAX = "CustomerFax";
   public static final String COL_QUERY_CUSTOMER_EMAIL = "CustomerEmail";
