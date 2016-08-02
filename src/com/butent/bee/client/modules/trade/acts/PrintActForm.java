@@ -143,7 +143,7 @@ public class PrintActForm extends AbstractFormInterceptor {
 
     final String formName = getFormView().getFormName();
 
-    if (BeeUtils.same(col, "RemainingQty") && BeeUtils.same(formName, FORM_PRINT_TA_NO_STOCK)) {
+    if (BeeUtils.same(col, "RemainingQty") && !BeeUtils.same(formName, FORM_PRINT_TA_SALE)) {
       return false;
     }
 

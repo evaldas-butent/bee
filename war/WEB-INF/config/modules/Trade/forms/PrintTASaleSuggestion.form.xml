@@ -28,11 +28,8 @@
        <Table style="width:100%; border:1px solid black;" kind="output">
         <row>
          <cell style="vertical-align:top;">
-           <FlowPanel>
-             <TextLabel source="Company">
-               <renderToken source="CompanyName" />
-               <renderToken source="TypeName" prefix=", " />
-             </TextLabel>
+           <FlowPanel style="margin-left:10px;">
+             <FlowPanel name="Company"  />
              <TextLabel source="Contact">
                <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
                <renderToken source="ContactLastName" />
