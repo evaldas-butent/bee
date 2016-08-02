@@ -188,12 +188,19 @@ public final class TradeConstants {
   public static final String COL_TRADE_DOCUMENT_STATUS = "Status";
   public static final String COL_TRADE_DOCUMENT_NUMBER_1 = "Number1";
   public static final String COL_TRADE_DOCUMENT_NUMBER_2 = "Number2";
+
+  public static final String COL_TRADE_DOCUMENT_DISCOUNT = "DocumentDiscount";
   public static final String COL_TRADE_DOCUMENT_PRICE_NAME = "PriceName";
   public static final String COL_TRADE_DOCUMENT_VAT_MODE = "DocumentVatMode";
   public static final String COL_TRADE_DOCUMENT_DISCOUNT_MODE = "DocumentDiscountMode";
 
   public static final String COL_TRADE_DOCUMENT = "TradeDocument";
   public static final String COL_TRADE_DOCUMENT_ITEM = "TradeDocumentItem";
+
+  public static final String COL_TRADE_DOCUMENT_ITEM_DISCOUNT = "Discount";
+  public static final String COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT = "DiscountIsPercent";
+  public static final String COL_TRADE_DOCUMENT_ITEM_VAT = "Vat";
+  public static final String COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT = "VatIsPercent";
 
   public static final String COL_DOCUMENT_TYPE_NAME = "DocumentTypeName";
   public static final String COL_DOCUMENT_TYPE = "DocumentType";
