@@ -32,6 +32,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.CssUnit;
@@ -906,10 +907,29 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     if (!rs.isEmpty()) {
-      return ResponseObject.response(rs);
+      return ResponseObject.response(Pair.of(rs, getDiscussionFiles(rs)));
     }
 
     return ResponseObject.emptyResponse();
+  }
+
+  private SimpleRowSet getDiscussionFiles(SimpleRowSet discussionRs) {
+    SqlSelect query = new SqlSelect()
+    .addFields(TBL_DISCUSSIONS_FILES, COL_DISCUSSION, AdministrationConstants.COL_FILE,
+        AdministrationConstants.COL_FILE_CAPTION)
+    .addFields(TBL_FILES, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
+    .addFrom(TBL_DISCUSSIONS_FILES)
+    .addFromInner(TBL_FILES,
+        sys.joinTables(TBL_FILES, TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE))
+    .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
+        sys.joinTables(TBL_DISCUSSIONS_COMMENTS, TBL_DISCUSSIONS_FILES, COL_COMMENT))
+    .setWhere(SqlUtils.and(SqlUtils.inList(TBL_DISCUSSIONS_FILES, COL_DISCUSSION,
+        (Object[]) discussionRs.getColumn(discussionRs
+        .getColumnIndex(sys.getIdName(TBL_DISCUSSIONS)))),
+        SqlUtils.or(SqlUtils.isNull(TBL_DISCUSSIONS_COMMENTS, COL_DELETED),
+            SqlUtils.equals(TBL_DISCUSSIONS_COMMENTS, COL_DELETED, false))));
+
+    return qs.getData(query);
   }
 
   private ResponseObject getBirthdays() {
