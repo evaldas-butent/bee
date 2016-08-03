@@ -5870,6 +5870,8 @@ public interface Dictionary {
 
   default String unitMinutes() {return g("unitMinutes");}
 
+  default String unitPrice() {return g("unitPrice");}
+
   default String unitShort() {return g("unitShort");}
 
   default String unitWeekShort() {return g("unitWeekShort");}
