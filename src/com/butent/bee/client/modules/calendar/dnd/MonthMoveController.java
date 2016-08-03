@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.calendar.dnd;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -30,7 +28,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MonthMoveController implements MoveEvent.Handler, Event.NativePreviewHandler {
+public class MonthMoveController implements MoveEvent.Handler {
 
   private static final int START_SENSITIVITY_PIXELS = 3;
 
@@ -38,8 +36,6 @@ public class MonthMoveController implements MoveEvent.Handler, Event.NativePrevi
   private static final int HEIGHT_RESERVE_PIXELS = 3;
 
   private static final int SELECTED_TODO = -2;
-
-  private boolean copying;
 
   private final MonthView monthView;
 
@@ -69,7 +65,6 @@ public class MonthMoveController implements MoveEvent.Handler, Event.NativePrevi
 
   public MonthMoveController(MonthView monthView) {
     this.monthView = monthView;
-    Event.addNativePreviewHandler(this);
   }
 
   @Override
@@ -109,6 +104,7 @@ public class MonthMoveController implements MoveEvent.Handler, Event.NativePrevi
       }
 
       updatePosition();
+      CalendarUtils.updateWidgetStyleByModifiers(event.getModifiers(), getItemWidget());
 
     } else if (event.isFinished()) {
 
@@ -118,7 +114,7 @@ public class MonthMoveController implements MoveEvent.Handler, Event.NativePrevi
       }
 
       if (getItemWidget() != null) {
-        if (copying) {
+        if (CalendarUtils.isCopying(event.getModifiers(), getItemWidget())) {
           copyAppointment();
         } else {
           drop();
@@ -244,26 +240,6 @@ public class MonthMoveController implements MoveEvent.Handler, Event.NativePrevi
 
   private int getTodoWidth() {
     return todoWidth;
-  }
-
-  @Override
-  public void onPreviewNativeEvent(Event.NativePreviewEvent event) {
-    NativeEvent ne = event.getNativeEvent();
-    if (getItemWidget() != null) {
-
-      if (ne.getCtrlKey() && getItemWidget().getItem().getItemType().equals(ItemType.APPOINTMENT)) {
-        this.copying = true;
-        if (getItemWidget() != null) {
-          getItemWidget().addStyleName(CalendarStyleManager.COPY);
-        }
-
-      } else {
-        this.copying = false;
-        if (getItemWidget() != null) {
-          getItemWidget().removeStyleName(CalendarStyleManager.COPY);
-        }
-      }
-    }
   }
 
   private void setItemWidget(ItemWidget itemWidget) {

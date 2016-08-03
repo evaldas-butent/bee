@@ -1508,11 +1508,11 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     }
 
     if (isRequired(ClassifierConstants.COL_COMPANY)
-        && CalendarUtils.isEmpty(row, ClassifierConstants.COL_COMPANY)) {
+        && CalendarUtils.isEmptyAppointmentColumn(row, ClassifierConstants.COL_COMPANY)) {
       getFormView().notifySevere(Localized.dictionary().calEnterClient());
       return false;
     }
-    if (isRequired(COL_VEHICLE) && CalendarUtils.isEmpty(row, COL_VEHICLE)) {
+    if (isRequired(COL_VEHICLE) && CalendarUtils.isEmptyAppointmentColumn(row, COL_VEHICLE)) {
       getFormView().notifySevere(Localized.dictionary().calEnterVehicle());
       return false;
     }

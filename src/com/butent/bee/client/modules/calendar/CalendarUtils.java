@@ -15,6 +15,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.ViewHelper;
@@ -406,6 +407,17 @@ public final class CalendarUtils {
     return BeeUtils.betweenExclusive(diff, 0, days) ? diff : BeeConst.UNDEF;
   }
 
+  public static boolean isCopying(Modifiers modifiers, ItemWidget itemWidget) {
+    if (Modifiers.isNotEmpty(modifiers)) {
+      if ((modifiers.isCtrlKey() || modifiers.isAltKey())
+          && itemWidget.getItem().getItemType().equals(ItemType.APPOINTMENT)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   public static String renderRange(Range<DateTime> range) {
     return (range == null) ? BeeConst.STRING_EMPTY
         : TimeUtils.renderPeriod(range.lowerEndpoint(), range.upperEndpoint(), true);
@@ -430,8 +442,8 @@ public final class CalendarUtils {
     if (appointmentBuilder != null) {
       if (!appointmentBuilder.getColors().isEmpty()) {
         int index = appointmentBuilder.getColorWidget().getSelectedTab();
-        if (!BeeUtils.isIndex(appointmentBuilder.getColors(), index) && isEmpty(row,
-            AdministrationConstants.COL_COLOR)) {
+        if (!BeeUtils.isIndex(appointmentBuilder.getColors(), index)
+            && isEmptyAppointmentColumn(row, AdministrationConstants.COL_COLOR)) {
           index = 0;
         }
         if (BeeUtils.isIndex(appointmentBuilder.getColors(), index)) {
@@ -526,8 +538,16 @@ public final class CalendarUtils {
     return true;
   }
 
-  public static boolean isEmpty(IsRow row, String columnId) {
+  public static boolean isEmptyAppointmentColumn(IsRow row, String columnId) {
     return BeeUtils.isEmpty(Data.getString(VIEW_APPOINTMENTS, row, columnId));
+  }
+
+  public static void updateWidgetStyleByModifiers(Modifiers modifiers, ItemWidget itemWidget) {
+    if (isCopying(modifiers, itemWidget)) {
+      itemWidget.addStyleName(CalendarStyleManager.COPY);
+    } else {
+      itemWidget.removeStyleName(CalendarStyleManager.COPY);
+    }
   }
 
   private CalendarUtils() {
