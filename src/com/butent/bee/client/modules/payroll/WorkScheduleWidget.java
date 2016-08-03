@@ -48,6 +48,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
@@ -450,7 +451,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
               JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
               onDrop(wsId, partIds, date, copy);
 
-            } else if (!copy) {
+            } else {
               removeFromSchedule(wsId);
             }
           }
