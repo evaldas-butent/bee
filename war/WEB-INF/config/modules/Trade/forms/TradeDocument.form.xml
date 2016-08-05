@@ -113,7 +113,7 @@
         </row>
       </Table>
 
-      <Table kind="controls">
+      <Table kind="controls" style="margin-right: 1em;">
         <col index="0" kind="label" />
 
         <row>
