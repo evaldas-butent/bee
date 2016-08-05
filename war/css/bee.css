@@ -2159,7 +2159,6 @@
 .bee-ColorEditor-container {
   position: relative;
   width: 120px;
-  height: 23px;
 }
 .bee-ColorEditor-container .bee-ColorEditor-textBox {
   width: calc(100% - 30px);

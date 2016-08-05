@@ -297,6 +297,15 @@ class TaskDialog extends DialogBox {
     }
   }
 
+  InputDateTime getInputDateTime(String id) {
+    Widget child = getChild(id);
+    if (child instanceof InputDateTime) {
+      return (InputDateTime) child;
+    } else {
+      return null;
+    }
+  }
+
   List<FileInfo> getFiles(String id) {
     Widget child = getChild(id);
     if (child instanceof FileCollector) {
