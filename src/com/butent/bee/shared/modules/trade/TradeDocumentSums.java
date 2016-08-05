@@ -237,6 +237,15 @@ public class TradeDocumentSums {
     items.put(id, item);
   }
 
+  public void clear() {
+    this.documentDiscount = BeeConst.DOUBLE_ZERO;
+
+    this.discountMode = null;
+    this.vatMode = null;
+
+    clearItems();
+  }
+
   public void clearItems() {
     items.clear();
   }

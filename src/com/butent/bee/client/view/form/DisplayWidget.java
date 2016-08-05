@@ -49,6 +49,7 @@ public class DisplayWidget {
 
   public DisplayWidget(int dataIndex, AbstractCellRenderer renderer,
       WidgetDescription widgetDescription) {
+
     this.dataIndex = dataIndex;
     this.renderer = renderer;
     this.widgetDescription = widgetDescription;

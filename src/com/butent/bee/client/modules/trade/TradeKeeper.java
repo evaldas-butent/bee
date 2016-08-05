@@ -75,8 +75,6 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     GridFactory.registerGridInterceptor(VIEW_SALE_FILES,
         new FileGridInterceptor(COL_SALE, COL_FILE, COL_FILE_CAPTION, ALS_FILE_NAME));
 
-    GridFactory.registerGridInterceptor(GRID_TRADE_DOCUMENT_ITEMS, new TradeDocumentItemsGrid());
-
     FormFactory.registerFormInterceptor(FORM_SALES_INVOICE, new SalesInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_TRADE_DOCUMENT, new TradeDocumentForm());
 

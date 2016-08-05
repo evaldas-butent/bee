@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.trade;
 
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -13,10 +14,13 @@ import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -27,13 +31,24 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeDocumentSums;
+import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collections;
 
 public class TradeDocumentForm extends AbstractFormInterceptor {
+
+  private static final String NAME_AMOUNT = "TdAmount";
+  private static final String NAME_DISCOUNT = "TdDiscount";
+  private static final String NAME_WITHOUT_VAT = "TdWithoutVat";
+  private static final String NAME_VAT = "TdVat";
+  private static final String NAME_TOTAL = "TdTotal";
+
+  private final TradeDocumentSums tdSums = new TradeDocumentSums();
 
   TradeDocumentForm() {
   }
@@ -53,14 +68,48 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
           onOperationChange(event.getRelatedRow());
         }
       });
+
+    } else if (BeeUtils.same(name, GRID_TRADE_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
+      TradeDocumentItemsGrid tdiGrid = new TradeDocumentItemsGrid();
+
+      tdiGrid.setTdsSupplier(() -> tdSums);
+      tdiGrid.setTdsListener(this::refreshSums);
+
+      ((ChildGrid) widget).setGridInterceptor(tdiGrid);
     }
 
     super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    tdSums.clearItems();
+
+    tdSums.updateDocumentDiscount(getDocumentDiscount(row));
+
+    tdSums.updateDiscountMode(getDiscountMode(row));
+    tdSums.updateVatMode(getVatMode(row));
+
+    super.beforeRefresh(form, row);
+  }
+
+  @Override
   public FormInterceptor getInstance() {
     return new TradeDocumentForm();
+  }
+
+  private Double getDocumentDiscount(IsRow row) {
+    return DataUtils.getDoubleQuietly(row, getDataIndex(COL_TRADE_DOCUMENT_DISCOUNT));
+  }
+
+  private TradeDiscountMode getDiscountMode(IsRow row) {
+    return EnumUtils.getEnumByIndex(TradeDiscountMode.class,
+        DataUtils.getIntegerQuietly(row, getDataIndex(COL_TRADE_DOCUMENT_DISCOUNT_MODE)));
+  }
+
+  private TradeVatMode getVatMode(IsRow row) {
+    return EnumUtils.getEnumByIndex(TradeVatMode.class,
+        DataUtils.getIntegerQuietly(row, getDataIndex(COL_TRADE_DOCUMENT_VAT_MODE)));
   }
 
   private Filter getOperationFilter() {
@@ -166,5 +215,26 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
   private void setPhase(IsRow row, TradeDocumentPhase phase) {
     row.setValue(getDataIndex(COL_TRADE_DOCUMENT_PHASE), phase.ordinal());
+  }
+
+  private void refreshSum(String name, double value) {
+    Widget widget = getFormView().getWidgetByName(name);
+
+    if (widget instanceof DecimalLabel) {
+      ((DecimalLabel) widget).setValue(BeeUtils.toDecimalOrNull(value));
+    }
+  }
+
+  private void refreshSums() {
+    double amount = tdSums.getAmount();
+    double discount = tdSums.getDiscount();
+    double vat = tdSums.getVat();
+    double total = tdSums.getTotal();
+
+    refreshSum(NAME_AMOUNT, amount);
+    refreshSum(NAME_DISCOUNT, discount);
+    refreshSum(NAME_WITHOUT_VAT, total - vat);
+    refreshSum(NAME_VAT, vat);
+    refreshSum(NAME_TOTAL, total);
   }
 }
