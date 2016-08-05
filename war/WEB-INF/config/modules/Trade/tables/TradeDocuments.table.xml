@@ -32,7 +32,7 @@
 
     <Relation name="Manager" relation="Employees" label="=trdManager" />
 
-    <Numeric name="DocumentDiscount" precision="12" scale="2" label="=discount" />
+    <Numeric name="DocumentDiscount" precision="12" scale="2" label="=discountForDocument" />
     <Enum name="PriceName" key="ItemPrice" label="=priceName" />
 
     <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"

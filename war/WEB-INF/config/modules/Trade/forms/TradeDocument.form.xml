@@ -1,114 +1,145 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-  <!ENTITY inpw "width: 16em;">
-  <!ENTITY inpdt "width: 10em;">
-  <!ENTITY inpsh "width: 10em;">
-]>
+    <!ENTITY inpw "width: 16em;">
+    <!ENTITY inpdt "width: 10em;">
+    <!ENTITY inpsh "width: 10em;">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="TradeDocument" viewName="TradeDocuments"
-  caption="=trdDocument" showRowId="true"
-  width="80" widthUnit="vw" height="60" heightUnit="vh"
-  >
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="TradeDocument" viewName="TradeDocuments"
+        caption="=trdDocument" showRowId="true"
+        width="80" widthUnit="vw" height="60" heightUnit="vh"
+>
   <FlowPanel class="flexBox-vertical">
-    <br/>
+    <br />
     <TabBar name="Phase" source="Phase" class="bee-trade-document-phase" />
-    
-    <br/>
-    <Table kind="controls">
-      <col index="0" kind="label" />
-      <col index="2" kind="label" />
-      <col index="4" kind="label" />
 
-      <row>
-        <Label for="Date" />
-        <InputDateTime source="Date" style="&inpdt;" visible="true" />
+    <br />
+    <FlowPanel class="flexBox-horizontal-space-between">
+      <Table kind="controls">
+        <col index="0" kind="label" />
+        <col index="2" kind="label" />
+        <col index="4" kind="label" />
 
-        <Label for="Series" />
-        <InputText source="Series" upperCase="true" style="width: &inpsh;" />
+        <row>
+          <Label for="Date" />
+          <InputDateTime source="Date" style="&inpdt;" visible="true" />
 
-        <Label for="Number" />
-        <InputText source="Number" style="&inpw;" />
-      </row>
+          <Label for="Series" />
+          <InputText source="Series" upperCase="true" style="width: &inpsh;" />
 
-      <row>
-        <Label for="Number1" />
-        <InputText source="Number1" style="&inpw;" />
+          <Label for="Number" />
+          <InputText source="Number" style="&inpw;" />
+        </row>
 
-        <Label for="Number2" />
-        <InputText source="Number2" style="&inpw;" />
+        <row>
+          <Label for="Number1" />
+          <InputText source="Number1" style="&inpw;" />
 
-        <Label text="=tags" />
-        <ChildSelector childTable="TradeDocumentTags" viewName="TradeTags"
-          targetRelColumn="TradeDocument" sourceRelColumn="TradeTag" renderColumns="TagName"
-          newRowEnabled="false" style="&inpw;" />
-      </row>
+          <Label for="Number2" />
+          <InputText source="Number2" style="&inpw;" />
 
-      <row>
-        <Label for="Operation" />
-        <DataSelector name="Operation" source="Operation" renderColumns="OperationName"
-                      newRowEnabled="false" style="&inpw;" visible="true" />
+          <Label text="=tags" />
+          <ChildSelector childTable="TradeDocumentTags" viewName="TradeTags"
+                         targetRelColumn="TradeDocument" sourceRelColumn="TradeTag"
+                         renderColumns="TagName"
+                         newRowEnabled="false" style="&inpw;" />
+        </row>
 
-        <Label for="Status" />
-        <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
-          style="&inpw;" />
+        <row>
+          <Label for="Operation" />
+          <DataSelector name="Operation" source="Operation" renderColumns="OperationName"
+                        newRowEnabled="false" style="&inpw;" visible="true" />
 
-        <Label for="Manager" />
-        <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-          newRowEnabled="false" style="&inpw;" />
-      </row>
+          <Label for="Status" />
+          <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
+                        style="&inpw;" />
 
-      <row>
-        <Label for="Supplier" />
-        <DataSelector source="Supplier" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
-          renderColumns="SupplierName SupplierTypeName"/>
+          <Label for="Manager" />
+          <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+                        newRowEnabled="false" style="&inpw;" />
+        </row>
 
-        <Label for="Customer" />
-        <DataSelector source="Customer" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
-          renderColumns="CustomerName CustomerTypeName"/>
+        <row>
+          <Label for="Supplier" />
+          <DataSelector source="Supplier" style="&inpw;" visible="true"
+                        choiceColumns="Name TypeName"
+                        renderColumns="SupplierName SupplierTypeName" />
 
-        <Label for="Payer" />
-        <DataSelector source="Payer" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
-          renderColumns="PayerName PayerTypeName"/>
-      </row>
+          <Label for="Customer" />
+          <DataSelector source="Customer" style="&inpw;" visible="true"
+                        choiceColumns="Name TypeName"
+                        renderColumns="CustomerName CustomerTypeName" />
 
-      <row>
-        <Label for="WarehouseFrom" />
-        <DataSelector source="WarehouseFrom" style="&inpw;" visible="true"
-          choiceColumns="Code Name" renderColumns="WarehouseFromCode WarehouseFromName"/>
+          <Label for="Payer" />
+          <DataSelector source="Payer" style="&inpw;" visible="true" choiceColumns="Name TypeName"
+                        renderColumns="PayerName PayerTypeName" />
+        </row>
 
-        <Label for="WarehouseTo" />
-        <DataSelector source="WarehouseTo" style="&inpw;" visible="true" choiceColumns="Code Name" 
-          renderColumns="WarehouseToCode WarehouseToName"/>
+        <row>
+          <Label for="WarehouseFrom" />
+          <DataSelector source="WarehouseFrom" style="&inpw;" visible="true"
+                        choiceColumns="Code Name"
+                        renderColumns="WarehouseFromCode WarehouseFromName" />
 
-        <Label for="Term" />
-        <InputDateTime source="Term" style="&inpdt;" />
-      </row>
+          <Label for="WarehouseTo" />
+          <DataSelector source="WarehouseTo" style="&inpw;" visible="true" choiceColumns="Code Name"
+                        renderColumns="WarehouseToCode WarehouseToName" />
 
-      <row>
-        <Label for="PriceName" />
-        <ListBox source="PriceName" />
+          <Label for="Term" />
+          <InputDateTime source="Term" style="&inpdt;" />
+        </row>
 
-        <Label for="DocumentDiscount" />
-        <InputDecimal source="DocumentDiscount" style="&inpsh;" />
+        <row>
+          <Label for="PriceName" />
+          <ListBox source="PriceName" />
 
-        <Label for="Currency" />
-        <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
-          newRowEnabled="false" style="width: 5em;" />
-      </row>
+          <Label for="DocumentDiscount" />
+          <InputDecimal source="DocumentDiscount" style="&inpsh;" />
 
-      <row>
-        <Label for="DocumentVatMode" />
-        <ListBox source="DocumentVatMode" />
+          <Label for="Currency" />
+          <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
+                        newRowEnabled="false" style="width: 5em;" />
+        </row>
 
-        <Label for="DocumentDiscountMode" />
-        <ListBox source="DocumentDiscountMode" />
-      </row>
-    </Table>
+        <row>
+          <Label for="DocumentVatMode" />
+          <ListBox source="DocumentVatMode" />
 
-    <br/>
+          <Label for="DocumentDiscountMode" />
+          <ListBox source="DocumentDiscountMode" />
+        </row>
+      </Table>
+
+      <Table kind="controls">
+        <col index="0" kind="label" />
+
+        <row>
+          <Label text="=amount" />
+          <MoneyLabel name="TdAmount" />
+        </row>
+        <row>
+          <Label text="=discount" />
+          <MoneyLabel name="TdDiscount" />
+        </row>
+        <row>
+          <Label text="=withoutVat" />
+          <MoneyLabel name="TdWithoutVat" />
+        </row>
+        <row>
+          <Label text="=vat" />
+          <MoneyLabel name="TdVat" />
+        </row>
+        <row>
+          <Label text="=total" />
+          <MoneyLabel name="TdTotal" />
+        </row>
+      </Table>
+    </FlowPanel>
+
+    <br />
     <TabbedPages class="flexible" style="min-height: 240px;">
       <page>
         <text>=goods</text>

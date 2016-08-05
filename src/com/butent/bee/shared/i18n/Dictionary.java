@@ -1489,9 +1489,13 @@ public interface Dictionary {
 
   default String discount() {return g("discount");}
 
+  default String discountAmountShort() {return g("discountAmountShort");}
+
   default String discountDateFrom() {return g("discountDateFrom");}
 
   default String discountDateTo() {return g("discountDateTo");}
+
+  default String discountForDocument() {return g("discountForDocument");}
 
   default String discountFromAmount() {return g("discountFromAmount");}
 
@@ -6081,6 +6085,8 @@ public interface Dictionary {
   default String width() {return g("width");}
 
   default String winter() {return g("winter");}
+
+  default String withoutVat() {return g("withoutVat");}
 
   default String workSchedule() {return g("workSchedule");}
 

@@ -356,7 +356,7 @@ public class TradeDocumentSums {
             double base = vatBases.get(i);
             if (isPositive(base)) {
               double z = round(base * factor, discountScale);
-              rebased += (base - z);
+              rebased += base - z;
 
               vatBases.set(i, z);
             }
