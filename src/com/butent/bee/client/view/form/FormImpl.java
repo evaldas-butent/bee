@@ -29,6 +29,7 @@ import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
@@ -429,6 +430,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     } else {
       return editableWidget.addCellValidationHandler(handler);
     }
+  }
+
+  @Override
+  public HandlerRegistration addDataReceivedHandler(DataReceivedEvent.Handler handler) {
+    return addHandler(handler, DataReceivedEvent.getType());
   }
 
   @Override
@@ -1644,11 +1650,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void setRowData(List<? extends IsRow> values, boolean refresh) {
-    if (BeeUtils.isEmpty(values)) {
+  public void setRowData(List<? extends IsRow> rows, boolean refresh) {
+    fireEvent(new DataReceivedEvent(rows));
+
+    if (BeeUtils.isEmpty(rows)) {
       setActiveRow(null);
     } else {
-      setActiveRow(values.get(0));
+      setActiveRow(rows.get(0));
     }
 
     if (refresh) {

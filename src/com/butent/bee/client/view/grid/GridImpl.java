@@ -26,6 +26,7 @@ import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.RowCountChangeEvent;
@@ -1491,6 +1492,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public void onDataReceived(DataReceivedEvent event) {
+    if (getGridInterceptor() != null && event != null) {
+      getGridInterceptor().onDataReceived(event.getRows());
+    }
+  }
+
+  @Override
   public void onEditEnd(EditEndEvent event, Object source) {
     Assert.notNull(event);
     getGrid().setEditing(false);
@@ -2436,7 +2444,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     getGrid().addSortHandler(this);
     getGrid().addSettingsChangeHandler(this);
     getGrid().addRenderingHandler(this);
+
     getGrid().addRowCountChangeHandler(this);
+    getGrid().addDataReceivedHandler(this);
   }
 
   private void initNewRowDefaults(String input) {

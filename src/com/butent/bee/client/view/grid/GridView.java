@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.event.DndWidget;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
 import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.ui.HandlesHistory;
@@ -42,7 +43,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
     HasEditFormHandlers, ParentRowCreator, HandlesHistory, DndWidget, HasWidgets,
     RowInsertEvent.Handler, RowUpdateEvent.Handler, EditStartEvent.Handler,
-    RowCountChangeEvent.Handler, HasSummaryChangeHandlers, HasState {
+    RowCountChangeEvent.Handler, DataReceivedEvent.Handler, HasSummaryChangeHandlers, HasState {
 
   enum SelectedRows {
     ALL, EDITABLE, REMOVABLE, MERGEABLE

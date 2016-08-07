@@ -1,13 +1,11 @@
 package com.butent.bee.client.view.grid;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
@@ -38,6 +36,7 @@ import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.MutationEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
@@ -101,6 +100,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Manages the structure and behavior of a cell grid user interface component.
@@ -646,7 +646,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private enum TargetType {
-    CONTAINER, RESIZER, HEADER, BODY, FOOTER;
+    CONTAINER, RESIZER, HEADER, BODY, FOOTER
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(CellGrid.class);
@@ -1071,6 +1071,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (!consumedEvents.isEmpty()) {
       EventUtils.sinkEvents(this, consumedEvents);
     }
+  }
+
+  @Override
+  public HandlerRegistration addDataReceivedHandler(DataReceivedEvent.Handler handler) {
+    return addHandler(handler, DataReceivedEvent.getType());
   }
 
   @Override
@@ -1600,7 +1605,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     int ps = getPageSize();
     int ar = getActiveRowIndex();
 
-    int nr = BeeConst.UNDEF;
+    int nr;
 
     if (rc <= ps || ps <= 0) {
       if (ar >= 0 && ar < rc - 1) {
@@ -2433,6 +2438,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   @Override
   public void setRowData(List<? extends IsRow> rows, boolean refresh) {
+    fireEvent(new DataReceivedEvent(rows));
+
     getRowData().clear();
     if (!BeeUtils.isEmpty(rows)) {
       getRowData().addAll(rows);
@@ -2978,7 +2985,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     Edges[][] borders = new Edges[rc][cc];
-    Edges cellBorders = null;
+    Edges cellBorders;
 
     for (int i = 0; i < rc; i++) {
       for (int j = 0; j < cc; j++) {
@@ -3486,8 +3493,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
             return true;
           }
           break;
-        default:
-          Assert.untouchable();
       }
 
     } else {
@@ -3603,7 +3608,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     } else if (!rowValue.isEditable()) {
       return false;
     } else if (getRowEditable() != null) {
-      return getRowEditable().apply(rowValue);
+      return getRowEditable().test(rowValue);
     } else {
       return true;
     }
@@ -3952,16 +3957,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     rowChangeScheduler.scheduleEvent();
 
     if (focus && isRowWithinBounds(getActiveRowIndex()) && getActiveColumnIndex() >= 0) {
-      Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-        @Override
-        public void execute() {
-          Element cellElement = getActiveCellElement();
+      Scheduler.get().scheduleDeferred(() -> {
+        Element cellElement = getActiveCellElement();
 
-          if (cellElement != null) {
-            setCellZIndex(cellElement);
-            if (UiHelper.isInteractive(CellGrid.this)) {
-              cellElement.focus();
-            }
+        if (cellElement != null) {
+          setCellZIndex(cellElement);
+          if (UiHelper.isInteractive(CellGrid.this)) {
+            cellElement.focus();
           }
         }
       });
@@ -3970,6 +3972,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private List<RenderInfo> renderBody(List<IsRow> rows, Collection<Integer> rowIndexes,
       Collection<Integer> colIndexes) {
+
     int size = getDataSize();
     int start = getPageStart();
     int actRow = getActiveRowIndex();

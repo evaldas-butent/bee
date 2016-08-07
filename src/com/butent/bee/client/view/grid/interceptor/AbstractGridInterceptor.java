@@ -406,6 +406,10 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public void onDataReceived(List<? extends IsRow> rows) {
+  }
+
+  @Override
   public void onEditEnd(EditEndEvent event, Object source) {
   }
 
