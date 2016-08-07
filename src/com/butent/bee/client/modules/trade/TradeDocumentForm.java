@@ -17,9 +17,10 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -82,20 +83,58 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   }
 
   @Override
-  public void beforeRefresh(FormView form, IsRow row) {
-    tdSums.clearItems();
-
-    tdSums.updateDocumentDiscount(getDocumentDiscount(row));
-
-    tdSums.updateDiscountMode(getDiscountMode(row));
-    tdSums.updateVatMode(getVatMode(row));
-
-    super.beforeRefresh(form, row);
+  public FormInterceptor getInstance() {
+    return new TradeDocumentForm();
   }
 
   @Override
-  public FormInterceptor getInstance() {
-    return new TradeDocumentForm();
+  public void onSetActiveRow(IsRow row) {
+    if (row == null) {
+      tdSums.clear();
+
+    } else {
+      if (tdSums.updateDocumentId(row.getId())) {
+        tdSums.clearItems();
+      }
+
+      tdSums.updateDocumentDiscount(getDocumentDiscount(row));
+
+      tdSums.updateDiscountMode(getDiscountMode(row));
+      tdSums.updateVatMode(getVatMode(row));
+    }
+
+    refreshSums();
+
+    super.onSetActiveRow(row);
+  }
+
+  @Override
+  public void onSourceChange(IsRow row, String source, String value) {
+    if (row != null && !BeeUtils.isEmpty(source)) {
+      switch (source) {
+        case COL_TRADE_DOCUMENT_DISCOUNT:
+          if (tdSums.updateDocumentDiscount(BeeUtils.toDoubleOrNull(value))) {
+            refreshSums();
+          }
+          break;
+
+        case COL_TRADE_DOCUMENT_DISCOUNT_MODE:
+          if (tdSums.updateDiscountMode(EnumUtils.getEnumByIndex(TradeDiscountMode.class, value))) {
+            refreshSums();
+            refreshItems();
+          }
+          break;
+
+        case COL_TRADE_DOCUMENT_VAT_MODE:
+          if (tdSums.updateVatMode(EnumUtils.getEnumByIndex(TradeVatMode.class, value))) {
+            refreshSums();
+            refreshItems();
+          }
+          break;
+      }
+    }
+
+    super.onSourceChange(row, source, value);
   }
 
   private Double getDocumentDiscount(IsRow row) {
@@ -215,6 +254,14 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
   private void setPhase(IsRow row, TradeDocumentPhase phase) {
     row.setValue(getDataIndex(COL_TRADE_DOCUMENT_PHASE), phase.ordinal());
+  }
+
+  private void refreshItems() {
+    GridView gridView = ViewHelper.getChildGrid(getFormView(), GRID_TRADE_DOCUMENT_ITEMS);
+
+    if (gridView != null && !gridView.isEmpty()) {
+      gridView.refresh(false, false);
+    }
   }
 
   private void refreshSum(String name, double value) {

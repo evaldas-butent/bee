@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class TradeDocumentSums {
@@ -205,19 +206,14 @@ public class TradeDocumentSums {
 
   private double documentDiscount;
 
+  private Long documentId;
+
   private TradeDiscountMode discountMode;
   private TradeVatMode vatMode;
 
   private final Map<Long, Item> items = new HashMap<>();
 
   public TradeDocumentSums() {
-  }
-
-  public TradeDocumentSums(Double discount, TradeDiscountMode discountMode, TradeVatMode vatMode) {
-    this.documentDiscount = normalize(discount);
-
-    this.discountMode = discountMode;
-    this.vatMode = vatMode;
   }
 
   public void add(long id, Double quantity, Double price,
@@ -238,6 +234,8 @@ public class TradeDocumentSums {
   }
 
   public void clear() {
+    this.documentId = null;
+
     this.documentDiscount = BeeConst.DOUBLE_ZERO;
 
     this.discountMode = null;
@@ -461,6 +459,15 @@ public class TradeDocumentSums {
 
   public void setVatScale(int vatScale) {
     this.vatScale = vatScale;
+  }
+
+  public boolean updateDocumentId(Long id) {
+    if (Objects.equals(documentId, id)) {
+      return false;
+    } else {
+      this.documentId = id;
+      return true;
+    }
   }
 
   public boolean updateDocumentDiscount(Double value) {
