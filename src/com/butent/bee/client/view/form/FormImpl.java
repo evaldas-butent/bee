@@ -1311,6 +1311,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         if (!BeeUtils.equalsTrim(oldValue, newValue)) {
           logger.debug(propertyName, userId, "old:", oldValue, "new:", newValue);
           rowValue.setProperty(propertyName, userId, newValue);
+
+          if (getFormInterceptor() != null) {
+            getFormInterceptor().onSourceChange(rowValue, propertyName, newValue);
+          }
         }
       }
 
@@ -1326,6 +1330,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       if (isFlushable()) {
         rowValue.setValue(index, newValue);
+
+        if (getFormInterceptor() != null) {
+          getFormInterceptor().onSourceChange(rowValue, column.getId(), newValue);
+        }
 
         Collection<String> updatedColumns;
         if (source instanceof EditableWidget) {
@@ -1768,36 +1776,46 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void updateCell(String columnId, String newValue) {
-    Assert.notEmpty(columnId);
+  public boolean updateCell(String columnId, String newValue) {
+    if (BeeUtils.isEmpty(columnId)) {
+      notifySevere("update cell:", newValue, "column not specified");
+      return false;
+    }
 
     IsRow rowValue = getActiveRow();
     if (rowValue == null) {
       notifySevere("update cell:", columnId, newValue, "form has no data");
-      return;
+      return false;
     }
 
     int index = getDataIndex(columnId);
     if (BeeConst.isUndef(index)) {
       notifySevere("update cell:", columnId, newValue, "column not found");
-      return;
+      return false;
     }
 
     String oldValue = rowValue.getString(index);
-
-    if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-      if (isFlushable()) {
-        rowValue.setValue(index, newValue);
-
-        Set<String> refreshed = refreshEditableWidget(index);
-        refreshDisplayWidgets(refreshed);
-        refreshDynamicStyles();
-
-      } else {
-        BeeColumn column = getDataColumns().get(index);
-        fireUpdate(rowValue, column, oldValue, newValue, column.isForeign());
-      }
+    if (BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      return false;
     }
+
+    if (isFlushable()) {
+      rowValue.setValue(index, newValue);
+
+      if (getFormInterceptor() != null) {
+        getFormInterceptor().onSourceChange(rowValue, columnId, newValue);
+      }
+
+      Set<String> refreshed = refreshEditableWidget(index);
+      refreshDisplayWidgets(refreshed);
+      refreshDynamicStyles();
+
+    } else {
+      BeeColumn column = getDataColumns().get(index);
+      fireUpdate(rowValue, column, oldValue, newValue, column.isForeign());
+    }
+
+    return true;
   }
 
   @Override
