@@ -163,6 +163,10 @@ public interface Dictionary {
 
   default String amount() {return g("amount");}
 
+  default String amountWithoutDiscount() {return g("amountWithoutDiscount");}
+
+  default String amountWithoutVat() {return g("amountWithoutVat");}
+
   default String announcement() {return g("announcement");}
 
   default String announcementNew() {return g("announcementNew");}
@@ -3580,6 +3584,8 @@ public interface Dictionary {
 
   default String payer() {return g("payer");}
 
+  default String paymentDueDate() {return g("paymentDueDate");}
+
   default String paymentType() {return g("paymentType");}
 
   default String paymentTypes() {return g("paymentTypes");}
@@ -3707,6 +3713,10 @@ public interface Dictionary {
   default String price9Label() {return g("price9Label");}
 
   default String priceName() {return g("priceName");}
+
+  default String priceWithVat() {return g("priceWithVat");}
+
+  default String priceWithoutVat() {return g("priceWithoutVat");}
 
   default String prices() {return g("prices");}
 
@@ -4404,6 +4414,8 @@ public interface Dictionary {
   default String stateVisible() {return g("stateVisible");}
 
   default String status() {return g("status");}
+
+  default String statusUpdated() {return g("statusUpdated");}
 
   default String statuses() {return g("statuses");}
 
