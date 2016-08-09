@@ -1122,7 +1122,8 @@
   outline: none !important;
 }
 
-.bee-TabBar-item {
+.bee-TabBar-item,
+.bee-TabGroup-item {
   margin-left: 4px;
   padding: 4px 8px 4px 8px;
   cursor: pointer;
@@ -1132,14 +1133,16 @@
   border-radius: 3px 3px 0px 0px;
 }
 
-.bee-TabBar-item-selected {
+.bee-TabBar-item-selected,
+.bee-TabGroup-item-selected {
   cursor: default;
   background-color: #eee;
   font-weight: bold;
   border: 1px solid #ccc;
 }
 
-.bee-TabBar-item-disabled {
+.bee-TabBar-item-disabled,
+.bee-TabGroup-item-disabled {
   cursor: default;
   color: #999;
 }

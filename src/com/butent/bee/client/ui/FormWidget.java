@@ -24,6 +24,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.composite.TabGroup;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.data.Data;
@@ -264,6 +265,7 @@ public enum FormWidget {
   SUMMARY_PROXY("SummaryProxy", null),
   SVG("Svg", EnumSet.of(Type.DISPLAY)),
   TAB_BAR("TabBar", EnumSet.of(Type.DISPLAY)),
+  TAB_GROUP("TabGroup", EnumSet.of(Type.DISPLAY)),
   TABBED_PAGES("TabbedPages", EnumSet.of(Type.PANEL)),
   TABLE("Table", EnumSet.of(Type.IS_TABLE)),
   TEXT_LABEL("TextLabel", EnumSet.of(Type.DISPLAY)),
@@ -1738,6 +1740,11 @@ public enum FormWidget {
             ? new TabBar(orientation) : new TabBar(stylePrefix, orientation);
         break;
 
+      case TAB_GROUP:
+        stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
+        widget = new TabGroup(stylePrefix);
+        break;
+
       case TABBED_PAGES:
         stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
         widget = BeeUtils.isEmpty(stylePrefix) ? new TabbedPages() : new TabbedPages(stylePrefix);
@@ -2384,12 +2391,14 @@ public enum FormWidget {
     } else if (this == TREE && parent instanceof Tree) {
       processTree((Tree) parent, child);
 
-    } else if (this == TAB_BAR && parent instanceof TabBar && BeeUtils.same(childTag, TAG_TAB)) {
+    } else if ((this == TAB_BAR || this == TAB_GROUP) && parent instanceof TabGroup
+        && BeeUtils.same(childTag, TAG_TAB)) {
+
       for (Element tabContent : XmlUtils.getChildrenElements(child)) {
         if (XmlUtils.tagIs(tabContent, TAG_TEXT)) {
           String text = Localized.maybeTranslate(XmlUtils.getText(tabContent));
           if (!BeeUtils.isEmpty(text)) {
-            ((TabBar) parent).addItem(text);
+            ((TabGroup) parent).addItem(text);
             break;
           }
         }
@@ -2397,7 +2406,7 @@ public enum FormWidget {
         if (XmlUtils.tagIs(tabContent, TAG_HTML)) {
           String html = XmlUtils.getText(tabContent);
           if (!BeeUtils.isEmpty(html)) {
-            ((TabBar) parent).addItem(html);
+            ((TabGroup) parent).addItem(html);
             break;
           }
         }
@@ -2405,7 +2414,7 @@ public enum FormWidget {
         IdentifiableWidget w = createIfWidget(formName, tabContent, viewName, columns, wdcb,
             widgetInterceptor);
         if (w != null) {
-          ((TabBar) parent).addItem(w.asWidget());
+          ((TabGroup) parent).addItem(w.asWidget());
           break;
         }
       }

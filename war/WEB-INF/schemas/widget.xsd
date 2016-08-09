@@ -934,6 +934,19 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="TabGroup" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="display">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="tab" type="wdhtType" />
+          </xs:choice>
+          <xs:attribute name="stylePrefix" type="xs:normalizedString" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="TabBar" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>

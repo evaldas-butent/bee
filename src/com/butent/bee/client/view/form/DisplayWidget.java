@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileGroup;
-import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.composite.TabGroup;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
@@ -239,10 +239,11 @@ public class DisplayWidget {
         break;
 
       case TAB_BAR:
-        if (widget instanceof TabBar && row != null && dataIndex >= 0) {
+      case TAB_GROUP:
+        if (widget instanceof TabGroup && row != null && dataIndex >= 0) {
           Integer idx = row.getInteger(dataIndex);
-          if (idx != null && ((TabBar) widget).isIndex(idx)) {
-            ((TabBar) widget).selectTab(idx, false);
+          if (idx != null && ((TabGroup) widget).isIndex(idx)) {
+            ((TabGroup) widget).selectTab(idx, false);
           }
         }
         break;
