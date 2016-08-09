@@ -46,6 +46,11 @@
       </x:minus>
     </SimpleColumn>
 
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin joinType="LEFT" name="Supplier">
+      <SimpleColumn name="Name" alias="SupplierName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" label="=trdCustomer" />

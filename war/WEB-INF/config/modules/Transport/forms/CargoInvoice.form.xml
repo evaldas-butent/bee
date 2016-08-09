@@ -6,7 +6,8 @@
         name="CargoInvoice" caption="=trdInvoice" showRowId="true"
         width="800" height="600"
     >
-  <f:properties reports="PrintCargoInvoice, PrintCargoInvoiceShort" />
+  <f:properties
+          reports="PrintCargoInvoiceLTEN, PrintCargoInvoiceLTRU, PrintCargoInvoiceShortLTEN, PrintCargoInvoiceShortLTRU" />
 
   <FlowPanel class="flexBox-vertical">
     <br />

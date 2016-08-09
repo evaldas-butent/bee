@@ -85,6 +85,11 @@ public class CargoSalesGrid extends InvoiceBuilder {
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_MANAGER + COL_LAST_NAME),
         BeeKeeper.getUser().getLastName());
 
+    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SUPPLIER),
+        BeeKeeper.getUser().getCompany());
+    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SUPPLIER + "Name"),
+        BeeKeeper.getUser().getUserData().getCompanyName());
+
     if (customers.size() == 1) {
       Map.Entry<Long, String> entry = BeeUtils.peek(customers.entrySet());
       newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_CUSTOMER), entry.getKey());

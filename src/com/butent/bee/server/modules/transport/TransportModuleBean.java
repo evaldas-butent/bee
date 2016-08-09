@@ -1257,7 +1257,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFields(TBL_CARGO_INCOMES,
             COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
         .addField(loadPlace, COL_DATE, ALS_LOADING_DATE)
+        .addField(loadPlace, COL_POST_INDEX, ALS_LOADING_POST_INDEX)
         .addField(unloadPlace, COL_DATE, ALS_UNLOADING_DATE)
+        .addField(unloadPlace, COL_POST_INDEX, ALS_UNLOADING_POST_INDEX)
         .addField(loadCountry, COL_COUNTRY_CODE, ALS_LOADING_COUNTRY_CODE)
         .addField(loadCountry, COL_COUNTRY_NAME, ALS_LOADING_COUNTRY_NAME)
         .addField(unloadCountry, COL_COUNTRY_CODE, ALS_UNLOADING_COUNTRY_CODE)
@@ -1300,6 +1302,32 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currency));
 
     SimpleRowSet rs = qs.getData(ss.addExpr(xpr, COL_AMOUNT));
+
+    SqlSelect additionalHandling = new SqlSelect()
+        .addFields(TBL_CARGO_HANDLING, COL_CARGO)
+        .addField(loadPlace, COL_DATE, ALS_LOADING_DATE)
+        .addField(loadPlace, COL_POST_INDEX, ALS_LOADING_POST_INDEX)
+        .addField(unloadPlace, COL_DATE, ALS_UNLOADING_DATE)
+        .addField(unloadPlace, COL_POST_INDEX, ALS_UNLOADING_POST_INDEX)
+        .addField(loadCountry, COL_COUNTRY_CODE, ALS_LOADING_COUNTRY_CODE)
+        .addField(loadCountry, COL_COUNTRY_NAME, ALS_LOADING_COUNTRY_NAME)
+        .addField(unloadCountry, COL_COUNTRY_CODE, ALS_UNLOADING_COUNTRY_CODE)
+        .addField(unloadCountry, COL_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_NAME)
+        .addFrom(TBL_CARGO_HANDLING)
+        .addFromLeft(TBL_CARGO_PLACES, loadPlace,
+            sys.joinTables(TBL_CARGO_PLACES, loadPlace, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+        .addFromLeft(TBL_COUNTRIES, loadCountry,
+            sys.joinTables(TBL_COUNTRIES, loadCountry, loadPlace, COL_COUNTRY))
+        .addFromLeft(TBL_CARGO_PLACES, unloadPlace,
+            sys.joinTables(TBL_CARGO_PLACES, unloadPlace, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
+        .addFromLeft(TBL_COUNTRIES, unloadCountry,
+            sys.joinTables(TBL_COUNTRIES, unloadCountry, unloadPlace, COL_COUNTRY))
+        .setWhere(SqlUtils.inList(TBL_CARGO_HANDLING, COL_CARGO, Sets.newHashSet(rs.getColumn(
+            COL_CARGO))))
+        .addOrder(TBL_CARGO_HANDLING, sys.getIdName(TBL_CARGO_HANDLING));
+
+    SimpleRowSet rsHandling = qs.getData(additionalHandling);
+
     ResponseObject response = new ResponseObject();
 
     Multimap<Long, String> drivers = HashMultimap.create();
@@ -1401,18 +1429,75 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
-            BeeUtils.join("-", row.getValue(ALS_LOADING_COUNTRY_CODE)
-                    + " (" + row.getValue(ALS_LOADING_COUNTRY_NAME) + ")",
-                row.getValue(ALS_UNLOADING_COUNTRY_CODE)
-                    + " (" + row.getValue(ALS_UNLOADING_COUNTRY_NAME) + ")"));
+            BeeUtils.join("-", row.getValue(ALS_LOADING_COUNTRY_CODE),
+                row.getValue(ALS_LOADING_POST_INDEX) + "\n"
+                    + row.getValue(ALS_UNLOADING_COUNTRY_CODE),
+                row.getValue(ALS_UNLOADING_POST_INDEX)));
 
         if (!BeeUtils.isEmpty(value)) {
           valueMap.put(COL_ORDER_NOTES, value);
         }
+        long cargoId = BeeUtils.unbox(row.getLong(COL_CARGO));
+        String handlingValue = "";
+        String handlingDates = "";
+
+        for (SimpleRow addH : rsHandling) {
+          long addCargoId = BeeUtils.unbox(addH.getLong(COL_CARGO));
+
+          if (addCargoId == cargoId) {
+            String postIndex = BeeUtils.join("\n",
+                BeeUtils.join("-", addH.getValue(ALS_LOADING_COUNTRY_CODE),
+                    addH.getValue(ALS_LOADING_POST_INDEX)),
+                BeeUtils.join("-",   addH.getValue(ALS_UNLOADING_COUNTRY_CODE),
+                    addH.getValue(ALS_UNLOADING_POST_INDEX)));
+
+            String ldate = "";
+            String udate = "";
+
+            DateTime time = addH.getDateTime(ALS_LOADING_DATE);
+
+            if (time != null && time.hasTimePart()) {
+               ldate =  time.getDateTime().toString();
+            } else if (time != null) {
+               ldate = time.getDate().toString();
+            }
+
+            time = addH.getDateTime(ALS_UNLOADING_DATE);
+
+            if (time != null && time.hasTimePart()) {
+              udate =  time.getDateTime().toString();
+            } else if (time != null) {
+              udate = time.getDate().toString();
+            }
+
+
+            String dates = BeeUtils.join("\n", ldate, udate);
+
+            if (!BeeUtils.isEmpty(postIndex)) {
+              handlingValue = BeeUtils.join("\n\n", handlingValue, postIndex);
+            }
+
+            if (!BeeUtils.isEmpty(dates)) {
+              handlingDates = BeeUtils.join("\n\n", handlingDates, dates);
+            }
+          }
+        }
+
+        if (!BeeUtils.isEmpty(handlingValue)) {
+          valueMap.put(COL_ORDER_NOTES2, handlingValue);
+        }
+
+        if (!BeeUtils.isEmpty(handlingDates)) {
+          valueMap.put(COL_ORDER_LOADING_NOTES, handlingDates);
+        }
+
+
         for (String fld : new String[] {ALS_LOADING_DATE, ALS_UNLOADING_DATE}) {
           DateTime time = row.getDateTime(fld);
 
-          if (time != null) {
+          if (time != null && time.hasTimePart()) {
+            valueMap.put(fld, time.getDateTime().toString());
+          } else if (time != null) {
             valueMap.put(fld, time.getDate().toString());
           }
         }
