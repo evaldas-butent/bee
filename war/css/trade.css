@@ -169,10 +169,3 @@
   font-size: 8pt;
   margin-top: -5px;
 }
-
-.bee-trade-document-phase {
-  margin-right: 1em;
-  align-self: flex-end;
-  -webkit-align-self: flex-end;
-  -ms-flex-item-align: end;
-}

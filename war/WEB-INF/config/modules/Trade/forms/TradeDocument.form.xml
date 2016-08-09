@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-    <!ENTITY inpw "width: 16em;">
-    <!ENTITY inpdt "width: 10em;">
-    <!ENTITY inpsh "width: 10em;">
+    <!ENTITY mrcl "flexBox-horizontal-top">
+    <!ENTITY mrst "margin-top: 12px;">
+    <!ENTITY mfld "margin-left: 1em;">
+    <!ENTITY mw1 "width: 10em;">
+    <!ENTITY mwn "width: 16em;">
+    <!ENTITY flbl "margin-bottom: 2px;">
+    <!ENTITY finp "width: 100&#37;;">
+    <!ENTITY sep "height: 1px; background-color: #ccc;">
+
+    <!ENTITY srcl "flexBox-horizontal-top">
+    <!ENTITY sfld "margin-left: 1em;">
+    <!ENTITY sw1 "width: 50&#37;;">
+    <!ENTITY slbl "margin-bottom: 2px;">
+    <!ENTITY soutp "text-align: left;">
+    <!ENTITY slarge "font-size: larger;">
+    <!ENTITY sbold "font-weight: bolder;">
+    <!ENTITY sbr '<div style="height: 12px;"></div>'>
+    <!ENTITY sblue '#0099ff'>
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
@@ -10,158 +25,250 @@
 
         name="TradeDocument" viewName="TradeDocuments"
         caption="=trdDocument" showRowId="true"
-        width="80" widthUnit="vw" height="60" heightUnit="vh"
+        width="80" widthUnit="vw" height="80" heightUnit="vh"
 >
-  <FlowPanel class="flexBox-vertical">
-    <br />
-    <TabBar name="Phase" source="Phase" class="bee-trade-document-phase" />
+  <SplitPanel splitterSize="3" name="Split">
+    <south size="300">
+      <TabbedPages resizable="false">
+        <page>
+          <text>=goods</text>
+          <ChildGrid name="TradeDocumentItems" relColumn="TradeDocument" />
+        </page>
 
-    <br />
-    <FlowPanel class="flexBox-horizontal-space-between">
-      <Table kind="controls">
-        <col index="0" kind="label" />
-        <col index="2" kind="label" />
-        <col index="4" kind="label" />
+        <page>
+          <text>=otherInfo</text>
+          <Table kind="controls">
+            <col index="0" kind="label" />
+            <col index="2" kind="label" />
 
-        <row>
-          <Label for="Date" />
-          <InputDateTime source="Date" style="&inpdt;" visible="true" />
+            <row>
+              <Label for="PriceName" />
+              <ListBox source="PriceName" summarize="true" />
 
-          <Label for="Series" />
-          <InputText source="Series" upperCase="true" style="width: &inpsh;" />
+              <Label for="DocumentDiscount" />
+              <InputDecimal source="DocumentDiscount" summarize="true" />
+            </row>
 
-          <Label for="Number" />
-          <InputText source="Number" style="&inpw;" />
-        </row>
+            <row>
+              <Label for="DocumentVatMode" />
+              <ListBox source="DocumentVatMode" summarize="true" />
 
-        <row>
-          <Label for="Number1" />
-          <InputText source="Number1" style="&inpw;" />
+              <Label for="DocumentDiscountMode" />
+              <ListBox source="DocumentDiscountMode" summarize="true" />
+            </row>
+          </Table>
+        </page>
 
-          <Label for="Number2" />
-          <InputText source="Number2" style="&inpw;" />
+        <page data="Dimensions">
+          <text>=dimensions</text>
+          <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
+        </page>
 
-          <Label text="=tags" />
-          <ChildSelector childTable="TradeDocumentTags" viewName="TradeTags"
-                         targetRelColumn="TradeDocument" sourceRelColumn="TradeTag"
-                         renderColumns="TagName"
-                         newRowEnabled="false" style="&inpw;" />
-        </row>
+        <page>
+          <text>=files</text>
+          <ChildGrid name="TradeDocumentFiles" relColumn="TradeDocument" />
+        </page>
 
-        <row>
-          <Label for="Operation" />
-          <DataSelector name="Operation" source="Operation" renderColumns="OperationName"
-                        newRowEnabled="false" style="&inpw;" visible="true" />
+        <page>
+          <text>=notes</text>
+          <SimplePanel>
+            <InputArea source="Notes" class="occupy-1" summarize="true" />
+          </SimplePanel>
+        </page>
+      </TabbedPages>
+    </south>
 
-          <Label for="Status" />
+    <east size="320">
+      <FlowPanel>
+        <FlowPanel style="margin-left: 1em; margin-right: 5px;">
+          <FlowPanel style="margin-top: 12px; padding-top: 10px; padding-bottom: 10px;
+           background-color: #f2f2f2; border: 1px solid #ccc; border-radius: 5px;">
+
+            <FlowPanel class="&srcl;">
+              <FlowPanel style="&sfld; &sw1;">
+                <Label text="=amountWithoutVat" style="&slbl;" />
+                <MoneyLabel name="TdWithoutVat" style="&soutp; &slarge;" />
+              </FlowPanel>
+
+              <FlowPanel style="&sfld;">
+                <Label text="=vat" style="&slbl;" />
+                <MoneyLabel name="TdVat" style="&soutp; &slarge;" />
+              </FlowPanel>
+            </FlowPanel>
+
+            &sbr;
+            <FlowPanel class="&srcl;">
+              <FlowPanel style="&sfld;">
+                <Label text="=totalOf" style="&slbl;" />
+                <MoneyLabel name="TdTotal" style="&soutp; &slarge; &sbold; color: &sblue;;" />
+              </FlowPanel>
+            </FlowPanel>
+          </FlowPanel>
+
+          &sbr;
+          <FlowPanel class="&srcl;">
+            <FlowPanel style="&sfld; &sw1;">
+              <Label text="=amountWithoutDiscount" style="&slbl;" />
+              <MoneyLabel name="TdAmount" style="&soutp;" />
+            </FlowPanel>
+
+            <FlowPanel style="&sfld;">
+              <Label text="=discount" style="&slbl;" />
+              <MoneyLabel name="TdDiscount" style="&soutp;" />
+            </FlowPanel>
+          </FlowPanel>
+
+          &sbr;
+          <div style="&sep;" />
+
+          &sbr;
+          <FlowPanel class="&srcl;">
+            <FlowPanel style="&sfld; &sw1;">
+              <Label text="=trdPaid" style="&slbl;" />
+              <MoneyLabel name="TdPaid" style="&soutp; &slarge;" />
+            </FlowPanel>
+
+            <FlowPanel style="&sfld;">
+              <Label text="=debt" style="&slbl;" />
+              <MoneyLabel name="TdDebt" style="&soutp; &slarge; &sbold;" />
+            </FlowPanel>
+          </FlowPanel>
+
+          &sbr;
+          <div style="&sep;" />
+
+          &sbr;
+          <TabBar name="Phase" source="Phase"
+                  style="background-color: white; color: &sblue;; border-color: &sblue;;" />
+
+          &sbr;
+          <div style="&sep;" />
+
+          &sbr;
+          <Label for="Status" style="&slbl;" />
           <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
-                        style="&inpw;" />
+                        style="width: 100%;" />
 
-          <Label for="Manager" />
-          <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-                        newRowEnabled="false" style="&inpw;" />
-        </row>
+          &sbr;
+          &sbr;
+          <Button text="=actionSave"
+                  style="width: 100%; padding: 8px; color: white; background-color: &sblue;; &slarge; &sbold;" />
+        </FlowPanel>
+      </FlowPanel>
+    </east>
 
-        <row>
-          <Label for="Supplier" />
-          <DataSelector source="Supplier" style="&inpw;" visible="true"
-                        choiceColumns="Name TypeName"
-                        renderColumns="SupplierName SupplierTypeName" />
+    <center>
+      <FlowPanel>
+        <FlowPanel style="margin-right: 1em;">
+          <FlowPanel class="&mrcl;" style="&mrst;">
+            <FlowPanel class="flexible" style="&mfld;">
+              <Label for="Operation" style="&flbl;" />
+              <DataSelector name="Operation" source="Operation" renderColumns="OperationName"
+                            newRowEnabled="false" style="&finp;" visible="true" />
+            </FlowPanel>
 
-          <Label for="Customer" />
-          <DataSelector source="Customer" style="&inpw;" visible="true"
-                        choiceColumns="Name TypeName"
-                        renderColumns="CustomerName CustomerTypeName" />
+            <FlowPanel style="&mfld; width: 10em;">
+              <Label for="Date" style="&flbl;" />
+              <InputDateTime source="Date" style="&finp;" visible="true" />
+            </FlowPanel>
 
-          <Label for="Payer" />
-          <DataSelector source="Payer" style="&inpw;" visible="true" choiceColumns="Name TypeName"
-                        renderColumns="PayerName PayerTypeName" />
-        </row>
+            <FlowPanel style="&mfld; width: 5em;">
+              <Label for="Currency" style="&flbl;" />
+              <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
+                            newRowEnabled="false" style="&finp;" />
+            </FlowPanel>
+          </FlowPanel>
 
-        <row>
-          <Label for="WarehouseFrom" />
-          <DataSelector source="WarehouseFrom" style="&inpw;" visible="true"
-                        choiceColumns="Code Name"
-                        renderColumns="WarehouseFromCode WarehouseFromName" />
+          <FlowPanel class="&mrcl;" style="&mrst;">
+            <FlowPanel style="&mfld; &mw1;">
+              <Label for="Series" style="&flbl;" />
+              <InputText source="Series" upperCase="true" style="&finp;" />
+            </FlowPanel>
 
-          <Label for="WarehouseTo" />
-          <DataSelector source="WarehouseTo" style="&inpw;" visible="true" choiceColumns="Code Name"
-                        renderColumns="WarehouseToCode WarehouseToName" />
+            <FlowPanel class="flexible" style="&mfld;">
+              <Label for="Number" style="&flbl;" />
+              <InputText source="Number" style="&finp;" />
+            </FlowPanel>
 
-          <Label for="Term" />
-          <InputDateTime source="Term" style="&inpdt;" />
-        </row>
+            <FlowPanel style="&mfld; &mwn;">
+              <Label for="Number1" style="&flbl;" />
+              <InputText source="Number1" style="&finp;" />
+            </FlowPanel>
 
-        <row>
-          <Label for="PriceName" />
-          <ListBox source="PriceName" />
+            <FlowPanel style="&mfld; &mwn;">
+              <Label for="Number2" style="&flbl;" />
+              <InputText source="Number2" style="&finp;" />
+            </FlowPanel>
+          </FlowPanel>
 
-          <Label for="DocumentDiscount" />
-          <InputDecimal source="DocumentDiscount" style="&inpsh;" />
+          <div style="&sep; margin-top: 12px; margin-left: 1em;" />
 
-          <Label for="Currency" />
-          <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
-                        newRowEnabled="false" style="width: 5em;" />
-        </row>
+          <FlowPanel class="&mrcl;" style="&mrst;">
+            <FlowPanel class="flexible" style="&mfld;">
+              <Label for="Supplier" style="&flbl;" />
+              <DataSelector source="Supplier" style="&finp;" visible="true"
+                            choiceColumns="Name TypeName"
+                            renderColumns="SupplierName SupplierTypeName" />
+            </FlowPanel>
 
-        <row>
-          <Label for="DocumentVatMode" />
-          <ListBox source="DocumentVatMode" />
+            <FlowPanel style="&mfld; &mwn;">
+              <Label for="WarehouseFrom" style="&flbl;" />
+              <DataSelector source="WarehouseFrom" style="&finp;" visible="true"
+                            choiceColumns="Code Name"
+                            renderColumns="WarehouseFromCode WarehouseFromName" />
+            </FlowPanel>
+          </FlowPanel>
 
-          <Label for="DocumentDiscountMode" />
-          <ListBox source="DocumentDiscountMode" />
-        </row>
-      </Table>
+          <FlowPanel class="&mrcl;" style="&mrst;">
+            <FlowPanel class="flexible" style="&mfld;">
+              <Label for="Customer" style="&flbl;" />
+              <DataSelector source="Customer" style="&finp;" visible="true"
+                            choiceColumns="Name TypeName"
+                            renderColumns="CustomerName CustomerTypeName" />
+            </FlowPanel>
 
-      <Table kind="controls" style="margin-right: 1em;">
-        <col index="0" kind="label" />
+            <FlowPanel style="&mfld; &mwn;">
+              <Label for="WarehouseTo" style="&flbl;" />
+              <DataSelector source="WarehouseTo" style="&finp;" visible="true"
+                            choiceColumns="Code Name"
+                            renderColumns="WarehouseToCode WarehouseToName" />
+            </FlowPanel>
+          </FlowPanel>
 
-        <row>
-          <Label text="=amount" />
-          <MoneyLabel name="TdAmount" />
-        </row>
-        <row>
-          <Label text="=discount" />
-          <MoneyLabel name="TdDiscount" />
-        </row>
-        <row>
-          <Label text="=withoutVat" />
-          <MoneyLabel name="TdWithoutVat" />
-        </row>
-        <row>
-          <Label text="=vat" />
-          <MoneyLabel name="TdVat" />
-        </row>
-        <row>
-          <Label text="=total" />
-          <MoneyLabel name="TdTotal" />
-        </row>
-      </Table>
-    </FlowPanel>
+          <FlowPanel class="&mrcl;" style="&mrst;">
+            <FlowPanel style="&mfld; &mw1;">
+              <Label for="Term" style="&flbl;" />
+              <InputDateTime source="Term" style="&finp;" />
+            </FlowPanel>
 
-    <br />
-    <TabbedPages class="flexible" style="min-height: 240px;">
-      <page>
-        <text>=goods</text>
-        <ChildGrid name="TradeDocumentItems" relColumn="TradeDocument" />
-      </page>
+            <FlowPanel class="flexible" style="&mfld;">
+              <Label for="Payer" style="&flbl;" />
+              <DataSelector source="Payer" style="&finp;" visible="true"
+                            choiceColumns="Name TypeName"
+                            renderColumns="PayerName PayerTypeName" />
+            </FlowPanel>
 
-      <page data="Dimensions">
-        <text>=dimensions</text>
-        <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
-      </page>
+            <FlowPanel style="&mfld; &mwn;">
+              <Label text="=tags" style="&flbl;" />
+              <ChildSelector childTable="TradeDocumentTags" viewName="TradeTags"
+                             targetRelColumn="TradeDocument" sourceRelColumn="TradeTag"
+                             renderColumns="TagName"
+                             newRowEnabled="false" style="&finp;" />
+            </FlowPanel>
+          </FlowPanel>
 
-      <page>
-        <text>=files</text>
-        <ChildGrid name="TradeDocumentFiles" relColumn="TradeDocument" />
-      </page>
+          <FlowPanel class="&mrcl;" style="&mrst;">
+            <FlowPanel class="flexible" style="&mfld;">
+              <Label for="Manager" style="&flbl;" />
+              <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+                            newRowEnabled="false" style="&finp;" />
+            </FlowPanel>
 
-      <page>
-        <text>=notes</text>
-        <SimplePanel>
-          <InputArea source="Notes" class="occupy-1" summarize="true" />
-        </SimplePanel>
-      </page>
-    </TabbedPages>
-  </FlowPanel>
+            <FlowPanel style="&mfld; &mwn;" />
+            <FlowPanel style="&mfld; &mwn;" />
+          </FlowPanel>
+        </FlowPanel>
+      </FlowPanel>
+    </center>
+  </SplitPanel>
 </f:Form>
