@@ -3,8 +3,6 @@ package com.butent.bee.client.modules.calendar.dnd;
 import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -29,7 +27,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class DayMoveController implements MoveEvent.Handler, Event.NativePreviewHandler {
+public class DayMoveController implements MoveEvent.Handler {
 
   private static final int START_SENSITIVITY_PIXELS = 3;
 
@@ -42,8 +40,6 @@ public class DayMoveController implements MoveEvent.Handler, Event.NativePreview
 
   private JustDate date;
   private int columnCount;
-
-  private boolean copying;
 
   private ItemWidget itemWidget;
   private int relativeLeft;
@@ -79,7 +75,6 @@ public class DayMoveController implements MoveEvent.Handler, Event.NativePreview
     super();
     this.calendarView = calendarView;
     this.scrollArea = scrollArea;
-    Event.addNativePreviewHandler(this);
   }
 
   @Override
@@ -128,6 +123,7 @@ public class DayMoveController implements MoveEvent.Handler, Event.NativePreview
       }
 
       updatePosition();
+      CalendarUtils.updateWidgetStyleByModifiers(event.getModifiers(), getItemWidget());
 
     } else if (event.isFinished()) {
       if (getPositioner() != null) {
@@ -141,7 +137,7 @@ public class DayMoveController implements MoveEvent.Handler, Event.NativePreview
       }
 
       if (getItemWidget() != null) {
-        if (copying) {
+        if (CalendarUtils.isCopying(event.getModifiers(), getItemWidget())) {
           copyAppointment();
         } else {
           drop();
@@ -318,26 +314,6 @@ public class DayMoveController implements MoveEvent.Handler, Event.NativePreview
     if (newPos >= 0 && newPos != oldPos) {
       scrollArea.setScrollTop(newPos);
       setTargetTop(getItemWidget().getParent().getAbsoluteTop());
-    }
-  }
-
-  @Override
-  public void onPreviewNativeEvent(Event.NativePreviewEvent event) {
-    NativeEvent ne = event.getNativeEvent();
-    if (getItemWidget() != null) {
-
-      if (ne.getCtrlKey() && getItemWidget().getItem().getItemType().equals(ItemType.APPOINTMENT)) {
-        this.copying = true;
-        if (getItemWidget() != null) {
-          getItemWidget().addStyleName(CalendarStyleManager.COPY);
-        }
-
-      } else {
-        this.copying = false;
-        if (getItemWidget() != null) {
-          getItemWidget().removeStyleName(CalendarStyleManager.COPY);
-        }
-      }
     }
   }
 
