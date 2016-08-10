@@ -567,6 +567,8 @@ public final class TransportConstants {
   public static final String COL_ORDER_ID = "OrderID";
   public static final String COL_ORDER_NO = "OrderNo";
   public static final String COL_ORDER_NOTES = "Notes";
+  public static final String COL_ORDER_NOTES2 = "Notes2";
+  public static final String COL_ORDER_LOADING_NOTES = "LoadingNotes";
   public static final String COL_ORDER_DATE = "Date";
   public static final String COL_ORDER_MANAGER = "Manager";
   public static final String COL_CUSTOMER = "Customer";
