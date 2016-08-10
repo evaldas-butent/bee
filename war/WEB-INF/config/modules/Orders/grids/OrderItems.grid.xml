@@ -63,6 +63,13 @@
       </render>
     </CalcColumn>
 
+    <DataColumn name="ItemCost">
+      <dynStyle>
+        <ui:inline>background-color: #ff5252</ui:inline>
+        <ui:expression>row.ItemCost &gt; (row.AmountWoVAT / row.Quantity)</ui:expression>
+      </dynStyle>
+    </DataColumn>
+
     <DataColumn name="Price" visible="true">
       <footer expression="row.Quantity * row.Price" />
     </DataColumn>
@@ -70,6 +77,12 @@
     <CalcColumn name="ItemPrices" type="string" cellType="html"
       label="=taItemPrices" width="100" exportable="false"
       verticalAlignment="middle" />
+
+    <CalcColumn name="UnitPrice" type="double" label="=unitPrice" format="0.00000">
+      <render>
+        <ui:expression>row.Price - row.Price * row.Discount / 100 </ui:expression>
+      </render>
+    </CalcColumn>
 
     <DataColumn name="Discount">
       <footer evaluator="discount" scale="2" />
@@ -85,8 +98,7 @@
     <DataColumn name="VatPercent" width="20" sortable="false"
       caption="%" format="%" carry="true" />
 
-    <PropColumn name="AmountWoVAT" type="double" label="=trdAmountWoVat" visible="true" scale="2"
-                format="0.00"/>
+    <PropColumn name="AmountWoVAT" type="double" label="=trdAmountWoVat" scale="2" format="0.00"/>
 
     <CalcColumn name="Total" type="decimal" caption="=trdAmount"
       scale="2">
