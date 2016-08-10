@@ -7,6 +7,8 @@
   <Relation renderColumns="Name CountryName CountryCode" />
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn alias="NameEn" name="Name" locale="en"  />
+    <SimpleColumn alias="NameRu" name="Name" locale="ru" />
     <SimpleColumn name="Country" />
     <SimpleJoin name="Country" joinType="LEFT">
       <SimpleColumn alias="CountryName" name="Name" />
