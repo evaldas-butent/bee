@@ -9,6 +9,8 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="Name2" />
     <SimpleColumn name="Name3" />
+    <SimpleColumn alias="NameEn" name="Name" locale="en"  />
+    <SimpleColumn alias="NameRu" name="Name" locale="ru" />
     <SimpleColumn name="Country" />
     <SimpleJoin name="Country" joinType="LEFT">
       <SimpleColumn alias="CountryName" name="Name" />
