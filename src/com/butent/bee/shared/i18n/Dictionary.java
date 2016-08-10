@@ -3234,6 +3234,8 @@ public interface Dictionary {
 
   default String more() {return g("more");}
 
+  default String myCompanyMenu() {return g("myCompanyMenu");}
+
   default String myEnvironment() {return g("myEnvironment");}
 
   default String name() {return g("name");}
@@ -4114,6 +4116,8 @@ public interface Dictionary {
   default String projects() {return g("projects");}
 
   default String projectsAll() {return g("projectsAll");}
+
+  default String projectsMy() {return g("projectsMy");}
 
   default String properties() {return g("properties");}
 
