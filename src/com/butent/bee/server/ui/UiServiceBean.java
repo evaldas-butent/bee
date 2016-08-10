@@ -299,6 +299,10 @@ public class UiServiceBean {
         response = copyGridSettings(reqInfo);
         break;
 
+      case GET_LAST_UPDATED:
+        response = getLastUpdated(reqInfo);
+        break;
+
       default:
         String msg = BeeUtils.joinWords("data service not recognized:", svc);
         logger.warning(msg);
@@ -651,6 +655,45 @@ public class UiServiceBean {
     SimpleRowSet res = qs.getHistogram(viewName, filter, NameUtils.toList(columns),
         NameUtils.toList(order));
     return ResponseObject.response(res);
+  }
+
+  private ResponseObject getLastUpdated(RequestInfo reqInfo) {
+    String tableName = reqInfo.getParameter(VAR_TABLE);
+    if (BeeUtils.isEmpty(tableName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_TABLE);
+    }
+
+    Long id = reqInfo.getParameterLong(VAR_ID);
+    if (!DataUtils.isId(id)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_ID);
+    }
+
+    String fieldName = reqInfo.getParameter(VAR_COLUMN);
+    if (BeeUtils.isEmpty(fieldName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_COLUMN);
+    }
+
+    if (!sys.isAuditable(tableName)) {
+      String message = BeeUtils.joinWords("table", tableName, "is not auditable");
+      logger.warning(reqInfo.getService(), message);
+
+      return ResponseObject.warning(message);
+    }
+
+    String source = sys.getAuditSource(tableName);
+
+    SqlSelect query = new SqlSelect()
+        .addMax(source, AUDIT_FLD_TIME)
+        .addFrom(source)
+        .setWhere(SqlUtils.equals(source, AUDIT_FLD_ID, id, AUDIT_FLD_FIELD, fieldName));
+
+    Long time = qs.getLong(query);
+
+    if (time == null) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(BeeUtils.toString(time));
+    }
   }
 
   private ResponseObject getRelatedValues(RequestInfo reqInfo) {
