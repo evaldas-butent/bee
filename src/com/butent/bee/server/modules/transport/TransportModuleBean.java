@@ -1428,11 +1428,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         }
       }
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
-        String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
-            BeeUtils.join("-", row.getValue(ALS_LOADING_COUNTRY_CODE),
-                row.getValue(ALS_LOADING_POST_INDEX) + "\n"
-                    + row.getValue(ALS_UNLOADING_COUNTRY_CODE),
-                row.getValue(ALS_UNLOADING_POST_INDEX)));
+        String value = BeeUtils.join("\n", BeeUtils.nvl(row.getValue(COL_ORDER_NOTES), ""),
+            BeeUtils.join("-", BeeUtils.nvl(row.getValue(ALS_LOADING_COUNTRY_CODE), ""),
+                BeeUtils.nvl(row.getValue(ALS_LOADING_POST_INDEX), "") + "\n"
+                    + BeeUtils.nvl(row.getValue(ALS_UNLOADING_COUNTRY_CODE), ""),
+                BeeUtils.nvl(row.getValue(ALS_UNLOADING_POST_INDEX), "")));
 
         if (!BeeUtils.isEmpty(value)) {
           valueMap.put(COL_ORDER_NOTES, value);
@@ -1446,10 +1446,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
           if (addCargoId == cargoId) {
             String postIndex = BeeUtils.join("\n",
-                BeeUtils.join("-", addH.getValue(ALS_LOADING_COUNTRY_CODE),
-                    addH.getValue(ALS_LOADING_POST_INDEX)),
-                BeeUtils.join("-",   addH.getValue(ALS_UNLOADING_COUNTRY_CODE),
-                    addH.getValue(ALS_UNLOADING_POST_INDEX)));
+                BeeUtils.join("-", BeeUtils.nvl(addH.getValue(ALS_LOADING_COUNTRY_CODE), ""),
+                    BeeUtils.nvl(addH.getValue(ALS_LOADING_POST_INDEX), "")),
+                BeeUtils.join("-",   BeeUtils.nvl(addH.getValue(ALS_UNLOADING_COUNTRY_CODE), ""),
+                    BeeUtils.nvl(addH.getValue(ALS_UNLOADING_POST_INDEX), "")));
 
             String ldate = "";
             String udate = "";
