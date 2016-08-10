@@ -147,10 +147,10 @@
           <Label for="Status" style="&slbl;" />
           <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
                         style="width: 100%;" />
+          <Label name="StatusUpdated" style="color: #aaa; min-height: 20px;" />
 
           &sbr;
-          &sbr;
-          <Button text="=actionSave"
+          <Button name="Save" text="=actionSave"
                   style="width: 100%; padding: 8px; color: white; background-color: &sblue;; &slarge; &sbold;" />
         </FlowPanel>
       </FlowPanel>

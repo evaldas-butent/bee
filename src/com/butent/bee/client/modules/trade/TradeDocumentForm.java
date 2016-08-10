@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -9,12 +10,14 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.TabGroup;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
@@ -23,6 +26,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -36,10 +40,13 @@ import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collections;
+import java.util.Objects;
 
 public class TradeDocumentForm extends AbstractFormInterceptor {
 
@@ -48,6 +55,9 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private static final String NAME_WITHOUT_VAT = "TdWithoutVat";
   private static final String NAME_VAT = "TdVat";
   private static final String NAME_TOTAL = "TdTotal";
+
+  private static final String NAME_STATUS_UPDATED = "StatusUpdated";
+  private static final String NAME_SAVE = "Save";
 
   private final TradeDocumentSums tdSums = new TradeDocumentSums();
 
@@ -77,6 +87,13 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       tdiGrid.setTdsListener(this::refreshSums);
 
       ((ChildGrid) widget).setGridInterceptor(tdiGrid);
+
+    } else if (BeeUtils.same(name, NAME_SAVE) && widget instanceof HasClickHandlers) {
+      ((HasClickHandlers) widget).addClickHandler(event -> {
+        if (getFormView() != null && getFormView().getViewPresenter() != null) {
+          getFormView().getViewPresenter().handleAction(Action.SAVE);
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -104,6 +121,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     }
 
     refreshSums();
+    refreshStatusLastUpdated(row);
 
     super.onSetActiveRow(row);
   }
@@ -261,6 +279,29 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
     if (gridView != null && !gridView.isEmpty()) {
       gridView.refresh(false, false);
+    }
+  }
+
+  private void refreshStatusLastUpdated(IsRow row) {
+    final Widget widget = getWidgetByName(NAME_STATUS_UPDATED);
+
+    if (widget instanceof HasHtml) {
+      ((HasHtml) widget).setText(BeeConst.STRING_EMPTY);
+
+      if (DataUtils.hasId(row)) {
+        final long id = row.getId();
+
+        Queries.getLastUpdated(TBL_TRADE_DOCUMENTS, id, COL_TRADE_DOCUMENT_STATUS,
+            new RpcCallback<DateTime>() {
+              @Override
+              public void onSuccess(DateTime result) {
+                if (result != null && Objects.equals(getActiveRowId(), id)) {
+                  ((HasHtml) widget).setText(BeeUtils.joinWords(
+                      Localized.dictionary().statusUpdated(), Format.renderDateTime(result)));
+                }
+              }
+            });
+      }
     }
   }
 
