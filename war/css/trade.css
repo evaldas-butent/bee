@@ -169,3 +169,33 @@
   font-size: 8pt;
   margin-top: -5px;
 }
+
+.bee-trade-document-phase-item {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 33.3%;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  text-align: center;
+  background-color: white;
+  color: #0099ff;
+  font-size: 105%;
+  font-weight: bolder;
+  border: 1px solid #0099ff;
+  cursor: pointer;
+}
+.bee-trade-document-phase-item-selected {
+  background-color: #0099ff;
+  color: white;
+  cursor: default;
+}
+
+.bee-trade-document-phase-item:nth-child(2),
+.bee-trade-document-phase-item:nth-child(3),
+.bee-trade-document-phase-item:nth-child(5) {
+  border-left: none;
+}
+.bee-trade-document-phase-item:nth-child(4),
+.bee-trade-document-phase-item:nth-child(5) {
+  border-top: none;
+}

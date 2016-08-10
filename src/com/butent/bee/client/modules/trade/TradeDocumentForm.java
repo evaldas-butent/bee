@@ -10,7 +10,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.composite.TabGroup;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
@@ -58,8 +58,8 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (BeeUtils.same(name, COL_TRADE_DOCUMENT_PHASE) && widget instanceof TabBar) {
-      ((TabBar) widget).addBeforeSelectionHandler(this::onPhaseTransition);
+    if (BeeUtils.same(name, COL_TRADE_DOCUMENT_PHASE) && widget instanceof TabGroup) {
+      ((TabGroup) widget).addBeforeSelectionHandler(this::onPhaseTransition);
 
     } else if (BeeUtils.same(name, COL_TRADE_OPERATION) && widget instanceof DataSelector) {
       ((DataSelector) widget).addSelectorHandler(event -> {

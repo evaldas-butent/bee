@@ -138,8 +138,7 @@
           <div style="&sep;" />
 
           &sbr;
-          <TabBar name="Phase" source="Phase"
-                  style="background-color: white; color: &sblue;; border-color: &sblue;;" />
+          <TabGroup name="Phase" source="Phase" stylePrefix="bee-trade-document-phase-" />
 
           &sbr;
           <div style="&sep;" />
