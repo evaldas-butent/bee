@@ -32,15 +32,18 @@
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <CalcColumn name="WithoutVat" type="decimal" caption="=withoutVat" scale="2">
+    <CalcColumn name="PriceWithoutVat" type="decimal" caption="=priceWithoutVat" scale="2" />
+    <CalcColumn name="AmountWithoutVat" type="decimal" caption="=amountWithoutVat" scale="2">
       <footer aggregate="sum" />
     </CalcColumn>
+
     <DataColumn name="Vat" scale="0" carry="true" flexGrow="0" />
     <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" carry="true" />
     <CalcColumn name="VatAmount" type="decimal" caption="=vatAmount" scale="2">
       <footer aggregate="sum" />
     </CalcColumn>
 
+    <CalcColumn name="PriceWithVat" type="decimal" caption="=priceWithVat" scale="2" />
     <CalcColumn name="Total" type="decimal" caption="=total" scale="2">
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>

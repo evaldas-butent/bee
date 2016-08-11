@@ -445,6 +445,26 @@ public class TradeDocumentSums {
     return total;
   }
 
+  public double getPriceWithoutVat(Long id) {
+    Item item = getItem(id);
+
+    if (item != null && item.isValid()) {
+      return (getItemTotal(id) - getItemVat(id)) / item.quantity;
+    } else {
+      return BeeConst.DOUBLE_ZERO;
+    }
+  }
+
+  public double getPriceWithVat(Long id) {
+    Item item = getItem(id);
+
+    if (item != null && item.isValid()) {
+      return getItemTotal(id) / item.quantity;
+    } else {
+      return BeeConst.DOUBLE_ZERO;
+    }
+  }
+
   public void setAmountScale(int amountScale) {
     this.amountScale = amountScale;
   }

@@ -46,10 +46,22 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       }
     },
 
-    WITHOUT_VAT {
+    PRICE_WITHOUT_VAT {
       @Override
       String getName() {
-        return "WithoutVat";
+        return "PriceWithoutVat";
+      }
+
+      @Override
+      double getValue(IsRow row, TradeDocumentSums tds) {
+        return (tds == null) ? BeeConst.DOUBLE_ZERO : tds.getPriceWithoutVat(row.getId());
+      }
+    },
+
+    AMOUNT_WITHOUT_VAT {
+      @Override
+      String getName() {
+        return "AmountWithoutVat";
       }
 
       @Override
@@ -68,6 +80,18 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       @Override
       double getValue(IsRow row, TradeDocumentSums tds) {
         return (tds == null) ? BeeConst.DOUBLE_ZERO : tds.getItemVat(row.getId());
+      }
+    },
+
+    PRICE_WITH_VAT {
+      @Override
+      String getName() {
+        return "PriceWithVat";
+      }
+
+      @Override
+      double getValue(IsRow row, TradeDocumentSums tds) {
+        return (tds == null) ? BeeConst.DOUBLE_ZERO : tds.getPriceWithVat(row.getId());
       }
     },
 
