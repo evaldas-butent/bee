@@ -443,13 +443,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
             DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
             if (DataUtils.contains(ev.getColumns(), COL_USER_BLOCK_FROM)
                 || DataUtils.contains(ev.getColumns(), COL_USER_BLOCK_UNTIL)) {
-              createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY,
-                  Pair.of(TBL_USERS, ev.getRow().getId()));
+              createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY, TBL_USERS, ev.getRow().getId());
             }
           } else if (event instanceof DataEvent.ViewDeleteEvent) {
             for (long id : ((DataEvent.ViewDeleteEvent) event).getIds()) {
-              createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY,
-                  Pair.of(TBL_USERS, id));
+              createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY, TBL_USERS, id);
             }
           }
         }
@@ -459,12 +457,54 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
             DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
 
             if (DataUtils.contains(ev.getColumns(), COL_TASKS_MAILING_TIME)) {
-              createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY,
-                  Pair.of(TBL_USER_SETTINGS, ev.getRow().getId()));
+              createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY, TBL_USER_SETTINGS,
+                  ev.getRow().getId());
             }
           } else if (event instanceof DataEvent.ViewInsertEvent) {
-            createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY, Pair.of(TBL_USER_SETTINGS,
-                ((DataEvent.ViewInsertEvent) event).getRow().getId()));
+            createOrUpdateTimers(TIMER_REMIND_TASKS_SUMMARY, TBL_USER_SETTINGS,
+                    ((DataEvent.ViewInsertEvent) event).getRow().getId());
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void updateRemindersTimers(DataEvent.ViewModifyEvent event) {
+        if (event.isAfter(TBL_REMINDER_TYPES)) {
+          if (event instanceof DataEvent.ViewDeleteEvent) {
+            createOrUpdateTimers(TIMER_REMIND_USER_TASKS, null, null);
+          } else if (event instanceof DataEvent.ViewUpdateEvent) {
+            DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_REMINDER_DATA_FIELD)
+                || DataUtils.contains(ev.getColumns(), COL_REMINDER_DATA_INDICATOR)
+                || DataUtils.contains(ev.getColumns(), COL_REMINDER_HOURS)
+                || DataUtils.contains(ev.getColumns(), COL_REMINDER_MINUTES)) {
+              createOrUpdateTimers(TIMER_REMIND_USER_TASKS, TBL_REMINDER_TYPES,
+                  ev.getRow().getId());
+            }
+          }
+        }
+        if (event.isAfter(VIEW_USER_REMINDERS)) {
+          if (event instanceof DataEvent.ViewUpdateEvent) {
+            DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_USER_REMINDER_TIME)
+                || DataUtils.contains(ev.getColumns(), COL_USER_REMINDER_TYPE)
+                || DataUtils.contains(ev.getColumns(), COL_USER_REMINDER_ACTIVE)) {
+              createOrUpdateTimers(TIMER_REMIND_USER_TASKS, VIEW_USER_REMINDERS,
+                  ev.getRow().getId());
+            }
+          } else if (event instanceof DataEvent.ViewInsertEvent) {
+            createOrUpdateTimers(TIMER_REMIND_USER_TASKS, VIEW_USER_REMINDERS,
+                ((DataEvent.ViewInsertEvent) event).getRow().getId());
+          }
+        } else if (event.isAfter(TBL_TASKS)) {
+          if (event instanceof DataEvent.ViewUpdateEvent) {
+            DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_START_TIME)
+                || DataUtils.contains(ev.getColumns(), COL_FINISH_TIME)
+                || DataUtils.contains(ev.getColumns(), COL_STATUS)) {
+              createOrUpdateTimers(TIMER_REMIND_USER_TASKS, TBL_TASKS, ev.getRow().getId());
+            }
           }
         }
       }
@@ -564,7 +604,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       }
     });
 
-    buildTimers(TIMER_REMIND_TASKS_SUMMARY);
+    buildTimers(TIMER_REMIND_TASKS_SUMMARY, TIMER_REMIND_USER_TASKS);
   }
 
   @Override
@@ -578,15 +618,58 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
           && !TimeUtils.isWeekend(TimeUtils.today())) {
         sendTasksSummaryReminder(userId);
       }
+    } else if (BeeUtils.isPrefix(timerInfo, TIMER_REMIND_USER_TASKS)) {
+
+      Long reminderId = BeeUtils.toLong(timerInfo.substring(TIMER_REMIND_USER_TASKS.length()));
+      if (reminderId != null) {
+        SimpleRow reminderRow = qs.getRow(new SqlSelect()
+            .addFields(VIEW_USER_REMINDERS, COL_USER_REMINDER_USER, COL_USER_REMINDER_TYPE)
+            .addFields(TBL_TASKS, COL_TASK_ID)
+            .addFrom(VIEW_USER_REMINDERS)
+            .addFromInner(TBL_TASKS, sys.joinTables(TBL_TASKS, VIEW_USER_REMINDERS,
+                COL_USER_REMINDER_OBJECT))
+            .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_USER_REMINDERS,
+                sys.getIdName(VIEW_USER_REMINDERS), reminderId))));
+
+        if (reminderRow == null) {
+          return;
+        }
+
+        Long recipientId = reminderRow.getLong(COL_USER_REMINDER_USER);
+        Long taskId = reminderRow.getLong(COL_TASK_ID);
+
+        if (DataUtils.isId(recipientId) && DataUtils.isId(taskId)) {
+          Long senderAccountId = mail.getSenderAccountId(TIMER_REMIND_USER_TASKS);
+
+          ResponseObject response = mailNewTask(senderAccountId, taskId, true, true,
+              recipientId, usr.getDictionary(recipientId).crmReminderMailSubject());
+
+          if (response.hasErrors() || response.hasWarnings()) {
+            logger.warning("user remind tasks canceled");
+          }
+        }
+
+        Long reminderTypeId = reminderRow.getLong(COL_USER_REMINDER_TYPE);
+        if (DataUtils.isId(reminderTypeId)) {
+          qs.updateData(new SqlUpdate(VIEW_USER_REMINDERS)
+              .addConstant(COL_USER_REMINDER_TIMEOUT, true)
+              .setWhere(sys.idEquals(VIEW_USER_REMINDERS, reminderId)));
+        } else {
+          qs.updateData(new SqlUpdate(VIEW_USER_REMINDERS)
+              .addConstant(COL_USER_REMINDER_ACTIVE, null)
+              .addConstant(COL_USER_REMINDER_TIMEOUT, true)
+              .setWhere(sys.idEquals(VIEW_USER_REMINDERS, reminderId)));
+        }
+      }
     }
   }
 
   @Override
   protected List<Timer> createTimers(String timerIdentifier, IsCondition wh) {
     List<Timer> timersList = new ArrayList<>();
+    Value currentTime = Value.getValue(System.currentTimeMillis());
 
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_TASKS_SUMMARY)) {
-      Value currentTime = Value.getValue(System.currentTimeMillis());
       SimpleRowSet data = qs.getData(new SqlSelect()
           .addFields(TBL_USER_SETTINGS, COL_USER, COL_TASKS_MAILING_TIME)
           .addFrom(TBL_USER_SETTINGS)
@@ -646,28 +729,114 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
           }
         }
       }
+
+    } else if (BeeUtils.same(timerIdentifier, TIMER_REMIND_USER_TASKS)) {
+      SimpleRowSet data = qs.getData(new SqlSelect()
+          .addFields(VIEW_USER_REMINDERS, sys.getIdName(VIEW_USER_REMINDERS),
+              COL_USER_REMINDER_OBJECT, COL_USER_REMINDER_USER, COL_USER_REMINDER_TIME)
+          .addFields(TBL_TASKS, COL_START_TIME, COL_FINISH_TIME)
+          .addFields(VIEW_REMINDER_TYPES, COL_REMINDER_DATA_FIELD, COL_REMINDER_DATA_INDICATOR,
+              COL_REMINDER_HOURS, COL_REMINDER_MINUTES)
+          .addFrom(VIEW_USER_REMINDERS)
+          .addFromInner(TBL_TASKS, sys.joinTables(TBL_TASKS,
+              VIEW_USER_REMINDERS, COL_USER_REMINDER_OBJECT))
+          .addFromInner(TBL_USERS, sys.joinTables(TBL_USERS, VIEW_USER_REMINDERS, COL_USER))
+          .addFromLeft(VIEW_REMINDER_TYPES,
+              sys.joinTables(VIEW_REMINDER_TYPES, VIEW_USER_REMINDERS, COL_USER_REMINDER_TYPE))
+
+          .setWhere(SqlUtils.and(wh,
+              SqlUtils.equals(VIEW_USER_REMINDERS,
+                  COL_USER_REMINDER_OBJECT_MODULE, getModule().ordinal()),
+              SqlUtils.equals(VIEW_USER_REMINDERS, COL_USER_REMINDER_ACTIVE, true),
+              getTaskStatusConditionForReminders(),
+              SqlUtils.or(
+                  SqlUtils.and(
+                      SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_FROM),
+                      SqlUtils.isNull(TBL_USERS, COL_USER_BLOCK_UNTIL)),
+                  SqlUtils.and(
+                      SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_FROM),
+                      SqlUtils.more(TBL_USERS, COL_USER_BLOCK_FROM, currentTime)),
+                  SqlUtils.and(
+                      SqlUtils.notNull(TBL_USERS, COL_USER_BLOCK_UNTIL),
+                      SqlUtils.less(TBL_USERS, COL_USER_BLOCK_UNTIL, currentTime))))));
+
+      for (SimpleRow row : data) {
+
+        Long taskId = row.getLong(COL_USER_REMINDER_OBJECT);
+        Long userId = row.getLong(COL_USER_REMINDER_USER);
+
+        Integer reminderDateFieldId = row.getInt(COL_REMINDER_DATA_FIELD);
+        DateTime reminderTime = row.getDateTime(COL_USER_REMINDER_TIME);
+
+        if (reminderTime == null && reminderDateFieldId != null) {
+          DateTime time = null;
+          if (BeeUtils.same(reminderDateFieldId.toString(),
+              BeeUtils.toString(ReminderDateField.START_DATE.ordinal()))) {
+            time = row.getDateTime(COL_START_TIME);
+          } else if (BeeUtils.same(reminderDateFieldId.toString(),
+              BeeUtils.toString(ReminderDateField.END_DATE.ordinal()))) {
+            time = row.getDateTime(COL_FINISH_TIME);
+          }
+
+          Integer dataIndicator = row.getInt(COL_REMINDER_DATA_INDICATOR);
+          Integer dataHours = row.getInt(COL_REMINDER_HOURS);
+          Integer dataMinutes = row.getInt(COL_REMINDER_MINUTES);
+          reminderTime = cls.calculateReminderTime(time.getTime(), dataIndicator,
+              dataHours, dataMinutes);
+        }
+        if (reminderTime == null) {
+          continue;
+        }
+
+        Long reminderId = row.getLong(sys.getIdName(VIEW_USER_REMINDERS));
+        if (reminderTime != null && taskId != null && userId != null && reminderId != null) {
+          if (reminderTime.getTime() > System.currentTimeMillis()) {
+            Timer timer = timerService.createSingleActionTimer(reminderTime.getJava(),
+                new TimerConfig(TIMER_REMIND_USER_TASKS + reminderId, false));
+
+            logger.info("Created timer:", reminderTime, TIMER_REMIND_USER_TASKS + reminderId);
+            if (timer != null) {
+              timersList.add(timer);
+            }
+
+            qs.updateData(new SqlUpdate(VIEW_USER_REMINDERS)
+                .addConstant(COL_USER_REMINDER_TIMEOUT, null)
+                .setWhere(sys.idEquals(VIEW_USER_REMINDERS, reminderId)));
+
+          } else {
+            qs.updateData(new SqlUpdate(VIEW_USER_REMINDERS)
+                .addConstant(COL_USER_REMINDER_TIMEOUT, true)
+                .setWhere(sys.idEquals(VIEW_USER_REMINDERS, reminderId)));
+          }
+        }
+      }
     }
     return timersList;
   }
 
+  private IsCondition getTaskStatusConditionForReminders() {
+    return SqlUtils.not(SqlUtils.inList(TBL_TASKS, COL_STATUS,
+            Sets.newHashSet(TaskStatus.NOT_SCHEDULED.ordinal(), TaskStatus.APPROVED.ordinal())));
+  }
+
   @Override
   protected Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
-      Pair<String, Long> idInfo) {
+                                                                String viewName, Long relationId) {
+    IsCondition wh = null;
+
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_TASKS_SUMMARY)) {
-      IsCondition wh = null;
-      String idName = idInfo.getA();
       Long userId = null;
 
-      if (BeeUtils.same(idName, TBL_USER_SETTINGS)) {
+      if (BeeUtils.same(viewName, TBL_USER_SETTINGS)) {
         SimpleRowSet data = qs.getData(new SqlSelect()
             .addFields(TBL_USER_SETTINGS, COL_USER)
             .addFrom(TBL_USER_SETTINGS)
-            .setWhere(sys.idEquals(TBL_USER_SETTINGS, idInfo.getB())));
+            .setWhere(sys.idEquals(TBL_USER_SETTINGS, relationId)));
         if (data.getRows() != null && data.getRows().size() > 0) {
           userId = data.getRow(0).getLong(COL_USER);
         }
-      } else if (BeeUtils.same(idName, TBL_USERS)) {
-        userId = idInfo.getB();
+      } else if (BeeUtils.same(viewName, TBL_USERS)) {
+        userId = relationId;
       }
 
       if (userId != null) {
@@ -677,8 +846,67 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       List timerIdentifiersIds = new ArrayList<String>();
       timerIdentifiersIds.add(timerIdentifier + userId);
       return Pair.of(wh, timerIdentifiersIds);
+
+    } else if (BeeUtils.same(timerIdentifier, TIMER_REMIND_USER_TASKS)) {
+      if (BeeUtils.same(viewName, TBL_REMINDER_TYPES)) {
+        Long typeId = relationId;
+        if (typeId != null) {
+          wh = SqlUtils.equals(VIEW_USER_REMINDERS, COL_USER_REMINDER_TYPE, typeId);
+
+          return Pair.of(wh, generateReminderTimersIdsListForUpdate(timerIdentifier, typeId, null));
+        }
+
+      } else if (BeeUtils.same(viewName, VIEW_USER_REMINDERS)) {
+        Long reminderId = relationId;
+        wh = SqlUtils.equals(VIEW_USER_REMINDERS,
+            sys.getIdName(VIEW_USER_REMINDERS), reminderId);
+        List timerIdentifiersIds = new ArrayList<String>();
+        timerIdentifiersIds.add(timerIdentifier + reminderId);
+        return Pair.of(wh, timerIdentifiersIds);
+
+      } else if (BeeUtils.same(viewName, TBL_TASKS)) {
+        Long taskId = relationId;
+        wh = SqlUtils.equals(VIEW_USER_REMINDERS, COL_USER_REMINDER_OBJECT, taskId);
+
+        return Pair.of(wh, generateReminderTimersIdsListForUpdate(timerIdentifier, null, taskId));
+      }
     }
     return null;
+  }
+
+  private List<String> generateReminderTimersIdsListForUpdate(String timerIdentifier,
+      Long reminderTypeId, Long taskId) {
+
+    List<String> timersIds = new ArrayList<>();
+
+    SimpleRowSet data = null;
+
+    if (reminderTypeId != null) {
+      data = qs.getData(new SqlSelect()
+          .addFields(VIEW_USER_REMINDERS, sys.getIdName(VIEW_USER_REMINDERS))
+          .addFrom(VIEW_USER_REMINDERS)
+          .addFromInner(TBL_TASKS, sys.joinTables(TBL_TASKS,
+              VIEW_USER_REMINDERS, COL_USER_REMINDER_OBJECT))
+          .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_USER_REMINDERS,
+              COL_USER_REMINDER_TYPE, reminderTypeId),
+              SqlUtils.equals(VIEW_USER_REMINDERS, COL_USER_REMINDER_ACTIVE, true),
+              getTaskStatusConditionForReminders())));
+
+    } else if (taskId != null) {
+      data = qs.getData(new SqlSelect()
+          .addFields(VIEW_USER_REMINDERS, sys.getIdName(VIEW_USER_REMINDERS))
+          .addFrom(VIEW_USER_REMINDERS)
+          .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_USER_REMINDERS,
+              COL_USER_REMINDER_OBJECT, taskId),
+              SqlUtils.equals(VIEW_USER_REMINDERS, COL_USER_REMINDER_ACTIVE, true))));
+    }
+
+    if (data != null) {
+      for (SimpleRow row : data) {
+        timersIds.add(timerIdentifier + row.getLong(sys.getIdName(VIEW_USER_REMINDERS)));
+      }
+    }
+    return timersIds;
   }
 
   public SimpleRowSet getTaskActualTimesAndExpenses(List<Long> ids) {
@@ -2136,6 +2364,12 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
   private ResponseObject mailNewTask(Long senderAccountId, long taskId,
       boolean ownerPreference, boolean automatic) {
+    return mailNewTask(senderAccountId, taskId, ownerPreference, automatic, null, null);
+  }
+
+  private ResponseObject mailNewTask(Long senderAccountId, long taskId,
+      boolean ownerPreference, boolean automatic,
+      Long recipientId, String mailSubject) {
 
     ResponseObject response = ResponseObject.emptyResponse();
     String label = "mail new task";
@@ -2175,15 +2409,21 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     Long executor = row.getLong(COL_EXECUTOR);
 
-    String recipientEmail = usr.getUserEmail(executor, false);
+    Long recipientUser = recipientId;
+    if (recipientUser == null) {
+      recipientUser = executor;
+    }
+
+    String recipientEmail = usr.getUserEmail(recipientUser, false);
+
     if (BeeUtils.isEmpty(recipientEmail)) {
-      logger.warning(label, taskId, "executor", executor, "email not available");
+      logger.warning(label, taskId, "recipient user", recipientUser, "email not available");
       return response;
     }
 
-    Dictionary constants = usr.getDictionary(executor);
+    Dictionary constants = usr.getDictionary(recipientUser);
     if (constants == null) {
-      logger.warning(label, taskId, "executor", executor, "localization not available");
+      logger.warning(label, taskId, "recipient user", recipientUser, "localization not available");
       return response;
     }
 
@@ -2195,10 +2435,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
             executor, constants);
     String content = document.buildLines();
 
-    logger.info(label, taskId, "mail to", executor, recipientEmail);
+    logger.info(label, taskId, "mail to", recipientUser, recipientEmail);
 
     ResponseObject mailResponse = mail.sendMail(senderAccountId, recipientEmail,
-        constants.crmMailTaskSubject(), content);
+        mailSubject == null ? constants.crmMailTaskSubject() : mailSubject, content);
 
     if (mailResponse.hasErrors()) {
       response.addWarning("Send mail failed");
@@ -3015,6 +3255,74 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     for (Long user : delete) {
       IsCondition condition = SqlUtils.equals(tblName, COL_TASK, taskId, COL_USER, user);
       qs.updateData(new SqlDelete(tblName).setWhere(condition));
+    }
+  }
+
+  private void sendTasksReminder(Long reminderId) {
+    if (!DataUtils.isId(reminderId)) {
+      return;
+    }
+
+    Long accountId = mail.getSenderAccountId(TIMER_REMIND_USER_TASKS);
+    if (!DataUtils.isId(accountId)) {
+      return;
+    }
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(VIEW_USER_REMINDERS, COL_USER_REMINDER_USER)
+        .addFields(TBL_TASKS, COL_TASK_ID, COL_SUMMARY, COL_DESCRIPTION, COL_OWNER,
+            COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+        .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE_NAME)
+        .addFrom(VIEW_USER_REMINDERS)
+        .addFromInner(TBL_TASKS, sys.joinTables(TBL_TASKS, VIEW_USER_REMINDERS,
+            COL_USER_REMINDER_OBJECT))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+        .addFromLeft(TBL_COMPANY_TYPES,
+            sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(VIEW_USER_REMINDERS, sys.getIdName(VIEW_USER_REMINDERS), reminderId))));
+
+    if (DataUtils.isEmpty(data)) {
+      return;
+    }
+
+    SimpleRow row = data.getRow(0);
+    Long recipientId = row.getLong(COL_USER_REMINDER_USER);
+    Long executor = row.getLong(COL_EXECUTOR);
+    if (recipientId != null) {
+      String recipientEmail = usr.getUserEmail(recipientId, false);
+      if (BeeUtils.isEmpty(recipientEmail)) {
+        logger.warning(TIMER_REMIND_USER_TASKS, "task reminder id",
+            reminderId, "user ", recipientId, "email not available");
+        return;
+      }
+
+      Dictionary constants = usr.getDictionary(executor);
+      if (constants == null) {
+        logger.warning(TIMER_REMIND_USER_TASKS, "task reminder id",
+            reminderId, "executor", executor, "localization not available");
+        return;
+      }
+
+      Document document =
+          taskToHtml(row.getLong(COL_TASK_ID), row.getDateTime(COL_START_TIME),
+              row.getDateTime(COL_FINISH_TIME), row.getValue(COL_SUMMARY),
+              row.getValue(COL_DESCRIPTION), BeeUtils.joinItems(row.getValue(ALS_COMPANY_NAME), row
+                  .getValue(ALS_COMPANY_TYPE_NAME)), row.getLong(COL_OWNER),
+              row.getLong(COL_EXECUTOR), constants);
+      String content = document.buildLines();
+
+      logger.info(TIMER_REMIND_USER_TASKS, "task reminder id",
+          reminderId, "mail to", recipientId, recipientEmail);
+
+      ResponseObject mailResponse = mail.sendMail(accountId, recipientEmail,
+          constants.crmReminderMailSubject(), content);
+
+      if (mailResponse.hasErrors()) {
+        logger.severe(TIMER_REMIND_USER_TASKS, "mail error - canceled");
+      }
     }
   }
 

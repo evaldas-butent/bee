@@ -628,3 +628,48 @@
 .bee-row-Mode-upd {
   background-color: #ffb300;
 }
+
+.bee-reminder-dialog-panel{
+  padding: 10px 0px;
+}
+
+.bee-reminder-dialog-infoPanel{
+  background-color: #FEF9D3;
+  padding: 10px 10px;
+  height: 40px;
+}
+
+.bee-reminder-dialog-infoText{
+  display: table-cell;
+}
+
+.bee-reminder-dialog-dateText{
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.bee-reminder-dialog-suspendButton {
+  background-color: #cc0000;
+  color: white;
+}
+
+.bee-reminder-dialog-remindButton {
+   background-color: #1eb2d8;
+   color: white;
+}
+
+.bee-reminder-dialog-text {
+   padding-right: 8px;
+}
+
+.bee-reminder-dialog-component {
+   margin-right: 10px;
+}
+
+.bee-Header-commandPanel .bee-reminder-dialog-active {
+  color: #6bae45;
+}
+
+.bee-reminder-dialog-not-visible {
+  display: none;
+}
