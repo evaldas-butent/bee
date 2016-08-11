@@ -2,11 +2,13 @@
 <!DOCTYPE Form[
     <!ENTITY mrcl "flexBox-horizontal-top">
     <!ENTITY mrst "margin-top: 12px;">
-    <!ENTITY mfld "margin-left: 1em;">
+    <!ENTITY mfld "margin-left: 1em; min-width: 5em;">
     <!ENTITY mw1 "width: 10em;">
     <!ENTITY mwn "width: 16em;">
     <!ENTITY flbl "margin-bottom: 2px;">
     <!ENTITY finp "width: 100&#37;;">
+    <!ENTITY fmax "max-width: 50em;">
+    <!ENTITY fmx2 "max-width: 39em;">
     <!ENTITY sep "height: 1px; background-color: #ccc;">
 
     <!ENTITY srcl "flexBox-horizontal-top">
@@ -27,7 +29,7 @@
         caption="=trdDocument" showRowId="true"
         width="80" widthUnit="vw" height="80" heightUnit="vh"
 >
-  <SplitPanel splitterSize="3" name="Split">
+  <SplitPanel splitterSize="4" name="Split">
     <south size="300">
       <TabbedPages resizable="false">
         <page>
@@ -163,7 +165,7 @@
             <FlowPanel class="flexible" style="&mfld;">
               <Label for="Operation" style="&flbl;" />
               <DataSelector name="Operation" source="Operation" renderColumns="OperationName"
-                            newRowEnabled="false" style="&finp;" visible="true" />
+                            newRowEnabled="false" style="&finp; &fmax;" visible="true" />
             </FlowPanel>
 
             <FlowPanel style="&mfld; width: 10em;">
@@ -186,7 +188,7 @@
 
             <FlowPanel class="flexible" style="&mfld;">
               <Label for="Number" style="&flbl;" />
-              <InputText source="Number" style="&finp;" />
+              <InputText source="Number" style="&finp; &fmx2;" />
             </FlowPanel>
 
             <FlowPanel style="&mfld; &mwn;">
@@ -205,7 +207,7 @@
           <FlowPanel class="&mrcl;" style="&mrst;">
             <FlowPanel class="flexible" style="&mfld;">
               <Label for="Supplier" style="&flbl;" />
-              <DataSelector source="Supplier" style="&finp;" visible="true"
+              <DataSelector source="Supplier" style="&finp; &fmax;" visible="true"
                             choiceColumns="Name TypeName"
                             renderColumns="SupplierName SupplierTypeName" />
             </FlowPanel>
@@ -221,7 +223,7 @@
           <FlowPanel class="&mrcl;" style="&mrst;">
             <FlowPanel class="flexible" style="&mfld;">
               <Label for="Customer" style="&flbl;" />
-              <DataSelector source="Customer" style="&finp;" visible="true"
+              <DataSelector source="Customer" style="&finp; &fmax;" visible="true"
                             choiceColumns="Name TypeName"
                             renderColumns="CustomerName CustomerTypeName" />
             </FlowPanel>
@@ -242,7 +244,7 @@
 
             <FlowPanel class="flexible" style="&mfld;">
               <Label for="Payer" style="&flbl;" />
-              <DataSelector source="Payer" style="&finp;" visible="true"
+              <DataSelector source="Payer" style="&finp; &fmx2;" visible="true"
                             choiceColumns="Name TypeName"
                             renderColumns="PayerName PayerTypeName" />
             </FlowPanel>
@@ -257,10 +259,10 @@
           </FlowPanel>
 
           <FlowPanel class="&mrcl;" style="&mrst;">
-            <FlowPanel class="flexible" style="&mfld;">
+            <FlowPanel class="flexible" style="margin-left: 1em; min-width: 16em;">
               <Label for="Manager" style="&flbl;" />
               <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-                            newRowEnabled="false" style="&finp;" />
+                            newRowEnabled="false" style="&finp; &fmax;" />
             </FlowPanel>
 
             <FlowPanel style="&mfld; &mwn;" />

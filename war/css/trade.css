@@ -199,3 +199,16 @@
 .bee-trade-document-phase-item:nth-child(5) {
   border-top: none;
 }
+
+.bee-form-TradeDocument > .bee-Split > .bee-Splitter {
+  box-sizing: border-box;
+  background-color: transparent;
+}
+.bee-form-TradeDocument > .bee-Split > .bee-HSplitter {
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+}
+.bee-form-TradeDocument > .bee-Split > .bee-VSplitter {
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
