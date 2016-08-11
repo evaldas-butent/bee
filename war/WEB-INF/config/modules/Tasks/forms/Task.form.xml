@@ -55,8 +55,7 @@
 
                 <row>
                   <Label for="Owner" />
-                  <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2x;" 
-                    readOnly="true" />
+                  <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2x;"/>
                 </row>
 
                 <row>
