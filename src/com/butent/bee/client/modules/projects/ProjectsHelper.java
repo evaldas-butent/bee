@@ -22,6 +22,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -161,6 +163,18 @@ public final class ProjectsHelper {
 
     Queries.insert(eventsViewName, columns, values, null, getEventRowCallback(eventFilesViewName,
         projectId, files, eventIdCallback, filesUploadedCallBack));
+
+    Filter flt = Filter.and(Filter.equals(COL_PROJECT, projectId),
+        Filter.equals(AdministrationConstants.COL_USER, currentUserId));
+
+    Queries.update(TBL_PROJECT_USAGE, flt, COL_ACCESS,
+        BeeUtils.toString(System.currentTimeMillis()), new Queries.IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS);
+          }
+        });
+
   }
 
   public static void registerReason(FormView form, IsRow row, CellValidateEvent event,
