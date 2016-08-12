@@ -7,5 +7,8 @@
   <g:columns>
     <DataColumn name="Name" caption="=name" minWidth="100" flexGrow="3" visible="true" />
     <RelColumn name="Role" flexGrow="1" />
+    <!-- Hop ERP Driver Sync {-->
+    <DataColumn name="ERPDriverSync" />
+    <!-- } -->
   </g:columns>
 </g:Grid>

@@ -11,6 +11,9 @@
     <SimpleJoin name="Role" joinType="LEFT">
       <SimpleColumn name="Name" alias="RoleName" />
     </SimpleJoin>
+    <!-- Hop ERP Driver Sync {-->
+    <SimpleColumn name="ERPDriverSync" />
+    <!-- } -->
   </Columns>
   <Order>
     <OrderBy column="Name" />
