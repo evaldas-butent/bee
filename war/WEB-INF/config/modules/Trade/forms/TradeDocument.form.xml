@@ -80,7 +80,7 @@
       </TabbedPages>
     </south>
 
-    <east size="320">
+    <east size="300">
       <FlowPanel>
         <FlowPanel style="margin-left: 1em; margin-right: 5px;">
           <FlowPanel style="margin-top: 12px; padding-top: 10px; padding-bottom: 10px;

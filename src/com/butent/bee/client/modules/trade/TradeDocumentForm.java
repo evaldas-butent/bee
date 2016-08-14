@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Storage;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcCallback;
@@ -18,15 +19,19 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.layout.Direction;
+import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -36,6 +41,8 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
@@ -44,11 +51,16 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collections;
 import java.util.Objects;
 
 public class TradeDocumentForm extends AbstractFormInterceptor {
+
+  private static final BeeLogger logger = LogUtils.getLogger(TradeDocumentForm.class);
+
+  private static final String NAME_SPLIT = "Split";
 
   private static final String NAME_AMOUNT = "TdAmount";
   private static final String NAME_DISCOUNT = "TdDiscount";
@@ -58,6 +70,11 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
   private static final String NAME_STATUS_UPDATED = "StatusUpdated";
   private static final String NAME_SAVE = "Save";
+
+  private static String getStorageKey(Direction direction) {
+    return Storage.getUserKey(NameUtils.getClassName(TradeDocumentForm.class),
+        direction.name().toLowerCase());
+  }
 
   private final TradeDocumentSums tdSums = new TradeDocumentSums();
 
@@ -94,9 +111,59 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
           getFormView().getViewPresenter().handleAction(Action.SAVE);
         }
       });
+
+    } else if (BeeUtils.same(name, NAME_SPLIT) && widget instanceof Split) {
+      ((Split) widget).addMutationHandler(event -> {
+        if (event.getSource() instanceof Split) {
+          saveSplitLayout((Split) event.getSource());
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    Split split = getSplit(form);
+
+    if (split != null) {
+      Integer eastSize = BeeKeeper.getStorage().getInteger(getStorageKey(Direction.EAST));
+      Double southPercent = BeeKeeper.getStorage().getDouble(getStorageKey(Direction.SOUTH));
+
+      boolean doLayout = false;
+
+      if (BeeUtils.isPositive(southPercent)) {
+        int height = split.getOffsetHeight();
+        int size = BeeUtils.round(height * southPercent / BeeConst.DOUBLE_ONE_HUNDRED);
+
+        if (size > 0 && size < height
+            && !Objects.equals(split.getDirectionSize(Direction.SOUTH), size)) {
+
+          split.setDirectionSize(Direction.SOUTH, size, false);
+          doLayout = true;
+
+          logger.debug(getClass().getSimpleName(), State.LOADED, Direction.SOUTH,
+              southPercent, height, size);
+        }
+      }
+
+      if (BeeUtils.isPositive(eastSize) && BeeUtils.isLess(eastSize, split.getOffsetWidth())
+          && !Objects.equals(split.getDirectionSize(Direction.EAST), eastSize)) {
+
+        split.setDirectionSize(Direction.EAST, eastSize, false);
+        doLayout = true;
+
+        logger.debug(getClass().getSimpleName(), State.LOADED, Direction.EAST,
+            split.getOffsetWidth(), eastSize);
+      }
+
+      if (doLayout) {
+        split.doLayout();
+      }
+    }
+
+    super.beforeRefresh(form, row);
   }
 
   @Override
@@ -162,6 +229,11 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private TradeDiscountMode getDiscountMode(IsRow row) {
     return EnumUtils.getEnumByIndex(TradeDiscountMode.class,
         DataUtils.getIntegerQuietly(row, getDataIndex(COL_TRADE_DOCUMENT_DISCOUNT_MODE)));
+  }
+
+  private static Split getSplit(FormView form) {
+    Widget widget = (form == null) ? null : form.getWidgetByName(NAME_SPLIT);
+    return (widget instanceof Split) ? (Split) widget : null;
   }
 
   private TradeVatMode getVatMode(IsRow row) {
@@ -324,5 +396,24 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     refreshSum(NAME_WITHOUT_VAT, total - vat);
     refreshSum(NAME_VAT, vat);
     refreshSum(NAME_TOTAL, total);
+  }
+
+  private static void saveSplitLayout(Split split) {
+    int southSize = split.getDirectionSize(Direction.SOUTH);
+    int height = split.getOffsetHeight();
+
+    if (height > 2) {
+      southSize = BeeUtils.clamp(southSize, 1, height - 1);
+      double southPercent = southSize * BeeConst.DOUBLE_ONE_HUNDRED / height;
+      BeeKeeper.getStorage().set(getStorageKey(Direction.SOUTH), southPercent);
+    }
+
+    int eastSize = split.getDirectionSize(Direction.EAST);
+    int width = split.getOffsetWidth();
+
+    if (width > 2) {
+      eastSize = BeeUtils.clamp(eastSize, 1, width - 1);
+      BeeKeeper.getStorage().set(getStorageKey(Direction.EAST), eastSize);
+    }
   }
 }
