@@ -269,6 +269,7 @@
       <xs:enumeration value="CargoTrips" />
       <xs:enumeration value="CargoTypes" />
       <xs:enumeration value="CategoryTree" />
+      <xs:enumeration value="ChartOfAccounts" />
       <xs:enumeration value="ChatFiles" />
       <xs:enumeration value="ChatMessages" />
       <xs:enumeration value="Chats" />

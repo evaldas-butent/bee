@@ -99,13 +99,15 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_OBJECTS = "CompanyObjects";
 
   public static final String VIEW_HOLIDAYS = "Holidays";
+  public static final String VIEW_CHART_OF_ACCOUNTS = "ChartOfAccounts";
 
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
   public static final String GRID_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
-
   public static final String GRID_COMPANY_USERS = "CompanyUsers";
+
   public static final String GRID_ITEMS = "Items";
+  public static final String GRID_CHART_OF_ACCOUNTS = "ChartOfAccounts";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
@@ -273,6 +275,8 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_PERCENT = "Percent";
   public static final String COL_DISCOUNT_PRICE = "Price";
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
+
+  public static final String COL_ACCOUNT_CODE = "AccountCode";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

@@ -10,6 +10,8 @@ public interface Dictionary {
 
   String g(String key);
 
+  default String account() {return g("account");}
+
   default String actionAdd() {return g("actionAdd");}
 
   default String actionAppend() {return g("actionAppend");}
@@ -647,6 +649,8 @@ public interface Dictionary {
 
   default String changedValues() {return g("changedValues");}
 
+  default String chartOfAccounts() {return g("chartOfAccounts");}
+
   default String chat() {return g("chat");}
 
   default String chatDeleteQuestion() {return g("chatDeleteQuestion");}
@@ -898,6 +902,8 @@ public interface Dictionary {
   default String creationDate() {return g("creationDate");}
 
   default String creator() {return g("creator");}
+
+  default String credit() {return g("credit");}
 
   default String creditDays() {return g("creditDays");}
 
@@ -1430,6 +1436,8 @@ public interface Dictionary {
   default String days() {return g("days");}
 
   default String daysShort() {return g("daysShort");}
+
+  default String debit() {return g("debit");}
 
   default String debt() {return g("debt");}
 
@@ -3251,6 +3259,8 @@ public interface Dictionary {
   default String myEnvironment() {return g("myEnvironment");}
 
   default String name() {return g("name");}
+
+  default String newAccount() {return g("newAccount");}
 
   default String newActivityType() {return g("newActivityType");}
 
