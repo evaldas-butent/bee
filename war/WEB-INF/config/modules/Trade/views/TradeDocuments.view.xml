@@ -98,6 +98,8 @@
     <SimpleColumn name="DocumentVatMode" />
     <SimpleColumn name="DocumentDiscountMode" />
 
+    <SimpleColumn name="ReceivedDate" />
+
     <SimpleColumn name="Notes" />
   </Columns>
 

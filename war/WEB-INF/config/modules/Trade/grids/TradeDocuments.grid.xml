@@ -39,6 +39,8 @@
 
     <DataColumn name="DocumentVatMode" carry="true" />
     <DataColumn name="DocumentDiscountMode" carry="true" />
+
+    <DataColumn name="ReceivedDate" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />

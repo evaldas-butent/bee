@@ -41,6 +41,8 @@
     <Enum name="DocumentVatMode" key="TradeVatMode" label="=vatMode" />
     <Enum name="DocumentDiscountMode" key="TradeDiscountMode" label="=discountMode" />
 
+    <DateTime name="ReceivedDate" label="=trdReceivedDate" />
+
     <Text name="Notes" label="=trdNotes" />
   </Fields>
 </Table>

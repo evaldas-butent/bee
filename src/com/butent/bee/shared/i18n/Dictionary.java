@@ -5806,6 +5806,8 @@ public interface Dictionary {
 
   default String trdPayer() {return g("trdPayer");}
 
+  default String trdPayment() {return g("trdPayment");}
+
   default String trdPaymentTime() {return g("trdPaymentTime");}
 
   default String trdPrice() {return g("trdPrice");}
@@ -5827,6 +5829,8 @@ public interface Dictionary {
   default String trdPurchases() {return g("trdPurchases");}
 
   default String trdQuantity() {return g("trdQuantity");}
+
+  default String trdReceivedDate() {return g("trdReceivedDate");}
 
   default String trdRemainders() {return g("trdRemainders");}
 
