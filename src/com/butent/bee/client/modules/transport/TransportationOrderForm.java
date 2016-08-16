@@ -282,7 +282,7 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
 
                       for (BeeColumn column : cols) {
                         if (!column.isEditable() || BeeUtils.inList(column.getId(),
-                            ALS_LOADING_DATE, ALS_UNLOADING_DATE)) {
+                            ALS_LOADING_DATE, ALS_UNLOADING_DATE, COL_CARGO_HANDLING)) {
                           rowSet.removeColumn(rowSet.getColumnIndex(column.getId()));
                         }
                       }
