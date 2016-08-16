@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-    <!ENTITY infoLabel "padding-bottom: 10px; font-size: 16px; margin-left: 20px; padding-top:20px;">
-    <!ENTITY lbl2 "padding-left: 10px; text-align: right; padding-right: 10px; min-width: 130px;">
     <!ENTITY form "NewCompany">
+    <!ENTITY defAlign "padding: 4px; vertical-align: middle; min-width: 150px;">
+    <!ENTITY labelStyle "text-align: right; &defAlign;">
+    <!ENTITY sectionLabelStyle "text-align: left; &defAlign; margin-top: 1em">
+    <!ENTITY notesLabelStyle "&defAlign; vertical-align: top; ">
+    <!ENTITY inpWidth "280px" >
+    <!ENTITY inputStyle "min-width: &inpWidth;; width: 400px; padding: 4px; vertical-align: middle">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
@@ -15,40 +19,32 @@
         width="700"
         height="700"
     >
+
   <FlowPanel class="flexBox-vertical">
     <css id="&form;">
-      .&form;-input{
-        width: 500px;
-      }
-      .&form;-table td .bee-InputText,
-      .&form;-table td .bee-InputArea,
-      .&form;-table td .bee-DataSelector-editableContainer,
-      .&form;-table td .bee-MultiSelector-container,
-      .&form;-table td .bee-MultiSelector-container-active{
-        width: calc(100% - 10px);
-        min-width: 200px;
+      .&form;-table td:nth-child(2) > * {
+        width: 100%;
       }
     </css>
-    <FlowPanel>
-      <Label text="=companyInfo" style="&infoLabel;" />
-    </FlowPanel>
-    <Table kind="controls" style="margin: 0 0 0 30px;" class="&form;-table">
-      <col index="0" cellStyle="&lbl2;" />
-      <col index="1" class="&form;-input" />
 
-      <row>
-        <Label text="=type" class="bee-required" />
-        <DataSelector source="CompanyType" required="true" />
-      </row>
+    <Table class="&form;-table" kind="controls" style="margin: 0 0 25px 30px;">
+      <col index="0" cellStyle="&labelStyle;"/>
+      <col index="1" cellStyle="&inputStyle;" />
 
+      <Label text="=companyInfo" style="&sectionLabelStyle;" />
       <row>
-        <Label text="=name" class="bee-required" />
-        <InputText source="Name" visible="true" required="true" />
+        <Label text="=name" class="bee-required"/>
+        <FlowPanel>
+          <DataSelector source="CompanyType" style="width: 75px; margin-right: 8px;"
+                        required="true" />
+          <InputText source="Name" visible="true" required="true"
+                     style="width: calc(100% - 83px);" />
+        </FlowPanel>
       </row>
 
       <row for="Code">
         <Label text="=companyCode" />
-        <InputText source="Code" visible="true" />
+        <InputText source="Code" visible="true"/>
       </row>
 
       <row for="VATCode">
@@ -62,16 +58,11 @@
       </row>
 
       <row>
-        <Label text="=notes" />
+        <Label text="=notes" style="&notesLabelStyle;" />
         <InputArea source="Notes" visibleLines="5" />
       </row>
-    </Table>
-    <FlowPanel>
-      <Label text="=contactInfo" style="&infoLabel;" /> 
-    </FlowPanel>
-    <Table kind="controls" style="margin: 0 0 0 30px;" class="&form;-table">
-      <col index="0" cellStyle="&lbl2;" />
-      <col index="1" class="&form;-input" />
+      <Label text="=contactInfo" style="&sectionLabelStyle;" />
+
       <row for="Address">
         <Label text="=address" />
         <InputText source="Address" />
@@ -94,7 +85,7 @@
 
       <row>
         <Label for="EmailId" />
-        <DataSelector source="EmailId" maxLength="50" />
+        <DataSelector source="EmailId" maxLength="50"/>
       </row>
 
       <row>
@@ -115,7 +106,7 @@
 
       <row for="Country">
         <Label for="Country" />
-        <DataSelector source="Country" >
+        <DataSelector source="Country">
           <renderToken source="CountryName" />
           <renderToken source="CountryCode" prefix=" (" suffix=")" />
           <selectorColumn source="Name" />
@@ -130,15 +121,9 @@
         <Label for="PostIndex" />
         <InputText source="PostIndex" />
       </row>
-    </Table>
 
-    <FlowPanel>
-      <Label text="=additionalInfo" style="&infoLabel;" />
-    </FlowPanel>
+      <Label text="=additionalInfo" style="&sectionLabelStyle;" />
 
-    <Table kind="controls" style="margin: 0 0 25px 30px;" class="&form;-table">
-      <col index="0" cellStyle="&lbl2;" />
-      <col index="1" class="&form;-input" />
       <row>
         <Label for="CompanySize" />
         <DataSelector source="CompanySize" />
@@ -153,7 +138,7 @@
         <Label text="=companyRelation" data="CompRelTypeStore" />
         <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
                        targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
-                       label="=companyRelationType" data="CompRelTypeStore" />
+                       label="=companyRelationType" data="CompRelTypeStore"/>
       </row>
 
       <row for="CompanyRelationTypeState">
@@ -170,7 +155,7 @@
 
       <row for="Turnover">
         <Label text="=trdTurnover" />
-        <DataSelector source="Turnover" />
+        <DataSelector source="Turnover"/>
       </row>
 
       <row for="CompanyGroup">
