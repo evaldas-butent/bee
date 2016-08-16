@@ -117,6 +117,10 @@ public final class TimeUtils {
     }
   }
 
+  public static void addDay(DateTime date, int amount) {
+    add(date, FIELD_DATE, amount);
+  }
+
   public static void addHour(DateTime date, int amount) {
     add(date, FIELD_HOUR, amount);
   }

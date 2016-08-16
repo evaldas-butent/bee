@@ -2437,8 +2437,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     logger.info(label, taskId, "mail to", recipientUser, recipientEmail);
 
-    ResponseObject mailResponse = mail.sendMail(senderAccountId, recipientEmail,
-        mailSubject == null ? constants.crmMailTaskSubject() : mailSubject, content);
+    String headerCaption = BeeUtils.joinWords(constants.crmTask(), taskId,
+        row.getValue(COL_SUMMARY));
+
+    ResponseObject mailResponse = mail.sendStyledMail(senderAccountId, recipientEmail,
+        mailSubject == null ? constants.crmMailTaskSubject() : mailSubject, content, headerCaption);
 
     if (mailResponse.hasErrors()) {
       response.addWarning("Send mail failed");
@@ -2869,11 +2872,12 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
                   .getValue(ALS_COMPANY_TYPE_NAME)), row.getLong(COL_OWNER),
               executor, constants);
       String content = document.buildLines();
-
+      String headerCaption = BeeUtils.joinWords(constants.crmTask(), taskId,
+          row.getValue(COL_SUMMARY));
       logger.info(label, taskId, "mail to", executor, recipientEmail);
 
-      ResponseObject mailResponse = mail.sendMail(accountId, recipientEmail,
-          constants.crmReminderMailSubject(), content);
+      ResponseObject mailResponse = mail.sendStyledMail(accountId, recipientEmail,
+          constants.crmReminderMailSubject(), content, headerCaption);
 
       if (mailResponse.hasErrors()) {
         logger.severe(label, "mail error - canceled");
@@ -3116,18 +3120,12 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       String summary, String description, String company, Long owner, Long executor,
       Dictionary constants) {
 
-    String caption = BeeUtils.joinWords(constants.crmTask(), taskId);
-
     Document doc = new Document();
 
-    doc.getHead().append(
-        meta().encodingDeclarationUtf8(),
-        title().text(caption));
+    doc.getHead().append(meta().encodingDeclarationUtf8());
 
     Div panel = div();
     doc.getBody().append(panel);
-
-    panel.append(h3().text(caption));
 
     Tbody fields = tbody().append(
         tr().append(

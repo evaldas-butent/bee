@@ -52,7 +52,6 @@ import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
-import com.butent.bee.shared.html.builder.elements.H2;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.io.FileInfo;
@@ -1231,23 +1230,11 @@ public class DiscussionsModuleBean implements BeeModule {
       String anouncmentTopic, SimpleRow discussMailRow, Dictionary constants,
       boolean isPublic) {
 
-    String discussSubject = BeeUtils.joinWords(
-        (typeAnnoucement ? constants.announcement()
-            : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
-            .getValue(COL_SUBJECT));
-
     Document doc = new Document();
-    doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(discussSubject));
+    doc.getHead().append(meta().encodingDeclarationUtf8());
 
     Div panel = div();
     doc.getBody().append(panel);
-
-    boolean important = BeeUtils.unbox(discussMailRow.getBoolean(COL_IMPORTANT));
-    String subjectColor = important ? Colors.RED : Colors.BLACK;
-
-    H2 subjectElement = h2().text(discussSubject);
-    subjectElement.setColor(subjectColor);
-    panel.append(subjectElement);
 
     Tbody tableFields = tbody().append(
         tr().append(td().text(constants.date()),
@@ -1260,14 +1247,14 @@ public class DiscussionsModuleBean implements BeeModule {
           );
     }
 
-    Div discussDescriptionContent = div().text(discussMailRow.getValue(COL_DESCRIPTION));
+    Div discussDescriptionContent = div().text(discussMailRow.getValue(COL_SUMMARY));
     // discussDescriptionContent.setMaxHeight(4, CssUnit.EM);
     // discussDescriptionContent.setOverflow(Overflow.HIDDEN);
 
     tableFields.append(
         tr().append(td().text(constants.discussOwner()),
             td().text(usr.getUserSign(discussMailRow.getLong(COL_OWNER)))),
-        tr().append(td().text(constants.discussDescription()),
+        tr().append(td().text(constants.discussSummary()),
             td().append(discussDescriptionContent))
         );
 
@@ -1368,7 +1355,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SqlSelect discussMailList =
         new SqlSelect()
-            .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_DESCRIPTION, COL_OWNER,
+            .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUMMARY, COL_OWNER,
                 COL_CREATED, COL_TOPIC, COL_IMPORTANT)
             .addFrom(TBL_DISCUSSIONS)
             .setDistinctMode(true);
@@ -1465,14 +1452,27 @@ public class DiscussionsModuleBean implements BeeModule {
               constants, sendAll);
 
       String htmlDiscussMailContent = discussMailDocument.buildLines();
+      String discussSubject = BeeUtils.joinWords(
+          (typeAnnoucement ? constants.announcement()
+              : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
+              .getValue(COL_SUBJECT));
+
+      Div subjectElement = div().text(discussSubject);
+      String content;
+      if (BeeUtils.unbox(discussMailRow.getBoolean(COL_IMPORTANT))) {
+        content = BeeUtils.join("",
+            mail.styleMailHeader(subjectElement.build(), Colors.RED), htmlDiscussMailContent);
+      } else {
+        content = BeeUtils.join("",
+            mail.styleMailHeader(subjectElement.build(), null), htmlDiscussMailContent);
+      }
 
       logger.info(label, discussionId, "mail to", member, memberEmail);
 
       String subject = typeAnnoucement ? constants.discussMailNewAnnouncementSubject()
           : constants.discussMailNewDiscussionSubject();
 
-      ResponseObject mailResponse = mail.sendMail(senderAccountId, memberEmail, subject,
-          htmlDiscussMailContent);
+      ResponseObject mailResponse = mail.sendMail(senderAccountId, memberEmail, subject, content);
 
       if (mailResponse.hasErrors()) {
         response.addWarning("Send mail failed");
