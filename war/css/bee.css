@@ -3312,22 +3312,28 @@ textarea,
   border: 1px solid black;
 }
 
-.bee-CreateNew {
+.bee-CreateNew,
+.bee-SaveLarge {
   margin-right: 10px;
-  background-color: #6bae45;
   color: white;
   border-radius: 5px;
   padding: 4px 8px;
   font-weight: bold;
   font-size: 13px;
-  text-transform: uppercase;
   cursor: pointer;
+}
+.bee-CreateNew {
+  background-color: #6bae45;
+  text-transform: uppercase;
 }
 .bee-CreateNew:hover {
   background-color: #63a140;
 }
 .bee-CreateNew:active {
   background-color: #578d37;
+}
+.bee-SaveLarge {
+  background-color: #0099ff;
 }
 
 .bee-CreateButton {
