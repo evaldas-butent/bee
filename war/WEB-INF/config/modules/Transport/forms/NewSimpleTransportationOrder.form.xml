@@ -39,8 +39,8 @@
         <Label text="=date" />
         <InputDateTime source="UnloadingDate" />
 
-        <Label for="CargoType" class="bee-required" />
-        <DataSelector source="CargoType" required="true" />
+        <br/>
+        <CheckBox source="MultipleSegments" />
       </row>
 
       <row>
@@ -62,8 +62,8 @@
           </selectorColumn>
         </DataSelector>
 
-        <Label text="=pallets" />
-        <InputInteger source="Palettes" style="width: 70px;" />
+        <Label for="CargoType" class="bee-required" />
+        <DataSelector source="CargoType" required="true" />
       </row>
 
       <row>
@@ -72,10 +72,8 @@
         <Label text="=postIndex" />
         <InputText source="UnloadingPostIndex" autocompleteKey="cargo-place-postal-code" />
 
-        <Label for="CargoNotes" />
-        <cell rowSpan="3" verticalAlignment="top">
-          <InputArea source="CargoNotes" visibleLines="4" />
-        </cell>
+        <Label text="=pallets" />
+        <InputInteger source="Palettes" style="width: 70px;" />
       </row>
 
       <row>
@@ -98,6 +96,11 @@
             <ui:renderer type="flag" />
           </selectorColumn>
         </DataSelector>
+
+        <Label for="CargoNotes" />
+        <cell rowSpan="3" verticalAlignment="top">
+          <InputArea source="CargoNotes" visibleLines="4" />
+        </cell>
       </row>
 
       <row>
