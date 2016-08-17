@@ -164,7 +164,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
   @Override
   public void afterDeleteRow(long rowId) {
-    if (tdsSupplier != null && tdsSupplier.get().delete(rowId)) {
+    if (tdsSupplier != null && tdsSupplier.get().deleteItem(rowId)) {
       fireTdsChange();
     }
 

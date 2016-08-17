@@ -66,6 +66,9 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private static final String NAME_VAT = "TdVat";
   private static final String NAME_TOTAL = "TdTotal";
 
+  private static final String NAME_PAID = "TdPaid";
+  private static final String NAME_DEBT = "TdDebt";
+
   private static final String NAME_STATUS_UPDATED = "StatusUpdated";
 
   private static String getStorageKey(Direction direction) {
@@ -101,6 +104,19 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       tdiGrid.setTdsListener(this::refreshSums);
 
       ((ChildGrid) widget).setGridInterceptor(tdiGrid);
+
+    } else if (BeeUtils.same(name, GRID_TRADE_PAYMENTS) && widget instanceof ChildGrid) {
+      TradePaymentsGrid tpGrid = new TradePaymentsGrid();
+
+      tpGrid.setTdsSupplier(() -> tdSums);
+      tpGrid.setTdsListener(() -> {
+        double paid = tdSums.getPaid();
+
+        refreshSum(NAME_PAID, paid);
+        refreshSum(NAME_DEBT, tdSums.getTotal() - paid);
+      });
+
+      ((ChildGrid) widget).setGridInterceptor(tpGrid);
 
     } else if (BeeUtils.same(name, NAME_SPLIT) && widget instanceof Split) {
       ((Split) widget).addMutationHandler(event -> {
@@ -381,11 +397,16 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     double vat = tdSums.getVat();
     double total = tdSums.getTotal();
 
+    double paid = tdSums.getPaid();
+
     refreshSum(NAME_AMOUNT, amount);
     refreshSum(NAME_DISCOUNT, discount);
     refreshSum(NAME_WITHOUT_VAT, total - vat);
     refreshSum(NAME_VAT, vat);
     refreshSum(NAME_TOTAL, total);
+
+    refreshSum(NAME_PAID, paid);
+    refreshSum(NAME_DEBT, total - paid);
   }
 
   private static void saveSplitLayout(Split split) {

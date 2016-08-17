@@ -151,7 +151,7 @@
 
             <FlowPanel style="&sfld;">
               <Label text="=debt" style="&slbl;" />
-              <MoneyLabel name="TdDebt" style="&soutp; &slarge; &sbold;" />
+              <MoneyLabel name="TdDebt" style="&soutp; &slarge; &sbold; color: fuchsia;" />
             </FlowPanel>
           </FlowPanel>
 

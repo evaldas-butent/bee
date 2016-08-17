@@ -166,6 +166,8 @@ public class TradeDocumentSums {
   private static final int DEFAULT_DISCOUNT_SCALE = 2;
   private static final int DEFAULT_VAT_SCALE = -1;
 
+  private static final int DEFAULT_DOCUMENT_SCALE = 2;
+
   private static boolean eq(double x1, double x2) {
     return x1 == x2;
   }
@@ -204,6 +206,8 @@ public class TradeDocumentSums {
   private int discountScale = DEFAULT_DISCOUNT_SCALE;
   private int vatScale = DEFAULT_VAT_SCALE;
 
+  private int documentScale = DEFAULT_DOCUMENT_SCALE;
+
   private double documentDiscount;
 
   private Long documentId;
@@ -212,6 +216,7 @@ public class TradeDocumentSums {
   private TradeVatMode vatMode;
 
   private final Map<Long, Item> items = new HashMap<>();
+  private final Map<Long, Double> payments = new HashMap<>();
 
   public TradeDocumentSums() {
   }
@@ -233,6 +238,14 @@ public class TradeDocumentSums {
     items.put(id, item);
   }
 
+  public void addPayment(long id, Double amount) {
+    if (BeeUtils.isDouble(amount)) {
+      payments.put(id, amount);
+    } else {
+      payments.remove(id);
+    }
+  }
+
   public void clear() {
     this.documentId = null;
 
@@ -242,22 +255,43 @@ public class TradeDocumentSums {
     this.vatMode = null;
 
     clearItems();
+    clearPayments();
   }
 
   public void clearItems() {
     items.clear();
   }
 
-  public boolean delete(Long id) {
+  public void clearPayments() {
+    payments.clear();
+  }
+
+  public boolean deleteItem(Long id) {
     return items.remove(id) != null;
   }
 
-  public boolean delete(Collection<Long> ids) {
+  public boolean deleteItems(Collection<Long> ids) {
     boolean changed = false;
 
     if (ids != null) {
       for (Long id : ids) {
-        changed |= delete(id);
+        changed |= deleteItem(id);
+      }
+    }
+
+    return changed;
+  }
+
+  public boolean deletePayment(Long id) {
+    return payments.remove(id) != null;
+  }
+
+  public boolean deletePayments(Collection<Long> ids) {
+    boolean changed = false;
+
+    if (ids != null) {
+      for (Long id : ids) {
+        changed |= deletePayment(id);
       }
     }
 
@@ -296,7 +330,8 @@ public class TradeDocumentSums {
     if (items.isEmpty()) {
       return BeeConst.DOUBLE_ZERO;
     } else {
-      return items.values().stream().mapToDouble(item -> item.getAmount(amountScale)).sum();
+      return round(items.values().stream().mapToDouble(item -> item.getAmount(amountScale)).sum(),
+          documentScale);
     }
   }
 
@@ -304,8 +339,9 @@ public class TradeDocumentSums {
     if (items.isEmpty() || discountMode == null) {
       return BeeConst.DOUBLE_ZERO;
     } else {
-      return items.values().stream().mapToDouble(item -> item.getDiscount(discountMode,
-          amountScale, priceScale, discountScale)).sum() + round(documentDiscount, discountScale);
+      return round(items.values().stream().mapToDouble(item -> item.getDiscount(discountMode,
+          amountScale, priceScale, discountScale)).sum() + round(documentDiscount, discountScale),
+          documentScale);
     }
   }
 
@@ -317,8 +353,9 @@ public class TradeDocumentSums {
     double dd = round(documentDiscount, discountScale);
 
     if (discountMode == null || isZero(dd)) {
-      return items.values().stream().mapToDouble(item -> item.getVat(vatMode,
-          item.getVatBase(discountMode, amountScale, priceScale, discountScale), vatScale)).sum();
+      return round(items.values().stream().mapToDouble(item -> item.getVat(vatMode,
+          item.getVatBase(discountMode, amountScale, priceScale, discountScale), vatScale)).sum(),
+          documentScale);
     }
 
     double result = BeeConst.DOUBLE_ZERO;
@@ -389,7 +426,7 @@ public class TradeDocumentSums {
       }
     }
 
-    return result;
+    return round(result, documentScale);
   }
 
   public double getTotal() {
@@ -399,6 +436,18 @@ public class TradeDocumentSums {
     }
 
     return total;
+  }
+
+  public double getPaid() {
+    if (payments.isEmpty()) {
+      return BeeConst.DOUBLE_ZERO;
+    } else {
+      return round(payments.values().stream().mapToDouble(d -> d).sum(), documentScale);
+    }
+  }
+
+  public double getDebt() {
+    return getTotal() - getPaid();
   }
 
   public double getItemAmount(Long id) {
@@ -481,6 +530,10 @@ public class TradeDocumentSums {
     this.vatScale = vatScale;
   }
 
+  public void setDocumentScale(int documentScale) {
+    this.documentScale = documentScale;
+  }
+
   public boolean updateDocumentId(Long id) {
     if (Objects.equals(documentId, id)) {
       return false;
@@ -547,6 +600,17 @@ public class TradeDocumentSums {
   public boolean updateVatIsPercent(long id, Boolean value) {
     Item item = getItem(id);
     return item != null && item.setVatIsPercent(value);
+  }
+
+  public boolean updatePayment(long id, Double value) {
+    if (BeeUtils.isDouble(value)) {
+      Double old = payments.put(id, value);
+      return !Objects.equals(value, old);
+
+    } else {
+      Double old = payments.remove(id);
+      return BeeUtils.isDouble(old);
+    }
   }
 
   private Item getItem(long id) {

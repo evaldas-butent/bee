@@ -113,6 +113,7 @@ public final class TradeConstants {
 
   public static final String VIEW_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String VIEW_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String VIEW_TRADE_PAYMENTS = "TradePayments";
   public static final String VIEW_TRADE_STOCK = "TradeStock";
 
   public static final String VIEW_TRADE_DOCUMENT_TYPES = "TradeDocumentTypes";
@@ -211,6 +212,8 @@ public final class TradeConstants {
   public static final String COL_STOCK_QUANTITY = "Quantity";
   public static final String COL_STOCK_WAREHOUSE = "Warehouse";
 
+  public static final String COL_TRADE_PAYMENT_AMOUNT = "PaymentAmount";
+
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_PAYER_NAME = "PayerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";
@@ -247,6 +250,7 @@ public final class TradeConstants {
 
   public static final String GRID_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String GRID_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String GRID_TRADE_PAYMENTS = "TradePayments";
   public static final String GRID_TRADE_DOCUMENT_FILES = "TradeDocumentFiles";
 
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
