@@ -3,7 +3,7 @@
       name="WaitingCargo"
       source="OrderCargo"
       readOnly="true"
-      filter="!(Cargo)"
+      filter="!(Cargo) OR MultipleSegments"
     >
   <Columns>
     <SimpleJoin name="Order" joinType="INNER">
@@ -20,9 +20,10 @@
     </SimpleJoin>
 
     <SimpleColumn name="Description" />
+    <SimpleColumn name="MultipleSegments" />
 
     <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
-      <SimpleColumn name="Cargo" />
+      <AggregateColumn name="Cargo" aggregate="MIN"/>
     </ExternalJoin>
   </Columns>
   <Order>
