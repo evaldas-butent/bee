@@ -8,5 +8,8 @@
     <String name="Name" precision="100" notNull="true" unique="true" label="=personPosition"
             translatable="true" />
     <Relation name="Role" relation="Roles" label="=role" />
+    <!-- Hop ERP Driver Sync {-->
+    <Boolean name="ERPDriverSync" label="=trERPDriverPositionSync" />
+    <!-- } -->
   </Fields>
 </Table>

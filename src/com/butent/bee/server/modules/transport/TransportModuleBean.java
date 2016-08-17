@@ -433,8 +433,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_CARGO_SERVICE, TBL_SERVICES, COL_SERVICE_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_VEHICLES),
         BeeParameter.createText(module, PRM_SYNC_ERP_EMPLOYEES),
-        BeeParameter.createRelation(module, PRM_ERP_DRIVER_POSITION, TBL_POSITIONS,
-            COL_POSITION_NAME),
         BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
   }
 
@@ -3453,8 +3451,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   private void importEmployees() {
     long historyId = sys.eventStart(PRM_SYNC_ERP_EMPLOYEES);
     SimpleRowSet rs;
-
-    Long driverPosition = prm.getRelation(PRM_ERP_DRIVER_POSITION);
     Long company = prm.getRelation(PRM_COMPANY);
 
     if (!DataUtils.isId(company)) {
@@ -3478,6 +3474,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     Map<String, Long> departments = getReferences(companyDepartments, "Name",
         SqlUtils.equals(companyDepartments, COL_COMPANY, company));
     Map<String, Long> positions = getReferences(TBL_POSITIONS, COL_POSITION_NAME);
+    Map<String, Long> driverPosition = getReferences(TBL_POSITIONS, COL_POSITION_NAME, SqlUtils
+        .notNull(TBL_POSITIONS, COL_ERP_DRIVER_SYNC));
     Map<String, Long> drivers = getReferences(TBL_DRIVERS, COL_COMPANY_PERSON);
 
     SimpleRowSet employees = qs.getData(new SqlSelect()
@@ -3649,8 +3647,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 TimeUtils.parseDate(row.getValue("DISMISSED")))
             .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, companyPerson)));
 
-        if (DataUtils.isId(driverPosition) && Objects
-            .equals(positions.get(position), driverPosition)
+        if (!BeeUtils.isEmpty(driverPosition) && Objects
+            .equals(positions.get(position), driverPosition.get(position))
             && !drivers.containsKey(BeeUtils.toString(companyPerson))) {
 
           drivers.put(BeeUtils.toString(companyPerson),

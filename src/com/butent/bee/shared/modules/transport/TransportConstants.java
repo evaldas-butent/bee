@@ -346,7 +346,6 @@ public final class TransportConstants {
   public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
   public static final String PRM_SYNC_ERP_VEHICLES = "ERPSyncVehiclesOnHours";
   public static final String PRM_SYNC_ERP_EMPLOYEES = "ERPSyncEmployeesOnHours";
-  public static final String PRM_ERP_DRIVER_POSITION = "ERPDriverPosition";
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
   public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
 
@@ -740,6 +739,8 @@ public final class TransportConstants {
 
   public static final String COL_DTB_FILTER_DATA_TYPES = "DtbFilterDataTypes";
   public static final String COL_DTB_FILTERS = "DtbFilters";
+
+  public static final String COL_ERP_DRIVER_SYNC = "ERPDriverSync";
 
   public static final String COL_TRUCK_MIN_DATE = "TruckMinDate";
   public static final String COL_TRUCK_MAX_DATE = "TruckMaxDate";
