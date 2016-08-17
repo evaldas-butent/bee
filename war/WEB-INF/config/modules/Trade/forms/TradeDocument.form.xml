@@ -3,7 +3,6 @@
     <!ENTITY mrcl "flexBox-horizontal-top">
     <!ENTITY mrst "margin-top: 12px;">
     <!ENTITY mfld "margin-left: 1em; min-width: 5em;">
-    <!ENTITY mw1 "width: 10em;">
     <!ENTITY mwn "width: 16em;">
     <!ENTITY flbl "margin-bottom: 2px;">
     <!ENTITY finp "width: 100&#37;;">
@@ -20,6 +19,8 @@
     <!ENTITY sbold "font-weight: bolder;">
     <!ENTITY sbr '<div style="height: 12px;"></div>'>
     <!ENTITY sblue '#0099ff'>
+
+    <!ENTITY dtw "width: 10em;">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
@@ -35,6 +36,28 @@
         <page>
           <text>=goods</text>
           <ChildGrid name="TradeDocumentItems" relColumn="TradeDocument" />
+        </page>
+
+        <page>
+          <text>=trdPayment</text>
+          <FlowPanel class="flexBox-vertical">
+            <Table kind="controls" style="margin-bottom: 1vh;">
+              <col index="0" kind="label" />
+              <col index="2" kind="label" />
+
+              <row>
+                <Label for="Term" />
+                <InputDateTime source="Term" style="&dtw;" summarize="true" />
+
+                <Label for="Payer" />
+                <DataSelector source="Payer" style="width: 30em;"
+                              choiceColumns="Name TypeName" renderColumns="PayerName PayerTypeName"
+                              summarize="true" />
+              </row>
+            </Table>
+
+            <ChildGrid name="TradePayments" relColumn="TradeDocument" class="flexible" />
+          </FlowPanel>
         </page>
 
         <page>
@@ -168,7 +191,7 @@
                             newRowEnabled="false" style="&finp; &fmax;" visible="true" />
             </FlowPanel>
 
-            <FlowPanel style="&mfld; width: 10em;">
+            <FlowPanel style="&mfld; &dtw;">
               <Label for="Date" style="&flbl;" />
               <InputDateTime source="Date" style="&finp;" visible="true" />
             </FlowPanel>
@@ -181,7 +204,7 @@
           </FlowPanel>
 
           <FlowPanel class="&mrcl;" style="&mrst;">
-            <FlowPanel style="&mfld; &mw1;">
+            <FlowPanel style="&mfld;">
               <Label for="Series" style="&flbl;" />
               <InputText source="Series" upperCase="true" style="&finp;" />
             </FlowPanel>
@@ -237,16 +260,10 @@
           </FlowPanel>
 
           <FlowPanel class="&mrcl;" style="&mrst;">
-            <FlowPanel style="&mfld; &mw1;">
-              <Label for="Term" style="&flbl;" />
-              <InputDateTime source="Term" style="&finp;" />
-            </FlowPanel>
-
             <FlowPanel class="flexible" style="&mfld;">
-              <Label for="Payer" style="&flbl;" />
-              <DataSelector source="Payer" style="&finp; &fmx2;" visible="true"
-                            choiceColumns="Name TypeName"
-                            renderColumns="PayerName PayerTypeName" />
+              <Label for="Manager" style="&flbl;" />
+              <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+                            newRowEnabled="false" style="&finp; &fmax;" visible="true" />
             </FlowPanel>
 
             <FlowPanel style="&mfld; &mwn;">
@@ -256,17 +273,6 @@
                              renderColumns="TagName"
                              newRowEnabled="false" style="&finp;" />
             </FlowPanel>
-          </FlowPanel>
-
-          <FlowPanel class="&mrcl;" style="&mrst;">
-            <FlowPanel class="flexible" style="margin-left: 1em; min-width: 16em;">
-              <Label for="Manager" style="&flbl;" />
-              <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-                            newRowEnabled="false" style="&finp; &fmax;" />
-            </FlowPanel>
-
-            <FlowPanel style="&mfld; &mwn;" />
-            <FlowPanel style="&mfld; &mwn;" />
           </FlowPanel>
         </FlowPanel>
       </FlowPanel>
