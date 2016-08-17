@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
     <!ENTITY mrcl "flexBox-horizontal-top">
-    <!ENTITY mrst "margin-top: 12px;">
+    <!ENTITY mrst "margin-top: 0.5vh;">
     <!ENTITY mfld "margin-left: 1em; min-width: 5em;">
     <!ENTITY mwn "width: 16em;">
-    <!ENTITY flbl "margin-bottom: 2px;">
+    <!ENTITY flbl "margin-bottom: 1px;">
     <!ENTITY finp "width: 100&#37;;">
     <!ENTITY fmax "max-width: 50em;">
-    <!ENTITY fmx2 "max-width: 39em;">
-    <!ENTITY sep "height: 1px; background-color: #ccc;">
+    <!ENTITY fmx3 "max-width: 14em;">
 
     <!ENTITY srcl "flexBox-horizontal-top">
     <!ENTITY sfld "margin-left: 1em;">
     <!ENTITY sw1 "width: 50&#37;;">
-    <!ENTITY slbl "margin-bottom: 2px;">
+    <!ENTITY slbl "margin-bottom: 1px;">
     <!ENTITY soutp "text-align: left;">
     <!ENTITY slarge "font-size: larger;">
     <!ENTITY sbold "font-weight: bolder;">
-    <!ENTITY sbr '<div style="height: 12px;"></div>'>
+    <!ENTITY sbr '<div style="height: 0.5vh;"></div>'>
     <!ENTITY sblue '#0099ff'>
 
     <!ENTITY dtw "width: 10em;">
@@ -106,7 +105,7 @@
     <east size="300">
       <FlowPanel>
         <FlowPanel style="margin-left: 1em; margin-right: 5px;">
-          <FlowPanel style="margin-top: 12px; padding-top: 10px; padding-bottom: 10px;
+          <FlowPanel style="margin-top: 0.5vh; padding-top: 0.5vh; padding-bottom: 0.5vh;
            background-color: #f2f2f2; border: 1px solid #ccc; border-radius: 5px;">
 
             <FlowPanel class="&srcl;">
@@ -144,9 +143,6 @@
           </FlowPanel>
 
           &sbr;
-          <div style="&sep;" />
-
-          &sbr;
           <FlowPanel class="&srcl;">
             <FlowPanel style="&sfld; &sw1;">
               <Label text="=trdPaid" style="&slbl;" />
@@ -160,23 +156,15 @@
           </FlowPanel>
 
           &sbr;
-          <div style="&sep;" />
-
-          &sbr;
           <TabGroup name="Phase" source="Phase" stylePrefix="bee-trade-document-phase-" />
 
           &sbr;
-          <div style="&sep;" />
-
-          &sbr;
-          <Label for="Status" style="&slbl;" />
+          <FlowPanel class="flexBox-horizontal-space-between">
+            <Label for="Status" style="&slbl;" />
+            <Label name="StatusUpdated" style="color: #aaa;" />
+          </FlowPanel>
           <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
                         style="width: 100%;" />
-          <Label name="StatusUpdated" style="color: #aaa; min-height: 20px;" />
-
-          &sbr;
-          <Button name="Save" text="=actionSave"
-                  style="width: 100%; padding: 8px; color: white; background-color: &sblue;; &slarge; &sbold;" />
         </FlowPanel>
       </FlowPanel>
     </east>
@@ -204,33 +192,36 @@
           </FlowPanel>
 
           <FlowPanel class="&mrcl;" style="&mrst;">
-            <FlowPanel style="&mfld;">
+            <FlowPanel style="&mfld; width: 5em;">
               <Label for="Series" style="&flbl;" />
               <InputText source="Series" upperCase="true" style="&finp;" />
             </FlowPanel>
 
-            <FlowPanel class="flexible" style="&mfld;">
+            <FlowPanel class="flexible" style="&mfld; &fmx3;">
               <Label for="Number" style="&flbl;" />
-              <InputText source="Number" style="&finp; &fmx2;" />
+              <InputText source="Number" style="&finp;" />
             </FlowPanel>
 
-            <FlowPanel style="&mfld; &mwn;">
+            <FlowPanel class="flexible" style="&mfld; &fmx3;">
               <Label for="Number1" style="&flbl;" />
               <InputText source="Number1" style="&finp;" />
             </FlowPanel>
 
-            <FlowPanel style="&mfld; &mwn;">
+            <FlowPanel class="flexible" style="&mfld; &fmx3;">
               <Label for="Number2" style="&flbl;" />
               <InputText source="Number2" style="&finp;" />
             </FlowPanel>
-          </FlowPanel>
 
-          <div style="&sep; margin-top: 12px; margin-left: 1em;" />
+            <FlowPanel style="&mfld; &mwn;">
+              <Label for="ReceivedDate" style="&flbl;" />
+              <InputDateTime source="ReceivedDate" style="&dtw;" />
+            </FlowPanel>
+          </FlowPanel>
 
           <FlowPanel class="&mrcl;" style="&mrst;">
             <FlowPanel class="flexible" style="&mfld;">
               <Label for="Supplier" style="&flbl;" />
-              <DataSelector source="Supplier" style="&finp; &fmax;" visible="true"
+              <DataSelector source="Supplier" style="&finp; &fmax;"
                             choiceColumns="Name TypeName"
                             renderColumns="SupplierName SupplierTypeName" />
             </FlowPanel>
@@ -246,7 +237,7 @@
           <FlowPanel class="&mrcl;" style="&mrst;">
             <FlowPanel class="flexible" style="&mfld;">
               <Label for="Customer" style="&flbl;" />
-              <DataSelector source="Customer" style="&finp; &fmax;" visible="true"
+              <DataSelector source="Customer" style="&finp; &fmax;"
                             choiceColumns="Name TypeName"
                             renderColumns="CustomerName CustomerTypeName" />
             </FlowPanel>
@@ -262,8 +253,11 @@
           <FlowPanel class="&mrcl;" style="&mrst;">
             <FlowPanel class="flexible" style="&mfld;">
               <Label for="Manager" style="&flbl;" />
-              <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-                            newRowEnabled="false" style="&finp; &fmax;" visible="true" />
+              <DataSelector source="Manager" newRowEnabled="false" style="&finp; &fmax;">
+                <renderToken source="ManagerFirstName" />
+                <renderToken source="ManagerLastName" />
+                <renderToken source="ManagerCompanyName" prefix=", " />
+              </DataSelector>
             </FlowPanel>
 
             <FlowPanel style="&mfld; &mwn;">

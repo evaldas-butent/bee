@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.trade;
 
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -48,7 +47,6 @@ import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -69,7 +67,6 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private static final String NAME_TOTAL = "TdTotal";
 
   private static final String NAME_STATUS_UPDATED = "StatusUpdated";
-  private static final String NAME_SAVE = "Save";
 
   private static String getStorageKey(Direction direction) {
     return Storage.getUserKey(NameUtils.getClassName(TradeDocumentForm.class),
@@ -104,13 +101,6 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       tdiGrid.setTdsListener(this::refreshSums);
 
       ((ChildGrid) widget).setGridInterceptor(tdiGrid);
-
-    } else if (BeeUtils.same(name, NAME_SAVE) && widget instanceof HasClickHandlers) {
-      ((HasClickHandlers) widget).addClickHandler(event -> {
-        if (getFormView() != null && getFormView().getViewPresenter() != null) {
-          getFormView().getViewPresenter().handleAction(Action.SAVE);
-        }
-      });
 
     } else if (BeeUtils.same(name, NAME_SPLIT) && widget instanceof Split) {
       ((Split) widget).addMutationHandler(event -> {

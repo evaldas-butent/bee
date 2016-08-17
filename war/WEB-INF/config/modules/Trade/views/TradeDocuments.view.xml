@@ -83,6 +83,10 @@
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerCompanyName" />
+        </SimpleJoin>
       </SimpleJoin>
       
       <SimpleColumn name="TabNumber" alias="ManagerTabNumber" />

@@ -3317,14 +3317,14 @@ textarea,
   margin-right: 10px;
   color: white;
   border-radius: 5px;
-  padding: 4px 8px;
-  font-weight: bold;
-  font-size: 13px;
   cursor: pointer;
 }
 .bee-CreateNew {
   background-color: #6bae45;
   text-transform: uppercase;
+  padding: 4px 8px;
+  font-weight: bold;
+  font-size: 13px;
 }
 .bee-CreateNew:hover {
   background-color: #63a140;
@@ -3334,6 +3334,9 @@ textarea,
 }
 .bee-SaveLarge {
   background-color: #0099ff;
+  padding: 0.4vh 1em;
+  font-weight: bolder;
+  font-size: larger;
 }
 
 .bee-CreateButton {
