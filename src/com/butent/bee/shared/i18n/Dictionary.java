@@ -3354,6 +3354,8 @@ public interface Dictionary {
 
   default String newPasswordsDoesNotMatch() {return g("newPasswordsDoesNotMatch");}
 
+  default String newPayment() {return g("newPayment");}
+
   default String newPerson() {return g("newPerson");}
 
   default String newPersonCompany() {return g("newPersonCompany");}
@@ -5809,6 +5811,8 @@ public interface Dictionary {
   default String trdPayment() {return g("trdPayment");}
 
   default String trdPaymentTime() {return g("trdPaymentTime");}
+
+  default String trdPayments() {return g("trdPayments");}
 
   default String trdPrice() {return g("trdPrice");}
 
