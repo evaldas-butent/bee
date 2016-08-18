@@ -212,3 +212,15 @@
   border-top: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
 }
+
+.bee-trade-document-sum-panel .bee-Toggle:hover {
+  color: black;
+}
+.bee-trade-document-sum-hidable {
+  display: none;
+}
+.bee-trade-document-sum-expanded .bee-trade-document-sum-hidable {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+}

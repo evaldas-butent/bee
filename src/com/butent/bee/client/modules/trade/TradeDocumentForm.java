@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -47,6 +48,7 @@ import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -70,6 +72,10 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private static final String NAME_DEBT = "TdDebt";
 
   private static final String NAME_STATUS_UPDATED = "StatusUpdated";
+
+  private static final String NAME_SUM_EXPANDER = "SumExpander";
+  private static final String STYLE_SUM_EXPANDED =
+      BeeConst.CSS_CLASS_PREFIX + "trade-document-sum-expanded";
 
   private static String getStorageKey(Direction direction) {
     return Storage.getUserKey(NameUtils.getClassName(TradeDocumentForm.class),
@@ -122,6 +128,17 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       ((Split) widget).addMutationHandler(event -> {
         if (event.getSource() instanceof Split) {
           saveSplitLayout((Split) event.getSource());
+        }
+      });
+
+    } else if (BeeUtils.same(name, NAME_SUM_EXPANDER) && widget instanceof HasClickHandlers) {
+      ((HasClickHandlers) widget).addClickHandler(event -> {
+        if (event.getSource() instanceof HasCheckedness && getFormView() != null) {
+          if (((HasCheckedness) event.getSource()).isChecked()) {
+            getFormView().addStyleName(STYLE_SUM_EXPANDED);
+          } else {
+            getFormView().removeStyleName(STYLE_SUM_EXPANDED);
+          }
         }
       });
     }

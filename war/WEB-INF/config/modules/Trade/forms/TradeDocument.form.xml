@@ -10,13 +10,13 @@
     <!ENTITY fmx3 "max-width: 14em;">
 
     <!ENTITY srcl "flexBox-horizontal-top">
+    <!ENTITY srst "margin-top: 0.5vh;">
     <!ENTITY sfld "margin-left: 1em;">
     <!ENTITY sw1 "width: 50&#37;;">
     <!ENTITY slbl "margin-bottom: 1px;">
     <!ENTITY soutp "text-align: left;">
     <!ENTITY slarge "font-size: larger;">
     <!ENTITY sbold "font-weight: bolder;">
-    <!ENTITY sbr '<div style="height: 0.5vh;"></div>'>
     <!ENTITY sblue '#0099ff'>
 
     <!ENTITY dtw "width: 10em;">
@@ -105,10 +105,10 @@
     <east size="300">
       <FlowPanel>
         <FlowPanel style="margin-left: 1em; margin-right: 5px;">
-          <FlowPanel style="margin-top: 0.5vh; padding-top: 0.5vh;
-           background-color: #f2f2f2; border: 1px solid #ccc; border-radius: 5px;">
+          <FlowPanel class="bee-trade-document-sum-panel"
+              style="margin-top: 0.5vh; background-color: #f2f2f2; border: 1px solid #ccc; border-radius: 5px;">
 
-            <FlowPanel class="&srcl;">
+            <FlowPanel class="&srcl;" style="&srst;">
               <FlowPanel style="&sfld; &sw1;">
                 <Label text="=amountWithoutVat" style="&slbl;" />
                 <MoneyLabel name="TdWithoutVat" style="&soutp; &slarge;" />
@@ -120,48 +120,44 @@
               </FlowPanel>
             </FlowPanel>
 
-            &sbr;
-            <FlowPanel class="&srcl;">
-              <FlowPanel style="&sfld;">
+            <FlowPanel class="&srcl;" style="&srst;">
+              <FlowPanel style="&sfld; &sw1;">
                 <Label text="=totalOf" style="&slbl;" />
                 <MoneyLabel name="TdTotal" style="&soutp; &slarge; &sbold; color: &sblue;;" />
               </FlowPanel>
+
+              <FlowPanel style="&sfld;">
+                <Label text="=debt" style="&slbl;" />
+                <MoneyLabel name="TdDebt" style="&soutp; &slarge; &sbold; color: fuchsia;" />
+              </FlowPanel>
             </FlowPanel>
 
-            &sbr;
-            <Toggle upFace="chevron_down" downFace="chevron_up" />
+            <FlowPanel class="&srcl; bee-trade-document-sum-hidable" style="&srst;">
+              <FlowPanel style="&sfld; &sw1;">
+                <Label text="=amountWithoutDiscount" style="&slbl;" />
+                <MoneyLabel name="TdAmount" style="&soutp;" />
+              </FlowPanel>
+
+              <FlowPanel style="&sfld;">
+                <Label text="=discount" style="&slbl;" />
+                <MoneyLabel name="TdDiscount" style="&soutp;" />
+              </FlowPanel>
+            </FlowPanel>
+
+            <FlowPanel class="&srcl; bee-trade-document-sum-hidable" style="&srst;">
+              <FlowPanel style="&sfld; &sw1;">
+                <Label text="=trdPaid" style="&slbl;" />
+                <MoneyLabel name="TdPaid" style="&soutp; &slarge;" />
+              </FlowPanel>
+            </FlowPanel>
+
+            <Toggle name="SumExpander" upFace="chevron_down" downFace="chevron_up"
+                    style="color: gray; outline: none;" />
           </FlowPanel>
 
-          &sbr;
-          <FlowPanel class="&srcl;">
-            <FlowPanel style="&sfld; &sw1;">
-              <Label text="=amountWithoutDiscount" style="&slbl;" />
-              <MoneyLabel name="TdAmount" style="&soutp;" />
-            </FlowPanel>
+          <TabGroup name="Phase" source="Phase" stylePrefix="bee-trade-document-phase-"
+                    style="margin-top: 1vh; margin-bottom: 1vh;" />
 
-            <FlowPanel style="&sfld;">
-              <Label text="=discount" style="&slbl;" />
-              <MoneyLabel name="TdDiscount" style="&soutp;" />
-            </FlowPanel>
-          </FlowPanel>
-
-          &sbr;
-          <FlowPanel class="&srcl;">
-            <FlowPanel style="&sfld; &sw1;">
-              <Label text="=trdPaid" style="&slbl;" />
-              <MoneyLabel name="TdPaid" style="&soutp; &slarge;" />
-            </FlowPanel>
-
-            <FlowPanel style="&sfld;">
-              <Label text="=debt" style="&slbl;" />
-              <MoneyLabel name="TdDebt" style="&soutp; &slarge; &sbold; color: fuchsia;" />
-            </FlowPanel>
-          </FlowPanel>
-
-          &sbr;
-          <TabGroup name="Phase" source="Phase" stylePrefix="bee-trade-document-phase-" />
-
-          &sbr;
           <FlowPanel class="flexBox-horizontal-space-between">
             <Label for="Status" style="&slbl;" />
             <Label name="StatusUpdated" style="color: #aaa;" />
