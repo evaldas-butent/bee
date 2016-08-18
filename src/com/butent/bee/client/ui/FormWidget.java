@@ -397,10 +397,6 @@ public enum FormWidget {
     return null;
   }
 
-  public static boolean isFormWidget(String tagName) {
-    return getByTagName(tagName) != null;
-  }
-
   private static void addHandler(IdentifiableWidget widget, String event, String handler) {
     Assert.notNull(widget);
 
@@ -556,7 +552,7 @@ public enum FormWidget {
       int row, int col, String viewName, List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
       WidgetInterceptor widgetInterceptor) {
 
-    boolean ok = false;
+    boolean ok;
     String tag = XmlUtils.getLocalName(element);
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
@@ -1281,7 +1277,7 @@ public enum FormWidget {
 
       case FILE_COLLECTOR:
         IdentifiableWidget face = null;
-        for (Iterator<Element> it = children.iterator(); it.hasNext();) {
+        for (Iterator<Element> it = children.iterator(); it.hasNext(); ) {
           Element child = it.next();
           if (BeeUtils.same(XmlUtils.getLocalName(child), TAG_FACE)) {
             face = createFace(child);
@@ -1770,11 +1766,29 @@ public enum FormWidget {
 
       case TOGGLE:
         String upFace = attributes.get(ATTR_UP_FACE);
-        String downFace = attributes.get(ATTR_DOWN_FACE);
-        if (BeeUtils.allEmpty(upFace, downFace)) {
-          widget = new Toggle();
+        String dnFace = attributes.get(ATTR_DOWN_FACE);
+
+        if (BeeUtils.allNotEmpty(upFace, dnFace)) {
+          stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
+          boolean checked = BeeConst.isTrue(attributes.get(ATTR_CHECKED));
+
+          if (Localized.maybeTranslatable(upFace) && Localized.maybeTranslatable(dnFace)) {
+            widget = new Toggle(Localized.maybeTranslate(upFace), Localized.maybeTranslate(dnFace),
+                stylePrefix, checked);
+
+          } else {
+            FontAwesome faUp = FontAwesome.parse(upFace);
+            FontAwesome faDn = FontAwesome.parse(dnFace);
+
+            if (faUp != null && faDn != null) {
+              widget = new Toggle(faUp, faDn, stylePrefix, checked);
+            } else {
+              widget = new Toggle(upFace, dnFace, stylePrefix, checked);
+            }
+          }
+
         } else {
-          widget = new Toggle(Localized.maybeTranslate(upFace), Localized.maybeTranslate(downFace));
+          widget = new Toggle();
         }
         break;
 
@@ -2421,7 +2435,7 @@ public enum FormWidget {
     }
   }
 
-  private void processTree(HasTreeItems parent, Element child) {
+  private static void processTree(HasTreeItems parent, Element child) {
     if (!XmlUtils.tagIs(child, TAG_TREE_ITEM)) {
       return;
     }

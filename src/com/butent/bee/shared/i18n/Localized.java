@@ -67,6 +67,10 @@ public final class Localized {
     return labels;
   }
 
+  public static boolean maybeTranslatable(String text) {
+    return text != null && text.length() >= 3 && text.charAt(0) == L10N_PREFIX;
+  }
+
   public static List<String> maybeTranslate(List<String> items) {
     return maybeTranslate(items, glossary);
   }
@@ -88,30 +92,31 @@ public final class Localized {
   }
 
   public static String maybeTranslate(String text, Map<String, String> data) {
-    if (text == null || text.length() < 3 || text.charAt(0) != L10N_PREFIX) {
-      return text;
-    }
+    if (maybeTranslatable(text)) {
+      String localized;
 
-    String localized;
+      if (text.indexOf(L10N_SEPARATOR) > 0) {
+        StringBuilder sb = new StringBuilder();
 
-    if (text.indexOf(L10N_SEPARATOR) > 0) {
-      StringBuilder sb = new StringBuilder();
+        for (String s : L10N_SPLITTER.split(text)) {
+          sb.append(maybeTranslate(s, data));
+        }
 
-      for (String s : L10N_SPLITTER.split(text)) {
-        sb.append(maybeTranslate(s, data));
+        localized = sb.toString();
+
+      } else {
+        localized = translate(text.substring(1), data);
       }
 
-      localized = sb.toString();
+      if (localized == null) {
+        logger.warning("cannot localize:", text);
+        return text;
+      } else {
+        return localized;
+      }
 
     } else {
-      localized = translate(text.substring(1), data);
-    }
-
-    if (localized == null) {
-      logger.warning("cannot localize:", text);
       return text;
-    } else {
-      return localized;
     }
   }
 

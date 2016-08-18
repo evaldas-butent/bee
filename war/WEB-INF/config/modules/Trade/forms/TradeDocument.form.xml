@@ -105,7 +105,7 @@
     <east size="300">
       <FlowPanel>
         <FlowPanel style="margin-left: 1em; margin-right: 5px;">
-          <FlowPanel style="margin-top: 0.5vh; padding-top: 0.5vh; padding-bottom: 0.5vh;
+          <FlowPanel style="margin-top: 0.5vh; padding-top: 0.5vh;
            background-color: #f2f2f2; border: 1px solid #ccc; border-radius: 5px;">
 
             <FlowPanel class="&srcl;">
@@ -127,6 +127,9 @@
                 <MoneyLabel name="TdTotal" style="&soutp; &slarge; &sbold; color: &sblue;;" />
               </FlowPanel>
             </FlowPanel>
+
+            &sbr;
+            <Toggle upFace="chevron_down" downFace="chevron_up" />
           </FlowPanel>
 
           &sbr;

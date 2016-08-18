@@ -198,16 +198,18 @@
   <xs:element name="HorizontalPanel" type="cellVector" substitutionGroup="widget" />
   <xs:element name="VerticalPanel" type="cellVector" substitutionGroup="widget" />
 
-  <xs:complexType name="customButton">
-    <xs:complexContent>
-      <xs:extension base="editableWidget">
-        <xs:attribute name="upFace" type="xs:string" />
-        <xs:attribute name="downFace" type="xs:string" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:element name="Toggle" type="customButton" substitutionGroup="widget" />
+  <xs:element name="Toggle" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="editableWidget">
+          <xs:attribute name="upFace" type="xs:string" />
+          <xs:attribute name="downFace" type="xs:string" />
+          <xs:attribute name="stylePrefix" type="xs:normalizedString" />
+          <xs:attribute name="checked" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:complexType name="splitPanel">
     <xs:complexContent>
