@@ -354,6 +354,7 @@ public final class TransportConstants {
 
   public static final String VAR_LOADING = "Loading";
   public static final String VAR_UNLOADING = "Unloading";
+  public static final String VAR_AUTO_NUMBER_SUFFIX = "_*";
 
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
