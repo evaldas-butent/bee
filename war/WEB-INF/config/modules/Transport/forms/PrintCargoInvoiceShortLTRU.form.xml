@@ -9,10 +9,11 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="&form;" caption="Trumpa sąskaita LT/RU" disabledActions="save"
-  width="70" widthUnit="%" height="90" heightUnit="%" viewName="PrintCargoInvoice"
+  width="750" widthUnit="px" height="90" heightUnit="%" viewName="PrintCargoInvoice"
   >
   <FlowPanel class="bee-PrintableForm"
-             style="padding: 10px; background-color: white; font-size:7pt">
+             style="padding: 10px; background-color: white;
+             font-size:9pt; font-family: Arial, sans-serif;">
 
       <css id="&form;">
           .&form;-bank div div:first-child:before {content:"a.s. | a.n. (Bankas gavėjas |
@@ -41,8 +42,8 @@
     <HorizontalPanel style="width:100%; margin-top:2em">
       <cell style="vertical-align:top; width:50%; text-align:left;" >
         <FlowPanel >
-          <Label style="&bold;" html="PVM Sąskaita | Счет №" />
-          <TextLabel source="InvoiceNo">
+          <Label style="&bold; font-size: 13pt;" html="PVM Sąskaita | Счет №" />
+          <TextLabel style="font-size: 11pt;" source="InvoiceNo">
             <renderToken source="InvoicePrefix" />
             <renderToken source="InvoiceNo" />
           </TextLabel>
@@ -67,7 +68,7 @@
     <FlowPanel style="&section;">
       <Table kind="output" style="width:100%;">
         <row>
-          <cell style="vertical-align:top;">
+          <cell style="vertical-align:top; font-size: 9.5pt">
             <Label html="Siuntėjas | Oтправитель:" />
           </cell>
           <cell  style="vertical-align:top;">
@@ -77,7 +78,7 @@
         <row>
           <cell rowSpan="3" style="vertical-align:top; width:50%; padding-right: 2em;">
             <FlowPanel>
-              <TextLabel source="SupplierName" style="&bold;">
+              <TextLabel source="SupplierName" style="&bold; font-size: 9.5pt">
                 <renderToken source="SupplierName" />
                 <renderToken source="SupplierType" prefix=" " />
               </TextLabel>
@@ -111,7 +112,7 @@
           </cell>
           <cell  style="vertical-align:top; width:50%;">
             <FlowPanel>
-              <TextLabel source="CustomerName" style="&bold;">
+              <TextLabel source="CustomerName" style="&bold; font-size:9.5pt">
                 <renderToken source="CustomerName" />
                 <renderToken source="CustomerType" prefix=" " />
               </TextLabel>
@@ -147,7 +148,7 @@
           </cell>
         </row>
         <row>
-          <cell style="vertical-align:bottom; padding-top: 2em;">
+          <cell style="vertical-align:bottom; padding-top: 2em; font-size: 9.5pt">
             <TextLabel>
               <render>
                 <ui:expression>row.Payer ? "Mokėtojas | Плательщик:" : null</ui:expression>
@@ -158,7 +159,7 @@
         <row>
           <cell style="vertical-align:top;">
             <FlowPanel>
-              <TextLabel source="PayerName" style="&bold;">
+              <TextLabel source="PayerName" style="&bold; font-size:9.5pt">
                 <renderToken source="PayerName" />
                 <renderToken source="PayerType" prefix=" " />
               </TextLabel>
@@ -197,7 +198,7 @@
     </FlowPanel>
     <br />
     <Table name="InvoiceDetails" kind="output"
-           style="&section; width:100%; font-size:6.5pt;">
+           style="&section; width:100%; font-size:8pt;">
       <properties rateCurrency="EUR" />
       <row style="vertical-align: top">
         <cell rowSpan="2" style="vertical-align: top">
@@ -339,15 +340,15 @@
       </Label>
     </HorizontalPanel>
 
-    <HtmlPanel style="&section;">
-      <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
+    <HtmlPanel>
+      <span style=" &bold; display:block; white-space:pre-wrap;">
 Pastaba: Šios nuorodos negalioja sąskaitoms su 21 % PVM
 0% PVM tarifas: pagal PVM Isr. 45, 52 str.
 Be PVM: pagal PVM Įst. 13 str.
 Without VAT: "Reverse charge" - according Directive 2006/112/EB
 Без НДС: “Обратный налог” – по директиве 2006/112/EB
       </span>
-      <span style="font-size:smaller; display:block; white-space:pre-wrap;">
+      <span style="display:block; white-space:pre-wrap; margin-top:-3ex;">
 Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai.
 После периода оплаты за каждый просроченный день будет расти 0,2% пени
       </span>
@@ -364,7 +365,7 @@ Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojam
         <br />
         <Label html="Gavėjas/Получатель:" />
       </row>
-      <row style="font-size:5.5pt">
+      <row style="font-size:6.5pt">
         <Label html="(Vardas, pavardė, pareigos ir parašas /Имя, фамилия, обязанности и подпись)" />
         <br />
         <Label html="(Vardas, pavardė, pareigos ir parašas /Имя, фамилия, обязанности и подпись)" />
