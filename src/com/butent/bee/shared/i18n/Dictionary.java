@@ -4937,6 +4937,8 @@ public interface Dictionary {
 
   default String trDriverStartingDate() {return g("trDriverStartingDate");}
 
+  default String trERPDriverPositionSync() {return g("trERPDriverPositionSync");}
+
   default String trEconomyBonus() {return g("trEconomyBonus");}
 
   default String trEmptyKilometers() {return g("trEmptyKilometers");}
@@ -5504,6 +5506,8 @@ public interface Dictionary {
   default String trTripDocuments() {return g("trTripDocuments");}
 
   default String trTripFuelConsumptions() {return g("trTripFuelConsumptions");}
+
+  default String trTripManagers() {return g("trTripManagers");}
 
   default String trTripNo() {return g("trTripNo");}
 
