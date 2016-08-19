@@ -594,11 +594,50 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
           String prefix = prm.getText(PRM_TRIP_PREFIX);
 
-          if (!BeeUtils.isEmpty(prefix)) {
-            event.addValue(new BeeColumn(COL_TRIP_NO),
-                Value.getValue(qs.getNextNumber(TBL_TRIPS, COL_TRIP_NO, prefix, null)));
+          /* @since Hoptransa TaskID 17242 trip number elementing under braces {*/
+          IsCondition con;
+
+          if (BeeUtils.isEmpty(prefix)) {
+            con = SqlUtils.not(SqlUtils.contains(TBL_TRIPS, COL_TRIP_NO, BeeConst.STRING_UNDER));
+          } else {
+            IsExpression expr = SqlUtils.substring(TBL_TRIPS, COL_TRIP_NO, prefix.length()
+                + 1);
+            con = SqlUtils.and(SqlUtils.startsWith(TBL_TRIPS, COL_TRIP_NO, prefix),
+                SqlUtils.not(SqlUtils.contains(expr, BeeConst.STRING_UNDER)));
+          }
+
+          String normaliseNumbers = qs.sqlCreateTemp(new SqlSelect()
+           .addFields(TBL_TRIPS, COL_TRIP_NO)
+              .addFrom(TBL_TRIPS)
+          .setWhere(con));
+
+          event.addValue(new BeeColumn(COL_TRIP_NO),
+              Value.getValue(qs.getNextNumber(normaliseNumbers, COL_TRIP_NO,
+                  BeeUtils.isEmpty(prefix) ? null : prefix, null)));
+
+          qs.sqlDropTemp(normaliseNumbers);
+          /* } */
+        }
+
+        /* @since Hoptransa TaskID 17242 trip number_template {*/
+        if (event.isBefore(VIEW_TRIPS)
+            && !BeeConst.isUndef(DataUtils.getColumnIndex(COL_TRIP_NO, event.getColumns()))) {
+          BeeRow row = event.getRow();
+          int idxTripNo = DataUtils.getColumnIndex(COL_TRIP_NO, event.getColumns());
+          String tripNo = row.getString(idxTripNo);
+
+          if (BeeUtils.isSuffix(tripNo, VAR_AUTO_NUMBER_SUFFIX)) {
+
+            String prefix = BeeUtils.removeSuffix(tripNo, VAR_AUTO_NUMBER_SUFFIX) + "_";
+
+            if (!BeeUtils.isEmpty(prefix)) {
+
+              row.setValue(idxTripNo,
+                  Value.getValue(qs.getNextNumber(TBL_TRIPS, COL_TRIP_NO, prefix, null)));
+            }
           }
         }
+        /* } */
       }
 
       @Subscribe

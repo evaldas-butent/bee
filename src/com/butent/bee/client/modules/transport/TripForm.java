@@ -352,7 +352,8 @@ public class TripForm extends PrintFormInterceptor {
       copyAction = new FaLabel(FontAwesome.COPY);
       copyAction.setTitle(Localized.dictionary().actionCopy());
 
-      copyAction.addClickHandler(clickEvent -> {
+      copyAction.addClickHandler(clickEvent ->
+          Global.getParameter(PRM_TRIP_PREFIX, prefix -> {
         DataInfo info = Data.getDataInfo(getViewName());
         BeeRow newRow = RowFactory.createEmptyRow(info, true);
 
@@ -366,14 +367,35 @@ public class TripForm extends PrintFormInterceptor {
             newRow.setValue(idx, getStringValue(col));
           }
         }
+
+        /* @since Hoptransa, Task ID 17242 */
+          renderSeparateTripPrefix(newRow, prefix);
+
         TripForm interceptor = getInstance();
         interceptor.defaultDriver = getLongValue(COL_DRIVER);
 
         RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow,
             Modality.ENABLED, null, interceptor, null, null);
-      });
+      }));
     }
     return copyAction;
+  }
+
+  /**
+   * @since Hoptransa, Task ID 17242
+   */
+  private void renderSeparateTripPrefix(BeeRow newRow, String prefix) {
+    if (!BeeUtils.isEmpty(getStringValue(COL_TRIP_NO))) {
+      String oldTripNo = BeeUtils.isEmpty(prefix) ? getStringValue(COL_TRIP_NO)
+          : BeeUtils.removePrefix(getStringValue(COL_TRIP_NO), prefix);
+
+      if (BeeUtils.isPositive(oldTripNo.indexOf("_"))) {
+        String newTemplate = BeeUtils.join(BeeConst.STRING_EMPTY,
+            BeeUtils.isPrefix(getStringValue(COL_TRIP_NO), prefix) ? prefix : BeeConst.STRING_EMPTY,
+            BeeUtils.left(oldTripNo, oldTripNo.indexOf("_")),  VAR_AUTO_NUMBER_SUFFIX);
+        newRow.setValue(getDataIndex(COL_TRIP_NO), newTemplate);
+      }
+    }
   }
 
   private void showDriver(boolean show) {
