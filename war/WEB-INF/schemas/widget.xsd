@@ -638,6 +638,7 @@
             default="caption-left-cell" />
           <xs:attribute name="onFocus" type="ui:focusAction" />
           <xs:attribute name="placeholder" type="xs:normalizedString" />
+          <xs:attribute name="spellcheck" type="xs:boolean" />
           <xs:attributeGroup ref="ui:autocomplete" />
         </xs:extension>
       </xs:complexContent>

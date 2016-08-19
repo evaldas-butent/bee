@@ -1024,6 +1024,8 @@ public enum FormWidget {
 
   private static final String ATTR_RESIZABLE = "resizable";
 
+  private static final String ATTR_SPELL_CHECK = "spellcheck";
+
   private static final String TAG_CSS = "css";
 
   private static final String TAG_HANDLER = "handler";
@@ -1388,6 +1390,10 @@ public enum FormWidget {
 
       case INPUT_AREA:
         widget = new InputArea();
+        String spellCheck = attributes.get(ATTR_SPELL_CHECK);
+        if (BeeUtils.isBoolean(spellCheck)) {
+          ((InputArea) widget).setSpellCheck(BeeUtils.toBoolean(spellCheck));
+        }
         break;
 
       case INPUT_DATE:
