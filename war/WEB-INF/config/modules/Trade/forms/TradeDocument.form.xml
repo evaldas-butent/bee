@@ -106,7 +106,7 @@
       <FlowPanel>
         <FlowPanel style="margin-left: 1em; margin-right: 5px;">
           <FlowPanel class="bee-trade-document-sum-panel"
-              style="margin-top: 0.5vh; background-color: #f2f2f2; border: 1px solid #ccc; border-radius: 5px;">
+                     style="margin-top: 0.5vh; background-color: #f2f2f2; border: 1px solid #ccc; border-radius: 5px;">
 
             <FlowPanel class="&srcl;" style="&srst;">
               <FlowPanel style="&sfld; &sw1;">
@@ -196,19 +196,21 @@
               <InputText source="Series" upperCase="true" style="&finp;" />
             </FlowPanel>
 
-            <FlowPanel class="flexible" style="&mfld; &fmx3;">
-              <Label for="Number" style="&flbl;" />
-              <InputText source="Number" style="&finp;" />
-            </FlowPanel>
+            <FlowPanel class="flexible flexBox-horizontal-top">
+              <FlowPanel class="flexible" style="&mfld; &fmx3;">
+                <Label for="Number" style="&flbl;" />
+                <InputText source="Number" style="&finp;" />
+              </FlowPanel>
 
-            <FlowPanel class="flexible" style="&mfld; &fmx3;">
-              <Label for="Number1" style="&flbl;" />
-              <InputText source="Number1" style="&finp;" />
-            </FlowPanel>
+              <FlowPanel class="flexible" style="&mfld; &fmx3;">
+                <Label for="Number1" style="&flbl;" />
+                <InputText source="Number1" style="&finp;" />
+              </FlowPanel>
 
-            <FlowPanel class="flexible" style="&mfld; &fmx3;">
-              <Label for="Number2" style="&flbl;" />
-              <InputText source="Number2" style="&finp;" />
+              <FlowPanel class="flexible" style="&mfld; &fmx3;">
+                <Label for="Number2" style="&flbl;" />
+                <InputText source="Number2" style="&finp;" />
+              </FlowPanel>
             </FlowPanel>
 
             <FlowPanel style="&mfld; &mwn;">
