@@ -369,7 +369,9 @@ final class FreightExchange extends ChartBase {
     ChartData cargoData = new ChartData(ChartData.Type.CARGO);
     ChartData cargoTypeData = new ChartData(ChartData.Type.CARGO_TYPE);
 
+    ChartData loadCountry = new ChartData(ChartData.Type.LOADING_COUNTRY);
     ChartData loadData = new ChartData(ChartData.Type.LOADING);
+    ChartData unloadCountry = new ChartData(ChartData.Type.UNLOADING_COUNTRY);
     ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
     ChartData placeData = new ChartData(ChartData.Type.PLACE);
 
@@ -389,10 +391,22 @@ final class FreightExchange extends ChartBase {
         cargoTypeData.add(getCargoTypeName(item.getCargoType()), item.getCargoType());
       }
 
+      String loadingCountry = Places.getCountryLabel(item.getLoadingCountry());
+
+      if (!BeeUtils.isEmpty(loadingCountry)) {
+        loadCountry.add(loadingCountry);
+      }
+
       String loading = Places.getLoadingPlaceInfo(item);
       if (!BeeUtils.isEmpty(loading)) {
         loadData.add(loading);
         placeData.add(loading);
+      }
+
+      String unloadingCountry = Places.getCountryLabel(item.getUnloadingCountry());
+
+      if (!BeeUtils.isEmpty(unloadingCountry)) {
+        unloadCountry.add(unloadingCountry);
       }
 
       String unloading = Places.getUnloadingPlaceInfo(item);
@@ -427,7 +441,9 @@ final class FreightExchange extends ChartBase {
     data.add(cargoData);
     data.add(cargoTypeData);
 
+    data.add(loadCountry);
     data.add(loadData);
+    data.add(unloadCountry);
     data.add(unloadData);
     data.add(placeData);
 
