@@ -20,6 +20,7 @@
     <!ENTITY sblue '#0099ff'>
 
     <!ENTITY dtw "width: 10em;">
+    <!ENTITY tgcl "bee-trade-document-toggle">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
@@ -31,75 +32,81 @@
 >
   <SplitPanel splitterSize="4" name="Split">
     <south size="300">
-      <TabbedPages resizable="false">
-        <page>
-          <text>=goods</text>
-          <ChildGrid name="TradeDocumentItems" relColumn="TradeDocument" />
-        </page>
+      <FlowPanel class="flexBox-vertical">
+        <Toggle name="SouthExpander" upFace="chevron_up" downFace="chevron_down"
+                stylePrefix="&tgcl;" />
 
-        <page>
-          <text>=trdPayment</text>
-          <FlowPanel class="flexBox-vertical">
-            <Table kind="controls" style="margin-bottom: 1vh;">
+        <TabbedPages class="flexible" resizable="false">
+          <page>
+            <text>=goods</text>
+            <ChildGrid name="TradeDocumentItems" relColumn="TradeDocument" />
+          </page>
+
+          <page>
+            <text>=trdPayment</text>
+            <FlowPanel class="flexBox-vertical">
+              <Table kind="controls" style="margin-bottom: 1vh;">
+                <col index="0" kind="label" />
+                <col index="2" kind="label" />
+
+                <row>
+                  <Label for="Term" />
+                  <InputDateTime source="Term" style="&dtw;" summarize="true" />
+
+                  <Label for="Payer" />
+                  <DataSelector source="Payer" style="width: 30em;"
+                                choiceColumns="Name TypeName"
+                                renderColumns="PayerName PayerTypeName"
+                                summarize="true" />
+                </row>
+              </Table>
+
+              <ChildGrid name="TradePayments" relColumn="TradeDocument" class="flexible" />
+            </FlowPanel>
+          </page>
+
+          <page>
+            <text>=otherInfo</text>
+            <Table kind="controls">
               <col index="0" kind="label" />
               <col index="2" kind="label" />
 
               <row>
-                <Label for="Term" />
-                <InputDateTime source="Term" style="&dtw;" summarize="true" />
+                <Label for="PriceName" />
+                <ListBox source="PriceName" summarize="true" />
 
-                <Label for="Payer" />
-                <DataSelector source="Payer" style="width: 30em;"
-                              choiceColumns="Name TypeName" renderColumns="PayerName PayerTypeName"
-                              summarize="true" />
+                <Label for="DocumentDiscount" />
+                <InputDecimal source="DocumentDiscount" summarize="true" />
+              </row>
+
+              <row>
+                <Label for="DocumentVatMode" />
+                <ListBox source="DocumentVatMode" summarize="true" />
+
+                <Label for="DocumentDiscountMode" />
+                <ListBox source="DocumentDiscountMode" summarize="true" />
               </row>
             </Table>
+          </page>
 
-            <ChildGrid name="TradePayments" relColumn="TradeDocument" class="flexible" />
-          </FlowPanel>
-        </page>
+          <page data="Dimensions">
+            <text>=dimensions</text>
+            <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
+          </page>
 
-        <page>
-          <text>=otherInfo</text>
-          <Table kind="controls">
-            <col index="0" kind="label" />
-            <col index="2" kind="label" />
+          <page>
+            <text>=files</text>
+            <ChildGrid name="TradeDocumentFiles" relColumn="TradeDocument" />
+          </page>
 
-            <row>
-              <Label for="PriceName" />
-              <ListBox source="PriceName" summarize="true" />
-
-              <Label for="DocumentDiscount" />
-              <InputDecimal source="DocumentDiscount" summarize="true" />
-            </row>
-
-            <row>
-              <Label for="DocumentVatMode" />
-              <ListBox source="DocumentVatMode" summarize="true" />
-
-              <Label for="DocumentDiscountMode" />
-              <ListBox source="DocumentDiscountMode" summarize="true" />
-            </row>
-          </Table>
-        </page>
-
-        <page data="Dimensions">
-          <text>=dimensions</text>
-          <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
-        </page>
-
-        <page>
-          <text>=files</text>
-          <ChildGrid name="TradeDocumentFiles" relColumn="TradeDocument" />
-        </page>
-
-        <page>
-          <text>=notes</text>
-          <SimplePanel>
-            <InputArea source="Notes" class="occupy-1" summarize="true" />
-          </SimplePanel>
-        </page>
-      </TabbedPages>
+          <page>
+            <text>=notes</text>
+            <SimplePanel>
+              <InputArea source="Notes" class="occupy-1" summarize="true" />
+            </SimplePanel>
+          </page>
+        </TabbedPages>
+      </FlowPanel>
     </south>
 
     <east size="300">
@@ -152,7 +159,7 @@
             </FlowPanel>
 
             <Toggle name="SumExpander" upFace="chevron_down" downFace="chevron_up"
-                    style="color: gray; outline: none;" />
+                    stylePrefix="&tgcl;" />
           </FlowPanel>
 
           <TabGroup name="Phase" source="Phase" stylePrefix="bee-trade-document-phase-"

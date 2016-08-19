@@ -213,9 +213,16 @@
   border-bottom: 1px solid #ccc;
 }
 
-.bee-trade-document-sum-panel .bee-Toggle:hover {
+.bee-trade-document-toggle {
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: gray;
+}
+.bee-trade-document-toggle:hover {
   color: black;
 }
+
 .bee-trade-document-sum-hidable {
   display: none;
 }
