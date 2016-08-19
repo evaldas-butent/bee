@@ -265,6 +265,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_CONFIRM_TASKS)) {
       response = confirmTasks(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_TASK_REPORT)) {
+        response = getReportData();
+
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);
@@ -1939,6 +1943,116 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       files.add(sf);
     }
     return ResponseObject.response(files);
+  }
+
+  private ResponseObject getReportData() {
+
+    String ownerPerson = SqlUtils.uniqueName();
+    String executorPerson = SqlUtils.uniqueName();
+
+    SqlSelect select = new SqlSelect();
+    select.addField(TaskConstants.TBL_TASKS, sys.getIdName(TaskConstants.TBL_TASKS),
+        TaskConstants.COL_TASK);
+    select.addFields(TaskConstants.TBL_TASKS, COL_SUMMARY, COL_STATUS,
+        COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME, COL_EXPECTED_DURATION);
+    select.addField(VIEW_TASK_PRODUCTS, COL_PRODUCT_NAME, ALS_TASK_PRODUCT_NAME);
+    select.addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME);
+    select.addField(VIEW_TASK_TYPES, COL_TASK_TYPE_NAME, ALS_TASK_TYPE_NAME);
+    select.addField(ProjectConstants.VIEW_PROJECTS,
+        ProjectConstants.COL_PROJECT_NAME, ProjectConstants.ALS_PROJECT_NAME);
+    select.addField(ProjectConstants.VIEW_PROJECT_STAGES,
+        ProjectConstants.COL_STAGE_NAME, ProjectConstants.ALS_STAGE_NAME);
+
+    select.addField(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, ALS_DURATION_TYPE_NAME);
+    select.addFields(TBL_EVENT_DURATIONS, COL_DURATION_DATE, COL_DURATION);
+
+    addExprForUserFirstLastNames(select, ownerPerson, TaskConstants.COL_OWNER);
+
+    addExprForUserFirstLastNames(select, executorPerson, TaskConstants.COL_EXECUTOR);
+
+    addExprForUserFirstLastNames(select, ClassifierConstants.TBL_PERSONS, COL_USER);
+
+    select.addFrom(TaskConstants.TBL_TASKS);
+
+    addJoinsForUserFirstLastNames(select, ownerPerson, TBL_TASKS, COL_OWNER);
+
+    addJoinsForUserFirstLastNames(select, executorPerson, TBL_TASKS, COL_EXECUTOR);
+
+    select.addFromLeft(VIEW_TASK_PRODUCTS, sys.joinTables(
+        VIEW_TASK_PRODUCTS, TBL_TASKS,
+        COL_PRODUCT));
+
+    select.addFromLeft(VIEW_COMPANIES, sys.joinTables(
+        VIEW_COMPANIES, TBL_TASKS,
+        COL_COMPANY));
+
+    select.addFromLeft(VIEW_TASK_TYPES, sys.joinTables(
+        VIEW_TASK_TYPES, TBL_TASKS,
+        COL_TASK_TYPE));
+
+    select.addFromLeft(ProjectConstants.VIEW_PROJECTS, sys.joinTables(
+        ProjectConstants.VIEW_PROJECTS, TBL_TASKS,
+        ProjectConstants.COL_PROJECT));
+
+    select.addFromLeft(ProjectConstants.VIEW_PROJECT_STAGES, sys.joinTables(
+        ProjectConstants.VIEW_PROJECT_STAGES, TBL_TASKS,
+        ProjectConstants.COL_PROJECT_STAGE));
+
+    select.addFromLeft(VIEW_TASK_EVENTS, sys.joinTables(
+        TBL_TASKS, VIEW_TASK_EVENTS,
+        COL_TASK));
+
+    select.addFromLeft(TBL_EVENT_DURATIONS, sys.joinTables(
+        TBL_EVENT_DURATIONS, VIEW_TASK_EVENTS,
+        COL_EVENT_DURATION));
+
+    select.addFromLeft(TBL_DURATION_TYPES, sys.joinTables(
+        TBL_DURATION_TYPES, TBL_EVENT_DURATIONS,
+        COL_DURATION_TYPE));
+
+    select.addFromLeft(VIEW_TASK_USERS, SqlUtils.and(sys.joinTables(
+        TBL_TASKS, VIEW_TASK_USERS,
+        COL_TASK),
+        SqlUtils.notEqual(VIEW_TASK_USERS, COL_USER,  SqlUtils.field(TBL_TASKS, COL_EXECUTOR)),
+        SqlUtils.notEqual(VIEW_TASK_USERS, COL_USER,  SqlUtils.field(TBL_TASKS, COL_OWNER))));
+
+    addJoinsForUserFirstLastNames(select, ClassifierConstants.TBL_PERSONS, VIEW_TASK_USERS,
+        COL_USER);
+
+
+    SimpleRowSet rqs = qs.getData(select);
+
+    if (rqs.isEmpty()) {
+      return ResponseObject.response(rqs);
+    }
+
+    return ResponseObject.response(rqs);
+  }
+
+  private void addExprForUserFirstLastNames(SqlSelect select, String table, String col) {
+    select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(table,
+        ClassifierConstants.COL_FIRST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY)),
+        SqlUtils.constant(BeeConst.STRING_SPACE), SqlUtils.nvl(SqlUtils.field(
+            table,
+            ClassifierConstants.COL_LAST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY))), col);
+  }
+
+  private void addJoinsForUserFirstLastNames(SqlSelect select, String personTblAls,
+      String table, String col) {
+    String userTblAls = SqlUtils.uniqueName();
+    String companyPersonTblAls = SqlUtils.uniqueName();
+
+    select.addFromLeft(AdministrationConstants.TBL_USERS, userTblAls, sys.joinTables(
+        AdministrationConstants.TBL_USERS, userTblAls, table,
+        col));
+
+    select.addFromLeft(ClassifierConstants.TBL_COMPANY_PERSONS, companyPersonTblAls, sys.joinTables(
+        ClassifierConstants.TBL_COMPANY_PERSONS, companyPersonTblAls, userTblAls,
+        ClassifierConstants.COL_COMPANY_PERSON));
+
+    select.addFromLeft(ClassifierConstants.TBL_PERSONS, personTblAls, sys.joinTables(
+        ClassifierConstants.TBL_PERSONS, personTblAls, companyPersonTblAls,
+        ClassifierConstants.COL_PERSON));
   }
 
   private ResponseObject getSchedulingData(RequestInfo reqInfo) {

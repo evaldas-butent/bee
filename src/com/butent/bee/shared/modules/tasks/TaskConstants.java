@@ -735,6 +735,8 @@ public final class TaskConstants {
   public static final String SVC_RT_SCHEDULE = "rt_schedule";
   public static final String SVC_RT_COPY = "rt_copy";
 
+  public static final String SVC_TASK_REPORT = "TaskReport";
+
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
   public static final String VAR_USER_ID = Service.RPC_VAR_PREFIX + "user_id";
@@ -862,6 +864,7 @@ public final class TaskConstants {
   public static final String COL_COMMENT = "Comment";
 
   public static final String COL_PRODUCT = "Product";
+  public static final String COL_PRODUCT_NAME = "Name";
   public static final String COL_PRODUCT_REQUIRED = "ProductRequired";
 
   public static final String COL_TASK_EVENT = "TaskEvent";
@@ -966,6 +969,8 @@ public final class TaskConstants {
   public static final String ALS_LAST_BREAK_EVENT = "LastBreakEvent";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
+
+  public static final String ALS_TASK_PRODUCT_NAME = "ProductName";
 
   public static final String MENU_TASKS = "Tasks";
 

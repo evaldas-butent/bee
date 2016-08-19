@@ -3,6 +3,9 @@ package com.butent.bee.client.output;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_RS_REPORT;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_USER;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -35,6 +38,7 @@ import com.butent.bee.shared.modules.projects.ProjectPriority;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -130,7 +134,7 @@ public enum Report implements HasWidgetSupplier {
               TripStatus.class),
 
           new ReportTextItem(COL_ORDER_NO, loc.orderNumber()),
-          new ReportDateTimeItem(COL_ORDER + COL_ORDER_DATE, loc.orderDate()),
+          new ReportDateTimeItem(TransportConstants.COL_ORDER + COL_ORDER_DATE, loc.orderDate()),
           new ReportTextItem(COL_CUSTOMER, loc.customer()),
           new ReportTextItem(COL_ORDER_MANAGER, loc.manager()),
           new ReportTextItem(COL_CARGO, loc.cargo()),
@@ -363,6 +367,88 @@ public enum Report implements HasWidgetSupplier {
       report.setColGrouping(items.get(ProjectConstants.ALS_TASK_STATUS));
       return Collections.singletonList(report);
     }
+  },
+
+  TASK_REPORT(ModuleAndSub.of(Module.TASKS), TaskConstants.SVC_TASK_REPORT) {
+    @Override
+    public List<ReportItem> getItems() {
+      Dictionary loc = Localized.dictionary();
+      return Arrays.asList(
+          new ReportTextItem(TaskConstants.COL_TASK, loc.crmTask()),
+          new ReportTextItem(TaskConstants.COL_SUMMARY, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_SUMMARY)),
+          new ReportTextItem(TaskConstants.COL_OWNER, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_OWNER)),
+          new ReportTextItem(TaskConstants.COL_EXECUTOR, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_EXECUTOR)),
+          new ReportTextItem(COL_USER, loc.crmTaskObservers()),
+          new ReportEnumItem(TaskConstants.COL_PRIORITY, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_PRIORITY),
+              TaskConstants.TaskPriority.class),
+          new ReportEnumItem(TaskConstants.COL_STATUS, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
+              TaskStatus.class),
+          new ReportTextItem(TaskConstants.ALS_TASK_TYPE_NAME, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_TASK_TYPE)),
+          new ReportTextItem(TaskConstants.ALS_TASK_PRODUCT_NAME, loc.crmTaskProduct()),
+          new ReportTextItem(ALS_COMPANY_NAME, loc.company()),
+          new ReportDateTimeItem(TaskConstants.COL_START_TIME, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_START_TIME)),
+          new ReportDateTimeItem(TaskConstants.COL_FINISH_TIME, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_FINISH_TIME)),
+          new ReportTextItem(TaskConstants.COL_EXPECTED_DURATION, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_EXPECTED_DURATION)),
+          new ReportTextItem(ProjectConstants.ALS_PROJECT_NAME, loc.project()),
+          new ReportTextItem(ProjectConstants.ALS_STAGE_NAME, loc.prjStage()),
+
+          new ReportTextItem(ALS_DURATION_TYPE_NAME, loc.crmDurationType()),
+          new ReportDateTimeItem(COL_DURATION_DATE,
+              BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
+                  loc.crmSpentTime(), loc.unitDaysShort())),
+          new ReportTimeDurationItem(COL_DURATION,
+              BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
+                  Data.getColumnLabel(TBL_EVENT_DURATIONS,
+                      COL_DURATION), loc.unitHourShort()))
+
+          );
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+      for (ReportItem item : getItems()) {
+        items.put(item.getExpression(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
+
+      report.addRowItem(items.get(TaskConstants.COL_TASK));
+
+      for (String item : new String[] {
+          TaskConstants.COL_TASK,
+          TaskConstants.COL_SUMMARY,
+          TaskConstants.COL_OWNER,
+          TaskConstants.COL_EXECUTOR,
+          COL_USER,
+          TaskConstants.COL_PRIORITY,
+          TaskConstants.COL_STATUS,
+          TaskConstants.ALS_TASK_TYPE_NAME,
+          TaskConstants.ALS_TASK_PRODUCT_NAME,
+          ALS_COMPANY_NAME,
+          TaskConstants.COL_START_TIME,
+          TaskConstants.COL_FINISH_TIME,
+          TaskConstants.COL_EXPECTED_DURATION,
+          ProjectConstants.ALS_PROJECT_NAME,
+          ProjectConstants.ALS_STAGE_NAME,
+          ALS_DURATION_TYPE_NAME,
+          COL_DURATION_DATE,
+          COL_DURATION
+
+      }) {
+        report.addColItem(items.get(item));
+      }
+      return Collections.singletonList(report);
+    }
+
   };
 
   private static BeeLogger logger = LogUtils.getLogger(Report.class);
