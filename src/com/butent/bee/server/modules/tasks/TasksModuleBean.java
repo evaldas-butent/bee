@@ -1970,7 +1970,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     addExprForUserFirstLastNames(select, executorPerson, TaskConstants.COL_EXECUTOR);
 
-    addExprForUserFirstLastNames(select, ClassifierConstants.TBL_PERSONS, COL_USER);
+    addExprForUserFirstLastNames(select, TBL_PERSONS, COL_USER);
 
     select.addFrom(TaskConstants.TBL_TASKS);
 
@@ -2016,8 +2016,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         SqlUtils.notEqual(VIEW_TASK_USERS, COL_USER,  SqlUtils.field(TBL_TASKS, COL_EXECUTOR)),
         SqlUtils.notEqual(VIEW_TASK_USERS, COL_USER,  SqlUtils.field(TBL_TASKS, COL_OWNER))));
 
-    addJoinsForUserFirstLastNames(select, ClassifierConstants.TBL_PERSONS, VIEW_TASK_USERS,
-        COL_USER);
+    addJoinsForUserFirstLastNames(select, TBL_PERSONS, VIEW_TASK_USERS, COL_USER);
 
 
     SimpleRowSet rqs = qs.getData(select);
@@ -2030,11 +2029,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   }
 
   private void addExprForUserFirstLastNames(SqlSelect select, String table, String col) {
-    select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(table,
-        ClassifierConstants.COL_FIRST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY)),
-        SqlUtils.constant(BeeConst.STRING_SPACE), SqlUtils.nvl(SqlUtils.field(
-            table,
-            ClassifierConstants.COL_LAST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY))), col);
+    select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(table, COL_FIRST_NAME),
+        SqlUtils.constant(BeeConst.STRING_EMPTY)),
+        SqlUtils.constant(BeeConst.STRING_SPACE),
+        SqlUtils.nvl(SqlUtils.field(table, COL_LAST_NAME),
+            SqlUtils.constant(BeeConst.STRING_EMPTY))), col);
   }
 
   private void addJoinsForUserFirstLastNames(SqlSelect select, String personTblAls,
@@ -2046,13 +2045,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         AdministrationConstants.TBL_USERS, userTblAls, table,
         col));
 
-    select.addFromLeft(ClassifierConstants.TBL_COMPANY_PERSONS, companyPersonTblAls, sys.joinTables(
-        ClassifierConstants.TBL_COMPANY_PERSONS, companyPersonTblAls, userTblAls,
-        ClassifierConstants.COL_COMPANY_PERSON));
+    select.addFromLeft(TBL_COMPANY_PERSONS, companyPersonTblAls, sys.joinTables(
+        TBL_COMPANY_PERSONS, companyPersonTblAls, userTblAls, COL_COMPANY_PERSON));
 
-    select.addFromLeft(ClassifierConstants.TBL_PERSONS, personTblAls, sys.joinTables(
-        ClassifierConstants.TBL_PERSONS, personTblAls, companyPersonTblAls,
-        ClassifierConstants.COL_PERSON));
+    select.addFromLeft(TBL_PERSONS, personTblAls, sys.joinTables(
+        TBL_PERSONS, personTblAls, companyPersonTblAls, COL_PERSON));
   }
 
   private ResponseObject getSchedulingData(RequestInfo reqInfo) {
