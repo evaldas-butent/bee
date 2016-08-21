@@ -169,8 +169,8 @@
             <Label for="Status" style="&slbl;" />
             <Label name="StatusUpdated" style="color: #aaa;" />
           </FlowPanel>
-          <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
-                        style="width: 100%;" />
+          <DataSelector name="Status" source="Status" renderColumns="StatusName"
+                        newRowEnabled="false" style="width: 100%;" />
         </FlowPanel>
       </FlowPanel>
     </east>

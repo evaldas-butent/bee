@@ -38,6 +38,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -107,6 +108,13 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
           event.getSelector().setAdditionalFilter(getOperationFilter());
         } else if (event.isChanged()) {
           onOperationChange(event.getRelatedRow());
+        }
+      });
+
+    } else if (BeeUtils.same(name, COL_TRADE_DOCUMENT_STATUS) && widget instanceof DataSelector) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isOpened()) {
+          event.getSelector().setAdditionalFilter(getStatusFilter());
         }
       });
 
@@ -342,6 +350,11 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     return BeeUtils.joinItems(s1, getStringValue(COL_OPERATION_NAME));
   }
 
+  private Filter getStatusFilter() {
+    TradeDocumentPhase phase = getPhase();
+    return (phase == null) ? null : Filter.notNull(phase.getStatusColumnName());
+  }
+
   private void onOperationChange(IsRow operationRow) {
     if (operationRow != null) {
       getFormView().updateCell(COL_TRADE_DOCUMENT_PRICE_NAME,
@@ -370,6 +383,25 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
     } else if (fromStock == toStock || DataUtils.isNewRow(row)) {
       setPhase(row, to);
+
+      final int statusIndex = getDataIndex(COL_TRADE_DOCUMENT_STATUS);
+      Long status = row.getLong(statusIndex);
+
+      if (DataUtils.isId(status)) {
+        Queries.getValue(VIEW_TRADE_STATUSES, status, to.getStatusColumnName(),
+            new RpcCallback<String>() {
+              @Override
+              public void onSuccess(String result) {
+                if (!BeeConst.isTrue(result) && DataUtils.sameId(row, getActiveRow())) {
+                  getActiveRow().clearCell(statusIndex);
+                  RelationUtils.clearRelatedValues(Data.getDataInfo(getViewName()),
+                      COL_TRADE_DOCUMENT_STATUS, getActiveRow());
+
+                  getFormView().refreshBySource(COL_TRADE_DOCUMENT_STATUS);
+                }
+              }
+            });
+      }
 
     } else {
       event.cancel();
