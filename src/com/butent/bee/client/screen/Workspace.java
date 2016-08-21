@@ -26,6 +26,7 @@ import com.butent.bee.client.event.logical.CaptionChangeEvent;
 import com.butent.bee.client.event.logical.HasActiveWidgetChangeHandlers;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.screen.TilePanel.Tile;
@@ -776,7 +777,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         if (index == tileIndex) {
           if (debug) {
             info.add(new ExtendedProperty("close", child.getElement().getId(),
-                BeeUtils.joinWords(panel.getWidgetDirection(child), panel.getWidgetSize(child))));
+                BeeUtils.joinWords(Split.getWidgetDirection(child), Split.getWidgetSize(child))));
           }
 
           close((Tile) child);

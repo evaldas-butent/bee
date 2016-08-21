@@ -34,7 +34,7 @@
     <south size="300">
       <FlowPanel class="flexBox-vertical">
         <Toggle name="SouthExpander" upFace="chevron_up" downFace="chevron_down"
-                stylePrefix="&tgcl;" />
+                stylePrefix="&tgcl;" options="116" />
 
         <TabbedPages class="flexible" resizable="false">
           <page>

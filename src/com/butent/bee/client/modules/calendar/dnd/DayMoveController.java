@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.logical.MoveEvent;
+import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarPanel;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
@@ -424,7 +425,7 @@ public class DayMoveController implements MoveEvent.Handler {
         && panel != null && panel.isTodoVisible()) {
 
       width = panel.getElement().getClientWidth();
-      setTodoWidth(panel.getWidgetSize(panel.getTodoContainer()));
+      setTodoWidth(Split.getWidgetSize(panel.getTodoContainer()));
 
     } else {
       width = target.getElement().getClientWidth();

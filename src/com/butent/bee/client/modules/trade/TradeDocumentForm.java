@@ -31,6 +31,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
+import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -74,8 +75,12 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private static final String NAME_STATUS_UPDATED = "StatusUpdated";
 
   private static final String NAME_SUM_EXPANDER = "SumExpander";
+  private static final String NAME_SOUTH_EXPANDER = "SouthExpander";
+
   private static final String STYLE_SUM_EXPANDED =
       BeeConst.CSS_CLASS_PREFIX + "trade-document-sum-expanded";
+
+  private static final double DEFAULT_SOUTH_PERCENT = 50d;
 
   private static String getStorageKey(Direction direction) {
     return Storage.getUserKey(NameUtils.getClassName(TradeDocumentForm.class),
@@ -83,6 +88,8 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   }
 
   private final TradeDocumentSums tdSums = new TradeDocumentSums();
+
+  private int southExpandedFrom;
 
   TradeDocumentForm() {
   }
@@ -127,7 +134,25 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     } else if (BeeUtils.same(name, NAME_SPLIT) && widget instanceof Split) {
       ((Split) widget).addMutationHandler(event -> {
         if (event.getSource() instanceof Split) {
-          saveSplitLayout((Split) event.getSource());
+          Direction direction = Direction.parse(event.getOptions());
+
+          if (direction != null) {
+            Split split = (Split) event.getSource();
+            switch (direction) {
+              case EAST:
+                saveEastSize(split);
+                break;
+
+              case SOUTH:
+                if (southExpandedFrom <= 0) {
+                  saveSouthSize(split);
+                }
+                break;
+
+              default:
+                saveSplitLayout(split);
+            }
+          }
         }
       });
 
@@ -141,6 +166,20 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
           }
         }
       });
+
+    } else if (BeeUtils.same(name, NAME_SOUTH_EXPANDER) && widget instanceof HasClickHandlers) {
+      ((HasClickHandlers) widget).addClickHandler(event -> {
+        if (event.getSource() instanceof HasCheckedness) {
+          boolean expand = ((HasCheckedness) event.getSource()).isChecked();
+
+          int top = BeeConst.UNDEF;
+          if (event.getSource() instanceof HasOptions) {
+            top = BeeUtils.toInt(((HasOptions) event.getSource()).getOptions());
+          }
+
+          expandSouth(expand, top);
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -152,11 +191,15 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
     if (split != null) {
       Integer eastSize = BeeKeeper.getStorage().getInteger(getStorageKey(Direction.EAST));
+
       Double southPercent = BeeKeeper.getStorage().getDouble(getStorageKey(Direction.SOUTH));
+      if (!BeeUtils.isPositive(southPercent)) {
+        southPercent = DEFAULT_SOUTH_PERCENT;
+      }
 
       boolean doLayout = false;
 
-      if (BeeUtils.isPositive(southPercent)) {
+      if (southExpandedFrom <= 0) {
         int height = split.getOffsetHeight();
         int size = BeeUtils.round(height * southPercent / BeeConst.DOUBLE_ONE_HUNDRED);
 
@@ -427,6 +470,11 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   }
 
   private static void saveSplitLayout(Split split) {
+    saveSouthSize(split);
+    saveEastSize(split);
+  }
+
+  private static void saveSouthSize(Split split) {
     int southSize = split.getDirectionSize(Direction.SOUTH);
     int height = split.getOffsetHeight();
 
@@ -435,7 +483,9 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       double southPercent = southSize * BeeConst.DOUBLE_ONE_HUNDRED / height;
       BeeKeeper.getStorage().set(getStorageKey(Direction.SOUTH), southPercent);
     }
+  }
 
+  private static void saveEastSize(Split split) {
     int eastSize = split.getDirectionSize(Direction.EAST);
     int width = split.getOffsetWidth();
 
@@ -443,5 +493,46 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       eastSize = BeeUtils.clamp(eastSize, 1, width - 1);
       BeeKeeper.getStorage().set(getStorageKey(Direction.EAST), eastSize);
     }
+  }
+
+  private void expandSouth(boolean expand, int top) {
+    Split split = getSplit(getFormView());
+
+    if (split != null) {
+      int splitHeight = split.getOffsetHeight();
+
+      int oldSize = split.getDirectionSize(Direction.SOUTH);
+      int newSize;
+
+      if (expand) {
+        newSize = splitHeight - top;
+        setSouthExpandedFrom(oldSize);
+
+      } else {
+        newSize = southExpandedFrom;
+        setSouthExpandedFrom(BeeConst.UNDEF);
+      }
+
+      if (splitHeight <= 2) {
+        newSize = oldSize;
+
+      } else if (newSize <= 0 || newSize >= splitHeight) {
+        if (expand) {
+          newSize = BeeUtils.percent(splitHeight, 90d);
+        } else {
+          newSize = BeeUtils.percent(splitHeight, DEFAULT_SOUTH_PERCENT);
+        }
+
+        newSize = BeeUtils.clamp(newSize, 1, splitHeight - 1);
+      }
+
+      if (oldSize != newSize) {
+        split.setDirectionSize(Direction.SOUTH, newSize, true);
+      }
+    }
+  }
+
+  private void setSouthExpandedFrom(int southExpandedFrom) {
+    this.southExpandedFrom = southExpandedFrom;
   }
 }
