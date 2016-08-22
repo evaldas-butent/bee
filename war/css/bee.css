@@ -9,13 +9,27 @@
   from {transform: rotate(0deg);}
   to {transform: rotate(360deg);}
 }
-@-webkit-keyframes rotate {
-  from {-webkit-transform: rotate(0deg);}
-  to {-webkit-transform: rotate(360deg);}
+@keyframes rotateX {
+  from {transform: rotateX(0deg);}
+  to {transform: rotateX(360deg);}
+}
+@keyframes rotateY {
+  from {transform: rotateY(0deg);}
+  to {transform: rotateY(360deg);}
+}
+@keyframes rotateZ {
+  from {transform: rotateZ(0deg);}
+  to {transform: rotateZ(360deg);}
 }
 
 @keyframes blinker {
   50% { opacity: 0.0; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 .bee-Body {
@@ -638,6 +652,15 @@
 .bee-CellGridResizedCell {
   outline: blue dashed 1px;
   outline-offset: -1px;
+}
+
+@keyframes gridCellUpdated {
+  0% {background-color: palegreen;}
+  90% {background-color: palegreen;}
+  100% {background-color: transparent;}
+}
+.bee-CellGridUpdatedCell {
+  animation: rotateX 1s linear, gridCellUpdated 10s linear;
 }
 
 .bee-CellGridResizerHorizontal {
@@ -2543,7 +2566,6 @@
 }
 .bee-Badge-updated {
   animation: rotate 1s;
-  -webkit-animation: rotate 1s;
 }
 
 .bee-MapContainer .bee-Map {
@@ -2600,7 +2622,6 @@
   left: 45%;
   font-size: 20px;
   animation: rotate 1s linear infinite;
-  -webkit-animation: rotate 1s linear infinite;
 }
 .bee-News-not-loading {
   display: none;
@@ -3577,7 +3598,6 @@ textarea,
   font-size: 20px;
   padding: 0 15px 0 20px;
   color: #989898;
-  -webkit-transform: rotate(30deg);
   transform: rotate(30deg);
 }
 
@@ -3728,7 +3748,6 @@ textarea,
   top: 45%;
   font-size: xx-large;
   animation: rotate 1s linear infinite;
-  -webkit-animation: rotate 1s linear infinite;
 }
 
 .bee-MenuRoot .bee-potentially-bold::after,

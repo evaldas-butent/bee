@@ -99,7 +99,6 @@
   margin-top: -4px;
   border: 4px solid #FF7F6E;
   transform: rotate(45deg);
-  -webkit-transform: rotate(45deg);
 }
 
 .bee-cal .appointment-grid {

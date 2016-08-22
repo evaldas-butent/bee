@@ -782,6 +782,16 @@ public final class BeeUtils {
     return isEmpty(col) ? null : col;
   }
 
+  public static boolean equals(String s1, String s2) {
+    if (s1 == null) {
+      return isEmpty(s2);
+    } else if (s2 == null) {
+      return isEmpty(s1);
+    } else {
+      return s1.equals(s2);
+    }
+  }
+
   /**
    * Trims both Strings and then compares them.
    *

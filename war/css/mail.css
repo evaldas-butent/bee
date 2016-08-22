@@ -7,7 +7,6 @@
   font-size: 20px;
   text-align: center;
   animation: rotate 1s linear infinite;
-  -webkit-animation: rotate 1s linear infinite;
 }
 
 .bee-mail-EmptySelection {
