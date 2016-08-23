@@ -14,8 +14,8 @@
     <SimpleJoin name="Driver" joinType="LEFT">
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn name="FirstName" />
           <SimpleColumn name="LastName" />
+          <SimpleColumn name="FirstName" />
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
