@@ -28,13 +28,13 @@ import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.ec.TecDocBean;
 import com.butent.bee.server.news.NewsBean;
-import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.InstallCert;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -55,7 +55,6 @@ import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
@@ -1109,46 +1108,17 @@ public class UiServiceBean {
       tcd.suckButent(true);
       response = ResponseObject.info("Butent...");
 
-    } else if (BeeUtils.same(cmd, "handling")) { // TODO: remove in future
-      int c = qs.updateData(new SqlUpdate(TransportConstants.TBL_CARGO_HANDLING)
-          .addExpression(TransportConstants.COL_CARGO_TRIP,
-              SqlUtils.field(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
-                  TransportConstants.COL_CARGO_TRIP))
-          .addExpression(TransportConstants.COL_CARGO, SqlUtils.constant(null))
-          .setFrom(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
-              sys.joinTables(TransportConstants.TBL_ASSESSMENT_FORWARDERS,
-                  TransportConstants.TBL_CARGO_HANDLING, TransportConstants.COL_FORWARDER)));
+    } else if (BeeUtils.startsSame(cmd, "cert")) {
+      try {
+        String[] args = BeeUtils.split(BeeUtils.removePrefix(cmd, "cert"), ' ');
 
-      String[] fields = new String[] {
-          TransportConstants.COL_LOADING_PLACE, TransportConstants.COL_UNLOADING_PLACE,
-          TransportConstants.COL_EMPTY_KILOMETERS, TransportConstants.COL_LOADED_KILOMETERS,
-          TransportConstants.COL_CARGO_WEIGHT};
-
-      HasConditions clause = SqlUtils.or();
-
-      for (String field : fields) {
-        clause.add(SqlUtils.notNull(TransportConstants.TBL_ORDER_CARGO, field));
-      }
-      SimpleRowSet rs = qs.getData(new SqlSelect()
-          .addField(TransportConstants.TBL_ORDER_CARGO,
-              sys.getIdName(TransportConstants.TBL_ORDER_CARGO), TransportConstants.COL_CARGO)
-          .addFields(TransportConstants.TBL_ORDER_CARGO, fields)
-          .addFrom(TransportConstants.TBL_ORDER_CARGO)
-          .setWhere(clause));
-
-      for (SimpleRow row : rs) {
-        SqlInsert insert = new SqlInsert(TransportConstants.TBL_CARGO_HANDLING);
-
-        for (String field : fields) {
-          insert.addNotNull(field, row.getValue(field));
+        for (String msg : InstallCert.installCert(args)) {
+          response.addInfo(msg);
         }
-        qs.updateData(new SqlUpdate(TransportConstants.TBL_ORDER_CARGO)
-            .addConstant(TransportConstants.COL_CARGO_HANDLING, qs.insertData(insert))
-            .setWhere(sys.idEquals(TransportConstants.TBL_ORDER_CARGO,
-                row.getLong(TransportConstants.COL_CARGO))));
+      } catch (Throwable e) {
+        response.addError(e);
+        logger.error(e);
       }
-      response = ResponseObject.info("Forwarders", c, "Cargo", rs.getNumberOfRows());
-
     } else if (!BeeUtils.isEmpty(cmd)) {
       String tbl = NameUtils.getWord(cmd, 0);
       if (sys.isTable(tbl)) {
