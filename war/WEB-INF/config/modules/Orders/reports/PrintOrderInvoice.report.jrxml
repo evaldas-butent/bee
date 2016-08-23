@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-08-10T11:09:28 -->
+<!-- 2016-08-23T14:30:48 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.shared.i18n.Localized"/>
@@ -116,7 +116,7 @@
 		<initialValueExpression><![CDATA[BeeUtils.joinWords("Serija", $P{InvoicePrefix}, "Nr.", $P{InvoiceNo})]]></initialValueExpression>
 	</variable>
 	<title>
-		<band height="162" splitType="Stretch">
+		<band height="120" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="555" height="20" uuid="2989e748-c56f-40bd-8009-ed6a87c2c699">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -146,7 +146,7 @@
 				<imageExpression><![CDATA["file/241209"]]></imageExpression>
 			</image>
 			<frame>
-				<reportElement x="0" y="50" width="280" height="70" uuid="d5a845f6-4724-4c30-9042-1436851384b3"/>
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="50" width="280" height="70" uuid="d5a845f6-4724-4c30-9042-1436851384b3"/>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement positionType="Float" x="0" y="0" width="60" height="14" uuid="2cd90227-64cf-43d4-9640-1e6070cfe49d"/>
 					<textElement>
@@ -194,7 +194,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{loc}.address(), $P{SupplierAddress}) + (($P{SupplierCityName} == null) ? "" : ", " + $P{SupplierCityName}) +  (($P{SupplierCountryName} == null) ? "" : ", " + $P{SupplierCountryName})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="60" y="56" width="220" height="14" isRemoveLineWhenBlank="true" uuid="d573d5f5-d965-491e-abc3-d09a53bcbdf0">
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="60" y="56" width="220" height="14" isRemoveLineWhenBlank="true" uuid="d573d5f5-d965-491e-abc3-d09a53bcbdf0">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<printWhenExpression><![CDATA[$P{SupplierBank} != null]]></printWhenExpression>
@@ -207,7 +207,7 @@
 				</textField>
 			</frame>
 			<frame>
-				<reportElement x="280" y="50" width="275" height="112" uuid="fb5582a7-cb9c-42b4-830e-3e18320d4fbb"/>
+				<reportElement x="280" y="50" width="275" height="70" isRemoveLineWhenBlank="true" uuid="fb5582a7-cb9c-42b4-830e-3e18320d4fbb"/>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement positionType="Float" x="0" y="0" width="70" height="14" uuid="34244968-8bac-43be-9b1b-145456542fc9"/>
 					<textElement>
@@ -297,7 +297,7 @@
 					<textFieldExpression><![CDATA[$V{loc}.email() + ": " + $P{CustomerEmail}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="yyyy.MM.dd" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="199" y="112" width="75" height="14" uuid="963945da-d81a-4948-aa6c-e995b0eebcfc"/>
+					<reportElement positionType="Float" x="199" y="118" width="75" height="14" uuid="963945da-d81a-4948-aa6c-e995b0eebcfc"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
@@ -309,8 +309,8 @@
 	<pageHeader>
 		<band height="10">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField>
-				<reportElement x="0" y="0" width="555" height="10" uuid="8ff84d5f-9ea3-4306-884f-303a97806717">
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="555" height="10" isRemoveLineWhenBlank="true" uuid="8ff84d5f-9ea3-4306-884f-303a97806717">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} > 1]]></printWhenExpression>
 				</reportElement>
