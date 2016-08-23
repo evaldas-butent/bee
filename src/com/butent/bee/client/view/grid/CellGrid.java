@@ -3716,23 +3716,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private void markAsUpdated(int rowIndex, int colIndex) {
-    final Element cellElement = getCellElement(rowIndex, colIndex);
-
+    Element cellElement = getCellElement(rowIndex, colIndex);
     if (cellElement != null) {
-      if (cellElement.hasClassName(STYLE_UPDATED_CELL)) {
-        cellElement.removeClassName(STYLE_UPDATED_CELL);
-
-        Timer timer = new Timer() {
-          @Override
-          public void run() {
-            cellElement.addClassName(STYLE_UPDATED_CELL);
-          }
-        };
-        timer.schedule(200);
-
-      } else {
-        cellElement.addClassName(STYLE_UPDATED_CELL);
-      }
+      StyleUtils.restartAnimation(cellElement, STYLE_UPDATED_CELL);
     }
   }
 
