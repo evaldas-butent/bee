@@ -8,6 +8,7 @@
     <SimpleColumn name="TradeAct" />
     <SimpleJoin name="TradeAct" joinType="LEFT">
       <SimpleColumn name="Date" />
+      <SimpleColumn name="Parent" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />

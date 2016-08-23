@@ -13,7 +13,7 @@
   caption="=tradeAct" showRowId="true"
   width="1050" height="700"
   >
-  <f:properties reports="PrintTradeActSalePhysical, PrintTASaleNoStock,
+  <f:properties reports="PrintTradeActSalePhysical, PrintTradeActReturn, PrintTASaleNoStock,
      PrintTASaleRent, PrintTASaleAddition, PrintTASaleSuggestion, PrintTASaleProforma" />
  
 
