@@ -25,7 +25,8 @@
       </row>
       <row>
         <Label for="Customer" />
-        <DataSelector name="Customer" source="Customer" style="&inp;" />
+        <DataSelector name="Customer" source="Customer" style="&inp;"
+                      choiceColumns="Name TypeName CityName CountryCode"/>
         <Label for="CustomerPerson" />
         <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
                       choiceColumns="FirstName LastName CompanyName" options="Customer"
@@ -33,7 +34,8 @@
       </row>
       <row>
         <Label for="Payer" horizontalAlignment="right" />
-        <DataSelector source="Payer" style="&inp;" />
+        <DataSelector source="Payer" style="&inp;"
+                      choiceColumns="Name TypeName CityName CountryCode" />
         <Label for="Manager" />
         <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
                       editSource="ManagerPerson" newRowEnabled="false" style="&inp;" />
