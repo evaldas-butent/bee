@@ -62,7 +62,7 @@ import javax.net.ssl.X509TrustManager;
  * Class used to add the server's certificate to the KeyStore
  * with your trusted certificates.
  */
-public class InstallCert {
+public final class InstallCert {
 
   private static class SavingTrustManager implements X509TrustManager {
 
@@ -211,6 +211,7 @@ public class InstallCert {
     }
   }
 
+  // CHECKSTYLE:OFF
   private static String toHexString(byte[] bytes) {
     StringBuilder sb = new StringBuilder(bytes.length * 3);
     for (int b : bytes) {
@@ -221,4 +222,5 @@ public class InstallCert {
     }
     return sb.toString();
   }
+  // CHECKSTYLE:ON
 }
