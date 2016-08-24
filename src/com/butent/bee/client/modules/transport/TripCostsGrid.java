@@ -31,6 +31,8 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -48,6 +50,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -215,6 +218,21 @@ public class TripCostsGrid extends AbstractGridInterceptor
           public void onSuccess(Integer result) {
             if (BeeUtils.isPositive(result)) {
               DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRIP_COSTS);
+            }
+          }
+        });
+    Queries.getRowSet(VIEW_ORDER_CARGO, Collections.singletonList(COL_CARGO_MULTIPLE_SEGMENTS),
+        Filter.and(Filter.idIn(cargoIds), Filter.notNull(COL_CARGO_MULTIPLE_SEGMENTS)),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (!DataUtils.isEmpty(result)) {
+              Global.confirm("Ar tai paskutinė atkarpa?", () -> {
+                for (BeeRow row : result) {
+                  Queries.updateCellAndFire(result.getViewName(), row.getId(), row.getVersion(),
+                      result.getColumnId(0), row.getString(0), null);
+                }
+              });
             }
           }
         });

@@ -535,6 +535,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_OUTSIZED = "Outsized";
   public static final String COL_CARGO_PARTIAL = "Partial";
   public static final String COL_CARGO_PALETTES = "Palettes";
+  public static final String COL_CARGO_MULTIPLE_SEGMENTS = "MultipleSegments";
   public static final String COL_CARGO_VALUE = "Value";
   public static final String COL_CARGO_VALUE_CURRENCY = "ValueCurrency";
   public static final String COL_CARGO_TYPE = "CargoType";
