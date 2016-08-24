@@ -64,12 +64,42 @@ import javax.net.ssl.X509TrustManager;
  */
 public class InstallCert {
 
-  public static void main(String[] args) throws Exception {
-    List<String> msgs = installCert(args);
+  private static class SavingTrustManager implements X509TrustManager {
 
-    for (String msg : msgs) {
-      System.out.println(msg);
+    private final X509TrustManager tm;
+    private X509Certificate[] tmChain;
+
+    SavingTrustManager(X509TrustManager tm) {
+      this.tm = tm;
     }
+
+    @Override
+    public X509Certificate[] getAcceptedIssuers() {
+      /**
+       * This change has been done due to the following resolution advised for Java 1.7+
+       http://infposs.blogspot.kr/2013/06/installcert-and-java-7.html
+       **/
+      return new X509Certificate[0];
+      //throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void checkClientTrusted(X509Certificate[] chain, String authType)
+        throws CertificateException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void checkServerTrusted(X509Certificate[] chain, String authType)
+        throws CertificateException {
+      this.tmChain = chain;
+      tm.checkServerTrusted(chain, authType);
+    }
+  }
+
+  private static final char[] HEXDIGITS = "0123456789abcdef".toCharArray();
+
+  private InstallCert() {
   }
 
   public static List<String> installCert(String... args) throws Exception {
@@ -88,16 +118,26 @@ public class InstallCert {
       install = (args.length > 2) && "install".equalsIgnoreCase(args[2]);
       passphrase = (args.length > 3 ? args[3] : "changeit").toCharArray();
     } else {
-      messages.add("Usage: java InstallCert host[:port] pathToStore [install|check [passphrase]]");
+      messages.add("Usage: java InstallCert host[:port] pathToStore [check|install [passphrase]]");
       return messages;
     }
     File file = new File(store);
+    File storeFile = file;
 
+    if (!storeFile.isFile()) {
+      char sep = File.separatorChar;
+      File dir = new File(System.getProperty("java.home") + sep + "lib" + sep + "security");
+      storeFile = new File(dir, "jssecacerts");
+
+      if (!storeFile.isFile()) {
+        storeFile = new File(dir, "cacerts");
+      }
+    }
     KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 
-    if (file.isFile()) {
-      messages.add("Loading KeyStore " + file + "...");
-      InputStream in = new FileInputStream(file);
+    if (storeFile.isFile()) {
+      messages.add("Loading KeyStore " + storeFile + "...");
+      InputStream in = new FileInputStream(storeFile);
       ks.load(in, passphrase);
       in.close();
     } else {
@@ -136,10 +176,10 @@ public class InstallCert {
     messages.add("");
     MessageDigest sha1 = MessageDigest.getInstance("SHA1");
     MessageDigest md5 = MessageDigest.getInstance("MD5");
+
     for (int i = 0; i < chain.length; i++) {
       X509Certificate cert = chain[i];
-      messages.add
-          (" " + (i + 1) + " Subject " + cert.getSubjectDN());
+      messages.add(" " + (i + 1) + " Subject " + cert.getSubjectDN());
       messages.add("   Issuer  " + cert.getIssuerDN());
       sha1.update(cert.getEncoded());
       messages.add("   sha1    " + toHexString(sha1.digest()));
@@ -163,7 +203,13 @@ public class InstallCert {
     return messages;
   }
 
-  private static final char[] HEXDIGITS = "0123456789abcdef".toCharArray();
+  public static void main(String[] args) throws Exception {
+    List<String> msgs = installCert(args);
+
+    for (String msg : msgs) {
+      System.out.println(msg);
+    }
+  }
 
   private static String toHexString(byte[] bytes) {
     StringBuilder sb = new StringBuilder(bytes.length * 3);
@@ -174,40 +220,5 @@ public class InstallCert {
       sb.append(' ');
     }
     return sb.toString();
-  }
-
-  private static class SavingTrustManager implements X509TrustManager {
-
-    private final X509TrustManager tm;
-    private X509Certificate[] tmChain;
-
-    SavingTrustManager(X509TrustManager tm) {
-      this.tm = tm;
-    }
-
-    @Override
-    public X509Certificate[] getAcceptedIssuers() {
-
-      /**
-       * This change has been done due to the following resolution advised for Java 1.7+
-       http://infposs.blogspot.kr/2013/06/installcert-and-java-7.html
-       **/
-
-      return new X509Certificate[0];
-      //throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void checkClientTrusted(X509Certificate[] chain, String authType)
-        throws CertificateException {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void checkServerTrusted(X509Certificate[] chain, String authType)
-        throws CertificateException {
-      this.tmChain = chain;
-      tm.checkServerTrusted(chain, authType);
-    }
   }
 }

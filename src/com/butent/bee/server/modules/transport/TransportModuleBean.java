@@ -3172,6 +3172,9 @@ public class TransportModuleBean implements BeeModule {
         }
       }
     } catch (IOException e) {
+      logger.error(e);
+      response = ResponseObject.error(e);
+
       try {
         if (wr != null) {
           wr.close();
@@ -3182,7 +3185,6 @@ public class TransportModuleBean implements BeeModule {
       } catch (IOException ex) {
         logger.error(ex);
       }
-      response = ResponseObject.error(e);
     } finally {
       if (conn != null) {
         conn.disconnect();
