@@ -69,11 +69,9 @@
 
   <FlowPanel style="&section;">
     <Label text="=address" style="&labelLeft;" />
-    <DataSelector source="LoadingAddress" viewName="DistinctPlaceAddresses" valueSource="Address"
-                  strict="false" caching="local" style="&inp; margin-right:20px;" />
+    <InputText source="LoadingAddress" style="&inp; margin-right:20px;" />
     <Label text="=address" style="&labelRight;" />
-    <DataSelector source="UnloadingAddress" viewName="DistinctPlaceAddresses" valueSource="Address"
-                  strict="false" caching="local" style="&inp;" />
+    <InputText source="UnloadingAddress" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
@@ -85,11 +83,9 @@
 
   <FlowPanel style="&section;">
     <Label text="=company" style="&labelLeft;" />
-    <DataSelector source="LoadingCompany" viewName="DistinctPlaceCompanies" valueSource="Company"
-                  strict="false" caching="local" style="&inp; margin-right:20px;" />
+    <InputText source="LoadingCompany" style="&inp; margin-right:20px;" />
     <Label text="=company" style="&labelRight;" />
-    <DataSelector source="UnloadingCompany" viewName="DistinctPlaceCompanies" valueSource="Company"
-                  strict="false" caching="local" style="&inp;" />
+    <InputText source="UnloadingCompany" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">

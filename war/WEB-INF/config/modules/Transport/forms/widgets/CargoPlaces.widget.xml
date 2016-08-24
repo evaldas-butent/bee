@@ -24,15 +24,19 @@
     </row>
     <row>
       <Label text="=company" style="&lbl1;" />
-      <InputText source="LoadingCompany" autocompleteKey="cargo-place-company" />
+      <DataSelector source="LoadingCompany" viewName="DistinctPlaceCompanies" valueSource="Company"
+                    strict="false" caching="local" style="&inp;" />
       <Label text="=company" style="&lbl1;" />
-      <InputText source="UnloadingCompany" autocompleteKey="cargo-place-company" />
+      <DataSelector source="UnloadingCompany" viewName="DistinctPlaceCompanies" valueSource="Company"
+                    strict="false" caching="local" style="&inp;" />
     </row>
     <row>
       <Label text="=address" style="&lbl1;" />
-      <InputText source="LoadingAddress" autocompleteKey="cargo-place-address" />
+      <DataSelector source="LoadingAddress" viewName="DistinctPlaceAddresses" valueSource="Address"
+                    strict="false" caching="local" style="&inp;" />
       <Label text="=address" style="&lbl1;" />
-      <InputText source="UnloadingAddress" autocompleteKey="cargo-place-address" />
+      <DataSelector source="UnloadingAddress" viewName="DistinctPlaceAddresses" valueSource="Address"
+                    strict="false" caching="local" style="&inp;" />
     </row>
     <row>
       <Label text="=city" style="&lbl1;" />
