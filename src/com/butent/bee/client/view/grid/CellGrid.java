@@ -1716,6 +1716,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return getSelectedRows().containsKey(rowId);
   }
 
+  public boolean isRowUpdated(long rowId) {
+    return getUpdatedCells().containsKey(rowId);
+  }
+
   public boolean isSortable(String columnId) {
     ColumnInfo info = getColumnInfo(columnId);
     if (info == null) {
@@ -3492,6 +3496,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private boolean handleMouseMove(Event event, Element element, TargetType targetType,
       String eventRow, int eventCol) {
+
     if (getRowData().isEmpty()) {
       return false;
     }
