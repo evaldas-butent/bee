@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="DistinctPlaceCompanies" source="CargoPlaces"
+      filter="Company"
+>
+  <Columns>
+    <SimpleColumn name="Company" />
+  </Columns>
+  <GroupBy columns="Company" />
+  <Order>
+    <OrderBy column="Company" />
+  </Order>
+</View>
