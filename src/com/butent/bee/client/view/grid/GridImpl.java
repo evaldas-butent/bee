@@ -770,7 +770,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (filterSupplier == null && !BeeConst.STRING_MINUS.equals(cd.getFilterOptions())
         && (filterSupplierType != null
-            || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
+        || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
 
       filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataColumns,
           gridDescription.getIdName(), gridDescription.getVersionName(), dataIndex, label,
@@ -1707,6 +1707,21 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     getGrid().insertRow(event.getRow(), false);
+
+    if (event.isSpookyActionAtADistance()) {
+      Set<String> sources = new HashSet<>();
+
+      for (int index = 0; index < getDataColumns().size(); index++) {
+        if (!event.getRow().isNull(index)) {
+          sources.add(getDataColumns().get(index).getId());
+        }
+      }
+
+      if (!sources.isEmpty()) {
+        getGrid().addUpdatedSources(event.getRowId(), sources);
+      }
+    }
+
     logger.info("grid", getId(), getViewName(), "insert row", event.getRowId());
   }
 
