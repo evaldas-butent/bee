@@ -58,6 +58,8 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputNumber;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
@@ -81,6 +83,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -293,6 +296,9 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   private static final String NAME_SERVICE_TYPE = "ServiceType";
   private static final String NAME_REPAIR_TYPE = "RepairType";
 
+  private static final String NAME_SUMMARY = "Summary";
+  private static final String NAME_SUMMARY_LABEL = "summaryLabel";
+
   private static final String NAME_RESOURCES = "Resources";
   private static final String NAME_OVERLAP = "Overlap";
 
@@ -312,8 +318,14 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   private static final String NAME_BUILD = "Build";
   private static final String NAME_BUILD_INFO = "BuildInfo";
 
+  private static final String NAME_PROJECT = "Project";
+  private static final String NAME_COURSE = "Course";
+  private static final String NAME_LECTURE = "Lecture";
+  private static final String NAME_TARIFF = "Tariff";
+
   private static final String STYLE_COLOR_BAR_PREFIX = BeeConst.CSS_CLASS_PREFIX
       + "cal-ColorBar-";
+  private static final String STYLE_REQUIRED = "bee-required";
 
   static BeeRow createEmptyRow(BeeRow typeRow, DateTime start, CalendarVisibility visibility) {
     BeeRow row = RowFactory.createEmptyRow(CalendarKeeper.getAppointmentViewInfo(), true);
@@ -370,6 +382,12 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   private String reminderWidgetId;
 
   private String buildInfoWidgetId;
+
+  private String lectureWidgetId;
+  private String summaryWidgetId;
+  private String summaryLabelId;
+  private String projectWidgetId;
+  private String tariffWidgetId;
 
   private final TabBar colorWidget = new TabBar(STYLE_COLOR_BAR_PREFIX, Orientation.HORIZONTAL);
 
@@ -509,6 +527,32 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
     } else if (BeeUtils.same(name, NAME_BUILD_INFO)) {
       setBuildInfoWidgetId(widget.getId());
+
+    } else if (BeeUtils.same(name, NAME_PROJECT)) {
+      if (widget instanceof DataSelector) {
+        setProjectWidgetId(widget.getId());
+        ((DataSelector) widget).addSelectorHandler(this);
+      }
+
+    } else if (BeeUtils.same(name, NAME_TARIFF)) {
+      if (widget instanceof InputNumber) {
+        setTariffWidgetId(widget.getId());
+      }
+
+    } else if (BeeUtils.same(name, NAME_COURSE)) {
+      if (widget instanceof DataSelector) {
+        ((DataSelector) widget).addSelectorHandler(this);
+      }
+
+    } else if (BeeUtils.same(name, NAME_LECTURE)) {
+      setLectureWidgetId(widget.getId());
+      ((DataSelector) widget).addSelectorHandler(this);
+
+    } else if (BeeUtils.same(name, NAME_SUMMARY)) {
+      setSummaryWidgetId(widget.getId());
+
+    } else if (BeeUtils.same(name, NAME_SUMMARY_LABEL)) {
+      setSummaryLabelId(widget.getId());
     }
   }
 
@@ -533,6 +577,25 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     }
     if (!BeeUtils.isEmpty(getEndTimeWidgetId())) {
       getInputTime(getEndTimeWidgetId()).setTime(end);
+    }
+
+    if (!BeeUtils.isEmpty(getLectureWidgetId())) {
+      String courseValue = Data.getString(VIEW_APPOINTMENTS, row, COL_APPOINTMENT_COURSE);
+      DataSelector lectureSelector = (DataSelector) getWidget(getLectureWidgetId());
+      if (!BeeUtils.isEmpty(courseValue)) {
+        setCourseSelectorFilter(lectureSelector, BeeUtils.toLong(courseValue));
+      }
+
+      if (getSummaryWidgetId() != null && getSummaryLabelId() != null) {
+        InputText input = (InputText) getWidget(getSummaryWidgetId());
+        if (BeeUtils.isEmpty(lectureSelector.getValue())) {
+          input.setNullable(false);
+          getWidget(getSummaryLabelId()).addStyleName(STYLE_REQUIRED);
+        } else {
+          input.setNullable(true);
+          getWidget(getSummaryLabelId()).removeStyleName(STYLE_REQUIRED);
+        }
+      }
     }
   }
 
@@ -571,7 +634,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (event.isOpened()) {
+    if (event.hasRelatedView(VIEW_ATTENDEES) && event.isOpened()) {
       Set<Long> include = new HashSet<>(ucAttendees);
       Set<Long> exclude = new HashSet<>();
 
@@ -610,6 +673,48 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
 
       event.getSelector().setAdditionalFilter(filter);
+
+    } else if (event.hasRelatedView(ProjectConstants.VIEW_PROJECTS) && event.isChanged()) {
+      Double tariffValue = event.getRelatedRow().getDouble(Data.getColumnIndex(
+          ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_TARIFF));
+
+      if (!BeeUtils.isEmpty(getTariffWidgetId())) {
+        InputNumber tariffWidget = (InputNumber) getWidget(getTariffWidgetId());
+
+        if (tariffValue != null) {
+          Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), COL_APPOINTMENT_TARIFF, tariffValue);
+          tariffWidget.setValue(BeeUtils.toString(tariffValue));
+        } else {
+          Data.clearCell(VIEW_APPOINTMENTS, getActiveRow(), COL_APPOINTMENT_TARIFF);
+          tariffWidget.clearValue();
+        }
+      }
+
+    } else if (event.hasRelatedView(VIEW_PROPERTY_GROUPS) && event.isChanged()) {
+      if (DataUtils.isId(event.getValue()) && getLectureWidgetId() != null) {
+        DataSelector lectureSelector = (DataSelector) getWidget(getLectureWidgetId());
+        setCourseSelectorFilter(lectureSelector, event.getValue());
+
+        Data.clearCell(VIEW_APPOINTMENTS, getActiveRow(), COL_APPOINTMENT_LECTURE);
+        Data.clearCell(VIEW_APPOINTMENTS, getActiveRow(), ALS_APPOINTMENT_LECTURE);
+        lectureSelector.clearValue();
+        lectureSelector.clearDisplay();
+
+        if (getSummaryLabelId() != null) {
+          getWidget(getSummaryLabelId()).addStyleName(STYLE_REQUIRED);
+        }
+      }
+
+    } else if (event.hasRelatedView(VIEW_EXTENDED_PROPERTIES) && event.isChanged()
+        && getSummaryWidgetId() != null && getSummaryLabelId() != null) {
+      InputText input = (InputText) getWidget(getSummaryWidgetId());
+      if (DataUtils.isId(event.getValue())) {
+        input.setNullable(true);
+        getWidget(getSummaryLabelId()).removeStyleName(STYLE_REQUIRED);
+      } else {
+        input.setNullable(false);
+        getWidget(getSummaryLabelId()).addStyleName(STYLE_REQUIRED);
+      }
     }
   }
 
@@ -685,6 +790,12 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         }
       }
     }
+  }
+
+  public void setProjectData(IsRow projectRow) {
+    DataSelector projectSelector = (DataSelector) getWidget(getProjectWidgetId());
+    projectSelector.setSelection((BeeRow) projectRow, null, true);
+    projectSelector.setEnabled(false);
   }
 
   void setProperties(List<Long> properties) {
@@ -894,6 +1005,10 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     return lastCheckStart;
   }
 
+  private String getLectureWidgetId() {
+    return lectureWidgetId;
+  }
+
   private ListBox getListBox(String id) {
     if (BeeUtils.isEmpty(id)) {
       return null;
@@ -913,6 +1028,10 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private String getOverlapWidgetId() {
     return overlapWidgetId;
+  }
+
+  private String getProjectWidgetId() {
+    return projectWidgetId;
   }
 
   private String getReminderWidgetId() {
@@ -966,12 +1085,24 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     return startTimeWidgetId;
   }
 
+  private String getSummaryLabelId() {
+    return summaryLabelId;
+  }
+
+  private String getSummaryWidgetId() {
+    return summaryWidgetId;
+  }
+
   private Widget getWidget(String id) {
     Widget widget = DomUtils.getChildQuietly(getFormView().asWidget(), id);
     if (widget == null) {
       logger.warning("widget not found: id", id);
     }
     return widget;
+  }
+
+  private String getTariffWidgetId() {
+    return tariffWidgetId;
   }
 
   private boolean hasValue(String widgetId) {
@@ -1457,6 +1588,15 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     this.lastCheckEnd = lastCheckEnd;
   }
 
+  private static void setCourseSelectorFilter(DataSelector lectureSelector, Long courseId) {
+    Filter filter = Filter.equals(COL_PROPERTY_GROUP, courseId);
+    lectureSelector.setAdditionalFilter(filter);
+  }
+
+  private void setLectureWidgetId(String lectureWidgetId) {
+    this.lectureWidgetId = lectureWidgetId;
+  }
+
   private void setLastCheckStart(DateTime lastCheckStart) {
     this.lastCheckStart = lastCheckStart;
   }
@@ -1475,6 +1615,10 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private void setOverlapWidgetId(String overlapWidgetId) {
     this.overlapWidgetId = overlapWidgetId;
+  }
+
+  public void setProjectWidgetId(String projectWidgetId) {
+    this.projectWidgetId = projectWidgetId;
   }
 
   private void setReminderWidgetId(String reminderWidgetId) {
@@ -1515,6 +1659,18 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private void setStartTimeWidgetId(String startTimeWidgetId) {
     this.startTimeWidgetId = startTimeWidgetId;
+  }
+
+  private void setSummaryLabelId(String summaryLabelId) {
+    this.summaryLabelId = summaryLabelId;
+  }
+
+  private void setSummaryWidgetId(String summaryWidgetId) {
+    this.summaryWidgetId = summaryWidgetId;
+  }
+
+  private void setTariffWidgetId(String tariffWidgetId) {
+    this.tariffWidgetId = tariffWidgetId;
   }
 
   private void showOverlap(boolean show) {

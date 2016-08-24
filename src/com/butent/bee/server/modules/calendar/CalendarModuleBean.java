@@ -83,6 +83,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
@@ -1128,16 +1129,32 @@ public class CalendarModuleBean implements BeeModule {
 
   private ResponseObject getCalendarItems(RequestInfo reqInfo) {
     long calendarId = BeeUtils.toLong(reqInfo.getParameter(PARAM_CALENDAR_ID));
-    if (!DataUtils.isId(calendarId)) {
+    long projectId = BeeUtils.toLong(reqInfo.getParameter(PARAM_PROJECT_ID));
+    Map<String, String> filterData = Codec.deserializeMap(reqInfo.getParameter(PARAM_FILTER_DATA));
+
+    if (!DataUtils.isId(calendarId) && !DataUtils.isId(projectId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), PARAM_CALENDAR_ID);
     }
 
-    Filter calFilter = Filter.equals(COL_CALENDAR, calendarId);
-    BeeRowSet calAppTypes = qs.getViewData(VIEW_CAL_APPOINTMENT_TYPES, calFilter);
-
+    Filter calFilter;
     CompoundFilter appFilter = Filter.and();
-    appFilter.add(VALID_APPOINTMENT);
-    appFilter.add(Filter.isNotEqual(COL_STATUS, IntegerValue.of(AppointmentStatus.CANCELED)));
+    if (DataUtils.isId(calendarId)) {
+      calFilter = Filter.equals(COL_CALENDAR, calendarId);
+
+      BeeRowSet calAppTypes = qs.getViewData(VIEW_CAL_APPOINTMENT_TYPES, calFilter);
+
+      appFilter.add(VALID_APPOINTMENT);
+      appFilter.add(Filter.isNotEqual(COL_STATUS, IntegerValue.of(AppointmentStatus.CANCELED)));
+
+      if (!calAppTypes.isEmpty()) {
+        appFilter.add(Filter.any(COL_APPOINTMENT_TYPE,
+        DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
+     }
+
+    } else if (DataUtils.isId(projectId)) {
+      appFilter.add(Filter.equals(COL_CALENDAR_PROJECT, projectId));
+
+    }
 
     Long startTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_START_TIME));
     Long endTime = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_END_TIME));
@@ -1149,12 +1166,22 @@ public class CalendarModuleBean implements BeeModule {
       appFilter.add(Filter.isLess(COL_START_DATE_TIME, new LongValue(endTime)));
     }
 
-    if (!calAppTypes.isEmpty()) {
-      appFilter.add(Filter.any(COL_APPOINTMENT_TYPE,
-          DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
-    }
-
     long millis = System.currentTimeMillis();
+    for (String key : filterData.keySet()) {
+      CalendarFilterDataType type = EnumUtils.getEnumByName(CalendarFilterDataType.class, key);
+      String value = filterData.get(key);
+
+          if (!BeeUtils.isEmpty(value)) {
+        switch (type) {
+          case PROJECT:
+            appFilter.add(Filter.contains(ALS_CALENDAR_PROJECT, value));
+            break;
+          case COURSE:
+            appFilter.add(Filter.contains(ALS_APPOINTMENT_COURSE, value));
+            break;
+          }
+      }
+    }
 
     List<BeeRow> appointments = getAppointments(appFilter, null, false);
     if (!appointments.isEmpty()) {

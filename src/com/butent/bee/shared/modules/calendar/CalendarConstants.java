@@ -176,6 +176,22 @@ public final class CalendarConstants {
     }
   }
 
+  public enum CalendarFilterDataType implements HasCaption {
+    PROJECT(Localized.dictionary().project()),
+    COURSE(Localized.dictionary().calCourse());
+
+    private final String caption;
+
+    CalendarFilterDataType(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+  }
+
   public static void register() {
     EnumUtils.register(AppointmentStatus.class);
     EnumUtils.register(MultidayLayout.class);
@@ -194,6 +210,7 @@ public final class CalendarConstants {
   public static final String SVC_DO_REPORT = "do_report";
 
   public static final String PARAM_CALENDAR_ID = "calendar_id";
+  public static final String PARAM_PROJECT_ID = "project_id";
   public static final String PARAM_USER_CALENDAR_ID = "user_calendar_id";
   public static final String PARAM_ACTIVE_VIEW = "active_view";
   public static final String PARAM_APPOINTMENT_ID = "appointment_id";
@@ -204,6 +221,7 @@ public final class CalendarConstants {
   public static final String PARAM_REPORT = "report";
   public static final String PARAM_START_TIME = "start_time";
   public static final String PARAM_END_TIME = "end_time";
+  public static final String PARAM_FILTER_DATA = "FilterData";
 
   public static final String TBL_USER_CALENDARS = "UserCalendars";
   public static final String TBL_USER_CAL_ATTENDEES = "UserCalAttendees";
@@ -269,6 +287,7 @@ public final class CalendarConstants {
   public static final String DEFAULT_EDIT_APPOINTMENT_FORM = "SimpleAppointment";
 
   public static final String COL_CALENDAR = "Calendar";
+  public static final String COL_CALENDAR_PROJECT = "Project";
   public static final String COL_USER_CALENDAR = "UserCalendar";
 
   public static final String COL_CALENDAR_NAME = "Name";
@@ -365,6 +384,14 @@ public final class CalendarConstants {
 
   public static final String COL_APPOINTMENT_COMPACT = "AppointmentCompact";
   public static final String COL_APPOINTMENT_TITLE = "AppointmentTitle";
+
+  public static final String COL_APPOINTMENT_LECTURE = "Lecture";
+  public static final String COL_APPOINTMENT_COURSE = "Course";
+  public static final String COL_APPOINTMENT_TARIFF = "Tariff";
+
+  public static final String ALS_CALENDAR_PROJECT = "ProjectName";
+  public static final String ALS_APPOINTMENT_LECTURE = "LectureName";
+  public static final String ALS_APPOINTMENT_COURSE = "CourseName";
 
   public static final String COL_STYLE = "Style";
 

@@ -339,6 +339,8 @@ public interface Dictionary {
 
   default String calCompactForm() {return g("calCompactForm");}
 
+  default String calCourse() {return g("calCourse");}
+
   default String calCreateNewAppointment() {return g("calCreateNewAppointment");}
 
   default String calDayView() {return g("calDayView");}
@@ -376,6 +378,8 @@ public interface Dictionary {
   default String calInvalidHoursInterval() {return g("calInvalidHoursInterval");}
 
   default String calLastActionDate() {return g("calLastActionDate");}
+
+  default String calLecture() {return g("calLecture");}
 
   default String calLinkOpen() {return g("calLinkOpen");}
 
@@ -2618,6 +2622,8 @@ public interface Dictionary {
 
   default String from() {return g("from");}
 
+  default String fuelCard() {return g("fuelCard");}
+
   default String goods() {return g("goods");}
 
   default String greatest() {return g("greatest");}
@@ -3786,6 +3792,8 @@ public interface Dictionary {
 
   default String prjActualTaskDuration() {return g("prjActualTaskDuration");}
 
+  default String prjAppointments() {return g("prjAppointments");}
+
   default String prjComments() {return g("prjComments");}
 
   default String prjCreateFromTasks() {return g("prjCreateFromTasks");}
@@ -3815,6 +3823,8 @@ public interface Dictionary {
   default String prjFilterAll() {return g("prjFilterAll");}
 
   default String prjFilterNotLate() {return g("prjFilterNotLate");}
+
+  default String prjGroup() {return g("prjGroup");}
 
   default String prjIncomePlan() {return g("prjIncomePlan");}
 
@@ -3875,6 +3885,8 @@ public interface Dictionary {
   default String prjStatusScheduled() {return g("prjStatusScheduled");}
 
   default String prjStatusSuspended() {return g("prjStatusSuspended");}
+
+  default String prjTariff() {return g("prjTariff");}
 
   default String prjTeam() {return g("prjTeam");}
 
@@ -4149,8 +4161,6 @@ public interface Dictionary {
   default String scheduledStartingDate() {return g("scheduledStartingDate");}
 
   default String scheduledStartingTime() {return g("scheduledStartingTime");}
-
-  default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
 
   default String search() {return g("search");}
 

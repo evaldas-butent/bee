@@ -46,6 +46,7 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
   private static final BeeLogger logger = LogUtils.getLogger(CalendarWidget.class);
 
   private final long calendarId;
+  private final Long projectId;
 
   private final CalendarSettings settings;
 
@@ -74,9 +75,14 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
   private State state;
 
   public CalendarWidget(long calendarId, CalendarSettings settings) {
+    this(calendarId, settings, null);
+  }
+
+  public CalendarWidget(long calendarId, CalendarSettings settings, Long projectId) {
     super();
 
     this.calendarId = calendarId;
+    this.projectId = projectId;
     this.settings = settings;
     this.dataManager = new CalendarDataManager();
 
@@ -148,11 +154,16 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
   }
 
   public void loadItems(boolean force, final boolean scroll) {
+    loadItems(force, scroll, null);
+  }
+
+  public void loadItems(boolean force, final boolean scroll, Map filterData) {
     if (getView() != null) {
       final long startMillis = System.currentTimeMillis();
       final Range<DateTime> range = getView().getVisibleRange();
 
-      dataManager.loadItems(calendarId, range, settings, force, new IntCallback() {
+      dataManager.loadItems(calendarId, projectId, filterData, range, settings, force,
+                                                                                new IntCallback() {
         @Override
         public void onSuccess(Integer result) {
           logger.debug("load", CalendarUtils.renderRange(range), result,

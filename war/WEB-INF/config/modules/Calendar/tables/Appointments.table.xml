@@ -32,5 +32,13 @@
     <Relation name="Company" relation="Companies" label="=company" />
     <Relation name="CompanyPerson" relation="CompanyPersons" label="=contact" />
     <Relation name="Vehicle" relation="Vehicles" label="=calCar" />
+
+    <Integer name="DurationHours" />
+    <Integer name="DurationMinutes" />
+    <Relation name="Project" relation="Projects" label="=project" />
+    <Relation name="Course" relation="PropertyGroups" label="=calCourse" />
+    <Relation name="Lecture" relation="ExtendedProperties" label="=calLecture" />
+    <Boolean name="FuelCard" label="=fuelCard"/>
+    <Numeric name="Tariff" precision="15" scale="5" label="=prjTariff" />
   </Fields>
 </Table>

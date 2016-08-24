@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="ProjectActionList" viewName="Appointments"
+        newRowCaption="=calNewAppointment"
+>
+  <g:columns>
+    <DataColumn name="Summary" visible="true">
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </DataColumn>
+    <DataColumn name="LectureName" label="=calLecture" visible="true" />
+    <DataColumn name="StartDateTime" visible="true" />
+    <DataColumn name="EndDateTime" visible="true" />
+    <CalcColumn name="Duration" label="=duration" visible="true" type="string">
+      <render>
+        <ui:function>
+          var duration = '';
+          if (row.DurationHours != null) {
+          duration = duration.concat(new String(row.DurationHours));
+          } else {
+          duration = duration.concat('00');
+          }
+
+          if (row.DurationMinutes != null) {
+          if (row.DurationMinutes > 9) {
+          duration = duration.concat(':' + new String(row.DurationMinutes));
+          } else {
+          duration = duration.concat(':0' + new String(row.DurationMinutes));
+          }
+          } else {
+          duration = duration.concat(':00');
+          }
+          return duration;
+        </ui:function>
+      </render>
+    </CalcColumn>
+    <DataColumn name="Status" visible="true"/>
+    <DataColumn name="Location" maxWidth="200" visible="true"/>
+    <DataColumn name="Description"/>
+    <DataColumn name="FuelCard" visible="true"/>
+    <DataColumn name="Tariff" visible="true" format="#.00"/>
+    <CalcColumn name="PrjExpenses" label="=prjExpenses" visible="true" type="decimal" scale="2">
+      <render>
+        <ui:function>
+          var duration = row.DurationHours + (row.DurationMinutes / 60) ;
+          return duration * row.Tariff
+        </ui:function>
+      </render>
+      <footer aggregate="sum" options="0" />
+    </CalcColumn>
+  </g:columns>
+</g:Grid>
