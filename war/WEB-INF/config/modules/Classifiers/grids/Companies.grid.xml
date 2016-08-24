@@ -45,6 +45,9 @@
     <DataColumn name="DiscountParent" renderColumns="DiscountParentName" visible="false" />
     <DataColumn name="PriceName" visible="false" />
 
+    <DataColumn name="ERPType" />
+    <DataColumn name="ERPGroup" />
+
     <DataColumn name="Created" readOnly="true" />
     <RelColumn name="Creator" readOnly="true" />
 
