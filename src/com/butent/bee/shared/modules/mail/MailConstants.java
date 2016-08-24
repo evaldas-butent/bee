@@ -277,6 +277,15 @@ public final class MailConstants {
   public static final String PRM_MAIL_CHECK_INTERVAL = "MailCheckIntervalInMinutes";
   public static final String PRM_SEND_NEWSLETTERS_COUNT = "SendNewslettersCount";
   public static final String PRM_SEND_NEWSLETTERS_INTERVAL = "SendNewslettersInterval";
+  public static final String PRM_REMINDERS_MAIL_TEMPLATE = "RemindersMailTemplate";
+
+  public static final String REMINDERS_MAIL_TEMPLATE_HEADER_TEXT = "{template_header_text}";
+  public static final String REMINDERS_MAIL_TEMPLATE_HEADER_COLOR = "{template_header_color}";
+  public static final String REMINDERS_MAIL_DEFAULT_COLOR = "#6bae45";
+  public static final String DEFAULT_REMINDERS_MAIL_TEMPLATE_VALUE =
+      "<h3 style=\"background-color: " + REMINDERS_MAIL_TEMPLATE_HEADER_COLOR
+          + "; color: white; text-transform: uppercase;"
+          + " padding: 10px;\">" + REMINDERS_MAIL_TEMPLATE_HEADER_TEXT + "</h3>";
 
   public static void register() {
     EnumUtils.register(RuleCondition.class);

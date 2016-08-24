@@ -1379,6 +1379,22 @@ public final class StyleUtils {
     setStyleDependentName(el, style, false);
   }
 
+  public static void restartAnimation(Element el, String className) {
+    Assert.notNull(el);
+    Assert.notEmpty(className);
+
+    if (el.hasClassName(className)) {
+      el.removeClassName(className);
+
+      if (el.getOffsetHeight() >= 0) { // trigger reflow
+        el.addClassName(className);
+      }
+
+    } else {
+      el.addClassName(className);
+    }
+  }
+
   public static void setBackgroundColor(Element el, String color) {
     Assert.notNull(el);
     setBackgroundColor(el.getStyle(), color);
@@ -2003,8 +2019,6 @@ public final class StyleUtils {
         clearStyleProperty(st, STYLE_OVERFLOW_X);
         clearStyleProperty(st, STYLE_OVERFLOW_Y);
         break;
-      default:
-        Assert.untouchable();
     }
   }
 

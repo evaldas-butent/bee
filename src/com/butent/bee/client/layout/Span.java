@@ -7,14 +7,13 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.BeeConst;
 
 /**
  * Enables to manage span elements from Document Object Model.
  */
 
-public class Span extends ComplexPanel implements HasIndexedWidgets, IdentifiableWidget {
+public class Span extends ComplexPanel implements HasIndexedWidgets {
 
   public Span() {
     setElement(Document.get().createSpanElement());

@@ -221,8 +221,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       case SVC_SET_RESTRICTIONS:
         Map<Long, Map<Long, Boolean>> data = new HashMap<>();
 
-        for (Map.Entry<String, String> entry :
-            Codec.deserializeMap(reqInfo.getParameter(TBL_CONF_RESTRICTIONS)).entrySet()) {
+        for (Map.Entry<String, String> entry
+            : Codec.deserializeMap(reqInfo.getParameter(TBL_CONF_RESTRICTIONS)).entrySet()) {
           Map<Long, Boolean> map = new HashMap<>();
 
           for (Map.Entry<String, String> subEntry : Codec.deserializeMap(entry.getValue())

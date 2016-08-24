@@ -503,7 +503,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             COL_ACCOUNT_DESCRIPTION),
         BeeParameter.createNumber(module, PRM_MAIL_CHECK_INTERVAL),
         BeeParameter.createNumber(module, PRM_SEND_NEWSLETTERS_COUNT, false, null),
-        BeeParameter.createNumber(module, PRM_SEND_NEWSLETTERS_INTERVAL, false, null));
+        BeeParameter.createNumber(module, PRM_SEND_NEWSLETTERS_INTERVAL, false, null),
+        BeeParameter.createText(module, PRM_REMINDERS_MAIL_TEMPLATE, false,
+            DEFAULT_REMINDERS_MAIL_TEMPLATE_VALUE));
+
   }
 
   @Override
@@ -871,8 +874,57 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return account;
   }
 
+  public String getSenderAccountEmail(Long accountId) {
+    SimpleRow row = qs.getRow(new SqlSelect()
+        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+        .addFrom(TBL_ACCOUNTS)
+        .addFromInner(TBL_EMAILS,
+            sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
+        .setWhere(sys.idEquals(TBL_ACCOUNTS, accountId)));
+
+    return row.getValue(COL_EMAIL_ADDRESS);
+  }
+
   public ResponseObject sendMail(Long accountId, String to, String subject, String content) {
     return sendMail(accountId, new String[] {to}, null, null, subject, content, null, false);
+  }
+
+  public String styleMailHeader(String headerContent) {
+    return styleMailHeader(headerContent, null);
+  }
+
+  public String styleMailHeader(String headerContent, String headerColor) {
+    String styledHeader;
+    String headerTemplate = prm.getText(PRM_REMINDERS_MAIL_TEMPLATE);
+
+    if (!BeeUtils.isEmpty(headerTemplate) && !BeeUtils.isEmpty(headerContent)
+        && headerTemplate.contains(REMINDERS_MAIL_TEMPLATE_HEADER_TEXT)) {
+
+      if (headerTemplate.contains(REMINDERS_MAIL_TEMPLATE_HEADER_COLOR)) {
+        if (BeeUtils.isEmpty(headerColor)) {
+          headerTemplate = headerTemplate.replace(
+              REMINDERS_MAIL_TEMPLATE_HEADER_COLOR, REMINDERS_MAIL_DEFAULT_COLOR);
+        } else {
+          headerTemplate = headerTemplate.replace(
+              REMINDERS_MAIL_TEMPLATE_HEADER_COLOR, headerColor);
+        }
+
+      }
+
+      styledHeader = headerTemplate.replace(REMINDERS_MAIL_TEMPLATE_HEADER_TEXT, headerContent);
+
+    } else {
+      styledHeader = headerContent;
+    }
+
+    return styledHeader;
+  }
+
+  public ResponseObject sendStyledMail(Long accountId, String to, String subject, String content,
+      String headerContent) {
+    String emailContent = BeeUtils.join("", styleMailHeader(headerContent), content);
+
+    return sendMail(accountId, to, subject, emailContent);
   }
 
   public ResponseObject sendMail(Long accountId, String[] to, String[] cc, String[] bcc,

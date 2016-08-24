@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="MailSettings" label="=settings" parent="Mail" order="30" separator="true"
+>
+   <Item name="Accounts" label="=mailAccounts" service="grid" parameters="Accounts" />
+   <Item name="Signatures" label="=mailSignatures" service="grid" parameters="Signatures" />
+   <Item name="RecipientsGroups" label="=mailRecipientsGroups" service="grid" parameters="RecipientsGroups" />
+   <Item name="Addressbook" label="=mailAddressbook" service="grid" parameters="Addressbook" />
+</Entry>

@@ -232,14 +232,14 @@ public class Specification implements BeeSerializable {
     return Codec.beeSerialize(arr);
   }
 
-  public void setBranchOptions(Long branchId, List<Option> options) {
-    this.branchId = branchId;
+  public void setBranchOptions(Long brId, List<Option> opt) {
+    this.branchId = brId;
     branchOptions.clear();
-    branchOptions.addAll(options);
+    branchOptions.addAll(opt);
   }
 
-  public void setBundle(Bundle bundle, Integer price) {
-    this.bundle = bundle;
+  public void setBundle(Bundle b, Integer price) {
+    this.bundle = b;
     this.bundlePrice = price;
   }
 

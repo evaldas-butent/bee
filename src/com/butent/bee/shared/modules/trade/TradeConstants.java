@@ -113,6 +113,7 @@ public final class TradeConstants {
 
   public static final String VIEW_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String VIEW_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String VIEW_TRADE_PAYMENTS = "TradePayments";
   public static final String VIEW_TRADE_STOCK = "TradeStock";
 
   public static final String VIEW_TRADE_DOCUMENT_TYPES = "TradeDocumentTypes";
@@ -170,6 +171,8 @@ public final class TradeConstants {
   public static final String COL_OPERATION_TYPE = "OperationType";
   public static final String COL_OPERATION_KIND = "Kind";
   public static final String COL_OPERATION_PRICE = "Price";
+  public static final String COL_OPERATION_VAT_MODE = "OperationVatMode";
+  public static final String COL_OPERATION_DISCOUNT_MODE = "OperationDiscountMode";
   public static final String COL_OPERATION_WAREHOUSE_FROM = "WarehouseFrom";
   public static final String COL_OPERATION_WAREHOUSE_TO = "WarehouseTo";
   public static final String COL_OPERATION_DEFAULT = "IsDefault";
@@ -187,8 +190,18 @@ public final class TradeConstants {
   public static final String COL_TRADE_DOCUMENT_NUMBER_1 = "Number1";
   public static final String COL_TRADE_DOCUMENT_NUMBER_2 = "Number2";
 
+  public static final String COL_TRADE_DOCUMENT_DISCOUNT = "DocumentDiscount";
+  public static final String COL_TRADE_DOCUMENT_PRICE_NAME = "PriceName";
+  public static final String COL_TRADE_DOCUMENT_VAT_MODE = "DocumentVatMode";
+  public static final String COL_TRADE_DOCUMENT_DISCOUNT_MODE = "DocumentDiscountMode";
+
   public static final String COL_TRADE_DOCUMENT = "TradeDocument";
   public static final String COL_TRADE_DOCUMENT_ITEM = "TradeDocumentItem";
+
+  public static final String COL_TRADE_DOCUMENT_ITEM_DISCOUNT = "Discount";
+  public static final String COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT = "DiscountIsPercent";
+  public static final String COL_TRADE_DOCUMENT_ITEM_VAT = "Vat";
+  public static final String COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT = "VatIsPercent";
 
   public static final String COL_DOCUMENT_TYPE_NAME = "DocumentTypeName";
   public static final String COL_DOCUMENT_TYPE = "DocumentType";
@@ -198,6 +211,8 @@ public final class TradeConstants {
   public static final String COL_PRIMARY_DOCUMENT_ITEM = "PrimaryDocumentItem";
   public static final String COL_STOCK_QUANTITY = "Quantity";
   public static final String COL_STOCK_WAREHOUSE = "Warehouse";
+
+  public static final String COL_TRADE_PAYMENT_AMOUNT = "PaymentAmount";
 
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_PAYER_NAME = "PayerName";
@@ -235,6 +250,7 @@ public final class TradeConstants {
 
   public static final String GRID_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String GRID_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String GRID_TRADE_PAYMENTS = "TradePayments";
   public static final String GRID_TRADE_DOCUMENT_FILES = "TradeDocumentFiles";
 
   public static final String FORM_SALES_INVOICE = "SalesInvoice";

@@ -87,6 +87,10 @@ public final class Theme {
     return getBoolean("ChildActionCreateNew");
   }
 
+  public static boolean hasActionSaveLarge() {
+    return getBoolean("ActionSaveLarge");
+  }
+
   public static int getGridHeaderRowHeight() {
     return getHeight("GridHeaderRowHeight");
   }

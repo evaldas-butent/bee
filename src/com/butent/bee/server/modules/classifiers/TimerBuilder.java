@@ -61,7 +61,7 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
         }
 
         for (String id : timerIdentifiers) {
-            createOrUpdateTimers(id, null);
+            createOrUpdateTimers(id, null, null);
         }
     }
 
@@ -74,21 +74,21 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
     /**
      * General method for creating and registering timers.
      * Method can be executed at module initiation or specific data changes conditions.
-     *
-     * @param idInfo information for timers updates (e.g. changed table name and table id value).
+     * @param viewName name of view which data have been changed.
+     * @param relationId changed data id.
      */
     @Lock(LockType.WRITE)
-    protected void createOrUpdateTimers(String timerIdentifier, Pair<String, Long> idInfo) {
+    protected void createOrUpdateTimers(String timerIdentifier, String viewName, Long relationId) {
         Collection<Timer> timers = new ArrayList<>();
         IsCondition wh = null;
 
-        if (idInfo == null && registry.containsKey(timerIdentifier)) {
+        if (viewName == null && registry.containsKey(timerIdentifier)) {
                 timers = new ArrayList<>(registry.get(timerIdentifier).values());
                 registry.get(timerIdentifier).clear();
 
-        } else if (idInfo != null) {
+        } else if (viewName != null) {
             Pair<IsCondition,  List<String>> whAndTimersId =
-                    getConditionAndTimerIdForUpdate(timerIdentifier, idInfo);
+                    getConditionAndTimerIdForUpdate(timerIdentifier, viewName, relationId);
 
             if (whAndTimersId != null) {
                 wh = whAndTimersId.getA();
@@ -135,11 +135,12 @@ public abstract class TimerBuilder implements ConcurrencyBean.HasTimerService {
     /**
      * Method used in timer updates to sort out which timers will be deleted and updated.
      * @param timerIdentifier  constant identifies type of timer.
-     * @param idInfo info for timer id which will be deleted and condition to find updatable timers.
+     * @param viewName name of view which data have been changed.
+     * @param relationId changed data id.
      * @return removable timer id and filter to query updatable timers.
      */
     protected abstract Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(
-            String timerIdentifier, Pair<String, Long> idInfo);
+            String timerIdentifier, String viewName, Long relationId);
 
     private boolean isRegistered(Timer timer) {
 

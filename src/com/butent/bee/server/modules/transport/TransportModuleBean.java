@@ -368,6 +368,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_GET_TRIP_INFO)) {
       response = rep.getTripInfo(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_TEXT_CONSTANT)) {
+      response = getTextConstant(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
@@ -2983,6 +2986,34 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
   }
 
+  private ResponseObject getTextConstant(RequestInfo reqInfo) {
+
+    Integer textConstant = Assert.notNull(reqInfo.getParameterInt(COL_TEXT_CONSTANT));
+    Integer userLocale = reqInfo.getParameterInt(COL_USER_LOCALE);
+    TextConstant constant = EnumUtils.getEnumByIndex(TextConstant.class, textConstant);
+
+    return ResponseObject.response(getTextConstant(constant, userLocale));
+  }
+
+  public String getTextConstant(TextConstant constant, Integer userLocale) {
+    BeeRowSet rowSet =
+        qs.getViewData(VIEW_TEXT_CONSTANTS, Filter.equals(COL_TEXT_CONSTANT, constant));
+
+    String localizedContent = Localized.column(COL_TEXT_CONTENT,
+        EnumUtils.getEnumByIndex(SupportedLocale.class, userLocale).getLanguage());
+    String text;
+
+    if (DataUtils.isEmpty(rowSet)) {
+      text = constant.getDefaultContent();
+    } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, rowSet.getColumns()))) {
+      text = rowSet.getString(0, COL_TEXT_CONTENT);
+    } else {
+      text = BeeUtils.notEmpty(rowSet.getString(0, localizedContent),
+          rowSet.getString(0, COL_TEXT_CONTENT));
+    }
+    return text;
+  }
+
   private List<Color> getThemeColors(Long theme) {
     List<Color> result = new ArrayList<>();
 
@@ -4013,6 +4044,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         }
       }
     } catch (IOException e) {
+      logger.error(e);
+      response = ResponseObject.error(e);
+
       try {
         if (wr != null) {
           wr.close();
@@ -4023,7 +4057,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       } catch (IOException ex) {
         logger.error(ex);
       }
-      response = ResponseObject.error(e);
     } finally {
       if (conn != null) {
         conn.disconnect();

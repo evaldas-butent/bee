@@ -9,13 +9,27 @@
   from {transform: rotate(0deg);}
   to {transform: rotate(360deg);}
 }
-@-webkit-keyframes rotate {
-  from {-webkit-transform: rotate(0deg);}
-  to {-webkit-transform: rotate(360deg);}
+@keyframes rotateX {
+  from {transform: rotateX(0deg);}
+  to {transform: rotateX(360deg);}
+}
+@keyframes rotateY {
+  from {transform: rotateY(0deg);}
+  to {transform: rotateY(360deg);}
+}
+@keyframes rotateZ {
+  from {transform: rotateZ(0deg);}
+  to {transform: rotateZ(360deg);}
 }
 
 @keyframes blinker {
   50% { opacity: 0.0; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 .bee-Body {
@@ -640,6 +654,15 @@
   outline-offset: -1px;
 }
 
+@keyframes gridCellUpdated {
+  0% {background-color: palegreen;}
+  90% {background-color: palegreen;}
+  100% {background-color: transparent;}
+}
+.bee-CellGridUpdatedCell {
+  animation: rotateX 1s linear, gridCellUpdated 10s linear;
+}
+
 .bee-CellGridResizerHorizontal {
   cursor: col-resize;
 }
@@ -1122,7 +1145,8 @@
   outline: none !important;
 }
 
-.bee-TabBar-item {
+.bee-TabBar-item,
+.bee-TabGroup-item {
   margin-left: 4px;
   padding: 4px 8px 4px 8px;
   cursor: pointer;
@@ -1132,14 +1156,16 @@
   border-radius: 3px 3px 0px 0px;
 }
 
-.bee-TabBar-item-selected {
+.bee-TabBar-item-selected,
+.bee-TabGroup-item-selected {
   cursor: default;
   background-color: #eee;
   font-weight: bold;
   border: 1px solid #ccc;
 }
 
-.bee-TabBar-item-disabled {
+.bee-TabBar-item-disabled,
+.bee-TabGroup-item-disabled {
   cursor: default;
   color: #999;
 }
@@ -2540,7 +2566,6 @@
 }
 .bee-Badge-updated {
   animation: rotate 1s;
-  -webkit-animation: rotate 1s;
 }
 
 .bee-MapContainer .bee-Map {
@@ -2597,7 +2622,6 @@
   left: 45%;
   font-size: 20px;
   animation: rotate 1s linear infinite;
-  -webkit-animation: rotate 1s linear infinite;
 }
 .bee-News-not-loading {
   display: none;
@@ -3309,22 +3333,31 @@ textarea,
   border: 1px solid black;
 }
 
-.bee-CreateNew {
+.bee-CreateNew,
+.bee-SaveLarge {
   margin-right: 10px;
-  background-color: #6bae45;
   color: white;
   border-radius: 5px;
+  cursor: pointer;
+}
+.bee-CreateNew {
+  background-color: #6bae45;
+  text-transform: uppercase;
   padding: 4px 8px;
   font-weight: bold;
   font-size: 13px;
-  text-transform: uppercase;
-  cursor: pointer;
 }
 .bee-CreateNew:hover {
   background-color: #63a140;
 }
 .bee-CreateNew:active {
   background-color: #578d37;
+}
+.bee-SaveLarge {
+  background-color: #0099ff;
+  padding: 0.4vh 1em;
+  font-weight: bolder;
+  font-size: larger;
 }
 
 .bee-CreateButton {
@@ -3565,7 +3598,6 @@ textarea,
   font-size: 20px;
   padding: 0 15px 0 20px;
   color: #989898;
-  -webkit-transform: rotate(30deg);
   transform: rotate(30deg);
 }
 
@@ -3716,7 +3748,6 @@ textarea,
   top: 45%;
   font-size: xx-large;
   animation: rotate 1s linear infinite;
-  -webkit-animation: rotate 1s linear infinite;
 }
 
 .bee-MenuRoot .bee-potentially-bold::after,

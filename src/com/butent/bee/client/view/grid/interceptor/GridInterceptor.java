@@ -149,6 +149,8 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   boolean onClose(GridPresenter presenter);
 
+  void onDataReceived(List<? extends IsRow> rows);
+
   void onLoad(GridView gridView);
 
   void onReadyForInsert(GridView gridView, ReadyForInsertEvent event);

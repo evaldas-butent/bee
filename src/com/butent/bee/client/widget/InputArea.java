@@ -416,6 +416,10 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
     this.resource = resource;
   }
 
+  public void setSpellCheck(boolean check) {
+    DomUtils.setSpellCheck(getElement(), check);
+  }
+
   @Override
   public void setSummarize(boolean summarize) {
     this.summarize = summarize;

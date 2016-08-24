@@ -1419,6 +1419,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
     }
 
+    int statusIndex = newRowSet.getColumnIndex(COL_TRADE_DOCUMENT_STATUS);
+    Long status = newRow.getLong(statusIndex);
+
+    if (DataUtils.isId(status) && !BeeUtils.isTrue(qs.getBooleanById(TBL_TRADE_STATUSES, status,
+        newPhase.getStatusColumnName()))) {
+
+      newRow.clearCell(statusIndex);
+    }
+
     return commitRow(oldRowSet.getViewName(), oldRowSet.getColumns(), oldRow, newRow);
   }
 

@@ -20,8 +20,11 @@
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
 
-    <SimpleColumn name="DiscountPercent" />
-    <SimpleColumn name="VatPercent" />
+    <SimpleColumn name="Discount" />
+    <SimpleColumn name="DiscountIsPercent" />
+
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatIsPercent" />
 
     <SimpleColumn name="Warehouse" />
     <SimpleJoin joinType="LEFT" name="Warehouse">

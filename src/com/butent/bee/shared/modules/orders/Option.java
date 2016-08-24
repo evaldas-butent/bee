@@ -148,18 +148,18 @@ public class Option implements BeeSerializable, Comparable<Option> {
     return Codec.beeSerialize(arr);
   }
 
-  public Option setCode(String code) {
-    this.code = code;
+  public Option setCode(String c) {
+    this.code = c;
     return this;
   }
 
-  public Option setDescription(String description) {
-    this.description = description;
+  public Option setDescription(String descr) {
+    this.description = descr;
     return this;
   }
 
-  public Option setPhoto(Long photo) {
-    this.photo = photo;
+  public Option setPhoto(Long ph) {
+    this.photo = ph;
     return this;
   }
 

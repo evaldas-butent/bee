@@ -164,7 +164,7 @@ public final class BeeConst {
   public static final double DOUBLE_UNDEF = -1.0d;
   public static final double DOUBLE_ZERO = 0.0d;
   public static final double DOUBLE_ONE = 1.0d;
-  public static final float FLOAT_ZERO = 0.0f;
+  public static final double DOUBLE_ONE_HUNDRED = 100.0d;
 
   public static final String YEAR = "Year";
   public static final String MONTH = "Month";

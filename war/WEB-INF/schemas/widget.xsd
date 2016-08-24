@@ -198,16 +198,18 @@
   <xs:element name="HorizontalPanel" type="cellVector" substitutionGroup="widget" />
   <xs:element name="VerticalPanel" type="cellVector" substitutionGroup="widget" />
 
-  <xs:complexType name="customButton">
-    <xs:complexContent>
-      <xs:extension base="editableWidget">
-        <xs:attribute name="upFace" type="xs:string" />
-        <xs:attribute name="downFace" type="xs:string" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:element name="Toggle" type="customButton" substitutionGroup="widget" />
+  <xs:element name="Toggle" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="editableWidget">
+          <xs:attribute name="upFace" type="xs:string" />
+          <xs:attribute name="downFace" type="xs:string" />
+          <xs:attribute name="stylePrefix" type="xs:normalizedString" />
+          <xs:attribute name="checked" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:complexType name="splitPanel">
     <xs:complexContent>
@@ -636,6 +638,7 @@
             default="caption-left-cell" />
           <xs:attribute name="onFocus" type="ui:focusAction" />
           <xs:attribute name="placeholder" type="xs:normalizedString" />
+          <xs:attribute name="spellcheck" type="xs:boolean" />
           <xs:attributeGroup ref="ui:autocomplete" />
         </xs:extension>
       </xs:complexContent>
@@ -929,6 +932,19 @@
             <xs:element name="face" type="buttonFace" minOccurs="0" maxOccurs="1" />
           </xs:sequence>
           <xs:attribute name="accept" type="xs:normalizedString" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="TabGroup" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="display">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="tab" type="wdhtType" />
+          </xs:choice>
+          <xs:attribute name="stylePrefix" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

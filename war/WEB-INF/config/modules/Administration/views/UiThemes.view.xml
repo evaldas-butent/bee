@@ -17,6 +17,8 @@
     <SimpleColumn name="GridActionCreateNew" />
     <SimpleColumn name="ChildActionCreateNew" />
 
+    <SimpleColumn name="ActionSaveLarge" />
+
     <SimpleColumn name="GridHeaderRowHeight" />
     <SimpleColumn name="GridBodyRowHeight" />
     <SimpleColumn name="GridFooterRowHeight" />

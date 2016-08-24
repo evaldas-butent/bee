@@ -14,8 +14,11 @@
     <Numeric name="Quantity" precision="15" scale="5" notNull="true" label="=trdQuantity" />
     <Numeric name="Price" precision="18" scale="8" label="=trdPrice" />
 
-    <Numeric name="DiscountPercent" precision="7" scale="3" label="=discountPercent" />
-    <Numeric name="VatPercent" precision="12" scale="7" label="=vat" />
+    <Numeric name="Discount" precision="12" scale="2" label="=discount" />
+    <Boolean name="DiscountIsPercent" label="=discountIsPercent" />
+
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatIsPercent" label="=vatIsPercent" />
 
     <Relation name="Warehouse" relation="Warehouses" label="=trdWarehouseTo" />
 

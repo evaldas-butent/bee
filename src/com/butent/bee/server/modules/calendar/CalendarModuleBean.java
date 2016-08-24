@@ -364,11 +364,11 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
 
   @Override
   protected  Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
-      Pair<String, Long> idInfo) {
+      String viewName, Long relationId) {
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_CALENDAR_EVENTS)) {
       IsCondition wh;
-      String idName = idInfo.getA();
-      Long id = idInfo.getB();
+      String idName = viewName;
+      Long id = relationId;
       String reminderIdName = sys.getIdName(TBL_APPOINTMENT_REMINDERS);
 
       if (BeeUtils.same(idName, TBL_APPOINTMENTS)) {
@@ -503,13 +503,13 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
               && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
               || DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_MINUTES))) {
 
-            createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS, null);
+            createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS, null, null);
           }
 
         } else if (event.isAfter(TBL_APPOINTMENTS)) {
           if (event instanceof ViewDeleteEvent) {
             for (long id : ((ViewDeleteEvent) event).getIds()) {
-              createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS, Pair.of(TBL_APPOINTMENTS, id));
+              createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS, TBL_APPOINTMENTS, id);
             }
           } else if (event instanceof ViewUpdateEvent) {
             ViewUpdateEvent ev = (ViewUpdateEvent) event;
@@ -518,15 +518,14 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
                 || DataUtils.contains(ev.getColumns(), COL_START_DATE_TIME)) {
 
               createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS,
-                  Pair.of(TBL_APPOINTMENTS, ev.getRow().getId()));
+                  TBL_APPOINTMENTS, ev.getRow().getId());
             }
           }
 
         } else if (event.isAfter(TBL_APPOINTMENT_REMINDERS)) {
           if (event instanceof ViewDeleteEvent) {
             for (long id : ((ViewDeleteEvent) event).getIds()) {
-              createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS,
-                  Pair.of(TBL_APPOINTMENT_REMINDERS, id));
+              createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS, TBL_APPOINTMENT_REMINDERS, id);
             }
           } else if (event instanceof ViewUpdateEvent) {
             ViewUpdateEvent ev = (ViewUpdateEvent) event;
@@ -537,12 +536,11 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
                 || DataUtils.contains(ev.getColumns(), COL_SCHEDULED)) {
 
               createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS,
-                  Pair.of(TBL_APPOINTMENT_REMINDERS, ev.getRow().getId()));
+                  TBL_APPOINTMENT_REMINDERS, ev.getRow().getId());
             }
           } else if (event instanceof ViewInsertEvent) {
             createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS,
-                Pair.of(TBL_APPOINTMENT_REMINDERS,
-                ((ViewInsertEvent) event).getRow().getId()));
+                TBL_APPOINTMENT_REMINDERS, ((ViewInsertEvent) event).getRow().getId());
           }
         }
       }
@@ -691,8 +689,7 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
               .addConstant(entry.getValue(), child));
 
           if (BeeUtils.same(TBL_APPOINTMENT_REMINDERS, childTable)) {
-            createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS,
-                Pair.of(TBL_APPOINTMENT_REMINDERS, childId));
+            createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS, TBL_APPOINTMENT_REMINDERS, childId);
           }
         }
       }
@@ -1862,7 +1859,7 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
       news.maybeRecordUpdate(VIEW_APPOINTMENTS, appId);
     }
     if (updateReminders) {
-      createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS, Pair.of(TBL_APPOINTMENTS, appId));
+      createOrUpdateTimers(TIMER_REMIND_CALENDAR_EVENTS, TBL_APPOINTMENTS, appId);
     }
 
     return response;

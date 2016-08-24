@@ -112,23 +112,13 @@
     </row>
 
     <row>
-      <Label for="Reminder" />
-      <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false" 
-        style="width: 100px;" />
-      <Label for="RemindBefore" />
-      <InputSpinner source="RemindBefore" minValue="0" maxValue="31" style="&spinner;" />
-      <Label for="RemindAt" />
-      <InputTimeOfDay source="RemindAt" step="&timeStep;" style="&tod;" />
-    </row>
-
-    <row>
       <Label />
       <CheckBox source="CopyByMail" text="=mailNotify" />
       <Label />
       <CheckBox source="PrivateTask" text="=crmTaskPrivate"/>
     </row>
   </Table>
-  
+
 
   
 </FlowPanel>

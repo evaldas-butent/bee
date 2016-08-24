@@ -16,6 +16,8 @@ public final class ClassifierConstants {
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
   public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
   public static final String TIMER_REMIND_CALENDAR_EVENTS = "timer_remind_calendar_events";
+  public static final String TIMER_REMIND_USER_TASKS = "timer_remind_user_tasks";
+  public static final String TIMER_REMIND_DOCUMENT_END = "timer_remind_document_end_";
 
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
@@ -97,13 +99,15 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_OBJECTS = "CompanyObjects";
 
   public static final String VIEW_HOLIDAYS = "Holidays";
+  public static final String VIEW_CHART_OF_ACCOUNTS = "ChartOfAccounts";
 
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
   public static final String GRID_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
-
   public static final String GRID_COMPANY_USERS = "CompanyUsers";
+
   public static final String GRID_ITEMS = "Items";
+  public static final String GRID_CHART_OF_ACCOUNTS = "ChartOfAccounts";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
@@ -271,6 +275,8 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_PERCENT = "Percent";
   public static final String COL_DISCOUNT_PRICE = "Price";
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
+
+  public static final String COL_ACCOUNT_CODE = "AccountCode";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

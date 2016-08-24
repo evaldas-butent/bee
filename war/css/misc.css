@@ -399,7 +399,7 @@
 
 .bee-EventsBoard-content {
   overflow: auto;
-  height: calc(100% - 35px);
+  height: calc(100% - 50px);
   width: 100%;
 }
 
@@ -418,7 +418,6 @@
   min-width: 150px;
   vertical-align: top;
   overflow: auto;
-  max-height: 9em;
 }
 
 .bee-EventsBoard-content-col-PublisherPhoto {
@@ -426,9 +425,6 @@
   height: 3.5em;
   max-width: 2.5em;
   min-width: 2.5em;
-  align-self: center;
-  -webkit-align-self: center;
-  -ms-flex-item-align: center;
 }
 
 .bee-EventsBoard-content-Photo {
@@ -444,7 +440,9 @@
 }
 
 .bee-EventsBoard-content-EventNote {
-  white-space: pre-wrap;
+   white-space: pre-wrap;
+   width: 100%;
+   margin-top: 10px;
 }
 
 .bee-EventsBoard-content-col.bee-EventsBoard-content-col-EventNote.bee-prj-Events-EventNote {
@@ -453,6 +451,32 @@
 
 .bee-EventsBoard-content-col.bee-EventsBoard-content-col-EventFiles.bee-prj-Events-content-col-EventFiles {
   width: calc(100% - 10px);
+}
+
+.bee-EventsBoard-content-EventPublisher {
+  font-weight: bolder;
+}
+
+.bee-EventsBoard-content-col-PublisherInfo {
+  display: -webkit-flex;
+}
+
+.bee-EventsBoard-content-EventPublisher, .bee-EventsBoard-content-EventPublished,
+.bee-EventsBoard-content-EventType {
+  padding-right: 10px;
+}
+
+.bee-EventsBoard-content-Properties, .bee-EventsBoard-content-col-EventFiles {
+  margin-top: 10px;
+}
+
+.bee-EventsBoard-content-Properties {
+  font-style: italic;
+  font-weight: bold;
+}
+
+.bee-EventsBoard-content-EventPublished {
+  color: #c5c5c5
 }
 
 .bee-rtc-local,
@@ -627,4 +651,49 @@
 }
 .bee-row-Mode-upd {
   background-color: #ffb300;
+}
+
+.bee-reminder-dialog-panel{
+  padding: 10px 0px;
+}
+
+.bee-reminder-dialog-infoPanel{
+  background-color: #FEF9D3;
+  padding: 10px 10px;
+  height: 40px;
+}
+
+.bee-reminder-dialog-infoText{
+  display: table-cell;
+}
+
+.bee-reminder-dialog-dateText{
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.bee-reminder-dialog-suspendButton {
+  background-color: #cc0000;
+  color: white;
+}
+
+.bee-reminder-dialog-remindButton {
+   background-color: #1eb2d8;
+   color: white;
+}
+
+.bee-reminder-dialog-text {
+   padding-right: 8px;
+}
+
+.bee-reminder-dialog-component {
+   margin-right: 10px;
+}
+
+.bee-Header-commandPanel .bee-reminder-dialog-active {
+  color: #6bae45;
+}
+
+.bee-reminder-dialog-not-visible {
+  display: none;
 }

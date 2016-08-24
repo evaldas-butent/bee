@@ -9,6 +9,11 @@ public enum TradeVatMode implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.vatModePlus();
     }
+
+    @Override
+    public double computePercent(double x, double p) {
+      return x * p / 100d;
+    }
   },
 
   INCLUSIVE {
@@ -16,5 +21,12 @@ public enum TradeVatMode implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.vatModeInclusive();
     }
-  }
+
+    @Override
+    public double computePercent(double x, double p) {
+      return x * p / (p + 100d);
+    }
+  };
+
+  public abstract double computePercent(double x, double p);
 }

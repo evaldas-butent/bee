@@ -269,6 +269,7 @@
       <xs:enumeration value="CargoTrips" />
       <xs:enumeration value="CargoTypes" />
       <xs:enumeration value="CategoryTree" />
+      <xs:enumeration value="ChartOfAccounts" />
       <xs:enumeration value="ChatFiles" />
       <xs:enumeration value="ChatMessages" />
       <xs:enumeration value="Chats" />
@@ -561,6 +562,7 @@
       <xs:enumeration value="TradeDocumentTypes" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />
+      <xs:enumeration value="TradePayments" />
       <xs:enumeration value="TradeSeries" />
       <xs:enumeration value="TradeStatuses" />
       <xs:enumeration value="TradeStock" />
@@ -593,6 +595,7 @@
       <xs:enumeration value="UserGroupSettings" />
       <xs:enumeration value="UserHistory" />
       <xs:enumeration value="UserParameters" />
+      <xs:enumeration value="UserReminders" />
       <xs:enumeration value="UserRoles" />
       <xs:enumeration value="Users" />
       <xs:enumeration value="UserSettings" />

@@ -5,6 +5,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.PreElement;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -27,6 +29,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.HtmlPanel;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
@@ -53,6 +56,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -72,6 +76,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -105,6 +110,8 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   private static final String NAME_VALUE_LABEL = "ValueLabel";
   private static final String NAME_LOADED_KILOMETERS_LABEL = "LoadedKilometersLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
+  private static final String NAME_AGREE_TERMS = "AgreeTerms";
+  private static final String WIDGET_AGREE_TERMS_NAME = "agreeTermsCheckBox";
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
@@ -145,6 +152,34 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         StyleUtils.setHeight(image, BeeKeeper.getScreen().getHeight() * 0.5, CssUnit.PX);
 
         Global.showModalWidget(image);
+      });
+    }
+
+    if (BeeUtils.same(name, NAME_AGREE_TERMS) && widget instanceof FaLabel) {
+      ((FaLabel) widget).addClickHandler(event -> {
+
+        ParameterList args = TransportHandler.createArgs(SVC_GET_TEXT_CONSTANT);
+        args.addDataItem(COL_TEXT_CONSTANT, TextConstant.REQUEST_COMMON_TERMS.ordinal());
+        args.addDataItem(COL_USER_LOCALE, getIntegerValue(COL_USER_LOCALE));
+
+        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            String message = (String) response.getResponse();
+
+            if (!BeeUtils.isEmpty(message)) {
+              PreElement pre = Document.get().createPreElement();
+              pre.setInnerHTML(message);
+
+              StyleUtils.setMaxHeight(pre, 80, CssUnit.VH);
+              StyleUtils.setMaxWidth(pre, 80,  CssUnit.VH);
+              StyleUtils.setOverflow(pre, StyleUtils.ScrollBars.BOTH, Overflow.AUTO);
+
+              Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(),
+                  new HtmlPanel(pre.getString()));
+            }
+          }
+        });
       });
     }
 
@@ -243,6 +278,15 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
                 dic.length(), dic.trRequestCargoLdm()) + ")");
         return false;
       }
+
+      Widget agreeTermWidget = getFormView().getWidgetByName(WIDGET_AGREE_TERMS_NAME);
+      if (agreeTermWidget instanceof HasCheckedness
+          && !((HasCheckedness) agreeTermWidget).isChecked()) {
+        getFormView().notifySevere(BeeUtils.joinWords(dic.trAgreeWithConditions(),
+            dic.valueRequired()));
+        return false;
+      }
+
     }
     return super.beforeAction(action, presenter);
   }
@@ -519,7 +563,20 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     BeeRow oldRow = DataUtils.cloneRow(form.getOldRow());
     BeeRow row = DataUtils.cloneRow(form.getActiveRow());
 
-    messages.add(loc.trCommandCreateNewUser());
+    Dictionary dic = Localized.dictionary();
+
+    messages.add(BeeUtils.join(": ", dic.client(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_NAME))));
+    messages.add(BeeUtils.join(": ", dic.companyCode(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CODE))));
+    messages.add(BeeUtils.join(": ", dic.companyVATCode(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_VAT_CODE))));
+    messages.add(BeeUtils.join(": ", dic.address(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_ADDRESS))));
+    messages.add(BeeUtils.join(": ", dic.postIndex(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_POST_INDEX))));
+    messages.add(BeeUtils.join(": ", dic.trRegistrationContact(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT))));
 
     String login = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_EMAIL));
     String password;
@@ -533,8 +590,11 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     } else {
       password = null;
     }
+
+    messages.add(loc.trCommandCreateNewUser());
+
     Global.confirm(loc.register(), Icon.QUESTION, messages,
-        Localized.dictionary().actionCreate(), Localized.dictionary().actionCancel(), () -> {
+        dic.actionCreate(), dic.actionCancel(), () -> {
           Map<String, String> companyInfo = new HashMap<>();
 
           for (String col : new String[] {

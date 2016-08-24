@@ -170,6 +170,52 @@ public class ProjectsModuleBean implements BeeModule {
 
       @Subscribe
       @AllowConcurrentEvents
+      public void setRowProperties(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_PROJECTS) && event.hasData()) {
+          Long userId = usr.getCurrentUserId();
+          BeeRowSet rowSet = event.getRowset();
+          if (!DataUtils.isEmpty(rowSet)) {
+
+            List projectsIdList = rowSet.getRowIds();
+
+            SqlSelect puQuery = new SqlSelect().addFrom(TBL_PROJECT_USAGE)
+                .addFields(TBL_PROJECT_USAGE, COL_PROJECT, ProjectConstants.COL_ACCESS)
+                .setWhere(SqlUtils.and(
+                    SqlUtils.inList(TBL_PROJECT_USAGE, COL_PROJECT, projectsIdList),
+                    SqlUtils.equals(TBL_PROJECT_USAGE, AdministrationConstants.COL_USER, userId)));
+
+            SimpleRowSet puData = qs.getData(puQuery);
+            int projectIndex = puData.getColumnIndex(COL_PROJECT);
+            for (SimpleRow tuRow : puData) {
+              BeeRow row = rowSet.getRowById(tuRow.getLong(projectIndex));
+              row.setProperty(ProjectConstants.PROP_LAST_ACCESS, userId,
+                  tuRow.getValue(puData.getColumnIndex(ProjectConstants.COL_ACCESS)));
+            }
+
+            SqlSelect peQuery = new SqlSelect().addFrom(TBL_PROJECT_EVENTS)
+                .addFields(TBL_PROJECT_EVENTS, COL_PROJECT)
+                .addMax(TBL_PROJECT_EVENTS, ProjectConstants.COL_PUBLISH_TIME)
+                .addGroup(TBL_PROJECT_EVENTS, COL_PROJECT)
+                .setWhere(SqlUtils.and(
+                    SqlUtils.inList(TBL_PROJECT_EVENTS, COL_PROJECT, projectsIdList),
+                    SqlUtils.notEqual(TBL_PROJECT_EVENTS, ProjectConstants.COL_PUBLISHER, userId)));
+
+            SimpleRowSet peData = qs.getData(peQuery);
+            projectIndex = peData.getColumnIndex(COL_PROJECT);
+            int publishIndex = peData.getColumnIndex(ProjectConstants.COL_PUBLISH_TIME);
+
+            for (SimpleRow teRow : peData) {
+              BeeRow row = rowSet.getRowById(teRow.getLong(projectIndex));
+              row.setProperty(ProjectConstants.PROP_LAST_PUBLISH, teRow.getValue(publishIndex));
+
+            }
+          }
+        }
+      }
+
+
+      @Subscribe
+      @AllowConcurrentEvents
       public void fillProjectsTimeData(ViewQueryEvent event) {
         if (event.isAfter(VIEW_PROJECTS, VIEW_PROJECT_STAGES) && event.hasData()) {
           BeeRowSet viewRows = event.getRowset();

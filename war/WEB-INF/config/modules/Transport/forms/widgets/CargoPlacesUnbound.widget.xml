@@ -16,9 +16,9 @@
     </row>
     <row>
       <Label text="=date" style="&lbl1;" class="bee-required" />
-      <InputDateTime source="LoadingDate" style="&inp;" required="true" />
+      <InputDateTime source="LoadingDate" style="&inp;" required="true" title="=trRequestDateTitle"/>
       <Label text="=date" style="&lbl1;" class="bee-required" />
-      <InputDateTime source="UnloadingDate" style="&inp;" required="true" />
+      <InputDateTime source="UnloadingDate" style="&inp;" required="true" title="=trRequestDateTitle"/>
     </row>
     <row>
       <Label text="=company" style="&lbl1;" />

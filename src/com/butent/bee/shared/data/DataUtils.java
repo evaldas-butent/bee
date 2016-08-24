@@ -554,6 +554,18 @@ public final class DataUtils {
     return row.getInteger(getColumnIndex(columnId, columns));
   }
 
+  public static Integer getIntegerQuietly(IsRow row, int index) {
+    if (row == null) {
+      return null;
+
+    } else if (row.isIndex(index)) {
+      return row.getInteger(index);
+
+    } else {
+      return null;
+    }
+  }
+
   public static Long getLong(BeeRowSet rowSet, IsRow row, String columnId) {
     return getLong(rowSet.getColumns(), row, columnId);
   }

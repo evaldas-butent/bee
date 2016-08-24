@@ -55,8 +55,7 @@
 
                 <row>
                   <Label for="Owner" />
-                  <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2x;" 
-                    readOnly="true" />
+                  <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2x;"/>
                 </row>
 
                 <row>
@@ -173,17 +172,6 @@
                     <InputDecimal source="ExpectedExpenses" style="&dateStyle;" disablable="true" scale="2"/>
                     <DataSelector source="Currency" for="ExpectedExpenses" newRowEnabled="false" editEnabled="false"
                       style="&timeStyle;" readOnly="true" />
-                  </FlowPanel>
-                </row>
-
-                <row>
-                  <Label for="Reminder" />
-                  <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
-                    style="&inp2;" />
-                  <Label for="ReminderTime" />
-                  <FlowPanel for="ReminderTime">
-                    <InputDate name="Reminder_Date" style="&dateStyle;" />
-                    <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
                   </FlowPanel>
                 </row>
 
