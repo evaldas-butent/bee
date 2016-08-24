@@ -44,6 +44,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -98,7 +99,7 @@ public final class CalendarKeeper {
           BeeRowSet ucAttendees = BeeRowSet.restore(row.getProperty(TBL_USER_CAL_ATTENDEES));
 
           CalendarSettings settings = CalendarSettings.create(row, result.getColumns());
-          CalendarPanel calendarPanel = new CalendarPanel(id, name, settings, ucAttendees);
+          CalendarPanel calendarPanel = new Calendar(id, name, settings, ucAttendees);
 
           onCreatePanel(id, row.getId(), name, ucAttendees);
 
@@ -204,6 +205,12 @@ public final class CalendarKeeper {
   public static void createAppointment(final Long calendarId, final DateTime start,
       final String duration, final Long attendeeId, final Consumer<BeeRow> initializer,
       final RowCallback callback) {
+    createAppointment(calendarId, start, duration, attendeeId, initializer, callback, null, null);
+  }
+
+  public static void createAppointment(final Long calendarId, final DateTime start,
+      final String duration, final Long attendeeId, final Consumer<BeeRow> initializer,
+      final RowCallback callback, IsRow projectRow, String form) {
 
     if (Data.isViewEditable(VIEW_APPOINTMENTS)
         && BeeKeeper.getUser().canCreateData(VIEW_APPOINTMENTS)) {
@@ -226,10 +233,15 @@ public final class CalendarKeeper {
       }
       final BeeRow typeRow = (type == null) ? null : CACHE.getRow(VIEW_APPOINTMENT_TYPES, type);
 
-      String formName = (typeRow == null) ? null : Data.getString(VIEW_APPOINTMENT_TYPES, typeRow,
-          COL_APPOINTMENT_CREATOR);
-      if (BeeUtils.isEmpty(formName)) {
-        formName = DEFAULT_NEW_APPOINTMENT_FORM;
+      String formName;
+      if (BeeUtils.isEmpty(form)) {
+        formName = (typeRow == null) ? null : Data.getString(VIEW_APPOINTMENT_TYPES, typeRow,
+            COL_APPOINTMENT_CREATOR);
+        if (BeeUtils.isEmpty(formName)) {
+          formName = DEFAULT_NEW_APPOINTMENT_FORM;
+        }
+      } else {
+        formName = form;
       }
 
       final AppointmentBuilder builder = new AppointmentBuilder(true);
@@ -284,6 +296,10 @@ public final class CalendarKeeper {
                 Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result,
                     builder.getModalCallback(callback), RowFactory.DIALOG_STYLE, null,
                     EnumSet.of(Action.PRINT));
+
+                if (projectRow != null) {
+                  builder.setProjectData(projectRow);
+                }
               }
             }
           });
@@ -292,7 +308,9 @@ public final class CalendarKeeper {
 
   public static void ensureData(final Command command) {
     if (isDataLoaded()) {
-      command.execute();
+      if (command != null) {
+        command.execute();
+      }
 
     } else {
       final long startMillis = System.currentTimeMillis();
@@ -302,14 +320,16 @@ public final class CalendarKeeper {
         public void onSuccess(Integer result) {
           setDataLoaded(true);
           logger.debug("calendar cache loaded", result, TimeUtils.elapsedMillis(startMillis));
-          command.execute();
+          if (command != null) {
+            command.execute();
+          }
         }
       });
     }
   }
 
   public static String getAttendeeCaption(long calendarId, long attId) {
-    if (activeControllers.containsKey(calendarId)) {
+    if (DataUtils.isId(calendarId) && activeControllers.containsKey(calendarId)) {
       CalendarController controller = getController(calendarId);
       if (controller != null) {
         String caption = controller.getAttendeeCaption(attId);
@@ -322,7 +342,7 @@ public final class CalendarKeeper {
   }
 
   public static Map<Long, String> getAttendeeColors(long calendarId) {
-    if (activeControllers.containsKey(calendarId)) {
+    if (DataUtils.isId(calendarId) && activeControllers.containsKey(calendarId)) {
       CalendarController controller = getController(calendarId);
       if (controller != null) {
         return controller.getAttendeeColors();
@@ -575,7 +595,12 @@ public final class CalendarKeeper {
     }
   }
 
-  static void openAppointment(final Appointment appointment, final Long calendarId) {
+  public static void openAppointment(final Appointment appointment, final Long calendarId) {
+    openAppointment(appointment, calendarId, null);
+  }
+
+  public static void openAppointment(final Appointment appointment, final Long calendarId,
+      String form) {
     Assert.notNull(appointment);
 
     if (!appointment.isVisible(BeeKeeper.getUser().getUserId())) {
@@ -584,10 +609,15 @@ public final class CalendarKeeper {
     }
 
     BeeRow typeRow = getAppointmentTypeRow(appointment);
-    String formName = (typeRow == null) ? null : Data.getString(VIEW_APPOINTMENT_TYPES, typeRow,
-        COL_APPOINTMENT_EDITOR);
-    if (BeeUtils.isEmpty(formName)) {
-      formName = DEFAULT_EDIT_APPOINTMENT_FORM;
+    String formName;
+    if (BeeUtils.isEmpty(form)) {
+      formName = (typeRow == null) ? null : Data.getString(VIEW_APPOINTMENT_TYPES, typeRow,
+          COL_APPOINTMENT_EDITOR);
+      if (BeeUtils.isEmpty(formName)) {
+        formName = DEFAULT_EDIT_APPOINTMENT_FORM;
+      }
+    } else {
+      formName = form;
     }
 
     final AppointmentBuilder builder = new AppointmentBuilder(false);

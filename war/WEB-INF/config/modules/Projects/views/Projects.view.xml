@@ -131,6 +131,13 @@
     <SimpleJoin name="ProjectTemplate" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProjectTMLName" />
     </SimpleJoin>
+
+    <SimpleColumn name="Group" />
+    <SimpleJoin name="Group" joinType="LEFT">
+      <SimpleColumn name="GroupName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Tariff" />
   </Columns>
   
   <Order>

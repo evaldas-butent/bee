@@ -721,3 +721,17 @@
 .bee-cal-Panel .status-completed {
   background-image: repeating-linear-gradient(330deg, rgba(211,211,211,1) 10px, rgba(211,211,211,0) 20px);
 }
+
+.bee-cal-filter-input-labels {
+  display: inline-block;
+  width: 80px;
+  margin-bottom: 10px;
+}
+
+.bee-cal-filter-action-panel {
+  text-align: center;
+}
+
+.bee-cal-filter-action-button {
+  margin-right: 8px;
+}

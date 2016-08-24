@@ -44,6 +44,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.html.Autocomplete;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasAutocomplete;
 import com.butent.bee.shared.ui.HasCapsLock;
@@ -51,6 +52,7 @@ import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasSuggestionSource;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -483,7 +485,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
 
   @Override
   public List<String> validate(boolean checkForNull) {
-    return Collections.emptyList();
+    List<String> messages = new ArrayList<>();
+    if (isEmpty() && checkForNull && !isNullable()) {
+      messages.add(Localized.dictionary().valueRequired());
+    }
+    return messages;
   }
 
   @Override

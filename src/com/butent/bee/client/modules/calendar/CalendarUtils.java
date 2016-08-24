@@ -18,6 +18,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
@@ -31,6 +32,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -386,5 +388,35 @@ public final class CalendarUtils {
   }
 
   private CalendarUtils() {
+  }
+
+  public static boolean isVisibleTodoContainer(CalendarPanel panel) {
+    return panel.getTodoContainer() != null && !panel.getTodoContainer().isEmpty()
+        && panel.getWidgetSize(panel.getTodoContainer()) > 0;
+  }
+
+  public static BeeRow createDefaultSettingsBeeRow() {
+    DataInfo data = Data.getDataInfo(TBL_USER_CALENDARS);
+    BeeRow settingsRow = RowFactory.createEmptyRow(data, true);
+    Data.setValue(TBL_USER_CALENDARS, settingsRow, COL_DEFAULT_DISPLAYED_DAYS, 5);
+    Data.setValue(TBL_USER_CALENDARS, settingsRow, COL_PIXELS_PER_INTERVAL, 24);
+    Data.setValue(TBL_USER_CALENDARS, settingsRow, COL_WORKING_HOUR_END, 17);
+    Data.setValue(TBL_USER_CALENDARS, settingsRow, COL_WORKING_HOUR_START, 8);
+    Data.setValue(TBL_USER_CALENDARS, settingsRow, COL_INTERVALS_PER_HOUR, 2);
+    Data.setValue(TBL_USER_CALENDARS, settingsRow, COL_SCROLL_TO_HOUR, 8);
+    Data.setValue(TBL_USER_CALENDARS, settingsRow, COL_TIME_BLOCK_CLICK_NUMBER,
+        TimeBlockClick.DOUBLE.ordinal());
+    Data.setValue(TBL_USER_CALENDARS, settingsRow, COL_ACTIVE_VIEW,
+        ViewType.WORK_WEEK.ordinal());
+
+    return settingsRow;
+
+  }
+
+  public static void getProjectAttendees(long projectId, Queries.RowSetCallback rowSetCallback) {
+    Queries.getRowSet(VIEW_APPOINTMENT_ATTENDEES,
+        Collections.singletonList(COL_ATTENDEE),
+        Filter.in(COL_APPOINTMENT, VIEW_APPOINTMENTS, Data.getIdColumn(VIEW_APPOINTMENTS),
+            Filter.equals(COL_CALENDAR_PROJECT, projectId)), rowSetCallback);
   }
 }
