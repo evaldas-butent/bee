@@ -27,6 +27,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportUtils;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -44,7 +45,8 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
     Global.getParameter(AdministrationConstants.PRM_ERP_ADDRESS, new Consumer<String>() {
       @Override
       public void accept(String address) {
-        if (!BeeUtils.isEmpty(address)) {
+        if (!BeeUtils.isEmpty(address)
+            && BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
           presenter.getHeader().addCommandItem(panel);
           setWaiting(false);
         }

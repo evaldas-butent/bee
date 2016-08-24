@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashSet;
@@ -38,8 +39,9 @@ public class ERPTripCostsGrid extends AbstractGridInterceptor implements ClickHa
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    presenter.getHeader().clearCommandPanel();
-    presenter.getHeader().addCommandItem(action);
+    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
+      presenter.getHeader().addCommandItem(action);
+    }
   }
 
   @Override
