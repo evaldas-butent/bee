@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY absolute "position: absolute;">
+    <!ENTITY relative "position: relative;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:d="http://www.butent.com/decorator"
+
+        name="ProjectAction" viewName="Appointments"
+        caption="=calAppointment" disabledActions="add delete" enabledActions="save">
+
+  <FlowPanel style="&relative; width: 760px; height: 400px; margin: 1em;">
+
+    <Label name="summaryLabel" text="=summary" style="&absolute; left: 0; top: 20px; width: 78px;" />
+    <InputText name="Summary" source="Summary" style="&absolute; left: 80px; top: 20px; width: 240px;"
+               autocomplete="true" />
+
+    <InputText source="Location" caption="=location" style="width: 400px;"
+               d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" autocomplete="true" />
+
+    <Label text="=calAttendees" style="&absolute; left: 0; top: 55px;" />
+
+    <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 120px;" />
+
+    <MultiSelector name="Resources" viewName="Attendees" property="AppointmentAttendees"
+                   renderColumns="Name" choiceColumns="Name TypeName" newRowEnabled="false"
+                   style="&absolute; left: 80px; top: 55px; width: 240px; max-height: 100px; overflow: auto;" />
+
+    <InputArea source="Description" placeholder="=description" visibleLines="5"
+               style="&absolute; left: 360px; top: 55px; width: 400px;" />
+
+    <InputDate name="StartDate" required="true" caption="=calAppointmentStart"
+               style="width: 8em;" d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 200px;" />
+    <InputTimeOfDay name="StartTime" step="30"
+                    style="&absolute; left: 190px; top: 200px; width: 5em;" />
+
+    <InputSpinner name="Hours" source="DurationHours" caption="=duration" minValue="0" maxValue="99" style="width: 4em;"
+                  d:size="60" d:unit="px" d:rootStyle="&absolute; left: 260px; top: 200px;" />
+    <InputSpinner name="Minutes" source="DurationMinutes" minValue="0" maxValue="60" step="5"
+                  style="&absolute; left: 370px; top: 200px; width: 4em;" />
+
+    <InputDate name="EndDate" caption="=calAppointmentEnd" style="width: 8em;"
+               d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 232px;" />
+    <InputTimeOfDay name="EndTime" step="30"
+                    style="&absolute; left: 190px; top: 232px; width: 5em;" options="60" />
+
+    <FlowPanel name="Colors" style="&absolute; left: 260px; top: 232px; width: 380px;" />
+
+    <DataSelector source="AppointmentType" required="true" caption="=calAppointmentType"
+                  style="width: 173px;" d:size="80" d:unit="px"
+                  d:rootStyle="&absolute; left: 0; top: 264px;" />
+
+    <ListBox name="Reminder" caption="=calReminder" style="width: 173px;"
+             d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 296px;" />
+
+    <Radio source="Visibility" vertical="true"
+           style="&absolute; left: 260px; top: 260px;" />
+
+    <Label text="=creator" style="&absolute; left: 0px; top: 328px; width: 76px;" />
+
+    <DataSelector source="Creator" style="&absolute; left: 82px; top: 328px; width: 300px;" readOnly="true"/>
+
+    <Label text="=project" style="&absolute; left: 390px; top: 264px; width: 76px;" />
+
+    <DataSelector name="Project" source="Project" choiceColumns="Name"
+                  style="&absolute; left: 460px; top: 264px; width: 300px;" readOnly="true"/>
+
+    <Label text="=calCourse" style="&absolute; left: 390px; top: 296px; width: 76px;" />
+
+    <DataSelector  name="Course" source="Course" choiceColumns="Name"
+                   style="&absolute; left: 460px; top: 296px; width: 300px;"/>
+
+    <Label text="=calLecture" style="&absolute; left: 390px; top: 328px; width: 76px;" />
+
+    <DataSelector name="Lecture" source="Lecture" choiceColumns="Name"
+                  style="&absolute; left: 460px; top: 328px; width: 300px;"/>
+
+    <Label text="=prjTariff" style="&absolute; left: 390px; top: 360px; width: 76px;" />
+
+    <InputDecimal name="Tariff" source="Tariff" scale="2"
+                  style="&absolute; left: 460px; top: 360px; width: 100px; height:30px;" />
+
+    <CheckBox source="FuelCard" summarize="false" style="&absolute; left: 620px; top: 364px;"/>
+
+  </FlowPanel>
+</f:Form>

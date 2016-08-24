@@ -11,6 +11,7 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
@@ -20,6 +21,7 @@ import com.butent.bee.shared.modules.calendar.CalendarTask;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -176,8 +178,9 @@ public class CalendarDataManager {
     return items;
   }
 
-  public void loadItems(long calendarId, final Range<DateTime> visibleRange,
-      final CalendarSettings settings, boolean force, final IntCallback callback) {
+  public void loadItems(long calendarId, Long projectId, Map filterData,
+      final Range<DateTime> visibleRange, final CalendarSettings settings, boolean force,
+      final IntCallback callback) {
 
     if (!force && getRange() != null && visibleRange != null
         && getRange().encloses(visibleRange)) {
@@ -188,11 +191,20 @@ public class CalendarDataManager {
     }
 
     ParameterList params = CalendarKeeper.createArgs(SVC_GET_CALENDAR_ITEMS);
-    params.addQueryItem(PARAM_CALENDAR_ID, calendarId);
+    if (DataUtils.isId(calendarId)) {
+      params.addQueryItem(PARAM_CALENDAR_ID, calendarId);
+    }
+    if (DataUtils.isId(projectId)) {
+      params.addQueryItem(PARAM_PROJECT_ID, projectId);
+    }
 
     if (visibleRange != null) {
       params.addQueryItem(PARAM_START_TIME, visibleRange.lowerEndpoint().getTime());
       params.addQueryItem(PARAM_END_TIME, visibleRange.upperEndpoint().getTime());
+    }
+
+    if (!BeeUtils.isEmpty(filterData)) {
+      params.addDataItem(PARAM_FILTER_DATA, Codec.beeSerialize(filterData));
     }
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {

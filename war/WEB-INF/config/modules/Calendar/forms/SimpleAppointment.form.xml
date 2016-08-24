@@ -11,20 +11,21 @@
   name="SimpleAppointment" viewName="Appointments"
   caption="=calAppointment" disabledActions="add delete" enabledActions="save">
 
-  <FlowPanel style="&relative; width: 760px; height: 400px;">
-    <InputText source="Summary" required="true" caption="=summary" style="width: 240px;"
-      d:size="78" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" autocomplete="true" />
+  <FlowPanel style="&relative; width: 760px; height: 500px;">
+    <Label name="summaryLabel" text="=summary" style="&absolute; left: 0; top: 20px; width: 78px;" />
+    <InputText name="Summary" source="Summary" style="&absolute; left: 80px; top: 20px; width: 240px;"
+      autocomplete="true" />
 
     <InputText source="Location" caption="=location" style="width: 400px;"
       d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" autocomplete="true" />
 
-    <Label text="=calAttendees" style="&absolute; left: 0; top: 40px;" />
+    <Label text="=calAttendees" style="&absolute; left: 0; top: 55px;" />
 
-    <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 100px;" />
+    <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 120px;" />
 
     <MultiSelector name="Resources" viewName="Attendees" property="AppointmentAttendees"
       renderColumns="Name" choiceColumns="Name TypeName" newRowEnabled="false"
-      style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px; overflow: auto;" />
+      style="&absolute; left: 80px; top: 55px; width: 240px; max-height: 100px; overflow: auto;" />
 
     <InputArea source="Description" placeholder="=description" visibleLines="5"
       style="&absolute; left: 360px; top: 55px; width: 400px;" />
@@ -34,9 +35,9 @@
     <InputTimeOfDay name="StartTime" step="30"
       style="&absolute; left: 300px; top: 200px; width: 5em;" />
 
-    <InputSpinner name="Hours" caption="=duration" minValue="0" maxValue="99" style="width: 4em;"
+    <InputSpinner name="Hours" source="DurationHours" caption="=duration" minValue="0" maxValue="99" style="width: 4em;"
       d:size="60" d:unit="px" d:rootStyle="&absolute; left: 380px; top: 200px;" />
-    <InputSpinner name="Minutes" minValue="0" maxValue="60" step="5"
+    <InputSpinner name="Minutes" source="DurationMinutes" minValue="0" maxValue="60" step="5"
       style="&absolute; left: 500px; top: 200px; width: 4em;" />
 
     <InputDate name="EndDate" caption="=scheduledEndingTime" style="width: 8em;"
@@ -57,21 +58,43 @@
     <Radio source="Visibility" vertical="true"
       style="&absolute; left: 260px; top: 340px;" />
 
-    <Label text="=company" style="&absolute; left: 380px; top: 280px; width: 76px;" />
+    <Label text="=project" style="&absolute; left: 390px; top: 264px; width: 76px;" />
+
+    <DataSelector name="Project" source="Project" choiceColumns="Name"
+                  style="&absolute; left: 460px; top: 264px; width: 300px;" />
+
+    <Label text="=calCourse" style="&absolute; left: 390px; top: 296px; width: 76px;" />
+
+    <DataSelector name="Course" source="Course" choiceColumns="Name"
+                  style="&absolute; left: 460px; top: 296px; width: 300px;"/>
+
+    <Label text="=calLecture" style="&absolute; left: 390px; top: 328px; width: 76px;" />
+
+    <DataSelector name="Lecture" source="Lecture" choiceColumns="Name"
+                  style="&absolute; left: 460px; top: 328px; width: 300px;"/>
+
+    <Label text="=prjTariff" style="&absolute; left: 390px; top: 360px; width: 76px;" />
+
+    <InputDecimal name="Tariff" source="Tariff" scale="2"
+                  style="&absolute; left: 460px; top: 360px; width: 100px; height:30px;" />
+
+    <CheckBox source="FuelCard" summarize="false" style="&absolute; left: 620px; top: 364px;"/>
+
+    <Label text="=company" style="&absolute; left: 390px; top: 393px; width: 76px;" />
 
     <DataSelector source="CompanyName" choiceColumns="Name Phone Email"
-      style="&absolute; left: 460px; top: 280px; width: 300px;" />
+      style="&absolute; left: 460px; top: 393px; width: 300px;" />
 
-    <Label text="=responsiblePersons" style="&absolute; left: 380px; top: 320px; width: 76px;" />
+    <Label text="=responsiblePersons" style="&absolute; left: 390px; top: 425px; width: 76px;" />
 
     <MultiSelector name="Owners" property="AppointmentOwners" viewName="Users"
       newRowEnabled="false" renderColumns="FirstName LastName"
       choiceColumns="FirstName LastName CompanyName PositionName"
-      style="&absolute; left: 460px; top: 320px; width: 300px;" />
-      
-    <Label text="=creator" style="&absolute; left: 380px; top: 360px; width: 76px;" />
+      style="&absolute; left: 460px; top: 425px; width: 300px;" />
 
-    <DataSelector source="Creator" style="&absolute; left: 460px; top: 360px; width: 300px;" readOnly="true"/>
+    <Label text="=creator" style="&absolute; left: 390px; top: 457px; width: 76px;" />
+
+    <DataSelector source="Creator" style="&absolute; left: 460px; top: 457px; width: 300px;" readOnly="true"/>
 
   </FlowPanel>
 </f:Form>  

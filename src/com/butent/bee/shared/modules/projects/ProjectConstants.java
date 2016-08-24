@@ -98,6 +98,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_CURENCY = "Currency";
   public static final String COL_PROJECT_INCOME_CURENCY = "Currency";
   public static final String COL_NOTES = "Notes";
+  public static final String COL_PROJECT_TARIFF = "Tariff";
 
   public static final String COL_DEFAULT_PROJECT_TEMPLATE_STAGE = "DefaultTMLStage";
 
@@ -158,6 +159,7 @@ public final class ProjectConstants {
   public static final String FORM_PROJECT_TEMPLATE = "ProjectTemplate";
   public static final String FORM_NEW_PROJECT_FROM_TEMPLATE = "NewProjectFromTemplate";
   public static final String FORM_NEW_PROJECT_FROM_TASK = "NewProjectFromTask";
+  public static final String FORM_PROJECT_ACTION = "ProjectAction";
 
   public static final String GRID_ALL_PROJECTS = "AllProjects";
   public static final String GRID_PROJECTS = "Projects";
@@ -166,6 +168,7 @@ public final class ProjectConstants {
   public static final String GRID_PROJECT_INCOMES = "ProjectIncomes";
   public static final String GRID_PROJECT_INVOICES = "ProjectInvoices";
   public static final String GRID_PROJECT_DATES = "ProjectDates";
+  public static final String GRID_PROJECT_ACTIONS = "ProjectActionList";
 
   public static final String GRID_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
   public static final String GRID_PROJECT_TEMPLATES = "ProjectTemplates";

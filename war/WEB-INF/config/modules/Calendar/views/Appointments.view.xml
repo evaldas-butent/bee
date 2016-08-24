@@ -123,6 +123,23 @@
       </SimpleJoin>
       <SimpleColumn alias="VehicleNotes" name="Notes" />
     </SimpleJoin>
+
+    <SimpleColumn name="DurationHours" />
+    <SimpleColumn name="DurationMinutes" />
+    <SimpleColumn name="Project" />
+    <SimpleJoin name="Project" joinType="LEFT">
+      <SimpleColumn alias="ProjectName" name="Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Course" />
+    <SimpleJoin name="Course" joinType="LEFT">
+      <SimpleColumn alias="CourseName" name="Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Lecture" />
+    <SimpleJoin name="Lecture" joinType="LEFT">
+      <SimpleColumn alias="LectureName" name="Name" />
+    </SimpleJoin>
+    <SimpleColumn name="FuelCard" />
+    <SimpleColumn name="Tariff" />
   </Columns>
 
   <Order>

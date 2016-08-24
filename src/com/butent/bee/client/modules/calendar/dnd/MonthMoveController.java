@@ -289,7 +289,7 @@ public class MonthMoveController implements MoveEvent.Handler {
 
     int width;
     if (widget.getItem().isRemovable(BeeKeeper.getUser().getUserId())
-        && panel != null && panel.isTodoVisible()) {
+        && panel != null && CalendarUtils.isVisibleTodoContainer(panel)) {
 
       width = panel.getElement().getClientWidth();
       setTodoWidth(panel.getWidgetSize(panel.getTodoContainer()));

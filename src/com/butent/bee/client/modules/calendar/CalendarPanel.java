@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -98,16 +99,18 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
-public class CalendarPanel extends Split implements AppointmentEvent.Handler, Presenter, View,
-    Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange, HasDomain,
-    HandlesAllDataEvents {
+public abstract class CalendarPanel extends Split implements AppointmentEvent.Handler, Presenter,
+    View, Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange,
+    HasDomain, HandlesAllDataEvents {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
 
   private static final String STYLE_PANEL = BeeConst.CSS_CLASS_PREFIX + "cal-Panel";
-  private static final String STYLE_PREFIX = STYLE_PANEL + "-";
+  public static final String STYLE_PREFIX = STYLE_PANEL + "-";
 
   private static final String STYLE_CONTROLS = STYLE_PREFIX + "controls";
 
@@ -124,29 +127,25 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   private static final String STYLE_CALENDAR = STYLE_PREFIX + "calendar";
 
-  private static final String STYLE_TODO_PREFIX = STYLE_PREFIX + "todo-";
-  private static final String STYLE_TODO_CONTAINER = STYLE_TODO_PREFIX + "container";
-  private static final String STYLE_TODO_HIDDEN = STYLE_TODO_PREFIX + "hidden";
-
   private static final DateTimeFormat DATE_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_FULL);
 
   private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
+
+  private Map<String, String> filterValues = Maps.newHashMap();
 
   private static boolean hasNonLocalAppointment(ModificationEvent<?> event) {
     return event.isSpookyActionAtADistance() && event.hasView(VIEW_APPOINTMENTS);
   }
 
   private final long calendarId;
+  private final Long objectId;
 
   private final HeaderView header;
   private final CalendarWidget calendar;
 
   private final Label dateBox;
   private final TabBar viewTabs;
-
-  private final Flow todoContainer;
-  private TodoMoveController todoMoveController;
 
   private final List<ViewType> views = new ArrayList<>();
 
@@ -158,6 +157,11 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   public CalendarPanel(long calendarId, String caption, CalendarSettings settings,
       BeeRowSet ucAttendees) {
+    this(calendarId, caption, settings, ucAttendees, null);
+  }
+
+  public CalendarPanel(long calendarId, String caption, CalendarSettings settings,
+      BeeRowSet ucAttendees, Long objectId) {
 
     super(BeeConst.UNDEF);
 
@@ -165,30 +169,21 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     addStyleName(UiOption.getStyleName(uiOptions));
 
     this.calendarId = calendarId;
+    this.objectId = objectId;
 
-    this.calendar = new CalendarWidget(calendarId, settings);
+    this.calendar = createCalendarWidget(settings);
 
     calendar.addOpenHandler(new OpenHandler<CalendarItem>() {
       @Override
       public void onOpen(OpenEvent<CalendarItem> event) {
-        CalendarItem item = event.getTarget();
-
-        switch (item.getItemType()) {
-          case APPOINTMENT:
-            CalendarKeeper.openAppointment((Appointment) item, getCalendarId());
-            break;
-          case TASK:
-            RowEditor.open(TaskConstants.VIEW_TASKS, item.getId(), Opener.MODAL);
-            break;
-        }
+        openAppointment(event);
       }
     });
 
     calendar.addTimeBlockClickHandler(new TimeBlockClickEvent.Handler() {
       @Override
       public void onTimeBlockClick(TimeBlockClickEvent event) {
-        CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), null,
-            event.getAttendeeId(), null, null);
+        createAppointment(event);
       }
     });
 
@@ -204,20 +199,12 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
     this.header = new HeaderImpl();
     header.create(caption, false, true, null, uiOptions,
-        EnumSet.of(Action.REFRESH, Action.CONFIGURE, Action.PRINT), Action.NO_ACTIONS,
-        Action.NO_ACTIONS);
+        EnumSet.of(Action.REFRESH, Action.FILTER, Action.REMOVE_FILTER, Action.CONFIGURE,
+            Action.PRINT),
+        Action.NO_ACTIONS,
+        getHeaderHiddenAction());
     header.setViewPresenter(this);
-
-    if (BeeKeeper.getUser().isDataVisible(TaskConstants.VIEW_TODO_LIST)) {
-      Button todoListCommand = new Button(Localized.dictionary().crmTodoList());
-      todoListCommand.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          showTodoList();
-        }
-      });
-      header.addCommandItem(todoListCommand);
-    }
+    header.showAction(Action.REMOVE_FILTER, Boolean.FALSE);
 
     this.dateBox = new Label();
     dateBox.addStyleName(STYLE_DATE);
@@ -308,11 +295,6 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     controls.add(viewTabs);
     addNorth(controls, 40);
 
-    this.todoContainer = new Flow(STYLE_TODO_CONTAINER);
-    addEast(todoContainer, 0, 2);
-
-    addStyleName(STYLE_TODO_HIDDEN);
-
     Simple container = new Simple();
     container.addStyleName(STYLE_CALENDAR);
     container.setWidget(calendar);
@@ -329,6 +311,32 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     activateView(views.get(viewIndex));
   }
 
+  protected Set<Action> getHeaderHiddenAction() {
+    return Action.NO_ACTIONS;
+  }
+
+  protected void createAppointment(TimeBlockClickEvent event) {
+    CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), null,
+        event.getAttendeeId(), null, null);
+  }
+
+  protected void openAppointment(OpenEvent<CalendarItem> event) {
+    CalendarItem item = event.getTarget();
+
+    switch (item.getItemType()) {
+      case APPOINTMENT:
+        CalendarKeeper.openAppointment((Appointment) item, getCalendarId());
+        break;
+      case TASK:
+        RowEditor.open(TaskConstants.VIEW_TASKS, item.getId(), Opener.MODAL);
+        break;
+    }
+  }
+
+  protected CalendarWidget createCalendarWidget(CalendarSettings settings) {
+    return new CalendarWidget(getCalendarId(), settings);
+  }
+
   @Override
   public com.google.gwt.event.shared.HandlerRegistration addReadyHandler(
       ReadyEvent.Handler handler) {
@@ -338,6 +346,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   public long getCalendarId() {
     return calendarId;
+  }
+
+  public CalendarWidget getCalendar() {
+    return calendar;
   }
 
   public CalendarView getCalendarView() {
@@ -359,6 +371,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     return null;
   }
 
+  public Map<String, String> getFilteredValues() {
+    return filterValues;
+  }
+
   @Override
   public HeaderView getHeader() {
     return header;
@@ -367,6 +383,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   @Override
   public View getMainView() {
     return this;
+  }
+
+  protected Long getObjectId() {
+    return objectId;
   }
 
   @Override
@@ -379,9 +399,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     return CalendarKeeper.getCalendarSupplierKey(getCalendarId());
   }
 
-  public Flow getTodoContainer() {
-    return todoContainer;
-  }
+  public abstract Flow getTodoContainer();
 
   @Override
   public String getViewKey() {
@@ -405,8 +423,18 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         refresh(true);
         break;
 
+      case FILTER:
+        CalendarFilterHelper.openDialog(getFilterDialogCallback(), filterValues);
+        break;
+
+      case REMOVE_FILTER:
+        getHeader().showAction(Action.REMOVE_FILTER, Boolean.FALSE);
+        setFilterValues(Maps.newHashMap());
+        refresh(true);
+
+        break;
       case CONFIGURE:
-        CalendarKeeper.editSettings(getCalendarId(), this);
+        editSettings();
         break;
 
       case CANCEL:
@@ -423,13 +451,39 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     }
   }
 
+  protected void editSettings() {
+    CalendarKeeper.editSettings(getCalendarId(), this);
+  }
+
+  private CalendarFilterHelper.DialogCallback getFilterDialogCallback() {
+    return  new CalendarFilterHelper.DialogCallback() {
+
+      @Override
+      public void onClear() {
+        filterValues = Maps.newHashMap();
+      }
+
+      @Override
+      public void onFilter(Map<CalendarFilterDataType, String> selectedData) {
+        if (!BeeUtils.isEmpty(selectedData)) {
+          filterValues = Maps.newHashMap();
+          for (CalendarFilterDataType filterKey : selectedData.keySet()) {
+            filterValues.put(filterKey.name(), selectedData.get(filterKey));
+          }
+          getHeader().showAction(Action.REMOVE_FILTER, Boolean.TRUE);
+        }
+        refresh(true);
+      }
+    };
+  }
+
+  private void setFilterValues(Map<String, String> filterValues) {
+    this.filterValues = filterValues;
+  }
+
   @Override
   public boolean isEnabled() {
     return enabled;
-  }
-
-  public boolean isTodoVisible() {
-    return !todoContainer.isEmpty() && getWidgetSize(todoContainer) > 0;
   }
 
   @Override
@@ -558,10 +612,12 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   @Override
   public void onStateChange(State state) {
-    if (State.ACTIVATED.equals(state)) {
-      CalendarKeeper.onActivatePanel(this);
-    } else if (State.REMOVED.equals(state)) {
-      CalendarKeeper.onRemovePanel(getId(), getCalendarId());
+    if (DataUtils.isId(getCalendarId())) {
+      if (State.ACTIVATED.equals(state)) {
+        CalendarKeeper.onActivatePanel(this);
+      } else if (State.REMOVED.equals(state)) {
+        CalendarKeeper.onRemovePanel(getId(), getCalendarId());
+      }
     }
   }
 
@@ -605,21 +661,21 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     super.onUnload();
   }
 
-  CalendarSettings getSettings() {
+  protected CalendarSettings getSettings() {
     return calendar.getSettings();
   }
 
   void setDate(JustDate date, boolean sync) {
     if (date != null && !date.equals(calendar.getDate())) {
       calendar.update(calendar.getType(), date, calendar.getDisplayedDays());
-      if (sync) {
+      if (sync && DataUtils.isId(calendarId)) {
         CalendarKeeper.synchronizeDate(calendarId, date, false);
       }
       refreshDateBox();
     }
   }
 
-  void updateSettings(BeeRow row, List<BeeColumn> columns, boolean requery) {
+  protected void updateSettings(BeeRow row, List<BeeColumn> columns, boolean requery) {
     getSettings().loadFrom(row, columns);
 
     int viewIndex = updateViews(getSettings());
@@ -632,7 +688,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     }
   }
 
-  void updateUcAttendees(BeeRowSet ucAttendees, boolean refresh) {
+  protected void updateUcAttendees(BeeRowSet ucAttendees, boolean refresh) {
     List<Long> attIds = new ArrayList<>();
     if (!DataUtils.isEmpty(ucAttendees)) {
       for (BeeRow row : ucAttendees.getRows()) {
@@ -689,7 +745,9 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
     boolean changed = calendar.update(type, date, days);
     if (changed) {
-      CalendarKeeper.synchronizeDate(calendarId, date, false);
+      if (DataUtils.isId(calendarId)) {
+        CalendarKeeper.synchronizeDate(calendarId, date, false);
+      }
       refreshDateBox();
     }
 
@@ -781,7 +839,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   }
 
   private void refresh(boolean scroll) {
-    calendar.loadItems(true, scroll);
+    calendar.loadItems(true, scroll, getFilteredValues());
   }
 
   private void refreshCalendar(boolean scroll) {
@@ -824,44 +882,6 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     }
 
     dateBox.setHtml(html);
-  }
-
-  private void showTodoList() {
-    if (todoContainer.isEmpty()) {
-      if (getOffsetWidth() < 100) {
-        BeeKeeper.getScreen().notifyWarning("NO");
-        return;
-      }
-
-      GridInterceptor interceptor = GridFactory.getGridInterceptor(GRID_CALENDAR_TODO);
-      String supplierKey = GridFactory.getSupplierKey(GRID_CALENDAR_TODO, interceptor);
-
-      GridFactory.createGrid(GRID_CALENDAR_TODO, supplierKey, interceptor,
-          EnumSet.of(UiOption.EMBEDDED), null, new PresenterCallback() {
-            @Override
-            public void onCreate(Presenter presenter) {
-              if (!todoContainer.isEmpty()) {
-                todoContainer.clear();
-              }
-
-              int size = Math.min(getOffsetWidth() / 3, 320);
-              setWidgetSize(todoContainer, size);
-              todoContainer.add(presenter.getMainView());
-
-              removeStyleName(STYLE_TODO_HIDDEN);
-            }
-          });
-
-      if (todoMoveController == null) {
-        todoMoveController = new TodoMoveController(todoContainer, this);
-      }
-
-    } else {
-      todoContainer.clear();
-
-      addStyleName(STYLE_TODO_HIDDEN);
-      setWidgetSize(todoContainer, 0);
-    }
   }
 
   private boolean updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,

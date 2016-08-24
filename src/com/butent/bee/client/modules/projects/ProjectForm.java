@@ -22,6 +22,10 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
+import com.butent.bee.client.modules.calendar.CalendarPanel;
+import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -86,6 +90,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private static final String WIDGET_RELATED_INFO = "RelatedInfo";
   private static final String WIDGET_RELATED_DOCUMENTS = "RelatedDocuments";
   private static final String WIDGET_OWNER = "Owner";
+  private static final String WIDGET_PROJECT_CALENDAR_SPLIT = "CalendarSplit";
 
   private static final Set<String> AUDIT_FIELDS = Sets.newHashSet(COL_PROJECT_START_DATE,
       COL_PROJECT_END_DATE, COL_COMAPNY, COL_PROJECT_STATUS, COL_PROJECT_OWNER,
@@ -113,6 +118,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private ChildGrid dates;
 
   private BeeRowSet timeUnits;
+  private Split projectCalendar;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -165,6 +171,11 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof ChildGrid && BeeUtils.same(name, GRID_PROJECT_DATES)) {
       dates = (ChildGrid) widget;
+    }
+
+    if (widget instanceof Split && BeeUtils.same(name, WIDGET_PROJECT_CALENDAR_SPLIT)) {
+      projectCalendar = (Split) widget;
+      projectCalendar.clear();
     }
   }
 
@@ -253,6 +264,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
           Filter.isNull(COL_PROJECT_STAGE));
       createTemplateDates(form, row, COL_PROJECT_TEMPLATE, dates);
     }
+
+    drawCalendar(form, row);
   }
 
   @Override
@@ -745,6 +758,30 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     eventsHandler.create(prjComments, row.getId(), filter);
   }
 
+  private void drawCalendar(FormView form, IsRow row) {
+    final Split prjCalendar = getProjectCalendar();
+    if (prjCalendar == null) {
+      logger.warning("Widget of project calendar not found");
+      return;
+    }
+
+    prjCalendar.clear();
+
+    CalendarKeeper.ensureData(null);
+    CalendarUtils.getProjectAttendees(row.getId(), new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            CalendarPanel calendarPanel = new ProjectCalendar(row,
+                CalendarUtils.createDefaultSettingsBeeRow(),
+                result,
+                form.isEnabled() && !DataUtils.isNewRow(row));
+
+            prjCalendar.add(calendarPanel);
+          }
+        }
+    );
+  }
+
   private Handler getAuditColumnHandler(final FormView form, final IsRow row) {
     return new Handler() {
 
@@ -817,6 +854,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         setTimeUnits(rs);
       }
     };
+  }
+
+  private Split getProjectCalendar() {
+    return projectCalendar;
   }
 
   private Flow getProjectComments() {

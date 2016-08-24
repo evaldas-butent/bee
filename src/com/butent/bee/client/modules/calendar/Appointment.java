@@ -89,26 +89,30 @@ public class Appointment extends CalendarItem {
   private static final String KEY_CREATOR_NAME = "CreatorName";
 
   static {
-    SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
+    SIMPLE_HEADER_TEMPLATE = BeeUtils.joinWords(
+        wrap(ALS_CALENDAR_PROJECT), wrap(ALS_APPOINTMENT_LECTURE), wrap(COL_SUMMARY));
     SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(COL_APPOINTMENT_LOCATION),
         wrap(ALS_COMPANY_NAME), BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL),
             wrap(COL_VEHICLE_MODEL)),
         wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES),
         wrap(KEY_OWNERS), wrap(COL_DESCRIPTION));
 
-    PARTIAL_HEADER_TEMPLATE = wrap(COL_SUMMARY);
+    PARTIAL_HEADER_TEMPLATE = BeeUtils.joinWords(
+        wrap(ALS_CALENDAR_PROJECT), wrap(ALS_APPOINTMENT_LECTURE), wrap(COL_SUMMARY));
     PARTIAL_BODY_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_APPOINTMENT_LOCATION),
         wrap(ALS_COMPANY_NAME), BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL),
             wrap(COL_VEHICLE_MODEL)),
         wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES),
         wrap(KEY_OWNERS), wrap(COL_DESCRIPTION));
 
-    MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
+    MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(ALS_CALENDAR_PROJECT),
+        wrap(ALS_APPOINTMENT_LECTURE), wrap(COL_SUMMARY));
     MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(COL_APPOINTMENT_LOCATION),
         wrap(ALS_COMPANY_NAME), wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
         wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(KEY_OWNERS));
 
-    COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(COL_SUMMARY), wrap(KEY_PERIOD));
+    COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(ALS_CALENDAR_PROJECT), wrap(ALS_APPOINTMENT_LECTURE),
+        wrap(COL_SUMMARY), wrap(KEY_PERIOD));
 
     TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS), wrap(COL_SUMMARY),
         wrap(COL_APPOINTMENT_LOCATION), wrap(ALS_COMPANY_NAME),
