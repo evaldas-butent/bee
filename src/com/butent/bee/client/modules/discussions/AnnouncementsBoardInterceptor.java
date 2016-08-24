@@ -904,10 +904,11 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
     for (SimpleRow row : rsFiles) {
       FileInfo file = new FileInfo(row.getLong(COL_FILE),
-          row.getValue(COL_FILE_CAPTION),
+          row.getValue(COL_FILE_NAME),
           row.getLong(COL_FILE_SIZE),
           row.getValue(COL_FILE_TYPE));
 
+      file.setCaption(row.getValue(COL_FILE_CAPTION));
       file.setIcon(FileNameUtils.getExtension(file.getName()) + ".png");
       Long discussionsId = row.getLong(COL_DISCUSSION);
       if (discussionFilesMap.containsKey(discussionsId)) {
