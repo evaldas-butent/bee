@@ -102,6 +102,7 @@ class ChartData implements HasEnabled {
     CUSTOMER(Localized.dictionary().transportationCustomers()),
     MANAGER(Localized.dictionary().managers()),
     LOADING(Localized.dictionary().cargoLoading()),
+    LOADING_COUNTRY(Localized.dictionary().trLoadingCountry()),
     ORDER(Localized.dictionary().trOrders()),
     ORDER_STATUS(Localized.dictionary().trOrderStatus()),
     PLACE(Localized.dictionary().cargoHandlingPlaces()),
@@ -112,6 +113,7 @@ class ChartData implements HasEnabled {
     TRIP_DEPARTURE(Localized.dictionary().transportDeparture()),
     TRUCK(Localized.dictionary().trucks()),
     UNLOADING(Localized.dictionary().cargoUnloading()),
+    UNLOADING_COUNTRY(Localized.dictionary().trUnloadingCountry()),
     VEHICLE_GROUP(Localized.dictionary().vehicleGroupsShort()),
     VEHICLE_MODEL(Localized.dictionary().vehicleModelsShort()),
     VEHICLE_TYPE(Localized.dictionary().trVehicleTypesShort());

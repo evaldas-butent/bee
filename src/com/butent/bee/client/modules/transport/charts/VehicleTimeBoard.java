@@ -249,7 +249,7 @@ abstract class VehicleTimeBoard extends ChartBase {
             int freightCount = 0;
 
             for (Freight freight : freights.get(trip.getTripId())) {
-              boolean freightMatch = (cargoMatcher == null) ? true : cargoMatcher.matches(freight);
+              boolean freightMatch = (cargoMatcher == null) || cargoMatcher.matches(freight);
 
               if (freightMatch && placeMatcher != null) {
                 boolean ok = placeMatcher.matches(freight);
@@ -562,8 +562,10 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData departureData = new ChartData(ChartData.Type.TRIP_DEPARTURE);
     ChartData arrivalData = new ChartData(ChartData.Type.TRIP_ARRIVAL);
 
+    ChartData loadCountry = new ChartData(ChartData.Type.LOADING_COUNTRY);
     ChartData loadData = new ChartData(ChartData.Type.LOADING);
     ChartData unloadData = new ChartData(ChartData.Type.UNLOADING);
+    ChartData unloadCountry = new ChartData(ChartData.Type.UNLOADING_COUNTRY);
     ChartData placeData = new ChartData(ChartData.Type.PLACE);
 
     ChartData driverData = new ChartData(ChartData.Type.DRIVER);
@@ -644,10 +646,22 @@ abstract class VehicleTimeBoard extends ChartBase {
             placeData.add(loading);
           }
 
+          String loadingCountry = Places.getCountryLabel(freight.getLoadingCountry());
+
+          if (!BeeUtils.isEmpty(loadingCountry)) {
+            loadCountry.add(loadingCountry);
+          }
+
           String unloading = Places.getUnloadingPlaceInfo(freight);
           if (!BeeUtils.isEmpty(unloading)) {
             unloadData.add(unloading);
             placeData.add(unloading);
+          }
+
+          String unloadingCountry = Places.getCountryLabel(freight.getUnloadingCountry());
+
+          if (!BeeUtils.isEmpty(unloadingCountry)) {
+            unloadCountry.add(unloadingCountry);
           }
 
           if (hasCargoHandling(freight.getCargoId())) {
@@ -689,7 +703,9 @@ abstract class VehicleTimeBoard extends ChartBase {
     data.add(departureData);
     data.add(arrivalData);
 
+    data.add(loadCountry);
     data.add(loadData);
+    data.add(unloadCountry);
     data.add(unloadData);
     data.add(placeData);
 
