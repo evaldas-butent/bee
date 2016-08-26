@@ -8,7 +8,7 @@
 
         name="&form;" caption="Įsakymas" disabledActions="save"
         width="70" widthUnit="%" height="90" heightUnit="%"
-    >
+>
 
   <FlowPanel class="bee-PrintableForm" style="font-family:Arial;">
     <Image url="images/hop_header.jpg" style="display:block; margin:auto;" />
@@ -49,11 +49,11 @@
           </cell>
         </row>
       </Table>
-      <Table kind="output" name="TripDrivers1Container">
+      <Table kind="output" name="TripDriversAllContainer">
         <col index="1" cellStyle="text-align:center; padding:0 2em 0 2em;" />
         <row>
           <Label text="Antram vairuotojui" />
-          <Label name="TripDrivers1" />
+          <Label name="TripDriversAll" />
         </row>
         <row>
           <text />
@@ -161,24 +161,73 @@
       </row>
     </Table>
     <br />
-    <Table kind="output" name="TripDrivers2Container" style="text-align:center; white-space:nowrap;">
-      <col index="0" cellStyle="text-align:left;" />
-      <row>
-        <Label text="Su įsakymu susipažinau, sutinku" />
-        <Label name="TripDrivers2" style="padding:0 2em 0 2em;" />
-        <cell rowSpan="5" style="width:100%;">
-          <text />
-        </cell>
-      </row>
-      <row>
-        <text />
-        <cell style="border-top: 1px solid black; font-size:x-small;">
-          <Label text="(vardas, pavardė)" />
-        </cell>
-        <cell style="border-top: 1px solid black; font-size:x-small;">
-          <Label text="(parašas)" style="width:15em;" />
-        </cell>
-      </row>
-    </Table>
+    <FlowPanel style="display:flex; flex-direction:row; flex-wrap:wrap;
+          align-items:flex-start;">
+      <FlowPanel name="TripDrivers0Container" style="margin:10px 10px 0 0;">
+        <InlineLabel text="Su įsakymu susipažinau, sutinku:" style="margin-right:10px;" />
+        <InlineLabel name="TripDrivers0" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers1Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers1" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers2Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers2" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers3Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers3" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers4Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers4" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers5Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers5" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers6Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers6" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers7Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers7" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers8Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers8" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers9Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers9" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers10Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers10" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers11Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers11" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers12Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers12" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers13Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers13" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers14Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers14" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+      <FlowPanel name="TripDrivers15Container" style="margin:10px 10px 0 0;">
+        <InlineLabel name="TripDrivers15" />
+        <InlineLabel text="____________________" />
+      </FlowPanel>
+    </FlowPanel>
   </FlowPanel>
 </f:Form>

@@ -36,7 +36,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
@@ -441,10 +440,6 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public boolean onRowInsert(RowInsertEvent event) {
     return true;
-  }
-
-  @Override
-  public void onRowUpdate(RowUpdateEvent event) {
   }
 
   @Override

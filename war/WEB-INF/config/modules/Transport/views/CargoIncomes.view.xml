@@ -29,7 +29,19 @@
     </SimpleJoin>
     <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
+
     <SimpleColumn name="Sale" />
+    <SimpleJoin name="Sale" joinType="LEFT">
+      <SimpleJoin name="SaleSeries" joinType="LEFT">
+        <SimpleColumn name="SeriesName" alias="SalePrefix" />
+      </SimpleJoin>
+      <SimpleColumn name="InvoiceNo" alias="SaleNo" />
+    </SimpleJoin>
+
     <SimpleColumn name="Purchase" />
+    <SimpleJoin name="Purchase" joinType="LEFT">
+      <SimpleColumn name="InvoicePrefix" alias="PurchasePrefix" />
+      <SimpleColumn name="InvoiceNo" alias="PurchaseNo" />
+    </SimpleJoin>
   </Columns>
 </View>

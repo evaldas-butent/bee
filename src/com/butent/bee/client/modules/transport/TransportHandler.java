@@ -25,7 +25,6 @@ import com.butent.bee.client.modules.transport.charts.ChartBase;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.client.output.ReportUtils;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -33,7 +32,6 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
@@ -48,7 +46,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -69,20 +66,6 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class TransportHandler {
-
-  private static class CargoGridHandler extends AbstractGridInterceptor {
-    @Override
-    public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
-        Collection<RowInfo> selectedRows, DeleteMode defMode) {
-
-      return new CargoTripChecker().getDeleteMode(presenter, activeRow, selectedRows, defMode);
-    }
-
-    @Override
-    public GridInterceptor getInstance() {
-      return new CargoGridHandler();
-    }
-  }
 
   static final class Profit extends Image implements ClickHandler {
     private final String column;
@@ -233,11 +216,11 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
 
-    GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
+    GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoInvoiceChecker());
+    GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoInvoiceChecker());
     GridFactory.registerGridInterceptor(VIEW_TRIPS, new CargoTripChecker());
     GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
 
-    GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoHandlingGrid());
 
     GridFactory.registerGridInterceptor("CargoDocuments", new TransportDocumentsGrid(COL_CARGO));

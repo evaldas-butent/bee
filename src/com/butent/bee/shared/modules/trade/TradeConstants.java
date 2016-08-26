@@ -253,6 +253,8 @@ public final class TradeConstants {
   public static final String GRID_TRADE_PAYMENTS = "TradePayments";
   public static final String GRID_TRADE_DOCUMENT_FILES = "TradeDocumentFiles";
 
+  public static final String GRID_TRADE_STOCK = "TradeStock";
+
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
 

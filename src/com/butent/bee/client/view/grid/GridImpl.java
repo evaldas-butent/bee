@@ -117,7 +117,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.RowInsertEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.IntegerValue;
@@ -770,7 +769,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (filterSupplier == null && !BeeConst.STRING_MINUS.equals(cd.getFilterOptions())
         && (filterSupplierType != null
-            || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
+        || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
 
       filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataColumns,
           gridDescription.getIdName(), gridDescription.getVersionName(), dataIndex, label,
@@ -1707,14 +1706,22 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     getGrid().insertRow(event.getRow(), false);
-    logger.info("grid", getId(), getViewName(), "insert row", event.getRowId());
-  }
 
-  @Override
-  public void onRowUpdate(RowUpdateEvent event) {
-    if (getGridInterceptor() != null && event.hasView(getViewName())) {
-      getGridInterceptor().onRowUpdate(event);
+    if (event.isSpookyActionAtADistance()) {
+      Set<String> sources = new HashSet<>();
+
+      for (int index = 0; index < getDataColumns().size(); index++) {
+        if (!event.getRow().isNull(index)) {
+          sources.add(getDataColumns().get(index).getId());
+        }
+      }
+
+      if (!sources.isEmpty()) {
+        getGrid().addUpdatedSources(event.getRowId(), sources);
+      }
     }
+
+    logger.info("grid", getId(), getViewName(), "insert row", event.getRowId());
   }
 
   @Override
@@ -1913,7 +1920,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     super.onLoad();
 
     registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
-    registry.add(BeeKeeper.getBus().registerRowUpdateHandler(this, false));
 
     if (getState() == State.INITIALIZED) {
       ReadyEvent.fire(this);
