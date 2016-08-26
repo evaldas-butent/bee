@@ -9,7 +9,9 @@
     <RelColumn name="Trip" caption="=trip" caching="none" newRowEnabled="false" />
     <DataColumn name="Date" caption="=date" />
 
-    <RelColumn name="Item" renderColumns="ItemName" />
+    <RelColumn name="Item" renderColumns="ItemName">
+      <footer text="Dienpinigiai:" />
+    </RelColumn>
     <DataColumn name="UnitName" />
     <DataColumn name="Quantity" />
     <DataColumn name="Price" format="0.00">
@@ -28,14 +30,15 @@
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
       <renderer type="total" />
+      <footer expression="row.OldPrice ? row.Quantity * row.Price : null" />
     </CalcColumn>
-    <CalcColumn name="Ratio" type="string" caption="Pokytis" horizontalAlignment="right">
+    <CalcColumn name="Ratio" type="decimal" caption="Pokytis" format="#.##%">
       <render>
         <ui:expression>
-          row.OldPrice &amp;&amp; row.Price
-            ? (Math.round(row.Price / row.OldPrice * 10000) / 100) + '%' : null
+          row.OldPrice &amp;&amp; row.Price ? row.Price / row.OldPrice : null
         </ui:expression>
       </render>
+      <footer expression="row.OldPrice ? row.Quantity * row.OldPrice : null" format="#.00" />
     </CalcColumn>
 
     <DataColumn name="Prefix" />
