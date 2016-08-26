@@ -87,7 +87,7 @@ public class GridMenu {
     EXPORT(Action.EXPORT) {
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return true;
+        return BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.EXPORT_TO_XLS);
       }
 
       @Override
