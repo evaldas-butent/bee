@@ -24,7 +24,7 @@ import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.ModificationPreviewer;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -41,8 +41,8 @@ import java.util.Set;
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
     HasEditFormHandlers, ParentRowCreator, HandlesHistory, DndWidget, HasWidgets,
-    RowInsertEvent.Handler, EditStartEvent.Handler,
-    RowCountChangeEvent.Handler, DataReceivedEvent.Handler, HasSummaryChangeHandlers, HasState {
+    EditStartEvent.Handler, RowCountChangeEvent.Handler, DataReceivedEvent.Handler,
+    HasSummaryChangeHandlers, HasState, ModificationPreviewer {
 
   enum SelectedRows {
     ALL, EDITABLE, REMOVABLE, MERGEABLE

@@ -35,7 +35,6 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
@@ -434,11 +433,6 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public boolean onRowCountChange(GridView gridView, RowCountChangeEvent event) {
-    return true;
-  }
-
-  @Override
-  public boolean onRowInsert(RowInsertEvent event) {
     return true;
   }
 

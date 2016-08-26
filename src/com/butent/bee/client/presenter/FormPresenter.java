@@ -368,15 +368,15 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     switch (providerType) {
       case ASYNC:
-        provider = new AsyncProvider(display, this, notificationListener, viewName, columns,
+        provider = new AsyncProvider(display, this, null, notificationListener, viewName, columns,
             null, null, null, cachingPolicy, null, null);
         break;
       case CACHED:
-        provider = new CachedProvider(display, this, notificationListener, viewName, columns,
+        provider = new CachedProvider(display, this, null, notificationListener, viewName, columns,
             rowSet);
         break;
       case LOCAL:
-        provider = new LocalProvider(display, this, notificationListener, viewName, columns,
+        provider = new LocalProvider(display, this, null, notificationListener, viewName, columns,
             rowSet);
         break;
       default:
