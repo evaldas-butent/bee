@@ -205,7 +205,9 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
     } else if (ready || getPresenter().isReady()) {
       getPresenter().getGridView().getGrid().deactivate();
 
-      updateFilter(getPendingRow());
+      if (updateFilter(getPendingRow())) {
+        getPresenter().getGridView().getGrid().clearSelection();
+      }
 
       if (!getPresenter().getGridView().isAdding()) {
         if (hasParentValue(getPendingRow())) {
@@ -231,7 +233,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
     this.pendingRow = pendingRow;
   }
 
-  private void updateFilter(IsRow row) {
+  private boolean updateFilter(IsRow row) {
     if (getPresenter() != null) {
       getPresenter().getGridView().setRelId(getParentValue(row));
 
@@ -251,6 +253,11 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
           header.showAction(Action.REMOVE_FILTER, false);
         }
       }
+
+      return changed;
+
+    } else {
+      return false;
     }
   }
 }
