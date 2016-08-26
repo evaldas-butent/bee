@@ -281,8 +281,9 @@ public class TransportModuleBean implements BeeModule {
       response = getColors(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CARGO_USAGE)) {
-      response = getCargoUsage(reqInfo.getParameter("ViewName"),
-          Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")));
+      response = getCargoUsage(reqInfo.getParameter(Service.VAR_VIEW_NAME),
+          DataUtils.parseIdList(reqInfo.getParameter(Service.VAR_VIEW_ROW_ID)),
+          reqInfo.getParameter(Service.VAR_COLUMN));
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTALS)) {
       response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSMENT)),
@@ -2123,27 +2124,48 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(BeeUtils.notEmpty(val, "0.00"));
   }
 
-  private ResponseObject getCargoUsage(String viewName, String[] ids) {
+  private ResponseObject getCargoUsage(String viewName, List<Long> ids, String saleColumn) {
     String source = sys.getViewSource(viewName);
-    IsExpression ref;
-    SqlSelect ss = new SqlSelect().addFrom(TBL_CARGO_TRIPS);
+    SqlSelect ss;
+    IsExpression ref = null;
 
-    if (BeeUtils.same(source, TBL_TRIPS)) {
-      ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_TRIP);
+    if (!BeeUtils.isEmpty(saleColumn)) {
+      ss = new SqlSelect()
+          .addFrom(TBL_CARGO_INCOMES)
+          .setWhere(SqlUtils.notNull(TBL_CARGO_INCOMES, saleColumn));
 
-    } else if (BeeUtils.same(source, TBL_ORDER_CARGO)) {
-      ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_CARGO);
-
-    } else if (BeeUtils.same(source, TBL_ORDERS)) {
-      ss.addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO));
-      ref = SqlUtils.field(TBL_ORDER_CARGO, COL_ORDER);
-
+      switch (source) {
+        case TBL_ORDER_CARGO:
+          ref = SqlUtils.field(TBL_CARGO_INCOMES, COL_CARGO);
+          break;
+        case TBL_ORDERS:
+          ss.addFromInner(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO));
+          ref = SqlUtils.field(TBL_ORDER_CARGO, COL_ORDER);
+          break;
+      }
     } else {
+      ss = new SqlSelect().addFrom(TBL_CARGO_TRIPS);
+
+      switch (source) {
+        case TBL_TRIPS:
+          ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_TRIP);
+          break;
+        case TBL_ORDER_CARGO:
+          ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_CARGO);
+          break;
+        case TBL_ORDERS:
+          ss.addFromInner(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO));
+          ref = SqlUtils.field(TBL_ORDER_CARGO, COL_ORDER);
+          break;
+      }
+    }
+    if (Objects.isNull(ref)) {
       return ResponseObject.error("Table not supported:", source);
     }
-    int cnt = qs.sqlCount(ss.setWhere(SqlUtils.inList(ref, (Object[]) ids)));
-
-    return ResponseObject.response(cnt);
+    return ResponseObject.response(qs.sqlCount(ss.setWhere(SqlUtils.and(SqlUtils.inList(ref, ids),
+        ss.getWhere()))));
   }
 
   private ResponseObject getColors(RequestInfo reqInfo) {
