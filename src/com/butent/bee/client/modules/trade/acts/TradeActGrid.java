@@ -460,20 +460,9 @@ public class TradeActGrid extends AbstractGridInterceptor {
               newRow.setValue(i, parent.getString(i) + "-"
                   + response.getResponseAsString());
               break;
-            case COL_TA_INPUT_VEHICLE:
-            case "VehicleName":
-            case COL_TA_VEHICLE:
-            case TransportConstants.ALS_VEHICLE_NUMBER:
-            case "VehicleType":
-            case CalendarConstants.COL_VEHICLE_PARENT_MODEL:
-            case CalendarConstants.COL_VEHICLE_MODEL:
-            case COL_TA_DRIVER:
-            case "DriverPerson":
-            case "DriverFirstName":
-            case "DriverLastName":
-            case COL_TA_INPUT_DRIVER:
-            case "DriverFirstName1":
-            case "DriverLastName1":
+
+            case COL_TA_UNTIL:
+            case COL_TA_NOTES:
               break;
 
             default:

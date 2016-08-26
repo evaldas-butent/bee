@@ -4444,6 +4444,8 @@ public interface Dictionary {
 
   default String taSaveSelectedItems() {return g("taSaveSelectedItems");}
 
+  default String taSelectKindReturn() {return g("taSelectKindReturn");}
+
   default String taTariff() {return g("taTariff");}
 
   default String taTimeUnit() {return g("taTimeUnit");}

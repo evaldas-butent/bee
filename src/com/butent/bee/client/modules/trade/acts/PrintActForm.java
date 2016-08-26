@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -22,13 +23,17 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
+import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -47,6 +52,7 @@ public class PrintActForm extends AbstractFormInterceptor {
   private static final String SERVICES_WIDGET_NAME = "TradeActServices";
   private static final String FORM_PRINT_TA_NO_STOCK = "PrintTASaleNoStock";
   private static final String FORM_PRINT_TA_SALE = "PrintTradeActSalePhysical";
+  private static final String FORM_PRINT_TA_RETURN = "PrintTradeActReturn";
   private static final String FORM_PRINT_TA_SALE_RENT = "PrintTASaleRent";
   private static final String FORM_PRINT_TA_SALE_ADDITION = "PrintTASaleAddition";
 
@@ -59,10 +65,12 @@ public class PrintActForm extends AbstractFormInterceptor {
   };
 
   final Map<String, String> tableHeaders = new HashMap<>();
+  final Map<Long, Double> remainQty = new HashMap<>();
   Map<String, Widget> companies = new HashMap<>();
   List<Widget> totals = new ArrayList<>();
   List<Widget> totalsOf = new ArrayList<>();
   Consumer<Double> totConsumer;
+
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -77,6 +85,19 @@ public class PrintActForm extends AbstractFormInterceptor {
     } else if (BeeUtils.startsSame(name, "TotalOf")) {
       totalsOf.add(widget.asWidget());
     }
+  }
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
+    TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
+    if (!DataUtils.isId(row.getLong(getDataIndex(COL_TA_PARENT)))
+        && !TradeActKind.RETURN.equals(kind)
+        && BeeUtils.same(getFormView().getFormName(), FORM_PRINT_TA_RETURN)) {
+      form.getViewPresenter().handleAction(Action.CLOSE);
+      BeeKeeper.getScreen().notifySevere(Localized.dictionary().taSelectKindReturn());
+      return false;
+    }
+    return super.onStartEdit(form, row, focusCommand);
   }
 
   @Override
@@ -107,8 +128,29 @@ public class PrintActForm extends AbstractFormInterceptor {
       }
     };
 
-    renderItems(ITEMS_WIDGET_NAME);
-    renderItems(SERVICES_WIDGET_NAME);
+    TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
+    if (DataUtils.isId(row.getLong(getDataIndex(COL_TA_PARENT)))
+        && TradeActKind.RETURN.equals(kind)) {
+      ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_RETURN);
+      params.addQueryItem(COL_TRADE_ACT, row.getLong((getDataIndex(COL_TA_PARENT))));
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response != null && response.hasResponse(BeeRowSet.class)) {
+            BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
+            remainQty.putAll(TradeActUtils.getItemQuantities(parentItems));
+          }
+
+          renderItems(ITEMS_WIDGET_NAME);
+          renderItems(SERVICES_WIDGET_NAME);
+        }
+      });
+
+    } else {
+      remainQty.clear();
+      renderItems(ITEMS_WIDGET_NAME);
+      renderItems(SERVICES_WIDGET_NAME);
+    }
 
     super.beforeRefresh(form, row);
   }
@@ -143,7 +185,8 @@ public class PrintActForm extends AbstractFormInterceptor {
 
     final String formName = getFormView().getFormName();
 
-    if (BeeUtils.same(col, "RemainingQty") && !BeeUtils.same(formName, FORM_PRINT_TA_SALE)) {
+    if (BeeUtils.same(col, "RemainingQty") && !BeeUtils.inList(formName, FORM_PRINT_TA_SALE,
+        FORM_PRINT_TA_RETURN)) {
       return false;
     }
 
@@ -193,6 +236,11 @@ public class PrintActForm extends AbstractFormInterceptor {
           return "Suma su PVM";
         }
         break;
+      case "Quantity":
+        if (BeeUtils.same(form.getFormName(), FORM_PRINT_TA_RETURN)) {
+          return "Grąžinta";
+        }
+        break;
       default:
         break;
     }
@@ -232,13 +280,20 @@ public class PrintActForm extends AbstractFormInterceptor {
 
         for (SimpleRowSet.SimpleRow row : rs) {
           Long id = row.getLong(typeTable);
+          Long itemId = row.getLong(COL_ITEM);
+
+          if (BeeUtils.same(FORM_PRINT_TA_RETURN, getFormView().getFormName())
+              && remainQty.get(itemId) == null ) {
+              remainQty.put(itemId, 0D);
+          }
 
           for (String col : rs.getColumnNames()) {
             String value = row.getValue(col);
 
             if (Objects.equals(col, COL_TA_RETURNED_QTY)) {
-              BigDecimal remaining = row.getDecimal(COL_TRADE_ITEM_QUANTITY)
-                  .subtract(BeeUtils.nvl(row.getDecimal(COL_TA_RETURNED_QTY), BigDecimal.ZERO));
+              BigDecimal remaining = remainQty.get(itemId) != null ? new BigDecimal
+                      (remainQty.get(itemId)): row.getDecimal(COL_TRADE_ITEM_QUANTITY).subtract(
+                          BeeUtils.nvl(row.getDecimal(COL_TA_RETURNED_QTY), BigDecimal.ZERO));
 
               if (remaining.compareTo(BigDecimal.ZERO) != 0) {
                 data.put(id, "RemainingQty", remaining.toPlainString());
@@ -274,8 +329,9 @@ public class PrintActForm extends AbstractFormInterceptor {
               data.put(id, col, value);
             }
           }
-          double qty = BeeUtils.toDouble(data.get(id, COL_TRADE_ITEM_QUANTITY))
-              - BeeUtils.toDouble(data.get(id, COL_TA_RETURNED_QTY));
+          double qty = BeeUtils.nvl(remainQty.get(itemId), BeeUtils.toDouble(data.get(id,
+              COL_TRADE_ITEM_QUANTITY))
+              - BeeUtils.toDouble(data.get(id, COL_TA_RETURNED_QTY)));
           double prc = BeeUtils.toDouble(data.get(id, COL_TRADE_ITEM_PRICE));
           double sum = qty * prc;
 
