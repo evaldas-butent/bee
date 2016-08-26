@@ -486,6 +486,12 @@
                            disabled="disabled" />
                   </td>
                 </tr>
+                <tr>
+                  <td colspan="2">
+                    <label for="CargoNotes">=cargoNotes</label>
+                    <textarea id="CargoNotes" name="CargoNotes" rows="3" style="width:100%"> </textarea>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </fieldset>

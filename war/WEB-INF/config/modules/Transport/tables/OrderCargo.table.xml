@@ -44,7 +44,7 @@
     <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
     <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
 
-    <Text name="Notes" label="=notes" />
+    <Text name="Notes" label="=cargoNotes" />
     <Text name="Directions" label="=trDirections" />
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
 
