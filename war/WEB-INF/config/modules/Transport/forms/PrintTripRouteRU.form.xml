@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY form "PrintTripRoute">
+    <!ENTITY nbsp "<Label text=&#34;&amp;#160;&#34; />">
+    <!ENTITY emptyRow "<row>&nbsp;<text /><text /><text /><text /><text /><text /></row>">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="PrintTripRouteRU" caption="Путевого лист" disabledActions="save"
+        width="70" widthUnit="%" height="90" heightUnit="%"
+  >
+
+  <FlowPanel class="bee-PrintableForm" style="font-family:Arial;">
+    <css id="&form;">
+      .&form;-table {border-collapse:collapse; width:100%;}
+      .&form;-table td {border:1px solid black; padding:2px;}
+    </css>
+
+    <Image url="images/hop_header_RU.PNG" style="display:block; margin:auto;" />
+
+    <Label html="ПУТЕВОЙ ЛИСТ ГРУЗОВОГО АВТОМОБИЛЯ  "
+           style="text-align:center; font-weight:bold;" />
+    <TextLabel style="text-align:center;">
+      <renderToken source="TripNo" prefix="№ " />
+    </TextLabel>
+
+    <br />
+
+    <Table kind="output" class="&form;-table">
+      <col index="0" cellStyle="width:30%; text-align:left; font-weight:bold;" />
+      <row>
+        <Label text="Дата выпуска путевого листа" />
+        <TextLabel>
+          <render>
+            <ui:expression>new Date().toISOString().substring(0, 10)</ui:expression>
+          </render>
+        </TextLabel>
+      </row>
+      <row>
+        <Label text="Водители" />
+        <FlowPanel>
+          <TextLabel source="DriverName" inline="true" />
+          <FlowPanel name="TripDriversAllContainer" style="display:inline;">
+            <InlineLabel text=", " />
+            <InlineLabel name="TripDriversAll" />
+          </FlowPanel>
+        </FlowPanel>
+      </row>
+      <row>
+        <Label text="Гос. номер тягач" />
+        <TextLabel source="VehicleNumber" />
+      </row>
+      <row>
+        <Label text="Гос. номер полуприцепа" />
+        <TextLabel source="TrailerNumber" />
+      </row>
+      <row>
+        <Label text="TИР номер" />
+        <text />
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" class="&form;-table" style="text-align:center;">
+      <col index="0" cellStyle="width:30%; text-align:left; font-weight:bold;" />
+      <row style="font-weight:bold;">
+        <text />
+        <Label text="Выезд" />
+        <Label text="Возвращение" />
+      </row>
+      <row>
+        <Label text="Дата" />
+        <DateLabel source="DateFrom" />
+        <text />
+      </row>
+      <row>
+        <Label text="Cпидометр" />
+        <TextLabel source="SpeedometerBefore" />
+        <text />
+      </row>
+      <row>
+        <Label text="Oстаток топлива в баке" />
+        <TextLabel source="FuelBefore" />
+        <text />
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" class="&form;-table">
+      <row>
+        <Label text="Маршрут командировки" style="text-align:center; font-weight:bold;" />
+      </row>
+      <row>
+        <TextLabel source="Route" />
+      </row>
+      <row>
+        &nbsp;
+      </row>
+      <row>
+        &nbsp;
+      </row>
+      <row>
+        &nbsp;
+      </row>
+    </Table>
+
+    <br />
+    <Label text="Детализация маршрута:" style="font-weight:bold;" />
+
+    <Table kind="output" class="&form;-table" style="font-weight:bold; text-align:center;">
+      <row>
+        <cell colSpan="2" style="width:35%;">
+          <Label text="Отправился из:" />
+        </cell>
+        <cell colSpan="2" style="width:35%;">
+          <Label text="Прибыл в:" />
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Километры" />
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Вес груза в тоннах" />
+        </cell>
+        <cell rowSpan="2" style="width:10%;">
+          <Label text="Номер CMR" />
+        </cell>
+      </row>
+      <row>
+        <Label text="(Cтрана, город)" />
+        <Label text="(Дата)" />
+        <Label text="(Cтрана, город)" />
+        <Label text="(Дата)" />
+      </row>
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+    </Table>
+
+    <br />
+    <br />
+
+    <Table kind="output" style="white-space:nowrap; width:100%;">
+      <col index="0" cellStyle="text-align:left;" />
+      <row>
+        <Label text="Bодитель" style="margin-right:1em;" />
+        <TextLabel source="DriverName" />
+      </row>
+      <row>
+        <text />
+        <cell style="border-top:1px solid black; font-size:x-small; text-align:center; width:100%;">
+          <Label text="(имя, фамилия, подпись)" />
+        </cell>
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" name="TripDriversAll2Container" style="white-space:nowrap; width:100%;">
+      <col index="0" cellStyle="text-align:left;" />
+      <row>
+        <Label text="Второй водитель" style="margin-right:1em;" />
+        <Label name="TripDriversAll2" />
+      </row>
+      <row>
+        <text />
+        <cell style="border-top:1px solid black; font-size:x-small; text-align:center; width:100%;">
+          <Label text="(имя, фамилия, подпись)" />
+        </cell>
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" style="white-space:nowrap; width:100%;">
+      <col index="0" cellStyle="text-align:left;" />
+      <row>
+        <Label text="В командировку выпустил" style="margin-right:1em;" />
+        <TextLabel name="User" />
+      </row>
+      <row>
+        <text />
+        <cell style="border-top:1px solid black; font-size:x-small; text-align:center; width:100%;">
+          <Label text="(имя, фамилия, подпись)" />
+        </cell>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>
