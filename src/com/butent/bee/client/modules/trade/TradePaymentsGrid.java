@@ -4,9 +4,10 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -35,29 +36,6 @@ public class TradePaymentsGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public void afterDeleteRow(long rowId) {
-    if (tdsSupplier != null && tdsSupplier.get().deletePayment(rowId)) {
-      fireTdsChange();
-    }
-
-    super.afterDeleteRow(rowId);
-  }
-
-  @Override
-  public void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
-      boolean rowMode) {
-
-    if (column != null && column.getId().equals(COL_TRADE_PAYMENT_AMOUNT)
-        && DataUtils.hasId(result) && tdsSupplier != null
-        && tdsSupplier.get().updatePayment(result.getId(), BeeUtils.toDoubleOrNull(newValue))) {
-
-      fireTdsChange();
-    }
-
-    super.afterUpdateCell(column, oldValue, newValue, result, rowMode);
-  }
-
-  @Override
   public void onDataReceived(List<? extends IsRow> rows) {
     if (tdsSupplier != null) {
       if (getGridPresenter() != null && getGridPresenter().getUserFilter() == null) {
@@ -76,6 +54,50 @@ public class TradePaymentsGrid extends AbstractGridInterceptor {
     }
 
     super.onDataReceived(rows);
+  }
+
+  @Override
+  public boolean previewCellUpdate(CellUpdateEvent event) {
+    long id = event.getRowId();
+
+    if (event.hasSource(COL_TRADE_PAYMENT_AMOUNT)
+        && tdsSupplier != null && tdsSupplier.get().containsPayment(id)
+        && tdsSupplier.get().updatePayment(id, BeeUtils.toDoubleOrNull(event.getValue()))) {
+
+      fireTdsChange();
+    }
+
+    return super.previewCellUpdate(event);
+  }
+
+  @Override
+  public boolean previewMultiDelete(MultiDeleteEvent event) {
+    if (tdsSupplier != null) {
+      boolean fire = false;
+
+      for (long id : event.getRowIds()) {
+        if (tdsSupplier.get().containsPayment(id)) {
+          tdsSupplier.get().deletePayment(id);
+          fire = true;
+        }
+      }
+
+      if (fire) {
+        fireTdsChange();
+      }
+    }
+
+    return super.previewMultiDelete(event);
+  }
+
+  @Override
+  public boolean previewRowDelete(RowDeleteEvent event) {
+    if (tdsSupplier != null && tdsSupplier.get().containsPayment(event.getRowId())) {
+      tdsSupplier.get().deletePayment(event.getRowId());
+      fireTdsChange();
+    }
+
+    return super.previewRowDelete(event);
   }
 
   private void fireTdsChange() {
