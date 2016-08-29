@@ -23,13 +23,13 @@
           .&form;-bank .CurrencyName:after {content:" ";}
           .&form;-bank .BankAccount {display: none;}
           .&form;-bank .correspondent .BankAccount {display: inline;  white-space: pre;}
-          .&form;-bank .correspondent .BankName{
-           display: inline-block;
+          .&form;-bank .correspondent .BankName {
+             display: inline-block;
           }
           .&form;-bank .correspondent .BankName:before {content:"Bankas
           korespondentas |
         корреспондент банк: ";}
-          .&form;-bank .BankCode:before {content:"Kodas | Код банкa: ";}
+          .&form;-bank .BankCode:before {content:"Kodas | Код банкa: "; font-weight: bold;}
         .&form;-bank .correspondent .BankCode:before {content:"Kodas | Код банкa: "; font-weight:
         normal ;}
           .&form;-bank .SWIFTCode:before {content:"SWIFT: ";  font-weight: bold;}
@@ -39,11 +39,11 @@
       <Image url="images/hop_logo.png" style="width:250px;" />
     </HorizontalPanel>
 
-    <HorizontalPanel style="width:100%; margin-top:2em">
+    <HorizontalPanel style="width:100%; margin-top: 2em">
       <cell style="vertical-align:top; width:50%; text-align:left;" >
         <FlowPanel >
-          <Label style="&bold; font-size: 13pt;" html="PVM Sąskaita | Счет №" />
-          <TextLabel style="font-size: 11pt;" source="InvoiceNo">
+          <Label style="&bold; font-size: 13.5pt;" html="PVM Sąskaita | Счет №" />
+          <TextLabel style="font-size: 13.5pt;" source="InvoiceNo">
             <renderToken source="InvoicePrefix" />
             <renderToken source="InvoiceNo" />
           </TextLabel>
@@ -65,13 +65,13 @@
       </cell>
     </HorizontalPanel>
 
-    <FlowPanel style="&section;">
+    <FlowPanel style="margin-top: 16pt">
       <Table kind="output" style="width:100%;">
         <row>
           <cell style="vertical-align:top; font-size: 9.5pt">
             <Label html="Siuntėjas | Oтправитель:" />
           </cell>
-          <cell  style="vertical-align:top;">
+          <cell  style="vertical-align:top; font-size: 9.5pt">
             <Label html="Gavėjas | Получатель:" />
           </cell>
         </row>
@@ -198,39 +198,39 @@
     </FlowPanel>
     <br />
     <Table name="InvoiceDetails" kind="output"
-           style="&section; width:100%; font-size:8pt;">
+           style="&section; width:100%; font-size:7.5pt;">
       <properties rateCurrency="EUR" />
       <row style="vertical-align: top">
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Paslauga &lt;br /&gt; Услуг">
+          <Label html="Paslauga &lt;br /&gt;Услуг">
             <properties name="Name" />
           </Label>
         </cell>
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Užsakymo Nr. &lt;br /&gt; № Заказа">
+          <Label style="white-space: nowrap;" html="Užsakymo Nr. &lt;br /&gt;№ Заказа">
             <properties name="OrderNo" />
           </Label>
         </cell>
-        <cell style="width:15em; vertical-align: top; border-bottom: none">
+        <cell style="vertical-align: top; border-bottom: none">
           <FlowPanel class="flex-Vertical">
-            <Label html="Pakrovimo data ir laikas|Дата и время погрузки">
+            <Label html="Pakrovimo data ir laikas | Дата и время погрузки">
               <properties name="LoadingDate" />
             </Label>
-            <Label text="Iškrovimo data ir laikas|Дата и время разгрузки">
+            <Label text="Iškrovimo data ir laikas | Дата и время разгрузки">
               <properties name="UnloadingDate" />
             </Label>
           </FlowPanel>
         </cell>
-        <cell style="white-space:pre-wrap; width:15em; vertical-align: top; border-bottom: none">
+        <cell style="white-space:pre-wrap; vertical-align: top; border-bottom: none">
           <FlowPanel class="flex-Vertical">
-            <Label html="Maršrutas &lt;br /&gt; Маршрут">
+            <Label html="Maršrutas &lt;br /&gt;Маршрут" >
               <properties name="Notes" />
             </Label>
           </FlowPanel>
         </cell>
 
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Suma be PVM &lt;br /&gt; Итого">
+          <Label html="Suma be PVM &lt;br /&gt;Итого">
             <properties name="Amount" />
           </Label>
         </cell>
@@ -242,17 +242,17 @@
         </cell>
 
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Kursas &lt;br /&gt; Курс">
+          <Label html="Kursas &lt;br /&gt;Курс">
             <properties name="Rate" />
           </Label>
         </cell>
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Suma pagal kursą &lt;br /&gt; Сумма по курсу">
+          <Label  html="Suma pagal kursą &lt;br /&gt;Сумма по курсу">
             <properties name="RateAmount" />
           </Label>
         </cell>
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="PVM &lt;br /&gt; НДС" horizontalAlignment="right">
+          <Label html="PVM &lt;br /&gt;НДС" horizontalAlignment="right">
             <properties name="Vat" />
           </Label>
         </cell>
@@ -270,11 +270,11 @@
         </cell>
       </row>
       <row>
-        <cell colSpan="6">
+        <cell colSpan="4">
           <FlowPanel style="text-align:right;">
-            <Label text="Suma|Итого:" />
-            <Label text="PVM|НДС:" />
-            <Label text="Bendra suma|Cумма итого:" style="&bold;" />
+            <Label text="Suma | Итого:" />
+            <Label text="PVM | НДС:" />
+            <Label text="Bendra suma | Cумма итого:" style="&bold;" />
           </FlowPanel>
         </cell>
         <FlowPanel>
@@ -325,7 +325,7 @@
     </Table>
 
     <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
-      <renderToken source="Term" prefix="Sąskaitą apmokėti iki/Платить с помощью " />
+      <renderToken source="Term" prefix="Sąskaitą apmokėti iki | Платить с помощью " />
     </TextLabel>
 
     <HorizontalPanel >
@@ -354,21 +354,23 @@ Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojam
       </span>
     </HtmlPanel>
 
-    <Label style="&bold;" text="Pastabos/Дополнительная информация:"/>
+    <Label style="&bold;" text="Pastabos | Дополнительная информация:"/>
     <TextLabel source="Notes" style="white-space:pre-wrap;" />
     <br/>
     <br />
 
     <Table kind="output" style="width:100%; padding:1em;">
       <row style="&bold;">
-        <Label html="Išdavė/Выдан: " />
+        <Label html="Išdavė | Выдан: " />
         <br />
-        <Label html="Gavėjas/Получатель:" />
+        <Label html="Gavėjas | Получатель:" />
       </row>
       <row style="font-size:6.5pt">
-        <Label html="(Vardas, pavardė, pareigos ir parašas /Имя, фамилия, обязанности и подпись)" />
+        <Label
+                html="(Vardas, pavardė, pareigos ir parašas | Имя, фамилия, обязанности и подпись)" />
         <br />
-        <Label html="(Vardas, pavardė, pareigos ir parašas /Имя, фамилия, обязанности и подпись)" />
+        <Label
+                html="(Vardas, pavardė, pareigos ir parašas | Имя, фамилия, обязанности и подпись)" />
       </row>
       <row>
         <cell style="border-bottom: 1px solid black; width:7cm">
