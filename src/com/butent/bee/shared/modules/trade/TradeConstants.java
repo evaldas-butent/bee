@@ -87,6 +87,8 @@ public final class TradeConstants {
   public static final String TBL_TRADE_TYPE_STATUSES = "TradeTypeStatuses";
   public static final String TBL_TRADE_TYPE_TAGS = "TradeTypeTags";
 
+  public static final String TBL_EXPENDITURE_TYPES = "ExpenditureTypes";
+
   public static final String VAR_VIEW_NAME = "view_name";
   public static final String VAR_ID_LIST = "IdList";
   public static final String VAR_SUBJECT = "Subject";
@@ -120,6 +122,8 @@ public final class TradeConstants {
 
   public static final String VIEW_TRADE_DOCUMENT_TYPES = "TradeDocumentTypes";
   public static final String VIEW_TRADE_DOCUMENT_TAGS = "TradeDocumentTags";
+
+  public static final String VIEW_EXPENDITURE_TYPES = "ExpenditureTypes";
 
   public static final String COL_PURCHASE = "Purchase";
 
@@ -256,6 +260,8 @@ public final class TradeConstants {
   public static final String GRID_TRADE_DOCUMENT_FILES = "TradeDocumentFiles";
 
   public static final String GRID_TRADE_STOCK = "TradeStock";
+
+  public static final String GRID_EXPENDITURE_TYPES = "ExpenditureTypes";
 
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
