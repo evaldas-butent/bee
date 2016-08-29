@@ -49,6 +49,8 @@ public final class TradeConstants {
 
     EnumUtils.register(TradeVatMode.class);
     EnumUtils.register(TradeDiscountMode.class);
+
+    EnumUtils.register(TradeCostBasis.class);
   }
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";

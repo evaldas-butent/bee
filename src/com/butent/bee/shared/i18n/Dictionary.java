@@ -853,6 +853,8 @@ public interface Dictionary {
 
   default String cost() {return g("cost");}
 
+  default String costBasis() {return g("costBasis");}
+
   default String costCenter() {return g("costCenter");}
 
   default String costCenters() {return g("costCenters");}
@@ -2496,6 +2498,8 @@ public interface Dictionary {
   default String expectedDuration() {return g("expectedDuration");}
 
   default String expeditionShort() {return g("expeditionShort");}
+
+  default String expenditures() {return g("expenditures");}
 
   default String expenses() {return g("expenses");}
 
@@ -5703,6 +5707,8 @@ public interface Dictionary {
 
   default String trdDocument() {return g("trdDocument");}
 
+  default String trdDocumentExpenditures() {return g("trdDocumentExpenditures");}
+
   default String trdDocumentFiles() {return g("trdDocumentFiles");}
 
   default String trdDocumentItem() {return g("trdDocumentItem");}
@@ -5740,6 +5746,10 @@ public interface Dictionary {
 
   default String trdDriver() {return g("trdDriver");}
 
+  default String trdExpenditureType() {return g("trdExpenditureType");}
+
+  default String trdExpenditureTypes() {return g("trdExpenditureTypes");}
+
   default String trdExported() {return g("trdExported");}
 
   default String trdInvoice() {return g("trdInvoice");}
@@ -5759,6 +5769,10 @@ public interface Dictionary {
   default String trdNewDocument() {return g("trdNewDocument");}
 
   default String trdNewDocumentType() {return g("trdNewDocumentType");}
+
+  default String trdNewExpenditure() {return g("trdNewExpenditure");}
+
+  default String trdNewExpenditureType() {return g("trdNewExpenditureType");}
 
   default String trdNewInvoice() {return g("trdNewInvoice");}
 
