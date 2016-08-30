@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
@@ -204,6 +205,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     CargoMatcher cargoMatcher = CargoMatcher.maybeCreate(selectedData);
 
     ChartData tripData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP);
+    ChartData tripManagerData = FilterHelper.getDataByType(selectedData, ChartData.Type
+        .TRIP_MANAGER);
     ChartData tripStatusData = FilterHelper.getDataByType(selectedData, ChartData.Type.TRIP_STATUS);
     ChartData departureData = FilterHelper.getDataByType(selectedData,
         ChartData.Type.TRIP_DEPARTURE);
@@ -216,7 +219,8 @@ abstract class VehicleTimeBoard extends ChartBase {
     boolean freightRequired = cargoMatcher != null || placeMatcher != null;
     boolean tripRequired = freightRequired || otherVehicleData != null
         || tripData != null || tripStatusData != null
-        || departureData != null || arrivalData != null || driverData != null;
+        || departureData != null || arrivalData != null || driverData != null
+        || tripManagerData != null;
 
     for (Vehicle vehicle : vehicles) {
       boolean vehicleMatch = FilterHelper.matches(vehicleData, vehicle.getId())
@@ -238,7 +242,8 @@ abstract class VehicleTimeBoard extends ChartBase {
               && FilterHelper.matches(departureData, trip.getTripDeparture())
               && FilterHelper.matches(arrivalData, trip.getTripArrival())
               && FilterHelper.matches(otherVehicleData, trip.getVehicleId(otherVehicleType))
-              && trip.matchesDrivers(driverData);
+              && trip.matchesDrivers(driverData)
+              && FilterHelper.matches(tripManagerData, trip.getManagerId());
 
           boolean hasFreights = tripMatch && freights.containsKey(trip.getTripId());
           if (tripMatch && !hasFreights && freightRequired) {
@@ -559,6 +564,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
     ChartData tripData = new ChartData(ChartData.Type.TRIP);
     ChartData tripStatusData = new ChartData(ChartData.Type.TRIP_STATUS);
+    ChartData tripManagerData = new ChartData(ChartData.Type.TRIP_MANAGER);
     ChartData departureData = new ChartData(ChartData.Type.TRIP_DEPARTURE);
     ChartData arrivalData = new ChartData(ChartData.Type.TRIP_ARRIVAL);
 
@@ -604,6 +610,7 @@ abstract class VehicleTimeBoard extends ChartBase {
         tripStatusData.addNotNull(trip.getStatus());
         departureData.addNotNull(trip.getTripDeparture());
         arrivalData.addNotNull(trip.getTripArrival());
+        tripManagerData.addUser(trip.getManagerId());
 
         String otherVehicleNumber = trip.getVehicleNumber(otherVehicleType);
         if (!BeeUtils.isEmpty(otherVehicleNumber)) {
@@ -699,6 +706,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     data.add(cargoTypeData);
 
     data.add(tripData);
+    data.add(tripManagerData);
     data.add(tripStatusData);
     data.add(departureData);
     data.add(arrivalData);

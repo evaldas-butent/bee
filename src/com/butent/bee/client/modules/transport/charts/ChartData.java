@@ -111,6 +111,7 @@ class ChartData implements HasEnabled {
     TRIP_STATUS(Localized.dictionary().trTripStatus()),
     TRIP_ARRIVAL(Localized.dictionary().transportArrival()),
     TRIP_DEPARTURE(Localized.dictionary().transportDeparture()),
+    TRIP_MANAGER(Localized.dictionary().trTripManagers()),
     TRUCK(Localized.dictionary().trucks()),
     UNLOADING(Localized.dictionary().cargoUnloading()),
     UNLOADING_COUNTRY(Localized.dictionary().trUnloadingCountry()),
