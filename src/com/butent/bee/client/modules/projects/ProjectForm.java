@@ -24,10 +24,12 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.render.AbstractSlackRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -37,6 +39,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -66,6 +69,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -252,6 +256,42 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
           Filter.isNull(COL_PROJECT_STAGE));
       createTemplateDates(form, row, COL_PROJECT_TEMPLATE, dates);
     }
+
+    setProjectStatusStyle(form, row);
+  }
+
+  private static void setProjectStatusStyle(FormView form, IsRow row) {
+
+    ProjectStatus projectStatus = EnumUtils.getEnumByIndex(ProjectStatus.class,
+        row.getInteger(form.getDataIndex(COL_PROJECT_STATUS)));
+
+    ProjectSlackRenderer renderer = new ProjectSlackRenderer(form.getDataColumns());
+    Pair<AbstractSlackRenderer.SlackKind, Long> slackData = renderer.getMinutes(row);
+
+    String styleName;
+    if (slackData != null && slackData.getA() != null) {
+      styleName = projectStatus.getStyleName(slackData.getA().equals(
+          AbstractSlackRenderer.SlackKind.LATE));
+
+    } else {
+      styleName = projectStatus.getStyleName(false);
+    }
+
+    HeaderView header = form.getViewPresenter().getHeader();
+    for (ProjectStatus projectStatusStyle : ProjectStatus.values()) {
+      if (projectStatusStyle.getStyleName(true) != null) {
+        header.removeStyleName(projectStatusStyle.getStyleName(true));
+      }
+      if (projectStatusStyle.getStyleName(false) != null) {
+        header.removeStyleName(projectStatusStyle.getStyleName(false));
+      }
+    }
+
+    if (!BeeUtils.isEmpty(styleName)) {
+      header.addStyleName(PROJECT_STATUS_STYLE);
+      header.addStyleName(styleName);
+    }
+
   }
 
   @Override
@@ -751,13 +791,24 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     Set<Action> disabledActions = eventsHandler.getDisabledActions();
     disabledActions.clear();
 
-    if (ProjectsHelper.isProjectUser(form, row)) {
+    if (ProjectsHelper.isProjectUser(form, row) || BeeKeeper.getUser().isAdministrator()) {
       eventActions.add(Action.ADD);
     } else {
       disabledActions.add(Action.ADD);
     }
 
+    Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS,
+        BeeKeeper.getUser().getUserId()));
+
+    eventsHandler.setLastAccess(lastAccess);
     eventsHandler.create(prjComments, row.getId(), filter);
+
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PROJECTS);
+    super.beforeRefresh(form, row);
   }
 
   private Handler getAuditColumnHandler(final FormView form, final IsRow row) {

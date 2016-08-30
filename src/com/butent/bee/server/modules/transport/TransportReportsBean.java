@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
+import java.util.function.Function;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -527,7 +528,7 @@ public class TransportReportsBean {
         sys.getIdName(TBL_ORDER_CARGO)), SqlConstants.SqlDataType.STRING, 20, 0), COL_CARGO));
     cargoClause.add(report.getCondition(TBL_ORDER_CARGO, COL_CARGO_PARTIAL));
 
-    if (clause.isEmpty()) {
+    if (!cargoClause.isEmpty()) {
       clause.add(SqlUtils.in(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
           new SqlSelect().setDistinctMode(true)
               .addFields(TBL_CARGO_TRIPS, COL_TRIP)
@@ -538,16 +539,16 @@ public class TransportReportsBean {
               .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
               .setWhere(cargoClause)));
     }
-    TimeZone tz = TimeZone.getDefault();
+    Function<IsExpression, IsExpression> dateTimeToDate = xpr ->
+        SqlUtils.multiply(SqlUtils.divide(SqlUtils.plus(xpr,
+            TimeZone.getDefault().getRawOffset() + TimeZone.getDefault().getDSTSavings()),
+            TimeUtils.MILLIS_PER_DAY), TimeUtils.MILLIS_PER_DAY);
 
     SqlSelect query = new SqlSelect()
         .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
         .addFields(TBL_TRIPS, COL_TRIP_STATUS, COL_TRIP_DATE, COL_TRIP_NO, COL_TRIP_ROUTE)
         .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM),
-            SqlUtils.multiply(SqlUtils.divide(
-                SqlUtils.plus(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE),
-                    tz.getRawOffset() + tz.getDSTSavings()),
-                TimeUtils.MILLIS_PER_DAY), TimeUtils.MILLIS_PER_DAY)), COL_TRIP_DATE_FROM)
+            dateTimeToDate.apply(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE))), COL_TRIP_DATE_FROM)
         .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
             SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)), COL_TRIP_DATE_TO)
         .addField(trucks, COL_VEHICLE_NUMBER, COL_VEHICLE)
@@ -791,8 +792,7 @@ public class TransportReportsBean {
           .addField(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER + COL_ORDER_DATE)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER)
           .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-              SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
-              COL_ORDER_MANAGER)
+              SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), COL_ORDER_MANAGER)
           .addFields(tmpPercents, COL_CARGO)
           .addFields(TBL_ORDER_CARGO, COL_CARGO_PARTIAL)
           .addFrom(tmp)
@@ -811,8 +811,7 @@ public class TransportReportsBean {
           .addFrom(tmp)
           .setWhere(SqlUtils.sqlFalse())).getColumnNames()) {
 
-        if (BeeUtils.inList(column, kilometers, fuelCosts, dailyCosts, roadCosts, constantCosts,
-            otherCosts)) {
+        if (BeeUtils.inList(column, kilometers, fuelCosts, dailyCosts, roadCosts, otherCosts)) {
           query.addExpr(SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(tmp, column), 100.0),
               SqlUtils.nvl(SqlUtils.field(tmpPercents, COL_CARGO_PERCENT), 100)), column);
         } else {
@@ -820,6 +819,92 @@ public class TransportReportsBean {
         }
       }
       String tt = qs.sqlCreateTemp(query);
+
+      // Constant costs
+      if (report.requiresField(constantCosts)) {
+        String alsLoading = SqlUtils.uniqueName();
+        String alsUnloading = SqlUtils.uniqueName();
+        String alsDays = SqlUtils.uniqueName();
+
+        query = new SqlSelect()
+            .addFields(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO)
+            .addMin(alsLoading, COL_DATE, COL_TRIP_DATE_FROM)
+            .addMax(alsUnloading, COL_DATE, COL_TRIP_DATE_TO)
+            .addFrom(tmp)
+            .addFromInner(TBL_CARGO_TRIPS, SqlUtils.joinUsing(tmp, TBL_CARGO_TRIPS, COL_TRIP))
+            .addGroup(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO);
+
+        String tmpDates = qs.sqlCreateTemp(query.copyOf()
+            .addEmptyDouble(alsDays)
+            .addFromLeft(TBL_CARGO_HANDLING,
+                sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP))
+            .addFromLeft(TBL_CARGO_PLACES, alsLoading, sys.joinTables(TBL_CARGO_PLACES, alsLoading,
+                TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+            .addFromLeft(TBL_CARGO_PLACES, alsUnloading, sys.joinTables(TBL_CARGO_PLACES,
+                alsUnloading, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE)));
+
+        String als = SqlUtils.uniqueName();
+
+        String tmpCargoDates = qs.sqlCreateTemp(new SqlSelect()
+            .addFields(als, COL_TRIP, COL_CARGO)
+            .addMin(als, COL_TRIP_DATE_FROM)
+            .addMax(als, COL_TRIP_DATE_TO)
+            .addFrom(query.copyOf()
+                .addFromInner(TBL_ORDER_CARGO,
+                    sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+                .addFromInner(TBL_CARGO_HANDLING,
+                    sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
+                .addFromLeft(TBL_CARGO_PLACES, alsLoading, sys.joinTables(TBL_CARGO_PLACES,
+                    alsLoading, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+                .addFromLeft(TBL_CARGO_PLACES, alsUnloading, sys.joinTables(TBL_CARGO_PLACES,
+                    alsUnloading, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
+
+                .addUnion(query.copyOf()
+                    .addFromInner(TBL_CARGO_HANDLING,
+                        SqlUtils.joinUsing(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO))
+                    .addFromLeft(TBL_CARGO_PLACES, alsLoading, sys.joinTables(TBL_CARGO_PLACES,
+                        alsLoading, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+                    .addFromLeft(TBL_CARGO_PLACES, alsUnloading, sys.joinTables(TBL_CARGO_PLACES,
+                        alsUnloading, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))), als)
+            .addGroup(als, COL_TRIP, COL_CARGO));
+
+        for (String col : new String[] {COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO}) {
+          qs.updateData(new SqlUpdate(tmpDates)
+              .addConstant(col, SqlUtils.field(tmpCargoDates, col))
+              .setFrom(tmpCargoDates,
+                  SqlUtils.joinUsing(tmpDates, tmpCargoDates, COL_TRIP, COL_CARGO))
+              .setWhere(SqlUtils.isNull(tmpDates, col)));
+
+          qs.updateData(new SqlUpdate(tmpDates)
+              .addConstant(col, SqlUtils.field(tmp, col))
+              .setFrom(tmp, SqlUtils.joinUsing(tmpDates, tmp, COL_TRIP))
+              .setWhere(SqlUtils.isNull(tmpDates, col)));
+        }
+        qs.sqlDropTemp(tmpCargoDates);
+
+        qs.updateData(new SqlUpdate(tmpDates)
+            .addConstant(alsDays, SqlUtils.plus(
+                SqlUtils.divide(
+                    SqlUtils.minus(dateTimeToDate.apply(SqlUtils.field(tmpDates, COL_TRIP_DATE_TO)),
+                        dateTimeToDate.apply(SqlUtils.field(tmpDates, COL_TRIP_DATE_FROM))),
+                    TimeUtils.MILLIS_PER_DAY), 1)));
+
+        qs.updateData(new SqlUpdate(tmpDates)
+            .addConstant(alsDays,
+                SqlUtils.divide(SqlUtils.field(tmpDates, alsDays), SqlUtils.field(als, alsDays)))
+            .setFrom(new SqlSelect()
+                .addFields(tmpDates, COL_TRIP)
+                .addSum(tmpDates, alsDays)
+                .addFrom(tmpDates)
+                .addGroup(tmpDates, COL_TRIP), als, SqlUtils.joinUsing(tmpDates, als, COL_TRIP)));
+
+        qs.updateData(new SqlUpdate(tt)
+            .addConstant(constantCosts, SqlUtils.multiply(SqlUtils.field(tt, constantCosts),
+                SqlUtils.field(tmpDates, alsDays)))
+            .setFrom(tmpDates, SqlUtils.joinUsing(tt, tmpDates, COL_TRIP, COL_CARGO)));
+
+        qs.sqlDropTemp(tmpDates);
+      }
       qs.sqlDropTemp(tmp);
       qs.sqlDropTemp(tmpPercents);
       tmp = tt;

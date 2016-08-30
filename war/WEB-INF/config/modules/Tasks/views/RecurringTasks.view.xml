@@ -83,6 +83,7 @@
     <SimpleColumn name="RemindAt" />
 
     <SimpleColumn name="CopyByMail" />
+    <SimpleColumn name="PrivateTask" />
   </Columns>
 </View>
  

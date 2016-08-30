@@ -1916,6 +1916,11 @@ public final class DomUtils {
     OptionElement.as(elem).setDefaultSelected(selected);
   }
 
+  public static void setSpellCheck(Element elem, boolean check) {
+    Assert.notNull(elem);
+    elem.setAttribute(Attributes.SPELL_CHECK, BeeUtils.toString(check));
+  }
+
   public static void setStep(UIObject obj, int step) {
     setAttribute(obj, Attributes.STEP, step);
   }

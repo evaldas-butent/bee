@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="ShipmentRequestFiles"
-  idName="FileID"
-  >
+       name="CargoFiles"
+       idName="FileID"
+>
   <Fields>
-    <Relation name="ShipmentRequest" notNull="true" relation="ShipmentRequests" cascade="DELETE"
-      label="=trRequest" />
+    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" label="=cargo" />
     <Relation name="File" relation="Files" notNull="true" editable="true" label="=file" />
     <String name="Caption" precision="100" label="=caption" />
   </Fields>

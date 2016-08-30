@@ -6,7 +6,6 @@
   >
   <Fields>
     <Relation name="Template" notNull="true" relation="OrdersTemplates" />
-    <Date name="Date" label="=date" defExpr="CURRENT_DATE" notNull="true" />
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
     <Numeric name="Quantity" precision="12" scale="3" label="=quantity" />
     <Numeric name="Price" precision="12" scale="2" label="=price" />
@@ -15,6 +14,6 @@
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="=vatPercent" />
     <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
-    <Relation name="Sale" relation="Sales" cascade="SET_NULL" label="=trdInvoiceId" />
+    <Numeric name="InvisibleDiscount" precision="7" scale="3" label="=discountPercent" />
   </Fields>
 </Table>

@@ -14,6 +14,10 @@ public final class ClassifierConstants {
   public static final String SVC_GET_PRICE_AND_DISCOUNT = "GetPriceAndDiscount";
 
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
+  public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
+  public static final String TIMER_REMIND_CALENDAR_EVENTS = "timer_remind_calendar_events";
+  public static final String TIMER_REMIND_USER_TASKS = "timer_remind_user_tasks";
+  public static final String TIMER_REMIND_DOCUMENT_END = "timer_remind_document_end_";
 
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
@@ -69,6 +73,7 @@ public final class ClassifierConstants {
   public static final String VIEW_ITEM_CATEGORY_TREE = "CategoryTree";
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
   public static final String VIEW_ITEM_REMAINDERS = "ItemRemainders";
+  public static final String VIEW_ITEM_SUPPLIERS = "ItemSuppliers";
 
   public static final String VIEW_COUNTRIES = "Countries";
   public static final String VIEW_CITIES = "Cities";
@@ -94,13 +99,15 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_OBJECTS = "CompanyObjects";
 
   public static final String VIEW_HOLIDAYS = "Holidays";
+  public static final String VIEW_CHART_OF_ACCOUNTS = "ChartOfAccounts";
 
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
   public static final String GRID_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
-
   public static final String GRID_COMPANY_USERS = "CompanyUsers";
+
   public static final String GRID_ITEMS = "Items";
+  public static final String GRID_CHART_OF_ACCOUNTS = "ChartOfAccounts";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
@@ -122,6 +129,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_INFORMATION_SOURCE = "InformationSource";
   public static final String COL_COMPANY_PRICE_NAME = "PriceName";
   public static final String COL_COMPANY_DISCOUNT_PERCENT = "DiscountPercent";
+  public static final String COL_COMPANY_TOLERATED_DAYS = "ToleratedDays";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
@@ -131,6 +139,9 @@ public final class ClassifierConstants {
 
   public static final String COL_DATE_OF_BIRTH = "DateOfBirth";
 
+  public static final String COL_DATE_FROM = "DateFrom";
+  public static final String COL_DATE_TO = "DateTo";
+
   public static final String COL_CATEGORY = "Category";
   public static final String COL_CATEGORY_NAME = "Name";
   public static final String COL_CATEGORY_PARENT = "Parent";
@@ -138,6 +149,7 @@ public final class ClassifierConstants {
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
   public static final String COL_ITEM_ARTICLE = "Article";
+  public static final String COL_ITEM_ATTRIBUTE = "Attribute";
   public static final String COL_ITEM_BARCODE = "Barcode";
   public static final String COL_ITEM_IS_SERVICE = "IsService";
   public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
@@ -145,12 +157,27 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_CURRENCY = "Currency";
   public static final String COL_ITEM_COST = "Cost";
   public static final String COL_ITEM_COST_CURRENCY = "CostCurrency";
+  public static final String COL_ITEM_PACKAGE_UNITS = "PackageUnits";
   public static final String COL_ITEM_PRICE_1 = "Price1";
   public static final String COL_ITEM_CURRENCY_1 = "Currency1";
   public static final String COL_ITEM_PRICE_2 = "Price2";
   public static final String COL_ITEM_CURRENCY_2 = "Currency2";
   public static final String COL_ITEM_PRICE_3 = "Price3";
   public static final String COL_ITEM_CURRENCY_3 = "Currency3";
+  public static final String COL_ITEM_PRICE_4 = "Price4";
+  public static final String COL_ITEM_CURRENCY_4 = "Currency4";
+  public static final String COL_ITEM_PRICE_5 = "Price5";
+  public static final String COL_ITEM_CURRENCY_5 = "Currency5";
+  public static final String COL_ITEM_PRICE_6 = "Price6";
+  public static final String COL_ITEM_CURRENCY_6 = "Currency6";
+  public static final String COL_ITEM_PRICE_7 = "Price7";
+  public static final String COL_ITEM_CURRENCY_7 = "Currency7";
+  public static final String COL_ITEM_PRICE_8 = "Price8";
+  public static final String COL_ITEM_CURRENCY_8 = "Currency8";
+  public static final String COL_ITEM_PRICE_9 = "Price9";
+  public static final String COL_ITEM_CURRENCY_9 = "Currency9";
+  public static final String COL_ITEM_PRICE_10 = "Price10";
+  public static final String COL_ITEM_CURRENCY_10 = "Currency10";
   public static final String COL_ITEM_TYPE = "Type";
   public static final String COL_ITEM_GROUP = "Group";
   public static final String COL_ITEM_WEIGHT = "Weight";
@@ -159,6 +186,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_DPW = "DaysPerWeek";
   public static final String COL_ITEM_MIN_TERM = "MinTerm";
   public static final String COL_ITEM_LINK = "Link";
+  public static final String COL_ITEM_NOT_MANUFACTURED = "NotManufactured";
+  public static final String COL_ITEM_REMAINDER_ID = "Id";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
@@ -177,8 +206,8 @@ public final class ClassifierConstants {
   public static final String COL_WEBSITE = "Website";
   public static final String COL_NOTES = "Notes";
   public static final String COL_REMIND_EMAIL = "RemindEmail";
-  public static final String COL_REMIND_ACTIONS = "MailCompanyActions";
   public static final String COL_REMIND_ACTION_BEFORE = "CompanyActionRemindBefore";
+  public static final String COL_TASKS_MAILING_TIME = "TasksMailingTime";
   public static final String COL_EMAIL_INVOICES = "EmailInvoices";
 
   public static final String COL_CITY = "City";
@@ -247,6 +276,8 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_PRICE = "Price";
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
 
+  public static final String COL_ACCOUNT_CODE = "AccountCode";
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "CompanyType";
@@ -289,6 +320,7 @@ public final class ClassifierConstants {
 
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";
+  public static final String PROP_WAREHOUSE_REMAINDER = "WarehouseRemainder";
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
@@ -299,6 +331,7 @@ public final class ClassifierConstants {
   public static final String QR_PERSON = "qrPerson";
 
   public static final long DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_HOUR;
+  public static final long DEFAULT_REMIND_TASKS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
 
   public static void register() {
     EnumUtils.register(ItemPrice.class);

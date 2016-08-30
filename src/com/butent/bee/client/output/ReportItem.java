@@ -365,6 +365,9 @@ public abstract class ReportItem implements BeeSerializable {
     } else if (NameUtils.getClassName(ReportResultItem.class).equals(clazz)) {
       item = new ReportResultItem(expression, caption);
 
+    } else if (NameUtils.getClassName(ReportTimeDurationItem.class).equals(clazz)) {
+      item = new ReportTimeDurationItem(expression, caption);
+
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);
     }

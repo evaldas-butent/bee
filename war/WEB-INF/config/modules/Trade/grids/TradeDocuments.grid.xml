@@ -16,17 +16,17 @@
     <DataColumn name="Number1" />
     <DataColumn name="Number2" />
 
-    <RelColumn name="Operation" renderColumns="OperationName" visible="true" />
+    <RelColumn name="Operation" renderColumns="OperationName" carry="true" visible="true" />
     <DataColumn name="Phase" visible="true" />
     <RelColumn name="Status" renderColumns="StatusName" />
 
     <RelColumn name="Supplier" renderColumns="SupplierName" />
     <RelColumn name="Customer" renderColumns="CustomerName" />
 
-    <RelColumn name="WarehouseFrom" renderColumns="WarehouseFromCode" />
-    <RelColumn name="WarehouseTo" renderColumns="WarehouseToCode" />
+    <RelColumn name="WarehouseFrom" renderColumns="WarehouseFromCode" carry="true" />
+    <RelColumn name="WarehouseTo" renderColumns="WarehouseToCode" carry="true" />
 
-    <RelColumn name="Currency" renderColumns="CurrencyName" />
+    <RelColumn name="Currency" renderColumns="CurrencyName" carry="true" />
 
     <RelColumn name="Payer" renderColumns="PayerName" />
     <DataColumn name="Term" />
@@ -34,8 +34,13 @@
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
       sortBy="ManagerLastName ManagerFirstName" />
 
-    <DataColumn name="Discount" />
-    <DataColumn name="PriceName" />
+    <DataColumn name="DocumentDiscount" />
+    <DataColumn name="PriceName" carry="true" />
+
+    <DataColumn name="DocumentVatMode" carry="true" />
+    <DataColumn name="DocumentDiscountMode" carry="true" />
+
+    <DataColumn name="ReceivedDate" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />

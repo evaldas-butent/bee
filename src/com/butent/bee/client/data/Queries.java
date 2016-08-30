@@ -359,6 +359,32 @@ public final class Queries {
     });
   }
 
+  public static void getLastUpdated(final String tableName, long rowId, String column,
+      final RpcCallback<DateTime> callback) {
+
+    Assert.notEmpty(tableName);
+    Assert.notEmpty(column);
+    Assert.notNull(callback);
+
+    List<Property> lst = PropertyUtils.createProperties(VAR_TABLE, tableName,
+        VAR_ID, BeeUtils.toString(rowId), VAR_COLUMN, column);
+
+    ParameterList params = new ParameterList(GET_LAST_UPDATED, RpcParameter.Section.QUERY, lst);
+    params.setSummary(tableName, rowId, column);
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(GET_LAST_UPDATED, getRpcId(), tableName, response, null, callback)) {
+          String s = response.hasResponse() ? response.getResponseAsString() : null;
+          DateTime dt = BeeUtils.isLong(s) ? DateTime.restore(s) : null;
+
+          callback.onSuccess(dt);
+        }
+      }
+    });
+  }
+
   public static void getRelatedValues(final String tableName, String filterColumn,
       long filterValue, String resultColumn, final IdListCallback callback) {
 

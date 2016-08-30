@@ -2,7 +2,6 @@ package com.butent.bee.shared.modules.discussions;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -23,31 +22,6 @@ import java.util.Map;
 public final class DiscussionsUtils {
 
   private static final long MEGABYTE_IN_BYTES = 1024 * 1024;
-
-  public static List<Long> getDiscussionMarksIds(IsRow row) {
-    if (row == null) {
-      return new ArrayList<>();
-    }
-    return DataUtils.parseIdList(row.getProperty(PROP_MARKS));
-
-  }
-
-  public static int getDiscussMarkCountTotal(SimpleRowSet marksStats) {
-    int result = 0;
-
-    if (marksStats == null) {
-      return result;
-    }
-
-    for (String[] row : marksStats.getRows()) {
-      if (BeeUtils.toLongOrNull(row[marksStats.getColumnIndex(COL_COMMENT)]) == null) {
-        result++;
-      }
-    }
-
-    return result;
-
-  }
 
   public static List<Long> getDiscussionMembers(IsRow row, List<BeeColumn> columns) {
     List<Long> users = new ArrayList<>();
@@ -77,9 +51,7 @@ public final class DiscussionsUtils {
       return new HashMap<>();
     }
 
-    Map<String, String> params = Codec.deserializeMap(formRow.getProperty(PROP_PARAMETERS));
-
-    return params;
+    return Codec.deserializeMap(formRow.getProperty(PROP_PARAMETERS));
   }
 
   public static int getMarkCount(long markId, Long commentId, SimpleRowSet marksStats) {
@@ -146,10 +118,6 @@ public final class DiscussionsUtils {
     }
 
     return BeeRowSet.restore(formRow.getProperty(PROP_MARK_TYPES));
-  }
-
-  public static boolean isAnnouncement(FormView form, IsRow row) {
-    return !BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_TOPIC)));
   }
 
   public static boolean isFileSizeLimitExceeded(long uploadFileSize, Long checkParam) {

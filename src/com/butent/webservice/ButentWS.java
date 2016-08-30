@@ -2,12 +2,16 @@ package com.butent.webservice;
 
 import com.google.common.collect.ImmutableMap;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import org.w3c.dom.Document;
@@ -140,8 +144,10 @@ public final class ButentWS {
     }
     SimpleRowSet data =
         xmlToSimpleRowSet(answer, "PAVAD", "PREKE", "MATO_VIEN", "ARTIKULAS",
-            "PARD_KAINA", "SAVIKAINA", "KAINA_1", "KAINA_2", "KAINA_3", "TIPAS", "GRUPE",
-            "PARD_VAL", "SAV_VAL", "VAL_1", "VAL_2", "VAL_3");
+            "PARD_KAINA", "SAVIKAINA", "KAINA_1", "KAINA_2", "KAINA_3", "KAINA_4", "KAINA_5",
+            "KAINA_6", "KAINA_7", "KAINA_8", "KAINA_9", "KAINA_10", "TIPAS", "GRUPE",
+            "PARD_VAL", "SAV_VAL", "VAL_1", "VAL_2", "VAL_3", "VAL_4", "VAL_5", "VAL_6", "VAL_7",
+            "VAL_8", "VAL_9", "VAL_10");
     logger.debug("GetGoods cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
     return data;
   }
@@ -160,12 +166,12 @@ public final class ButentWS {
     return data;
   }
 
-  public SimpleRowSet getStocks() throws BeeException {
+  public SimpleRowSet getStocks(String code) throws BeeException {
     logger.debug("GetStocks");
     String answer;
 
     try {
-      answer = process("GetStocks", "");
+      answer = process("GetStocks", XmlUtils.tag("preke", code));
     } catch (Exception e) {
       throw BeeException.error(e);
     }
@@ -276,16 +282,18 @@ public final class ButentWS {
     return answer;
   }
 
-  public String importItemReservation(String warehouse, Long itemId, Double remainder)
+  public String importItemReservation(SimpleRowSet rs)
       throws BeeException {
 
-    StringBuilder sb = new StringBuilder("<a>")
-        .append("<b>")
-        .append(XmlUtils.tag("sandelis", warehouse))
-        .append(XmlUtils.tag("preke", itemId))
-        .append(XmlUtils.tag("kiekis", remainder))
-        .append("</b>")
-        .append("</a>");
+    StringBuilder sb = new StringBuilder("<a>");
+    for (SimpleRow row : rs) {
+      sb.append("<b>");
+      sb.append(XmlUtils.tag("sandelis", row.getValue(COL_WAREHOUSE_CODE)));
+      sb.append(XmlUtils.tag("preke", row.getValue(COL_ITEM_EXTERNAL_CODE)));
+      sb.append(XmlUtils.tag("kiekis", row.getValue(TradeActConstants.ALS_TOTAL_AMOUNT)));
+      sb.append("</b>");
+    }
+    sb.append("</a>");
 
     String answer;
 
@@ -294,7 +302,6 @@ public final class ButentWS {
     } catch (Exception e) {
       throw BeeException.error(e);
     }
-    LogUtils.getRootLogger().info(answer);
     answer = getNode(answer).getTextContent();
 
     return answer;

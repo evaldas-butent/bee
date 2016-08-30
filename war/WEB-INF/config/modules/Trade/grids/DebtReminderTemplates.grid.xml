@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="DebtReminderTemplates" viewName="DebtReminderTemplates" caption="=trdReminderTemplates"
+        minColumnWidth="100"
+>
+  <g:body height="60" />
+
+  <g:columns>
+    <DataColumn name="Name" visible="true" />
+    <DataColumn name="Subject" />
+    <DataColumn name="FirstParagraph" />
+    <DataColumn name="LastParagraph" />
+  </g:columns>
+</g:Grid>

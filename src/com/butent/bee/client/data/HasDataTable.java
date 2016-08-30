@@ -2,6 +2,7 @@ package com.butent.bee.client.data;
 
 import com.google.gwt.event.shared.HandlerRegistration;
 
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.HasActiveRowChangeHandlers;
 import com.butent.bee.client.event.logical.HasSelectionCountChangeHandlers;
@@ -22,6 +23,8 @@ import java.util.List;
 
 public interface HasDataTable extends HasSortHandlers, HandlesDeleteEvents, HandlesUpdateEvents,
     HasSelectionCountChangeHandlers, HasEditState, HasActiveRowChangeHandlers, HasDataRows {
+
+  HandlerRegistration addDataReceivedHandler(DataReceivedEvent.Handler handler);
 
   HandlerRegistration addDataRequestHandler(DataRequestEvent.Handler handler);
 

@@ -2,16 +2,16 @@
 <!DOCTYPE Form [
   <!ENTITY inp "width: 15em;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget"
+<f:Form
+  xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
 
-  name="OrderInvoice" viewName="Sales"
-  caption="=trdInvoice" showRowId="true"
-  width="840" height="600"
-  >
-  <f:properties reports="PrintSalesInvoice" />
+  name="OrderInvoice" viewName="OrderChildInvoices" caption="=trdInvoice"
+  width="840" height="600" readOnly="true">
+  <f:properties jasperReports="PrintOrderInvoice:=trdInvoice, PrintOrderProforma:=trdProformaInvoice" />
   <FlowPanel class="flexBox-vertical">
-    <br/>
+    <br />
     <Table kind="controls">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
@@ -21,18 +21,25 @@
         <Label for="Date" />
         <InputDateTime source="Date" visible="true" />
 
+        <Label for="CheckNo" />
+        <InputText source="CheckNo" />
+      </row>
+
+      <row>
         <Label for="SaleSeries" />
-        <DataSelector source="SaleSeries" upperCase="true" style="width: 7em;" />
+        <DataSelector source="SaleSeries" upperCase="true" name="Series"
+          style="width: 7em;" disablable="false" />
+
         <Label for="InvoiceNo" />
         <InputText source="InvoiceNo" />
       </row>
-
       <row>
         <Label for="Term" />
         <InputDate source="Term" style="width: 10em;" />
 
         <Label text="=trdTotal" />
-        <DecimalLabel source="Amount" format="0.00" style="font-weight: bold;" />
+        <DecimalLabel source="Amount" format="0.00"
+          style="font-weight: bold;" />
 
         <Label for="Currency" />
         <DataSelector source="Currency" renderColumns="CurrencyName"
@@ -41,18 +48,20 @@
 
       <row>
         <Label for="Operation" />
-        <DataSelector source="Operation" style="&inp;" />
+        <DataSelector source="Operation" style="&inp;" renderColumns="OperationName" />
 
         <Label for="WarehouseFrom" />
-        <DataSelector source="WarehouseFrom" style="&inp;" readOnly="true" />
+        <DataSelector source="WarehouseFrom" style="&inp;"
+          readOnly="true" />
       </row>
-      
+
       <row>
         <Label for="Supplier" />
         <DataSelector source="Supplier" style="&inp;" />
 
         <Label for="Customer" />
-        <DataSelector source="Customer" required="true" visible="true" style="&inp;" />
+        <DataSelector source="Customer" required="true"
+          visible="true" style="&inp;" renderColumns="CustomerName" />
       </row>
 
       <row>
@@ -61,11 +70,11 @@
           renderColumns="ManagerFirstName ManagerLastName" style="&inp;" />
 
         <Label for="Payer" />
-        <DataSelector source="Payer" style="&inp;"/>
+        <DataSelector source="Payer" style="&inp;" />
       </row>
     </Table>
 
-    <br/>
+    <br />
 
     <TabbedPages class="flexible">
       <page>
@@ -76,9 +85,14 @@
       <page>
         <text>=trdNotes</text>
         <SimplePanel>
-          <InputArea source="Notes" class="occupy-1" summarize="true" />
+          <InputArea source="Notes" class="occupy-1"
+            summarize="true" />
         </SimplePanel>
       </page>
     </TabbedPages>
   </FlowPanel>
+
+  <f:rowMessage>
+    <ui:expression>row.Sale</ui:expression>
+  </f:rowMessage>
 </f:Form>

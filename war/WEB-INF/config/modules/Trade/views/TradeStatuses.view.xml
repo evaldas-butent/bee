@@ -10,6 +10,12 @@
 
     <SimpleColumn name="Background" />
     <SimpleColumn name="Foreground" />
+
+    <SimpleColumn name="PhaseOrder" />
+    <SimpleColumn name="PhasePending" />
+    <SimpleColumn name="PhaseActive" />
+    <SimpleColumn name="PhaseCompleted" />
+    <SimpleColumn name="PhaseApproved" />
   </Columns>
   
   <Order>

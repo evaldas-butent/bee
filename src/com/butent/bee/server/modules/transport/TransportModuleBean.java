@@ -281,8 +281,9 @@ public class TransportModuleBean implements BeeModule {
       response = getColors(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CARGO_USAGE)) {
-      response = getCargoUsage(reqInfo.getParameter("ViewName"),
-          Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")));
+      response = getCargoUsage(reqInfo.getParameter(Service.VAR_VIEW_NAME),
+          DataUtils.parseIdList(reqInfo.getParameter(Service.VAR_VIEW_ROW_ID)),
+          reqInfo.getParameter(Service.VAR_COLUMN));
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTALS)) {
       response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSMENT)),
@@ -345,6 +346,9 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_TRIP_INFO)) {
       response = rep.getTripInfo(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_TEXT_CONSTANT)) {
+      response = getTextConstant(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
@@ -513,7 +517,7 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void getFileIcons(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_SHIPMENT_REQUEST_FILES)) {
+        if (event.isAfter(VIEW_CARGO_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
         }
       }
@@ -2120,27 +2124,48 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(BeeUtils.notEmpty(val, "0.00"));
   }
 
-  private ResponseObject getCargoUsage(String viewName, String[] ids) {
+  private ResponseObject getCargoUsage(String viewName, List<Long> ids, String saleColumn) {
     String source = sys.getViewSource(viewName);
-    IsExpression ref;
-    SqlSelect ss = new SqlSelect().addFrom(TBL_CARGO_TRIPS);
+    SqlSelect ss;
+    IsExpression ref = null;
 
-    if (BeeUtils.same(source, TBL_TRIPS)) {
-      ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_TRIP);
+    if (!BeeUtils.isEmpty(saleColumn)) {
+      ss = new SqlSelect()
+          .addFrom(TBL_CARGO_INCOMES)
+          .setWhere(SqlUtils.notNull(TBL_CARGO_INCOMES, saleColumn));
 
-    } else if (BeeUtils.same(source, TBL_ORDER_CARGO)) {
-      ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_CARGO);
-
-    } else if (BeeUtils.same(source, TBL_ORDERS)) {
-      ss.addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO));
-      ref = SqlUtils.field(TBL_ORDER_CARGO, COL_ORDER);
-
+      switch (source) {
+        case TBL_ORDER_CARGO:
+          ref = SqlUtils.field(TBL_CARGO_INCOMES, COL_CARGO);
+          break;
+        case TBL_ORDERS:
+          ss.addFromInner(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_INCOMES, COL_CARGO));
+          ref = SqlUtils.field(TBL_ORDER_CARGO, COL_ORDER);
+          break;
+      }
     } else {
+      ss = new SqlSelect().addFrom(TBL_CARGO_TRIPS);
+
+      switch (source) {
+        case TBL_TRIPS:
+          ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_TRIP);
+          break;
+        case TBL_ORDER_CARGO:
+          ref = SqlUtils.field(TBL_CARGO_TRIPS, COL_CARGO);
+          break;
+        case TBL_ORDERS:
+          ss.addFromInner(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO));
+          ref = SqlUtils.field(TBL_ORDER_CARGO, COL_ORDER);
+          break;
+      }
+    }
+    if (Objects.isNull(ref)) {
       return ResponseObject.error("Table not supported:", source);
     }
-    int cnt = qs.sqlCount(ss.setWhere(SqlUtils.inList(ref, (Object[]) ids)));
-
-    return ResponseObject.response(cnt);
+    return ResponseObject.response(qs.sqlCount(ss.setWhere(SqlUtils.and(SqlUtils.inList(ref, ids),
+        ss.getWhere()))));
   }
 
   private ResponseObject getColors(RequestInfo reqInfo) {
@@ -2645,6 +2670,34 @@ public class TransportModuleBean implements BeeModule {
     return qs.getViewData(VIEW_TRANSPORT_SETTINGS, filter);
   }
 
+  private ResponseObject getTextConstant(RequestInfo reqInfo) {
+
+    Integer textConstant = Assert.notNull(reqInfo.getParameterInt(COL_TEXT_CONSTANT));
+    Integer userLocale = reqInfo.getParameterInt(COL_USER_LOCALE);
+    TextConstant constant = EnumUtils.getEnumByIndex(TextConstant.class, textConstant);
+
+    return ResponseObject.response(getTextConstant(constant, userLocale));
+  }
+
+  public String getTextConstant(TextConstant constant, Integer userLocale) {
+    BeeRowSet rowSet =
+        qs.getViewData(VIEW_TEXT_CONSTANTS, Filter.equals(COL_TEXT_CONSTANT, constant));
+
+    String localizedContent = Localized.column(COL_TEXT_CONTENT,
+        EnumUtils.getEnumByIndex(SupportedLocale.class, userLocale).getLanguage());
+    String text;
+
+    if (DataUtils.isEmpty(rowSet)) {
+      text = constant.getDefaultContent();
+    } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, rowSet.getColumns()))) {
+      text = rowSet.getString(0, COL_TEXT_CONTENT);
+    } else {
+      text = BeeUtils.notEmpty(rowSet.getString(0, localizedContent),
+          rowSet.getString(0, COL_TEXT_CONTENT));
+    }
+    return text;
+  }
+
   private List<Color> getThemeColors(Long theme) {
     List<Color> result = new ArrayList<>();
 
@@ -3141,6 +3194,9 @@ public class TransportModuleBean implements BeeModule {
         }
       }
     } catch (IOException e) {
+      logger.error(e);
+      response = ResponseObject.error(e);
+
       try {
         if (wr != null) {
           wr.close();
@@ -3151,7 +3207,6 @@ public class TransportModuleBean implements BeeModule {
       } catch (IOException ex) {
         logger.error(ex);
       }
-      response = ResponseObject.error(e);
     } finally {
       if (conn != null) {
         conn.disconnect();

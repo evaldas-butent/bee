@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="ConfPricelist" caption="=configuration"
+>
+  <SplitPanel>
+    <west size="300" splitterSize="2">
+      <DataTree caption="=categories" viewName="ConfPricelist"
+                parentColumn="Branch" orderColumn="Ordinal">
+        <calc>
+          <ui:function>
+            var cap = row.OptionName;
+
+            if (row.ValidUntil) {
+              cap += " (&lt; " + row.ValidUntil.toLocaleDateString() + ")";
+            }
+            return cap;
+          </ui:function>
+        </calc>
+        <form name="EditConfiguration">
+          <FlowPanel>
+            <Table kind="controls">
+              <col index="0" kind="label" />
+              <row>
+                <Label for="Option" />
+                <DataSelector source="Option" style="width:20em;" />
+              </row>
+              <row>
+                <Label for="ValidUntil" />
+                <InputDate source="ValidUntil" />
+              </row>
+              <row>
+                <Label for="Ordinal" />
+                <InputDecimal source="Ordinal" style="width:40px;" />
+              </row>
+            </Table>
+          </FlowPanel>
+        </form>
+      </DataTree>
+    </west>
+    <center>
+      <FlowPanel name="Container" style="margin:10px;" />
+    </center>
+  </SplitPanel>
+</f:Form>

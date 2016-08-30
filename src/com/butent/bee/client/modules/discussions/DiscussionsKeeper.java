@@ -7,19 +7,37 @@ import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 
 public final class DiscussionsKeeper {
+
+  private static class RowTransformHandler implements RowTransformEvent.Handler {
+    @Override
+    public void onRowTransform(RowTransformEvent event) {
+      if (event.hasView(VIEW_DISCUSSIONS_FILES)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_DISCUSSIONS_FILES), event.getRow(),
+            Lists.newArrayList(COL_CAPTION, AdministrationConstants.ALS_FILE_TYPE,
+                COL_COMMENT_TEXT),
+            BeeConst.STRING_SPACE));
+      }
+    }
+  }
 
   public static void register() {
     /* Form interceptors */
@@ -39,17 +57,14 @@ public final class DiscussionsKeeper {
     GridFactory.registerGridInterceptor(GRID_DISCUSSION_FILES, new DiscussionFilesGrid());
 
     /* Menu */
-    MenuService.DISCUSS_LIST.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        DiscussionsListType type = DiscussionsListType.getByPrefix(parameters);
+    MenuService.DISCUSS_LIST.setHandler(parameters -> {
+      DiscussionsListType type = DiscussionsListType.getByPrefix(parameters);
 
-        if (type == null) {
-          Global.showError(Lists.newArrayList(GRID_DISCUSSIONS, "Type not recognized:",
-              parameters));
-        } else {
-          ViewFactory.createAndShow(type.getSupplierKey());
-        }
+      if (type == null) {
+        Global.showError(Lists.newArrayList(GRID_DISCUSSIONS, "Type not recognized:",
+            parameters));
+      } else {
+        ViewFactory.createAndShow(type.getSupplierKey());
       }
     });
 
@@ -58,6 +73,20 @@ public final class DiscussionsKeeper {
 
     Global.getNewsAggregator().registerFilterHandler(Feed.ANNOUNCEMENTS,
         getAnnouncementsFilterHandler());
+
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionEvent.Handler() {
+      @Override
+      public void onRowAction(RowActionEvent event) {
+        if (event.isEditRow() && event.hasView(VIEW_DISCUSSIONS_FILES)) {
+          event.consume();
+
+          if (event.hasRow() && event.getOpener() != null) {
+            Long discussionId = Data.getLong(event.getViewName(), event.getRow(), COL_DISCUSSION);
+            RowEditor.open(VIEW_DISCUSSIONS, discussionId, event.getOpener());
+          }
+        }
+      }
+    });
   }
 
   static ParameterList createArgs(String method) {
@@ -69,17 +98,10 @@ public final class DiscussionsKeeper {
   }
 
   static BiConsumer<GridOptions, PresenterCallback> getAnnouncementsFilterHandler() {
-    BiConsumer<GridOptions, PresenterCallback> consumer =
-        new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
-          @Override
-          public void accept(GridOptions gridOptions, PresenterCallback callback) {
-            GridFactory.openGrid(GRID_DISCUSSIONS,
+    return (gridOptions, callback) -> GridFactory.openGrid(GRID_DISCUSSIONS,
                 new DiscussionsGridHandler(DiscussionsListType.ALL),
                 gridOptions, callback);
-          }
-        };
 
-    return consumer;
   }
 
   private DiscussionsKeeper() {

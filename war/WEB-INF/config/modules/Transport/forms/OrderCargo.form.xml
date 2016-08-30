@@ -187,6 +187,10 @@
         <GridPanel name="TripDocuments" parent="{form}" child="true" />
       </page>
       <page>
+        <text>=files</text>
+        <ChildGrid name="CargoFiles" relColumn="Cargo" />
+      </page>
+      <page>
         <text>=relatedInformation</text>
         <Relations relColumn="Cargo" inline="true"
                    defaultRelations="Companies Persons Requests Tasks"

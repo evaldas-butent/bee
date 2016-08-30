@@ -6,7 +6,6 @@
   >
   <Columns>
     <SimpleColumn name="Template" />
-    <SimpleColumn name="Date" />
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
@@ -32,6 +31,20 @@
       <SimpleColumn name="Currency2" alias="ItemCurrency2" />
       <SimpleColumn name="Price3" alias="ItemPrice3" />
       <SimpleColumn name="Currency3" alias="ItemCurrency3" />
+      <SimpleColumn name="Price4" alias="ItemPrice4" />
+      <SimpleColumn name="Currency4" alias="ItemCurrency4" />
+      <SimpleColumn name="Price5" alias="ItemPrice5" />
+      <SimpleColumn name="Currency5" alias="ItemCurrency5" />
+      <SimpleColumn name="Price6" alias="ItemPrice6" />
+      <SimpleColumn name="Currency6" alias="ItemCurrency6" />
+      <SimpleColumn name="Price7" alias="ItemPrice7" />
+      <SimpleColumn name="Currency7" alias="ItemCurrency7" />
+      <SimpleColumn name="Price8" alias="ItemPrice8" />
+      <SimpleColumn name="Currency8" alias="ItemCurrency8" />
+      <SimpleColumn name="Price9" alias="ItemPrice9" />
+      <SimpleColumn name="Currency9" alias="ItemCurrency9" />
+      <SimpleColumn name="Price10" alias="ItemPrice10" />
+      <SimpleColumn name="Currency10" alias="ItemCurrency10" />
     </SimpleJoin>
 
     <SimpleColumn name="Quantity" />
@@ -46,6 +59,6 @@
     </SimpleJoin>
     
     <SimpleColumn name="Discount" />
-    <SimpleColumn name="Sale" />
+    <SimpleColumn name="InvisibleDiscount" />
   </Columns>
 </View>
