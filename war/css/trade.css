@@ -32,6 +32,22 @@
   text-align: right;
 }
 
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-Quantity,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-Price,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-Vat,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-Amount,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-Rate,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-RateAmount,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-QuantityTotal,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-AmountTotal,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-VatTotal,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-Total,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-RateAmountTotal,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-RateVatTotal,
+.bee-trade-itemsInfo-header .bee-trade-itemsInfo-RateTotal {
+  text-align: left;
+}
+
 .bee-trade-itemsInfo-data .bee-trade-itemsInfo-Quantity,
 .bee-trade-itemsInfo-data .bee-trade-itemsInfo-Price,
 .bee-trade-itemsInfo-data .bee-trade-itemsInfo-Vat,

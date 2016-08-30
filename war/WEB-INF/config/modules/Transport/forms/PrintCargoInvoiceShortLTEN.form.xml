@@ -42,8 +42,8 @@
     <HorizontalPanel style="width:100%; margin-top: 2em">
       <cell style="vertical-align:top; width:50%; text-align:left;" >
         <FlowPanel >
-          <Label style="&bold; font-size: 13pt;" html="PVM Sąskaita | Invoice No" />
-          <TextLabel style="font-size: 11pt;" source="InvoiceNo">
+          <Label style="&bold; font-size: 13.5pt;" html="PVM Sąskaita | Invoice No" />
+          <TextLabel style="font-size: 13.5pt;" source="InvoiceNo">
             <renderToken source="InvoicePrefix" />
             <renderToken source="InvoiceNo" />
           </TextLabel>
@@ -65,7 +65,7 @@
       </cell>
     </HorizontalPanel>
 
-    <FlowPanel style="&section;">
+    <FlowPanel style="margin-top: 16pt">
       <Table kind="output" style="width:100%;">
         <row>
           <cell style="vertical-align:top; font-size: 9.5pt">
@@ -140,7 +140,7 @@
                              prefix="&lt;b&gt;Telefonas | Telephone &lt;/b&gt; " />
               </TextLabel>
               <TextLabel source="CustomerFax">
-                <renderToken source="CustomerFax" prefix="&lt;b&gt;Faksas| Fax &lt;/b&gt; " />
+                <renderToken source="CustomerFax" prefix="&lt;b&gt;Faksas | Fax &lt;/b&gt; " />
               </TextLabel>
               <TextLabel source="CustomerEmail">
                 <renderToken source="CustomerEmail" prefix="&lt;b&gt;El.paštas | E-mail &lt;/b&gt;" />
@@ -186,7 +186,7 @@
                              prefix="&lt;b&gt;Telefonas | Telephone &lt;/b&gt; " />
               </TextLabel>
               <TextLabel source="PayerFax">
-                <renderToken source="PayerFax" prefix="&lt;b&gt;Faksas| Fax &lt;/b&gt; " />
+                <renderToken source="PayerFax" prefix="&lt;b&gt;Faksas | Fax &lt;/b&gt; " />
               </TextLabel>
               <TextLabel source="PayerEmail">
                 <renderToken source="PayerEmail" prefix="&lt;b&gt;El.paštas | E-mail &lt;/b&gt;" />
@@ -198,38 +198,38 @@
     </FlowPanel>
     <br />
     <Table name="InvoiceDetails" kind="output"
-           style="&section; width:100%; font-size:8pt;">
+           style="&section; width:100%; font-size:7.5pt;">
       <properties rateCurrency="EUR" />
       <row style="vertical-align: top">
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Paslauga &lt;br /&gt; Service">
+          <Label html="Paslauga &lt;br /&gt;Service">
             <properties name="Name" />
           </Label>
         </cell>
-        <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Užsakymo Nr. &lt;br /&gt; Order No.">
+        <cell rowSpan="2" style="vertical-align: top; ">
+          <Label style="white-space: nowrap;" html="Užsakymo Nr. &lt;br /&gt;Order No.">
             <properties name="OrderNo" />
           </Label>
         </cell>
-        <cell style="width:15em; vertical-align: top; border-bottom: none">
+        <cell style="vertical-align: top; border-bottom: none">
           <FlowPanel class="flex-Vertical">
-            <Label html="Pakrovimo data ir laikas|Loading date and time">
+            <Label html="Pakrovimo data ir laikas | Loading date and time">
               <properties name="LoadingDate" />
             </Label>
-            <Label text="Iškrovimo data ir laikas|Unloading date and time">
+            <Label text="Iškrovimo data ir laikas | Unloading date and time">
               <properties name="UnloadingDate" />
             </Label>
           </FlowPanel>
         </cell>
-        <cell style="white-space:pre-wrap; width:15em; vertical-align: top; border-bottom: none">
+        <cell style="white-space:pre-wrap; vertical-align: top; border-bottom: none">
           <FlowPanel class="flex-Vertical">
-            <Label html="Maršrutas &lt;br /&gt; Route" >
+            <Label html="Maršrutas &lt;br /&gt;Route" >
               <properties name="Notes" />
             </Label>
           </FlowPanel>
         </cell>
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Suma be PVM &lt;br /&gt; Amount">
+          <Label html="Suma be PVM &lt;br /&gt;Amount">
             <properties name="Amount" />
           </Label>
         </cell>
@@ -241,17 +241,17 @@
         </cell>
 
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Kursas &lt;br /&gt; Rate">
+          <Label html="Kursas &lt;br /&gt;Rate">
             <properties name="Rate" />
           </Label>
         </cell>
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Suma pagal kursą &lt;br /&gt; Amount by rate">
+          <Label html="Suma pagal kursą &lt;br /&gt;Amount by rate">
             <properties name="RateAmount" />
           </Label>
         </cell>
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="PVM &lt;br /&gt; VAT" horizontalAlignment="right">
+          <Label  html="PVM &lt;br /&gt;VAT" horizontalAlignment="right">
             <properties name="Vat" />
           </Label>
         </cell>
@@ -269,11 +269,11 @@
         </cell>
       </row>
       <row>
-        <cell colSpan="6">
+        <cell colSpan="4">
           <FlowPanel style="text-align:right;">
-            <Label text="Suma|Amount:" />
-            <Label text="PVM|VAT:" />
-            <Label text="Bendra suma|Total amount:" style="&bold;" />
+            <Label text="Suma | Amount:" />
+            <Label text="PVM | VAT:" />
+            <Label text="Bendra suma | Total amount:" style="&bold;" />
           </FlowPanel>
         </cell>
         <FlowPanel>
@@ -324,7 +324,7 @@
     </Table>
 
     <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
-      <renderToken source="Term" prefix="Sąskaitą apmokėti iki/Pay by " />
+      <renderToken source="Term" prefix="Sąskaitą apmokėti iki | Pay by " />
     </TextLabel>
 
     <HorizontalPanel >
@@ -352,23 +352,23 @@ After the due period of payment the fine of 0.2% will be calculated for each day
       </span>
     </HtmlPanel>
 
-    <Label style="&bold;" text="Pastabos/Additional information:"/>
+    <Label style="&bold;" text="Pastabos | Additional information:"/>
     <TextLabel source="Notes" style="white-space:pre-wrap;" />
     <br/>
     <br />
 
     <Table kind="output" style="width:100%; padding:1em;">
       <row style="&bold;">
-        <Label html="Išdavė/Dispenser: " />
+        <Label html="Išdavė | Dispenser: " />
         <br />
-        <Label html="Gavėjas/Receiver:"  />
+        <Label html="Gavėjas | Receiver:"  />
       </row>
       <row style="font-size:6.5pt">
         <Label
-                html="(Vardas, pavardė, pareigos ir parašas /name, lastname, position and signature)" />
+                html="(Vardas, pavardė, pareigos ir parašas | name, lastname, position and signature)" />
         <br />
         <Label
-                html="(Vardas, pavardė, pareigos ir parašas /name, lastname, position and signature)" />
+                html="(Vardas, pavardė, pareigos ir parašas | name, lastname, position and signature)" />
       </row>
       <row>
         <cell style="border-bottom: 1px solid black; width:7cm">
