@@ -86,7 +86,7 @@ public class FileServiceApplication extends Application {
   }
 
   @GET
-  @Path("{name}")
+  @Path("zip/{name}")
   public Response getFiles(@PathParam("name") String fileName,
       @QueryParam(Service.VAR_FILES) String files) {
 
@@ -100,9 +100,7 @@ public class FileServiceApplication extends Application {
       tmp = File.createTempFile("bee_", ".zip");
       tmp.deleteOnExit();
 
-      try (
-          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))
-      ) {
+      try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))) {
         Set<String> names = new HashSet<>();
 
         for (Map.Entry<String, String> entry : fileMap.entrySet()) {
