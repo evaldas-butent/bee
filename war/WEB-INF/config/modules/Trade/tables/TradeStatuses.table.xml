@@ -10,5 +10,11 @@
 
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />
+
+    <Boolean name="PhaseOrder" label="=trdDocumentPhaseOrder" />
+    <Boolean name="PhasePending" label="=trdDocumentPhasePending" />
+    <Boolean name="PhaseActive" label="=trdDocumentPhaseActive" />
+    <Boolean name="PhaseCompleted" label="=trdDocumentPhaseCompleted" />
+    <Boolean name="PhaseApproved" label="=trdDocumentPhaseApproved" />
   </Fields>
 </Table>

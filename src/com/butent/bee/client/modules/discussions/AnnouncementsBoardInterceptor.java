@@ -1,17 +1,16 @@
 package com.butent.bee.client.modules.discussions;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -48,6 +47,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.Cursor;
 import com.butent.bee.shared.data.BeeColumn;
@@ -64,11 +64,13 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.news.NewsConstants;
@@ -88,7 +90,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     RowInsertEvent.Handler, HandlesUpdateEvents, DataChangeEvent.Handler,
     HandlesDeleteEvents {
 
-  private class AnnouncmentTopicWidget extends Flow {
+  private class AnnouncementTopicWidget extends Flow {
     private static final String STYLE_BORDER_LEFT_BLUE = STYLE_PREFIX + "LeftBorder";
     private static final String STYLE_BORDER_LEFT_NONE = STYLE_PREFIX + "leftBorder-none";
     private static final String STYLE_BORDER_LEFT_ORANGE = STYLE_PREFIX + "leftBorder-red";
@@ -131,8 +133,9 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         + COL_ATTACH);
     private final FileCollector att = new FileCollector(attachLabel);
     private final Flow commentLineFlow = new Flow();
+    private FileGroup files = new FileGroup();
 
-    AnnouncmentTopicWidget(final Long discussId) {
+    AnnouncementTopicWidget(final Long discussId) {
       super(STYLE_MAIN_CONTAINER);
       openOnClick(VIEW_DISCUSSIONS, discussId);
       add(eventContainer);
@@ -156,13 +159,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       userContainer.add(topicWidget);
 
       attachmentLabel.setStyleName(STYLE_PAPER_CLIP);
-      attachmentLabel.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent arg0) {
-          downloadFile(discussId);
-        }
-      });
+      attachmentLabel.addClickHandler(arg0 -> downloadFile(discussId));
       userContainer.add(attachmentLabel);
 
       timeCreated.setStyleName(STYLE_TIME_CREATED);
@@ -188,7 +185,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       container5.addStyleName(StyleUtils.NAME_FLEX_BOX_VERTICAL);
       eventContainer.add(container5);
 
-      FileGroup files = new FileGroup();
       files.addStyleName(STYLE_FILE_GROUP);
 
       container5.add(files);
@@ -219,62 +215,52 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       sendLabel.setTitle(Localized.dictionary().crmActionComment());
       attachLabel.addStyleName(STYLE_FA);
 
-      sendLabel.addClickHandler(new ClickHandler() {
+      sendLabel.addClickHandler(event -> {
+        String viewName = VIEW_DISCUSSIONS_COMMENTS;
 
-        @Override
-        public void onClick(ClickEvent event) {
-          String viewName = VIEW_DISCUSSIONS_COMMENTS;
-
-          if (BeeUtils.isEmpty(commentInput.getValue()) || !DataUtils.isId(discussId)) {
-            return;
-          }
-
-          Queries.insert(viewName, Data.getColumns(VIEW_DISCUSSIONS_COMMENTS, Lists.newArrayList(
-              COL_DISCUSSION, COL_PUBLISHER, COL_PUBLISH_TIME, COL_COMMENT_TEXT)), Lists
-              .newArrayList(
-                  BeeUtils.toString(discussId), BeeUtils.toString(BeeKeeper.getUser()
-                      .getUserId()), BeeUtils.toString(new DateTime().getTime()), commentInput
-                      .getValue()),
-              null,
-              new RowInsertCallback(viewName) {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  final String commentId = Long.toString(result.getId());
-                  RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS_COMMENTS, result);
-
-                  final List<BeeColumn> columns =
-                      Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION,
-                          COL_COMMENT,
-                          AdministrationConstants.COL_FILE, COL_CAPTION));
-                  commentInput.setValue("");
-
-                  for (final FileInfo f : att.getFiles()) {
-                    FileUtils.uploadFile(f, new Callback<Long>() {
-
-                      @Override
-                      public void onSuccess(Long result1) {
-                        att.clear();
-                        commentInput.setValue("");
-                        List<String> values = Lists.newArrayList(BeeUtils.toString(discussId),
-                            commentId, BeeUtils.toString(result1), f
-                                .getCaption());
-
-                        Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null,
-                            new RowCallback() {
-                              @Override
-                              public void onSuccess(BeeRow row) {
-                                att.clear();
-                                renderContent(getFormView(), false);
-                              }
-                            });
-                      }
-
-                    });
-                  }
-                }
-              });
+        if (BeeUtils.isEmpty(commentInput.getValue()) || !DataUtils.isId(discussId)) {
+          return;
         }
 
+        Queries.insert(viewName, Data.getColumns(VIEW_DISCUSSIONS_COMMENTS, Lists.newArrayList(
+            COL_DISCUSSION, COL_PUBLISHER, COL_PUBLISH_TIME, COL_COMMENT_TEXT)), Lists
+            .newArrayList(
+                BeeUtils.toString(discussId), BeeUtils.toString(BeeKeeper.getUser()
+                    .getUserId()), BeeUtils.toString(new DateTime().getTime()), commentInput
+                    .getValue()),
+            null,
+            new RowInsertCallback(viewName) {
+              @Override
+              public void onSuccess(BeeRow result) {
+                final String commentId = Long.toString(result.getId());
+                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS_COMMENTS, result);
+
+                final List<BeeColumn> columns =
+                    Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION,
+                        COL_COMMENT,
+                        AdministrationConstants.COL_FILE, COL_CAPTION));
+                commentInput.setValue("");
+
+                for (final FileInfo f : att.getFiles()) {
+                  FileUtils.uploadFile(f, result1 -> {
+                    att.clear();
+                    commentInput.setValue("");
+                    List<String> values = Lists.newArrayList(BeeUtils.toString(discussId),
+                        commentId, BeeUtils.toString(result1), f
+                            .getCaption());
+
+                    Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null,
+                        new RowCallback() {
+                          @Override
+                          public void onSuccess(BeeRow row) {
+                            att.clear();
+                            renderContent(getFormView(), false);
+                          }
+                        });
+                  });
+                }
+              }
+            });
       });
 
       sendLabel.addStyleName(STYLE_FA_SEND);
@@ -300,14 +286,9 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
       if (DataUtils.isId(id) && BeeKeeper.getUser().isDataVisible(viewName)) {
 
-        ClickHandler handler = new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent arg0) {
-            RowEditor.open(viewName, id, Opener.NEW_TAB);
-            markAsReaded();
-          }
-
+        ClickHandler handler = arg0 -> {
+          RowEditor.open(viewName, id, Opener.NEW_TAB);
+          markAsRead();
         };
         if (commentCount != null) {
           commentCount.addClickHandler(handler);
@@ -332,7 +313,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       eventContainer.removeStyleName(STYLE_BORDER_LEFT_ORANGE);
     }
 
-    void markAsReaded() {
+    void markAsRead() {
       eventContainer.removeStyleName(STYLE_BORDER_LEFT_ORANGE);
       eventContainer.removeStyleName(STYLE_BORDER_LEFT_BLUE);
       eventContainer.setStyleName(STYLE_BORDER_LEFT_NONE);
@@ -344,12 +325,23 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       eventContainer.removeStyleName(STYLE_BORDER_LEFT_BLUE);
     }
 
-    void showAttachments(boolean show) {
+    void showAttachments(boolean show, List<FileInfo>  filesList) {
       attachmentLabel.setVisible(show);
+
+      files.clear();
+      if (!BeeUtils.isEmpty(filesList)) {
+        files.addFiles(filesList);
+      }
+      files.setVisible(show);
     }
 
     void setCreateTime(String time) {
-      timeCreated.setText(renderDateTime(time));
+      if (!BeeUtils.isLong(time)) {
+        timeCreated.setText(BeeConst.STRING_EMPTY);
+      } else {
+        Long timeInMillis = BeeUtils.toLong(time);
+        timeCreated.setText(DiscussionHelper.renderDateTime(new DateTime(timeInMillis)));
+      }
     }
 
     void setCommentCount(String count) {
@@ -409,7 +401,11 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         return;
       }
 
-      Filter filter = Filter.isEqual(COL_DISCUSSION, Value.getValue(discussionId));
+      Filter filter = Filter.and(Filter.isEqual(COL_DISCUSSION, Value.getValue(discussionId)),
+          Filter.or(Filter.isNull(COL_COMMENT),
+              Filter.in(COL_COMMENT, VIEW_DISCUSSIONS_COMMENTS, COL_DISCUSSION_COMMENT_ID,
+                  Filter.or(Filter.isNull(COL_DELETED),
+                      Filter.isEqual(COL_DELETED, BooleanValue.FALSE)))));
       // filter = Filter.and(filter, Filter.isNull(COL_COMMENT));
       GridPanel grid = new GridPanel(GRID_DISCUSSION_FILES, GridOptions.forFilter(filter), false);
       grid.setGridInterceptor(new DiscussionFilesGrid());
@@ -426,7 +422,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   private static final String WIDGET_ADS_CONTENT = "AdsContent";
   private static final String WIDGET_ADS_FLOW = "Flowing";
 
-  public static final String COL_ANNOUNCEMENT = "Description";
   public static final String COL_ATTACH = "Attach";
   public static final String COL_SEND = "Send";
 
@@ -448,9 +443,9 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   private static final String DAY = Localized.dictionary().unitDayShort().toLowerCase();
 
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
-  private final Map<Long, AnnouncmentTopicWidget> cachedContainers = new HashMap<>();
+  private final Map<Long, AnnouncementTopicWidget> cachedContainers = new HashMap<>();
   private boolean emptyForm;
-  private AnnouncmentTopicWidget lastTopicPosition;
+  private AnnouncementTopicWidget lastTopicPosition;
   private Flow cachedBirthdays;
 
   @Override
@@ -514,7 +509,8 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
-    if (event.hasView(VIEW_DISCUSSIONS) || event.hasView(VIEW_DISCUSSIONS_COMMENTS)) {
+    if (event.hasView(VIEW_DISCUSSIONS) || event.hasView(VIEW_DISCUSSIONS_COMMENTS)
+        || event.hasView(VIEW_DISCUSSIONS_FILES)) {
       renderContent(getFormView(), false);
     }
   }
@@ -546,11 +542,11 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     super.onUnload(form);
   }
 
-  protected void renderAnnoucementsSection(final SimpleRow rsRow,
-      final SimpleRowSet rs, Flow mainFlow) {
+  protected void renderAnnouncementsSection(final SimpleRow rsRow,
+      final SimpleRowSet rs, Flow mainFlow, List<FileInfo>  filesList) {
     final Long rowId = rsRow.getLong(COL_DISCUSSION);
 
-    AnnouncmentTopicWidget tWidget = null;
+    AnnouncementTopicWidget tWidget = null;
 
     if (cachedContainers.containsKey(rowId)) {
       tWidget = cachedContainers.get(rowId);
@@ -558,7 +554,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     }
 
     if (tWidget == null) {
-      tWidget = new AnnouncmentTopicWidget(rowId);
+      tWidget = new AnnouncementTopicWidget(rowId);
       mainFlow.insert(tWidget, mainFlow.getWidgetIndex(getLastTopicPosition()) + 1);
       cachedContainers.put(rowId, tWidget);
       setLastTopicPosition(tWidget);
@@ -570,7 +566,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         tWidget.markAsNew();
       } else {
         if (!isNew) {
-          tWidget.markAsReaded();
+          tWidget.markAsRead();
         }
         if (BeeUtils.unbox(rsRow.getLong(ALS_MAX_PUBLISH_TIME)) > BeeUtils.unbox(rsRow.getLong(
             NewsConstants.COL_USAGE_ACCESS))) {
@@ -610,16 +606,14 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       if (!BeeUtils.isEmpty(rsRow.getValue(AdministrationConstants.COL_FILE))) {
         int fileCount = BeeUtils.unbox(rsRow.getInt(AdministrationConstants.COL_FILE));
 
-        if (BeeUtils.isPositive(fileCount)) {
-          tWidget.showAttachments(true);
-        } else {
-          tWidget.showAttachments(false);
-        }
+        boolean hasFiles = BeeUtils.isPositive(fileCount);
+        tWidget.showAttachments(hasFiles, filesList);
+
       } else {
-        tWidget.showAttachments(false);
+        tWidget.showAttachments(false, filesList);
       }
     } else {
-      tWidget.showAttachments(false);
+      tWidget.showAttachments(false, filesList);
     }
 
     if (DataUtils.isId(rsRow.getLong(COL_DISCUSSION_COMMENT_ID))) {
@@ -643,11 +637,11 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
   protected void renderWelcomeSection(Flow adsTable) {
 
-    AnnouncmentTopicWidget welcome = new AnnouncmentTopicWidget(null);
+    AnnouncementTopicWidget welcome = new AnnouncementTopicWidget(null);
     welcome.setEnableCommenting(false);
     welcome.setPhoto(DEFAULT_PHOTO_IMAGE);
     welcome.setSummary(Localized.dictionary().welcomeMessage());
-    welcome.showAttachments(false);
+    welcome.showAttachments(false, null);
     welcome.setVisibleCommentLine(false);
 
     adsTable.clear();
@@ -695,8 +689,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
     birthTable.getRow(row).addClassName(STYLE_PREFIX + ALS_BIRTHDAY);
 
-    row++;
-
     renderBirthdaysList(contentRow, birthTable, rsRow.getValue(ALS_BIRTHDAY));
 
     birthdayContent.add(birthTable);
@@ -716,19 +708,12 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     for (long id : k) {
       Global.getNewsAggregator().onAccess(VIEW_DISCUSSIONS, id);
 
-      AnnouncmentTopicWidget w = cachedContainers.get(id);
+      AnnouncementTopicWidget w = cachedContainers.get(id);
 
       if (w != null) {
-        w.markAsReaded();
+        w.markAsRead();
       }
     }
-  }
-
-  private static String renderDateTime(String timestamp) {
-    String result;
-    DateTime dt = new DateTime(BeeUtils.toLong(timestamp));
-    result = dt.toCompactString();
-    return result;
   }
 
   private void clearCache(Flow panel) {
@@ -738,7 +723,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
   private void clearUnused(Flow panel, SimpleRowSet data) {
     // List<Long> queue = new ArrayList<>();
-    Map<Long, AnnouncmentTopicWidget> newCache = new HashMap<>();
+    Map<Long, AnnouncementTopicWidget> newCache = new HashMap<>();
     for (Long id : cachedContainers.keySet()) {
       if (!DataUtils.isId(data.getValueByKey(COL_DISCUSSION, BeeUtils.toString(id),
           COL_DISCUSSION))) {
@@ -757,7 +742,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     return cachedBirthdays;
   }
 
-  private AnnouncmentTopicWidget getLastTopicPosition() {
+  private AnnouncementTopicWidget getLastTopicPosition() {
     return lastTopicPosition;
   }
 
@@ -798,7 +783,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       listTbl.setHtml(row, 1, birthListData[rs.getColumnIndex(COL_NAME)]);
       listTbl.addStyleName(STYLE_NAME_SUR_HB);
       String locale =
-          LocaleInfo.getCurrentLocale().getLocaleName().toString();
+          LocaleInfo.getCurrentLocale().getLocaleName();
       if (locale.equals(LOCALE_NAME_LT)) {
         Flow happyBirthdayDate = new Flow();
         listTbl.setWidget(row, 2, happyBirthdayDate);
@@ -867,26 +852,37 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
           return;
         }
 
-        if (!response.hasResponse(SimpleRowSet.class)) {
+        if (!response.hasResponse(Pair.class)) {
           renderWelcomeSection(adsFlow);
           return;
         }
 
         setEmptyForm(true);
 
-        SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
+        Pair<String, String> results = Pair.restore(response.getResponseAsString());
+        String serializedAnnouncements = results.getA();
+        if (BeeUtils.isEmpty(serializedAnnouncements)) {
+          return;
+        }
+        SimpleRowSet rs = SimpleRowSet.restore(serializedAnnouncements);
+
+        String serializedAnnouncementsFiles = results.getB();
+        Map<Long, List<FileInfo>> discussionFilesMap = new HashMap<>();
+        if (!BeeUtils.isEmpty(serializedAnnouncementsFiles)) {
+          SimpleRowSet rsFiles = SimpleRowSet.restore(results.getB());
+          discussionFilesMap = generateDiscussionFilesMap(rsFiles);
+        }
 
         clearUnused(adsFlow, rs);
         setLastTopicPosition(null);
 
         for (SimpleRow rsRow : rs) {
-
           if (rs.hasColumn(ALS_BIRTHDAY) && !BeeUtils.isEmpty(rsRow.getValue(ALS_BIRTHDAY))) {
             renderBirthdaySection(rsRow, adsFlow, forceRefresh);
           } else {
-            renderAnnoucementsSection(rsRow, rs, adsFlow);
+            renderAnnouncementsSection(rsRow, rs, adsFlow,
+                discussionFilesMap.get(rsRow.getLong(COL_DISCUSSION)));
           }
-
         }
 
         if (isEmptyForm()) {
@@ -898,6 +894,33 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
       }
     });
+  }
+
+  private Map<Long, List<FileInfo>> generateDiscussionFilesMap(SimpleRowSet rsFiles) {
+    Map<Long, List<FileInfo>> discussionFilesMap = new HashMap<>();
+    if (DataUtils.isEmpty(rsFiles)) {
+      return new HashMap<>();
+    }
+
+    for (SimpleRow row : rsFiles) {
+      FileInfo file = new FileInfo(row.getLong(COL_FILE),
+          row.getValue(COL_FILE_NAME),
+          row.getLong(COL_FILE_SIZE),
+          row.getValue(COL_FILE_TYPE));
+
+      file.setCaption(row.getValue(COL_FILE_CAPTION));
+      file.setIcon(FileNameUtils.getExtension(file.getName()) + ".png");
+      Long discussionsId = row.getLong(COL_DISCUSSION);
+      if (discussionFilesMap.containsKey(discussionsId)) {
+        discussionFilesMap.get(discussionsId).add(file);
+      } else {
+        List<FileInfo> fileList = new ArrayList<>();
+        fileList.add(file);
+        discussionFilesMap.put(discussionsId, fileList);
+      }
+    }
+
+    return discussionFilesMap;
   }
 
   private boolean isEmptyForm() {
@@ -912,7 +935,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     this.cachedBirthdays = cahedBirthdays;
   }
 
-  private void setLastTopicPosition(AnnouncmentTopicWidget lastTopicPosition) {
+  private void setLastTopicPosition(AnnouncementTopicWidget lastTopicPosition) {
     this.lastTopicPosition = lastTopicPosition;
   }
 }

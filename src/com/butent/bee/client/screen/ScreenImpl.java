@@ -1076,7 +1076,7 @@ public class ScreenImpl implements Screen {
 
     for (Widget child : children) {
       String id = DomUtils.getId(child);
-      int size = getScreenPanel().getWidgetSize(child);
+      int size = Split.getWidgetSize(child);
 
       if (!BeeUtils.isEmpty(id) && size > 0) {
         getScreenPanel().setWidgetSize(child, 0);

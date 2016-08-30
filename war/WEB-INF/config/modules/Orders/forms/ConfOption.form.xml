@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="ConfOption" viewName="ConfOptions" caption="=option" height="400" width="700"
+>
+  <Table kind="controls">
+    <col index="0" kind="label" />
+    <row>
+      <Label for="Group" />
+      <DataSelector source="Group" renderColumns="GroupName" />
+
+      <Label for="Description" />
+      <cell rowSpan="4">
+        <InputArea source="Description" style="height:100%; width:300px;" />
+      </cell>
+    </row>
+    <row>
+      <Label for="OptionName" />
+      <InputText source="OptionName" />
+    </row>
+    <row>
+      <Label for="Code" />
+      <InputText source="Code" />
+    </row>
+    <row>
+      <Label for="Item" />
+      <DataSelector source="Item" newRowEnabled="false" />
+    </row>
+    <row>
+      <Label for="PhotoFile" />
+      <cell colSpan="3">
+        <Image name="PhotoFile" />
+      </cell>
+    </row>
+  </Table>
+</f:Form>

@@ -47,6 +47,8 @@ public final class DocumentConstants {
   public static final String COL_DOCUMENT_SENT_NUMBER = "SentNumber";
   public static final String COL_DOCUMENT_RECEIVED_NUMBER = "ReceivedNumber";
   public static final String COL_DOCUMENT_STATUS = "Status";
+  public static final String COL_DOCUMENT_EXPIRES = "Expires";
+  public static final String COL_DOCUMENT_USER = "User";
 
   public static final String COL_DOCUMENT_TEMPLATE = "Template";
   public static final String COL_DOCUMENT_TEMPLATE_NAME = "Name";
@@ -70,6 +72,10 @@ public final class DocumentConstants {
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
   public static final String COL_FILE_CAPTION = "Caption";
+  public static final String COL_FILE_DESCRIPTION = "Description";
+  public static final String COL_FILE_COMMENT = "Comment";
+  public static final String COL_FILE_OWNER_FIRST_NAME = "OwnerFirstName";
+  public static final String COL_FILE_OWNER_LAST_NAME = "OwnerLastName";
   public static final String COL_DOCUMENT_TYPE_NAME = "Name";
 
   public static final String ALS_CATEGORY_NAME = "CategoryName";
@@ -79,6 +85,8 @@ public final class DocumentConstants {
   public static final String ALS_DOCUMENT_COMPANY_NAME = "CompanyName";
 
   public static final String FORM_DOCUMENT = "Document";
+
+  public static final int DOCUMENT_EXPIRATION_MIN_DAYS = 5;
 
   private DocumentConstants() {
   }

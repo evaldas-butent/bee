@@ -5,6 +5,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 
+import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 
@@ -25,14 +26,15 @@ public final class MoveEvent extends GwtEvent<MoveEvent.Handler> {
 
   private static final Type<Handler> TYPE = new Type<>();
 
-  public static void fireFinish(HasMoveHandlers source, int deltaX, int deltaY) {
+  public static void fireFinish(HasMoveHandlers source, int deltaX, int deltaY,
+                                                                              Modifiers modifiers) {
     Assert.notNull(source);
-    source.fireEvent(new MoveEvent(State.FINISHED, deltaX, deltaY));
+    source.fireEvent(new MoveEvent(State.FINISHED, deltaX, deltaY, modifiers));
   }
 
-  public static void fireMove(HasMoveHandlers source, int deltaX, int deltaY) {
+  public static void fireMove(HasMoveHandlers source, int deltaX, int deltaY, Modifiers modifiers) {
     Assert.notNull(source);
-    source.fireEvent(new MoveEvent(State.MOVING, deltaX, deltaY));
+    source.fireEvent(new MoveEvent(State.MOVING, deltaX, deltaY, modifiers));
   }
 
   public static Type<Handler> getType() {
@@ -43,13 +45,15 @@ public final class MoveEvent extends GwtEvent<MoveEvent.Handler> {
 
   private final int deltaX;
   private final int deltaY;
+  private final Modifiers modifiers;
 
-  private MoveEvent(State state, int deltaX, int deltaY) {
+  private MoveEvent(State state, int deltaX, int deltaY, Modifiers modifiers) {
     super();
     this.state = state;
 
     this.deltaX = deltaX;
     this.deltaY = deltaY;
+    this.modifiers = modifiers;
   }
 
   @Override
@@ -63,6 +67,10 @@ public final class MoveEvent extends GwtEvent<MoveEvent.Handler> {
 
   public int getDeltaY() {
     return deltaY;
+  }
+
+  public Modifiers getModifiers() {
+    return modifiers;
   }
 
   public Mover getMover() {

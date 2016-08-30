@@ -8,6 +8,10 @@
   >
   <g:columns>
     <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true">
+      <dynStyle>
+        <ui:inline>color: blue;</ui:inline>
+        <ui:expression>row.IsService</ui:expression>
+      </dynStyle>
       <footer text="=totalOf" horizontalAlignment="right" />
     </RelColumn>
     <DataColumn name="Article" />
@@ -17,12 +21,35 @@
     </DataColumn>
     <DataColumn name="UnitName" flexGrow="0" label="=unitShort" />
 
-    <DataColumn name="Price" scale="2">
-      <footer expression="row.Quantity * row.Price" scale="2" />
-    </DataColumn>
+    <DataColumn name="Price" scale="2" />
+    <CalcColumn name="Amount" type="decimal" caption="=amount" scale="2">
+      <footer aggregate="sum" />
+    </CalcColumn>
 
-    <DataColumn name="DiscountPercent" scale="0" carry="true" flexGrow="0" />
-    <DataColumn name="VatPercent" scale="0" carry="true" flexGrow="0" />
+    <DataColumn name="Discount" scale="0" carry="true" flexGrow="0" />
+    <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" carry="true" />
+    <CalcColumn name="DiscountAmount" type="decimal" caption="=discountAmountShort" scale="2">
+      <footer aggregate="sum" />
+    </CalcColumn>
+
+    <CalcColumn name="PriceWithoutVat" type="decimal" caption="=priceWithoutVat" scale="2" />
+    <CalcColumn name="AmountWithoutVat" type="decimal" caption="=amountWithoutVat" scale="2">
+      <footer aggregate="sum" />
+    </CalcColumn>
+
+    <DataColumn name="Vat" scale="0" carry="true" flexGrow="0" />
+    <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" carry="true" />
+    <CalcColumn name="VatAmount" type="decimal" caption="=vatAmount" scale="2">
+      <footer aggregate="sum" />
+    </CalcColumn>
+
+    <CalcColumn name="PriceWithVat" type="decimal" caption="=priceWithVat" scale="2" />
+    <CalcColumn name="Total" type="decimal" caption="=total" scale="2">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+      <footer aggregate="sum" />
+    </CalcColumn>
 
     <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
       flexGrow="0" visible="false" />

@@ -15,8 +15,4 @@
     <Relation name="EventDuration" unique="true" relation="EventDurations" editable="true" label="=crmTaskDuration" />
     <DateTime name="FinishTime" label="=crmFinishDate" />
   </Fields>
-  <Indexes>
-    <Index fields="Task Event" />
-    <Index fields="PublishTime" />
-  </Indexes>
 </Table>

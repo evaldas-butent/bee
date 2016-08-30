@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="TradePayments" viewName="TradePayments"
+        caption="=trdPayments" newRowCaption="=newPayment"
+>
+  <g:columns>
+    <DataColumn name="PaymentDate" visible="true" />
+
+    <DataColumn name="PaymentAmount" minWidth="80" visible="true">
+      <footer aggregate="sum" />
+    </DataColumn>
+
+    <RelColumn name="PaymentType" renderColumns="PaymentName" />
+    <RelColumn name="PaymentAccount" renderColumns="AccountCode"
+               choiceColumns="AccountCode AccountName" />
+
+    <DataColumn name="PaymentSeries">
+      <editor type="string" upperCase="true" />
+    </DataColumn>
+    <DataColumn name="PaymentNumber" minWidth="80" />
+
+    <IdColumn name="Id" visible="false" />
+  </g:columns>
+</g:Grid>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="ShipmentRequestFiles" viewName="ShipmentRequestFiles" autoFit="true"
-  >
+        name="CargoFiles" viewName="CargoFiles" autoFit="true"
+>
   <g:columns>
     <DataColumn name="File" caption="=actionOpen" readOnly="true" cellType="html"
-      sortable="false" minWidth="150" visible="true" exportable="false" />
+                sortable="false" minWidth="150" visible="true" exportable="false" />
 
     <DataColumn name="Caption" required="true" updateMode="row" minWidth="150" />
 
@@ -14,7 +14,7 @@
     </DataColumn>
 
     <PropColumn name="Icon" caption="-" type="string" cellType="html" horizontalAlignment="center"
-      width="20" label="=fileIcon" >
+                width="20" label="=fileIcon">
       <renderer type="fileIcon" />
     </PropColumn>
 

@@ -115,11 +115,11 @@
     <Label for="LoadedKilometers" style="&inline;" />
     <InputInteger name="LoadedKilometers" source="LoadedKilometers"
                   style="&inline; width:70px; margin-left:5px;" />
-    <Label for="CargoWeight" style="&inline; margin-left:20px;" />
-    <InputDecimal source="CargoWeight" format="0.000"
-                  style="&inline; width:70px; margin-left:5px; margin-right:20px;" />
-    <Label for="EmptyKilometers" style="&inline;" />
+    <Label for="EmptyKilometers" style="&inline; margin-left:20px;" />
     <InputInteger name="EmptyKilometers" source="EmptyKilometers"
+                  style="&inline; width:70px; margin-left:5px; margin-right:20px;" />
+    <Label for="CargoWeight" style="&inline;" />
+    <InputDecimal source="CargoWeight" format="0.000"
                   style="&inline; width:70px; margin-left:5px;" />
   </FlowPanel>
 </FlowPanel>

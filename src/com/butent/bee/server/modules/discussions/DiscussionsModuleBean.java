@@ -32,6 +32,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.CssUnit;
@@ -46,11 +47,11 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
-import com.butent.bee.shared.html.builder.elements.H2;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.io.FileInfo;
@@ -137,9 +138,20 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    return qs.getSearchResults(VIEW_DISCUSSIONS,
+    List<SearchResult> result = new ArrayList<>();
+    result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS,
         Filter.anyContains(Sets.newHashSet(COL_SUBJECT, COL_DESCRIPTION, ALS_OWNER_FIRST_NAME,
-            ALS_OWNER_LAST_NAME), query));
+            ALS_OWNER_LAST_NAME), query)));
+
+    result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS_FILES, Filter.and(
+        Filter.anyContains(Sets.newHashSet(AdministrationConstants.COL_FILE_CAPTION,
+            AdministrationConstants.ALS_FILE_NAME, COL_COMMENT_TEXT), query),
+        Filter.in(COL_COMMENT, VIEW_DISCUSSIONS_COMMENTS, COL_DISCUSSION_COMMENT_ID,
+            Filter.or(Filter.isNull(COL_DELETED),
+                Filter.isEqual(COL_DELETED, BooleanValue.FALSE))))));
+
+    return result;
+
   }
 
   @Override
@@ -894,10 +906,29 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     if (!rs.isEmpty()) {
-      return ResponseObject.response(rs);
+      return ResponseObject.response(Pair.of(rs, getDiscussionFiles(rs)));
     }
 
     return ResponseObject.emptyResponse();
+  }
+
+  private SimpleRowSet getDiscussionFiles(SimpleRowSet discussionRs) {
+    SqlSelect query = new SqlSelect()
+    .addFields(TBL_DISCUSSIONS_FILES, COL_DISCUSSION, AdministrationConstants.COL_FILE,
+        AdministrationConstants.COL_FILE_CAPTION)
+    .addFields(TBL_FILES, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
+    .addFrom(TBL_DISCUSSIONS_FILES)
+    .addFromInner(TBL_FILES,
+        sys.joinTables(TBL_FILES, TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE))
+    .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
+        sys.joinTables(TBL_DISCUSSIONS_COMMENTS, TBL_DISCUSSIONS_FILES, COL_COMMENT))
+    .setWhere(SqlUtils.and(SqlUtils.inList(TBL_DISCUSSIONS_FILES, COL_DISCUSSION,
+        (Object[]) discussionRs.getColumn(discussionRs
+        .getColumnIndex(sys.getIdName(TBL_DISCUSSIONS)))),
+        SqlUtils.or(SqlUtils.isNull(TBL_DISCUSSIONS_COMMENTS, COL_DELETED),
+            SqlUtils.equals(TBL_DISCUSSIONS_COMMENTS, COL_DELETED, false))));
+
+    return qs.getData(query);
   }
 
   private ResponseObject getBirthdays() {
@@ -1199,23 +1230,11 @@ public class DiscussionsModuleBean implements BeeModule {
       String anouncmentTopic, SimpleRow discussMailRow, Dictionary constants,
       boolean isPublic) {
 
-    String discussSubject = BeeUtils.joinWords(
-        (typeAnnoucement ? constants.announcement()
-            : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
-            .getValue(COL_SUBJECT));
-
     Document doc = new Document();
-    doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(discussSubject));
+    doc.getHead().append(meta().encodingDeclarationUtf8());
 
     Div panel = div();
     doc.getBody().append(panel);
-
-    boolean important = BeeUtils.unbox(discussMailRow.getBoolean(COL_IMPORTANT));
-    String subjectColor = important ? Colors.RED : Colors.BLACK;
-
-    H2 subjectElement = h2().text(discussSubject);
-    subjectElement.setColor(subjectColor);
-    panel.append(subjectElement);
 
     Tbody tableFields = tbody().append(
         tr().append(td().text(constants.date()),
@@ -1228,14 +1247,14 @@ public class DiscussionsModuleBean implements BeeModule {
           );
     }
 
-    Div discussDescriptionContent = div().text(discussMailRow.getValue(COL_DESCRIPTION));
+    Div discussDescriptionContent = div().text(discussMailRow.getValue(COL_SUMMARY));
     // discussDescriptionContent.setMaxHeight(4, CssUnit.EM);
     // discussDescriptionContent.setOverflow(Overflow.HIDDEN);
 
     tableFields.append(
         tr().append(td().text(constants.discussOwner()),
             td().text(usr.getUserSign(discussMailRow.getLong(COL_OWNER)))),
-        tr().append(td().text(constants.discussDescription()),
+        tr().append(td().text(constants.discussSummary()),
             td().append(discussDescriptionContent))
         );
 
@@ -1336,7 +1355,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SqlSelect discussMailList =
         new SqlSelect()
-            .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_DESCRIPTION, COL_OWNER,
+            .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUMMARY, COL_OWNER,
                 COL_CREATED, COL_TOPIC, COL_IMPORTANT)
             .addFrom(TBL_DISCUSSIONS)
             .setDistinctMode(true);
@@ -1433,14 +1452,27 @@ public class DiscussionsModuleBean implements BeeModule {
               constants, sendAll);
 
       String htmlDiscussMailContent = discussMailDocument.buildLines();
+      String discussSubject = BeeUtils.joinWords(
+          (typeAnnoucement ? constants.announcement()
+              : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
+              .getValue(COL_SUBJECT));
+
+      Div subjectElement = div().text(discussSubject);
+      String content;
+      if (BeeUtils.unbox(discussMailRow.getBoolean(COL_IMPORTANT))) {
+        content = BeeUtils.join("",
+            mail.styleMailHeader(subjectElement.build(), Colors.RED), htmlDiscussMailContent);
+      } else {
+        content = BeeUtils.join("",
+            mail.styleMailHeader(subjectElement.build(), null), htmlDiscussMailContent);
+      }
 
       logger.info(label, discussionId, "mail to", member, memberEmail);
 
       String subject = typeAnnoucement ? constants.discussMailNewAnnouncementSubject()
           : constants.discussMailNewDiscussionSubject();
 
-      ResponseObject mailResponse = mail.sendMail(senderAccountId, memberEmail, subject,
-          htmlDiscussMailContent);
+      ResponseObject mailResponse = mail.sendMail(senderAccountId, memberEmail, subject, content);
 
       if (mailResponse.hasErrors()) {
         response.addWarning("Send mail failed");

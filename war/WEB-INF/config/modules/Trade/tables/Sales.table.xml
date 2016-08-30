@@ -10,8 +10,9 @@
     <Relation name="Operation" relation="TradeOperations" label="=trdOperation" />
 
     <Relation name="SaleSeries" relation="SaleSeries" label="=trdInvoicePrefix"/>
-    <String name="InvoicePrefix" precision="10" label="=trdInvoicePrefix" /> <!--TODO: remove-->
     <String name="InvoiceNo" precision="20" label="=trdInvoiceNo" />
+
+    <String name="CheckNo" precision="20" label="=checkNo" />
 
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />
@@ -39,6 +40,9 @@
     <Integer name="Kind" />
   </Fields>
 
+  <Constraints>
+    <Unique fields="SaleSeries InvoiceNo" />
+  </Constraints>
   <Indexes>
     <Index fields="Proforma" />
   </Indexes>

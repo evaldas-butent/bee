@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui">
+	<CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
+		caption="-" label="=prjColumnMode" exportWidthFactor="0.3" />
 	<IdColumn name="Id" />
 	<DataColumn name="Priority" visible="true" minWidth="70"
 		autoFit="true" />

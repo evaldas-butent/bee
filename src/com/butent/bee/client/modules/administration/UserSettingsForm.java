@@ -54,6 +54,7 @@ class UserSettingsForm extends AbstractFormInterceptor {
 
         Queries.getRowSet(VIEW_USER_ROLES, Lists.newArrayList(ALS_ROLE_NAME),
             Filter.equals(COL_USER, userId), new Queries.RowSetCallback() {
+
               @Override
               public void onSuccess(BeeRowSet result) {
                 List<String> roles = new ArrayList<>();

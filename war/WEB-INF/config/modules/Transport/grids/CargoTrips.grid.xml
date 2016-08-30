@@ -50,4 +50,8 @@
   </g:columns>
 
   <xi:include href="columns/Handling.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="Message" readOnly="true" />
+  </g:columns>
 </g:Grid>

@@ -1,8 +1,6 @@
 package com.butent.bee.client.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -63,6 +61,9 @@ public class HeaderImpl extends Flow implements HeaderView {
   private static final String STYLE_CONTROL = STYLE_PREFIX + "control";
   private static final String STYLE_CONTROL_HIDDEN = STYLE_CONTROL + "-hidden";
   private static final String STYLE_CONTROL_DISABLED = STYLE_CONTROL + "-disabled";
+
+  private static final String STYLE_CREATE_NEW = BeeConst.CSS_CLASS_PREFIX + "CreateNew";
+  private static final String STYLE_SAVE_LARGE = BeeConst.CSS_CLASS_PREFIX + "SaveLarge";
 
   private static boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
@@ -157,7 +158,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
       if (createNew) {
         Label control = new Label("+ " + Localized.dictionary().createNew());
-        control.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateNew");
+        control.addStyleName(STYLE_CREATE_NEW);
 
         initControl(control, Action.ADD, hiddenActions);
         add(control);
@@ -194,8 +195,18 @@ public class HeaderImpl extends Flow implements HeaderView {
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
       add(createFa(Action.EDIT, hiddenActions));
     }
+
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      add(createFa(Action.SAVE, hiddenActions));
+      if (Theme.hasActionSaveLarge()) {
+        Label control = new Label(Localized.dictionary().actionSave());
+        control.addStyleName(STYLE_SAVE_LARGE);
+
+        initControl(control, Action.SAVE, hiddenActions);
+        add(control);
+
+      } else {
+        add(createFa(Action.SAVE, hiddenActions));
+      }
     }
 
     if (hasAction(Action.EXPORT, false, enabledActions, disabledActions)) {
@@ -338,7 +349,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       return false;
     } else {
       String id = source.getId();
-      return BeeUtils.isEmpty(id) ? true : !actionControls.containsValue(id);
+      return BeeUtils.isEmpty(id) || !actionControls.containsValue(id);
     }
   }
 
@@ -517,12 +528,9 @@ public class HeaderImpl extends Flow implements HeaderView {
       control.getElement().addClassName(STYLE_CONTROL_HIDDEN);
     }
 
-    control.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (getViewPresenter() != null) {
-          getViewPresenter().handleAction(action);
-        }
+    control.addClickHandler(event -> {
+      if (getViewPresenter() != null) {
+        getViewPresenter().handleAction(action);
       }
     });
 

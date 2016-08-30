@@ -159,7 +159,7 @@ public class PanelHandler extends Handler implements HasVisibility, HasEnabled {
   private int getSize() {
     Widget parent = getPanel().getParent();
     if (parent instanceof Split) {
-      return ((Split) parent).getWidgetSize(getPanel());
+      return Split.getWidgetSize(getPanel());
     } else {
       return BeeConst.UNDEF;
     }

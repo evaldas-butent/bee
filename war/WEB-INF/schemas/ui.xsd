@@ -417,6 +417,7 @@
       <xs:enumeration value="discount" />
       <xs:enumeration value="branch" />
       <xs:enumeration value="time" />
+      <xs:enumeration value="place" />
     </xs:restriction>
   </xs:simpleType>
 

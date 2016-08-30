@@ -80,6 +80,10 @@ public class Storage {
     return TimeUtils.toDateTimeOrNull(get(key));
   }
 
+  public Double getDouble(String key) {
+    return BeeUtils.toDoubleOrNull(get(key));
+  }
+
   public Integer getInteger(String key) {
     return BeeUtils.toIntOrNull(get(key));
   }
@@ -171,6 +175,18 @@ public class Storage {
       remove(key);
     } else {
       set(key, value.serialize());
+    }
+  }
+
+  public void set(String key, Double value) {
+    set(key, value, 7);
+  }
+
+  public void set(String key, Double value, int maxDec) {
+    if (BeeUtils.isDouble(value)) {
+      set(key, BeeUtils.toString(value, maxDec));
+    } else {
+      remove(key);
     }
   }
 

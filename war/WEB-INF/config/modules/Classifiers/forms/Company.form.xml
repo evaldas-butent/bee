@@ -141,6 +141,11 @@
               <InputDecimal source="CreditDays" style="width: 60px;" summarize="true" />
             </row>
 
+            <row for="ToleratedDays" module="Orders">
+              <Label for="ToleratedDays" style="&lbl;"/>
+              <InputDecimal source="ToleratedDays" style="width: 60px;" summarize="true" />
+            </row>
+
             <row for="FinancialState">
               <Label text="=financialState" style="&lbl;" />
               <DataSelector source="FinancialState" summarize="true" />
@@ -268,6 +273,11 @@
       <page data="Projects">
         <text>=projects</text>
         <ChildGrid name="CompanyProjects" relColumn="Company" paging="true" />
+      </page>
+
+      <page data="Orders">
+        <text>=offers</text>
+        <ChildGrid name="CompanyOrders" relColumn="Company" />
       </page>
 
       <page for="Notes">

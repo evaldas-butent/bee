@@ -19,11 +19,12 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.modules.calendar.CalendarHelper;
-import com.butent.bee.shared.utils.*;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
@@ -100,6 +101,11 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 
 import java.awt.*;
@@ -347,6 +353,47 @@ public class ClassifiersModuleBean implements BeeModule {
             } catch (AddressException ex) {
               event.addErrorMessage(BeeUtils.joinWords("Wrong address ", email, ": ",
                   ex.getMessage()));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setItemRemainders(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_ITEMS) && usr.isModuleVisible(ModuleAndSub.of(Module.ORDERS))) {
+          Map<Long, IsRow> indexedRows = new HashMap<>();
+          BeeRowSet rowSet = event.getRowset();
+          List<Long> ids = rowSet.getRowIds();
+
+          Map<Long, Double> resReminders =
+              getReminders(ids, TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+          Map<Long, Double> wrhReminders =
+              getReminders(ids, VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER);
+
+          for (BeeRow row : rowSet.getRows()) {
+            Long id = row.getId();
+
+            if (DataUtils.isId(id)) {
+              indexedRows.put(id, row);
+              row.setProperty(COL_RESERVED_REMAINDER, resReminders.get(id));
+              row.setProperty(PROP_WAREHOUSE_REMAINDER, wrhReminders.get(id));
+            }
+          }
+          if (!indexedRows.isEmpty()) {
+            BeeView view = sys.getView(VIEW_ITEM_REMAINDERS);
+            SqlSelect query = view.getQuery(usr.getCurrentUserId());
+
+            query.setWhere(SqlUtils.and(query.getWhere(), SqlUtils.inList(view.getSourceAlias(),
+                COL_ITEM, indexedRows.keySet())));
+
+            for (SimpleRow row : qs.getData(query)) {
+              IsRow r = indexedRows.get(row.getLong(COL_ITEM));
+
+              if (r != null) {
+                r.setProperty(COL_WAREHOUSE_REMAINDER + row.getValue(ALS_WAREHOUSE_CODE),
+                    row.getValue(COL_WAREHOUSE_REMAINDER));
+              }
             }
           }
         }
@@ -798,7 +845,11 @@ public class ClassifiersModuleBean implements BeeModule {
         }
 
         if (BeeUtils.isEmpty(row.getValue(i))) {
-          tr.append(td());
+          Td td = td();
+          tr.append(td);
+          td.setBorderWidth("1px");
+          td.setBorderStyle(BorderStyle.SOLID);
+          td.setBorderColor("black");
           continue;
         }
 
@@ -826,7 +877,6 @@ public class ClassifiersModuleBean implements BeeModule {
           default:
             value = BeeUtils.nvl(row.getValue(i), BeeConst.STRING_EMPTY);
         }
-
 
         Td td = td();
         tr.append(td);
@@ -1976,10 +2026,9 @@ public class ClassifiersModuleBean implements BeeModule {
 
   private Map<Long, Integer> getRemindActionsUserSettings() {
     Map<Long, Integer> userSettings = Maps.newHashMap();
-    Filter isSetReminder = Filter.notNull(COL_REMIND_ACTIONS);
     Filter timeIsSet = Filter.isPositive(COL_REMIND_ACTION_BEFORE);
 
-    BeeRowSet rows = qs.getViewData(VIEW_USER_SETTINGS, Filter.and(isSetReminder, timeIsSet));
+    BeeRowSet rows = qs.getViewData(VIEW_USER_SETTINGS, timeIsSet);
 
     for (IsRow row : rows) {
       Long userId = row.getLong(rows.getColumnIndex(COL_USER));
@@ -1991,6 +2040,54 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     return userSettings;
+  }
+
+  private Map<Long, Double> getReminders(List<Long> ids, String source, String field) {
+
+    Map<Long, Double> reminders = new HashMap<>();
+    Map<Long, Double> invoices = new HashMap<>();
+
+    if (!BeeUtils.isEmpty(ids)) {
+      SqlSelect select = new SqlSelect()
+          .addFields(source, COL_ITEM)
+          .addSum(source, field)
+          .addFrom(source)
+          .setWhere(SqlUtils.inList(source, COL_ITEM, ids))
+          .addGroup(source, COL_ITEM);
+
+      if (source == TBL_ORDER_ITEMS) {
+        SqlSelect slcInvoices =
+            new SqlSelect()
+                .addFields(TBL_SALE_ITEMS, COL_ITEM)
+                .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+                .addFrom(TBL_SALE_ITEMS)
+                .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                .setWhere(
+                    SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_ITEM, ids), SqlUtils.isNull(
+                        TBL_SALES, COL_TRADE_EXPORTED)))
+                .addGroup(TBL_SALE_ITEMS, COL_ITEM);
+
+        for (SimpleRow row : qs.getData(slcInvoices)) {
+          invoices.put(row.getLong(COL_ITEM), BeeUtils
+              .unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY)));
+        }
+
+        for (SimpleRow row : qs.getData(select)) {
+          if (invoices.containsKey(row.getLong(COL_ITEM))) {
+            reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field))
+                + BeeUtils.unbox(invoices.get(row.getLong(COL_ITEM))));
+          } else {
+            reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+          }
+        }
+      } else {
+        for (SimpleRow row : qs.getData(select)) {
+          reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+        }
+      }
+    }
+
+    return reminders;
   }
 
   @Schedule(hour = "*/1", persistent = false)
@@ -2156,4 +2253,33 @@ public class ClassifiersModuleBean implements BeeModule {
     qrBase64 = Codec.toBase64(imageInByte);
     return qrBase64;
   }
+
+  public DateTime calculateReminderTime(Long time, Integer dataIndicator,
+      Integer hours, Integer minutes) {
+    DateTime reminderTime = new DateTime();
+    reminderTime.setTime(time);
+
+    if (time != null && dataIndicator != null) {
+      if (BeeUtils.same(dataIndicator.toString(),
+          BeeUtils.toString(ReminderDateIndicator.AFTER.ordinal()))) {
+        if (hours != null) {
+          TimeUtils.addHour(reminderTime, hours);
+        }
+        if (minutes != null) {
+          TimeUtils.addMinute(reminderTime, minutes);
+        }
+      }
+      if (BeeUtils.same(dataIndicator.toString(),
+          BeeUtils.toString(ReminderDateIndicator.BEFORE.ordinal()))) {
+        if (hours != null) {
+          TimeUtils.addHour(reminderTime, hours * -1);
+        }
+        if (minutes != null) {
+          TimeUtils.addMinute(reminderTime, minutes * -1);
+        }
+      }
+    }
+    return reminderTime;
+  }
+
 }

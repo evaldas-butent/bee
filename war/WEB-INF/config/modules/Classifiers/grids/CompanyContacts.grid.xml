@@ -20,5 +20,22 @@
     <RelColumn name="EmailId" />
     <DataColumn name="Website" minWidth="100" maxWidth="200" visible="false" />
     <DataColumn name="SocialContacts" minWidth="100" maxWidth="200" visible="false" />
+    <DataColumn name="RemindEmail" maxWidth="30" editInPlace="true" >
+      <validation>
+        <ui:function>
+            var emailId = row.EmailId;
+
+            if (cell.oldValue != null &#38;&#38; cell.newValue == null) {
+              return null;
+            }
+
+            if (emailId == null  &#38;&#38; cell.newValue != null) {
+              return $wnd.Bee_maybeTranslate("=email") + ". " + $wnd.Bee_maybeTranslate("=valueRequired");
+            } else {
+              return null;
+            }
+          </ui:function>
+      </validation>
+    </DataColumn>
   </g:columns>
 </g:Grid>

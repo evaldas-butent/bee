@@ -92,7 +92,6 @@ public final class ReportInfoItem implements BeeSerializable {
           return ReportItem.STYLE_TEXT;
 
         case COUNT:
-        case SUM:
           return ReportItem.STYLE_NUM;
 
         default:

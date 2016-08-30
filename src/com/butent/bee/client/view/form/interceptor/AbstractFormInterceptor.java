@@ -265,6 +265,10 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public void onSourceChange(IsRow row, String source, String value) {
+  }
+
+  @Override
   public void onStart(FormView form) {
   }
 

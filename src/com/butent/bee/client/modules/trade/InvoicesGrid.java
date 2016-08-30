@@ -81,12 +81,16 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
             response.notify(view);
 
             if (!response.hasErrors()) {
+              getERPStocks(ids);
               Data.onViewChange(view.getViewName(), DataChangeEvent.RESET_REFRESH);
             }
           }
         });
       }
     });
+  }
+
+  public void getERPStocks(Set<Long> ids) {
   }
 
   private void setWaiting(boolean waiting) {
