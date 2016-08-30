@@ -13,6 +13,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.client.modules.tasks.TaskSlackRenderer;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -119,7 +120,7 @@ import javax.ejb.*;
 @LocalBean
 public class TasksModuleBean extends TimerBuilder implements BeeModule  {
 
-  private static final String COL_DELAYED_HOURS = "DelayedHours";
+  private static final String COL_DELAYED = "Delayed";
   private static BeeLogger logger = LogUtils.getLogger(TasksModuleBean.class);
 
   @EJB
@@ -3006,7 +3007,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
             .addFields(TBL_TASKS, COL_TASK_ID, COL_SUMMARY)
             .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
             .addFields(TBL_TASKS, COL_START_TIME, COL_FINISH_TIME)
-            .addEmptyField(COL_DELAYED_HOURS, SqlConstants.SqlDataType.LONG, 0, 0, false)
+            .addEmptyField(COL_DELAYED, SqlConstants.SqlDataType.LONG, 0, 0, false)
             .addFields(TBL_TASKS, COL_STATUS)
             .addExpr(SqlUtils.concat(
                 SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "''"), "' '",
@@ -3046,7 +3047,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
     labels.put(COL_COMPANY_NAME, dic.calClient());
     labels.put(COL_START_TIME, dic.crmStartDate());
     labels.put(COL_FINISH_TIME, dic.crmFinishDate());
-    labels.put(COL_DELAYED_HOURS, dic.crmTaskLabelDelayedHours());
+    labels.put(COL_DELAYED, dic.crmTaskLabelDelayed());
     labels.put(COL_STATUS, dic.crmTaskStatus());
     labels.put(ALS_OWNER_NAME, dic.crmTaskManager());
 
@@ -3069,7 +3070,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
     dataTypes.put(COL_COMPANY_NAME, ValueType.TEXT);
     dataTypes.put(COL_START_TIME, ValueType.DATE_TIME);
     dataTypes.put(COL_FINISH_TIME, ValueType.DATE_TIME);
-    dataTypes.put(COL_DELAYED_HOURS, ValueType.LONG);
+    dataTypes.put(COL_DELAYED, ValueType.LONG);
     dataTypes.put(COL_STATUS, ValueType.INTEGER);
     dataTypes.put(ALS_OWNER_NAME, ValueType.TEXT);
 
@@ -3107,11 +3108,20 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
         } else if (status == TaskStatus.ACTIVE) {
           activeCount++;
         }
-        long finishTime = BeeUtils.unbox(row.getLong(tasks.getColumnIndex(COL_FINISH_TIME)));
-        if ((finishTime - nowTime) < 0) {
+
+        DateTime startTime = row.getDateTime(tasks.getColumnIndex(COL_START_TIME));
+        DateTime finishTime = row.getDateTime(tasks.getColumnIndex(COL_FINISH_TIME));
+
+        if ((finishTime.getTime() - nowTime) < 0) {
           lateCount++;
-          long  diff = (nowTime - finishTime) / TimeUtils.MILLIS_PER_HOUR;
-          row.setValue(COL_DELAYED_HOURS, BeeUtils.toString(diff));
+
+          long minutes = TaskUtils.getMinutes(
+              TaskUtils.getKind(startTime, finishTime, now),
+              startTime,
+              finishTime,
+              now);
+
+          row.setValue(COL_DELAYED, TaskSlackRenderer.getFormatedTimeLabel(minutes));
           lateTasks.addRow(row.getValues());
         }
       }
