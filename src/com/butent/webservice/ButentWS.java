@@ -165,13 +165,15 @@ public final class ButentWS {
     return data;
   }
 
-  public String importClient(String companyName, String companyCode, String companyVATCode,
-      String companyAddress, String companyPostIndex, String companyCity, String companyCountry)
+  public String importClient(String companyId, String companyName, String companyCode,
+      String companyVATCode, String companyAddress, String companyPostIndex, String companyCity,
+      String companyCountry)
       throws BeeException {
 
     logger.debug("ImportClient:", "importing client...");
 
     StringBuilder sb = new StringBuilder("<client>")
+        .append(XmlUtils.tag("common_id", companyId))
         .append(XmlUtils.tag("klientas", companyName))
         .append(XmlUtils.tag("kodas", companyCode))
         .append(XmlUtils.tag("pvm_kodas", companyVATCode))
