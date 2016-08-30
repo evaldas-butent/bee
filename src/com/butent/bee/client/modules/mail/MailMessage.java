@@ -344,8 +344,8 @@ public class MailMessage extends AbstractFormInterceptor {
                     files.put(fileInfo.getId(),
                         BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
                   }
-                  BrowsingContext.open(FileUtils
-                      .getUrl(Localized.dictionary().mailAttachments() + ".zip", files));
+                  BrowsingContext.open(FileUtils.getUrl(Localized.dictionary().mailAttachments()
+                      + ".zip", files));
                   break;
 
                 default:

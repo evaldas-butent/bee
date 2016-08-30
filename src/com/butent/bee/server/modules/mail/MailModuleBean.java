@@ -499,6 +499,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     String module = getModule().getName();
 
     return Lists.newArrayList(
+        BeeParameter.createBoolean(module, PRM_SIGNATURE_POSITION, true, true),
         BeeParameter.createRelation(module, PRM_DEFAULT_ACCOUNT, TBL_ACCOUNTS,
             COL_ACCOUNT_DESCRIPTION),
         BeeParameter.createNumber(module, PRM_MAIL_CHECK_INTERVAL),
