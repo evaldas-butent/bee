@@ -5,7 +5,7 @@
         name="ExpenditureTypes" viewName="ExpenditureTypes" caption="=trdExpenditureTypes"
 >
   <g:columns>
-    <DataColumn name="ExpenditureTypeName" visible="true" minWidth="200" />
+    <DataColumn name="ExpenditureTypeName" visible="true" minWidth="100" />
 
     <RelColumn name="Debit" renderColumns="DebitCode" choiceColumns="AccountCode AccountName" />
     <RelColumn name="Credit" renderColumns="CreditCode" choiceColumns="AccountCode AccountName" />
@@ -14,10 +14,10 @@
 
     <RelColumn name="Supplier" renderColumns="SupplierName" />
 
-    <RelColumn name="Operation" renderColumns="OperationName" />
+    <RelColumn name="Operation" renderColumns="OperationName" filter="OperationType=0" />
     <RelColumn name="Warehouse" renderColumns="WarehouseCode" />
 
-    <RelColumn name="Item" renderColumns="ItemName Article" />
+    <RelColumn name="Item" renderColumns="ItemName Article" filter="IsService" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />

@@ -5752,6 +5752,10 @@ public interface Dictionary {
 
   default String trdExported() {return g("trdExported");}
 
+  default String trdGenerateDocument() {return g("trdGenerateDocument");}
+
+  default String trdGeneratedDocument() {return g("trdGeneratedDocument");}
+
   default String trdInvoice() {return g("trdInvoice");}
 
   default String trdInvoiceId() {return g("trdInvoiceId");}
