@@ -3003,13 +3003,24 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
 
     SqlSelect query =
         new SqlSelect()
-            .addFields(TBL_TASKS, COL_TASK_ID, COL_SUMMARY, COL_STATUS)
+            .addFields(TBL_TASKS, COL_TASK_ID, COL_SUMMARY)
             .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
             .addFields(TBL_TASKS, COL_START_TIME, COL_FINISH_TIME)
             .addEmptyField(COL_DELAYED_HOURS, SqlConstants.SqlDataType.LONG, 0, 0, false)
+            .addFields(TBL_TASKS, COL_STATUS)
+            .addExpr(SqlUtils.concat(
+                SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "''"), "' '",
+                SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
+                ALS_OWNER_NAME)
             .addFrom(TBL_TASKS)
             .addFromLeft(TBL_COMPANIES,
                 sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
+            .addFromInner(TBL_USERS,
+                sys.joinTables(TBL_USERS, TBL_TASKS, COL_OWNER))
+            .addFromInner(TBL_COMPANY_PERSONS,
+                sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+            .addFromInner(TBL_PERSONS,
+                sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
             .setWhere(
                 SqlUtils.and(SqlUtils.equals(TBL_TASKS, COL_EXECUTOR, userID),
                     SqlUtils.notEqual(TBL_TASKS, COL_STATUS, TaskConstants.TaskStatus.COMPLETED),
@@ -3036,8 +3047,18 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
     labels.put(COL_START_TIME, dic.crmStartDate());
     labels.put(COL_FINISH_TIME, dic.crmFinishDate());
     labels.put(COL_DELAYED_HOURS, dic.crmTaskLabelDelayedHours());
+    labels.put(COL_STATUS, dic.crmTaskStatus());
+    labels.put(ALS_OWNER_NAME, dic.crmTaskManager());
 
     return labels;
+  }
+
+  private Map<String,String> getReminderDataEnumKeys() {
+    Map<String, String> enumKeys = new HashMap<>();
+    enumKeys.put(COL_STATUS,
+        NameUtils.getClassName(TaskStatus.class));
+
+    return enumKeys;
   }
 
   public static Map<String, ValueType> getReminderDataTypes() {
@@ -3049,6 +3070,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
     dataTypes.put(COL_START_TIME, ValueType.DATE_TIME);
     dataTypes.put(COL_FINISH_TIME, ValueType.DATE_TIME);
     dataTypes.put(COL_DELAYED_HOURS, ValueType.LONG);
+    dataTypes.put(COL_STATUS, ValueType.INTEGER);
+    dataTypes.put(ALS_OWNER_NAME, ValueType.TEXT);
 
     return dataTypes;
   }
@@ -3101,11 +3124,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule  {
 
     Map<String, String> labels = getReminderDataLabels(dic);
     Map<String, ValueType> format = getReminderDataTypes();
+    Map<String, String> enumKeys = getReminderDataEnumKeys();
 
-    List<String> excludedColumns = new ArrayList<>();
-    excludedColumns.add(COL_STATUS);
-    Document doc = cls.createRemindTemplate(lateTasks, labels, format, null,
-        excludedColumns, BeeConst.STRING_EMPTY, reminderText, userId);
+    Document doc = cls.createRemindTemplate(lateTasks, labels, format, enumKeys,
+        null, BeeConst.STRING_EMPTY, reminderText, userId);
 
     mail.sendMail(accountId, to, subject, doc.buildLines());
     logger.info(TIMER_REMIND_COMPANY_ACTIONS, "mail send, user id", userId,
