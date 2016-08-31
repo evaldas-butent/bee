@@ -88,6 +88,7 @@ public final class TradeConstants {
   public static final String TBL_TRADE_TYPE_TAGS = "TradeTypeTags";
 
   public static final String TBL_EXPENDITURE_TYPES = "ExpenditureTypes";
+  public static final String TBL_TRADE_EXPENDITURES = "TradeExpenditures";
 
   public static final String VAR_VIEW_NAME = "view_name";
   public static final String VAR_ID_LIST = "IdList";
@@ -124,6 +125,7 @@ public final class TradeConstants {
   public static final String VIEW_TRADE_DOCUMENT_TAGS = "TradeDocumentTags";
 
   public static final String VIEW_EXPENDITURE_TYPES = "ExpenditureTypes";
+  public static final String VIEW_TRADE_EXPENDITURES = "TradeExpenditures";
 
   public static final String COL_PURCHASE = "Purchase";
 
@@ -220,6 +222,26 @@ public final class TradeConstants {
 
   public static final String COL_TRADE_PAYMENT_AMOUNT = "PaymentAmount";
 
+  public static final String COL_EXPENDITURE_TYPE_NAME = "ExpenditureTypeName";
+  public static final String COL_EXPENDITURE_TYPE_DEBIT = "Debit";
+  public static final String COL_EXPENDITURE_TYPE_CREDIT = "Credit";
+  public static final String COL_EXPENDITURE_TYPE_COST_BASIS = "CostBasis";
+  public static final String COL_EXPENDITURE_TYPE_SUPPLIER = "Supplier";
+  public static final String COL_EXPENDITURE_TYPE_OPERATION = "Operation";
+  public static final String COL_EXPENDITURE_TYPE_WAREHOUSE = "Warehouse";
+  public static final String COL_EXPENDITURE_TYPE_ITEM = "Item";
+
+  public static final String COL_EXPENDITURE_TYPE = "ExpenditureType";
+  public static final String COL_EXPENDITURE_DATE = "Date";
+  public static final String COL_EXPENDITURE_AMOUNT = "Amount";
+  public static final String COL_EXPENDITURE_CURRENCY = "Currency";
+  public static final String COL_EXPENDITURE_VAT = "Vat";
+  public static final String COL_EXPENDITURE_VAT_IS_PERCENT = "VatIsPercent";
+  public static final String COL_EXPENDITURE_SERIES = "Series";
+  public static final String COL_EXPENDITURE_NUMBER = "Number";
+  public static final String COL_EXPENDITURE_SUPPLIER = "Supplier";
+  public static final String COL_EXPENDITURE_GENERATED_DOCUMENT = "GeneratedDocument";
+
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_PAYER_NAME = "PayerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";
@@ -262,6 +284,7 @@ public final class TradeConstants {
   public static final String GRID_TRADE_STOCK = "TradeStock";
 
   public static final String GRID_EXPENDITURE_TYPES = "ExpenditureTypes";
+  public static final String GRID_TRADE_EXPENDITURES = "TradeExpenditures";
 
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";

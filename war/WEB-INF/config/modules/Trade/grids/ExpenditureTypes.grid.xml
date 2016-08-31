@@ -7,17 +7,21 @@
   <g:columns>
     <DataColumn name="ExpenditureTypeName" visible="true" minWidth="100" />
 
-    <RelColumn name="Debit" renderColumns="DebitCode" choiceColumns="AccountCode AccountName" />
-    <RelColumn name="Credit" renderColumns="CreditCode" choiceColumns="AccountCode AccountName" />
+    <RelColumn name="Debit" renderColumns="DebitCode" choiceColumns="AccountCode AccountName"
+               newRowEnabled="false" />
+    <RelColumn name="Credit" renderColumns="CreditCode" choiceColumns="AccountCode AccountName"
+               newRowEnabled="false" />
 
     <DataColumn name="CostBasis" visible="true" />
 
     <RelColumn name="Supplier" renderColumns="SupplierName" />
 
-    <RelColumn name="Operation" renderColumns="OperationName" filter="OperationType=0" />
-    <RelColumn name="Warehouse" renderColumns="WarehouseCode" />
+    <RelColumn name="Operation" renderColumns="OperationName" filter="OperationType=0"
+               newRowEnabled="false" />
+    <RelColumn name="Warehouse" renderColumns="WarehouseCode" newRowEnabled="false" />
 
-    <RelColumn name="Item" renderColumns="ItemName Article" filter="IsService" />
+    <RelColumn name="Item" renderColumns="ItemName Article" filter="IsService"
+               newRowEnabled="false" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
