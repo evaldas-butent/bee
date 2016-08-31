@@ -6,7 +6,7 @@ import com.butent.bee.shared.data.RowToDouble;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class QuantityReader extends RowToDouble {
+public class QuantityReader implements RowToDouble {
 
   private final int index;
 

@@ -3,8 +3,6 @@ package com.butent.bee.client.modules.calendar;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.gwt.dom.client.Style.Visibility;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -13,6 +11,10 @@ import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -51,18 +53,21 @@ import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -94,9 +99,19 @@ import java.util.Set;
 
 class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEvent.Handler {
 
-  private class DateOrTimeWidgetHandler implements BlurHandler {
+  private class DateOrTimeKeyDownHandler implements KeyDownHandler {
+
     @Override
-    public void onBlur(BlurEvent event) {
+    public void onKeyDown(KeyDownEvent keyDownEvent) {
+      checkOverlap(true);
+    }
+
+  }
+
+  private class TimeMouseDownHandler implements MouseDownHandler {
+
+    @Override
+    public void onMouseDown(MouseDownEvent mouseDownEvent) {
       checkOverlap(true);
     }
   }
@@ -332,7 +347,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private ModalCallback modalCallback;
 
-  private final DateOrTimeWidgetHandler dateOrTimeWidgetHandler = new DateOrTimeWidgetHandler();
+  private KeyDownHandler dateOrTimeKeyDownHandler = new DateOrTimeKeyDownHandler();
+  private MouseDownHandler timeMouseDownHandler = new TimeMouseDownHandler();
 
   private final List<Long> serviceTypes = new ArrayList<>();
   private Long defaultServiceType;
@@ -432,8 +448,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     } else if (BeeUtils.same(name, NAME_START_DATE)) {
       setStartDateWidgetId(widget.getId());
-      if (widget instanceof Editor) {
-        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      if (widget instanceof InputDate) {
+        ((InputDate) widget).addKeyDownHandler(dateOrTimeKeyDownHandler);
       }
       if (widget instanceof InputDate) {
         setDateBounds((InputDate) widget);
@@ -441,14 +457,14 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     } else if (BeeUtils.same(name, NAME_START_TIME)) {
       setStartTimeWidgetId(widget.getId());
-      if (widget instanceof Editor) {
-        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      if (widget instanceof InputTime) {
+        ((InputTime) widget).addKeyDownHandler(dateOrTimeKeyDownHandler);
       }
 
     } else if (BeeUtils.same(name, NAME_END_DATE)) {
       setEndDateWidgetId(widget.getId());
-      if (widget instanceof Editor) {
-        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      if (widget instanceof InputDate) {
+        ((InputDate) widget).addKeyDownHandler(dateOrTimeKeyDownHandler);
       }
       if (widget instanceof InputDate) {
         setDateBounds((InputDate) widget);
@@ -462,8 +478,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     } else if (BeeUtils.same(name, NAME_END_TIME)) {
       setEndTimeWidgetId(widget.getId());
-      if (widget instanceof Editor) {
-        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      if (widget instanceof InputTime) {
+        ((InputTime) widget).addKeyDownHandler(dateOrTimeKeyDownHandler);
       }
       if (widget instanceof InputTime) {
         ((InputTime) widget).addFocusHandler(new FocusHandler() {
@@ -476,13 +492,15 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     } else if (BeeUtils.same(name, NAME_HOURS)) {
       setHourWidgetId(widget.getId());
-      if (widget instanceof Editor) {
-        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      if (widget instanceof InputNumber) {
+        ((InputNumber) widget).addKeyDownHandler(dateOrTimeKeyDownHandler);
+        ((InputNumber) widget).addMouseDownHandler(timeMouseDownHandler);
       }
     } else if (BeeUtils.same(name, NAME_MINUTES)) {
       setMinuteWidgetId(widget.getId());
-      if (widget instanceof Editor) {
-        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      if (widget instanceof InputNumber) {
+        ((InputNumber) widget).addKeyDownHandler(dateOrTimeKeyDownHandler);
+        ((InputNumber) widget).addMouseDownHandler(timeMouseDownHandler);
       }
 
     } else if (BeeUtils.same(name, NAME_COLORS) && widget instanceof HasWidgets) {
@@ -528,6 +546,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     if (!BeeUtils.isEmpty(getEndTimeWidgetId())) {
       getInputTime(getEndTimeWidgetId()).setTime(end);
     }
+
+    checkOverlap(false);
   }
 
   @Override
@@ -604,6 +624,26 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
 
       event.getSelector().setAdditionalFilter(filter);
+
+    } else if (event.getSource() instanceof MultiSelector
+        && (event.getState().equals(State.REMOVED) || event.getState().equals(State.INSERTED))) {
+      checkOverlap(false, ((MultiSelector) event.getSource()).getIds(), true);
+
+    }
+
+  }
+
+  @Override
+  public void onEditEnd(EditEndEvent event, Object source) {
+    super.onEditEnd(event, source);
+    if (event.getWidgetId().equals(getHourWidgetId())
+        || event.getWidgetId().equals(getMinuteWidgetId())
+        || event.getWidgetId().equals(getStartDateWidgetId())
+        || event.getWidgetId().equals(getStartTimeWidgetId())
+        || event.getWidgetId().equals(getEndDateWidgetId())
+        || event.getWidgetId().equals(getEndTimeWidgetId())) {
+
+      checkOverlap(true);
     }
   }
 
@@ -753,7 +793,19 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   private void checkOverlap(boolean whenPeriodChanged) {
-    List<Long> resources = getResources(getFormView().getActiveRow());
+    checkOverlap(whenPeriodChanged, null, false);
+  }
+
+  private void checkOverlap(boolean whenPeriodChanged, List<Long> resourcesList,
+                                                                              boolean fromSelect) {
+    List<Long> resources;
+    if (fromSelect) {
+      resources = resourcesList;
+
+    } else {
+      resources = getResources(getFormView().getActiveRow());
+    }
+
     if (resources.isEmpty()) {
       hideOverlap();
       return;

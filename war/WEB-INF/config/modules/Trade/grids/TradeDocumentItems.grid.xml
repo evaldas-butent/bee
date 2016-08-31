@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="TradeDocumentItems" viewName="TradeDocumentItems"
-        flexGrow="1"
-        newRowCaption="=newItem"
+        flexGrow="1" newRowCaption="=newItem"
 >
   <g:columns>
     <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true">
@@ -46,16 +45,18 @@
     <CalcColumn name="PriceWithVat" type="decimal" caption="=priceWithVat" scale="2" />
     <CalcColumn name="Total" type="decimal" caption="=total" scale="2">
       <style>
-        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+        <bodyStyle>
+          <ui:font>bold</ui:font>
+        </bodyStyle>
       </style>
       <footer aggregate="sum" />
     </CalcColumn>
 
     <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
-      flexGrow="0" visible="false" />
+               newRowEnabled="false" flexGrow="0" visible="false" />
 
     <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"
-      sortBy="EmployeeLastName EmployeeFirstName" visible="false" />
+               sortBy="EmployeeLastName EmployeeFirstName" newRowEnabled="false" visible="false" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />

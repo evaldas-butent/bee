@@ -24,10 +24,7 @@
 
     <DataColumn name="MultipleSegments" editInPlace="true" />
 
-    <DataColumn name="TripPercent" minValue="0" editInPlace="true" />
-    <PropColumn name="Income" type="decimal" caption="=income" format="#.00" />
-
-    <DataColumn name="CargoPercent" minValue="0" editInPlace="true">
+    <DataColumn name="TripPercent" horizontalAlignment="right">
       <style>
         <headerStyle>
           <ui:inline>font-weight:bold;</ui:inline>
@@ -36,7 +33,12 @@
           <ui:inline>font-weight:bold;</ui:inline>
         </bodyStyle>
       </style>
+      <render>
+        <ui:expression>row.Income</ui:expression>
+      </render>
     </DataColumn>
+
+    <DataColumn name="CargoPercent" minValue="0" editInPlace="true" />
   </g:columns>
 
   <xi:include href="columns/Handling.columns.xml" />

@@ -11,9 +11,9 @@
       <footer aggregate="sum" />
     </DataColumn>
 
-    <RelColumn name="PaymentType" renderColumns="PaymentName" />
+    <RelColumn name="PaymentType" renderColumns="PaymentName" newRowEnabled="false" />
     <RelColumn name="PaymentAccount" renderColumns="AccountCode"
-               choiceColumns="AccountCode AccountName" />
+               choiceColumns="AccountCode AccountName" newRowEnabled="false" />
 
     <DataColumn name="PaymentSeries">
       <editor type="string" upperCase="true" />

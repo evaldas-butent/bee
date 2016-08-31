@@ -957,7 +957,7 @@ public class MailPanel extends AbstractFormInterceptor {
     final boolean purge = getCurrentAccount().isTrashFolder(getCurrentFolder())
         || getCurrentAccount().isDraftsFolder(getCurrentFolder());
 
-    Global.confirm(purge ? Localized.dictionary().delete()
+    Global.confirmDelete(purge ? Localized.dictionary().delete()
             : Localized.dictionary().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
         Collections.singletonList(Localized.dictionary().mailMessages(ids.size())), () -> {
           ParameterList params = MailKeeper.createArgs(SVC_REMOVE_MESSAGES);

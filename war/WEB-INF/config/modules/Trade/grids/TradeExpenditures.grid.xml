@@ -4,12 +4,13 @@
         name="TradeExpenditures" viewName="TradeExpenditures"
 >
   <g:columns>
-    <RelColumn name="ExpenditureType" renderColumns="ExpenditureTypeName" visible="true" />
+    <RelColumn name="ExpenditureType" renderColumns="ExpenditureTypeName" newRowEnabled="false"
+               visible="true" />
     <DataColumn name="CostBasis" />
 
     <DataColumn name="Date" visible="true" />
     <DataColumn name="Amount" minWidth="80" visible="true" />
-    <RelColumn name="Currency" visible="true" />
+    <RelColumn name="Currency" newRowEnabled="false" visible="true" />
 
     <DataColumn name="Vat" scale="0" />
     <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" />
@@ -32,8 +33,8 @@
     <DataColumn name="ItemName" label="=item" />
     <DataColumn name="Article" visible="false" />
 
-    <DataColumn name="GeneratedDocument" editSource="GeneratedDocument"
-                editViewName="TradeDocuments" readOnly="true" />
+    <DataColumn name="GeneratedDocument" readOnly="true" cellType="html"
+                sortable="true" exportable="false" />
 
     <DataColumn name="DebitCode" label="=debit" />
     <DataColumn name="CreditCode" label="=credit" />

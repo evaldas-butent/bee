@@ -333,7 +333,7 @@ class TaskDialog extends DialogBox {
     }
   }
 
-  private Widget getChild(String id) {
+  Widget getChild(String id) {
     return DomUtils.getChildQuietly(getContent(), id);
   }
 

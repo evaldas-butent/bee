@@ -1,11 +1,13 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
@@ -337,6 +339,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       response = getCargoTotal(BeeUtils.toLong(reqInfo.getParameter(COL_CARGO)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY)));
 
+    } else if (BeeUtils.same(svc, SVC_UPDATE_FREIGHT)) {
+      response = updateFreight(reqInfo.getParameterLong(COL_CARGO_TRIP),
+          reqInfo.getParameterDouble(COL_AMOUNT),
+          BeeUtils.toBoolean(reqInfo.getParameter(COL_TRIP_PERCENT)));
+
     } else if (BeeUtils.same(svc, SVC_TRIP_PROFIT_REPORT)) {
       response = rep.getTripProfitReport(reqInfo);
 
@@ -561,23 +568,41 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       @Subscribe
       @AllowConcurrentEvents
       public void fillTripCargoIncomes(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_TRIP_CARGO) && event.hasData()) {
+        if (event.isAfter(VIEW_TRIP_CARGO, VIEW_CARGO_TRIPS) && event.hasData()) {
           BeeRowSet rowset = event.getRowset();
           int cargoIndex = rowset.getColumnIndex(COL_CARGO);
+          int tripIndex = rowset.getColumnIndex(COL_TRIP);
 
-          if (BeeConst.isUndef(cargoIndex)) {
+          if (BeeConst.isUndef(cargoIndex) || BeeConst.isUndef(tripIndex)) {
             return;
           }
-          String crs = rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                  .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
-              null, BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
+          SqlSelect query = null;
+
+          for (Long tripId : rowset.getDistinctLongs(tripIndex)) {
+            SqlSelect subQuery = new SqlSelect().addConstant(tripId, COL_TRIP);
+
+            if (Objects.isNull(query)) {
+              query = subQuery;
+            } else {
+              query.addUnion(subQuery);
+            }
+          }
+          String crs = rep.getTripIncomes(query, prm.getRelation(PRM_CURRENCY),
+              BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
 
           SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
           qs.sqlDropTemp(crs);
 
+          Table<Long, Long, String> amounts = HashBasedTable.create();
+
+          for (SimpleRow row : rs) {
+            amounts.put(row.getLong(COL_TRIP), row.getLong(COL_CARGO),
+                BeeUtils.round(BeeUtils.nvl(row.getValue("TripIncome"), "0"), 2) + " (" +
+                    BeeUtils.removeTrailingZeros(row.getValue(COL_TRIP_PERCENT)) + "%)");
+          }
           for (BeeRow row : rowset.getRows()) {
-            row.setProperty(VAR_INCOME, rs.getValueByKey(COL_CARGO, row.getString(cargoIndex),
-                "TripIncome"));
+            row.setProperty(VAR_INCOME,
+                amounts.get(row.getLong(tripIndex), row.getLong(cargoIndex)));
           }
         }
       }
@@ -4110,5 +4135,55 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
     }
     return response;
+  }
+
+  private ResponseObject updateFreight(Long id, Double amount, boolean percentMode) {
+    long cargo = qs.getLong(new SqlSelect()
+        .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+        .addFrom(TBL_CARGO_TRIPS)
+        .setWhere(sys.idEquals(TBL_CARGO_TRIPS, id)));
+
+    if (!DataUtils.isId(cargo)) {
+      return ResponseObject.error(Localized.dictionary().noData());
+    }
+    double availablePercent = BeeUtils.max(100
+        - BeeUtils.round(BeeUtils.unbox(qs.getDouble(new SqlSelect()
+        .addSum(TBL_CARGO_TRIPS, COL_TRIP_PERCENT)
+        .addFrom(TBL_CARGO_TRIPS)
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CARGO_TRIPS, COL_CARGO, cargo),
+            SqlUtils.notEqual(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), id))))), 2), 0.0);
+
+    Double percent = null;
+
+    if (Objects.nonNull(amount)) {
+      percent = BeeUtils.round(BeeUtils.toNonNegativeInt(amount * 100) / 100.0, 2);
+    }
+    if (BeeUtils.isPositive(percent)) {
+      if (percentMode) {
+        if (percent > availablePercent) {
+          return ResponseObject.error(percent + "% > " + availablePercent + "%");
+        }
+      } else {
+        String als = SqlUtils.uniqueName();
+
+        double total = BeeUtils.unbox(qs.getDouble(new SqlSelect()
+            .addFields(als, "CargoIncome")
+            .addFrom(rep.getCargoIncomeQuery(new SqlSelect().addConstant(cargo, COL_CARGO),
+                prm.getRelation(PRM_CURRENCY),
+                BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))), als)));
+
+        double availableAmount = BeeUtils.round(total / 100 * availablePercent, 2);
+
+        if (percent > availableAmount) {
+          return ResponseObject.error(percent + " > " + availableAmount);
+        }
+        percent = BeeUtils.round(percent / total * 100, 2);
+      }
+    }
+    qs.updateData(new SqlUpdate(TBL_CARGO_TRIPS)
+        .addConstant(COL_TRIP_PERCENT, percent)
+        .setWhere(sys.idEquals(TBL_CARGO_TRIPS, id)));
+
+    return ResponseObject.emptyResponse();
   }
 }
