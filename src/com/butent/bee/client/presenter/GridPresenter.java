@@ -64,6 +64,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.ModificationPreviewer;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -632,10 +633,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           @Override
           public void onSuccess(BeeRow result) {
-            RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), result, event.getSourceId());
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(result);
             }
+            RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), result, event.getSourceId());
           }
         });
   }
@@ -707,10 +708,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           @Override
           public void onSuccess(BeeRow row) {
-            RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(row);
             }
+            RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
           }
         });
   }
@@ -864,23 +865,25 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     Provider provider;
     CellGrid display = view.getGridView().getGrid();
+    ModificationPreviewer modificationPreviewer = view.getGridView();
     NotificationListener notificationListener = view.getGridView();
 
     switch (providerType) {
       case ASYNC:
-        provider = new AsyncProvider(display, this, notificationListener, viewName, columns,
-            idColumnName, versionColumnName, immutableFilter, cachingPolicy, parentFilters,
-            userFilter);
+        provider = new AsyncProvider(display, this, modificationPreviewer, notificationListener,
+            viewName, columns, idColumnName, versionColumnName,
+            immutableFilter, cachingPolicy, parentFilters, userFilter);
         break;
 
       case CACHED:
-        provider = new CachedProvider(display, this, notificationListener, viewName, columns,
-            idColumnName, versionColumnName, immutableFilter, rowSet, parentFilters, userFilter);
+        provider = new CachedProvider(display, this, modificationPreviewer, notificationListener,
+            viewName, columns, idColumnName, versionColumnName,
+            immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
       case LOCAL:
-        provider = new LocalProvider(display, this, notificationListener, viewName, columns,
-            immutableFilter, rowSet, parentFilters, userFilter);
+        provider = new LocalProvider(display, this, modificationPreviewer, notificationListener,
+            viewName, columns, immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
       default:

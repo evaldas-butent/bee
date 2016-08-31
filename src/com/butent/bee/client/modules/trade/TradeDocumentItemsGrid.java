@@ -10,6 +10,9 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.HasRowValue;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
@@ -163,62 +166,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public void afterDeleteRow(long rowId) {
-    if (tdsSupplier != null && tdsSupplier.get().deleteItem(rowId)) {
-      fireTdsChange();
-    }
-
-    super.afterDeleteRow(rowId);
-  }
-
-  @Override
-  public void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
-      boolean rowMode) {
-
-    if (column != null && result != null && tdsSupplier != null) {
-      boolean fire = false;
-
-      switch (column.getId()) {
-        case COL_TRADE_ITEM_QUANTITY:
-          fire = tdsSupplier.get().updateQuantity(result.getId(),
-              BeeUtils.toDoubleOrNull(newValue));
-          break;
-
-        case COL_TRADE_ITEM_PRICE:
-          fire = tdsSupplier.get().updatePrice(result.getId(),
-              BeeUtils.toDoubleOrNull(newValue));
-          break;
-
-        case COL_TRADE_DOCUMENT_ITEM_DISCOUNT:
-          fire = tdsSupplier.get().updateDiscount(result.getId(),
-              BeeUtils.toDoubleOrNull(newValue));
-          break;
-
-        case COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT:
-          fire = tdsSupplier.get().updateDiscountIsPercent(result.getId(),
-              BeeUtils.toBooleanOrNull(newValue));
-          break;
-
-        case COL_TRADE_DOCUMENT_ITEM_VAT:
-          fire = tdsSupplier.get().updateVat(result.getId(),
-              BeeUtils.toDoubleOrNull(newValue));
-          break;
-
-        case COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT:
-          fire = tdsSupplier.get().updateVatIsPercent(result.getId(),
-              BeeUtils.toBooleanOrNull(newValue));
-          break;
-      }
-
-      if (fire) {
-        fireTdsChange();
-      }
-    }
-
-    super.afterUpdateCell(column, oldValue, newValue, result, rowMode);
-  }
-
-  @Override
   public GridInterceptor getInstance() {
     return new TradeDocumentItemsGrid();
   }
@@ -264,6 +211,80 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     super.onDataReceived(rows);
+  }
+
+  @Override
+  public boolean previewCellUpdate(CellUpdateEvent event) {
+    if (event.hasColumn() && tdsSupplier != null
+        && tdsSupplier.get().containsItem(event.getRowId())) {
+
+      long id = event.getRowId();
+      String value = event.getValue();
+
+      boolean fire = false;
+
+      switch (event.getSourceName()) {
+        case COL_TRADE_ITEM_QUANTITY:
+          fire = tdsSupplier.get().updateQuantity(id, BeeUtils.toDoubleOrNull(value));
+          break;
+
+        case COL_TRADE_ITEM_PRICE:
+          fire = tdsSupplier.get().updatePrice(id, BeeUtils.toDoubleOrNull(value));
+          break;
+
+        case COL_TRADE_DOCUMENT_ITEM_DISCOUNT:
+          fire = tdsSupplier.get().updateDiscount(id, BeeUtils.toDoubleOrNull(value));
+          break;
+
+        case COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT:
+          fire = tdsSupplier.get().updateDiscountIsPercent(id, BeeUtils.toBooleanOrNull(value));
+          break;
+
+        case COL_TRADE_DOCUMENT_ITEM_VAT:
+          fire = tdsSupplier.get().updateVat(id, BeeUtils.toDoubleOrNull(value));
+          break;
+
+        case COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT:
+          fire = tdsSupplier.get().updateVatIsPercent(id, BeeUtils.toBooleanOrNull(value));
+          break;
+      }
+
+      if (fire) {
+        fireTdsChange();
+      }
+    }
+
+    return super.previewCellUpdate(event);
+  }
+
+  @Override
+  public boolean previewMultiDelete(MultiDeleteEvent event) {
+    if (tdsSupplier != null) {
+      boolean fire = false;
+
+      for (long id : event.getRowIds()) {
+        if (tdsSupplier.get().containsItem(id)) {
+          tdsSupplier.get().deleteItem(id);
+          fire = true;
+        }
+      }
+
+      if (fire) {
+        fireTdsChange();
+      }
+    }
+
+    return super.previewMultiDelete(event);
+  }
+
+  @Override
+  public boolean previewRowDelete(RowDeleteEvent event) {
+    if (tdsSupplier != null && tdsSupplier.get().containsItem(event.getRowId())) {
+      tdsSupplier.get().deleteItem(event.getRowId());
+      fireTdsChange();
+    }
+
+    return super.previewRowDelete(event);
   }
 
   private void fireTdsChange() {

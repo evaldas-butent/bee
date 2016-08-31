@@ -89,6 +89,11 @@
             </Table>
           </page>
 
+          <page>
+            <text>=expenditures</text>
+            <ChildGrid name="TradeExpenditures" relColumn="TradeDocument" />
+          </page>
+
           <page data="Dimensions">
             <text>=dimensions</text>
             <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />

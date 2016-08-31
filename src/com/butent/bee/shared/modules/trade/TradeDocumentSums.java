@@ -266,6 +266,14 @@ public class TradeDocumentSums {
     payments.clear();
   }
 
+  public boolean containsItem(Long id) {
+    return items.containsKey(id);
+  }
+
+  public boolean containsPayment(Long id) {
+    return payments.containsKey(id);
+  }
+
   public boolean deleteItem(Long id) {
     return items.remove(id) != null;
   }

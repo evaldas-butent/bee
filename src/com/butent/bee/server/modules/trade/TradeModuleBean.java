@@ -267,12 +267,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
    * Returns map based collection of company and e-mail address'es list. This collection formed from
    * data source table of Contacts where has relation of Companies table. It must also be not empty
    * the RemindEmail field in Contacts data source table.
-   *
+   * <p>
    * This collection using send reports or documents over e-mail liked with company Id.
    *
    * @param companyIds List of company Id's using to filter company email of contacts.
    * @return collection of company contact e-mails where key of map is companyId and value of map is
-   *         collection of email address.
+   * collection of email address.
    * @throws BeeRuntimeException throws if collection {@code companyIds} is empty or null.
    */
   public Multimap<Long, String> getCompaniesRemindEmailAddresses(List<Long> companyIds) {
@@ -282,19 +282,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     Multimap<Long, String> emails = HashMultimap.create();
 
     SqlSelect select = new SqlSelect()
-      .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
-      .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
-      .addFrom(TBL_COMPANIES)
-      .addFromInner(TBL_COMPANY_CONTACTS, sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS,
-        COL_COMPANY))
-      .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))
-      .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-      .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
-        companyIds), SqlUtils.notNull(TBL_COMPANY_CONTACTS, COL_REMIND_EMAIL)))
+        .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+        .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
+        .addFrom(TBL_COMPANIES)
+        .addFromInner(TBL_COMPANY_CONTACTS, sys.joinTables(TBL_COMPANIES, TBL_COMPANY_CONTACTS,
+            COL_COMPANY))
+        .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))
+        .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+            companyIds), SqlUtils.notNull(TBL_COMPANY_CONTACTS, COL_REMIND_EMAIL)))
         .setDistinctMode(true);
 
     SimpleRowSet companiesEmails = qs.getData(select);
-
 
     for (String[] row : companiesEmails.getRows()) {
       Long companyId = BeeUtils.toLong(row[companiesEmails.getColumnIndex(COL_COMPANY)]);
@@ -1095,8 +1094,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       try {
         ResponseObject response = mail.sendMail(senderMailAccountId, ArrayUtils.toArray(
-                Lists.newArrayList(emails.get(companyId))), null, null, subject, mailDocument
-                .buildLines(), null, true);
+            Lists.newArrayList(emails.get(companyId))), null, null, subject, mailDocument
+            .buildLines(), null, true);
 
         if (response.hasWarnings()) {
           resp.addWarning((Object) response.getWarnings());
@@ -1284,7 +1283,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 data.getValue(COL_COMPANY_TYPE));
 
             company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-                .importClient(company, data.getValue(COL_COMPANY_CODE),
+                .importClient(BeeUtils.toString(id), company, data.getValue(COL_COMPANY_CODE),
                     data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
                     data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
                     data.getValue(COL_COUNTRY));

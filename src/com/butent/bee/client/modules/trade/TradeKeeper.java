@@ -92,6 +92,10 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_FOREGROUND, csp);
 
+    csp = ColorStyleProvider.createDefault(VIEW_EXPENDITURE_TYPES);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_EXPENDITURE_TYPES, COL_BACKGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_EXPENDITURE_TYPES, COL_FOREGROUND, csp);
+
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENTS, COL_TRADE_OPERATION,
         ColorStyleProvider.create(VIEW_TRADE_DOCUMENTS,
             ALS_OPERATION_BACKGROUND, ALS_OPERATION_FOREGROUND));

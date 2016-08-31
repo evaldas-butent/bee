@@ -368,6 +368,7 @@
       <xs:enumeration value="EventHistory" />
       <xs:enumeration value="ExpeditionTypes" />
       <xs:enumeration value="ExpeditionTrips" />
+      <xs:enumeration value="ExpenditureTypes" />
       <xs:enumeration value="ExtendedProperties" />
       <xs:enumeration value="Favorites" />
       <xs:enumeration value="FamilyRelationTypes" />
@@ -562,6 +563,7 @@
       <xs:enumeration value="TradeDocuments" />
       <xs:enumeration value="TradeDocumentTags" />
       <xs:enumeration value="TradeDocumentTypes" />
+      <xs:enumeration value="TradeExpenditures" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />
       <xs:enumeration value="TradePayments" />

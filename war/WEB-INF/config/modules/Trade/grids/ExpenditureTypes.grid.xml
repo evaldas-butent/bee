@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="ExpenditureTypes" viewName="ExpenditureTypes" caption="=trdExpenditureTypes"
+>
+  <g:columns>
+    <DataColumn name="ExpenditureTypeName" visible="true" minWidth="100" />
+
+    <RelColumn name="Debit" renderColumns="DebitCode" choiceColumns="AccountCode AccountName" />
+    <RelColumn name="Credit" renderColumns="CreditCode" choiceColumns="AccountCode AccountName" />
+
+    <DataColumn name="CostBasis" visible="true" />
+
+    <RelColumn name="Supplier" renderColumns="SupplierName" />
+
+    <RelColumn name="Operation" renderColumns="OperationName" filter="OperationType=0" />
+    <RelColumn name="Warehouse" renderColumns="WarehouseCode" />
+
+    <RelColumn name="Item" renderColumns="ItemName Article" filter="IsService" />
+  </g:columns>
+
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="Background" updateMode="row" minWidth="100">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row" minWidth="100">
+      <editor type="color" />
+    </DataColumn>
+  </g:columns>
+</g:Grid>

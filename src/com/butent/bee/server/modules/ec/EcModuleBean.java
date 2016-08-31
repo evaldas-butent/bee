@@ -3181,7 +3181,8 @@ public class EcModuleBean implements BeeModule {
           .addFields(TBL_ORDERS, COL_ORDER_NUMBER)
           .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_SUPPLIER_CODE)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY)
-          .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+          .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
+              sys.getIdName(TBL_COMPANIES))
           .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
           .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
           .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
@@ -3205,10 +3206,10 @@ public class EcModuleBean implements BeeModule {
 
       try {
         company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-            .importClient(order.getValue(COL_COMPANY), order.getValue(COL_COMPANY_CODE),
-                order.getValue(COL_COMPANY_VAT_CODE), order.getValue(COL_ADDRESS),
-                order.getValue(COL_POST_INDEX), order.getValue(COL_CITY),
-                order.getValue(COL_COUNTRY));
+            .importClient(order.getValue(sys.getIdName(TBL_COMPANIES)), order.getValue(COL_COMPANY),
+                order.getValue(COL_COMPANY_CODE), order.getValue(COL_COMPANY_VAT_CODE),
+                order.getValue(COL_ADDRESS), order.getValue(COL_POST_INDEX),
+                order.getValue(COL_CITY), order.getValue(COL_COUNTRY));
       } catch (BeeException e) {
         response = response.addError(e);
       }
