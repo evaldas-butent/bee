@@ -58,6 +58,8 @@
                editViewName="TripPurchaseInvoices" />
 
     <DataColumn name="ExternalID" visible="false" />
+
+    <RelColumn name="Creator" readOnly="true" />
   </g:columns>
 
   <g:rowStyle>

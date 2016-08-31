@@ -2474,6 +2474,8 @@ public interface Dictionary {
 
   default String enterTime() {return g("enterTime");}
 
+  default String enteredBy() {return g("enteredBy");}
+
   default String error() {return g("error");}
 
   default String errorMessage() {return g("errorMessage");}

@@ -33,6 +33,7 @@
 
     <Numeric name="OldPrice" precision="15" scale="5" />
     <DateTime name="Exported" />
+    <Relation name="Creator" relation="Users" label="=enteredBy" defExpr="CURRENT_USER" />
   </Fields>
   <Indexes>
     <Index fields="ExternalID" />
