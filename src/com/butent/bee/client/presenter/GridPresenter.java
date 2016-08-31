@@ -18,6 +18,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.HistoryHandler;
@@ -53,7 +54,6 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -332,8 +332,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
               DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
               deleteCallback.onConfirm();
             }
-          }, BeeConst.UNDEF, null, StyleUtils.className(FontSize.XX_LARGE),
-          StyleUtils.className(FontSize.MEDIUM), null, null);
+          }, BeeConst.UNDEF, MessageBoxes.STYLE_MASSAGE_BOX_DELETE, null, null, null, null);
     }
   }
 

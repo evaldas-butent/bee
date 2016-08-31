@@ -151,6 +151,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private List<Long> projectUsers;
   private Map<String, Pair<Long, String>> dbaParameters = Maps.newConcurrentMap();
+  private String prmEndOfWorkDay;
 
   private boolean isDefaultLayout;
 
@@ -956,6 +957,9 @@ class TaskEditor extends ProductSupportInterceptor {
         form.updateRow(data, true);
       }
     });
+
+    Global.getParameter(PRM_END_OF_WORK_DAY, parameter -> setPrmEndOfWorkDay(parameter));
+
     return false;
   }
 
@@ -1643,6 +1647,22 @@ class TaskEditor extends ProductSupportInterceptor {
 
     final String endId = dialog.addDateTime(Localized.dictionary().crmFinishDate(), true, null);
 
+    if (dialog.getChild(endId) instanceof InputDateTime) {
+      InputDateTime input = (InputDateTime) dialog.getChild(endId);
+      JustDate minTime = new JustDate();
+      input.setMinDate(minTime);
+
+      minTime.increment();
+      DateTime extendTime = new DateTime(minTime.getDateTime().getTime());
+
+      if (BeeUtils.isPositive(TimeUtils.parseTime(getPrmEndOfWorkDay()))) {
+        extendTime = new DateTime(new JustDate().getDateTime().getTime()
+            + TimeUtils.parseTime(getPrmEndOfWorkDay()));
+      }
+
+      input.setDateTime(extendTime);
+    }
+
     final String cid = dialog.addComment(false);
 
     dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), () -> {
@@ -1887,6 +1907,10 @@ class TaskEditor extends ProductSupportInterceptor {
     return getFormView().getActiveRow().getDateTime(getFormView().getDataIndex(colName));
   }
 
+  private String getPrmEndOfWorkDay() {
+    return prmEndOfWorkDay;
+  }
+
   private Long getExecutor() {
     return getLong(COL_EXECUTOR);
   }
@@ -2077,6 +2101,10 @@ class TaskEditor extends ProductSupportInterceptor {
       StyleUtils.autoHeight(taskWidget.getElement());
       split.updateCenter(taskEventsWidget);
     }
+  }
+
+  private void setPrmEndOfWorkDay(String prmEndOfWorkDay) {
+    this.prmEndOfWorkDay = prmEndOfWorkDay;
   }
 
   private void setLateIndicatorHtml(Pair<AbstractSlackRenderer.SlackKind, Long> data) {
