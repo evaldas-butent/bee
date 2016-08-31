@@ -41,6 +41,7 @@
       <HiddenColumn name="CargoHandling" alias="DefaultHandling" />
 
       <SimpleColumn name="Directions" editable="true"/>
+      <SimpleColumn name="CmrCopy" editable="true" />
     </SimpleJoin>
 
     <SimpleColumn name="CargoHandling" />
