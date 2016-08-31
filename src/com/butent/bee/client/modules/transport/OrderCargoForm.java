@@ -260,6 +260,11 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           widget.getElement().setInnerText(response.getResponseAsString());
         }
       });
+      ChildGrid grid = (ChildGrid) getWidgetByName(VIEW_CARGO_TRIPS);
+
+      if (Objects.nonNull(grid) && Objects.nonNull(grid.getPresenter())) {
+        grid.getPresenter().refresh(false, false);
+      }
     }
   }
 

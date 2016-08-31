@@ -330,7 +330,7 @@ public class TransportReportsBean {
   }
 
   /**
-   * Returns Temporary table name with calculated trip incomes by each cargo.
+   * Returns Temporary table name with calculated trip percents and incomes by each cargo.
    *
    * @param trips query filter with <b>unique</b> "Trip" values.
    * @param currency currency to convert to.
@@ -338,6 +338,7 @@ public class TransportReportsBean {
    * @return Temporary table name with following structure: <br>
    * "Trip" - trip ID <br>
    * "Cargo" - cargo ID <br>
+   * "TripPercent" - calculated trip percent <br>
    * "TripIncome" - total trip income <br>
    */
   public String getTripIncomes(SqlSelect trips, Long currency, boolean woVat) {
@@ -351,7 +352,7 @@ public class TransportReportsBean {
             .addFromInner(trips, alias, SqlUtils.joinUsing(TBL_CARGO_TRIPS, alias, COL_TRIP)));
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
-        .addFields(tmpCargoTrip, COL_CARGO, COL_TRIP)
+        .addFields(tmpCargoTrip, COL_CARGO, COL_TRIP, COL_TRIP_PERCENT)
         .addExpr(SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(subq, "CargoIncome"), 100),
             SqlUtils.field(tmpCargoTrip, COL_TRIP_PERCENT)), "TripIncome")
         .addFrom(tmpCargoTrip)
