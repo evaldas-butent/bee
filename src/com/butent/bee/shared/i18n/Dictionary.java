@@ -4875,6 +4875,8 @@ public interface Dictionary {
 
   default String trChooseForwarder() {return g("trChooseForwarder");}
 
+  default String trCmrCopy() {return g("trCmrCopy");}
+
   default String trCommandCreateNewOrder() {return g("trCommandCreateNewOrder");}
 
   default String trCommandCreateNewUser() {return g("trCommandCreateNewUser");}

@@ -158,7 +158,9 @@
               <CheckBox source="FreightInsurance" />
             </row>
             <row>
-              <cell colSpan="5">
+              <text />
+              <CheckBox source="CmrCopy" />
+              <cell colSpan="3">
                 <text />
               </cell>
               <CheckBox source="CustomsBrokerage" />

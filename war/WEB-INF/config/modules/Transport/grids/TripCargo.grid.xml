@@ -57,5 +57,6 @@
     <DataColumn name="Ordinal" visible="false" />
 
     <DataColumn name="Directions" editInPlace="true" />
+    <DataColumn name="CmrCopy" caption="=trCmrCopy" editInPlace="true" />
   </g:columns>
 </g:Grid>

@@ -71,5 +71,7 @@
         </ui:function>
       </render>
     </CalcColumn>
+
+    <DataColumn name="CmrCopy" caption="=trCmrCopy" sortable="false" />
   </g:columns>
 </g:Grid>

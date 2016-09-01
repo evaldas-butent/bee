@@ -52,5 +52,7 @@
 
     <Relation name="CargoType" relation="CargoTypes" label="=trCargoType" />
     <Relation name="CargoGroup" relation="CargoGroups" label="=group" />
+
+    <Boolean name="CmrCopy" label="=trCmrCopy" />
   </Fields>
 </Table>
