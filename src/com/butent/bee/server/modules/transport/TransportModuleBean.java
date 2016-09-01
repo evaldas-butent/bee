@@ -553,8 +553,21 @@ public class TransportModuleBean implements BeeModule {
         if (event.isBefore(VIEW_TRIPS, VIEW_EXPEDITION_TRIPS)
             && BeeConst.isUndef(DataUtils.getColumnIndex(COL_TRIP_NO, event.getColumns()))) {
 
-          String prefix = prm.getText(PRM_TRIP_PREFIX);
+          BeeParameter parameter = prm.getParameter(PRM_TRIP_PREFIX);
+          String prefix;
 
+          if (parameter.supportsUsers()) {
+            Long userId;
+
+            if (!BeeConst.isUndef(DataUtils.getColumnIndex(COL_TRIP_MANAGER, event.getColumns()))) {
+              userId = DataUtils.getLong(event.getColumns(), event.getRow(), COL_TRIP_MANAGER);
+            } else {
+              userId = usr.getCurrentUserId();
+            }
+            prefix = parameter.getText(userId);
+          } else {
+            prefix = parameter.getText();
+          }
           if (!BeeUtils.isEmpty(prefix)) {
             event.addValue(new BeeColumn(COL_TRIP_NO),
                 Value.getValue(qs.getNextNumber(TBL_TRIPS, COL_TRIP_NO, prefix, null)));
