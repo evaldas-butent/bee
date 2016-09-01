@@ -42,6 +42,8 @@
     <SimpleJoin joinType="LEFT" name="CargoGroup">
       <SimpleColumn name="CargoGroupName" />
     </SimpleJoin>
+
+    <SimpleColumn name="CmrCopy" />
   </Columns>
   <Order>
     <OrderBy column="LoadingDate" />

@@ -114,6 +114,8 @@
           </ExternalJoin>
         </SimpleJoin>
       </ExternalJoin>
+
+      <SimpleColumn name="CmrCopy" />
     </ExternalJoin>
   </Columns>
   <Order>

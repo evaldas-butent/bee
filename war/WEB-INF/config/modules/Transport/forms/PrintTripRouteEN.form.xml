@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY form "PrintTripRoute">
+    <!ENTITY nbsp "<Label text=&#34;&amp;#160;&#34; />">
+    <!ENTITY emptyRow "<row>&nbsp;<text /><text /><text /><text /><text /><text /></row>">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="PrintTripRouteEN" caption="Trip sheet" disabledActions="save"
+        width="70" widthUnit="%" height="90" heightUnit="%"
+    >
+
+  <FlowPanel class="bee-PrintableForm" style="font-family:Arial;">
+    <css id="&form;">
+      .&form;-table {border-collapse:collapse; width:100%;}
+      .&form;-table td {border:1px solid black; padding:2px;}
+    </css>
+
+    <Image url="images/hop_header.jpg" style="display:block; margin:auto;" />
+
+    <Label html="TRUCK TRIP SHEET"
+           style="text-align:center; font-weight:bold;" />
+    <TextLabel style="text-align:center;">
+      <renderToken source="TripNo" prefix="No. " />
+    </TextLabel>
+
+    <br />
+
+    <Table kind="output" class="&form;-table">
+      <col index="0" cellStyle="width:30%; text-align:left; font-weight:bold;" />
+      <row>
+        <Label text="Date of issue" />
+        <TextLabel>
+          <render>
+            <ui:expression>new Date().toISOString().substring(0, 10)</ui:expression>
+          </render>
+        </TextLabel>
+      </row>
+      <row>
+        <Label text="Drivers" />
+        <FlowPanel>
+          <TextLabel source="DriverName" inline="true" />
+          <FlowPanel name="TripDriversAllContainer" style="display:inline;">
+            <InlineLabel text=", " />
+            <InlineLabel name="TripDriversAll" />
+          </FlowPanel>
+        </FlowPanel>
+      </row>
+      <row>
+        <Label text="Truck registration number" />
+        <TextLabel source="VehicleNumber" />
+      </row>
+      <row>
+        <Label text="Semitrailer registration number" />
+        <TextLabel source="TrailerNumber" />
+      </row>
+      <row>
+        <Label text="TIR number" />
+        <text />
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" class="&form;-table" style="text-align:center;">
+      <col index="0" cellStyle="width:30%; text-align:left; font-weight:bold;" />
+      <row style="font-weight:bold;">
+        <text />
+        <Label text="Before the trip" />
+        <Label text="After the trip" />
+      </row>
+      <row>
+        <Label text="Date" />
+        <DateLabel source="DateFrom" />
+        <text />
+      </row>
+      <row>
+        <Label text="Odometer" />
+        <TextLabel source="SpeedometerBefore" />
+        <text />
+      </row>
+      <row>
+        <Label text="Fuel residue" />
+        <TextLabel source="FuelBefore" />
+        <text />
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" class="&form;-table">
+      <row>
+        <Label text="Route" style="text-align:center; font-weight:bold;" />
+      </row>
+      <row>
+        <TextLabel source="Route" />
+      </row>
+      <row>
+        &nbsp;
+      </row>
+      <row>
+        &nbsp;
+      </row>
+      <row>
+        &nbsp;
+      </row>
+    </Table>
+
+    <br />
+    <Label text="Route specification:" style="font-weight:bold;" />
+
+    <Table kind="output" class="&form;-table" style="font-weight:bold; text-align:center;">
+      <row>
+        <cell colSpan="2" style="width:35%;">
+          <Label text="Departed from" />
+        </cell>
+        <cell colSpan="2" style="width:35%;">
+          <Label text="Arrived to" />
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Distance in kilometers" />
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Cargo weight tonnes" />
+        </cell>
+        <cell rowSpan="2" style="width:10%;">
+          <Label text="CMR No." />
+        </cell>
+      </row>
+      <row>
+        <Label text="(Country, city)" />
+        <Label text="(Date)" />
+        <Label text="(Country, city)" />
+        <Label text="(Date)" />
+      </row>
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+      &emptyRow;
+    </Table>
+
+    <br />
+    <br />
+
+    <Table kind="output" style="white-space:nowrap; width:100%;">
+      <col index="0" cellStyle="text-align:left;" />
+      <row>
+        <Label text="Driver" style="margin-right:1em;" />
+        <TextLabel source="DriverName" />
+      </row>
+      <row>
+        <text />
+        <cell style="border-top:1px solid black; font-size:x-small; text-align:center; width:100%;">
+          <Label text="(name, surname, signature)" />
+        </cell>
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" name="TripDriversAll2Container" style="white-space:nowrap; width:100%;">
+      <col index="0" cellStyle="text-align:left;" />
+      <row>
+        <Label text="Second driver" style="margin-right:1em;" />
+        <Label name="TripDriversAll2" />
+      </row>
+      <row>
+        <text />
+        <cell style="border-top:1px solid black; font-size:x-small; text-align:center; width:100%;">
+          <Label text="(name, surname, signature)" />
+        </cell>
+      </row>
+    </Table>
+
+    <br />
+
+    <Table kind="output" style="white-space:nowrap; width:100%;">
+      <col index="0" cellStyle="text-align:left;" />
+      <row>
+        <Label text="Released by" style="margin-right:1em;" />
+        <TextLabel name="User" />
+      </row>
+      <row>
+        <text />
+        <cell style="border-top:1px solid black; font-size:x-small; text-align:center; width:100%;">
+          <Label text="(name, surname, signature)" />
+        </cell>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>
