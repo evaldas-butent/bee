@@ -10,6 +10,15 @@
             choiceColumns="Description LoadingDate LoadingCountryCode UnloadingDate UnloadingCountryCode" />
   <Columns>
     <SimpleColumn name="Order" />
+    <SimpleJoin joinType="LEFT" name="Order">
+      <SimpleColumn name="Customer" />
+      <SimpleJoin joinType="LEFT" name="Customer">
+        <SimpleColumn name="Name" alias="CustomerName" />
+        <SimpleJoin joinType="LEFT" name="CompanyType">
+          <SimpleColumn name="Name" alias="CustomerTypeName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
 
     <xi:include href="viewcolumns/CargoInfo.viewcolumns.xml" />
 

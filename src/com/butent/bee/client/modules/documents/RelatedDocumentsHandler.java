@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -60,18 +61,36 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
     }
 
     if (parentRow != null
-        && BeeUtils.same(parentForm.getFormName(), ProjectConstants.FORM_PROJECT)) {
+        && BeeUtils.inList(parentForm.getFormName(), ProjectConstants.FORM_PROJECT,
+                              TransportConstants.FORM_ORDER, TransportConstants.FORM_CARGO)) {
 
       int idxCmp = info.getColumnIndex(COL_DOCUMENT_COMPANY);
       int idxCmpName = info.getColumnIndex(ALS_DOCUMENT_COMPANY_NAME);
-      int idxParCmp = parentForm.getDataIndex(ProjectConstants.COL_COMAPNY);
-      int idxParCmpName = parentForm.getDataIndex(ProjectConstants.ALS_PROJECT_COMPANY_NAME);
+      int idxParCmp = BeeConst.UNDEF;
+      int idxParCmpName = BeeConst.UNDEF;
+      int idxParCmpTypeName = BeeConst.UNDEF;
+
+      if (BeeUtils.same(parentForm.getFormName(), ProjectConstants.FORM_PROJECT)) {
+        idxParCmp = parentForm.getDataIndex(ProjectConstants.COL_COMAPNY);
+        idxParCmpName = parentForm.getDataIndex(ProjectConstants.ALS_PROJECT_COMPANY_NAME);
+        idxParCmpTypeName = parentForm.getDataIndex(ProjectConstants.ALS_COMPANY_TYPE_NAME);
+
+      } else if (BeeUtils.in(parentForm.getFormName(),
+                            TransportConstants.FORM_ORDER, TransportConstants.FORM_CARGO)) {
+        idxParCmp = parentForm.getDataIndex(TransportConstants.COL_CUSTOMER);
+        idxParCmpName = parentForm.getDataIndex(TransportConstants.COL_CUSTOMER_NAME);
+        idxParCmpTypeName = parentForm.getDataIndex(TransportConstants.ALS_CUSTOMER_TYPE_NAME);
+
+      }
 
       if (!BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)
           && !BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)) {
 
         docRow.setValue(idxCmp, parentRow.getLong(idxParCmp));
-        docRow.setValue(idxCmpName, parentRow.getString(idxParCmpName));
+        docRow.setValue(idxCmpName, BeeConst.isUndef(idxParCmpTypeName)
+                                      ? parentRow.getString(idxParCmpName)
+                                      : BeeUtils.joinWords(parentRow.getString(idxParCmpName),
+                                          parentRow.getString(idxParCmpTypeName)));
       }
     }
 
