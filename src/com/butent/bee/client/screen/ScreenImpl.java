@@ -1,49 +1,38 @@
 package com.butent.bee.client.screen;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
-import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.IsUserPanel;
+import com.butent.bee.client.NotificationUserPanel;
 import com.butent.bee.client.OnlineUsers;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.UserPanelHelper;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Notification;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.Animation;
-import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer;
-import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.CustomComplex;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.menu.MenuCommand;
-import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
@@ -53,6 +42,7 @@ import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BrowsingContext;
+import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
@@ -63,10 +53,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.Presence;
-import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Tags;
@@ -76,13 +63,10 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
-import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -107,13 +91,7 @@ public class ScreenImpl implements Screen {
 
   private static Flow flowEmailContainer = new Flow();
   private static Flow flowOnlineEmailSize = new Flow();
-
-  public static final HtmlTable NOTIFICATION_CONTENT = new HtmlTable(BeeConst.CSS_CLASS_PREFIX
-      + "NotificationBar-Content");
-
   private static final String STYLE_COMMAND = BeeConst.CSS_CLASS_PREFIX + "MainCommandPanelItem";
-
-  private static final String STYLE_POPUP_PRESENCE = BeeConst.CSS_CLASS_PREFIX + "PresenceChange";
 
   private static final int NORTH_HEIGHT = 112;
   private static final int MENU_HEIGHT = 50;
@@ -125,10 +103,7 @@ public class ScreenImpl implements Screen {
   private HasWidgets commandPanel;
 
   private HasWidgets menuPanel;
-
-  private HasWidgets userPhotoContainer;
-  private Panel userPresenceContainer;
-  private HasHtml userSignature;
+  private IsUserPanel userPanel;
 
   private Notification notification;
 
@@ -520,125 +495,40 @@ public class ScreenImpl implements Screen {
       return;
     }
 
-    if (getUserPhotoContainer() != null) {
-      Long photoFile = userData.getPhotoFile();
-
-      getUserPhotoContainer().clear();
-      final Image image = new Image(DataUtils.isId(photoFile) ? PhotoRenderer.getUrl(photoFile)
-          : PhotoRenderer.DEFAULT_PHOTO_IMAGE);
-
-      image.setAlt(userData.getLogin());
-      image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
-
-      image.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          NOTIFICATION_CONTENT.setWidget(0, 0, createUserPanel());
-          NOTIFICATION_CONTENT.setWidget(1, 0, createCalendarPanel());
-
-          if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.NEWS)) {
-            NOTIFICATION_CONTENT.setWidget(2, 0,
-                Global.getNewsAggregator().getNewsPanel().asWidget());
-          }
-
-          final Popup popup = new Popup(OutsideClick.CLOSE,
-              BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
-          popup.setWidget(NOTIFICATION_CONTENT);
-          popup.setHideOnEscape(true);
-
-          popup.setAnimationEnabled(true);
-          popup.setAnimation(new Animation(300) {
-            int left;
-            int width;
-
-            @Override
-            public void start() {
-              this.width = getPopup().getOffsetWidth();
-              this.left = DomUtils.getClientWidth() - this.width;
-
-              if (getPopup().isShowing()) {
-                StyleUtils.setOpacity(getPopup(), BeeConst.DOUBLE_ZERO);
-                StyleUtils.setLeft(getPopup(), this.width);
-              }
-              super.start();
-            }
-
-            @Override
-            protected void onComplete() {
-              if (getPopup().isShowing()) {
-                StyleUtils.setLeft(getPopup(), this.left);
-              }
-              getPopup().getElement().getStyle().clearOpacity();
-              super.onComplete();
-            }
-
-            @Override
-            protected boolean run(double elapsed) {
-              if (isCanceled()) {
-                return false;
-              } else {
-                StyleUtils.setOpacity(getPopup(), getFactor(elapsed));
-                double x = this.left + (1 - getFactor(elapsed)) * this.width;
-                StyleUtils.setLeft(getPopup(), x, CssUnit.PX);
-                return true;
-              }
-            }
-          });
-
-          popup.setPopupPositionAndShow(new Popup.PositionCallback() {
-            @Override
-            public void setPosition(int offsetWidth, int offsetHeight) {
-              popup.setPopupPosition(DomUtils.getClientWidth() - offsetWidth, 0);
-            }
-          });
-        }
-      });
-
-      newsBadge.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize-None");
-
-      getUserPhotoContainer().add(newsBadge);
-      getUserPhotoContainer().add(image);
+    if (userPanel == null) {
+      return;
     }
 
-    if (getUserSignature() != null) {
-      getUserSignature().setText(BeeUtils.trim(userData.getUserSign()));
-    }
-  }
+    userPanel.updateUserData(userData);
+    if (userPanel instanceof NotificationUserPanel) {
+      NotificationUserPanel notificationUserPanel = (NotificationUserPanel) userPanel;
 
-  protected void activateShell() {
-    if (getCentralScrutinizer() != null) {
-      getCentralScrutinizer().activateShell();
+      if (notificationUserPanel.getSettingsAction() != null) {
+        notificationUserPanel.getSettingsAction()
+            .addClickHandler(this::onUserSignatureClick);
+      }
 
-    } else if (getScreenPanel() != null && getScreenPanel().getDirectionSize(Direction.WEST) <= 0) {
-      List<Widget> children = getScreenPanel().getDirectionChildren(Direction.WEST, false);
-      for (Widget widget : children) {
-        if (UiHelper.isOrHasChild(widget, Shell.class)) {
-          getScreenPanel().setDirectionSize(Direction.WEST, getWidth() / 5, true);
-          break;
-        }
+      if (notificationUserPanel.getMenuHideAction() != null) {
+        notificationUserPanel.getMenuHideAction()
+            .addClickHandler(e -> getScreenPanel().setDirectionSize(Direction.NORTH,
+                getNorthHeight(NORTH_HEIGHT), true));
       }
     }
+    if (userPanel.getUserSignatureContainer() != null) {
+      userPanel.getUserSignatureContainer().addClickHandler(this::onUserSignatureClick);
+    }
+    newsBadge.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize-None");
+
+    if (userPanel.getPhotoContainer() != null) {
+       userPanel.getPhotoContainer().insert(newsBadge, 0);
+    }
   }
 
-  protected void bindShellActivation(IdentifiableWidget widget) {
-    final String id = widget.getId();
-
-    Binder.addClickHandler(widget.asWidget(), new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (EventUtils.hasModifierKey(event.getNativeEvent())
-            && EventUtils.isTargetId(event, id)) {
-          activateShell();
-        }
-      }
-    });
-  }
-
-  protected Panel createCommandPanel() {
+  protected static Panel createCommandPanel() {
     return new Flow(BeeConst.CSS_CLASS_PREFIX + "MainCommandPanel");
   }
 
-  protected Widget createCopyright(String stylePrefix) {
+  protected static Widget createCopyright(String stylePrefix) {
     Flow copyright = new Flow();
     copyright.addStyleName(stylePrefix + "Copyright");
 
@@ -653,94 +543,12 @@ public class ScreenImpl implements Screen {
     final String url = UiConstants.wtfplUrl();
     copyright.setTitle(url);
 
-    copyright.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        BrowsingContext.open(url);
-      }
-    });
+    copyright.addClickHandler(event -> BrowsingContext.open(url));
 
     return copyright;
   }
 
-  protected void createExpanders() {
-    CustomComplex container = new CustomComplex(DomUtils.createElement(Tags.NAV),
-        BeeConst.CSS_CLASS_PREFIX + "Workspace-expander");
-
-    Toggle toggle = new Toggle(FontAwesome.LONG_ARROW_LEFT, FontAwesome.LONG_ARROW_RIGHT,
-        BeeConst.CSS_CLASS_PREFIX + "east-west-toggle", false);
-    setEastWestToggle(toggle);
-
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (getEastWestToggle().isChecked()) {
-          expand(Direction.WEST);
-          expand(Direction.EAST);
-        } else {
-          compress(Direction.WEST);
-          compress(Direction.EAST);
-        }
-
-        getScreenPanel().doLayout();
-        refreshExpanders();
-      }
-    });
-
-    container.add(toggle);
-
-    toggle = new Toggle(FontAwesome.LONG_ARROW_UP, FontAwesome.LONG_ARROW_DOWN,
-        BeeConst.CSS_CLASS_PREFIX + "north-toggle", false);
-    setNorthToggle(toggle);
-
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (getNorthToggle().isChecked()) {
-          expand(Direction.NORTH);
-        } else {
-          compress(Direction.NORTH);
-        }
-
-        getScreenPanel().doLayout();
-        refreshExpanders();
-      }
-    });
-
-    container.add(toggle);
-
-    toggle = new Toggle(FontAwesome.EXPAND, FontAwesome.COMPRESS,
-        BeeConst.CSS_CLASS_PREFIX + "workspace-maximizer", false);
-    setMaximizer(toggle);
-
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (getMaximizer().isChecked()) {
-          for (Direction direction : hidableDirections) {
-            expand(direction);
-          }
-
-        } else {
-          for (Map.Entry<String, Integer> entry : hidden.entrySet()) {
-            getScreenPanel().setWidgetSize(entry.getKey(), entry.getValue(), false);
-          }
-          hidden.clear();
-        }
-
-        getScreenPanel().doLayout();
-        refreshExpanders();
-      }
-    });
-
-    container.add(toggle);
-
-    getWorkspace().addToTabBar(container);
-
-    refreshExpanders();
-  }
-
-  protected Widget createLogo(ScheduledCommand command) {
+  protected static Widget createLogo(ScheduledCommand command) {
     String imageUrl = Settings.getLogoImage();
     if (BeeUtils.isEmpty(imageUrl)) {
       return null;
@@ -767,16 +575,118 @@ public class ScreenImpl implements Screen {
         widget.setTitle(openUrl);
       }
 
-      widget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          BrowsingContext.open(openUrl);
-        }
-      });
+      widget.addClickHandler(event -> BrowsingContext.open(openUrl));
     }
 
     return widget;
   }
+
+  protected static int getEastMargin() {
+    return Theme.getWorkspaceMarginRight();
+  }
+
+  protected static int getNorthHeight(int defHeight) {
+    int height = BeeUtils.positive(Settings.getInt("northHeight"), defHeight);
+    if (!BeeKeeper.getUser().isMenuVisible() && height > MENU_HEIGHT) {
+      height -= MENU_HEIGHT;
+    }
+    return height;
+  }
+
+  protected void activateShell() {
+    if (getCentralScrutinizer() != null) {
+      getCentralScrutinizer().activateShell();
+
+    } else if (getScreenPanel() != null && getScreenPanel().getDirectionSize(Direction.WEST) <= 0) {
+      List<Widget> children = getScreenPanel().getDirectionChildren(Direction.WEST, false);
+      for (Widget widget : children) {
+        if (UiHelper.isOrHasChild(widget, Shell.class)) {
+          getScreenPanel().setDirectionSize(Direction.WEST, getWidth() / 5, true);
+          break;
+        }
+      }
+    }
+  }
+
+  protected void bindShellActivation(IdentifiableWidget widget) {
+    final String id = widget.getId();
+
+    Binder.addClickHandler(widget.asWidget(), event -> {
+      if (EventUtils.hasModifierKey(event.getNativeEvent())
+          && EventUtils.isTargetId(event, id)) {
+        activateShell();
+      }
+    });
+  }
+
+  protected void createExpanders() {
+    CustomComplex container = new CustomComplex(DomUtils.createElement(Tags.NAV),
+        BeeConst.CSS_CLASS_PREFIX + "Workspace-expander");
+
+    Toggle toggle = new Toggle(FontAwesome.LONG_ARROW_LEFT, FontAwesome.LONG_ARROW_RIGHT,
+        BeeConst.CSS_CLASS_PREFIX + "east-west-toggle", false);
+    setEastWestToggle(toggle);
+
+    toggle.addClickHandler(event -> {
+      if (getEastWestToggle().isChecked()) {
+        expand(Direction.WEST);
+        expand(Direction.EAST);
+      } else {
+        compress(Direction.WEST);
+        compress(Direction.EAST);
+      }
+
+      getScreenPanel().doLayout();
+      refreshExpanders();
+    });
+
+    container.add(toggle);
+
+    toggle = new Toggle(FontAwesome.LONG_ARROW_UP, FontAwesome.LONG_ARROW_DOWN,
+        BeeConst.CSS_CLASS_PREFIX + "north-toggle", false);
+    setNorthToggle(toggle);
+
+    toggle.addClickHandler(event -> {
+      if (getNorthToggle().isChecked()) {
+        expand(Direction.NORTH);
+      } else {
+        compress(Direction.NORTH);
+      }
+
+      getScreenPanel().doLayout();
+      refreshExpanders();
+    });
+
+    container.add(toggle);
+
+    toggle = new Toggle(FontAwesome.EXPAND, FontAwesome.COMPRESS,
+        BeeConst.CSS_CLASS_PREFIX + "workspace-maximizer", false);
+    setMaximizer(toggle);
+
+    toggle.addClickHandler(event -> {
+      if (getMaximizer().isChecked()) {
+        for (Direction direction : hidableDirections) {
+          expand(direction);
+        }
+
+      } else {
+        for (Map.Entry<String, Integer> entry : hidden.entrySet()) {
+          getScreenPanel().setWidgetSize(entry.getKey(), entry.getValue(), false);
+        }
+        hidden.clear();
+      }
+
+      getScreenPanel().doLayout();
+      refreshExpanders();
+    });
+
+    container.add(toggle);
+
+    getWorkspace().addToTabBar(container);
+
+    refreshExpanders();
+  }
+
 
   protected Panel createMenuPanel() {
     return new Flow(BeeConst.CSS_CLASS_PREFIX + "MainMenu");
@@ -791,6 +701,7 @@ public class ScreenImpl implements Screen {
     StyleUtils.occupy(p);
     p.addStyleName(getScreenStyle());
 
+    UserPanelHelper.register();
     Pair<? extends IdentifiableWidget, Integer> north = initNorth();
     if (north != null) {
       p.addNorth(north.getA(), north.getB());
@@ -826,61 +737,12 @@ public class ScreenImpl implements Screen {
   }
 
   protected Widget createUserContainer() {
-    Horizontal userContainer = new Horizontal();
-
-    if (Settings.showUserPhoto()) {
-      Flow photoContainer = new Flow(BeeConst.CSS_CLASS_PREFIX + "UserPhotoContainer");
-      userContainer.add(photoContainer);
-      setUserPhotoContainer(photoContainer);
-    }
-
-    if (Settings.showUserPresence()) {
-      Flow presenceContainer = new Flow(BeeConst.CSS_CLASS_PREFIX + "UserPresenceContainer");
-      userContainer.add(presenceContainer);
-      setUserPresenceContainer(presenceContainer);
-    }
-
-    if (Settings.showLogout()) {
-      Simple exitContainer = new Simple();
-      exitContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "LogoutContainer");
-
-      FaLabel exit = new FaLabel(FontAwesome.SIGN_OUT);
-      exit.addStyleName(BeeConst.CSS_CLASS_PREFIX + "Logout");
-      exit.setTitle(Localized.dictionary().signOut());
-
-      exit.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Global.getMsgBoxen().confirm(Localized.dictionary().endSession(Settings.getAppName()),
-              Icon.QUESTION, Lists.newArrayList(Localized.dictionary().questionLogout()),
-              Localized.dictionary().yes(), Localized.dictionary().no(),
-              new ConfirmationCallback() {
-                @Override
-                public void onConfirm() {
-                  Bee.exit();
-                }
-              }, null, StyleUtils.className(FontSize.MEDIUM), null, null);
-        }
-      });
-
-      exitContainer.setWidget(exit);
-      userContainer.add(exitContainer);
-    }
-
-    return userContainer;
+    userPanel = (IsUserPanel) UserPanelHelper.getUserPanel(JsonUtils.getString(Settings
+        .getUserPanel(), UserPanelHelper.VAR_DEFAULT_PANEL));
+    return userPanel.asWidget();
   }
 
-  protected int getEastMargin() {
-    return Theme.getWorkspaceMarginRight();
-  }
 
-  protected int getNorthHeight(int defHeight) {
-    int height = BeeUtils.positive(Settings.getInt("northHeight"), defHeight);
-    if (!BeeKeeper.getUser().isMenuVisible() && height > MENU_HEIGHT) {
-      height -= MENU_HEIGHT;
-    }
-    return height;
-  }
 
   protected Notification getNotification() {
     return notification;
@@ -965,12 +827,7 @@ public class ScreenImpl implements Screen {
     final Label createButton = new Label("+ " + Localized.dictionary().create());
     createButton.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateButton");
 
-    createButton.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        RowFactory.showMenu(createButton);
-      }
-    });
+    createButton.addClickHandler(event -> RowFactory.showMenu(createButton));
 
     Flow myEnv = new Flow(BeeConst.CSS_CLASS_PREFIX + "MyEnvironment");
     myEnv.add(new FaLabel(FontAwesome.BOOKMARK));
@@ -987,7 +844,7 @@ public class ScreenImpl implements Screen {
     return Pair.of(panel, width);
   }
 
-  protected void onUserSignatureClick() {
+  protected void onUserSignatureClick(ClickEvent event) {
     BeeRow row = BeeKeeper.getUser().getSettingsRow();
     if (row != null) {
       RowEditor.open(AdministrationConstants.VIEW_USER_SETTINGS, row, Opener.MODAL,
@@ -1016,16 +873,10 @@ public class ScreenImpl implements Screen {
     this.screenPanel = screenPanel;
   }
 
-  protected void setUserPhotoContainer(HasWidgets userPhotoContainer) {
-    this.userPhotoContainer = userPhotoContainer;
-  }
-
-  protected void setUserPresenceContainer(Panel userPresenceContainer) {
-    this.userPresenceContainer = userPresenceContainer;
-  }
-
   protected void setUserSignature(HasHtml userSignature) {
-    this.userSignature = userSignature;
+    if (userPanel != null && userPanel.getUserSignatureContainer() != null) {
+      userPanel.getUserSignatureContainer().getElement().setInnerHTML(userSignature.getHtml());
+    }
   }
 
   protected void showProgressPanel() {
@@ -1100,18 +951,6 @@ public class ScreenImpl implements Screen {
 
   private Panel getProgressPanel() {
     return progressPanel;
-  }
-
-  private HasWidgets getUserPhotoContainer() {
-    return userPhotoContainer;
-  }
-
-  private Panel getUserPresenceContainer() {
-    return userPresenceContainer;
-  }
-
-  private HasHtml getUserSignature() {
-    return userSignature;
   }
 
   private void refreshExpanders() {
@@ -1238,14 +1077,10 @@ public class ScreenImpl implements Screen {
     flowOnlineEmailSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmailSize-None");
     emailLabel.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmail");
 
-    emailLabel.addClickHandler(new ClickHandler() {
+    emailLabel.addClickHandler(arg0 -> {
 
-      @Override
-      public void onClick(ClickEvent arg0) {
-
-        if (command.getService().equals(MenuService.OPEN_MAIL)) {
-          command.execute();
-        }
+      if (command.getService().equals(MenuService.OPEN_MAIL)) {
+        command.execute();
       }
     });
 
@@ -1285,54 +1120,10 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void updateUserPresence(Presence presence) {
-    if (getUserPresenceContainer() != null && presence != null
-        && DomUtils.getDataIndexInt(getUserPresenceContainer().getElement())
-        != presence.ordinal()) {
-
-      getUserPresenceContainer().clear();
-      DomUtils.setDataIndex(getUserPresenceContainer().getElement(), presence.ordinal());
-
-      FaLabel presenceWidget = new FaLabel(presence.getIcon(), presence.getStyleName());
-      presenceWidget.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPresenceIcon");
-      presenceWidget.setTitle(Localized.dictionary().presenceChangeTooltip());
-
-      if (presence != Presence.IDLE) {
-        presenceWidget.addClickHandler(event -> {
-          HtmlTable table = new HtmlTable(STYLE_POPUP_PRESENCE + "Table");
-          int r = 0;
-
-          for (Presence p : Presence.values()) {
-            table.setWidgetAndStyle(r, 0, new FaLabel(p.getIcon(), p.getStyleName()),
-                STYLE_POPUP_PRESENCE + "Icon");
-            table.setWidgetAndStyle(r, 1, new Label(p.getCaption()),
-                STYLE_POPUP_PRESENCE + "Label");
-
-            DomUtils.setDataIndex(table.getRow(r), p.ordinal());
-            r++;
-          }
-
-          table.addClickHandler(te -> {
-            Element targetElement = EventUtils.getEventTargetElement(te);
-            TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
-
-            int index = DomUtils.getDataIndexInt(rowElement);
-            Presence newPresence = EnumUtils.getEnumByIndex(Presence.class, index);
-
-            UiHelper.closeDialog(table);
-            BeeKeeper.getUser().maybeUpdatePresence(newPresence);
-          });
-
-          Popup popup = new Popup(OutsideClick.CLOSE, STYLE_POPUP_PRESENCE);
-
-          popup.setWidget(table);
-          popup.setHideOnEscape(true);
-
-          popup.showRelativeTo(presenceWidget.getElement());
-        });
-      }
-
-      getUserPresenceContainer().add(presenceWidget);
+    if (userPanel == null) {
+      return;
     }
+    userPanel.updateUserPresence(presence);
   }
 
   @Override
@@ -1343,140 +1134,6 @@ public class ScreenImpl implements Screen {
   @Override
   public Flow getOnlineEmailSize() {
     return flowOnlineEmailSize;
-  }
-
-  private Widget createUserPanel() {
-    Horizontal userContainer = new Horizontal();
-    Flow userPanel = new Flow();
-    Label signature = new Label();
-    Flow settingsCnt = new Flow();
-
-    FaLabel sett = new FaLabel(FontAwesome.GEAR);
-    FaLabel help = new FaLabel(FontAwesome.QUESTION);
-    FaLabel menuHide = new FaLabel(FontAwesome.THUMB_TACK);
-
-    userContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserContainer");
-    userPanel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPanel");
-    settingsCnt.addStyleName(BeeConst.CSS_CLASS_PREFIX + "SettingsContainer");
-    signature.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserSignature");
-    sett.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
-    help.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
-
-    sett.setTitle(Localized.dictionary().settings());
-    help.setTitle(Localized.dictionary().help());
-    menuHide.setTitle(Localized.dictionary().hideOrShowMenu());
-
-    styleMenuToggle(menuHide, BeeKeeper.getUser().isMenuVisible());
-
-    sett.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent arg0) {
-        onUserSignatureClick();
-        UiHelper.closeDialog((Widget) arg0.getSource());
-      }
-    });
-
-    help.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent arg1) {
-        BrowsingContext.open(UiConstants.helpURL());
-      }
-    });
-
-    menuHide.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent arg2) {
-        boolean visible = !BeeKeeper.getUser().isMenuVisible();
-        BeeKeeper.getUser().setMenuVisible(visible);
-
-        styleMenuToggle((Widget) arg2.getSource(), visible);
-
-        getScreenPanel().setDirectionSize(Direction.NORTH, getNorthHeight(NORTH_HEIGHT), true);
-      }
-    });
-
-    settingsCnt.add(sett);
-    settingsCnt.add(help);
-    settingsCnt.add(menuHide);
-
-    signature.setText(BeeUtils.trim(BeeKeeper.getUser().getUserSign()));
-
-    Flow exitContainer = new Flow();
-    exitContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExitContainer");
-
-    Label exit = new Label(Localized.dictionary().signOut());
-    exit.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExit");
-    exit.setTitle(Localized.dictionary().signOut());
-
-    exit.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Bee.exit();
-      }
-    });
-
-    exitContainer.add(signature);
-    exitContainer.add(exit);
-
-    Long photoFileName = BeeKeeper.getUser().getUserData().getPhotoFile();
-    Image image = new Image(DataUtils.isId(photoFileName) ? PhotoRenderer.getUrl(photoFileName)
-        : PhotoRenderer.DEFAULT_PHOTO_IMAGE);
-
-    image.setAlt(BeeKeeper.getUser().getLogin());
-    image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
-
-    image.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg3) {
-        UiHelper.closeDialog((Widget) arg3.getSource());
-      }
-    });
-
-    userPanel.add(settingsCnt);
-    userContainer.add(exitContainer);
-    userContainer.add(image);
-    userPanel.add(userContainer);
-
-    return userPanel;
-  }
-
-  private static void styleMenuToggle(Widget toggle, boolean visible) {
-    toggle.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon", visible);
-    toggle.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon-Selected", !visible);
-  }
-
-  private static Widget createCalendarPanel() {
-    Flow userCal = new Flow();
-    userCal.setStyleName(BeeConst.CSS_CLASS_PREFIX + "CalendarContainer");
-
-    JustDate firstDay = TimeUtils.today();
-    JustDate day;
-
-    for (int i = 0; i < 5; i++) {
-
-      Label lblD = new Label();
-      Label lblWd = new Label();
-      Flow cal = new Flow();
-
-      lblD.setStyleName(BeeConst.CSS_CLASS_PREFIX + "MonthDay");
-      lblWd.setStyleName(BeeConst.CSS_CLASS_PREFIX + "WeekDay");
-
-      if (i == 0) {
-
-        lblD.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MonthDayToday");
-        lblD.setText(String.valueOf(firstDay.getDom()));
-        lblWd.setText(String.valueOf(Format.renderDayOfWeekShort(firstDay.getDow())));
-      } else {
-        day = TimeUtils.toDateOrNull(firstDay.getDays() + i);
-        lblD.setText(String.valueOf(day.getDom()));
-        lblWd.setText(String.valueOf(Format.renderDayOfWeekShort(day.getDow())));
-      }
-      cal.add(lblWd);
-      cal.add(lblD);
-      userCal.add(cal);
-    }
-    return userCal;
   }
 
   protected void extendCommandPanel() {
@@ -1497,12 +1154,8 @@ public class ScreenImpl implements Screen {
           BeeConst.CSS_CLASS_PREFIX + "CompanyStructure-command");
       command.setTitle(Localized.dictionary().companyStructure());
 
-      command.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          FormFactory.openForm(AdministrationConstants.FORM_COMPANY_STRUCTURE);
-        }
-      });
+      command.addClickHandler(event ->
+          FormFactory.openForm(AdministrationConstants.FORM_COMPANY_STRUCTURE));
 
       getCommandPanel().add(command);
     }

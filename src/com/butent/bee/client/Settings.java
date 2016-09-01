@@ -8,6 +8,7 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 
+import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -37,7 +38,7 @@ public final class Settings {
     JSONValue value = getValue(key);
     if (value != null) {
       JSONBoolean b = value.isBoolean();
-      return (b == null) ? false : b.booleanValue();
+      return b != null && b.booleanValue();
     } else {
       return false;
     }
@@ -212,6 +213,10 @@ public final class Settings {
     return getObject("theme");
   }
 
+  public static JSONObject getUserPanel() {
+    return getObject("userPanel");
+  }
+
   public static String getVersion() {
     return getString("version");
   }
@@ -229,15 +234,15 @@ public final class Settings {
   }
 
   public static boolean showLogout() {
-    return getBoolean("showLogout");
+    return JsonUtils.getBoolean(getUserPanel(), "showLogout");
   }
 
   public static boolean showUserPresence() {
-    return getBoolean("showUserPresence");
+    return JsonUtils.getBoolean(getUserPanel(), "showUserPresence");
   }
 
   public static boolean showUserPhoto() {
-    return getBoolean("showUserPhoto");
+    return JsonUtils.getBoolean(getUserPanel(), "showUserPhoto");
   }
 
   private static boolean checkSettings() {
