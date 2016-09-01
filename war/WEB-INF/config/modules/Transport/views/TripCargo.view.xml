@@ -39,6 +39,8 @@
 
       <SimpleColumn name="Notes" />
       <HiddenColumn name="CargoHandling" alias="DefaultHandling" />
+
+      <SimpleColumn name="Directions" editable="true"/>
     </SimpleJoin>
 
     <SimpleColumn name="CargoHandling" />
