@@ -73,7 +73,7 @@
       </row>
       <row>
         <Label text="Дата" />
-        <DateLabel source="DateFrom" />
+        <DateTimeLabel source="Date" format="DATE_SHORT"/>
         <text />
       </row>
       <row>
