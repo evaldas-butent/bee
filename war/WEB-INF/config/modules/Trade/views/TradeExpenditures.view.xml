@@ -22,10 +22,15 @@
 
       <SimpleColumn name="CostBasis" />
 
+      <SimpleColumn name="Supplier" alias="TypeSupplier" />
+
+      <SimpleColumn name="Operation" />
       <SimpleJoin name="Operation" joinType="LEFT">
         <SimpleColumn name="OperationName" />
         <SimpleColumn name="OperationVatMode" />
       </SimpleJoin>
+
+      <SimpleColumn name="Warehouse" />
       <SimpleJoin joinType="LEFT" name="Warehouse">
         <SimpleColumn name="Code" alias="WarehouseCode" />
       </SimpleJoin>

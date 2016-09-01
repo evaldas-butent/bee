@@ -63,6 +63,7 @@ public final class BeeConst {
   public static final String STRING_EMPTY = "";
   public static final String STRING_SPACE = " ";
   public static final String STRING_ZERO = "0";
+  public static final String STRING_ONE = "1";
   public static final String STRING_COMMA = ",";
   public static final String STRING_POINT = ".";
   public static final String STRING_LEFT_BRACKET = "[";

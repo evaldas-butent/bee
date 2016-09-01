@@ -33,8 +33,7 @@
     <DataColumn name="ItemName" label="=item" />
     <DataColumn name="Article" visible="false" />
 
-    <DataColumn name="GeneratedDocument" readOnly="true" cellType="html"
-                sortable="true" exportable="false" />
+    <CalcColumn name="GeneratedDocument" source="GeneratedDocument" type="string" cellType="html" />
 
     <DataColumn name="DebitCode" label="=debit" />
     <DataColumn name="CreditCode" label="=credit" />

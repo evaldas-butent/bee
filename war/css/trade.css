@@ -231,3 +231,17 @@
   display: -webkit-flex;
   display: -ms-flexbox;
 }
+
+.bee-trade-expenditures-gen-build {
+  display: block;
+  margin: auto;
+  cursor: pointer;
+}
+.bee-trade-expenditures-gen-link {
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.bee-trade-expenditures-gen-link:hover {
+  color: #00e;
+}
