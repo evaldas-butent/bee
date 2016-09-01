@@ -85,7 +85,8 @@ public class CargoHandlingGrid extends AbstractGridInterceptor {
         }
       }
       for (String col : new String[] {
-          COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS, COL_ROUTE_WEIGHT}) {
+          COL_LOADED_KILOMETERS, COL_UNPLANNED_KILOMETERS, COL_EMPTY_KILOMETERS,
+          COL_ROUTE_WEIGHT}) {
 
         newRow.setValue(gridView.getDataIndex(col),
             parentRow.getString(Data.getColumnIndex(parentView, col)));

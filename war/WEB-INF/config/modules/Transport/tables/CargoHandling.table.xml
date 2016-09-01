@@ -15,6 +15,7 @@
 
     <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
     <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
+    <Integer name="UnplannedKilometers" label="Neplanuoti km" />
     <Numeric name="Weight" precision="10" scale="3" label="=trWeightInTons" />
     <Text name="Notes" label="=notes" />
 

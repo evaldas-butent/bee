@@ -1538,7 +1538,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             String postIndex = BeeUtils.join("\n",
                 BeeUtils.join("-", BeeUtils.nvl(addH.getValue(ALS_LOADING_COUNTRY_CODE), ""),
                     BeeUtils.nvl(addH.getValue(ALS_LOADING_POST_INDEX), "")),
-                BeeUtils.join("-",   BeeUtils.nvl(addH.getValue(ALS_UNLOADING_COUNTRY_CODE), ""),
+                BeeUtils.join("-", BeeUtils.nvl(addH.getValue(ALS_UNLOADING_COUNTRY_CODE), ""),
                     BeeUtils.nvl(addH.getValue(ALS_UNLOADING_POST_INDEX), "")));
 
             String ldate = "";
@@ -1547,19 +1547,18 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             DateTime time = addH.getDateTime(ALS_LOADING_DATE);
 
             if (time != null && time.hasTimePart()) {
-               ldate =  time.getDateTime().toString();
+              ldate = time.getDateTime().toString();
             } else if (time != null) {
-               ldate = time.getDate().toString();
+              ldate = time.getDate().toString();
             }
 
             time = addH.getDateTime(ALS_UNLOADING_DATE);
 
             if (time != null && time.hasTimePart()) {
-              udate =  time.getDateTime().toString();
+              udate = time.getDateTime().toString();
             } else if (time != null) {
               udate = time.getDate().toString();
             }
-
 
             String dates = BeeUtils.join("\n", ldate, udate);
 
@@ -1580,7 +1579,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         if (!BeeUtils.isEmpty(handlingDates)) {
           valueMap.put(COL_ORDER_LOADING_NOTES, handlingDates);
         }
-
 
         for (String fld : new String[] {ALS_LOADING_DATE, ALS_UNLOADING_DATE}) {
           DateTime time = row.getDateTime(fld);
@@ -1938,7 +1936,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     SqlSelect query = new SqlSelect()
         .addField(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), COL_ROUTE_CARGO)
         .addFields(TBL_CARGO_HANDLING, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS,
-            COL_EMPTY_KILOMETERS)
+            COL_EMPTY_KILOMETERS, COL_UNPLANNED_KILOMETERS)
         .addFields(TBL_CARGO_PLACES, COL_PLACE_DATE, COL_PLACE_COUNTRY, COL_PLACE_CITY)
         .addFields(TBL_ORDER_CARGO, COL_CARGO_PARTIAL)
         .addFrom(TBL_CARGO_TRIPS)
@@ -2037,7 +2035,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         Pair<Integer, Integer> pair = stack.get(orderCargo);
 
         int emptyKm = BeeUtils.unbox(row.getInt(COL_EMPTY_KILOMETERS));
-        pair.setA(pair.getA() + BeeUtils.unbox(row.getInt(COL_LOADED_KILOMETERS)) + emptyKm);
+        pair.setA(pair.getA() + BeeUtils.unbox(row.getInt(COL_LOADED_KILOMETERS)) + emptyKm
+            + BeeUtils.unbox(row.getInt(COL_UNPLANNED_KILOMETERS)));
         pair.setB(pair.getB() + emptyKm);
 
         currentWeight -= weight;

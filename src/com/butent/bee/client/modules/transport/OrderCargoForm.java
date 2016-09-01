@@ -207,7 +207,8 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   @Override
   public void onEditEnd(EditEndEvent event, Object source) {
     String colId = event.getColumnId();
-    if ((COL_EMPTY_KILOMETERS.equals(colId) || COL_LOADED_KILOMETERS.equals(colId))
+    if ((COL_EMPTY_KILOMETERS.equals(colId) || COL_LOADED_KILOMETERS.equals(colId)
+        || COL_UNPLANNED_KILOMETERS.equals(colId))
         && event.valueChanged()) {
       refreshKilometers(getActiveRow(), colId, BeeUtils.toIntOrNull(event.getNewValue()));
     }
@@ -281,6 +282,8 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
         ? km : getIntegerValue(COL_EMPTY_KILOMETERS);
     Integer loadedKm = COL_LOADED_KILOMETERS.equals(colId)
         ? km : getIntegerValue(COL_LOADED_KILOMETERS);
+    Integer unplannedKm = COL_UNPLANNED_KILOMETERS.equals(colId)
+        ? km : getIntegerValue(COL_UNPLANNED_KILOMETERS);
 
     if (DataUtils.hasId(row)) {
       GridView grid = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
@@ -289,6 +292,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
         List<? extends IsRow> childRows = grid.getRowData();
         int emptyKmIndex = grid.getDataIndex(COL_EMPTY_KILOMETERS);
         int loadedKmIndex = grid.getDataIndex(COL_LOADED_KILOMETERS);
+        int unplannedKmIndex = grid.getDataIndex(COL_UNPLANNED_KILOMETERS);
 
         for (IsRow childRow : childRows) {
           Integer v = childRow.getInteger(emptyKmIndex);
@@ -306,6 +310,15 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
               loadedKm = v;
             } else {
               loadedKm += v;
+            }
+          }
+
+          v = childRow.getInteger(unplannedKmIndex);
+          if (v != null) {
+            if (unplannedKm == null) {
+              unplannedKm = v;
+            } else {
+              unplannedKm += v;
             }
           }
         }

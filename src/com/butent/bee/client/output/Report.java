@@ -150,6 +150,8 @@ public enum Report implements HasWidgetSupplier {
 
           new ReportNumericItem("Planned" + COL_ROUTE_KILOMETERS,
               BeeUtils.joinWords(loc.kilometers(), plan)),
+          new ReportNumericItem("Unplanned" + COL_ROUTE_KILOMETERS, "Neplanuoti kilometrai"),
+          new ReportNumericItem("Empty" + COL_ROUTE_KILOMETERS, "Tušti kilometrai"),
           new ReportNumericItem("PlannedFuelCosts", BeeUtils.joinWords(loc.trFuelCosts(), plan))
               .setPrecision(2),
           new ReportNumericItem("PlannedDailyCosts", BeeUtils.joinWords(loc.trDailyCosts(), plan))

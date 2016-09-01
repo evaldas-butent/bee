@@ -7,6 +7,7 @@
     <SimpleColumn name="Notes" alias="HandlingNotes" />
     <SimpleColumn name="EmptyKilometers" />
     <SimpleColumn name="LoadedKilometers" />
+    <SimpleColumn name="UnplannedKilometers" />
     <SimpleColumn name="Weight" alias="CargoWeight" />
 
     <xi:include href="Handling.viewcolumns.xml" />
