@@ -40,6 +40,12 @@
       <SimpleColumn name="Notes" />
       <HiddenColumn name="CargoHandling" alias="DefaultHandling" />
 
+      <ExternalJoin name="Cargo" joinType="LEFT" source="CargoIncomes">
+        <SimpleJoin name="Sale" joinType="LEFT">
+          <AggregateColumn name="InvoiceNo" aggregate="MAX" />
+        </SimpleJoin>
+      </ExternalJoin>
+
       <SimpleColumn name="Directions" editable="true"/>
       <SimpleColumn name="CmrCopy" editable="true" />
     </SimpleJoin>

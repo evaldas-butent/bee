@@ -115,6 +115,12 @@
         </SimpleJoin>
       </ExternalJoin>
 
+      <ExternalJoin name="Cargo" joinType="LEFT" source="CargoIncomes">
+        <SimpleJoin name="Sale" joinType="LEFT">
+          <AggregateColumn name="InvoiceNo" aggregate="MAX" />
+        </SimpleJoin>
+      </ExternalJoin>
+
       <SimpleColumn name="CmrCopy" />
     </ExternalJoin>
   </Columns>

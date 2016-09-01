@@ -72,6 +72,7 @@
       </render>
     </CalcColumn>
 
+    <DataColumn name="InvoiceNo" caption="=trdInvoice" />
     <DataColumn name="CmrCopy" caption="=trCmrCopy" sortable="false" />
   </g:columns>
 </g:Grid>
