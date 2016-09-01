@@ -8,7 +8,7 @@
         name="Trip" viewName="Trips" caption="=trip"
         width="900" height="600"
     >
-  <f:properties reports="PrintTripRoute, PrintTripOrder, PrintTripOrder2, PrintTripSummary" />
+  <f:properties reports="PrintTripRoute, PrintTripRouteRU, PrintTripOrder, PrintTripOrder2, PrintTripSummary" />
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
       <row>
