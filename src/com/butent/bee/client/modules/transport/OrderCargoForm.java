@@ -280,10 +280,10 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
     Integer emptyKm = COL_EMPTY_KILOMETERS.equals(colId)
         ? km : getIntegerValue(COL_EMPTY_KILOMETERS);
-    Integer loadedKm = COL_LOADED_KILOMETERS.equals(colId)
-        ? km : getIntegerValue(COL_LOADED_KILOMETERS);
-    Integer unplannedKm = COL_UNPLANNED_KILOMETERS.equals(colId)
-        ? km : getIntegerValue(COL_UNPLANNED_KILOMETERS);
+    Integer loadedKm = BeeUtils.unbox(COL_LOADED_KILOMETERS.equals(colId)
+        ? km : getIntegerValue(COL_LOADED_KILOMETERS));
+    loadedKm += BeeUtils.unbox(COL_UNPLANNED_KILOMETERS.equals(colId)
+        ? km : getIntegerValue(COL_UNPLANNED_KILOMETERS));
 
     if (DataUtils.hasId(row)) {
       GridView grid = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
@@ -315,10 +315,10 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
           v = childRow.getInteger(unplannedKmIndex);
           if (v != null) {
-            if (unplannedKm == null) {
-              unplannedKm = v;
+            if (loadedKm == null) {
+              loadedKm = v;
             } else {
-              unplannedKm += v;
+              loadedKm += v;
             }
           }
         }
