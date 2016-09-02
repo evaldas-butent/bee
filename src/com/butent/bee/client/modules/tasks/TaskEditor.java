@@ -755,13 +755,13 @@ class TaskEditor extends ProductSupportInterceptor {
     header.addCommandItem(setMenuLabel());
 
     TaskSlackRenderer renderer = new TaskSlackRenderer(form.getDataColumns());
-    Pair<AbstractSlackRenderer.SlackKind, Long> data = renderer.getMinutes(row);
+    Pair<TaskUtils.SlackKind, Long> data = renderer.getMinutes(row);
     setLateIndicatorHtml(data);
     setTaskStatusStyle(header, form, row, data);
   }
 
   private static void setTaskStatusStyle(HeaderView header, FormView form, IsRow row,
-      Pair<AbstractSlackRenderer.SlackKind, Long> slackData) {
+      Pair<TaskUtils.SlackKind, Long> slackData) {
     for (TaskStatus taskStatusStyle : TaskStatus.values()) {
       if (taskStatusStyle.getStyleName(true) != null) {
         header.removeStyleName(taskStatusStyle.getStyleName(true));
@@ -776,7 +776,7 @@ class TaskEditor extends ProductSupportInterceptor {
     String styleName;
     if (slackData != null && slackData.getA() != null) {
       styleName = taskStatus.getStyleName(slackData.getA().equals(
-          AbstractSlackRenderer.SlackKind.LATE));
+          TaskUtils.SlackKind.LATE));
     } else {
       styleName = taskStatus.getStyleName(false);
     }
@@ -2134,7 +2134,7 @@ class TaskEditor extends ProductSupportInterceptor {
     }
   }
 
-  private void setLateIndicatorHtml(Pair<AbstractSlackRenderer.SlackKind, Long> data) {
+  private void setLateIndicatorHtml(Pair<TaskUtils.SlackKind, Long> data) {
     if (lateIndicator == null) {
       return;
     }
@@ -2154,12 +2154,12 @@ class TaskEditor extends ProductSupportInterceptor {
     lateIndicator.setHtml(text + BeeConst.HTML_NBSP);
   }
 
-  private void setLateIndicatorStyle(AbstractSlackRenderer.SlackKind kind) {
+  private void setLateIndicatorStyle(TaskUtils.SlackKind kind) {
     if (lateIndicator == null) {
       return;
     }
 
-    for (AbstractSlackRenderer.SlackKind k : AbstractSlackRenderer.SlackKind.values()) {
+    for (TaskUtils.SlackKind k : TaskUtils.SlackKind.values()) {
       lateIndicator.removeStyleName(STYLE_TASK_LATE_KIND + k.toString().toLowerCase());
     }
 

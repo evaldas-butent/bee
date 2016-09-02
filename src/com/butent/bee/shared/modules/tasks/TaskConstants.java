@@ -1051,6 +1051,8 @@ public final class TaskConstants {
   public static final String TASK_STATUS_STYLE_NOT_SCHEDULED = TASK_STATUS_STYLE + "_not_scheduled";
   public static final String TASK_STATUS_STYLE_WITH_BORDER = "_with_border";
 
+  public static final String STYLE_SLACK_PREFIX = BeeConst.CSS_CLASS_PREFIX + "misc-Slack-";
+
   private TaskConstants() {
   }
 }

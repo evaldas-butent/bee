@@ -15,6 +15,7 @@ import com.butent.bee.shared.export.XFont;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -72,12 +73,12 @@ public class ProjectSlackRenderer extends AbstractSlackRenderer {
       DateTime start = getStartDateTime(isColumns, row);
       DateTime finish = getFinishDateTime(isColumns, row);
 
-      SlackKind kind = getKind(start, finish, now);
+      TaskUtils.SlackKind kind = TaskUtils.getKind(start, finish, now);
       if (kind == null) {
         return null;
       }
 
-      long minutes = getMinutes(kind, start, finish, now);
+      long minutes = TaskUtils.getMinutes(kind, start, finish, now);
       String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getFormatedTimeLabel(minutes);
 
       XStyle style = new XStyle();
@@ -149,18 +150,18 @@ public class ProjectSlackRenderer extends AbstractSlackRenderer {
       DateTime start = getStartDateTime(isColumns, row);
       DateTime finish = getFinishDateTime(isColumns, row);
 
-      SlackKind kind = getKind(start, finish, now);
+      TaskUtils.SlackKind kind = TaskUtils.getKind(start, finish, now);
       if (kind == null) {
         return BeeConst.STRING_EMPTY;
       }
 
-      long minutes = getMinutes(kind, start, finish, now);
+      long minutes = TaskUtils.getMinutes(kind, start, finish, now);
       if (minutes == 0L) {
         return BeeConst.STRING_EMPTY;
       }
 
       String label = getFormatedTimeLabel(minutes);
-      return createSlackBar(kind, label);
+      return createSlackBar(kind.getStyleName(), label);
     }
   }
 }

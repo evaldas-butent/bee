@@ -943,6 +943,8 @@ public interface Dictionary {
 
   default String crmMailTaskSubject() {return g("crmMailTaskSubject");}
 
+  default String crmMailTasksSummary() {return g("crmMailTasksSummary");}
+
   default String crmMailTasksSummarySubject() {return g("crmMailTasksSummarySubject");}
 
   default String crmMailTasksSummaryText() {return g("crmMailTasksSummaryText");}
@@ -1187,7 +1189,7 @@ public interface Dictionary {
 
   default String crmTaskForwardingForExecution() {return g("crmTaskForwardingForExecution");}
 
-  default String crmTaskLabelDelayedHours() {return g("crmTaskLabelDelayedHours");}
+  default String crmTaskLabelDelayed() {return g("crmTaskLabelDelayed");}
 
   default String crmTaskLabelLate() {return g("crmTaskLabelLate");}
 

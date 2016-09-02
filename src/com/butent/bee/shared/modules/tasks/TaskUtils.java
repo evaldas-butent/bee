@@ -41,6 +41,14 @@ import java.util.Set;
 
 public final class TaskUtils {
 
+  public enum SlackKind {
+    LATE, OPENING, ENDGAME, SCHEDULED;
+
+    public String getStyleName() {
+      return STYLE_SLACK_PREFIX + name().toLowerCase();
+    }
+  }
+
   private static final String NOTE_LABEL_SEPARATOR = ": ";
 
   private static final BiMap<String, String> taskPropertyToRelation = HashBiMap.create();
@@ -98,6 +106,42 @@ public final class TaskUtils {
   public static String getInsertNote(String label, String value) {
     return BeeUtils.join(NOTE_LABEL_SEPARATOR, label, BeeUtils
         .joinWords(Localized.dictionary().crmAdded().toLowerCase(), value));
+  }
+
+  public static TaskUtils.SlackKind getKind(DateTime start, DateTime finish, DateTime now) {
+
+    if (finish != null && TimeUtils.isLess(finish, now)) {
+      return SlackKind.LATE;
+    } else if (start != null && TimeUtils.isMore(finish, start) && TimeUtils.isMeq(now, start)
+        && TimeUtils.isLess(now, finish)) {
+      if (now.getTime() - start.getTime() < (finish.getTime() - start.getTime()) / 2) {
+        return SlackKind.OPENING;
+      } else {
+        return SlackKind.ENDGAME;
+      }
+
+    } else {
+      return null;
+    }
+  }
+
+  public static long getMinutes(SlackKind kind, DateTime start, DateTime finish, DateTime now) {
+
+    switch (kind) {
+      case LATE:
+        return (now.getTime() - finish.getTime()) / TimeUtils.MILLIS_PER_MINUTE;
+
+      case OPENING:
+      case ENDGAME:
+        return (finish.getTime() - now.getTime()) / TimeUtils.MILLIS_PER_MINUTE;
+
+      case SCHEDULED:
+        return TimeUtils.dayDiff(now, start) * TimeUtils.MINUTES_PER_DAY;
+
+      default:
+        Assert.untouchable();
+        return 0L;
+    }
   }
 
   public static Set<String> getRelationPropertyNames() {

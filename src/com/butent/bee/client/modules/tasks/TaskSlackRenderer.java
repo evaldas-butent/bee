@@ -15,6 +15,7 @@ import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -56,12 +57,12 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
       DateTime start = getStartDateTime(dataColumns, row);
       DateTime finish = getFinishDateTime(dataColumns, row);
 
-      SlackKind kind = getKind(start, finish, now);
+      TaskUtils.SlackKind kind = TaskUtils.getKind(start, finish, now);
       if (kind == null) {
         return null;
       }
 
-      long minutes = getMinutes(kind, start, finish, now);
+      long minutes = TaskUtils.getMinutes(kind, start, finish, now);
       String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getFormatedTimeLabel(minutes);
 
       XStyle style = new XStyle();
@@ -106,7 +107,7 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
 
   @Override
   public String render(IsRow row) {
-    Pair<SlackKind, Long> minutes = getMinutes(row);
+    Pair<TaskUtils.SlackKind, Long> minutes = getMinutes(row);
     if (minutes == null) {
       return null;
     } else if (minutes.bEquals(0L)) {
@@ -114,10 +115,10 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
     }
 
     String label = getFormatedTimeLabel(minutes.getB());
-    return createSlackBar(minutes.getA(), label);
+    return createSlackBar(minutes.getA().getStyleName(), label);
   }
 
-  public Pair<SlackKind, Long> getMinutes(IsRow row) {
+  public Pair<TaskUtils.SlackKind, Long> getMinutes(IsRow row) {
     if (row == null) {
       return null;
     }
@@ -142,12 +143,12 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
       DateTime start = getStartDateTime(dataColumns, row);
       DateTime finish = getFinishDateTime(dataColumns, row);
 
-      SlackKind kind = getKind(start, finish, now);
+      TaskUtils.SlackKind kind = TaskUtils.getKind(start, finish, now);
       if (kind == null) {
         return Pair.of(null, 0L);
       }
 
-      Long minutes = getMinutes(kind, start, finish, now);
+      Long minutes = TaskUtils.getMinutes(kind, start, finish, now);
       return Pair.of(kind, minutes);
     }
   }
