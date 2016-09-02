@@ -35,6 +35,14 @@ public class NotificationUserPanel extends SimpleUserPanel {
 
   private static final String STYLE_CALENDAR_CONTAINER = BeeConst.CSS_CLASS_PREFIX
       + "CalendarContainer";
+
+  private static final String STYLE_INFO_CONTAINER = BeeConst.CSS_CLASS_PREFIX
+      + "InfoContainer";
+
+  private static final String STYLE_INFO_TABLE = BeeConst.CSS_CLASS_PREFIX  + "InfoTable";
+  private static final String STYLE_INFO_LABEL = STYLE_INFO_TABLE + "-label";
+  private static final String STYLE_INFO_VALUE = STYLE_INFO_TABLE + "-value";
+
   private static final String STYLE_CALENDAR_MONTH_DAY = BeeConst.CSS_CLASS_PREFIX + "MonthDay";
   private static final String STYLE_CALENDAR_MONTH_DAY_TODAY = STYLE_CALENDAR_MONTH_DAY + "Today";
   private static final String STYLE_CALENDAR_WEEK_DAY = BeeConst.CSS_CLASS_PREFIX + "WeekDay";
@@ -47,6 +55,9 @@ public class NotificationUserPanel extends SimpleUserPanel {
 
   private static final String STYLE_USER_CONTROL_ICON = BeeConst.CSS_CLASS_PREFIX
       + "UserControlIcon";
+
+  private static final String STYLE_USER_CONTROL_ICON_INFO_CLICKED = STYLE_USER_CONTROL_ICON
+      + "-InfoClicked";
 
   private static final String STYLE_USER_PANEL = BeeConst.CSS_CLASS_PREFIX + "UserPanel";
 
@@ -62,7 +73,7 @@ public class NotificationUserPanel extends SimpleUserPanel {
   private Horizontal userSignatureContainer;
   private FaLabel menuHideAction;
   private Popup popup;
-
+  private FaLabel infoAction;
 
   @Override
   public String getName() {
@@ -170,6 +181,70 @@ public class NotificationUserPanel extends SimpleUserPanel {
     return userCal;
   }
 
+  private static Widget createInfoPanel() {
+    Flow infoPanel = new Flow();
+    Label lbl = new Label();
+    infoPanel.setStyleName(STYLE_INFO_CONTAINER);
+
+    HtmlTable table = new HtmlTable(STYLE_INFO_TABLE);
+
+    int row = 0;
+    int col = 0;
+
+    table.setWidget(row, col, new Image("images/bs-logo.png"));
+
+    if (!BeeUtils.isEmpty(Settings.getAppName())) {
+      lbl.setText(Settings.getAppName());
+    }
+
+    col++;
+    table.setWidget(row, col, lbl);
+    row++;
+
+    col = 0;
+
+    if (!BeeUtils.isEmpty(Settings.getLicence())) {
+      row = appendValue(table, row, col, Localized.dictionary().softwareLicenceNo(),
+          Settings.getLicence());
+    }
+
+    if (!BeeUtils.isEmpty(Settings.getVersion())) {
+      row = appendValue(table, row, col, Localized.dictionary().softwareVersion(),
+          Settings.getVersion());
+    }
+
+    if (!BeeUtils.isEmpty(Settings.getBuild())) {
+      row = appendValue(table, row, col, Localized.dictionary().softwareBuild(),
+          Settings.getBuild());
+    }
+
+    if (!BeeUtils.isEmpty(Settings.getReleaseDate())) {
+      row = appendValue(table, row, col, Localized.dictionary().softwareReleaseDate(),
+          Settings.getReleaseDate());
+    }
+
+    table.getCellFormatter().setColSpan(0, 1, 2);
+    table.getCellFormatter().setStyleName(0, 1, STYLE_INFO_VALUE);
+    table.getCellFormatter().setRowSpan(0, 0, row);
+
+    infoPanel.add(table);
+    return infoPanel;
+  }
+
+  private static int appendValue(HtmlTable table, int row, int col, String key, String val) {
+    int r = row;
+    int c = col;
+    table.getCellFormatter().setStyleName(r, c, STYLE_INFO_LABEL);
+    table.setWidget(r, c, new Label(key));
+
+    c++;
+    table.getCellFormatter().setStyleName(r, c, STYLE_INFO_VALUE);
+    table.setWidget(r, c, new Label(val));
+
+    r++;
+    return r;
+  }
+
   private static void styleMenuToggle(Widget toggle, boolean visible) {
     toggle.setStyleName(STYLE_USER_MENU_ICON, visible);
     toggle.setStyleName(STYLE_USER_MENU_ICON_SELECTED, !visible);
@@ -183,6 +258,7 @@ public class NotificationUserPanel extends SimpleUserPanel {
 
     createSettingsAction();
     createHelpAction();
+    createInfoAction();
     createMenuHideAction();
 
     panelHeader.add(commandPanel);
@@ -196,6 +272,17 @@ public class NotificationUserPanel extends SimpleUserPanel {
 
     if (commandPanel != null) {
       commandPanel.add(helpAction);
+    }
+  }
+
+  private void createInfoAction() {
+    infoAction = new FaLabel(FontAwesome.INFO, STYLE_USER_CONTROL_ICON);
+
+    infoAction.setTitle(Localized.dictionary().additionalInfo());
+    infoAction.addClickHandler(arg1 -> onInfoActionClick());
+
+    if (commandPanel != null) {
+      commandPanel.add(infoAction);
     }
   }
 
@@ -296,5 +383,22 @@ public class NotificationUserPanel extends SimpleUserPanel {
 
     popup.setPopupPositionAndShow((offsetWidth, offsetHeight)
         -> popup.setPopupPosition(DomUtils.getClientWidth() - offsetWidth, 0));
+  }
+
+  private void onInfoActionClick() {
+    if (infoAction == null) {
+      return;
+    }
+
+    infoAction.setStyleName(STYLE_USER_CONTROL_ICON_INFO_CLICKED,
+        !StyleUtils.hasClassName(infoAction.getElement(), STYLE_USER_CONTROL_ICON_INFO_CLICKED));
+
+    if (notificationPanel == null) {
+      return;
+    }
+
+    notificationPanel.setWidget(1, 0,
+        StyleUtils.hasClassName(infoAction.getElement(), STYLE_USER_CONTROL_ICON_INFO_CLICKED)
+            ? createInfoPanel() : createCalendarPanel());
   }
 }

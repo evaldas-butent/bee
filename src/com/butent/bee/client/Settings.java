@@ -44,6 +44,10 @@ public final class Settings {
     }
   }
 
+  public static String getBuild() {
+    return getString("build");
+  }
+
   public static int getClickSensitivityDistance() {
     return getInt("clickSensitivityDistance");
   }
@@ -139,6 +143,10 @@ public final class Settings {
     return BeeUtils.isDouble(d) ? BeeUtils.round(d) : null;
   }
 
+  public static String getLicence() {
+    return getString("licence");
+  }
+
   public static int getLoadingStateDelayMillis() {
     return getInt("loadingStateDelayMillis");
   }
@@ -199,6 +207,10 @@ public final class Settings {
 
   public static int getReducedInteractionStatusMinutes() {
     return getInt("reducedInteractionStatusMinutes");
+  }
+
+  public static String getReleaseDate() {
+    return getString("releaseDate");
   }
 
   public static List<String> getScripts() {
