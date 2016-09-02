@@ -258,6 +258,8 @@ public final class TradeConstants {
   public static final String ALS_TRADE_STATUS_NAME = "TradeStatusName";
   public static final String ALS_TRADE_STATUS = "TradeStatus";
 
+  public static final String ALS_EXPENDITURE_TYPE_SUPPLIER = "TypeSupplier";
+
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";
 

@@ -621,8 +621,21 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         if (event.isBefore(VIEW_TRIPS, VIEW_EXPEDITION_TRIPS)
             && BeeConst.isUndef(DataUtils.getColumnIndex(COL_TRIP_NO, event.getColumns()))) {
 
-          String prefix = prm.getText(PRM_TRIP_PREFIX);
+          BeeParameter parameter = prm.getParameter(PRM_TRIP_PREFIX);
+          String prefix;
 
+          if (parameter.supportsUsers()) {
+            Long userId;
+
+            if (!BeeConst.isUndef(DataUtils.getColumnIndex(COL_TRIP_MANAGER, event.getColumns()))) {
+              userId = DataUtils.getLong(event.getColumns(), event.getRow(), COL_TRIP_MANAGER);
+            } else {
+              userId = usr.getCurrentUserId();
+            }
+            prefix = parameter.getText(userId);
+          } else {
+            prefix = parameter.getText();
+          }
           /* @since Hoptransa TaskID 17242 trip number elementing under braces {*/
           String nextNumber = qs.getNextNumber(TBL_TRIPS, COL_TRIP_NO,
               BeeUtils.isEmpty(prefix) ? null : prefix, null);
