@@ -519,6 +519,26 @@ public class ChatBean {
     return qs.updateDataWithResponse(update);
   }
 
+  public void putMessage(String input, Long userId, Map<String, String> linkData) {
+    Boolean activeAssistant = qs.getBoolean(new SqlSelect()
+        .addFields(TBL_USER_SETTINGS, COL_ASSISTANT)
+        .addFrom(TBL_USER_SETTINGS)
+        .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId)));
+
+    if (BeeUtils.isTrue(activeAssistant)) {
+      String messageText = BeeUtils.joinItems(
+          usr.getDictionary(userId).chatReminderTitle(),
+          input);
+
+      ChatItem chatItem = new ChatItem(0, messageText, linkData);
+      ChatMessage message = new ChatMessage(0, chatItem);
+
+      message.getChatItem().setTime(System.currentTimeMillis());
+
+      Endpoint.sendToUser(userId, message);
+    }
+  }
+
   private ResponseObject putMessage(RequestInfo reqInfo) {
     String input = reqInfo.getParameter(COL_CHAT_MESSAGE);
     if (BeeUtils.isEmpty(input)) {

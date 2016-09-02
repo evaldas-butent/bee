@@ -32,5 +32,6 @@
 
     <Boolean name="MenuHide" />
     <Boolean name="ShowNewMessagesNotifier" label="=showNewMessagesNotifier" />
+    <Boolean name="Assistant" label="=assistant" />
   </Fields>
 </Table>

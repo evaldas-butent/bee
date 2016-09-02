@@ -6,10 +6,13 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -19,6 +22,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.modules.classifiers.TimerBuilder;
 import com.butent.bee.server.modules.tasks.TasksModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.HasConditions;
@@ -29,6 +33,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -39,7 +44,9 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -67,16 +74,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Singleton;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 
 /**
  * Server-side Projects module bean.
  */
-@Stateless
+@Singleton
+@Lock(LockType.READ)
 @LocalBean
-public class ProjectsModuleBean implements BeeModule {
+public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
 
   @EJB
   SystemBean sys;
@@ -95,6 +109,12 @@ public class ProjectsModuleBean implements BeeModule {
 
   @EJB
   TasksModuleBean tasksBean;
+
+  @EJB
+  ChatBean chat;
+
+  @Resource
+  TimerService timerService;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -162,6 +182,11 @@ public class ProjectsModuleBean implements BeeModule {
   @Override
   public String getResourcePath() {
     return getModule().getName();
+  }
+
+  @Override
+  public TimerService getTimerService() {
+    return timerService;
   }
 
   @Override
@@ -337,6 +362,27 @@ public class ProjectsModuleBean implements BeeModule {
           }
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void updateTimers(DataEvent.ViewModifyEvent event) {
+        if (event.isAfter(VIEW_PROJECT_DATES)) {
+          if (event instanceof DataEvent.ViewInsertEvent) {
+            DataEvent.ViewInsertEvent ev = (DataEvent.ViewInsertEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_DATES_START_DATE)) {
+              createOrUpdateTimers(TIMER_REMIND_PROJECT_DATES,
+                  VIEW_PROJECT_DATES, ev.getRow().getId());
+            }
+
+          } else if (event instanceof DataEvent.ViewUpdateEvent) {
+            DataEvent.ViewUpdateEvent ev = (DataEvent.ViewUpdateEvent) event;
+            if (DataUtils.contains(ev.getColumns(), COL_DATES_START_DATE)) {
+              createOrUpdateTimers(TIMER_REMIND_PROJECT_DATES,
+                  VIEW_PROJECT_DATES, ev.getRow().getId());
+            }
+          }
+        }
+      }
     });
 
     news.registerUsageQueryProvider(Feed.PROJECT, new ProjectsUsageQueryProvider());
@@ -382,6 +428,69 @@ public class ProjectsModuleBean implements BeeModule {
             return conditions;
           }
         });
+
+    buildTimers(TIMER_REMIND_PROJECT_DATES);
+  }
+
+  @Override
+  public void onTimeout(String timerInfo) {
+    if (BeeUtils.isPrefix(timerInfo, TIMER_REMIND_PROJECT_DATES)) {
+      Long dateId = BeeUtils.toLong(BeeUtils.removePrefix(timerInfo, TIMER_REMIND_PROJECT_DATES));
+
+      if (DataUtils.isId(dateId)) {
+        notifyProjectDate(dateId);
+      }
+    }
+  }
+
+  @Override
+  protected List<Timer> createTimers(String timerIdentifier, IsCondition wh) {
+    List<Timer> timersList = new ArrayList<>();
+    if (BeeUtils.same(timerIdentifier, TIMER_REMIND_PROJECT_DATES)) {
+      SimpleRowSet data = qs.getData(new SqlSelect()
+          .addFields(VIEW_PROJECT_DATES, sys.getIdName(VIEW_PROJECT_DATES), COL_DATES_START_DATE,
+              COL_DATES_NOTE)
+          .addFrom(VIEW_PROJECT_DATES)
+          .setWhere(SqlUtils.and(wh,
+              SqlUtils.more(VIEW_PROJECT_DATES, COL_DATES_START_DATE,
+                                                    Value.getValue(System.currentTimeMillis())))));
+
+      for (SimpleRowSet.SimpleRow row : data) {
+        Long timerId = row.getLong(sys.getIdName(VIEW_PROJECT_DATES));
+        DateTime timerTime = TimeUtils.toDateTimeOrNull(row.getValue(COL_DATES_START_DATE));
+
+        if (timerTime == null || !TimeUtils.hasTimePart(timerTime)) {
+          continue;
+        }
+
+        if (timerTime.getTime() > System.currentTimeMillis()) {
+          Timer timer = timerService.createSingleActionTimer(timerTime.getJava(),
+              new TimerConfig(TIMER_REMIND_PROJECT_DATES + timerId, false));
+
+
+          if (timer != null) {
+            timersList.add(timer);
+          }
+        }
+      }
+    }
+    return timersList;
+  }
+
+  @Override
+  protected  Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
+      String viewName, Long relationId) {
+    if (BeeUtils.same(timerIdentifier, TIMER_REMIND_PROJECT_DATES)) {
+      IsCondition wh;
+
+      if (BeeUtils.same(viewName, VIEW_PROJECT_DATES)) {
+        wh = SqlUtils.equals(VIEW_PROJECT_DATES, sys.getIdName(VIEW_PROJECT_DATES), relationId);
+        List<String> timerIdentifiersIds = new ArrayList<>();
+        timerIdentifiersIds.add(timerIdentifier + relationId);
+        return Pair.of(wh, timerIdentifiersIds);
+      }
+    }
+    return null;
   }
 
   private static void fillUnitProperties(BeeRowSet units, long defUnit) {
@@ -1102,5 +1211,35 @@ public class ProjectsModuleBean implements BeeModule {
     fillUnitProperties(units, defUnit);
 
     return ResponseObject.response(units);
+  }
+
+  private void notifyProjectDate(Long projectDateId) {
+    if (DataUtils.isId(projectDateId)) {
+      SimpleRowSet data = qs.getData(new SqlSelect()
+          .addFields(VIEW_PROJECT_DATES, COL_DATES_NOTE, COL_DATES_START_DATE)
+          .addFields(VIEW_PROJECTS, sys.getIdName(VIEW_PROJECTS), COL_PROJECT_NAME, COL_OWNER)
+          .addFrom(VIEW_PROJECT_DATES)
+          .addFromInner(VIEW_PROJECTS,
+              sys.joinTables(VIEW_PROJECTS, VIEW_PROJECT_DATES, COL_PROJECT))
+          .setWhere(SqlUtils.equals(
+                            VIEW_PROJECT_DATES, sys.getIdName(VIEW_PROJECT_DATES), projectDateId)));
+
+      for (SimpleRow row : data) {
+        Long userId = row.getLong(COL_OWNER);
+        Dictionary dic = usr.getDictionary(userId);
+        Map<String, String> linkData = Maps.newHashMap();
+        linkData.put(VIEW_PROJECTS, row.getValue(sys.getIdName(VIEW_PROJECTS)));
+
+        if (DataUtils.isId(userId) && dic != null) {
+          chat.putMessage(
+              BeeUtils.joinWords(dic.project(), row.getValue(COL_PROJECT_NAME),
+                  dic.prjDates(), row.getDateTime(COL_DATES_START_DATE).toCompactString(),
+                  BeeUtils.isEmpty(row.getValue(COL_DATES_NOTE))
+                      ? "" :  dic.note(), row.getValue(COL_DATES_NOTE)),
+              userId,
+              linkData);
+        }
+      }
+    }
   }
 }
