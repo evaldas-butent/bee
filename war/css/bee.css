@@ -2753,12 +2753,13 @@
 }
 
 .bee-News-content {
-  position: absolute;
+  /*position: absolute;
   top: 200px;
   bottom: 0;
   left: 0;
   right: 0;
   overflow: auto;
+  */
 }
 
 .bee-News-subscription-panel {
@@ -3702,6 +3703,7 @@ textarea,
   height: 100%;
   outline: 9999px solid rgba(0,0,0,0.7);
   background-color: #f2f2f2;
+  overflow: auto;
 }
 
 .bee-NotificationBar-Content {
@@ -3714,6 +3716,30 @@ textarea,
   display: -ms-flexbox;
   background-color: #F2F2F2;
   height: 100px;
+}
+
+.bee-InfoContainer {
+  display: inline;
+  background-color: #F2F2F2;
+  min-height: 100px;
+  padding: 3px;
+}
+
+.bee-InfoTable-label {
+  text-align: right;
+  padding: 2px;
+  font-size: smaller;
+}
+
+.bee-InfoTable .bee-Image {
+  padding-right: 1em;
+}
+
+.bee-InfoTable-value {
+  text-align: left;
+  padding: 2px;
+  color: #414142;
+  font-weight: bolder;
 }
 
 .bee-MonthDay {
@@ -3743,24 +3769,28 @@ textarea,
 
 .bee-UserControlIcon {
   font-size: 20px;
-  padding: 0 15px 0 20px;
+  padding: 0 10px 0 15px;
   color: #989898;
 }
 
 .bee-UserMenuIcon {
   font-size: 20px;
-  padding: 0 15px 0 20px;
+  padding: 0 10px 0 15px;
   color: #989898;
   transform: rotate(30deg);
 }
 
 .bee-UserMenuIcon-Selected {
   font-size: 20px;
-  padding: 0 15px 0 20px;
+  padding: 0 10px 0 15px;
   color: black;
 }
 
 .bee-UserControlIcon:hover {
+  color: black;
+}
+
+.bee-UserControlIcon-InfoClicked {
   color: black;
 }
 

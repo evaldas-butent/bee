@@ -4431,6 +4431,14 @@ public interface Dictionary {
 
   default String socialContacts() {return g("socialContacts");}
 
+  default String softwareBuild() {return g("softwareBuild");}
+
+  default String softwareLicenceNo() {return g("softwareLicenceNo");}
+
+  default String softwareReleaseDate() {return g("softwareReleaseDate");}
+
+  default String softwareVersion() {return g("softwareVersion");}
+
   default String sorry() {return g("sorry");}
 
   default String sort() {return g("sort");}

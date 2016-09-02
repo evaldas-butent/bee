@@ -165,7 +165,7 @@ public final class Global {
   public static void confirm(String caption, Icon icon, List<String> messages,
       String optionYes, String optionNo, ConfirmationCallback callback, Element target) {
     msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback,
-        MessageBoxes.STYLE_MASSAGE_BOX_CONFIRM, null, null, target);
+        MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null, null, target);
   }
 
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
@@ -177,7 +177,7 @@ public final class Global {
       ConfirmationCallback callback, Element target) {
     msgBoxen.confirm(caption, icon, messages, Localized.dictionary().delete(),
         Localized.dictionary().cancel(), callback,
-        MessageBoxes.STYLE_MASSAGE_BOX_DELETE, null, null, target);
+        MessageBoxes.STYLE_MESSAGE_BOX_DELETE, null, null, target);
   }
 
   public static void confirmRemove(String caption, String item, ConfirmationCallback callback) {
@@ -188,7 +188,7 @@ public final class Global {
       Element target) {
     List<String> messages = Lists.newArrayList(Localized.dictionary().removeQuestion(item));
     msgBoxen.confirm(caption, Icon.WARNING, messages, Localized.dictionary().actionRemove(),
-        Localized.dictionary().cancel(), callback, MessageBoxes.STYLE_MASSAGE_BOX_DELETE,
+        Localized.dictionary().cancel(), callback, MessageBoxes.STYLE_MESSAGE_BOX_DELETE,
        null, null, target);
   }
 
@@ -497,7 +497,7 @@ public final class Global {
   }
 
   public static void showError(List<String> messages) {
-    showError(Localized.dictionary().error(), messages, MessageBoxes.STYLE_MASSAGE_BOX_CONFIRM,
+    showError(Localized.dictionary().error(), messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM,
         null);
   }
 
@@ -511,7 +511,7 @@ public final class Global {
   }
 
   public static void showError(String caption, List<String> messages) {
-    showError(caption, messages, MessageBoxes.STYLE_MASSAGE_BOX_CONFIRM, null);
+    showError(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null);
   }
 
   public static void showError(String caption, List<String> messages, String dialogStyle) {
@@ -524,7 +524,7 @@ public final class Global {
   }
 
   public static void showInfo(List<String> messages) {
-    showInfo(null, messages, MessageBoxes.STYLE_MASSAGE_BOX_CONFIRM, null);
+    showInfo(null, messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null);
   }
 
   public static void showInfo(String message) {
@@ -537,7 +537,7 @@ public final class Global {
   }
 
   public static void showInfo(String caption, List<String> messages) {
-    showInfo(caption, messages, MessageBoxes.STYLE_MASSAGE_BOX_CONFIRM, null);
+    showInfo(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null);
   }
 
   public static void showInfo(String caption, List<String> messages, String dialogStyle) {
