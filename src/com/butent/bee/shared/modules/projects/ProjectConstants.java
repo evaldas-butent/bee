@@ -162,6 +162,8 @@ public final class ProjectConstants {
   public static final String FORM_NEW_PROJECT_FROM_TEMPLATE = "NewProjectFromTemplate";
   public static final String FORM_NEW_PROJECT_FROM_TASK = "NewProjectFromTask";
 
+  public static final String FORM_PROJECT_DATE = "ProjectDate";
+
   public static final String GRID_ALL_PROJECTS = "AllProjects";
   public static final String GRID_PROJECTS = "Projects";
   public static final String GRID_PROJECT_USERS = "ProjectUsers";
