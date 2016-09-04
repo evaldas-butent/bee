@@ -147,7 +147,7 @@ final class Places {
     }
   }
 
-  static void setCountries(BeeRowSet rowSet) {
+  static int setCountries(BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet)) {
       Places.countries = rowSet;
 
@@ -155,16 +155,26 @@ final class Places {
         Places.countryCodeIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_CODE);
         Places.countryNameIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_NAME);
       }
+
+      return rowSet.getNumberOfRows();
+
+    } else {
+      return 0;
     }
   }
 
-  static void setCities(BeeRowSet rowSet) {
+  static int setCities(BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet)) {
       Places.cities = rowSet;
 
       if (BeeConst.isUndef(cityNameIndex)) {
         Places.cityNameIndex = rowSet.getColumnIndex(ClassifierConstants.COL_CITY_NAME);
       }
+
+      return rowSet.getNumberOfRows();
+
+    } else {
+      return 0;
     }
   }
 

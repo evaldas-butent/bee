@@ -44,6 +44,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.DateTime;
@@ -141,6 +143,8 @@ final class DriverTimeBoard extends ChartBase {
       this.range = range;
     }
   }
+
+  private static final BeeLogger logger = LogUtils.getLogger(DriverTimeBoard.class);
 
   static final String SUPPLIER_KEY = "driver_time_board";
   private static final String DATA_SERVICE = SVC_GET_DTB_DATA;
@@ -447,7 +451,9 @@ final class DriverTimeBoard extends ChartBase {
       return;
     }
 
+    long millis = System.currentTimeMillis();
     BeeRowSet brs = BeeRowSet.getIfPresent(properties, PROP_DRIVERS);
+
     if (!DataUtils.isEmpty(brs)) {
       int firstNameIndex = brs.getColumnIndex(ClassifierConstants.COL_FIRST_NAME);
       int lastNameIndex = brs.getColumnIndex(ClassifierConstants.COL_LAST_NAME);
@@ -465,13 +471,17 @@ final class DriverTimeBoard extends ChartBase {
             row.getDate(experienceIndex), row.getString(notesIndex),
             DataUtils.parseIdSet(row.getProperty(PROP_DRIVER_GROUPS))));
       }
+
+      logger.debug(PROP_DRIVERS, drivers.size(), TimeUtils.elapsedMillis(millis));
     }
 
     if (drivers.isEmpty()) {
       return;
     }
 
+    millis = System.currentTimeMillis();
     brs = BeeRowSet.getIfPresent(properties, PROP_ABSENCE);
+
     if (!DataUtils.isEmpty(brs)) {
       int driverIndex = brs.getColumnIndex(COL_DRIVER);
 
@@ -496,20 +506,27 @@ final class DriverTimeBoard extends ChartBase {
               row.getString(bgIndex), row.getString(fgIndex), row.getString(notesIndex)));
         }
       }
+
+      logger.debug(PROP_ABSENCE, driverAbsence.size(), TimeUtils.elapsedMillis(millis));
     }
 
+    millis = System.currentTimeMillis();
     SimpleRowSet srs = SimpleRowSet.getIfPresent(properties, PROP_FREIGHTS);
+
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO));
         freights.put(row.getLong(COL_TRIP_ID),
             Freight.create(row, handlingSpan.getA(), handlingSpan.getB()));
       }
+      logger.debug(PROP_FREIGHTS, freights.size(), TimeUtils.elapsedMillis(millis));
     }
 
     Multimap<Long, Driver> tripDrivers = HashMultimap.create();
 
+    millis = System.currentTimeMillis();
     srs = SimpleRowSet.getIfPresent(properties, PROP_TRIP_DRIVERS);
+
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         Long driverId = row.getLong(COL_DRIVER);
@@ -529,9 +546,13 @@ final class DriverTimeBoard extends ChartBase {
               dateFrom, dateTo, note));
         }
       }
+
+      logger.debug(PROP_TRIP_DRIVERS, driverTrips.size(), TimeUtils.elapsedMillis(millis));
     }
 
+    millis = System.currentTimeMillis();
     srs = SimpleRowSet.getIfPresent(properties, PROP_TRIPS);
+
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         Long tripId = row.getLong(COL_TRIP_ID);
@@ -578,14 +599,19 @@ final class DriverTimeBoard extends ChartBase {
           trips.put(tripId, new Trip(row, td));
         }
       }
+
+      logger.debug(PROP_TRIPS, trips.size(), TimeUtils.elapsedMillis(millis));
     }
 
+    millis = System.currentTimeMillis();
     for (DriverTrip driverTrip : driverTrips.values()) {
       Trip trip = trips.get(driverTrip.tripId);
       if (trip != null) {
         driverTrip.adjustRange(trip.getRange());
       }
     }
+
+    logger.debug("driver trips adjust range", TimeUtils.elapsedMillis(millis));
   }
 
   @Override

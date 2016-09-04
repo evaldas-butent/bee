@@ -51,6 +51,8 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -75,6 +77,8 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract class ChartBase extends TimeBoard {
+
+  private static final BeeLogger logger = LogUtils.getLogger(ChartBase.class);
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-chart-";
 
@@ -507,6 +511,9 @@ public abstract class ChartBase extends TimeBoard {
 
   @Override
   protected boolean setData(ResponseObject response, boolean init) {
+    long startMillis = System.currentTimeMillis();
+    long millis;
+
     if (!Queries.checkResponse(getCaption(), null, response, BeeRowSet.class)) {
       return false;
     }
@@ -514,24 +521,34 @@ public abstract class ChartBase extends TimeBoard {
     BeeRowSet rowSet = BeeRowSet.restore((String) response.getResponse());
     setSettings(rowSet);
 
+    logger.debug(rowSet.getViewName(), TimeUtils.elapsedMillis(startMillis));
+
     String serialized = rowSet.getTableProperty(PROP_COUNTRIES);
     if (!BeeUtils.isEmpty(serialized)) {
-      Places.setCountries(BeeRowSet.restore(serialized));
+      millis = System.currentTimeMillis();
+      int size = Places.setCountries(BeeRowSet.restore(serialized));
+      logger.debug(PROP_COUNTRIES, size, TimeUtils.elapsedMillis(millis));
     }
 
     serialized = rowSet.getTableProperty(PROP_CITIES);
     if (!BeeUtils.isEmpty(serialized)) {
-      Places.setCities(BeeRowSet.restore(serialized));
+      millis = System.currentTimeMillis();
+      int size = Places.setCities(BeeRowSet.restore(serialized));
+      logger.debug(PROP_CITIES, size, TimeUtils.elapsedMillis(millis));
     }
 
     serialized = rowSet.getTableProperty(PROP_COLORS);
     if (!BeeUtils.isEmpty(serialized)) {
-      restoreColors(serialized);
+      millis = System.currentTimeMillis();
+      int size = restoreColors(serialized);
+      logger.debug(PROP_COLORS, size, TimeUtils.elapsedMillis(millis));
     }
 
     transportGroups.clear();
     serialized = rowSet.getTableProperty(PROP_TRANSPORT_GROUPS);
     if (!BeeUtils.isEmpty(serialized)) {
+      millis = System.currentTimeMillis();
+
       BeeRowSet groups = BeeRowSet.restore(serialized);
       int nameIndex = groups.getColumnIndex(COL_GROUP_NAME);
 
@@ -541,6 +558,7 @@ public abstract class ChartBase extends TimeBoard {
           transportGroups.put(group.getId(), name);
         }
       }
+      logger.debug(PROP_TRANSPORT_GROUPS, transportGroups.size(), TimeUtils.elapsedMillis(millis));
     }
 
     cargoTypeColors.clear();
@@ -548,6 +566,8 @@ public abstract class ChartBase extends TimeBoard {
 
     serialized = rowSet.getTableProperty(PROP_CARGO_TYPES);
     if (!BeeUtils.isEmpty(serialized)) {
+      millis = System.currentTimeMillis();
+
       BeeRowSet cargoTypes = BeeRowSet.restore(serialized);
 
       int nameIndex = cargoTypes.getColumnIndex(COL_CARGO_TYPE_NAME);
@@ -569,26 +589,41 @@ public abstract class ChartBase extends TimeBoard {
               new Color(cargoType.getLong(colorIndex), bg.trim(), BeeUtils.trim(fg)));
         }
       }
+
+      logger.debug(PROP_CARGO_TYPES, cargoTypeNames.size(), cargoTypeColors.size(),
+          TimeUtils.elapsedMillis(millis));
     }
 
     cargoHandling.clear();
     serialized = rowSet.getTableProperty(PROP_CARGO_HANDLING);
     if (!BeeUtils.isEmpty(serialized)) {
+      millis = System.currentTimeMillis();
+
       SimpleRowSet srs = SimpleRowSet.restore(serialized);
       for (SimpleRow row : srs) {
         cargoHandling.put(row.getLong(COL_CARGO), new CargoHandling(row));
       }
+
+      logger.debug(PROP_CARGO_HANDLING, cargoHandling.size(), TimeUtils.elapsedMillis(millis));
     }
 
+    millis = System.currentTimeMillis();
     initData(rowSet.getTableProperties());
-    updateMaxRange();
+    logger.debug("init data", TimeUtils.elapsedMillis(millis));
 
+    millis = System.currentTimeMillis();
+    updateMaxRange();
+    logger.debug("update max range", TimeUtils.elapsedMillis(millis));
+
+    millis = System.currentTimeMillis();
     if (init) {
       initFilterData();
     } else {
       updateFilterData();
     }
+    logger.debug(init ? "init" : "update", "filter data", TimeUtils.elapsedMillis(millis));
 
+    logger.debug("total set data", TimeUtils.elapsedMillis(startMillis));
     return true;
   }
 
@@ -1021,7 +1056,7 @@ public abstract class ChartBase extends TimeBoard {
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        restoreColors((String) response.getResponse());
+        restoreColors(response.getResponseAsString());
         render(false);
       }
     });

@@ -1381,7 +1381,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     TimeBoardHelper.renderVisibleRange(this, panel, getChartLeft(), getHeaderHeight());
   }
 
-  protected void restoreColors(String serialized) {
+  protected int restoreColors(String serialized) {
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (arr != null && arr.length > 0) {
       colors.clear();
@@ -1392,6 +1392,11 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
           colors.add(color);
         }
       }
+
+      return colors.size();
+
+    } else {
+      return 0;
     }
   }
 

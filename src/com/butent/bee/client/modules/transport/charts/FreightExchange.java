@@ -42,6 +42,8 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -60,6 +62,8 @@ import java.util.Objects;
 import java.util.Set;
 
 final class FreightExchange extends ChartBase {
+
+  private static final BeeLogger logger = LogUtils.getLogger(FreightExchange.class);
 
   static final String SUPPLIER_KEY = "freight_exchange";
   private static final String DATA_SERVICE = SVC_GET_FX_DATA;
@@ -295,12 +299,16 @@ final class FreightExchange extends ChartBase {
   protected void initData(Map<String, String> properties) {
     items.clear();
 
+    long millis = System.currentTimeMillis();
     SimpleRowSet srs = SimpleRowSet.getIfPresent(properties, PROP_ORDER_CARGO);
+
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO_ID));
         items.add(OrderCargo.create(row, handlingSpan.getA(), handlingSpan.getB()));
       }
+
+      logger.debug(PROP_ORDER_CARGO, items.size(), TimeUtils.elapsedMillis(millis));
     }
   }
 
