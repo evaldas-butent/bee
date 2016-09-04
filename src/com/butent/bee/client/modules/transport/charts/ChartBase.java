@@ -91,19 +91,19 @@ public abstract class ChartBase extends TimeBoard {
     final ViewCallback showCallback = result -> BeeKeeper.getScreen().show(result);
 
     MenuService.FREIGHT_EXCHANGE.setHandler(parameters -> FreightExchange.open(showCallback));
-    ViewFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, cb -> FreightExchange.open(cb));
+    ViewFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, FreightExchange::open);
 
     MenuService.SHIPPING_SCHEDULE.setHandler(parameters -> ShippingSchedule.open(showCallback));
-    ViewFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, cb -> ShippingSchedule.open(cb));
+    ViewFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, ShippingSchedule::open);
 
     MenuService.DRIVER_TIME_BOARD.setHandler(parameters -> DriverTimeBoard.open(showCallback));
-    ViewFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, cb -> DriverTimeBoard.open(cb));
+    ViewFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, DriverTimeBoard::open);
 
     MenuService.TRUCK_TIME_BOARD.setHandler(parameters -> TruckTimeBoard.open(showCallback));
-    ViewFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, cb -> TruckTimeBoard.open(cb));
+    ViewFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, TruckTimeBoard::open);
 
     MenuService.TRAILER_TIME_BOARD.setHandler(parameters -> TrailerTimeBoard.open(showCallback));
-    ViewFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, cb -> TrailerTimeBoard.open(cb));
+    ViewFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, TrailerTimeBoard::open);
   }
 
   private final Map<Long, String> transportGroups = new HashMap<>();
@@ -343,7 +343,7 @@ public abstract class ChartBase extends TimeBoard {
 
   protected abstract String getDataService();
 
-  protected int getDefaultDayColumnWidth(int chartWidth) {
+  protected static int getDefaultDayColumnWidth(int chartWidth) {
     return Math.max(chartWidth / 10, 1);
   }
 

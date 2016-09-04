@@ -427,7 +427,6 @@ final class FilterHelper {
     int dataWrapperWidth = Math.min(dataContainerWidth, dialogMaxWidth);
     int dataWrapperHeight = dataContainerHeight + DomUtils.getScrollBarHeight();
 
-    int contentWidth = dataWrapperWidth;
     int contentHeight = dataWrapperHeight + SAVED_FILTERS_HEIGHT + COMMAND_GROUP_HEIGHT;
 
     final DialogBox dialog = DialogBox.create(Localized.dictionary().filter(), STYLE_DIALOG);
@@ -479,13 +478,12 @@ final class FilterHelper {
     clear.addStyleName(STYLE_COMMAND_CLEAR);
     commands.add(clear);
 
-    Button configure = new Button(Localized.dictionary().actionConfigure(), event -> {
-      configureDataTypes(filterData, EventUtils.getEventTargetElement(event), result -> {
-        dialog.setAnimationEnabled(false);
-        dialog.close();
-        callback.onDataTypesChange(result);
-      });
-    });
+    Button configure = new Button(Localized.dictionary().actionConfigure(),
+        event -> configureDataTypes(filterData, EventUtils.getEventTargetElement(event), result -> {
+          dialog.setAnimationEnabled(false);
+          dialog.close();
+          callback.onDataTypesChange(result);
+        }));
     configure.addStyleName(STYLE_COMMAND_CONFIGURE);
     commands.add(configure);
 
@@ -507,7 +505,7 @@ final class FilterHelper {
     StyleUtils.setSize(dataWrapper, dataWrapperWidth, dataWrapperHeight);
 
     Flow content = new Flow(STYLE_CONTENT);
-    StyleUtils.setSize(content, contentWidth, contentHeight);
+    StyleUtils.setSize(content, dataWrapperWidth, contentHeight);
 
     content.add(dataWrapper);
     content.add(savedContainer);

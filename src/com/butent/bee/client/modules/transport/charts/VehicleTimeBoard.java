@@ -249,7 +249,7 @@ abstract class VehicleTimeBoard extends ChartBase {
             int freightCount = 0;
 
             for (Freight freight : freights.get(trip.getTripId())) {
-              boolean freightMatch = (cargoMatcher == null) ? true : cargoMatcher.matches(freight);
+              boolean freightMatch = cargoMatcher == null || cargoMatcher.matches(freight);
 
               if (freightMatch && placeMatcher != null) {
                 boolean ok = placeMatcher.matches(freight);
@@ -757,7 +757,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
       for (HasDateRange item : layout.getInactivity()) {
         if (item instanceof VehicleService) {
-          offWidget = ((VehicleService) item).createWidget(this, STYLE_SERVICE_PANEL,
+          offWidget = ((VehicleService) item).createWidget(STYLE_SERVICE_PANEL,
               STYLE_SERVICE_LABEL);
         } else {
           offWidget = new CustomDiv(STYLE_INACTIVE);
@@ -835,12 +835,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     StyleUtils.setLeft(numberMover, getNumberWidth() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
     StyleUtils.setHeight(numberMover, height);
 
-    numberMover.addMoveHandler(new MoveEvent.Handler() {
-      @Override
-      public void onMove(MoveEvent event) {
-        onNumberResize(event);
-      }
-    });
+    numberMover.addMoveHandler(this::onNumberResize);
 
     panel.add(numberMover);
 
@@ -849,12 +844,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       StyleUtils.setLeft(infoMover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
       StyleUtils.setHeight(infoMover, height);
 
-      infoMover.addMoveHandler(new MoveEvent.Handler() {
-        @Override
-        public void onMove(MoveEvent event) {
-          onInfoResize(event);
-        }
-      });
+      infoMover.addMoveHandler(this::onInfoResize);
 
       panel.add(infoMover);
     }
@@ -914,7 +904,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     return panel;
   }
 
-  private IdentifiableWidget createInfoWidget(Vehicle vehicle, boolean hasOverlap) {
+  private static IdentifiableWidget createInfoWidget(Vehicle vehicle, boolean hasOverlap) {
     Simple panel = new Simple();
     panel.addStyleName(STYLE_INFO_PANEL);
     if (hasOverlap) {

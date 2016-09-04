@@ -43,7 +43,7 @@ class ChartData implements HasEnabled {
 
     @Override
     public boolean equals(Object obj) {
-      return (obj instanceof Item) ? Objects.equals(name, ((Item) obj).name) : false;
+      return obj instanceof Item && Objects.equals(name, ((Item) obj).name);
     }
 
     @Override

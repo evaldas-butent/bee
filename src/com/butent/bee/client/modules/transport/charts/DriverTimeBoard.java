@@ -289,7 +289,7 @@ final class DriverTimeBoard extends ChartBase {
             int freightCount = 0;
 
             for (Freight freight : freights.get(tripId)) {
-              boolean freightMatch = (cargoMatcher == null) ? true : cargoMatcher.matches(freight);
+              boolean freightMatch = cargoMatcher == null || cargoMatcher.matches(freight);
 
               if (freightMatch && placeMatcher != null) {
                 boolean ok = placeMatcher.matches(freight);
@@ -866,12 +866,7 @@ final class DriverTimeBoard extends ChartBase {
     StyleUtils.setLeft(driverMover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
     StyleUtils.setHeight(driverMover, height);
 
-    driverMover.addMoveHandler(new MoveEvent.Handler() {
-      @Override
-      public void onMove(MoveEvent event) {
-        onDriverResize(event);
-      }
-    });
+    driverMover.addMoveHandler(this::onDriverResize);
 
     panel.add(driverMover);
   }
@@ -962,7 +957,7 @@ final class DriverTimeBoard extends ChartBase {
     return panel;
   }
 
-  private Widget createDriverWidget(Driver driver, boolean hasOverlap) {
+  private static Widget createDriverWidget(Driver driver, boolean hasOverlap) {
     Simple panel = new Simple();
     panel.addStyleName(STYLE_DRIVER_PANEL);
     if (hasOverlap) {
