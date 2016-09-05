@@ -987,12 +987,11 @@ public class ChatManager implements HasInfo, HasEnabled {
   }
 
   public void updateAssistantChat(boolean assistant) {
-    boolean existAssistantChat = findChat(ASSISTANT_ID) == null ? false : true;
-
-    if (!assistant && existAssistantChat) {
-      removeChat(ASSISTANT_ID);
-    } else if (assistant && !existAssistantChat) {
+    if (assistant) {
       addAssistantChat();
+
+    } else {
+      removeChat(ASSISTANT_ID);
     }
   }
 
