@@ -6,8 +6,8 @@
   >
   <Fields>
     <Relation name="PropertyGroup" notNull="true" relation="PropertyGroups" 
-      label="=calParameterGroup" />
-    <String name="Name" precision="100" notNull="true" unique="true" label="=calParameter" />
+      label="=calCourse" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=calLecture" />
     
     <Integer name="Hours" label="=unitHours" />
     <Integer name="Minutes" label="=unitMinutes" />

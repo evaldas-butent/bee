@@ -5,7 +5,7 @@
   idName="PropertyGroupID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" label="=calParameterGroup" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=calCourse" />
     <Text name="Description" label="=description" />
     <Relation name="DefaultProperty" relation="ExtendedProperties"  label="=calDefaultParameter" />
   </Fields>
