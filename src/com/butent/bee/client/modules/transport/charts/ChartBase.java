@@ -174,9 +174,6 @@ public abstract class ChartBase extends TimeBoard {
 
               @Override
               public void onSelectionChange(HasWidgets dataContainer) {
-                filter(FilterType.TENTATIVE);
-                FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE),
-                    dataContainer);
               }
 
               @Override
@@ -240,7 +237,6 @@ public abstract class ChartBase extends TimeBoard {
 
     for (ChartData data : getFilterData()) {
       if (data != null) {
-        data.enableAll();
         data.deselectAll();
       }
     }
@@ -691,8 +687,6 @@ public abstract class ChartBase extends TimeBoard {
     setFiltered(filter(FilterType.TENTATIVE));
 
     if (isFiltered()) {
-      FilterHelper.enableData(getFilterData(), prepareFilterData(FilterType.TENTATIVE), null);
-
       if (FilterHelper.hasSelection(getFilterData())) {
         persistFilter();
         refreshFilterInfo();
@@ -895,10 +889,6 @@ public abstract class ChartBase extends TimeBoard {
     List<ChartData> data = FilterHelper.notEmptyData(prepareFilterData(null));
 
     if (!BeeUtils.isEmpty(data)) {
-      for (ChartData cd : data) {
-        cd.prepare();
-      }
-
       List<ChartFilter> savedFilters = getSavedFilters();
       boolean filter = false;
 
@@ -1077,11 +1067,6 @@ public abstract class ChartBase extends TimeBoard {
 
   private void updateFilterData() {
     List<ChartData> newData = FilterHelper.notEmptyData(prepareFilterData(null));
-    if (newData != null) {
-      for (ChartData cd : newData) {
-        cd.prepare();
-      }
-    }
 
     boolean wasFiltered = isFiltered();
 
@@ -1100,9 +1085,9 @@ public abstract class ChartBase extends TimeBoard {
           ChartData ncd = FilterHelper.getDataByType(newData, ocd.getType());
 
           if (ncd != null) {
-            Collection<String> selectedNames = ocd.getSelectedNames();
+            Collection<String> selectedNames = ocd.getSelectedItems();
             for (String name : selectedNames) {
-              ncd.setSelected(name, true);
+              ncd.setItemSelected(name, true);
             }
           }
         }

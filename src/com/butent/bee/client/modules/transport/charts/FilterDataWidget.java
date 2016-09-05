@@ -14,7 +14,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.modules.transport.charts.ChartData.Item;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.widget.Image;
@@ -25,6 +24,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Type> {
@@ -73,7 +73,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     this.unselectedContainer = Document.get().createDivElement();
     this.selectedContainer = Document.get().createDivElement();
 
-    int itemCount = addItems(data.getItems());
+    int itemCount = addItems(data.getItems(), data.getSelectedItems());
 
     CustomDiv caption = new CustomDiv(STYLE_DATA_CAPTION);
     caption.setHtml(data.getType().getCaption());
@@ -161,13 +161,12 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  void addItem(Item item, int index) {
+  void addItem(String item, boolean selected) {
     Element itemElement = Document.get().createDivElement();
     itemElement.addClassName(STYLE_DATA_ITEM);
-    itemElement.setInnerText(item.getName());
-    DomUtils.setDataIndex(itemElement, index);
+    itemElement.setInnerText(item);
 
-    if (item.isSelected()) {
+    if (selected) {
       selectedContainer.appendChild(itemElement);
 
     } else {
@@ -185,7 +184,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
   }
 
   void refresh() {
-    int cnt = data.getNumberOfEnabledUnselectedItems();
+    int cnt = data.getNumberOfUnselectedItems();
     if (unselectedSizeWidget != null) {
       String text;
       if (cnt <= 0) {
@@ -214,9 +213,9 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     }
   }
 
-  void removeItem(int index, boolean selected) {
-    Element itemElement = DomUtils.getChildByDataIndex(selected
-        ? selectedContainer : unselectedContainer, index, false);
+  void removeItem(String item, boolean selected) {
+    Element itemElement = DomUtils.getChildByInnerText(selected
+        ? selectedContainer : unselectedContainer, item, false);
 
     if (itemElement != null) {
       if (!selected && !UIObject.isVisible(itemElement)) {
@@ -234,31 +233,24 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     }
 
     if (resetData) {
-      data.enableAll();
       data.deselectAll();
     }
 
     DomUtils.clear(unselectedContainer);
     DomUtils.clear(selectedContainer);
 
-    int itemCount = addItems(data.getItems());
+    int itemCount = addItems(data.getItems(), data.getSelectedItems());
 
     updateVisibility(itemCount);
     refresh();
   }
 
-  private int addItems(List<Item> items) {
-    int count = 0;
-
-    for (int i = 0; i < items.size(); i++) {
-      Item item = items.get(i);
-      if (item.isEnabled()) {
-        addItem(item, i);
-        count++;
-      }
+  private int addItems(List<String> enabledItems, Collection<String> selectedItems) {
+    for (String item : enabledItems) {
+      addItem(item, selectedItems.contains(item));
     }
 
-    return count;
+    return enabledItems.size();
   }
 
   private boolean doAll(boolean wasSelected) {
@@ -282,7 +274,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     String newQuery = BeeUtils.trim(input);
     setSearchQuery(newQuery);
 
-    if (BeeUtils.same(oldQuery, newQuery) || data.getNumberOfEnabledUnselectedItems() <= 0) {
+    if (BeeUtils.same(oldQuery, newQuery) || data.getNumberOfUnselectedItems() <= 0) {
       return;
     }
     if (getNumberOfVisibleUnselectedItems() <= 0 && BeeUtils.containsSame(newQuery, oldQuery)) {
@@ -323,7 +315,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
   }
 
   private int getNumberOfVisibleUnselectedItems() {
-    return data.getNumberOfEnabledUnselectedItems() - getNumberOfHiddenItems();
+    return data.getNumberOfUnselectedItems() - getNumberOfHiddenItems();
   }
 
   private String getSearchQuery() {
@@ -336,7 +328,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
   private boolean moveItem(Element itemElement, boolean wasSelected) {
     boolean updated = StyleUtils.hasClassName(itemElement, STYLE_DATA_ITEM)
-        && data.setSelected(DomUtils.getDataIndexInt(itemElement), !wasSelected);
+        && data.setItemSelected(itemElement.getInnerText(), !wasSelected);
 
     if (updated) {
       if (wasSelected) {
