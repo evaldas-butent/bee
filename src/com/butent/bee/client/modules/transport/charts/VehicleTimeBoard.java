@@ -43,6 +43,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.HasDateRange;
@@ -60,6 +62,8 @@ import java.util.Objects;
 import java.util.Set;
 
 abstract class VehicleTimeBoard extends ChartBase {
+
+  private static final BeeLogger logger = LogUtils.getLogger(VehicleTimeBoard.class);
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-vtb-";
 
@@ -148,6 +152,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   protected void addInfoWidget(HasWidgets panel, IdentifiableWidget widget,
       int firstRow, int lastRow) {
+
     Rectangle rectangle = TimeBoardHelper.getRectangle(getNumberWidth(), getInfoWidth(),
         firstRow, lastRow, getRowHeight());
 
@@ -254,7 +259,7 @@ abstract class VehicleTimeBoard extends ChartBase {
             int freightCount = 0;
 
             for (Freight freight : freights.get(trip.getTripId())) {
-              boolean freightMatch = (cargoMatcher == null) || cargoMatcher.matches(freight);
+              boolean freightMatch = cargoMatcher == null || cargoMatcher.matches(freight);
 
               if (freightMatch && placeMatcher != null) {
                 boolean ok = placeMatcher.matches(freight);
@@ -396,16 +401,21 @@ abstract class VehicleTimeBoard extends ChartBase {
       return;
     }
 
+    long millis = System.currentTimeMillis();
     BeeRowSet brs = BeeRowSet.getIfPresent(properties, PROP_VEHICLES);
+
     if (!DataUtils.isEmpty(brs)) {
-      for (BeeRow row : brs.getRows()) {
+      for (BeeRow row : brs) {
         vehicles.add(new Vehicle(row));
       }
+      logger.debug(PROP_VEHICLES, vehicles.size(), TimeUtils.elapsedMillis(millis));
     }
 
     Multimap<Long, Driver> drivers = HashMultimap.create();
 
+    millis = System.currentTimeMillis();
     SimpleRowSet srs = SimpleRowSet.getIfPresent(properties, PROP_TRIP_DRIVERS);
+
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         drivers.put(row.getLong(COL_TRIP), new Driver(row.getLong(COL_DRIVER),
@@ -414,18 +424,24 @@ abstract class VehicleTimeBoard extends ChartBase {
             row.getDateTime(COL_TRIP_DRIVER_FROM), row.getDateTime(COL_TRIP_DRIVER_TO),
             row.getValue(COL_TRIP_DRIVER_NOTE)));
       }
+      logger.debug(PROP_TRIP_DRIVERS, drivers.size(), TimeUtils.elapsedMillis(millis));
     }
 
+    millis = System.currentTimeMillis();
     srs = SimpleRowSet.getIfPresent(properties, PROP_FREIGHTS);
+
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         Pair<JustDate, JustDate> handlingSpan = getCargoHandlingSpan(row.getLong(COL_CARGO));
         freights.put(row.getLong(COL_TRIP_ID),
             Freight.create(row, handlingSpan.getA(), handlingSpan.getB()));
       }
+      logger.debug(PROP_FREIGHTS, freights.size(), TimeUtils.elapsedMillis(millis));
     }
 
+    millis = System.currentTimeMillis();
     srs = SimpleRowSet.getIfPresent(properties, PROP_TRIPS);
+
     if (!DataUtils.isEmpty(srs)) {
       int index = srs.getColumnIndex(vehicleType.getTripVehicleIdColumnName());
 
@@ -475,14 +491,19 @@ abstract class VehicleTimeBoard extends ChartBase {
           trips.put(row.getLong(index), new Trip(row, tripDrivers));
         }
       }
+
+      logger.debug(PROP_TRIPS, trips.size(), TimeUtils.elapsedMillis(millis));
     }
 
+    millis = System.currentTimeMillis();
     srs = SimpleRowSet.getIfPresent(properties, PROP_VEHICLE_SERVICES);
+
     if (!DataUtils.isEmpty(srs)) {
       for (SimpleRow row : srs) {
         VehicleService service = new VehicleService(row);
         services.put(service.getVehicleId(), service);
       }
+      logger.debug(PROP_VEHICLE_SERVICES, services.size(), TimeUtils.elapsedMillis(millis));
     }
 
     setSeparateCargo(TimeBoardHelper.getBoolean(getSettings(), getSeparateCargoColumnName()));
@@ -607,9 +628,9 @@ abstract class VehicleTimeBoard extends ChartBase {
         }
 
         tripData.add(trip.getTripNo(), trip.getTripId());
-        tripStatusData.addNotNull(trip.getStatus());
-        departureData.addNotNull(trip.getTripDeparture());
-        arrivalData.addNotNull(trip.getTripArrival());
+        tripStatusData.add(trip.getStatus());
+        departureData.add(trip.getTripDeparture());
+        arrivalData.add(trip.getTripArrival());
         tripManagerData.addUser(trip.getManagerId());
 
         String otherVehicleNumber = trip.getVehicleNumber(otherVehicleType);
@@ -640,7 +661,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           managerData.addUser(freight.getManager());
 
           orderData.add(freight.getOrderName(), freight.getOrderId());
-          orderStatusData.addNotNull(freight.getOrderStatus());
+          orderStatusData.add(freight.getOrderStatus());
 
           cargoData.add(freight.getCargoDescription(), freight.getCargoId());
           if (DataUtils.isId(freight.getCargoType())) {
@@ -781,7 +802,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
       for (HasDateRange item : layout.getInactivity()) {
         if (item instanceof VehicleService) {
-          offWidget = ((VehicleService) item).createWidget(this, STYLE_SERVICE_PANEL,
+          offWidget = ((VehicleService) item).createWidget(STYLE_SERVICE_PANEL,
               STYLE_SERVICE_LABEL);
         } else {
           offWidget = new CustomDiv(STYLE_INACTIVE);
@@ -849,6 +870,7 @@ abstract class VehicleTimeBoard extends ChartBase {
 
   protected void renderInfoCell(TimeBoardRowLayout layout, Vehicle vehicle, ComplexPanel panel,
       int firstRow, int lastRow) {
+
     IdentifiableWidget infoWidget = createInfoWidget(vehicle, layout.hasOverlap());
     addInfoWidget(panel, infoWidget, firstRow, lastRow);
   }
@@ -859,12 +881,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     StyleUtils.setLeft(numberMover, getNumberWidth() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
     StyleUtils.setHeight(numberMover, height);
 
-    numberMover.addMoveHandler(new MoveEvent.Handler() {
-      @Override
-      public void onMove(MoveEvent event) {
-        onNumberResize(event);
-      }
-    });
+    numberMover.addMoveHandler(this::onNumberResize);
 
     panel.add(numberMover);
 
@@ -873,12 +890,7 @@ abstract class VehicleTimeBoard extends ChartBase {
       StyleUtils.setLeft(infoMover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
       StyleUtils.setHeight(infoMover, height);
 
-      infoMover.addMoveHandler(new MoveEvent.Handler() {
-        @Override
-        public void onMove(MoveEvent event) {
-          onInfoResize(event);
-        }
-      });
+      infoMover.addMoveHandler(this::onInfoResize);
 
       panel.add(infoMover);
     }
@@ -938,7 +950,7 @@ abstract class VehicleTimeBoard extends ChartBase {
     return panel;
   }
 
-  private IdentifiableWidget createInfoWidget(Vehicle vehicle, boolean hasOverlap) {
+  private static IdentifiableWidget createInfoWidget(Vehicle vehicle, boolean hasOverlap) {
     Simple panel = new Simple();
     panel.addStyleName(STYLE_INFO_PANEL);
     if (hasOverlap) {

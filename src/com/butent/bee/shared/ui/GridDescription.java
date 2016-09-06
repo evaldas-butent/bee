@@ -412,7 +412,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           setOptions(value);
           break;
         case PROPERTIES:
-          setProperties(Codec.deserializeMap(value));
+          setProperties(Codec.deserializeLinkedHashMap(value));
           break;
       }
     }

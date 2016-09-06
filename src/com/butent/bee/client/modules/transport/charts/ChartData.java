@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.transport.charts;
 import com.google.gwt.user.client.ui.HasEnabled;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.HasCaption;
@@ -11,88 +10,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Set;
 
 class ChartData implements HasEnabled {
-
-  static final class Item implements Comparable<Item> {
-    private final String name;
-    private final Long id;
-
-    private int count;
-
-    private boolean selected;
-    private boolean enabled = true;
-
-    private boolean wasSelected;
-    private boolean wasEnabled;
-
-    private Item(String name, Long id) {
-      this.name = name;
-      this.id = id;
-
-      this.count = 1;
-    }
-
-    @Override
-    public int compareTo(Item o) {
-      return Collator.DEFAULT.compare(name, o.name);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      return (obj instanceof Item) ? Objects.equals(name, ((Item) obj).name) : false;
-    }
-
-    @Override
-    public int hashCode() {
-      return (name == null) ? 0 : name.hashCode();
-    }
-
-    int getCount() {
-      return count;
-    }
-
-    Long getId() {
-      return id;
-    }
-
-    String getName() {
-      return name;
-    }
-
-    boolean isEnabled() {
-      return enabled;
-    }
-
-    boolean isSelected() {
-      return selected;
-    }
-
-    private void increment() {
-      count++;
-    }
-
-    private void restoreState() {
-      selected = wasSelected;
-      enabled = wasEnabled;
-    }
-
-    private void saveState() {
-      wasSelected = selected;
-      wasEnabled = enabled;
-    }
-
-    private void setEnabled(boolean enabled) {
-      this.enabled = enabled;
-    }
-
-    private void setSelected(boolean selected) {
-      this.selected = selected;
-    }
-  }
 
   enum Type implements HasCaption {
     DRIVER(Localized.dictionary().drivers()),
@@ -133,10 +57,10 @@ class ChartData implements HasEnabled {
 
   private final Type type;
 
-  private final List<Item> items = new ArrayList<>();
+  private final Set<String> items = new HashSet<>();
+  private final List<String> selectedItems = new ArrayList<>();
 
-  private int numberOfSelectedItems;
-  private int numberOfDisabledItems;
+  private final Map<Long, String> ids = new HashMap<>();
 
   private boolean enabled = true;
 
@@ -171,27 +95,22 @@ class ChartData implements HasEnabled {
   }
 
   void add(String name, Long id) {
-    Item item = find(name);
-    if (item == null) {
-      items.add(new Item(name, id));
-    } else {
-      item.increment();
+    if (name != null && !name.isEmpty()) {
+      items.add(name);
+
+      if (id != null) {
+        ids.put(id, name);
+      }
     }
   }
 
-  void addNotEmpty(String name) {
-    if (!BeeUtils.isEmpty(name)) {
-      add(name);
-    }
-  }
-
-  <E extends Enum<?> & HasCaption> void addNotNull(E item) {
+  <E extends Enum<?> & HasCaption> void add(E item) {
     if (item != null) {
       add(item.getCaption(), (long) item.ordinal());
     }
   }
 
-  void addNotNull(JustDate date) {
+  void add(JustDate date) {
     if (date != null) {
       add(date.toString(), (long) date.getDays());
     }
@@ -204,13 +123,6 @@ class ChartData implements HasEnabled {
         add(signature, userId);
       }
     }
-  }
-
-  void clear() {
-    items.clear();
-
-    setNumberOfSelectedItems(0);
-    setNumberOfDisabledItems(0);
   }
 
   boolean contains(Enum<?> e) {
@@ -232,28 +144,19 @@ class ChartData implements HasEnabled {
   }
 
   boolean contains(Long id) {
-    if (id == null) {
-      return false;
-    }
-
-    for (Item item : items) {
-      if (Objects.equals(item.id, id)) {
-        return true;
-      }
-    }
-    return false;
+    return id != null && ids.containsKey(id);
   }
 
   boolean contains(String name) {
-    return find(name) != null;
+    return name != null && items.contains(name);
   }
 
-  boolean containsAny(Collection<Long> ids) {
-    if (BeeUtils.isEmpty(ids)) {
+  boolean containsAny(Collection<Long> itemIds) {
+    if (BeeUtils.isEmpty(itemIds) || ids.isEmpty()) {
       return false;
     }
 
-    for (Long id : ids) {
+    for (Long id : itemIds) {
       if (contains(id)) {
         return true;
       }
@@ -263,91 +166,43 @@ class ChartData implements HasEnabled {
   }
 
   void deselectAll() {
-    if (getNumberOfSelectedItems() > 0) {
-      for (Item item : items) {
-        item.setSelected(false);
-      }
-      setNumberOfSelectedItems(0);
+    if (!selectedItems.isEmpty()) {
+      selectedItems.clear();
     }
   }
 
-  void disableAll() {
-    if (getNumberOfEnabledItems() > 0) {
-      for (Item item : items) {
-        item.setEnabled(false);
-        item.setSelected(false);
-      }
-
-      setNumberOfDisabledItems(size());
-      setNumberOfSelectedItems(0);
-    }
-  }
-
-  void enableAll() {
-    if (getNumberOfDisabledItems() > 0) {
-      for (Item item : items) {
-        item.setEnabled(true);
-      }
-      setNumberOfDisabledItems(0);
-    }
-  }
-
-  Collection<String> getDisabledNames() {
-    List<String> names = new ArrayList<>();
-
-    if (getNumberOfDisabledItems() > 0) {
-      for (Item item : items) {
-        if (!item.isEnabled()) {
-          names.add(item.name);
-        }
-      }
+  Long getItemId(String item) {
+    if (BeeUtils.isEmpty(item) || ids.isEmpty()) {
+      return null;
     }
 
-    return names;
+    for (Map.Entry<Long, String> entry : ids.entrySet()) {
+      if (item.equals(entry.getValue())) {
+        return entry.getKey();
+      }
+    }
+    return null;
   }
 
-  List<Item> getItems() {
-    return items;
-  }
-
-  int getNumberOfEnabledItems() {
-    return size() - getNumberOfDisabledItems();
-  }
-
-  int getNumberOfEnabledUnselectedItems() {
-    return size() - getNumberOfSelectedItems() - getNumberOfDisabledItems();
+  List<String> getItems() {
+    return new ArrayList<>(items);
   }
 
   int getNumberOfSelectedItems() {
-    return numberOfSelectedItems;
+    return selectedItems.size();
   }
 
-  List<Item> getSelectedItems() {
-    List<Item> result = new ArrayList<>();
+  int getNumberOfUnselectedItems() {
+    return size() - getNumberOfSelectedItems();
+  }
 
-    if (getNumberOfSelectedItems() > 0) {
-      for (Item item : items) {
-        if (item.isSelected()) {
-          result.add(item);
-        }
-      }
+  List<String> getSelectedItems() {
+    List<String> result = new ArrayList<>();
+
+    if (!selectedItems.isEmpty()) {
+      result.addAll(selectedItems);
     }
-
     return result;
-  }
-
-  Collection<String> getSelectedNames() {
-    List<String> names = new ArrayList<>();
-
-    if (getNumberOfSelectedItems() > 0) {
-      for (Item item : items) {
-        if (item.isSelected()) {
-          names.add(item.name);
-        }
-      }
-    }
-
-    return names;
   }
 
   Type getType() {
@@ -355,118 +210,28 @@ class ChartData implements HasEnabled {
   }
 
   boolean hasSelection() {
-    return getNumberOfSelectedItems() > 0;
+    return !selectedItems.isEmpty();
   }
 
   boolean isEmpty() {
     return items.isEmpty();
   }
 
-  void prepare() {
-    if (size() > 1) {
-      Collections.sort(items);
-    }
-  }
-
-  void restoreState() {
-    if (!isEmpty()) {
-      int cntSelected = 0;
-      int cntDisabled = 0;
-
-      for (Item item : items) {
-        item.restoreState();
-        if (!isEnabled()) {
-          item.setSelected(false);
-        }
-
-        if (item.isSelected()) {
-          cntSelected++;
-        }
-        if (!item.isEnabled()) {
-          cntDisabled++;
-        }
-      }
-
-      setNumberOfSelectedItems(cntSelected);
-      setNumberOfDisabledItems(cntDisabled);
-    }
-  }
-
-  void saveState() {
-    for (Item item : items) {
-      item.saveState();
-    }
-  }
-
-  void selectAll() {
-    if (getNumberOfSelectedItems() < size()) {
-      for (Item item : items) {
-        item.setSelected(true);
-      }
-      setNumberOfSelectedItems(size());
-    }
-  }
-
-  boolean setItemEnabled(String name, boolean enbl) {
-    return setItemEnabled(find(name), enbl);
-  }
-
-  boolean setItemEnabled(Item item, boolean enbl) {
-    if (item != null && item.isEnabled() != enbl) {
-      item.setEnabled(enbl);
-      setNumberOfDisabledItems(getNumberOfDisabledItems() + (enbl ? -1 : 1));
-
-      if (!enbl) {
-        setItemSelected(item, false);
-      }
-
-      return true;
-    } else {
+  boolean setItemSelected(String item, boolean selected) {
+    if (BeeUtils.isEmpty(item)) {
       return false;
-    }
-  }
 
-  boolean setItemSelected(Item item, boolean selected) {
-    if (item != null && item.isSelected() != selected) {
-      item.setSelected(selected);
-      setNumberOfSelectedItems(getNumberOfSelectedItems() + (selected ? 1 : -1));
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  boolean setSelected(int index, boolean selected) {
-    if (BeeUtils.isIndex(items, index)) {
-      return setItemSelected(items.get(index), selected);
-    } else {
-      return false;
-    }
-  }
-
-  boolean setSelected(String name, boolean selected) {
-    return setItemSelected(find(name), selected);
-  }
-
-  private Item find(String name) {
-    for (Item item : items) {
-      if (Objects.equals(item.name, name)) {
-        return item;
+    } else if (selected) {
+      if (selectedItems.contains(item)) {
+        return false;
+      } else {
+        selectedItems.add(item);
+        return true;
       }
+
+    } else {
+      return selectedItems.remove(item);
     }
-    return null;
-  }
-
-  private int getNumberOfDisabledItems() {
-    return numberOfDisabledItems;
-  }
-
-  private void setNumberOfDisabledItems(int numberOfDisabledItems) {
-    this.numberOfDisabledItems = numberOfDisabledItems;
-  }
-
-  private void setNumberOfSelectedItems(int numberOfSelectedItems) {
-    this.numberOfSelectedItems = numberOfSelectedItems;
   }
 
   private int size() {

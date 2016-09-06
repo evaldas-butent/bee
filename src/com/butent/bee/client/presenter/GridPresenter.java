@@ -332,7 +332,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
               DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
               deleteCallback.onConfirm();
             }
-          }, BeeConst.UNDEF, MessageBoxes.STYLE_MASSAGE_BOX_DELETE, null, null, null, null);
+          }, BeeConst.UNDEF, MessageBoxes.STYLE_MESSAGE_BOX_DELETE, null, null, null, null);
     }
   }
 

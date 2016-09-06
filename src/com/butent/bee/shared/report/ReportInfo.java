@@ -71,7 +71,7 @@ public class ReportInfo implements BeeSerializable {
 
   @Override
   public void deserialize(String data) {
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
       for (Serial key : Serial.values()) {

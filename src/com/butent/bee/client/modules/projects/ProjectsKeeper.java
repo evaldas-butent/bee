@@ -196,6 +196,8 @@ public final class ProjectsKeeper {
     FormFactory.registerFormInterceptor(FORM_PROJECT_STAGE, new ProjectStageForm());
     FormFactory.registerFormInterceptor(FORM_PROJECT_TEMPLATE, new ProjectTemplateForm());
 
+    FormFactory.registerFormInterceptor(FORM_PROJECT_DATE, new ProjectDateForm());
+
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());
 
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler());

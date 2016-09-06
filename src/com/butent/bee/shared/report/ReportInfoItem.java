@@ -34,7 +34,7 @@ public final class ReportInfoItem implements BeeSerializable {
 
   @Override
   public void deserialize(String data) {
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
       for (Serial key : Serial.values()) {
@@ -61,8 +61,6 @@ public final class ReportInfoItem implements BeeSerializable {
             break;
           case ROW_SUMMARY:
             rowSummary = BeeUtils.toBoolean(value);
-            break;
-          default:
             break;
         }
       }

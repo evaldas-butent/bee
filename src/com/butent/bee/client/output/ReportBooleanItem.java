@@ -33,7 +33,7 @@ public class ReportBooleanItem extends ReportItem {
   @Override
   public void deserialize(String data) {
     if (data != null) {
-      setFilter(Codec.deserializeMap(data).get(Service.VAR_DATA));
+      setFilter(Codec.deserializeLinkedHashMap(data).get(Service.VAR_DATA));
     }
   }
 

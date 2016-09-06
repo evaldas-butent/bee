@@ -125,7 +125,7 @@ public class SystemServiceBean {
       }
       response = getReport(reqInfo.getParameter(VAR_REPORT),
           reqInfo.getParameter(VAR_REPORT_FORMAT),
-          Codec.deserializeMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)), dataSets);
+          Codec.deserializeLinkedHashMap(reqInfo.getParameter(VAR_REPORT_PARAMETERS)), dataSets);
 
     } else if (BeeUtils.same(svc, CREATE_PDF)) {
       Long fileId = fs.createPdf(reqInfo.getParameter(VAR_REPORT_DATA));
@@ -271,7 +271,8 @@ public class SystemServiceBean {
           bundlePath = null;
         }
         if (!BeeUtils.isEmpty(bundlePath)) {
-          bundle = new PropertyResourceBundle(FileUtils.getFileReader(bundlePath));
+          bundle = new PropertyResourceBundle(new InputStreamReader(new FileInputStream(bundlePath),
+              BeeConst.CHARSET_UTF8));
         }
         reportFile = FileUtils.fileToString(reportFile);
       }

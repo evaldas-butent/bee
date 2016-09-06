@@ -410,11 +410,13 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     @Override
     public void start() {
-      setState(AnimationState.RUNNING);
-      if (popup.isShowing()) {
-        popup.getElement().getStyle().clearVisibility();
+      if (popup != null) {
+        setState(AnimationState.RUNNING);
+        if (popup.isShowing()) {
+          popup.getElement().getStyle().clearVisibility();
+        }
+        super.start();
       }
-      super.start();
     }
 
     protected double getFactor(double elapsed) {

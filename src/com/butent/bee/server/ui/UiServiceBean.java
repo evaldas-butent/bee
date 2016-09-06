@@ -272,7 +272,7 @@ public class UiServiceBean {
                 EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo
                     .getParameter(COL_OBJECT_TYPE)),
                 EnumUtils.getEnumByIndex(RightsState.class, reqInfo.getParameter(COL_STATE)),
-                Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
+                Codec.deserializeLinkedHashMap(reqInfo.getParameter(COL_OBJECT)));
         break;
 
       case SET_ROLE_RIGHTS:
@@ -281,7 +281,7 @@ public class UiServiceBean {
                 EnumUtils.getEnumByIndex(RightsObjectType.class, reqInfo
                     .getParameter(COL_OBJECT_TYPE)),
                 BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
-                Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
+                Codec.deserializeLinkedHashMap(reqInfo.getParameter(COL_OBJECT)));
         break;
 
       case SET_ROW_RIGHTS:

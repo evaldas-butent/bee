@@ -118,7 +118,8 @@
 
           <CheckBox source="OpenInNewTab" summarize="true" style="&tabbedFlowCheckStyle;" />
           <CheckBox source="WorkspaceContinue" summarize="true" style="&tabbedFlowCheckStyle;"/>
-          <CheckBox source="ShowNewMessagesNotifier" summarize="true" style="&tabbedFlowCheckStyle;"/>
+          <CheckBox name="ShowNewMessagesNotifier" source="ShowNewMessagesNotifier" summarize="true" style="&tabbedFlowCheckStyle;"/>
+          <CheckBox name="Assistant" source="Assistant" summarize="true" style="&tabbedFlowCheckStyle;"/>
 
           <hr />
 

@@ -292,7 +292,7 @@ public class EcScreen extends ScreenImpl {
   }
 
   @Override
-  protected void onUserSignatureClick() {
+  protected void onUserSignatureClick(ClickEvent event) {
     PasswordService.change();
   }
 

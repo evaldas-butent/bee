@@ -156,7 +156,8 @@ public final class ClassifierUtils {
         if (response.hasErrors()) {
           return;
         }
-        Map<String, String> entries = Codec.deserializeMap(response.getResponseAsString());
+        Map<String, String> entries =
+            Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
         if (BeeUtils.isEmpty(entries)) {
           return;

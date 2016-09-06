@@ -11,14 +11,15 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Map;
+
 final class Places {
 
   private static BeeRowSet countries;
-  private static BeeRowSet cities;
+  private static Map<String, String> cities;
 
   private static int countryCodeIndex = BeeConst.UNDEF;
   private static int countryNameIndex = BeeConst.UNDEF;
-  private static int cityNameIndex = BeeConst.UNDEF;
 
   private static ValueType placeDateType = ValueType.DATE_TIME;
 
@@ -59,20 +60,10 @@ final class Places {
   }
 
   static String getCityLabel(Long cityId) {
-    if (!DataUtils.isId(cityId) || DataUtils.isEmpty(cities)) {
+    if (cityId == null || cities == null) {
       return null;
-    }
-
-    BeeRow row = cities.getRowById(cityId);
-    if (row == null) {
-      return null;
-    }
-
-    String label = row.getString(cityNameIndex);
-    if (BeeUtils.isEmpty(label)) {
-      return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.trim(label);
+      return cities.get(cityId.toString());
     }
   }
 
@@ -147,7 +138,7 @@ final class Places {
     }
   }
 
-  static void setCountries(BeeRowSet rowSet) {
+  static int setCountries(BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet)) {
       Places.countries = rowSet;
 
@@ -155,16 +146,21 @@ final class Places {
         Places.countryCodeIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_CODE);
         Places.countryNameIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_NAME);
       }
+
+      return rowSet.getNumberOfRows();
+
+    } else {
+      return 0;
     }
   }
 
-  static void setCities(BeeRowSet rowSet) {
-    if (!DataUtils.isEmpty(rowSet)) {
-      Places.cities = rowSet;
+  static int setCities(Map<String, String> map) {
+    if (map != null) {
+      Places.cities = map;
+      return map.size();
 
-      if (BeeConst.isUndef(cityNameIndex)) {
-        Places.cityNameIndex = rowSet.getColumnIndex(ClassifierConstants.COL_CITY_NAME);
-      }
+    } else {
+      return 0;
     }
   }
 

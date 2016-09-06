@@ -174,7 +174,7 @@ class TaskEditor extends ProductSupportInterceptor {
     if (!BeeUtils.isEmpty(value) && !serializable) {
       widget.getElement().setInnerText(value);
     } else if (!BeeUtils.isEmpty(value) && serializable) {
-      Map<String, String> data = Codec.deserializeMap(value);
+      Map<String, String> data = Codec.deserializeLinkedHashMap(value);
 
       if (data == null) {
         return widget;
@@ -1269,7 +1269,7 @@ class TaskEditor extends ProductSupportInterceptor {
           if (BeeUtils.isEmpty(result)) {
             data = Maps.newLinkedHashMap();
           } else {
-            data = Codec.deserializeMap(result);
+            data = Codec.deserializeLinkedHashMap(result);
           }
 
           if (data.containsKey(BeeUtils.toString(TaskEvent.CREATE.ordinal()))) {
@@ -1665,12 +1665,31 @@ class TaskEditor extends ProductSupportInterceptor {
 
     final String cid = dialog.addComment(false);
 
+    InputDateTime newEndInput = dialog.getInputDateTime(endId);
+    newEndInput.addEditStopHandler(event -> {
+      if (event.isChanged()) {
+        Global.getParameter(TaskConstants.PRM_END_OF_WORK_DAY, input -> {
+          if (!BeeUtils.isEmpty(input)) {
+            DateTime dateTime = TimeUtils.toDateTimeOrNull(TimeUtils.parseTime(input));
+            if (dateTime != null) {
+              int hour = dateTime.getUtcHour();
+              int minute = dateTime.getUtcMinute();
+              DateTime value = newEndInput.getDateTime();
+              value.setHour(hour);
+              value.setMinute(minute);
+              newEndInput.setDateTime(value);
+            }
+          }
+        });
+      }
+    });
+
     dialog.addAction(Localized.dictionary().crmTaskChangeTerm(), () -> {
 
       DateTime newStart = getDateTime(COL_START_TIME);
       DateTime oldEnd = getDateTime(COL_FINISH_TIME);
 
-      DateTime newEnd = dialog.getDateTime(endId);
+      DateTime newEnd = newEndInput.getDateTime();
 
       if (newEnd == null) {
         showError(Localized.dictionary().crmEnterFinishDate());

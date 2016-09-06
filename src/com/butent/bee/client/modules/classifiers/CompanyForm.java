@@ -325,7 +325,8 @@ class CompanyForm extends CustomCompanyForm {
           if (response.hasErrors()) {
             return;
           }
-          Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
+          Map<String, String> result =
+              Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
           if (!BeeUtils.isEmpty(result)) {
             HtmlTable table = new HtmlTable();

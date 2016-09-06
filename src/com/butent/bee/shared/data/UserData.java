@@ -168,7 +168,7 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
 
         case RIGHTS:
-          Map<String, String> map = Codec.deserializeMap(value);
+          Map<String, String> map = Codec.deserializeLinkedHashMap(value);
 
           if (!BeeUtils.isEmpty(map)) {
             rights = HashBasedTable.create();
@@ -176,7 +176,7 @@ public class UserData implements BeeSerializable, HasInfo {
             for (String stateIdx : map.keySet()) {
               RightsState state = EnumUtils.getEnumByIndex(RightsState.class,
                   BeeUtils.toInt(stateIdx));
-              Map<String, String> row = Codec.deserializeMap(map.get(stateIdx));
+              Map<String, String> row = Codec.deserializeLinkedHashMap(map.get(stateIdx));
 
               for (String typeIdx : row.keySet()) {
                 rights.put(state,

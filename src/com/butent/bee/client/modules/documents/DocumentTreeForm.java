@@ -163,7 +163,7 @@ public class DocumentTreeForm extends AbstractFormInterceptor
           }
         }
         if (roles == null) {
-          roles = Codec.deserializeMap(treeView.getTreePresenter()
+          roles = Codec.deserializeLinkedHashMap(treeView.getTreePresenter()
               .getProperty(AdministrationConstants.TBL_ROLES));
         }
         if (table == null) {

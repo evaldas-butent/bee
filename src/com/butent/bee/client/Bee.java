@@ -2,8 +2,6 @@ package com.butent.bee.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
@@ -32,7 +30,6 @@ import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
@@ -171,7 +168,7 @@ public class Bee implements EntryPoint, ClosingHandler {
           break;
 
         case Service.PROPERTY_VIEW_MODULES:
-          RightsUtils.setViewModules(Codec.deserializeMap(value));
+          RightsUtils.setViewModules(Codec.deserializeHashMap(value));
           break;
 
         case COL_CURRENCY:
@@ -187,7 +184,7 @@ public class Bee implements EntryPoint, ClosingHandler {
           break;
 
         case TBL_DICTIONARY:
-          Localized.setGlossary(Codec.deserializeMap(value));
+          Localized.setGlossary(Codec.deserializeHashMap(value));
           break;
       }
     }
@@ -293,12 +290,9 @@ public class Bee implements EntryPoint, ClosingHandler {
 
     Historian.start();
 
-    Endpoint.open(BeeKeeper.getUser().getUserId(), new Consumer<Boolean>() {
-      @Override
-      public void accept(Boolean input) {
-        initWorkspace();
-        Global.getChatManager().start();
-      }
+    Endpoint.open(BeeKeeper.getUser().getUserId(), input -> {
+      initWorkspace();
+      Global.getChatManager().start();
     });
   }
 
@@ -354,7 +348,7 @@ public class Bee implements EntryPoint, ClosingHandler {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        load(Codec.deserializeMap(response.getResponseAsString()));
+        load(Codec.deserializeLinkedHashMap(response.getResponseAsString()));
         onLogin();
       }
     });
@@ -369,16 +363,13 @@ public class Bee implements EntryPoint, ClosingHandler {
     BeeKeeper.getScreen().init();
     BeeKeeper.getScreen().start(BeeKeeper.getUser().getUserData());
 
-    Window.addResizeHandler(new ResizeHandler() {
-      @Override
-      public void onResize(ResizeEvent event) {
-        BeeKeeper.getScreen().getScreenPanel().onResize();
+    Window.addResizeHandler(event -> {
+      BeeKeeper.getScreen().getScreenPanel().onResize();
 
-        Collection<Popup> popups = Popup.getVisiblePopups();
-        if (!BeeUtils.isEmpty(popups)) {
-          for (Popup popup : popups) {
-            popup.onResize();
-          }
+      Collection<Popup> popups = Popup.getVisiblePopups();
+      if (!BeeUtils.isEmpty(popups)) {
+        for (Popup popup : popups) {
+          popup.onResize();
         }
       }
     });
@@ -389,7 +380,7 @@ public class Bee implements EntryPoint, ClosingHandler {
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        load(Codec.deserializeMap(response.getResponseAsString()));
+        load(Codec.deserializeLinkedHashMap(response.getResponseAsString()));
 
         BeeKeeper.getBus().registerExitHandler(Bee.this);
 

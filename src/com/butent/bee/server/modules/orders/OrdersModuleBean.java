@@ -221,12 +221,12 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       case SVC_SET_RESTRICTIONS:
         Map<Long, Map<Long, Boolean>> data = new HashMap<>();
 
-        for (Map.Entry<String, String> entry
-            : Codec.deserializeMap(reqInfo.getParameter(TBL_CONF_RESTRICTIONS)).entrySet()) {
+        for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(
+            reqInfo.getParameter(TBL_CONF_RESTRICTIONS)).entrySet()) {
           Map<Long, Boolean> map = new HashMap<>();
 
-          for (Map.Entry<String, String> subEntry : Codec.deserializeMap(entry.getValue())
-              .entrySet()) {
+          for (Map.Entry<String, String> subEntry : Codec.deserializeLinkedHashMap(
+              entry.getValue()).entrySet()) {
             map.put(BeeUtils.toLong(subEntry.getKey()), BeeUtils.toBoolean(subEntry.getValue()));
           }
           data.put(BeeUtils.toLong(entry.getKey()), map);
@@ -521,7 +521,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   private ResponseObject createInvoiceItems(RequestInfo reqInfo) {
     Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
     Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
-    Map<String, String> map = Codec.deserializeMap(reqInfo.getParameter(Service.VAR_DATA));
+    Map<String, String> map =
+        Codec.deserializeLinkedHashMap(reqInfo.getParameter(Service.VAR_DATA));
     Map<Long, Double> idsQty = new HashMap<>();
 
     for (Entry<String, String> entry : map.entrySet()) {
@@ -552,7 +553,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     IsExpression vatExch =
         ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_VAT),
-        SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_CURRENCY), SqlUtils.field(TBL_ORDERS,
+            SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_CURRENCY), SqlUtils.field(TBL_ORDERS,
                 COL_DATES_START_DATE), SqlUtils.constant(currency));
 
     String vatAlias = "Vat_" + SqlUtils.uniqueName();

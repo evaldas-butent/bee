@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.tasks;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
@@ -14,6 +15,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent;
@@ -152,6 +154,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   ClassifiersModuleBean cls;
   @EJB
   SearchBean src;
+  @EJB
+  ChatBean chat;
 
   @Resource
   EJBContext ctx;
@@ -419,9 +423,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
           }
 
           Map<String, String> times =
-              Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_DURATION));
+              Codec.deserializeLinkedHashMap(timesData.getValue(0, COL_ACTUAL_DURATION));
           Map<String, String> expenses =
-              Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_EXPENSES));
+              Codec.deserializeLinkedHashMap(timesData.getValue(0, COL_ACTUAL_EXPENSES));
 
           for (BeeRow row : taskRows) {
             if (row == null) {
@@ -628,7 +632,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       if (reminderId != null) {
         SimpleRow reminderRow = qs.getRow(new SqlSelect()
             .addFields(VIEW_USER_REMINDERS, COL_USER_REMINDER_USER, COL_USER_REMINDER_TYPE)
-            .addFields(TBL_TASKS, COL_TASK_ID)
+            .addFields(TBL_TASKS, COL_TASK_ID, COL_SUMMARY)
             .addFrom(VIEW_USER_REMINDERS)
             .addFromInner(TBL_TASKS, sys.joinTables(TBL_TASKS, VIEW_USER_REMINDERS,
                 COL_USER_REMINDER_OBJECT))
@@ -651,6 +655,13 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
           if (response.hasErrors() || response.hasWarnings()) {
             logger.warning("user remind tasks canceled");
           }
+
+          String headerCaption = mail.styleMailHeader(
+              BeeUtils.joinWords(usr.getDictionary(recipientId).crmTask(), taskId,
+                  reminderRow.getValue(COL_SUMMARY)));
+          Map<String, String> linkData = Maps.newHashMap();
+          linkData.put(VIEW_TASKS, BeeUtils.toString(taskId));
+          chat.putMessage(headerCaption, recipientId, linkData);
         }
 
         Long reminderTypeId = reminderRow.getLong(COL_USER_REMINDER_TYPE);

@@ -1,6 +1,8 @@
 package com.butent.bee.client.communication;
 
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
@@ -10,7 +12,9 @@ import static com.butent.bee.shared.communication.ChatConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Search;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
@@ -19,6 +23,7 @@ import com.butent.bee.client.js.Markdown;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderImpl;
@@ -30,6 +35,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
@@ -40,6 +46,7 @@ import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.ChatItem;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.communication.TextMessage;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -80,20 +87,43 @@ public class ChatView extends Flow implements Presenter, View,
       Flow body = new Flow(STYLE_MESSAGE_BODY);
 
       if (addPhoto) {
-        Image photo = Global.getUsers().getPhoto(message.getUserId());
+        Image photo;
+        if (DataUtils.isId(message.getUserId())) {
+          photo = Global.getUsers().getPhoto(message.getUserId());
 
-        if (photo == null) {
+          if (photo == null) {
+            photo = new Image(DEFAULT_PHOTO_IMAGE);
+            CustomDiv signature = new CustomDiv(STYLE_MESSAGE_SIGNATURE);
+            signature.setText(Global.getUsers().getSignature(message.getUserId()));
+            add(signature);
+          }
+
+        } else {
           photo = new Image(DEFAULT_PHOTO_IMAGE);
-          CustomDiv signature = new CustomDiv(STYLE_MESSAGE_SIGNATURE);
-          signature.setText(Global.getUsers().getSignature(message.getUserId()));
-          add(signature);
-
         }
         photo.addStyleName(STYLE_MESSAGE_PHOTO);
         body.add(photo);
       }
 
-      if (message.hasText()) {
+      if (message.hasText() && !BeeUtils.isEmpty(message.getLinkData())) {
+
+        Flow linkContainer = new Flow(STYLE_MESSAGE_TEXT);
+        for (String view : message.getLinkData().keySet()) {
+          InternalLink link = new InternalLink(message.getText());
+          link.addClickHandler(new ClickHandler() {
+
+            @Override
+            public void onClick(ClickEvent arg0) {
+              RowEditor.open(view,
+                                  BeeUtils.toLong(message.getLinkData().get(view)), Opener.NEW_TAB);
+            }
+          });
+          linkContainer.add(link);
+        }
+
+        body.add(linkContainer);
+
+      } else if (message.hasText()) {
         Label text = new Label(Markdown.toHtml(message.getText()));
         text.addStyleName(STYLE_MESSAGE_TEXT);
         body.add(text);
@@ -306,7 +336,8 @@ public class ChatView extends Flow implements Presenter, View,
   }
 
   public void addMessage(ChatItem message, boolean update) {
-    if (message != null && message.isValid()) {
+    if (message != null
+        && (message.isValid() || Global.getChatManager().isAssistant(message.getUserId()))) {
       boolean incoming = !BeeKeeper.getUser().is(message.getUserId());
       boolean addPhoto = incoming;
 
@@ -548,6 +579,11 @@ public class ChatView extends Flow implements Presenter, View,
     ChatMessage chatMessage = new ChatMessage(chatId, item);
 
     Global.getChatManager().addMessage(chatMessage);
+
+    if (Global.getChatManager().isAssistant(chatMessage.getChatId())) {
+      Search.doQuery(chatMessage.getChatItem().getText(), null);
+      return;
+    }
 
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.SEND_CHAT_MESSAGE);
     params.addDataItem(COL_CHAT_MESSAGE, chatMessage.encode());

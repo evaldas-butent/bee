@@ -97,7 +97,7 @@ public class Configuration implements BeeSerializable {
         case DATA:
           data.clear();
 
-          for (Map.Entry<String, String> entry : Codec.deserializeMap(value).entrySet()) {
+          for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(value).entrySet()) {
             data.put(Bundle.restore(entry.getKey()), entry.getValue());
           }
           break;
@@ -105,21 +105,21 @@ public class Configuration implements BeeSerializable {
         case RELATIONS:
           relations.clear();
 
-          for (Map.Entry<String, String> entry : Codec.deserializeMap(value).entrySet()) {
+          for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(value).entrySet()) {
             Pair<String, String> pair = Pair.restore(entry.getValue());
             relations.put(Option.restore(entry.getKey()),
-                Pair.of(pair.getA(), Codec.deserializeMap(pair.getB())));
+                Pair.of(pair.getA(), Codec.deserializeLinkedHashMap(pair.getB())));
           }
           break;
 
         case RESTRICTIONS:
           restrictions.clear();
 
-          for (Map.Entry<String, String> entry : Codec.deserializeMap(value).entrySet()) {
+          for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(value).entrySet()) {
             Map<Option, Boolean> map = new HashMap<>();
 
-            for (Map.Entry<String, String> subEntry : Codec.deserializeMap(entry.getValue())
-                .entrySet()) {
+            for (Map.Entry<String, String> subEntry : Codec
+                .deserializeLinkedHashMap(entry.getValue()).entrySet()) {
               map.put(Option.restore(subEntry.getKey()), BeeUtils.toBoolean(subEntry.getValue()));
             }
             restrictions.put(Option.restore(entry.getKey()), map);

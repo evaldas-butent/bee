@@ -2548,6 +2548,24 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         ss.getWhere()))));
   }
 
+  private Map<String, String> getCityNames() {
+    Map<String, String> result = new HashMap<>();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_CITIES, sys.getIdName(TBL_CITIES), COL_CITY_NAME)
+        .addFrom(TBL_CITIES);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        result.put(row.getValue(0), row.getValue(1));
+      }
+    }
+
+    return result;
+  }
+
   private ResponseObject getColors(RequestInfo reqInfo) {
     Long theme;
     if (reqInfo.hasParameter(Service.VAR_ID)) {
@@ -2721,8 +2739,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
 
-    BeeRowSet cities = qs.getViewData(VIEW_CITIES, Filter.any(COL_COUNTRY, countries.getRowIds()));
-    settings.setTableProperty(PROP_CITIES, cities.serialize());
+    Map<String, String> cityNames = getCityNames();
+    if (!BeeUtils.isEmpty(cityNames)) {
+      settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
+    }
 
     Filter driverFilter = null;
     if (!BeeUtils.isEmpty(filterGroups) && !DataUtils.isEmpty(transportGroups)) {
@@ -2934,8 +2954,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
 
-    BeeRowSet cities = qs.getViewData(VIEW_CITIES, Filter.any(COL_COUNTRY, countries.getRowIds()));
-    settings.setTableProperty(PROP_CITIES, cities.serialize());
+    Map<String, String> cityNames = getCityNames();
+    if (!BeeUtils.isEmpty(cityNames)) {
+      settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
+    }
 
     String loadAlias = "load_" + SqlUtils.uniqueName();
     String unlAlias = "unl_" + SqlUtils.uniqueName();
@@ -3497,8 +3519,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
 
-    BeeRowSet cities = qs.getViewData(VIEW_CITIES, Filter.any(COL_COUNTRY, countries.getRowIds()));
-    settings.setTableProperty(PROP_CITIES, cities.serialize());
+    Map<String, String> cityNames = getCityNames();
+    if (!BeeUtils.isEmpty(cityNames)) {
+      settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
+    }
 
     Filter vehicleTripFilter;
     if (filterVehiclesByTrip) {

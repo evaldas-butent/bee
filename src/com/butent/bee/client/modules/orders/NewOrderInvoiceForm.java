@@ -186,7 +186,7 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
         }
 
         holder.set(holder.get() - 1);
-        Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
+        Map<String, String> result = Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
         debt = BeeUtils.toDouble(result.get(VAR_DEBT));
         creditLimit = BeeUtils.toDouble(result.get(COL_COMPANY_CREDIT_LIMIT));

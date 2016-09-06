@@ -209,6 +209,8 @@ public interface Dictionary {
 
   default String assignTruckToTripQuestion() {return g("assignTruckToTripQuestion");}
 
+  default String assistant() {return g("assistant");}
+
   default String attribute() {return g("attribute");}
 
   default String author() {return g("author");}
@@ -216,6 +218,8 @@ public interface Dictionary {
   default String autoFit() {return g("autoFit");}
 
   default String autocompletion() {return g("autocompletion");}
+
+  default String bAssistant() {return g("bAssistant");}
 
   default String background() {return g("background");}
 
@@ -666,6 +670,8 @@ public interface Dictionary {
   default String chatName() {return g("chatName");}
 
   default String chatNew() {return g("chatNew");}
+
+  default String chatReminderTitle() {return g("chatReminderTitle");}
 
   default String chatSettings() {return g("chatSettings");}
 
@@ -4432,6 +4438,14 @@ public interface Dictionary {
   default String signOut() {return g("signOut");}
 
   default String socialContacts() {return g("socialContacts");}
+
+  default String softwareBuild() {return g("softwareBuild");}
+
+  default String softwareLicenceNo() {return g("softwareLicenceNo");}
+
+  default String softwareReleaseDate() {return g("softwareReleaseDate");}
+
+  default String softwareVersion() {return g("softwareVersion");}
 
   default String sorry() {return g("sorry");}
 

@@ -57,7 +57,8 @@ public class PrintTripForm extends AbstractFormInterceptor {
             if (response.hasErrors()) {
               return;
             }
-            final Map<String, String> pack = Codec.deserializeMap(response.getResponseAsString());
+            final Map<String, String> pack =
+                Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
             // DRIVERS
             final Map<Long, String> drivers = new LinkedHashMap<>();

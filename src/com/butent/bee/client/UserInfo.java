@@ -49,6 +49,8 @@ public class UserInfo implements HasInfo {
   private boolean openInNewTab;
   private boolean showNewMessagesNotifier;
 
+  private boolean assistant;
+
   private int clickSensitivityMillis;
   private int clickSensitivityDistance;
 
@@ -446,6 +448,10 @@ public class UserInfo implements HasInfo {
     return styleId;
   }
 
+  public boolean assistant() {
+    return assistant;
+  }
+
   public boolean showNewMessagesNotifier() {
     return showNewMessagesNotifier;
   }
@@ -481,6 +487,8 @@ public class UserInfo implements HasInfo {
   private void updateFields() {
     setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
     setShowNewMessagesNotifier(getBooleanSetting(COL_SHOW_NEW_MESSAGES_NOTIFIER));
+    setAssistant(getBooleanSetting(COL_ASSISTANT));
+    Global.getChatManager().updateAssistantChat(assistant);
 
     setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS, BeeConst.UNDEF));
     setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE, BeeConst.UNDEF));
@@ -491,6 +499,10 @@ public class UserInfo implements HasInfo {
 
   private void updateStyle(String css) {
     DomUtils.setText(getStyleId(), css);
+  }
+
+  public void setAssistant(boolean assistant) {
+    this.assistant = assistant;
   }
 
   public void setShowNewMessagesNotifier(boolean showNewMessagesNotifier) {
