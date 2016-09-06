@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY section "margin-top: 15px;">
   <!ENTITY bold "font-weight:bold;">
   <!ENTITY form "PrintCargoInvoiceShortLTEN">
 ]>
@@ -42,7 +42,11 @@
     <HorizontalPanel style="width:100%; margin-top: 2em">
       <cell style="vertical-align:top; width:50%; text-align:left;" >
         <FlowPanel >
-          <Label style="&bold; font-size: 13.5pt;" html="PVM Sąskaita | Invoice No" />
+          <TextLabel style="&bold; font-size: 13.5pt;">
+            <render>
+              <ui:expression>row.Proforma ? 'Sąskaita išankstiniam apmokėjimui | Proforma Invoice' : 'PVM Sąskaita | Invoice No'</ui:expression>
+            </render>
+          </TextLabel>
           <TextLabel style="font-size: 13.5pt;" source="InvoiceNo">
             <renderToken source="InvoicePrefix" />
             <renderToken source="InvoiceNo" />
@@ -323,7 +327,11 @@
       </row>
     </Table>
 
-    <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
+    <TextLabel source="Term" style="&section; &bold;">
+      <dynStyle>
+        <ui:inline>display:none;</ui:inline>
+        <ui:expression>row.Proforma</ui:expression>
+      </dynStyle>
       <renderToken source="Term" prefix="Sąskaitą apmokėti iki | Pay by " />
     </TextLabel>
 
@@ -339,18 +347,26 @@
       </Label>
     </HorizontalPanel>
 
-    <HtmlPanel>
-      <span style=" &bold; display:block; white-space:pre-wrap;">
-Pastaba: Šios nuorodos negalioja sąskaitoms su 21 % PVM
-0% PVM tarifas: pagal PVM Isr. 45, 52 str.
-Be PVM: pagal PVM Įst. 13 str.
-Without VAT: "Reverse charge" - according Directive 2006/112/EB
-      </span>
-      <span style="display:block; white-space:pre-wrap; margin-top:-3ex;">
-Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai.
-After the due period of payment the fine of 0.2% will be calculated for each day.
-      </span>
-    </HtmlPanel>
+    <Label style="&section; font-size:smaller; &bold;"
+           html="Pastaba:
+             &lt;br>Šios nuorodos negalioja sąskaitoms su 21 % PVM
+             &lt;br>0% PVM tarifas: pagal PVM Isr. 45, 52 str.
+             &lt;br>Be PVM: pagal PVM Įst. 13 str.
+             &lt;br>Without VAT: &quot;Reverse charge&quot; - according Directive 2006/112/EB">
+      <dynStyle>
+        <ui:inline>display:none;</ui:inline>
+        <ui:expression>row.Proforma</ui:expression>
+      </dynStyle>
+    </Label>
+
+    <Label style="&section; font-size:smaller;"
+           html="Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai.
+             &lt;br>After the due period of payment the fine of 0.2% will be calculated for each day.">
+      <dynStyle>
+        <ui:inline>display:none;</ui:inline>
+        <ui:expression>row.Proforma</ui:expression>
+      </dynStyle>
+    </Label>
 
     <Label style="&bold;" text="Pastabos | Additional information:"/>
     <TextLabel source="Notes" style="white-space:pre-wrap;" />
