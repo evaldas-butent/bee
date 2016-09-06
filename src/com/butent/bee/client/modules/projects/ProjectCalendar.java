@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.projects;
 
 import com.google.gwt.event.logical.shared.OpenEvent;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -106,6 +107,11 @@ public class ProjectCalendar extends CalendarPanel {
     settingsForm.updateRow(settingsRow, false);
 
     String caption = settingsForm.getCaption();
+
+    Widget separateAttendeesWidget = settingsForm.getWidgetBySource(COL_SEPARATE_ATTENDEES);
+    if (separateAttendeesWidget != null) {
+      separateAttendeesWidget.setVisible(false);
+    }
 
     Global.inputWidget(caption, settingsForm, new InputCallback() {
       @Override
