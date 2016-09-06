@@ -74,5 +74,7 @@
 
     <DataColumn name="InvoiceNo" caption="=trdInvoice" />
     <DataColumn name="CmrCopy" caption="=trCmrCopy" sortable="false" />
+
+    <DataColumn name="CargoTypeName" caption="=trCargoType" />
   </g:columns>
 </g:Grid>

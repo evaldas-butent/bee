@@ -122,6 +122,12 @@
       </ExternalJoin>
 
       <SimpleColumn name="CmrCopy" />
+
+      <SimpleColumn name="CargoType" />
+      <SimpleJoin name="CargoType" joinType="LEFT">
+        <SimpleColumn name="CargoTypeName" label="=trCargoType" />
+      </SimpleJoin>
+
     </ExternalJoin>
   </Columns>
   <Order>
