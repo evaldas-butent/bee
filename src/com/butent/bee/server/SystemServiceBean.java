@@ -271,7 +271,8 @@ public class SystemServiceBean {
           bundlePath = null;
         }
         if (!BeeUtils.isEmpty(bundlePath)) {
-          bundle = new PropertyResourceBundle(FileUtils.getFileReader(bundlePath));
+          bundle = new PropertyResourceBundle(new InputStreamReader(new FileInputStream(bundlePath),
+              BeeConst.CHARSET_UTF8));
         }
         reportFile = FileUtils.fileToString(reportFile);
       }

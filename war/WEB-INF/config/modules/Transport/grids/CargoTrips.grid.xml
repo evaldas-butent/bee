@@ -50,6 +50,10 @@
           <ui:inline>font-weight:bold;</ui:inline>
         </bodyStyle>
       </style>
+      <dynStyle>
+        <ui:inline>color:silver;</ui:inline>
+        <ui:expression>!row.TripPercent</ui:expression>
+      </dynStyle>
       <render>
         <ui:expression>row.Income</ui:expression>
       </render>
