@@ -93,7 +93,7 @@ public class FileServiceApplication extends Application {
     if (BeeUtils.isEmpty(files)) {
       throw new BadRequestException();
     }
-    Map<String, String> fileMap = Codec.deserializeMap(Codec.decodeBase64(files));
+    Map<String, String> fileMap = Codec.deserializeLinkedHashMap(Codec.decodeBase64(files));
     File tmp;
 
     try {

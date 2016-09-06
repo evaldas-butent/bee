@@ -416,7 +416,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         Map<Long, String> attachments = new LinkedHashMap<>();
 
         for (Entry<String, String> entry : Codec
-            .deserializeMap(reqInfo.getParameter(TBL_ATTACHMENTS)).entrySet()) {
+            .deserializeLinkedHashMap(reqInfo.getParameter(TBL_ATTACHMENTS)).entrySet()) {
           attachments.put(BeeUtils.toLong(entry.getKey()), entry.getValue());
         }
         MailAccount account = mail.getAccount(accountId);
@@ -621,7 +621,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     });
 
     BeeView.registerConditionProvider(TBL_PLACES, (view, args) -> {
-      Map<String, String> params = Codec.deserializeMap(BeeUtils.peek(args));
+      Map<String, String> params = Codec.deserializeLinkedHashMap(BeeUtils.peek(args));
       Long folderId = BeeUtils.toLong(params.get(COL_FOLDER));
       Long accountId = BeeUtils.toLong(params.get(COL_ACCOUNT));
       String sender = params.get(COL_SENDER);

@@ -423,9 +423,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
           }
 
           Map<String, String> times =
-              Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_DURATION));
+              Codec.deserializeLinkedHashMap(timesData.getValue(0, COL_ACTUAL_DURATION));
           Map<String, String> expenses =
-              Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_EXPENSES));
+              Codec.deserializeLinkedHashMap(timesData.getValue(0, COL_ACTUAL_EXPENSES));
 
           for (BeeRow row : taskRows) {
             if (row == null) {

@@ -108,15 +108,15 @@ class ProjectEventsHandler extends EventsBoard {
       return;
     }
 
-    Map<String, String> viewOldList = Codec.deserializeMap(pairedData.get(0));
-    Map<String, String> viewNewList = Codec.deserializeMap(pairedData.get(1));
+    Map<String, String> viewOldList = Codec.deserializeLinkedHashMap(pairedData.get(0));
+    Map<String, String> viewNewList = Codec.deserializeLinkedHashMap(pairedData.get(1));
 
     String html = BeeConst.STRING_EMPTY;
     final List<Widget> links = Lists.newArrayList();
 
     for (String view : viewOldList.keySet()) {
-      Map<String, String> newChanges = Codec.deserializeMap(viewNewList.get(view));
-      final Map<String, String> oldChanges = Codec.deserializeMap(viewOldList.get(view));
+      Map<String, String> newChanges = Codec.deserializeLinkedHashMap(viewNewList.get(view));
+      final Map<String, String> oldChanges = Codec.deserializeLinkedHashMap(viewOldList.get(view));
 
       if (newChanges.isEmpty() && oldChanges.isEmpty()) {
         continue;

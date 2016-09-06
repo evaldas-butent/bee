@@ -85,7 +85,7 @@ final class ResponseHandler {
     Map<String, String> serverData;
 
     if (response != null && response.hasResponse()) {
-      serverData = Codec.deserializeMap(response.getResponseAsString());
+      serverData = Codec.deserializeLinkedHashMap(response.getResponseAsString());
     } else {
       serverData = null;
     }

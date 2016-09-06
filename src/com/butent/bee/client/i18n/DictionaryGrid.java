@@ -90,7 +90,7 @@ public class DictionaryGrid extends AbstractGridInterceptor {
           @Override
           public void onResponse(ResponseObject response) {
             if (response.hasResponse()) {
-              Localized.setGlossary(Codec.deserializeMap(response.getResponseAsString()));
+              Localized.setGlossary(Codec.deserializeHashMap(response.getResponseAsString()));
             }
           }
         });

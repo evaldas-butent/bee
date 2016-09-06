@@ -70,7 +70,7 @@ public class Specification implements BeeSerializable {
         case OPTIONS:
           options.clear();
 
-          for (Map.Entry<String, String> entry : Codec.deserializeMap(value).entrySet()) {
+          for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(value).entrySet()) {
             options.put(Option.restore(entry.getKey()), BeeUtils.toIntOrNull(entry.getValue()));
           }
           break;

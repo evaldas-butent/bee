@@ -1033,10 +1033,8 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
     Map<String, String> expenses = Maps.newHashMap();
 
     if (!timesData.isEmpty()) {
-      times =
-          Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_DURATION));
-      expenses =
-          Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_EXPENSES));
+      times = Codec.deserializeLinkedHashMap(timesData.getValue(0, COL_ACTUAL_DURATION));
+      expenses = Codec.deserializeLinkedHashMap(timesData.getValue(0, COL_ACTUAL_EXPENSES));
     }
 
     for (int i = 0; i < rqs.getNumberOfRows(); i++) {

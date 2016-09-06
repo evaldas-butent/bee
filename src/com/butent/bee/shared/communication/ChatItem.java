@@ -79,7 +79,7 @@ public class ChatItem implements BeeSerializable, Comparable<ChatItem> {
       setFiles(FileInfo.restoreCollection(fs));
     }
 
-    setLinkData(Codec.deserializeMap(arr[i++]));
+    setLinkData(Codec.deserializeLinkedHashMap(arr[i++]));
 
   }
 

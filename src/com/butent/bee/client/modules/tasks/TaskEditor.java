@@ -174,7 +174,7 @@ class TaskEditor extends ProductSupportInterceptor {
     if (!BeeUtils.isEmpty(value) && !serializable) {
       widget.getElement().setInnerText(value);
     } else if (!BeeUtils.isEmpty(value) && serializable) {
-      Map<String, String> data = Codec.deserializeMap(value);
+      Map<String, String> data = Codec.deserializeLinkedHashMap(value);
 
       if (data == null) {
         return widget;
@@ -1269,7 +1269,7 @@ class TaskEditor extends ProductSupportInterceptor {
           if (BeeUtils.isEmpty(result)) {
             data = Maps.newLinkedHashMap();
           } else {
-            data = Codec.deserializeMap(result);
+            data = Codec.deserializeLinkedHashMap(result);
           }
 
           if (data.containsKey(BeeUtils.toString(TaskEvent.CREATE.ordinal()))) {

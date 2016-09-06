@@ -50,7 +50,7 @@ public final class ColumnRelation implements BeeSerializable, HasInfo {
     if (BeeUtils.isEmpty(s)) {
       return null;
     } else {
-      return maybeCreate(Codec.deserializeMap(s));
+      return maybeCreate(Codec.deserializeLinkedHashMap(s));
     }
   }
 
@@ -65,7 +65,7 @@ public final class ColumnRelation implements BeeSerializable, HasInfo {
       attributes.clear();
     }
 
-    attributes.putAll(Codec.deserializeMap(s));
+    attributes.putAll(Codec.deserializeLinkedHashMap(s));
   }
 
   public String getEditForm() {

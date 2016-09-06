@@ -115,7 +115,8 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       setWidget(panel);
 
       Global.getParameter(PRM_MESSAGE_TEMPLATE, parameter -> {
-        for (Map.Entry<String, String> entry : Codec.deserializeMap(parameter).entrySet()) {
+        for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(
+            parameter).entrySet()) {
           String[] items;
 
           try {

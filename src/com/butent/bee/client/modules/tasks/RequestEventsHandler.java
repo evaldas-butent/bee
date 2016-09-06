@@ -217,7 +217,7 @@ public class RequestEventsHandler extends EventsBoard {
 
   private static Widget createLinkedTask(String prop) {
     Widget widget = new Flow("bee-crm-taskEvent-EventNote");
-    Map<String, String> data = Codec.deserializeMap(prop);
+    Map<String, String> data = Codec.deserializeLinkedHashMap(prop);
 
     if (data == null) {
       return widget;
@@ -249,14 +249,14 @@ public class RequestEventsHandler extends EventsBoard {
   }
 
   private static String getCommentCellHtml(List<String> pairedData) {
-    Map<String, String> viewOldList = Codec.deserializeMap(pairedData.get(0));
-    Map<String, String> viewNewList = Codec.deserializeMap(pairedData.get(1));
+    Map<String, String> viewOldList = Codec.deserializeLinkedHashMap(pairedData.get(0));
+    Map<String, String> viewNewList = Codec.deserializeLinkedHashMap(pairedData.get(1));
 
     String html = BeeConst.STRING_EMPTY;
 
     for (String view : viewOldList.keySet()) {
-      Map<String, String> newChanges = Codec.deserializeMap(viewNewList.get(view));
-      final Map<String, String> oldChanges = Codec.deserializeMap(viewOldList.get(view));
+      Map<String, String> newChanges = Codec.deserializeLinkedHashMap(viewNewList.get(view));
+      final Map<String, String> oldChanges = Codec.deserializeLinkedHashMap(viewOldList.get(view));
 
       if (newChanges.isEmpty() && oldChanges.isEmpty()) {
         continue;

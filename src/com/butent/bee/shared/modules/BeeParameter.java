@@ -196,7 +196,7 @@ public final class BeeParameter implements BeeSerializable {
           defValue = val;
           break;
         case USER_VALUES:
-          for (Entry<String, String> entry : Codec.deserializeMap(val).entrySet()) {
+          for (Entry<String, String> entry : Codec.deserializeLinkedHashMap(val).entrySet()) {
             userValues.put(BeeUtils.toLongOrNull(entry.getKey()), entry.getValue());
           }
           break;
@@ -424,7 +424,7 @@ public final class BeeParameter implements BeeSerializable {
         break;
 
       case MAP:
-        val = Codec.deserializeMap(expr);
+        val = Codec.deserializeLinkedHashMap(expr);
         break;
 
       case NUMBER:

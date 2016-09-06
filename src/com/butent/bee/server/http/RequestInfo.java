@@ -97,7 +97,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     this.contentLen = BeeUtils.length(this.content);
 
     if (isData()) {
-      this.vars = Codec.deserializeMap(content);
+      this.vars = Codec.deserializeLinkedHashMap(content);
     } else {
       this.vars = null;
     }

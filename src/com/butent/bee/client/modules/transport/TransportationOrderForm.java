@@ -213,7 +213,7 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
         if (response.hasErrors()) {
           return;
         }
-        Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
+        Map<String, String> result = Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
         double limit = BeeUtils.toDouble(result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
         double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));

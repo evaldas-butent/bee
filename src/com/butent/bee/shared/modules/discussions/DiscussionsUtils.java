@@ -51,7 +51,7 @@ public final class DiscussionsUtils {
       return new HashMap<>();
     }
 
-    return Codec.deserializeMap(formRow.getProperty(PROP_PARAMETERS));
+    return Codec.deserializeLinkedHashMap(formRow.getProperty(PROP_PARAMETERS));
   }
 
   public static int getMarkCount(long markId, Long commentId, SimpleRowSet marksStats) {

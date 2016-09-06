@@ -328,7 +328,7 @@ public abstract class ReportItem implements BeeSerializable {
     if (BeeUtils.isEmpty(data)) {
       return null;
     }
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
     String clazz = map.get(Serial.CLAZZ.name());
     String expression = map.get(Serial.EXPRESSION.name());
     String caption = map.get(Serial.CAPTION.name());

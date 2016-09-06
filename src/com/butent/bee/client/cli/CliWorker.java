@@ -1228,7 +1228,7 @@ public final class CliWorker {
           public void onResponse(ResponseObject response) {
             if (!response.hasErrors()) {
               if (SVC_GET_DICTIONARY.equals(service)) {
-                Localized.setGlossary(Codec.deserializeMap(response.getResponseAsString()));
+                Localized.setGlossary(Codec.deserializeHashMap(response.getResponseAsString()));
                 logger.debug(service, Localized.getGlossary().size());
 
               } else {
