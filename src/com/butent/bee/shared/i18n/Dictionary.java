@@ -5762,6 +5762,8 @@ public interface Dictionary {
 
   default String trdGenerateDocument() {return g("trdGenerateDocument");}
 
+  default String trdGenerated() {return g("trdGenerated");}
+
   default String trdGeneratedDocument() {return g("trdGeneratedDocument");}
 
   default String trdInvoice() {return g("trdInvoice");}

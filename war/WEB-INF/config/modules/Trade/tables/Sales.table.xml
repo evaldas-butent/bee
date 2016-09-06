@@ -38,6 +38,8 @@
     <DateTime name="Exported" label="=trdExported" />
 
     <Integer name="Kind" />
+
+    <Relation name="Creator" relation="Users" label="=trdGenerated" defExpr="CURRENT_USER" />
   </Fields>
 
   <Constraints>
