@@ -2,11 +2,11 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="ExtendedProperties" viewName="ExtendedProperties"
-  caption="=calAppointmentProperties" newRowCaption="=calNewParameter"
+  caption="=calLectures" newRowCaption="=calNewLecture"
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <RelColumn name="GroupName" caption="=calParameterGroup" minWidth="100" visible="true" />
+    <RelColumn name="GroupName" caption="=calCourse" minWidth="100" visible="true" />
     <DataColumn name="Name" minWidth="100" visible="true" />
 
     <DataColumn name="Hours" flexGrow="0" />

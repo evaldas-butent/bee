@@ -9,8 +9,8 @@ name="Calendar" label="=calendar" order="60" module="Calendar"
     
   <Item name="Attendees" label="=calAttendees" service="grid" parameters="Attendees" separator="true" />
 
-  <Item name="AppointmentProperties" label="=calAppointmentProperties" service="grid" parameters="ExtendedProperties" separator="true" />
-  <Item name="PropertyGroups" label="=calAppointmentPropertyGroups" service="grid" parameters="PropertyGroups" />
+  <Item name="AppointmentProperties" label="=calLectures" service="grid" parameters="ExtendedProperties" separator="true" />
+  <Item name="PropertyGroups" label="=calCourses" service="grid" parameters="PropertyGroups" />
     
   <Item name="AppointmentStyles" label="=calAppointmentStyles" service="grid" parameters="AppointmentStyles" />
 

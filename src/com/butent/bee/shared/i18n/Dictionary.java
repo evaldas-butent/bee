@@ -341,6 +341,8 @@ public interface Dictionary {
 
   default String calCourse() {return g("calCourse");}
 
+  default String calCourses() {return g("calCourses");}
+
   default String calCreateNewAppointment() {return g("calCreateNewAppointment");}
 
   default String calDayView() {return g("calDayView");}
@@ -380,6 +382,8 @@ public interface Dictionary {
   default String calLastActionDate() {return g("calLastActionDate");}
 
   default String calLecture() {return g("calLecture");}
+
+  default String calLectures() {return g("calLectures");}
 
   default String calLinkOpen() {return g("calLinkOpen");}
 
@@ -428,6 +432,10 @@ public interface Dictionary {
   default String calNewAttendeeType() {return g("calNewAttendeeType");}
 
   default String calNewCalendar() {return g("calNewCalendar");}
+
+  default String calNewCourse() {return g("calNewCourse");}
+
+  default String calNewLecture() {return g("calNewLecture");}
 
   default String calNewParameter() {return g("calNewParameter");}
 
