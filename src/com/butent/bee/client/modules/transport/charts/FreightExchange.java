@@ -379,7 +379,7 @@ final class FreightExchange extends ChartBase {
       managerData.addUser(item.getManager());
 
       orderData.add(item.getOrderName(), item.getOrderId());
-      statusData.addNotNull(item.getOrderStatus());
+      statusData.add(item.getOrderStatus());
 
       cargoData.add(item.getCargoDescription(), item.getCargoId());
       if (DataUtils.isId(item.getCargoType())) {

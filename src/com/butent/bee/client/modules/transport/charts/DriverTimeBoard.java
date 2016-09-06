@@ -709,9 +709,9 @@ final class DriverTimeBoard extends ChartBase {
         }
 
         tripData.add(trip.getTripNo(), tripId);
-        tripStatusData.addNotNull(trip.getStatus());
-        departureData.addNotNull(trip.getTripDeparture());
-        arrivalData.addNotNull(trip.getTripArrival());
+        tripStatusData.add(trip.getStatus());
+        departureData.add(trip.getTripDeparture());
+        arrivalData.add(trip.getTripArrival());
 
         if (!freights.containsKey(tripId)) {
           continue;
@@ -726,7 +726,7 @@ final class DriverTimeBoard extends ChartBase {
           managerData.addUser(freight.getManager());
 
           orderData.add(freight.getOrderName(), freight.getOrderId());
-          orderStatusData.addNotNull(freight.getOrderStatus());
+          orderStatusData.add(freight.getOrderStatus());
 
           cargoData.add(freight.getCargoDescription(), freight.getCargoId());
           if (DataUtils.isId(freight.getCargoType())) {

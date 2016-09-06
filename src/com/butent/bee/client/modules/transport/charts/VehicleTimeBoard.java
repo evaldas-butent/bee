@@ -620,9 +620,9 @@ abstract class VehicleTimeBoard extends ChartBase {
         }
 
         tripData.add(trip.getTripNo(), trip.getTripId());
-        tripStatusData.addNotNull(trip.getStatus());
-        departureData.addNotNull(trip.getTripDeparture());
-        arrivalData.addNotNull(trip.getTripArrival());
+        tripStatusData.add(trip.getStatus());
+        departureData.add(trip.getTripDeparture());
+        arrivalData.add(trip.getTripArrival());
 
         String otherVehicleNumber = trip.getVehicleNumber(otherVehicleType);
         if (!BeeUtils.isEmpty(otherVehicleNumber)) {
@@ -652,7 +652,7 @@ abstract class VehicleTimeBoard extends ChartBase {
           managerData.addUser(freight.getManager());
 
           orderData.add(freight.getOrderName(), freight.getOrderId());
-          orderStatusData.addNotNull(freight.getOrderStatus());
+          orderStatusData.add(freight.getOrderStatus());
 
           cargoData.add(freight.getCargoDescription(), freight.getCargoId());
           if (DataUtils.isId(freight.getCargoType())) {

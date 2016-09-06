@@ -529,7 +529,7 @@ public abstract class ChartBase extends TimeBoard {
     serialized = rowSet.getTableProperty(PROP_CITIES);
     if (!BeeUtils.isEmpty(serialized)) {
       millis = System.currentTimeMillis();
-      int size = Places.setCities(BeeRowSet.restore(serialized));
+      int size = Places.setCities(Codec.deserializeHashMap(serialized));
       logger.debug(PROP_CITIES, size, TimeUtils.elapsedMillis(millis));
     }
 

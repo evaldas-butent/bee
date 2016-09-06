@@ -92,7 +92,7 @@ class ChartData implements HasEnabled {
   }
 
   void add(String name, Long id) {
-    if (!BeeUtils.isEmpty(name)) {
+    if (name != null && !name.isEmpty()) {
       items.add(name);
 
       if (id != null) {
@@ -101,13 +101,13 @@ class ChartData implements HasEnabled {
     }
   }
 
-  <E extends Enum<?> & HasCaption> void addNotNull(E item) {
+  <E extends Enum<?> & HasCaption> void add(E item) {
     if (item != null) {
       add(item.getCaption(), (long) item.ordinal());
     }
   }
 
-  void addNotNull(JustDate date) {
+  void add(JustDate date) {
     if (date != null) {
       add(date.toString(), (long) date.getDays());
     }
