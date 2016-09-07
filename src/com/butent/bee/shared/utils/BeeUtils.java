@@ -2010,6 +2010,10 @@ public final class BeeUtils {
     return isEmpty(s1) ? (isEmpty(s2) ? def : s2) : s1;
   }
 
+  public static String nullOrTrim(String s) {
+    return (s == null) ? null : s.trim();
+  }
+
   /**
    * Gets the first object which is not {@code null}.
    *

@@ -55,9 +55,10 @@ class ChartData implements HasEnabled {
   private final Type type;
 
   private final Set<String> items = new HashSet<>();
-  private final List<String> selectedItems = new ArrayList<>();
-
   private final Map<Long, String> ids = new HashMap<>();
+
+  private final List<String> orderedItems = new ArrayList<>();
+  private final List<String> selectedItems = new ArrayList<>();
 
   private boolean enabled = true;
 
@@ -181,8 +182,16 @@ class ChartData implements HasEnabled {
     return null;
   }
 
-  List<String> getItems() {
-    return new ArrayList<>(items);
+  List<String> getOrderedItems() {
+    if (orderedItems.size() != size()) {
+      orderedItems.clear();
+      orderedItems.addAll(items);
+
+      if (size() > 1) {
+        orderedItems.sort(null);
+      }
+    }
+    return orderedItems;
   }
 
   int getNumberOfSelectedItems() {

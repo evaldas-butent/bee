@@ -197,7 +197,7 @@ final class FilterHelper {
       for (ChartData input : data) {
         if (input != null && input.hasSelection()) {
           ChartData selected = new ChartData(input.getType());
-          selected.getItems().addAll(input.getSelectedItems());
+          selected.add(input.getSelectedItems());
 
           result.add(selected);
         }
