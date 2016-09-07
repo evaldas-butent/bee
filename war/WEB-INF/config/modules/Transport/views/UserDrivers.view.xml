@@ -11,6 +11,9 @@
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
       </SimpleJoin>
+      <SimpleJoin name="Company" joinType="INNER">
+        <SimpleColumn alias="CompanyName" name="Name" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <ExternalJoin name="Driver" joinType="LEFT" source="DriverGroups">

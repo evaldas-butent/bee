@@ -54,6 +54,14 @@
           <InputText source="Route" style="width:100%" />
         </cell>
       </row>
+      <row>
+        <FlowPanel />
+        <cell colSpan="5">
+        <FlowPanel class="flexBox-vertical flexible">
+          <ChildGrid name="TripDrivers" relColumn="Trip" style="height:120px;" />
+        </FlowPanel>
+        </cell>
+      </row>
     </Table>
 
     <TabbedPages class="flexible" style="margin-top: 1ex;">
@@ -101,7 +109,6 @@
           </FlowPanel>
 
           <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em;">
-            <ChildGrid name="TripDrivers" relColumn="Trip" style="height:200px;" />
             <ChildGrid name="DriverAdvances" parent="TripDrivers" relColumn="Driver"
                        class="flexible" />
           </FlowPanel>

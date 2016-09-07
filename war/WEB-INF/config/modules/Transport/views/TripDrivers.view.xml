@@ -17,6 +17,12 @@
           <SimpleColumn name="LastName" />
           <SimpleColumn name="FirstName" />
         </SimpleJoin>
+        <SimpleJoin name="Company" joinType="INNER">
+          <SimpleColumn alias="CompanyName" name="Name" />
+        </SimpleJoin>
+        <ExternalJoin name="CompanyPerson" joinType="LEFT" source="Employees">
+          <SimpleColumn name="TabNumber" />
+        </ExternalJoin>
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Note" />
