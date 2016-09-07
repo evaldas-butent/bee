@@ -3659,8 +3659,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     SimpleRowSet employees = qs.getData(new SqlSelect()
         .addField(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), COL_COMPANY_PERSON)
         .addFields(TBL_COMPANY_PERSONS, COL_PERSON, COL_CONTACT)
-        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-            SqlUtils.field(TBL_PERSONS, COL_LAST_NAME)), COL_FIRST_NAME)
         .addField(TBL_PERSONS, COL_CONTACT, COL_PERSON + COL_CONTACT)
         .addFields(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)
         .addField(PayrollConstants.TBL_EMPLOYEES, sys.getIdName(PayrollConstants.TBL_EMPLOYEES),
@@ -3684,24 +3682,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         tabNr = row.getValue("CODE");
         SimpleRow info = employees.getRowByKey(PayrollConstants.COL_TAB_NUMBER, tabNr);
 
-        if (info == null) {
-          info = employees.getRowByKey(COL_FIRST_NAME,
-              BeeUtils.joinWords(row.getValue("NAME"), row.getValue("SURNAME")));
-
-          if (info != null) {
-            Long id = info.getLong(PayrollConstants.COL_EMPLOYEE);
-
-            if (DataUtils.isId(id)) {
-              qs.updateData(new SqlUpdate(PayrollConstants.TBL_EMPLOYEES)
-                  .addConstant(PayrollConstants.COL_TAB_NUMBER, tabNr)
-                  .setWhere(sys.idEquals(PayrollConstants.TBL_EMPLOYEES, id)));
-            } else {
-              qs.insertData(new SqlInsert(PayrollConstants.TBL_EMPLOYEES)
-                  .addConstant(COL_COMPANY_PERSON, info.getLong(COL_COMPANY_PERSON))
-                  .addConstant(PayrollConstants.COL_TAB_NUMBER, tabNr));
-            }
-          }
-        }
         Long person;
         Long personContact = null;
         Long companyPerson;

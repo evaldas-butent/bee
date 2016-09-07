@@ -368,7 +368,7 @@
       </dynStyle>
     </Label>
 
-    <Label style="&bold;" text="Pastabos | Additional information:"/>
+    <Label style="&section; &bold;" text="Pastabos | Additional information:"/>
     <TextLabel source="Notes" style="white-space:pre-wrap;" />
     <br/>
     <br />

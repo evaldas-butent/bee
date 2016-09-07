@@ -3209,7 +3209,7 @@ public class EcModuleBean implements BeeModule {
             .importClient(order.getValue(sys.getIdName(TBL_COMPANIES)), order.getValue(COL_COMPANY),
                 order.getValue(COL_COMPANY_CODE), order.getValue(COL_COMPANY_VAT_CODE),
                 order.getValue(COL_ADDRESS), order.getValue(COL_POST_INDEX),
-                order.getValue(COL_CITY), order.getValue(COL_COUNTRY));
+                order.getValue(COL_CITY), order.getValue(COL_COUNTRY), null, null);
       } catch (BeeException e) {
         response = response.addError(e);
       }

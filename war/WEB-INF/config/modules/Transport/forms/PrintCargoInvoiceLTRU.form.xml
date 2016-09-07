@@ -383,7 +383,7 @@
       </dynStyle>
     </Label>
 
-    <Label style="&bold;" text="Pastabos | Дополнительная информация:"/>
+    <Label style="&section; &bold;" text="Pastabos | Дополнительная информация:"/>
     <TextLabel source="Notes" style="white-space:pre-wrap;" />
     <br/>
     <br />
