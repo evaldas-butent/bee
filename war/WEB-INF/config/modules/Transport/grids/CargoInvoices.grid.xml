@@ -38,6 +38,8 @@
     <DataColumn name="Vehicle" />
     <DataColumn name="Driver" />
     <DataColumn name="Exported" />
+
+    <RelColumn name="Creator" readOnly="true" />
   </g:columns>
 
   <g:rowStyle>

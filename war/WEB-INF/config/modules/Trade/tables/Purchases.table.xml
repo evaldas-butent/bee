@@ -31,5 +31,7 @@
     <Text name="Notes" label="=trdNotes" />
 
     <DateTime name="Exported" label="=trdExported" />
+
+    <Relation name="Creator" relation="Users" label="=trdGenerated" defExpr="CURRENT_USER" />
   </Fields>
 </Table>
