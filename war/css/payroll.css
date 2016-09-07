@@ -532,3 +532,9 @@
   font-weight: bolder;
   font-size: larger;
 }
+
+.bee-payroll-ws-partition-clear-item {
+  font-size: large;
+  color: #666;
+  margin: 0 10px;
+}
