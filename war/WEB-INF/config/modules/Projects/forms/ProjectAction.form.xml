@@ -20,11 +20,11 @@
     <InputText source="Location" caption="=location" style="width: 400px;"
                d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" autocomplete="true" />
 
-    <Label text="=calAttendees" style="&absolute; left: 0; top: 55px;" />
+    <Label text="=calAttendees" class="bee-required" style="&absolute; left: 0; top: 55px;" />
 
     <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 120px;" />
 
-    <MultiSelector name="Resources" viewName="Attendees" property="AppointmentAttendees"
+    <MultiSelector name="Resources" required="true" viewName="Attendees" property="AppointmentAttendees"
                    renderColumns="Name" choiceColumns="Name TypeName" newRowEnabled="false"
                    style="&absolute; left: 80px; top: 55px; width: 240px; max-height: 100px; overflow: auto;" />
 
