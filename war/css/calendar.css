@@ -598,7 +598,7 @@
 }
 
 .bee-cal-Controller-datePicker img {
-  -webkit-filter: grayscale(100%);
+  filter: grayscale(100%);
 }
 .bee-cal-Controller-datePicker .bee-DatePicker-days td {
   height: 16px;

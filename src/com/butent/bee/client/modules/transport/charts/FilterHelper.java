@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.HasNativeEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -48,19 +46,17 @@ final class FilterHelper {
 
     void applySavedFilter(int index, Popup popup);
 
-    void onClear();
-
     void onDataTypesChange(Set<ChartData.Type> types);
 
     void onFilter();
 
     void onSave(Callback<List<ChartFilter>> callback);
 
-    void onSelectionChange(HasWidgets dataContainer);
-
     void removeSavedFilter(int index, Callback<List<ChartFilter>> callback);
 
     void setInitial(int index, boolean initial, Runnable callback);
+
+    boolean tryFilter();
   }
 
   static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-chart-filter-";
@@ -197,7 +193,10 @@ final class FilterHelper {
       for (ChartData input : data) {
         if (input != null && input.hasSelection()) {
           ChartData selected = new ChartData(input.getType());
-          selected.add(input.getSelectedItems());
+
+          for (String item : input.getSelectedItems()) {
+            selected.add(item, input.getItemId(item));
+          }
 
           result.add(selected);
         }
@@ -365,14 +364,10 @@ final class FilterHelper {
     dataContainer.addStyleName(STYLE_DATA_CONTAINER);
     StyleUtils.setSize(dataContainer, dataContainerWidth, dataContainerHeight);
 
-    SelectionHandler<ChartData.Type> selectionHandler =
-        event -> callback.onSelectionChange(dataContainer);
-
     int dataIndex = 0;
     for (ChartData data : filterData) {
       if (data.isEnabled() && !data.isEmpty()) {
         FilterDataWidget dataWidget = new FilterDataWidget(data);
-        dataWidget.addSelectionHandler(selectionHandler);
 
         dataIndex++;
         if (dataIndex < dataCounter) {
@@ -389,8 +384,12 @@ final class FilterHelper {
     Flow commands = new Flow(STYLE_COMMAND_GROUP);
 
     Button filter = new Button(Localized.dictionary().doFilter(), event -> {
-      dialog.close();
-      callback.onFilter();
+      if (callback.tryFilter()) {
+        dialog.close();
+        callback.onFilter();
+      } else {
+        BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
+      }
     });
     filter.addStyleName(STYLE_COMMAND_FILTER);
     commands.add(filter);
@@ -401,7 +400,6 @@ final class FilterHelper {
           ((FilterDataWidget) widget).reset(true);
         }
       }
-      callback.onClear();
     });
     clear.addStyleName(STYLE_COMMAND_CLEAR);
     commands.add(clear);

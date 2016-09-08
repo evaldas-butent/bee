@@ -283,7 +283,7 @@
   margin-right: 3px;
 }
 .bee-tr-chart-filter-data-commandAll {
-  -webkit-filter: grayscale(50%);
+  filter: grayscale(50%);
 }
 
 .bee-tr-chart-filter-savedContainer {

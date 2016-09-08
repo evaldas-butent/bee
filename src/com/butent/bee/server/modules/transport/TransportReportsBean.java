@@ -661,23 +661,33 @@ public class TransportReportsBean {
               sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
           .setWhere(SqlUtils.nonPositive(tmpTripCargo, plannedKilometers)));
 
+      String als = SqlUtils.uniqueName();
+
       // Planned additional CargoHandling
       qs.updateData(new SqlUpdate(tmpCargo)
           .addExpression(plannedKilometers,
-              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpCargo, plannedKilometers), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_UNPLANNED_KILOMETERS), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)))
+              SqlUtils.plus(SqlUtils.field(tmpCargo, plannedKilometers),
+                  SqlUtils.field(als, plannedKilometers)))
           .addExpression(unplannedKilometers,
               SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpCargo, unplannedKilometers), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_UNPLANNED_KILOMETERS), 0)))
+                  SqlUtils.nvl(SqlUtils.field(als, unplannedKilometers), 0)))
           .addExpression(emptyKilometers,
               SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpCargo, emptyKilometers), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)))
-          .setFrom(TBL_CARGO_HANDLING,
-              SqlUtils.joinUsing(tmpCargo, TBL_CARGO_HANDLING, COL_CARGO)));
-
-      String als = SqlUtils.uniqueName();
+                  SqlUtils.nvl(SqlUtils.field(als, emptyKilometers), 0)))
+          .setFrom(new SqlSelect()
+                  .addFields(tmpCargo, COL_CARGO)
+                  .addSum(SqlUtils.plus(0.0,
+                      SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
+                      SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_UNPLANNED_KILOMETERS), 0),
+                      SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
+                      plannedKilometers)
+                  .addSum(TBL_CARGO_HANDLING, COL_UNPLANNED_KILOMETERS, unplannedKilometers)
+                  .addSum(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS, emptyKilometers)
+                  .addFrom(tmpCargo)
+                  .addFromInner(TBL_CARGO_HANDLING,
+                      SqlUtils.joinUsing(tmpCargo, TBL_CARGO_HANDLING, COL_CARGO))
+                  .addGroup(tmpCargo, COL_CARGO),
+              als, SqlUtils.joinUsing(tmpCargo, als, COL_CARGO)));
 
       qs.updateData(new SqlUpdate(tmpTripCargo)
           .addExpression(plannedKilometers,

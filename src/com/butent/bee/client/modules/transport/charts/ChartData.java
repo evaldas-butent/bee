@@ -58,7 +58,9 @@ class ChartData implements HasEnabled {
   private final Type type;
 
   private final Set<String> items = new HashSet<>();
-  private final Map<Long, String> ids = new HashMap<>();
+
+  private final Set<Long> ids = new HashSet<>();
+  private final Map<String, Long> itemToId = new HashMap<>();
 
   private final List<String> orderedItems = new ArrayList<>();
   private final List<String> selectedItems = new ArrayList<>();
@@ -83,14 +85,6 @@ class ChartData implements HasEnabled {
     }
   }
 
-  void add(Collection<String> names) {
-    if (names != null) {
-      for (String name : names) {
-        add(name);
-      }
-    }
-  }
-
   void add(String name) {
     add(name, null);
   }
@@ -100,7 +94,8 @@ class ChartData implements HasEnabled {
       items.add(name);
 
       if (id != null) {
-        ids.put(id, name);
+        ids.add(id);
+        itemToId.put(name, id);
       }
     }
   }
@@ -145,7 +140,7 @@ class ChartData implements HasEnabled {
   }
 
   boolean contains(Long id) {
-    return id != null && ids.containsKey(id);
+    return id != null && ids.contains(id);
   }
 
   boolean contains(String name) {
@@ -173,16 +168,7 @@ class ChartData implements HasEnabled {
   }
 
   Long getItemId(String item) {
-    if (BeeUtils.isEmpty(item) || ids.isEmpty()) {
-      return null;
-    }
-
-    for (Map.Entry<Long, String> entry : ids.entrySet()) {
-      if (item.equals(entry.getValue())) {
-        return entry.getKey();
-      }
-    }
-    return null;
+    return itemToId.get(item);
   }
 
   List<String> getOrderedItems() {

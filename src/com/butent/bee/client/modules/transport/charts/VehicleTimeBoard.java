@@ -275,8 +275,6 @@ abstract class VehicleTimeBoard extends ChartBase {
               freight.setMatch(filterType, freightMatch);
               if (freightMatch) {
                 freightCount++;
-              } else {
-                filtered = true;
               }
             }
 
@@ -288,8 +286,6 @@ abstract class VehicleTimeBoard extends ChartBase {
           trip.setMatch(filterType, tripMatch);
           if (tripMatch) {
             tripCount++;
-          } else {
-            filtered = true;
           }
         }
 
@@ -299,7 +295,8 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
 
       vehicle.setMatch(filterType, vehicleMatch);
-      if (!vehicleMatch) {
+
+      if (vehicleMatch) {
         filtered = true;
       }
     }
