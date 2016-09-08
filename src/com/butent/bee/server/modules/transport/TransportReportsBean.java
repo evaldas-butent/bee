@@ -55,7 +55,7 @@ public class TransportReportsBean {
    * @param cargos query filter with <b>unique</b> "Cargo" values.
    * @param currency currency to convert to.
    * @param woVat exclude vat.
-   * @return query with columns: "Cargo", "CargoIncome", "ServicesIncome"
+   * @return query with columns: "Cargo", "CargoIncome", "CargoVat", "ServicesIncome", "ServicesVat"
    */
   public SqlSelect getCargoIncomeQuery(SqlSelect cargos, Long currency, boolean woVat) {
     String alias = SqlUtils.uniqueName();
@@ -71,6 +71,7 @@ public class TransportReportsBean {
         .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO));
 
     IsExpression amountExpr = SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT);
+    IsExpression vatExpr = TradeModuleBean.getVatExpression(TBL_CARGO_INCOMES, amountExpr);
 
     if (woVat) {
       amountExpr = TradeModuleBean.getWithoutVatExpression(TBL_CARGO_INCOMES, amountExpr);
@@ -80,25 +81,32 @@ public class TransportReportsBean {
     IsExpression currencyExpr = SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY);
     IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_INCOMES, COL_DATE),
         SqlUtils.field(TBL_ORDERS, COL_DATE));
+    IsCondition isService = SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION);
 
-    IsExpression cargoIncome = SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
-        null, amountExpr);
-    IsExpression servicesIncome = SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
-        amountExpr, null);
+    IsExpression cargoIncome = SqlUtils.sqlIf(isService, null, amountExpr);
+    IsExpression cargoVat = SqlUtils.sqlIf(isService, null, vatExpr);
+    IsExpression servicesIncome = SqlUtils.sqlIf(isService, amountExpr, null);
+    IsExpression servicesVat = SqlUtils.sqlIf(isService, vatExpr, null);
 
     if (DataUtils.isId(currency)) {
       cargoIncome = ExchangeUtils.exchangeFieldTo(ss, cargoIncome, currencyExpr, dateExpr,
           SqlUtils.constant(currency));
-
+      cargoVat = ExchangeUtils.exchangeFieldTo(ss, cargoVat, currencyExpr, dateExpr,
+          SqlUtils.constant(currency));
       servicesIncome = ExchangeUtils.exchangeFieldTo(ss, servicesIncome, currencyExpr, dateExpr,
+          SqlUtils.constant(currency));
+      servicesVat = ExchangeUtils.exchangeFieldTo(ss, servicesVat, currencyExpr, dateExpr,
           SqlUtils.constant(currency));
     } else {
       cargoIncome = ExchangeUtils.exchangeField(ss, cargoIncome, currencyExpr, dateExpr);
-
+      cargoVat = ExchangeUtils.exchangeField(ss, cargoVat, currencyExpr, dateExpr);
       servicesIncome = ExchangeUtils.exchangeField(ss, servicesIncome, currencyExpr, dateExpr);
+      servicesVat = ExchangeUtils.exchangeField(ss, servicesVat, currencyExpr, dateExpr);
     }
     ss.addSum(cargoIncome, "CargoIncome")
-        .addSum(servicesIncome, "ServicesIncome");
+        .addSum(cargoVat, "CargoVat")
+        .addSum(servicesIncome, "ServicesIncome")
+        .addSum(servicesVat, "ServicesVat");
 
     return ss;
   }
