@@ -203,7 +203,8 @@ final class FreightExchange extends ChartBase {
       }
 
       item.setMatch(filterType, match);
-      if (!match) {
+
+      if (match) {
         filtered = true;
       }
     }

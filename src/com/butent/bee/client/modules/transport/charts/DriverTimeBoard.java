@@ -309,8 +309,6 @@ final class DriverTimeBoard extends ChartBase {
               freight.setMatch(filterType, freightMatch);
               if (freightMatch) {
                 freightCount++;
-              } else {
-                filtered = true;
               }
             }
 
@@ -322,8 +320,6 @@ final class DriverTimeBoard extends ChartBase {
           trip.setMatch(filterType, tripMatch);
           if (tripMatch) {
             tripCount++;
-          } else {
-            filtered = true;
           }
         }
 
@@ -333,7 +329,8 @@ final class DriverTimeBoard extends ChartBase {
       }
 
       driver.setMatch(filterType, driverMatch);
-      if (!driverMatch) {
+
+      if (driverMatch) {
         filtered = true;
       }
     }

@@ -4,11 +4,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.logical.shared.HasSelectionHandlers;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
@@ -27,7 +22,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Type> {
+class FilterDataWidget extends Flow {
 
   private static final String STYLE_PREFIX = FilterHelper.STYLE_DATA_PREFIX;
 
@@ -54,7 +49,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
   private final Element selectedContainer;
 
   private final CustomDiv unselectedSizeWidget;
-  private final Image selectAllWidget;
 
   private final CustomDiv selectedSizeWidget;
   private final Image deselectAllWidget;
@@ -93,12 +87,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     this.unselectedSizeWidget = new CustomDiv(STYLE_DATA_SIZE);
     unselectedControls.add(unselectedSizeWidget);
 
-    this.selectAllWidget = new Image(Global.getImages().arrowDownDouble());
-    selectAllWidget.addStyleName(STYLE_DATA_COMMAND_ALL);
-    selectAllWidget.setTitle(Localized.dictionary().selectAll());
-
-    unselectedControls.add(selectAllWidget);
-
     add(unselectedControls);
 
     this.searchBox = new InputText();
@@ -120,13 +108,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     });
 
     add(searchBox);
-
-    selectAllWidget.addClickHandler(event -> {
-      boolean updated = doAll(false);
-      if (updated && !BeeUtils.isEmpty(getSearchQuery())) {
-        AutocompleteProvider.retainValue(searchBox);
-      }
-    });
 
     Flow selectedControls = new Flow();
     selectedControls.addStyleName(STYLE_DATA_SELECTED);
@@ -156,11 +137,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     refresh();
   }
 
-  @Override
-  public HandlerRegistration addSelectionHandler(SelectionHandler<ChartData.Type> handler) {
-    return addHandler(handler, SelectionEvent.getType());
-  }
-
   void addItem(String item, boolean selected) {
     Element itemElement = Document.get().createDivElement();
     itemElement.addClassName(STYLE_DATA_ITEM);
@@ -171,10 +147,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     } else {
       unselectedContainer.appendChild(itemElement);
     }
-  }
-
-  boolean hasType(ChartData.Type type) {
-    return data.getType() == type;
   }
 
   void refresh() {
@@ -191,11 +163,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
       unselectedSizeWidget.setHtml(text);
     }
 
-    if (selectAllWidget != null) {
-      StyleUtils.setVisible(selectAllWidget,
-          getNumberOfVisibleUnselectedItems() >= MIN_SIZE_FOR_COMMAND_ALL);
-    }
-
     cnt = data.getNumberOfSelectedItems();
     if (selectedSizeWidget != null) {
       String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
@@ -204,18 +171,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     if (deselectAllWidget != null) {
       StyleUtils.setVisible(deselectAllWidget, cnt >= MIN_SIZE_FOR_COMMAND_ALL);
-    }
-  }
-
-  void removeItem(String item, boolean selected) {
-    Element itemElement = DomUtils.getChildByInnerText(selected
-        ? selectedContainer : unselectedContainer, item, false);
-
-    if (itemElement != null) {
-      if (!selected && !UIObject.isVisible(itemElement)) {
-        setNumberOfHiddenItems(getNumberOfHiddenItems() - 1);
-      }
-      itemElement.removeFromParent();
     }
   }
 
@@ -258,7 +213,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     if (updated) {
       refresh();
-      fireSelection();
     }
     return updated;
   }
@@ -298,10 +252,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
       setNumberOfHiddenItems(hideCnt);
       refresh();
     }
-  }
-
-  private void fireSelection() {
-    SelectionEvent.fire(this, data.getType());
   }
 
   private int getNumberOfHiddenItems() {
@@ -353,7 +303,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     } else if (moveItem(DomUtils.getFirstVisibleChild(unselectedContainer), false)) {
       refresh();
-      fireSelection();
       return true;
 
     } else {
@@ -364,7 +313,6 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
   private void onItemClick(ClickEvent event, boolean wasSelected) {
     if (moveItem(EventUtils.getEventTargetElement(event), wasSelected)) {
       refresh();
-      fireSelection();
     }
   }
 

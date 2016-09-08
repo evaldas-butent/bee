@@ -150,11 +150,6 @@ public abstract class ChartBase extends TimeBoard {
               }
 
               @Override
-              public void onClear() {
-                resetFilter(FilterType.TENTATIVE);
-              }
-
-              @Override
               public void onDataTypesChange(Set<ChartData.Type> types) {
                 updateEnabledFilterDataTypes(types);
                 handleAction(Action.FILTER);
@@ -173,10 +168,6 @@ public abstract class ChartBase extends TimeBoard {
               }
 
               @Override
-              public void onSelectionChange(HasWidgets dataContainer) {
-              }
-
-              @Override
               public void removeSavedFilter(int index, Callback<List<ChartFilter>> callback) {
                 onRemoveFilter(index, callback);
               }
@@ -184,6 +175,15 @@ public abstract class ChartBase extends TimeBoard {
               @Override
               public void setInitial(int index, boolean initial, Runnable callback) {
                 onSetInitialFilter(index, initial, callback);
+              }
+
+              @Override
+              public boolean tryFilter() {
+                if (FilterHelper.hasSelection(getFilterData())) {
+                  return filter(FilterType.TENTATIVE);
+                } else {
+                  return true;
+                }
               }
             });
         break;
@@ -293,7 +293,7 @@ public abstract class ChartBase extends TimeBoard {
                   int index = getSettings().getColumnIndex(colName);
                   if (!BeeConst.isUndef(index)
                       && !BeeUtils.equalsTrimRight(oldRow.getString(index),
-                          result.getString(index))) {
+                      result.getString(index))) {
 
                     refresh = true;
                     break;
@@ -687,13 +687,8 @@ public abstract class ChartBase extends TimeBoard {
     setFiltered(filter(FilterType.TENTATIVE));
 
     if (isFiltered()) {
-      if (FilterHelper.hasSelection(getFilterData())) {
-        persistFilter();
-        refreshFilterInfo();
-
-      } else {
-        clearFilter();
-      }
+      persistFilter();
+      refreshFilterInfo();
 
     } else {
       clearFilter();
