@@ -705,15 +705,41 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         }
       }
 
-    } else if (event.hasRelatedView(VIEW_EXTENDED_PROPERTIES) && event.isChanged()
-        && getSummaryWidgetId() != null && getSummaryLabelId() != null) {
-      InputText input = (InputText) getWidget(getSummaryWidgetId());
-      if (DataUtils.isId(event.getValue())) {
-        input.setNullable(true);
-        getWidget(getSummaryLabelId()).removeStyleName(STYLE_REQUIRED);
-      } else {
-        input.setNullable(false);
-        getWidget(getSummaryLabelId()).addStyleName(STYLE_REQUIRED);
+    } else if (event.hasRelatedView(VIEW_EXTENDED_PROPERTIES) && event.isChanged()) {
+      if (getSummaryWidgetId() != null && getSummaryLabelId() != null) {
+        InputText input = (InputText) getWidget(getSummaryWidgetId());
+        if (DataUtils.isId(event.getValue())) {
+          input.setNullable(true);
+          getWidget(getSummaryLabelId()).removeStyleName(STYLE_REQUIRED);
+        } else {
+          input.setNullable(false);
+          getWidget(getSummaryLabelId()).addStyleName(STYLE_REQUIRED);
+        }
+      }
+
+      if (event.getRelatedRow() != null) {
+        Editor durationHoursWidget = (Editor) getWidget(getHourWidgetId());
+        Editor durationMinutesWidget = (Editor) getWidget(getMinuteWidgetId());
+
+        if (durationHoursWidget != null && durationMinutesWidget != null
+            && BeeUtils.isEmpty(durationHoursWidget.getValue())
+            && BeeUtils.isEmpty(durationMinutesWidget.getValue())) {
+
+          Integer hours = event.getRelatedRow().getInteger(
+                                        Data.getColumnIndex(VIEW_EXTENDED_PROPERTIES, COL_HOURS));
+          if (BeeUtils.isPositive(hours)) {
+            durationHoursWidget.setValue(BeeUtils.toString(hours));
+            Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), COL_DURATION_HOURS, hours);
+          }
+
+          Integer minutes = event.getRelatedRow().getInteger(
+                                        Data.getColumnIndex(VIEW_EXTENDED_PROPERTIES, COL_MINUTES));
+          if (BeeUtils.isPositive(minutes)) {
+            durationMinutesWidget.setValue(BeeUtils.toString(minutes));
+            Data.setValue(VIEW_APPOINTMENTS, getActiveRow(), COL_DURATION_MINUTES, minutes);
+          }
+        }
+
       }
     }
   }
