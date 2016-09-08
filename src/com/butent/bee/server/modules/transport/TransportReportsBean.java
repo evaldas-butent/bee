@@ -650,16 +650,24 @@ public class TransportReportsBean {
               sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
           .setWhere(SqlUtils.nonPositive(tmpTripCargo, plannedKilometers)));
 
+      String als = SqlUtils.uniqueName();
+
       // Planned additional CargoHandling
       qs.updateData(new SqlUpdate(tmpCargo)
           .addExpression(plannedKilometers,
-              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpCargo, plannedKilometers), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
-                  SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)))
-          .setFrom(TBL_CARGO_HANDLING,
-              SqlUtils.joinUsing(tmpCargo, TBL_CARGO_HANDLING, COL_CARGO)));
-
-      String als = SqlUtils.uniqueName();
+              SqlUtils.plus(SqlUtils.field(tmpCargo, plannedKilometers),
+                  SqlUtils.field(als, plannedKilometers)))
+          .setFrom(new SqlSelect()
+                  .addFields(tmpCargo, COL_CARGO)
+                  .addSum(SqlUtils.plus(0.0,
+                      SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
+                      SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
+                      plannedKilometers)
+                  .addFrom(tmpCargo)
+                  .addFromInner(TBL_CARGO_HANDLING,
+                      SqlUtils.joinUsing(tmpCargo, TBL_CARGO_HANDLING, COL_CARGO))
+                  .addGroup(tmpCargo, COL_CARGO),
+              als, SqlUtils.joinUsing(tmpCargo, als, COL_CARGO)));
 
       qs.updateData(new SqlUpdate(tmpTripCargo)
           .addExpression(plannedKilometers,
