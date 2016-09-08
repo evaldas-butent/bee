@@ -6,61 +6,36 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 final class Places {
 
-  private static BeeRowSet countries;
-  private static Map<String, String> cities;
+  private static final Map<String, String> countryNames = new HashMap<>();
+  private static final Map<String, String> countryCodes = new HashMap<>();
 
-  private static int countryCodeIndex = BeeConst.UNDEF;
-  private static int countryNameIndex = BeeConst.UNDEF;
-
-  private static ValueType placeDateType = ValueType.DATE_TIME;
+  private static Map<String, String> cities = new HashMap<>();
 
   static String getCountryFlag(Long countryId) {
-    if (!DataUtils.isId(countryId) || DataUtils.isEmpty(countries)) {
-      return null;
-    }
-
-    BeeRow row = countries.getRowById(countryId);
-    if (row == null) {
-      return null;
-    }
-
-    String code = row.getString(countryCodeIndex);
-    if (BeeUtils.isEmpty(code)) {
-      return null;
-    } else {
-      return Flags.get(code);
-    }
+    return (countryId == null) ? null : Flags.get(countryCodes.get(countryId.toString()));
   }
 
   static String getCountryLabel(Long countryId) {
-    if (!DataUtils.isId(countryId) || DataUtils.isEmpty(countries)) {
+    if (countryId == null) {
       return null;
-    }
 
-    BeeRow row = countries.getRowById(countryId);
-    if (row == null) {
-      return null;
-    }
-
-    String label = row.getString(countryCodeIndex);
-    if (BeeUtils.isEmpty(label)) {
-      return BeeUtils.trim(row.getString(countryNameIndex));
     } else {
-      return BeeUtils.trim(label).toUpperCase();
+      String label = countryCodes.get(countryId.toString());
+      return (label == null) ? countryNames.get(countryId.toString()) : label;
     }
   }
 
   static String getCityLabel(Long cityId) {
-    if (cityId == null || cities == null) {
+    if (cityId == null) {
       return null;
     } else {
       return cities.get(cityId.toString());
@@ -68,11 +43,7 @@ final class Places {
   }
 
   static JustDate getLoadingDate(SimpleRow row, String colName) {
-    if (getPlaceDateType() == ValueType.DATE_TIME) {
-      return JustDate.get(row.getDateTime(colName));
-    } else {
-      return row.getDate(colName);
-    }
+    return JustDate.get(row.getDateTime(colName));
   }
 
   static String getLoadingInfo(HasShipmentInfo item) {
@@ -93,19 +64,18 @@ final class Places {
     }
   }
 
-  static ValueType getPlaceDateType() {
-    return Places.placeDateType;
-  }
-
   static String getPlaceInfo(Long countryId, String placeName, String postIndex, Long cityId,
       String number) {
+
     String countryLabel = getCountryLabel(countryId);
     String cityLabel = getCityLabel(cityId);
 
     if (BeeUtils.isEmpty(countryLabel) || BeeUtils.containsSame(placeName, countryLabel)
         || BeeUtils.containsSame(number, countryLabel)) {
+
       return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, placeName, postIndex, cityLabel,
           number);
+
     } else {
       return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, countryLabel, placeName, postIndex,
           cityLabel, number);
@@ -113,11 +83,7 @@ final class Places {
   }
 
   static JustDate getUnloadingDate(SimpleRow row, String colName) {
-    if (getPlaceDateType() == ValueType.DATE_TIME) {
-      return JustDate.get(row.getDateTime(colName));
-    } else {
-      return row.getDate(colName);
-    }
+    return JustDate.get(row.getDateTime(colName));
   }
 
   static String getUnloadingInfo(HasShipmentInfo item) {
@@ -140,11 +106,24 @@ final class Places {
 
   static int setCountries(BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet)) {
-      Places.countries = rowSet;
+      countryCodes.clear();
+      countryNames.clear();
 
-      if (BeeConst.isUndef(countryCodeIndex)) {
-        Places.countryCodeIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_CODE);
-        Places.countryNameIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_NAME);
+      int codeIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_CODE);
+      int nameIndex = rowSet.getColumnIndex(ClassifierConstants.COL_COUNTRY_NAME);
+
+      for (BeeRow row : rowSet) {
+        String key = BeeUtils.toString(row.getId());
+
+        String code = row.getString(codeIndex);
+        if (!BeeUtils.isEmpty(code)) {
+          countryCodes.put(key, code.trim());
+        }
+
+        String name = row.getString(nameIndex);
+        if (!BeeUtils.isEmpty(name)) {
+          countryNames.put(key, name.trim());
+        }
       }
 
       return rowSet.getNumberOfRows();

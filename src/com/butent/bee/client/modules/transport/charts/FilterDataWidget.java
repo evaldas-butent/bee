@@ -73,7 +73,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     this.unselectedContainer = Document.get().createDivElement();
     this.selectedContainer = Document.get().createDivElement();
 
-    int itemCount = addItems(data.getItems(), data.getSelectedItems());
+    int itemCount = addItems(data.getOrderedItems(), data.getSelectedItems());
 
     CustomDiv caption = new CustomDiv(STYLE_DATA_CAPTION);
     caption.setHtml(data.getType().getCaption());
@@ -168,13 +168,7 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
 
     if (selected) {
       selectedContainer.appendChild(itemElement);
-
     } else {
-      if (!matches(itemElement, getSearchQuery())) {
-        StyleUtils.setVisible(itemElement, false);
-        setNumberOfHiddenItems(getNumberOfHiddenItems() + 1);
-      }
-
       unselectedContainer.appendChild(itemElement);
     }
   }
@@ -239,18 +233,18 @@ class FilterDataWidget extends Flow implements HasSelectionHandlers<ChartData.Ty
     DomUtils.clear(unselectedContainer);
     DomUtils.clear(selectedContainer);
 
-    int itemCount = addItems(data.getItems(), data.getSelectedItems());
+    int itemCount = addItems(data.getOrderedItems(), data.getSelectedItems());
 
     updateVisibility(itemCount);
     refresh();
   }
 
-  private int addItems(List<String> enabledItems, Collection<String> selectedItems) {
-    for (String item : enabledItems) {
+  private int addItems(List<String> items, Collection<String> selectedItems) {
+    for (String item : items) {
       addItem(item, selectedItems.contains(item));
     }
 
-    return enabledItems.size();
+    return items.size();
   }
 
   private boolean doAll(boolean wasSelected) {

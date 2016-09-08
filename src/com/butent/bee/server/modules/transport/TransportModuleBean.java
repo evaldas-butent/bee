@@ -533,12 +533,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               prm.getRelation(PRM_CURRENCY), BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
 
           for (BeeRow row : rowSet.getRows()) {
-            String cargoId = BeeUtils.toString(valueSupplier.apply(row));
-            String cargoIncome = rs.getValueByKey(COL_CARGO, cargoId, "CargoIncome");
-            String servicesIncome = rs.getValueByKey(COL_CARGO, cargoId, "ServicesIncome");
+            SimpleRow r = rs.getRowByKey(COL_CARGO, BeeUtils.toString(valueSupplier.apply(row)));
 
-            row.setProperty(VAR_INCOME, BeeUtils.toString(BeeUtils.toDouble(cargoIncome)
-                + BeeUtils.toDouble(servicesIncome)));
+            row.setProperty(VAR_INCOME, BeeUtils.toString(BeeUtils.unbox(r.getDouble("CargoIncome"))
+                + BeeUtils.unbox(r.getDouble("ServicesIncome"))));
+            row.setProperty(COL_TRADE_VAT, BeeUtils.toString(BeeUtils.unbox(r.getDouble("CargoVat"))
+                + BeeUtils.unbox(r.getDouble("ServicesVat"))));
           }
         }
       }
@@ -597,8 +597,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
           for (SimpleRow row : rs) {
             amounts.put(row.getLong(COL_TRIP), row.getLong(COL_CARGO),
-                BeeUtils.round(BeeUtils.nvl(row.getValue("TripIncome"), "0"), 2) + " (" +
-                    BeeUtils.removeTrailingZeros(row.getValue(COL_TRIP_PERCENT)) + "%)");
+                BeeUtils.round(BeeUtils.nvl(row.getValue("TripIncome"), "0"), 2) + " ("
+                    + BeeUtils.removeTrailingZeros(row.getValue(COL_TRIP_PERCENT)) + "%)");
           }
           for (BeeRow row : rowset.getRows()) {
             row.setProperty(VAR_INCOME,
