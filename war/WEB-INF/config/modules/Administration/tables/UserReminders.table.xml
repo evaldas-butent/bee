@@ -6,7 +6,7 @@
   >
   <Fields>
     <Long name="Object" notNull="true" />
-    <Enum name="ObjectModule" key="Module" notNull="false" />
+    <Enum name="ObjectModule" key="Module" notNull="false" precision="2" />
     <Relation name="ReminderType" relation="ReminderTypes" cascade="DELETE" />
     <Relation name="User" notNull="true" relation="Users" />
     <DateTime name="ReminderTime" />
