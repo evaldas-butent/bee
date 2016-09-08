@@ -60,6 +60,7 @@
 
       <SimpleColumn name="EmptyKilometers" />
       <SimpleColumn name="LoadedKilometers" />
+      <SimpleColumn name="UnplannedKilometers" />
       <SimpleColumn name="Weight" alias="CargoWeight" />
     </SimpleJoin>
 

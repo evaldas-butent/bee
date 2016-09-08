@@ -39,6 +39,8 @@
 
     <Integer name="Kind" />
 
+    <Date name="SentDate" label="Išsiųsta" />
+    <DateTime name="OtherDate" label="Kita data" />
     <Relation name="Creator" relation="Users" label="=trdGenerated" defExpr="CURRENT_USER" />
   </Fields>
 

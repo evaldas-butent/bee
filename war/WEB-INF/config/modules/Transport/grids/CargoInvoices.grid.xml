@@ -39,6 +39,8 @@
     <DataColumn name="Driver" />
     <DataColumn name="Exported" />
 
+    <DataColumn name="SentDate" />
+    <DataColumn name="OtherDate" />
     <RelColumn name="Creator" readOnly="true" />
   </g:columns>
 

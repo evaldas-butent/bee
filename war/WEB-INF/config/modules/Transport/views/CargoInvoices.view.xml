@@ -87,6 +87,9 @@
       <AggregateColumn name="Sale" aggregate="MAX" />
     </ExternalJoin>
 
+    <SimpleColumn name="SentDate" />
+    <SimpleColumn name="OtherDate" />
+
     <SimpleColumn name="Creator" />
     <SimpleJoin name="Creator" joinType="LEFT">
       <SimpleJoin name="CompanyPerson" joinType="LEFT">

@@ -83,12 +83,13 @@ import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants.OperationType;
+import com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -1195,7 +1196,67 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
       }
     }
+    c += importERPSentDates();
+
     sys.eventEnd(historyId, "OK", BeeUtils.joinWords("Updated", c, "records"));
+  }
+
+  private int importERPSentDates() {
+    int c = 0;
+    String sent = "SentDate";
+    String other = "OtherDate";
+    String idName = sys.getIdName(TBL_SALES);
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_SALES, idName, sent, other)
+        .addFrom(TBL_SALES)
+        .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_SALES, COL_TRADE_EXPORTED),
+            SqlUtils.or(SqlUtils.isNull(TBL_SALES, sent), SqlUtils.isNull(TBL_SALES, other)))));
+
+    if (!DataUtils.isEmpty(data)) {
+      StringBuilder ids = new StringBuilder();
+
+      for (Long id : data.getLongColumn(idName)) {
+        if (ids.length() > 0) {
+          ids.append(",");
+        }
+        ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, id)).append("'");
+      }
+      String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+      String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+      String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+      try {
+        SimpleRowSet rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+            .getSQLData("SELECT extern_id AS id, dekl_data AS " + sent + ", kita_data AS " + other
+                    + " FROM apyvarta"
+                    + " WHERE extern_id IN(" + ids.toString() + ")"
+                    + " AND (dekl_data IS NOT NULL OR kita_data IS NOT NULL)",
+                "id", sent, other);
+
+        for (SimpleRow newRow : rs) {
+          Long id = TradeModuleBean.decodeId(TBL_SALES, newRow.getLong("id"));
+          JustDate sentDate = TimeUtils.parseDate(newRow.getValue(sent));
+          DateTime otherDate = TimeUtils.parseDateTime(newRow.getValue(other));
+          SimpleRow oldRow = data.getRowByKey(idName, BeeUtils.toString(id));
+
+          SqlUpdate update = new SqlUpdate(TBL_SALES);
+
+          if (!Objects.equals(oldRow.getDate(sent), sentDate)) {
+            update.addConstant(sent, sentDate);
+          }
+          if (!Objects.equals(oldRow.getDateTime(other), otherDate)) {
+            update.addConstant(other, otherDate);
+          }
+          if (!update.isEmpty()) {
+            c += qs.updateData(update.setWhere(SqlUtils.equals(TBL_SALES, idName, id)));
+          }
+        }
+      } catch (BeeException e) {
+        logger.error(e);
+      }
+    }
+    return c;
   }
 
   private ResponseObject sendToERP(String viewName, Set<Long> ids) {

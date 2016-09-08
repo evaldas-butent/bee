@@ -11,6 +11,13 @@
 
   <FlowPanel class="flexBox-vertical">
     <br />
+    <HorizontalPanel>
+      <Label for="SentDate" />
+      <DateLabel source="SentDate" style="font-weight:bold;" />
+      <Label for="OtherDate" />
+      <DateTimeLabel source="OtherDate" style="font-weight:bold;" />
+    </HorizontalPanel>
+    <br />
     <xi:include href="widgets/SaleInvoice.widget.xml" />
     <br />
 
