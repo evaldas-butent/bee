@@ -23,13 +23,16 @@ import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarPanel;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -75,6 +78,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Handler,
@@ -119,6 +123,9 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   private BeeRowSet timeUnits;
   private Split projectCalendar;
+
+  private CalendarPanel calendarPanel;
+  private TabbedPages tabbedPages;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -176,6 +183,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     if (widget instanceof Split && BeeUtils.same(name, WIDGET_PROJECT_CALENDAR_SPLIT)) {
       projectCalendar = (Split) widget;
       projectCalendar.clear();
+    }
+
+    if (widget instanceof TabbedPages) {
+      tabbedPages = (TabbedPages) widget;
     }
   }
 
@@ -503,6 +514,14 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         }
       }
       return valid;
+
+    } else if (action.equals(Action.PRINT)) {
+      if (tabbedPages != null && calendarPanel != null
+          && tabbedPages.getSelectedWidget() instanceof Split
+          && Objects.equals(tabbedPages.getSelectedWidget(), calendarPanel.getParent())) {
+        Printer.print(calendarPanel);
+        return false;
+      }
     }
     return super.beforeAction(action, presenter);
   }
@@ -759,7 +778,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   private void drawCalendar(FormView form, IsRow row) {
-    final Split prjCalendar = getProjectCalendar();
+    Split prjCalendar = getProjectCalendar();
     if (prjCalendar == null) {
       logger.warning("Widget of project calendar not found");
       return;
@@ -767,19 +786,23 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     prjCalendar.clear();
 
-    CalendarKeeper.ensureData(null);
-    CalendarUtils.getProjectAttendees(row.getId(), new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            CalendarPanel calendarPanel = new ProjectCalendar(row,
-                CalendarUtils.createDefaultSettingsBeeRow(),
-                result,
-                form.isEnabled() && !DataUtils.isNewRow(row));
+    CalendarKeeper.ensureData(new Command() {
+      @Override
+      public void execute() {
+        CalendarUtils.getProjectAttendees(row.getId(), new Queries.RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                calendarPanel = new ProjectCalendar(row,
+                    CalendarUtils.createDefaultSettingsBeeRow(),
+                    result,
+                    form.isEnabled() && !DataUtils.isNewRow(row));
 
-            prjCalendar.add(calendarPanel);
-          }
-        }
-    );
+                prjCalendar.add(calendarPanel);
+              }
+            }
+        );
+      }
+    });
   }
 
   private Handler getAuditColumnHandler(final FormView form, final IsRow row) {
