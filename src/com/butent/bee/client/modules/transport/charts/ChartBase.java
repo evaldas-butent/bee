@@ -22,7 +22,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.transport.TransportHandler;
@@ -145,8 +144,8 @@ public abstract class ChartBase extends TimeBoard {
         FilterHelper.openDialog(getFilterData(), getSavedFilters(),
             new FilterHelper.DialogCallback() {
               @Override
-              public void applySavedFilter(int index, Popup popup) {
-                onApplyFilter(index, popup);
+              public boolean applySavedFilter(int index) {
+                return onApplyFilter(index);
               }
 
               @Override
@@ -156,15 +155,23 @@ public abstract class ChartBase extends TimeBoard {
               }
 
               @Override
-              public void onFilter() {
-                setFiltered(persistFilter());
-                refreshFilterInfo();
-                render(false);
+              public boolean onFilter() {
+                boolean ok = tryFilter();
+
+                if (ok) {
+                  setFiltered(persistFilter());
+                  refreshFilterInfo();
+                  render(false);
+                }
+
+                return ok;
               }
 
               @Override
               public void onSave(Callback<List<ChartFilter>> callback) {
-                onSaveFilter(callback);
+                if (tryFilter()) {
+                  onSaveFilter(callback);
+                }
               }
 
               @Override
@@ -175,15 +182,6 @@ public abstract class ChartBase extends TimeBoard {
               @Override
               public void setInitial(int index, boolean initial, Runnable callback) {
                 onSetInitialFilter(index, initial, callback);
-              }
-
-              @Override
-              public boolean tryFilter() {
-                if (FilterHelper.hasSelection(getFilterData())) {
-                  return filter(FilterType.TENTATIVE);
-                } else {
-                  return true;
-                }
               }
             });
         break;
@@ -901,28 +899,28 @@ public abstract class ChartBase extends TimeBoard {
     }
   }
 
-  private void onApplyFilter(int index, Popup popup) {
+  private boolean onApplyFilter(int index) {
     List<ChartFilter> filters = getSavedFilters();
 
     if (BeeUtils.isIndex(filters, index)) {
       ChartFilter cf = filters.get(index);
 
       if (cf.matches(getFilterData())) {
-        if (popup != null) {
-          popup.close();
-        }
-
         clearFilter();
 
         if (cf.applyTo(getFilterData())) {
           applyFilterData();
         }
+
         render(false);
+        return true;
 
       } else {
         BeeKeeper.getScreen().notifyWarning(cf.getLabel(), Localized.dictionary().nothingFound());
       }
     }
+
+    return false;
   }
 
   private void onRemoveFilter(final int index, final Callback<List<ChartFilter>> callback) {
@@ -1030,6 +1028,19 @@ public abstract class ChartBase extends TimeBoard {
 
   private boolean showPlaceInfo() {
     return showPlaceInfo;
+  }
+
+  private boolean tryFilter() {
+    if (FilterHelper.hasSelection(getFilterData())) {
+      boolean ok = filter(FilterType.TENTATIVE);
+      if (!ok) {
+        BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
+      }
+      return ok;
+
+    } else {
+      return true;
+    }
   }
 
   private void updateColorTheme(Long theme) {

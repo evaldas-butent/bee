@@ -8,7 +8,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
@@ -44,19 +43,17 @@ final class FilterHelper {
 
   interface DialogCallback {
 
-    void applySavedFilter(int index, Popup popup);
+    boolean applySavedFilter(int index);
 
     void onDataTypesChange(Set<ChartData.Type> types);
 
-    void onFilter();
+    boolean onFilter();
 
     void onSave(Callback<List<ChartFilter>> callback);
 
     void removeSavedFilter(int index, Callback<List<ChartFilter>> callback);
 
     void setInitial(int index, boolean initial, Runnable callback);
-
-    boolean tryFilter();
   }
 
   static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-chart-filter-";
@@ -384,11 +381,8 @@ final class FilterHelper {
     Flow commands = new Flow(STYLE_COMMAND_GROUP);
 
     Button filter = new Button(Localized.dictionary().doFilter(), event -> {
-      if (callback.tryFilter()) {
+      if (callback.onFilter()) {
         dialog.close();
-        callback.onFilter();
-      } else {
-        BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
       }
     });
     filter.addStyleName(STYLE_COMMAND_FILTER);
@@ -443,7 +437,7 @@ final class FilterHelper {
 
     if (items != null) {
       for (Filterable item : items) {
-        if (item != null && !item.persistFilter()) {
+        if (item != null && item.persistFilter()) {
           filtered = true;
         }
       }
@@ -555,8 +549,11 @@ final class FilterHelper {
     Label label = new Label(cf.getLabel());
     label.addStyleName(STYLE_SAVED_LABEL);
 
-    label.addClickHandler(event -> callback.applySavedFilter(getSaveFilterIndex(event),
-        UiHelper.getParentPopup(container.asWidget())));
+    label.addClickHandler(event -> {
+      if (callback.applySavedFilter(getSaveFilterIndex(event))) {
+        UiHelper.closeDialog(container.asWidget());
+      }
+    });
 
     panel.add(label);
 
