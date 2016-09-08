@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-09-07T17:15:37 -->
+<!-- 2016-09-08T12:19:20 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" whenResourceMissingType="Error" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -457,6 +457,27 @@
 						<textFieldExpression><![CDATA["<b>" + $V{d}.trRequestShippingTerms() + "</b> " + $P{ShippingTermName}]]></textFieldExpression>
 					</textField>
 				</frame>
+				<frame>
+					<reportElement positionType="Float" x="0" y="215" width="220" height="20" isRemoveLineWhenBlank="true" uuid="e784d251-4da0-49cd-8916-b63b64e5d48b"/>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="0" y="0" width="220" height="10" isRemoveLineWhenBlank="true" uuid="dee83763-462e-460b-8714-a703ba61cc45">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ExpeditionType})]]></printWhenExpression>
+						</reportElement>
+						<textElement markup="html">
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA["<b>" + $V{d}.trRequestExpeditionType() + "</b> " + BeeUtils.notEmpty($V{qs}.getLocalizedValue("ExpeditionTypes", "Name", $P{ExpeditionType}, $P{REPORT_LOCALE}), $P{ExpeditionType})]]></textFieldExpression>
+					</textField>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="0" y="10" width="220" height="10" isRemoveLineWhenBlank="true" uuid="bfc9045a-620f-4b87-be37-502ea55a4893">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Driver})]]></printWhenExpression>
+						</reportElement>
+						<textElement markup="html">
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA["<b>" + $V{d}.vehicleDriver() + "</b> " + $P{Driver}]]></textFieldExpression>
+					</textField>
+				</frame>
 			</band>
 		</groupHeader>
 	</group>
@@ -784,27 +805,6 @@
 						<font size="7" isBold="false" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{d}.trRequestFreightInsurance()]]></textFieldExpression>
-				</textField>
-			</frame>
-			<frame>
-				<reportElement positionType="Float" x="0" y="-20" width="220" height="20" isRemoveLineWhenBlank="true" uuid="e784d251-4da0-49cd-8916-b63b64e5d48b"/>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="0" y="0" width="220" height="10" isRemoveLineWhenBlank="true" uuid="dee83763-462e-460b-8714-a703ba61cc45">
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ExpeditionType})]]></printWhenExpression>
-					</reportElement>
-					<textElement markup="html">
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["<b>" + $V{d}.trRequestExpeditionType() + "</b> " + BeeUtils.notEmpty($V{qs}.getLocalizedValue("ExpeditionTypes", "Name", $P{ExpeditionType}, $P{REPORT_LOCALE}), $P{ExpeditionType})]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="0" y="10" width="220" height="10" isRemoveLineWhenBlank="true" uuid="bfc9045a-620f-4b87-be37-502ea55a4893">
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Driver})]]></printWhenExpression>
-					</reportElement>
-					<textElement markup="html">
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["<b>" + $V{d}.vehicleDriver() + "</b> " + $P{Driver}]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>
