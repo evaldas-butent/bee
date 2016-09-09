@@ -31,6 +31,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.IntegerLabel;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -235,6 +236,34 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     if (defaultCargoType != null) {
       RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, newRow,
           Data.getDataInfo(VIEW_CARGO_TYPES), defaultCargoType, true);
+    }
+
+    GridView gridView = getGridView();
+    if (gridView != null) {
+      FormView parentForm = ViewHelper.getForm(gridView.asWidget());
+
+      if (parentForm != null && BeeUtils.same(parentForm.getFormName(), FORM_ORDER)
+                                            && Data.isNull(form.getViewName(), newRow, COL_ORDER)) {
+        IsRow parentRow = parentForm.getActiveRow();
+
+        if (parentRow != null) {
+          int idxParCmp = parentForm.getDataIndex(COL_CUSTOMER);
+          int idxParCmpName = parentForm.getDataIndex(COL_CUSTOMER_NAME);
+          int idxParCmpTypeName = parentForm.getDataIndex(ALS_CUSTOMER_TYPE_NAME);
+
+          if (!BeeConst.isUndef(idxParCmp) && !BeeConst.isUndef(idxParCmpName)) {
+            newRow.setValue(
+                Data.getColumnIndex(form.getViewName(), COL_CUSTOMER),
+                parentRow.getLong(idxParCmp));
+            newRow.setValue(
+                Data.getColumnIndex(form.getViewName(), COL_CUSTOMER_NAME),
+                BeeConst.isUndef(idxParCmpTypeName)
+                    ? parentRow.getString(idxParCmpName)
+                    : BeeUtils.joinWords(parentRow.getString(idxParCmpName),
+                    parentRow.getString(idxParCmpTypeName)));
+          }
+        }
+      }
     }
   }
 
