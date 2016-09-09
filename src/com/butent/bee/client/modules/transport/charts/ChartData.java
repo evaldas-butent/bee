@@ -55,12 +55,13 @@ class ChartData implements HasEnabled {
   private final Type type;
 
   private final Set<String> items = new HashSet<>();
+  private final List<String> orderedItems = new ArrayList<>();
 
   private final Set<Long> ids = new HashSet<>();
   private final Map<String, Long> itemToId = new HashMap<>();
 
-  private final List<String> orderedItems = new ArrayList<>();
   private final List<String> selectedItems = new ArrayList<>();
+  private final List<String> savedSelection = new ArrayList<>();
 
   private boolean enabled = true;
 
@@ -207,6 +208,14 @@ class ChartData implements HasEnabled {
 
   boolean isEmpty() {
     return items.isEmpty();
+  }
+
+  void saveState() {
+    BeeUtils.overwrite(savedSelection, selectedItems);
+  }
+
+  void restoreState() {
+    BeeUtils.overwrite(selectedItems, savedSelection);
   }
 
   boolean setItemSelected(String item, boolean selected) {

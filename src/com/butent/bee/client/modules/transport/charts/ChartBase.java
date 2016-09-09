@@ -156,21 +156,34 @@ public abstract class ChartBase extends TimeBoard {
 
               @Override
               public boolean onFilter() {
-                boolean ok = tryFilter();
+                boolean ok;
 
-                if (ok) {
-                  setFiltered(persistFilter());
-                  refreshFilterInfo();
-                  render(false);
+                if (FilterHelper.hasSelection(getFilterData())) {
+                  ok = tryFilter();
+                  if (ok) {
+                    setFiltered(persistFilter());
+                    refreshFilterInfo();
+                  }
+
+                } else {
+                  ok = true;
+                  clearFilter();
                 }
 
+                if (ok) {
+                  render(false);
+                }
                 return ok;
               }
 
               @Override
               public void onSave(Callback<List<ChartFilter>> callback) {
-                if (tryFilter()) {
-                  onSaveFilter(callback);
+                if (FilterHelper.hasSelection(getFilterData())) {
+                  if (tryFilter()) {
+                    onSaveFilter(callback);
+                  }
+                } else {
+                  BeeKeeper.getScreen().notifyWarning(Localized.dictionary().noData());
                 }
               }
 
@@ -411,7 +424,7 @@ public abstract class ChartBase extends TimeBoard {
     setShowPlaceCodes(TimeBoardHelper.getBoolean(getSettings(), getShowPlaceCodesColumnName()));
   }
 
-  protected abstract List<ChartData> prepareFilterData(FilterType filterType);
+  protected abstract List<ChartData> prepareFilterData();
 
   @Override
   protected void refresh() {
@@ -879,7 +892,7 @@ public abstract class ChartBase extends TimeBoard {
       clearFilter();
     }
 
-    List<ChartData> data = FilterHelper.notEmptyData(prepareFilterData(null));
+    List<ChartData> data = FilterHelper.notEmptyData(prepareFilterData());
 
     if (!BeeUtils.isEmpty(data)) {
       List<ChartFilter> savedFilters = getSavedFilters();
@@ -1031,16 +1044,11 @@ public abstract class ChartBase extends TimeBoard {
   }
 
   private boolean tryFilter() {
-    if (FilterHelper.hasSelection(getFilterData())) {
-      boolean ok = filter(FilterType.TENTATIVE);
-      if (!ok) {
-        BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
-      }
-      return ok;
-
-    } else {
-      return true;
+    boolean ok = filter(FilterType.TENTATIVE);
+    if (!ok) {
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
     }
+    return ok;
   }
 
   private void updateColorTheme(Long theme) {
@@ -1072,7 +1080,7 @@ public abstract class ChartBase extends TimeBoard {
   }
 
   private void updateFilterData() {
-    List<ChartData> newData = FilterHelper.notEmptyData(prepareFilterData(null));
+    List<ChartData> newData = FilterHelper.notEmptyData(prepareFilterData());
 
     boolean wasFiltered = isFiltered();
 
@@ -1091,9 +1099,9 @@ public abstract class ChartBase extends TimeBoard {
           ChartData ncd = FilterHelper.getDataByType(newData, ocd.getType());
 
           if (ncd != null) {
-            Collection<String> selectedNames = ocd.getSelectedItems();
-            for (String name : selectedNames) {
-              ncd.setItemSelected(name, true);
+            Collection<String> selectedItems = ocd.getSelectedItems();
+            for (String item : selectedItems) {
+              ncd.setItemSelected(item, true);
             }
           }
         }

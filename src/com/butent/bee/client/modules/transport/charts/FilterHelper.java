@@ -363,6 +363,8 @@ final class FilterHelper {
 
     int dataIndex = 0;
     for (ChartData data : filterData) {
+      data.saveState();
+
       if (data.isEnabled() && !data.isEmpty()) {
         FilterDataWidget dataWidget = new FilterDataWidget(data);
 
@@ -411,6 +413,14 @@ final class FilterHelper {
         event -> callback.onSave(filters -> renderSavedFilters(savedContainer, filters, callback)));
     save.addStyleName(STYLE_COMMAND_SAVE);
     commands.add(save);
+
+    dialog.addCloseHandler(event -> {
+      if (event.userCaused()) {
+        for (ChartData data : filterData) {
+          data.restoreState();
+        }
+      }
+    });
 
     Simple dataWrapper = new Simple(dataContainer);
     dataWrapper.addStyleName(STYLE_DATA_WRAPPER);

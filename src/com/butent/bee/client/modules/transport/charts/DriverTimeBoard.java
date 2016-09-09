@@ -634,7 +634,7 @@ final class DriverTimeBoard extends ChartBase {
   }
 
   @Override
-  protected List<ChartData> prepareFilterData(FilterType filterType) {
+  protected List<ChartData> prepareFilterData() {
     List<ChartData> data = new ArrayList<>();
     if (drivers.isEmpty()) {
       return data;
@@ -667,10 +667,6 @@ final class DriverTimeBoard extends ChartBase {
     Set<Long> processedTrips = new HashSet<>();
 
     for (Driver driver : drivers) {
-      if (!driver.matched(filterType)) {
-        continue;
-      }
-
       driverData.add(driver.getItemName());
 
       if (!BeeUtils.isEmpty(driver.getGroups())) {
@@ -694,9 +690,6 @@ final class DriverTimeBoard extends ChartBase {
         if (trip == null) {
           continue;
         }
-        if (!trip.matched(filterType)) {
-          continue;
-        }
 
         if (DataUtils.isId(trip.getTruckId())) {
           truckData.add(trip.getTruckNumber(), trip.getTruckId());
@@ -715,10 +708,6 @@ final class DriverTimeBoard extends ChartBase {
         }
 
         for (Freight freight : freights.get(trip.getTripId())) {
-          if (!freight.matched(filterType)) {
-            continue;
-          }
-
           customerData.add(freight.getCustomerName(), freight.getCustomerId());
           managerData.addUser(freight.getManager());
 
