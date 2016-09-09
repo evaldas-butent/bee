@@ -526,7 +526,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   }
 
   private String renderDocTitle(IsRow row, TradeDocumentData tdd) {
-    if (BeeUtils.anyEmpty(getString(row, COL_TRADE_INVOICE_PREFIX),
+    if (BeeUtils.anyEmpty(getString(row, COL_SERIES_NAME),
         getString(row, COL_TRADE_INVOICE_NO))) {
       return BeeConst.STRING_EMPTY;
 
