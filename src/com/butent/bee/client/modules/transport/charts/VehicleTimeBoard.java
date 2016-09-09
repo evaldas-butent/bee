@@ -557,7 +557,7 @@ abstract class VehicleTimeBoard extends ChartBase {
   }
 
   @Override
-  protected List<ChartData> prepareFilterData(FilterType filterType) {
+  protected List<ChartData> prepareFilterData() {
     List<ChartData> data = new ArrayList<>();
     if (vehicles.isEmpty()) {
       return data;
@@ -595,10 +595,6 @@ abstract class VehicleTimeBoard extends ChartBase {
     ChartData driverData = new ChartData(ChartData.Type.DRIVER);
 
     for (Vehicle vehicle : vehicles) {
-      if (!vehicle.matched(filterType)) {
-        continue;
-      }
-
       String vehicleName = vehicle.getItemName();
       if (isTrailerPark()) {
         trailerData.add(vehicleName, vehicle.getId());
@@ -620,10 +616,6 @@ abstract class VehicleTimeBoard extends ChartBase {
       }
 
       for (Trip trip : trips.get(vehicle.getId())) {
-        if (!trip.matched(filterType)) {
-          continue;
-        }
-
         tripData.add(trip.getTripNo(), trip.getTripId());
         tripStatusData.add(trip.getStatus());
         departureData.add(trip.getTripDeparture());
@@ -650,10 +642,6 @@ abstract class VehicleTimeBoard extends ChartBase {
         }
 
         for (Freight freight : freights.get(trip.getTripId())) {
-          if (!freight.matched(filterType)) {
-            continue;
-          }
-
           customerData.add(freight.getCustomerName(), freight.getCustomerId());
           managerData.addUser(freight.getManager());
 

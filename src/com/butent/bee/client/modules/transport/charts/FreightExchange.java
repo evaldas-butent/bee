@@ -352,7 +352,7 @@ final class FreightExchange extends ChartBase {
   }
 
   @Override
-  protected List<ChartData> prepareFilterData(FilterType filterType) {
+  protected List<ChartData> prepareFilterData() {
     List<ChartData> data = new ArrayList<>();
     if (items.isEmpty()) {
       return data;
@@ -374,10 +374,6 @@ final class FreightExchange extends ChartBase {
     ChartData placeData = new ChartData(ChartData.Type.PLACE);
 
     for (OrderCargo item : items) {
-      if (!item.matched(filterType)) {
-        continue;
-      }
-
       customerData.add(item.getCustomerName(), item.getCustomerId());
       managerData.addUser(item.getManager());
 
