@@ -9,7 +9,7 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="&form;" caption="Sąskaita LT/EN" disabledActions="save"
-  width="750" widthUnit="px" height="90" heightUnit="%" viewName="PrintCargoInvoice"
+  width="810" widthUnit="px" height="90" heightUnit="%" viewName="PrintCargoInvoice"
   >
   <FlowPanel class="bee-PrintableForm"
              style="padding: 10px; background-color: white;
@@ -268,6 +268,11 @@
         <cell rowSpan="2" style="vertical-align: top">
           <Label html="PVM &lt;br /&gt;VAT" horizontalAlignment="right">
             <properties name="Vat" />
+          </Label>
+        </cell>
+        <cell rowSpan="2" style="vertical-align: top; word-break: break-all; min-width: 60px;">
+          <Label html="Pastaba &lt;br /&gt;Remark">
+            <properties name="CargoNotes" />
           </Label>
         </cell>
       </row>
