@@ -1326,9 +1326,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
         if (DataUtils.isId(id) && !companies.containsKey(id)) {
           SimpleRow data = qs.getRow(new SqlSelect()
-              .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+              .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
+                  "ERPType", "ERPGroup")
               .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, COL_COMPANY_TYPE)
-              .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX, "ERPType", "ERPGroup")
+              .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
               .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
               .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
               .addFrom(TBL_COMPANIES)
