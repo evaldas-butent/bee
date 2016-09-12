@@ -333,7 +333,7 @@ abstract class MultiStateForm extends RightsForm {
   @Override
   protected void save(final Consumer<Boolean> callback) {
     if (changes.isEmpty() || !DataUtils.isId(getRoleId())) {
-      BeeKeeper.getScreen().notifyInfo("no changes");
+      BeeKeeper.getScreen().notifyInfo(Localized.dictionary().noChanges());
       if (callback != null) {
         callback.accept(false);
       }
@@ -372,8 +372,9 @@ abstract class MultiStateForm extends RightsForm {
             changes.clear();
             onClearChanges();
 
-            String message = BeeUtils.joinWords(getObjectType(), getRoleName(),
-                "saved", size, "changes");
+            String message = Localized.dictionary().roleRightsSaved(BeeUtils.joinWords(
+                BeeUtils.bracket(getObjectType().getCaption()), Localized.dictionary().role(),
+                getRoleName()), size);
             debug(message);
             BeeKeeper.getScreen().notifyInfo(message);
 
