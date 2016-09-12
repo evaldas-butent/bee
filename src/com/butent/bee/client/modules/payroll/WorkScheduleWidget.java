@@ -2272,6 +2272,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     FaLabel refresh = new FaLabel(Action.REFRESH.getIcon(), STYLE_ACTION);
     refresh.addStyleName(STYLE_PREFIX + Action.REFRESH.getStyleSuffix());
     refresh.setTitle(Action.REFRESH.getCaption());
+    StyleUtils.enableAnimation(Action.REFRESH, refresh);
 
     refresh.addClickHandler(event -> refresh());
     headerPanel.add(refresh);
@@ -2279,6 +2280,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     FaLabel print = new FaLabel(Action.PRINT.getIcon(), STYLE_ACTION);
     print.addStyleName(STYLE_PREFIX + Action.PRINT.getStyleSuffix());
     print.setTitle(Action.PRINT.getCaption());
+    StyleUtils.enableAnimation(Action.PRINT, print);
 
     print.addClickHandler(event -> Printer.print(WorkScheduleWidget.this));
     headerPanel.add(print);

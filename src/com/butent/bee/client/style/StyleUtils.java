@@ -36,6 +36,7 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.TextTransform;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -176,6 +177,10 @@ public final class StyleUtils {
 
   public static final String NAME_INFO_TABLE = BeeConst.CSS_CLASS_PREFIX + "info-table";
 
+  public static final String NAME_ANIMATE_HOVER = BeeConst.CSS_CLASS_PREFIX + "animate-hover";
+  public static final String NAME_ANIMATE_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "animate-active";
+  public static final String NAME_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "active";
+
   public static final String TRANSFORM_ROTATE = "rotate";
   public static final String TRANSFORM_SCALE = "scale";
   public static final String TRANSFORM_SKEW = "skew";
@@ -273,6 +278,26 @@ public final class StyleUtils {
   public static void alwaysScroll(UIObject obj, ScrollBars scroll) {
     Assert.notNull(obj);
     alwaysScroll(obj.getElement(), scroll);
+  }
+
+  public static void animateActive(Element el) {
+    Assert.notNull(el);
+    el.addClassName(NAME_ANIMATE_ACTIVE);
+  }
+
+  public static void animateActive(UIObject obj) {
+    Assert.notNull(obj);
+    animateActive(obj.getElement());
+  }
+
+  public static void animateHover(Element el) {
+    Assert.notNull(el);
+    el.addClassName(NAME_ANIMATE_HOVER);
+  }
+
+  public static void animateHover(UIObject obj) {
+    Assert.notNull(obj);
+    animateHover(obj.getElement());
   }
 
   public static void autoHeight(Element el) {
@@ -729,6 +754,15 @@ public final class StyleUtils {
 
   public static void copySize(Style src, Style dst) {
     copyProperties(src, dst, STYLE_WIDTH, STYLE_HEIGHT);
+  }
+
+  public static void enableAnimation(Action action, UIObject obj) {
+    Assert.notNull(action);
+
+    animateHover(obj);
+    if (action.animate()) {
+      animateActive(obj);
+    }
   }
 
   public static void fillHorizontal(Element el) {

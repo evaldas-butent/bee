@@ -204,6 +204,8 @@ public class GridContainerImpl extends Split implements GridContainerView,
       } else {
         FaLabel autoFit = new FaLabel(Action.AUTO_FIT.getIcon(), BeeConst.CSS_CLASS_PREFIX
             + Action.AUTO_FIT.getStyleSuffix());
+
+        StyleUtils.enableAnimation(Action.AUTO_FIT, autoFit);
         autoFit.setTitle(Action.AUTO_FIT.getCaption());
 
         autoFit.addClickHandler(event -> getGridView().getGrid().autoFit(
