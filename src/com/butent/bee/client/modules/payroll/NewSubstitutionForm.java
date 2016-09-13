@@ -43,12 +43,7 @@ class NewSubstitutionForm extends AbstractFormInterceptor implements SelectorEve
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       FormFactory.WidgetDescriptionCallback callback) {
 
-    if (widget instanceof HasCheckedness
-        && BeeUtils.same(WIDGET_SHOW_AVAILABLE_EMPLOYEES_NAME, name)) {
-
-      ((HasCheckedness) widget).setChecked(true);
-
-    } else if (widget instanceof DataSelector && BeeUtils.same(COL_EMPLOYEE, name)) {
+    if (widget instanceof DataSelector && BeeUtils.same(COL_EMPLOYEE, name)) {
       ((DataSelector) widget).addSelectorHandler(this);
 
       ((DataSelector) widget).getOracle().addDataReceivedHandler(rowSet -> {
