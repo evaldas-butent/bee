@@ -37,11 +37,8 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {
-      if (getFormView().isAdding()) {
-        return saveOnPrintNewRow() || DataUtils.hasId(getActiveRow());
-      }
       if (DataUtils.isNewRow(getActiveRow())) {
-        return false;
+        return saveOnPrintNewRow();
       }
       String[] reports = BeeUtils.split(getFormView().getProperty("reports"), BeeConst.CHAR_COMMA);
 

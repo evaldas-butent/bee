@@ -553,7 +553,14 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       @Subscribe
       @AllowConcurrentEvents
       public void getRecipients(ViewQueryEvent event) {
-        if (event.isAfter(TBL_PLACES)) {
+        if (event.isBefore(TBL_PLACES)) {
+          // TODO Removed order by "PlaceID" for optimization purposes
+          List<String[]> order = event.getQuery().getOrderBy();
+
+          if (BeeUtils.size(order) > 1) {
+            order.remove(order.size() - 1);
+          }
+        } else if (event.isAfter(TBL_PLACES)) {
           BeeRowSet rowSet = event.getRowset();
           int idx = DataUtils.getColumnIndex(COL_MESSAGE, rowSet.getColumns(), false);
 
@@ -1284,9 +1291,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         Long lastUid = null;
 
         if (hasUid) {
-          Pair<Long, Integer> pair =
-              mail.syncFolder(account, localFolder, remoteFolder, progressId,
-                  syncAll);
+          Pair<Long, Integer> pair = mail.syncFolder(account, localFolder, remoteFolder, progressId,
+              syncAll);
 
           if (Objects.isNull(pair)) {
             return c;
