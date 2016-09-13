@@ -274,11 +274,14 @@
             <properties name="Vat" />
           </Label>
         </cell>
-        <cell rowSpan="2" style="vertical-align: top; word-break: break-all; min-width: 60px;">
-          <Label html="Pastaba &lt;br /&gt;Remark">
-            <properties name="CargoNotes" />
-          </Label>
+        <cell rowSpan="2" style="white-space:pre-wrap; vertical-align: top;">
+          <FlowPanel class="flex-Vertical" >
+            <Label html="Pastaba &lt;br /&gt;Remark">
+              <properties name="CargoNotes" />
+            </Label>
+          </FlowPanel>
         </cell>
+
       </row>
       <row>
         <cell style="border-top: none">
