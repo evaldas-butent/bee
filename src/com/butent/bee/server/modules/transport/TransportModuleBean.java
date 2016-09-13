@@ -1821,7 +1821,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   private ResponseObject generateDailyCosts(long tripId) {
     Long mainCountry = prm.getRelation(PRM_COUNTRY);
 
-    SimpleRowSet rs = qs.getData(new SqlSelect().setDistinctMode(true)
+    SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(TBL_COUNTRY_NORMS, COL_COUNTRY, COL_DAILY_COSTS_ITEM)
         .addFields(TBL_COUNTRY_DAILY_COSTS, COL_AMOUNT, COL_CURRENCY)
         .addExpr(SqlUtils.sqlIf(SqlUtils.or(
@@ -1855,20 +1855,22 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 SqlUtils.joinMore(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO,
                     TBL_TRIP_ROUTES, COL_ROUTE_DEPARTURE_DATE))))
         .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId))
-        .addOrderDesc(null, COL_ROUTE_DEPARTURE_DATE, COL_ROUTE_ARRIVAL_DATE));
+        .addOrderDesc(null, COL_ROUTE_DEPARTURE_DATE, COL_ROUTE_ARRIVAL_DATE,
+            sys.getIdName(TBL_TRIP_ROUTES)));
 
     qs.updateData(new SqlDelete(TBL_TRIP_COSTS)
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TRIP_COSTS, COL_TRIP, tripId),
             SqlUtils.in(TBL_TRIP_COSTS, COL_COSTS_ITEM, TBL_COUNTRY_NORMS, COL_DAILY_COSTS_ITEM))));
 
     Map<String, Map<String, String>> map = new HashMap<>();
-    DateTime lastArrivalTime = null;
+    JustDate lastArrivalTime = null;
     String lastKey = null;
 
     for (SimpleRow row : rs) {
+      JustDate arrivalTime = row.getDateTime(COL_ROUTE_ARRIVAL_DATE).getDate();
       String key;
 
-      if (TimeUtils.sameDate(row.getDateTime(COL_ROUTE_ARRIVAL_DATE), lastArrivalTime)) {
+      if (TimeUtils.sameDate(arrivalTime, lastArrivalTime)) {
         key = lastKey;
       } else {
         Map<String, String> values = new LinkedHashMap<>();
@@ -1878,29 +1880,38 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         values.put(COL_COSTS_CURRENCY, row.getValue(COL_CURRENCY));
         values.put("Old" + COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
 
-        key = Codec.md5(BeeUtils.joinItems(values.values()));
+        key = Codec.md5(BeeUtils.joinItems(arrivalTime, BeeUtils.joinItems(values.values())));
 
         if (!map.containsKey(key)) {
           map.put(key, values);
         }
-        lastArrivalTime = row.getDateTime(COL_ROUTE_ARRIVAL_DATE);
+        lastArrivalTime = arrivalTime;
         lastKey = key;
       }
       Map<String, String> values = map.get(key);
 
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY))
-              + Math.max(TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE),
-              row.getDateTime(COL_ROUTE_ARRIVAL_DATE)), 1)));
+              + TimeUtils.dayDiff(row.getDateTime(COL_ROUTE_DEPARTURE_DATE), arrivalTime)));
     }
-    if (!BeeUtils.isEmpty(lastKey)
-        && BeeUtils.isPositive(TimeUtils.dayDiff(rs.getDateTime(rs.getNumberOfRows() - 1,
-        COL_ROUTE_DEPARTURE_DATE), rs.getDateTime(rs.getNumberOfRows() - 1,
-        COL_ROUTE_ARRIVAL_DATE)))) {
-
+    if (!BeeUtils.isEmpty(lastKey)) {
       Map<String, String> values = map.get(lastKey);
       values.put(COL_COSTS_QUANTITY,
           BeeUtils.toString(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY)) + 1));
+    }
+    Map<String, Map<String, String>> newMap = new HashMap<>();
+
+    for (Map<String, String> values : map.values()) {
+      int qty = Math.max(BeeUtils.toInt(values.get(COL_COSTS_QUANTITY)), 1);
+      values.remove(COL_COSTS_QUANTITY);
+      String key = Codec.md5(BeeUtils.joinItems(values.values()));
+
+      if (newMap.containsKey(key)) {
+        qty += BeeUtils.toInt(newMap.get(key).get(COL_COSTS_QUANTITY));
+      } else {
+        newMap.put(key, values);
+      }
+      newMap.get(key).put(COL_COSTS_QUANTITY, BeeUtils.toString(qty));
     }
     SimpleRow dateRow = qs.getRow(new SqlSelect()
         .addFields(TBL_TRIPS, COL_TRIP_DATE, COL_TRIP_DATE_TO)
@@ -1918,25 +1929,21 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .setWhere(SqlUtils.equals(TBL_TRIP_DRIVERS, COL_TRIP, tripId)));
 
     for (Long driver : drivers) {
-      for (Map<String, String> values : map.values()) {
+      for (Map<String, String> values : newMap.values()) {
         SqlInsert insert = new SqlInsert(TBL_TRIP_COSTS)
             .addConstant(COL_TRIP, tripId)
-            .addConstant(COL_COSTS_DATE,
-                BeeUtils.nvl(dateRow.getDate(COL_TRIP_DATE_TO), dateRow.getDateTime(COL_TRIP_DATE)))
+            .addConstant(COL_COSTS_DATE, BeeUtils.nvl(dateRow.getDate(COL_TRIP_DATE_TO),
+                dateRow.getDateTime(COL_TRIP_DATE).getDate()))
             .addConstant(COL_DRIVER, driver)
             .addNotNull(COL_PAYMENT_TYPE, payment);
 
         for (Entry<String, String> entry : values.entrySet()) {
-          if (Objects.equals(entry.getKey(), COL_COSTS_QUANTITY)
-              && BeeUtils.toInt(entry.getValue()) == 0) {
-            entry.setValue("1");
-          }
           insert.addConstant(entry.getKey(), entry.getValue());
         }
         qs.insertData(insert);
       }
     }
-    return ResponseObject.info(Localized.dictionary().createdRows(drivers.length * map.size()));
+    return ResponseObject.info(Localized.dictionary().createdRows(drivers.length * newMap.size()));
   }
 
   private ResponseObject generateTripRoute(long tripId) {

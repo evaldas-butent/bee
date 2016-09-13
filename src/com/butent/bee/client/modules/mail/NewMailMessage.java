@@ -333,6 +333,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private void initHeader(DialogBox dialog) {
     FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE);
     send.setTitle(Localized.dictionary().send());
+    send.enableAnimation();
     send.addClickHandler(this);
 
     dialog.insertAction(1, send);

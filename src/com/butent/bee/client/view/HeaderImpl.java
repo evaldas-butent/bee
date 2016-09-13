@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.animation.Animatable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.logical.ReadyEvent;
@@ -105,6 +106,9 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public void addCommandItem(IdentifiableWidget widget) {
+    if (widget instanceof Animatable) {
+      ((Animatable) widget).enableAnimation();
+    }
     getCommandPanel().add(widget);
   }
 
@@ -521,6 +525,10 @@ public class HeaderImpl extends Flow implements HeaderView {
   private void initControl(Label control, final Action action, Set<Action> hiddenActions) {
     control.addStyleName(STYLE_CONTROL);
     control.addStyleName(action.getStyleName());
+
+    if (control instanceof Animatable) {
+      StyleUtils.enableAnimation(action, control);
+    }
 
     control.setTitle(action.getCaption());
 

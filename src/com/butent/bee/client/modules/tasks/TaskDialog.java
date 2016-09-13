@@ -77,6 +77,7 @@ class TaskDialog extends DialogBox {
     int col = 0;
 
     faSave.setTitle(Action.SAVE.getCaption());
+    StyleUtils.enableAnimation(Action.SAVE, faSave);
 
     insertAction(BeeConst.INT_TRUE, faSave);
 
