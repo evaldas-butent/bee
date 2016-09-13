@@ -11,6 +11,8 @@ import com.google.common.collect.Table;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.UIObject;
@@ -168,6 +170,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_PARTITION_INFO = STYLE_PREFIX + "partition-info";
   private static final String STYLE_PARTITION_SUBST = STYLE_PREFIX + "partition-subst";
   private static final String STYLE_PARTITION_CLEAR = STYLE_PREFIX + "partition-clear";
+  private static final String STYLE_CLEAR_ITEM = STYLE_PARTITION_CLEAR + "-item";
 
   private static final String STYLE_APPEND_PANEL = STYLE_PREFIX + "append-panel";
   private static final String STYLE_APPEND_SELECTOR = STYLE_PREFIX + "append-selector";
@@ -293,6 +296,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   private static final Set<String> NON_PRINTABLE = Sets.newHashSet(STYLE_ACTION,
       STYLE_MONTH_SELECTOR, STYLE_APPEND_PANEL, STYLE_CONTROL_PANEL);
+
+  private static final FaLabel clearItem = new FaLabel(FontAwesome.TRASH, STYLE_CLEAR_ITEM);
 
   protected static Set<Integer> getInactiveDays(YearMonth ym,
       JustDate activeFrom, JustDate activeUntil) {
@@ -455,7 +460,15 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
               removeFromSchedule(wsId);
             }
           }
+          clearItem.setVisible(false);
         });
+
+    this.addDragStartHandler(new DragStartHandler() {
+      @Override
+      public void onDragStart(DragStartEvent dragStartEvent) {
+        clearItem.setVisible(true);
+      }
+    });
   }
 
   @Override
@@ -2247,6 +2260,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           controlPanel.add(extendCommand);
         }
       }
+
+      clearItem.setVisible(false);
+      controlPanel.add(clearItem);
 
       Flow modePanel = new Flow(STYLE_MODE_PANEL);
       modePanel.add(renderInputMode());
