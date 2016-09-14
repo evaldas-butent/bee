@@ -111,7 +111,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
     }
     if (invoiceDetails != null) {
       if (BeeUtils.containsSame(form.getFormName(), "short")) {
-        Relation relation = Relation.create(TBL_ITEMS, Arrays.asList(COL_ITEM_NAME));
+        Relation relation = Relation.create(TBL_ITEMS, Arrays.asList(COL_ITEM_NAME, COL_ITEM_ARTICLE));
         relation.disableNewRow();
 
         final UnboundSelector selector = UnboundSelector.create(relation);
