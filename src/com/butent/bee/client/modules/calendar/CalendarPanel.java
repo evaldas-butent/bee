@@ -667,7 +667,7 @@ public abstract class CalendarPanel extends Split implements AppointmentEvent.Ha
 
   void setDate(JustDate date, boolean sync) {
     if (date != null && !date.equals(calendar.getDate())) {
-      calendar.update(calendar.getType(), date, calendar.getDisplayedDays());
+      calendar.update(calendar.getType(), date, calendar.getDisplayedDays(), getFilteredValues());
       if (sync && DataUtils.isId(calendarId)) {
         CalendarKeeper.synchronizeDate(calendarId, date, false);
       }
@@ -743,7 +743,7 @@ public abstract class CalendarPanel extends Split implements AppointmentEvent.Ha
         break;
     }
 
-    boolean changed = calendar.update(type, date, days);
+    boolean changed = calendar.update(type, date, days, getFilteredValues());
     if (changed) {
       if (DataUtils.isId(calendarId)) {
         CalendarKeeper.synchronizeDate(calendarId, date, false);
