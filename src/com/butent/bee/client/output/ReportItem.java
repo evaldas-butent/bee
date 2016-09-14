@@ -202,6 +202,12 @@ public abstract class ReportItem implements BeeSerializable {
 
   public abstract ReportValue evaluate(SimpleRow row);
 
+  /**
+   * @param rowGroup
+   * @param rowValues
+   * @param colGroup
+   * @param resultHolder
+   */
   public ReportValue evaluate(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
       ResultHolder resultHolder) {
     Assert.unsupported();
@@ -322,7 +328,7 @@ public abstract class ReportItem implements BeeSerializable {
     if (BeeUtils.isEmpty(data)) {
       return null;
     }
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
     String clazz = map.get(Serial.CLAZZ.name());
     String expression = map.get(Serial.EXPRESSION.name());
     String caption = map.get(Serial.CAPTION.name());
@@ -358,6 +364,9 @@ public abstract class ReportItem implements BeeSerializable {
 
     } else if (NameUtils.getClassName(ReportResultItem.class).equals(clazz)) {
       item = new ReportResultItem(expression, caption);
+
+    } else if (NameUtils.getClassName(ReportTimeDurationItem.class).equals(clazz)) {
+      item = new ReportTimeDurationItem(expression, caption);
 
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);

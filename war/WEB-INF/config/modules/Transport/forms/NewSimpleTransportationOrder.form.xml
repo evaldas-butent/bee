@@ -2,7 +2,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
-  
+
   name="NewSimpleTransportationOrder" viewName="OrderCargo" caption="=newTransportationOrder"
   width="800" height="600"
   >
@@ -23,7 +23,7 @@
         <Label text="=orderNumber" class="bee-hasDefaults" />
         <InputText name="OrderNo" maxLength="50" />
       </row>
-  
+
       <row>
         <cell colSpan="2">
           <Label text="=loading" horizontalAlignment="center" style="font-weight: bold;" />
@@ -32,7 +32,7 @@
           <Label text="=unloading" horizontalAlignment="center" style="font-weight: bold;" />
         </cell>
       </row>
-  
+
       <row>
         <Label text="=date" />
         <InputDateTime source="LoadingDate" />
@@ -42,7 +42,7 @@
         <Label for="CargoType" class="bee-required" />
         <DataSelector source="CargoType" required="true" />
       </row>
-  
+
       <row>
         <Label text="=city" />
         <DataSelector source="LoadingCity" options="LoadingCountry">
@@ -65,19 +65,19 @@
         <Label text="=pallets" />
         <InputInteger source="Palettes" style="width: 70px;" />
       </row>
-    
+
       <row>
         <Label text="=postIndex" />
         <InputText source="LoadingPostIndex" autocompleteKey="cargo-place-postal-code" />
         <Label text="=postIndex" />
         <InputText source="UnloadingPostIndex" autocompleteKey="cargo-place-postal-code" />
 
-        <Label text="=notes" />
+        <Label for="CargoNotes" />
         <cell rowSpan="3" verticalAlignment="top">
-          <InputArea source="Notes" visibleLines="4" />
+          <InputArea source="CargoNotes" visibleLines="4" />
         </cell>
       </row>
-    
+
       <row>
         <Label text="=country" />
         <DataSelector source="LoadingCountry">
@@ -88,7 +88,7 @@
             <ui:renderer type="flag" />
           </selectorColumn>
         </DataSelector>
-  
+
         <Label text="=country" />
         <DataSelector source="UnloadingCountry">
           <renderToken source="UnloadingCountryName" />
@@ -99,7 +99,7 @@
           </selectorColumn>
         </DataSelector>
       </row>
-  
+
       <row>
         <Label text="=price" />
         <HorizontalPanel>
@@ -108,7 +108,7 @@
             style="width: 4em;" editEnabled="false" newRowEnabled="false"
             placeholder="=currencyShort" />
         </HorizontalPanel>
-        
+
         <cell><text/></cell>
         <HorizontalPanel>
           <CheckBox name="VatPlus" text="=vatPlus" />

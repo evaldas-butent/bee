@@ -68,6 +68,10 @@ public enum TradeDocumentPhase implements HasLocalizedCaption {
 
   public abstract String getDocumentTypeColumnName();
 
+  public String getStatusColumnName() {
+    return getDocumentTypeColumnName();
+  }
+
   public boolean modifyStock() {
     return modifyStock;
   }

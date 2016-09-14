@@ -639,6 +639,10 @@ public final class SqlUtils {
     return notNull(field(src, fld));
   }
 
+  public static IsCondition notNull(String src, String fld1, String fld2) {
+    return and(notNull(src, fld1), notNull(src, fld2));
+  }
+
   public static IsExpression nvl(Object... members) {
     Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);

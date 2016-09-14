@@ -90,7 +90,7 @@
       td label {
       float: right;
       }
-      input[required] {
+      input[required], select[required] {
       border: 1px solid red;
       }
       input[type="number"] {
@@ -405,22 +405,25 @@
                   </td>
                   <td>
                     <input id="Quantity" name="Quantity" type="number" maxlength="8" step="0.01" />
+                    <select id="Units-Name-Quantity" name="QuantityUnit" style="display:inline;" />
                   </td>
                 </tr>
                 <tr>
                   <td>
-                    <label for="Weight">=trRequestCargoWeight</label>
+                    <label for="Weight">=weight</label>
                   </td>
                   <td>
                     <input id="Weight" name="Weight" type="number" maxlength="10" step="0.001" />
+                    <select id="Units-Name-Weight" name="WeightUnit" style="display:inline;" />
                   </td>
                 </tr>
                 <tr>
                   <td>
-                    <label for="Volume">=trRequestCargoVolume</label>
+                    <label for="Volume">=volume</label>
                   </td>
                   <td>
                     <input id="Volume" name="Volume" type="number" maxlength="8" step="0.001" />
+                    <select id="Units-Name-Volume" name="VolumeUnit" style="display:inline;" />
                   </td>
                 </tr>
                 <tr>
@@ -483,6 +486,12 @@
                            disabled="disabled" />
                   </td>
                 </tr>
+                <tr>
+                  <td colspan="2">
+                    <label for="CargoNotes">=cargoNotes</label>
+                    <textarea id="CargoNotes" name="CargoNotes" rows="3" style="width:100%"> </textarea>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </fieldset>
@@ -506,6 +515,14 @@
                     </td>
                     <td>
                       <select id="ShippingTerms-Name" name="ShippingTerm" required="required" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label for="LoadedKilometers">=trLoadedKilometers</label>
+                    </td>
+                    <td>
+                      <input id="LoadedKilometers" name="LoadedKilometers" type="number" maxlength="5" />
                     </td>
                   </tr>
                   <tr>
@@ -574,7 +591,6 @@
       <datalist id="Positions-Name" />
       <datalist id="Countries-Name" />
       <datalist id="Cities-Name" />
-      <datalist id="Units-Name" />
     </div>
   </body>
 </html>

@@ -77,6 +77,7 @@ class TaskDialog extends DialogBox {
     int col = 0;
 
     faSave.setTitle(Action.SAVE.getCaption());
+    StyleUtils.enableAnimation(Action.SAVE, faSave);
 
     insertAction(BeeConst.INT_TRUE, faSave);
 
@@ -297,6 +298,15 @@ class TaskDialog extends DialogBox {
     }
   }
 
+  InputDateTime getInputDateTime(String id) {
+    Widget child = getChild(id);
+    if (child instanceof InputDateTime) {
+      return (InputDateTime) child;
+    } else {
+      return null;
+    }
+  }
+
   List<FileInfo> getFiles(String id) {
     Widget child = getChild(id);
     if (child instanceof FileCollector) {
@@ -333,7 +343,7 @@ class TaskDialog extends DialogBox {
     }
   }
 
-  private Widget getChild(String id) {
+  Widget getChild(String id) {
     return DomUtils.getChildQuietly(getContent(), id);
   }
 

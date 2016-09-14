@@ -374,6 +374,7 @@ public final class DomUtils {
 
     for (Element child = parent.getFirstChildElement(); child != null; child =
         child.getNextSiblingElement()) {
+
       if (getDataIndexInt(child) == dataIndex) {
         return child;
       }
@@ -441,6 +442,28 @@ public final class DomUtils {
     for (Widget child : parent) {
       if (idEquals(child, id)) {
         return child;
+      }
+    }
+    return null;
+  }
+
+  public static Element getChildByInnerText(Element parent, String text, boolean recurse) {
+    if (parent == null || text == null) {
+      return null;
+    }
+
+    for (Element child = parent.getFirstChildElement(); child != null; child =
+        child.getNextSiblingElement()) {
+
+      if (BeeUtils.equalsTrimRight(child.getInnerText(), text)) {
+        return child;
+      }
+
+      if (recurse) {
+        Element element = getChildByInnerText(child, text, recurse);
+        if (element != null) {
+          return element;
+        }
       }
     }
     return null;
@@ -971,6 +994,11 @@ public final class DomUtils {
     } else {
       return null;
     }
+  }
+
+  public static Integer getParentRowIndex(Element child) {
+    TableRowElement rowElement = getParentRow(child, true);
+    return (rowElement == null) ? null : rowElement.getRowIndex();
   }
 
   public static TableElement getParentTable(Element child, boolean incl) {
@@ -1909,6 +1937,11 @@ public final class DomUtils {
 
     OptionElement.as(elem).setSelected(selected);
     OptionElement.as(elem).setDefaultSelected(selected);
+  }
+
+  public static void setSpellCheck(Element elem, boolean check) {
+    Assert.notNull(elem);
+    elem.setAttribute(Attributes.SPELL_CHECK, BeeUtils.toString(check));
   }
 
   public static void setStep(UIObject obj, int step) {

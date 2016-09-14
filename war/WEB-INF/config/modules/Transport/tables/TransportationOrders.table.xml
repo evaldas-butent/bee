@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="TransportationOrders"
-  idName="OrderID"
-  >
+       name="TransportationOrders"
+       idName="OrderID"
+>
   <Fields>
     <Enum name="Status" key="OrderStatus" notNull="true" label="=trOrderStatus" defValue="1" />
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=orderDate" />
     <String name="OrderNo" precision="50" unique="true" notNull="true" label="=orderNumber"
-      defExpr="NEXT_NUMBER" />
+            defExpr="NEXT_NUMBER" defValue="ORD" />
     <Relation name="Customer" relation="Companies" notNull="true" label="=customer" />
     <Relation name="CustomerPerson" relation="CompanyPersons" label="=personContact" />
     <Relation name="Payer" relation="Companies" label="=payer" />
     <Relation name="Manager" relation="Users" defExpr="CURRENT_USER" label="=manager" />
+
+    <Relation name="Expedition" relation="ExpeditionTypes" label="=trExpeditionType" />
+    <Relation name="ShippingTerm" relation="ShippingTerms" label="=cargoTermsOfService" />
+
+    <String name="Vehicle" precision="50" label="=trTruck" />
+    <String name="Driver" precision="50" label="=vehicleDriver" />
+
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

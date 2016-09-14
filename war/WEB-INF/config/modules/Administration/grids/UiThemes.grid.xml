@@ -32,6 +32,10 @@
       <carry><ui:expression>$wnd.BeeSettings.theme[colName]</ui:expression></carry>
     </DataColumn>
 
+    <DataColumn name="ActionSaveLarge">
+      <carry><ui:expression>$wnd.BeeSettings.theme[colName]</ui:expression></carry>
+    </DataColumn>
+
     <DataColumn name="GridHeaderRowHeight">
       <carry><ui:expression>$wnd.BeeSettings.theme[colName]</ui:expression></carry>
     </DataColumn>

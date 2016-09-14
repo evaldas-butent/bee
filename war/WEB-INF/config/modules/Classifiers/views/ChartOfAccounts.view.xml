@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="ChartOfAccounts" source="ChartOfAccounts" module="Classifiers"
+      caption="=chartOfAccounts" newRowCaption="=newAccount"
+>
+  <Columns>
+    <SimpleColumn name="AccountCode" />
+    <SimpleColumn name="AccountName" />
+
+    <SimpleJoin name="Dimensions" joinType="LEFT">
+      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="AccountCode" />
+  </Order>
+</View>

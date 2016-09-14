@@ -2,6 +2,10 @@ package com.butent.bee.shared.i18n;
 
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public enum SupportedLocale implements HasCaption {
   LT {
@@ -125,6 +129,19 @@ public enum SupportedLocale implements HasCaption {
 
   public static SupportedLocale parse(String language) {
     return BeeUtils.nvl(getByLanguage(language), USER_DEFAULT);
+  }
+
+  public static List<SupportedLocale> parseList(String languages) {
+    List<SupportedLocale> result = new ArrayList<>();
+
+    for (String language : NameUtils.toList(languages)) {
+      SupportedLocale supportedLocale = getByLanguage(language);
+      if (supportedLocale != null && !result.contains(supportedLocale)) {
+        result.add(supportedLocale);
+      }
+    }
+
+    return result;
   }
 
   public String getDictionaryCustomColumnName() {

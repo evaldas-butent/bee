@@ -359,6 +359,32 @@ public final class Queries {
     });
   }
 
+  public static void getLastUpdated(final String tableName, long rowId, String column,
+      final RpcCallback<DateTime> callback) {
+
+    Assert.notEmpty(tableName);
+    Assert.notEmpty(column);
+    Assert.notNull(callback);
+
+    List<Property> lst = PropertyUtils.createProperties(VAR_TABLE, tableName,
+        VAR_ID, BeeUtils.toString(rowId), VAR_COLUMN, column);
+
+    ParameterList params = new ParameterList(GET_LAST_UPDATED, RpcParameter.Section.QUERY, lst);
+    params.setSummary(tableName, rowId, column);
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(GET_LAST_UPDATED, getRpcId(), tableName, response, null, callback)) {
+          String s = response.hasResponse() ? response.getResponseAsString() : null;
+          DateTime dt = BeeUtils.isLong(s) ? DateTime.restore(s) : null;
+
+          callback.onSuccess(dt);
+        }
+      }
+    });
+  }
+
   public static void getRelatedValues(final String tableName, String filterColumn,
       long filterValue, String resultColumn, final IdListCallback callback) {
 
@@ -387,10 +413,11 @@ public final class Queries {
     });
   }
 
-  public static void getRow(final String viewName, final long rowId, List<String> columns,
+  public static void getRow(final String viewName, final Filter filter, List<String> columns,
       final RowCallback callback) {
 
     Assert.notEmpty(viewName);
+    Assert.notNull(filter);
     Assert.notNull(callback);
 
     final String columnNames;
@@ -401,13 +428,13 @@ public final class Queries {
     }
 
     List<Property> lst = PropertyUtils.createProperties(VAR_VIEW_NAME, viewName,
-        VAR_VIEW_ROW_ID, BeeUtils.toString(rowId));
+        VAR_VIEW_WHERE, filter.serialize());
     if (!BeeUtils.isEmpty(columnNames)) {
       PropertyUtils.addProperties(lst, VAR_VIEW_COLUMNS, columnNames);
     }
 
     ParameterList params = new ParameterList(QUERY, RpcParameter.Section.DATA, lst);
-    params.setSummary(viewName, rowId);
+    params.setSummary(viewName, filter);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
@@ -418,7 +445,7 @@ public final class Queries {
           if (rs.getNumberOfRows() == 1) {
             callback.onSuccess(rs.getRow(0));
           } else {
-            error(callback, "Get Row:", getRpcId(), viewName, "id " + rowId,
+            error(callback, "Get Row:", getRpcId(), viewName, filter.toString(),
                 "response number of rows: " + rs.getNumberOfRows());
           }
         }
@@ -427,7 +454,7 @@ public final class Queries {
   }
 
   public static void getRow(String viewName, long rowId, RowCallback callback) {
-    getRow(viewName, rowId, null, callback);
+    getRow(viewName, Filter.compareId(rowId), null, callback);
   }
 
   public static void getRowCount(final String viewName, final Filter filter,

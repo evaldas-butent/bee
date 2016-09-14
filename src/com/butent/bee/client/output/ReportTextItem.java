@@ -6,6 +6,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -15,6 +16,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -29,10 +31,12 @@ import java.util.Objects;
 public class ReportTextItem extends ReportItem {
 
   private static final String NEGATION = "NEGATION";
+  private static final String EMPTY = "EMPTY";
 
   private boolean filterNegation;
   private MultiSelector filterWidget;
   private List<String> filter;
+  private boolean filterEmpty;
 
   public ReportTextItem(String expression, String caption) {
     super(expression, caption);
@@ -40,18 +44,28 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public void clearFilter() {
+    filter = null;
+    filterEmpty = false;
+
     if (filterWidget != null) {
       filterWidget.clearValue();
+      renderFilter((Flow) filterWidget.getParent());
     }
-    filter = null;
   }
 
   @Override
   public void deserialize(String data) {
     if (data != null) {
-      Map<String, String> map = Codec.deserializeMap(data);
+      Map<String, String> map = Codec.deserializeLinkedHashMap(data);
+
       filterNegation = BeeUtils.toBoolean(map.get(NEGATION));
-      filter = Arrays.asList(Codec.beeDeserializeCollection(map.get(Service.VAR_DATA)));
+
+      String[] values = Codec.beeDeserializeCollection(map.get(Service.VAR_DATA));
+
+      if (!ArrayUtils.isEmpty(values)) {
+        filter = Arrays.asList(values);
+      }
+      filterEmpty = BeeUtils.toBoolean(map.get(EMPTY));
     }
   }
 
@@ -97,6 +111,10 @@ public class ReportTextItem extends ReportItem {
     return Objects.hash(getExpression(), isNegationFilter());
   }
 
+  public boolean isEmptyFilter() {
+    return filterEmpty;
+  }
+
   public boolean isNegationFilter() {
     return filterNegation;
   }
@@ -105,13 +123,13 @@ public class ReportTextItem extends ReportItem {
   public String serialize() {
     String data = null;
 
-    if (!BeeUtils.isEmpty(filter)) {
+    if (!BeeUtils.isEmpty(filter) || isEmptyFilter()) {
       Map<String, Object> map = new HashMap<>();
 
-      if (isNegationFilter()) {
-        map.put(NEGATION, true);
-      }
+      map.put(NEGATION, isNegationFilter());
       map.put(Service.VAR_DATA, filter);
+      map.put(EMPTY, isEmptyFilter());
+
       data = Codec.beeSerialize(map);
     }
     return serialize(data);
@@ -120,9 +138,10 @@ public class ReportTextItem extends ReportItem {
   @Override
   public ReportItem setFilter(String value) {
     filterNegation = false;
+    filterEmpty = BeeUtils.isEmpty(value);
 
-    if (!BeeUtils.isEmpty(value)) {
-      filter = Collections.singletonList(value);
+    if (!isEmptyFilter()) {
+      filter = Collections.singletonList(BeeConst.STRING_EQ + value);
     } else {
       filter = null;
     }
@@ -131,26 +150,39 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getExpression())) {
+    if (BeeUtils.isEmpty(filter) && !isEmptyFilter()
+        || !row.getRowSet().hasColumn(getExpression())) {
       return true;
     }
     String value = row.getValue(getExpression());
 
-    for (String opt : filter) {
-      if (BeeUtils.isPrefix(opt, BeeConst.STRING_EQ)
-          ? Objects.equals(value, BeeUtils.removePrefix(opt, BeeConst.STRING_EQ))
-          : BeeUtils.containsSame(value, opt)) {
-        return !isNegationFilter();
+    if (isEmptyFilter() && BeeUtils.isEmpty(value)) {
+      return !isNegationFilter();
+    }
+    if (!BeeUtils.isEmpty(filter)) {
+      for (String opt : filter) {
+        if (BeeUtils.isPrefix(opt, BeeConst.STRING_EQ)
+            ? Objects.equals(value, BeeUtils.removePrefix(opt, BeeConst.STRING_EQ))
+            : BeeUtils.containsSame(value, opt)) {
+          return !isNegationFilter();
+        }
       }
     }
     return isNegationFilter();
   }
 
-  private void renderFilter(final Flow container) {
-    final Toggle toggle = new Toggle(Localized.dictionary().is(),
-        Localized.dictionary().isNot(), null, filterNegation);
+  private void renderFilter(Flow container) {
+    container.clear();
+
+    Toggle toggle = new Toggle(Localized.dictionary().is(),
+        Localized.dictionary().isNot(), null, isNegationFilter());
     toggle.addClickHandler(clickEvent -> filterNegation = toggle.isChecked());
     container.add(toggle);
+
+    InputBoolean empty = new InputBoolean(Localized.dictionary().empty());
+    empty.setChecked(isEmptyFilter());
+    empty.addValueChangeHandler(ev -> filterEmpty = empty.isChecked());
+    container.add(empty);
 
     if (filterWidget == null) {
       Relation relation = Relation.create(ClassifierConstants.TBL_COUNTRIES,

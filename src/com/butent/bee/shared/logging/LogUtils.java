@@ -2,6 +2,7 @@ package com.butent.bee.shared.logging;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -41,6 +42,11 @@ public final class LogUtils {
     for (StackTraceElement el : err.getStackTrace()) {
       logger.log(level, BeeUtils.bracket(++i), el);
     }
+  }
+
+  public static long profile(BeeLogger logger, String caption, long start) {
+    logger.debug(caption, TimeUtils.elapsedMillis(start));
+    return System.currentTimeMillis();
   }
 
   public static void setLoggerFactory(BeeLoggerFactory loggerFactory) {

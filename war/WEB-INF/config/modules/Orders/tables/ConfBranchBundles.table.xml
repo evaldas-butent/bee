@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfBranchBundles"
+       idName="BranchBundleID"
+>
+  <Fields>
+    <Relation name="Branch" relation="ConfPricelist" notNull="true" cascade="DELETE"
+              label="=configuration" />
+    <Relation name="Bundle" relation="ConfBundles" notNull="true" label="=bundle" editable="true" />
+    <Integer name="Price" label="=price" notNull="true" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Branch Bundle" />
+  </Constraints>
+</Table>

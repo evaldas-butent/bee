@@ -6,8 +6,9 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasOptions;
 
-public final class MutationEvent extends GwtEvent<MutationEvent.Handler> {
+public final class MutationEvent extends GwtEvent<MutationEvent.Handler> implements HasOptions {
 
   public interface HasMutationHandlers extends HasHandlers {
     HandlerRegistration addMutationHandler(Handler handler);
@@ -24,9 +25,20 @@ public final class MutationEvent extends GwtEvent<MutationEvent.Handler> {
     source.fireEvent(new MutationEvent());
   }
 
+  public static void fire(HasMutationHandlers source, String options) {
+    Assert.notNull(source);
+
+    MutationEvent event = new MutationEvent();
+    event.setOptions(options);
+
+    source.fireEvent(event);
+  }
+
   public static Type<Handler> getType() {
     return TYPE;
   }
+
+  private String options;
 
   private MutationEvent() {
     super();
@@ -35,6 +47,16 @@ public final class MutationEvent extends GwtEvent<MutationEvent.Handler> {
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
+  }
+
+  @Override
+  public String getOptions() {
+    return options;
+  }
+
+  @Override
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   @Override

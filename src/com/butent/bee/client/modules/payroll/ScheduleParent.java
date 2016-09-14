@@ -2,8 +2,25 @@ package com.butent.bee.client.modules.payroll;
 
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
+import com.butent.bee.shared.i18n.Localized;
+
 enum ScheduleParent {
   LOCATION {
+    @Override
+    String getEmployeeObjectPartitionColumn() {
+      return COL_EMPLOYEE;
+    }
+
+    @Override
+    String getEmployeeObjectRelationColumn() {
+      return COL_PAYROLL_OBJECT;
+    }
+
+    @Override
+    String getPartitionTitle() {
+      return Localized.dictionary().employees();
+    }
+
     @Override
     String getPartitionViewName() {
       return VIEW_EMPLOYEES;
@@ -24,7 +41,23 @@ enum ScheduleParent {
       return COL_PAYROLL_OBJECT;
     }
   },
+
   EMPLOYEE {
+    @Override
+    String getEmployeeObjectPartitionColumn() {
+      return COL_PAYROLL_OBJECT;
+    }
+
+    @Override
+    String getEmployeeObjectRelationColumn() {
+      return COL_EMPLOYEE;
+    }
+
+    @Override
+    String getPartitionTitle() {
+      return Localized.dictionary().objects();
+    }
+
     @Override
     String getPartitionViewName() {
       return VIEW_LOCATIONS;
@@ -45,6 +78,12 @@ enum ScheduleParent {
       return COL_EMPLOYEE;
     }
   };
+
+  abstract String getEmployeeObjectPartitionColumn();
+
+  abstract String getEmployeeObjectRelationColumn();
+
+  abstract String getPartitionTitle();
 
   abstract String getPartitionViewName();
 

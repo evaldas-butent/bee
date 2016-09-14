@@ -29,6 +29,7 @@
       <SimpleColumn name="Mobile" />
       <SimpleColumn name="Fax" />
 
+
       <SimpleColumn name="Email" alias="EmailId" />
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
@@ -85,6 +86,7 @@
     </SimpleJoin>
     <SimpleColumn name="CreditDays" />
     <SimpleColumn name="SupplierCreditDays" />
+    <SimpleColumn name="ToleratedDays" />
 
     <SimpleColumn name="FinancialState" />
     <SimpleJoin joinType="LEFT" name="FinancialState">

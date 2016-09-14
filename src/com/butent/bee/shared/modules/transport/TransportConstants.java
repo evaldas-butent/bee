@@ -93,12 +93,6 @@ public final class TransportConstants {
   }
 
   public enum TextConstant implements HasLocalizedCaption {
-    SHIPPING_TERMS {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trShippingTerms();
-      }
-    },
     CONTRACT_MAIL_CONTENT {
       @Override
       public String getCaption(Dictionary constants) {
@@ -109,7 +103,7 @@ public final class TransportConstants {
       public String getDefaultContent() {
         return "Follow the link below to confirm or reject the agreement"
             + " which is attached to this letter<br><br>"
-            + "http://127.0.0.1:8080/Bee/{contract_path}<br><br><br>"
+            + "http://127.0.0.1:8080/Bee/{CONTRACT_PATH}<br><br><br>"
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
@@ -124,8 +118,8 @@ public final class TransportConstants {
       public String getDefaultContent() {
         return "The login which is given below is to connect to Your user account<br><br>"
             + "Address: http://127.0.0.1:8080/Bee<br>"
-            + "Login: {login}<br>"
-            + "Password: {password}<br><br>"
+            + "Login: {LOGIN}<br>"
+            + "Password: {PASSWORD}<br><br>"
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
@@ -138,7 +132,7 @@ public final class TransportConstants {
 
       @Override
       public String getDefaultContent() {
-        return "Your order is in progress!<br><br><br>"
+        return "Your order (id:{CONTRACT_ID}) is in progress!<br><br><br>"
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
       }
@@ -151,9 +145,31 @@ public final class TransportConstants {
 
       @Override
       public String getDefaultContent() {
-        return "Your inquiry is denied.<br><br><br>"
+        return "Your inquiry (id:{CONTRACT_ID}) is denied.<br><br><br>"
             + "This message was created automatically by mail delivery software. "
             + "Thank You for using our services.";
+      }
+    },
+    SUMBMITTED_REQUEST_CONTENT {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trRequestSubmittedContent();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "Your request has been received. Will contact You soon!";
+      }
+    },
+    REQUEST_COMMON_TERMS {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trRequestCommonTerms();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "";
       }
     };
 
@@ -252,6 +268,13 @@ public final class TransportConstants {
       public String getCaption(Dictionary constants) {
         return constants.trConstantCosts();
       }
+    },
+
+    ECONOMY_BONUS {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trEconomyBonus();
+      }
     };
   }
 
@@ -312,11 +335,13 @@ public final class TransportConstants {
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
   public static final String SVC_GET_ASSESSMENT_QUANTITY_REPORT = "GetAssessmentQuantityReport";
   public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";
+  public static final String SVC_UPDATE_FREIGHT = "UpdateFreight";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
   public static final String SVC_GET_TRIP_INFO = "GetTripInfo";
   public static final String SVC_GET_VEHICLE_BUSY_DATES = "GetVehicleBusyDates";
   public static final String SVC_GET_DRIVER_BUSY_DATES = "GetDriverBusyDates";
+  public static final String SVC_GET_TEXT_CONSTANT = "GetTextConstant";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
@@ -408,6 +433,7 @@ public final class TransportConstants {
   public static final String VIEW_CARGO_CREDIT_INVOICES = "CargoCreditInvoices";
   public static final String VIEW_CARGO_PURCHASE_INVOICES = "CargoPurchaseInvoices";
   public static final String VIEW_CARGO_INCOMES = "CargoIncomes";
+  public static final String VIEW_CARGO_FILES = "CargoFiles";
 
   public static final String VIEW_CARGO_TYPES = "CargoTypes";
   public static final String VIEW_CARGO_GROUPS = "CargoGroups";
@@ -443,7 +469,6 @@ public final class TransportConstants {
   public static final String VIEW_ASSESSMENT_EXECUTORS = "AssessmentExecutors";
 
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
-  public static final String VIEW_SHIPMENT_REQUEST_FILES = "ShipmentRequestFiles";
 
   public static final String VIEW_TEXT_CONSTANTS = "TextConstants";
 
@@ -490,7 +515,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_CMR = "Cmr";
   public static final String COL_CARGO_NOTES = "Notes";
-  public static final String COL_CARGO_SHIPPING_TERM = "ShippingTerm";
+  public static final String COL_SHIPPING_TERM = "ShippingTerm";
   public static final String COL_CARGO_QUANTITY = "Quantity";
   public static final String COL_CARGO_WEIGHT = "Weight";
   public static final String COL_CARGO_VOLUME = "Volume";
@@ -498,6 +523,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_LENGTH = "Length";
   public static final String COL_CARGO_WIDTH = "Width";
   public static final String COL_CARGO_HEIGHT = "Height";
+  public static final String COL_CARGO_OUTSIZED = "Outsized";
   public static final String COL_CARGO_PARTIAL = "Partial";
   public static final String COL_CARGO_PALETTES = "Palettes";
   public static final String COL_CARGO_VALUE = "Value";
@@ -809,6 +835,7 @@ public final class TransportConstants {
   public static final String COL_QUERY_CUSTOMER_COUNTRY = "CustomerCountry";
   public static final String COL_QUERY_CUSTOMER_CITY = "CustomerCity";
   public static final String COL_QUERY_CUSTOMER_ADDRESS = "CustomerAddress";
+  public static final String COL_QUERY_CUSTOMER_POST_INDEX = "CustomerPostIndex";
   public static final String COL_QUERY_CUSTOMER_PHONE = "CustomerPhone";
   public static final String COL_QUERY_CUSTOMER_FAX = "CustomerFax";
   public static final String COL_QUERY_CUSTOMER_EMAIL = "CustomerEmail";
@@ -946,6 +973,7 @@ public final class TransportConstants {
   public static final String ALS_CARGO_HANDLING_NOTES = "HandlingNotes";
 
   public static final String ALS_CARGO_CMR_NUMBER = "CmrNumber";
+  public static final String ALS_CARGO_NOTES = "CargoNotes";
 
   public static final String ALS_SERVICE_NAME = "ServiceName";
 
@@ -956,7 +984,7 @@ public final class TransportConstants {
   public static final String DATA_TYPE_TRAILER = "Trailer";
   public static final String DATA_TYPE_DRIVER = "Driver";
 
-  public static final String REP_CONTRACT = "Contract";
+  public static final String REP_CONTRACT = "OrderContract";
 
   public static final String AR_DEPARTMENT = "Department";
   public static final String AR_MANAGER = "Manager";

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="TradeExpenditures" viewName="TradeExpenditures"
+>
+  <g:columns>
+    <RelColumn name="ExpenditureType" renderColumns="ExpenditureTypeName" newRowEnabled="false"
+               visible="true" />
+    <DataColumn name="CostBasis" />
+
+    <DataColumn name="Date" visible="true" />
+    <DataColumn name="Amount" minWidth="80" visible="true" />
+    <RelColumn name="Currency" newRowEnabled="false" visible="true" />
+
+    <DataColumn name="Vat" scale="0" />
+    <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" />
+
+    <DataColumn name="OperationVatMode" />
+
+    <CalcColumn name="VatAmount" type="decimal" label="=vatAmount" scale="2" />
+    <CalcColumn name="Total" type="decimal" label="=total" scale="2" />
+
+    <DataColumn name="Series">
+      <editor type="string" upperCase="true" />
+    </DataColumn>
+    <DataColumn name="Number" minWidth="60" />
+
+    <RelColumn name="Supplier" renderColumns="SupplierName" />
+
+    <DataColumn name="OperationName" />
+    <DataColumn name="WarehouseCode" label="=warehouse" />
+
+    <DataColumn name="ItemName" label="=item" />
+    <DataColumn name="Article" visible="false" />
+
+    <CalcColumn name="GeneratedDocument" source="GeneratedDocument" type="string" cellType="html" />
+
+    <DataColumn name="DebitCode" label="=debit" />
+    <DataColumn name="CreditCode" label="=credit" />
+  </g:columns>
+</g:Grid>

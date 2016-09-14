@@ -23,16 +23,19 @@
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
+      <renderer type="total" />
     </CalcColumn>
 
     <RelColumn name="Customer" />
     <DataColumn name="Number" />
     <DataColumn name="Note" />
 
-    <RelColumn name="Sale" caption="=trdInvoiceId" readOnly="true" renderColumns="Sale"
-      editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices" />
-    <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true" renderColumns="Purchase"
-      editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
+    <RelColumn name="Sale" readOnly="true" renderColumns="Sale SalePrefix SaleNo"
+               editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices" />
+
+    <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true"
+               renderColumns="Purchase PurchasePrefix PurchaseNo" editEnabled="true"
+               editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
   </g:columns>
 
   <g:rowEditable>

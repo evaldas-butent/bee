@@ -6,7 +6,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -20,22 +19,17 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.modules.trade.InvoiceForm;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
-import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.client.output.ReportUtils;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.render.ProvidesGridColumnRenderer;
-import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
@@ -49,7 +43,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -60,27 +53,12 @@ import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 public final class TransportHandler {
-
-  private static class CargoGridHandler extends AbstractGridInterceptor {
-    @Override
-    public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
-        Collection<RowInfo> selectedRows, DeleteMode defMode) {
-
-      return new CargoTripChecker().getDeleteMode(presenter, activeRow, selectedRows, defMode);
-    }
-
-    @Override
-    public GridInterceptor getInstance() {
-      return new CargoGridHandler();
-    }
-  }
 
   static final class Profit extends Image implements ClickHandler {
     private final String column;
@@ -213,11 +191,11 @@ public final class TransportHandler {
 
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
 
-    GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
+    GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoInvoiceChecker());
+    GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoInvoiceChecker());
     GridFactory.registerGridInterceptor(VIEW_TRIPS, new CargoTripChecker());
     GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
 
-    GridFactory.registerGridInterceptor(VIEW_ORDER_CARGO, new CargoGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoHandlingGrid());
 
     GridFactory.registerGridInterceptor("CargoDocuments", new TransportDocumentsGrid(COL_CARGO));
@@ -225,40 +203,10 @@ public final class TransportHandler {
         new TransportDocumentsGrid(COL_TRANSPORTATION_ORDER));
     GridFactory.registerGridInterceptor("TripDocuments", new TransportDocumentsGrid(COL_TRIP));
 
-    ProvidesGridColumnRenderer provider = new CargoPlaceRenderer.Provider();
-    String loading = "Loading";
-    String unloading = "Unloading";
-
-    RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_CARGO_HANDLING, unloading, provider);
-    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, loading, provider);
-    RendererFactory.registerGcrProvider(GRID_CARGO_HANDLING_UNBOUND, unloading, provider);
-    RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_ALL_CARGO, unloading, provider);
-    RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_ORDER_CARGO, unloading, provider);
-    RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, unloading, provider);
-    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
-    RendererFactory.registerGcrProvider(TBL_ASSESSMENT_FORWARDERS, loading, provider);
-    RendererFactory.registerGcrProvider(TBL_ASSESSMENT_FORWARDERS, unloading, provider);
-
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
         ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_CARGO_TYPES, COL_CARGO_TYPE_COLOR,
         ColorStyleProvider.createDefault(VIEW_CARGO_TYPES));
-
-    TradeUtils.registerTotalRenderer(TBL_TRIP_COSTS, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(TBL_CARGO_INCOMES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(TBL_CARGO_EXPENSES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_SALES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_SALES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_PURCHASES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_TRIP_PURCHASES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
-    TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_SALES, new CargoSalesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_SALES, new CargoCreditSalesGrid());
@@ -270,8 +218,8 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new InvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_TRIP_PURCHASE_INVOICES, new InvoicesGrid());
 
-    GridFactory.registerGridInterceptor(VIEW_SHIPMENT_REQUEST_FILES,
-        new FileGridInterceptor(COL_SHIPMENT_REQUEST, AdministrationConstants.COL_FILE,
+    GridFactory.registerGridInterceptor(VIEW_CARGO_FILES,
+        new FileGridInterceptor(COL_CARGO, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     if (!BeeKeeper.getUser().isAdministrator()) {

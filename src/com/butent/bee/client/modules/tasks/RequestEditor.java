@@ -407,13 +407,12 @@ public class RequestEditor extends ProductSupportInterceptor {
         }
 
         BeeRow reqDurTypes = dialog.getSelector(durTypeId).getRelatedRow();
-        final Long type =
-            reqDurTypes
-                .getLong(Data.getColumnIndex(VIEW_REQUEST_DURATION_TYPES, COL_DURATION_TYPE));
-        if (!DataUtils.isId(type)) {
+        if (reqDurTypes == null) {
           Global.showError(Localized.dictionary().crmEnterDurationType());
           return;
         }
+        final Long type = reqDurTypes
+            .getLong(Data.getColumnIndex(VIEW_REQUEST_DURATION_TYPES, COL_DURATION_TYPE));
 
         final DateTime date = dialog.getDateTime(did);
         if (date == null) {

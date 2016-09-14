@@ -22,6 +22,7 @@ import com.google.gwt.user.client.Event;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.EventState;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashSet;
@@ -100,6 +101,10 @@ public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHand
 
   public CellContext getEventContext() {
     return eventContext;
+  }
+
+  public IsRow getEventRow() {
+    return (getEventContext() == null) ? null : getEventContext().getRow();
   }
 
   public C getEventValue() {

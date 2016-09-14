@@ -152,17 +152,6 @@
       </row>
 
       <row>
-        <Label for="Reminder" />
-        <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
-          style="&inp2;" />
-        <Label for="ReminderTime" />
-        <FlowPanel for="ReminderTime">
-          <InputDate name="Reminder_Date" style="&dateStyle;" />
-          <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
-        </FlowPanel>
-      </row>
-
-      <row>
         <Label />
         <CheckBox name="Mail" text="=mailNotify" />
         <Label />

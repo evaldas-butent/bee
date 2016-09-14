@@ -72,7 +72,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
    */
 
   private enum Serial {
-    COL_TYPE, ID, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, USER_MODE, RELATION,
+    COL_TYPE, ID, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, USER_MODE,
+    RELATION, COLUMN_RELATION,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, VERT_ALIGN, WHITE_SPACE,
     VALIDATION, EDITABLE, CARRY_CALC, CARRY_ON, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ENUM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
@@ -113,7 +114,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private String source;
   private String property;
   private Boolean userMode;
+
   private Relation relation;
+  private ColumnRelation columnRelation;
 
   private Integer minWidth;
   private Integer maxWidth;
@@ -244,6 +247,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case RELATION:
           setRelation(Relation.restore(value));
+          break;
+        case COLUMN_RELATION:
+          setColumnRelation(ColumnRelation.restore(value));
           break;
         case VALUE_TYPE:
           setValueType(ValueType.getByTypeCode(value));
@@ -430,6 +436,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return colType;
   }
 
+  public ColumnRelation getColumnRelation() {
+    return columnRelation;
+  }
+
   public Boolean getDraggable() {
     return draggable;
   }
@@ -558,6 +568,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     if (getRelation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Relation", getRelation().getInfo());
       PropertyUtils.addProperty(info, "Relation Initialized", isRelationInitialized());
+    }
+    if (getColumnRelation() != null) {
+      PropertyUtils.appendChildrenToProperties(info, "Column Relation",
+          getColumnRelation().getInfo());
     }
 
     if (getValidation() != null) {
@@ -752,7 +766,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
       }
 
       if (getRelation() != null) {
-        getRelation().replaceTargeColumn(oldId, newId);
+        getRelation().replaceTargetColumn(oldId, newId);
+      }
+      if (getColumnRelation() != null) {
+        getColumnRelation().replaceSource(oldId, newId);
       }
 
       if (getValidation() != null) {
@@ -834,6 +851,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case RELATION:
           arr[i++] = getRelation();
+          break;
+        case COLUMN_RELATION:
+          arr[i++] = getColumnRelation();
           break;
         case VALUE_TYPE:
           arr[i++] = (getValueType() == null) ? null : getValueType().getTypeCode();
@@ -1002,6 +1022,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setCellType(CellType cellType) {
     this.cellType = cellType;
+  }
+
+  public void setColumnRelation(ColumnRelation columnRelation) {
+    this.columnRelation = columnRelation;
   }
 
   public void setDraggable(Boolean draggable) {

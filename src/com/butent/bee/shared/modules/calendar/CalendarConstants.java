@@ -51,7 +51,7 @@ public final class CalendarConstants {
       public String getCaption(Dictionary constants) {
         return constants.calAppointmentStatusCompleted();
       }
-    };
+    }
   }
 
   public enum ItemType {
@@ -99,7 +99,7 @@ public final class CalendarConstants {
     TRANSPARENT(Localized.dictionary().calTransparent());
 
     public static boolean isOpaque(Integer value) {
-      return (value == null) ? false : value == OPAQUE.ordinal();
+      return value != null && value == OPAQUE.ordinal();
     }
 
     private final String caption;
@@ -214,6 +214,7 @@ public final class CalendarConstants {
   public static final String TBL_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
   public static final String TBL_APPOINTMENT_OWNERS = "AppointmentOwners";
   public static final String TBL_APPOINTMENT_REMINDERS = "AppointmentReminders";
+  public static final String TBL_APPOINTMENT_TYPES = "AppointmentTypes";
 
   public static final String TBL_ATTENDEES = "Attendees";
 
@@ -312,6 +313,7 @@ public final class CalendarConstants {
 
   public static final String COL_ATTENDEE_TYPE_NAME = "Name";
   public static final String ALS_ATTENDEE_TYPE_NAME = "TypeName";
+  public static final String ALS_APPOINTMENT_TYPE_NAME = "TypeName";
 
   public static final String COL_PROPERTY_NAME = "Name";
   public static final String COL_PROPERTY_GROUP = "PropertyGroup";
@@ -328,6 +330,9 @@ public final class CalendarConstants {
   public static final String COL_HOURS = "Hours";
   public static final String COL_MINUTES = "Minutes";
   public static final String COL_SCHEDULED = "Scheduled";
+
+  public static final String COL_ALIAS_DEF_HOURS = "defHours";
+  public static final String COL_ALIAS_DEL_MINUTES = "defMinutes";
 
   public static final String COL_MESSAGE = "Message";
   public static final String COL_SENT = "Sent";
@@ -354,6 +359,7 @@ public final class CalendarConstants {
 
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
+  public static final String ALS_OWNER_EMAIL = "OwnerEmail";
 
   public static final String COL_SIMPLE_HEADER = "SimpleHeader";
   public static final String COL_SIMPLE_BODY = "SimpleBody";

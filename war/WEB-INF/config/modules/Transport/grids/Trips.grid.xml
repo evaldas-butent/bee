@@ -1,28 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="Trips" viewName="Trips" caption="=trips"
-  newRowPopup="true" order="TripID desc" flexGrow="1"
-  >
+        name="Trips" viewName="Trips" caption="=trips"
+        newRowPopup="true" order="TripID desc" flexGrow="1"
+>
 
   <g:columns>
     <DataColumn name="Date" />
     <DataColumn name="TripNo" caption="=trTripNo" />
     <DataColumn name="Status" caption="=status" />
-    <CalcColumn name="Vehicle" type="string" caption="=transport" searchBy="VehicleNumber TrailerNumber">
+    <CalcColumn name="Vehicle" type="string" caption="=transport"
+                searchBy="VehicleNumber TrailerNumber">
       <render>
         <ui:function>
           var vehicle = row.VehicleNumber;
 
           if (row.TrailerNumber) {
-            vehicle = vehicle + ' / ' + row.TrailerNumber;
+          vehicle = vehicle + ' / ' + row.TrailerNumber;
           }
           return vehicle;
         </ui:function>
       </render>
     </CalcColumn>
-    <DataColumn name="DriverName" caption="=vehicleDriver" verticalAlignment="middle" />
+    <DataColumn name="DriverName" caption="=vehicleDriver" verticalAlignment="middle"
+                searchBy="DriverFirstName DriverLastName">
+      <render>
+        <ui:expression>(row.DriverName ? row.DriverName : "")
+          + (row.DriverCount > 1 ? " (+" + (row.DriverCount - 1) + ")" : "")</ui:expression>
+      </render>
+    </DataColumn>
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
     <DataColumn name="PlannedEndDate" caption="=trPlannedEndDate" />

@@ -41,7 +41,24 @@
               <Label for="StartTime" style="&lbl1;" />
               <InputDateTime source="StartTime" style="&inp2;" readOnly="true" visible="true" />
               <Label for="FinishTime" style="&lbl2;" />
-              <InputDateTime source="FinishTime" style="&inp2;" readOnly="true" />
+              <FlowPanel class="flexBox-horizontal" style="&inline;">
+                <InputDateTime source="FinishTime" style="&inp2;" readOnly="true" />
+                <TextLabel name="LateIndicator" style="&inp2;margin-left: -180px;">
+                  <dynStyle>
+                    <ui:class>bee-crm-task-break</ui:class>
+                    <ui:expression>
+                      row.Status == 3 || row.Status == 4 || row.Status == 5 || row.Status == 6
+                    </ui:expression>
+                  </dynStyle>
+
+                  <dynStyle>
+                    <ui:class>bee-crm-task-progress</ui:class>
+                    <ui:expression>
+                      !(row.Status == 3 || row.Status == 4 || row.Status == 5 || row.Status == 6)
+                    </ui:expression>
+                  </dynStyle>
+                </TextLabel>
+              </FlowPanel>
             </FlowPanel>
 
             <FlowPanel style="&section;">
@@ -201,6 +218,14 @@
                 choiceColumns="Id Summary FirstName LastName"
                 newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
             </FlowPanel>
+
+            <FlowPanel style="&section;" data="Relations" module="Mail">
+              <Label text="=mails" style="&top1;" />
+              <ChildSelector viewName="Messages" childTable="Relations"
+                targetRelColumn="Task" sourceRelColumn="Message"
+                renderColumns="Date Subject"
+                label="=mails" style="&inp2x;" readOnly="true" summarize="true" />
+            </FlowPanel>
           </FlowPanel>
         </FlowPanel>
       </page>
@@ -263,6 +288,6 @@
     </center>
   </SplitPanel>
   <f:rowMessage>
-    <ui:function>return "&lt;span style&#61;\"font-size:23px; color: #484849; font-weight: lighter;\"&gt;" + row.Summary + "&lt;&#47;span&gt;";</ui:function>
+    <ui:expression>row.Summary</ui:expression>
   </f:rowMessage>
 </f:Form>

@@ -342,8 +342,8 @@ class TasksGrid extends AbstractGridInterceptor {
           getViewName())) {
         event.consume();
 
-        RowEditor.openForm(FORM_NEW_TASK, Data.getDataInfo(getViewName()), row.getId(),
-            Opener.MODAL);
+        RowEditor.openForm(FORM_NEW_TASK, Data.getDataInfo(getViewName()),
+            Filter.compareId(row.getId()), Opener.MODAL);
       } else if (Objects.equals(TaskStatus.NOT_SCHEDULED, status)) {
         event.consume();
         getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted(), BeeUtils

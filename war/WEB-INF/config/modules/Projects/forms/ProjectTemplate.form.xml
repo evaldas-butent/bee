@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
     <!ENTITY inline "display: inline-block;">
-    <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
-    <!ENTITY lbl2 "margin-left: 1em; margin-right: 1em; text-align: left">
+    <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px;">
+    <!ENTITY lbl2 "margin-left: 1em; margin-right: 1em; text-align: left;">
+    <!ENTITY lbl3 "min-width: 150px; margin-right: 1em; text-align: right;">
     <!ENTITY inp1 "&inline; width: 350px;">
     <!ENTITY inp2 "&inline; width: 200px;">
     <!ENTITY inp3 "&inline; width: 100px;">
@@ -17,14 +18,14 @@
     <Table kind="controls" class="bee-ProjectTable">
       <row>
         <Label for="Name" text="=name" style="&lbl;" class="bee-required"/>
-        <InputText source="Name" style="width:100%"/>
+        <InputText source="Name" style="&inp2;"/>
       </row>
 
       <row>
-        <FlowPanel class="flexBox-horizontal">
-          <Label for="Term" text="=prjTerm" style="&lbl2;" />
-          <InputDecimal source="Term" style="&inp3;"/>
-        </FlowPanel>
+        <Label for="Term" text="=prjTerm" style="&lbl;" />
+        <InputDecimal source="Term" style="&inp2; text-align:left;"/>
+      </row>
+      <row>
         <Label for="Company" text="=client" style="&lbl;" />
         <DataSelector source="Company" style="&inp2;" choiceColumns="Name TypeName"
                       renderColumns="CompanyName CompanyTypeName"/>
@@ -42,7 +43,7 @@
 
           <row>
             <Label for="ContactPerson" text="=personContact"
-                   style="&lbl;"/>
+                   style="&lbl3;"/>
             <DataSelector source="ContactPerson"
                           style="&inp2;"
                           renderColumns="ContactFirstName ContactLastName"
@@ -53,19 +54,19 @@
           <row>
             <Label for="Category" text="=category" style="&lbl;" class="bee-required"/>
             <DataSelector name="Category" source="Category" style="&inp2;"/>
-            <Label for="Type" text="=type" style="&lbl;"/>
+            <Label for="Type" text="=type" style="&lbl; min-width: 113px;"/>
             <DataSelector source="Type" style="&inp2;"/>
           </row>
         </Table>
 
         <Table kind="controls">
           <row>
-            <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;"/>
+            <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl3;"/>
             <InputDecimal source="ExpectedDuration" style="&inp3;"/>
             <DataSelector name="TimeUnit" source="TimeUnit" renderColumns="UnitName"
                           style="width: 5em;"/>
             <Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration"
-                   style="width: 250px; &lbl;"/>
+                   style="width: 247px; &lbl;"/>
             <InputText name="ExpectedTasksDuration" readOnly="true" style="&inp3;"/>
           </row>
 

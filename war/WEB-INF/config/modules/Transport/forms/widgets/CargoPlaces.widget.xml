@@ -2,10 +2,11 @@
 <!DOCTYPE Form [
     <!ENTITY lbl1 "width:115px; text-align:right; margin-right:5px;">
     <!ENTITY inline "display:inline;">
+    <!ENTITY inp "width:150px;">
     ]>
 <FlowPanel xmlns="http://www.butent.com/widget"
            xmlns:ui="http://www.butent.com/ui"
-    >
+>
   <Table kind="controls">
     <row>
       <cell colSpan="2" style="padding-top:0;">
@@ -17,9 +18,9 @@
     </row>
     <row>
       <Label text="=date" style="&lbl1;" />
-      <InputDateTime source="LoadingDate" style="width: 11em;" />
+      <InputDateTime source="LoadingDate" style="&inp;" />
       <Label text="=date" style="&lbl1;" />
-      <InputDateTime source="UnloadingDate" style="width: 11em;" />
+      <InputDateTime source="UnloadingDate" style="&inp;" />
     </row>
     <row>
       <Label text="=company" style="&lbl1;" />
@@ -35,7 +36,7 @@
     </row>
     <row>
       <Label text="=city" style="&lbl1;" />
-      <DataSelector source="LoadingCity" style="width: 155px;" options="LoadingCountry">
+      <DataSelector source="LoadingCity" style="&inp;" options="LoadingCountry">
         <selectorColumn source="Name" />
         <selectorColumn source="CountryName" />
         <selectorColumn source="CountryCode">
@@ -43,7 +44,7 @@
         </selectorColumn>
       </DataSelector>
       <Label text="=city" style="&lbl1;" />
-      <DataSelector source="UnloadingCity" style="width: 155px;" options="UnloadingCountry">
+      <DataSelector source="UnloadingCity" style="&inp;" options="UnloadingCountry">
         <selectorColumn source="Name" />
         <selectorColumn source="CountryName" />
         <selectorColumn source="CountryCode">
@@ -53,10 +54,10 @@
     </row>
     <row>
       <Label text="=postIndex" style="&lbl1;" />
-      <InputText source="LoadingPostIndex" style="width: 90px;"
+      <InputText source="LoadingPostIndex" style="&inp;"
                  autocompleteKey="cargo-place-postal-code" />
       <Label text="=postIndex" style="&lbl1;" />
-      <InputText source="UnloadingPostIndex" style="width: 90px;"
+      <InputText source="UnloadingPostIndex" style="&inp;"
                  autocompleteKey="cargo-place-postal-code" />
     </row>
     <row>
@@ -121,5 +122,4 @@
     <InputDecimal source="CargoWeight" format="0.000"
                   style="&inline; width:70px; margin-left:5px;" />
   </FlowPanel>
-
 </FlowPanel>

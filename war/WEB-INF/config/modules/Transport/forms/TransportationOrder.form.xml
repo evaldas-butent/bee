@@ -1,45 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY inp "width: 15em;">
-]>
+    <!ENTITY inp "width: 15em;">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
 
         name="TransportationOrder" viewName="TransportationOrders" caption="=trOrder"
         showRowId="true" width="70" widthUnit="%" height="80" heightUnit="%"
-    >
-  <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal">
-      <Table kind="controls" style="border-spacing: 5px;">
-        <row>
-          <Label text="=date" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
-          <InputDateTime source="Date" />
-		  <Label text="=orderNumber" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
-          <InputText source="OrderNo" />
-          <Label text="=status" horizontalAlignment="right" class="bee-required bee-hasDefaults" style="" />
-          <ListBox source="Status" style="height: 29px; width: 152px;"/>
-        </row>
-        <row>
-          <Label text="=customer" horizontalAlignment="right" class="bee-required" />
-          <DataSelector name="Customer" source="Customer" choiceColumns="Name TypeName" renderColumns="CustomerName TypeName" style="&inp;" />
-          <Label text="=payer" horizontalAlignment="right" />
-          <DataSelector source="Payer" choiceColumns="Name TypeName" renderColumns="PayerName PayerTypeName" style="&inp;" />
-          <Label text="=notes" horizontalAlignment="right" />
-           <cell rowSpan="2">
-             <InputArea source="Notes" visibleLines="3"/>
-           </cell>
-        </row>
-        <row>
-          <Label text="=personContact" horizontalAlignment="right" />
-          <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
-            choiceColumns="FirstName LastName CompanyName" options="Customer" style="&inp;" />
-          <Label text="=manager" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
-          <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" style="&inp;" />
-        </row>
-      </Table>
-    </FlowPanel>
+>
+  <f:properties jasperReports="OrderContract" />
 
-    <TabbedPages class="flexible" resizable="false" style="margin-top:1ex;" >
+  <FlowPanel class="flexBox-vertical">
+    <Table kind="controls">
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+      <col index="4" kind="label" />
+      <row>
+        <Label for="Date" />
+        <InputDateTime source="Date" />
+        <Label for="OrderNo" />
+        <InputText source="OrderNo" />
+        <Label for="Status" />
+        <ListBox source="Status" style="height: 29px; width: 152px;" />
+      </row>
+      <row>
+        <Label for="Customer" />
+        <DataSelector name="Customer" source="Customer" style="&inp;" />
+        <Label for="CustomerPerson" />
+        <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
+                      choiceColumns="FirstName LastName CompanyName" options="Customer"
+                      style="&inp;" />
+      </row>
+      <row>
+        <Label for="Payer" horizontalAlignment="right" />
+        <DataSelector source="Payer" style="&inp;" />
+        <Label for="Manager" />
+        <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+                      editSource="ManagerPerson" newRowEnabled="false" style="&inp;" />
+        <Label for="Notes" />
+        <cell rowSpan="2">
+          <InputArea source="Notes" visibleLines="4" />
+        </cell>
+      </row>
+      <row>
+        <Label for="Expedition" />
+        <DataSelector source="Expedition" style="&inp;" />
+        <Label for="ShippingTerm" />
+        <DataSelector source="ShippingTerm" style="&inp;" />
+      </row>
+      <row>
+        <Label for="Vehicle" />
+        <InputText source="Vehicle" style="&inp;" />
+        <Label for="Driver" />
+        <InputText source="Driver" style="&inp;" />
+      </row>
+    </Table>
+
+    <TabbedPages class="flexible" resizable="false" style="margin-top:1ex;">
       <page>
         <text>=cargos</text>
         <ChildGrid name="OrderCargo" relColumn="Order" />
@@ -57,9 +74,10 @@
         <GridPanel name="TripDocuments" parent="{form}" child="true" />
       </page>
       <page>
-      <text>=relatedInformation</text>
-      <Relations relColumn="TransportationOrder" inline="true"
-                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
+        <text>=relatedInformation</text>
+        <Relations relColumn="TransportationOrder" inline="true"
+                   defaultRelations="Companies Persons Requests Tasks"
+                   style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>
 

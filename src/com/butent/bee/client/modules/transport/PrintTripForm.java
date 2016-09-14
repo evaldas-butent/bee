@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -56,7 +57,8 @@ public class PrintTripForm extends AbstractFormInterceptor {
             if (response.hasErrors()) {
               return;
             }
-            final Map<String, String> pack = Codec.deserializeMap(response.getResponseAsString());
+            final Map<String, String> pack =
+                Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
             // DRIVERS
             final Map<Long, String> drivers = new LinkedHashMap<>();
@@ -70,27 +72,35 @@ public class PrintTripForm extends AbstractFormInterceptor {
                   BeeUtils.joinWords(driver.getValue(COL_FIRST_NAME),
                       driver.getValue(COL_LAST_NAME)));
             }
-            String txt = null;
+            List<String> allDrivers = new ArrayList<>();
 
             for (Long driver : drivers.keySet()) {
               if (!Objects.equals(driver, mainDriver)) {
-                txt = BeeUtils.joinItems(txt, drivers.get(driver));
+                allDrivers.add(drivers.get(driver));
               }
             }
             for (Map.Entry<String, Widget> entry : form.getNamedWidgets().entrySet()) {
-              if (BeeUtils.isPrefix(entry.getKey(), TBL_TRIP_DRIVERS)
-                  && !BeeUtils.isSuffix(entry.getKey(), "Container")) {
+              String name = entry.getKey();
 
-                entry.getValue().getElement().setInnerText(txt);
-                Widget containerWidget = form.getWidgetByName(entry.getKey() + "Container");
+              if (BeeUtils.isPrefix(name, TBL_TRIP_DRIVERS)
+                  && !BeeUtils.isSuffix(name, "Container")) {
 
-                if (containerWidget != null) {
-                  StyleUtils.setVisible(containerWidget, !BeeUtils.isEmpty(txt));
+                String idx = BeeUtils.removePrefix(name, TBL_TRIP_DRIVERS);
+
+                String value = BeeUtils.isNonNegativeInt(idx)
+                    ? BeeUtils.getQuietly(allDrivers, BeeUtils.toInt(idx))
+                    : BeeUtils.joinItems(allDrivers);
+
+                entry.getValue().getElement().setInnerText(value);
+                Widget containerWidget = form.getWidgetByName(name + "Container", false);
+
+                if (Objects.nonNull(containerWidget)) {
+                  StyleUtils.setVisible(containerWidget, !BeeUtils.isEmpty(value));
                 }
               }
             }
             // FUEL
-            Widget fuelWidget = form.getWidgetByName(COL_FUEL);
+            Widget fuelWidget = form.getWidgetByName(COL_FUEL, false);
 
             if (fuelWidget != null) {
               double before = BeeUtils.unbox(form.getDoubleValue("FuelBefore"));
@@ -99,7 +109,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
               fuelWidget.getElement()
                   .setInnerText(BeeUtils.toString(BeeUtils.round(fuel, 2)));
 
-              fuelWidget = form.getWidgetByName(TBL_TRIP_FUEL_CONSUMPTIONS);
+              fuelWidget = form.getWidgetByName(TBL_TRIP_FUEL_CONSUMPTIONS, false);
 
               if (fuelWidget != null) {
                 before = BeeUtils.unbox(form.getDoubleValue("SpeedometerBefore"));
@@ -108,7 +118,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                     : BeeUtils.toString(BeeUtils.round(fuel / (after - before) * 100, 2)));
               }
             }
-            fuelWidget = form.getWidgetByName(TBL_TRIP_FUEL_COSTS);
+            fuelWidget = form.getWidgetByName(TBL_TRIP_FUEL_COSTS, false);
 
             if (fuelWidget != null) {
               fuelWidget.getElement()
@@ -166,7 +176,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
             }
             double driverTotal = 0;
             double otherTotal = 0;
-            Widget driverCostsWidget = form.getWidgetByName("DriverCosts");
+            Widget driverCostsWidget = form.getWidgetByName("DriverCosts", false);
 
             if (driverCostsWidget != null) {
               if (driverInfo.size() > 0) {
@@ -193,14 +203,14 @@ public class PrintTripForm extends AbstractFormInterceptor {
                         BeeUtils.parenthesize(pack.get(AdministrationConstants.COL_CURRENCY))));
                 driverCosts.setText(r, index.get(COL_AMOUNT), BeeUtils.toString(driverTotal));
               }
-              Widget driverCostsTotal = form.getWidgetByName("DriverCostsTotal");
+              Widget driverCostsTotal = form.getWidgetByName("DriverCostsTotal", false);
 
               if (driverCostsTotal != null) {
                 driverCostsTotal.getElement().setInnerText(BeeUtils.toString(driverTotal));
               }
               driverCostsWidget.getElement().setInnerHTML(driverCosts.toString());
             }
-            Widget otherCostsWidget = form.getWidgetByName("OtherCosts");
+            Widget otherCostsWidget = form.getWidgetByName("OtherCosts", false);
 
             if (otherCostsWidget != null) {
               HtmlTable otherCosts = new HtmlTable();
@@ -226,7 +236,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
                     BeeUtils.parenthesize(pack.get(AdministrationConstants.COL_CURRENCY))));
                 otherCosts.setText(r, 1, BeeUtils.toString(otherTotal));
 
-                Widget otherCostsTotal = form.getWidgetByName("OtherCostsTotal");
+                Widget otherCostsTotal = form.getWidgetByName("OtherCostsTotal", false);
 
                 if (otherCostsTotal != null) {
                   otherCostsTotal.getElement().setInnerText(BeeUtils.toString(otherTotal));
@@ -234,14 +244,14 @@ public class PrintTripForm extends AbstractFormInterceptor {
               }
               otherCostsWidget.getElement().setInnerHTML(otherCosts.toString());
             }
-            Widget costsTotal = form.getWidgetByName("CostsTotal");
+            Widget costsTotal = form.getWidgetByName("CostsTotal", false);
 
             if (costsTotal != null) {
               costsTotal.getElement()
                   .setInnerText(BeeUtils.toString(BeeUtils.round(driverTotal + otherTotal, 2)));
             }
             // ADVANCES
-            Widget advancesWidget = form.getWidgetByName(TBL_DRIVER_ADVANCES);
+            Widget advancesWidget = form.getWidgetByName(TBL_DRIVER_ADVANCES, false);
 
             if (advancesWidget != null) {
               index = new HashMap<>();
@@ -326,46 +336,43 @@ public class PrintTripForm extends AbstractFormInterceptor {
               advancesWidget.getElement().setInnerHTML(driverAdvances.toString());
             }
             // DAILY COSTS
-            final Widget currentDriverWidget = form.getWidgetByName("CurrentDriver");
+            final Widget currentDriverWidget = form.getWidgetByName("CurrentDriver", false);
 
             if (currentDriverWidget != null) {
-              ChoiceCallback choice = new ChoiceCallback() {
-                @Override
-                public void onSuccess(int value) {
-                  Long driver = BeeUtils.getQuietly(new ArrayList<>(drivers.keySet()), value);
+              ChoiceCallback choice = value -> {
+                Long driver = BeeUtils.getQuietly(new ArrayList<>(drivers.keySet()), value);
 
-                  if (!DataUtils.isId(driver)) {
-                    return;
-                  }
-                  currentDriverWidget.getElement().setInnerText(drivers.get(driver));
-                  double daily = 0;
-                  HtmlTable dailyCosts = new HtmlTable();
-                  int r = 0;
-
-                  for (SimpleRowSet.SimpleRow cost : driverInfo.get(driver)) {
-                    if (dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))) {
-                      dailyCosts.setText(r, 0, BeeUtils.joinWords(cost.getValue(COL_ITEM_NAME),
-                          BeeUtils.parenthesize(cost.getValue(COL_COSTS_COUNTRY))));
-                      dailyCosts.setText(r, 1, BeeUtils.joinWords(cost.getValue(COL_COSTS_QUANTITY),
-                          cost.getValue(COL_UNIT)));
-                      daily += BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
-                      r++;
-                    }
-                  }
-                  Widget dailyWidget = form.getWidgetByName("DailyCosts");
-
-                  if (dailyWidget != null) {
-                    dailyWidget.getElement().setInnerHTML(dailyCosts.toString());
-                  }
-                  Widget dailyTotal = form.getWidgetByName("DailyCostsTotal");
-
-                  if (dailyTotal != null) {
-                    dailyTotal.getElement().setInnerText(BeeUtils
-                        .joinWords(BeeUtils.toString(BeeUtils.round(daily, 2)),
-                            pack.get(AdministrationConstants.COL_CURRENCY)));
-                  }
-
+                if (!DataUtils.isId(driver)) {
+                  return;
                 }
+                currentDriverWidget.getElement().setInnerText(drivers.get(driver));
+                double daily = 0;
+                HtmlTable dailyCosts = new HtmlTable();
+                int r = 0;
+
+                for (SimpleRowSet.SimpleRow cost : driverInfo.get(driver)) {
+                  if (dailyCostsItems.contains(cost.getLong(COL_COSTS_ITEM))) {
+                    dailyCosts.setText(r, 0, BeeUtils.joinWords(cost.getValue(COL_ITEM_NAME),
+                        BeeUtils.parenthesize(cost.getValue(COL_COSTS_COUNTRY))));
+                    dailyCosts.setText(r, 1, BeeUtils.joinWords(cost.getValue(COL_COSTS_QUANTITY),
+                        cost.getValue(COL_UNIT)));
+                    daily += BeeUtils.round(BeeUtils.unbox(cost.getDouble(COL_AMOUNT)), 2);
+                    r++;
+                  }
+                }
+                Widget dailyWidget = form.getWidgetByName("DailyCosts", false);
+
+                if (dailyWidget != null) {
+                  dailyWidget.getElement().setInnerHTML(dailyCosts.toString());
+                }
+                Widget dailyTotal = form.getWidgetByName("DailyCostsTotal", false);
+
+                if (dailyTotal != null) {
+                  dailyTotal.getElement().setInnerText(BeeUtils
+                      .joinWords(BeeUtils.toString(BeeUtils.round(daily, 2)),
+                          pack.get(AdministrationConstants.COL_CURRENCY)));
+                }
+
               };
               if (drivers.size() > 1) {
                 Global.choice(Localized.dictionary().drivers(), null,
@@ -375,7 +382,7 @@ public class PrintTripForm extends AbstractFormInterceptor {
               }
             }
             // USER
-            Widget userWidget = form.getWidgetByName(AdministrationConstants.COL_USER);
+            Widget userWidget = form.getWidgetByName(AdministrationConstants.COL_USER, false);
 
             if (userWidget != null) {
               userWidget.getElement().setInnerText(BeeKeeper.getUser().getUserSign());

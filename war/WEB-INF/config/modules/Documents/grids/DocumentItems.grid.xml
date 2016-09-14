@@ -29,6 +29,7 @@
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
+      <renderer type="total" />
       <footer aggregate="sum" />
     </CalcColumn>
   </g:columns>

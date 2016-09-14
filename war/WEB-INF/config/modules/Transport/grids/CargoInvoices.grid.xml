@@ -7,7 +7,7 @@
         disabledActions="add"
         caption="=trIncomeInvoices"
         filter="Sale AND !(Proforma)"
-    >
+>
   <g:columns>
     <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" caption="=trdInvoiceId" />
@@ -24,7 +24,6 @@
 
     <DataColumn name="PaymentTime" />
     <DataColumn name="Paid" />
-
     <DataColumn name="Debt" format="0.00" />
 
     <DataColumn name="Vehicle" />

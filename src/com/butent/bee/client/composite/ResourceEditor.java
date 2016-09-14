@@ -9,7 +9,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
@@ -108,6 +107,7 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable, 
 
     this.textArea = new InputArea(resource);
     textArea.addStyleName(STYLE_PREFIX + "inputArea");
+    textArea.setSpellCheck(false);
 
     Simple wrapper = new Simple(textArea);
     wrapper.addStyleName(STYLE_PREFIX + "wrapper");
@@ -257,24 +257,22 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable, 
     }
 
     Global.confirm(getCaption(), Icon.QUESTION, Lists.newArrayList(uri,
-        Localized.dictionary().saveChanges()), new ConfirmationCallback() {
-      @Override
-      public void onConfirm() {
-        final String digest = Codec.md5(v);
+        Localized.dictionary().saveChanges()), () -> {
 
-        ParameterList params = new ParameterList(Service.SAVE_RESOURCE);
-        params.addQueryItem(Service.RPC_VAR_URI, Codec.encodeBase64(uri));
-        params.addQueryItem(Service.RPC_VAR_MD5, digest);
+      final String digest = Codec.md5(v);
 
-        BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (!response.hasErrors()) {
-              textArea.onAfterSave(digest);
-            }
+      ParameterList params = new ParameterList(Service.SAVE_RESOURCE);
+      params.addQueryItem(Service.RPC_VAR_URI, Codec.encodeBase64(uri));
+      params.addQueryItem(Service.RPC_VAR_MD5, digest);
+
+      BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (!response.hasErrors()) {
+            textArea.onAfterSave(digest);
           }
-        });
-      }
+        }
+      });
     });
   }
 }

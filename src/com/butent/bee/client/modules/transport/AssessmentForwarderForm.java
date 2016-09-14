@@ -59,7 +59,7 @@ public class AssessmentForwarderForm extends PrintFormInterceptor {
               }
             }
           }
-          return super.onStartNewRow(gridView, oldRow, newRow);
+          return true;
         }
       });
     }

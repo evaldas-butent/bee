@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.HashSet;
@@ -40,7 +39,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -90,23 +88,21 @@ public class FileServiceApplication extends Application {
   }
 
   @GET
-  @Path("{name}")
+  @Path("zip/{name}")
   public Response getFiles(@PathParam("name") String fileName,
       @QueryParam(Service.VAR_FILES) String files) {
 
     if (BeeUtils.isEmpty(files)) {
       throw new BadRequestException();
     }
-    Map<String, String> fileMap = Codec.deserializeMap(Codec.decodeBase64(files));
+    Map<String, String> fileMap = Codec.deserializeLinkedHashMap(Codec.decodeBase64(files));
     File tmp;
 
     try {
       tmp = File.createTempFile("bee_", ".zip");
       tmp.deleteOnExit();
 
-      try (
-          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))
-      ) {
+      try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))) {
         Set<String> names = new HashSet<>();
 
         for (Map.Entry<String, String> entry : fileMap.entrySet()) {
@@ -163,18 +159,15 @@ public class FileServiceApplication extends Application {
   }
 
   private static Response response(FileInfo fileInfo, String fileName, boolean close) {
-    StreamingOutput so = new StreamingOutput() {
-      @Override
-      public void write(OutputStream outputStream) throws WebApplicationException {
-        try (BufferedOutputStream bus = new BufferedOutputStream(outputStream)) {
-          Files.copy(fileInfo.getFile().toPath(), bus);
-          bus.flush();
-        } catch (IOException e) {
-          logger.error(e);
-        }
-        if (close) {
-          fileInfo.close();
-        }
+    StreamingOutput so = outputStream -> {
+      try (BufferedOutputStream bus = new BufferedOutputStream(outputStream)) {
+        Files.copy(fileInfo.getFile().toPath(), bus);
+        bus.flush();
+      } catch (IOException e) {
+        logger.error(e);
+      }
+      if (close) {
+        fileInfo.close();
       }
     };
     String name = BeeUtils.notEmpty(fileName, fileInfo.getCaption(), fileInfo.getName());

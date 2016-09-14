@@ -3,11 +3,11 @@
 
         name="ShipmentRegisteredRequests" viewName="ShipmentRequests"
         caption="=trRequests"
-        enableCopy="- *Date, *Time, Status, Cargo, Order*"
+        enableCopy="- *Date, Status, Customer*, Notes, Vehicle, Driver, Host, Agent, LossReason, Cargo, CargoHandling, Assessment, Order"
         filter="CompanyPerson"
-    >
+>
   <g:columns>
-    <IdColumn name="ID" width="40" />
+    <DataColumn name="OrderNo" />
     <DataColumn name="Date" />
     <DataColumn name="Status" />
 
@@ -32,6 +32,8 @@
     <DataColumn name="Logistics" />
     <RelColumn name="ShippingTerm" />
 
+    <DataColumn name="CargoNotes" />
+
     <DataColumn name="CustomsBrokerage" />
     <DataColumn name="FreightInsurance" />
 
@@ -48,9 +50,8 @@
     <DataColumn name="Value" />
     <RelColumn name="ValueCurrency" />
 
-    <RelColumn name="Manager" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
 
-    <DataColumn name="Notes" />
     <DataColumn name="LossReason" />
     <DataColumn name="Host" />
     <DataColumn name="Agent" />

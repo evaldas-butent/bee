@@ -1,8 +1,9 @@
 package com.butent.bee.client.modules.transport;
 
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_TRIP;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -12,6 +13,8 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Objects;
 
 class CargoTripsGrid extends AbstractGridInterceptor {
 
@@ -29,6 +32,16 @@ class CargoTripsGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new CargoTripsGrid();
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (!event.isReadOnly() && Objects.equals(event.getColumnId(), COL_TRIP_PERCENT)) {
+      TripCargoGrid.updateFreight(getGridPresenter(), event.getRowValue().getId());
+      event.consume();
+      return;
+    }
+    super.onEditStart(event);
   }
 
   @Override

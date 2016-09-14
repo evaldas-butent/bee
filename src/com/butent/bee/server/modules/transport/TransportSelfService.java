@@ -7,7 +7,6 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.LoginServlet;
-import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -66,8 +65,6 @@ public class TransportSelfService extends LoginServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(TransportSelfService.class);
 
-  @EJB
-  ProxyBean proxy;
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -181,7 +178,7 @@ public class TransportSelfService extends LoginServlet {
 
     for (Map<String, String> map : handling.values()) {
       JsonObjectBuilder obj = Json.createObjectBuilder();
-      map.forEach((name, value) -> obj.add(name, value));
+      map.forEach(obj::add);
       places.add(obj);
     }
     RestResponse result = worker.request(json.add(TBL_CARGO_HANDLING, places)
@@ -223,7 +220,7 @@ public class TransportSelfService extends LoginServlet {
         org.w3c.dom.Element node = (org.w3c.dom.Element) lists.item(i);
         String[] id = BeeUtils.split(node.getAttribute("id"), '-');
 
-        if (ArrayUtils.length(id) == 2) {
+        if (ArrayUtils.length(id) > 1) {
           String tbl = id[0];
           String fld = id[1];
 
@@ -232,7 +229,7 @@ public class TransportSelfService extends LoginServlet {
             List<String> columns = new ArrayList<>();
             columns.add(fld);
             Filter filter = null;
-            Order order = null;
+            Order order;
 
             String fldLoc = Localized.column(fld, locale);
 
@@ -248,6 +245,10 @@ public class TransportSelfService extends LoginServlet {
               order = Order.ascending(fld);
             }
             BeeRowSet rs = qs.getViewData(tbl, filter, order, columns);
+
+            if (Objects.equals(tag, "select")) {
+              node.appendChild(form.createElement("option"));
+            }
             for (int j = 0; j < rs.getNumberOfRows(); j++) {
               org.w3c.dom.Element opt = form.createElement("option");
               String value = rs.getString(j, fld);

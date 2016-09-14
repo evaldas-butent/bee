@@ -33,7 +33,7 @@ public class ReportResultItem extends ReportNumericItem {
 
   @Override
   public void deserialize(String data) {
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
       setLevel(EnumUtils.getEnumByName(ResultHolder.ResultLevel.class, map.get(LEVEL)));
@@ -135,8 +135,8 @@ public class ReportResultItem extends ReportNumericItem {
     return serialize(Codec.beeSerialize(Collections.singletonMap(LEVEL, getLevel())));
   }
 
-  public ReportResultItem setLevel(ResultHolder.ResultLevel level) {
-    this.level = Assert.notNull(level);
+  public ReportResultItem setLevel(ResultHolder.ResultLevel lvl) {
+    this.level = Assert.notNull(lvl);
     return this;
   }
 }

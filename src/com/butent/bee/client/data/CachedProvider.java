@@ -16,6 +16,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.ModificationPreviewer;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -49,31 +50,31 @@ public class CachedProvider extends Provider {
   private final List<BeeRow> viewRows = new ArrayList<>();
 
   public CachedProvider(HasDataTable display, HasDataProvider presenter,
-      NotificationListener notificationListener,
+      ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, BeeRowSet table) {
 
-    this(display, presenter, notificationListener,
+    this(display, presenter, modificationPreviewer, notificationListener,
         viewName, columns, null, null,
         null, table, null, null);
   }
 
   public CachedProvider(HasDataTable display, HasDataProvider presenter,
-      NotificationListener notificationListener,
+      ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, Filter immutableFilter, BeeRowSet table,
       Map<String, Filter> parentFilters, Filter userFilter) {
 
-    this(display, presenter, notificationListener,
+    this(display, presenter, modificationPreviewer, notificationListener,
         viewName, columns, null, null,
         immutableFilter, table, parentFilters, userFilter);
   }
 
   public CachedProvider(HasDataTable display, HasDataProvider presenter,
-      NotificationListener notificationListener,
+      ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, BeeRowSet table, Map<String, Filter> parentFilters,
       Filter userFilter) {
 
-    super(display, presenter, notificationListener,
+    super(display, presenter, modificationPreviewer, notificationListener,
         viewName, columns, idColumnName, versionColumnName,
         immutableFilter, parentFilters, userFilter);
 
@@ -120,31 +121,38 @@ public class CachedProvider extends Provider {
           break;
         }
       }
+
       super.onCellUpdate(event);
     }
   }
 
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
-    if (BeeUtils.same(event.getViewName(), getViewName())) {
+    if (event.hasView(getViewName())) {
       for (RowInfo rowInfo : event.getRows()) {
         deleteRow(rowInfo.getId());
       }
-      getDisplay().onMultiDelete(event);
-      getDisplay().setRowCount(getRowCount(), true);
 
-      onRequest(false);
+      if (previewMultiDelete(event)) {
+        getDisplay().onMultiDelete(event);
+        getDisplay().setRowCount(getRowCount(), true);
+
+        onRequest(false);
+      }
     }
   }
 
   @Override
   public void onRowDelete(RowDeleteEvent event) {
-    if (BeeUtils.same(event.getViewName(), getViewName())) {
+    if (event.hasView(getViewName())) {
       deleteRow(event.getRowId());
-      getDisplay().onRowDelete(event);
-      getDisplay().setRowCount(getRowCount(), true);
 
-      onRequest(false);
+      if (previewRowDelete(event)) {
+        getDisplay().onRowDelete(event);
+        getDisplay().setRowCount(getRowCount(), true);
+
+        onRequest(false);
+      }
     }
   }
 
@@ -152,6 +160,8 @@ public class CachedProvider extends Provider {
   public void onRowInsert(RowInsertEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
       addRow(event.getRow());
+
+      super.onRowInsert(event);
     }
   }
 
@@ -170,6 +180,7 @@ public class CachedProvider extends Provider {
           break;
         }
       }
+
       super.onRowUpdate(event);
     }
   }
@@ -240,12 +251,7 @@ public class CachedProvider extends Provider {
       tryNotEmptyFilter(newFilter, callback, notify);
 
     } else {
-      refresh(true, new ScheduledCommand() {
-        @Override
-        public void execute() {
-          tryNotEmptyFilter(newFilter, callback, notify);
-        }
-      });
+      refresh(true, () -> tryNotEmptyFilter(newFilter, callback, notify));
     }
   }
 

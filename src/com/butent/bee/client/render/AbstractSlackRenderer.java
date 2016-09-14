@@ -1,22 +1,10 @@
 package com.butent.bee.client.render;
 
-import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
-
-import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.css.Colors;
-import com.butent.bee.shared.css.values.TextAlign;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.export.XCell;
-import com.butent.bee.shared.export.XFont;
-import com.butent.bee.shared.export.XSheet;
-import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.html.builder.elements.Div;
-import com.butent.bee.shared.modules.projects.ProjectStatus;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -25,20 +13,20 @@ import java.util.List;
 
 public abstract class AbstractSlackRenderer extends AbstractCellRenderer {
 
-  private enum Kind {
+  public enum SlackKind {
     LATE, OPENING, ENDGAME, SCHEDULED;
 
-    private String getStyleName() {
+    public String getStyleName() {
       return STYLE_PREFIX + name().toLowerCase();
     }
   }
 
-  private static final String STYLE_PREFIX = TaskConstants.CRM_STYLE_PREFIX + "Slack-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "misc-Slack-";
 
   private static final String STYLE_BAR = STYLE_PREFIX + "bar";
   private static final String STYLE_LABEl = STYLE_PREFIX + "label";
 
-  private static String format(Kind kind, String label) {
+  protected static String createSlackBar(SlackKind kind, String label) {
     Div bar = new Div().addClass(STYLE_BAR).addClass(kind.getStyleName());
     if (!BeeUtils.isEmpty(label)) {
       bar.appendChild(new Div().addClass(STYLE_LABEl).text(label));
@@ -47,16 +35,16 @@ public abstract class AbstractSlackRenderer extends AbstractCellRenderer {
     return bar.toString();
   }
 
-  private static Kind getKind(DateTime start, DateTime finish, DateTime now) {
+  public static SlackKind getKind(DateTime start, DateTime finish, DateTime now) {
 
     if (finish != null && TimeUtils.isLess(finish, now)) {
-      return Kind.LATE;
+      return SlackKind.LATE;
     } else if (start != null && TimeUtils.isMore(finish, start) && TimeUtils.isMeq(now, start)
         && TimeUtils.isLess(now, finish)) {
       if (now.getTime() - start.getTime() < (finish.getTime() - start.getTime()) / 2) {
-        return Kind.OPENING;
+        return SlackKind.OPENING;
       } else {
-        return Kind.ENDGAME;
+        return SlackKind.ENDGAME;
       }
 
     } else {
@@ -64,7 +52,7 @@ public abstract class AbstractSlackRenderer extends AbstractCellRenderer {
     }
   }
 
-  private static String getLabel(long minutes) {
+  public static String getFormatedTimeLabel(long minutes) {
     if (minutes <= 0L) {
       return BeeConst.STRING_ZERO;
 
@@ -76,7 +64,7 @@ public abstract class AbstractSlackRenderer extends AbstractCellRenderer {
     }
   }
 
-  private static long getMinutes(Kind kind, DateTime start, DateTime finish, DateTime now) {
+  public static long getMinutes(SlackKind kind, DateTime start, DateTime finish, DateTime now) {
 
     switch (kind) {
       case LATE:
@@ -95,12 +83,8 @@ public abstract class AbstractSlackRenderer extends AbstractCellRenderer {
     }
   }
 
-  private final List<? extends IsColumn> isColumns;
-
-  protected AbstractSlackRenderer(List<? extends IsColumn> columns) {
+  protected AbstractSlackRenderer() {
     super(null);
-
-    this.isColumns = columns;
   }
 
   /**
@@ -129,110 +113,4 @@ public abstract class AbstractSlackRenderer extends AbstractCellRenderer {
    */
   public abstract DateTime getFinishDateTime(List<? extends IsColumn> columns, IsRow row);
 
-  @Override
-  public XCell export(IsRow row, int cellIndex, Integer styleRef, XSheet sheet) {
-    if (row == null || sheet == null) {
-      return null;
-    }
-    DateTime now = TimeUtils.nowMinutes();
-    if (row.getInteger(Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS)) != null) {
-      int projectStatus =
-          BeeUtils.unbox(row.getInteger(Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS)));
-      if (projectStatus == ProjectStatus.APPROVED.ordinal()
-          || projectStatus == ProjectStatus.SUSPENDED.ordinal()) {
-        if (row.getDateTime(DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE, isColumns))
-        != null) {
-          now =
-              row.getDateTime(DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE,
-                  isColumns));
-        }
-      }
-    }
-
-    DateTime start = getStartDateTime(isColumns, row);
-    DateTime finish = getFinishDateTime(isColumns, row);
-
-    Kind kind = getKind(start, finish, now);
-    if (kind == null) {
-      return null;
-    }
-
-    long minutes = getMinutes(kind, start, finish, now);
-    String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getLabel(minutes);
-
-    XStyle style = new XStyle();
-    XFont font;
-
-    switch (kind) {
-      case LATE:
-        style.setColor(Colors.RED);
-
-        font = XFont.bold();
-        font.setColor(Colors.WHITE);
-        style.setFontRef(sheet.registerFont(font));
-        break;
-
-      case OPENING:
-        style.setColor(Colors.GREEN);
-        style.setTextAlign(TextAlign.CENTER);
-
-        font = XFont.bold();
-        font.setColor(Colors.WHITE);
-        style.setFontRef(sheet.registerFont(font));
-        break;
-
-      case ENDGAME:
-        style.setColor(Colors.ORANGE);
-        style.setTextAlign(TextAlign.CENTER);
-
-        font = XFont.bold();
-        font.setColor(Colors.WHITE);
-        style.setFontRef(sheet.registerFont(font));
-        break;
-
-      case SCHEDULED:
-        style.setColor(Colors.YELLOW);
-        style.setTextAlign(TextAlign.RIGHT);
-        break;
-    }
-
-    return new XCell(cellIndex, text, sheet.registerStyle(style));
-  }
-
-  @Override
-  public String render(IsRow row) {
-    if (row == null) {
-      return null;
-    }
-    DateTime now = TimeUtils.nowMinutes();
-    if (row.getInteger(Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS)) != null) {
-      int projectStatus =
-          BeeUtils.unbox(row.getInteger(Data.getColumnIndex(VIEW_PROJECTS, COL_PROJECT_STATUS)));
-      if (projectStatus == ProjectStatus.APPROVED.ordinal()
-          || projectStatus == ProjectStatus.SUSPENDED.ordinal()) {
-        if (row.getDateTime(DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE, isColumns))
-        != null) {
-          now =
-              row.getDateTime(DataUtils.getColumnIndex(COL_PROJECT_APPROVED_DATE,
-                  isColumns));
-        }
-      }
-    }
-
-    DateTime start = getStartDateTime(isColumns, row);
-    DateTime finish = getFinishDateTime(isColumns, row);
-
-    Kind kind = getKind(start, finish, now);
-    if (kind == null) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    long minutes = getMinutes(kind, start, finish, now);
-    if (minutes == 0L) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    String label = getLabel(minutes);
-    return format(kind, label);
-  }
 }

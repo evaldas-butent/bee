@@ -1,6 +1,7 @@
 .git
 gwt-unitCache
 lib
+out
 war\bee
 war\custom
 war\SqlDesigner

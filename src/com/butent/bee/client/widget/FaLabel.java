@@ -1,7 +1,9 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 
+import com.butent.bee.client.animation.Animatable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.style.StyleUtils;
@@ -10,12 +12,14 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class FaLabel extends Label implements EnablableWidget {
+public class FaLabel extends Label implements EnablableWidget, Animatable {
 
   public static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "fa-label";
   private static final String STYLE_DISABLED = STYLE_NAME + "-" + StyleUtils.SUFFIX_DISABLED;
 
   private boolean enabled = true;
+
+  private Timer animationTimer;
 
   public FaLabel(FontAwesome fa) {
     super();
@@ -35,6 +39,12 @@ public class FaLabel extends Label implements EnablableWidget {
   }
 
   @Override
+  public void enableAnimation() {
+    StyleUtils.animateHover(this);
+    StyleUtils.animateActive(this);
+  }
+
+  @Override
   public String getIdPrefix() {
     return "fa";
   }
@@ -46,8 +56,15 @@ public class FaLabel extends Label implements EnablableWidget {
 
   @Override
   public void onBrowserEvent(Event event) {
-    if (!isEnabled() && EventUtils.isClick(event)) {
-      return;
+    if (EventUtils.isClick(event)) {
+      if (!isEnabled()) {
+        return;
+      }
+
+      if (getElement().hasClassName(StyleUtils.NAME_ANIMATE_ACTIVE)) {
+        StyleUtils.restartAnimation(getElement(), StyleUtils.NAME_ACTIVE);
+        scheduleAnimationEnd(1_000);
+      }
     }
 
     super.onBrowserEvent(event);
@@ -81,5 +98,18 @@ public class FaLabel extends Label implements EnablableWidget {
 
     StyleUtils.setFontFamily(this, FontAwesome.FAMILY);
     DomUtils.preventSelection(this);
+  }
+
+  private void scheduleAnimationEnd(int millis) {
+    if (animationTimer == null) {
+      animationTimer = new Timer() {
+        @Override
+        public void run() {
+          getElement().removeClassName(StyleUtils.NAME_ACTIVE);
+        }
+      };
+    }
+
+    animationTimer.schedule(millis);
   }
 }

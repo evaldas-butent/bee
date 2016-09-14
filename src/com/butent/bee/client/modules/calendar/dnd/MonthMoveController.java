@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.MoveEvent;
+import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarPanel;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
@@ -59,6 +60,8 @@ public class MonthMoveController implements MoveEvent.Handler {
   private int selectedRow = BeeConst.UNDEF;
   private int selectedColumn = BeeConst.UNDEF;
 
+  private Element sourceWidget;
+
   private final Map<String, String> overflow = new HashMap<>();
 
   public MonthMoveController(MonthView monthView) {
@@ -102,10 +105,21 @@ public class MonthMoveController implements MoveEvent.Handler {
       }
 
       updatePosition();
+      CalendarUtils.updateWidgetStyleByModifiers(event.getModifiers(), getItemWidget());
 
     } else if (event.isFinished()) {
+
+      if (sourceWidget != null) {
+        sourceWidget.removeFromParent();
+        sourceWidget = null;
+      }
+
       if (getItemWidget() != null) {
-        drop();
+        if (CalendarUtils.isCopying(event.getModifiers(), getItemWidget())) {
+          copyAppointment();
+        } else {
+          drop();
+        }
         setItemWidget(null);
 
         if (!overflow.isEmpty()) {
@@ -164,6 +178,17 @@ public class MonthMoveController implements MoveEvent.Handler {
     }
 
     monthView.getCalendarWidget().refresh(false);
+  }
+
+  private void copyAppointment() {
+    CalendarItem item = getItemWidget().getItem();
+    Appointment itemCopy  = (Appointment) item.copy();
+
+    JustDate date = monthView.getCellDate(getSelectedRow(), getSelectedColumn());
+    DateTime start = TimeUtils.combine(date, item.getStartTime());
+    DateTime end = new DateTime(start.getTime() + item.getDuration());
+    monthView.copyAppointment(itemCopy, start, end);
+
   }
 
   private int getHeaderHeight() {
@@ -280,6 +305,12 @@ public class MonthMoveController implements MoveEvent.Handler {
     setItemWidget(widget);
 
     Widget target = widget.getParent();
+
+    if (sourceWidget == null) {
+      sourceWidget = CalendarUtils.createSourceElement(getItemWidget());
+      target.getElement().appendChild(sourceWidget);
+    }
+
     CalendarPanel panel = CalendarUtils.getCalendarPanel(widget);
 
     setTargetLeft(target.getElement().getAbsoluteLeft());
@@ -292,7 +323,7 @@ public class MonthMoveController implements MoveEvent.Handler {
         && panel != null && panel.isTodoVisible()) {
 
       width = panel.getElement().getClientWidth();
-      setTodoWidth(panel.getWidgetSize(panel.getTodoContainer()));
+      setTodoWidth(Split.getWidgetSize(panel.getTodoContainer()));
 
       for (Widget w = target; w != null; w = w.getParent()) {
         String id = w.getElement().getId();

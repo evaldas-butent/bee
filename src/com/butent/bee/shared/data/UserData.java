@@ -38,7 +38,8 @@ public class UserData implements BeeSerializable, HasInfo {
 
   private enum Serial {
     LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_NAME,
-    COMPANY_PERSON, COMPANY, PERSON, PROPERTIES, RIGHTS
+    COMPANY_PERSON, COMPANY_PERSON_POSITION, COMPANY_PERSON_POSITION_NAME, COMPANY, PERSON,
+    PROPERTIES, RIGHTS
   }
 
   private static BeeLogger logger = LogUtils.getLogger(UserData.class);
@@ -59,6 +60,10 @@ public class UserData implements BeeSerializable, HasInfo {
   private String companyName;
 
   private Long companyPerson;
+  private Long companyPersonPosition;
+
+  private String companyPersonPositionName;
+
   private Long company;
   private Long person;
 
@@ -135,6 +140,13 @@ public class UserData implements BeeSerializable, HasInfo {
           setCompanyPerson(BeeUtils.toLongOrNull(value));
           break;
 
+        case COMPANY_PERSON_POSITION:
+          setCompanyPersonPosition(BeeUtils.toLongOrNull(value));
+          break;
+
+        case COMPANY_PERSON_POSITION_NAME:
+          setCompanyPersonPositionName(value);
+          break;
         case COMPANY:
           setCompany(BeeUtils.toLongOrNull(value));
           break;
@@ -156,7 +168,7 @@ public class UserData implements BeeSerializable, HasInfo {
           break;
 
         case RIGHTS:
-          Map<String, String> map = Codec.deserializeMap(value);
+          Map<String, String> map = Codec.deserializeLinkedHashMap(value);
 
           if (!BeeUtils.isEmpty(map)) {
             rights = HashBasedTable.create();
@@ -164,7 +176,7 @@ public class UserData implements BeeSerializable, HasInfo {
             for (String stateIdx : map.keySet()) {
               RightsState state = EnumUtils.getEnumByIndex(RightsState.class,
                   BeeUtils.toInt(stateIdx));
-              Map<String, String> row = Codec.deserializeMap(map.get(stateIdx));
+              Map<String, String> row = Codec.deserializeLinkedHashMap(map.get(stateIdx));
 
               for (String typeIdx : row.keySet()) {
                 rights.put(state,
@@ -190,6 +202,14 @@ public class UserData implements BeeSerializable, HasInfo {
     return companyPerson;
   }
 
+  public Long getCompanyPersonPosition() {
+    return companyPersonPosition;
+  }
+
+  public String getCompanyPersonPositionName() {
+    return  companyPersonPositionName;
+  }
+
   public String getFirstName() {
     return firstName;
   }
@@ -203,6 +223,8 @@ public class UserData implements BeeSerializable, HasInfo {
         "Photo File Name", getPhotoFile(),
         "Company Name", getCompanyName(),
         "Company Person ID", getCompanyPerson(),
+        "Company Person Position ID", getCompanyPersonPosition(),
+        "Company Person Position Name", getCompanyPersonPositionName(),
         "Company ID", getCompany(),
         "Person ID", getPerson());
 
@@ -354,6 +376,12 @@ public class UserData implements BeeSerializable, HasInfo {
         case COMPANY_PERSON:
           arr[i++] = companyPerson;
           break;
+        case COMPANY_PERSON_POSITION:
+          arr[i++] = companyPersonPosition;
+          break;
+        case COMPANY_PERSON_POSITION_NAME:
+          arr[i++] = companyPersonPositionName;
+          break;
         case COMPANY:
           arr[i++] = company;
           break;
@@ -395,6 +423,14 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public void setCompanyPerson(Long companyPerson) {
     this.companyPerson = companyPerson;
+  }
+
+  public void setCompanyPersonPosition(Long companyPersonPosition) {
+    this.companyPersonPosition = companyPersonPosition;
+  }
+
+  public void setCompanyPersonPositionName(String companyPersonPositionName) {
+    this.companyPersonPositionName = companyPersonPositionName;
   }
 
   public void setFirstName(String firstName) {

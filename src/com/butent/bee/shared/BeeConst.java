@@ -63,6 +63,7 @@ public final class BeeConst {
   public static final String STRING_EMPTY = "";
   public static final String STRING_SPACE = " ";
   public static final String STRING_ZERO = "0";
+  public static final String STRING_ONE = "1";
   public static final String STRING_COMMA = ",";
   public static final String STRING_POINT = ".";
   public static final String STRING_LEFT_BRACKET = "[";
@@ -164,7 +165,7 @@ public final class BeeConst {
   public static final double DOUBLE_UNDEF = -1.0d;
   public static final double DOUBLE_ZERO = 0.0d;
   public static final double DOUBLE_ONE = 1.0d;
-  public static final float FLOAT_ZERO = 0.0f;
+  public static final double DOUBLE_ONE_HUNDRED = 100.0d;
 
   public static final String YEAR = "Year";
   public static final String MONTH = "Month";

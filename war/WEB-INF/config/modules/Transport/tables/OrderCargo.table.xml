@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="OrderCargo"
-  idName="CargoID"
-  >
+       name="OrderCargo"
+       idName="CargoID"
+>
   <Fields>
     <Relation name="Order" relation="TransportationOrders" cascade="DELETE" label="=trOrder" />
     <Text name="Description" notNull="true" label="=cargo" defValue="*" />
 
-    <Numeric name="Weight" precision="10" scale="3" label="=trWeightInTons" />
+    <Numeric name="Weight" precision="10" scale="3" label="=weight" />
     <Relation name="WeightUnit" relation="Units" label="=weightUnit" />
     <Numeric name="Volume" precision="8" scale="3" label="=volume" />
     <Relation name="VolumeUnit" relation="Units" label="=volumeUnit" />
@@ -18,7 +18,6 @@
     <Numeric name="Height" precision="8" scale="2" label="=height" />
     <Numeric name="Quantity" precision="8" scale="2" label="=quantity" />
     <Relation name="QuantityUnit" relation="Units" label="=unit" />
-    <Integer name="Palettes" label="=trPalettesQuantity" />
     <Numeric name="Value" precision="12" scale="2" label="=valuation" />
     <Relation name="ValueCurrency" relation="Currencies" label="=trCargoValueCurrency" />
 
@@ -27,18 +26,25 @@
     <Boolean name="Partial" label="=partial" />
     <Boolean name="Outsized" label="=outsized" />
     <Boolean name="Dangerous" label="=dangerous" />
+
+    <Integer name="Palettes" label="=trPalettesQuantity" />
     <Numeric name="ExchangeOfPalettes" precision="2" label="=cargoChangeOfPallets" />
 
-    <Relation name="CargoHandling" unique="true" relation="CargoHandling" cascade="SET_NULL" editable="true" label="=cargoHandlingPlaces" />
+    <Boolean name="CustomsBrokerage" label="=trRequestCustomsBrokerage" />
+    <Boolean name="FreightInsurance" label="=trRequestFreightInsurance" />
+
+    <Relation name="CargoHandling" unique="true" relation="CargoHandling" cascade="SET_NULL"
+              editable="true" label="=cargoHandlingPlaces" />
 
     <!--TODO: drop LoadingPlace, UnloadingPlace, EmptyKilometers, LoadedKilometers-->
-    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=loading" />
-    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=unloading" />
+    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true"
+              label="=loading" />
+    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true"
+              label="=unloading" />
     <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
     <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
 
-    <Relation name="ShippingTerm"  relation="ShippingTerms" label="=cargoTermsOfService" />
-    <Text name="Notes" label="=notes" />
+    <Text name="Notes" label="=cargoNotes" />
     <Text name="Directions" label="=trDirections" />
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
 

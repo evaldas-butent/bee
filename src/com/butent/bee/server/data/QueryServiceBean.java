@@ -67,7 +67,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -341,6 +343,15 @@ public class QueryServiceBean {
     return getSingleValue(query).getBoolean(0, 0);
   }
 
+  public Boolean getBooleanById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
+
+    return getBoolean(query);
+  }
+
   public List<byte[]> getBytesColumn(SqlSelect query) {
     Assert.state(query.getFields().size() == 1, "Only one column allowed");
 
@@ -540,6 +551,30 @@ public class QueryServiceBean {
     return getSingleColumn(query).getIntColumn(0);
   }
 
+  public Set<Integer> getIntSet(IsQuery query) {
+    Set<Integer> result = new HashSet<>();
+
+    Integer[] arr = getIntColumn(query);
+    if (arr != null && arr.length > 0) {
+      Collections.addAll(result, arr);
+    }
+
+    return result;
+  }
+
+  public String getLocalizedValue(String tblName, String fldName, String fldValue, Locale locale) {
+    if (BeeUtils.isEmpty(fldValue) || Objects.isNull(locale)) {
+      return null;
+    }
+    SqlSelect query = new SqlSelect()
+        .addFrom(tblName)
+        .setWhere(SqlUtils.equals(tblName, fldName, fldValue));
+
+    String als = sys.joinTranslationField(query, tblName, null, fldName, locale.getLanguage());
+
+    return ArrayUtils.getQuietly(getColumn(query.addFields(als, fldName)), 0);
+  }
+
   public Long getLong(IsQuery query) {
     return getSingleValue(query).getLong(0, 0);
   }
@@ -549,6 +584,15 @@ public class QueryServiceBean {
         .addFields(tableName, fieldName)
         .addFrom(tableName)
         .setWhere(SqlUtils.equals(tableName, filterColumn, filterValue));
+
+    return getLong(query);
+  }
+
+  public Long getLongById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
 
     return getLong(query);
   }
@@ -685,6 +729,15 @@ public class QueryServiceBean {
 
   public String getValue(IsQuery query) {
     return getSingleValue(query).getValue(0, 0);
+  }
+
+  public String getValueById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
+
+    return getValue(query);
   }
 
   public Set<String> getValueSet(IsQuery query) {

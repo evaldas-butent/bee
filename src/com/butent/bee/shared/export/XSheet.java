@@ -184,7 +184,7 @@ public class XSheet implements BeeSerializable {
 
       switch (members[i]) {
         case COLUMN_WIDTH_FACTORS:
-          Map<String, String> map = Codec.deserializeMap(value);
+          Map<String, String> map = Codec.deserializeLinkedHashMap(value);
 
           for (Map.Entry<String, String> entry : map.entrySet()) {
             if (BeeUtils.isDigit(entry.getKey()) && BeeUtils.isPositiveDouble(entry.getValue())) {

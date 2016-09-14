@@ -17,11 +17,11 @@ public abstract class Defaults {
     } else {
       switch (defExpr) {
         case CURRENT_DATE:
-          value = TimeUtils.today().getDays();
+          value = TimeUtils.today();
           break;
 
         case CURRENT_TIME:
-          value = TimeUtils.nowMinutes().getTime();
+          value = TimeUtils.nowMinutes();
           break;
 
         case CURRENT_USER:

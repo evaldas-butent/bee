@@ -13,22 +13,19 @@
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
-    <CalcColumn name="Expedition" type="boolean" caption="=expeditionShort" width="15" sortable="false">
-      <render><ui:expression>row.Expedition ? true : false</ui:expression></render>
-    </CalcColumn>
-    
-    <RelColumn name="Customer" caption="=customer" />
-    <RelColumn name="Payer" caption="=payer" />
-    <RelColumn name="Manager" caption="=manager" />
+
+    <RelColumn name="Customer" />
+    <RelColumn name="Payer" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
     <CalcColumn name="Cargo" type="string" caption="=cargos" maxWidth="300" searchBy="MinCargo MaxCargo">
       <render>
         <ui:function>
           if (!row.MinCargo) {
             return row.MaxCargo;
-          
+
           } else if(!row.MaxCargo || row.MinCargo == row.MaxCargo) {
             return row.MinCargo;
-          
+
           } else {
             return row.MinCargo + ", " + row.MaxCargo + (row.CntCargo > 2 ? ", ...": "");
           }

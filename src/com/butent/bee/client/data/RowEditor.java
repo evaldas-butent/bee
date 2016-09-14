@@ -22,6 +22,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -106,22 +107,22 @@ public final class RowEditor {
       return false;
     }
 
-    getRow(formName, dataInfo, rowId, opener, rowCallback, null);
+    getRow(formName, dataInfo, Filter.compareId(rowId), opener, rowCallback, null);
     return true;
   }
 
-  public static void openForm(String formName, DataInfo dataInfo, long rowId, Opener opener) {
-    openForm(formName, dataInfo, rowId, opener, null, null);
+  public static void openForm(String formName, DataInfo dataInfo, Filter filter, Opener opener) {
+    openForm(formName, dataInfo, filter, opener, null, null);
   }
 
-  public static void openForm(String formName, DataInfo dataInfo, long rowId,
+  public static void openForm(String formName, DataInfo dataInfo, Filter filter,
       Opener opener, RowCallback rowCallback) {
-    openForm(formName, dataInfo, rowId, opener, rowCallback, null);
+    openForm(formName, dataInfo, filter, opener, rowCallback, null);
   }
 
-  public static void openForm(String formName, DataInfo dataInfo, long rowId,
+  public static void openForm(String formName, DataInfo dataInfo, Filter filter,
       Opener opener, RowCallback rowCallback, FormInterceptor formInteceptor) {
-    getRow(formName, dataInfo, rowId, opener, rowCallback, formInteceptor);
+    getRow(formName, dataInfo, filter, opener, rowCallback, formInteceptor);
   }
 
   public static void openForm(String formName, String viewName, IsRow row, Opener opener,
@@ -211,10 +212,10 @@ public final class RowEditor {
         });
   }
 
-  private static void getRow(final String formName, final DataInfo dataInfo, final long rowId,
+  private static void getRow(final String formName, final DataInfo dataInfo, Filter filter,
       final Opener opener, final RowCallback rowCallback, final FormInterceptor formInteceptor) {
 
-    Queries.getRow(dataInfo.getViewName(), rowId, new RowCallback() {
+    Queries.getRow(dataInfo.getViewName(), filter, null, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         openForm(formName, dataInfo, result, opener, rowCallback, formInteceptor);

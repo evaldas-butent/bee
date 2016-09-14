@@ -1,5 +1,13 @@
 #/opt/wildfly/bin/jboss-cli.sh -c controller=localhost:12190 --file=config.cli
 
+#=====HTTPS======
+#go to $JBOSS_HOME/standalone/configuration
+#keytool -genkeypair -alias serverkey -keyalg RSA -keysize 2048 -validity 3650 -keystore server.keystore -keypass changeit -storepass changeit -dname "CN=127.0.0.1,O=B-NOVO,C=LT"
+
+/core-service=management/security-realm=SSLRealm:add()
+/core-service=management/security-realm=SSLRealm/server-identity=ssl/:add(keystore-path=server.keystore,keystore-relative-to=jboss.server.config.dir, keystore-password=changeit, alias=serverkey, key-password=changeit)
+/subsystem=undertow/server=default-server/https-listener=https/:add(socket-binding=https, security-realm=SSLRealm, max-post-size=104857600)
+
 # REPLACE
 #<periodic-rotating-file-handler...>
 #    ...

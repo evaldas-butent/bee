@@ -40,6 +40,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -94,6 +95,10 @@ public class TripForm extends PrintFormInterceptor {
 
         case TBL_TRIP_ROUTES:
           ((ChildGrid) widget).setGridInterceptor(new TripRoutesGrid());
+          break;
+
+        case TBL_TRIP_FUEL_COSTS:
+          ((ChildGrid) widget).setGridInterceptor(new TripFuelCostsGrid());
           break;
       }
     } else if (BeeUtils.same(name, COL_TRIP_ROUTE) && widget instanceof HasClickHandlers) {
@@ -229,8 +234,9 @@ public class TripForm extends PrintFormInterceptor {
         if (BeeUtils.isEmpty(messages)) {
           listener.fireEvent(event);
         } else {
-          Queries.getRow(TBL_DRIVERS, driverId, Arrays.asList(ClassifierConstants.COL_FIRST_NAME,
-              ClassifierConstants.COL_LAST_NAME), new RowCallback() {
+          Queries.getRow(TBL_DRIVERS, Filter.compareId(driverId),
+              Arrays.asList(ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME),
+              new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
               Global.confirm(Localized.dictionary().employment()

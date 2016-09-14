@@ -136,6 +136,12 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
     setValue(null);
   }
 
+  public void click() {
+    if (isEnabled()) {
+      EventUtils.click(this);
+    }
+  }
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;

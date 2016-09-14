@@ -9,7 +9,6 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.server.data.BeeView;
-import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -48,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -164,6 +162,13 @@ public class ParamHolderBean {
         ? parameter.getNumber(usr.getCurrentUserId()) : parameter.getNumber();
   }
 
+  public BeeParameter getParameter(String name) {
+    Assert.notEmpty(name);
+    Assert.state(hasParameter(name), "Unknown parameter: " + name);
+
+    return BeeUtils.peek(parameters.row(BeeUtils.normalize(name)).values());
+  }
+
   public Collection<BeeParameter> getParameters(String module) {
     Assert.notEmpty(module);
     Collection<BeeParameter> params = new ArrayList<>();
@@ -238,12 +243,7 @@ public class ParamHolderBean {
       }
     });
 
-    BeeView.registerConditionProvider(VAR_PARAMETERS_MODULE, new ConditionProvider() {
-      @Override
-      public IsCondition getCondition(BeeView view, List<String> args) {
-        return null;
-      }
-    });
+    BeeView.registerConditionProvider(VAR_PARAMETERS_MODULE, (view, args) -> null);
 
     QueryServiceBean.registerViewDataProvider(TBL_PARAMETERS, new ViewDataProvider() {
       @Override
@@ -416,13 +416,6 @@ public class ParamHolderBean {
       param.setValue(value);
     }
     postParameterEvent(new ParameterEvent(name));
-  }
-
-  private BeeParameter getParameter(String name) {
-    Assert.notEmpty(name);
-    Assert.state(hasParameter(name), "Unknown parameter: " + name);
-
-    return BeeUtils.peek(parameters.row(BeeUtils.normalize(name)).values());
   }
 
   private Pair<Long, String> getRelationInfo(String name, boolean defaultMode) {

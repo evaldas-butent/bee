@@ -2,6 +2,7 @@
 <!DOCTYPE Form [
     <!ENTITY lbl1 "width:115px; text-align:right; margin-right:5px;">
     <!ENTITY inline "display:inline;">
+    <!ENTITY inp "width:150px;">
     ]>
 <FlowPanel xmlns="http://www.butent.com/widget">
   <Table kind="controls">
@@ -15,9 +16,9 @@
     </row>
     <row>
       <Label text="=date" style="&lbl1;" class="bee-required" />
-      <InputDateTime source="LoadingDate" style="width: 11em;" required="true" />
+      <InputDateTime source="LoadingDate" style="&inp;" required="true" title="=trRequestDateTitle"/>
       <Label text="=date" style="&lbl1;" class="bee-required" />
-      <InputDateTime source="UnloadingDate" style="width: 11em;" required="true" />
+      <InputDateTime source="UnloadingDate" style="&inp;" required="true" title="=trRequestDateTitle"/>
     </row>
     <row>
       <Label text="=company" style="&lbl1;" />
@@ -41,10 +42,10 @@
     </row>
     <row>
       <Label text="=postIndex" style="&lbl1;" class="bee-required" />
-      <InputText source="LoadingPostIndex" style="width: 90px;"
+      <InputText source="LoadingPostIndex" style="&inp;"
                  autocompleteKey="cargo-place-postal-code" required="true" />
       <Label text="=postIndex" style="&lbl1;" class="bee-required" />
-      <InputText source="UnloadingPostIndex" style="width: 90px;"
+      <InputText source="UnloadingPostIndex" style="&inp;"
                  autocompleteKey="cargo-place-postal-code" required="true" />
     </row>
     <row>
