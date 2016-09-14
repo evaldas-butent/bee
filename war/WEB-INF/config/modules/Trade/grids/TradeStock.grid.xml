@@ -25,5 +25,7 @@
 
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
+
+    <DataColumn name="Cost" />
   </g:columns>
 </g:Grid>

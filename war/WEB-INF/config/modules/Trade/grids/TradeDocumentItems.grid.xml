@@ -52,6 +52,9 @@
       <footer aggregate="sum" />
     </CalcColumn>
 
+    <DataColumn name="Cost" />
+    <DataColumn name="ParentCost" />
+
     <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
                newRowEnabled="false" flexGrow="0" visible="false" />
 
