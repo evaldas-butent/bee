@@ -40,7 +40,7 @@
     </HorizontalPanel>
 
     <HorizontalPanel style="width:100%; margin-top: 2em">
-      <cell style="vertical-align:top; width:50%; text-align:left;" >
+      <cell style="vertical-align:top; width:70%; text-align:left;" >
         <FlowPanel >
           <TextLabel style="&bold; font-size: 13.5pt;">
             <render>
@@ -259,10 +259,12 @@
             <properties name="Vat" />
           </Label>
         </cell>
-        <cell rowSpan="2" style="vertical-align: top; word-break: break-all; min-width: 60px;">
-          <Label  html="Pastaba &lt;br /&gt;Remark">
-            <properties name="CargoNotes" />
-          </Label>
+        <cell rowSpan="2" style="white-space:pre-wrap; vertical-align: top;">
+          <FlowPanel class="flex-Vertical" >
+            <Label  html="Pastaba &lt;br /&gt;Remark">
+              <properties name="CargoNotes" />
+            </Label>
+          </FlowPanel>
         </cell>
 
       </row>
