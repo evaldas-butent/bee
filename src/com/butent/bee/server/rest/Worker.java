@@ -54,6 +54,8 @@ public class Worker {
   SystemBean sys;
   @EJB
   UserServiceBean usr;
+  @EJB
+  FileStorageBean fs;
 
   @GET
   @Path("companytypes")
