@@ -1821,7 +1821,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private void sendNewsletter() {
-    int count = prm.getInteger(PRM_SEND_NEWSLETTERS_COUNT);
+    Integer count = prm.getInteger(PRM_SEND_NEWSLETTERS_COUNT);
     Long accountId = getSenderAccountId(PRM_DEFAULT_ACCOUNT);
 
     if (BeeUtils.unbox(count) > 0 && DataUtils.isId(accountId)
@@ -1865,8 +1865,16 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                     .getValue(CalendarConstants.COL_CAPTION));
               }
             }
-            sendMail(accountId, null, emailSet.getColumn(COL_EMAIL), null, sr.getValue(COL_SUBJECT),
-                sr.getValue(COL_CONTENT), attachments, true);
+            boolean visibleCopies = BeeUtils.toBoolean(sr.getValue(COL_NEWSLETTER_VISIBLE_COPIES));
+            if (visibleCopies) {
+              sendMail(accountId, null, emailSet.getColumn(COL_EMAIL), null,
+                  sr.getValue(COL_SUBJECT),
+                  sr.getValue(COL_CONTENT), attachments, true);
+            } else {
+              sendMail(accountId, null, null, emailSet.getColumn(COL_EMAIL),
+                  sr.getValue(COL_SUBJECT),
+                  sr.getValue(COL_CONTENT), attachments, true);
+            }
 
             for (Long email : emailSet.getLongColumn("EmailId")) {
               SqlUpdate update =
