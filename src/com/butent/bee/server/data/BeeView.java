@@ -1037,7 +1037,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
                 relTable.getName() + "." + field.getName(), "View:", getName());
             continue;
           }
-          join = SqlUtils.join(alias, table.getIdName(), relAls, field.getName());
+          join = SqlUtils.join(alias,
+              BeeUtils.notEmpty(((XmlExternalJoin) col).targetName, table.getIdName()),
+              relAls, field.getName());
         } else {
           Assert.state(table.hasField(col.name), BeeUtils.joinWords("View:", getName(),
               "Unknown field name:", table.getName(), col.name));
