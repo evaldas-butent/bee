@@ -40,7 +40,7 @@
     </HorizontalPanel>
 
     <HorizontalPanel style="width:100%; margin-top: 2em">
-      <cell style="vertical-align:top; width:50%; text-align:left;" >
+      <cell style="vertical-align:top; width:70%; text-align:left;" >
         <FlowPanel >
           <TextLabel style="&bold; font-size: 13.5pt;">
             <render>
