@@ -387,7 +387,7 @@ abstract class MultiRoleForm extends RightsForm {
   @Override
   protected void save(final Consumer<Boolean> callback) {
     if (changes.isEmpty()) {
-      BeeKeeper.getScreen().notifyInfo("no changes");
+      BeeKeeper.getScreen().notifyInfo(Localized.dictionary().noChanges());
       if (callback != null) {
         callback.accept(false);
       }
@@ -426,8 +426,9 @@ abstract class MultiRoleForm extends RightsForm {
             changes.clear();
             onClearChanges();
 
-            String message = BeeUtils.joinWords(getObjectType(), getRightsState(),
-                "saved", size, "changes");
+            String message = Localized.dictionary().roleRightsSaved(BeeUtils.joinWords(
+                BeeUtils.bracket(getObjectType().getCaption()), Localized.dictionary().roleState(),
+                getRightsState().getCaption()), size);
             debug(message);
             BeeKeeper.getScreen().notifyInfo(message);
 
@@ -499,7 +500,7 @@ abstract class MultiRoleForm extends RightsForm {
           @Override
           public void onSuccess(BeeRowSet result) {
             if (DataUtils.isEmpty(result)) {
-              BeeKeeper.getScreen().notifyWarning("user has no roles");
+              BeeKeeper.getScreen().notifyWarning(Localized.dictionary().userHasNotRoles());
 
             } else {
               int index = result.getColumnIndex(COL_ROLE);

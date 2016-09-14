@@ -4317,6 +4317,13 @@ public interface Dictionary {
 
   default String roleRights() {return g("roleRights");}
 
+  default String roleRightsSaved(Object p0, Object p1) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    _m.put("{1}", p1);
+    return Localized.format(g("roleRightsSaved"), _m);
+  }
+
   default String roleState() {return g("roleState");}
 
   default String roleUsers() {return g("roleUsers");}
@@ -6015,6 +6022,8 @@ public interface Dictionary {
   default String userGroupVisibility() {return g("userGroupVisibility");}
 
   default String userGroups() {return g("userGroups");}
+
+  default String userHasNotRoles() {return g("userHasNotRoles");}
 
   default String userInterface() {return g("userInterface");}
 

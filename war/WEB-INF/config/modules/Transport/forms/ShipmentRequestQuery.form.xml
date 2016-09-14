@@ -519,6 +519,14 @@
                   </tr>
                   <tr>
                     <td>
+                      <label for="LoadedKilometers">=trLoadedKilometers</label>
+                    </td>
+                    <td>
+                      <input id="LoadedKilometers" name="LoadedKilometers" type="number" maxlength="5" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
                       <label for="CustomsBrokerage">=trRequestCustomsBrokerage</label>
                     </td>
                     <td>
