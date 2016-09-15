@@ -697,6 +697,9 @@ public final class TransportConstants {
 
   public static final String COL_SS_ADDITIONAL_INFO = "SsAdditionalInfo";
 
+  public static final String COL_SS_ORDER_CUSTOMER = "SsOrderCustomer";
+  public static final String COL_SS_ORDER_NO = "SsOrderNo";
+
   public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
   public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";
 

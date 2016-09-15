@@ -5474,6 +5474,10 @@ public interface Dictionary {
 
   default String trTbSettingsCountryFlags() {return g("trTbSettingsCountryFlags");}
 
+  default String trTbSettingsOrderCustomer() {return g("trTbSettingsOrderCustomer");}
+
+  default String trTbSettingsOrderNo() {return g("trTbSettingsOrderNo");}
+
   default String trTbSettingsPixelsPerCustomer() {return g("trTbSettingsPixelsPerCustomer");}
 
   default String trTbSettingsPixelsPerDriver() {return g("trTbSettingsPixelsPerDriver");}
