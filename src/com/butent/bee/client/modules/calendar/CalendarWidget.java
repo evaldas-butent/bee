@@ -270,7 +270,7 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
     layoutSuspended = true;
   }
 
-  public boolean update(CalendarView.Type viewType, JustDate newDate, int days) {
+  public boolean update(CalendarView.Type viewType, JustDate newDate, int days, Map filterValues) {
     boolean changed = false;
 
     if (viewType != null && !viewType.equals(getType())) {
@@ -289,7 +289,7 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
     }
 
     if (changed) {
-      loadItems(false, true);
+      loadItems(false, true, filterValues);
     }
 
     return changed;
