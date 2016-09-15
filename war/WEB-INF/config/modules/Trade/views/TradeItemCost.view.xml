@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="TradeItemCost" source="TradeItemCost"
+      caption="=cost"
+>
+  <Columns>
+    <SimpleColumn name="TradeDocumentItem" />
+
+    <SimpleColumn name="Cost" />
+    <SimpleColumn name="Currency" />
+  </Columns>
+</View>
+ 

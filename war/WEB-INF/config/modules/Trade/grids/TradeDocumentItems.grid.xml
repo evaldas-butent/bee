@@ -2,8 +2,8 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="TradeDocumentItems" viewName="TradeDocumentItems"
-        flexGrow="1" newRowCaption="=newItem"
+        name="TradeDocumentItems" viewName="TradeDocumentItems" newRowCaption="=newItem"
+        flexGrow="1" autoFlex="true"
 >
   <g:columns>
     <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true">
@@ -52,8 +52,13 @@
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <DataColumn name="Cost" />
-    <DataColumn name="ParentCost" />
+    <CalcColumn name="Cost" type="decimal" label="=cost" format="#.00######">
+      <render>
+        <ui:expression>row.Parent ? row.ParentCost : row.Cost</ui:expression>
+      </render>
+      <footer aggregate="sum" scale="2"
+              expression="(row.Parent ? row.ParentCost : row.Cost) * row.Quantity" />
+    </CalcColumn>
 
     <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
                newRowEnabled="false" flexGrow="0" visible="false" />
