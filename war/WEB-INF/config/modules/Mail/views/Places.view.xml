@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Places" source="Places" caption="=mails"
+  name="Places" source="Places" caption="=places"
   editForm="MailMessage"
   >
   <Columns>

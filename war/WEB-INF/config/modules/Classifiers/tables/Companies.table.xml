@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Owner" relation="Companies" />
-    <String name="Name" precision="100" notNull="true" unique="true" label="=companyName" />
+    <String name="Name" precision="100" notNull="true" label="=companyName" />
     <String name="Code" precision="30" unique="true" label="=companyCode" />
     <String name="VATCode" precision="30" label="=companyVATCode" />
 
@@ -30,6 +30,7 @@
     <Integer name="CreditTolerance" label="=creditTolerance" />
     <Numeric name="CreditDays" precision="3" label="=creditDays" />
     <Numeric name="SupplierCreditDays" precision="3" label="=supplierCreditDays" />
+    <Integer name="ToleratedDays" label="=companyToleratedDays" />
 
     <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
     <Relation name="DefaultBankAccount" relation="CompanyBankAccounts" unique="true"

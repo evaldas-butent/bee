@@ -18,6 +18,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
@@ -33,11 +34,13 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsState;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +81,8 @@ public class DocumentTreeForm extends AbstractFormInterceptor
   @Override
   public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
     if (BeeUtils.same(name, "Tree") && !isManager) {
-      description.setAttribute("hideActions", "true");
+      description.setAttribute(FormDescription.ATTR_DISABLED_ACTIONS,
+          BeeUtils.joinWords(EnumSet.allOf(Action.class)));
     }
     return super.beforeCreateWidget(name, description);
   }
@@ -159,7 +163,7 @@ public class DocumentTreeForm extends AbstractFormInterceptor
           }
         }
         if (roles == null) {
-          roles = Codec.deserializeMap(treeView.getTreePresenter()
+          roles = Codec.deserializeLinkedHashMap(treeView.getTreePresenter()
               .getProperty(AdministrationConstants.TBL_ROLES));
         }
         if (table == null) {

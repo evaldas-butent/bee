@@ -3,6 +3,7 @@ package com.butent.bee.server.i18n;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -14,6 +15,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -38,6 +40,8 @@ public class LocalizationBean {
 
   private static BeeLogger logger = LogUtils.getLogger(LocalizationBean.class);
 
+  @EJB
+  UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
 
@@ -68,13 +72,41 @@ public class LocalizationBean {
         response = prepareDictionary();
         break;
 
+      case Service.CUSTOMIZE_DICTIONARY:
+        response = customizeDictionary(reqInfo);
+        break;
+
       default:
-        String msg = BeeUtils.joinWords("chat service not recognized:", svc);
+        String msg = BeeUtils.joinWords("localization service not recognized:", svc);
         logger.warning(msg);
         response = ResponseObject.error(msg);
     }
 
     return response;
+  }
+
+  private ResponseObject customizeDictionary(RequestInfo reqInfo) {
+    SupportedLocale locale = SupportedLocale.getByLanguage(reqInfo.getParameter(VAR_LOCALE));
+    if (locale == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VAR_LOCALE);
+    }
+
+    Localizations.setCustomGlossary(locale,
+        getDictionaryData(locale.getDictionaryCustomColumnName()));
+
+    if (locale == SupportedLocale.USER_DEFAULT || locale == SupportedLocale.DICTIONARY_DEFAULT) {
+      Localized.setGlossary(Localizations.getGlossary(SupportedLocale.USER_DEFAULT));
+    }
+
+    SupportedLocale userLocale = usr.getSupportedLocale();
+    if (userLocale != null
+        && (locale == userLocale || locale == SupportedLocale.DICTIONARY_DEFAULT)) {
+
+      return ResponseObject.response(Localizations.getGlossary(userLocale));
+
+    } else {
+      return ResponseObject.emptyResponse();
+    }
   }
 
   private Map<String, String> getDictionaryData(String column) {
@@ -144,9 +176,9 @@ public class LocalizationBean {
       for (SupportedLocale supportedLocale : SupportedLocale.values()) {
         String columnName = supportedLocale.getDictionaryDefaultColumnName();
 
-        Map<String, String> newGlossay = glossaries.get(supportedLocale);
+        Map<String, String> newGlossary = glossaries.get(supportedLocale);
 
-        if (BeeUtils.isEmpty(newGlossay)) {
+        if (BeeUtils.isEmpty(newGlossary)) {
           logger.warning(Service.PREPARE_DICTIONARY, "default glossary", supportedLocale,
               "is empty");
 
@@ -164,7 +196,7 @@ public class LocalizationBean {
           int updateCount = 0;
 
           for (String key : intersection) {
-            String newValue = newGlossay.get(key);
+            String newValue = newGlossary.get(key);
 
             if (!BeeUtils.equalsTrimRight(newValue, oldGlossary.get(key))) {
               SqlUpdate update = new SqlUpdate(TBL_DICTIONARY)

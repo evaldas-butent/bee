@@ -1,14 +1,14 @@
 package com.butent.bee.client.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.animation.Animatable;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -17,10 +17,13 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -30,6 +33,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,13 +52,19 @@ public class HeaderImpl extends Flow implements HeaderView {
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
 
   private static final String STYLE_CAPTION = STYLE_PREFIX + "caption";
+
   private static final String STYLE_MESSAGE = STYLE_PREFIX + "message";
+  private static final String STYLE_ROW_ID = STYLE_PREFIX + "row-id";
+  private static final String STYLE_ROW_MESSAGE = STYLE_PREFIX + "row-message";
 
   private static final String STYLE_COMMAND_PANEL = STYLE_PREFIX + "commandPanel";
 
   private static final String STYLE_CONTROL = STYLE_PREFIX + "control";
   private static final String STYLE_CONTROL_HIDDEN = STYLE_CONTROL + "-hidden";
   private static final String STYLE_CONTROL_DISABLED = STYLE_CONTROL + "-disabled";
+
+  private static final String STYLE_CREATE_NEW = BeeConst.CSS_CLASS_PREFIX + "CreateNew";
+  private static final String STYLE_SAVE_LARGE = BeeConst.CSS_CLASS_PREFIX + "SaveLarge";
 
   private static boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
@@ -68,7 +78,6 @@ public class HeaderImpl extends Flow implements HeaderView {
   private Presenter viewPresenter;
 
   private final Label captionWidget = new Label();
-  private final Label messageWidget = new Label();
 
   private boolean enabled = true;
 
@@ -97,6 +106,9 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public void addCommandItem(IdentifiableWidget widget) {
+    if (widget instanceof Animatable) {
+      ((Animatable) widget).enableAnimation();
+    }
     getCommandPanel().add(widget);
   }
 
@@ -131,9 +143,6 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
     add(captionWidget);
 
-    messageWidget.addStyleName(STYLE_MESSAGE);
-    add(messageWidget);
-
     commandPanel.addStyleName(STYLE_COMMAND_PANEL);
     add(commandPanel);
 
@@ -153,7 +162,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
       if (createNew) {
         Label control = new Label("+ " + Localized.dictionary().createNew());
-        control.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateNew");
+        control.addStyleName(STYLE_CREATE_NEW);
 
         initControl(control, Action.ADD, hiddenActions);
         add(control);
@@ -190,8 +199,18 @@ public class HeaderImpl extends Flow implements HeaderView {
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
       add(createFa(Action.EDIT, hiddenActions));
     }
+
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      add(createFa(Action.SAVE, hiddenActions));
+      if (Theme.hasActionSaveLarge()) {
+        Label control = new Label(Localized.dictionary().actionSave());
+        control.addStyleName(STYLE_SAVE_LARGE);
+
+        initControl(control, Action.SAVE, hiddenActions);
+        add(control);
+
+      } else {
+        add(createFa(Action.SAVE, hiddenActions));
+      }
     }
 
     if (hasAction(Action.EXPORT, false, enabledActions, disabledActions)) {
@@ -334,7 +353,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       return false;
     } else {
       String id = source.getId();
-      return BeeUtils.isEmpty(id) ? true : !actionControls.containsValue(id);
+      return BeeUtils.isEmpty(id) || !actionControls.containsValue(id);
     }
   }
 
@@ -386,13 +405,57 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
-  public void setMessage(String message) {
-    messageWidget.setHtml(BeeUtils.trim(message));
-  }
+  public void setMessage(int index, String message, String styleName) {
+    if (index < 0) {
+      logger.warning("invalid message index", index);
+      return;
+    }
 
-  @Override
-  public void setMessageTitle(String title) {
-    messageWidget.setTitle(title);
+    List<Element> elements = Selectors.getElementsByClassName(getElement(), STYLE_MESSAGE);
+
+    if (BeeUtils.isIndex(elements, index)) {
+      Element target = elements.get(index);
+      target.setInnerHTML(BeeUtils.trim(message));
+
+      if (!BeeUtils.isEmpty(styleName) && !target.hasClassName(styleName)) {
+        target.addClassName(styleName);
+      }
+
+    } else if (!BeeUtils.isEmpty(message)) {
+      int afterIndex;
+
+      if (BeeUtils.isEmpty(elements)) {
+        afterIndex = getWidgetIndex(captionWidget);
+      } else {
+        afterIndex = DomUtils.getElementIndex(BeeUtils.getLast(elements));
+      }
+
+      if (afterIndex >= 0 && afterIndex < getWidgetCount()) {
+        int beforeIndex = afterIndex + 1;
+
+        for (int i = BeeUtils.size(elements); i < index; i++) {
+          Label emptyWidget = new Label();
+          emptyWidget.addStyleName(STYLE_MESSAGE);
+          emptyWidget.addStyleName(STYLE_MESSAGE + BeeConst.STRING_MINUS + i);
+
+          insert(emptyWidget, beforeIndex);
+          beforeIndex++;
+        }
+
+        Label messageWidget = new Label(message.trim());
+        messageWidget.addStyleName(STYLE_MESSAGE);
+        messageWidget.addStyleName(STYLE_MESSAGE + BeeConst.STRING_MINUS + index);
+
+        if (!BeeUtils.isEmpty(styleName)) {
+          messageWidget.addStyleName(styleName);
+        }
+
+        insert(messageWidget, beforeIndex);
+
+      } else {
+        logger.warning("cannot insert message with index", index);
+      }
+    }
   }
 
   @Override
@@ -420,6 +483,26 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public void showRowId(IsRow row) {
+    String message = DataUtils.hasId(row) ? BeeUtils.bracket(row.getId()) : null;
+    setMessage(0, message, STYLE_ROW_ID);
+  }
+
+  @Override
+  public void showRowMessage(Evaluator evaluator, IsRow row) {
+    String message;
+
+    if (evaluator != null && row != null) {
+      evaluator.update(row);
+      message = evaluator.evaluate();
+    } else {
+      message = null;
+    }
+
+    setMessage(1, message, STYLE_ROW_MESSAGE);
+  }
+
+  @Override
   protected void onLoad() {
     super.onLoad();
     ReadyEvent.fire(this);
@@ -443,18 +526,19 @@ public class HeaderImpl extends Flow implements HeaderView {
     control.addStyleName(STYLE_CONTROL);
     control.addStyleName(action.getStyleName());
 
+    if (control instanceof Animatable) {
+      StyleUtils.enableAnimation(action, control);
+    }
+
     control.setTitle(action.getCaption());
 
     if (hiddenActions != null && hiddenActions.contains(action)) {
       control.getElement().addClassName(STYLE_CONTROL_HIDDEN);
     }
 
-    control.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (getViewPresenter() != null) {
-          getViewPresenter().handleAction(action);
-        }
+    control.addClickHandler(event -> {
+      if (getViewPresenter() != null) {
+        getViewPresenter().handleAction(action);
       }
     });
 

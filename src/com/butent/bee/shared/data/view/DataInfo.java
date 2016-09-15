@@ -51,7 +51,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
       return false;
     } else {
       return !BeeUtils.isEmpty(viewColumn.getRelation())
-          && (viewColumn.getLevel() <= 0 || BeeUtils.isTrue(viewColumn.getEditable()));
+          && (viewColumn.getLevel() <= 0 || viewColumn.isEditable());
     }
   }
 

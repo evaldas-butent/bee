@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
       name="UserDrivers" source="Drivers"
-      filter="DriverGroupID=0 OR GroupID>0"
+      filter="!(DateOfDismissal) AND (DriverGroupID=0 OR GroupID>0)"
       readOnly="true"
     >
   <Columns>
@@ -11,6 +11,7 @@
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
       </SimpleJoin>
+      <HiddenColumn name="DateOfDismissal" />
     </SimpleJoin>
 
     <ExternalJoin name="Driver" joinType="LEFT" source="DriverGroups">

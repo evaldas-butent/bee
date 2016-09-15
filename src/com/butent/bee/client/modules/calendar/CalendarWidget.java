@@ -14,6 +14,8 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.calendar.event.CopyEvent;
+import com.butent.bee.client.modules.calendar.event.HasCopyHandlers;
 import com.butent.bee.client.modules.calendar.event.HasTimeBlockClickHandlers;
 import com.butent.bee.client.modules.calendar.event.HasUpdateHandlers;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
@@ -41,7 +43,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem>,
-    HasTimeBlockClickHandlers, HasUpdateHandlers, ReadyEvent.HasReadyHandlers, HasState {
+    HasTimeBlockClickHandlers, HasUpdateHandlers, HasCopyHandlers, ReadyEvent.HasReadyHandlers,
+    HasState {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarWidget.class);
 
@@ -88,6 +91,11 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
   public void addItem(CalendarItem item) {
     dataManager.addItem(item, settings);
     refresh(false);
+  }
+
+  @Override
+  public HandlerRegistration addCopyHandler(CopyEvent.Handler handler) {
+    return addHandler(handler, CopyEvent.getType());
   }
 
   @Override

@@ -2,6 +2,7 @@ package com.butent.bee.client.view.form.interceptor;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.presenter.Presenter;
@@ -25,7 +26,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
 
 import java.util.List;
-import java.util.Set;
 
 public interface FormInterceptor extends WidgetInterceptor, HasGridView, HandlesStateChange,
     HasDomain, HasActiveRow, HasViewName, EditEndEvent.Handler {
@@ -50,10 +50,6 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   boolean focusSource(String source);
 
-  Set<Action> getDisabledActions(Set<Action> defaultActions);
-
-  Set<Action> getEnabledActions(Set<Action> defaultActions);
-
   FormView getFormView();
 
   HeaderView getHeaderView();
@@ -63,6 +59,8 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
 
   BeeRowSet getRowSet();
+
+  Widget getWidgetByName(String name);
 
   boolean hasFooter(int rowCount);
 
@@ -83,6 +81,8 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   void onSetActiveRow(IsRow row);
 
   void onShow(Presenter presenter);
+
+  void onSourceChange(IsRow row, String source, String value);
 
   void onStart(FormView form);
 

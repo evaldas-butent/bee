@@ -68,13 +68,10 @@ abstract class EmbeddedGrid extends Simple implements EnablableWidget, HasFoster
     if (gridView == null) {
       pendingSummaryChangeHandlers.add(handler);
 
-      return new com.google.gwt.event.shared.HandlerRegistration() {
-        @Override
-        public void removeHandler() {
-          HandlerRegistration registration = gridHandlerRegistry.get(handler);
-          if (registration != null) {
-            registration.removeHandler();
-          }
+      return () -> {
+        HandlerRegistration registration = gridHandlerRegistry.get(handler);
+        if (registration != null) {
+          registration.removeHandler();
         }
       };
 
@@ -181,8 +178,9 @@ abstract class EmbeddedGrid extends Simple implements EnablableWidget, HasFoster
     return gridInterceptor;
   }
 
-  protected String getGridKey() {
-    return GridFactory.getSupplierKey(gridName, getGridInterceptor());
+  protected String getGridKey(String suffix) {
+    return GridFactory.getSupplierKey(BeeUtils.join(BeeConst.STRING_UNDER, gridName, suffix),
+        getGridInterceptor());
   }
 
   protected String getGridName() {

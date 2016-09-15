@@ -7,6 +7,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -15,12 +18,17 @@ import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputNumber;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -36,6 +44,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 class TripCargoGrid extends AbstractGridInterceptor {
 
@@ -159,7 +168,44 @@ class TripCargoGrid extends AbstractGridInterceptor {
   }
 
   @Override
+  public void onEditStart(EditStartEvent event) {
+    if (!event.isReadOnly() && Objects.equals(event.getColumnId(), COL_TRIP_PERCENT)) {
+      updateFreight(getGridPresenter(), event.getRowValue().getId());
+      event.consume();
+      return;
+    }
+    super.onEditStart(event);
+  }
+
+  @Override
   public void onLoad(GridView gridView) {
     gridView.getViewPresenter().getHeader().addCommandItem(new MessageBuilder(gridView));
+  }
+
+  static void updateFreight(GridPresenter presenter, Long id) {
+    InputNumber amount = new InputNumber();
+    InputBoolean percent = new InputBoolean("%");
+
+    Horizontal widget = new Horizontal();
+    widget.add(amount);
+    widget.add(percent);
+
+    Global.inputWidget(Localized.dictionary().freight(), widget, () -> {
+      ParameterList args = TransportHandler.createArgs(SVC_UPDATE_FREIGHT);
+      args.addDataItem(COL_CARGO_TRIP, id);
+      args.addNotEmptyData(COL_AMOUNT, amount.getValue());
+      args.addDataItem(COL_TRIP_PERCENT, BeeUtils.toString(percent.isChecked()));
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          response.notify(presenter.getGridView());
+
+          if (!response.hasErrors()) {
+            presenter.refresh(true, false);
+          }
+        }
+      });
+    });
   }
 }

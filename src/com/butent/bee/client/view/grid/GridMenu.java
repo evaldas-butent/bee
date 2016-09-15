@@ -18,6 +18,7 @@ import com.butent.bee.client.rights.Roles;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
@@ -86,7 +87,7 @@ public class GridMenu {
     EXPORT(Action.EXPORT) {
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return true;
+        return BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.EXPORT_TO_XLS);
       }
 
       @Override
@@ -421,9 +422,11 @@ public class GridMenu {
 
   private final List<Item> enabledItems = new ArrayList<>();
 
-  public GridMenu(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-    Set<Action> enabledActions = gridDescription.getEnabledActions();
-    Set<Action> disabledActions = gridDescription.getDisabledActions();
+  public GridMenu(GridDescription gridDescription, Collection<UiOption> uiOptions,
+      GridInterceptor gridInterceptor) {
+
+    Set<Action> enabledActions = GridUtils.getEnabledActions(gridDescription, gridInterceptor);
+    Set<Action> disabledActions = GridUtils.getDisabledActions(gridDescription, gridInterceptor);
 
     boolean ok;
     for (Item item : Item.values()) {

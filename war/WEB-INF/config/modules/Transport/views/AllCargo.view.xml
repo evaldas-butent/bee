@@ -8,7 +8,6 @@
     <SimpleColumn name="Status" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="OrderNo" />
-    <SimpleColumn name="Notes" />
 
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
@@ -48,7 +47,21 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <ExternalJoin source="OrderCargo" name="Order" joinType="LEFT">
+    <SimpleColumn name="Expedition" />
+    <SimpleJoin joinType="LEFT" name="Expedition">
+      <SimpleColumn name="Name" alias="ExpeditionType" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ShippingTerm" />
+    <SimpleJoin joinType="LEFT" name="ShippingTerm">
+      <SimpleColumn name="Name" alias="ShippingTermName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Vehicle" />
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="Notes" />
+
+    <ExternalJoin source="OrderCargo" name="Order" joinType="INNER">
       <IdColumn name="Cargo" />
 
       <SimpleJoin name="CargoHandling" joinType="LEFT">
@@ -64,10 +77,6 @@
         <SimpleColumn name="Number" alias="CmrNumber" />
       </SimpleJoin>
 
-      <SimpleJoin joinType="LEFT" name="ShippingTerm">
-        <SimpleColumn name="Name" alias="ShippingTermName" />
-      </SimpleJoin>
-
       <SimpleColumn name="Partial" />
       <SimpleColumn name="Outsized" />
       <SimpleColumn name="Dangerous" />
@@ -80,18 +89,13 @@
           <SimpleColumn name="TripNo" />
           <SimpleColumn name="Notes" alias="TripNotes" />
 
-          <SimpleColumn name="Vehicle" />
           <SimpleJoin name="Vehicle" joinType="LEFT">
             <SimpleColumn name="Number" alias="VehicleNumber" />
           </SimpleJoin>
-          <SimpleColumn name="Trailer" />
           <SimpleJoin name="Trailer" joinType="LEFT">
             <SimpleColumn name="Number" alias="TrailerNumber" />
           </SimpleJoin>
 
-          <SimpleJoin joinType="LEFT" name="Expedition">
-            <SimpleColumn name="Name" alias="ExpeditionType" />
-          </SimpleJoin>
           <SimpleJoin joinType="LEFT" name="Forwarder">
             <SimpleColumn name="Name" alias="ForwarderName" />
           </SimpleJoin>

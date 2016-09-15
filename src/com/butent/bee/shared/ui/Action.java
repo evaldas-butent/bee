@@ -16,30 +16,32 @@ import java.util.Set;
  */
 
 public enum Action implements BeeSerializable, HasCaption {
-  ADD(FontAwesome.PLUS, Localized.dictionary().actionAdd(), "add", true),
-  AUDIT(FontAwesome.HISTORY, Localized.dictionary().actionAudit(), "audit", false),
-  AUTO_FIT(FontAwesome.ARROWS_H, Localized.dictionary().autoFit(), "auto-fit", false),
-  BOOKMARK(FontAwesome.BOOKMARK_O, Localized.dictionary().actionBookmark(), "bookmark", false),
-  CANCEL(FontAwesome.CLOSE, Localized.dictionary().actionCancel(), "cancel", false),
-  CLOSE(FontAwesome.CLOSE, Localized.dictionary().actionClose(), "close", false),
-  CONFIGURE(FontAwesome.COG, Localized.dictionary().actionConfigure(), "configure", false),
-  COPY(FontAwesome.COPY, Localized.dictionary().actionCopy(), "copy", true),
-  DELETE(FontAwesome.TRASH_O, Localized.dictionary().actionDelete(), "delete", true),
-  EDIT(FontAwesome.EDIT, Localized.dictionary().actionEdit(), "edit", true),
-  EXPORT(FontAwesome.FILE_EXCEL_O, Localized.dictionary().actionExport(), "export", false),
-  FILTER(FontAwesome.FILTER, Localized.dictionary().actionFilter(), "filter", false),
-  MAXIMIZE(FontAwesome.SQUARE_O, Localized.dictionary().actionMaximize(), "maximize", false),
-  MENU(FontAwesome.NAVICON, Localized.dictionary().menu(), "menu", false),
-  MINIMIZE(FontAwesome.MINUS, Localized.dictionary().actionMinimize(), "minimize", false),
-  MERGE(FontAwesome.OBJECT_GROUP, Localized.dictionary().actionMerge(), "merge", true),
-  PRINT(FontAwesome.PRINT, Localized.dictionary().actionPrint(), "print", false),
-  REFRESH(FontAwesome.REFRESH, Localized.dictionary().actionRefresh(), "refresh", false),
+  ADD(FontAwesome.PLUS, Localized.dictionary().actionAdd(), "add", true, true),
+  AUDIT(FontAwesome.HISTORY, Localized.dictionary().actionAudit(), "audit", false, true),
+  AUTO_FIT(FontAwesome.ARROWS_H, Localized.dictionary().autoFit(), "auto-fit", false, true),
+  BOOKMARK(FontAwesome.BOOKMARK_O, Localized.dictionary().actionBookmark(), "bookmark", false,
+      true),
+  CANCEL(FontAwesome.CLOSE, Localized.dictionary().actionCancel(), "cancel", false, false),
+  CLOSE(FontAwesome.CLOSE, Localized.dictionary().actionClose(), "close", false, false),
+  CONFIGURE(FontAwesome.COG, Localized.dictionary().actionConfigure(), "configure", false, true),
+  COPY(FontAwesome.COPY, Localized.dictionary().actionCopy(), "copy", true, true),
+  DELETE(FontAwesome.TRASH_O, Localized.dictionary().actionDelete(), "delete", true, true),
+  EDIT(FontAwesome.EDIT, Localized.dictionary().actionEdit(), "edit", true, true),
+  EXPORT(FontAwesome.FILE_EXCEL_O, Localized.dictionary().actionExport(), "export", false, true),
+  FILTER(FontAwesome.FILTER, Localized.dictionary().actionFilter(), "filter", false, true),
+  MAXIMIZE(FontAwesome.SQUARE_O, Localized.dictionary().actionMaximize(), "maximize", false, true),
+  MENU(FontAwesome.NAVICON, Localized.dictionary().menu(), "menu", false, true),
+  MINIMIZE(FontAwesome.MINUS, Localized.dictionary().actionMinimize(), "minimize", false, true),
+  MERGE(FontAwesome.OBJECT_GROUP, Localized.dictionary().actionMerge(), "merge", true, true),
+  PRINT(FontAwesome.PRINT, Localized.dictionary().actionPrint(), "print", false, true),
+  REFRESH(FontAwesome.REFRESH, Localized.dictionary().actionRefresh(), "refresh", false, true),
   REMOVE_FILTER(FontAwesome.REMOVE, Localized.dictionary().actionRemoveFilter(), "removeFilter",
-      false),
+      false, false),
   RESET_SETTINGS(FontAwesome.TIMES_CIRCLE_O, Localized.dictionary().actionResetSettings(),
-      "resetSettings", false),
-  RIGHTS(FontAwesome.EYE, Localized.dictionary().rights(), "rights", true),
-  SAVE(FontAwesome.SAVE, Localized.dictionary().actionSave(), "save", true);
+      "resetSettings", false, true),
+  RIGHTS(FontAwesome.EYE, Localized.dictionary().rights(), "rights", true, true),
+  SAVE(FontAwesome.SAVE, Localized.dictionary().actionSave(), "save", true, true),
+  MOVE(FontAwesome.ARROWS, Localized.dictionary().actionMove(), "move", true, true);
 
   public static final Set<Action> NO_ACTIONS = new HashSet<>();
 
@@ -72,12 +74,19 @@ public enum Action implements BeeSerializable, HasCaption {
 
   private final String styleSuffix;
   private final boolean disablable;
+  private final boolean animate;
 
-  Action(FontAwesome icon, String caption, String styleSuffix, boolean disablable) {
+  Action(FontAwesome icon, String caption, String styleSuffix, boolean disablable,
+      boolean animate) {
     this.icon = icon;
     this.caption = caption;
     this.styleSuffix = styleSuffix;
     this.disablable = disablable;
+    this.animate = animate;
+  }
+
+  public boolean animate() {
+    return animate;
   }
 
   @Override

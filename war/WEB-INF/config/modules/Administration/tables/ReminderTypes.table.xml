@@ -8,6 +8,10 @@
     <String name="Name" precision="30" notNull="true" unique="true" label="=reminderName"/>
     <Enum name="Method" key="ReminderMethod" notNull="true" label="=reminderMethod" />
 
+    <Enum name="Module" key="Module" notNull="false" label="=reminderModule" precision="2" />
+    <Enum name="ReminderDateField" key="ReminderDateField" notNull="false" label="=reminderDateField" />
+    <Enum name="ReminderDateIndicator" key="ReminderDateIndicator" notNull="false" label="=reminderDateIndicator" />
+
     <Integer name="Hours" label="=unitHours" />
     <Integer name="Minutes" label="=unitMinutes" />
     <String name="Caption" precision="15" label="=reminderCaption" />

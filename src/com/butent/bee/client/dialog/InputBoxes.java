@@ -575,7 +575,7 @@ public class InputBoxes {
       }
 
       if (enabled && enabledActions.contains(Action.DELETE)) {
-        FaLabel delete = new FaLabel(FontAwesome.TRASH);
+        FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
         delete.addClickHandler(event -> callback.onDelete(dialog));
         delete.addStyleName(STYLE_INPUT_DELETE);
 

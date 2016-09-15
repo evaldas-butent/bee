@@ -213,6 +213,14 @@ public class Chat implements BeeSerializable, HasInfo, Comparable<Chat> {
     return lastMessage;
   }
 
+  public String getLastMessagePlainText() {
+    if (!BeeUtils.isEmpty(lastMessage.getText())) {
+      return lastMessage.getText().replaceAll("\\<.*?\\>", "");
+    }
+
+    return lastMessage.getText();
+  }
+
   public long getMaxTime() {
     return (getLastMessage() == null) ? BeeConst.LONG_UNDEF : getLastMessage().getTime();
   }

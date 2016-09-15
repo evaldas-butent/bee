@@ -76,7 +76,6 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
    * Focus the widget on this form view.
    * 
    * @param source name of source where related focusable widget.
-   * @return
    */
   boolean focus(String source);
 
@@ -172,7 +171,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void start(Integer rowCount);
 
-  void updateCell(String columnId, String newValue);
+  boolean updateCell(String columnId, String newValue);
 
   void updateRow(IsRow row, boolean refreshChildren);
 

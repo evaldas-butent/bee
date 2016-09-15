@@ -65,8 +65,6 @@ public class ParameterList extends ArrayList<RpcParameter> {
       case QUERY:
         addQueryItems(items);
         break;
-      default:
-        Assert.untouchable();
     }
   }
 

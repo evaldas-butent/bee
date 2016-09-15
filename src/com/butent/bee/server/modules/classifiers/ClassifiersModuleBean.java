@@ -17,9 +17,14 @@ import com.google.zxing.common.ByteMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.modules.calendar.CalendarHelper;
+
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
@@ -68,7 +73,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.elements.Table;
@@ -76,14 +80,12 @@ import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
 import com.butent.bee.shared.i18n.Dictionary;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.classifiers.PriceInfo;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -127,14 +129,7 @@ import java.util.OptionalDouble;
 import java.util.Set;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
+import javax.ejb.*;
 import javax.imageio.ImageIO;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -204,7 +199,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Override
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
-    ResponseObject response = null;
+    ResponseObject response;
 
     if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
       response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)),
@@ -279,8 +274,6 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    initActionReminderTimer();
-
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
@@ -360,6 +353,47 @@ public class ClassifiersModuleBean implements BeeModule {
             } catch (AddressException ex) {
               event.addErrorMessage(BeeUtils.joinWords("Wrong address ", email, ": ",
                   ex.getMessage()));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setItemRemainders(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_ITEMS) && usr.isModuleVisible(ModuleAndSub.of(Module.ORDERS))) {
+          Map<Long, IsRow> indexedRows = new HashMap<>();
+          BeeRowSet rowSet = event.getRowset();
+          List<Long> ids = rowSet.getRowIds();
+
+          Map<Long, Double> resReminders =
+              getReminders(ids, TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+          Map<Long, Double> wrhReminders =
+              getReminders(ids, VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER);
+
+          for (BeeRow row : rowSet.getRows()) {
+            Long id = row.getId();
+
+            if (DataUtils.isId(id)) {
+              indexedRows.put(id, row);
+              row.setProperty(COL_RESERVED_REMAINDER, resReminders.get(id));
+              row.setProperty(PROP_WAREHOUSE_REMAINDER, wrhReminders.get(id));
+            }
+          }
+          if (!indexedRows.isEmpty()) {
+            BeeView view = sys.getView(VIEW_ITEM_REMAINDERS);
+            SqlSelect query = view.getQuery(usr.getCurrentUserId());
+
+            query.setWhere(SqlUtils.and(query.getWhere(), SqlUtils.inList(view.getSourceAlias(),
+                COL_ITEM, indexedRows.keySet())));
+
+            for (SimpleRow row : qs.getData(query)) {
+              IsRow r = indexedRows.get(row.getLong(COL_ITEM));
+
+              if (r != null) {
+                r.setProperty(COL_WAREHOUSE_REMAINDER + row.getValue(ALS_WAREHOUSE_CODE),
+                    row.getValue(COL_WAREHOUSE_REMAINDER));
+              }
             }
           }
         }
@@ -763,57 +797,31 @@ public class ClassifiersModuleBean implements BeeModule {
     });
   }
 
-  public void initActionReminderTimer() {
-    Timer actionReminderTimer = null;
-
-    for (Timer timer : timerService.getTimers()) {
-      if (Objects.equals(timer.getInfo(), TIMER_REMIND_COMPANY_ACTIONS)) {
-        actionReminderTimer = timer;
-        break;
-      }
-    }
-
-    if (actionReminderTimer != null) {
-      actionReminderTimer.cancel();
-    }
-
-    long startDelay = ((TimeUtils.MINUTES_PER_HOUR - (new DateTime()).getMinute())
-        * TimeUtils.MILLIS_PER_MINUTE) + (1 * TimeUtils.MILLIS_PER_SECOND);
-
-    actionReminderTimer = timerService.createIntervalTimer(startDelay,
-        DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT, new TimerConfig(TIMER_REMIND_COMPANY_ACTIONS, false));
-
-    logger.info("Created CALENDAR company actions timer. Timer starts at",
-        actionReminderTimer.getNextTimeout());
+  public Document createRemindTemplate(SimpleRowSet data, Map<String, String> labels,
+                                       Map<String, ValueType> format, Map<String, String> enumKeys,
+                                       String subject, String reminderText, Long userId) {
+    return createRemindTemplate(data, labels, format, enumKeys, null, subject, reminderText,
+            userId);
   }
 
-  private void createActionRemindMail(Long userId, BeeRowSet appointments) {
-    Long accountId = mail.getSenderAccountId(TIMER_REMIND_COMPANY_ACTIONS);
-    String to = usr.getUserEmail(userId, false);
-
-    if (!DataUtils.isId(accountId) && BeeUtils.isEmpty(to)) {
-      return;
-    }
-
-    String subject = usr.getDictionary().calMailPlannedActionSubject();
-    String reminderText = usr.getDictionary().calMailPlannedActionText();
-
+  public Document createRemindTemplate(SimpleRowSet data, Map<String, String> labels,
+                                       Map<String, ValueType> format, Map<String, String> enumKeys,
+                                       List<String> excludedColumns, String subject,
+                                       String reminderText, Long userId) {
+    Assert.notNull(data);
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(subject));
 
     Table table = table();
     Tr trHead = tr();
 
-    for (int i = 0; i < appointments.getNumberOfColumns(); i++) {
-      String label = BeeConst.STRING_EMPTY;
-
-      if (BeeUtils.same(appointments.getColumnId(i), CalendarConstants.ALS_ATTENDEE_TYPE_NAME)) {
-        label = usr.getDictionary().type();
-      } else if (BeeUtils.same(appointments.getColumnId(i), ClassifierConstants.ALS_COMPANY_NAME)) {
-        label = usr.getDictionary().customer();
-      } else {
-        label = Localized.maybeTranslate(appointments.getColumnLabel(i), usr.getGlossary());
+    for (int i = 0; i < data.getNumberOfColumns(); i++) {
+      if (BeeUtils.contains(excludedColumns, data.getColumnName(i))) {
+        continue;
       }
+
+      String label = BeeUtils.containsKey(labels, data.getColumnName(i))
+              ? labels.get(data.getColumnName(i)) : data.getColumnName(i);
 
       Th th = th().text(label);
       th.setBorderWidth("1px");
@@ -825,38 +833,60 @@ public class ClassifiersModuleBean implements BeeModule {
     table.append(trHead);
 
     Range<Long> maybeTime = Range.closed(
-        TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
-        TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+            TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
+            TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
 
-    for (IsRow row : appointments) {
+    for (SimpleRow row : data) {
       Tr tr = tr();
 
-      for (int i = 0; i < appointments.getNumberOfColumns(); i++) {
-        if (row.isNull(i)) {
-          tr.append(td());
+      for (int i = 0; i < data.getNumberOfColumns(); i++) {
+        if (BeeUtils.contains(excludedColumns, data.getColumnName(i))) {
           continue;
         }
 
-        ValueType type = appointments.getColumnType(i);
-        String value = DataUtils.render(appointments.getColumn(i), row, i);
+        if (BeeUtils.isEmpty(row.getValue(i))) {
+          Td td = td();
+          tr.append(td);
+          td.setBorderWidth("1px");
+          td.setBorderStyle(BorderStyle.SOLID);
+          td.setBorderColor("black");
+          continue;
+        }
 
-        if (type == ValueType.LONG) {
-          Long x = row.getLong(i);
-          if (x != null && maybeTime.contains(x)) {
-            type = ValueType.DATE_TIME;
-            value = new DateTime(x).toCompactString();
-          }
-        } else if (!BeeUtils.isEmpty(appointments.getColumn(i).getEnumKey())) {
-          value = EnumUtils.getLocalizedCaption(appointments.getColumn(i).getEnumKey(),
-              row.getInteger(i), usr.getDictionary(userId));
+        ValueType type = format.get(data.getColumnName(i)) == null
+                ? ValueType.TEXT : format.get(data.getColumnName(i));
+        String value = BeeUtils.nvl(row.getValue(i), BeeConst.STRING_EMPTY);
+
+        switch (type) {
+          case LONG:
+            Long x = row.getLong(i);
+            if (x != null && maybeTime.contains(x)) {
+              type = ValueType.DATE_TIME;
+              value = new DateTime(x).toCompactString();
+            }
+            break;
+          case INTEGER:
+            if (BeeUtils.containsKey(enumKeys, data.getColumnName(i))) {
+              value = EnumUtils.getLocalizedCaption(enumKeys.get(data.getColumnName(i)),
+                      row.getInt(i), usr.getDictionary(userId));
+            }
+            break;
+          case DATE_TIME:
+            value = row.getDateTime(i).toCompactString();
+            break;
+          default:
+            value = BeeUtils.nvl(row.getValue(i), BeeConst.STRING_EMPTY);
         }
 
         Td td = td();
         tr.append(td);
         td.text(value);
+        td.setBorderWidth("1px");
+        td.setBorderStyle(BorderStyle.SOLID);
+        td.setBorderColor("black");
 
         if (ValueType.isNumeric(type) || ValueType.TEXT == type
-            && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
+                && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
           td.setTextAlign(TextAlign.RIGHT);
         }
       }
@@ -870,10 +900,35 @@ public class ClassifiersModuleBean implements BeeModule {
     doc.getBody().append(p().text(reminderText));
     doc.getBody().append(table);
 
+    return doc;
+  }
+
+  private void createActionRemindMail(Long userId, SimpleRowSet appointments) {
+    Long accountId = mail.getSenderAccountId(TIMER_REMIND_COMPANY_ACTIONS);
+    String to = usr.getUserEmail(userId, false);
+
+    if (!DataUtils.isId(accountId) && BeeUtils.isEmpty(to)) {
+      return;
+    }
+
+    Dictionary dic = usr.getDictionary();
+    String subject = dic.calMailPlannedActionSubject();
+    String reminderText = dic.calMailPlannedActionText();
+
+    String appointmentIdName = sys.getIdName(CalendarConstants.TBL_APPOINTMENTS);
+
+    Map<String, String> labels =
+            CalendarHelper.getAppointmentReminderDataLabels(dic, appointmentIdName);
+    Map<String, ValueType> format =
+            CalendarHelper.getAppointmentReminderDataTypes(appointmentIdName);
+    Map<String, String> enumKeys = CalendarHelper.getAppointmentReminderDataEnumKeys();
+    Document doc = createRemindTemplate(appointments, labels, format, enumKeys,
+            BeeConst.STRING_EMPTY, reminderText, userId);
+
     mail.sendMail(accountId, to, subject, doc.buildLines());
-    setRemindedAppointments(appointments);
+    setRemindedAppointments(Lists.newArrayList(appointments.getLongColumn(appointmentIdName)));
     logger.info(TIMER_REMIND_COMPANY_ACTIONS, "mail send, user id", userId,
-        ", company action count", appointments.getRows().size());
+            ", company action count", appointments.getRows().size());
   }
 
   private ResponseObject createCompany(Map<String, String> companyInfo) {
@@ -1714,6 +1769,38 @@ public class ClassifiersModuleBean implements BeeModule {
     return BeeUtils.joinOptions(COL_DISCOUNT_PRICE, pp.getA(), COL_DISCOUNT_PERCENT, pp.getB());
   }
 
+  private static IsCondition getCompanyActionsFilter(Long user, int remindBefore) {
+    JustDate today = new JustDate();
+    long nowInHours = new DateTime().getTime() / TimeUtils.MILLIS_PER_HOUR;
+
+    IsCondition hasCompany = SqlUtils.notNull(CalendarConstants.TBL_APPOINTMENTS, COL_COMPANY);
+
+    IsCondition isCompleted = SqlUtils.inList(CalendarConstants.TBL_APPOINTMENTS,
+            CalendarConstants.COL_STATUS, AppointmentStatus.COMPLETED.ordinal(),
+            AppointmentStatus.CONFIRMED.ordinal());
+
+    IsCondition isActive = SqlUtils.not(isCompleted);
+
+    IsCondition notResult = SqlUtils.isNull(CalendarConstants.TBL_APPOINTMENTS,
+            CalendarConstants.COL_ACTION_RESULT);
+    IsCondition notRemind = SqlUtils.isNull(CalendarConstants.TBL_APPOINTMENTS,
+            CalendarConstants.COL_ACTION_REMINDED);
+    IsCondition validStart = SqlUtils.more(CalendarConstants.TBL_APPOINTMENTS,
+            CalendarConstants.COL_START_DATE_TIME,
+            today);
+    IsCondition isOwner = SqlUtils.equals(CalendarConstants.TBL_APPOINTMENTS,
+            CalendarConstants.COL_CREATOR, user);
+
+    IsExpression remindStartHrs = SqlUtils.divide(
+            SqlUtils.field(CalendarConstants.TBL_APPOINTMENTS,
+                    CalendarConstants.COL_START_DATE_TIME), TimeUtils.MILLIS_PER_HOUR);
+
+    IsCondition canRemind = SqlUtils.moreEqual(SqlUtils.minus(remindStartHrs, nowInHours),
+            remindBefore);
+
+    return SqlUtils.and(hasCompany, isActive, notResult, notRemind, validStart, canRemind, isOwner);
+  }
+
   private Pair<Double, Double> getCompanyLevelPriceAndDiscount(List<PriceInfo> discounts,
       List<Long> companies, int explain) {
 
@@ -1939,10 +2026,9 @@ public class ClassifiersModuleBean implements BeeModule {
 
   private Map<Long, Integer> getRemindActionsUserSettings() {
     Map<Long, Integer> userSettings = Maps.newHashMap();
-    Filter isSetReminder = Filter.notNull(COL_REMIND_ACTIONS);
     Filter timeIsSet = Filter.isPositive(COL_REMIND_ACTION_BEFORE);
 
-    BeeRowSet rows = qs.getViewData(VIEW_USER_SETTINGS, Filter.and(isSetReminder, timeIsSet));
+    BeeRowSet rows = qs.getViewData(VIEW_USER_SETTINGS, timeIsSet);
 
     for (IsRow row : rows) {
       Long userId = row.getLong(rows.getColumnIndex(COL_USER));
@@ -1956,12 +2042,56 @@ public class ClassifiersModuleBean implements BeeModule {
     return userSettings;
   }
 
-  @Timeout
-  private void notifyCompanyActions(Timer timer) {
-    if (!BeeUtils.same((String) timer.getInfo(), TIMER_REMIND_COMPANY_ACTIONS)) {
-      return;
+  private Map<Long, Double> getReminders(List<Long> ids, String source, String field) {
+
+    Map<Long, Double> reminders = new HashMap<>();
+    Map<Long, Double> invoices = new HashMap<>();
+
+    if (!BeeUtils.isEmpty(ids)) {
+      SqlSelect select = new SqlSelect()
+          .addFields(source, COL_ITEM)
+          .addSum(source, field)
+          .addFrom(source)
+          .setWhere(SqlUtils.inList(source, COL_ITEM, ids))
+          .addGroup(source, COL_ITEM);
+
+      if (source == TBL_ORDER_ITEMS) {
+        SqlSelect slcInvoices =
+            new SqlSelect()
+                .addFields(TBL_SALE_ITEMS, COL_ITEM)
+                .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+                .addFrom(TBL_SALE_ITEMS)
+                .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                .setWhere(
+                    SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_ITEM, ids), SqlUtils.isNull(
+                        TBL_SALES, COL_TRADE_EXPORTED)))
+                .addGroup(TBL_SALE_ITEMS, COL_ITEM);
+
+        for (SimpleRow row : qs.getData(slcInvoices)) {
+          invoices.put(row.getLong(COL_ITEM), BeeUtils
+              .unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY)));
+        }
+
+        for (SimpleRow row : qs.getData(select)) {
+          if (invoices.containsKey(row.getLong(COL_ITEM))) {
+            reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field))
+                + BeeUtils.unbox(invoices.get(row.getLong(COL_ITEM))));
+          } else {
+            reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+          }
+        }
+      } else {
+        for (SimpleRow row : qs.getData(select)) {
+          reminders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+        }
+      }
     }
 
+    return reminders;
+  }
+
+  @Schedule(hour = "*/1", persistent = false)
+  private void notifyCompanyActions() {
     logger.info("Timer", TIMER_REMIND_COMPANY_ACTIONS, "started");
 
     if (!DataUtils.isId(mail.getSenderAccountId(TIMER_REMIND_COMPANY_ACTIONS))) {
@@ -1975,8 +2105,7 @@ public class ClassifiersModuleBean implements BeeModule {
       sendCompanyActionsReminder(user, userSettings.get(user));
     }
 
-    logger.info("Timer", TIMER_REMIND_COMPANY_ACTIONS, "ended, Next start time",
-        timer.getNextTimeout());
+    logger.info("Timer", TIMER_REMIND_COMPANY_ACTIONS, "ended");
   }
 
   private void sendCompanyActionsReminder(Long user, Integer remindBefore) {
@@ -1984,55 +2113,44 @@ public class ClassifiersModuleBean implements BeeModule {
       return;
     }
 
-    Order sortBy = Order.ascending(CalendarConstants.COL_END_DATE_TIME);
-    JustDate today = new JustDate();
-    DateTime now = new DateTime();
+    IsCondition filter = getCompanyActionsFilter(user, remindBefore);
 
-    Filter hasCompany = Filter.notNull(COL_COMPANY);
-    Filter isCompleted = Filter.or(
-        Filter.equals(CalendarConstants.COL_STATUS, AppointmentStatus.COMPLETED),
-        Filter.equals(CalendarConstants.COL_STATUS, AppointmentStatus.CONFIRMED));
-    Filter isActive = Filter.isNot(isCompleted);
+    SqlSelect appointmentsQuery = new SqlSelect()
+            .addFields(CalendarConstants.TBL_APPOINTMENTS,
+                    sys.getIdName(CalendarConstants.TBL_APPOINTMENTS),
+                    CalendarConstants.COL_CREATED, CalendarConstants.COL_SUMMARY,
+                    CalendarConstants.COL_STATUS,
+                    CalendarConstants.COL_START_DATE_TIME, CalendarConstants.COL_END_DATE_TIME)
+            .addField(CalendarConstants.TBL_APPOINTMENT_TYPES,
+                    CalendarConstants.COL_APPOINTMENT_TYPE_NAME,
+                    CalendarConstants.ALS_APPOINTMENT_TYPE_NAME)
+            .addExpr(SqlUtils.concat(
+                    SqlUtils.nvl(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "''"), "' '",
+                    SqlUtils.nvl(SqlUtils.field(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME), "''")),
+                    ALS_COMPANY_NAME)
+            .addExpr(SqlUtils.concat(
+                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "''"), "' '",
+                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
+                    ALS_CONTACT_PERSON)
+            .addFrom(CalendarConstants.TBL_APPOINTMENTS)
+            .addFromLeft(CalendarConstants.TBL_APPOINTMENT_TYPES,
+                    sys.joinTables(CalendarConstants.TBL_APPOINTMENT_TYPES,
+                            CalendarConstants.TBL_APPOINTMENTS,
+                            CalendarConstants.COL_APPOINTMENT_TYPE))
+            .addFromLeft(TBL_COMPANIES,
+                    sys.joinTables(TBL_COMPANIES, CalendarConstants.TBL_APPOINTMENTS, COL_COMPANY))
+            .addFromLeft(TBL_COMPANY_TYPES,
+                    sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+            .addFromLeft(TBL_COMPANY_PERSONS,
+                    sys.joinTables(TBL_COMPANY_PERSONS, CalendarConstants.TBL_APPOINTMENTS,
+                            COL_COMPANY_PERSON))
+            .addFromLeft(TBL_PERSONS,
+                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+            .setWhere(filter)
+            .addOrder(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_START_DATE_TIME);
 
-    Filter notResult = Filter.isNull(CalendarConstants.COL_ACTION_RESULT);
-    Filter notRemind = Filter.isNull(CalendarConstants.COL_ACTION_REMINDED);
-    Filter validEnd = Filter.isMore(CalendarConstants.COL_END_DATE_TIME, Value.getValue(today));
-    Filter isOwner = Filter.equals(CalendarConstants.COL_CREATOR, user);
 
-    List<String> cols = Lists.newArrayList(CalendarConstants.COL_CREATED,
-        CalendarConstants.ALS_ATTENDEE_TYPE_NAME, CalendarConstants.COL_SUMMARY,
-        ClassifierConstants.ALS_COMPANY_NAME, CalendarConstants.ALS_PERSON_FIRST_NAME,
-        CalendarConstants.ALS_PERSON_LAST_NAME, CalendarConstants.COL_STATUS,
-        CalendarConstants.COL_END_DATE_TIME);
-
-    BeeRowSet appointments = qs.getViewData(CalendarConstants.VIEW_APPOINTMENTS,
-        Filter.and(hasCompany, Filter.and(isActive, isOwner),
-            Filter.and(notResult, notRemind, validEnd)), sortBy, cols);
-
-    List<Long> notRemindIds = Lists.newArrayList();
-    long nowInHours = now.getTime() / TimeUtils.MILLIS_PER_HOUR;
-    logger.debug("current appointment count", appointments.getNumberOfRows());
-    for (IsRow row : appointments) {
-      DateTime eventEnd =
-          row.getDateTime(appointments.getColumnIndex(CalendarConstants.COL_END_DATE_TIME));
-
-      if (eventEnd == null) {
-        notRemindIds.add(row.getId());
-        continue;
-      }
-
-      long eventEndInHours = eventEnd.getTime() / TimeUtils.MILLIS_PER_HOUR;
-
-      logger.debug("Time values", "event end in hours", row.getId(), eventEndInHours,
-          "remind before", remindBefore, "diff", eventEndInHours - (nowInHours + 1));
-      if ((eventEndInHours - nowInHours) > remindBefore) {
-        notRemindIds.add(row.getId());
-      }
-    }
-
-    for (long id : notRemindIds) {
-      appointments.removeRowById(id);
-    }
+    SimpleRowSet appointments = qs.getData(appointmentsQuery);
 
     if (appointments.getNumberOfRows() > 0) {
       createActionRemindMail(user, appointments);
@@ -2041,11 +2159,15 @@ public class ClassifiersModuleBean implements BeeModule {
     }
   }
 
-  public void setRemindedAppointments(BeeRowSet appointments) {
+  public void setRemindedAppointments(List<Long> appointments) {
+    if (BeeUtils.isEmpty(appointments)) {
+      return;
+    }
+
     SqlUpdate update = new SqlUpdate(CalendarConstants.TBL_APPOINTMENTS);
     update.addConstant(CalendarConstants.COL_ACTION_REMINDED, Boolean.TRUE);
     update.setWhere(SqlUtils.inList(CalendarConstants.TBL_APPOINTMENTS,
-        sys.getIdName(CalendarConstants.TBL_APPOINTMENTS), appointments.getRowIds()));
+            sys.getIdName(CalendarConstants.TBL_APPOINTMENTS), appointments));
     qs.updateData(update);
   }
 
@@ -2131,4 +2253,33 @@ public class ClassifiersModuleBean implements BeeModule {
     qrBase64 = Codec.toBase64(imageInByte);
     return qrBase64;
   }
+
+  public DateTime calculateReminderTime(Long time, Integer dataIndicator,
+      Integer hours, Integer minutes) {
+    DateTime reminderTime = new DateTime();
+    reminderTime.setTime(time);
+
+    if (time != null && dataIndicator != null) {
+      if (BeeUtils.same(dataIndicator.toString(),
+          BeeUtils.toString(ReminderDateIndicator.AFTER.ordinal()))) {
+        if (hours != null) {
+          TimeUtils.addHour(reminderTime, hours);
+        }
+        if (minutes != null) {
+          TimeUtils.addMinute(reminderTime, minutes);
+        }
+      }
+      if (BeeUtils.same(dataIndicator.toString(),
+          BeeUtils.toString(ReminderDateIndicator.BEFORE.ordinal()))) {
+        if (hours != null) {
+          TimeUtils.addHour(reminderTime, hours * -1);
+        }
+        if (minutes != null) {
+          TimeUtils.addMinute(reminderTime, minutes * -1);
+        }
+      }
+    }
+    return reminderTime;
+  }
+
 }

@@ -38,7 +38,6 @@ import java.util.Set;
 
 public final class DataUtils {
 
-  public static final String STATE_NAMESPACE = "http://www.butent.com/state";
   public static final String TABLE_NAMESPACE = "http://www.butent.com/table";
   public static final String VIEW_NAMESPACE = "http://www.butent.com/view";
   public static final String EXPRESSION_NAMESPACE = "http://www.butent.com/expression";
@@ -58,12 +57,7 @@ public final class DataUtils {
 
   private static BeeLogger logger = LogUtils.getLogger(DataUtils.class);
 
-  private static final Predicate<Long> IS_ID = new Predicate<Long>() {
-    @Override
-    public boolean apply(Long input) {
-      return isId(input);
-    }
-  };
+  private static final Predicate<Long> IS_ID = DataUtils::isId;
 
   private static final char ID_LIST_SEPARATOR = ',';
 
@@ -81,11 +75,6 @@ public final class DataUtils {
     if (!BeeConst.isUndef(index) && !rowSet.isEmpty()) {
       BeeUtils.addAllNotNull(target, rowSet.getDistinctLongs(index));
     }
-  }
-
-  public static long assertId(Long id) {
-    Assert.isTrue(isId(id), "invalid row id");
-    return id;
   }
 
   public static String buildIdList(BeeRowSet rowSet) {
@@ -223,6 +212,42 @@ public final class DataUtils {
     BeeRowSet rs = new BeeRowSet(viewName, newColumns);
     rs.addRow(newRow);
     return rs;
+  }
+
+  public static BeeRowSet createRowSetForInsert(BeeRowSet input) {
+    if (input == null) {
+      return null;
+    }
+
+    List<BeeColumn> newColumns = new ArrayList<>();
+    List<Integer> indexes = new ArrayList<>();
+
+    for (int i = 0; i < input.getNumberOfColumns(); i++) {
+      BeeColumn column = input.getColumn(i);
+
+      if (column.isEditable()) {
+        newColumns.add(column);
+        indexes.add(i);
+      }
+    }
+
+    if (newColumns.isEmpty()) {
+      return null;
+    }
+
+    BeeRowSet result = new BeeRowSet(input.getViewName(), newColumns);
+
+    for (BeeRow oldRow : input) {
+      List<String> values = new ArrayList<>();
+      for (int index : indexes) {
+        values.add(oldRow.getString(index));
+      }
+
+      BeeRow newRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+      result.addRow(newRow);
+    }
+
+    return result;
   }
 
   public static String defaultColumnId(int index) {
@@ -491,6 +516,24 @@ public final class DataUtils {
     return row.getDouble(getColumnIndex(columnId, columns));
   }
 
+  public static Double getDoubleQuietly(IsRow row, int index) {
+    if (row == null) {
+      return null;
+
+    } else if (index == ID_INDEX) {
+      return (double) row.getId();
+
+    } else if (index == VERSION_INDEX) {
+      return (double) row.getVersion();
+
+    } else if (row.isIndex(index)) {
+      return row.getDouble(index);
+
+    } else {
+      return null;
+    }
+  }
+
   public static long getId(IsRow row) {
     return (row == null) ? BeeConst.LONG_UNDEF : row.getId();
   }
@@ -511,12 +554,42 @@ public final class DataUtils {
     return row.getInteger(getColumnIndex(columnId, columns));
   }
 
+  public static Integer getIntegerQuietly(IsRow row, int index) {
+    if (row == null) {
+      return null;
+
+    } else if (row.isIndex(index)) {
+      return row.getInteger(index);
+
+    } else {
+      return null;
+    }
+  }
+
   public static Long getLong(BeeRowSet rowSet, IsRow row, String columnId) {
     return getLong(rowSet.getColumns(), row, columnId);
   }
 
   public static Long getLong(List<? extends IsColumn> columns, IsRow row, String columnId) {
     return row.getLong(getColumnIndex(columnId, columns));
+  }
+
+  public static Long getLongQuietly(IsRow row, int index) {
+    if (row == null) {
+      return null;
+
+    } else if (index == ID_INDEX) {
+      return row.getId();
+
+    } else if (index == VERSION_INDEX) {
+      return row.getVersion();
+
+    } else if (row.isIndex(index)) {
+      return row.getLong(index);
+
+    } else {
+      return null;
+    }
   }
 
   public static int getMaxInitialRowSetSize() {
@@ -667,7 +740,7 @@ public final class DataUtils {
     } else if (index == VERSION_INDEX) {
       return BeeUtils.toString(row.getVersion());
 
-    } else if (index >= 0 && index < row.getNumberOfCells()) {
+    } else if (row.isIndex(index)) {
       return row.getString(index);
 
     } else {

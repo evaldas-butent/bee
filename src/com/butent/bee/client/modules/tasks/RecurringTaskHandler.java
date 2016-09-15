@@ -1075,7 +1075,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         List<ScheduleDateRange> scheduleDateRanges = new ArrayList<>();
 
         if (response.hasResponse()) {
-          Map<String, String> data = Codec.deserializeMap(response.getResponseAsString());
+          Map<String, String> data = Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
           if (data.containsKey(AdministrationConstants.VIEW_USERS)) {
             setExecutors(BeeRowSet.restore(data.get(AdministrationConstants.VIEW_USERS)));

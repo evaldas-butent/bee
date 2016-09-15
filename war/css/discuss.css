@@ -24,6 +24,10 @@
   border-left: 5px solid red;
 }
 
+.bee-discuss-comment-rowLastComment {
+  border-left: 3px  solid #1ca5c7;
+}
+
 .bee-discuss-comment-PublishTime {
   float: left;
   margin-left: 20px;

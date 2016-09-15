@@ -11,9 +11,6 @@ name="Payroll" label="=payroll" order="120" module="Payroll"
     separator="true" />
   <Item name="TimeSheet" label="=timeSheet" service="form" parameters="TimeSheet" />
 
-  <Item name="Earnings" label="=earningsOfObjects" service="form" parameters="Earnings"
-    separator="true" />
-  
   <Item name="TimeCardCodes" label="=timeCardCodes" service="grid" parameters="TimeCardCodes"
     separator="true" />
   <Item name="TimeRanges" label="=timeRanges" service="grid" parameters="TimeRanges" />

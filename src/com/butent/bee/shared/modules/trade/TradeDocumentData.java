@@ -82,14 +82,14 @@ public class TradeDocumentData implements BeeSerializable {
         case CURRENCY_RATES:
           this.currencyRates = new HashMap<>();
 
-          Map<String, String> map = Codec.deserializeMap(value);
+          Map<String, String> map = Codec.deserializeLinkedHashMap(value);
           for (Map.Entry<String, String> entry : map.entrySet()) {
             getCurrencyRates().put(entry.getKey(), BeeUtils.toDoubleOrNull(entry.getValue()));
           }
           break;
 
         case TOTAL_IN_WORDS:
-          setTotalInWords(Codec.deserializeMap(value));
+          setTotalInWords(Codec.deserializeLinkedHashMap(value));
           break;
       }
     }

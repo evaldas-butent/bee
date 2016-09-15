@@ -2,10 +2,6 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
@@ -30,6 +26,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -42,6 +39,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Orientation;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
@@ -52,6 +50,11 @@ import java.util.List;
  */
 
 public class MessageBoxes {
+
+  public static final String STYLE_MESSAGE_BOX = BeeConst.CSS_CLASS_PREFIX + "MessageBox";
+  public static final String STYLE_MESSAGE_BOX_DECIDE = STYLE_MESSAGE_BOX + "-decide";
+  public static final String STYLE_MESSAGE_BOX_CONFIRM = STYLE_MESSAGE_BOX + "-confirm";
+  public static final String STYLE_MESSAGE_BOX_DELETE = STYLE_MESSAGE_BOX + "-delete";
 
   private static final BeeLogger logger = LogUtils.getLogger(MessageBoxes.class);
 
@@ -64,10 +67,11 @@ public class MessageBoxes {
   private static final String STYLE_CHOICE_DEFAULT = BeeConst.CSS_CLASS_PREFIX + "ChoiceDefault";
   private static final String STYLE_CHOICE_CANCEL = BeeConst.CSS_CLASS_PREFIX + "ChoiceCancel";
 
-  private static final String STYLE_MESSAGE_BOX = BeeConst.CSS_CLASS_PREFIX + "MessageBox";
   private static final String STYLE_MESSAGE_BOX_PANEL = STYLE_MESSAGE_BOX + "-panel";
   private static final String STYLE_MESSAGE_BOX_ICON = STYLE_MESSAGE_BOX + "-icon";
   private static final String STYLE_MESSAGE_BOX_MESSAGE = STYLE_MESSAGE_BOX + "-message";
+  private static final String STYLE_MESSAGE_BOX_MESSAGE_ITEM = STYLE_MESSAGE_BOX_MESSAGE + "-item";
+
   private static final String STYLE_MESSAGE_BOX_BUTTON_GROUP = STYLE_MESSAGE_BOX + "-buttonGroup";
   private static final String STYLE_MESSAGE_BOX_BUTTON = STYLE_MESSAGE_BOX + "-button";
 
@@ -275,7 +279,8 @@ public class MessageBoxes {
     };
 
     display(caption, Icon.QUESTION, messages, options, defaultValue, choice, BeeConst.UNDEF,
-        dialogStyle, messageStyle, buttonStyle, target, null);
+        BeeUtils.notEmpty(dialogStyle, STYLE_MESSAGE_BOX_DECIDE), messageStyle, buttonStyle,
+            target, null);
   }
 
   public void display(String caption, Icon icon, List<String> messages, List<String> options,
@@ -285,12 +290,13 @@ public class MessageBoxes {
 
     final Popup popup;
     if (BeeUtils.isEmpty(caption)) {
-      popup = new Popup(OutsideClick.IGNORE);
+      popup = DialogBox.create(UserInterface.TITLE);
     } else {
       popup = DialogBox.create(caption);
     }
 
     popup.addStyleName(BeeUtils.notEmpty(dialogStyle, STYLE_MESSAGE_BOX));
+    popup.setResizable(false);
 
     UiHelper.initialize(popup, initializer, DialogConstants.WIDGET_DIALOG);
 
@@ -304,7 +310,7 @@ public class MessageBoxes {
     int col = 0;
 
     if (icon != null) {
-      Widget iconWidget = UiHelper.initialize(new Image(icon.getImageResource()), initializer,
+      Widget iconWidget = UiHelper.initialize(new FaLabel(icon.getIcon()), initializer,
           DialogConstants.WIDGET_ICON);
 
       if (iconWidget != null) {
@@ -314,6 +320,10 @@ public class MessageBoxes {
     }
 
     if (!BeeUtils.isEmpty(messages)) {
+      int msgRow = 0;
+      HtmlTable messagesTable = new HtmlTable();
+      table.setWidgetAndStyle(row++, col, messagesTable, STYLE_MESSAGE_BOX_MESSAGE);
+
       for (String message : messages) {
         if (message != null) {
           Widget messageWidget = UiHelper.initialize(new Label(message), initializer,
@@ -323,7 +333,8 @@ public class MessageBoxes {
             if (!BeeUtils.isEmpty(messageStyle)) {
               messageWidget.addStyleName(messageStyle);
             }
-            table.setWidgetAndStyle(row++, col, messageWidget, STYLE_MESSAGE_BOX_MESSAGE);
+            messagesTable.setWidgetAndStyle(msgRow++, 0, messageWidget,
+                    STYLE_MESSAGE_BOX_MESSAGE_ITEM);
           }
         }
       }
@@ -331,16 +342,14 @@ public class MessageBoxes {
 
     final Holder<Integer> selectedIndex = Holder.absent();
 
+    col = 0;
     final Horizontal group = new Horizontal();
 
     if (!BeeUtils.isEmpty(options)) {
       for (String option : options) {
-        Button button = new Button(option, new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            selectedIndex.set(group.getWidgetIndex((Widget) event.getSource()));
-            popup.close();
-          }
+        Button button = new Button(option, event -> {
+          selectedIndex.set(group.getWidgetIndex((Widget) event.getSource()));
+          popup.close();
         });
 
         button.addStyleName(STYLE_MESSAGE_BOX_BUTTON);
@@ -357,25 +366,23 @@ public class MessageBoxes {
 
       UiHelper.initialize(group, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
       table.setWidgetAndStyle(row, col, group, STYLE_MESSAGE_BOX_BUTTON_GROUP);
+      table.getCellFormatter().setColSpan(row, col, 2);
     }
 
     popup.setHideOnEscape(true);
 
-    popup.addCloseHandler(new CloseEvent.Handler() {
-      @Override
-      public void onClose(CloseEvent event) {
-        if (timer != null) {
-          timer.cancel();
-        }
+    popup.addCloseHandler(event -> {
+      if (timer != null) {
+        timer.cancel();
+      }
 
-        if (callback != null) {
-          if (selectedIndex.isNotNull()) {
-            callback.onSuccess(selectedIndex.get());
-          } else if (State.EXPIRED.equals(state.get())) {
-            callback.onTimeout();
-          } else {
-            callback.onCancel();
-          }
+      if (callback != null) {
+        if (selectedIndex.isNotNull()) {
+          callback.onSuccess(selectedIndex.get());
+        } else if (State.EXPIRED.equals(state.get())) {
+          callback.onTimeout();
+        } else {
+          callback.onCancel();
         }
       }
     });
@@ -387,14 +394,11 @@ public class MessageBoxes {
 
       if (group.getWidgetCount() > 1) {
         for (Widget widget : group) {
-          Binder.addKeyDownHandler(widget, new KeyDownHandler() {
-            @Override
-            public void onKeyDown(KeyDownEvent event) {
-              if (event.isRightArrow() || event.isDownArrow()) {
-                rotateFocus(event, group, true);
-              } else if (event.isLeftArrow() || event.isUpArrow()) {
-                rotateFocus(event, group, false);
-              }
+          Binder.addKeyDownHandler(widget, event -> {
+            if (event.isRightArrow() || event.isDownArrow()) {
+              rotateFocus(event, group, true);
+            } else if (event.isLeftArrow() || event.isUpArrow()) {
+              rotateFocus(event, group, false);
             }
           });
         }
@@ -575,6 +579,7 @@ public class MessageBoxes {
 
     popup.setWidget(widget);
 
+    popup.focusOnOpen(widget);
     popup.showRelativeTo(target);
   }
 

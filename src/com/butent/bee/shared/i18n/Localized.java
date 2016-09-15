@@ -21,6 +21,7 @@ public final class Localized {
 
   private static final char L10N_PREFIX = '=';
   private static final char L10N_SEPARATOR = '+';
+  private static final String LANGUAGE_SEPARATOR = "_";
 
   public static final Splitter L10N_SPLITTER = Splitter.on(L10N_SEPARATOR);
 
@@ -34,6 +35,15 @@ public final class Localized {
 
   public static Dictionary dictionary() {
     return dictionary;
+  }
+
+  public static String extractLanguage(String name) {
+    String loc = BeeUtils.right(name, 3);
+
+    if (BeeUtils.isPrefix(loc, LANGUAGE_SEPARATOR)) {
+      return BeeUtils.removePrefix(loc, LANGUAGE_SEPARATOR);
+    }
+    return null;
   }
 
   public static Map<String, String> getGlossary() {
@@ -57,6 +67,10 @@ public final class Localized {
     return labels;
   }
 
+  public static boolean maybeTranslatable(String text) {
+    return text != null && text.length() >= 3 && text.charAt(0) == L10N_PREFIX;
+  }
+
   public static List<String> maybeTranslate(List<String> items) {
     return maybeTranslate(items, glossary);
   }
@@ -78,34 +92,44 @@ public final class Localized {
   }
 
   public static String maybeTranslate(String text, Map<String, String> data) {
-    if (text == null || text.length() < 3 || text.charAt(0) != L10N_PREFIX) {
-      return text;
-    }
+    if (maybeTranslatable(text)) {
+      String localized;
 
-    String localized;
+      if (text.indexOf(L10N_SEPARATOR) > 0) {
+        StringBuilder sb = new StringBuilder();
 
-    if (text.indexOf(L10N_SEPARATOR) > 0) {
-      StringBuilder sb = new StringBuilder();
+        for (String s : L10N_SPLITTER.split(text)) {
+          sb.append(maybeTranslate(s, data));
+        }
 
-      for (String s : L10N_SPLITTER.split(text)) {
-        sb.append(maybeTranslate(s, data));
+        localized = sb.toString();
+
+      } else {
+        localized = translate(text.substring(1), data);
       }
 
-      localized = sb.toString();
+      if (localized == null) {
+        logger.warning("cannot localize:", text);
+        return text;
+      } else {
+        return localized;
+      }
 
     } else {
-      localized = translate(text.substring(1), data);
-    }
-
-    if (localized == null) {
-      logger.warning("cannot localize:", text);
       return text;
-    } else {
-      return localized;
     }
   }
 
-  public static void setGlossary(Map<String, String> glossary) {
+  public static String removeLanguage(String name) {
+    String loc = BeeUtils.right(name, 3);
+
+    if (BeeUtils.isPrefix(loc, LANGUAGE_SEPARATOR)) {
+      return BeeUtils.removeSuffix(name, loc);
+    }
+    return name;
+  }
+
+  public static synchronized void setGlossary(Map<String, String> glossary) {
     if (BeeUtils.isEmpty(glossary)) {
       logger.severe("glossary is empty");
 
@@ -118,6 +142,10 @@ public final class Localized {
       logger.info(NameUtils.getClassName(Localized.class), "glossary",
           dictionary().languageTag(), glossary.size());
     }
+  }
+
+  public static String setLanguage(String name, String language) {
+    return BeeUtils.join(LANGUAGE_SEPARATOR, name, language);
   }
 
   public static String translate(String key) {

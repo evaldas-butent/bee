@@ -68,7 +68,7 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
       int idxParCmpName = parentForm.getDataIndex(ProjectConstants.ALS_PROJECT_COMPANY_NAME);
 
       if (!BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)
-          && !BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)) {
+          && !BeeConst.isUndef(idxParCmp) && !BeeConst.isUndef(idxParCmpName)) {
 
         docRow.setValue(idxCmp, parentRow.getLong(idxParCmp));
         docRow.setValue(idxCmpName, parentRow.getString(idxParCmpName));

@@ -81,7 +81,7 @@ public class Favorites implements HandlesDeleteEvents {
           return;
         }
 
-        RowEditor.openForm(formName, dataInfo, id, Opener.modeless());
+        RowEditor.openForm(formName, dataInfo, Filter.compareId(id), Opener.modeless());
       }
     };
 

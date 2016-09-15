@@ -81,6 +81,15 @@ public final class DiscussionsConstants {
       return false;
     }
 
+    public static boolean in(DiscussionStatus status, DiscussionStatus... statuses) {
+      for (DiscussionStatus ts : statuses) {
+        if (ts == status) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     public boolean is(Integer status) {
       return status != null && ordinal() == status;
     }
@@ -103,11 +112,11 @@ public final class DiscussionsConstants {
   public static final String DISCUSSIONS_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "discuss-";
 
   public static final String ALS_BIRTHDAY = "Birthday";
-  public static final String ALS_BIRTHDAY_VALID = "BirthdayValid";
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
   public static final String ALS_OWNER_PHOTO = "OwnerPhoto";
   public static final String ALS_LAST_COMMET = "LastComment";
+  public static final String ALS_LAST_COMMENT_PUBLISH_TIME = "LastCommentPublishTime";
   public static final String ALS_FILES_COUNT = "FilesCount";
   public static final String ALS_RELATIONS_COUNT = "RelCount";
   public static final String ALS_TOPIC_NAME = "TopicName";
@@ -130,7 +139,6 @@ public final class DiscussionsConstants {
   public static final String COL_MARK_NAME = "Name";
   public static final String COL_MARK_RESOURCE = "ImageResourceName";
   public static final String COL_LAST_ACCESS = "LastAccess";
-  public static final String COL_DISCUSSION_COMMENTS = "DiscussionComments";
 
   public static final String COL_MAIL_NEW_ANNOUNCEMENTS = "MailNewAnnouncements";
   public static final String COL_MAIL_NEW_DISCUSSIONS = "MailNewDiscussions";
@@ -171,7 +179,6 @@ public final class DiscussionsConstants {
   public static final String PROP_DESCRIPTION = "Description";
   public static final String PROP_FILES = "Files";
   public static final String PROP_LAST_ACCESS = "LastAccess";
-  public static final String PROP_LAST_PUBLISH = "LastPublish";
   public static final String PROP_LAST_COMMENT = "LastComment";
   public static final String PROP_LAST_COMMENT_DATA = "LastCommentData";
   public static final String PROP_MEMBERS = "Members";
@@ -221,8 +228,6 @@ public final class DiscussionsConstants {
       + "discuss_deleted_comment";
   public static final String VAR_DISCUSSION_DATA = Service.RPC_VAR_PREFIX + "discuss_data";
   public static final String VAR_DISCUSSION_ID = Service.RPC_VAR_PREFIX + "discuss_id";
-  public static final String VAR_DISCUSSION_RELATIONS = Service.RPC_VAR_PREFIX
-      + "discuss_relations";
   public static final String VAR_DISCUSSION_USERS = Service.RPC_VAR_PREFIX + "discuss_users";
   public static final String VAR_DISCUSSION_MARK = Service.RPC_VAR_PREFIX + "discuss_mark";
   public static final String VAR_DISCUSSION_MARKED_COMMENT = Service.RPC_VAR_PREFIX

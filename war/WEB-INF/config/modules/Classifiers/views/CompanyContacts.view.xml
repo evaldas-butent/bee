@@ -13,7 +13,9 @@
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
     </SimpleJoin>
-    
+
+    <SimpleColumn name="RemindEmail" />
+
     <SimpleColumn name="Contact"/>
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />

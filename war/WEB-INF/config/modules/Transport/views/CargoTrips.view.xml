@@ -12,6 +12,7 @@
     </SimpleJoin>
     <SimpleColumn name="CargoPercent" />
     <SimpleColumn name="TripPercent" />
+    <SimpleColumn name="Message" />
 
     <SimpleColumn name="Trip" />
     <SimpleJoin joinType="LEFT" name="Trip">
@@ -66,6 +67,10 @@
       <IdColumn name="Handling" hidden="true" />
 
       <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
+
+      <SimpleColumn name="EmptyKilometers" />
+      <SimpleColumn name="LoadedKilometers" />
+      <SimpleColumn name="Weight" alias="CargoWeight" />
     </SimpleJoin>
 
     <SimpleJoin name="Trailer" joinType="LEFT">

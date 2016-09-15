@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="CalendarClassifiers" label="=classifiers" parent="Calendar" order="20" separator="true" 
+name="CalendarClassifiers" label="=settings" parent="Calendar" order="20" separator="true"
 >
+   <Item name="AppointmentProperties" label="=calAppointmentProperties" service="grid" parameters="ExtendedProperties" separator="true" />
+   <Item name="PropertyGroups" label="=calAppointmentPropertyGroups" service="grid" parameters="PropertyGroups" />
+
+   <Item name="AppointmentStyles" label="=calAppointmentStyles" service="grid" parameters="AppointmentStyles" />
    <Item name="AppointmentTypes" label="=calAppointmentTypes" service="grid" parameters="AppointmentTypes" separator="true" />
+
    <Item name="AttendeeTypes" label="=calAttendeeTypes" service="grid" parameters="AttendeeTypes" />
-  
+   <Item name="Configuration" label="=settings" service="grid" parameters="Configuration" separator="true" />
+
+   <Item name="CalendarParameters" label="=calParameters" service="parameters" parameters="Calendar"
+         separator="true" module="Administration" />
 </Entry>

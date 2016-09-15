@@ -7,7 +7,7 @@
       filter="!(Expedition)"
       editForm="Trip" newRowForm="Trip"
       caption="=trips" newRowCaption="=trNewTrip"
-    >
+>
   <Relation renderColumns="TripNo" choiceColumns="Date PlannedEndDate TripNo VehicleNumber" />
   <Columns>
     <HiddenColumn name="Expedition" />
@@ -39,20 +39,33 @@
       <SimpleJoin name="Driver" joinType="LEFT">
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
           <SimpleJoin name="Person" joinType="LEFT">
-            <HiddenColumn name="FirstName" />
-            <HiddenColumn name="LastName" />
+            <SimpleColumn name="FirstName" alias="MainDriverFirstName" />
+            <SimpleColumn name="LastName" alias="MainDriverLastName" />
 
             <SimpleColumn name="DriverName" label="=vehicleDriver">
               <xpr:concat>
-                <xpr:string>"FirstName"</xpr:string>
+                <xpr:string>"MainDriverFirstName"</xpr:string>
                 <xpr:string>' '</xpr:string>
-                <xpr:string>"LastName"</xpr:string>
+                <xpr:string>"MainDriverLastName"</xpr:string>
               </xpr:concat>
             </SimpleColumn>
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+
+    <ExternalJoin name="Trip" joinType="LEFT" source="TripDrivers">
+      <AggregateColumn name="Driver" alias="DriverCount" aggregate="COUNT_DISTINCT" />
+
+      <SimpleJoin name="Driver" joinType="LEFT">
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <HiddenColumn name="FirstName" alias="DriverFirstName" />
+            <HiddenColumn name="LastName" alias="DriverLastName" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </ExternalJoin>
 
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">

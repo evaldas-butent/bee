@@ -65,6 +65,10 @@ public class EditEndEvent implements Consumable {
     return column;
   }
 
+  public String getColumnId() {
+    return (getColumn() == null) ? null : getColumn().getId();
+  }
+
   public Integer getKeyCode() {
     return keyCode;
   }

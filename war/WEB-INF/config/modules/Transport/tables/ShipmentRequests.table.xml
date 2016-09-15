@@ -3,7 +3,7 @@
 
        name="ShipmentRequests"
        idName="ShipmentRequestID"
-    >
+>
   <Fields>
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trRequestDate" />
     <Enum name="Status" key="ShipmentRequestStatus" notNull="true" defValue="0"
@@ -14,15 +14,16 @@
 
     <Relation name="CompanyPerson" relation="CompanyPersons" label="=companyPerson" />
 
-    <Boolean name="CustomsBrokerage" label="=trRequestCustomsBrokerage" />
-    <Boolean name="FreightInsurance" label="=trRequestFreightInsurance" />
-
-    <Relation name="Expedition" relation="ExpeditionTypes" notNull="true"
-              label="=trRequestExpeditionType" />
+    <Relation name="Expedition" relation="ExpeditionTypes" label="=trRequestExpeditionType" />
+    <Relation name="ShippingTerm" relation="ShippingTerms" label="=cargoTermsOfService" />
 
     <Relation name="Cargo" relation="OrderCargo" unique="true" editable="true" label="=cargo" />
 
     <Relation name="Manager" relation="Users" label="=trRequestResponsibleManager" />
+
+    <Text name="Notes" label="=notes" />
+    <String name="Vehicle" precision="50" label="=trTruck" />
+    <String name="Driver" precision="50" label="=vehicleDriver" />
 
     <Text name="LossReason" label="=reason" />
 

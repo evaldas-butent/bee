@@ -72,6 +72,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -193,7 +194,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       }
 
     } else if (BeeUtils.same(svc, SVC_DICTIONARY_DATABASE_TO_PROPERTIES)) {
-      response = dictionaryDatabaseToProperties();
+      response = dictionaryDatabaseToProperties(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Administration service not recognized:", svc);
@@ -663,13 +664,27 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
-  private ResponseObject dictionaryDatabaseToProperties() {
+  private ResponseObject dictionaryDatabaseToProperties(RequestInfo reqInfo) {
+    List<SupportedLocale> locales;
+
+    if (reqInfo.hasParameter(VAR_LOCALE)) {
+      String value = reqInfo.getParameter(VAR_LOCALE);
+      locales = SupportedLocale.parseList(value);
+
+      if (BeeUtils.isEmpty(locales)) {
+        return ResponseObject.error(reqInfo.getSubService(), "cannot parse", VAR_LOCALE, value);
+      }
+
+    } else {
+      locales = Arrays.asList(SupportedLocale.values());
+    }
+
     EnumMap<SupportedLocale, Integer> sizes = new EnumMap<>(SupportedLocale.class);
 
-    for (SupportedLocale supportedLocale : SupportedLocale.values()) {
+    for (SupportedLocale supportedLocale : locales) {
       SimpleRowSet data = getDictionaryData(supportedLocale);
       if (DataUtils.isEmpty(data)) {
-        logger.warning(TBL_DICTIONARY, supportedLocale, "is empty");
+        logger.warning(reqInfo.getSubService(), TBL_DICTIONARY, supportedLocale, "is empty");
 
       } else {
         StringBuilder sb = new StringBuilder();
@@ -693,7 +708,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
           int len = src.length();
           sizes.put(supportedLocale, len);
 
-          logger.info(SVC_DICTIONARY_DATABASE_TO_PROPERTIES, supportedLocale, len, path);
+          logger.info(reqInfo.getSubService(), supportedLocale, len, path);
         }
       }
     }
@@ -828,7 +843,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     for (ViewColumn col : view.getViewColumns()) {
       if (!col.isHidden() && !col.isReadOnly()
-          && (col.getLevel() == 0 || BeeUtils.unbox(col.getEditable()))
+          && (col.getLevel() == 0 || col.isEditable())
           && BeeUtils.isEmpty(view.getColumnLocale(col.getName()))) {
 
         String als = view.getColumnSource(col.getName());

@@ -7,7 +7,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -51,12 +50,8 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     NAME, PARENT, TABLE, FIELD, RELATION, LEVEL, HIDDEN, READ_ONLY, EDITABLE
   }
 
-  public static final Predicate<ViewColumn> VISIBLE = new Predicate<ViewColumn>() {
-    @Override
-    public boolean apply(ViewColumn input) {
-      return (input == null) ? false : !input.isHidden();
-    }
-  };
+  public static final Predicate<ViewColumn> VISIBLE =
+      input -> input != null && !input.isHidden();
 
   public static ViewColumn restore(String s) {
     if (BeeUtils.isEmpty(s)) {
@@ -80,10 +75,10 @@ public class ViewColumn implements BeeSerializable, HasInfo {
   private boolean hidden;
   private boolean readOnly;
 
-  private Boolean editable;
+  private boolean editable;
 
   public ViewColumn(String name, String parent, String table, String field, String relation,
-      int level, boolean hidden, boolean readOnly, Boolean editable) {
+      int level, boolean hidden, boolean readOnly, boolean editable) {
     super();
     this.name = name;
     this.parent = parent;
@@ -135,7 +130,7 @@ public class ViewColumn implements BeeSerializable, HasInfo {
           setReadOnly(Codec.unpack(value));
           break;
         case EDITABLE:
-          setEditable(BooleanValue.unpack(value));
+          setEditable(Codec.unpack(value));
           break;
       }
     }
@@ -152,10 +147,6 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     return BeeUtils.same(getName(), ((ViewColumn) obj).getName());
   }
 
-  public Boolean getEditable() {
-    return editable;
-  }
-
   public String getField() {
     return field;
   }
@@ -165,7 +156,7 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     return PropertyUtils.createProperties("Name", getName(), "Parent", getParent(),
         "Table", getTable(), "Field", getField(),
         "Relation", getRelation(), "Level", getLevel(),
-        "Hidden", isHidden(), "Read Only", isReadOnly(), "Editable", getEditable());
+        "Hidden", isHidden(), "Read Only", isReadOnly(), "Editable", isEditable());
   }
 
   public int getLevel() {
@@ -191,6 +182,10 @@ public class ViewColumn implements BeeSerializable, HasInfo {
   @Override
   public int hashCode() {
     return BeeUtils.normalize(getName()).hashCode();
+  }
+
+  public boolean isEditable() {
+    return editable;
   }
 
   public boolean isHidden() {
@@ -234,14 +229,14 @@ public class ViewColumn implements BeeSerializable, HasInfo {
           arr[i++] = Codec.pack(isReadOnly());
           break;
         case EDITABLE:
-          arr[i++] = BooleanValue.pack(getEditable());
+          arr[i++] = Codec.pack(isEditable());
           break;
       }
     }
     return Codec.beeSerialize(arr);
   }
 
-  private void setEditable(Boolean editable) {
+  private void setEditable(boolean editable) {
     this.editable = editable;
   }
 

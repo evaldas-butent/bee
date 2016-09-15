@@ -3,16 +3,12 @@ package com.butent.bee.client.widget;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.DomEvent;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.logical.CloseEvent;
-import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
@@ -313,118 +309,9 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     }
 
     JustDate oldDate = getDate();
-    JustDate baseDate = (oldDate == null) ? new JustDate() : oldDate;
     JustDate newDate = null;
 
     switch (charCode) {
-      case 'a':
-      case 'A':
-      case 'p':
-      case 'P':
-        newDate = TimeUtils.getDate(baseDate, 2);
-        break;
-
-      case 'b':
-      case 'B':
-      case 'u':
-      case 'U':
-        newDate = TimeUtils.getDate(baseDate, -2);
-        break;
-
-      case 'd':
-      case 'D':
-        newDate = TimeUtils.today();
-        break;
-
-      case 'r':
-      case 'R':
-      case 'o':
-      case 'O':
-        newDate = TimeUtils.today(1);
-        break;
-
-      case 'e':
-      case 'E':
-      case 'v':
-      case 'V':
-        newDate = TimeUtils.today(-1);
-        break;
-
-      case 'f':
-        newDate = TimeUtils.endOfPreviousMonth(baseDate);
-        break;
-
-      case 'F':
-        newDate = TimeUtils.endOfMonth(baseDate);
-        if (TimeUtils.sameDate(newDate, oldDate)) {
-          newDate = TimeUtils.endOfMonth(oldDate, 1);
-        }
-        break;
-
-      case 'm':
-        newDate = TimeUtils.startOfMonth(baseDate);
-        if (TimeUtils.sameDate(newDate, oldDate)) {
-          newDate = TimeUtils.startOfMonth(oldDate, -1);
-        }
-        break;
-
-      case 'M':
-        newDate = TimeUtils.startOfNextMonth(baseDate);
-        break;
-
-      case 'n':
-        int step = (baseDate.getDom() == 1) ? -2 : -1;
-        newDate = TimeUtils.startOfMonth(baseDate, step);
-        break;
-
-      case 'N':
-        newDate = TimeUtils.startOfMonth(baseDate, 2);
-        break;
-
-      case 'q':
-      case 'k':
-        newDate = TimeUtils.startOfQuarter(baseDate);
-        if (TimeUtils.sameDate(newDate, oldDate)) {
-          newDate = TimeUtils.startOfQuarter(oldDate, -1);
-        }
-        break;
-
-      case 'Q':
-      case 'K':
-        newDate = TimeUtils.startOfQuarter(baseDate, 1);
-        break;
-
-      case 't':
-      case 'T':
-      case 'l':
-      case 'L':
-        newDate = TimeUtils.today();
-        break;
-
-      case 'w':
-      case 's':
-        newDate = TimeUtils.startOfWeek(baseDate);
-        if (TimeUtils.sameDate(newDate, oldDate)) {
-          newDate = TimeUtils.startOfWeek(oldDate, -1);
-        }
-        break;
-
-      case 'W':
-      case 'S':
-        newDate = TimeUtils.startOfWeek(baseDate, 1);
-        break;
-
-      case 'y':
-        newDate = TimeUtils.startOfYear(baseDate);
-        if (TimeUtils.sameDate(newDate, oldDate)) {
-          newDate = TimeUtils.startOfYear(oldDate, -1);
-        }
-        break;
-
-      case 'Y':
-        newDate = TimeUtils.startOfYear(baseDate, 1);
-        break;
-
       case '+':
       case '-':
         int cnt = TimeUtils.countFields(getValue());
@@ -441,6 +328,9 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
           }
         }
         break;
+
+      default:
+        newDate = TimeUtils.parseDate(BeeUtils.toChar(charCode), oldDate);
     }
 
     if (newDate == null) {
@@ -467,47 +357,36 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
     final DatePicker picker = new DatePicker(TimeUtils.clamp(date, min, max), min, max);
 
-    picker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<JustDate> event) {
-        setDate(event.getValue());
-        popup.close();
+    picker.addValueChangeHandler(event -> {
+      setDate(event.getValue());
+      popup.close();
 
-        fireEvent(new EditStopEvent(State.CHANGED));
-      }
+      fireEvent(new EditStopEvent(State.CHANGED));
     });
 
     popup.setHideOnEscape(true);
 
-    popup.addOpenHandler(new OpenEvent.Handler() {
-      @Override
-      public void onOpen(OpenEvent event) {
-        picker.setFocus(true);
-      }
-    });
+    popup.addOpenHandler(event -> picker.setFocus(true));
 
-    popup.addCloseHandler(new CloseEvent.Handler() {
-      @Override
-      public void onClose(CloseEvent event) {
-        if (event.mouseEvent()) {
-          if (event.isTarget(getElement())) {
-            setPickerState(State.CLOSING);
-          } else {
-            setPickerState(State.CLOSED);
-            DomEvent.fireNativeEvent(Document.get().createBlurEvent(), InputDate.this);
-          }
-
-        } else if (event.keyboardEvent()) {
+    popup.addCloseHandler(event -> {
+      if (event.mouseEvent()) {
+        if (event.isTarget(getElement())) {
           setPickerState(State.CLOSING);
-          setFocus(true);
-          selectAll();
-
         } else {
           setPickerState(State.CLOSED);
+          DomEvent.fireNativeEvent(Document.get().createBlurEvent(), InputDate.this);
         }
 
-        InputDate.this.removeStyleName(STYLE_ACTIVE);
+      } else if (event.keyboardEvent()) {
+        setPickerState(State.CLOSING);
+        setFocus(true);
+        selectAll();
+
+      } else {
+        setPickerState(State.CLOSED);
       }
+
+      InputDate.this.removeStyleName(STYLE_ACTIVE);
     });
 
     setPickerState(State.OPEN);

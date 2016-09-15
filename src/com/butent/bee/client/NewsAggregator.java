@@ -14,7 +14,6 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.Domain;
-import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
@@ -102,7 +101,9 @@ public class NewsAggregator implements HandlesAllDataEvents {
         @Override
         public void onClick(ClickEvent event) {
           readHeadline(HeadlinePanel.this);
-          UiHelper.closeDialog(ScreenImpl.NOTIFICATION_CONTENT);
+          if (HeadlinePanel.this.getParent() != null) {
+            UiHelper.closeDialog(HeadlinePanel.this.getParent());
+          }
         }
       });
 

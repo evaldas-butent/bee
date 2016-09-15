@@ -51,15 +51,18 @@ public class ReportDateItem extends ReportItem {
 
   @Override
   public void clearFilter() {
+    filterOperator = null;
+    filter = null;
+
     if (filterWidget != null) {
       filterWidget.clearValue();
+      renderFilter((Flow) filterWidget.asWidget().getParent());
     }
-    filter = null;
   }
 
   @Override
   public void deserialize(String data) {
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
       setFormat(EnumUtils.getEnumByName(DateTimeFunction.class, map.get(FORMAT)));
@@ -174,8 +177,8 @@ public class ReportDateItem extends ReportItem {
 
     saveFilter();
 
-    if (filterOperator != null) {
-      map.put(Service.VAR_DATA, Pair.of(filterOperator, filter));
+    if (getFilterOperator() != null) {
+      map.put(Service.VAR_DATA, Pair.of(getFilterOperator(), filter));
     }
     return serialize(Codec.beeSerialize(map));
   }
@@ -186,6 +189,7 @@ public class ReportDateItem extends ReportItem {
       filterOperator = Operator.EQ;
       filter = BeeUtils.toLongOrNull(value);
     } else {
+      filterOperator = Operator.IS_NULL;
       filter = null;
     }
     if (filterWidget != null) {
@@ -338,15 +342,23 @@ public class ReportDateItem extends ReportItem {
   protected boolean validate(HasDateValue date) {
     saveFilter();
 
+    switch (getFilterOperator()) {
+      case IS_NULL:
+        return date == null;
+      case NOT_NULL:
+        return date != null;
+      default:
+        break;
+    }
     if (filter == null) {
       return true;
     }
     if (date == null) {
-      return filterOperator == Operator.LT;
+      return getFilterOperator() == Operator.LT;
     }
     long value = getValue(date);
 
-    switch (filterOperator) {
+    switch (getFilterOperator()) {
       case EQ:
         return value == filter;
       case GE:
@@ -362,7 +374,7 @@ public class ReportDateItem extends ReportItem {
     }
   }
 
-  private void renderFilter(final Flow container) {
+  private void renderFilter(Flow container) {
     container.clear();
 
     container.add(new Button(getFormat().getCaption(), event -> {
@@ -371,22 +383,26 @@ public class ReportDateItem extends ReportItem {
         renderFilter(container);
       });
     }));
-    if (filterOperator == null) {
+    if (getFilterOperator() == null) {
       filterOperator = Operator.EQ;
     }
-    final Label operator = new Label(filterOperator.toTextString());
+    Label operator = new Label(getFilterOperator().getCaption());
     operator.addStyleName(getStyle() + "-operator");
     operator.addClickHandler(event -> {
-      final List<Operator> operators = Arrays.asList(Operator.LT, Operator.LE, Operator.EQ,
-          Operator.GE, Operator.GT);
+      List<Operator> operators = Arrays.asList(Operator.LT, Operator.LE, Operator.EQ,
+          Operator.GE, Operator.GT, Operator.IS_NULL, Operator.NOT_NULL);
       List<String> options = new ArrayList<>();
 
       for (Operator o : operators) {
-        options.add(o.toTextString());
+        options.add(o.getCaption());
       }
       Global.choice(Localized.dictionary().operator(), null, options, value -> {
         filterOperator = operators.get(value);
-        operator.setText(filterOperator.toTextString());
+
+        if (EnumUtils.in(getFilterOperator(), Operator.IS_NULL, Operator.NOT_NULL)) {
+          filter = null;
+        }
+        renderFilter(container);
       });
     });
     container.add(operator);
@@ -395,6 +411,8 @@ public class ReportDateItem extends ReportItem {
       filterWidget = createFilterEditor();
     }
     filterWidget.setValue(filter == null ? null : BeeUtils.toString(filter));
+    filterWidget.asWidget()
+        .setVisible(!EnumUtils.in(getFilterOperator(), Operator.IS_NULL, Operator.NOT_NULL));
     container.add(filterWidget);
   }
 

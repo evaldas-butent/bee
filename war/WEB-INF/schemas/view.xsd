@@ -110,6 +110,7 @@
       <xs:extension base="column">
         <xs:attribute name="aggregate" type="tp:aggregateType" />
         <xs:attribute name="hidden" type="xs:boolean" />
+        <xs:attribute name="label" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -119,6 +120,7 @@
       <xs:extension base="column">
         <xs:attribute name="aggregate" type="tp:aggregateType" />
         <xs:attribute name="hidden" type="xs:boolean" />
+        <xs:attribute name="label" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

@@ -3,9 +3,8 @@
 
 name="Projects" label="=prjMenu" order="30" module="Projects"
 >
-  <Item name="Projects" label="=projects" service="grid" parameters="Projects" />
-  <Item name="AllProjects" label="=projectsAll" service="grid" parameters="AllProjects" />  
+  <Item name="Projects" label="=projectsMy" service="grid" parameters="Projects" />
+  <Item name="AllProjects" label="=projectsAll" service="grid" parameters="AllProjects" />
+  <Item name="ProjectReports" label="=reports" service="report"  parameters="ProjectReport"/>
   <Item name="ProjectInvoices" label="=trdInvoices" service="grid" parameters="ProjectInvoices" separator="true" />
-  <Item name="ProjectReports" label="=report" service="report"  parameters="ProjectReport"/>
-  <Item name="ProjectParameters" label="=parameters" service="parameters" parameters="Projects" separator="true"/>
 </Entry>

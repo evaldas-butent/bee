@@ -114,7 +114,7 @@ public class Search {
           EnumSet.of(Action.PRINT, Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
 
       header.setViewPresenter(this);
-      header.setMessage(getMessage());
+      header.setMessage(0, getMessage(), null);
 
       this.add(header);
 
@@ -360,7 +360,7 @@ public class Search {
     }
 
     private void updateMessage() {
-      header.setMessage(getMessage());
+      header.setMessage(0, getMessage(), null);
     }
   }
 

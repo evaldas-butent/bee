@@ -9,6 +9,8 @@
     <SimpleColumn name="User" />
 
     <SimpleJoin name="User" joinType="INNER">
+      <SimpleColumn name="Login" />
+
       <SimpleColumn name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleColumn name="Person" />

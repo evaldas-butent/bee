@@ -13,14 +13,15 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -36,14 +37,8 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {
-      if (getFormView().isAdding()) {
-        return saveOnPrintNewRow() || DataUtils.hasId(getActiveRow());
-      }
       if (DataUtils.isNewRow(getActiveRow())) {
-        return false;
-      }
-      if (printJasperReport()) {
-        return false;
+        return saveOnPrintNewRow();
       }
       String[] reports = BeeUtils.split(getFormView().getProperty("reports"), BeeConst.CHAR_COMMA);
 
@@ -53,18 +48,23 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
           forms.add(null);
         }
         final ChoiceCallback choice = value -> {
-          FormDescription form = forms.get(value);
-          String viewName = form.getViewName();
-          IsRow row = getFormView().getActiveRow();
+          if (BeeUtils.isIndex(forms, value)) {
+            FormDescription form = forms.get(value);
 
-          if (BeeUtils.isEmpty(viewName)
-              || BeeUtils.same(viewName, getFormView().getViewName())) {
+            String viewName = form.getViewName();
+            IsRow row = getFormView().getActiveRow();
 
-            RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
-                row, Opener.MODAL, null, getPrintFormInterceptor());
+            if (BeeUtils.isEmpty(viewName)
+                || BeeUtils.same(viewName, getFormView().getViewName())) {
+
+              RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
+                  row, Opener.MODAL, null, getPrintFormInterceptor());
+            } else {
+              RowEditor.openForm(form.getName(), Data.getDataInfo(viewName),
+                  Filter.compareId(row.getId()), Opener.MODAL, null, getPrintFormInterceptor());
+            }
           } else {
-            RowEditor.openForm(form.getName(), Data.getDataInfo(viewName), row.getId(),
-                Opener.MODAL, null, getPrintFormInterceptor());
+            printJasperReport();
           }
         };
         final Holder<Integer> counter = Holder.of(0);
@@ -98,6 +98,9 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
                     descriptions.add(dscr);
                   }
                 }
+                if (!ArrayUtils.isEmpty(getReports())) {
+                  captions.add(Localized.dictionary().otherInfo() + "...");
+                }
                 BeeUtils.overwrite(forms, descriptions);
 
                 if (captions.size() > 1) {
@@ -111,6 +114,9 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
             }
           });
         }
+        return false;
+
+      } else if (printJasperReport()) {
         return false;
       }
     }
@@ -139,7 +145,6 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         params.put(column.getId(), value);
       }
     }
-    params.put("ID", BeeUtils.toString(getActiveRowId()));
     parametersConsumer.accept(params);
   }
 
@@ -147,8 +152,10 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     return BeeUtils.split(getFormView().getProperty("jasperReports"), BeeConst.CHAR_COMMA);
   }
 
-  protected void print(BiConsumer<Map<String, String>, BeeRowSet[]> consumer) {
-    getReportParameters((parameters) -> getReportData((data) -> consumer.accept(parameters, data)));
+  protected void print(String report) {
+    getReportParameters(parameters ->
+        getReportData(data ->
+            ReportUtils.showReport(report, getReportCallback(), parameters, data)));
   }
 
   private boolean printJasperReport() {
@@ -173,11 +180,21 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
       reps.add(rep);
       caps.add(cap);
     }
-    Consumer<String> consumer = report -> print((parameters, data) ->
-        ReportUtils.showReport(report, getReportCallback(), parameters, data));
+    Consumer<String> consumer = report -> {
+      if (BeeUtils.isEmpty(Localized.extractLanguage(report))) {
+        List<String> locales = new ArrayList<>();
 
+        for (SupportedLocale locale : SupportedLocale.values()) {
+          locales.add(BeeUtils.notEmpty(locale.getCaption(), locale.getLanguage()));
+        }
+        Global.choice(Localized.dictionary().chooseLanguage(), null, locales, idx ->
+            print(Localized.setLanguage(report, SupportedLocale.values()[idx].getLanguage())));
+      } else {
+        print(report);
+      }
+    };
     if (reps.size() > 1) {
-      Global.choice(null, Localized.dictionary().choosePrintingForm(), caps,
+      Global.choice(Localized.dictionary().choosePrintingForm(), null, caps,
           idx -> consumer.accept(reps.get(idx)));
     } else {
       consumer.accept(reps.get(0));

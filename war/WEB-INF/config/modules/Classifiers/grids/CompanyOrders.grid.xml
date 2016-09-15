@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+
+        name="CompanyOrders" viewName="Orders" flexGrow="1" caption="=offers" >
+  <g:columns>
+    <IdColumn name="ID" />
+    <RelColumn name="Type" visible="true" />
+    <DataColumn name="Status" visible="true" />
+    <DataColumn name="StartDate" visible="true" />
+    <DataColumn name="EndDate" />
+
+    <RelColumn name="Series" visible="true" />
+    <DataColumn name="Number" visible="true" />
+
+    <RelColumn name="Warehouse" visible="true" />
+
+    <DataColumn name="CompanyName" visible="true" />
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
+               choiceColumns="FirstName LastName CompanyName" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+  </g:columns>
+</g:Grid>

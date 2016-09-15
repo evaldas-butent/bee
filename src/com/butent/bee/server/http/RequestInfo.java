@@ -97,7 +97,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     this.contentLen = BeeUtils.length(this.content);
 
     if (isData()) {
-      this.vars = Codec.deserializeMap(content);
+      this.vars = Codec.deserializeLinkedHashMap(content);
     } else {
       this.vars = null;
     }
@@ -209,6 +209,10 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
   public String getId() {
     return id;
+  }
+
+  public String getLabel() {
+    return BeeUtils.notEmpty(getSubService(), getService());
   }
 
   @Override

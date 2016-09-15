@@ -2,6 +2,7 @@ package com.butent.bee.shared.time;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -14,6 +15,7 @@ import com.butent.bee.shared.utils.RangeOptions;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Contains methods for date/time calculations.
@@ -115,6 +117,10 @@ public final class TimeUtils {
     }
   }
 
+  public static void addDay(DateTime date, int amount) {
+    add(date, FIELD_DATE, amount);
+  }
+
   public static void addHour(DateTime date, int amount) {
     add(date, FIELD_HOUR, amount);
   }
@@ -173,9 +179,9 @@ public final class TimeUtils {
       if (d2 instanceof YearMonth) {
         return ((YearMonth) d1).compareTo((YearMonth) d2);
       } else if (d2 instanceof JustDate) {
-        return ((YearMonth) d1).getDate().compareTo((JustDate) d2);
+        return d1.getDate().compareTo((JustDate) d2);
       } else if (d2 instanceof HasDateValue) {
-        return ((YearMonth) d1).getDate().getDateTime()
+        return d1.getDate().getDateTime()
             .compareTo(((HasDateValue) d2).getDateTime());
       }
 
@@ -183,7 +189,7 @@ public final class TimeUtils {
       if (d2 instanceof JustDate) {
         return ((JustDate) d1).compareTo((JustDate) d2);
       } else if (d2 instanceof YearMonth) {
-        return ((JustDate) d1).compareTo(((YearMonth) d2).getDate());
+        return ((JustDate) d1).compareTo(d2.getDate());
       } else if (d2 instanceof HasDateValue) {
         return ((JustDate) d1).getDateTime().compareTo(((HasDateValue) d2).getDateTime());
       }
@@ -192,7 +198,7 @@ public final class TimeUtils {
       if (d2 instanceof DateTime) {
         return ((DateTime) d1).compareTo((DateTime) d2);
       } else if (d2 instanceof YearMonth) {
-        return ((DateTime) d1).compareTo(((YearMonth) d2).getDate().getDateTime());
+        return ((DateTime) d1).compareTo(d2.getDate().getDateTime());
       } else if (d2 instanceof HasDateValue) {
         return ((DateTime) d1).compareTo(((HasDateValue) d2).getDateTime());
       }
@@ -340,7 +346,7 @@ public final class TimeUtils {
     int min = 0;
     int max = 1;
 
-    for (;;) {
+    while (true) {
       long ms = startMs + getDelta(start, field, max);
       if (ms == endMs) {
         return max;
@@ -396,7 +402,7 @@ public final class TimeUtils {
       return ref;
     } else {
       YearMonth ym = YearMonth.of(ref).shiftMonth(increment);
-      return new JustDate(ym.getYear(), ym.getMonth(), ref.getDom());
+      return new JustDate(ym.getYear(), ym.getMonth(), Math.min(ref.getDom(), ym.getLength()));
     }
   }
 
@@ -501,7 +507,7 @@ public final class TimeUtils {
   }
 
   public static boolean isWeekend(HasDateValue dt) {
-    return (dt == null) ? false : dt.getDow() >= 6;
+    return dt != null && dt.getDow() >= 6;
   }
 
   public static boolean isYear(Integer year) {
@@ -650,7 +656,7 @@ public final class TimeUtils {
    *
    * @param number the value to pad
    * @return a String representation of the padded value {@code number} if
-   *         {@code number >=0 and number < 10}, otherwise a non-padded value String.
+   * {@code number >=0 and number < 10}, otherwise a non-padded value String.
    */
   public static String padTwo(int number) {
     if (number >= 0 && number < 10) {
@@ -669,11 +675,179 @@ public final class TimeUtils {
       return new JustDate(BeeUtils.toLong(BeeUtils.removeSuffix(input, MS)));
     }
 
+    if (input.trim().length() == 1) {
+      char c = input.trim().charAt(0);
+      if (!BeeUtils.isDigit(c)) {
+        return parseDate(c, null);
+      }
+    }
+
     List<Integer> fields = parseFields(input);
     if (BeeUtils.isPositive(BeeUtils.max(fields))) {
       return parseDate(input, fields);
     } else {
       return null;
+    }
+  }
+
+  public static JustDate parseDate(char charCode, JustDate ref) {
+    switch (charCode) {
+      case 'd':
+      case 'D':
+        return today();
+
+      case 'r':
+      case 'R':
+      case 'o':
+      case 'O':
+        return today(1);
+
+      case 'e':
+      case 'E':
+      case 'v':
+      case 'V':
+        return today(-1);
+
+      case 't':
+      case 'T':
+      case 'l':
+      case 'L':
+        return today();
+    }
+
+    JustDate base = (ref == null) ? today() : ref;
+    JustDate result;
+
+    switch (charCode) {
+      case 'a':
+      case 'A':
+      case 'p':
+      case 'P':
+        result = getDate(base, 2);
+        break;
+
+      case 'b':
+      case 'B':
+      case 'u':
+      case 'U':
+        result = getDate(base, -2);
+        break;
+
+      case 'f':
+        result = endOfPreviousMonth(base);
+        break;
+
+      case 'F':
+        result = endOfMonth(base);
+        if (Objects.equals(result, ref)) {
+          result = endOfMonth(ref, 1);
+        }
+        break;
+
+      case 'm':
+        result = startOfMonth(base);
+        if (Objects.equals(result, ref)) {
+          result = startOfMonth(ref, -1);
+        }
+        break;
+
+      case 'M':
+        result = startOfNextMonth(base);
+        break;
+
+      case 'n':
+        int step = (base.getDom() == 1) ? -2 : -1;
+        result = startOfMonth(base, step);
+        break;
+
+      case 'N':
+        result = startOfMonth(base, 2);
+        break;
+
+      case 'q':
+      case 'k':
+        result = startOfQuarter(base);
+        if (Objects.equals(result, ref)) {
+          result = startOfQuarter(ref, -1);
+        }
+        break;
+
+      case 'Q':
+      case 'K':
+        result = startOfQuarter(base, 1);
+        break;
+
+      case 'w':
+      case 's':
+        result = startOfWeek(base);
+        if (Objects.equals(result, ref)) {
+          result = startOfWeek(ref, -1);
+        }
+        break;
+
+      case 'W':
+      case 'S':
+        result = startOfWeek(base, 1);
+        break;
+
+      case 'y':
+        result = startOfYear(base);
+        if (Objects.equals(result, ref)) {
+          result = startOfYear(ref, -1);
+        }
+        break;
+
+      case 'Y':
+        result = startOfYear(base, 1);
+        break;
+
+      default:
+        result = null;
+    }
+
+    return result;
+  }
+
+  public static DateTime parseDateTime(char charCode, DateTime ref) {
+    int incr;
+
+    switch (charCode) {
+      case 'h':
+      case 'H':
+        if (ref == null) {
+          return nowHours();
+        } else {
+          incr = Character.isLowerCase(charCode) ? -1 : 1;
+          return new DateTime(ref.getTime() + incr * MILLIS_PER_HOUR);
+        }
+
+      case 'i':
+      case 'I':
+        if (ref == null) {
+          return nowMinutes();
+        } else {
+          incr = Character.isLowerCase(charCode) ? -1 : 1;
+          return new DateTime(ref.getTime() + incr * MILLIS_PER_MINUTE);
+        }
+
+      case 't':
+      case 'T':
+      case 'l':
+      case 'L':
+        return nowMillis();
+
+      case 'x':
+      case 'X':
+        if (ref == null) {
+          return nowSeconds();
+        } else {
+          incr = Character.isLowerCase(charCode) ? -1 : 1;
+          return new DateTime(ref.getTime() + incr * MILLIS_PER_SECOND);
+        }
+
+      default:
+        JustDate date = parseDate(charCode, JustDate.get(ref));
+        return DateTime.get(date);
     }
   }
 
@@ -684,6 +858,13 @@ public final class TimeUtils {
 
     if (BeeUtils.isSuffix(input, MS)) {
       return new DateTime(BeeUtils.toLong(BeeUtils.removeSuffix(input, MS)));
+    }
+
+    if (input.trim().length() == 1) {
+      char c = input.trim().charAt(0);
+      if (!BeeUtils.isDigit(c)) {
+        return parseDateTime(c, null);
+      }
     }
 
     List<Integer> fields = parseFields(input);
@@ -791,9 +972,8 @@ public final class TimeUtils {
       fields.addAll(parseDigits(digits, slices));
     }
 
-    long millis = MILLIS_PER_HOUR * getField(fields, 0) + MILLIS_PER_MINUTE * getField(fields, 1)
+    return MILLIS_PER_HOUR * getField(fields, 0) + MILLIS_PER_MINUTE * getField(fields, 1)
         + MILLIS_PER_SECOND * getField(fields, 2) + getField(fields, 3);
-    return millis;
   }
 
   public static JustDate previousDay(HasDateValue ref) {
@@ -1094,6 +1274,13 @@ public final class TimeUtils {
 
     return renderTime(days, dayLabel, hour, minute,
         (showSeconds || showMillis) ? second : 0, showMillis ? millis : 0, true);
+  }
+
+  public static void restart(Stopwatch stopwatch) {
+    Assert.notNull(stopwatch);
+
+    stopwatch.reset();
+    stopwatch.start();
   }
 
   public static boolean sameDate(HasDateValue x, HasDateValue y) {
@@ -1509,7 +1696,7 @@ public final class TimeUtils {
           return parseDate(splitDigits(digits, sep, 2, 2, 2));
 
         } else if (len == 7) {
-          if (digits.substring(4, 5) == BeeConst.STRING_ZERO) {
+          if (Objects.equals(digits.substring(4, 5), BeeConst.STRING_ZERO)) {
             return parseDate(splitDigits(digits, sep, 4, 2, 1));
           } else {
             return parseDate(splitDigits(digits, sep, 4, 1, 2));

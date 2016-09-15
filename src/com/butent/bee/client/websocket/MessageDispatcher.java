@@ -290,7 +290,8 @@ class MessageDispatcher {
       case CHAT_MESSAGE:
         ChatMessage chatMessage = (ChatMessage) message;
 
-        if (chatMessage.isValid()) {
+        if (chatMessage.isValid()
+                                || Global.getChatManager().isAssistant(chatMessage.getChatId())) {
           Global.getChatManager().addMessage(chatMessage);
         } else {
           WsUtils.onEmptyMessage(message);

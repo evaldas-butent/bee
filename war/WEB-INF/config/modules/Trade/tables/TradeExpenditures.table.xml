@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="TradeExpenditures"
+       idName="ExpenditureID"
+>
+  <Fields>
+    <Relation name="TradeDocument" notNull="true" relation="TradeDocuments" cascade="DELETE"
+              label="=trdDocument" />
+
+    <Relation name="ExpenditureType" notNull="true" relation="ExpenditureTypes"
+              label="=trdExpenditureType" />
+
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
+    <Numeric name="Amount" notNull="true" precision="15" scale="2" label="=amount" />
+    <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
+              label="=currency" />
+
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatIsPercent" label="=vatIsPercent" />
+
+    <String name="Series" precision="10" label="=trdSeries" />
+    <String name="Number" precision="50" label="=trdNumber" />
+
+    <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
+
+    <Relation name="GeneratedDocument" relation="TradeDocuments" cascade="SET_NULL"
+              label="=trdGeneratedDocument" />
+  </Fields>
+</Table>

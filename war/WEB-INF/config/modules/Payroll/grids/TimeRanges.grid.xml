@@ -30,5 +30,7 @@
     </DataColumn>
 
     <DataColumn name="Description" flexGrow="1" />
+
+    <DataColumn name="TrUsage" />
   </g:columns>
 </g:Grid>

@@ -89,6 +89,7 @@
       <xs:extension base="baseColumn">
         <xs:attribute name="minValue" type="xs:normalizedString" />
         <xs:attribute name="maxValue" type="xs:normalizedString" />
+        <xs:attributeGroup ref="columnRelation" />
         <xs:attribute name="dynamic" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
@@ -130,6 +131,7 @@
         <xs:attribute name="type" type="tp:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
         <xs:attribute name="source" type="tp:fieldNameType" />
+        <xs:attributeGroup ref="columnRelation" />
         <xs:attribute name="dynamic" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
@@ -142,6 +144,7 @@
       <xs:extension base="columnType">
         <xs:attribute name="source" type="tp:fieldNameType" />
         <xs:attribute name="element" type="ui:elementType" use="required" />
+        <xs:attributeGroup ref="columnRelation" />
         <xs:attribute name="dynamic" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
@@ -157,6 +160,7 @@
         <xs:attribute name="property" type="tp:nameType" />
         <xs:attribute name="userMode" type="xs:boolean" />
         <xs:attribute name="enumKey" type="xs:normalizedString" />
+        <xs:attributeGroup ref="columnRelation" />
         <xs:attribute name="dynamic" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
@@ -237,5 +241,15 @@
     <xs:attribute name="whiteSpace" type="ui:whiteSpaceType" />
     <xs:attribute name="options" type="xs:normalizedString" />
   </xs:complexType>
+
+  <xs:attributeGroup name="columnRelation">
+    <xs:attribute name="editForm" type="tp:nameType" />
+    <xs:attribute name="editPopup" type="xs:boolean" />
+    <xs:attribute name="editEnabled" type="xs:boolean" />
+    <xs:attribute name="editKey" type="xs:int" />
+    <xs:attribute name="editSource" type="tp:fieldNameType" />
+    <xs:attribute name="editTarget" type="tp:fieldNameType" />
+    <xs:attribute name="editViewName" type="tp:dataView" />
+  </xs:attributeGroup>
 
 </xs:schema>

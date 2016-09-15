@@ -86,6 +86,11 @@ public final class TasksKeeper {
             Format.getDefaultDateTimeFormat().format(Data.getDateTime(event.getViewName(),
                 event.getRow(), COL_PUBLISH_TIME)),
             Data.getString(event.getViewName(), event.getRow(), COL_COMMENT)));
+      } else if (event.hasView(VIEW_TASK_FILES)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_TASK_FILES), event.getRow(),
+            Lists.newArrayList(COL_TASK, AdministrationConstants.ALS_FILE_NAME,
+                AdministrationConstants.ALS_FILE_TYPE),
+            BeeConst.STRING_SPACE));
       }
     }
 
@@ -299,6 +304,13 @@ public final class TasksKeeper {
                 }
               }
             });
+          }
+        } else if (event.isEditRow() && event.hasView(VIEW_TASK_FILES)) {
+          event.consume();
+
+          if (event.hasRow() && event.getOpener() != null) {
+            Long taskId = Data.getLong(event.getViewName(), event.getRow(), COL_TASK);
+            RowEditor.open(VIEW_TASKS, taskId, event.getOpener());
           }
         }
       }

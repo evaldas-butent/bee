@@ -1,12 +1,16 @@
 package com.butent.bee.shared.data.filter;
 
+import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 /**
  * Contains a list of possible comparison operators.
  */
 
-public enum Operator {
+public enum Operator implements HasLocalizedCaption {
   EQ("="),
   NE("!="),
   LT("<"),
@@ -18,8 +22,18 @@ public enum Operator {
   CONTAINS("$"),
   MATCHES("~"),
   IN,
-  IS_NULL,
-  NOT_NULL,
+  IS_NULL {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.empty();
+    }
+  },
+  NOT_NULL {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.not(dictionary.empty());
+    }
+  },
   FULL_TEXT;
 
   public static final String CHAR_ANY = "*";
@@ -61,6 +75,16 @@ public enum Operator {
 
   Operator(String textString) {
     this.textString = textString;
+  }
+
+  @Override
+  public String getCaption() {
+    return getCaption(Localized.dictionary());
+  }
+
+  @Override
+  public String getCaption(Dictionary dictionary) {
+    return BeeUtils.notEmpty(toTextString(), EnumUtils.proper(this));
   }
 
   public boolean isStringOperator() {

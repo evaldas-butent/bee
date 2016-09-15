@@ -70,14 +70,6 @@ public final class NameUtils {
   }
 
   /**
-   * Creates a unique name.
-   * @return a unique name.
-   */
-  public static String createUniqueName() {
-    return createUniqueName(null);
-  }
-
-  /**
    * Created a unique name with a specified prefix.
    * @param pfx prefix used for generating a unique name
    * @return String which contains unique value with a specified prefix.

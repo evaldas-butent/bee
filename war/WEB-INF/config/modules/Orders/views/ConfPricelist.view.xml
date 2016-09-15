@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="ConfPricelist" source="ConfPricelist" caption="=configuration"
+>
+  <Columns>
+    <SimpleColumn name="Branch" />
+    <SimpleJoin name="Branch" joinType="LEFT">
+      <SimpleColumn name="Ordinal" alias="ParentOrdinal" />
+    </SimpleJoin>
+    <SimpleColumn name="Option" />
+    <SimpleJoin name="Option" joinType="INNER">
+      <SimpleColumn name="Group" />
+      <SimpleJoin name="Group" joinType="INNER">
+        <SimpleColumn name="GroupName" />
+      </SimpleJoin>
+      <SimpleColumn name="OptionName" />
+      <SimpleColumn name="Code" />
+      <SimpleColumn name="Description" />
+      <SimpleColumn name="PhotoFile" />
+    </SimpleJoin>
+    <SimpleColumn name="ValidUntil" />
+    <SimpleColumn name="Ordinal" />
+  </Columns>
+  <Order>
+    <OrderBy column="ParentOrdinal" />
+    <OrderBy column="Ordinal" />
+    <OrderBy column="ValidUntil" descending="true" />
+  </Order>
+</View>

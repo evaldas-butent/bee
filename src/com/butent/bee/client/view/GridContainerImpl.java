@@ -1,12 +1,9 @@
 package com.butent.bee.client.view;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -109,8 +106,13 @@ public class GridContainerImpl extends Split implements GridContainerView,
     super(-1);
 
     addStyleName(STYLE_NAME);
+
     if (!BeeUtils.isEmpty(gridName)) {
       addStyleName(BeeConst.CSS_CLASS_PREFIX + "grid-" + gridName.trim());
+    }
+    if (!BeeUtils.isEmpty(supplierKey) && !BeeUtils.same(gridName, supplierKey)
+        && !BeeUtils.same(ViewFactory.SupplierKind.GRID.getKey(gridName), supplierKey)) {
+      addStyleName(BeeConst.CSS_CLASS_PREFIX + "grid-" + supplierKey.trim());
     }
 
     this.supplierKey = supplierKey;
@@ -146,10 +148,11 @@ public class GridContainerImpl extends Split implements GridContainerView,
       addStyleName(UiOption.getStyleName(uiOptions));
     }
 
-    setHasPaging(GridUtils.hasPaging(gridDescription, uiOptions, gridOptions));
+    Set<Action> enabledActions = GridUtils.getEnabledActions(gridDescription, gridInterceptor);
+    Set<Action> disabledActions = GridUtils.getDisabledActions(gridDescription, gridInterceptor);
 
-    setHasSearch(UiOption.hasSearch(uiOptions)
-        && !gridDescription.getDisabledActions().contains(Action.FILTER));
+    setHasPaging(GridUtils.hasPaging(gridDescription, uiOptions, gridOptions));
+    setHasSearch(UiOption.hasSearch(uiOptions) && !disabledActions.contains(Action.FILTER));
 
     boolean hasData = !BeeUtils.isEmpty(gridDescription.getViewName());
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly())
@@ -165,12 +168,10 @@ public class GridContainerImpl extends Split implements GridContainerView,
         caption = gridDescription.getCaption();
       }
 
-      Set<Action> enabledActions = new HashSet<>(gridDescription.getEnabledActions());
       if (!enabledActions.isEmpty()) {
         enabledActions.retainAll(HEADER_ACTIONS);
       }
 
-      Set<Action> disabledActions = new HashSet<>(gridDescription.getDisabledActions());
       Set<Action> hiddenActions = new HashSet<>();
 
       if (hasSearch()) {
@@ -203,14 +204,12 @@ public class GridContainerImpl extends Split implements GridContainerView,
       } else {
         FaLabel autoFit = new FaLabel(Action.AUTO_FIT.getIcon(), BeeConst.CSS_CLASS_PREFIX
             + Action.AUTO_FIT.getStyleSuffix());
+
+        StyleUtils.enableAnimation(Action.AUTO_FIT, autoFit);
         autoFit.setTitle(Action.AUTO_FIT.getCaption());
 
-        autoFit.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            getGridView().getGrid().autoFit(!EventUtils.hasModifierKey(event.getNativeEvent()));
-          }
-        });
+        autoFit.addClickHandler(event -> getGridView().getGrid().autoFit(
+            !EventUtils.hasModifierKey(event.getNativeEvent())));
 
         header = new HeaderImpl(autoFit);
       }
@@ -421,13 +420,8 @@ public class GridContainerImpl extends Split implements GridContainerView,
       return;
     }
 
-    if (getRowMessage() != null) {
-      getRowMessage().update(event.getRowValue());
-      String message = getRowMessage().evaluate();
-
-      if (hasHeader()) {
-        getHeader().setMessage(message);
-      }
+    if (getRowMessage() != null && hasHeader()) {
+      getHeader().showRowMessage(getRowMessage(), rowValue);
     }
 
     if (gridView.getGridInterceptor() != null) {
@@ -618,39 +612,36 @@ public class GridContainerImpl extends Split implements GridContainerView,
   protected void onLoad() {
     super.onLoad();
 
-    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        if (getGridView().getGridInterceptor() != null) {
-          getGridView().getGridInterceptor().onLoad(getGridView());
+    Scheduler.get().scheduleDeferred(() -> {
+      if (getGridView().getGridInterceptor() != null) {
+        getGridView().getGridInterceptor().onLoad(getGridView());
+      }
+
+      CellGrid grid = getGridView().getGrid();
+
+      if (hasPaging()) {
+        Collection<PagerView> pagers = getPagers();
+        if (pagers != null) {
+          for (PagerView pager : pagers) {
+            pager.start(grid);
+          }
         }
 
-        CellGrid grid = getGridView().getGrid();
+        int ps = estimatePageSize();
+        grid.setPageSize(ps, true);
 
-        if (hasPaging()) {
-          Collection<PagerView> pagers = getPagers();
-          if (pagers != null) {
-            for (PagerView pager : pagers) {
-              pager.start(grid);
-            }
-          }
-
-          int ps = estimatePageSize();
-          grid.setPageSize(ps, true);
-
-          int ds = grid.getDataSize();
-          if (ps > 0 && ps < ds) {
-            grid.getRowData().subList(ps, ds).clear();
-            grid.refresh();
-          } else if (ps > 0 && ps > ds && ds < grid.getRowCount()) {
-            DataRequestEvent.fire(grid, NavigationOrigin.SYSTEM);
-          } else {
-            grid.refresh();
-          }
-
+        int ds = grid.getDataSize();
+        if (ps > 0 && ps < ds) {
+          grid.getRowData().subList(ps, ds).clear();
+          grid.refresh();
+        } else if (ps > 0 && ps > ds && ds < grid.getRowCount()) {
+          DataRequestEvent.fire(grid, NavigationOrigin.SYSTEM);
         } else {
           grid.refresh();
         }
+
+      } else {
+        grid.refresh();
       }
     });
   }

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" name="Orders" source="Orders" module="Orders" editForm="Order" newRowForm="Order">
+<View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression"
+
+  name="Orders" source="Orders" module="Orders" editForm="Order"
+  newRowForm="Order">
   <Columns>
     <SimpleColumn name="Status" />
     <SimpleColumn name="Source" />
@@ -28,6 +31,7 @@
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
+      <SimpleColumn name="CreditDays" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="CompanyTypeName" />
       </SimpleJoin>
@@ -40,12 +44,16 @@
 
     <SimpleColumn name="Contact" />
     <SimpleJoin name="Contact" joinType="LEFT">
+      <SimpleJoin name="Position" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ContactPosition" />
+      </SimpleJoin>
       <SimpleColumn alias="ContactPerson" name="Person" />
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn alias="ContactFirstName" name="FirstName" />
         <SimpleColumn alias="ContactLastName" name="LastName" />
       </SimpleJoin>
       <SimpleJoin joinType="LEFT" name="Contact">
+        <SimpleColumn name="Phone" alias="ContactPhone" />
         <SimpleJoin joinType="LEFT" name="Email">
           <SimpleColumn name="Email" alias="ContactEmail" />
         </SimpleJoin>
@@ -60,18 +68,43 @@
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPosition" />
+        </SimpleJoin>
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+        <SimpleJoin joinType="LEFT" name="Contact">
+          <SimpleColumn name="Phone" alias="ManagerPhone" />
+          <SimpleColumn name="Mobile" alias="ManagerMobile" />
+          <SimpleJoin joinType="LEFT" name="Email">
+            <SimpleColumn name="Email" alias="ManagerEmail" />
+          </SimpleJoin>
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 
+    <SimpleColumn name="Object" />
+    <SimpleJoin name="Object" joinType="LEFT">
+      <SimpleColumn name="Description" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+    <SimpleColumn name="Discount" />
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+
     <SimpleColumn name="Notes" />
 
-    <ExternalJoin name="Order" source="OrderItems" joinType="LEFT" >
-      <AggregateColumn aggregate="MAX" name="Sale" alias="OrderSale" />
+    <ExternalJoin name="Order" source="OrderChildInvoices"
+      joinType="LEFT">
+      <AggregateColumn name="Order" aggregate="MAX" />
     </ExternalJoin>
-
   </Columns>
 </View>

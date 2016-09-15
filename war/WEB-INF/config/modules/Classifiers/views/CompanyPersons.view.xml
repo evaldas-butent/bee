@@ -61,6 +61,14 @@
 
       <SimpleColumn name="SocialContacts" />
     </SimpleJoin>
+
+    <ExternalJoin name="CompanyPerson" joinType="LEFT" source="Employees">
+      <SimpleColumn name="TabNumber" />
+    </ExternalJoin>
+    <ExternalJoin name="CompanyPerson" joinType="LEFT" source="Users">
+      <SimpleColumn name="Login" />
+    </ExternalJoin>
+
   </Columns>
   <Order>
     <OrderBy column="LastName" />

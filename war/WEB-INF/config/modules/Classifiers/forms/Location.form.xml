@@ -67,6 +67,11 @@
         <SummaryProxy name="TimeSheet" summarize="true" />
       </page>
 
+      <page module="Payroll">
+        <text>=payrollEarnings</text>
+        <SummaryProxy name="Earnings" summarize="true" />
+      </page>
+
       <page>
         <text>=notes</text>
         <SimplePanel>

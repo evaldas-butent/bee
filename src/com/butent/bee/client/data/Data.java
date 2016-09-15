@@ -79,7 +79,7 @@ public final class Data {
 
   public static boolean containsColumn(String viewName, String colName) {
     DataInfo dataInfo = getDataInfo(viewName);
-    return (dataInfo == null) ? false : dataInfo.containsColumn(colName);
+    return dataInfo != null && dataInfo.containsColumn(colName);
   }
 
   public static BeeRowSet createRowSet(String viewName) {
@@ -140,7 +140,11 @@ public final class Data {
   }
 
   public static BeeColumn getColumn(String viewName, String colName) {
-    return getDataInfo(viewName).getColumn(colName);
+    BeeColumn column = getDataInfo(viewName).getColumn(colName);
+    if (column == null) {
+      logger.severe(viewName, "column", colName, "not found");
+    }
+    return column;
   }
 
   public static int getColumnIndex(String viewName, String colName) {

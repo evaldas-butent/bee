@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY section "margin-top: 15px;">
   <!ENTITY bold "font-weight:bold;">
   <!ENTITY form "PrintCargoInvoiceShort">
 ]>
@@ -118,25 +118,38 @@
       <Label name="TotalInWords" />
     </HorizontalPanel>
 
-    <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
+    <TextLabel source="Term" style="&section; &bold;">
+      <dynStyle>
+        <ui:inline>display:none;</ui:inline>
+        <ui:expression>row.Proforma</ui:expression>
+      </dynStyle>
       <renderToken source="Term" prefix="Sąskaitą apmokėti iki: " />
     </TextLabel>
 
-    <HtmlPanel style="&section;">
-      <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
-Pastaba:
-Šios nuorodos negalioja sąskaitoms su 21 % PVM
-0 % PVM tarifas: pagal PVM 1 sr. 45 str.
-Be PVM: Pagal PVM įst. 13 (1) str.
-      </span>
-      <span style="font-size:smaller; display:block; white-space:pre-wrap;">
-Pagal LR CK 6.210 (1) straipsnį: „Terminą įvykdyti piniginę prievolę praleidęs skolininkas privalo mokėti 0,02 procentų dydžio delspinigius per dieną už sumą, kurią sumokėti praleistas terminas, jeigu įstatymai ar sutartis nenustato kitokio delspinigių dydžio“.
-      </span>
-    </HtmlPanel>
+    <Label style="&section; font-size:smaller; &bold;"
+      html="Pastaba:
+            &lt;br>Šios nuorodos negalioja sąskaitoms su 21 % PVM
+            &lt;br>0 % PVM tarifas: pagal PVM 1 sr. 45 str.
+            &lt;br>Be PVM: Pagal PVM įst. 13 (1) str.">
+      <dynStyle>
+        <ui:inline>display:none;</ui:inline>
+        <ui:expression>row.Proforma</ui:expression>
+      </dynStyle>
+    </Label>
 
-    <TextLabel source="Notes" style="white-space:pre-wrap;" />
+    <Label style="&section; font-size:smaller;"
+      text="Pagal LR CK 6.210 (1) straipsnį: „Terminą įvykdyti piniginę prievolę praleidęs skolininkas privalo mokėti 0,02 procentų dydžio delspinigius per dieną už sumą, kurią sumokėti praleistas terminas, jeigu įstatymai ar sutartis nenustato kitokio delspinigių dydžio“.">
+      <dynStyle>
+        <ui:inline>display:none;</ui:inline>
+        <ui:expression>row.Proforma</ui:expression>
+      </dynStyle>
+    </Label>
 
-    <Table kind="output" style="width:100%; margin-top:10px;">
+    <TextLabel source="Notes" style="&section; white-space:pre-wrap;">
+      <renderToken source="Notes" prefix="=notes+: " />
+    </TextLabel>
+
+    <Table kind="output" style="&section; width:100%;">
       <row style="&bold;">
         <Label html="Išdavė" />
         <Label html="Priėmė" />

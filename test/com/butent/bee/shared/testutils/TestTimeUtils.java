@@ -33,8 +33,8 @@ public class TestTimeUtils {
 
   @Test
   public final void testDateDiff() {
-    DateTime start = new DateTime(2011, 03, 07, 11, 50, 10, 00);
-    DateTime end = new DateTime(2012, 03, 8, 12, 40, 20, 00);
+    DateTime start = new DateTime(2011, 3, 7, 11, 50, 10, 0);
+    DateTime end = new DateTime(2012, 3, 8, 12, 40, 20, 0);
 
     assertEquals(367, TimeUtils.dateDiff(start, end));
   }
@@ -63,7 +63,7 @@ public class TestTimeUtils {
     assertEquals(0,
         TimeUtils.fieldDifference(start, start, TimeUtils.FIELD_MILLISECOND));
 
-    DateTime start1 = new DateTime(2010, 03, 7, 7, 10, 10);
+    DateTime start1 = new DateTime(2010, 3, 7, 7, 10, 10);
 
     DateTime start2 = new DateTime(2011, 3, 7, 17, 30, 20);
     DateTime start3 = new DateTime(2011, 2, 7, 10, 30, 10);
@@ -86,8 +86,8 @@ public class TestTimeUtils {
     assertEquals(2, TimeUtils.fieldDifference(start3, start,
         TimeUtils.FIELD_DAY_OF_WEEK_IN_MONTH));
 
-    DateTime start4 = new DateTime(2011, 03, 01);
-    DateTime end1 = new DateTime(2012, 03, 01);
+    DateTime start4 = new DateTime(2011, 3, 1);
+    DateTime end1 = new DateTime(2012, 3, 1);
 
     assertEquals(366, TimeUtils.fieldDifference(start4, end1, TimeUtils.FIELD_DAY_OF_YEAR));
     assertEquals(12, TimeUtils.fieldDifference(start4, end1, TimeUtils.FIELD_MONTH));
@@ -107,7 +107,34 @@ public class TestTimeUtils {
 
   @Test
   public final void testFieldsToDay() {
-    assertEquals(15075, Grego.fieldsToDay(2011, 04, 11));
+    assertEquals(15075, Grego.fieldsToDay(2011, 4, 11));
+  }
+
+  @Test
+  public final void testGoMonth() {
+    JustDate date = new JustDate(2016, 5, 31);
+
+    assertEquals(TimeUtils.goMonth(date, 0), date);
+
+    assertEquals(TimeUtils.goMonth(date, -1), new JustDate(2016, 4, 30));
+    assertEquals(TimeUtils.goMonth(date, -2), new JustDate(2016, 3, 31));
+    assertEquals(TimeUtils.goMonth(date, -3), new JustDate(2016, 2, 29));
+    assertEquals(TimeUtils.goMonth(date, -5), new JustDate(2015, 12, 31));
+
+    assertEquals(TimeUtils.goMonth(date, 1), new JustDate(2016, 6, 30));
+    assertEquals(TimeUtils.goMonth(date, 2), new JustDate(2016, 7, 31));
+
+    date = new JustDate(2016, 5, 30);
+    assertEquals(TimeUtils.goMonth(date, -1), new JustDate(2016, 4, 30));
+    assertEquals(TimeUtils.goMonth(date, -2), new JustDate(2016, 3, 30));
+    assertEquals(TimeUtils.goMonth(date, -3), new JustDate(2016, 2, 29));
+    assertEquals(TimeUtils.goMonth(date, -5), new JustDate(2015, 12, 30));
+
+    assertEquals(TimeUtils.goMonth(date, 1), new JustDate(2016, 6, 30));
+    assertEquals(TimeUtils.goMonth(date, 2), new JustDate(2016, 7, 30));
+
+    date = new JustDate(2016, 6, 1);
+    assertEquals(TimeUtils.goMonth(date, -100 * 12), new JustDate(1916, 6, 1));
   }
 
   @Test
@@ -131,8 +158,8 @@ public class TestTimeUtils {
 
   @Test
   public final void testRandomDate() {
-    JustDate min = new JustDate(2011, 03, 07);
-    JustDate max = new JustDate(2012, 03, 07);
+    JustDate min = new JustDate(2011, 3, 7);
+    JustDate max = new JustDate(2012, 3, 7);
 
     for (int i = 0; i < MAX_RANDOM_REQUEST; i++) {
 
@@ -145,8 +172,8 @@ public class TestTimeUtils {
 
   @Test
   public final void testRandomDateTime() {
-    DateTime min = new DateTime(2011, 03, 07, 12, 25, 10);
-    DateTime max = new DateTime(2012, 03, 07, 14, 15, 17);
+    DateTime min = new DateTime(2011, 3, 7, 12, 25, 10);
+    DateTime max = new DateTime(2012, 3, 7, 14, 15, 17);
 
     for (int i = 0; i < MAX_RANDOM_REQUEST; i++) {
 
@@ -178,8 +205,8 @@ public class TestTimeUtils {
 
   @Test
   public final void testToDate() {
-    JustDate first = new JustDate(2011, 02, 22);
-    DateTime dt = new DateTime(2011, 02, 22);
+    JustDate first = new JustDate(2011, 2, 22);
+    DateTime dt = new DateTime(2011, 2, 22);
     Date d = new Date(1298362388227L);
 
     assertEquals(first, TimeUtils.toDate(first));
@@ -189,11 +216,11 @@ public class TestTimeUtils {
 
   @Test
   public final void testToDateTime() {
-    DateTime first = new DateTime(2011, 03, 29, 8, 54, 6, 875);
-    DateTime first2 = new DateTime(2011, 03, 29);
-    JustDate second = new JustDate(2011, 03, 29);
+    DateTime first = new DateTime(2011, 3, 29, 8, 54, 6, 875);
+    DateTime first2 = new DateTime(2011, 3, 29);
+    JustDate second = new JustDate(2011, 3, 29);
 
-    DateTime dt = new DateTime(2011, 03, 29, 8, 54, 6, 875);
+    DateTime dt = new DateTime(2011, 3, 29, 8, 54, 6, 875);
     Date d = new Date(1301378046875L);
 
     assertEquals(first, TimeUtils.toDateTime(first));
@@ -207,8 +234,8 @@ public class TestTimeUtils {
     Date first = new Date(1298362388227L);
     Date first2 = new Date(1301346000000L);
 
-    DateTime dt = new DateTime(2011, 02, 22, 10, 13, 8, 227);
-    JustDate d = new JustDate(2011, 03, 29);
+    DateTime dt = new DateTime(2011, 2, 22, 10, 13, 8, 227);
+    JustDate d = new JustDate(2011, 3, 29);
 
     assertEquals(first, TimeUtils.toJava(first));
     assertEquals(true, TimeUtils.toJava(dt).compareTo(first) == 0);

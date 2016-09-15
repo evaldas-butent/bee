@@ -61,7 +61,7 @@ public final class Localizations {
           result.putAll(glossary);
 
         } else {
-          glossary.forEach((key, value) -> result.putIfAbsent(key, value));
+          glossary.forEach(result::putIfAbsent);
         }
       }
     }
@@ -97,7 +97,9 @@ public final class Localizations {
     return defaultGlossaries;
   }
 
-  static void setCustomGlossary(SupportedLocale supportedLocale, Map<String, String> glossary) {
+  static synchronized void setCustomGlossary(SupportedLocale supportedLocale,
+      Map<String, String> glossary) {
+
     if (supportedLocale == null) {
       logger.warning("Localizations setCustomGlossary: supportedLocale is null");
 

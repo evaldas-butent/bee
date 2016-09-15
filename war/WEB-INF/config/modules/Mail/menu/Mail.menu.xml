@@ -4,10 +4,6 @@
 name="Mail" label="=mail" order="70" module="Mail"
 >
   <Item name="Mail" label="=mails" service="open_mail" />
-  <Item name="Accounts" label="=mailAccounts" service="grid" parameters="Accounts" separator="true" />
-  <Item name="Signatures" label="=mailSignatures" service="grid" parameters="Signatures" />
-  <Item name="RecipientsGroups" label="=mailRecipientsGroups" service="grid" parameters="RecipientsGroups" />
-  <Item name="Addressbook" label="=mailAddressbook" service="grid" parameters="Addressbook" />
   <Item name="Newsletter" label="=mailNewsletters" service="grid" parameters="Newsletters" />
 
   <Item name="Parameters" label="=mailParameters" service="parameters" parameters="Mail"

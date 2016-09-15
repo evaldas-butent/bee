@@ -11,9 +11,12 @@
 
     <String name="Article" precision="30" unique="true" label="=article" />
     <String name="Article2" precision="30" label="=article2" />
+    <String name="Article3" precision="30" label="=article3" />
+    <String name="Article4" precision="30" label="=article4" />
     <String name="Barcode" precision="30" unique="true" label="=itemBarcode" />
 
     <Relation name="Unit" notNull="true" relation="Units" label="=unit" />
+    <Numeric name="PackageUnits" label="=packageUnits" precision="10" scale="2" />
     <Enum name="TimeUnit" key="TradeActTimeUnit" label="=taTimeUnit" />
 
     <Numeric name="Weight" precision="10" scale="3" label="=weight" />
@@ -31,11 +34,27 @@
     <Relation name="Currency2" relation="Currencies" label="=currency2" />
     <Numeric name="Price3" precision="15" scale="5" label="=price3" />
     <Relation name="Currency3" relation="Currencies" label="=currency3" />
+    <Numeric name="Price4" precision="15" scale="5" label="=price4" />
+    <Relation name="Currency4" relation="Currencies" label="=currency4" />
+    <Numeric name="Price5" precision="15" scale="5" label="=price5" />
+    <Relation name="Currency5" relation="Currencies" label="=currency5" />
+    <Numeric name="Price6" precision="15" scale="5" label="=price6" />
+    <Relation name="Currency6" relation="Currencies" label="=currency6" />
+    <Numeric name="Price7" precision="15" scale="5" label="=price7" />
+    <Relation name="Currency7" relation="Currencies" label="=currency7" />
+    <Numeric name="Price8" precision="15" scale="5" label="=price8" />
+    <Relation name="Currency8" relation="Currencies" label="=currency8" />
+    <Numeric name="Price9" precision="15" scale="5" label="=price9" />
+    <Relation name="Currency9" relation="Currencies" label="=currency9" />
+    <Numeric name="Price10" precision="15" scale="5" label="=price10" />
+    <Relation name="Currency10" relation="Currencies" label="=currency10" />
 
     <Boolean name="Vat" label="=vat" defValue="true" />
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />
 
     <Boolean name="IsService" label="=service" />
+    <String name="Attribute" label="=attribute" precision="30" />
+    <Boolean name="NotManufactured" label="=notManufactured" />
 
     <Relation name="Type" relation="CategoryTree" label="=type" />
     <Relation name="Group" relation="CategoryTree" label="=group" />

@@ -20,6 +20,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -27,11 +28,12 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -54,17 +56,44 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-class TransportationOrderForm extends AbstractFormInterceptor implements ClickHandler {
+class TransportationOrderForm extends PrintFormInterceptor implements ClickHandler {
 
   private FaLabel copyAction;
 
   @Override
   public FormInterceptor getInstance() {
     return new TransportationOrderForm();
+  }
+
+  @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    SelfServiceUtils.getCargos(Filter.equals(COL_ORDER, getActiveRowId()),
+        cargoInfo -> dataConsumer.accept(new BeeRowSet[] {cargoInfo}));
+  }
+
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    Map<String, Long> companies = new HashMap<>();
+
+    for (String col : Arrays.asList(COL_CUSTOMER, COL_PAYER)) {
+      Long id = getLongValue(col);
+
+      if (DataUtils.isId(id)) {
+        companies.put(col, id);
+      }
+    }
+    companies.put(ClassifierConstants.COL_COMPANY, BeeKeeper.getUser().getCompany());
+
+    super.getReportParameters(defaultParameters ->
+        ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+          parametersConsumer.accept(defaultParameters);
+        }));
   }
 
   @Override
@@ -184,7 +213,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
         if (response.hasErrors()) {
           return;
         }
-        Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
+        Map<String, String> result = Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
         double limit = BeeUtils.toDouble(result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
         double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));

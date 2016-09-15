@@ -79,7 +79,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
         response.notify(getFormView());
         return;
       }
-      Map<String, String> data = Codec.deserializeMap(response.getResponseAsString());
+      Map<String, String> data = Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
       HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
       int r = 0;

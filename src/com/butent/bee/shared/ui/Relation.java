@@ -757,7 +757,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     return RenderMode.TARGET.equals(getRenderMode());
   }
 
-  public void replaceTargeColumn(String oldId, String newId) {
+  public void replaceTargetColumn(String oldId, String newId) {
     if (!BeeUtils.isEmpty(oldId) && !BeeUtils.isEmpty(newId)
         && !BeeUtils.equalsTrim(oldId, newId)) {
 
