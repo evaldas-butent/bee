@@ -4,6 +4,14 @@
 
   <Columns>
     <SimpleColumn name="Order" />
+    <SimpleJoin name="Order" joinType="LEFT">
+      <SimpleColumn name="Series" />
+      <SimpleJoin joinType="LEFT" name="Series">
+        <SimpleColumn name="SeriesName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Number" />
+    </SimpleJoin>
 
     <SimpleColumn name="Sale" />
     <SimpleJoin joinType="LEFT" name="Sale">
@@ -69,5 +77,10 @@
         <SimpleColumn name="Name" alias="PayerName" label="=trdPayer" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="Loading" />
+    <SimpleColumn name="Unloading" />
+    <SimpleColumn name="Issued" />
+    <SimpleColumn name="DriverInfo" />
   </Columns>
 </View>

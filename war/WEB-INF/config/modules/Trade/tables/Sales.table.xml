@@ -37,6 +37,11 @@
     <DateTime name="Exported" label="=trdExported" />
 
     <Integer name="Kind" />
+
+    <String name="Loading" precision="100" label="=loading" />
+    <String name="Unloading" precision="100" label="=unloading" />
+    <String name="Issued" precision="100" label="=ordIssued" />
+    <String name="DriverInfo" precision="100" label="=ordDriverInfo" />
   </Fields>
 
   <Indexes>
