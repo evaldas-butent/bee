@@ -3477,6 +3477,10 @@ public interface Dictionary {
 
   default String ordDebtExceedsCreditLimit() {return g("ordDebtExceedsCreditLimit");}
 
+  default String ordDriverInfo() {return g("ordDriverInfo");}
+
+  default String ordIssued() {return g("ordIssued");}
+
   default String ordEcOrder() {return g("ordEcOrder");}
 
   default String ordEcOrders() {return g("ordEcOrders");}
@@ -3524,6 +3528,8 @@ public interface Dictionary {
   default String ordShoppingCartName() {return g("ordShoppingCartName");}
 
   default String ordSupplierTerm() {return g("ordSupplierTerm");}
+
+  default String ordTransportationActInfo() {return g("ordTransportationActInfo");}
 
   default String ordUncompleted() {return g("ordUncompleted");}
 
