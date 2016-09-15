@@ -9,7 +9,9 @@
 
   name="OrderInvoice" viewName="Sales" caption="=trdInvoice" showRowId="true"
   width="840" height="600" readOnly="true">
-  <f:properties jasperReports="PrintOrderInvoice:Sąskaita, PrintOrderProforma:Išankstinė sąskaita" />
+  <f:properties jasperReports="PrintInvoice:=trdInvoice, PrintInvoice_ee:=trdInvoice+_EE,
+  PrintProforma:=trdProformaInvoice, PrintProforma_ee:=trdProformaInvoice+_EE,
+  PrintTransportationAct:=printInvoiceBoL, PrintTransportationAct_ee:=printInvoiceBoL+_EE" />
   <FlowPanel class="flexBox-vertical">
     <br />
     <Table kind="controls">
@@ -77,6 +79,32 @@
       <page>
         <text>=goods</text>
         <ChildGrid name="SaleItems" relColumn="Sale" />
+      </page>
+
+      <page>
+        <text>=ordTransportationActInfo</text>
+        <SimplePanel>
+          <Table kind="controls">
+            <col index="0" kind="label" />
+            <col index="2" kind="label" />
+
+            <row>
+              <Label for="Loading" />
+              <InputText source="Loading" style="&inp;" disablable="false" />
+
+              <Label for="Issued" />
+              <InputText source="Issued" style="&inp;" disablable="false" />
+            </row>
+
+            <row>
+              <Label for="Unloading" />
+              <InputText source="Unloading" style="&inp;" disablable="false" />
+
+              <Label for="DriverInfo" />
+              <InputText source="DriverInfo" style="&inp;" disablable="false" />
+            </row>
+          </Table>
+        </SimplePanel>
       </page>
 
       <page>
