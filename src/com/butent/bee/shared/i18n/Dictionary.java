@@ -4183,6 +4183,12 @@ public interface Dictionary {
 
   default String rebuildTradeStockQuestion() {return g("rebuildTradeStockQuestion");}
 
+  default String recalculateTradeItemCostsCaption() {return g("recalculateTradeItemCostsCaption");}
+
+  default String recalculateTradeItemCostsNotification() {return g("recalculateTradeItemCostsNotification");}
+
+  default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
+
   default String received() {return g("received");}
 
   default String recipient() {return g("recipient");}
