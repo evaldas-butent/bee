@@ -7,7 +7,8 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
 
   name="Order" viewName="Orders" width="800" height="600">
-  <f:properties reports="PrintOrder, PrintOffer, PrintOfferApprove" />
+  <f:properties jasperReports="PrintOffer:=offer, PrintOffer_ee:=offer+_EE, PrintOrder:=order,
+    PrintOrder_ee:=order+_EE" />
   <FlowPanel>
     <Table kind="controls">
       <row data="OrdersTemplates" class="bee-ta-template-selection">
