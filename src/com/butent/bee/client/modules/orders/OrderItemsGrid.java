@@ -238,9 +238,9 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
             case COL_TRADE_ITEM_QUANTITY:
 
-              if (newValue < 1) {
+              if (!BeeUtils.isPositive(newValue)) {
                 getGridPresenter().getGridView().notifySevere(
-                    Localized.dictionary().minValue() + " 1");
+                    Localized.dictionary().minValue() + " > 0");
                 return false;
               }
 
