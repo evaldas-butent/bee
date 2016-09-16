@@ -40,8 +40,8 @@ public class ResponseObject implements BeeSerializable {
     return new ResponseObject().addError(err);
   }
 
-  public static ResponseObject error(Throwable err) {
-    return new ResponseObject().addError(err);
+  public static ResponseObject error(Throwable err, Object... msgs) {
+    return new ResponseObject().addError(err, msgs);
   }
 
   public static ResponseObject info(Object... obj) {
@@ -95,13 +95,13 @@ public class ResponseObject implements BeeSerializable {
     return this;
   }
 
-  public ResponseObject addError(Throwable err) {
+  public ResponseObject addError(Throwable err, Object... msgs) {
     Throwable cause = err;
 
     while (cause.getCause() != null) {
       cause = cause.getCause();
     }
-    addError(BeeUtils.notEmpty(cause.getLocalizedMessage(), cause.toString()));
+    addError(BeeUtils.joinWords(ArrayUtils.joinWords(msgs), cause.toString()));
     return this;
   }
 

@@ -14,6 +14,7 @@ import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -113,6 +114,7 @@ public class MailStorageBean {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(MailStorageBean.class);
+  static int CHUNK = 1000;
 
   @EJB
   QueryServiceBean qs;
@@ -426,7 +428,7 @@ public class MailStorageBean {
     return messageId;
   }
 
-  public Pair<Long, Integer> syncFolder(MailAccount account, MailFolder localFolder,
+  public Pair<Integer, Integer> syncFolder(MailAccount account, MailFolder localFolder,
       Folder remoteFolder, String progressId, boolean syncAll) throws MessagingException {
 
     Assert.noNulls(localFolder, remoteFolder);
@@ -437,90 +439,73 @@ public class MailStorageBean {
         .addFrom(TBL_PLACES)
         .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))
         .addOrderDesc(TBL_PLACES, COL_MESSAGE_UID)
-        .setLimit(1000);
+        .setLimit(CHUNK);
 
-    long lastUid = 0;
+    int start = 0;
+    int lastNo = 0;
     int cnt = 0;
-    int size;
-    int offset = 0;
 
-    do {
-      SimpleRowSet data = qs.getData(query.setOffset(offset));
-      size = data.getNumberOfRows();
-      long from = (syncAll && size < query.getLimit()) ? 1
-          : BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID));
-      long to = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
+    while (lastNo == 0) {
+      SimpleRowSet data = qs.getData(query);
+      int size = data.getNumberOfRows();
 
-      if (lastUid == 0) {
-        lastUid = to;
+      if (size == 0) {
+        break;
       }
-      if (size > 0) {
-        Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(from, to);
+      Message[] msgs = ((UIDFolder) remoteFolder)
+          .getMessagesByUID(BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID)),
+              BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID)));
+
+      if (!ArrayUtils.isEmpty(msgs)) {
+        start = msgs[0].getMessageNumber();
+        lastNo = msgs[msgs.length - 1].getMessageNumber();
+
         FetchProfile fp = new FetchProfile();
         fp.add(FetchProfile.Item.FLAGS);
         remoteFolder.fetch(msgs, fp);
-
-        Map<Long, Holder<Integer>> syncedMsgs = new HashMap<>();
-        long l = msgs.length;
-        long progressUpdated = System.currentTimeMillis();
-
-        for (Message message : msgs) {
-          long uid = ((UIDFolder) remoteFolder).getUID(message);
-          SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
-
-          if (row != null) {
-            Integer flags = MailEnvelope.getFlagMask(message);
-            Holder<Integer> hasFlags = null;
-
-            if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
-              hasFlags = Holder.of(flags);
-            }
-            syncedMsgs.put(row.getLong(COL_PLACE), hasFlags);
-          } else {
-            try {
-              ctx.getBusinessObject(MailStorageBean.class)
-                  .storeMail(account, message, localFolder.getId(), uid);
-              cnt++;
-            } catch (MessagingException e) {
-              logger.error(e);
-            }
-          }
-          if (!BeeUtils.isEmpty(progressId)) {
-            l--;
-
-            if ((System.currentTimeMillis() - progressUpdated) > 10) {
-              if (!Endpoint.updateProgress(progressId, l / (double) msgs.length)) {
-                return null;
-              }
-              progressUpdated = System.currentTimeMillis();
-            }
-          }
-        }
-        for (Entry<Long, Holder<Integer>> entry : syncedMsgs.entrySet()) {
-          if (entry.getValue() != null) {
-            cnt += qs.updateData(new SqlUpdate(TBL_PLACES)
-                .addConstant(COL_FLAGS, entry.getValue().get())
-                .setWhere(sys.idEquals(TBL_PLACES, entry.getKey())));
-          }
-        }
-        List<Long> deletedMsgs = new ArrayList<>();
-
-        for (int i = 0; i < size; i++) {
-          Long id = data.getLong(i, COL_PLACE);
-
-          if (!syncedMsgs.containsKey(id)) {
-            deletedMsgs.add(id);
-          }
-        }
-        if (!deletedMsgs.isEmpty()) {
-          cnt += qs.updateData(new SqlDelete(TBL_PLACES)
-              .setWhere(sys.idInList(TBL_PLACES, deletedMsgs)));
-        }
-        offset += query.getLimit();
       }
-    } while (syncAll && size == query.getLimit());
+      int c = syncMessages(data, msgs, account, localFolder, remoteFolder, progressId);
+      cnt += Math.abs(c);
 
-    return Pair.of(lastUid, cnt);
+      if (c < 0) {
+        start = 0;
+        break;
+      }
+    }
+    if (syncAll && start > 0) {
+      HasConditions clause = SqlUtils.and();
+
+      query.resetOrder().setLimit(0)
+          .setWhere(SqlUtils.and(query.getWhere(), clause));
+
+      int end = start - 1;
+
+      while (end > 0) {
+        start = Math.max(end - CHUNK + 1, 1);
+        Message[] msgs = remoteFolder.getMessages(start, end);
+        end = start - 1;
+
+        FetchProfile fp = new FetchProfile();
+        fp.add(FetchProfile.Item.FLAGS);
+        fp.add(UIDFolder.FetchProfileItem.UID);
+        remoteFolder.fetch(msgs, fp);
+
+        clause.clear();
+        clause.add(SqlUtils.moreEqual(TBL_PLACES, COL_MESSAGE_UID,
+            ((UIDFolder) remoteFolder).getUID(msgs[0])),
+            SqlUtils.lessEqual(TBL_PLACES, COL_MESSAGE_UID,
+                ((UIDFolder) remoteFolder).getUID(msgs[msgs.length - 1])));
+
+        int c = syncMessages(qs.getData(query), msgs, account, localFolder, remoteFolder,
+            progressId);
+        cnt += Math.abs(c);
+
+        if (c < 0) {
+          break;
+        }
+      }
+    }
+    return Pair.of(lastNo, cnt);
   }
 
   public void validateFolder(MailFolder folder, Long uidValidity) {
@@ -874,5 +859,65 @@ public class MailStorageBean {
         .addConstant(COL_FOLDER, folderId)
         .addNotNull(COL_FLAGS, flags)
         .addNotNull(COL_MESSAGE_UID, messageUID));
+  }
+
+  private int syncMessages(SimpleRowSet data, Message[] messages, MailAccount account,
+      MailFolder localFolder, Folder remoteFolder, String progressId) throws MessagingException {
+    int cnt = 0;
+    Map<Long, Holder<Integer>> syncedMsgs = new HashMap<>();
+    double l = messages.length;
+    long progressUpdated = System.currentTimeMillis();
+
+    for (int i = messages.length - 1; i >= 0; i--) {
+      if (!BeeUtils.isEmpty(progressId)) {
+        if ((System.currentTimeMillis() - progressUpdated) > 10) {
+          if (!Endpoint.updateProgress(progressId, l / messages.length)) {
+            return cnt * (-1);
+          }
+          progressUpdated = System.currentTimeMillis();
+        }
+        l--;
+      }
+      Message message = messages[i];
+      long uid = ((UIDFolder) remoteFolder).getUID(message);
+      SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
+
+      if (row != null) {
+        Integer flags = MailEnvelope.getFlagMask(message);
+        Holder<Integer> hasFlags = null;
+
+        if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
+          hasFlags = Holder.of(flags);
+        }
+        syncedMsgs.put(row.getLong(COL_PLACE), hasFlags);
+      } else {
+        try {
+          ctx.getBusinessObject(MailStorageBean.class)
+              .storeMail(account, message, localFolder.getId(), uid);
+          cnt++;
+        } catch (MessagingException e) {
+          logger.error(e);
+        }
+      }
+    }
+    for (Entry<Long, Holder<Integer>> entry : syncedMsgs.entrySet()) {
+      if (entry.getValue() != null) {
+        cnt += qs.updateData(new SqlUpdate(TBL_PLACES)
+            .addConstant(COL_FLAGS, entry.getValue().get())
+            .setWhere(sys.idEquals(TBL_PLACES, entry.getKey())));
+      }
+    }
+    List<Long> deletedMsgs = new ArrayList<>();
+
+    for (Long id : data.getLongColumn(COL_PLACE)) {
+      if (!syncedMsgs.containsKey(id)) {
+        deletedMsgs.add(id);
+      }
+    }
+    if (!deletedMsgs.isEmpty()) {
+      cnt += qs.updateData(new SqlDelete(TBL_PLACES)
+          .setWhere(sys.idInList(TBL_PLACES, deletedMsgs)));
+    }
+    return cnt;
   }
 }

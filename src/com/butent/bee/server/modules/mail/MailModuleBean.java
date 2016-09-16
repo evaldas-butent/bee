@@ -202,7 +202,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       } catch (Throwable e) {
         logger.error(e, account.getStoreProtocol(), account.getStoreHost(), account.getStoreLogin(),
             localFolder.getName());
-        error = BeeUtils.joinWords(account.getStoreProtocol(), e.getMessage());
+        error = ArrayUtils.joinWords(ResponseObject.error(e, account.getStoreProtocol())
+            .getErrors());
       } finally {
         account.disconnectFromStore(store);
       }
@@ -432,7 +433,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             save = true;
             logger.error(e, account.getTransportProtocol(), account.getTransportHost(),
                 account.getTransportLogin());
-            response.addError(e);
+            response.addError(e, account.getTransportProtocol());
           }
         }
         if (save) {
@@ -946,7 +947,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     } catch (MessagingException ex) {
       logger.error(ex, account.getTransportProtocol(), account.getTransportHost(),
           account.getTransportLogin());
-      return ResponseObject.error(account.getTransportProtocol(), ex.getMessage());
+      return ResponseObject.error(ex, account.getTransportProtocol());
     }
     if (storeInSentFolder) {
       try {
@@ -954,7 +955,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       } catch (MessagingException ex) {
         logger.error(ex, account.getStoreProtocol(), account.getStoreHost(),
             account.getStoreLogin(), account.getSentFolder().getName());
-        return ResponseObject.error(account.getStoreProtocol(), ex.getMessage());
+        return ResponseObject.error(ex, account.getStoreProtocol());
       }
     }
     return ResponseObject.emptyResponse();
@@ -1287,35 +1288,61 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       try {
         remoteFolder.open(Folder.READ_ONLY);
-        Message[] newMessages;
-        Long lastUid = null;
+        int first = 1;
+        int count = remoteFolder.getMessageCount();
+        int start;
+        int end = count;
 
         if (hasUid) {
-          Pair<Long, Integer> pair = mail.syncFolder(account, localFolder, remoteFolder, progressId,
-              syncAll);
+          Pair<Integer, Integer> pair = mail.syncFolder(account, localFolder, remoteFolder,
+              progressId, syncAll);
 
           if (Objects.isNull(pair)) {
-            return c;
+            count = 0;
+          } else {
+            if (BeeUtils.isPositive(pair.getA())) {
+              first = pair.getA() + 1;
+              count = count - first + 1;
+            }
+            c += pair.getB();
           }
-          lastUid = pair.getA();
-          c += pair.getB();
-          newMessages = ((UIDFolder) remoteFolder).getMessagesByUID(lastUid + 1, UIDFolder.LASTUID);
-        } else {
-          newMessages = remoteFolder.getMessages();
         }
-        FetchProfile fp = new FetchProfile();
-        fp.add(FetchProfile.Item.ENVELOPE);
-        fp.add(FetchProfile.Item.FLAGS);
-        remoteFolder.fetch(newMessages, fp);
+        if (!BeeUtils.isPositive(count)) {
+          return c;
+        }
         boolean isInbox = account.isInbox(localFolder);
-        int l = 0;
+        double l = 0;
         long progressUpdated = System.currentTimeMillis();
+        boolean stop = false;
 
-        for (Message message : newMessages) {
-          Long currentUid = hasUid ? ((UIDFolder) remoteFolder).getUID(message) : null;
+        do {
+          start = Math.max(end - MailStorageBean.CHUNK + 1, first);
+          Message[] newMessages = remoteFolder.getMessages(start, end);
+          end = start - 1;
 
-          if (currentUid == null || currentUid > lastUid) {
-            Long placeId = mail.storeMail(account, message, localFolder.getId(), currentUid).getB();
+          FetchProfile fp = new FetchProfile();
+          fp.add(FetchProfile.Item.ENVELOPE);
+          fp.add(FetchProfile.Item.FLAGS);
+          fp.add(MailConstants.COL_IN_REPLY_TO);
+
+          if (hasUid) {
+            fp.add(UIDFolder.FetchProfileItem.UID);
+          }
+          remoteFolder.fetch(newMessages, fp);
+
+          for (int i = newMessages.length - 1; i >= 0; i--) {
+            if (!BeeUtils.isEmpty(progressId)) {
+              if ((System.currentTimeMillis() - progressUpdated) > 10) {
+                if (!Endpoint.updateProgress(progressId, l / count)) {
+                  return c;
+                }
+                progressUpdated = System.currentTimeMillis();
+              }
+              l++;
+            }
+            Message message = newMessages[i];
+            Long placeId = mail.storeMail(account, message, localFolder.getId(),
+                hasUid ? ((UIDFolder) remoteFolder).getUID(message) : null).getB();
 
             if (DataUtils.isId(placeId)) {
               if (isInbox) {
@@ -1335,19 +1362,12 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                 }
               }
               c++;
+            } else if (!syncAll) {
+              stop = true;
+              break;
             }
           }
-          if (!BeeUtils.isEmpty(progressId)) {
-            l++;
-
-            if ((System.currentTimeMillis() - progressUpdated) > 10) {
-              if (!Endpoint.updateProgress(progressId, l / (double) newMessages.length)) {
-                break;
-              }
-              progressUpdated = System.currentTimeMillis();
-            }
-          }
-        }
+        } while (!stop && start > first);
       } finally {
         if (remoteFolder.isOpen()) {
           try {
