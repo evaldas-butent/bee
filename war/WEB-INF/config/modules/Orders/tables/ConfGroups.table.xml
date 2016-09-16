@@ -5,7 +5,7 @@
        idName="GroupID"
 >
   <Fields>
-    <String name="GroupName" precision="50" unique="true" notNull="true" label="=optionGroup" />
+    <String name="GroupName" precision="100" unique="true" notNull="true" label="=optionGroup" />
     <Boolean name="Required" label="=required" />
   </Fields>
 </Table>
