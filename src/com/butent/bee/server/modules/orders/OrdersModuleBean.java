@@ -865,6 +865,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
   }
 
+  private Map<Long, Double> getCompletedInvoices(Long order) {
+    Map<Long, Double> complInvoices = new HashMap<>();
+
+    return complInvoices;
+  }
+  private Map<Long, Double> getFreeRemainders(List<Long> itemIds, Long order, Long whId) {
+    Map<Long, Double> totRemainders = new HashMap<>();
+    return totRemainders;
+  }
+
   private Map<Long, Double> totReservedRemainders(List<Long> itemIds, Long order, Long whId) {
     Long warehouseId;
     if (whId == null) {
