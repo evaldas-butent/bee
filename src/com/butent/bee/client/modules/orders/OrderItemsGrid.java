@@ -209,147 +209,143 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
     if (BeeUtils.inList(columnName, COL_RESERVED_REMAINDER, COL_TRADE_ITEM_QUANTITY,
         COL_TRADE_ITEM_PRICE, "ItemPrices", COL_TRADE_DISCOUNT) && editableColumn != null) {
-      editableColumn.addCellValidationHandler(new CellValidateEvent.Handler() {
+      editableColumn.addCellValidationHandler(event -> {
+        if (event.isCellValidation() && event.isPostValidation()) {
+          CellValidation cv = event.getCellValidation();
+          IsRow row = cv.getRow();
+          double freeRem = BeeUtils.toDouble(row.getProperty(PRP_FREE_REMAINDER));
+          double qty =
+              BeeUtils.unbox(row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS,
+                  COL_TRADE_ITEM_QUANTITY)));
+          double newValue = BeeUtils.toDouble(cv.getNewValue());
+          double oldValue = BeeUtils.toDouble(cv.getOldValue());
 
-        @Override
-        public Boolean validateCell(CellValidateEvent event) {
-          if (event.isCellValidation() && event.isPostValidation()) {
-            CellValidation cv = event.getCellValidation();
-            IsRow row = cv.getRow();
-            double freeRem = BeeUtils.toDouble(row.getProperty(PRP_FREE_REMAINDER));
-            double qty =
-                BeeUtils.unbox(row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS,
-                    COL_TRADE_ITEM_QUANTITY)));
-            double newValue = BeeUtils.toDouble(cv.getNewValue());
-            double oldValue = BeeUtils.toDouble(cv.getOldValue());
+          List<BeeColumn> cols = null;
+          List<String> oldValues = null;
+          List<String> newValues = null;
 
-            List<BeeColumn> cols = null;
-            List<String> oldValues = null;
-            List<String> newValues = null;
+          switch (event.getColumnId()) {
+            case COL_RESERVED_REMAINDER:
 
-            switch (event.getColumnId()) {
-              case COL_RESERVED_REMAINDER:
+              if (newValue < 0) {
+                getGridPresenter().getGridView().notifySevere(
+                    Localized.dictionary().minValue() + " 0");
+                return false;
+              }
 
-                if (newValue < 0) {
+              if (freeRem == 0) {
+                if (newValue > oldValue) {
                   getGridPresenter().getGridView().notifySevere(
-                      Localized.dictionary().minValue() + " 0");
+                      Localized.dictionary().ordResNotIncrease());
                   return false;
                 }
 
-                if (freeRem == 0) {
-                  if (newValue > oldValue) {
-                    getGridPresenter().getGridView().notifySevere(
-                        Localized.dictionary().ordResNotIncrease());
-                    return false;
-                  }
+              } else if (newValue > qty || newValue > freeRem) {
+                getGridPresenter().getGridView().notifySevere(
+                    Localized.dictionary().ordResQtyIsTooBig());
+                return false;
+              }
 
-                } else if (newValue > qty || newValue > freeRem) {
-                  getGridPresenter().getGridView().notifySevere(
-                      Localized.dictionary().ordResQtyIsTooBig());
-                  return false;
-                }
+              cols = Lists.newArrayList(cv.getColumn());
+              oldValues = Lists.newArrayList(cv.getOldValue());
+              newValues = Lists.newArrayList(cv.getNewValue());
 
-                cols = Lists.newArrayList(cv.getColumn());
-                oldValues = Lists.newArrayList(cv.getOldValue());
-                newValues = Lists.newArrayList(cv.getNewValue());
+              break;
 
-                break;
+            case COL_TRADE_ITEM_QUANTITY:
 
-              case COL_TRADE_ITEM_QUANTITY:
+              if (!BeeUtils.isPositive(newValue)) {
+                getGridPresenter().getGridView().notifySevere(
+                    Localized.dictionary().minValue() + " > 0");
+                return false;
+              }
+              IsRow parentRow = ViewHelper.getFormRow(getGridPresenter().getMainView());
+              int status = parentRow.getInteger(Data.getColumnIndex(VIEW_ORDERS,
+                  COL_ORDERS_STATUS));
 
-                if (newValue < 1) {
-                  getGridPresenter().getGridView().notifySevere(
-                      Localized.dictionary().minValue() + " 1");
-                  return false;
-                }
-                IsRow parentRow = ViewHelper.getFormRow(getGridPresenter().getMainView());
-                int status = parentRow.getInteger(Data.getColumnIndex(VIEW_ORDERS,
-                    COL_ORDERS_STATUS));
+              int updIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+              double updValue = BeeUtils.unbox(row.getDouble(updIndex));
 
-                int updIndex = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
-                double updValue = BeeUtils.unbox(row.getDouble(updIndex));
+              BeeColumn updColumn = Data.getColumn(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
 
-                BeeColumn updColumn = Data.getColumn(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+              if (newValue <= (updValue + freeRem)) {
+                updValue = newValue;
+              } else {
+                updValue += freeRem;
+              }
 
-                if (newValue <= (updValue + freeRem)) {
-                  updValue = newValue;
-                } else {
-                  updValue += freeRem;
-                }
+              if (OrdersStatus.APPROVED.ordinal() != status) {
+                updValue = 0;
+              }
 
-                if (OrdersStatus.APPROVED.ordinal() != status) {
-                  updValue = 0;
-                }
+              cols = Lists.newArrayList(cv.getColumn(), updColumn);
+              oldValues = Lists.newArrayList(cv.getOldValue(),
+                  row.getString(updIndex));
+              newValues = Lists.newArrayList(cv.getNewValue(),
+                  BeeUtils.toString(updValue));
 
-                cols = Lists.newArrayList(cv.getColumn(), updColumn);
-                oldValues = Lists.newArrayList(cv.getOldValue(),
-                    row.getString(updIndex));
-                newValues = Lists.newArrayList(cv.getNewValue(),
-                    BeeUtils.toString(updValue));
+              Long supplier =
+                  row.getLong(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_SUPPLIER));
+              Integer pckUnits =
+                  row.getInteger(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM_PACKAGE_UNITS));
+              String attribute =
+                  row.getString(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM_ATTRIBUTE));
 
-                Long supplier =
-                    row.getLong(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_SUPPLIER));
-                Integer pckUnits =
-                    row.getInteger(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM_PACKAGE_UNITS));
-                String attribute =
-                    row.getString(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM_ATTRIBUTE));
+              if (BeeUtils.isPositive(supplier) && BeeUtils.isPositive(pckUnits)
+                  && BeeUtils.isEmpty(attribute)) {
+                getUnpckSuppliers(row.getLong(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM)),
+                    supplier, newValue, BeeUtils.toString(updValue));
+                return false;
+              }
 
-                if (BeeUtils.isPositive(supplier) && BeeUtils.isPositive(pckUnits)
-                    && BeeUtils.isEmpty(attribute)) {
-                  getUnpckSuppliers(row.getLong(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM)),
-                      supplier, newValue, BeeUtils.toString(updValue));
-                  return false;
-                }
+              break;
 
-                break;
+            case COL_TRADE_ITEM_PRICE:
+              Double unpack = row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_UNPACKING));
+              if (unpack != null) {
+                newValue = Double.valueOf(BeeUtils.unbox(newValue) + BeeUtils.unbox(unpack)
+                    / BeeUtils.unbox(qty));
+              }
 
-              case COL_TRADE_ITEM_PRICE:
-                Double unpack = row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_UNPACKING));
-                if (unpack != null) {
-                  newValue = Double.valueOf(BeeUtils.unbox(newValue) + BeeUtils.unbox(unpack)
-                      / BeeUtils.unbox(qty));
-                }
+              cols = Lists.newArrayList(cv.getColumn());
+              oldValues = Lists.newArrayList(cv.getOldValue());
+              newValues = Lists.newArrayList(BeeUtils.toString(newValue));
+              break;
 
-                cols = Lists.newArrayList(cv.getColumn());
-                oldValues = Lists.newArrayList(cv.getOldValue());
-                newValues = Lists.newArrayList(BeeUtils.toString(newValue));
-                break;
+            case COL_TRADE_DISCOUNT:
+              double invisibleDiscount = BeeUtils.unbox(row.getDouble(
+                  Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_INVISIBLE_DISCOUNT)))
+                  + managerDiscount;
 
-              case COL_TRADE_DISCOUNT:
-                double invisibleDiscount = BeeUtils.unbox(row.getDouble(
-                    Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_INVISIBLE_DISCOUNT)))
-                    + managerDiscount;
+              double maxDiscount = BeeUtils.unbox(row.getDouble(Data.getColumnIndex(
+                  VIEW_ORDER_ITEMS, COL_TRADE_MAX_DISCOUNT)));
 
-                double maxDiscount = BeeUtils.unbox(row.getDouble(Data.getColumnIndex(
-                    VIEW_ORDER_ITEMS, COL_TRADE_MAX_DISCOUNT)));
+              if (maxDiscount != 0) {
+                invisibleDiscount = maxDiscount;
+              } else if (managerDiscount == 0) {
+                invisibleDiscount = 0;
+              }
 
-                if (maxDiscount != 0) {
-                  invisibleDiscount = maxDiscount;
-                } else if (managerDiscount == 0) {
-                  invisibleDiscount = 0;
-                }
+              double discount = BeeUtils.unbox(newValue);
 
-                double discount = BeeUtils.unbox(newValue);
+              if (discount > invisibleDiscount && invisibleDiscount != 0) {
+                getGridPresenter().getGridView().notifySevere(
+                    Localized.dictionary().ordMaxDiscount() + ": " + invisibleDiscount + "%");
 
-                if (discount > invisibleDiscount && invisibleDiscount != 0) {
-                  getGridPresenter().getGridView().notifySevere(
-                      Localized.dictionary().ordMaxDiscount() + ": " + invisibleDiscount + "%");
-
-                  return false;
-                }
-                cols = Lists.newArrayList(cv.getColumn());
-                oldValues = Lists.newArrayList(cv.getOldValue());
-                newValues = Lists.newArrayList(cv.getNewValue());
-                break;
-            }
-
-            Queries.update(getViewName(), row.getId(), row.getVersion(), cols, oldValues,
-                newValues, null, new RowUpdateCallback(getViewName()));
-
-            return null;
+                return false;
+              }
+              cols = Lists.newArrayList(cv.getColumn());
+              oldValues = Lists.newArrayList(cv.getOldValue());
+              newValues = Lists.newArrayList(cv.getNewValue());
+              break;
           }
-          return true;
+
+          Queries.update(getViewName(), row.getId(), row.getVersion(), cols, oldValues,
+              newValues, null, new RowUpdateCallback(getViewName()));
+
+          return null;
         }
+        return true;
       });
     } else if (column instanceof CalculatedColumn) {
       if ("ItemPrices".equals(columnName)) {
