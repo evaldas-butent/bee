@@ -210,6 +210,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       fireTdsChange();
     }
 
+    TradeUtils.configureCostCalculation(getGridView());
+
     super.onDataReceived(rows);
   }
 

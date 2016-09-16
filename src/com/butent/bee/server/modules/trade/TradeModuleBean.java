@@ -222,6 +222,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else if (BeeUtils.same(svc, SVC_REBUILD_STOCK)) {
       response = rebuildStock();
 
+    } else if (BeeUtils.same(svc, SVC_CALCULATE_COST)) {
+      response = calculateCost(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
       logger.warning(msg);
@@ -2546,5 +2549,14 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     query.setWhere(condition);
 
     return query;
+  }
+
+  private ResponseObject calculateCost(RequestInfo reqInfo) {
+    Long docId = reqInfo.getParameterLong(COL_TRADE_DOCUMENT);
+    if (!DataUtils.isId(docId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_DOCUMENT);
+    }
+
+    return ResponseObject.response(BeeConst.STRING_ZERO);
   }
 }
