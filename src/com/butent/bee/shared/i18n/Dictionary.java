@@ -3166,6 +3166,8 @@ public interface Dictionary {
 
   default String mailSMTPServerSettings() {return g("mailSMTPServerSettings");}
 
+  default String mailSendVisibleCopies() {return g("mailSendVisibleCopies");}
+
   default String mailSender() {return g("mailSender");}
 
   default String mailServerAddress() {return g("mailServerAddress");}
