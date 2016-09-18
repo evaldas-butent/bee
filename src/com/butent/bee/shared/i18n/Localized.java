@@ -17,6 +17,8 @@ import java.util.Map;
 
 public final class Localized {
 
+  public static final int MONEY_SCALE = 2;
+
   private static final BeeLogger logger = LogUtils.getLogger(Localized.class);
 
   private static final char L10N_PREFIX = '=';
@@ -118,6 +120,10 @@ public final class Localized {
     } else {
       return text;
     }
+  }
+
+  public static double normalizeMoney(Double x) {
+    return BeeUtils.nonZero(x) ? BeeUtils.round(x, MONEY_SCALE) : BeeConst.DOUBLE_ZERO;
   }
 
   public static String removeLanguage(String name) {

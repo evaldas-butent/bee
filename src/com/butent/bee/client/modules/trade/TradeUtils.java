@@ -395,7 +395,10 @@ public final class TradeUtils {
               BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
                 @Override
                 public void onResponse(ResponseObject response) {
-                  if (response.hasResponse()) {
+                  if (response.hasMessages()) {
+                    response.notify(dataView);
+
+                  } else if (response.hasResponse()) {
                     dataView.notifyInfo(
                         Localized.dictionary().recalculateTradeItemCostsNotification(),
                         response.getResponseAsString());
@@ -441,13 +444,15 @@ public final class TradeUtils {
 
       IsRow row = ViewHelper.getParentRow(dataView.asWidget(), VIEW_TRADE_DOCUMENTS);
 
-      return DataUtils.hasId(row)
-          && Data.getEnum(VIEW_TRADE_DOCUMENTS, row, COL_OPERATION_TYPE, OperationType.class)
-          == OperationType.PURCHASE;
+      if (DataUtils.hasId(row)) {
+        OperationType operationType =
+            Data.getEnum(VIEW_TRADE_DOCUMENTS, row, COL_OPERATION_TYPE, OperationType.class);
 
-    } else {
-      return false;
+        return operationType != null && operationType.providesCost();
+      }
     }
+
+    return false;
   }
 
   private TradeUtils() {

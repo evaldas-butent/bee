@@ -2843,14 +2843,14 @@ public final class BeeUtils {
     }
   }
 
-  public static int sum(Collection<Integer> col) {
-    int result = 0;
+  public static double sum(Collection<Double> col) {
+    double result = BeeConst.DOUBLE_ZERO;
     if (col == null) {
       return result;
     }
 
-    for (Integer item : col) {
-      if (item != null) {
+    for (Double item : col) {
+      if (isDouble(item)) {
         result += item;
       }
     }
