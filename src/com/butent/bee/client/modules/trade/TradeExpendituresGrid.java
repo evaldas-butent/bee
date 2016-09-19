@@ -193,6 +193,13 @@ public class TradeExpendituresGrid extends AbstractGridInterceptor {
     return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
   }
 
+  @Override
+  public void onDataReceived(List<? extends IsRow> rows) {
+    TradeUtils.configureCostCalculation(getGridView());
+
+    super.onDataReceived(rows);
+  }
+
   private boolean canGenerate(IsRow row) {
     if (row == null) {
       return false;

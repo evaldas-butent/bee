@@ -10,6 +10,7 @@ import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.HasYearMonth;
@@ -140,8 +141,6 @@ public final class Format {
     }
   }
 
-  private static final int DEFAULT_MONEY_SCALE = 2;
-
   private static final String DEFAULT_MONEY_PATTERN = "#,##0.00;(#)";
 
   private static final String DEFAULT_DECIMAL_PATTERN_INTEGER = "#,##0";
@@ -234,7 +233,7 @@ public final class Format {
   }
 
   public static int getDefaultMoneyScale() {
-    return DEFAULT_MONEY_SCALE;
+    return Localized.MONEY_SCALE;
   }
 
   public static DateTimeFormat getDefaultDateFormat() {

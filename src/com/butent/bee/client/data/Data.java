@@ -25,6 +25,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -230,6 +231,12 @@ public final class Data {
 
   public static Double getDouble(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getDouble(viewName, row, colName);
+  }
+
+  public static <E extends Enum<?>> E getEnum(String viewName, IsRow row, String colName,
+      Class<E> clazz) {
+
+    return EnumUtils.getEnumByIndex(clazz, getInteger(viewName, row, colName));
   }
 
   public static String getIdColumn(String viewName) {

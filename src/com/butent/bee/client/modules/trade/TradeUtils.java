@@ -21,10 +21,16 @@ import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -38,6 +44,7 @@ import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class TradeUtils {
@@ -47,6 +54,9 @@ public final class TradeUtils {
   private static final String STYLE_ITEMS_HEADER = STYLE_ITEMS + "header";
   private static final String STYLE_ITEMS_DATA = STYLE_ITEMS + "data";
   private static final String STYLE_ITEMS_FOOTER = STYLE_ITEMS + "footer";
+
+  private static final String STYLE_COST_CALCULATION_COMMAND =
+      TradeKeeper.STYLE_PREFIX + "cost-calculation";
 
   private static final String COL_NAME = "Name";
   private static final String COL_ORDINAL = "Ordinal";
@@ -141,7 +151,7 @@ public final class TradeUtils {
 
         table.addStyleName(STYLE_ITEMS_TABLE);
 
-        NumberFormat formater = NumberFormat.getFormat("0.00");
+        NumberFormat formatter = NumberFormat.getFormat("0.00");
         String currency = null;
         double qtyTotal = 0;
         double vatTotal = 0;
@@ -207,7 +217,7 @@ public final class TradeUtils {
                   value = BeeUtils.toString(qty);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_ITEM_PRICE)) {
-                  value = formater.format(sum / qty);
+                  value = formatter.format(sum / qty);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_VAT)) {
                   value = row.getValue(fld);
@@ -216,10 +226,10 @@ public final class TradeUtils {
                     value = BeeUtils.removeTrailingZeros(value) + "%";
                   }
                 } else if (BeeUtils.same(fld, COL_TRADE_AMOUNT)) {
-                  value = formater.format(sum);
+                  value = formatter.format(sum);
 
                 } else if (BeeUtils.same(fld, COL_RATE_AMOUNT)) {
-                  value = formater.format(currSum);
+                  value = formatter.format(currSum);
 
                 } else if (BeeUtils.same(fld, COL_ORDINAL)) {
                   value = BeeUtils.toString(ordinal);
@@ -288,25 +298,25 @@ public final class TradeUtils {
                 value = BeeUtils.removeTrailingZeros(BeeUtils.toString(qtyTotal));
 
               } else if (BeeUtils.same(fld, COL_TRADE_AMOUNT + COL_TOTAL)) {
-                value = formater.format(sumTotal);
+                value = formatter.format(sumTotal);
 
               } else if (BeeUtils.same(fld, COL_TRADE_VAT + COL_TOTAL)) {
-                value = formater.format(vatTotal);
+                value = formatter.format(vatTotal);
 
               } else if (BeeUtils.same(fld, COL_TOTAL)) {
-                value = formater.format(sumTotal + vatTotal);
+                value = formatter.format(sumTotal + vatTotal);
 
               } else if (BeeUtils.same(fld, COL_CURRENCY)) {
                 value = currency;
 
               } else if (BeeUtils.same(fld, COL_RATE_AMOUNT + COL_TOTAL)) {
-                value = formater.format(currSumTotal);
+                value = formatter.format(currSumTotal);
 
               } else if (BeeUtils.same(fld, COL_RATE_VAT + COL_TOTAL)) {
-                value = formater.format(currVatTotal);
+                value = formatter.format(currVatTotal);
 
               } else if (BeeUtils.same(fld, COL_RATE_TOTAL)) {
-                value = formater.format(currSumTotal + currVatTotal);
+                value = formatter.format(currSumTotal + currVatTotal);
 
               } else if (BeeUtils.same(fld, COL_RATE_CURRENCY)) {
                 value = rateCurrency;
@@ -357,7 +367,52 @@ public final class TradeUtils {
     });
   }
 
-  private TradeUtils() {
+  static void configureCostCalculation(final DataView dataView) {
+    HeaderView header = ViewHelper.getHeader(dataView);
+
+    boolean enabled = isCostCalculationEnabled(dataView);
+    boolean has = hasCostCalculationCommand(header);
+
+    if (has && !enabled) {
+      header.removeCommandByStyleName(STYLE_COST_CALCULATION_COMMAND);
+
+    } else if (enabled && !has && header != null) {
+      String caption = Localized.dictionary().recalculateTradeItemCostsCaption();
+
+      Button command = new Button(caption);
+      command.addStyleName(STYLE_COST_CALCULATION_COMMAND);
+
+      command.addClickHandler(event -> Global.confirm(caption, Icon.QUESTION,
+          Collections.singletonList(Localized.dictionary().recalculateTradeItemCostsQuestion()),
+          () -> {
+            Long id = ViewHelper.getParentRowId(dataView.asWidget(), VIEW_TRADE_DOCUMENTS);
+
+            if (DataUtils.isId(id)) {
+              ParameterList params = TradeKeeper.createArgs(SVC_CALCULATE_COST);
+              params.addQueryItem(COL_TRADE_DOCUMENT, id);
+              params.setSummary(COL_TRADE_DOCUMENT, id);
+
+              BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+                @Override
+                public void onResponse(ResponseObject response) {
+                  if (response.hasMessages()) {
+                    response.notify(dataView);
+
+                  } else if (response.hasResponse()) {
+                    dataView.notifyInfo(
+                        Localized.dictionary().recalculateTradeItemCostsNotification(),
+                        response.getResponseAsString());
+
+                  } else {
+                    dataView.notifyWarning(Localized.dictionary().noData());
+                  }
+                }
+              });
+            }
+          }));
+
+      header.addCommandItem(command);
+    }
   }
 
   private static Multimap<String, Element> getNamedElements(Element element) {
@@ -376,5 +431,30 @@ public final class TradeUtils {
       }
     }
     return elements;
+  }
+
+  private static boolean hasCostCalculationCommand(HeaderView header) {
+    return header != null && Selectors.contains(header.getElement(),
+        Selectors.classSelector(STYLE_COST_CALCULATION_COMMAND));
+  }
+
+  private static boolean isCostCalculationEnabled(DataView dataView) {
+    if (dataView != null && BeeKeeper.getUser().canEditData(VIEW_TRADE_DOCUMENT_ITEMS)
+        && BeeKeeper.getUser().canEditData(VIEW_TRADE_ITEM_COST)) {
+
+      IsRow row = ViewHelper.getParentRow(dataView.asWidget(), VIEW_TRADE_DOCUMENTS);
+
+      if (DataUtils.hasId(row)) {
+        OperationType operationType =
+            Data.getEnum(VIEW_TRADE_DOCUMENTS, row, COL_OPERATION_TYPE, OperationType.class);
+
+        return operationType != null && operationType.providesCost();
+      }
+    }
+
+    return false;
+  }
+
+  private TradeUtils() {
   }
 }

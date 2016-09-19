@@ -411,6 +411,16 @@ final class DriverTimeBoard extends ChartBase {
   }
 
   @Override
+  protected String getShowOrderCustomerColumnName() {
+    return null;
+  }
+
+  @Override
+  protected String getShowOderNoColumnName() {
+    return null;
+  }
+
+  @Override
   protected String getShowPlaceInfoColumnName() {
     return COL_DTB_PLACE_INFO;
   }

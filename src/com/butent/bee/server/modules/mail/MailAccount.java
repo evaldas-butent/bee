@@ -19,6 +19,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -302,7 +303,7 @@ public class MailAccount {
       return false;
     }
     Store store = null;
-    Folder folder = null;
+    Folder folder;
 
     try {
       store = connectToStore();
@@ -350,6 +351,7 @@ public class MailAccount {
       Properties props = new Properties();
       String pfx = "mail." + protocol + ".";
 
+      props.put("mail.mime.address.strict", "false");
       props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
       props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
 
@@ -421,7 +423,7 @@ public class MailAccount {
       return ok;
     }
     Store store = null;
-    Folder folder = null;
+    Folder folder;
 
     try {
       store = connectToStore();
@@ -479,7 +481,7 @@ public class MailAccount {
       return ok;
     }
     Store store = null;
-    Folder folder = null;
+    Folder folder;
 
     try {
       store = connectToStore();
@@ -625,7 +627,7 @@ public class MailAccount {
       return ok;
     }
     Store store = null;
-    Folder folder = null;
+    Folder folder;
 
     try {
       store = connectToStore();
@@ -695,9 +697,7 @@ public class MailAccount {
     accountUsers.add(getUserId());
 
     if (!ArrayUtils.isEmpty(users)) {
-      for (Long user : users) {
-        accountUsers.add(user);
-      }
+      Collections.addAll(accountUsers, users);
     }
   }
 }

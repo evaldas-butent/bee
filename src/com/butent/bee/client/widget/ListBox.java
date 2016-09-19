@@ -30,6 +30,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
@@ -385,15 +386,15 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
     if (!isEmpty()) {
       clear();
     }
-    addItems(EnumUtils.getCaptions(clazz));
+    for (Pair<Integer, String> pair : EnumUtils.getSortedCaptions(clazz)) {
+      addItem(pair.getB(), BeeUtils.toString(pair.getA()));
+    }
+    setValueNumeric(false);
   }
 
   @Override
   public void setCaptions(String captionKey) {
-    if (!isEmpty()) {
-      clear();
-    }
-    addItems(EnumUtils.getCaptions(captionKey));
+    setCaptions(EnumUtils.getClassByKey(captionKey));
   }
 
   @Override

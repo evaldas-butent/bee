@@ -54,7 +54,6 @@ public class MailEnvelope {
     return mask == 0 ? null : mask;
   }
 
-  private final String messageId;
   private final DateTime date;
   private final InternetAddress sender;
   private final String subject;
@@ -69,7 +68,6 @@ public class MailEnvelope {
         "Unknown message type: " + message.getClass().getName());
 
     MimeMessage msg = (MimeMessage) message;
-    messageId = msg.getMessageID();
     date = new DateTime(msg.getSentDate());
     subject = msg.getSubject();
 
@@ -96,7 +94,7 @@ public class MailEnvelope {
     }
     flagMask = getFlagMask(message);
     inReplyTo = msg.getHeader(MailConstants.COL_IN_REPLY_TO, null);
-    uniqueId = Codec.md5(BeeUtils.joinWords(messageId, date, sender, subject));
+    uniqueId = Codec.md5(BeeUtils.joinWords(msg.getMessageID(), date, sender, subject));
   }
 
   public DateTime getDate() {

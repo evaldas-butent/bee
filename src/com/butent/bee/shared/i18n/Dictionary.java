@@ -3168,6 +3168,8 @@ public interface Dictionary {
 
   default String mailSMTPServerSettings() {return g("mailSMTPServerSettings");}
 
+  default String mailSendVisibleCopies() {return g("mailSendVisibleCopies");}
+
   default String mailSender() {return g("mailSender");}
 
   default String mailServerAddress() {return g("mailServerAddress");}
@@ -4184,6 +4186,12 @@ public interface Dictionary {
   default String rebuildTradeStockNotification() {return g("rebuildTradeStockNotification");}
 
   default String rebuildTradeStockQuestion() {return g("rebuildTradeStockQuestion");}
+
+  default String recalculateTradeItemCostsCaption() {return g("recalculateTradeItemCostsCaption");}
+
+  default String recalculateTradeItemCostsNotification() {return g("recalculateTradeItemCostsNotification");}
+
+  default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
 
   default String received() {return g("received");}
 
@@ -5480,6 +5488,10 @@ public interface Dictionary {
 
   default String trTbSettingsCountryFlags() {return g("trTbSettingsCountryFlags");}
 
+  default String trTbSettingsOrderCustomer() {return g("trTbSettingsOrderCustomer");}
+
+  default String trTbSettingsOrderNo() {return g("trTbSettingsOrderNo");}
+
   default String trTbSettingsPixelsPerCustomer() {return g("trTbSettingsPixelsPerCustomer");}
 
   default String trTbSettingsPixelsPerDriver() {return g("trTbSettingsPixelsPerDriver");}
@@ -5547,6 +5559,8 @@ public interface Dictionary {
   default String trTripStatus() {return g("trTripStatus");}
 
   default String trTripStatusActive() {return g("trTripStatusActive");}
+
+  default String trTripStatusArranged() {return g("trTripStatusArranged");}
 
   default String trTripStatusCanceled() {return g("trTripStatusCanceled");}
 

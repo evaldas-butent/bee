@@ -30,6 +30,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.sql.HasConditions;
@@ -83,9 +84,12 @@ import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants.*;
+import com.butent.bee.shared.modules.trade.TradeCostBasis;
+import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeDocumentSums;
+import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -103,6 +107,7 @@ import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -139,6 +144,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   MailModuleBean mail;
   @EJB
   DataEditorBean deb;
+  @EJB
+  AdministrationModuleBean adm;
 
   @Resource
   TimerService timerService;
@@ -223,6 +230,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     } else if (BeeUtils.same(svc, SVC_REBUILD_STOCK)) {
       response = rebuildStock();
+
+    } else if (BeeUtils.same(svc, SVC_CALCULATE_COST)) {
+      response = calculateCost(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
@@ -2610,5 +2620,185 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     query.setWhere(condition);
 
     return query;
+  }
+
+  private ResponseObject calculateCost(RequestInfo reqInfo) {
+    Long docId = reqInfo.getParameterLong(COL_TRADE_DOCUMENT);
+    if (!DataUtils.isId(docId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_DOCUMENT);
+    }
+
+    OperationType operationType = getOperationTypeByTradeDocument(docId);
+    if (operationType == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    if (!operationType.providesCost()) {
+      return ResponseObject.warning(COL_OPERATION_TYPE, operationType, "no cost for you");
+    }
+
+    SqlSelect docQuery = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE, COL_TRADE_CURRENCY,
+            COL_TRADE_DOCUMENT_VAT_MODE, COL_TRADE_DOCUMENT_DISCOUNT_MODE,
+            COL_TRADE_DOCUMENT_DISCOUNT)
+        .addFrom(TBL_TRADE_DOCUMENTS)
+        .setWhere(sys.idEquals(TBL_TRADE_DOCUMENTS, docId));
+
+    SimpleRow docRow = qs.getRow(docQuery);
+
+    DateTime docDate = docRow.getDateTime(COL_TRADE_DATE);
+    if (docDate == null) {
+      return ResponseObject.error(TBL_TRADE_DOCUMENTS, docId, COL_TRADE_DATE, BeeConst.NULL);
+    }
+
+    Long docCurrency = docRow.getLong(COL_TRADE_CURRENCY);
+    if (!DataUtils.isId(docCurrency)) {
+      return ResponseObject.error(TBL_TRADE_DOCUMENTS, docId, COL_TRADE_CURRENCY,
+          Objects.toString(docCurrency));
+    }
+
+    String docItemIdName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+
+    SqlSelect itemQuery = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, docItemIdName,
+            COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+            COL_TRADE_DOCUMENT_ITEM_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT,
+            COL_TRADE_DOCUMENT_ITEM_VAT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT)
+        .addFields(TBL_ITEMS, COL_ITEM_WEIGHT)
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docId),
+            SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
+            SqlUtils.positive(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY),
+            SqlUtils.positive(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PRICE)));
+
+    SimpleRowSet docItems = qs.getData(itemQuery);
+    if (DataUtils.isEmpty(docItems)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    TradeDocumentSums tdSums = new TradeDocumentSums();
+
+    tdSums.updateDocumentDiscount(docRow.getDouble(COL_TRADE_DOCUMENT_DISCOUNT));
+
+    tdSums.updateDiscountMode(EnumUtils.getEnumByIndex(TradeDiscountMode.class,
+        docRow.getInt(COL_TRADE_DOCUMENT_DISCOUNT_MODE)));
+    tdSums.updateVatMode(EnumUtils.getEnumByIndex(TradeVatMode.class,
+        docRow.getInt(COL_TRADE_DOCUMENT_VAT_MODE)));
+
+    Map<Long, Double> itemQuantities = new HashMap<>();
+    Map<Long, Double> itemWeights = new HashMap<>();
+
+    for (SimpleRow item : docItems) {
+      Long itemId = item.getLong(docItemIdName);
+      Double quantity = item.getDouble(COL_TRADE_ITEM_QUANTITY);
+
+      tdSums.add(itemId, quantity, item.getDouble(COL_TRADE_ITEM_PRICE),
+          item.getDouble(COL_TRADE_DOCUMENT_ITEM_DISCOUNT),
+          item.getBoolean(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT),
+          item.getDouble(COL_TRADE_DOCUMENT_ITEM_VAT),
+          item.getBoolean(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT));
+
+      itemQuantities.put(itemId, quantity);
+
+      Double weight = item.getDouble(COL_ITEM_WEIGHT);
+      if (BeeUtils.nonZero(weight)) {
+        itemWeights.put(itemId, weight * quantity);
+      }
+    }
+
+    SqlSelect expenditureQuery = new SqlSelect()
+        .addFields(TBL_TRADE_EXPENDITURES, COL_EXPENDITURE_DATE, COL_EXPENDITURE_AMOUNT,
+            COL_EXPENDITURE_CURRENCY, COL_EXPENDITURE_VAT, COL_EXPENDITURE_VAT_IS_PERCENT)
+        .addFields(TBL_EXPENDITURE_TYPES, COL_EXPENDITURE_TYPE_COST_BASIS)
+        .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_VAT_MODE)
+        .addFields(TBL_TRADE_EXPENDITURES)
+        .addFromLeft(TBL_EXPENDITURE_TYPES, sys.joinTables(TBL_EXPENDITURE_TYPES,
+            TBL_TRADE_EXPENDITURES, COL_EXPENDITURE_TYPE))
+        .addFromLeft(TBL_TRADE_OPERATIONS, sys.joinTables(TBL_TRADE_OPERATIONS,
+            TBL_EXPENDITURE_TYPES, COL_EXPENDITURE_TYPE_OPERATION))
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_TRADE_EXPENDITURES, COL_TRADE_DOCUMENT, docId),
+            SqlUtils.notNull(TBL_TRADE_EXPENDITURES, COL_EXPENDITURE_DATE),
+            SqlUtils.nonZero(TBL_TRADE_EXPENDITURES, COL_EXPENDITURE_AMOUNT),
+            SqlUtils.notNull(TBL_TRADE_EXPENDITURES, COL_EXPENDITURE_CURRENCY),
+            SqlUtils.notNull(TBL_EXPENDITURE_TYPES, COL_EXPENDITURE_TYPE_COST_BASIS)));
+
+    SimpleRowSet expenditures = qs.getData(expenditureQuery);
+
+    Long costCurrency = prm.getRelation(PRM_CURRENCY);
+    if (!DataUtils.isId(costCurrency)) {
+      return ResponseObject.error(PRM_CURRENCY, Objects.toString(costCurrency));
+    }
+
+    Map<Long, Double> costs = new HashMap<>();
+
+    for (Long itemId : docItems.getLongColumn(docItemIdName)) {
+      Double amount = tdSums.getItemTotal(itemId) - tdSums.getItemVat(itemId);
+      Double cost = adm.maybeExchange(docCurrency, costCurrency, amount, docDate);
+
+      costs.put(itemId, cost);
+    }
+
+    if (!DataUtils.isEmpty(expenditures)) {
+      EnumMap<TradeCostBasis, Double> expenditureByCostBasis = new EnumMap<>(TradeCostBasis.class);
+
+      for (SimpleRow expenditure : expenditures) {
+        TradeCostBasis costBasis = EnumUtils.getEnumByIndex(TradeCostBasis.class,
+            expenditure.getInt(COL_EXPENDITURE_TYPE_COST_BASIS));
+
+        double amount = Localized.normalizeMoney(expenditure.getDouble(COL_EXPENDITURE_AMOUNT));
+
+        TradeVatMode vatMode = EnumUtils.getEnumByIndex(TradeVatMode.class,
+            expenditure.getInt(COL_OPERATION_VAT_MODE));
+
+        if (TradeVatMode.INCLUSIVE == vatMode) {
+          Double vat = expenditure.getDouble(COL_EXPENDITURE_VAT);
+
+          if (BeeUtils.nonZero(vat)) {
+            if (BeeUtils.isTrue(expenditure.getBoolean(COL_EXPENDITURE_VAT_IS_PERCENT))) {
+              amount -= Localized.normalizeMoney(vatMode.computePercent(amount, vat));
+            } else {
+              amount -= Localized.normalizeMoney(vat);
+            }
+          }
+        }
+
+        if (BeeUtils.nonZero(amount) && costBasis != null) {
+          if (expenditureByCostBasis.containsKey(costBasis)) {
+            expenditureByCostBasis.put(costBasis, expenditureByCostBasis.get(costBasis) + amount);
+          } else {
+            expenditureByCostBasis.put(costBasis, amount);
+          }
+        }
+      }
+
+      Map<Long, Double> costIncrement = new HashMap<>();
+
+      expenditureByCostBasis.forEach((costBasis, amount) -> {
+        double total;
+
+        switch (costBasis) {
+          case AMOUNT:
+            total = BeeUtils.sum(costs.values());
+            if (BeeUtils.isPositive(total)) {
+              costs.forEach((itemId, cost) ->
+                  costIncrement.merge(itemId, cost * amount / total, Double::sum));
+            }
+            break;
+
+          case QUANTITY:
+            total = BeeUtils.sum(itemQuantities.values());
+            break;
+
+          case WEIGHT:
+            total = BeeUtils.sum(itemWeights.values());
+            break;
+        }
+      });
+    }
+
+    return ResponseObject.emptyResponse();
   }
 }

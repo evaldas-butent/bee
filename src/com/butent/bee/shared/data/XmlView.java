@@ -90,6 +90,8 @@ public class XmlView {
   public static class XmlExternalJoin extends XmlSimpleJoin {
     @XmlAttribute
     public String source;
+    @XmlAttribute
+    public String targetName;
   }
 
   @XmlRootElement(name = "GroupBy", namespace = DataUtils.VIEW_NAMESPACE)
