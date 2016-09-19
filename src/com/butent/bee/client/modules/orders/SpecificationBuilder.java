@@ -13,7 +13,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
@@ -122,9 +121,8 @@ public class SpecificationBuilder implements InputCallback {
   public SpecificationBuilder(Specification template, Consumer<Specification> callback) {
     this.callback = Assert.notNull(callback);
 
-    DialogBox dialog = Global.inputWidget(Localized.dictionary().specification(), container, this);
-    StyleUtils.setWidth(dialog, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
-    StyleUtils.setHeight(dialog, BeeKeeper.getScreen().getHeight() * 0.8, CssUnit.PX);
+    StyleUtils.setWidth(container, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
+    StyleUtils.setHeight(container, BeeKeeper.getScreen().getHeight() * 0.8, CssUnit.PX);
 
     Queries.getRowSet(TBL_CONF_PRICELIST, null, Filter.or(Filter.isNull(COL_VALID_UNTIL),
         Filter.isMore(COL_VALID_UNTIL, new DateValue(TimeUtils.today()))),
@@ -147,6 +145,7 @@ public class SpecificationBuilder implements InputCallback {
             setBranch(tree);
           }
         });
+    Global.inputWidget(Localized.dictionary().specification(), container, this);
   }
 
   @Override

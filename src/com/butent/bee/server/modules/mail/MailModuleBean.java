@@ -1297,15 +1297,14 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           Pair<Integer, Integer> pair = mail.syncFolder(account, localFolder, remoteFolder,
               progressId, syncAll);
 
-          if (Objects.isNull(pair)) {
-            count = 0;
-          } else {
-            if (BeeUtils.isPositive(pair.getA())) {
-              first = pair.getA() + 1;
-              count = count - first + 1;
-            }
-            c += pair.getB();
+          if (BeeUtils.isPositive(pair.getA())) {
+            first = pair.getA() + 1;
+            count = count - first + 1;
           }
+          if (BeeUtils.isNegative(pair.getB())) {
+            count = 0;
+          }
+          c += Math.abs(pair.getB());
         }
         if (!BeeUtils.isPositive(count)) {
           return c;

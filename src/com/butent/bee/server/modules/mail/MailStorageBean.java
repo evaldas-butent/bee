@@ -469,6 +469,7 @@ public class MailStorageBean {
 
       if (c < 0) {
         start = 0;
+        cnt = cnt * (-1);
         break;
       }
     }
@@ -501,6 +502,7 @@ public class MailStorageBean {
         cnt += Math.abs(c);
 
         if (c < 0) {
+          cnt = cnt * (-1);
           break;
         }
       }
