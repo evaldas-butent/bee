@@ -2757,6 +2757,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     itemQuantities.forEach((itemId, quantity) ->
         costs.computeIfPresent(itemId, (k, v) -> v / quantity));
 
+    costs.replaceAll((k, v) -> Math.max(v, BeeConst.DOUBLE_ZERO));
+
     int scale = sys.getFieldScale(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
     costs.replaceAll((k, v) -> BeeUtils.round(v, scale));
 
@@ -2765,10 +2767,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return saveResponse;
     }
 
-    double total = costs.entrySet().stream().mapToDouble(e ->
-        e.getValue() * itemQuantities.get(e.getKey())).sum();
-
-    return ResponseObject.response(BeeUtils.toString(Localized.normalizeMoney(total)));
+    return ResponseObject.response(costs).setSize(costs.size());
   }
 
   private ResponseObject saveCost(long docId, Map<Long, Double> costs, long currency) {
