@@ -21,7 +21,11 @@
     <DataColumn name="Price">
       <footer expression="row.Quantity * row.Price" />
     </DataColumn>
-
+<!--
+    <DataColumn name="Discount" flexGrow="0">
+      <footer evaluator="discount" scale="2" />
+    </DataColumn>
+-->
     <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" />
     <DataColumn name="Vat" carry="true">
       <footer evaluator="vat" />

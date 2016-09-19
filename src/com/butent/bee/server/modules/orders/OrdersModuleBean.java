@@ -57,6 +57,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
 
 import java.math.BigInteger;
@@ -67,6 +68,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -337,7 +340,12 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   private ResponseObject createInvoiceItems(RequestInfo reqInfo) {
     Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
     Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
-    Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_DATA));
+    Map<String, String> map = Codec.deserializeMap(reqInfo.getParameter(Service.VAR_DATA));
+    Map<Long, Double> idsQty = new HashMap<>();
+
+    for (Entry<String, String> entry : map.entrySet()) {
+      idsQty.put(Long.valueOf(entry.getKey()), Double.valueOf(entry.getValue()));
+    }
 
     if (!DataUtils.isId(saleId)) {
       return ResponseObject.error("Wrong account ID");
@@ -345,17 +353,19 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     if (!DataUtils.isId(currency)) {
       return ResponseObject.error("Wrong currency ID");
     }
-    if (BeeUtils.isEmpty(ids)) {
+    if (BeeUtils.isEmpty(idsQty)) {
       return ResponseObject.error("Empty ID list");
     }
 
-    IsCondition where = sys.idInList(TBL_ORDER_ITEMS, ids);
+    IsCondition where = sys.idInList(TBL_ORDER_ITEMS, idsQty.keySet());
 
     SqlSelect query = new SqlSelect();
-    query.addFields(TBL_ORDER_ITEMS, COL_TRADE_VAT_PLUS,
-        TradeConstants.COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_INCOME_ITEM,
-        TradeConstants.COL_TRADE_ITEM_QUANTITY)
+    query.addFields(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS), COL_ORDER, COL_TRADE_VAT_PLUS,
+        TradeConstants.COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_INCOME_ITEM, COL_RESERVED_REMAINDER,
+        COL_TRADE_DISCOUNT, COL_TRADE_ITEM_QUANTITY)
+        .addFields(TBL_ITEMS, COL_ITEM_ARTICLE)
         .addFrom(TBL_ORDER_ITEMS)
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
         .setWhere(where);
 
     IsExpression vatExch =
@@ -376,16 +386,24 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
-      return ResponseObject.error(TBL_ORDER_ITEMS, ids, "not found");
+      return ResponseObject.error(TBL_ORDER_ITEMS, idsQty, "not found");
     }
+
+    Map<Long, Double> freeRemainders =
+        getFreeRemainders(Arrays.asList(data.getLongColumn(COL_ITEM)), data.getRow(0).getLong(
+            COL_ORDER), null);
+    Map<Long, Double> compInvoices = getCompletedInvoices(data.getRow(0).getLong(
+        COL_ORDER));
 
     ResponseObject response = new ResponseObject();
 
     for (SimpleRow row : data) {
       Long item = row.getLong(COL_INCOME_ITEM);
+      String article = row.getValue(COL_ITEM_ARTICLE);
 
       SqlInsert insert = new SqlInsert(TBL_SALE_ITEMS)
           .addConstant(COL_SALE, saleId)
+          .addConstant(COL_ITEM_ARTICLE, article)
           .addConstant(COL_ITEM, item);
 
       Boolean vatPerc = row.getBoolean(COL_TRADE_VAT_PERC);
@@ -407,12 +425,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         insert.addConstant(COL_TRADE_VAT_PLUS, vatPlus);
       }
 
-      Double quantity = row.getDouble(TradeConstants.COL_TRADE_ITEM_QUANTITY);
-      Double price = row.getDouble(priceAlias);
+      double saleQuantity = BeeUtils.unbox(idsQty.get(row.getLong(sys.getIdName(TBL_ORDER_ITEMS))));
+      double price = BeeUtils.unbox(row.getDouble(priceAlias));
+      double discount = BeeUtils.unbox(row.getDouble(COL_TRADE_DISCOUNT));
+      if (discount > 0) {
+        insert.addConstant(COL_TRADE_DISCOUNT, discount);
+      }
 
-      insert.addConstant(COL_TRADE_ITEM_QUANTITY, BeeUtils.unbox(quantity));
+      insert.addConstant(COL_TRADE_ITEM_QUANTITY, saleQuantity);
 
-      if (price != null) {
+      if (price > 0) {
         insert.addConstant(COL_TRADE_ITEM_PRICE, price);
       }
 
@@ -420,18 +442,28 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       if (insResponse.hasErrors()) {
         response.addMessagesFrom(insResponse);
         break;
-      }
-    }
+      } else {
+        double quantity = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY));
+        double invoiceQty =
+            BeeUtils.unbox(compInvoices.get(row.getLong(sys.getIdName(TBL_ORDER_ITEMS))));
+        double resRemainder = BeeUtils.unbox(row.getDouble(COL_RESERVED_REMAINDER));
+        double freeRemainder = BeeUtils.unbox(freeRemainders.get(row.getLong(COL_ITEM)));
+        double value;
 
-    if (!response.hasErrors()) {
-      SqlUpdate update = new SqlUpdate(TBL_ORDER_ITEMS)
-          .addConstant(COL_INCOME_SALE, saleId)
-          .addConstant(COL_RESERVED_REMAINDER, null)
-          .setWhere(where);
+        if (quantity == invoiceQty + saleQuantity) {
+          value = 0;
+        } else if (quantity - invoiceQty - saleQuantity <= freeRemainder + resRemainder
+            - saleQuantity) {
+          value = quantity - invoiceQty - saleQuantity;
+        } else {
+          value = freeRemainder + resRemainder - saleQuantity;
+        }
 
-      ResponseObject updResponse = qs.updateDataWithResponse(update);
-      if (updResponse.hasErrors()) {
-        response.addMessagesFrom(updResponse);
+        SqlUpdate update = new SqlUpdate(TBL_ORDER_ITEMS)
+            .addConstant(COL_RESERVED_REMAINDER, value)
+            .setWhere(sys.idEquals(TBL_ORDER_ITEMS, row.getLong(sys.getIdName(TBL_ORDER_ITEMS))));
+
+        qs.updateData(update);
       }
     }
 
@@ -831,6 +863,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       return Filter.and(Filter.equals(COL_TEMPLATE, templateId),
           Filter.exclude(COL_ITEM, excludeItems));
     }
+  }
+
+  private Map<Long, Double> getCompletedInvoices(Long order) {
+    Map<Long, Double> complInvoices = new HashMap<>();
+
+    return complInvoices;
+  }
+  private Map<Long, Double> getFreeRemainders(List<Long> itemIds, Long order, Long whId) {
+    Map<Long, Double> totRemainders = new HashMap<>();
+    return totRemainders;
   }
 
   private Map<Long, Double> totReservedRemainders(List<Long> itemIds, Long order, Long whId) {

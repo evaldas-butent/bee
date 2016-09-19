@@ -533,7 +533,7 @@ public class TradeActBean implements HasTimerService {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_ACT_ITEMS, TradeConstants.COL_TRADE_VAT_PLUS,
             TradeConstants.COL_TRADE_VAT, TradeConstants.COL_TRADE_VAT_PERC, COL_INCOME_ITEM,
-            TradeConstants.COL_TRADE_ITEM_PRICE,
+            TradeConstants.COL_TRADE_ITEM_PRICE, TradeConstants.COL_TRADE_DISCOUNT,
             TradeConstants.COL_TRADE_ITEM_QUANTITY, COL_INCOME_NOTE)
         .addFrom(TBL_TRADE_ACT_ITEMS)
         .setWhere(where);
@@ -572,11 +572,16 @@ public class TradeActBean implements HasTimerService {
 
       Double quantity = row.getDouble(TradeConstants.COL_TRADE_ITEM_QUANTITY);
       Double price = row.getDouble(TradeConstants.COL_TRADE_ITEM_PRICE);
+      Double discount = row.getDouble(TradeConstants.COL_TRADE_DISCOUNT);
 
       insert.addConstant(TradeConstants.COL_TRADE_ITEM_QUANTITY, BeeUtils.unbox(quantity));
 
       if (price != null) {
         insert.addConstant(TradeConstants.COL_TRADE_ITEM_PRICE, price);
+      }
+
+      if (discount != null) {
+        insert.addConstant(TradeConstants.COL_TRADE_DISCOUNT, discount);
       }
 
       if (data.hasColumn(COL_INCOME_NOTE)) {
