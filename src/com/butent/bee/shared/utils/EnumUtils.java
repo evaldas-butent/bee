@@ -6,9 +6,12 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.TreeMultimap;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -29,6 +32,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.ui.HasSortingOrder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,6 +107,16 @@ public final class EnumUtils {
 
   public static List<String> getCaptions(String key) {
     return getLocalizedCaptions(key, Localized.dictionary());
+  }
+
+  public static Class<? extends Enum<?>> getClassByKey(String key) {
+    Assert.notEmpty(key);
+    Class<? extends Enum<?>> clazz = CLASSES.get(BeeUtils.normalize(key));
+
+    if (clazz == null) {
+      logger.severe("Captions not registered: " + key);
+    }
+    return clazz;
   }
 
   public static <E extends Enum<?>> E getEnumByIndex(Class<E> clazz, Integer idx) {
@@ -221,10 +235,8 @@ public final class EnumUtils {
     for (Enum<?> constant : clazz.getEnumConstants()) {
       if (constant instanceof HasLocalizedCaption) {
         result.add(((HasLocalizedCaption) constant).getCaption(constants));
-      } else if (constant instanceof HasCaption) {
-        result.add(((HasCaption) constant).getCaption());
       } else {
-        result.add(proper(constant));
+        result.add(getCaption(constant));
       }
     }
     return result;
@@ -232,10 +244,9 @@ public final class EnumUtils {
 
   public static List<String> getLocalizedCaptions(String key, Dictionary constants) {
     Assert.notEmpty(key);
-    Class<? extends Enum<?>> clazz = CLASSES.get(BeeUtils.normalize(key));
+    Class<? extends Enum<?>> clazz = getClassByKey(key);
 
     if (clazz == null) {
-      logger.severe("Captions not registered: " + key);
       return null;
     } else {
       return getLocalizedCaptions(clazz, constants);
@@ -253,6 +264,27 @@ public final class EnumUtils {
       key = register(clazz);
     }
     return key;
+  }
+
+  public static Collection<Pair<Integer, String>> getSortedCaptions(Class<? extends Enum<?>> cls) {
+    Assert.notNull(cls);
+
+    TreeMultimap<Integer, Pair<Integer, String>> result = TreeMultimap.create(Ordering.natural(),
+        (o1, o2) -> o1.getA().compareTo(o2.getA()));
+
+    for (Enum<?> constant : cls.getEnumConstants()) {
+      String caption;
+
+      if (constant instanceof HasLocalizedCaption) {
+        caption = ((HasLocalizedCaption) constant).getCaption(Localized.dictionary());
+      } else {
+        caption = getCaption(constant);
+      }
+      result.put(constant instanceof HasSortingOrder
+              ? ((HasSortingOrder) constant).getSortingOrder() : constant.ordinal(),
+          Pair.of(constant.ordinal(), caption));
+    }
+    return result.values();
   }
 
   @SafeVarargs

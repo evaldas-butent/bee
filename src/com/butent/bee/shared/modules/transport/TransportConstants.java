@@ -6,6 +6,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.ui.HasSortingOrder;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
@@ -224,23 +225,31 @@ public final class TransportConstants {
     }
   }
 
-  public enum TripStatus implements HasCaption {
-    NEW(Localized.dictionary().trTripStatusNew(), true),
-    ACTIVE(Localized.dictionary().trTripStatusActive(), true),
-    CANCELED(Localized.dictionary().trTripStatusCanceled(), false),
-    COMPLETED(Localized.dictionary().trTripStatusCompleted(), false);
+  public enum TripStatus implements HasCaption, HasSortingOrder {
+    NEW(Localized.dictionary().trTripStatusNew(), true, 0),
+    ACTIVE(Localized.dictionary().trTripStatusActive(), true, 1),
+    CANCELED(Localized.dictionary().trTripStatusCanceled(), false, 2),
+    COMPLETED(Localized.dictionary().trTripStatusCompleted(), false, 4),
+    ARRANGED(Localized.dictionary().trTripStatusArranged(), true, 3);
 
     private final String caption;
     private final boolean editable;
+    private final int sortingOrder;
 
-    TripStatus(String caption, boolean editable) {
+    TripStatus(String caption, boolean editable, int sortingOrder) {
       this.caption = caption;
       this.editable = editable;
+      this.sortingOrder = sortingOrder;
     }
 
     @Override
     public String getCaption() {
       return caption;
+    }
+
+    @Override
+    public int getSortingOrder() {
+      return sortingOrder;
     }
 
     public boolean isEditable() {

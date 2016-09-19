@@ -5552,6 +5552,8 @@ public interface Dictionary {
 
   default String trTripStatusActive() {return g("trTripStatusActive");}
 
+  default String trTripStatusArranged() {return g("trTripStatusArranged");}
+
   default String trTripStatusCanceled() {return g("trTripStatusCanceled");}
 
   default String trTripStatusCompleted() {return g("trTripStatusCompleted");}
