@@ -114,7 +114,7 @@ public class MailStorageBean {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(MailStorageBean.class);
-  static int CHUNK = 1000;
+  static final int CHUNK = 1000;
 
   @EJB
   QueryServiceBean qs;

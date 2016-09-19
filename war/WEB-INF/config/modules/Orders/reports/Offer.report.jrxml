@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-07-28T14:47:28 -->
+<!-- 2016-09-19T10:52:24 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Offer" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="ebed3f98-42bf-4dea-bdfb-41ad487be1da">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.i18n.Localizations"/>
@@ -81,25 +81,14 @@
 		<groupHeader>
 			<band height="124">
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="370" y="69" width="184" height="24" uuid="aa546cff-1acb-4b8c-ae2c-6ace21d8618d"/>
-					<textElement markup="html"/>
-					<textFieldExpression><![CDATA[$P{ConfObjectOptions}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="180" y="5" width="200" height="18" uuid="dad1a93a-4011-4ab0-a6f5-29f93ee0273a"/>
 					<textElement textAlignment="Center">
 						<font size="14"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{d}.offer()]]></textFieldExpression>
 				</textField>
-				<image hAlign="Right" vAlign="Middle">
-					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="180" y="70" width="190" height="23" isRemoveLineWhenBlank="true" uuid="57051d7c-728c-4c69-9513-fb14b5705e00">
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{PhotoFile})]]></printWhenExpression>
-					</reportElement>
-					<imageExpression><![CDATA["file/" + $P{PhotoFile}]]></imageExpression>
-				</image>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="180" y="110" width="374" height="14" isRemoveLineWhenBlank="true" uuid="99f03762-e1fd-4de0-bf53-98b6c5292f13"/>
+					<reportElement positionType="Float" x="180" y="110" width="374" height="14" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="99f03762-e1fd-4de0-bf53-98b6c5292f13"/>
 					<textElement markup="html"/>
 					<textFieldExpression><![CDATA[$P{Description}]]></textFieldExpression>
 				</textField>
@@ -142,6 +131,22 @@
 					</textElement>
 					<textFieldExpression><![CDATA["<b>" + $V{d}.email() + "</b> " + $P{CompanyEmail}]]></textFieldExpression>
 				</textField>
+				<frame>
+					<reportElement positionType="Float" x="80" y="69" width="474" height="24" isRemoveLineWhenBlank="true" uuid="5448a427-adde-4c6f-8921-3742be75754d">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+					</reportElement>
+					<image hAlign="Right" vAlign="Middle">
+						<reportElement positionType="Float" stretchType="ContainerHeight" x="0" y="0" width="237" height="24" isRemoveLineWhenBlank="true" uuid="57051d7c-728c-4c69-9513-fb14b5705e00">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{PhotoFile})]]></printWhenExpression>
+						</reportElement>
+						<imageExpression><![CDATA["file/" + $P{PhotoFile}]]></imageExpression>
+					</image>
+					<textField isStretchWithOverflow="true">
+						<reportElement positionType="Float" x="237" y="0" width="237" height="24" uuid="aa546cff-1acb-4b8c-ae2c-6ace21d8618d"/>
+						<textElement markup="html"/>
+						<textFieldExpression><![CDATA[$P{ConfObjectOptions}]]></textFieldExpression>
+					</textField>
+				</frame>
 			</band>
 		</groupHeader>
 	</group>

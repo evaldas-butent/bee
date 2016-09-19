@@ -584,6 +584,11 @@
 }
 
 .bee-spec {
+  display: flex;
+  flex-direction: column;
+}
+.bee-spec-options {
+  flex: 1;
   overflow: auto;
 }
 .bee-spec-box {
@@ -626,8 +631,6 @@
   font-weight: bold;
 }
 .bee-spec-description {
-  max-height: 100px;
-  overflow: auto;
   background-color: lightgoldenrodyellow;
 }
 .bee-spec-selectable {
