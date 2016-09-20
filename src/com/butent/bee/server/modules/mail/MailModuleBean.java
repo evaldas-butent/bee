@@ -1730,7 +1730,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private void sendNewsletter() {
-    int count = prm.getInteger(PRM_SEND_NEWSLETTERS_COUNT);
+    Integer count = prm.getInteger(PRM_SEND_NEWSLETTERS_COUNT);
     Long accountId = getSenderAccountId(PRM_DEFAULT_ACCOUNT);
 
     if (BeeUtils.unbox(count) > 0 && DataUtils.isId(accountId)
@@ -1780,8 +1780,15 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             String content = sr.getValue(COL_CONTENT);
 
             try {
-              MimeMessage message = sendMail(account, null, emailSet.getColumn(COL_EMAIL), null,
-                  subject, content, attachments, null);
+              boolean visibleCopies = BeeUtils.toBoolean(sr.getValue(COL_NEWSLETTER_VISIBLE_COPIES));
+              MimeMessage message = null;
+              if (visibleCopies) {
+                message = sendMail(account, null, emailSet.getColumn(COL_EMAIL), null,
+                    subject, content, attachments, null);
+              } else {
+                message = sendMail(account, null, null, emailSet.getColumn(COL_EMAIL),
+                    subject, content, attachments, null);
+              }
               storeMessage(account, message, account.getSentFolder());
             } catch (MessagingException e) {
               logger.error(e);

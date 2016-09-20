@@ -8,5 +8,6 @@
     <String name="Subject" precision="255" notNull="true" label="=mailSubject" />
     <Text name="Content" notNull="true" label="=content" />
     <Boolean name="Active" label="=calActiveView" />
+    <Boolean name="VisibleCopies" label="=mailSendVisibleCopies" />
   </Fields>
 </Table>
