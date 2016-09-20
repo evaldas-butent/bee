@@ -392,12 +392,25 @@ public final class TradeUtils {
       command.addClickHandler(event -> Global.confirm(caption, Icon.QUESTION,
           Collections.singletonList(Localized.dictionary().recalculateTradeItemCostsQuestion()),
           () -> {
-            Long id = ViewHelper.getParentRowId(dataView.asWidget(), VIEW_TRADE_DOCUMENTS);
+            IsRow row = ViewHelper.getParentRow(dataView.asWidget(), VIEW_TRADE_DOCUMENTS);
 
-            if (DataUtils.isId(id)) {
+            if (isCostCalculationEnabled(row)) {
               ParameterList params = TradeKeeper.createArgs(SVC_CALCULATE_COST);
-              params.addQueryItem(COL_TRADE_DOCUMENT, id);
-              params.setSummary(COL_TRADE_DOCUMENT, id);
+
+              params.addQueryItem(COL_TRADE_DOCUMENT, row.getId());
+              params.addNotEmptyQuery(COL_TRADE_DATE,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DATE));
+              params.addNotEmptyQuery(COL_TRADE_CURRENCY,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_CURRENCY));
+
+              params.addNotEmptyQuery(COL_TRADE_DOCUMENT_VAT_MODE,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DOCUMENT_VAT_MODE));
+              params.addNotEmptyQuery(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DOCUMENT_DISCOUNT_MODE));
+              params.addNotEmptyQuery(COL_TRADE_DOCUMENT_DISCOUNT,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DOCUMENT_DISCOUNT));
+
+              params.setSummary(COL_TRADE_DOCUMENT, row.getId());
 
               BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
                 @Override
@@ -460,16 +473,23 @@ public final class TradeUtils {
         && BeeKeeper.getUser().canEditData(VIEW_TRADE_ITEM_COST)) {
 
       IsRow row = ViewHelper.getParentRow(dataView.asWidget(), VIEW_TRADE_DOCUMENTS);
+      return isCostCalculationEnabled(row);
 
-      if (DataUtils.hasId(row)) {
-        OperationType operationType =
-            Data.getEnum(VIEW_TRADE_DOCUMENTS, row, COL_OPERATION_TYPE, OperationType.class);
-
-        return operationType != null && operationType.providesCost();
-      }
+    } else {
+      return false;
     }
+  }
 
-    return false;
+  private static boolean isCostCalculationEnabled(IsRow row) {
+    if (DataUtils.hasId(row)) {
+      OperationType operationType =
+          Data.getEnum(VIEW_TRADE_DOCUMENTS, row, COL_OPERATION_TYPE, OperationType.class);
+
+      return operationType != null && operationType.providesCost();
+
+    } else {
+      return false;
+    }
   }
 
   private static void updateItemCost(DataView dataView, Map<Long, Double> costs) {
