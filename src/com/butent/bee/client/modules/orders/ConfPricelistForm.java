@@ -20,6 +20,7 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndHelper;
@@ -224,7 +225,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
         inputPrice(price, true, newPrice -> {
           ParameterList args = OrdersKeeper.createSvcArgs(SVC_SET_BUNDLE);
-          args.addDataItem(COL_BRANCH, tree.getSelectedItem().getId());
+          args.addDataItem(COL_BRANCH, getBranchId());
           args.addDataItem(COL_BUNDLE, Codec.beeSerialize(bundle));
           args.addDataItem(ClassifierConstants.COL_ITEM_PRICE, newPrice);
           BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
@@ -332,6 +333,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor
     }
     Collections.reverse(cap);
     return BeeUtils.joinItems(cap);
+  }
+
+  private Long getBranchId() {
+    IsRow item = tree.getSelectedItem();
+
+    if (item == null) {
+      return null;
+    }
+    return item.getId();
   }
 
   private static void inputPrice(String defaultPrice, boolean required, Consumer<String> consumer,
@@ -463,7 +473,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
             }
           }
           ParameterList args = OrdersKeeper.createSvcArgs(SVC_SET_RESTRICTIONS);
-          args.addDataItem(COL_BRANCH, tree.getSelectedItem().getId());
+          args.addDataItem(COL_BRANCH, getBranchId());
           args.addDataItem(TBL_CONF_RESTRICTIONS, Codec.beeSerialize(data));
           BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
           refresh();
@@ -528,7 +538,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
         keys.add(bundle.getKey());
       }
       ParameterList args = OrdersKeeper.createSvcArgs(SVC_DELETE_BUNDLES);
-      args.addDataItem(COL_BRANCH, tree.getSelectedItem().getId());
+      args.addDataItem(COL_BRANCH, getBranchId());
       args.addDataItem(COL_KEY, Codec.beeSerialize(keys));
       BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
     }
@@ -537,13 +547,13 @@ public class ConfPricelistForm extends AbstractFormInterceptor
   private void requery() {
     configuration = null;
     refresh();
-    IsRow item = tree.getSelectedItem();
+    Long branchId = getBranchId();
 
-    if (item == null) {
+    if (!DataUtils.isId(branchId)) {
       return;
     }
     ParameterList args = OrdersKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
-    args.addDataItem(COL_BRANCH, item.getId());
+    args.addDataItem(COL_BRANCH, branchId);
 
     rpcId = BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -772,6 +782,22 @@ public class ConfPricelistForm extends AbstractFormInterceptor
         rIdx++;
         group = option.getDimension();
       }
+      CustomSpan remove = new CustomSpan(STYLE_REMOVE);
+      remove.addClickHandler(clickEvent ->
+          Global.confirmRemove(null, BeeUtils.bracket(option.toString()), () -> {
+            ParameterList args = OrdersKeeper.createSvcArgs(SVC_DELETE_OPTION);
+            args.addDataItem(COL_BRANCH, getBranchId());
+            args.addDataItem(COL_OPTION, option.getId());
+            BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
+
+            configuration.removeOption(option);
+            refresh();
+          }));
+      Flow widget = new Flow();
+      widget.add(new InlineLabel(option.getCode()));
+      widget.add(remove);
+      table.setWidget(rIdx, 0, widget, STYLE_ROW);
+
       String txt = null;
 
       if (configuration.hasRestrictions(option)) {
@@ -779,7 +805,6 @@ public class ConfPricelistForm extends AbstractFormInterceptor
         lbl.setStyleName(STYLE_RESTRICTED);
         txt = lbl.toString();
       }
-      table.setText(rIdx, 0, option.getCode(), STYLE_ROW);
       table.setHtml(rIdx, 1, BeeUtils.joinWords(option.getName(), txt), STYLE_ROW, STYLE_CELL);
       table.setText(rIdx, 2, configuration.getOptionPrice(option), STYLE_CELL);
       DomUtils.setDataIndex(table.getCellFormatter().getElement(rIdx, 1), r);
@@ -811,21 +836,42 @@ public class ConfPricelistForm extends AbstractFormInterceptor
     CustomSpan rowAdd = new CustomSpan(STYLE_ROW_ADD);
     rowAdd.addClickHandler(clickEvent -> {
       HtmlTable input = new HtmlTable();
-      Set<Long> ids = new HashSet<>();
+      Set<Long> excludedGroups = new HashSet<>();
+      configuration.getAllDimensions().forEach(dimension -> excludedGroups.add(dimension.getId()));
+      Set<Long> excludedOptions = new HashSet<>();
+      configuration.getOptions().stream().map(Option::getId).forEach(excludedOptions::add);
 
-      for (Option opt : configuration.getOptions()) {
-        ids.add(opt.getId());
-      }
-      input.setText(0, 0, Localized.dictionary().option());
+      UnboundSelector inputGroup = UnboundSelector.create(TBL_CONF_GROUPS,
+          Collections.singletonList(COL_GROUP_NAME));
+      inputGroup.getOracle().setAdditionalFilter(Filter.idNotIn(excludedGroups), true);
+      inputGroup.setWidth("100%");
+
+      input.setText(0, 0, Localized.dictionary().group());
+      input.getCellFormatter().setColSpan(1, 0, 2);
+      input.setWidget(1, 0, inputGroup);
+
+      input.setText(2, 0, Localized.dictionary().option());
       UnboundSelector inputOption = UnboundSelector.create(TBL_CONF_OPTIONS,
           Arrays.asList(COL_CODE, COL_OPTION_NAME, COL_GROUP_NAME));
-      inputOption.getOracle().setExclusions(ids);
-      input.setWidget(1, 0, inputOption);
 
-      input.setText(0, 1, Localized.dictionary().price());
+      inputOption.getOracle().setExclusions(excludedOptions);
+      inputOption.addSelectorHandler(event -> {
+        if (event.isOpened()) {
+          if (DataUtils.isId(inputGroup.getRelatedId())) {
+            event.getSelector().getOracle()
+                .setAdditionalFilter(Filter.equals(COL_GROUP, inputGroup.getRelatedId()), true);
+          } else {
+            event.getSelector().getOracle()
+                .setAdditionalFilter(Filter.exclude(COL_GROUP, excludedGroups), true);
+          }
+        }
+      });
+      input.setWidget(3, 0, inputOption);
+
+      input.setText(2, 1, Localized.dictionary().price());
       InputSpinner inputPrice = new InputSpinner();
       inputPrice.setMinValue("0");
-      input.setWidget(1, 1, inputPrice);
+      input.setWidget(3, 1, inputPrice);
 
       Global.inputWidget(null, input, () -> {
         BeeRow beeRow = inputOption.getRelatedRow();
@@ -837,6 +883,31 @@ public class ConfPricelistForm extends AbstractFormInterceptor
                       Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
                   .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)),
               BeeUtils.isNonNegativeInt(inputPrice.getValue()) ? inputPrice.getValue() : null);
+          refresh();
+
+        } else if (DataUtils.isId(inputGroup.getRelatedId())) {
+          Global.confirm(inputGroup.getRenderedValue(),
+              Icon.QUESTION, Collections.singletonList(Localized.dictionary().selectAll()), () -> {
+                Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.and(Filter.equals(COL_GROUP,
+                    inputGroup.getRelatedId()), Filter.idNotIn(excludedOptions)),
+                    new Queries.RowSetCallback() {
+                      @Override
+                      public void onSuccess(BeeRowSet result) {
+                        if (DataUtils.isEmpty(result)) {
+                          getFormView().notifyWarning(Localized.dictionary().noData());
+                        } else {
+                          for (BeeRow beeRow : result) {
+                            setOptionPrice(new Option(beeRow.getId(),
+                                Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
+                                new Dimension(inputGroup.getRelatedId(),
+                                    Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
+                                .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)), null);
+                          }
+                          refresh();
+                        }
+                      }
+                    });
+              });
         }
       });
     });
@@ -857,18 +928,10 @@ public class ConfPricelistForm extends AbstractFormInterceptor
         if (cell.hasClassName(STYLE_ROW)) {
           inputRestrictions(option, cell);
         } else {
-          inputPrice(configuration.getOptionPrice(option), false,
-              newPrice -> setOptionPrice(option, newPrice),
-              dialog -> Global.confirmRemove(null, BeeUtils.bracket(option.toString()), () -> {
-                dialog.close();
-                ParameterList args = OrdersKeeper.createSvcArgs(SVC_DELETE_OPTION);
-                args.addDataItem(COL_BRANCH, tree.getSelectedItem().getId());
-                args.addDataItem(COL_OPTION, option.getId());
-                BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
-
-                configuration.removeOption(option);
-                refresh();
-              }), cell);
+          inputPrice(configuration.getOptionPrice(option), false, newPrice -> {
+            setOptionPrice(option, newPrice);
+            refresh();
+          }, null, cell);
         }
         return;
       }
@@ -877,7 +940,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
       BiConsumer<String, String> consumer = (svc, prc) -> {
         ParameterList args = OrdersKeeper.createSvcArgs(svc);
-        args.addDataItem(COL_BRANCH, tree.getSelectedItem().getId());
+        args.addDataItem(COL_BRANCH, getBranchId());
         args.addDataItem(COL_KEY, bundle.getKey());
         args.addDataItem(COL_OPTION, option.getId());
         args.addNotEmptyData(ClassifierConstants.COL_ITEM_PRICE, prc);
@@ -912,7 +975,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
   private void saveDimensions() {
     ParameterList args = OrdersKeeper.createSvcArgs(SVC_SAVE_DIMENSIONS);
-    args.addDataItem(COL_BRANCH, tree.getSelectedItem().getId());
+    args.addDataItem(COL_BRANCH, getBranchId());
 
     List<Long> rowDimensions = new ArrayList<>();
     List<Long> colDimensions = new ArrayList<>();
@@ -931,12 +994,11 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
   private void setOptionPrice(Option option, String price) {
     ParameterList args = OrdersKeeper.createSvcArgs(SVC_SET_OPTION);
-    args.addDataItem(COL_BRANCH, tree.getSelectedItem().getId());
+    args.addDataItem(COL_BRANCH, getBranchId());
     args.addDataItem(COL_OPTION, option.getId());
     args.addNotEmptyData(ClassifierConstants.COL_ITEM_PRICE, price);
     BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
 
     configuration.setOptionPrice(option, price);
-    refresh();
   }
 }

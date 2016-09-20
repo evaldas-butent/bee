@@ -63,7 +63,7 @@ import com.butent.bee.shared.modules.orders.Configuration;
 import com.butent.bee.shared.modules.orders.Dimension;
 import com.butent.bee.shared.modules.orders.Option;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
-import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
+import com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import com.butent.bee.shared.modules.orders.Specification;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -1598,8 +1598,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             .addConstant(COL_ORDINAL, pair.getB()));
       }
     }
-    List<Long> unusedIds = Arrays.asList(data.getLongColumn(idName))
-        .stream()
+    List<Long> unusedIds = Arrays.stream(data.getLongColumn(idName))
         .filter(id -> !usedIds.contains(id))
         .collect(Collectors.toList());
 

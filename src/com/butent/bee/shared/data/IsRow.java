@@ -4,6 +4,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,6 +35,10 @@ public interface IsRow extends HasCustomProperties {
   BigDecimal getDecimal(int index);
 
   Double getDouble(int index);
+
+  default <E extends Enum<?>> E getEnum(int index, Class<E> clazz) {
+    return EnumUtils.getEnumByIndex(clazz, getInteger(index));
+  }
 
   long getId();
 

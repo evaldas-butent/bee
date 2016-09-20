@@ -339,10 +339,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       response = getCargoTotal(BeeUtils.toLong(reqInfo.getParameter(COL_CARGO)),
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY)));
 
-    } else if (BeeUtils.same(svc, SVC_UPDATE_FREIGHT)) {
-      response = updateFreight(reqInfo.getParameterLong(COL_CARGO_TRIP),
+    } else if (BeeUtils.same(svc, SVC_UPDATE_PERCENT)) {
+      response = updatePercent(reqInfo.getParameterLong(COL_CARGO_TRIP),
+          reqInfo.getParameter(Service.VAR_COLUMN),
           reqInfo.getParameterDouble(COL_AMOUNT),
-          BeeUtils.toBoolean(reqInfo.getParameter(COL_TRIP_PERCENT)));
+          BeeUtils.toBoolean(reqInfo.getParameter(Service.VAR_CHECK)));
 
     } else if (BeeUtils.same(svc, SVC_TRIP_PROFIT_REPORT)) {
       response = rep.getTripProfitReport(reqInfo);
@@ -567,7 +568,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void fillTripCargoIncomes(ViewQueryEvent event) {
+      public void fillPercents(ViewQueryEvent event) {
         if (event.isAfter(VIEW_TRIP_CARGO, VIEW_CARGO_TRIPS) && event.hasData()) {
           BeeRowSet rowset = event.getRowset();
           int cargoIndex = rowset.getColumnIndex(COL_CARGO);
@@ -576,33 +577,46 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           if (BeeConst.isUndef(cargoIndex) || BeeConst.isUndef(tripIndex)) {
             return;
           }
-          SqlSelect query = null;
+          SqlSelect trips = null;
 
           for (Long tripId : rowset.getDistinctLongs(tripIndex)) {
             SqlSelect subQuery = new SqlSelect().addConstant(tripId, COL_TRIP);
 
-            if (Objects.isNull(query)) {
-              query = subQuery;
+            if (Objects.isNull(trips)) {
+              trips = subQuery;
             } else {
-              query.addUnion(subQuery);
+              trips.addUnion(subQuery);
             }
           }
-          String crs = rep.getTripIncomes(query, prm.getRelation(PRM_CURRENCY),
-              BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
+          Table<Long, Long, Pair<String, String>> amounts = HashBasedTable.create();
 
+          String crs = rep.getTripIncomes(trips, prm.getRelation(PRM_CURRENCY),
+              BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
           SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
           qs.sqlDropTemp(crs);
 
-          Table<Long, Long, String> amounts = HashBasedTable.create();
-
           for (SimpleRow row : rs) {
             amounts.put(row.getLong(COL_TRIP), row.getLong(COL_CARGO),
-                BeeUtils.round(BeeUtils.nvl(row.getValue("TripIncome"), "0"), 2) + " ("
-                    + BeeUtils.removeTrailingZeros(row.getValue(COL_TRIP_PERCENT)) + "%)");
+                Pair.of(BeeUtils.round(BeeUtils.nvl(row.getValue("TripIncome"), "0"), 2) + " ("
+                    + BeeUtils.removeTrailingZeros(BeeUtils.round(row.getValue(COL_TRIP_PERCENT),
+                    2)) + "%)", null));
+          }
+          crs = rep.getCargoTripPercents(COL_TRIP, trips);
+          rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
+          qs.sqlDropTemp(crs);
+
+          for (SimpleRow row : rs) {
+            if (!amounts.contains(row.getLong(COL_TRIP), row.getLong(COL_CARGO))) {
+              amounts.put(row.getLong(COL_TRIP), row.getLong(COL_CARGO), Pair.empty());
+            }
+            amounts.get(row.getLong(COL_TRIP), row.getLong(COL_CARGO))
+                .setB(BeeUtils.removeTrailingZeros(BeeUtils.round(row.getValue(COL_CARGO_PERCENT),
+                    2)) + "%");
           }
           for (BeeRow row : rowset.getRows()) {
-            row.setProperty(VAR_INCOME,
-                amounts.get(row.getLong(tripIndex), row.getLong(cargoIndex)));
+            Pair<String, String> p = amounts.get(row.getLong(tripIndex), row.getLong(cargoIndex));
+            row.setProperty(VAR_INCOME, p.getA());
+            row.setProperty(VAR_EXPENSE, p.getB());
           }
         }
       }
@@ -4161,26 +4175,55 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return response;
   }
 
-  private ResponseObject updateFreight(Long id, Double amount, boolean percentMode) {
-    long cargo = qs.getLong(new SqlSelect()
-        .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+  private ResponseObject updatePercent(Long id, String column, Double amount, boolean percentMode) {
+    String keyName;
+    Function<Long, Double> totalSupplier;
+
+    switch (column) {
+      case COL_TRIP_PERCENT:
+        keyName = COL_CARGO;
+        totalSupplier = value -> BeeUtils.unbox(qs.getDouble(new SqlSelect()
+            .addFields("als", "CargoIncome")
+            .addFrom(rep.getCargoIncomeQuery(new SqlSelect().addConstant(value, keyName),
+                prm.getRelation(PRM_CURRENCY), BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))),
+                "als")));
+        break;
+      case COL_CARGO_PERCENT:
+        keyName = COL_TRIP;
+        totalSupplier = value -> {
+          String tmp = rep.getTripCosts(new SqlSelect().addConstant(value, keyName),
+              prm.getRelation(PRM_CURRENCY), BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
+          SimpleRow row = qs.getRow(new SqlSelect().addAllFields(tmp).addFrom(tmp));
+          qs.sqlDropTemp(tmp);
+
+          return BeeUtils.unbox(row.getDouble("DailyCosts"))
+              + BeeUtils.unbox(row.getDouble("RoadCosts"))
+              + BeeUtils.unbox(row.getDouble("OtherCosts"))
+              + BeeUtils.unbox(row.getDouble("FuelCosts"));
+        };
+        break;
+      default:
+        Assert.unsupported(column);
+        return null;
+    }
+    long keyValue = qs.getLong(new SqlSelect()
+        .addFields(TBL_CARGO_TRIPS, keyName)
         .addFrom(TBL_CARGO_TRIPS)
         .setWhere(sys.idEquals(TBL_CARGO_TRIPS, id)));
 
-    if (!DataUtils.isId(cargo)) {
+    if (!DataUtils.isId(keyValue)) {
       return ResponseObject.error(Localized.dictionary().noData());
     }
-    double availablePercent = BeeUtils.max(100
-        - BeeUtils.round(BeeUtils.unbox(qs.getDouble(new SqlSelect()
-        .addSum(TBL_CARGO_TRIPS, COL_TRIP_PERCENT)
+    double availablePercent = BeeUtils.max(100 - BeeUtils.unbox(qs.getDouble(new SqlSelect()
+        .addSum(TBL_CARGO_TRIPS, column)
         .addFrom(TBL_CARGO_TRIPS)
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CARGO_TRIPS, COL_CARGO, cargo),
-            SqlUtils.notEqual(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), id))))), 2), 0.0);
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CARGO_TRIPS, keyName, keyValue),
+            SqlUtils.notEqual(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), id))))), 0.0);
 
     Double percent = null;
 
     if (Objects.nonNull(amount)) {
-      percent = BeeUtils.round(BeeUtils.toNonNegativeInt(amount * 100) / 100.0, 2);
+      percent = Math.max(amount, 0);
     }
     if (BeeUtils.isPositive(percent)) {
       if (percentMode) {
@@ -4188,24 +4231,17 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           return ResponseObject.error(percent + "% > " + availablePercent + "%");
         }
       } else {
-        String als = SqlUtils.uniqueName();
-
-        double total = BeeUtils.unbox(qs.getDouble(new SqlSelect()
-            .addFields(als, "CargoIncome")
-            .addFrom(rep.getCargoIncomeQuery(new SqlSelect().addConstant(cargo, COL_CARGO),
-                prm.getRelation(PRM_CURRENCY),
-                BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))), als)));
-
+        double total = totalSupplier.apply(keyValue);
         double availableAmount = BeeUtils.round(total / 100 * availablePercent, 2);
 
         if (percent > availableAmount) {
           return ResponseObject.error(percent + " > " + availableAmount);
         }
-        percent = BeeUtils.round(percent / total * 100, 2);
+        percent = percent / total * 100;
       }
     }
     qs.updateData(new SqlUpdate(TBL_CARGO_TRIPS)
-        .addConstant(COL_TRIP_PERCENT, percent)
+        .addConstant(column, percent)
         .setWhere(sys.idEquals(TBL_CARGO_TRIPS, id)));
 
     return ResponseObject.emptyResponse();

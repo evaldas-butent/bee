@@ -13,7 +13,7 @@
         <InputText source="Name" />
       </row>
       <row>
-        <Label text="=description" horizontalAlignment="right" style="&lbl1;" />
+        <Label for="Description" horizontalAlignment="right" style="&lbl1;" />
         <InputArea source="Description" style="width: 155px;" />
       </row>
     </Table>

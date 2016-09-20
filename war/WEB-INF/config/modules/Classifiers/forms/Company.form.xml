@@ -37,7 +37,7 @@
       </row>
 
       <row for="Address">
-        <Label text="=address" style="&lbl;" />
+        <Label for="Address" style="&lbl;" />
         <cell colSpan="4">
           <InputText source="Address" style="width: 525px;" />
         </cell>
@@ -79,7 +79,7 @@
           <row>
             <Label text="=website" style="&lbl;" for="Website" />
             <InputText source="Website" style="width: 280px;" />
-            <Label text="=socialContacts" style="&lbl;" />
+            <Label for="SocialContacts" style="&lbl;"  />
             <InputText source="SocialContacts" style="width: 280px;" />
           </row>
           <row>
@@ -120,12 +120,12 @@
             </row>
 
             <row for="CreditTolerance">
-              <Label text="=creditTolerance" style="&lbl;" />
+              <Label for="CreditTolerance" style="&lbl;" />
               <InputInteger source="CreditTolerance" style="width: 60px;" summarize="true" />
             </row>
 
             <row for="CreditDays">
-              <Label text="=creditDays" style="&lbl;"/>
+              <Label for="CreditDays" style="&lbl;"/>
               <InputDecimal source="CreditDays" style="width: 60px;" summarize="true" />
             </row>
 
@@ -135,12 +135,12 @@
             </row>
 
             <row for="FinancialState">
-              <Label text="=financialState" style="&lbl;" />
+              <Label for="FinancialState" style="&lbl;" />
               <DataSelector source="FinancialState" summarize="true" />
             </row>
 
             <row for="SupplierCreditDays">
-              <Label text="=supplierCreditDays" style="&lbl;"/>
+              <Label for="SupplierCreditDays" style="&lbl;"/>
               <InputDecimal source="SupplierCreditDays" style="width: 60px;" summarize="true" />
             </row>
 
@@ -195,7 +195,7 @@
               </cell>
             </row>
             <row>
-              <Label text="=trdTurnover" style="&lbl;"/>
+              <Label for="Turnover" text="=trdTurnover" style="&lbl;"/>
               <DataSelector source="Turnover" summarize="true" />
               <DataSelector source="TurnoverCurrency" editEnabled="false"
                 placeholder="=currencyShort"

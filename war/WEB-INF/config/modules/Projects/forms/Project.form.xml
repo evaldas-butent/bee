@@ -141,26 +141,26 @@
         <FlowPanel>
           <Table kind="controls" style="margin-bottom: 5px;">
             <row>
-              <Label text="=personContact" style="margin-right: 1em; text-align: left;" />
+              <Label for="ContactPerson" style="margin-right: 1em; text-align: left;" />
               <DataSelector source="ContactPerson"
                 style="display: inline-block; width: 200px;"
                 renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName"
                 options="Company" module="Classifiers.Contacts" />
-              <Label text="=signDate" style="&lbl;" />
+              <Label for="ContractSigned" style="&lbl;" />
               <InputDate source="ContractSigned" style="&inp3;" />
               <Label />
-              <Label text="=prjTerm" style="&lbl;" />
+              <Label for="EndDate" style="&lbl;" />
               <InputDate source="EndDate" style="&inp3;" />
             </row>
 
             <row>
-              <Label text="=contract" style="margin-right: 1em; text-align: left;" />
+              <Label for="Contract" style="margin-right: 1em; text-align: left;" />
               <DataSelector name="Contract" source="Contract"
                 renderColumns="ContractName ContractNumber"
                 choiceColumns="Name Number DocumentDate Expires" viewName="Documents"
                 caching="none" module="Documents"
                 newRowEnabled="false" style="&inp2;" />
-              <Label text="=salePrice" style="&lbl;" />
+              <Label for="ContractPrice" style="&lbl;" />
               <InputText source="ContractPrice" style="&inp3;" />
               <DataSelector source="Currency" for="ContractPrice" newRowEnabled="false" editEnabled="false"
                 style="width: 50px;" readOnly="true" />

@@ -107,22 +107,22 @@ public class SpecificationBuilder implements InputCallback {
   }
 
   public static final String STYLE_PREFIX = "bee-spec";
+  public static final String STYLE_OPTIONS = STYLE_PREFIX + "-options";
   private static final String STYLE_BOX = STYLE_PREFIX + "-box";
   public static final String STYLE_THUMBNAIL = STYLE_PREFIX + "-thumbnail";
   private static final String STYLE_SELECTABLE = STYLE_PREFIX + "-selectable";
   private static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
 
+  private final Specification template;
   private final Consumer<Specification> callback;
   private final Flow container = new Flow(STYLE_PREFIX);
 
   private Branch currentBranch;
-  private Specification specification = new Specification();
+  private final Specification specification = new Specification();
 
   public SpecificationBuilder(Specification template, Consumer<Specification> callback) {
+    this.template = template;
     this.callback = Assert.notNull(callback);
-
-    StyleUtils.setWidth(container, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
-    StyleUtils.setHeight(container, BeeKeeper.getScreen().getHeight() * 0.8, CssUnit.PX);
 
     Queries.getRowSet(TBL_CONF_PRICELIST, null, Filter.or(Filter.isNull(COL_VALID_UNTIL),
         Filter.isMore(COL_VALID_UNTIL, new DateValue(TimeUtils.today()))),
@@ -145,6 +145,9 @@ public class SpecificationBuilder implements InputCallback {
             setBranch(tree);
           }
         });
+    StyleUtils.setWidth(container, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
+    StyleUtils.setHeight(container, BeeKeeper.getScreen().getHeight() * 0.8, CssUnit.PX);
+
     Global.inputWidget(Localized.dictionary().specification(), container, this);
   }
 
@@ -182,6 +185,22 @@ public class SpecificationBuilder implements InputCallback {
   @Override
   public void onSuccess() {
     if (specification.getBundle() != null) {
+      List<String> selectedOptions = new ArrayList<>();
+      Dimension dimension = null;
+
+      for (Option option : specification.getOptions()) {
+        if (!option.getDimension().isRequired()) {
+          if (!Objects.equals(option.getDimension(), dimension)) {
+            dimension = option.getDimension();
+            selectedOptions.add("<b>" + dimension + ":</b>");
+          }
+          selectedOptions.add(option.toString());
+        }
+      }
+      specification.setDescription(BeeUtils.join("<br><br>"
+              + Localized.dictionary().additionalServices() + ":<br>",
+          specification.getDescription(), BeeUtils.join("<br>", selectedOptions)));
+
       ParameterList args = OrdersKeeper.createSvcArgs(SVC_SAVE_OBJECT);
       args.addDataItem(COL_OBJECT, Codec.beeSerialize(specification));
 
@@ -367,6 +386,13 @@ public class SpecificationBuilder implements InputCallback {
         currentBranch.setConfiguration(new Configuration());
       }
     }
+    int scroll = 0;
+
+    for (Widget widget : container) {
+      if (widget.getElement().hasClassName(STYLE_OPTIONS)) {
+        scroll = widget.getElement().getScrollTop();
+      }
+    }
     container.clear();
     Flow header = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
     Flow boxes = new Flow(StyleUtils.NAME_FLEXIBLE);
@@ -472,9 +498,11 @@ public class SpecificationBuilder implements InputCallback {
     if (!proceed.get()) {
       return;
     }
-    // OPTIONS
     header.add(specification.renderSummary(true));
+    Flow subContainer = new Flow(STYLE_OPTIONS);
+    container.add(subContainer);
 
+    // OPTIONS
     Multimap<Dimension, Option> allOptions = getAvailableOptions();
     Flow optionBox = new Flow(STYLE_BOX);
     HtmlTable selectable = new HtmlTable(STYLE_SELECTABLE);
@@ -510,6 +538,7 @@ public class SpecificationBuilder implements InputCallback {
             check.setChecked(specification.getOptions().contains(option));
             check.addValueChangeHandler(valueChangeEvent ->
                 toggleOption(allOptions, option, check.isChecked()));
+
             if (BeeConst.isUndef(rowSelectable)) {
               rowSelectable = selectable.getRowCount();
               selectable.setText(rowSelectable, 0, dimension.getName());
@@ -527,10 +556,11 @@ public class SpecificationBuilder implements InputCallback {
     if (!BeeUtils.isEmpty(specification.getDescription())) {
       CustomDiv defaults = new CustomDiv(STYLE_DESCRIPTION);
       defaults.setHtml(specification.getDescription());
-      container.add(defaults);
+      subContainer.add(defaults);
     }
-    container.add(optionBox);
-    container.add(selectable);
+    subContainer.add(optionBox);
+    subContainer.add(selectable);
+    subContainer.getElement().setScrollTop(scroll);
   }
 
   private void setBranch(Branch branch) {
@@ -558,7 +588,7 @@ public class SpecificationBuilder implements InputCallback {
         if (!option.getDimension().isRequired() && configuration.isDefault(option, bundle)) {
           if (!Objects.equals(option.getDimension(), dimension)) {
             dimension = option.getDimension();
-            defaults.add(dimension + ":");
+            defaults.add("<b>" + dimension + ":</b>");
           }
           defaults.add(option.toString());
         }

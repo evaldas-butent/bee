@@ -30,22 +30,29 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public final class TradeUtils {
 
@@ -398,10 +405,20 @@ public final class TradeUtils {
                   if (response.hasMessages()) {
                     response.notify(dataView);
 
-                  } else if (response.hasResponse()) {
-                    dataView.notifyInfo(
-                        Localized.dictionary().recalculateTradeItemCostsNotification(),
-                        response.getResponseAsString());
+                  } else if (response.hasResponse() && response.getSize() > 0) {
+                    Map<Long, Double> costs = new HashMap<>();
+                    Map<String, String> result =
+                        Codec.deserializeHashMap(response.getResponseAsString());
+
+                    if (!BeeUtils.isEmpty(result)) {
+                      result.forEach((k, v) -> costs.put(BeeUtils.toLongOrNull(k),
+                          BeeUtils.toDoubleOrNull(v)));
+
+                      updateItemCost(dataView, costs);
+
+                      dataView.notifyInfo(
+                          Localized.dictionary().recalculateTradeItemCostsNotification());
+                    }
 
                   } else {
                     dataView.notifyWarning(Localized.dictionary().noData());
@@ -453,6 +470,26 @@ public final class TradeUtils {
     }
 
     return false;
+  }
+
+  private static void updateItemCost(DataView dataView, Map<Long, Double> costs) {
+    GridView gridView = VIEW_TRADE_DOCUMENT_ITEMS.equals(dataView.getViewName())
+        ? (GridView) dataView
+        : ViewHelper.getSiblingGrid(dataView.asWidget(), GRID_TRADE_DOCUMENT_ITEMS);
+
+    if (gridView != null && !gridView.isEmpty()) {
+      int index = gridView.getDataIndex(COL_TRADE_ITEM_COST);
+      CellSource cellSource = CellSource.forColumn(gridView.getDataColumns().get(index), index);
+
+      for (IsRow row : gridView.getRowData()) {
+        Double newCost = costs.get(row.getId());
+
+        if (!Objects.equals(row.getDouble(index), newCost)) {
+          CellUpdateEvent.fire(BeeKeeper.getBus(), gridView.getViewName(),
+              row.getId(), row.getVersion(), cellSource, BeeUtils.toStringOrNull(newCost));
+        }
+      }
+    }
   }
 
   private TradeUtils() {

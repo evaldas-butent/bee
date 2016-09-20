@@ -31,7 +31,7 @@
         </cell>
       </row>
       <row>
-        <Label text="=vehicleDriver" />
+        <Label for="ForwarderDriver" text="=vehicleDriver" />
         <InputText source="ForwarderDriver" />
         <cell colSpan="2" rowSpan="2">
           <Table kind="controls">
@@ -42,14 +42,14 @@
             </row>
             <row>
               <InputDate source="DateFrom" style="width: 7em;" />
-              <Label text="=date" />
+              <Label for="DateTo" text="=date" />
               <InputDate source="DateTo" style="width: 7em;" />
             </row>
           </Table>
         </cell>
       </row>
       <row>
-        <Label text="=transport" />
+        <Label for="ForwarderVehicle" text="=transport" />
         <InputText source="ForwarderVehicle" />
       </row>
       <row>

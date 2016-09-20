@@ -52,7 +52,7 @@
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <CalcColumn name="Cost" type="decimal" label="=cost" format="#.00######">
+    <CalcColumn name="Cost" type="decimal" label="=cost" format="0.00######">
       <render>
         <ui:expression>row.Parent ? row.ParentCost : row.Cost</ui:expression>
       </render>

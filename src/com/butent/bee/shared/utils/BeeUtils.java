@@ -3204,6 +3204,10 @@ public final class BeeUtils {
     return Long.toString(x);
   }
 
+  public static String toStringOrNull(Double x) {
+    return isDouble(x) ? toString(x) : null;
+  }
+
   public static String trim(String s) {
     return (s == null) ? BeeConst.STRING_EMPTY : s.trim();
   }

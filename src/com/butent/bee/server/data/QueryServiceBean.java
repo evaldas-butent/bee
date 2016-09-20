@@ -489,6 +489,10 @@ public class QueryServiceBean {
     return getSingleColumn(query).getDoubleColumn(0);
   }
 
+  public <E extends Enum<?>> E getEnum(IsQuery query, Class<E> clazz) {
+    return getSingleValue(query).getEnum(0, 0, clazz);
+  }
+
   public SimpleRowSet getHistogram(String viewName, Filter filter, List<String> columns,
       List<String> order) {
 
