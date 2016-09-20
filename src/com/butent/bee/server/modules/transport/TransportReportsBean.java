@@ -112,6 +112,89 @@ public class TransportReportsBean {
   }
 
   /**
+   * Returns Temporary table name with calculated trip income or cargo cost percents.
+   *
+   * @param key "Cargo" or "Trip"
+   * @param filter query filter with <b>unique</b> key values.
+   * @return Temporary table name with following structure: <br>
+   * "Cargo" - cargo ID <br>
+   * "Trip" - trip ID <br>
+   * key == "Cargo" ? "TripPercent" : "CargoPercent"
+   */
+  public String getCargoTripPercents(String key, SqlSelect filter) {
+    String percent = null;
+
+    switch (key) {
+      case COL_CARGO:
+        percent = COL_TRIP_PERCENT;
+        break;
+      case COL_TRIP:
+        percent = COL_CARGO_PERCENT;
+        break;
+      default:
+        Assert.unsupported(key + ": only " + COL_CARGO + " and " + COL_TRIP + " values supported");
+    }
+    String alias = SqlUtils.uniqueName();
+
+    String tmpCargoTrip = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP, percent)
+        .addSum(TBL_TRIP_ROUTES, COL_ROUTE_KILOMETERS)
+        .addFrom(TBL_CARGO_TRIPS)
+        .addFromInner(filter, alias, SqlUtils.joinUsing(TBL_CARGO_TRIPS, alias, key))
+        .addFromLeft(TBL_TRIP_ROUTES,
+            sys.joinTables(TBL_CARGO_TRIPS, TBL_TRIP_ROUTES, COL_ROUTE_CARGO))
+        .addGroup(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP, percent));
+
+    // Too big percent correction
+    qs.updateData(new SqlUpdate(tmpCargoTrip)
+        .addExpression(percent, SqlUtils.multiply(
+            SqlUtils.divide(SqlUtils.field(tmpCargoTrip, percent),
+                SqlUtils.field(alias, percent)), 100))
+        .setFrom(new SqlSelect()
+                .addFields(tmpCargoTrip, key)
+                .addSum(tmpCargoTrip, percent)
+                .addFrom(tmpCargoTrip)
+                .addGroup(tmpCargoTrip, key), alias,
+            SqlUtils.and(SqlUtils.joinUsing(tmpCargoTrip, alias, key),
+                SqlUtils.notNull(alias, percent), SqlUtils.more(alias, percent, 100))));
+
+    // Percent correction by runned kilometers
+    qs.updateData(new SqlUpdate(tmpCargoTrip)
+        .addExpression(percent, SqlUtils.multiply(
+            SqlUtils.divide(SqlUtils.field(tmpCargoTrip, COL_ROUTE_KILOMETERS),
+                SqlUtils.field(alias, COL_ROUTE_KILOMETERS)),
+            SqlUtils.minus(100, SqlUtils.nvl(SqlUtils.field(alias, percent), 0))))
+        .setFrom(new SqlSelect()
+                .addFields(tmpCargoTrip, key)
+                .addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmpCargoTrip, percent),
+                    SqlUtils.field(tmpCargoTrip, COL_ROUTE_KILOMETERS), null), COL_ROUTE_KILOMETERS)
+                .addSum(tmpCargoTrip, percent)
+                .addFrom(tmpCargoTrip)
+                .addGroup(tmpCargoTrip, key), alias,
+            SqlUtils.and(SqlUtils.joinUsing(alias, tmpCargoTrip, key),
+                SqlUtils.notNull(alias, COL_ROUTE_KILOMETERS),
+                SqlUtils.positive(alias, COL_ROUTE_KILOMETERS)))
+        .setWhere(SqlUtils.isNull(tmpCargoTrip, percent)));
+
+    String cntEmpty = SqlUtils.uniqueName();
+
+    // Percent correction proportionaly for empty percents
+    qs.updateData(new SqlUpdate(tmpCargoTrip)
+        .addExpression(percent, SqlUtils.divide(
+            SqlUtils.minus(100.0, SqlUtils.nvl(SqlUtils.field(alias, percent), 0)),
+            SqlUtils.field(alias, cntEmpty)))
+        .setFrom(new SqlSelect()
+            .addFields(tmpCargoTrip, key)
+            .addSum(tmpCargoTrip, percent)
+            .addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmpCargoTrip, percent), 1, 0), cntEmpty)
+            .addFrom(tmpCargoTrip)
+            .addGroup(tmpCargoTrip, key), alias, SqlUtils.joinUsing(tmpCargoTrip, alias, key))
+        .setWhere(SqlUtils.isNull(tmpCargoTrip, percent)));
+
+    return tmpCargoTrip;
+  }
+
+  /**
    * Return SqlSelect query, calculating trip fuel consumptions from TripRoutes table.
    *
    * @param routes query filter with <b>unique</b> route values.
@@ -335,6 +418,269 @@ public class TransportReportsBean {
     SimpleRowSet data = qs.getData(query);
     qs.sqlDropTemp(tmp);
     return ResponseObject.response(data);
+  }
+
+  /**
+   * Return Temporary table name with calculated trip costs.
+   *
+   * @param trips query filter with <b>unique</b> "Trip" values.
+   * @param currency currency to convert to.
+   * @param woVat exclude vat.
+   * @return Temporary table name with following structure: <br>
+   * "Trip" - trip ID <br>
+   * "DailyCosts" - total trip daily costs <br>
+   * "RoadCosts" - total trip road costs <br>
+   * "OtherCosts" - total trip other costs <br>
+   * "FuelCosts" - total trip fuel costs considering remainder corrections
+   */
+  public String getTripCosts(SqlSelect trips, Long currency, boolean woVat) {
+    String alias = SqlUtils.uniqueName();
+
+    // Trip costs
+    SqlSelect ss = new SqlSelect()
+        .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
+        .addField(TBL_TRIPS, COL_TRIP_DATE, "TripDate")
+        .addFields(TBL_TRIPS, COL_VEHICLE, COL_FUEL_BEFORE, COL_FUEL_AFTER)
+        .addEmptyDouble("FuelCosts")
+        .addFrom(TBL_TRIPS)
+        .addFromInner(trips, alias, sys.joinTables(TBL_TRIPS, alias, COL_TRIP))
+        .addFromLeft(TBL_TRIP_COSTS, sys.joinTables(TBL_TRIPS, TBL_TRIP_COSTS, COL_TRIP))
+        .addGroup(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP_DATE, COL_VEHICLE, COL_FUEL_BEFORE,
+            COL_FUEL_AFTER);
+
+    IsExpression amountExpr;
+
+    if (woVat) {
+      amountExpr = TradeModuleBean.getWithoutVatExpression(TBL_TRIP_COSTS);
+    } else {
+      amountExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_COSTS);
+    }
+    IsExpression currencyExpr = SqlUtils.field(TBL_TRIP_COSTS, COL_CURRENCY);
+    IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_DATE),
+        SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE));
+
+    IsExpression xpr;
+
+    if (DataUtils.isId(currency)) {
+      xpr = ExchangeUtils.exchangeFieldTo(ss, amountExpr, currencyExpr, dateExpr,
+          SqlUtils.constant(currency));
+    } else {
+      xpr = ExchangeUtils.exchangeField(ss, amountExpr, currencyExpr, dateExpr);
+    }
+    IsCondition dailyCond = SqlUtils.inList(TBL_TRIP_COSTS, COL_ITEM,
+        qs.getLongList(new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_COUNTRY_NORMS, COL_DAILY_COSTS_ITEM)
+            .addFrom(TBL_COUNTRY_NORMS)));
+
+    if (dailyCond != null) {
+      ss.addSum(SqlUtils.sqlIf(dailyCond, xpr, null), "DailyCosts");
+    } else {
+      ss.addEmptyDouble("DailyCosts");
+    }
+    IsCondition roadCond = SqlUtils.inList(TBL_TRIP_COSTS, COL_ITEM,
+        qs.getLongList(new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_COUNTRY_NORMS, COL_ROAD_COSTS_ITEM)
+            .addFrom(TBL_COUNTRY_NORMS)));
+
+    if (roadCond != null) {
+      ss.addSum(SqlUtils.sqlIf(roadCond, xpr, null), "RoadCosts");
+    } else {
+      ss.addEmptyDouble("RoadCosts");
+    }
+    if (BeeUtils.anyNotNull(dailyCond, roadCond)) {
+      ss.addSum(SqlUtils.sqlIf(SqlUtils.or(dailyCond, roadCond), null, xpr), "OtherCosts");
+    } else {
+      ss.addSum(xpr, "OtherCosts");
+    }
+    String tmpCosts = qs.sqlCreateTemp(ss);
+    qs.sqlIndex(tmpCosts, COL_TRIP);
+
+    // Fuel costs
+    ss = new SqlSelect()
+        .addFields(tmpCosts, COL_TRIP)
+        .addSum(TBL_TRIP_FUEL_COSTS, COL_COSTS_QUANTITY)
+        .addFrom(tmpCosts)
+        .addFromLeft(TBL_TRIP_FUEL_COSTS,
+            SqlUtils.joinUsing(tmpCosts, TBL_TRIP_FUEL_COSTS, COL_TRIP))
+        .addGroup(tmpCosts, COL_TRIP);
+
+    if (woVat) {
+      amountExpr = TradeModuleBean.getWithoutVatExpression(TBL_TRIP_FUEL_COSTS);
+    } else {
+      amountExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_FUEL_COSTS);
+    }
+    currencyExpr = SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_CURRENCY);
+    dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE),
+        SqlUtils.field(tmpCosts, "TripDate"));
+
+    if (DataUtils.isId(currency)) {
+      xpr = ExchangeUtils.exchangeFieldTo(ss, amountExpr, currencyExpr, dateExpr,
+          SqlUtils.constant(currency));
+    } else {
+      xpr = ExchangeUtils.exchangeField(ss, amountExpr, currencyExpr, dateExpr);
+    }
+    ss.addSum(xpr, "FuelCosts");
+
+    String tmp = qs.sqlCreateTemp(ss);
+    qs.sqlIndex(tmp, COL_TRIP);
+
+    qs.updateData(new SqlUpdate(tmpCosts)
+        .setFrom(tmp, SqlUtils.joinUsing(tmpCosts, tmp, COL_TRIP))
+        .addExpression("FuelCosts", SqlUtils.field(tmp, "FuelCosts")));
+
+    // Fuel consumptions
+    if (qs.sqlExists(tmpCosts, SqlUtils.isNull(tmpCosts, COL_FUEL_AFTER))) {
+      String tmpRoutes = qs.sqlCreateTemp(getFuelConsumptionsQuery(new SqlSelect()
+          .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
+          .addFrom(TBL_TRIP_ROUTES)
+          .addFromInner(tmpCosts, SqlUtils.joinUsing(TBL_TRIP_ROUTES, tmpCosts, COL_TRIP)), false));
+      qs.sqlIndex(tmpRoutes, COL_TRIP);
+
+      String tmpConsumptions = qs.sqlCreateTemp(new SqlSelect()
+          .addFields(TBL_TRIP_FUEL_CONSUMPTIONS, COL_TRIP)
+          .addSum(TBL_TRIP_FUEL_CONSUMPTIONS, "Quantity")
+          .addFrom(TBL_TRIP_FUEL_CONSUMPTIONS)
+          .addFromInner(tmpCosts,
+              SqlUtils.joinUsing(TBL_TRIP_FUEL_CONSUMPTIONS, tmpCosts, COL_TRIP))
+          .addGroup(TBL_TRIP_FUEL_CONSUMPTIONS, COL_TRIP));
+
+      qs.sqlIndex(tmpConsumptions, COL_TRIP);
+
+      qs.updateData(new SqlUpdate(tmpCosts)
+          .setFrom(new SqlSelect()
+                  .addFields(tmp, COL_TRIP, "Quantity")
+                  .addField(tmpRoutes, COL_ROUTE_CONSUMPTION, "routeQuantity")
+                  .addField(tmpConsumptions, "Quantity", "consumeQuantity")
+                  .addFrom(tmp)
+                  .addFromLeft(tmpRoutes, SqlUtils.joinUsing(tmp, tmpRoutes, COL_TRIP))
+                  .addFromLeft(tmpConsumptions, SqlUtils.joinUsing(tmp, tmpConsumptions, COL_TRIP)),
+              "sub", SqlUtils.joinUsing(tmpCosts, "sub", COL_TRIP))
+          .addExpression(COL_FUEL_AFTER, SqlUtils.minus(
+              SqlUtils.plus(
+                  SqlUtils.nvl(SqlUtils.field(tmpCosts, COL_FUEL_BEFORE), 0),
+                  SqlUtils.nvl(SqlUtils.field("sub", "Quantity"), 0)),
+              SqlUtils.nvl(SqlUtils.field("sub", "routeQuantity"), 0),
+              SqlUtils.nvl(SqlUtils.field("sub", "consumeQuantity"), 0)))
+          .setWhere(SqlUtils.isNull(tmpCosts, COL_FUEL_AFTER)));
+
+      qs.sqlDropTemp(tmpRoutes);
+      qs.sqlDropTemp(tmpConsumptions);
+    }
+    qs.sqlDropTemp(tmp);
+
+    // Fuel cost correction
+    ss =
+        new SqlSelect()
+            .addFields(TBL_TRIPS, COL_VEHICLE)
+            .addField(TBL_TRIPS, "Date", "TripDate")
+            .addFields(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE)
+            .addSum(TBL_TRIP_FUEL_COSTS, COL_COSTS_QUANTITY)
+            .addFrom(TBL_TRIPS)
+            .addFromInner(TBL_TRIP_FUEL_COSTS,
+                sys.joinTables(TBL_TRIPS, TBL_TRIP_FUEL_COSTS, COL_TRIP))
+            .addFromInner(new SqlSelect()
+                    .addFields(TBL_TRIPS, COL_VEHICLE)
+                    .addMax(TBL_TRIPS, "Date", "MaxDate")
+                    .addFrom(TBL_TRIPS)
+                    .addFromInner(tmpCosts, sys.joinTables(TBL_TRIPS, tmpCosts, COL_TRIP))
+                    .addGroup(TBL_TRIPS, COL_VEHICLE), "sub",
+                SqlUtils.and(SqlUtils.joinUsing(TBL_TRIPS, "sub", COL_VEHICLE),
+                    SqlUtils.joinLessEqual(TBL_TRIPS, "Date", "sub", "MaxDate"),
+                    SqlUtils.and(SqlUtils.positive(TBL_TRIP_FUEL_COSTS, COL_COSTS_QUANTITY),
+                        SqlUtils.positive(TBL_TRIP_FUEL_COSTS, COL_COSTS_PRICE))))
+            .addGroup(TBL_TRIPS, COL_VEHICLE, "Date")
+            .addGroup(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE);
+
+    if (woVat) {
+      amountExpr = TradeModuleBean.getWithoutVatExpression(TBL_TRIP_FUEL_COSTS);
+    } else {
+      amountExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_FUEL_COSTS);
+    }
+    currencyExpr = SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_CURRENCY);
+    dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE),
+        SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE));
+
+    if (DataUtils.isId(currency)) {
+      xpr = ExchangeUtils.exchangeFieldTo(ss, amountExpr, currencyExpr, dateExpr,
+          SqlUtils.constant(currency));
+    } else {
+      xpr = ExchangeUtils.exchangeField(ss, amountExpr, currencyExpr, dateExpr);
+    }
+    ss.addSum(xpr, "Sum");
+
+    String tmpFuels = qs.sqlCreateTemp(ss);
+    qs.sqlIndex(tmpFuels, COL_VEHICLE);
+
+    for (int i = 0; i < 2; i++) {
+      boolean plusMode = i == 0;
+      String fld = plusMode ? COL_FUEL_BEFORE : COL_FUEL_AFTER;
+
+      tmp = qs.sqlCreateTemp(new SqlSelect()
+          .addFields(tmpCosts, COL_TRIP, "TripDate", COL_VEHICLE)
+          .addField(tmpCosts, fld, "Remainder")
+          .addEmptyDate("Date")
+          .addEmptyDouble("Cost")
+          .addFrom(tmpCosts)
+          .setWhere(SqlUtils.positive(tmpCosts, fld)));
+
+      qs.sqlIndex(tmp, COL_TRIP, COL_VEHICLE);
+      int c;
+
+      IsCondition cond = plusMode
+          ? SqlUtils.joinLess(tmpFuels, "TripDate", tmp, "TripDate")
+          : SqlUtils.joinLessEqual(tmpFuels, "TripDate", tmp, "TripDate");
+
+      do {
+        String tmp2 = qs.sqlCreateTemp(new SqlSelect()
+            .addFields(tmp, COL_VEHICLE, "TripDate")
+            .addMax(tmpFuels, "Date")
+            .addFrom(tmp)
+            .addFromInner(tmpFuels, SqlUtils.joinUsing(tmp, tmpFuels, COL_VEHICLE))
+            .setWhere(SqlUtils.and(cond,
+                SqlUtils.or(SqlUtils.isNull(tmp, "Date"),
+                    SqlUtils.joinLess(tmpFuels, "Date", tmp, "Date")),
+                SqlUtils.positive(tmp, "Remainder")))
+            .addGroup(tmp, COL_VEHICLE, "TripDate"));
+
+        qs.sqlIndex(tmp2, COL_VEHICLE);
+
+        c = qs.updateData(new SqlUpdate(tmp)
+            .setFrom(new SqlSelect()
+                    .addFields(tmp2, COL_VEHICLE, "TripDate", "Date")
+                    .addFields(tmpFuels, "Quantity", "Sum")
+                    .addFrom(tmp2)
+                    .addFromInner(tmpFuels,
+                        SqlUtils.joinUsing(tmp2, tmpFuels, COL_VEHICLE, "Date")),
+                "sub", SqlUtils.joinUsing(tmp, "sub", COL_VEHICLE, "TripDate"))
+            .addExpression("Date", SqlUtils.field("sub", "Date"))
+            .addExpression("Cost", SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmp, "Cost"), 0),
+                SqlUtils.sqlIf(SqlUtils.joinLess(tmp, "Remainder", "sub", "Quantity"),
+                    SqlUtils.multiply(SqlUtils.field(tmp, "Remainder"),
+                        SqlUtils.divide((Object[]) SqlUtils.fields("sub", "Sum", "Quantity"))),
+                    SqlUtils.field("sub", "Sum"))))
+            .addExpression("Remainder", SqlUtils.minus(SqlUtils.field(tmp, "Remainder"),
+                SqlUtils.field("sub", "Quantity")))
+            .setWhere(SqlUtils.positive(tmp, "Remainder")));
+
+        qs.sqlDropTemp(tmp2);
+
+      } while (BeeUtils.isPositive(c));
+
+      IsExpression expr = plusMode
+          ? SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpCosts, "FuelCosts"), 0),
+          SqlUtils.nvl(SqlUtils.field(tmp, "Cost"), 0))
+          : SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(tmpCosts, "FuelCosts"), 0),
+          SqlUtils.nvl(SqlUtils.field(tmp, "Cost"), 0));
+
+      qs.updateData(new SqlUpdate(tmpCosts)
+          .setFrom(tmp, SqlUtils.joinUsing(tmpCosts, tmp, COL_TRIP))
+          .addExpression("FuelCosts", expr));
+
+      qs.sqlDropTemp(tmp);
+    }
+    qs.sqlDropTemp(tmpFuels);
+
+    return tmpCosts;
   }
 
   /**
@@ -1064,89 +1410,6 @@ public class TransportReportsBean {
     return tmp;
   }
 
-  /**
-   * Returns Temporary table name with calculated trip income or cargo cost percents.
-   *
-   * @param key "Cargo" or "Trip"
-   * @param filter query filter with <b>unique</b> key values.
-   * @return Temporary table name with following structure: <br>
-   * "Cargo" - cargo ID <br>
-   * "Trip" - trip ID <br>
-   * key == "Cargo" ? "TripPercent" : "CargoPercent"
-   */
-  private String getCargoTripPercents(String key, SqlSelect filter) {
-    String percent = null;
-
-    switch (key) {
-      case COL_CARGO:
-        percent = COL_TRIP_PERCENT;
-        break;
-      case COL_TRIP:
-        percent = COL_CARGO_PERCENT;
-        break;
-      default:
-        Assert.unsupported(key + ": only " + COL_CARGO + " and " + COL_TRIP + " values supported");
-    }
-    String alias = SqlUtils.uniqueName();
-
-    String tmpCargoTrip = qs.sqlCreateTemp(new SqlSelect()
-        .addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP, percent)
-        .addSum(TBL_TRIP_ROUTES, COL_ROUTE_KILOMETERS)
-        .addFrom(TBL_CARGO_TRIPS)
-        .addFromInner(filter, alias, SqlUtils.joinUsing(TBL_CARGO_TRIPS, alias, key))
-        .addFromLeft(TBL_TRIP_ROUTES,
-            sys.joinTables(TBL_CARGO_TRIPS, TBL_TRIP_ROUTES, COL_ROUTE_CARGO))
-        .addGroup(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP, percent));
-
-    // Too big percent correction
-    qs.updateData(new SqlUpdate(tmpCargoTrip)
-        .addExpression(percent, SqlUtils.multiply(
-            SqlUtils.divide(SqlUtils.field(tmpCargoTrip, percent),
-                SqlUtils.field(alias, percent)), 100))
-        .setFrom(new SqlSelect()
-                .addFields(tmpCargoTrip, key)
-                .addSum(tmpCargoTrip, percent)
-                .addFrom(tmpCargoTrip)
-                .addGroup(tmpCargoTrip, key), alias,
-            SqlUtils.and(SqlUtils.joinUsing(tmpCargoTrip, alias, key),
-                SqlUtils.notNull(alias, percent), SqlUtils.more(alias, percent, 100))));
-
-    // Percent correction by runned kilometers
-    qs.updateData(new SqlUpdate(tmpCargoTrip)
-        .addExpression(percent, SqlUtils.multiply(
-            SqlUtils.divide(SqlUtils.field(tmpCargoTrip, COL_ROUTE_KILOMETERS),
-                SqlUtils.field(alias, COL_ROUTE_KILOMETERS)),
-            SqlUtils.minus(100, SqlUtils.nvl(SqlUtils.field(alias, percent), 0))))
-        .setFrom(new SqlSelect()
-                .addFields(tmpCargoTrip, key)
-                .addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmpCargoTrip, percent),
-                    SqlUtils.field(tmpCargoTrip, COL_ROUTE_KILOMETERS), null), COL_ROUTE_KILOMETERS)
-                .addSum(tmpCargoTrip, percent)
-                .addFrom(tmpCargoTrip)
-                .addGroup(tmpCargoTrip, key), alias,
-            SqlUtils.and(SqlUtils.joinUsing(alias, tmpCargoTrip, key),
-                SqlUtils.notNull(alias, COL_ROUTE_KILOMETERS),
-                SqlUtils.positive(alias, COL_ROUTE_KILOMETERS)))
-        .setWhere(SqlUtils.isNull(tmpCargoTrip, percent)));
-
-    String cntEmpty = SqlUtils.uniqueName();
-
-    // Percent correction proportionaly for empty percents
-    qs.updateData(new SqlUpdate(tmpCargoTrip)
-        .addExpression(percent, SqlUtils.divide(
-            SqlUtils.minus(100.0, SqlUtils.nvl(SqlUtils.field(alias, percent), 0)),
-            SqlUtils.field(alias, cntEmpty)))
-        .setFrom(new SqlSelect()
-            .addFields(tmpCargoTrip, key)
-            .addSum(tmpCargoTrip, percent)
-            .addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmpCargoTrip, percent), 1, 0), cntEmpty)
-            .addFrom(tmpCargoTrip)
-            .addGroup(tmpCargoTrip, key), alias, SqlUtils.joinUsing(tmpCargoTrip, alias, key))
-        .setWhere(SqlUtils.isNull(tmpCargoTrip, percent)));
-
-    return tmpCargoTrip;
-  }
-
   private static SqlSelect getConstantsQuery(String tmp, String src, IsExpression factor,
       String als, Long currency) {
 
@@ -1185,268 +1448,5 @@ public class TransportReportsBean {
           SqlUtils.field(src, COL_CURRENCY), SqlUtils.field(tmp, COL_TRIP_DATE));
     }
     return ss.addSum(xpr, als);
-  }
-
-  /**
-   * Return Temporary table name with calculated trip costs.
-   *
-   * @param trips query filter with <b>unique</b> "Trip" values.
-   * @param currency currency to convert to.
-   * @param woVat exclude vat.
-   * @return Temporary table name with following structure: <br>
-   * "Trip" - trip ID <br>
-   * "DailyCosts" - total trip daily costs <br>
-   * "RoadCosts" - total trip road costs <br>
-   * "OtherCosts" - total trip other costs <br>
-   * "FuelCosts" - total trip fuel costs considering remainder corrections
-   */
-  private String getTripCosts(SqlSelect trips, Long currency, boolean woVat) {
-    String alias = SqlUtils.uniqueName();
-
-    // Trip costs
-    SqlSelect ss = new SqlSelect()
-        .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
-        .addField(TBL_TRIPS, COL_TRIP_DATE, "TripDate")
-        .addFields(TBL_TRIPS, COL_VEHICLE, COL_FUEL_BEFORE, COL_FUEL_AFTER)
-        .addEmptyDouble("FuelCosts")
-        .addFrom(TBL_TRIPS)
-        .addFromInner(trips, alias, sys.joinTables(TBL_TRIPS, alias, COL_TRIP))
-        .addFromLeft(TBL_TRIP_COSTS, sys.joinTables(TBL_TRIPS, TBL_TRIP_COSTS, COL_TRIP))
-        .addGroup(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP_DATE, COL_VEHICLE, COL_FUEL_BEFORE,
-            COL_FUEL_AFTER);
-
-    IsExpression amountExpr;
-
-    if (woVat) {
-      amountExpr = TradeModuleBean.getWithoutVatExpression(TBL_TRIP_COSTS);
-    } else {
-      amountExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_COSTS);
-    }
-    IsExpression currencyExpr = SqlUtils.field(TBL_TRIP_COSTS, COL_CURRENCY);
-    IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_DATE),
-        SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE));
-
-    IsExpression xpr;
-
-    if (DataUtils.isId(currency)) {
-      xpr = ExchangeUtils.exchangeFieldTo(ss, amountExpr, currencyExpr, dateExpr,
-          SqlUtils.constant(currency));
-    } else {
-      xpr = ExchangeUtils.exchangeField(ss, amountExpr, currencyExpr, dateExpr);
-    }
-    IsCondition dailyCond = SqlUtils.inList(TBL_TRIP_COSTS, COL_ITEM,
-        qs.getLongList(new SqlSelect().setDistinctMode(true)
-            .addFields(TBL_COUNTRY_NORMS, COL_DAILY_COSTS_ITEM)
-            .addFrom(TBL_COUNTRY_NORMS)));
-
-    if (dailyCond != null) {
-      ss.addSum(SqlUtils.sqlIf(dailyCond, xpr, null), "DailyCosts");
-    } else {
-      ss.addEmptyDouble("DailyCosts");
-    }
-    IsCondition roadCond = SqlUtils.inList(TBL_TRIP_COSTS, COL_ITEM,
-        qs.getLongList(new SqlSelect().setDistinctMode(true)
-            .addFields(TBL_COUNTRY_NORMS, COL_ROAD_COSTS_ITEM)
-            .addFrom(TBL_COUNTRY_NORMS)));
-
-    if (roadCond != null) {
-      ss.addSum(SqlUtils.sqlIf(roadCond, xpr, null), "RoadCosts");
-    } else {
-      ss.addEmptyDouble("RoadCosts");
-    }
-    if (BeeUtils.anyNotNull(dailyCond, roadCond)) {
-      ss.addSum(SqlUtils.sqlIf(SqlUtils.or(dailyCond, roadCond), null, xpr), "OtherCosts");
-    } else {
-      ss.addSum(xpr, "OtherCosts");
-    }
-    String tmpCosts = qs.sqlCreateTemp(ss);
-    qs.sqlIndex(tmpCosts, COL_TRIP);
-
-    // Fuel costs
-    ss = new SqlSelect()
-        .addFields(tmpCosts, COL_TRIP)
-        .addSum(TBL_TRIP_FUEL_COSTS, COL_COSTS_QUANTITY)
-        .addFrom(tmpCosts)
-        .addFromLeft(TBL_TRIP_FUEL_COSTS,
-            SqlUtils.joinUsing(tmpCosts, TBL_TRIP_FUEL_COSTS, COL_TRIP))
-        .addGroup(tmpCosts, COL_TRIP);
-
-    if (woVat) {
-      amountExpr = TradeModuleBean.getWithoutVatExpression(TBL_TRIP_FUEL_COSTS);
-    } else {
-      amountExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_FUEL_COSTS);
-    }
-    currencyExpr = SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_CURRENCY);
-    dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE),
-        SqlUtils.field(tmpCosts, "TripDate"));
-
-    if (DataUtils.isId(currency)) {
-      xpr = ExchangeUtils.exchangeFieldTo(ss, amountExpr, currencyExpr, dateExpr,
-          SqlUtils.constant(currency));
-    } else {
-      xpr = ExchangeUtils.exchangeField(ss, amountExpr, currencyExpr, dateExpr);
-    }
-    ss.addSum(xpr, "FuelCosts");
-
-    String tmp = qs.sqlCreateTemp(ss);
-    qs.sqlIndex(tmp, COL_TRIP);
-
-    qs.updateData(new SqlUpdate(tmpCosts)
-        .setFrom(tmp, SqlUtils.joinUsing(tmpCosts, tmp, COL_TRIP))
-        .addExpression("FuelCosts", SqlUtils.field(tmp, "FuelCosts")));
-
-    // Fuel consumptions
-    if (qs.sqlExists(tmpCosts, SqlUtils.isNull(tmpCosts, COL_FUEL_AFTER))) {
-      String tmpRoutes = qs.sqlCreateTemp(getFuelConsumptionsQuery(new SqlSelect()
-          .addFields(TBL_TRIP_ROUTES, sys.getIdName(TBL_TRIP_ROUTES))
-          .addFrom(TBL_TRIP_ROUTES)
-          .addFromInner(tmpCosts, SqlUtils.joinUsing(TBL_TRIP_ROUTES, tmpCosts, COL_TRIP)), false));
-      qs.sqlIndex(tmpRoutes, COL_TRIP);
-
-      String tmpConsumptions = qs.sqlCreateTemp(new SqlSelect()
-          .addFields(TBL_TRIP_FUEL_CONSUMPTIONS, COL_TRIP)
-          .addSum(TBL_TRIP_FUEL_CONSUMPTIONS, "Quantity")
-          .addFrom(TBL_TRIP_FUEL_CONSUMPTIONS)
-          .addFromInner(tmpCosts,
-              SqlUtils.joinUsing(TBL_TRIP_FUEL_CONSUMPTIONS, tmpCosts, COL_TRIP))
-          .addGroup(TBL_TRIP_FUEL_CONSUMPTIONS, COL_TRIP));
-
-      qs.sqlIndex(tmpConsumptions, COL_TRIP);
-
-      qs.updateData(new SqlUpdate(tmpCosts)
-          .setFrom(new SqlSelect()
-                  .addFields(tmp, COL_TRIP, "Quantity")
-                  .addField(tmpRoutes, COL_ROUTE_CONSUMPTION, "routeQuantity")
-                  .addField(tmpConsumptions, "Quantity", "consumeQuantity")
-                  .addFrom(tmp)
-                  .addFromLeft(tmpRoutes, SqlUtils.joinUsing(tmp, tmpRoutes, COL_TRIP))
-                  .addFromLeft(tmpConsumptions, SqlUtils.joinUsing(tmp, tmpConsumptions, COL_TRIP)),
-              "sub", SqlUtils.joinUsing(tmpCosts, "sub", COL_TRIP))
-          .addExpression(COL_FUEL_AFTER, SqlUtils.minus(
-              SqlUtils.plus(
-                  SqlUtils.nvl(SqlUtils.field(tmpCosts, COL_FUEL_BEFORE), 0),
-                  SqlUtils.nvl(SqlUtils.field("sub", "Quantity"), 0)),
-              SqlUtils.nvl(SqlUtils.field("sub", "routeQuantity"), 0),
-              SqlUtils.nvl(SqlUtils.field("sub", "consumeQuantity"), 0)))
-          .setWhere(SqlUtils.isNull(tmpCosts, COL_FUEL_AFTER)));
-
-      qs.sqlDropTemp(tmpRoutes);
-      qs.sqlDropTemp(tmpConsumptions);
-    }
-    qs.sqlDropTemp(tmp);
-
-    // Fuel cost correction
-    ss =
-        new SqlSelect()
-            .addFields(TBL_TRIPS, COL_VEHICLE)
-            .addField(TBL_TRIPS, "Date", "TripDate")
-            .addFields(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE)
-            .addSum(TBL_TRIP_FUEL_COSTS, COL_COSTS_QUANTITY)
-            .addFrom(TBL_TRIPS)
-            .addFromInner(TBL_TRIP_FUEL_COSTS,
-                sys.joinTables(TBL_TRIPS, TBL_TRIP_FUEL_COSTS, COL_TRIP))
-            .addFromInner(new SqlSelect()
-                    .addFields(TBL_TRIPS, COL_VEHICLE)
-                    .addMax(TBL_TRIPS, "Date", "MaxDate")
-                    .addFrom(TBL_TRIPS)
-                    .addFromInner(tmpCosts, sys.joinTables(TBL_TRIPS, tmpCosts, COL_TRIP))
-                    .addGroup(TBL_TRIPS, COL_VEHICLE), "sub",
-                SqlUtils.and(SqlUtils.joinUsing(TBL_TRIPS, "sub", COL_VEHICLE),
-                    SqlUtils.joinLessEqual(TBL_TRIPS, "Date", "sub", "MaxDate"),
-                    SqlUtils.and(SqlUtils.positive(TBL_TRIP_FUEL_COSTS, COL_COSTS_QUANTITY),
-                        SqlUtils.positive(TBL_TRIP_FUEL_COSTS, COL_COSTS_PRICE))))
-            .addGroup(TBL_TRIPS, COL_VEHICLE, "Date")
-            .addGroup(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE);
-
-    if (woVat) {
-      amountExpr = TradeModuleBean.getWithoutVatExpression(TBL_TRIP_FUEL_COSTS);
-    } else {
-      amountExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_FUEL_COSTS);
-    }
-    currencyExpr = SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_CURRENCY);
-    dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE),
-        SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE));
-
-    if (DataUtils.isId(currency)) {
-      xpr = ExchangeUtils.exchangeFieldTo(ss, amountExpr, currencyExpr, dateExpr,
-          SqlUtils.constant(currency));
-    } else {
-      xpr = ExchangeUtils.exchangeField(ss, amountExpr, currencyExpr, dateExpr);
-    }
-    ss.addSum(xpr, "Sum");
-
-    String tmpFuels = qs.sqlCreateTemp(ss);
-    qs.sqlIndex(tmpFuels, COL_VEHICLE);
-
-    for (int i = 0; i < 2; i++) {
-      boolean plusMode = i == 0;
-      String fld = plusMode ? COL_FUEL_BEFORE : COL_FUEL_AFTER;
-
-      tmp = qs.sqlCreateTemp(new SqlSelect()
-          .addFields(tmpCosts, COL_TRIP, "TripDate", COL_VEHICLE)
-          .addField(tmpCosts, fld, "Remainder")
-          .addEmptyDate("Date")
-          .addEmptyDouble("Cost")
-          .addFrom(tmpCosts)
-          .setWhere(SqlUtils.positive(tmpCosts, fld)));
-
-      qs.sqlIndex(tmp, COL_TRIP, COL_VEHICLE);
-      int c;
-
-      IsCondition cond = plusMode
-          ? SqlUtils.joinLess(tmpFuels, "TripDate", tmp, "TripDate")
-          : SqlUtils.joinLessEqual(tmpFuels, "TripDate", tmp, "TripDate");
-
-      do {
-        String tmp2 = qs.sqlCreateTemp(new SqlSelect()
-            .addFields(tmp, COL_VEHICLE, "TripDate")
-            .addMax(tmpFuels, "Date")
-            .addFrom(tmp)
-            .addFromInner(tmpFuels, SqlUtils.joinUsing(tmp, tmpFuels, COL_VEHICLE))
-            .setWhere(SqlUtils.and(cond,
-                SqlUtils.or(SqlUtils.isNull(tmp, "Date"),
-                    SqlUtils.joinLess(tmpFuels, "Date", tmp, "Date")),
-                SqlUtils.positive(tmp, "Remainder")))
-            .addGroup(tmp, COL_VEHICLE, "TripDate"));
-
-        qs.sqlIndex(tmp2, COL_VEHICLE);
-
-        c = qs.updateData(new SqlUpdate(tmp)
-            .setFrom(new SqlSelect()
-                    .addFields(tmp2, COL_VEHICLE, "TripDate", "Date")
-                    .addFields(tmpFuels, "Quantity", "Sum")
-                    .addFrom(tmp2)
-                    .addFromInner(tmpFuels,
-                        SqlUtils.joinUsing(tmp2, tmpFuels, COL_VEHICLE, "Date")),
-                "sub", SqlUtils.joinUsing(tmp, "sub", COL_VEHICLE, "TripDate"))
-            .addExpression("Date", SqlUtils.field("sub", "Date"))
-            .addExpression("Cost", SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmp, "Cost"), 0),
-                SqlUtils.sqlIf(SqlUtils.joinLess(tmp, "Remainder", "sub", "Quantity"),
-                    SqlUtils.multiply(SqlUtils.field(tmp, "Remainder"),
-                        SqlUtils.divide((Object[]) SqlUtils.fields("sub", "Sum", "Quantity"))),
-                    SqlUtils.field("sub", "Sum"))))
-            .addExpression("Remainder", SqlUtils.minus(SqlUtils.field(tmp, "Remainder"),
-                SqlUtils.field("sub", "Quantity")))
-            .setWhere(SqlUtils.positive(tmp, "Remainder")));
-
-        qs.sqlDropTemp(tmp2);
-
-      } while (BeeUtils.isPositive(c));
-
-      IsExpression expr = plusMode
-          ? SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpCosts, "FuelCosts"), 0),
-          SqlUtils.nvl(SqlUtils.field(tmp, "Cost"), 0))
-          : SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(tmpCosts, "FuelCosts"), 0),
-          SqlUtils.nvl(SqlUtils.field(tmp, "Cost"), 0));
-
-      qs.updateData(new SqlUpdate(tmpCosts)
-          .setFrom(tmp, SqlUtils.joinUsing(tmpCosts, tmp, COL_TRIP))
-          .addExpression("FuelCosts", expr));
-
-      qs.sqlDropTemp(tmp);
-    }
-    qs.sqlDropTemp(tmpFuels);
-
-    return tmpCosts;
   }
 }
