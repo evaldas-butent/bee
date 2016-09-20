@@ -547,12 +547,14 @@
 .bee-conf-remove:after, .bee-conf-row-hdr .bee-Label:before, .bee-conf-col-hdr .bee-Label:before {
   margin-left: 1px;
   content: "\00d7";
+  font-weight: bold;
   font-size: 15px;
   color: red;
   cursor: pointer;
   visibility: hidden;
 }
-.bee-conf-row-hdr:hover .bee-conf-remove:after, .bee-conf-col-hdr:hover .bee-conf-remove:after {
+.bee-conf-row-hdr:hover .bee-conf-remove:after, .bee-conf-col-hdr:hover .bee-conf-remove:after,
+.bee-conf-row:hover .bee-conf-remove:after {
   visibility: visible;
 }
 .bee-conf-row-add:after, .bee-conf-col-add:after {
