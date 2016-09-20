@@ -29,7 +29,7 @@
           <Label text="=company" class="bee-co-companyInfo-label" style="&lbl;" />
           <TextLabel source="CompanyName" />
 
-          <Label text="=trDriverExperience" style="&lbl;" />
+          <Label for="Experience" style="&lbl;" />
           <SimplePanel style="&w2;">
             <InputDate source="Experience" style="&inpdt;" minValue="1960" />
           </SimplePanel>

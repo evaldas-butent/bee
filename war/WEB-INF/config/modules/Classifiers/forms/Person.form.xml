@@ -37,7 +37,7 @@
           </cell>
           <Label text="=firstName" style="&lbl;" class="bee-required" />
           <InputText source="FirstName" style="width: 135px;" />
-          <Label text="=lastName" style="&lbl;" />
+          <Label for="LastName" style="&lbl;" />
           <InputText source="LastName" style="width: 135px;" />
           <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
         </row>
@@ -88,7 +88,7 @@
                   filter="Creator {u} or Visibility = 0" />
             </row>
             <row for="Address">
-              <Label text="=address" />
+              <Label for="Address" />
               <InputText source="Address" />
             </row>
           </Table>
@@ -129,11 +129,11 @@
             <InputText source="Website" style="&inp;" />
           </FlowPanel>
           <FlowPanel style="&flow;">
-            <Label text="=socialContacts" style="&l1;" />
+            <Label for="SocialContacts" style="&l1;" />
             <InputText source="SocialContacts" style="&inp;" />
           </FlowPanel>
           <FlowPanel  style="&flow;">
-            <Label text="=dateOfBirth" style="&l1;" />
+            <Label for="DateOfBirth" style="&l1;" />
             <InputDate source="DateOfBirth" style="&inp;"
               minValue="1900" maxValue="2000" />
           </FlowPanel>
