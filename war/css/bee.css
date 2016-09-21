@@ -482,10 +482,11 @@
   border-collapse: collapse;
 }
 .bee-Header-commandPanel .bee-Button {
-  padding: 2px 6px;
+  margin-right: 3px;
+  padding: 3px 8px;
   background-color: #fafafa;
   border: 1px solid #ccc;
-  border-radius: 2px;
+  border-radius: 5px;
 }
 .bee-Header-commandPanel .bee-Button:hover {
   cursor: pointer;
