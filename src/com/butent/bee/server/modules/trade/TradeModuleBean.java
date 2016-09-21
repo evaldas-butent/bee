@@ -1718,23 +1718,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     switch (operationType) {
       case PURCHASE:
-        if (toStock && hasChildren(itemCondition)) {
-          errorMessage = "illegal";
+        if (!toStock && hasChildren(itemCondition)) {
+          errorMessage = "document has children";
         }
         break;
 
       case SALE:
         if (toStock && !verifyStock(itemCondition, warehouseFrom)) {
-          errorMessage = "never enough";
+          errorMessage = "not enough stock";
         }
         break;
 
       case TRANSFER:
         if (toStock && !verifyStock(itemCondition, warehouseFrom)) {
-          errorMessage = "it's never enough";
+          errorMessage = "not enough stock";
         }
         if (!toStock && hasChildren(itemCondition)) {
-          errorMessage = "taboo";
+          errorMessage = "document has children";
         }
         break;
     }
