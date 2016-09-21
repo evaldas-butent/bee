@@ -4187,7 +4187,11 @@ public interface Dictionary {
 
   default String recalculateTradeItemCostsCaption() {return g("recalculateTradeItemCostsCaption");}
 
-  default String recalculateTradeItemCostsNotification() {return g("recalculateTradeItemCostsNotification");}
+  default String recalculateTradeItemCostsNotification(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("recalculateTradeItemCostsNotification"), _m);
+  }
 
   default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
 
