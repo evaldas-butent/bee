@@ -55,6 +55,14 @@
         <Label for="Payer" />
         <DataSelector source="Payer" style="&inp;"/>
       </row>
+
+      <row>
+        <Label for="Operation" />
+        <DataSelector source="Operation"/>
+
+        <Label for="WarehouseFrom" />
+        <DataSelector source="WarehouseFrom" style="&inp;"/>
+      </row>
     </Table>
 
     <br/>
