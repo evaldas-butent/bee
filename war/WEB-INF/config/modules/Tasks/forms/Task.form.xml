@@ -27,13 +27,13 @@
   >
 
   <SplitPanel splitterSize="1" style="margin:5px;" name="Split" >
-    <west size="650">
+    <west size="660">
       <TabbedPages resizable="false" name="TabbedPages" >
         <page>
           <text>=mainInformation</text>
 
           <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
-            <FlowPanel style="margin-left: 5px; overflow:scroll; min-width:650px;">
+            <FlowPanel name="TaskContainer" style="margin-left: 5px; overflow:scroll; min-width:650px;">
               <Table kind="controls" style="&tbl;" cellStyle="&cell;">
                 <col index="0" cellStyle="&col1;" />
 
