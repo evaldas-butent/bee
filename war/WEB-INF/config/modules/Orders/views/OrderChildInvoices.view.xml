@@ -6,6 +6,7 @@
   <Columns>
     <ExternalJoin name="Sale" joinType="LEFT" source="OrderChildInvoices">
       <SimpleColumn name="Order" />
+      <SimpleColumn name="Sale" />
     </ExternalJoin>
 
     <SimpleColumn name="Date" />
