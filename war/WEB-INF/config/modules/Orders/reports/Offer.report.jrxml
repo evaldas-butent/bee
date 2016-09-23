@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-09-19T10:52:24 -->
+<!-- 2016-09-22T08:56:30 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Offer" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="ebed3f98-42bf-4dea-bdfb-41ad487be1da">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.i18n.Localizations"/>
+	<import value="com.butent.bee.shared.time.DateTime"/>
 	<import value="com.butent.bee.shared.utils.BeeUtils"/>
+	<import value="com.butent.bee.shared.modules.trade.TradeDiscountMode"/>
+	<import value="com.butent.bee.shared.modules.trade.TradeDocumentSums"/>
+	<import value="com.butent.bee.shared.modules.trade.TradeVatMode"/>
 	<style name="Font" isDefault="true" isBlankWhenNull="true" fontName="DejaVu Sans"/>
 	<style name="TableCell">
 		<box>
@@ -50,26 +54,37 @@
 		</variable>
 	</subDataset>
 	<parameter name="OrderItemsDataSet" class="com.butent.bee.server.RsDataSource" isForPrompting="false"/>
-	<parameter name="CurrencyName" class="java.lang.String"/>
 	<parameter name="ConfObjectOptions" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="PhotoFile" class="java.lang.String"/>
+	<parameter name="PhotoFile0" class="java.lang.String"/>
+	<parameter name="PhotoFile1" class="java.lang.String"/>
 	<parameter name="Description" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyName" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyTypeName" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyAddress" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyPostIndex" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyCityName" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyCountryName" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyPhone" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyMobile" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyFax" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="CompanyEmail" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerName" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerTypeName" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerAddress" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerPostIndex" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerCityName" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerCountryName" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerPhone" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerMobile" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerFax" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="CustomerEmail" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManagerFirstName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManagerLastName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManagerPhone" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManagerMobile" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManagerFax" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManagerEmail" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="Amount" class="java.lang.String"/>
+	<parameter name="CurrencyName" class="java.lang.String"/>
+	<parameter name="Discount" class="java.lang.String"/>
+	<parameter name="VatPlus" class="java.lang.String"/>
+	<parameter name="Vat" class="java.lang.String"/>
+	<parameter name="VatPercent" class="java.lang.String"/>
+	<parameter name="SeriesName" class="java.lang.String"/>
+	<parameter name="Number" class="java.lang.String"/>
+	<parameter name="StartDate" class="java.lang.String"/>
+	<parameter name="ContactFirstName" class="java.lang.String"/>
+	<parameter name="ContactLastName" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -77,23 +92,23 @@
 		<variableExpression><![CDATA[$V{d}]]></variableExpression>
 		<initialValueExpression><![CDATA[Localizations.getDictionary($P{REPORT_LOCALE}.getLanguage())]]></initialValueExpression>
 	</variable>
+	<variable name="totalizer" class="com.butent.bee.shared.modules.trade.TradeDocumentSums">
+		<variableExpression><![CDATA[$V{totalizer}]]></variableExpression>
+		<initialValueExpression><![CDATA[new TradeDocumentSums(BeeUtils.isEmpty($P{VatPlus}) ? TradeVatMode.INCLUSIVE : TradeVatMode.PLUS, TradeDiscountMode.FROM_AMOUNT).add(0, 1d, BeeUtils.toDoubleOrNull($P{Amount}), BeeUtils.toDoubleOrNull($P{Discount}), true, BeeUtils.toDoubleOrNull($P{Vat}), BeeUtils.toBooleanOrNull($P{VatPercent}))]]></initialValueExpression>
+	</variable>
 	<group name="Group1">
 		<groupHeader>
-			<band height="124">
+			<band height="175">
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="180" y="5" width="200" height="18" uuid="dad1a93a-4011-4ab0-a6f5-29f93ee0273a"/>
-					<textElement textAlignment="Center">
-						<font size="14"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$V{d}.offer()]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="180" y="110" width="374" height="14" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="99f03762-e1fd-4de0-bf53-98b6c5292f13"/>
+					<reportElement positionType="Float" x="0" y="120" width="554" height="15" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="99f03762-e1fd-4de0-bf53-98b6c5292f13">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
 					<textElement markup="html"/>
 					<textFieldExpression><![CDATA[$P{Description}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement positionType="Float" x="180" y="95" width="174" height="14" isRemoveLineWhenBlank="true" uuid="3f73107b-8522-4342-8c91-8ca709cd6e34">
+					<reportElement positionType="Float" x="0" y="105" width="280" height="15" isRemoveLineWhenBlank="true" uuid="3f73107b-8522-4342-8c91-8ca709cd6e34">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Description})]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -101,52 +116,103 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$V{d}.description() + ":"]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="0" y="40" width="275" height="10" isRemoveLineWhenBlank="true" uuid="5d9e0960-9c3b-4aed-b607-7e038b361a05"/>
-					<textElement>
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinItems($P{CompanyAddress}, $P{CompanyPostIndex}, $P{CompanyCityName}, $P{CompanyCountryName})]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="0" y="30" width="275" height="10" isRemoveLineWhenBlank="true" uuid="406ca567-6629-4afe-a09b-b9e7ff497f90"/>
-					<textElement>
-						<font size="8" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords($P{CompanyName}, $P{CompanyTypeName})]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="0" y="50" width="275" height="10" isRemoveLineWhenBlank="true" uuid="25e8db7a-9b6a-496a-a15e-497cb7c7196c"/>
-					<textElement markup="html">
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords(BeeUtils.anyNotEmpty($P{CompanyPhone}, $P{CompanyMobile}) ? "<b>" + $V{d}.phone() + "</b> " + BeeUtils.joinItems($P{CompanyPhone}, $P{CompanyMobile}) : "", BeeUtils.isEmpty($P{CompanyFax}) ? "" : BeeUtils.joinWords("<b>" + $V{d}.fax() + "</b>", $P{CompanyFax}))]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="0" y="60" width="275" height="10" isRemoveLineWhenBlank="true" uuid="8e497df7-1a1a-4023-b7bb-2e51ca00c0fb">
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{CompanyEmail})]]></printWhenExpression>
-					</reportElement>
-					<textElement markup="html">
-						<font size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA["<b>" + $V{d}.email() + "</b> " + $P{CompanyEmail}]]></textFieldExpression>
-				</textField>
 				<frame>
-					<reportElement positionType="Float" x="80" y="69" width="474" height="24" isRemoveLineWhenBlank="true" uuid="5448a427-adde-4c6f-8921-3742be75754d">
+					<reportElement positionType="Float" x="0" y="80" width="554" height="25" isRemoveLineWhenBlank="true" uuid="5448a427-adde-4c6f-8921-3742be75754d">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
-					<image hAlign="Right" vAlign="Middle">
-						<reportElement positionType="Float" stretchType="ContainerHeight" x="0" y="0" width="237" height="24" isRemoveLineWhenBlank="true" uuid="57051d7c-728c-4c69-9513-fb14b5705e00">
-							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{PhotoFile})]]></printWhenExpression>
-						</reportElement>
-						<imageExpression><![CDATA["file/" + $P{PhotoFile}]]></imageExpression>
+					<image hAlign="Center" vAlign="Middle" onErrorType="Blank">
+						<reportElement positionType="Float" stretchType="ContainerHeight" x="0" y="0" width="277" height="25" isRemoveLineWhenBlank="true" uuid="57051d7c-728c-4c69-9513-fb14b5705e00"/>
+						<imageExpression><![CDATA["file/" + $P{PhotoFile1}]]></imageExpression>
 					</image>
 					<textField isStretchWithOverflow="true">
-						<reportElement positionType="Float" x="237" y="0" width="237" height="24" uuid="aa546cff-1acb-4b8c-ae2c-6ace21d8618d"/>
+						<reportElement positionType="Float" x="277" y="0" width="277" height="25" uuid="aa546cff-1acb-4b8c-ae2c-6ace21d8618d"/>
 						<textElement markup="html"/>
 						<textFieldExpression><![CDATA[$P{ConfObjectOptions}]]></textFieldExpression>
 					</textField>
 				</frame>
+				<frame>
+					<reportElement positionType="Float" x="0" y="5" width="275" height="54" isRemoveLineWhenBlank="true" uuid="cded0fde-83df-4f21-ba1f-bdd4a684c859">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					</reportElement>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="0" y="0" width="275" height="14" isRemoveLineWhenBlank="true" uuid="406ca567-6629-4afe-a09b-b9e7ff497f90"/>
+						<textElement>
+							<font size="8" isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords($P{CustomerName}, $P{CustomerTypeName})]]></textFieldExpression>
+					</textField>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="0" y="14" width="275" height="10" isRemoveLineWhenBlank="true" uuid="5d9e0960-9c3b-4aed-b607-7e038b361a05"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[BeeUtils.joinItems($P{CustomerAddress}, $P{CustomerPostIndex}, $P{CustomerCityName}, $P{CustomerCountryName})]]></textFieldExpression>
+					</textField>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="0" y="24" width="275" height="10" isRemoveLineWhenBlank="true" uuid="25e8db7a-9b6a-496a-a15e-497cb7c7196c"/>
+						<textElement markup="html">
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords(BeeUtils.anyNotEmpty($P{CustomerPhone}, $P{CustomerMobile}) ? "<b>" + $V{d}.phone() + "</b> " + BeeUtils.joinItems($P{CustomerPhone}, $P{CustomerMobile}) : "", BeeUtils.isEmpty($P{CustomerFax}) ? "" : BeeUtils.joinWords("<b>" + $V{d}.fax() + "</b>", $P{CustomerFax}))]]></textFieldExpression>
+					</textField>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="0" y="34" width="275" height="10" isRemoveLineWhenBlank="true" uuid="8e497df7-1a1a-4023-b7bb-2e51ca00c0fb">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{CustomerEmail})]]></printWhenExpression>
+						</reportElement>
+						<textElement markup="html">
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA["<b>" + $V{d}.email() + "</b> " + $P{CustomerEmail}]]></textFieldExpression>
+					</textField>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="0" y="44" width="275" height="10" isRemoveLineWhenBlank="true" uuid="d88bb592-608b-4a3e-be1d-ba02a1b4a8a7"/>
+						<textElement>
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[BeeUtils.joinItems($P{ContactFirstName}, $P{ContactLastName})]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="280" y="5" width="274" height="65" isRemoveLineWhenBlank="true" uuid="8b90a174-049d-4ae1-a4c8-868dafa820ce">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+					</reportElement>
+					<image hAlign="Right" vAlign="Middle" onErrorType="Blank">
+						<reportElement positionType="Float" x="0" y="0" width="274" height="39" isRemoveLineWhenBlank="true" uuid="cd735b22-1c17-449d-9c7a-0e3327b76f1e"/>
+						<imageExpression><![CDATA["file/" + $P{PhotoFile0}]]></imageExpression>
+					</image>
+					<textField isStretchWithOverflow="true">
+						<reportElement positionType="Float" x="0" y="40" width="274" height="14" uuid="dad1a93a-4011-4ab0-a6f5-29f93ee0273a"/>
+						<textElement textAlignment="Right">
+							<font size="12" isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords($V{d}.offer(), $V{d}.numeroSign(), $P{SeriesName}, $P{Number})]]></textFieldExpression>
+					</textField>
+					<textField isStretchWithOverflow="true">
+						<reportElement positionType="Float" x="0" y="55" width="274" height="10" isRemoveLineWhenBlank="true" uuid="47956718-52e7-4cf4-9e2f-ce7fc4bf749e"/>
+						<textElement textAlignment="Right">
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA[new DateTime(BeeUtils.toLong($P{StartDate})).getDate()]]></textFieldExpression>
+					</textField>
+				</frame>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="0" y="145" width="554" height="15" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="b2357809-6cca-45df-9294-5fa0a96dc68b">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Discount})]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html"/>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords($V{d}.amountWithoutDiscount(), BeeUtils.toString($V{totalizer}.getTotal() + $V{totalizer}.getDiscount(), 2), $P{CurrencyName})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="0" y="160" width="554" height="15" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="5b1c3df3-34df-4cb6-9d3a-5350ee8a749b">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement markup="html">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords($V{d}.amount(), BeeUtils.toString($V{totalizer}.getTotal(), 2), $P{CurrencyName})]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 	</group>

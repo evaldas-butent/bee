@@ -167,7 +167,7 @@ public class Specification implements BeeSerializable {
     }
     if (priceMode && !BeeConst.isUndef(other)) {
       row++;
-      summary.setText(row, 0, Localized.dictionary().otherCosts());
+      summary.setText(row, 0, Localized.dictionary().additionalEquipment());
       summary.setText(row, 1, BeeUtils.toString(other));
     }
     if (priceMode) {

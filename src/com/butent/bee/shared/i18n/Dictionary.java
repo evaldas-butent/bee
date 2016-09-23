@@ -132,6 +132,8 @@ public interface Dictionary {
 
   default String additionalContacts() {return g("additionalContacts");}
 
+  default String additionalEquipment() {return g("additionalEquipment");}
+
   default String additionalInfo() {return g("additionalInfo");}
 
   default String additionalServices() {return g("additionalServices");}
