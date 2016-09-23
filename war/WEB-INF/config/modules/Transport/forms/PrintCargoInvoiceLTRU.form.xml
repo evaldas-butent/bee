@@ -12,12 +12,12 @@
   width="810" widthUnit="px" height="90" heightUnit="%" viewName="PrintCargoInvoice"
   >
   <FlowPanel class="bee-PrintableForm"
-             style="padding: 10px; background-color: white;
+             style="padding: 10px 10px 10px 30px; background-color: white;
              font-size:9pt; font-family: Arial, sans-serif;">
 
       <css id="&form;">
           .&form;-bank div div:first-child:before {content:"a.s. | a.n. (Bankas gavėjas |
-        Банк получателя) "; font-weight: bold;}
+        Банк получатель) "; font-weight: bold;}
           .&form;-bank span:after {content:"; ";}
           .&form;-bank .CurrencyName {font-weight: bold;}
           .&form;-bank .CurrencyName:after {content:" ";}
@@ -40,30 +40,14 @@
     </HorizontalPanel>
 
     <HorizontalPanel style="width:100%; margin-top: 2em">
-      <cell style="vertical-align:top; width:70%; text-align:left;" >
+      <cell style="vertical-align:top; text-align:left;" >
         <FlowPanel >
           <TextLabel style="&bold; font-size: 13.5pt;">
             <render>
-              <ui:expression>row.Proforma ? 'Sąskaita išankstiniam apmokėjimui | Проформа №' : 'PVM Sąskaita | Счет №'</ui:expression>
+              <ui:expression>row.Proforma ? 'Sąskaita išankstiniam apmokėjimui | Проформа №' : 'PVM Sąskaita | Счет №'
+                + ( row.InvoicePrefix ? ' ' + row.InvoicePrefix : '' )
+                + ( row.InvoiceNo ? ' ' + row.InvoiceNo : '')</ui:expression>
             </render>
-          </TextLabel>
-          <TextLabel style="font-size: 13.5pt;" source="InvoiceNo">
-            <renderToken source="InvoicePrefix" />
-            <renderToken source="InvoiceNo" />
-          </TextLabel>
-        </FlowPanel>
-      </cell>
-      <cell style="vertical-align:top; width:50%; text-align:right;" >
-        <FlowPanel>
-          <DateTimeLabel source="Date" format="DATE_LONG" />
-          <TextLabel>
-             <render>
-                 <ui:function>
-                     var date = new Date(row.Date);
-                     var options = {year: 'numeric', month: 'numeric', day: 'numeric' };
-                     return new Intl.DateTimeFormat('ru-ru', options).format(date);
-                 </ui:function>
-             </render>
           </TextLabel>
         </FlowPanel>
       </cell>
@@ -80,7 +64,7 @@
           </cell>
         </row>
         <row>
-          <cell rowSpan="3" style="vertical-align:top; width:50%; padding-right: 2em;">
+          <cell rowSpan="4" style="vertical-align:top; width:50%; padding-right: 2em;">
             <FlowPanel>
               <TextLabel source="SupplierName" style="&bold; font-size: 9.5pt">
                 <renderToken source="SupplierName" />
@@ -198,6 +182,22 @@
             </FlowPanel>
           </cell>
         </row>
+        <row>
+          <cell style="vertical-align:bottom; text-align:right;">
+            <FlowPanel>
+              <DateTimeLabel source="Date" format="DATE_LONG"/>
+              <TextLabel>
+                <render>
+                  <ui:function>
+                    var date = new Date(row.Date);
+                    var options = {year: 'numeric', month: 'numeric', day: 'numeric' };
+                    return new Intl.DateTimeFormat('ru-ru', options).format(date);
+                  </ui:function>
+                </render>
+              </TextLabel>
+            </FlowPanel>
+          </cell>
+        </row>
       </Table>
     </FlowPanel>
     <br />
@@ -206,7 +206,7 @@
       <properties rateCurrency="EUR" />
       <row style="vertical-align: top">
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Paslauga &lt;br /&gt;Услуг">
+          <Label html="Paslauga &lt;br /&gt;Услугa">
             <properties name="Name" />
           </Label>
         </cell>
@@ -248,7 +248,7 @@
           </FlowPanel>
         </cell>
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Suma be PVM &lt;br /&gt;Итого">
+          <Label html="Suma be PVM &lt;br /&gt;Сумма без НДС">
             <properties name="Amount" />
           </Label>
         </cell>
@@ -259,11 +259,6 @@
           </Label>
         </cell>
 
-        <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Kursas &lt;br /&gt;Курс">
-            <properties name="Rate" />
-          </Label>
-        </cell>
         <cell rowSpan="2" style="vertical-align: top">
           <Label html="Suma pagal kursą &lt;br /&gt;Сумма по курсу">
             <properties name="RateAmount" />
@@ -355,7 +350,7 @@
         <ui:inline>display:none;</ui:inline>
         <ui:expression>row.Proforma</ui:expression>
       </dynStyle>
-      <renderToken source="Term" prefix="Sąskaitą apmokėti iki | Платить с помощью " />
+      <renderToken source="Term" prefix="Sąskaitą apmokėti iki | Термин оплаты до " />
     </TextLabel>
 
     <HorizontalPanel >
@@ -364,7 +359,7 @@
     </HorizontalPanel>
 
     <HorizontalPanel >
-      <Label html="Сумма в прописью:" />
+      <Label html="Сумма прописью:" />
       <Label name="TotalInWordsRU" >
         <properties bee_locale="ru" />
       </Label>
@@ -384,7 +379,7 @@
 
     <Label style="&section; font-size:smaller;"
            html="Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai.
-             &lt;br>После периода оплаты за каждый просроченный день будет расти 0,2% пени">
+             &lt;br>При окончании срока оплаты начисляется пени в размере 0.2% от суммы оплаты">
       <dynStyle>
         <ui:inline>display:none;</ui:inline>
         <ui:expression>row.Proforma</ui:expression>
@@ -398,7 +393,7 @@
 
     <Table kind="output" style="width:100%; padding:1em;">
       <row style="&bold;">
-        <Label html="Išdavė | Выдан: " />
+        <Label html="Sąskaitą išrašė | Счет выставляет: " />
         <br />
         <Label html="Gavėjas | Получатель:" />
       </row>
