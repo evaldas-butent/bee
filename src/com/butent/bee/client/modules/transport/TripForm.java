@@ -12,6 +12,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -26,12 +27,14 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -49,10 +52,12 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class TripForm extends PrintFormInterceptor {
 
@@ -374,8 +379,41 @@ public class TripForm extends PrintFormInterceptor {
         TripForm interceptor = getInstance();
         interceptor.defaultDriver = getLongValue(COL_DRIVER);
 
+        List<IsRow> oldTripDrivers = new ArrayList<>();
+        GridView tripDriversGrid = ViewHelper.getChildGrid(getFormView(), TBL_TRIP_DRIVERS);
+
+        if (tripDriversGrid != null && !tripDriversGrid.isEmpty()) {
+          for (IsRow row : tripDriversGrid.getRowData()) {
+            oldTripDrivers.add(row);
+          }
+        }
         RowFactory.createRow(info.getNewRowForm(), info.getNewRowCaption(), info, newRow,
-            Modality.ENABLED, null, interceptor, null, null);
+            Modality.ENABLED, null, interceptor, null, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                Long tripId = result.getId();
+
+                if (DataUtils.isId(tripId)) {
+                  Queries.getDistinctLongs(TBL_TRIP_DRIVERS, COL_DRIVER,
+                      Filter.equals(COL_TRIP, tripId), new RpcCallback<Set<Long>>() {
+                        @Override
+                        public void onSuccess(Set<Long> newDriverIds) {
+                          DataInfo dataInfo = Data.getDataInfo(TBL_TRIP_DRIVERS);
+                          int driverColumnIndex = dataInfo.getColumnIndex(COL_DRIVER);
+                          int tripColumnIndex = dataInfo.getColumnIndex(COL_TRIP);
+
+                          for (IsRow tripDriver : oldTripDrivers) {
+                            if (BeeUtils.isEmpty(newDriverIds)
+                                || !newDriverIds.contains(tripDriver.getLong(driverColumnIndex))) {
+                              tripDriver.setValue(tripColumnIndex, tripId);
+                              Queries.insert(dataInfo.getViewName(), dataInfo.getColumns(), tripDriver, null);
+                            }
+                          }
+                        }
+                      });
+                }
+              }
+            });
       }));
     }
     return copyAction;
