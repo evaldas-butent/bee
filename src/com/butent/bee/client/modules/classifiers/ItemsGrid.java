@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
@@ -30,7 +28,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -81,6 +78,9 @@ class ItemsGrid extends TreeGridInterceptor {
       switch (id) {
         case COL_ITEM_WEIGHT:
         case COL_ITEM_AREA:
+        case COL_RESERVED_REMAINDER:
+        case PRP_FREE_REMAINDER:
+        case COL_WAREHOUSE_REMAINDER:
           return null;
       }
 
@@ -137,7 +137,7 @@ class ItemsGrid extends TreeGridInterceptor {
   @Override
   public void onEditStart(EditStartEvent event) {
 
-    if (BeeUtils.same(event.getColumnId(), OrdersConstants.COL_RESERVED_REMAINDER)) {
+    if (BeeUtils.same(event.getColumnId(), COL_RESERVED_REMAINDER)) {
       event.consume();
 
       IsRow row = event.getRowValue();
@@ -232,19 +232,16 @@ class ItemsGrid extends TreeGridInterceptor {
       table.getRowFormatter().addStyleName(i + 1, STYLE_RES_ORDER_INFO);
     }
 
-    table.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element target = EventUtils.getEventTargetElement(event);
-        TableCellElement cell = DomUtils.getParentCell(target, true);
+    table.addClickHandler(event -> {
+      Element target = EventUtils.getEventTargetElement(event);
+      TableCellElement cell = DomUtils.getParentCell(target, true);
 
-        if (cell != null && cell.hasClassName(STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX)) {
+      if (cell != null && cell.hasClassName(STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX)) {
 
-          long id = Long.valueOf(cell.getInnerText());
-          if (DataUtils.isId(id)) {
-            RowEditor.openForm(COL_ORDER, Data.getDataInfo(VIEW_ORDERS), Filter.compareId(id),
-                Opener.MODAL, null, new OrderForm());
-          }
+        long id = Long.valueOf(cell.getInnerText());
+        if (DataUtils.isId(id)) {
+          RowEditor.openForm(COL_ORDER, Data.getDataInfo(VIEW_ORDERS), Filter.compareId(id),
+              Opener.MODAL, null, new OrderForm());
         }
       }
     });
