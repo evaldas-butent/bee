@@ -48,5 +48,7 @@
     <RelColumn name="Country" />
     <RelColumn name="PaymentType" visible="false" />
     <DataColumn name="Note" />
+
+    <RelColumn name="Creator" readOnly="true" />
   </g:columns>
 </g:Grid>

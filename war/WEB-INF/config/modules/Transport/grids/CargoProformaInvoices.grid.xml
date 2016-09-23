@@ -22,5 +22,6 @@
 
     <DataColumn name="Vehicle" />
     <DataColumn name="Driver" />
+    <RelColumn name="Creator" readOnly="true" />
   </g:columns>
 </g:Grid>

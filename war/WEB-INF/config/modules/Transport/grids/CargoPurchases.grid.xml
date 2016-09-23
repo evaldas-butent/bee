@@ -47,5 +47,7 @@
     </CalcColumn>
 
     <DataColumn name="Note" />
+
+    <RelColumn name="Creator" readOnly="true" />
   </g:columns>
 </g:Grid>

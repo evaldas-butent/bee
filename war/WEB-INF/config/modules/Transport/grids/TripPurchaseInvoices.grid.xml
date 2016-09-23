@@ -29,6 +29,8 @@
     <DataColumn name="Debt" format="0.00" />
 
     <DataColumn name="Exported" />
+
+    <RelColumn name="Creator" readOnly="true" />
   </g:columns>
 
   <g:rowStyle>

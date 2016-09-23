@@ -67,6 +67,16 @@
     <ExternalJoin name="Purchase" source="TripCosts" joinType="LEFT">
       <AggregateColumn name="Purchase" aggregate="MAX" />
     </ExternalJoin>
+
+    <SimpleColumn name="Creator" />
+    <SimpleJoin name="Creator" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="CreatorFirstName" />
+          <SimpleColumn name="LastName" alias="CreatorLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />
