@@ -1188,6 +1188,8 @@
 }
 .bee-TabbedPages-resized {
   background-color: inherit;
+  left: 0;
+  width: 100%;
 }
 
 .bee-TabbedPages-tabPanel {
