@@ -84,6 +84,6 @@
     </CalcColumn>
 
     <PropColumn name="Remainder" type="string" dynamic="true" module="Orders" />
-
+    <PropColumn name="Stock" type="double" dynamic="true" module="Trade" />
   </g:columns>
 </g:Grid>

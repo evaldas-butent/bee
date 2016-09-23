@@ -30,6 +30,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -81,6 +82,7 @@ class ItemsGrid extends TreeGridInterceptor {
         case COL_RESERVED_REMAINDER:
         case PRP_FREE_REMAINDER:
         case COL_WAREHOUSE_REMAINDER:
+        case TradeConstants.PROP_STOCK:
           return null;
       }
 
