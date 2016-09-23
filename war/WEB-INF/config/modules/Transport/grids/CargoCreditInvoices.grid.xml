@@ -11,7 +11,7 @@
     <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" caption="=trdInvoiceId" />
     <DataColumn name="Date" />
-    <DataColumn name="Number" label="Užsakymų ID" />
+    <DataColumn name="Number" />
     <RelColumn name="OperationName" />
 
     <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNo">

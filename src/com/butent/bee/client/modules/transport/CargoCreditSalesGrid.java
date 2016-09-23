@@ -102,7 +102,7 @@ public class CargoCreditSalesGrid extends AbstractGridInterceptor implements Cli
         DataInfo info = Data.getDataInfo(VIEW_CARGO_CREDIT_SALES);
 
         int item = info.getColumnIndex(ClassifierConstants.COL_ITEM);
-        int order = info.getColumnIndex(COL_ASSESSMENT);
+        int order = info.getColumnIndex(COL_ORDER_NO);
         int custId = info.getColumnIndex(COL_CUSTOMER);
         int custName = info.getColumnIndex(COL_CUSTOMER_NAME);
         int currId = info.getColumnIndex(COL_CURRENCY);

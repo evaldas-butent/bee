@@ -143,7 +143,7 @@
             <FlowPanel>
               <FlowPanel>
                 <InlineLabel html="Užsakymo Nr./Заказ №: " />
-                <InlineLabel name="Assessment" />
+                <InlineLabel name="OrderNo" />
               </FlowPanel>
               <FlowPanel>
                 <InlineLabel html="Ref Nr./ Реф. №: " />

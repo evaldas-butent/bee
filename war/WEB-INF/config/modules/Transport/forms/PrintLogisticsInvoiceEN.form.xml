@@ -178,7 +178,7 @@
           </Label>
         </cell>
         <Label text="Užsakymo Nr. / Order No.">
-          <properties name="Assessment" />
+          <properties name="OrderNo" />
         </Label>
         <cell rowSpan="2">
           <Label text="Suma / Amount">

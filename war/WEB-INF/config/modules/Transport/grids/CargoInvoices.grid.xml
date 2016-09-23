@@ -14,7 +14,7 @@
       <footer text="=totalOf" horizontalAlignment="right" />
     </IdColumn>
     <DataColumn name="Date" />
-    <DataColumn name="Number" label="Užsakymų ID" />
+    <DataColumn name="Number" />
     <RelColumn name="Operation" filterSupplier="list" />
     <DataColumn name="InvoiceNo" renderColumns="InvoicePrefix InvoiceNo"
                 searchBy="InvoicePrefix InvoiceNo" />

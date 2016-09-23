@@ -11,7 +11,7 @@
     <RelColumn name="Assessment" label="ID" editEnabled="true" filterSupplier="value"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="OrderDate" />
-    <RelColumn name="OrderNo" editEnabled="true" editSource="Order" visible="false" />
+    <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
     <DataColumn name="Status" />
     <DataColumn name="SupplierName" />
     <DataColumn name="Number" />
