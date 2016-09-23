@@ -121,8 +121,8 @@ public final class RowEditor {
   }
 
   public static void openForm(String formName, DataInfo dataInfo, Filter filter,
-      Opener opener, RowCallback rowCallback, FormInterceptor formInteceptor) {
-    getRow(formName, dataInfo, filter, opener, rowCallback, formInteceptor);
+      Opener opener, RowCallback rowCallback, FormInterceptor formInterceptor) {
+    getRow(formName, dataInfo, filter, opener, rowCallback, formInterceptor);
   }
 
   public static void openForm(String formName, String viewName, IsRow row, Opener opener,
@@ -139,13 +139,13 @@ public final class RowEditor {
   }
 
   public static void openForm(String formName, DataInfo dataInfo, IsRow row, Opener opener,
-      RowCallback rowCallback, FormInterceptor formInteceptor) {
+      RowCallback rowCallback, FormInterceptor formInterceptor) {
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
     Assert.notNull(opener);
 
-    if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row, opener)) {
+    if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row, opener, formName)) {
       return;
     }
 
@@ -154,7 +154,7 @@ public final class RowEditor {
       return;
     }
 
-    createForm(formName, dataInfo, row, opener, rowCallback, formInteceptor);
+    createForm(formName, dataInfo, row, opener, rowCallback, formInterceptor);
   }
 
   public static boolean parse(String input, final Opener opener) {
@@ -213,12 +213,12 @@ public final class RowEditor {
   }
 
   private static void getRow(final String formName, final DataInfo dataInfo, Filter filter,
-      final Opener opener, final RowCallback rowCallback, final FormInterceptor formInteceptor) {
+      final Opener opener, final RowCallback rowCallback, final FormInterceptor formInterceptor) {
 
     Queries.getRow(dataInfo.getViewName(), filter, null, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
-        openForm(formName, dataInfo, result, opener, rowCallback, formInteceptor);
+        openForm(formName, dataInfo, result, opener, rowCallback, formInterceptor);
       }
     });
   }
