@@ -16,6 +16,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
+import com.butent.bee.client.event.logical.MutationEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
@@ -63,7 +64,7 @@ import java.util.Set;
 
 public class GridContainerImpl extends Split implements GridContainerView,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
-    EditFormEvent.Handler, HasEditState, RenderingEvent.Handler {
+    EditFormEvent.Handler, HasEditState, RenderingEvent.Handler, MutationEvent.Handler {
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridContainer";
 
@@ -126,12 +127,16 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
   @Override
   public void bind() {
+    getGridView().getGrid().addActiveRowChangeHandler(this);
+    getGridView().getGrid().addRenderingHandler(this);
+
+    if (getRowMessage() != null && hasHeader()) {
+      getGridView().getGrid().addMutationHandler(this);
+    }
+
     if (hasFooter()) {
       getGridView().getGrid().addSelectionCountChangeHandler(getFooter());
     }
-
-    getGridView().getGrid().addActiveRowChangeHandler(this);
-    getGridView().getGrid().addRenderingHandler(this);
 
     getGridView().addAddStartHandler(this);
     getGridView().addAddEndHandler(this);
@@ -420,9 +425,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
       return;
     }
 
-    if (getRowMessage() != null && hasHeader()) {
-      getHeader().showRowMessage(getRowMessage(), rowValue);
-    }
+    maybeRefreshRowMessage(rowValue);
 
     if (gridView.getGridInterceptor() != null) {
       gridView.getGridInterceptor().onActiveRowChange(event);
@@ -520,6 +523,11 @@ public class GridContainerImpl extends Split implements GridContainerView,
   @Override
   public boolean onHistory(Place place, boolean forward) {
     return getGridView().onHistory(place, forward);
+  }
+
+  @Override
+  public void onMutation(MutationEvent event) {
+    maybeRefreshRowMessage(getGridView().getGrid().getActiveRow());
   }
 
   @Override
@@ -812,6 +820,12 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
   private boolean isResizeSuspended() {
     return resizeSuspended;
+  }
+
+  private void maybeRefreshRowMessage(IsRow row) {
+    if (getRowMessage() != null && hasHeader()) {
+      getHeader().showRowMessage(getRowMessage(), row);
+    }
   }
 
   private void setExtCreation(WidgetCreationCallback extCreation) {
