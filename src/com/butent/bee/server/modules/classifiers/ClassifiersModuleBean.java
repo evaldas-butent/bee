@@ -2327,12 +2327,15 @@ public class ClassifiersModuleBean implements BeeModule {
 
     if (!DataUtils.isEmpty(data)) {
       for (SimpleRow row : data) {
-        result.put(row.getLong(COL_ITEM), row.getValue(COL_WAREHOUSE_CODE),
-            row.getValue(COL_STOCK_QUANTITY));
+        Double quantity = row.getDouble(COL_STOCK_QUANTITY);
+
+        if (BeeUtils.nonZero(quantity)) {
+          result.put(row.getLong(COL_ITEM), row.getValue(COL_WAREHOUSE_CODE),
+              BeeUtils.toString(quantity));
+        }
       }
     }
 
-    logger.info("stock", result);
     return result;
   }
 }
