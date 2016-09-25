@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="TradeExpenditures" viewName="TradeExpenditures"
 >
@@ -38,4 +39,8 @@
     <DataColumn name="DebitCode" label="=debit" />
     <DataColumn name="CreditCode" label="=credit" />
   </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.ExpenditureTypeName</ui:expression>
+  </g:rowMessage>
 </g:Grid>
