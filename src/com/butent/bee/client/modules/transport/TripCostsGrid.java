@@ -237,4 +237,24 @@ public class TripCostsGrid extends AbstractGridInterceptor
           }
         });
   }
+
+  @Override
+  public void afterInsertRow(IsRow result) {
+    super.afterInsertRow(result);
+    if (result != null && DataUtils.isId(result.getId())) {
+      ParameterList args = TransportHandler.createArgs(SVC_GET_MANUAL_DAILY_COST);
+      args.addDataItem(COL_TRIP_COST_ID, result.getId());
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          response.notify(getGridView());
+
+          if (!response.isEmpty() && !response.hasErrors()) {
+            getGridPresenter().refresh(true, false);
+          }
+        }
+      });
+    }
+  }
 }

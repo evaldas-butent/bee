@@ -380,6 +380,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_GET_TEXT_CONSTANT)) {
       response = getTextConstant(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_MANUAL_DAILY_COST)) {
+        response = getManualDailyCost(BeeUtils.toLong(reqInfo.getParameter(COL_TRIP_COST_ID)));
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
@@ -3073,6 +3076,45 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     }
 
     return ResponseObject.response(settings);
+  }
+
+  private ResponseObject getManualDailyCost(long tripCostId) {
+    SimpleRowSet rowSet = qs.getData(new SqlSelect()
+        .addFields(TBL_COUNTRY_DAILY_COSTS, COL_AMOUNT, COL_CURRENCY)
+        .addFields(TBL_TRIP_COSTS, COL_COSTS_PRICE)
+        .addField(TBL_TRIP_COSTS, COL_CURRENCY, ALS_CURRENCY_NAME)
+        .addFrom(TBL_TRIP_COSTS)
+        .addFromInner(TBL_COUNTRY_NORMS,
+            SqlUtils.join(TBL_TRIP_COSTS, COL_ITEM, TBL_COUNTRY_NORMS, COL_DAILY_COSTS_ITEM))
+        .addFromInner(TBL_COUNTRY_DAILY_COSTS, SqlUtils.and(
+            sys.joinTables(TBL_COUNTRY_NORMS, TBL_COUNTRY_DAILY_COSTS, COL_COUNTRY_NORM),
+            SqlUtils.or(
+                SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM),
+                SqlUtils.joinLess(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_FROM,
+                    TBL_TRIP_COSTS, COL_DATE)),
+            SqlUtils.or(
+                SqlUtils.isNull(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO),
+                SqlUtils.joinMore(TBL_COUNTRY_DAILY_COSTS, COL_TRIP_DATE_TO,
+                    TBL_TRIP_COSTS, COL_DATE))))
+        .setWhere(SqlUtils.equals(TBL_TRIP_COSTS, sys.getIdName(TBL_TRIP_COSTS), tripCostId))
+        .addOrderDesc(TBL_COUNTRY_DAILY_COSTS, sys.getIdName(TBL_COUNTRY_DAILY_COSTS)));
+
+    if (!DataUtils.isEmpty(rowSet)) {
+      SimpleRow row = rowSet.getRow(0);
+      SqlUpdate update = new SqlUpdate(TBL_TRIP_COSTS)
+          .setWhere(sys.idEquals(TBL_TRIP_COSTS, tripCostId));
+
+      if (BeeUtils.isEmpty(row.getValue(COL_COSTS_PRICE))) {
+        update.addConstant(COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
+      }
+      if (BeeUtils.isEmpty(row.getValue(ALS_CURRENCY_NAME))) {
+        update.addConstant(COL_CURRENCY, row.getValue(COL_CURRENCY));
+      }
+      update.addConstant("Old" + COL_COSTS_PRICE, row.getValue(COL_AMOUNT));
+
+      return qs.updateDataWithResponse(update);
+    }
+    return ResponseObject.emptyResponse();
   }
 
   private Map<String, Long> getReferences(String tableName, String keyName) {

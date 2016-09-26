@@ -354,6 +354,7 @@ public final class TransportConstants {
   public static final String SVC_GET_VEHICLE_BUSY_DATES = "GetVehicleBusyDates";
   public static final String SVC_GET_DRIVER_BUSY_DATES = "GetDriverBusyDates";
   public static final String SVC_GET_TEXT_CONSTANT = "GetTextConstant";
+  public static final String SVC_GET_MANUAL_DAILY_COST = "GetManualDailyCost";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
@@ -510,6 +511,7 @@ public final class TransportConstants {
   public static final String COL_TRIP_NOTES = "Notes";
   public static final String COL_TRIP_STATUS = "Status";
   public static final String COL_TRIP_MANAGER = "Manager";
+  public static final String COL_TRIP_COST_ID = "CostID";
 
   public static final String COL_SPEEDOMETER = "Speedometer";
   public static final String COL_SPEEDOMETER_BEFORE = "SpeedometerBefore";
