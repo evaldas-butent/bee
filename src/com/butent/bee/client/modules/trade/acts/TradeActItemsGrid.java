@@ -452,26 +452,24 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       final Scheduler.ScheduledCommand command) {
 
     if (!DataUtils.isEmpty(actItems) && getViewName().equals(actItems.getViewName())) {
-      getGridView().ensureRelId(new IdCallback() {
-        @Override
-        public void onSuccess(Long result) {
-          IsRow parentRow = ViewHelper.getFormRow(getGridView());
+      getGridView().ensureRelId(result -> {
+        IsRow parentRow = ViewHelper.getFormRow(getGridView());
 
-          if (DataUtils.idEquals(parentRow, result)) {
-            Long sourceCurrency =
-                (act == null) ? null : Data.getLong(VIEW_TRADE_ACTS, act, COL_TA_CURRENCY);
+        if (DataUtils.idEquals(parentRow, result)) {
+          Long sourceCurrency =
+              (act == null) ? null : Data.getLong(VIEW_TRADE_ACTS, act, COL_TA_CURRENCY);
+          Long parentActId = act == null ? null : act.getId();
 
-            DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
-            Long targetCurrency = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CURRENCY);
+          DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
+          Long targetCurrency = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CURRENCY);
 
-            addActItems(result, date, sourceCurrency, targetCurrency, actItems, command);
-          }
+          addActItems(result, parentActId, date, sourceCurrency, targetCurrency, actItems, command);
         }
       });
     }
   }
 
-  private void addActItems(long targetId, DateTime date, Long sourceCurrency,
+  private void addActItems(long targetId, Long act, DateTime date, Long sourceCurrency,
       Long targetCurrency, BeeRowSet sourceItems, final Scheduler.ScheduledCommand command) {
 
     List<BeeColumn> columns = new ArrayList<>();
@@ -493,10 +491,12 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     int actIndex = rowSet.getColumnIndex(COL_TRADE_ACT);
     int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
+    int parentIndex = rowSet.getColumnIndex(COL_TA_PARENT);
 
     for (BeeRow sourceItem : sourceItems) {
       BeeRow row = DataUtils.createEmptyRow(columns.size());
       row.setValue(actIndex, targetId);
+      row.setValue(parentIndex, act);
 
       for (Map.Entry<Integer, Integer> indexEntry : indexes.entrySet()) {
         if (!sourceItem.isNull(indexEntry.getKey())) {

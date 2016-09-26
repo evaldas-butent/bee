@@ -35,6 +35,7 @@
     <Text name="Notes" label="=notes" />
 
     <Relation name="Parent" relation="TradeActs" label="=taParent" />
+
     <String name="RegistrationNo" label="=taRegistrationNo" precision="30" />
   </Fields>
   <Constraints>

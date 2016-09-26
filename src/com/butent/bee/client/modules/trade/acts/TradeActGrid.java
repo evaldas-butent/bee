@@ -1,12 +1,9 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
@@ -16,8 +13,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ChoiceCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.StringCallback;
@@ -34,7 +29,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.ListFilterSupplier;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -49,10 +43,8 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.StringList;
@@ -133,13 +125,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
         options.add(k.getCaption());
       }
 
-      Global.choice(Localized.dictionary().tradeActNew(), null, options, new ChoiceCallback() {
-        @Override
-        public void onSuccess(int value) {
-          if (BeeUtils.isIndex(kinds, value)) {
-            newActKind = kinds.get(value);
-            getGridView().startNewRow(false);
-          }
+      Global.choice(Localized.dictionary().tradeActNew(), null, options, value -> {
+        if (BeeUtils.isIndex(kinds, value)) {
+          newActKind = kinds.get(value);
+          getGridView().startNewRow(false);
         }
       });
 
@@ -250,36 +239,30 @@ public class TradeActGrid extends AbstractGridInterceptor {
   private Button ensureCopyCommand() {
     if (copyCommand == null) {
       copyCommand = new Button(Localized.dictionary().actionCopy(),
-          new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              final IsRow row = getGridView().getActiveRow();
-              TradeActKind tak = TradeActKeeper.getKind(getViewName(), row);
+          event -> {
+            final IsRow row = getGridView().getActiveRow();
+            TradeActKind tak = TradeActKeeper.getKind(getViewName(), row);
 
-              if (tak != null) {
-                List<String> messages = new StringList();
+            if (tak != null) {
+              List<String> messages = new StringList();
 
-                messages.add(row.getString(getDataIndex(COL_TRADE_ACT_NAME)));
+              messages.add(row.getString(getDataIndex(COL_TRADE_ACT_NAME)));
 
-                String number = row.getString(getDataIndex(COL_TA_NUMBER));
-                if (!BeeUtils.isEmpty(number)) {
-                  messages.add(BeeUtils.joinWords(
-                      row.getString(getDataIndex(TradeConstants.COL_SERIES_NAME)), number));
-                }
-
-                messages.add(Localized.dictionary().tradeActCopyQuestion());
-
-                Global.confirm(tak.getCaption(), Icon.QUESTION, messages,
-                    Localized.dictionary().actionCopy(), Localized.dictionary().actionCancel(),
-                    new ConfirmationCallback() {
-                      @Override
-                      public void onConfirm() {
-                        if (DataUtils.sameId(row, getGridView().getActiveRow())) {
-                          doCopy(row.getId());
-                        }
-                      }
-                    });
+              String number = row.getString(getDataIndex(COL_TA_NUMBER));
+              if (!BeeUtils.isEmpty(number)) {
+                messages.add(BeeUtils.joinWords(
+                    row.getString(getDataIndex(TradeConstants.COL_SERIES_NAME)), number));
               }
+
+              messages.add(Localized.dictionary().tradeActCopyQuestion());
+
+              Global.confirm(tak.getCaption(), Icon.QUESTION, messages,
+                  Localized.dictionary().actionCopy(), Localized.dictionary().actionCancel(),
+                  () -> {
+                    if (DataUtils.sameId(row, getGridView().getActiveRow())) {
+                      doCopy(row.getId());
+                    }
+                  });
             }
           });
 
@@ -315,34 +298,43 @@ public class TradeActGrid extends AbstractGridInterceptor {
   private Button ensureReturnCommand() {
     if (returnCommand == null) {
       returnCommand = new Button(Localized.dictionary().taKindReturn(),
-          new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              final List<IsRow> rows = new ArrayList<>();
-              int idxObject = getGridView().getDataIndex(COL_TA_OBJECT);
+          event -> {
+            final List<IsRow> rows = new ArrayList<>();
+            int idxObject = getGridView().getDataIndex(COL_TA_OBJECT);
+            int idxSeries = getGridView().getDataIndex(COL_TA_SERIES);
+            int idxCompany = getGridView().getDataIndex(COL_TA_COMPANY);
 
-              IsRow activeRow = getGridView().getActiveRow();
-              for (IsRow row : getGridView().getRowData()) {
-                if (getGridView().isRowSelected(row.getId()) || DataUtils.sameId(row, activeRow)) {
-                  if (BeeUtils.compare(activeRow.getLong(idxObject), row.getLong(idxObject),
-                      null) != BeeConst.COMPARE_EQUAL) {
-                    getGridView().notifyWarning(Localized.dictionary().taObjectsIsDifferent());
-                    return;
-                  }
+            IsRow activeRow = getGridView().getActiveRow();
+            for (IsRow row : getGridView().getRowData()) {
+              if (getGridView().isRowSelected(row.getId()) || DataUtils.sameId(row, activeRow)) {
+                if (BeeUtils.compare(activeRow.getLong(idxObject), row.getLong(idxObject),
+                    null) != BeeConst.COMPARE_EQUAL) {
+                  getGridView().notifyWarning(Localized.dictionary().taObjectsIsDifferent());
+                  return;
+                }
 
-                  TradeActKind tak = TradeActKeeper.getKind(getViewName(), row);
-                  if (tak != null && tak.enableReturn()) {
-                    rows.add(row);
-                  }
+                if (BeeUtils.compare(activeRow.getLong(idxSeries), row.getLong(idxSeries),
+                    null) != BeeConst.COMPARE_EQUAL
+                    || BeeUtils.compare(activeRow.getLong(idxCompany), row.getLong(idxCompany),
+                    null) != BeeConst.COMPARE_EQUAL) {
+                  getGridView().notifyWarning(Localized.dictionary().taIsDifferent());
+                  return;
+                }
+
+                TradeActKind tak = TradeActKeeper.getKind(getViewName(), row);
+                if (tak != null && tak.enableReturn()) {
+                  rows.add(row);
                 }
               }
+            }
+
+//            multiReturn(rows);
 
               if (rows.size() == 1) {
                 createReturn(rows.get(0));
               } else if (rows.size() > 1) {
                 multiReturn(rows);
               }
-            }
           });
 
       TradeActKeeper.addCommandStyle(returnCommand, "return");
@@ -354,13 +346,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
   private Button ensureAlterCommand() {
     if (alterCommand == null) {
       alterCommand = new Button(Localized.dictionary().taAlterKind(),
-          new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              IsRow row = getGridView().getActiveRow();
-              if (row != null) {
-                alterKind(row);
-              }
+          event -> {
+            IsRow row = getGridView().getActiveRow();
+            if (row != null) {
+              alterKind(row);
             }
           });
 
@@ -388,35 +377,32 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
       Global.getMsgBoxen().choice(Localized.dictionary().taAlterKind(),
           BeeUtils.joinWords(tak.getCaption(), row.getString(getDataIndex(COL_TRADE_ACT_NAME))),
-          choices, new ChoiceCallback() {
-            @Override
-            public void onSuccess(int value) {
-              if (DataUtils.idEquals(getGridView().getActiveRow(), actId)
-                  && BeeUtils.isIndex(targets, value)) {
+          choices, value -> {
+            if (DataUtils.idEquals(getGridView().getActiveRow(), actId)
+                && BeeUtils.isIndex(targets, value)) {
 
-                ParameterList params = TradeActKeeper.createArgs(SVC_ALTER_ACT_KIND);
-                params.addQueryItem(COL_TRADE_ACT, actId);
-                params.addQueryItem(COL_TA_KIND, targets.get(value).ordinal());
+              ParameterList params = TradeActKeeper.createArgs(SVC_ALTER_ACT_KIND);
+              params.addQueryItem(COL_TRADE_ACT, actId);
+              params.addQueryItem(COL_TA_KIND, targets.get(value).ordinal());
 
-                BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    if (response.hasResponse(BeeRow.class)) {
-                      BeeRow updated = BeeRow.restore(response.getResponseAsString());
-                      RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), updated);
+              BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+                @Override
+                public void onResponse(ResponseObject response) {
+                  if (response.hasResponse(BeeRow.class)) {
+                    BeeRow updated = BeeRow.restore(response.getResponseAsString());
+                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), updated);
 
-                      GridView gridView = getGridView();
+                    GridView gridView = getGridView();
 
-                      if (gridView != null && gridView.asWidget().isAttached()) {
-                        if (DataUtils.idEquals(gridView.getActiveRow(), actId)) {
-                          refreshCommands(updated);
-                        }
-                        maybeOpenAct(gridView, updated);
+                    if (gridView != null && gridView.asWidget().isAttached()) {
+                      if (DataUtils.idEquals(gridView.getActiveRow(), actId)) {
+                        refreshCommands(updated);
                       }
+                      maybeOpenAct(gridView, updated);
                     }
                   }
-                });
-              }
+                }
+              });
             }
           }, BeeConst.UNDEF, BeeConst.UNDEF, Localized.dictionary().cancel(), null);
     }
@@ -503,22 +489,25 @@ public class TradeActGrid extends AbstractGridInterceptor {
           }
 
           TradeActItemReturn.show(Localized.dictionary().taKindReturn(), parentActs, parentItems,
-              true, new Consumer<BeeRowSet>() {
-                @Override
-                public void accept(BeeRowSet selectedItems) {
-                  if (!DataUtils.isEmpty(selectedItems)) {
-                    ParameterList args = TradeActKeeper.createArgs(SVC_RETURN_ACT_ITEMS);
-                    args.addDataItem(VIEW_TRADE_ACT_ITEMS, selectedItems.serialize());
+              true, selectedItems -> {
+                if (!DataUtils.isEmpty(selectedItems)) {
+                  ParameterList args = TradeActKeeper.createArgs(SVC_RETURN_ACT_ITEMS);
+                  args.addDataItem(VIEW_TRADE_ACT_ITEMS, selectedItems.serialize());
 
-                    BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
-                      @Override
-                      public void onResponse(ResponseObject ro) {
-                        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_ITEMS);
-                        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_SERVICES);
-                        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
-                      }
-                    });
-                  }
+                  BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+                    @Override
+                    public void onResponse(ResponseObject ro) {
+                      ro.notify(getGridView());
+
+                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_ITEMS);
+                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_SERVICES);
+                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
+//
+//                      if (ro.hasResponse(Long.class)  && DataUtils.isId(ro.getResponseAsLong())) {
+//                        RowEditor.open(VIEW_TRADE_ACTS, ro.getResponseAsLong(), Opener.MODAL);
+//                      }
+                    }
+                  });
                 }
               });
 
@@ -532,13 +521,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
   private Button ensureSupplementCommand() {
     if (supplementCommand == null) {
       supplementCommand = new Button(Localized.dictionary().taKindSupplement(),
-          new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              IsRow row = getGridView().getActiveRow();
-              if (row != null) {
-                createSupplement(row);
-              }
+          event -> {
+            IsRow row = getGridView().getActiveRow();
+            if (row != null) {
+              createSupplement(row);
             }
           });
 
@@ -598,21 +584,18 @@ public class TradeActGrid extends AbstractGridInterceptor {
   private Button ensureTemplateCommand() {
     if (templateCommand == null) {
       templateCommand = new Button(Localized.dictionary().tradeActSaveAsTemplate(),
-          new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              int maxLen = Data.getColumnPrecision(VIEW_TRADE_ACT_TEMPLATES, COL_TA_TEMPLATE_NAME);
+          event -> {
+            int maxLen = Data.getColumnPrecision(VIEW_TRADE_ACT_TEMPLATES, COL_TA_TEMPLATE_NAME);
 
-              Global.inputString(Localized.dictionary().tradeActNewTemplate(),
-                  Localized.dictionary().name(), new StringCallback() {
-                    @Override
-                    public void onSuccess(String value) {
-                      if (!BeeUtils.isEmpty(value)) {
-                        saveAsTemplate(value.trim());
-                      }
+            Global.inputString(Localized.dictionary().tradeActNewTemplate(),
+                Localized.dictionary().name(), new StringCallback() {
+                  @Override
+                  public void onSuccess(String value) {
+                    if (!BeeUtils.isEmpty(value)) {
+                      saveAsTemplate(value.trim());
                     }
-                  }, null, null, maxLen);
-            }
+                  }
+                }, null, null, maxLen);
           });
 
       TradeActKeeper.addCommandStyle(templateCommand, "template");
@@ -694,13 +677,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
         }
 
         Global.confirm(Localized.dictionary().taEmptyContract()
-            + Localized.dictionary().saveChanges(), new ConfirmationCallback() {
-
-          @Override
-          public void onConfirm() {
-            gridView.fireEvent(event);
-          }
-        });
+            + Localized.dictionary().saveChanges(), () -> gridView.fireEvent(event));
       }
     }
   }

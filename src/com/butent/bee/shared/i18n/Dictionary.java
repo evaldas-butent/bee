@@ -4388,6 +4388,8 @@ public interface Dictionary {
 
   default String taInvoiceSources() {return g("taInvoiceSources");}
 
+  default String taIsDifferent() {return g("taIsDifferent");}
+
   default String taItemPrices() {return g("taItemPrices");}
 
   default String taKind() {return g("taKind");}

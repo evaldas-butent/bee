@@ -88,7 +88,12 @@
       </row>
 
       <row>
-        <Label for="Contact" />
+        <Label for="Contact" name="labelContact" >
+          <dynStyle>
+            <ui:class>bee-required</ui:class>
+            <ui:expression>!row.ContactPhysical</ui:expression>
+          </dynStyle>
+        </Label>
         <DataSelector source="Contact" newRowEnabled="true" style="&inpw;"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />

@@ -8,8 +8,10 @@
     <SimpleColumn name="TradeAct" />
     <SimpleJoin name="TradeAct" joinType="LEFT">
       <SimpleColumn name="Date" />
-      <SimpleColumn name="Parent" />
+      <SimpleColumn name="Parent" alias="TAParent"/>
     </SimpleJoin>
+
+    <SimpleColumn name="Parent" />
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">

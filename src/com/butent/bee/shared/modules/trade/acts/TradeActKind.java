@@ -30,7 +30,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   SUPPLEMENT(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
       Option.BUILD_INVOICES, Option.ENABLE_RETURN, Option.HAS_SERVICES,
-      Option.SHOW_STOCK) {
+      Option.SHOW_STOCK, Option.HAS_PARENT_ACT) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.taKindSupplement();
@@ -43,7 +43,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   },
 
   RETURN(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
-      Option.AUTO_NUMBER) {
+      Option.AUTO_NUMBER, Option.HAS_PARENT_ACT) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.taKindReturn();
@@ -102,7 +102,8 @@ public enum TradeActKind implements HasLocalizedCaption {
     ENABLE_SUPPLEMENT,
     HAS_SERVICES,
     SAVE_AS_TEMPLATE,
-    SHOW_STOCK
+    SHOW_STOCK,
+    HAS_PARENT_ACT
   }
 
   public static Filter getFilterForInvoiceBuilder() {

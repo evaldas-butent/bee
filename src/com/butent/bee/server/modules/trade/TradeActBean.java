@@ -832,10 +832,18 @@ public class TradeActBean implements HasTimerService {
       return ResponseObject.emptyResponse();
     }
 
+    return ResponseObject.response(getNextReturnActNumber(seriesId, parentId, columnName));
+  }
+
+  private String getNextReturnActNumber(Long seriesId, Long parentId, String columnName) {
     IsCondition where =
         SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, seriesId),
-            SqlUtils.notNull(TBL_TRADE_ACTS, columnName), SqlUtils.equals(TBL_TRADE_ACTS,
-                COL_TA_KIND, TradeActKind.RETURN.ordinal()), SqlUtils.equals(TBL_TRADE_ACTS,
+            SqlUtils.notNull(TBL_TRADE_ACTS, columnName),
+            SqlUtils.or(SqlUtils.equals(TBL_TRADE_ACTS,
+                COL_TA_KIND, TradeActKind.RETURN.ordinal()),
+                SqlUtils.equals(TBL_TRADE_ACTS,
+                    COL_TA_KIND, TradeActKind.SUPPLEMENT.ordinal())),
+            SqlUtils.equals(TBL_TRADE_ACTS,
                 COL_TA_PARENT, parentId));
 
     SqlSelect query = new SqlSelect()
@@ -871,9 +879,7 @@ public class TradeActBean implements HasTimerService {
       big = big.max(bigMax);
     }
 
-    String number = big.add(BigInteger.ONE).toString();
-
-    return ResponseObject.response(number);
+     return big.add(BigInteger.ONE).toString();
   }
 
   private ResponseObject getActsForInvoice(RequestInfo reqInfo) {
@@ -1383,7 +1389,7 @@ public class TradeActBean implements HasTimerService {
       return ResponseObject.error(reqInfo.getService(), VIEW_TRADE_ACTS, parentIds, "not found");
     }
 
-    Set<String> copyColNames = Sets.newHashSet(COL_TA_NAME, COL_TA_SERIES, COL_TA_NUMBER,
+    Set<String> copyColNames = Sets.newHashSet(COL_TA_NAME, COL_TA_SERIES,
         COL_TA_COMPANY, COL_TA_CONTACT, COL_TA_OBJECT, COL_TA_CURRENCY, COL_TA_VEHICLE,
         COL_TA_DRIVER);
 
@@ -1402,13 +1408,20 @@ public class TradeActBean implements HasTimerService {
 
     Long retStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
     int statusIndex = parentActs.getColumnIndex(COL_TA_STATUS);
+    int idxSeries = parentActs.getColumnIndex(COL_TA_SERIES);
+    int idxNumber = parentActs.getColumnIndex(COL_TA_NUMBER);
+
 
     for (BeeRow parentAct : parentActs) {
       long parentId = parentAct.getId();
+      Long series = parentAct.getLong(idxSeries);
+      String number = parentAct.getString(idxNumber);
 
       SqlInsert actInsert =
           new SqlInsert(TBL_TRADE_ACTS)
               .addConstant(COL_TA_KIND, TradeActKind.RETURN.ordinal())
+              .addConstant(COL_TA_NUMBER, number + "-" + getNextReturnActNumber(series, parentId,
+                  COL_TA_NUMBER))
               .addConstant(COL_TA_PARENT, parentId)
               .addConstant(COL_TA_DATE, date)
               .addConstant(COL_TA_MANAGER, usr.getCurrentUserId());
@@ -1434,7 +1447,8 @@ public class TradeActBean implements HasTimerService {
       for (BeeRow parentItem : parentItems) {
         if (Objects.equals(parentItem.getLong(itemActIndex), parentId)) {
           SqlInsert itemInsert = new SqlInsert(TBL_TRADE_ACT_ITEMS)
-              .addConstant(COL_TRADE_ACT, actId);
+              .addConstant(COL_TRADE_ACT, actId)
+              .addConstant(COL_TA_PARENT, parentId);
 
           for (int index = 0; index < parentItems.getNumberOfColumns(); index++) {
             if (index != itemActIndex && parentItems.getColumn(index).isEditable()) {
@@ -1483,7 +1497,7 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
-    return ResponseObject.response(parentActs.getNumberOfRows());
+    return ResponseObject.info(usr.getDictionary().createdRows(parentActs.getNumberOfRows()));
   }
 
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
@@ -1638,7 +1652,7 @@ public class TradeActBean implements HasTimerService {
             .addFromInner(TBL_TRADE_ACT_ITEMS,
                 sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
             .setWhere(
-                SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_PARENT, Lists
+                SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, Lists
                     .newArrayList(actId)),
                     SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())))
             .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
