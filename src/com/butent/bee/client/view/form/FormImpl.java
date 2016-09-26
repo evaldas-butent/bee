@@ -85,6 +85,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.data.RowConsumer;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.DataEvent;
@@ -214,6 +215,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         if (conditionalStyle != null) {
           addDynamicStyle(id, cellSource, conditionalStyle);
         }
+      }
+
+      if (widget instanceof RowConsumer && hasData() && !BeeUtils.isEmpty(id)) {
+        getRowConsumers().add(id);
       }
 
       super.onSuccess(result, widget);
@@ -396,6 +401,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private boolean hasReadyDelegates;
 
   private final List<DynamicStyler> dynamicStylers = new ArrayList<>();
+  private final List<String> rowConsumers = new ArrayList<>();
 
   public FormImpl(String formName) {
     super(Position.RELATIVE, Overflow.AUTO);
@@ -1202,7 +1208,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     refreshDisplayWidgets(refreshed);
+
     refreshDynamicStyles();
+    refreshRowConsumers();
   }
 
   @Override
@@ -1364,7 +1372,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
 
         refreshDisplayWidgets(refreshed);
+
         refreshDynamicStyles();
+        refreshRowConsumers();
 
       } else {
         fireUpdate(rowValue, column, oldValue, newValue, event.isRowMode());
@@ -1810,7 +1820,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       Set<String> refreshed = refreshEditableWidget(index);
       refreshDisplayWidgets(refreshed);
+
       refreshDynamicStyles();
+      refreshRowConsumers();
 
     } else {
       BeeColumn column = getDataColumns().get(index);
@@ -2011,6 +2023,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private IsRow getRowBuffer() {
     return rowBuffer;
+  }
+
+  private List<String> getRowConsumers() {
+    return rowConsumers;
   }
 
   private Evaluator getRowEditable() {
@@ -2216,6 +2232,20 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     return refreshed;
   }
 
+  private void refreshRowConsumers() {
+    if (!rowConsumers.isEmpty()) {
+      for (String id : rowConsumers) {
+        Widget widget = getWidgetById(id);
+
+        if (widget instanceof RowConsumer) {
+          ((RowConsumer) widget).accept(getActiveRow());
+        } else {
+          logger.warning("row consumer", id, "not found");
+        }
+      }
+    }
+  }
+
   private void render(boolean refreshChildren) {
     if (getFormInterceptor() != null) {
       getFormInterceptor().beforeRefresh(this, getActiveRow());
@@ -2229,6 +2259,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     refreshDynamicStyles();
+    refreshRowConsumers();
 
     fireEvent(new ActiveRowChangeEvent(getActiveRow()));
 

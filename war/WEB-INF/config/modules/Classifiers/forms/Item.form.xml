@@ -274,7 +274,7 @@
         <ChildGrid name="ItemManufacturers" relColumn="Item" />
       </page>
 
-      <page module="Orders" data="Orders">
+      <page module="Orders" data="Orders" predicate="!row.IsService">
         <text>=orders</text>
         <FlowPanel class="flexBox-vertical">
           <Table kind="controls" style="margin-top: 1ex; margin-bottom: 2em;">

@@ -263,6 +263,14 @@
   <xs:element name="AbsolutePanel" type="layout" substitutionGroup="widget" />
   <xs:element name="ComplexPanel" type="layout" substitutionGroup="widget" />
 
+  <xs:complexType name="stackElement">
+    <xs:complexContent>
+      <xs:extension base="headerAndContent">
+        <xs:attribute name="headerSize" type="tp:positiveDecimal" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:element name="StackPanel" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
@@ -275,10 +283,10 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="stackElement">
+  <xs:complexType name="pageType">
     <xs:complexContent>
       <xs:extension base="headerAndContent">
-        <xs:attribute name="headerSize" type="tp:positiveDecimal" use="required" />
+        <xs:attribute name="predicate" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -288,7 +296,7 @@
       <xs:complexContent>
         <xs:extension base="widgetType">
           <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="page" type="headerAndContent" />
+            <xs:element name="page" type="pageType" />
           </xs:choice>
           <xs:attribute name="stylePrefix" type="xs:normalizedString" />
           <xs:attribute name="resizable" type="xs:boolean" default="true" />
