@@ -2088,7 +2088,7 @@ class TaskEditor extends ProductSupportInterceptor {
   }
 
   private Map<String, String> setDurations(TaskDialog dialog) {
-    final String durId = dialog.addTime(Localized.dictionary().crmSpentTime());
+    final String durId = dialog.addTime(Localized.dictionary().crmSpentTime(), false);
     String durTypeId = dialog.addSelector(Localized.dictionary().crmDurationType(),
         VIEW_TASK_DURATION_TYPES, Lists.newArrayList(ALS_DURATION_TYPE_NAME), false, null, null,
         COL_DURATION_TYPE);
@@ -2107,16 +2107,16 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private void setCommentsLayout() {
     if (isDefaultLayout) {
-      split.remove(taskWidget);
-      split.remove(taskEventsWidget);
-      split.addNorth(taskWidget, 575);
+      int height = getFormView().getWidgetByName("TaskContainer").getElement().getScrollHeight();
+      if (height == 0) {
+        height = 600;
+      }
+      split.addNorth(taskWidget, height + 60);
       split.updateCenter(taskEventsWidget);
 
     } else {
       Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_TASK_TREE));
-      split.remove(taskWidget);
-      split.remove(taskEventsWidget);
-      split.addWest(taskWidget, size == null ? 650 : size);
+      split.addWest(taskWidget, size == null ? 660 : size);
       StyleUtils.autoHeight(taskWidget.getElement());
       split.updateCenter(taskEventsWidget);
     }

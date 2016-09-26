@@ -114,7 +114,7 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
               row.setValue(DataUtils.getColumnIndex(COL_OBJECT, columns), specification.getId());
               price.set(price.get() - opts.get(item.getId()));
             }
-            Runnable runner = () -> {
+            Consumer<Integer> consumer = itemCount -> {
               BeeRowSet rs = DataUtils.getUpdated(getViewName(), getFormView().getDataColumns(),
                   getFormView().getOldRow(), getActiveRow(), getFormView().getChildrenForUpdate());
 
@@ -147,11 +147,11 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
                     Queries.deleteRow(TBL_CONF_OBJECTS, oldObject, new IntCallback() {
                       @Override
                       public void onSuccess(Integer cnt) {
-                        if (BeeUtils.isPositive(cnt)) {
-                          Data.onViewChange(VIEW_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
-                        }
+                        Data.onViewChange(VIEW_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
                       }
                     });
+                  } else if (BeeUtils.isPositive(itemCount)) {
+                    Data.onViewChange(VIEW_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
                   }
                   super.onSuccess(result);
                 }
@@ -161,11 +161,11 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
               Queries.insertRows(items, new RpcCallback<RowInfoList>() {
                 @Override
                 public void onSuccess(RowInfoList result) {
-                  runner.run();
+                  consumer.accept(result.size());
                 }
               });
             } else {
-              runner.run();
+              consumer.accept(0);
             }
           }
         });
@@ -365,10 +365,9 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
             defaultParameters.put(TBL_CONF_OBJECT_OPTIONS,
                 objectSpecification.renderSummary(false).toString());
 
-            for (Option option : objectSpecification.getBranchOptions()) {
-              if (DataUtils.isId(option.getPhoto())) {
-                defaultParameters.put(COL_PHOTO, BeeUtils.toString(option.getPhoto()));
-              }
+            for (int i = 0; i < objectSpecification.getBranchOptions().size(); i++) {
+              defaultParameters.put(COL_PHOTO + i,
+                  BeeUtils.toString(objectSpecification.getBranchOptions().get(i).getPhoto()));
             }
           }
           defaultParameters.putAll(companiesInfo);

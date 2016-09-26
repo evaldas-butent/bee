@@ -192,13 +192,13 @@ public class SpecificationBuilder implements InputCallback {
         if (!option.getDimension().isRequired()) {
           if (!Objects.equals(option.getDimension(), dimension)) {
             dimension = option.getDimension();
-            selectedOptions.add("<b>" + dimension + ":</b>");
+            selectedOptions.add("<i>" + dimension + ":</i>");
           }
-          selectedOptions.add(option.toString());
+          selectedOptions.add(BeeUtils.notEmpty(option.getDescription(), option.toString()));
         }
       }
-      specification.setDescription(BeeUtils.join("<br><br>"
-              + Localized.dictionary().additionalServices() + ":<br>",
+      specification.setDescription(BeeUtils.join("<br><br><b>"
+              + Localized.dictionary().additionalEquipment() + "</b><br>",
           specification.getDescription(), BeeUtils.join("<br>", selectedOptions)));
 
       ParameterList args = OrdersKeeper.createSvcArgs(SVC_SAVE_OBJECT);
@@ -498,7 +498,6 @@ public class SpecificationBuilder implements InputCallback {
     if (!proceed.get()) {
       return;
     }
-    header.add(specification.renderSummary(true));
     Flow subContainer = new Flow(STYLE_OPTIONS);
     container.add(subContainer);
 
@@ -561,6 +560,7 @@ public class SpecificationBuilder implements InputCallback {
     subContainer.add(optionBox);
     subContainer.add(selectable);
     subContainer.getElement().setScrollTop(scroll);
+    header.add(specification.renderSummary(true));
   }
 
   private void setBranch(Branch branch) {
@@ -588,9 +588,9 @@ public class SpecificationBuilder implements InputCallback {
         if (!option.getDimension().isRequired() && configuration.isDefault(option, bundle)) {
           if (!Objects.equals(option.getDimension(), dimension)) {
             dimension = option.getDimension();
-            defaults.add("<b>" + dimension + ":</b>");
+            defaults.add("<i>" + dimension + ":</i>");
           }
-          defaults.add(option.toString());
+          defaults.add(BeeUtils.notEmpty(option.getDescription(), option.toString()));
         }
       }
     } else {

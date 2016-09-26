@@ -462,10 +462,15 @@ public final class DynamicColumnFactory {
 
     if (!add.isEmpty()) {
       for (ColumnDescription columnDescription : add) {
-        int index = getInsertionIndex(gridView, predefinedColumns, visibleColumns, dynGroup,
-            columnDescription.getId());
-        if (gridView.addColumn(columnDescription, dynGroup, index)) {
-          changed = true;
+        ColumnDescription cd = (gridView.getGridInterceptor() == null) ? columnDescription
+            : gridView.getGridInterceptor().beforeCreateColumn(gridView, columnDescription);
+
+        if (cd != null) {
+          int index = getInsertionIndex(gridView, predefinedColumns, visibleColumns, dynGroup,
+              cd.getId());
+          if (gridView.addColumn(cd, dynGroup, index)) {
+            changed = true;
+          }
         }
       }
     }

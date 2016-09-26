@@ -944,6 +944,9 @@ public final class TaskConstants {
   public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
 
+  public static final String ALS_REQUEST_PRODUCT_FOREGROUND = "ProductForeground";
+  public static final String ALS_REQUEST_PRODUCT_BACKGROUND = "ProductBackground";
+
   public static final String ALS_DURATION_TYPE_NAME = "DurationTypeName";
 
   public static final String ALS_EXECUTOR_FIRST_NAME = "ExecutorFirstName";

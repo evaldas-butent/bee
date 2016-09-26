@@ -404,9 +404,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
-  public boolean addColumn(ColumnDescription columnDescription, String dynGroup, int beforeIndex) {
-    ColumnDescription cd = (gridInterceptor == null) ? columnDescription
-        : gridInterceptor.beforeCreateColumn(this, columnDescription);
+  public boolean addColumn(ColumnDescription cd, String dynGroup, int beforeIndex) {
     if (cd == null) {
       return false;
     }
@@ -2448,10 +2446,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     for (ColumnDescription columnDescription : columnDescriptions) {
       if (isColumnVisible(getGridName(), columnDescription)) {
-        if (BeeUtils.isTrue(columnDescription.getDynamic())) {
-          dynamicColumnGroups.add(columnDescription.getId());
-        } else {
-          addColumn(columnDescription, null, BeeConst.UNDEF);
+        ColumnDescription cd = (gridInterceptor == null) ? columnDescription
+            : gridInterceptor.beforeCreateColumn(this, columnDescription);
+
+        if (cd != null) {
+          if (BeeUtils.isTrue(cd.getDynamic())) {
+            dynamicColumnGroups.add(cd.getId());
+          } else {
+            addColumn(cd, null, BeeConst.UNDEF);
+          }
         }
       }
     }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="ChartOfAccounts" viewName="ChartOfAccounts" caption="=chartOfAccounts"
@@ -22,4 +23,8 @@
       <editor type="color" />
     </DataColumn>
   </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.AccountCode</ui:expression>
+  </g:rowMessage>
 </g:Grid>

@@ -30,29 +30,22 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 public final class TradeUtils {
 
@@ -392,12 +385,25 @@ public final class TradeUtils {
       command.addClickHandler(event -> Global.confirm(caption, Icon.QUESTION,
           Collections.singletonList(Localized.dictionary().recalculateTradeItemCostsQuestion()),
           () -> {
-            Long id = ViewHelper.getParentRowId(dataView.asWidget(), VIEW_TRADE_DOCUMENTS);
+            IsRow row = ViewHelper.getParentRow(dataView.asWidget(), VIEW_TRADE_DOCUMENTS);
 
-            if (DataUtils.isId(id)) {
+            if (isCostCalculationEnabled(row)) {
               ParameterList params = TradeKeeper.createArgs(SVC_CALCULATE_COST);
-              params.addQueryItem(COL_TRADE_DOCUMENT, id);
-              params.setSummary(COL_TRADE_DOCUMENT, id);
+
+              params.addQueryItem(COL_TRADE_DOCUMENT, row.getId());
+              params.addNotEmptyQuery(COL_TRADE_DATE,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DATE));
+              params.addNotEmptyQuery(COL_TRADE_CURRENCY,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_CURRENCY));
+
+              params.addNotEmptyQuery(COL_TRADE_DOCUMENT_VAT_MODE,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DOCUMENT_VAT_MODE));
+              params.addNotEmptyQuery(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DOCUMENT_DISCOUNT_MODE));
+              params.addNotEmptyQuery(COL_TRADE_DOCUMENT_DISCOUNT,
+                  Data.getString(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DOCUMENT_DISCOUNT));
+
+              params.setSummary(COL_TRADE_DOCUMENT, row.getId());
 
               BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
                 @Override
@@ -405,20 +411,10 @@ public final class TradeUtils {
                   if (response.hasMessages()) {
                     response.notify(dataView);
 
-                  } else if (response.hasResponse() && response.getSize() > 0) {
-                    Map<Long, Double> costs = new HashMap<>();
-                    Map<String, String> result =
-                        Codec.deserializeHashMap(response.getResponseAsString());
-
-                    if (!BeeUtils.isEmpty(result)) {
-                      result.forEach((k, v) -> costs.put(BeeUtils.toLongOrNull(k),
-                          BeeUtils.toDoubleOrNull(v)));
-
-                      updateItemCost(dataView, costs);
-
-                      dataView.notifyInfo(
-                          Localized.dictionary().recalculateTradeItemCostsNotification());
-                    }
+                  } else if (response.hasResponse()) {
+                    dataView.notifyInfo(
+                        Localized.dictionary().recalculateTradeItemCostsNotification(
+                            response.getResponseAsString()));
 
                   } else {
                     dataView.notifyWarning(Localized.dictionary().noData());
@@ -460,35 +456,22 @@ public final class TradeUtils {
         && BeeKeeper.getUser().canEditData(VIEW_TRADE_ITEM_COST)) {
 
       IsRow row = ViewHelper.getParentRow(dataView.asWidget(), VIEW_TRADE_DOCUMENTS);
+      return isCostCalculationEnabled(row);
 
-      if (DataUtils.hasId(row)) {
-        OperationType operationType =
-            Data.getEnum(VIEW_TRADE_DOCUMENTS, row, COL_OPERATION_TYPE, OperationType.class);
-
-        return operationType != null && operationType.providesCost();
-      }
+    } else {
+      return false;
     }
-
-    return false;
   }
 
-  private static void updateItemCost(DataView dataView, Map<Long, Double> costs) {
-    GridView gridView = VIEW_TRADE_DOCUMENT_ITEMS.equals(dataView.getViewName())
-        ? (GridView) dataView
-        : ViewHelper.getSiblingGrid(dataView.asWidget(), GRID_TRADE_DOCUMENT_ITEMS);
+  private static boolean isCostCalculationEnabled(IsRow row) {
+    if (DataUtils.hasId(row)) {
+      OperationType operationType =
+          Data.getEnum(VIEW_TRADE_DOCUMENTS, row, COL_OPERATION_TYPE, OperationType.class);
 
-    if (gridView != null && !gridView.isEmpty()) {
-      int index = gridView.getDataIndex(COL_TRADE_ITEM_COST);
-      CellSource cellSource = CellSource.forColumn(gridView.getDataColumns().get(index), index);
+      return operationType != null && operationType.providesCost();
 
-      for (IsRow row : gridView.getRowData()) {
-        Double newCost = costs.get(row.getId());
-
-        if (!Objects.equals(row.getDouble(index), newCost)) {
-          CellUpdateEvent.fire(BeeKeeper.getBus(), gridView.getViewName(),
-              row.getId(), row.getVersion(), cellSource, BeeUtils.toStringOrNull(newCost));
-        }
-      }
+    } else {
+      return false;
     }
   }
 

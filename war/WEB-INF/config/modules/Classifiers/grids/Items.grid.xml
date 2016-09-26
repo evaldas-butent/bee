@@ -84,6 +84,10 @@
     </CalcColumn>
 
     <PropColumn name="Remainder" type="string" dynamic="true" module="Orders" />
-
+    <PropColumn name="Stock" type="double" dynamic="true" module="Trade" />
   </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>[row.Name, row.Article].join(' ')</ui:expression>
+  </g:rowMessage>
 </g:Grid>

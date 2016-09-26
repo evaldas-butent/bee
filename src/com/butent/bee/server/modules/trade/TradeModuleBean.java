@@ -46,6 +46,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.BorderStyle;
@@ -78,6 +79,7 @@ import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuItem;
@@ -1467,13 +1469,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return ResponseObject.warning(reqInfo.getLabel(), docId, "phase not changed");
     }
 
+    OperationType operationType = newRow.getEnum(newRowSet.getColumnIndex(COL_OPERATION_TYPE),
+        OperationType.class);
+
     boolean oldStock = oldPhase != null && oldPhase.modifyStock();
     boolean newStock = newPhase.modifyStock();
 
     if (oldStock != newStock) {
-      OperationType operationType = newRow.getEnum(newRowSet.getColumnIndex(COL_OPERATION_TYPE),
-          OperationType.class);
-
       Long warehouseFrom = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_WAREHOUSE_FROM));
       Long warehouseTo = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_WAREHOUSE_TO));
 
@@ -1499,7 +1501,35 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       newRow.clearCell(statusIndex);
     }
 
-    return commitRow(oldRowSet.getViewName(), oldRowSet.getColumns(), oldRow, newRow);
+    ResponseObject result =
+        commitRow(oldRowSet.getViewName(), oldRowSet.getColumns(), oldRow, newRow);
+
+    if (!result.hasErrors() && newStock && operationType != null && operationType.providesCost()) {
+      ResponseObject response = calculateCost(docId,
+          newRow.getDateTime(newRowSet.getColumnIndex(COL_TRADE_DATE)),
+          newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_CURRENCY)),
+          newRow.getEnum(newRowSet.getColumnIndex(COL_TRADE_DOCUMENT_VAT_MODE),
+              TradeVatMode.class),
+          newRow.getEnum(newRowSet.getColumnIndex(COL_TRADE_DOCUMENT_DISCOUNT_MODE),
+              TradeDiscountMode.class),
+          newRow.getDouble(newRowSet.getColumnIndex(COL_TRADE_DOCUMENT_DISCOUNT)));
+
+      if (response != null && response.hasMessages()) {
+        List<ResponseMessage> messages = new ArrayList<>();
+
+        for (ResponseMessage rm : response.getMessages()) {
+          if (rm != null) {
+            messages.add(new ResponseMessage(rm.getDate(),
+                rm.getLevel() == LogLevel.ERROR ? LogLevel.WARNING : rm.getLevel(),
+                rm.getMessage()));
+          }
+        }
+
+        result.addMessages(messages);
+      }
+    }
+
+    return result;
   }
 
   private ResponseObject doPhaseTransition(long docId, OperationType operationType,
@@ -1750,23 +1780,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     switch (operationType) {
       case PURCHASE:
-        if (toStock && hasChildren(itemCondition)) {
-          errorMessage = "illegal";
+        if (!toStock && hasChildren(itemCondition)) {
+          errorMessage = "document has children";
         }
         break;
 
       case SALE:
         if (toStock && !verifyStock(itemCondition, warehouseFrom)) {
-          errorMessage = "never enough";
+          errorMessage = "not enough stock";
         }
         break;
 
       case TRANSFER:
         if (toStock && !verifyStock(itemCondition, warehouseFrom)) {
-          errorMessage = "it's never enough";
+          errorMessage = "not enough stock";
         }
         if (!toStock && hasChildren(itemCondition)) {
-          errorMessage = "taboo";
+          errorMessage = "document has children";
         }
         break;
     }
@@ -2622,38 +2652,37 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   private ResponseObject calculateCost(RequestInfo reqInfo) {
-    Long docId = reqInfo.getParameterLong(COL_TRADE_DOCUMENT);
-    if (!DataUtils.isId(docId)) {
+    Long id = reqInfo.getParameterLong(COL_TRADE_DOCUMENT);
+    if (!DataUtils.isId(id)) {
       return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_DOCUMENT);
     }
 
-    OperationType operationType = getOperationTypeByTradeDocument(docId);
-    if (operationType == null) {
-      return ResponseObject.emptyResponse();
+    DateTime date = reqInfo.getParameterDateTime(COL_TRADE_DATE);
+    if (date == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_DATE);
     }
 
-    if (!operationType.providesCost()) {
-      return ResponseObject.warning(COL_OPERATION_TYPE, operationType, "no cost for you");
+    Long currency = reqInfo.getParameterLong(COL_TRADE_CURRENCY);
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_TRADE_CURRENCY);
     }
 
-    SqlSelect docQuery = new SqlSelect()
-        .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE, COL_TRADE_CURRENCY,
-            COL_TRADE_DOCUMENT_VAT_MODE, COL_TRADE_DOCUMENT_DISCOUNT_MODE,
-            COL_TRADE_DOCUMENT_DISCOUNT)
-        .addFrom(TBL_TRADE_DOCUMENTS)
-        .setWhere(sys.idEquals(TBL_TRADE_DOCUMENTS, docId));
+    TradeVatMode vatMode = reqInfo.getParameterEnum(COL_TRADE_DOCUMENT_VAT_MODE,
+        TradeVatMode.class);
+    TradeDiscountMode discountMode = reqInfo.getParameterEnum(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
+        TradeDiscountMode.class);
 
-    SimpleRow docRow = qs.getRow(docQuery);
+    Double discount = reqInfo.getParameterDouble(COL_TRADE_DOCUMENT_DISCOUNT);
 
-    DateTime docDate = docRow.getDateTime(COL_TRADE_DATE);
-    if (docDate == null) {
-      return ResponseObject.error(TBL_TRADE_DOCUMENTS, docId, COL_TRADE_DATE, BeeConst.NULL);
-    }
+    return calculateCost(id, date, currency, vatMode, discountMode, discount);
+  }
 
-    Long docCurrency = docRow.getLong(COL_TRADE_CURRENCY);
-    if (!DataUtils.isId(docCurrency)) {
-      return ResponseObject.error(TBL_TRADE_DOCUMENTS, docId, COL_TRADE_CURRENCY,
-          Objects.toString(docCurrency));
+  private ResponseObject calculateCost(long docId, DateTime docDate, Long docCurrency,
+      TradeVatMode docVatMode, TradeDiscountMode docDiscountMode, Double docDiscount) {
+
+    Long costCurrency = prm.getRelation(PRM_CURRENCY);
+    if (!DataUtils.isId(costCurrency)) {
+      return ResponseObject.error(PRM_CURRENCY, Objects.toString(costCurrency));
     }
 
     String docItemIdName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
@@ -2673,38 +2702,62 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             SqlUtils.positive(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PRICE)));
 
     SimpleRowSet docItems = qs.getData(itemQuery);
-    if (DataUtils.isEmpty(docItems)) {
-      return ResponseObject.emptyResponse();
-    }
 
-    TradeDocumentSums tdSums = new TradeDocumentSums();
+    TradeDocumentSums tdSums = new TradeDocumentSums(docVatMode, docDiscountMode);
+    tdSums.disableRounding();
 
-    tdSums.updateDocumentDiscount(docRow.getDouble(COL_TRADE_DOCUMENT_DISCOUNT));
+    tdSums.updateDocumentDiscount(docDiscount);
 
-    tdSums.updateDiscountMode(docRow.getEnum(COL_TRADE_DOCUMENT_DISCOUNT_MODE,
-        TradeDiscountMode.class));
-    tdSums.updateVatMode(docRow.getEnum(COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class));
+    Map<Long, Double> costs = new HashMap<>();
 
     Map<Long, Double> itemQuantities = new HashMap<>();
     Map<Long, Double> itemWeights = new HashMap<>();
 
-    for (SimpleRow item : docItems) {
-      Long itemId = item.getLong(docItemIdName);
-      Double quantity = item.getDouble(COL_TRADE_ITEM_QUANTITY);
+    if (!DataUtils.isEmpty(docItems)) {
+      for (SimpleRow item : docItems) {
+        Long itemId = item.getLong(docItemIdName);
+        Double quantity = item.getDouble(COL_TRADE_ITEM_QUANTITY);
 
-      tdSums.add(itemId, quantity, item.getDouble(COL_TRADE_ITEM_PRICE),
-          item.getDouble(COL_TRADE_DOCUMENT_ITEM_DISCOUNT),
-          item.getBoolean(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT),
-          item.getDouble(COL_TRADE_DOCUMENT_ITEM_VAT),
-          item.getBoolean(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT));
+        tdSums.add(itemId, quantity, item.getDouble(COL_TRADE_ITEM_PRICE),
+            item.getDouble(COL_TRADE_DOCUMENT_ITEM_DISCOUNT),
+            item.getBoolean(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT),
+            item.getDouble(COL_TRADE_DOCUMENT_ITEM_VAT),
+            item.getBoolean(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT));
 
-      itemQuantities.put(itemId, quantity);
+        itemQuantities.put(itemId, quantity);
 
-      Double weight = item.getDouble(COL_ITEM_WEIGHT);
-      if (BeeUtils.nonZero(weight)) {
-        itemWeights.put(itemId, weight * quantity);
+        Double weight = item.getDouble(COL_ITEM_WEIGHT);
+        if (BeeUtils.nonZero(weight)) {
+          itemWeights.put(itemId, weight * quantity);
+        }
+      }
+
+      for (SimpleRow item : docItems) {
+        Long itemId = item.getLong(docItemIdName);
+
+        double vat = tdSums.getItemVat(itemId);
+        double discount = tdSums.getItemDiscount(itemId);
+
+        Double amount;
+        if ((BeeUtils.isZero(vat) || docVatMode != TradeVatMode.INCLUSIVE)
+            && BeeUtils.isZero(discount)) {
+
+          amount = item.getDouble(COL_TRADE_ITEM_QUANTITY) * item.getDouble(COL_TRADE_ITEM_PRICE);
+
+        } else {
+          amount = tdSums.getItemTotal(itemId) - vat;
+        }
+
+        Double cost = adm.maybeExchange(docCurrency, costCurrency, amount, docDate);
+        costs.put(itemId, cost);
       }
     }
+
+    double totalItemCost = BeeUtils.sum(costs.values());
+    double totalExpenditure = BeeConst.DOUBLE_ZERO;
+    double totalCost = totalItemCost;
+
+    logger.info(docId, COL_TRADE_ITEM_COST, totalItemCost);
 
     SqlSelect expenditureQuery = new SqlSelect()
         .addFields(TBL_TRADE_EXPENDITURES, COL_EXPENDITURE_DATE, COL_EXPENDITURE_AMOUNT,
@@ -2724,22 +2777,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             SqlUtils.notNull(TBL_EXPENDITURE_TYPES, COL_EXPENDITURE_TYPE_COST_BASIS)));
 
     SimpleRowSet expenditures = qs.getData(expenditureQuery);
-
-    Long costCurrency = prm.getRelation(PRM_CURRENCY);
-    if (!DataUtils.isId(costCurrency)) {
-      return ResponseObject.error(PRM_CURRENCY, Objects.toString(costCurrency));
-    }
-
-    Map<Long, Double> costs = new HashMap<>();
-
-    for (Long itemId : docItems.getLongColumn(docItemIdName)) {
-      Double amount = tdSums.getItemTotal(itemId) - tdSums.getItemVat(itemId);
-      Double cost = adm.maybeExchange(docCurrency, costCurrency, amount, docDate);
-
-      costs.put(itemId, cost);
-    }
-
-    logger.info(docId, COL_TRADE_ITEM_COST, BeeUtils.sum(costs.values()));
 
     if (!DataUtils.isEmpty(expenditures)) {
       EnumMap<TradeCostBasis, Double> expenditureByCostBasis = new EnumMap<>(TradeCostBasis.class);
@@ -2764,12 +2801,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           }
         }
 
+        amount = Localized.normalizeMoney(adm.maybeExchange(
+            expenditure.getLong(COL_EXPENDITURE_CURRENCY), costCurrency,
+            amount, expenditure.getDateTime(COL_EXPENDITURE_DATE)));
+
         if (BeeUtils.nonZero(amount) && costBasis != null) {
-          if (expenditureByCostBasis.containsKey(costBasis)) {
-            expenditureByCostBasis.put(costBasis, expenditureByCostBasis.get(costBasis) + amount);
-          } else {
-            expenditureByCostBasis.put(costBasis, amount);
-          }
+          expenditureByCostBasis.merge(costBasis, amount, Double::sum);
         }
       }
 
@@ -2806,13 +2843,14 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       });
 
       if (!costIncrement.isEmpty()) {
-        logger.info(docId, TBL_TRADE_EXPENDITURES, BeeUtils.sum(costIncrement.values()));
+        totalExpenditure = BeeUtils.sum(costIncrement.values());
+        logger.info(docId, TBL_TRADE_EXPENDITURES, totalExpenditure);
 
         costIncrement.forEach((itemId, increment) ->
             costs.merge(itemId, increment, Double::sum));
 
-        logger.info(docId, COL_TRADE_ITEM_COST, Localized.dictionary().total(),
-            BeeUtils.sum(costs.values()));
+        totalCost = BeeUtils.sum(costs.values());
+        logger.info(docId, COL_TRADE_ITEM_COST, Localized.dictionary().total(), totalCost);
       }
     }
 
@@ -2829,7 +2867,54 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return saveResponse;
     }
 
-    return ResponseObject.response(costs).setSize(costs.size());
+    if (saveResponse.getSize() > 0) {
+      Map<Long, Double> updatedCosts = new HashMap<>();
+      Set<Long> changedItems = DataUtils.parseIdSet(saveResponse.getResponseAsString());
+
+      for (Long itemId : changedItems) {
+        updatedCosts.put(itemId, costs.get(itemId));
+      }
+
+      if (!updatedCosts.isEmpty()) {
+        refreshCost(VIEW_TRADE_DOCUMENT_ITEMS, sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS),
+            COL_TRADE_ITEM_COST, updatedCosts);
+        refreshCost(VIEW_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM,
+            COL_TRADE_ITEM_COST, updatedCosts);
+      }
+    }
+
+    int dec = 5;
+    String result = BeeUtils.isZero(totalExpenditure)
+        ? BeeUtils.toString(totalCost, dec)
+        : BeeUtils.joinWords(BeeUtils.toString(totalItemCost, dec), BeeConst.STRING_PLUS,
+        BeeUtils.toString(totalExpenditure, dec), BeeConst.STRING_EQ,
+        BeeUtils.toString(totalCost, dec));
+
+    return ResponseObject.response(result);
+  }
+
+  private void refreshCost(String viewName, String keyColumn, String valueColumn,
+      Map<Long, Double> costs) {
+
+    boolean keyIsId = sys.getIdName(sys.getViewSource(viewName)).equals(keyColumn);
+
+    Filter filter = keyIsId ? Filter.idIn(costs.keySet()) : Filter.any(keyColumn, costs.keySet());
+    BeeRowSet rowSet = qs.getViewData(viewName, filter);
+
+    if (!DataUtils.isEmpty(rowSet)) {
+      int keyIndex = keyIsId ? DataUtils.ID_INDEX : rowSet.getColumnIndex(keyColumn);
+      int valueIndex = rowSet.getColumnIndex(valueColumn);
+
+      CellSource cellSource = CellSource.forColumn(rowSet.getColumn(valueIndex), valueIndex);
+
+      for (BeeRow row : rowSet) {
+        Long key = keyIsId ? row.getId() : row.getLong(keyIndex);
+        Double value = costs.get(key);
+
+        CellUpdateEvent.fire(Endpoint.getModificationShooter(), viewName,
+            row.getId(), row.getVersion(), cellSource, BeeUtils.toStringOrNull(value));
+      }
+    }
   }
 
   private ResponseObject saveCost(long docId, Map<Long, Double> costs, long currency) {
@@ -2879,6 +2964,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       });
     }
 
+    Set<Long> changedItems = new HashSet<>();
+
     if (!delete.isEmpty()) {
       SqlDelete sd = new SqlDelete(TBL_TRADE_ITEM_COST)
           .setWhere(SqlUtils.inList(TBL_TRADE_ITEM_COST, COL_TRADE_DOCUMENT_ITEM, delete));
@@ -2887,6 +2974,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       if (response.hasErrors()) {
         return response;
       }
+
+      changedItems.addAll(delete);
     }
 
     if (!update.isEmpty()) {
@@ -2902,6 +2991,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           return response;
         }
       }
+
+      changedItems.addAll(update.keySet());
     }
 
     if (!insert.isEmpty()) {
@@ -2916,8 +3007,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           return response;
         }
       }
+
+      changedItems.addAll(insert.keySet());
     }
 
-    return ResponseObject.emptyResponse();
+    return ResponseObject.response(DataUtils.buildIdList(changedItems))
+        .setSize(changedItems.size());
   }
 }
