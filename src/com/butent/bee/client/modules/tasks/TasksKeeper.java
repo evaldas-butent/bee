@@ -36,6 +36,7 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.html.builder.elements.Object;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
@@ -51,6 +52,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -271,6 +273,9 @@ public final class TasksKeeper {
           int privateTaskIdx = Data.getColumnIndex(VIEW_TASKS, COL_PRIVATE_TASK);
           Long userId = BeeKeeper.getUser().getUserId();
           IsRow row = event.getRow();
+          TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class, row.getInteger(
+              Data.getColumnIndex(VIEW_TASKS, COL_STATUS)));
+
 
           if (BeeUtils.unbox(row.getBoolean(privateTaskIdx))
               && row.getProperty(COL_PRIVATE_TASK) != COL_PRIVATE_TASK) {
@@ -300,10 +305,17 @@ public final class TasksKeeper {
                   BeeKeeper.getScreen().notifySevere(Localized.dictionary().crmTaskPrivate());
                 } else {
                   row.setProperty(COL_PRIVATE_TASK, COL_PRIVATE_TASK);
-                  RowEditor.open(VIEW_TASKS, row, event.getOpener());
+
+                  String formName = status == TaskStatus.NOT_SCHEDULED ? FORM_NEW_TASK : FORM_TASK;
+                  RowEditor.openForm(formName, VIEW_TASKS, row, event.getOpener(), null);
                 }
               }
             });
+          } else if (status == TaskStatus.NOT_SCHEDULED && Objects.equals(event.getOptions(),
+              FORM_TASK)) {
+
+            event.consume();
+            RowEditor.openForm(FORM_NEW_TASK, VIEW_TASKS, row, event.getOpener(), null);
           }
         } else if (event.isEditRow() && event.hasView(VIEW_TASK_FILES)) {
           event.consume();

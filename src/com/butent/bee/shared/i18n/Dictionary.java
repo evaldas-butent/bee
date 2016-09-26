@@ -1351,6 +1351,8 @@ public interface Dictionary {
 
   default String crmTasksDelegatedTasks() {return g("crmTasksDelegatedTasks");}
 
+  default String crmTasksNotScheduledTask() {return g("crmTasksNotScheduledTask");}
+
   default String crmTasksNotScheduledTasks() {return g("crmTasksNotScheduledTasks");}
 
   default String crmTasksObserved() {return g("crmTasksObserved");}

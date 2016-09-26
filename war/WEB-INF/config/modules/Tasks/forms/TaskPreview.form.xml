@@ -62,10 +62,10 @@
             </FlowPanel>
 
             <FlowPanel style="&section;">
-              <Label for="Company" style="&lbl1;" module="Classifiers.Contacts" class="bee-required" />
+              <Label for="Company" style="&lbl1;" module="Classifiers.Contacts" />
               <DataSelector source="Company" newRowEnabled="false" style="&inp2;" disablable="true"
-                choiceColumns="Name TypeName " renderColumns="CompanyName CompanyTypeName" module="Classifiers.Contacts"
-                required="true" />
+                choiceColumns="Name TypeName " renderColumns="CompanyName CompanyTypeName"
+                            module="Classifiers.Contacts" />
               <Label for="Contact" style="&lbl2;" module="Classifiers.Contacts" />
               <DataSelector source="Contact" newRowEnabled="false" style="&inp2;" disablable="true"
                 renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName" options="Company"
@@ -73,9 +73,9 @@
             </FlowPanel>
 
             <FlowPanel style="&section;">
-              <Label for="Type" style="&lbl1;" class="bee-required" />
+              <Label for="Type" style="&lbl1;" />
               <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="false" style="&inp2;"
-                disablable="true" required="true" />
+                disablable="true" />
               <Label for="Product" name="Product" style="&lbl2;" />
               <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2;"
                 filter="Visible" />
