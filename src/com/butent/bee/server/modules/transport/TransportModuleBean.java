@@ -96,13 +96,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -120,9 +113,18 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.core.MediaType;
 
 @Stateless
 @LocalBean
@@ -381,6 +383,7 @@ public class TransportModuleBean implements BeeModule {
         BeeParameter.createText(module, "SmsPassword"),
         BeeParameter.createText(module, "SmsServiceId"),
         BeeParameter.createText(module, "SmsDisplayText"),
+        BeeParameter.createMap(module, "SmsRequestHeaders"),
         BeeParameter.createRelation(module, PRM_SELF_SERVICE_ROLE, TBL_ROLES, COL_ROLE_NAME),
         BeeParameter.createRelation(module, PRM_CARGO_TYPE, true, TBL_CARGO_TYPES,
             COL_CARGO_TYPE_NAME),
@@ -3217,83 +3220,47 @@ public class TransportModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(address)) {
       return ResponseObject.error("SmsServiceAddress is empty");
     }
-    StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>")
-        .append("<sms-send>")
-        .append("<authentication>")
-        .append(XmlUtils.tag("username", prm.getText("SmsUserName")))
-        .append(XmlUtils.tag("password", prm.getText("SmsPassword")))
-        .append(XmlUtils.tag("serviceId", prm.getText("SmsServiceId")))
-        .append("</authentication>")
-        .append("<originator>")
-        .append(XmlUtils.tag("source", prm.getText("SmsDisplayText")))
-        .append("</originator>")
-        .append("<sms-messages>");
+    JsonArrayBuilder jsonRecipients = Json.createArrayBuilder();
 
     for (String phone : recipients) {
-      xml.append("<sms>")
-          .append(XmlUtils.tag("destination", phone))
-          .append(XmlUtils.tag("msg", message))
-          .append(XmlUtils.tag("dr", true))
-          .append(XmlUtils.tag("id", 0))
-          .append(XmlUtils.tag("sendTime", new DateTime().toString()))
-          .append("</sms>");
+      jsonRecipients.add(Json.createObjectBuilder()
+          .add("from", prm.getText("SmsDisplayText"))
+          .add("to", phone)
+          .add("text", message));
     }
-    xml.append("</sms-messages>")
-        .append("</sms-send>");
+    JsonObjectBuilder json = Json.createObjectBuilder()
+        .add("username", prm.getText("SmsUserName"))
+        .add("password", prm.getText("SmsPassword"))
+        .add("service_id", prm.getText("SmsServiceId"))
+        .add("time", new DateTime().getTime())
+        .add("message", jsonRecipients);
 
-    ResponseObject response = ResponseObject.info(Localized.dictionary().messageSent());
-    BufferedWriter wr = null;
-    BufferedReader in = null;
-    HttpURLConnection conn = null;
+    Client client = ClientBuilder.newClient();
 
-    try {
-      conn = (HttpURLConnection) new URL(address).openConnection();
-      conn.setRequestMethod("POST");
-      conn.setDoOutput(true);
+    Invocation.Builder builder = client.target(address)
+        .request(MediaType.APPLICATION_JSON_TYPE);
 
-      wr = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream(),
-          BeeConst.CHARSET_UTF8));
-      wr.write(xml.toString());
-      wr.close();
+    Map<String, String> headers = prm.getMap("SmsRequestHeaders");
 
-      if (conn.getResponseCode() != HttpServletResponse.SC_OK) {
-        response = ResponseObject.error(Localized.dictionary().error(), conn.getResponseCode(),
-            conn.getResponseMessage());
+    if (!BeeUtils.isEmpty(headers)) {
+      for (Entry<String, String> entry : headers.entrySet()) {
+        builder.header(entry.getKey(), entry.getValue());
+      }
+    }
+    JsonObject jsonResponse = builder.post(Entity.json(json.build().toString()), JsonObject.class);
+
+    ResponseObject response;
+
+    if (jsonResponse.containsKey("response")) {
+      JsonValue resp = jsonResponse.get("response");
+
+      if (resp.getValueType() == JsonValue.ValueType.OBJECT) {
+        response = ResponseObject.info(Localized.dictionary().messageSent(), resp);
       } else {
-        in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        StringBuilder sb = new StringBuilder();
-        String input = in.readLine();
-
-        while (input != null) {
-          sb.append(input);
-          input = in.readLine();
-        }
-        in.close();
-        input = sb.toString();
-        String status = XmlUtils.getText(input, "status");
-
-        if (!BeeUtils.same(status, "OK")) {
-          response = ResponseObject.error(input);
-        }
+        response = ResponseObject.error(resp);
       }
-    } catch (IOException e) {
-      logger.error(e);
-      response = ResponseObject.error(e);
-
-      try {
-        if (wr != null) {
-          wr.close();
-        }
-        if (in != null) {
-          in.close();
-        }
-      } catch (IOException ex) {
-        logger.error(ex);
-      }
-    } finally {
-      if (conn != null) {
-        conn.disconnect();
-      }
+    } else {
+      response = ResponseObject.error("Unknown response:", jsonResponse);
     }
     return response;
   }
