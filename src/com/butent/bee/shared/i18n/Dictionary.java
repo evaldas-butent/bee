@@ -4404,6 +4404,8 @@ public interface Dictionary {
 
   default String scheduledStartingTime() {return g("scheduledStartingTime");}
 
+  default String scvAddressRequired() {return g("scvAddressRequired");}
+
   default String search() {return g("search");}
 
   default String searchQueryRestriction(Object p0) {
@@ -4554,15 +4556,27 @@ public interface Dictionary {
 
   default String svcNewObject() {return g("svcNewObject");}
 
+  default String svcNewServiceState() {return g("svcNewServiceState");}
+
+  default String svcNewServiceType() {return g("svcNewServiceType");}
+
+  default String svcNewWarrantyType() {return g("svcNewWarrantyType");}
+
   default String svcObject() {return g("svcObject");}
 
   default String svcObjectFiles() {return g("svcObjectFiles");}
 
   default String svcObjects() {return g("svcObjects");}
 
+  default String svcServiceStates() {return g("svcServiceStates");}
+
+  default String svcServiceTypes() {return g("svcServiceTypes");}
+
   default String svcSpecification() {return g("svcSpecification");}
 
   default String svcTypeOfWork() {return g("svcTypeOfWork");}
+
+  default String svcWarrantyTypes() {return g("svcWarrantyTypes");}
 
   default String swift() {return g("swift");}
 

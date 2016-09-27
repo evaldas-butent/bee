@@ -393,6 +393,8 @@
       <xs:enumeration value="Locations" />
       <xs:enumeration value="LossReasons" />
       <xs:enumeration value="Maintenance" />
+      <xs:enumeration value="MaintenanceStates" />
+      <xs:enumeration value="MaintenanceTypes" />
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Newsletters" />
       <xs:enumeration value="NewsletterContacts" />
@@ -606,6 +608,7 @@
       <xs:enumeration value="VehicleTracking" />
       <xs:enumeration value="WaitingCargo" />
       <xs:enumeration value="Warehouses" />
+      <xs:enumeration value="WarrantyTypes" />
       <xs:enumeration value="WorkSchedule" />
       <xs:enumeration value="Workspaces" />
 
