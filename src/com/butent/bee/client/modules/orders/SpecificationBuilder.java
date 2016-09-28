@@ -13,6 +13,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
@@ -34,8 +35,6 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -45,6 +44,7 @@ import com.butent.bee.shared.modules.orders.Configuration;
 import com.butent.bee.shared.modules.orders.Dimension;
 import com.butent.bee.shared.modules.orders.Option;
 import com.butent.bee.shared.modules.orders.Specification;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -61,24 +61,38 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class SpecificationBuilder implements InputCallback {
 
   private static final class Branch {
     private final Long id;
     private final Option option;
+    private final JustDate validUntil;
     private final List<Branch> childs = new ArrayList<>();
     private Branch parent;
     private Configuration configuration;
 
-    private Branch(Long id, Option option) {
+    private Branch(Long id, Option option, JustDate validUntil) {
       this.id = id;
       this.option = option;
+      this.validUntil = validUntil;
     }
 
     private void addChild(Branch child) {
       child.parent = this;
       childs.add(child);
+    }
+
+    private List<Option> getBranchOptions() {
+      List<Option> branchOptions = new ArrayList<>();
+      Branch br = this;
+
+      while (br.getParent() != null) {
+        branchOptions.add(0, br.getOption());
+        br = br.getParent();
+      }
+      return branchOptions;
     }
 
     private List<Branch> getChilds() {
@@ -101,21 +115,31 @@ public class SpecificationBuilder implements InputCallback {
       return parent;
     }
 
+    private JustDate getValidUntil() {
+      return validUntil;
+    }
+
+    private boolean isValid() {
+      return Objects.isNull(validUntil) || TimeUtils.isMeq(validUntil, TimeUtils.today());
+    }
+
     private void setConfiguration(Configuration configuration) {
       this.configuration = configuration;
     }
   }
 
   public static final String STYLE_PREFIX = "bee-spec";
+  private static final String STYLE_DIALOG = STYLE_PREFIX + "-dialog";
+  private static final String STYLE_CONTAINER = STYLE_PREFIX + "-container";
   public static final String STYLE_OPTIONS = STYLE_PREFIX + "-options";
   private static final String STYLE_BOX = STYLE_PREFIX + "-box";
   public static final String STYLE_THUMBNAIL = STYLE_PREFIX + "-thumbnail";
   private static final String STYLE_SELECTABLE = STYLE_PREFIX + "-selectable";
   private static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
 
-  private final Specification template;
+  private Specification template;
   private final Consumer<Specification> callback;
-  private final Flow container = new Flow(STYLE_PREFIX);
+  private final Flow container = new Flow(STYLE_CONTAINER);
 
   private Branch currentBranch;
   private final Specification specification = new Specification();
@@ -124,31 +148,30 @@ public class SpecificationBuilder implements InputCallback {
     this.template = template;
     this.callback = Assert.notNull(callback);
 
-    Queries.getRowSet(TBL_CONF_PRICELIST, null, Filter.or(Filter.isNull(COL_VALID_UNTIL),
-        Filter.isMore(COL_VALID_UNTIL, new DateValue(TimeUtils.today()))),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            Branch tree = new Branch(null, null);
-            Multimap<Long, Branch> hierarchy = LinkedHashMultimap.create();
+    Queries.getRowSet(TBL_CONF_PRICELIST, null, new Queries.RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        Branch tree = new Branch(null, null, null);
+        Multimap<Long, Branch> hierarchy = LinkedHashMultimap.create();
 
-            for (int i = 0; i < result.getNumberOfRows(); i++) {
-              Option option = new Option(result.getLong(i, COL_OPTION),
-                  result.getString(i, COL_OPTION_NAME),
-                  new Dimension(result.getLong(i, COL_GROUP), result.getString(i, COL_GROUP_NAME)))
-                  .setPhoto(result.getLong(i, ClassifierConstants.COL_PHOTO));
+        for (int i = 0; i < result.getNumberOfRows(); i++) {
+          Option option = new Option(result.getLong(i, COL_OPTION),
+              result.getString(i, COL_OPTION_NAME),
+              new Dimension(result.getLong(i, COL_GROUP), result.getString(i, COL_GROUP_NAME)))
+              .setPhoto(result.getLong(i, ClassifierConstants.COL_PHOTO));
 
-              hierarchy.put(result.getLong(i, COL_BRANCH),
-                  new Branch(result.getRow(i).getId(), option));
-            }
-            fillTree(tree, hierarchy);
-            setBranch(tree);
-          }
-        });
-    StyleUtils.setWidth(container, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
-    StyleUtils.setHeight(container, BeeKeeper.getScreen().getHeight() * 0.8, CssUnit.PX);
+          hierarchy.put(result.getLong(i, COL_BRANCH),
+              new Branch(result.getRow(i).getId(), option, result.getDate(i, COL_VALID_UNTIL)));
+        }
+        fillTree(tree, hierarchy);
+        setBranch(tree);
+      }
+    });
+    DialogBox dialog = Global.inputWidget(Localized.dictionary().specification(), container, this);
+    dialog.addStyleName(STYLE_DIALOG);
 
-    Global.inputWidget(Localized.dictionary().specification(), container, this);
+    StyleUtils.setWidth(dialog, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
+    StyleUtils.setHeight(dialog, BeeKeeper.getScreen().getHeight() * 0.8, CssUnit.PX);
   }
 
   @Override
@@ -327,6 +350,23 @@ public class SpecificationBuilder implements InputCallback {
     }
   }
 
+  private static Branch findBranch(Branch branch, Long id) {
+    Branch found = null;
+
+    if (DataUtils.isId(branch.getId()) && Objects.equals(branch.getId(), id)) {
+      found = branch;
+    } else {
+      for (Branch childBranch : branch.getChilds()) {
+        found = findBranch(childBranch, id);
+
+        if (Objects.nonNull(found)) {
+          break;
+        }
+      }
+    }
+    return found;
+  }
+
   private Multimap<Dimension, Option> getAvailableOptions() {
     Multimap<Dimension, Option> options = TreeMultimap.create();
 
@@ -365,27 +405,7 @@ public class SpecificationBuilder implements InputCallback {
   }
 
   private void refresh() {
-    if (currentBranch.getConfiguration() == null) {
-      if (DataUtils.isId(currentBranch.getId())) {
-        ParameterList args = OrdersKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
-        args.addDataItem(COL_BRANCH, currentBranch.getId());
-
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(BeeKeeper.getScreen());
-
-            if (!response.hasErrors()) {
-              currentBranch.setConfiguration(Configuration.restore(response.getResponseAsString()));
-              refresh();
-            }
-          }
-        });
-        return;
-      } else {
-        currentBranch.setConfiguration(new Configuration());
-      }
-    }
+    Configuration configuration = currentBranch.getConfiguration();
     int scroll = 0;
 
     for (Widget widget : container) {
@@ -410,8 +430,9 @@ public class SpecificationBuilder implements InputCallback {
     Flow branchBox = new Flow(STYLE_BOX);
 
     for (Branch branch : path) {
-      List<Branch> branches = branch.getParent().getChilds();
       List<Option> choices = new ArrayList<>();
+      List<Branch> branches = branch.getParent().getChilds().stream().filter(Branch::isValid)
+          .collect(Collectors.toList());
 
       for (Branch bra : branches) {
         choices.add(bra.getOption());
@@ -420,9 +441,10 @@ public class SpecificationBuilder implements InputCallback {
           getCaptionWidgets(branch.getOption(), true)));
     }
     if (!BeeUtils.isEmpty(currentBranch.getChilds())) {
-      List<Branch> branches = currentBranch.getChilds();
+      List<Branch> branches = currentBranch.getChilds().stream().filter(Branch::isValid)
+          .collect(Collectors.toList());
 
-      if (branches.size() == 1 && currentBranch.getConfiguration().isEmpty()) {
+      if (branches.size() == 1 && configuration.isEmpty()) {
         setBranch(BeeUtils.peek(branches));
         return;
       } else {
@@ -438,7 +460,6 @@ public class SpecificationBuilder implements InputCallback {
 
     // BUNDLES
     Flow bundleBox = new Flow(STYLE_BOX);
-    Configuration configuration = currentBranch.getConfiguration();
 
     List<Dimension> allDimensions = configuration.getAllDimensions();
     List<Bundle> bundles = configuration.getMetrics(allDimensions);
@@ -526,8 +547,9 @@ public class SpecificationBuilder implements InputCallback {
           option = def;
           specification.addOption(option, normPrice(option));
         }
-        optionBox.add(buildThumbnail(opts, index -> toggleOption(allOptions, opts.get(index), true),
-            option != null ? getCaptionWidgets(option, true) : null));
+        optionBox.add(buildThumbnail(opts, index ->
+            toggleOption(allOptions, opts.get(index), true, false), option != null
+            ? getCaptionWidgets(option, true) : null));
       } else {
         int rowSelectable = BeeConst.UNDEF;
 
@@ -536,7 +558,7 @@ public class SpecificationBuilder implements InputCallback {
             CheckBox check = new CheckBox();
             check.setChecked(specification.getOptions().contains(option));
             check.addValueChangeHandler(valueChangeEvent ->
-                toggleOption(allOptions, option, check.isChecked()));
+                toggleOption(allOptions, option, check.isChecked(), false));
 
             if (BeeConst.isUndef(rowSelectable)) {
               rowSelectable = selectable.getRowCount();
@@ -563,25 +585,12 @@ public class SpecificationBuilder implements InputCallback {
     header.add(specification.renderSummary(true));
   }
 
-  private void setBranch(Branch branch) {
-    List<Option> branchOptions = new ArrayList<>();
-    Branch br = branch;
-
-    while (br.getParent() != null) {
-      branchOptions.add(0, br.getOption());
-      br = br.getParent();
-    }
-    currentBranch = branch;
-    specification.setBranchOptions(branch.getId(), branchOptions);
-    setBundle(null);
-  }
-
-  private void setBundle(Bundle bundle) {
+  private void renderDescription() {
     List<String> defaults = new ArrayList<>();
+    Bundle bundle = specification.getBundle();
 
     if (bundle != null) {
       Configuration configuration = currentBranch.getConfiguration();
-      specification.setBundle(bundle, BeeUtils.toIntOrNull(configuration.getBundlePrice(bundle)));
       Dimension dimension = null;
 
       for (Option option : getAvailableOptions().values()) {
@@ -593,15 +602,84 @@ public class SpecificationBuilder implements InputCallback {
           defaults.add(BeeUtils.notEmpty(option.getDescription(), option.toString()));
         }
       }
-    } else {
-      specification.setBundle(null, null);
     }
     specification.setDescription(BeeUtils.join("<br>", defaults));
+  }
+
+  private void setBranch(Branch branch) {
+    if (Objects.nonNull(template)) {
+      Branch br = findBranch(branch, template.getBranchId());
+
+      if (Objects.isNull(br)) {
+        BeeKeeper.getScreen().notifySevere(Localized.dictionary()
+            .keyNotFound(template.getBranchOptions()));
+        template = null;
+        br = branch;
+      } else {
+        if (!Objects.equals(template.getBranchOptions(), br.getBranchOptions())) {
+          BeeKeeper.getScreen().notifyWarning(Localized.dictionary()
+              .keyNotFound(template.getBranchOptions()));
+        }
+      }
+      currentBranch = br;
+    } else {
+      currentBranch = branch;
+    }
+    specification.setBranchOptions(currentBranch.getId(), currentBranch.getBranchOptions());
+
+    if (Objects.isNull(currentBranch.getConfiguration())) {
+      if (DataUtils.isId(currentBranch.getId())) {
+        ParameterList args = OrdersKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
+        args.addDataItem(COL_BRANCH, currentBranch.getId());
+
+        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            response.notify(BeeKeeper.getScreen());
+
+            if (!response.hasErrors()) {
+              currentBranch.setConfiguration(Configuration.restore(response.getResponseAsString()));
+              setBundle(null);
+            }
+          }
+        });
+        return;
+      } else {
+        currentBranch.setConfiguration(new Configuration());
+      }
+    }
+    setBundle(null);
+  }
+
+  private void setBundle(Bundle bundle) {
     specification.getOptions().clear();
+    Configuration configuration = currentBranch.getConfiguration();
+
+    if (Objects.nonNull(template)) {
+      Bundle templateBundle = template.getBundle();
+      Integer price = BeeUtils.toIntOrNull(configuration.getBundlePrice(templateBundle));
+
+      if (Objects.isNull(price)) {
+        BeeKeeper.getScreen().notifySevere(Localized.dictionary().keyNotFound(templateBundle));
+        specification.setBundle(null, null);
+      } else {
+        specification.setBundle(templateBundle, price);
+        Multimap<Dimension, Option> allOptions = getAvailableOptions();
+
+        for (Option option : template.getOptions()) {
+          toggleOption(allOptions, option, true, true);
+        }
+      }
+      template = null;
+    } else {
+      specification.setBundle(bundle, BeeUtils.toIntOrNull(configuration.getBundlePrice(bundle)));
+    }
+    renderDescription();
     refresh();
   }
 
-  private void toggleOption(Multimap<Dimension, Option> allOptions, Option option, boolean on) {
+  private void toggleOption(Multimap<Dimension, Option> allOptions, Option option, boolean on,
+      boolean silent) {
     Map<Option, Boolean> toggle = new TreeMap<>();
 
     for (Option opt : specification.getOptions()) {
@@ -610,7 +688,9 @@ public class SpecificationBuilder implements InputCallback {
     ConfirmationCallback confirmationCallback = new ConfirmationCallback() {
       @Override
       public void onCancel() {
-        refresh();
+        if (!silent) {
+          refresh();
+        }
       }
 
       @Override
@@ -626,7 +706,9 @@ public class SpecificationBuilder implements InputCallback {
             }
           }
         }
-        refresh();
+        if (!silent) {
+          refresh();
+        }
       }
     };
     try {
@@ -642,7 +724,8 @@ public class SpecificationBuilder implements InputCallback {
           msgs.add(BeeUtils.joinWords(action ? "+" : "-", opt));
         }
       }
-      if (BeeUtils.isEmpty(msgs) || msgs.size() == 1 && option.getDimension().isRequired()) {
+      if (silent || BeeUtils.isEmpty(msgs)
+          || msgs.size() == 1 && option.getDimension().isRequired()) {
         confirmationCallback.onConfirm();
       } else {
         Global.confirm(option.toString(), Icon.QUESTION, msgs, confirmationCallback);

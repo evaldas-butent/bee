@@ -585,7 +585,16 @@
   content: "\f00d";
 }
 
-.bee-spec {
+.bee-spec-dialog > div {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.bee-spec-dialog .bee-Dialog-content {
+  flex: 1;
+}
+.bee-spec-container {
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
