@@ -21,48 +21,54 @@
         <Label for="TabNumber" />
         <InputInteger source="TabNumber" style="&w2;" />
       </row>
-
-      <row>
-        <Label text="=company" />
-        <TextLabel source="CompanyName" class="bee-output" style="&w1;" />
-
-        <Label for="Salary" module="Payroll" />
-        <InputDecimal source="Salary" currencySource="Currency" style="&w2;" module="Payroll" />
-        <cell style="padding-left: 6px;" module="Payroll">
-          <DataSelector source="Currency" for="Salary" newRowEnabled="false" editEnabled="false"
-            style="width: 5em;" />
-        </cell>
-      </row>
-
-      <row>
-        <Label text="=department" />
-        <TextLabel source="DepartmentName" class="bee-output" style="&w1;" />
-
-        <Label for="PartTime" module="Payroll" />
-        <InputDecimal source="PartTime" style="&w2;" module="Payroll" />
-      </row>
-
-      <row>
-        <Label text="=personPosition" />
-        <TextLabel source="PositionName" class="bee-output" style="&w1;" />
-
-        <Label for="DateOfEmployment" />
-        <DateLabel source="DateOfEmployment" class="bee-output" />
-      </row>
-
-      <row>
-        <Label for="Mobile" />
-        <TextLabel source="Mobile" class="bee-output" style="&w1;" />
-
-        <Label for="DateOfDismissal" />
-        <DateLabel source="DateOfDismissal" class="bee-output" style="color: red;" />
-      </row>
-
-      <row>
-        <Label text="=email" />
-        <TextLabel source="Email" class="bee-output" style="&w1;" textOnly="true" />
-      </row>
     </Table>
+    <Disclosure name="EmployeeInfo">
+      <Label text="=employeeInfo" />
+      <FlowPanel style="margin-left:30px;">
+        <Table kind="controls">
+          <row>
+            <Label text="=company" />
+            <TextLabel source="CompanyName" class="bee-output" style="&w1;" />
+
+            <Label for="Salary" module="Payroll" />
+            <InputDecimal source="Salary" currencySource="Currency" style="&w2;" module="Payroll" />
+            <cell style="padding-left: 6px;" module="Payroll">
+              <DataSelector source="Currency" for="Salary" newRowEnabled="false" editEnabled="false"
+                style="width: 5em;" />
+            </cell>
+          </row>
+
+          <row>
+            <Label text="=department" />
+            <TextLabel source="DepartmentName" class="bee-output" style="&w1;" />
+
+            <Label for="PartTime" module="Payroll" />
+            <InputDecimal source="PartTime" style="&w2;" module="Payroll" />
+          </row>
+
+          <row>
+            <Label text="=personPosition" />
+            <TextLabel source="PositionName" class="bee-output" style="&w1;" />
+
+            <Label for="DateOfEmployment" />
+            <DateLabel source="DateOfEmployment" class="bee-output" />
+          </row>
+
+          <row>
+            <Label for="Mobile" />
+            <TextLabel source="Mobile" class="bee-output" style="&w1;" />
+
+            <Label for="DateOfDismissal" />
+            <DateLabel source="DateOfDismissal" class="bee-output" style="color: red;" />
+          </row>
+
+          <row>
+            <Label text="=email" />
+            <TextLabel source="Email" class="bee-output" style="&w1;" textOnly="true" />
+          </row>
+        </Table>
+      </FlowPanel>
+    </Disclosure>
     <br/>
 
     <TabbedPages class="flexible">

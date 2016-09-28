@@ -2438,6 +2438,8 @@ public interface Dictionary {
 
   default String employee() {return g("employee");}
 
+  default String employeeInfo() {return g("employeeInfo");}
+
   default String employeeSubstituteFor() {return g("employeeSubstituteFor");}
 
   default String employeeSubstitution() {return g("employeeSubstitution");}
