@@ -128,8 +128,7 @@
   <xs:simpleType name="cellType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="html" />
-      <xs:enumeration value="input" />
-      <xs:enumeration value="div" />
+      <xs:enumeration value="text" />
     </xs:restriction>
   </xs:simpleType>
 
