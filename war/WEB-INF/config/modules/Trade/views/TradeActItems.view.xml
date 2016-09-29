@@ -9,6 +9,7 @@
     <SimpleJoin name="TradeAct" joinType="LEFT">
       <SimpleColumn name="Date" />
       <SimpleColumn name="Parent" alias="TAParent"/>
+      <SimpleColumn name="Kind" />
     </SimpleJoin>
 
     <SimpleColumn name="Parent" />

@@ -383,10 +383,10 @@ final class TradeActItemReturn {
           Element overall = Selectors.getElement(currentRow,
               Selectors.classSelector(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL));
 
-          Double min = BeeUtils.toDoubleOrNull(source.getInnerText());
-          Double max = BeeUtils.toDoubleOrNull(overall.getInnerText());
+          double min = BeeUtils.toDouble(source.getInnerText());
+          double max = BeeUtils.toDouble(overall.getInnerText());
 
-          if (w.getNumber().equals(BeeUtils.clamp(w.getNumber(), min, max))) {
+          if (w.getNumber().equals(BeeUtils.clamp(BeeUtils.unbox(w.getNumber()), min, max))) {
             selectQuantity(w.getElement());
             return;
           }

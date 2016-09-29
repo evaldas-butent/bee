@@ -7,7 +7,7 @@
     <IdColumn name="Id" />
     <RelColumn name="Operation" renderColumns="OperationName" />
     <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" />
-    <RelColumn name="Series" visible="true" />
+    <RelColumn name="Series" visible="true" filterSupplier="list" />
     <DataColumn name="Number" visible="true" />
     <DataColumn name="ReturnedCount" />
     <RelColumn name="Name" visible="true" />

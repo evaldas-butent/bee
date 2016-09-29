@@ -203,7 +203,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
       return null;
     }
 
-    BeeRowSet statuses = (kind == null) ? null : TradeActKeeper.getStatuses();
+    BeeRowSet statuses = kind == null ? null : TradeActKeeper.getStatuses();
     if (DataUtils.isEmpty(statuses)) {
       return null;
     }
@@ -502,10 +502,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
                       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_ITEMS);
                       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_SERVICES);
                       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
-//
-//                      if (ro.hasResponse(Long.class)  && DataUtils.isId(ro.getResponseAsLong())) {
-//                        RowEditor.open(VIEW_TRADE_ACTS, ro.getResponseAsLong(), Opener.MODAL);
-//                      }
+
+                      if (ro.hasResponse(Long.class)  && DataUtils.isId(ro.getResponseAsLong())) {
+                        RowEditor.open(VIEW_TRADE_ACTS, ro.getResponseAsLong(), Opener.MODAL);
+                      }
                     }
                   });
                 }
@@ -535,48 +535,66 @@ public class TradeActGrid extends AbstractGridInterceptor {
   }
 
   private void createSupplement(IsRow parent) {
-    DataInfo dataInfo = Data.getDataInfo(getViewName());
-    BeeRow newRow = RowFactory.createEmptyRow(dataInfo, false);
+    ParameterList prm = TradeActKeeper.createArgs(SVC_GET_NEXT_CHILD_ACT_NUMBER);
 
-    for (int i = 0; i < getDataColumns().size(); i++) {
-      String colId = getDataColumns().get(i).getId();
-
-      switch (colId) {
-        case COL_TA_KIND:
-          newRow.setValue(i, TradeActKind.SUPPLEMENT.ordinal());
-          break;
-
-        case COL_TA_DATE:
-          newRow.setValue(i, TimeUtils.nowMinutes());
-          break;
-
-        case COL_TA_PARENT:
-          newRow.setValue(i, parent.getId());
-          break;
-
-        case COL_TA_NUMBER:
-          if (!parent.isNull(i)) {
-            newRow.setValue(i, BeeUtils.trim(parent.getString(i)) + "-1");
-          }
-          break;
-
-        case COL_TA_UNTIL:
-        case COL_TA_NOTES:
-          break;
-
-        default:
-          if (!parent.isNull(i) && !colId.startsWith(COL_TA_STATUS)) {
-            newRow.setValue(i, parent.getString(i));
-          }
-      }
+    if (DataUtils.isId(parent.getLong(getDataIndex(COL_TA_SERIES)))) {
+      prm.addDataItem(COL_TA_SERIES, parent.getLong(getDataIndex(COL_TA_SERIES)));
     }
 
-    TradeActKeeper.setDefaultOperation(newRow, TradeActKind.SUPPLEMENT);
+    prm.addDataItem(TradeConstants.VAR_VIEW_NAME, getViewName());
+    prm.addDataItem(Service.VAR_COLUMN, COL_TA_NUMBER);
+    prm.addDataItem(COL_TA_PARENT, parent.getId());
+    prm.addDataItem(COL_TA_KIND, TradeActKind.SUPPLEMENT.ordinal());
 
-    RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
+    BeeKeeper.getRpc().makeRequest(prm, new ResponseCallback() {
+
       @Override
-      public void onSuccess(BeeRow result) {
-        getGridView().ensureRow(result, true);
+      public void onResponse(ResponseObject response) {
+        DataInfo dataInfo = Data.getDataInfo(getViewName());
+        BeeRow newRow = RowFactory.createEmptyRow(dataInfo, false);
+
+        for (int i = 0; i < getDataColumns().size(); i++) {
+          String colId = getDataColumns().get(i).getId();
+
+          switch (colId) {
+            case COL_TA_KIND:
+              newRow.setValue(i, TradeActKind.SUPPLEMENT.ordinal());
+              break;
+
+            case COL_TA_DATE:
+              newRow.setValue(i, TimeUtils.nowMinutes());
+              break;
+
+            case COL_TA_PARENT:
+              newRow.setValue(i, parent.getId());
+              break;
+
+            case COL_TA_NUMBER:
+              if (!parent.isNull(i)) {
+                newRow.setValue(i, BeeUtils.trim(parent.getString(i)) + " P-"
+                    + response.getResponseAsString());
+              }
+              break;
+
+            case COL_TA_UNTIL:
+            case COL_TA_NOTES:
+              break;
+
+            default:
+              if (!parent.isNull(i) && !colId.startsWith(COL_TA_STATUS)) {
+                newRow.setValue(i, parent.getString(i));
+              }
+          }
+        }
+
+        TradeActKeeper.setDefaultOperation(newRow, TradeActKind.SUPPLEMENT);
+
+        RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            getGridView().ensureRow(result, true);
+          }
+        });
       }
     });
   }
@@ -612,13 +630,20 @@ public class TradeActGrid extends AbstractGridInterceptor {
   }
 
   private void refreshCommands(IsRow row) {
+    if (row == null) {
+      return;
+    }
+
     TradeActKind k = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
+    Integer contCnt = row.hasPropertyValue(PROP_CONTINUOUS_COUNT)
+        ? row.getPropertyInteger(PROP_CONTINUOUS_COUNT) : null;
 
     if (supplementCommand != null) {
       TradeActKeeper.setCommandEnabled(supplementCommand, k != null && k.enableSupplement());
     }
     if (returnCommand != null) {
-      TradeActKeeper.setCommandEnabled(returnCommand, k != null && k.enableReturn());
+      TradeActKeeper.setCommandEnabled(returnCommand, k != null && k.enableReturn()
+          && !BeeUtils.isPositive(contCnt));
     }
 
     if (alterCommand != null) {

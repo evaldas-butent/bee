@@ -4,6 +4,8 @@
   <!ENTITY inpdt "width: 10em;">
   <!ENTITY forparent "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.Parent</ui:expression></dynStyle>">
   <!ENTITY forRegistrationNo "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.Kind != 2</ui:expression></dynStyle>">
+  <!ENTITY forOperation
+          "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.Kind == 7 </ui:expression></dynStyle>">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -67,9 +69,13 @@
       </row>
 
       <row>
-        <Label for="Operation" class="bee-required" />
+        <Label for="Operation" class="bee-required" >
+          &forOperation;
+        </Label>
         <DataSelector source="Operation" renderColumns="OperationName" newRowEnabled="false"
-          style="&inpw;" required="true" />
+          style="&inpw;" required="true">
+          &forOperation;
+        </DataSelector>
 
         <Label for="Status" name="labelStatus" />
         <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"

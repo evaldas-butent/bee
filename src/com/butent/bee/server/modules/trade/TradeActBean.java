@@ -101,6 +101,11 @@ import javax.ejb.TimerService;
 @LocalBean
 public class TradeActBean implements HasTimerService {
 
+  private static  final Set<String> COPY_TA_COLUMN_NAMES =
+      Sets.newHashSet(COL_TA_NAME, COL_TA_SERIES, COL_TA_COMPANY, COL_TA_CONTACT, COL_TA_OBJECT,
+          COL_TA_CURRENCY, COL_TA_VEHICLE, COL_TA_DRIVER);
+
+
   private static BeeLogger logger = LogUtils.getLogger(TradeActBean.class);
 
   @EJB
@@ -174,6 +179,10 @@ public class TradeActBean implements HasTimerService {
 
       case SVC_GET_NEXT_RETURN_ACT_NUMBER:
         response = getNextReturnActNumber(reqInfo);
+        break;
+
+      case SVC_GET_NEXT_CHILD_ACT_NUMBER:
+        response = getNextChildActNumber(reqInfo);
         break;
 
       case SVC_GET_SERVICES_FOR_INVOICE:
@@ -262,6 +271,39 @@ public class TradeActBean implements HasTimerService {
 
         if (BeeUtils.same(event.getTargetName(), VIEW_TRADE_ACT_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
+        }
+
+        if (BeeUtils.same(event.getTargetName(), VIEW_TRADE_ACTS)) {
+          BeeRowSet rs = event.getRowset();
+
+          if (DataUtils.isEmpty(rs)) {
+            return;
+          }
+
+          String count = SqlUtils.uniqueName();
+
+          SqlSelect continuousCountsQuery = new SqlSelect()
+              .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT)
+              .addCountDistinct(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, count)
+              .addFrom(TBL_TRADE_ACT_ITEMS)
+              .addFromInner(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS,
+                  COL_TRADE_ACT))
+              .setWhere(SqlUtils.and(
+                  SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.CONTINUOUS.ordinal()),
+                  SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, rs.getRowIds())
+              ))
+              .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT);
+
+          SimpleRowSet countinuousCounts = qs.getData(continuousCountsQuery);
+
+          for (BeeRow row  : rs) {
+            String prop = countinuousCounts.getValueByKey(COL_TA_PARENT,
+                BeeUtils.toString(row.getId()), count);
+
+            if (!BeeUtils.isEmpty(prop)) {
+              row.setProperty(PROP_CONTINUOUS_COUNT, prop);
+            }
+          }
         }
       }
 
@@ -441,6 +483,70 @@ public class TradeActBean implements HasTimerService {
     }
 
     return response;
+  }
+
+  private ResponseObject createContinuousAct(BeeRowSet parentActs) {
+    if (parentActs.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    }
+
+    List<Long> parentIds = parentActs.getRowIds();
+    BeeRowSet remainItems = getRemainingItems(parentIds.toArray(new Long[parentIds.size()]));
+
+    if (DataUtils.isEmpty(remainItems)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    String number = parentActs.getString(0, COL_TA_NUMBER);
+    Long series = parentActs.getLong(0, COL_TA_SERIES);
+    DateTime now = TimeUtils.nowMinutes();
+
+    SqlInsert actInsert = new SqlInsert(TBL_TRADE_ACTS)
+        .addConstant(COL_TA_KIND, TradeActKind.CONTINUOUS.ordinal())
+        .addConstant(COL_TA_NUMBER, number + " T-" + getNextChildActNumber(TradeActKind
+            .CONTINUOUS, series, parentIds.get(0), COL_TA_NUMBER))
+        .addConstant(COL_TA_DATE, now)
+        .addConstant(COL_TA_MANAGER, usr.getCurrentUserId());
+
+    for (String colName : COPY_TA_COLUMN_NAMES) {
+      if (!parentActs.containsColumn(colName)) {
+        continue;
+      }
+
+      if (BeeUtils.isEmpty(parentActs.getString(0, colName))) {
+        continue;
+      }
+
+      actInsert.addConstant(colName, parentActs.getString(0, colName));
+    }
+
+    ResponseObject response = qs.insertDataWithResponse(actInsert);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    Long continuousActId = response.getResponseAsLong();
+
+    response = insertChildItems(continuousActId, remainItems);
+
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    SqlUpdate updateService = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
+        .addConstant(COL_TA_SERVICE_TO, now)
+        .setWhere(SqlUtils.and(
+            SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, parentIds),
+            SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO)
+        ));
+
+    response = qs.updateDataWithResponse(updateService);
+
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    return ResponseObject.response(continuousActId);
   }
 
   private ResponseObject createInvoice(RequestInfo reqInfo) {
@@ -832,17 +938,50 @@ public class TradeActBean implements HasTimerService {
       return ResponseObject.emptyResponse();
     }
 
-    return ResponseObject.response(getNextReturnActNumber(seriesId, parentId, columnName));
+    return ResponseObject.response(getNextChildActNumber(TradeActKind.RETURN,
+        seriesId, parentId, columnName));
   }
 
-  private String getNextReturnActNumber(Long seriesId, Long parentId, String columnName) {
+  private ResponseObject getNextChildActNumber(RequestInfo reqInfo) {
+    Long seriesId = reqInfo.getParameterLong(COL_TA_SERIES);
+    String columnName = reqInfo.getParameter(Service.VAR_COLUMN);
+    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+    Long parentId = reqInfo.getParameterLong(COL_TA_PARENT);
+    TradeActKind kind = EnumUtils.getEnumByIndex(TradeActKind.class,
+        reqInfo.getParameterInt(COL_TA_KIND));
+
+    if (!DataUtils.isId(seriesId) || BeeUtils.isEmpty(columnName) || BeeUtils.isEmpty(viewName)
+        || !DataUtils.isId(parentId) || kind == null) {
+      logger.warning("Missing one of parameter (seriesId, columnName, viewname, parentId)",
+          seriesId,
+          columnName, viewName, parentId);
+      return ResponseObject.emptyResponse();
+    }
+
+    DataInfo viewData = sys.getDataInfo(viewName);
+
+    if (viewData == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    BeeColumn col = viewData.getColumn(columnName);
+
+    if (col == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    return ResponseObject.response(getNextChildActNumber(kind,
+        seriesId, parentId, columnName));
+  }
+
+  private String getNextChildActNumber(TradeActKind childKind, Long seriesId, Long parentId, String
+      columnName) {
+    Assert.notNull(childKind);
+
     IsCondition where =
         SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, seriesId),
             SqlUtils.notNull(TBL_TRADE_ACTS, columnName),
-            SqlUtils.or(SqlUtils.equals(TBL_TRADE_ACTS,
-                COL_TA_KIND, TradeActKind.RETURN.ordinal()),
-                SqlUtils.equals(TBL_TRADE_ACTS,
-                    COL_TA_KIND, TradeActKind.SUPPLEMENT.ordinal())),
+            SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, childKind.ordinal()),
             SqlUtils.equals(TBL_TRADE_ACTS,
                 COL_TA_PARENT, parentId));
 
@@ -858,13 +997,13 @@ public class TradeActBean implements HasTimerService {
 
     if (!ArrayUtils.isEmpty(values)) {
       for (String value : values) {
-        value = value.substring(value.indexOf("-") + 1);
-        if (BeeUtils.isDigit(value)) {
-          if (BeeUtils.isLong(value)) {
-            max = Math.max(max, BeeUtils.toLong(value));
+        String newValue = value.substring(value.lastIndexOf("-") + 1);
+        if (BeeUtils.isDigit(newValue)) {
+          if (BeeUtils.isLong(newValue)) {
+            max = Math.max(max, BeeUtils.toLong(newValue));
 
           } else {
-            BigInteger big = new BigInteger(value);
+            BigInteger big = new BigInteger(newValue);
 
             if (bigMax == null || BeeUtils.isLess(bigMax, big)) {
               bigMax = big;
@@ -1389,19 +1528,13 @@ public class TradeActBean implements HasTimerService {
       return ResponseObject.error(reqInfo.getService(), VIEW_TRADE_ACTS, parentIds, "not found");
     }
 
-    Set<String> copyColNames = Sets.newHashSet(COL_TA_NAME, COL_TA_SERIES,
-        COL_TA_COMPANY, COL_TA_CONTACT, COL_TA_OBJECT, COL_TA_CURRENCY, COL_TA_VEHICLE,
-        COL_TA_DRIVER);
-
     Set<Integer> copyColIndexes = new HashSet<>();
-    for (String colName : copyColNames) {
+    for (String colName : COPY_TA_COLUMN_NAMES) {
       int index = parentActs.getColumnIndex(colName);
       if (index >= 0) {
         copyColIndexes.add(index);
       }
     }
-
-    int itemActIndex = parentItems.getColumnIndex(COL_TRADE_ACT);
 
     DateTime date = TimeUtils.nowMinutes();
     Long operation = getDefaultOperation(TradeActKind.RETURN);
@@ -1420,8 +1553,8 @@ public class TradeActBean implements HasTimerService {
       SqlInsert actInsert =
           new SqlInsert(TBL_TRADE_ACTS)
               .addConstant(COL_TA_KIND, TradeActKind.RETURN.ordinal())
-              .addConstant(COL_TA_NUMBER, number + "-" + getNextReturnActNumber(series, parentId,
-                  COL_TA_NUMBER))
+              .addConstant(COL_TA_NUMBER, number + "-" + getNextChildActNumber(TradeActKind
+                      .RETURN, series, parentId, COL_TA_NUMBER))
               .addConstant(COL_TA_PARENT, parentId)
               .addConstant(COL_TA_DATE, date)
               .addConstant(COL_TA_MANAGER, usr.getCurrentUserId());
@@ -1444,37 +1577,17 @@ public class TradeActBean implements HasTimerService {
 
       Long actId = actInsResponse.getResponseAsLong();
 
-      for (BeeRow parentItem : parentItems) {
-        if (Objects.equals(parentItem.getLong(itemActIndex), parentId)) {
-          SqlInsert itemInsert = new SqlInsert(TBL_TRADE_ACT_ITEMS)
-              .addConstant(COL_TRADE_ACT, actId)
-              .addConstant(COL_TA_PARENT, parentId);
-
-          for (int index = 0; index < parentItems.getNumberOfColumns(); index++) {
-            if (index != itemActIndex && parentItems.getColumn(index).isEditable()) {
-
-              switch (parentItems.getColumn(index).getType()) {
-                case BOOLEAN:
-                  Boolean boolValue = parentItem
-                      .getBoolean(index);
-                  itemInsert.addConstant(parentItems.getColumnId(index), boolValue);
-                  break;
-                default:
-                  String value = parentItem.getString(index);
-                  if (!BeeUtils.isEmpty(value)) {
-                    itemInsert.addConstant(parentItems.getColumnId(index), value);
-                  }
-              }
-
-            }
-          }
-
-          // logger.warning(itemInsert.getQuery());
-          ResponseObject itemInsResponse = qs.insertDataWithResponse(itemInsert);
-          if (itemInsResponse.hasErrors()) {
-            return itemInsResponse;
-          }
+      BeeRowSet returnedItems = new BeeRowSet(parentItems.getColumns());
+      for (int i = 0; i < parentItems.getNumberOfRows(); i++) {
+        if (Objects.equals(parentItems.getLong(i, COL_TRADE_ACT), parentId)) {
+          returnedItems.addRow(DataUtils.cloneRow(parentItems.getRow(i)));
         }
+      }
+
+      ResponseObject childResponse = insertChildItems(actId, returnedItems);
+
+      if (childResponse.hasErrors()) {
+        return childResponse;
       }
 
       boolean hasItems = !DataUtils.isEmpty(getRemainingItems(parentId));
@@ -1497,7 +1610,7 @@ public class TradeActBean implements HasTimerService {
       }
     }
 
-    return ResponseObject.info(usr.getDictionary().createdRows(parentActs.getNumberOfRows()));
+    return createContinuousAct(parentActs);
   }
 
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
@@ -1994,7 +2107,7 @@ public class TradeActBean implements HasTimerService {
   private String getStock(IsCondition actCondition, IsCondition itemCondition, Long time,
       Collection<Long> warehouses, Set<Long> categories, Set<Long> items, String colPrefix) {
 
-    /** Selects all items items from */
+    /* Selects all items items from */
     SqlSelect itemsQuery = getStockQuery(TBL_TRADE_ACT_ITEMS, true);
     SqlSelect servicesQuery = getStockQuery(TBL_TRADE_ACT_SERVICES, false);
 
@@ -2882,11 +2995,8 @@ public class TradeActBean implements HasTimerService {
 
         if (hasValidRange) {
           actsForApprove.remove(actRow.getLong(colActId));
-        } else {
-          continue;
         }
       }
-
     }
 
     if (actsForApprove.isEmpty()) {
@@ -3224,6 +3334,40 @@ public class TradeActBean implements HasTimerService {
     return ResponseObject.response(has);
   }
 
+  private ResponseObject insertChildItems(Long actId, BeeRowSet parentItems) {
+    int itemActIndex = parentItems.getColumnIndex(COL_TRADE_ACT);
+    for (BeeRow parentItem : parentItems) {
+        SqlInsert itemInsert = new SqlInsert(TBL_TRADE_ACT_ITEMS)
+            .addConstant(COL_TRADE_ACT, actId)
+            .addConstant(COL_TA_PARENT, parentItem.getLong(itemActIndex));
+
+        for (int index = 0; index < parentItems.getNumberOfColumns(); index++) {
+          if (index != itemActIndex && parentItems.getColumn(index).isEditable()) {
+
+            switch (parentItems.getColumn(index).getType()) {
+              case BOOLEAN:
+                Boolean boolValue = parentItem
+                    .getBoolean(index);
+                itemInsert.addConstant(parentItems.getColumnId(index), boolValue);
+                break;
+              default:
+                String value = parentItem.getString(index);
+                if (!BeeUtils.isEmpty(value)) {
+                  itemInsert.addConstant(parentItems.getColumnId(index), value);
+                }
+            }
+
+          }
+        }
+        ResponseObject itemInsResponse = qs.insertDataWithResponse(itemInsert);
+        if (itemInsResponse.hasErrors()) {
+          return itemInsResponse;
+        }
+    }
+
+    return ResponseObject.response(parentItems.getNumberOfRows());
+  }
+
   private ResponseObject saveActAsTemplate(RequestInfo reqInfo) {
     Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
     if (!DataUtils.isId(actId)) {
@@ -3410,7 +3554,7 @@ public class TradeActBean implements HasTimerService {
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    SimpleRowSet rs = null;
+    SimpleRowSet rs;
     // Company Advances
     try {
       rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
@@ -3888,7 +4032,6 @@ public class TradeActBean implements HasTimerService {
       updateLastestPayments(lastestPayments, compIdByName);
     } catch (BeeException e) {
       logger.error(e);
-      return;
     }
   }
 
@@ -3899,7 +4042,7 @@ public class TradeActBean implements HasTimerService {
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    SimpleRowSet rs = null;
+    SimpleRowSet rs;
 
     Map<String, Long> items = new HashMap<>();
 

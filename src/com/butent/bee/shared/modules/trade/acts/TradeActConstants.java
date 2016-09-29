@@ -19,6 +19,7 @@ public final class TradeActConstants {
   public static final String SVC_GET_SERVICES_FOR_INVOICE = "GetServicesForInvoice";
   public static final String SVC_GET_NEXT_ACT_NUMBER = "GetNextActNumber";
   public static final String SVC_GET_NEXT_RETURN_ACT_NUMBER = "GetNextReturnActNumber";
+  public static final String SVC_GET_NEXT_CHILD_ACT_NUMBER = "GetNextChildActNumber";
   public static final String SVC_CREATE_ACT_INVOICE = "CreateActInvoice";
   public static final String SVC_SYNCHRONIZE_ERP_DATA = "SyncErpData";
 
@@ -130,6 +131,7 @@ public final class TradeActConstants {
   public static final String PRP_TA_SERVICE_FROM = "service_from";
   public static final String PRP_TA_SERVICE_TO = "service_to";
   public static final String PRP_INVOICE_PERIODS = "invoice_periods";
+  public static final String PROP_CONTINUOUS_COUNT = "ContinuousCount";
 
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";

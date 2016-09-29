@@ -9,10 +9,9 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
-
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
@@ -67,6 +66,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
   }
 
   private TradeActServicePicker picker;
+  private Button commandRecalculate;
 
   TradeActServicesGrid() {
   }
@@ -76,17 +76,17 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     GridView gridView = presenter.getGridView();
 
     if (gridView != null && !gridView.isReadOnly()) {
-      Button command = new Button(Localized.dictionary().taRecalculatePrices());
-      command.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
+      commandRecalculate = new Button(Localized.dictionary().taRecalculatePrices());
+      commandRecalculate.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
 
-      command.addClickHandler(new ClickHandler() {
+      commandRecalculate.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           maybeRecalculatePrices();
         }
       });
 
-      presenter.getHeader().addCommandItem(command);
+      presenter.getHeader().addCommandItem(commandRecalculate);
     }
   }
 
@@ -98,10 +98,29 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     final IsRow parentRow = ViewHelper.getFormRow(presenter.getMainView());
 
     if (parentRow != null) {
+      if (parentRow.hasPropertyValue(PROP_CONTINUOUS_COUNT)
+          && BeeUtils.isPositive(parentRow.getPropertyInteger(PROP_CONTINUOUS_COUNT))) {
+        getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted());
+        return false;
+      }
       ensurePicker().show(parentRow, presenter.getMainView().getElement());
     }
 
     return false;
+  }
+
+  @Override
+  public void beforeRender(GridView gridView, RenderingEvent event) {
+    super.beforeRender(gridView, event);
+
+    IsRow parentRow = ViewHelper.getFormRow(gridView);
+    Integer contCnt = parentRow != null && parentRow.hasPropertyValue(PROP_CONTINUOUS_COUNT)
+        ? parentRow.getPropertyInteger(PROP_CONTINUOUS_COUNT) : null;
+
+
+    if (commandRecalculate != null) {
+      commandRecalculate.setVisible(!BeeUtils.isPositive(contCnt));
+    }
   }
 
   @Override
@@ -169,24 +188,21 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
   private void addItems(final BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet) && VIEW_ITEMS.equals(rowSet.getViewName())) {
-      getGridView().ensureRelId(new IdCallback() {
-        @Override
-        public void onSuccess(Long result) {
-          IsRow parentRow = ViewHelper.getFormRow(getGridView());
+      getGridView().ensureRelId(result -> {
+        IsRow parentRow = ViewHelper.getFormRow(getGridView());
 
-          if (DataUtils.idEquals(parentRow, result)) {
-            ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, parentRow);
+        if (DataUtils.idEquals(parentRow, result)) {
+          ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, parentRow);
 
-            String ip = rowSet.getTableProperty(PRP_ITEM_PRICE);
-            if (BeeUtils.isDigit(ip)) {
-              itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
-            }
-
-            DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
-            Long currency = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CURRENCY);
-
-            addItems(parentRow, date, currency, itemPrice, rowSet);
+          String ip = rowSet.getTableProperty(PRP_ITEM_PRICE);
+          if (BeeUtils.isDigit(ip)) {
+            itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
           }
+
+          DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
+          Long currency = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CURRENCY);
+
+          addItems(parentRow, date, currency, itemPrice, rowSet);
         }
       });
     }

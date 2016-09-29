@@ -4394,6 +4394,8 @@ public interface Dictionary {
 
   default String taKind() {return g("taKind");}
 
+  default String taKindContinuous() {return g("taKindContinuous");}
+
   default String taKindPurchase() {return g("taKindPurchase");}
 
   default String taKindReserve() {return g("taKindReserve");}

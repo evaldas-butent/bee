@@ -17,6 +17,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -74,6 +75,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private DataSelector contractSelector;
   private DataSelector objectSelector;
   private DataSelector companySelector;
+  private ChildGrid tradeActItemsGrid;
+  private ChildGrid tradeActServicesGrid;
 
   TradeActForm() {
   }
@@ -105,6 +108,14 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     if (widget instanceof DataSelector && BeeUtils.same(name, TradeActConstants.COL_TA_COMPANY)) {
       companySelector = (DataSelector) widget;
       companySelector.addSelectorHandler(this);
+    }
+
+    if (widget instanceof ChildGrid && BeeUtils.same(name, GRID_TRADE_ACT_ITEMS)) {
+      tradeActItemsGrid = (ChildGrid) widget;
+    }
+
+    if (widget instanceof ChildGrid && BeeUtils.same(name, GRID_TRADE_ACT_SERVICES)) {
+      tradeActServicesGrid = (ChildGrid) widget;
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -186,6 +197,18 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         header.addCommandItem(commandCompose);
       }
     }
+
+    if (tradeActItemsGrid != null) {
+      tradeActItemsGrid.setEnabled((row != null && row.hasPropertyValue(PROP_CONTINUOUS_COUNT)
+          ? !BeeUtils.isPositive(row.getPropertyInteger(PROP_CONTINUOUS_COUNT)) : true)
+          && kind != TradeActKind.CONTINUOUS);
+    }
+
+    if (tradeActServicesGrid != null) {
+      tradeActServicesGrid.setEnabled(row != null && row.hasPropertyValue(PROP_CONTINUOUS_COUNT)
+          ? !BeeUtils.isPositive(row.getPropertyInteger(PROP_CONTINUOUS_COUNT)) : true);
+    }
+
     createReqLabels(form);
     super.afterRefresh(form, row);
   }
@@ -319,6 +342,17 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (form != null && DataUtils.hasId(row)) {
       TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
+
+      if (tradeActItemsGrid != null) {
+        tradeActItemsGrid.setEnabled((row != null && row.hasPropertyValue(PROP_CONTINUOUS_COUNT)
+            ? !BeeUtils.isPositive(row.getPropertyInteger(PROP_CONTINUOUS_COUNT)) : true)
+            && kind != TradeActKind.CONTINUOUS);
+      }
+
+      if (tradeActServicesGrid != null) {
+        tradeActServicesGrid.setEnabled(row != null && row.hasPropertyValue(PROP_CONTINUOUS_COUNT)
+            ? !BeeUtils.isPositive(row.getPropertyInteger(PROP_CONTINUOUS_COUNT)) : true);
+      }
 
       if (kind != null && kind.enableInvoices()) {
         ParameterList params = TradeActKeeper.createArgs(SVC_HAS_INVOICES_OR_SECONDARY_ACTS);
