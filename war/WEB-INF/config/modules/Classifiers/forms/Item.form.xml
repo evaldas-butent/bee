@@ -297,6 +297,11 @@
         </FlowPanel>
       </page>
 
+      <page module="Trade" data="TradeStock" predicate="!row.IsService">
+        <text>=trdStock</text>
+        <ChildGrid name="ItemStock" relColumn="Item" />
+      </page>
+
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>
