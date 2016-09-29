@@ -1009,6 +1009,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     VisibilityChangeEvent.register(id, this);
 
+    EventUtils.preventClickDebouncer(this);
+
     boolean isChild = UiOption.isChildOrEmbedded(uiOptions);
 
     this.headerComponent = new Component(ComponentType.HEADER,

@@ -932,6 +932,25 @@ public final class DomUtils {
     }
   }
 
+  public static String getParentDataProperty(Element child, String key, boolean incl) {
+    if (child == null || BeeUtils.isEmpty(key)) {
+      return null;
+    }
+
+    Element elem = incl ? child : child.getParentElement();
+    String name = Attributes.DATA_PREFIX + key.trim();
+
+    while (elem != null) {
+      if (elem.hasAttribute(name)) {
+        return elem.getAttribute(name);
+      }
+
+      elem = elem.getParentElement();
+    }
+
+    return null;
+  }
+
   public static Element getParentElement(Element child, Collection<String> tagNames, boolean incl) {
     if (child == null) {
       return null;
