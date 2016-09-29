@@ -21,6 +21,11 @@
     </SimpleJoin>
     <SimpleColumn name="ValidUntil" />
     <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="Type" />
+    <SimpleJoin name="Type" joinType="LEFT">
+      <SimpleColumn name="TypeName" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="ParentOrdinal" />

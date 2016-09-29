@@ -4,7 +4,7 @@
         name="ConfOptions" viewName="ConfOptions" caption="=options"
 >
   <g:columns>
-    <RelColumn name="Group" renderColumns="GroupName" />
+    <RelColumn name="Group" renderColumns="TypeName GroupName" />
     <DataColumn name="OptionName" />
     <DataColumn name="Code" />
   </g:columns>

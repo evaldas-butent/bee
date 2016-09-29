@@ -5,7 +5,11 @@
        idName="GroupID"
 >
   <Fields>
-    <String name="GroupName" precision="100" unique="true" notNull="true" label="=optionGroup" />
+    <Relation name="Type" relation="ConfTypes" notNull="true" label="=optionType" />
+    <String name="GroupName" precision="100" notNull="true" label="=optionGroup" />
     <Boolean name="Required" label="=required" />
   </Fields>
+  <Constraints>
+    <Unique fields="Type GroupName" />
+  </Constraints>
 </Table>

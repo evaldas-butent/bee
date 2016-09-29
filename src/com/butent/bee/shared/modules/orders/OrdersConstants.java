@@ -126,6 +126,7 @@ public final class OrdersConstants {
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_BUNDLE = "Bundle";
   public static final String COL_KEY = "Key";
+  public static final String COL_TYPE = "Type";
   public static final String COL_GROUP = "Group";
   public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_VALID_UNTIL = "ValidUntil";

@@ -296,6 +296,7 @@
       <xs:enumeration value="ConfOptions" />
       <xs:enumeration value="ConfPricelist" />
       <xs:enumeration value="Configuration" />
+      <xs:enumeration value="ConfTypes" />
       <xs:enumeration value="CostCenters" />
       <xs:enumeration value="Countries" />
       <xs:enumeration value="CountryDailyCosts" />

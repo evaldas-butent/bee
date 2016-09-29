@@ -8,6 +8,10 @@
   <Columns>
     <SimpleColumn name="Group" />
     <SimpleJoin name="Group" joinType="INNER">
+      <SimpleColumn name="Type" />
+      <SimpleJoin name="Type" joinType="INNER">
+        <SimpleColumn name="TypeName" />
+      </SimpleJoin>
       <SimpleColumn name="GroupName" />
     </SimpleJoin>
     <SimpleColumn name="OptionName" />
@@ -21,6 +25,7 @@
     </SimpleJoin>
   </Columns>
   <Order>
+    <OrderBy column="TypeName" />
     <OrderBy column="GroupName" />
     <OrderBy column="OptionName" />
   </Order>

@@ -35,6 +35,10 @@
                 <Label for="Ordinal" />
                 <InputDecimal source="Ordinal" style="width:40px;" />
               </row>
+              <row>
+                <Label for="Type" />
+                <DataSelector source="Type" style="width:20em;" />
+              </row>
             </Table>
           </FlowPanel>
         </form>

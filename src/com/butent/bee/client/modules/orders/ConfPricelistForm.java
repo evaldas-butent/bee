@@ -89,13 +89,13 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
     @Override
     public void onClick(ClickEvent clickEvent) {
+      Long type = getBranchType();
+
       Queries.getRowSet(TBL_CONF_GROUPS, Collections.singletonList(COL_GROUP_NAME),
+          DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null,
           new Queries.RowSetCallback() {
             @Override
             public void onSuccess(BeeRowSet result) {
-              if (DataUtils.isEmpty(result)) {
-                return;
-              }
               List<String> choice = new ArrayList<>();
               Map<String, Dimension> map = new HashMap<>();
 
@@ -333,6 +333,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor
     }
     Collections.reverse(cap);
     return BeeUtils.joinItems(cap);
+  }
+
+  private Long getBranchType() {
+    IsRow item = tree.getSelectedItem();
+
+    if (item == null) {
+      return null;
+    }
+    return Data.getLong(tree.getViewName(), item, COL_TYPE);
   }
 
   private Long getBranchId() {
@@ -654,7 +663,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
       Configuration.processOptions(bundle, configuration.getColDimensions(),
           (dimension, option) -> {
             table.setText(colSize - x.get(), c + (x.get() < colSize ? 1 : 2),
-                option != null ? option.getName() : "", STYLE_COL);
+                option != null ? option.toString() : "", STYLE_COL);
             x.set(x.get() - 1);
             return true;
           });
@@ -686,7 +695,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
       Configuration.processOptions(bundle, configuration.getRowDimensions(),
           (dimension, option) -> {
-            table.setText(r, rowSize - i.get(), option != null ? option.getName() : "", STYLE_ROW);
+            table.setText(r, rowSize - i.get(), option != null ? option.toString() : "", STYLE_ROW);
             i.set(i.get() - 1);
             return true;
           });
@@ -762,7 +771,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
         Configuration.processOptions(bundle, allDimensions, (dimension, option) -> {
           table.setText(dimSize - r.get(), c + (r.get() < dimSize ? 1 : 2),
-              option != null ? option.getName() : "", STYLE_COL);
+              option != null ? option.toString() : "", STYLE_COL);
           r.set(r.get() - 1);
           return true;
         });
@@ -843,7 +852,11 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
       UnboundSelector inputGroup = UnboundSelector.create(TBL_CONF_GROUPS,
           Collections.singletonList(COL_GROUP_NAME));
-      inputGroup.getOracle().setAdditionalFilter(Filter.idNotIn(excludedGroups), true);
+
+      Long type = getBranchType();
+      inputGroup.getOracle().setAdditionalFilter(Filter.and(Filter.idNotIn(excludedGroups),
+          DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null), true);
+
       inputGroup.setWidth("100%");
 
       input.setText(0, 0, Localized.dictionary().group());
@@ -862,7 +875,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor
                 .setAdditionalFilter(Filter.equals(COL_GROUP, inputGroup.getRelatedId()), true);
           } else {
             event.getSelector().getOracle()
-                .setAdditionalFilter(Filter.exclude(COL_GROUP, excludedGroups), true);
+                .setAdditionalFilter(Filter.and(Filter.exclude(COL_GROUP, excludedGroups),
+                    DataUtils.isId(type) ? Filter.equals(COL_TYPE, type) : null), true);
           }
         }
       });
@@ -887,27 +901,26 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
         } else if (DataUtils.isId(inputGroup.getRelatedId())) {
           Global.confirm(inputGroup.getRenderedValue(),
-              Icon.QUESTION, Collections.singletonList(Localized.dictionary().selectAll()), () -> {
-                Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.and(Filter.equals(COL_GROUP,
-                    inputGroup.getRelatedId()), Filter.idNotIn(excludedOptions)),
-                    new Queries.RowSetCallback() {
-                      @Override
-                      public void onSuccess(BeeRowSet result) {
-                        if (DataUtils.isEmpty(result)) {
-                          getFormView().notifyWarning(Localized.dictionary().noData());
-                        } else {
-                          for (BeeRow beeRow : result) {
-                            setOptionPrice(new Option(beeRow.getId(),
-                                Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
-                                new Dimension(inputGroup.getRelatedId(),
-                                    Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
-                                .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)), null);
-                          }
-                          refresh();
+              Icon.QUESTION, Collections.singletonList(Localized.dictionary().selectAll()),
+              () -> Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.and(Filter.equals(COL_GROUP,
+                  inputGroup.getRelatedId()), Filter.idNotIn(excludedOptions)),
+                  new Queries.RowSetCallback() {
+                    @Override
+                    public void onSuccess(BeeRowSet result) {
+                      if (DataUtils.isEmpty(result)) {
+                        getFormView().notifyWarning(Localized.dictionary().noData());
+                      } else {
+                        for (BeeRow beeRow : result) {
+                          setOptionPrice(new Option(beeRow.getId(),
+                              Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
+                              new Dimension(inputGroup.getRelatedId(),
+                                  Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
+                              .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)), null);
                         }
+                        refresh();
                       }
-                    });
-              });
+                    }
+                  }));
         }
       });
     });

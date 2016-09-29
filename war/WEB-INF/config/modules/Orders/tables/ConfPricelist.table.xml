@@ -9,5 +9,6 @@
     <Relation name="Option" relation="ConfOptions" notNull="true" label="=option" />
     <Date name="ValidUntil" label="=validUntil" />
     <Numeric name="Ordinal" precision="3" label="=ordinal" />
+    <Relation name="Type" relation="ConfTypes" label="=optionType" />
   </Fields>
 </Table>

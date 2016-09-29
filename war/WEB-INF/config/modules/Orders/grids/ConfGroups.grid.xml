@@ -4,6 +4,7 @@
         name="ConfGroups" viewName="ConfGroups" caption="=optionGroups"
 >
   <g:columns>
+    <RelColumn name="Type" />
     <DataColumn name="GroupName" />
     <DataColumn name="Required" />
   </g:columns>

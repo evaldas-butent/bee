@@ -599,7 +599,7 @@ public class SpecificationBuilder implements InputCallback {
             dimension = option.getDimension();
             defaults.add("<i>" + dimension + ":</i>");
           }
-          defaults.add(BeeUtils.notEmpty(option.getDescription(), option.toString()));
+          defaults.add(BeeUtils.notEmpty(option.getDescription(), option.getName()));
         }
       }
     }

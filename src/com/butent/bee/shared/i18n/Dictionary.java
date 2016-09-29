@@ -3520,6 +3520,10 @@ public interface Dictionary {
 
   default String options() {return g("options");}
 
+  default String optionType() {return g("optionType");}
+
+  default String optionTypes() {return g("optionTypes");}
+
   default String ordApprove() {return g("ordApprove");}
 
   default String ordApproved() {return g("ordApproved");}
