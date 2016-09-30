@@ -26,7 +26,9 @@
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <DataColumn name="Discount" scale="0" carry="true" flexGrow="0" />
+    <DataColumn name="Discount" scale="0" carry="true" flexGrow="0">
+      <editor type="number" percentageTag="DiscountIsPercent" />
+    </DataColumn>
     <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" carry="true" />
     <CalcColumn name="DiscountAmount" type="decimal" caption="=discountAmountShort" scale="2">
       <footer aggregate="sum" />
@@ -37,7 +39,9 @@
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <DataColumn name="Vat" scale="0" carry="true" flexGrow="0" />
+    <DataColumn name="Vat" scale="0" carry="true" flexGrow="0">
+      <editor type="number" percentageTag="VatIsPercent" />
+    </DataColumn>
     <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" carry="true" />
     <CalcColumn name="VatAmount" type="decimal" caption="=vatAmount" scale="2">
       <footer aggregate="sum" />

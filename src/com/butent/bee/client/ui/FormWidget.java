@@ -142,6 +142,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasPercentageTag;
 import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.font.FontAwesome;
@@ -530,6 +531,11 @@ public enum FormWidget {
     String currencySource = attributes.get(HasRelatedCurrency.ATTR_CURRENCY_SOURCE);
     if (!BeeUtils.isEmpty(currencySource)) {
       widget.setCurrencySource(currencySource);
+    }
+
+    String percentageTag = attributes.get(HasPercentageTag.ATTR_PERCENTAGE_TAG);
+    if (!BeeUtils.isEmpty(percentageTag)) {
+      widget.setPercentageTag(percentageTag);
     }
 
     return widget;

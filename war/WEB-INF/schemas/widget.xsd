@@ -671,6 +671,7 @@
       <xs:extension base="inputWidget">
         <xs:attribute name="scale" type="xs:unsignedByte" />
         <xs:attribute name="currencySource" type="tp:fieldNameType" />
+        <xs:attribute name="percentageTag" type="tp:fieldNameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
