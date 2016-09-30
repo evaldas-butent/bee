@@ -35,7 +35,7 @@
           <SimpleColumn name="Address" alias="EmployeeAddress" />
         </SimpleJoin>
       </SimpleJoin>
-  
+
       <SimpleColumn name="TabNumber" />
     </SimpleJoin>
 
@@ -47,10 +47,10 @@
           <SimpleColumn name="LastName" alias="ForLastName" />
         </SimpleJoin>
       </SimpleJoin>
-  
+
       <SimpleColumn name="TabNumber" alias="ForTabNumber" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Object" />
     <SimpleJoin name="Object" joinType="LEFT">
       <SimpleColumn name="LocationName" />
@@ -83,18 +83,18 @@
     </SimpleJoin>
 
     <SimpleColumn name="Date" />
-    
+
     <SimpleColumn name="TimeRangeCode" />
     <SimpleJoin name="TimeRangeCode" joinType="LEFT">
       <SimpleColumn name="TrCode" />
       <SimpleColumn name="TrName" />
-    
+
       <SimpleColumn name="TimeFrom" alias="TrTimeFrom" />
       <SimpleColumn name="TimeUntil" alias="TrTimeUntil" />
 
       <SimpleColumn name="Duration" alias="TrDuration" />
       <SimpleColumn name="Description" />
-      
+
       <SimpleColumn name="Background" alias="TrBackground" />
       <SimpleColumn name="Foreground" alias="TrForeground" />
     </SimpleJoin>
@@ -103,17 +103,19 @@
     <SimpleJoin name="TimeCardCode" joinType="LEFT">
       <SimpleColumn name="TcCode" />
       <SimpleColumn name="TcName" />
-    
+
       <SimpleColumn name="Background" alias="TcBackground" />
       <SimpleColumn name="Foreground" alias="TcForeground" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="TimeFrom" />
     <SimpleColumn name="TimeUntil" />
 
     <SimpleColumn name="Duration" />
 
     <SimpleColumn name="Note" />
+
+    <SimpleColumn name="Approved" />
   </Columns>
 
   <Order>

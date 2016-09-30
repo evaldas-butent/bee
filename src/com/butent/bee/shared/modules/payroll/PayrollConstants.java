@@ -160,6 +160,7 @@ public final class PayrollConstants {
   public static final String COL_WORK_SCHEDULE_UNTIL = "TimeUntil";
   public static final String COL_WORK_SCHEDULE_DURATION = "Duration";
   public static final String COL_WORK_SCHEDULE_NOTE = "Note";
+  public static final String COL_WORK_SCHEDULE_APPROVED = "Approved";
 
   public static final String COL_TIME_RANGE_CODE = "TimeRangeCode";
   public static final String COL_TIME_CARD_CODE = "TimeCardCode";

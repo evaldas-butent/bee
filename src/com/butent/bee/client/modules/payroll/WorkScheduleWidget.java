@@ -186,6 +186,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_SCHEDULE_DURATION = STYLE_PREFIX + "item-duration";
   private static final String STYLE_SCHEDULE_DRAG = STYLE_PREFIX + "item-drag";
 
+  private static final String STYLE_SCHEDULE_ITEM_APPROVED = STYLE_SCHEDULE_ITEM + "-approved";
+
   private static final String STYLE_WEEKEND = STYLE_PREFIX + "weekend";
   private static final String STYLE_HOLIDAY = STYLE_PREFIX + "holiday";
   private static final String STYLE_TODAY = STYLE_PREFIX + "today";
@@ -1089,6 +1091,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     copyIndexes.add(rowSet.getColumnIndex(COL_WORK_SCHEDULE_FROM));
     copyIndexes.add(rowSet.getColumnIndex(COL_WORK_SCHEDULE_UNTIL));
     copyIndexes.add(rowSet.getColumnIndex(COL_WORK_SCHEDULE_DURATION));
+    copyIndexes.add(rowSet.getColumnIndex(COL_WORK_SCHEDULE_APPROVED));
 
     for (IdPair pair : selection.keySet()) {
       for (BeeRow oldRow : selection.get(pair)) {
@@ -1621,12 +1624,16 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
       int dateIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_DATE);
 
+      int approvedIndex = wsData.getColumnIndex(COL_WORK_SCHEDULE_APPROVED);
+
       if (copy) {
         BeeRow target = DataUtils.cloneRow(source);
         target.setValue(partIndex, partIds.getA());
         target.setValue(substIndex, partIds.getB());
 
         target.setValue(dateIndex, date);
+
+        target.clearCell(approvedIndex);
 
         BeeRowSet rowSet = DataUtils.createRowSetForInsert(viewName, wsData.getColumns(), target);
 
@@ -1650,12 +1657,14 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
         final JustDate srcDate = source.getDate(dateIndex);
 
+        final Boolean srcApproved = source.getBoolean(approvedIndex);
+
         List<BeeColumn> columns = DataUtils.getColumns(wsData.getColumns(),
             Lists.newArrayList(scheduleParent.getWorkSchedulePartitionColumn(),
-                COL_SUBSTITUTE_FOR, COL_WORK_SCHEDULE_DATE));
+                COL_SUBSTITUTE_FOR, COL_WORK_SCHEDULE_DATE, COL_WORK_SCHEDULE_APPROVED));
 
-        List<String> oldValues = Queries.asList(srcPart, srcSubst, srcDate);
-        List<String> newValues = Queries.asList(partIds.getA(), partIds.getB(), date);
+        List<String> oldValues = Queries.asList(srcPart, srcSubst, srcDate, srcApproved);
+        List<String> newValues = Queries.asList(partIds.getA(), partIds.getB(), date, null);
 
         Queries.update(viewName, source.getId(), source.getVersion(),
             columns, oldValues, newValues, null, new RowCallback() {
@@ -1737,7 +1746,8 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
                 Format.renderMonthFullStandalone(activeMonth).toLowerCase());
 
             renderFetch(caption, keys, extension, extendWorkScheduleMessage(null),
-                WorkScheduleWidget.this::doFetch);
+                WorkScheduleWidget.this::doFetch,
+                rowSet.getColumnIndex(COL_WORK_SCHEDULE_APPROVED));
           }
         }
       }
@@ -1989,6 +1999,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private void renderFetch(String caption, List<IdPair> partIds,
       final Table<IdPair, Integer, List<BeeRow>> layout, String submissionLabel,
       final Consumer<Multimap<IdPair, BeeRow>> consumer) {
+    renderFetch(caption, partIds, layout, submissionLabel, consumer, null);
+  }
+
+  private void renderFetch(String caption, List<IdPair> partIds,
+      final Table<IdPair, Integer, List<BeeRow>> layout, String submissionLabel,
+      final Consumer<Multimap<IdPair, BeeRow>> consumer, Integer removeValueIndex) {
 
     final DialogBox dialog = DialogBox.create(caption, STYLE_FETCH_DIALOG);
 
@@ -2189,6 +2205,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
               if (!BeeUtils.isEmpty(wsRows)) {
                 for (BeeRow wsRow : wsRows) {
+                  if (removeValueIndex != null) {
+                    wsRow.clearCell(removeValueIndex);
+                  }
+
                   selection.put(pair, wsRow);
                 }
               }
@@ -2552,6 +2572,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   private DndSource renderScheduleItem(BeeRow item) {
+    DndSource dndWidget = null;
     String note = DataUtils.getString(wsData, item, COL_WORK_SCHEDULE_NOTE);
 
     Long trId = DataUtils.getLong(wsData, item, COL_TIME_RANGE_CODE);
@@ -2588,13 +2609,13 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
           DomUtils.setDataProperty(widget.getElement(), KEY_MILLIS, millis);
         }
 
-        return widget;
+        dndWidget = widget;
       }
     }
 
     Long tcId = DataUtils.getLong(wsData, item, COL_TIME_CARD_CODE);
 
-    if (DataUtils.isId(tcId) && !DataUtils.isEmpty(timeCardCodes)) {
+    if (dndWidget == null && DataUtils.isId(tcId) && !DataUtils.isEmpty(timeCardCodes)) {
       BeeRow tcRow = timeCardCodes.getRowById(tcId);
 
       if (tcRow != null) {
@@ -2616,7 +2637,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
             DataUtils.getString(timeCardCodes, tcRow, AdministrationConstants.COL_BACKGROUND),
             DataUtils.getString(timeCardCodes, tcRow, AdministrationConstants.COL_FOREGROUND));
 
-        return widget;
+        dndWidget = widget;
       }
     }
 
@@ -2624,7 +2645,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     String until = DataUtils.getString(wsData, item, COL_WORK_SCHEDULE_UNTIL);
     String duration = DataUtils.getString(wsData, item, COL_WORK_SCHEDULE_DURATION);
 
-    if (!BeeUtils.isEmpty(from) || !BeeUtils.isEmpty(until)) {
+    if (dndWidget == null && (!BeeUtils.isEmpty(from) || !BeeUtils.isEmpty(until))) {
       Flow panel = new Flow(STYLE_SCHEDULE_RANGE);
       if (!BeeUtils.isEmpty(note)) {
         panel.setTitle(note);
@@ -2653,10 +2674,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         DomUtils.setDataProperty(panel.getElement(), KEY_MILLIS, millis);
       }
 
-      return panel;
+      dndWidget = panel;
     }
 
-    if (!BeeUtils.isEmpty(duration)) {
+    if (dndWidget == null && !BeeUtils.isEmpty(duration)) {
       DndDiv widget = new DndDiv(STYLE_SCHEDULE_DURATION);
       widget.setText(formatDuration(duration));
 
@@ -2669,10 +2690,15 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         DomUtils.setDataProperty(widget.getElement(), KEY_MILLIS, time);
       }
 
-      return widget;
+      dndWidget = widget;
     }
 
-    return null;
+    if (dndWidget != null
+              && BeeUtils.isTrue(DataUtils.getBoolean(wsData, item, COL_WORK_SCHEDULE_APPROVED))) {
+      dndWidget.addStyleName(STYLE_SCHEDULE_ITEM_APPROVED);
+    }
+
+    return dndWidget;
   }
 
   private Widget renderTimeCardChange(long codeId) {

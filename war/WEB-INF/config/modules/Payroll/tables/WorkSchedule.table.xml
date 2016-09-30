@@ -25,5 +25,7 @@
     <String name="Duration" precision="10" label="=duration" />
 
     <String name="Note" precision="100" label="=note" />
+
+    <Boolean name="Approved" label="=workScheduleApproved"/>
   </Fields>
 </Table>

@@ -6188,6 +6188,8 @@ public interface Dictionary {
 
   default String workScheduleActualShort() {return g("workScheduleActualShort");}
 
+  default String workScheduleApproved() {return g("workScheduleApproved");}
+
   default String workScheduleExtension(Object fromyear, Object frommonth, Object toyear, Object tomonth) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{fromyear}", fromyear);

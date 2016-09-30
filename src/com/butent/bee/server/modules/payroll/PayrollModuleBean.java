@@ -765,6 +765,7 @@ public class PayrollModuleBean extends CustomERPIntegration {
     if (dateUntil != null) {
       wsWhere.add(SqlUtils.lessEqual(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_DATE, dateUntil));
     }
+    wsWhere.add(SqlUtils.isNull(TBL_WORK_SCHEDULE, COL_WORK_SCHEDULE_APPROVED));
 
     IsCondition relWhere = SqlUtils.equals(TBL_WORK_SCHEDULE, relationColumn, relId);
 

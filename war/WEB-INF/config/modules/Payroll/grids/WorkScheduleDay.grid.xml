@@ -29,6 +29,8 @@
       </editable>
     </RelColumn>
 
+    <DataColumn name="Approved" visible="true" />
+
     <DataColumn name="TimeFrom" visible="true">
       <editable>
         <ui:expression>!(row.TimeRangeCode || row.TimeCardCode)</ui:expression>

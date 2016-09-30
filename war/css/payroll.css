@@ -248,6 +248,10 @@
   background-image: linear-gradient(to bottom, skyblue, skyblue);
   color: black !important;
 }
+.bee-payroll-ws-item-approved {
+  background-image: repeating-linear-gradient(330deg, rgba(220,220,220,1) 5px, rgba(255,255,255,0) 10px);
+  color: black;
+}
 
 .bee-payroll-ws-control-panel {
   display: flex;
