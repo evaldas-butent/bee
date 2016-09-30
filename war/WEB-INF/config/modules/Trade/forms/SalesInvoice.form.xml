@@ -22,7 +22,8 @@
         <InputDateTime source="Date" visible="true" />
 
         <Label for="SaleSeries" />
-        <DataSelector source="SaleSeries" upperCase="true" style="width: 7em;" />
+        <DataSelector source="SaleSeries" renderColumns="SeriesName"
+                      upperCase="true" style="width: 7em;" />
         <Label for="InvoiceNo" />
         <InputText source="InvoiceNo" />
       </row>

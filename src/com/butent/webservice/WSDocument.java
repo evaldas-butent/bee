@@ -19,6 +19,7 @@ public class WSDocument {
     private String vatPercent;
     private String article;
     private String note;
+    private String discount;
 
     private WSDocumentItem(String itemId, String quantity) {
       this.itemId = itemId;
@@ -27,6 +28,10 @@ public class WSDocument {
 
     public void setArticle(String article) {
       this.article = article;
+    }
+
+    public void setDiscount(String discount) {
+      this.discount = discount;
     }
 
     public void setNote(String note) {
@@ -107,6 +112,10 @@ public class WSDocument {
 
       if (!BeeUtils.isEmpty(item.price)) {
         sb.append(XmlUtils.tag("kaina", item.price));
+
+        if (!BeeUtils.isEmpty(item.discount)) {
+          sb.append(XmlUtils.tag("nuolaida", item.discount));
+        }
 
         if (!BeeUtils.isEmpty(item.vat)) {
           sb.append(XmlUtils.tag("pvm_stat", item.vatMode))

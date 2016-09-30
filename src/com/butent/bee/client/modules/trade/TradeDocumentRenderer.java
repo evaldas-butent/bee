@@ -195,6 +195,19 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
         return AMOUNT_FORMAT.format(total);
       }
+    },
+
+    DISCOUNT("discount", false) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.discountPercent();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        Double discount = rowSet.getDouble(rowIndex, COL_TRADE_DISCOUNT);
+        return discount == null ? "" : PRICE_FORMAT.format(discount);
+      }
     };
 
     private final String styleSuffix;

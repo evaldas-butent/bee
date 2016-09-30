@@ -119,6 +119,7 @@
 .bee-trade-print-item-quantity,
 .bee-trade-print-item-unit,
 .bee-trade-print-item-price,
+.bee-trade-print-item-discount,
 .bee-trade-print-item-amount,
 .bee-trade-print-items-total-label,
 .bee-trade-print-items-total-value {
@@ -132,6 +133,7 @@
 }
 .bee-trade-print-item-quantity,
 .bee-trade-print-item-price,
+.bee-trade-print-item-discount,
 .bee-trade-print-item-amount,
 .bee-trade-print-items-total-label,
 .bee-trade-print-items-total-value {

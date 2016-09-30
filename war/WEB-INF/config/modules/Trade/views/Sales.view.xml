@@ -17,6 +17,7 @@
     <SimpleColumn name="SaleSeries" label="=trdInvoicePrefix" />
     <SimpleJoin name="SaleSeries" joinType="LEFT">
       <SimpleColumn name="SeriesName" />
+      <SimpleColumn name="SeriesName" alias="InvoicePrefix"/>
       <SimpleColumn name="SentERP" />
     </SimpleJoin>
     <SimpleColumn name="InvoiceNo" />

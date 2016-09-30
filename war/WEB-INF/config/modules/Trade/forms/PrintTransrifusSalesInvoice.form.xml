@@ -119,7 +119,7 @@
     </Table>
 
     <Table name="Items" class="bee-trade-print-items" kind="output">
-      <properties columns="Ordinal, Name, Article, Quantity, Unit, Price, Amount" />
+      <properties columns="Ordinal, Name, Article, Quantity, Unit, Price, Discount, Amount" />
     </Table>
 
     <FlowPanel class="bee-trade-print-document-footer">
