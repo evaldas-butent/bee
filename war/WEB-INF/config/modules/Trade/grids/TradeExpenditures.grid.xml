@@ -13,7 +13,9 @@
     <DataColumn name="Amount" minWidth="80" visible="true" />
     <RelColumn name="Currency" newRowEnabled="false" visible="true" />
 
-    <DataColumn name="Vat" scale="0" />
+    <DataColumn name="Vat" scale="0">
+      <editor type="number" percentageTag="VatIsPercent" />
+    </DataColumn>
     <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" />
 
     <DataColumn name="OperationVatMode" />
