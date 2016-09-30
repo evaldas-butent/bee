@@ -3518,11 +3518,11 @@ public interface Dictionary {
 
   default String optionGroups() {return g("optionGroups");}
 
-  default String options() {return g("options");}
-
   default String optionType() {return g("optionType");}
 
   default String optionTypes() {return g("optionTypes");}
+
+  default String options() {return g("options");}
 
   default String ordApprove() {return g("ordApprove");}
 
@@ -5830,6 +5830,8 @@ public interface Dictionary {
   default String trdInvoices() {return g("trdInvoices");}
 
   default String trdManager() {return g("trdManager");}
+
+  default String trdMovement() {return g("trdMovement");}
 
   default String trdMovementOfGoods() {return g("trdMovementOfGoods");}
 

@@ -140,6 +140,8 @@ public final class TradeConstants {
   public static final String VIEW_EXPENDITURE_TYPES = "ExpenditureTypes";
   public static final String VIEW_TRADE_EXPENDITURES = "TradeExpenditures";
 
+  public static final String VIEW_TRADE_MOVEMENT = "TradeMovement";
+
   public static final String COL_PURCHASE = "Purchase";
 
   public static final String COL_SALE = "Sale";
@@ -304,6 +306,8 @@ public final class TradeConstants {
 
   public static final String GRID_EXPENDITURE_TYPES = "ExpenditureTypes";
   public static final String GRID_TRADE_EXPENDITURES = "TradeExpenditures";
+
+  public static final String GRID_ITEM_MOVEMENT = "ItemMovement";
 
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
