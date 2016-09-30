@@ -6,4 +6,5 @@ name="ServiceClassifiers" label="=classifiers" order="50" parent="Service" modul
   <Item name="MaintenanceStates" label="=svcServiceStates" service="grid" parameters="MaintenanceStates" />
   <Item name="MaintenanceTypes" label="=svcServiceTypes" service="grid" parameters="MaintenanceTypes" />
   <Item name="WarrantyTypes" label="=svcWarrantyTypes" service="grid" parameters="WarrantyTypes" />
+  <Item name="StateProcess" label="=svcStateProcess" service="grid" parameters="StateProcess" />
 </Entry>

@@ -509,6 +509,7 @@
       <xs:enumeration value="SpareParts" />
       <xs:enumeration value="SparePartTypes" />
       <xs:enumeration value="SparePartUsage" />
+      <xs:enumeration value="StateProcess" />
       <xs:enumeration value="TaskDurations" />
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />

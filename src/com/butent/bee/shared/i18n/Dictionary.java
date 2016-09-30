@@ -4524,9 +4524,13 @@ public interface Dictionary {
 
   default String svcCalendarSeparateObjects() {return g("svcCalendarSeparateObjects");}
 
+  default String svcComment() {return g("svcComment");}
+
   default String svcContractor() {return g("svcContractor");}
 
   default String svcDates() {return g("svcDates");}
+
+  default String svcDaysActive() {return g("svcDaysActive");}
 
   default String svcDefect() {return g("svcDefect");}
 
@@ -4541,6 +4545,10 @@ public interface Dictionary {
   default String svcDefectSupplier() {return g("svcDefectSupplier");}
 
   default String svcDefects() {return g("svcDefects");}
+
+  default String svcFinite() {return g("svcFinite");}
+
+  default String svcInitial() {return g("svcInitial");}
 
   default String svcInvoices() {return g("svcInvoices");}
 
@@ -4566,19 +4574,31 @@ public interface Dictionary {
 
   default String svcNewWarrantyType() {return g("svcNewWarrantyType");}
 
+  default String svcNotifyCustomer() {return g("svcNotifyCustomer");}
+
   default String svcObject() {return g("svcObject");}
 
   default String svcObjectFiles() {return g("svcObjectFiles");}
 
   default String svcObjects() {return g("svcObjects");}
 
+  default String svcServiceState() {return g("svcServiceState");}
+
   default String svcServiceStates() {return g("svcServiceStates");}
+
+  default String svcServiceType() {return g("svcServiceType");}
 
   default String svcServiceTypes() {return g("svcServiceTypes");}
 
   default String svcSpecification() {return g("svcSpecification");}
 
+  default String svcStateProcess() {return g("svcStateProcess");}
+
+  default String svcTerm() {return g("svcTerm");}
+
   default String svcTypeOfWork() {return g("svcTypeOfWork");}
+
+  default String svcWarranty() {return g("svcWarranty");}
 
   default String svcWarrantyTypes() {return g("svcWarrantyTypes");}
 
