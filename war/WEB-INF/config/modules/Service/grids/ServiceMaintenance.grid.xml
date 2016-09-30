@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="ServiceMaintenance" viewName="ServiceMaintenance" autoFit="true"
+        caption="=svcMaintenance"
+  >
+  <g:columns>
+    <IdColumn name="Id" />
+    <DataColumn name="CreatorDepartmentName" visible="true"/>
+    <RelColumn name="Type" renderColumns="TypeName" visible="true" />
+    <DataColumn name="CustomerName" label="=client" visible="true"/>
+    <RelColumn name="ContactPerson" renderColumns="ContactFirstName ContactLastName" label="=contact" visible="true" />
+    <DataColumn name="Phone" visible="true"/>
+    <RelColumn name="State" renderColumns="StateName" visible="true" />
+    <RelColumn name="Repairer" renderColumns="RepairerFirstName RepairerLastName" visible="true" />
+    <DataColumn name="Date" visible="true" />
+    <DataColumn name="CategoryName" label="=svcDeviceCategory" visible="true" />
+    <DataColumn name="Model" visible="true" />
+    <DataColumn name="SerialNo" visible="true" />
+    <DataColumn name="Description" visible="true"/>
+  </g:columns>
+</g:Grid>

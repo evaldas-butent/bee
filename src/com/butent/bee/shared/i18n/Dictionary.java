@@ -4546,6 +4546,12 @@ public interface Dictionary {
 
   default String svcDefects() {return g("svcDefects");}
 
+  default String svcDeviceCategory() {return g("svcDeviceCategory");}
+
+  default String svcEquipment() {return g("svcEquipment");}
+
+  default String svcFaultInfo() {return g("svcFaultInfo");}
+
   default String svcFinite() {return g("svcFinite");}
 
   default String svcInitial() {return g("svcInitial");}
@@ -4554,9 +4560,13 @@ public interface Dictionary {
 
   default String svcMaintenance() {return g("svcMaintenance");}
 
+  default String svcMaintenanceItems() {return g("svcMaintenanceItems");}
+
   default String svcMaster() {return g("svcMaster");}
 
   default String svcMenu() {return g("svcMenu");}
+
+  default String svcModel() {return g("svcModel");}
 
   default String svcModule() {return g("svcModule");}
 
@@ -4565,6 +4575,8 @@ public interface Dictionary {
   default String svcNewDefect() {return g("svcNewDefect");}
 
   default String svcNewMaintenance() {return g("svcNewMaintenance");}
+
+  default String svcNewMaintenanceItem() {return g("svcNewMaintenanceItem");}
 
   default String svcNewObject() {return g("svcNewObject");}
 
@@ -4582,6 +4594,8 @@ public interface Dictionary {
 
   default String svcObjects() {return g("svcObjects");}
 
+  default String svcSerialNo() {return g("svcSerialNo");}
+
   default String svcServiceState() {return g("svcServiceState");}
 
   default String svcServiceStates() {return g("svcServiceStates");}
@@ -4598,9 +4612,17 @@ public interface Dictionary {
 
   default String svcTypeOfWork() {return g("svcTypeOfWork");}
 
+  default String svcUrgent() {return g("svcUrgent");}
+
   default String svcWarranty() {return g("svcWarranty");}
 
+  default String svcWarrantyBasis() {return g("svcWarrantyBasis");}
+
+  default String svcWarrantyType() {return g("svcWarrantyType");}
+
   default String svcWarrantyTypes() {return g("svcWarrantyTypes");}
+
+  default String svcWarrantyValidTo() {return g("svcWarrantyValidTo");}
 
   default String swift() {return g("swift");}
 

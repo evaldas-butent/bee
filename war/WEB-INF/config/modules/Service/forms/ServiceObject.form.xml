@@ -18,6 +18,10 @@
       </page>
       <page>
         <text>=svcMaintenance</text>
+        <ChildGrid name="ServiceMaintenance" relColumn="ServiceObject" />
+      </page>
+      <page>
+        <text>=svcMaintenanceItems</text>
         <ChildGrid name="Maintenance" relColumn="ServiceObject" />
       </page>
       <page>

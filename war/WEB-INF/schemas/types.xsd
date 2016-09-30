@@ -497,6 +497,7 @@
       <xs:enumeration value="ServiceDistinctCritValues" />
       <xs:enumeration value="ServiceFiles" />
       <xs:enumeration value="ServiceInvoices" />
+      <xs:enumeration value="ServiceMaintenance" />
       <xs:enumeration value="ServiceObjectCriteria" />
       <xs:enumeration value="ServiceObjects" />
       <xs:enumeration value="Services" />
