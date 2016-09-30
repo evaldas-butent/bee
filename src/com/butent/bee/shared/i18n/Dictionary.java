@@ -4097,7 +4097,11 @@ public interface Dictionary {
 
   default String prmClearReservationsTime() {return g("prmClearReservationsTime");}
 
+  default String prmDefaultMaintenanceType() {return g("prmDefaultMaintenanceType");}
+
   default String prmDefaultSaleOperation() {return g("prmDefaultSaleOperation");}
+
+  default String prmDefaultWarrantyType() {return g("prmDefaultWarrantyType");}
 
   default String prmDiscussBirthdays() {return g("prmDiscussBirthdays");}
 
@@ -4116,6 +4120,8 @@ public interface Dictionary {
   default String prmImportERPItemsTime() {return g("prmImportERPItemsTime");}
 
   default String prmImportERPStocksTime() {return g("prmImportERPStocksTime");}
+
+  default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
 
   default String prmManagerDiscount() {return g("prmManagerDiscount");}
 
@@ -4142,6 +4148,8 @@ public interface Dictionary {
   default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
 
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
+
+  default String prmUrgentRate() {return g("prmUrgentRate");}
 
   default String productService() {return g("productService");}
 
