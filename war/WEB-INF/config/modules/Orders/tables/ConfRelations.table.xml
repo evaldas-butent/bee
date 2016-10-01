@@ -8,6 +8,7 @@
     <Relation name="BranchBundle" relation="ConfBranchBundles" notNull="true" cascade="DELETE" />
     <Relation name="BranchOption" relation="ConfBranchOptions" notNull="true" cascade="DELETE" />
     <Integer name="Price" label="=price" />
+    <Text name="Description" label="=description" />
   </Fields>
   <Constraints>
     <Unique fields="BranchBundle BranchOption" />

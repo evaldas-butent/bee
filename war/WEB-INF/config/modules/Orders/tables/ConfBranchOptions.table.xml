@@ -9,6 +9,7 @@
               label="=configuration" />
     <Relation name="Option" relation="ConfOptions" notNull="true" label="=option" />
     <Integer name="Price" label="=price" />
+    <Text name="Description" label="=description" />
   </Fields>
   <Constraints>
     <Unique fields="Branch Option" />

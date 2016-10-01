@@ -213,12 +213,17 @@ public class SpecificationBuilder implements InputCallback {
             dimension = option.getDimension();
             selectedOptions.add("<i>" + dimension + ":</i>");
           }
-          selectedOptions.add(BeeUtils.notEmpty(option.getDescription(), option.toString()));
+          Configuration configuration = currentBranch.getConfiguration();
+          selectedOptions.add(BeeUtils.notEmpty(BeeUtils
+                  .notEmpty(configuration.getRelationDescription(option, specification.getBundle()),
+                      configuration.getOptionDescription(option), option.getDescription()),
+              option.getName()));
         }
       }
       specification.setDescription(BeeUtils.join("<br><br><b>"
               + Localized.dictionary().additionalEquipment() + "</b><br>",
-          specification.getDescription(), BeeUtils.join("<br>", selectedOptions)));
+          specification.getDescription(), BeeUtils.join("<br>", selectedOptions.stream()
+              .map(s -> s.replace("\n", "<br>")).collect(Collectors.toList()))));
 
       ParameterList args = OrdersKeeper.createSvcArgs(SVC_SAVE_OBJECT);
       args.addDataItem(COL_OBJECT, Codec.beeSerialize(specification));
@@ -584,18 +589,26 @@ public class SpecificationBuilder implements InputCallback {
     if (bundle != null) {
       Configuration configuration = currentBranch.getConfiguration();
       Dimension dimension = null;
+      String description = configuration.getBundleDescription(bundle);
 
+      if (!BeeUtils.isEmpty(description)) {
+        defaults.add(description);
+      }
       for (Option option : getAvailableOptions().values()) {
         if (!option.getDimension().isRequired() && configuration.isDefault(option, bundle)) {
           if (!Objects.equals(option.getDimension(), dimension)) {
             dimension = option.getDimension();
             defaults.add("<i>" + dimension + ":</i>");
           }
-          defaults.add(BeeUtils.notEmpty(option.getDescription(), option.getName()));
+          defaults.add(BeeUtils.notEmpty(BeeUtils
+                  .notEmpty(configuration.getRelationDescription(option, bundle),
+                      configuration.getOptionDescription(option), option.getDescription()),
+              option.getName()));
         }
       }
     }
-    specification.setDescription(BeeUtils.join("<br>", defaults));
+    specification.setDescription(BeeUtils.join("<br>",
+        defaults.stream().map(s -> s.replace("\n", "<br>")).collect(Collectors.toList())));
   }
 
   private void setBranch(Branch branch) {

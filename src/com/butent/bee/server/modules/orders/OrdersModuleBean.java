@@ -159,7 +159,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       case SVC_SET_BUNDLE:
         response = setBundle(reqInfo.getParameterLong(COL_BRANCH),
             Bundle.restore(reqInfo.getParameter(COL_BUNDLE)),
-            reqInfo.getParameterInt(COL_ITEM_PRICE));
+            Configuration.DataInfo.restore(reqInfo.getParameter(Service.VAR_DATA)));
         break;
 
       case SVC_DELETE_BUNDLES:
@@ -187,12 +187,14 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       case SVC_SET_OPTION:
         response = setOption(reqInfo.getParameterLong(COL_BRANCH),
-            reqInfo.getParameterLong(COL_OPTION), reqInfo.getParameterInt(COL_ITEM_PRICE));
+            reqInfo.getParameterLong(COL_OPTION),
+            Configuration.DataInfo.restore(reqInfo.getParameter(Service.VAR_DATA)));
         break;
 
       case SVC_SET_RELATION:
         response = setRelation(reqInfo.getParameterLong(COL_BRANCH), reqInfo.getParameter(COL_KEY),
-            reqInfo.getParameterLong(COL_OPTION), reqInfo.getParameterInt(COL_ITEM_PRICE));
+            reqInfo.getParameterLong(COL_OPTION),
+            Configuration.DataInfo.restore(reqInfo.getParameter(Service.VAR_DATA)));
         break;
 
       case SVC_DELETE_RELATION:
@@ -769,6 +771,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     data = qs.getData(new SqlSelect()
         .addFields(TBL_CONF_BRANCH_BUNDLES, COL_ITEM_PRICE)
+        .addField(TBL_CONF_BRANCH_BUNDLES, OrdersConstants.COL_DESCRIPTION,
+            COL_BUNDLE + OrdersConstants.COL_DESCRIPTION)
         .addFields(TBL_CONF_BUNDLE_OPTIONS, COL_BUNDLE, COL_OPTION)
         .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE,
             OrdersConstants.COL_DESCRIPTION, COL_PHOTO)
@@ -782,33 +786,42 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId)));
 
     Multimap<Long, Option> bundleOptions = HashMultimap.create();
-    Map<Long, Pair<Bundle, String>> bundles = new HashMap<>();
+    Map<Long, Pair<Bundle, Configuration.DataInfo>> bundles = new HashMap<>();
 
     for (SimpleRow row : data) {
       Long id = row.getLong(COL_BUNDLE);
+
       bundleOptions.put(id, new Option(row.getLong(COL_OPTION),
           row.getValue(COL_OPTION_NAME), new Dimension(row.getLong(COL_GROUP),
           row.getValue(COL_GROUP_NAME)).setRequired(row.getBoolean(COL_REQUIRED)))
           .setCode(row.getValue(COL_CODE))
           .setDescription(row.getValue(OrdersConstants.COL_DESCRIPTION))
           .setPhoto(row.getLong(COL_PHOTO)));
-      bundles.put(id, Pair.of(null, row.getValue(COL_ITEM_PRICE)));
+
+      if (!bundles.containsKey(id)) {
+        bundles.put(id, Pair.of(null, Configuration.DataInfo.of(row.getValue(COL_ITEM_PRICE),
+            row.getValue(COL_BUNDLE + OrdersConstants.COL_DESCRIPTION))));
+      }
     }
     for (Long bundleId : bundles.keySet()) {
       Bundle bundle = new Bundle(bundleOptions.get(bundleId));
-      Pair<Bundle, String> pair = bundles.get(bundleId);
+      Pair<Bundle, Configuration.DataInfo> pair = bundles.get(bundleId);
       pair.setA(bundle);
-      configuration.setBundlePrice(bundle, pair.getB());
+      configuration.setBundleInfo(bundle, pair.getB());
     }
     data = qs.getData(new SqlSelect()
         .addField(TBL_CONF_BRANCH_OPTIONS, sys.getIdName(TBL_CONF_BRANCH_OPTIONS),
             COL_BRANCH_OPTION)
         .addFields(TBL_CONF_BRANCH_OPTIONS, COL_OPTION)
         .addField(TBL_CONF_BRANCH_OPTIONS, COL_ITEM_PRICE, COL_OPTION + COL_ITEM_PRICE)
+        .addField(TBL_CONF_BRANCH_OPTIONS, OrdersConstants.COL_DESCRIPTION,
+            COL_OPTION + OrdersConstants.COL_DESCRIPTION)
         .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE,
             OrdersConstants.COL_DESCRIPTION, COL_PHOTO)
         .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
         .addFields(TBL_CONF_RELATIONS, COL_ITEM_PRICE)
+        .addField(TBL_CONF_RELATIONS, OrdersConstants.COL_DESCRIPTION,
+            COL_RELATION + OrdersConstants.COL_DESCRIPTION)
         .addFields(TBL_CONF_BRANCH_BUNDLES, COL_BUNDLE)
         .addFrom(TBL_CONF_BRANCH_OPTIONS)
         .addFromInner(TBL_CONF_OPTIONS,
@@ -826,20 +839,24 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       Long branchOption = row.getLong(COL_BRANCH_OPTION);
 
       if (!branchOptions.containsKey(branchOption)) {
-        branchOptions.put(branchOption, new Option(row.getLong(COL_OPTION),
+        Option option = new Option(row.getLong(COL_OPTION),
             row.getValue(COL_OPTION_NAME), new Dimension(row.getLong(COL_GROUP),
             row.getValue(COL_GROUP_NAME)).setRequired(row.getBoolean(COL_REQUIRED)))
             .setCode(row.getValue(COL_CODE))
             .setDescription(row.getValue(OrdersConstants.COL_DESCRIPTION))
-            .setPhoto(row.getLong(COL_PHOTO)));
-      }
-      Option option = branchOptions.get(branchOption);
+            .setPhoto(row.getLong(COL_PHOTO));
 
-      if (DataUtils.isId(row.getLong(COL_BUNDLE))) {
-        configuration.setRelationPrice(option, bundles.get(row.getLong(COL_BUNDLE)).getA(),
-            row.getValue(COL_ITEM_PRICE));
+        branchOptions.put(branchOption, option);
+        configuration.setOptionInfo(option,
+            Configuration.DataInfo.of(row.getValue(COL_OPTION + COL_ITEM_PRICE),
+                row.getValue(COL_OPTION + OrdersConstants.COL_DESCRIPTION)));
       }
-      configuration.setOptionPrice(option, row.getValue(COL_OPTION + COL_ITEM_PRICE));
+      if (DataUtils.isId(row.getLong(COL_BUNDLE))) {
+        configuration.setRelationInfo(branchOptions.get(branchOption),
+            bundles.get(row.getLong(COL_BUNDLE)).getA(),
+            Configuration.DataInfo.of(row.getValue(COL_ITEM_PRICE),
+                row.getValue(COL_RELATION + OrdersConstants.COL_DESCRIPTION)));
+      }
     }
     data = qs.getData(new SqlSelect()
         .addFields(TBL_CONF_RESTRICTIONS, COL_BRANCH_OPTION, COL_OPTION, COL_DENIED)
@@ -1644,7 +1661,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(objectId);
   }
 
-  private ResponseObject setBundle(Long branchId, Bundle bundle, Integer price) {
+  private ResponseObject setBundle(Long branchId, Bundle bundle, Configuration.DataInfo info) {
     int c = 0;
     Long bundleId = qs.getLong(new SqlSelect()
         .addFields(TBL_CONF_BUNDLES, sys.getIdName(TBL_CONF_BUNDLES))
@@ -1662,7 +1679,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       }
     } else {
       c = qs.updateData(new SqlUpdate(TBL_CONF_BRANCH_BUNDLES)
-          .addConstant(COL_ITEM_PRICE, price)
+          .addConstant(COL_ITEM_PRICE, info.getPrice())
+          .addConstant(OrdersConstants.COL_DESCRIPTION, info.getDescription())
           .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId,
               COL_BUNDLE, bundleId)));
     }
@@ -1670,14 +1688,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       qs.insertData(new SqlInsert(TBL_CONF_BRANCH_BUNDLES)
           .addConstant(COL_BRANCH, branchId)
           .addConstant(COL_BUNDLE, bundleId)
-          .addNotNull(COL_ITEM_PRICE, price));
+          .addNotEmpty(COL_ITEM_PRICE, info.getPrice())
+          .addNotEmpty(OrdersConstants.COL_DESCRIPTION, info.getDescription()));
     }
     return ResponseObject.emptyResponse();
   }
 
-  private ResponseObject setOption(Long branchId, Long optionId, Integer price) {
+  private ResponseObject setOption(Long branchId, Long optionId, Configuration.DataInfo info) {
     int c = qs.updateData(new SqlUpdate(TBL_CONF_BRANCH_OPTIONS)
-        .addConstant(COL_ITEM_PRICE, price)
+        .addConstant(COL_ITEM_PRICE, info.getPrice())
+        .addConstant(OrdersConstants.COL_DESCRIPTION, info.getDescription())
         .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_OPTIONS, COL_BRANCH, branchId, COL_OPTION,
             optionId)));
 
@@ -1685,12 +1705,14 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       qs.insertData(new SqlInsert(TBL_CONF_BRANCH_OPTIONS)
           .addConstant(COL_BRANCH, branchId)
           .addConstant(COL_OPTION, optionId)
-          .addNotNull(COL_ITEM_PRICE, price));
+          .addNotEmpty(COL_ITEM_PRICE, info.getPrice())
+          .addNotEmpty(OrdersConstants.COL_DESCRIPTION, info.getDescription()));
     }
     return ResponseObject.emptyResponse();
   }
 
-  private ResponseObject setRelation(Long branchId, String key, Long optionId, Integer price) {
+  private ResponseObject setRelation(Long branchId, String key, Long optionId,
+      Configuration.DataInfo info) {
     SimpleRow row = qs.getRow(new SqlSelect()
         .addField(TBL_CONF_BRANCH_BUNDLES, sys.getIdName(TBL_CONF_BRANCH_BUNDLES),
             COL_BRANCH_BUNDLE)
@@ -1715,7 +1737,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     if (DataUtils.isId(relationId)) {
       qs.updateData(new SqlUpdate(TBL_CONF_RELATIONS)
-          .addConstant(COL_ITEM_PRICE, price)
+          .addConstant(COL_ITEM_PRICE, info.getPrice())
+          .addConstant(OrdersConstants.COL_DESCRIPTION, info.getDescription())
           .setWhere(sys.idEquals(TBL_CONF_RELATIONS, relationId)));
     } else {
       Long branchOptionId = row.getLong(COL_BRANCH_OPTION);
@@ -1728,7 +1751,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       qs.insertData(new SqlInsert(TBL_CONF_RELATIONS)
           .addConstant(COL_BRANCH_BUNDLE, row.getLong(COL_BRANCH_BUNDLE))
           .addConstant(COL_BRANCH_OPTION, branchOptionId)
-          .addNotNull(COL_ITEM_PRICE, price));
+          .addNotEmpty(COL_ITEM_PRICE, info.getPrice())
+          .addNotEmpty(OrdersConstants.COL_DESCRIPTION, info.getDescription()));
     }
     return ResponseObject.emptyResponse();
   }

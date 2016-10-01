@@ -23,14 +23,58 @@ import java.util.TreeMap;
 
 public class Configuration implements BeeSerializable {
 
+  public static final class DataInfo implements BeeSerializable {
+    private String price;
+    private String description;
+
+    private DataInfo() {
+    }
+
+    @Override
+    public void deserialize(String s) {
+      String[] dataInfo = Codec.beeDeserializeCollection(s);
+      this.price = dataInfo[0];
+      this.description = dataInfo[1];
+    }
+
+    public String getDescription() {
+      return description;
+    }
+
+    public String getPrice() {
+      return price;
+    }
+
+    public static DataInfo of(String prc, String descr) {
+      DataInfo info = new DataInfo();
+      info.price = prc;
+      info.description = descr;
+      return info;
+    }
+
+    public static DataInfo restore(String s) {
+      if (BeeUtils.isEmpty(s)) {
+        return null;
+      }
+      DataInfo info = new DataInfo();
+      info.deserialize(s);
+      return info;
+    }
+
+    @Override
+    public String serialize() {
+      return Codec.beeSerialize(new Object[] {price, description});
+    }
+  }
+
   public static final String DEFAULT_PRICE = BeeUtils.toString(BeeConst.UNDEF);
 
   private enum Serial {
     ROW_DIMENSIONS, COL_DIMENSIONS, DATA, RELATIONS, RESTRICTIONS
   }
 
-  private final Map<Bundle, String> data = new HashMap<>();
-  private final Map<Option, Pair<String, Map<String, String>>> relations = new TreeMap<>();
+  private final Map<Bundle, DataInfo> data = new HashMap<>();
+  private final Map<Option, Pair<DataInfo, Map<String, DataInfo>>> relations = new TreeMap<>();
   private final Map<Option, Map<Option, Boolean>> restrictions = new HashMap<>();
 
   private final List<Dimension> rowDimensions = new ArrayList<>();
@@ -63,12 +107,6 @@ public class Configuration implements BeeSerializable {
     }
   }
 
-  public void addOption(Option option) {
-    if (!relations.containsKey(option)) {
-      relations.put(option, Pair.of(null, new HashMap<>()));
-    }
-  }
-
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -96,34 +134,34 @@ public class Configuration implements BeeSerializable {
 
         case DATA:
           data.clear();
-
-          for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(value).entrySet()) {
-            data.put(Bundle.restore(entry.getKey()), entry.getValue());
-          }
+          Codec.deserializeHashMap(value).forEach((key, val) -> {
+            data.put(Bundle.restore(key), DataInfo.restore(val));
+          });
           break;
 
         case RELATIONS:
           relations.clear();
+          Codec.deserializeHashMap(value).forEach((key, val) -> {
+            Pair<String, String> pair = Pair.restore(val);
+            Map<String, DataInfo> map = new HashMap<>();
 
-          for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(value).entrySet()) {
-            Pair<String, String> pair = Pair.restore(entry.getValue());
-            relations.put(Option.restore(entry.getKey()),
-                Pair.of(pair.getA(), Codec.deserializeLinkedHashMap(pair.getB())));
-          }
+            Codec.deserializeHashMap(pair.getB())
+                .forEach((key2, val2) -> map.put(key2, DataInfo.restore(val2)));
+
+            relations.put(Option.restore(key), Pair.of(DataInfo.restore(pair.getA()), map));
+          });
           break;
 
         case RESTRICTIONS:
           restrictions.clear();
-
-          for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(value).entrySet()) {
+          Codec.deserializeLinkedHashMap(value).forEach((key, val) -> {
             Map<Option, Boolean> map = new HashMap<>();
 
-            for (Map.Entry<String, String> subEntry : Codec
-                .deserializeLinkedHashMap(entry.getValue()).entrySet()) {
-              map.put(Option.restore(subEntry.getKey()), BeeUtils.toBoolean(subEntry.getValue()));
-            }
-            restrictions.put(Option.restore(entry.getKey()), map);
-          }
+            Codec.deserializeHashMap(val)
+                .forEach((key2, val2) -> map.put(Option.restore(key2), BeeUtils.toBoolean(val2)));
+
+            restrictions.put(Option.restore(key), map);
+          });
           break;
       }
     }
@@ -135,8 +173,14 @@ public class Configuration implements BeeSerializable {
     return allDimensions;
   }
 
+  public String getBundleDescription(Bundle bundle) {
+    DataInfo info = data.get(bundle);
+    return Objects.isNull(info) ? null : info.getDescription();
+  }
+
   public String getBundlePrice(Bundle bundle) {
-    return data.get(bundle);
+    DataInfo info = data.get(bundle);
+    return Objects.isNull(info) ? null : info.getPrice();
   }
 
   public List<Dimension> getColDimensions() {
@@ -193,18 +237,30 @@ public class Configuration implements BeeSerializable {
     return metrics;
   }
 
+  public String getOptionDescription(Option option) {
+    Pair<DataInfo, Map<String, DataInfo>> pair = relations.get(option);
+    return pair != null && pair.getA() != null ? pair.getA().getDescription() : null;
+  }
+
   public String getOptionPrice(Option option) {
-    Pair<String, Map<String, String>> pair = relations.get(option);
-    return pair != null ? pair.getA() : null;
+    Pair<DataInfo, Map<String, DataInfo>> pair = relations.get(option);
+    return pair != null && pair.getA() != null ? pair.getA().getPrice() : null;
   }
 
   public Collection<Option> getOptions() {
     return relations.keySet();
   }
 
+  public String getRelationDescription(Option option, Bundle bundle) {
+    Pair<DataInfo, Map<String, DataInfo>> pair = relations.get(option);
+    return pair != null && pair.getB().get(bundle.getKey()) != null
+        ? pair.getB().get(bundle.getKey()).getDescription() : null;
+  }
+
   public String getRelationPrice(Option option, Bundle bundle) {
-    Pair<String, Map<String, String>> pair = relations.get(option);
-    return pair != null ? pair.getB().get(bundle.getKey()) : null;
+    Pair<DataInfo, Map<String, DataInfo>> pair = relations.get(option);
+    return pair != null && pair.getB().get(bundle.getKey()) != null
+        ? pair.getB().get(bundle.getKey()).getPrice() : null;
   }
 
   public Set<Option> getRequiredOptions(Option option) {
@@ -232,8 +288,8 @@ public class Configuration implements BeeSerializable {
   }
 
   public boolean hasBundles() {
-    for (String price : data.values()) {
-      if (!BeeUtils.isEmpty(price)) {
+    for (DataInfo info : data.values()) {
+      if (Objects.nonNull(info)) {
         return true;
       }
     }
@@ -241,12 +297,12 @@ public class Configuration implements BeeSerializable {
   }
 
   public boolean hasRelation(Option option, Bundle bundle) {
-    Pair<String, Map<String, String>> pair = relations.get(option);
+    Pair<DataInfo, Map<String, DataInfo>> pair = relations.get(option);
     return pair != null && pair.getB().containsKey(bundle.getKey());
   }
 
   public boolean hasRelations(Bundle bundle) {
-    for (Pair<String, Map<String, String>> pair : relations.values()) {
+    for (Pair<DataInfo, Map<String, DataInfo>> pair : relations.values()) {
       if (pair.getB().containsKey(bundle.getKey())) {
         return true;
       }
@@ -299,7 +355,7 @@ public class Configuration implements BeeSerializable {
     Set<Bundle> realBundles = new HashSet<>();
 
     for (Bundle bundle : bundles) {
-      if (!BeeUtils.isEmpty(data.remove(bundle))) {
+      if (Objects.nonNull(data.remove(bundle))) {
         realBundles.add(bundle);
         removeRelations(bundle);
       }
@@ -310,14 +366,14 @@ public class Configuration implements BeeSerializable {
   public Set<Bundle> removeBundlesByDimension(Dimension dimension) {
     Set<Bundle> realBundles = new HashSet<>();
 
-    for (Iterator<Map.Entry<Bundle, String>> iterator = data.entrySet().iterator();
+    for (Iterator<Map.Entry<Bundle, DataInfo>> iterator = data.entrySet().iterator();
          iterator.hasNext(); ) {
-      Map.Entry<Bundle, String> entry = iterator.next();
+      Map.Entry<Bundle, DataInfo> entry = iterator.next();
       Bundle bundle = entry.getKey();
 
       for (Option option : bundle.getOptions()) {
         if (Objects.equals(option.getDimension(), dimension)) {
-          if (!BeeUtils.isEmpty(entry.getValue())) {
+          if (Objects.nonNull(entry.getValue())) {
             realBundles.add(bundle);
           }
           removeRelations(bundle);
@@ -335,7 +391,7 @@ public class Configuration implements BeeSerializable {
   }
 
   public void removeRelation(Option option, Bundle bundle) {
-    Pair<String, Map<String, String>> pair = relations.get(option);
+    Pair<DataInfo, Map<String, DataInfo>> pair = relations.get(option);
 
     if (pair != null) {
       pair.getB().remove(bundle.getKey());
@@ -391,23 +447,23 @@ public class Configuration implements BeeSerializable {
     return Codec.beeSerialize(arr);
   }
 
-  public void setBundlePrice(Bundle bundle, String price) {
+  public void setBundleInfo(Bundle bundle, DataInfo info) {
     addBundle(bundle);
-    data.put(bundle, price);
+    data.put(bundle, info);
 
-    if (BeeUtils.isEmpty(price)) {
+    if (Objects.isNull(info)) {
       removeRelations(bundle);
     }
   }
 
-  public void setOptionPrice(Option option, String price) {
+  public void setOptionInfo(Option option, DataInfo info) {
     addOption(option);
-    relations.get(option).setA(price);
+    relations.get(option).setA(info);
   }
 
-  public void setRelationPrice(Option option, Bundle bundle, String price) {
+  public void setRelationInfo(Option option, Bundle bundle, DataInfo info) {
     addOption(option);
-    relations.get(option).getB().put(bundle.getKey(), price);
+    relations.get(option).getB().put(bundle.getKey(), info);
   }
 
   public void setRestriction(Option option, Option relatedOption, boolean denied) {
@@ -420,8 +476,14 @@ public class Configuration implements BeeSerializable {
     }
   }
 
+  private void addOption(Option option) {
+    if (!relations.containsKey(option)) {
+      relations.put(option, Pair.of(null, new HashMap<>()));
+    }
+  }
+
   private void removeRelations(Bundle bundle) {
-    for (Pair<String, Map<String, String>> pair : relations.values()) {
+    for (Pair<DataInfo, Map<String, DataInfo>> pair : relations.values()) {
       pair.getB().remove(bundle.getKey());
     }
   }
