@@ -120,6 +120,7 @@ public final class OrdersConstants {
   public static final String COL_INVISIBLE_DISCOUNT = "InvisibleDiscount";
 
   public static final String COL_BRANCH = "Branch";
+  public static final String COL_BRANCH_NAME = "BranchName";
   public static final String COL_OPTION = "Option";
   public static final String COL_OPTION_NAME = "OptionName";
   public static final String COL_CODE = "Code";
@@ -129,7 +130,7 @@ public final class OrdersConstants {
   public static final String COL_TYPE = "Type";
   public static final String COL_GROUP = "Group";
   public static final String COL_GROUP_NAME = "GroupName";
-  public static final String COL_VALID_UNTIL = "ValidUntil";
+  public static final String COL_BLOCKED = "Blocked";
   public static final String COL_ORDINAL = "Ordinal";
   public static final String COL_REQUIRED = "Required";
   public static final String COL_BRANCH_BUNDLE = "BranchBundle";

@@ -328,11 +328,10 @@ public class ConfPricelistForm extends AbstractFormInterceptor
     IsRow item = tree.getSelectedItem();
 
     while (item != null) {
-      cap.add(Data.getString(tree.getViewName(), item, COL_OPTION_NAME));
+      cap.add(0, Data.getString(tree.getViewName(), item, COL_BRANCH_NAME));
       item = tree.getParentItem(item);
     }
-    Collections.reverse(cap);
-    return BeeUtils.joinItems(cap);
+    return BeeUtils.joinWords(cap);
   }
 
   private Long getBranchType() {

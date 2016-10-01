@@ -108,7 +108,7 @@ public class MailStorageBean {
       long time = history.values().stream().mapToLong(Long::longValue).sum();
 
       if (time >= 1000) {
-        beeLogger.info(caption, time, history);
+        beeLogger.warning(caption, time, history);
       }
     }
   }

@@ -21,16 +21,17 @@ import java.util.TreeMap;
 public class Specification implements BeeSerializable {
 
   private enum Serial {
-    BRANCH_ID, BRANCH_OPTIONS, BUNDLE, BUNDLE_PRICE, OPTIONS, DESCRIPTION, ID
+    BRANCH_ID, BRANCH_NAME, BUNDLE, BUNDLE_PRICE, OPTIONS, DESCRIPTION, ID, PHOTOS
   }
 
   private Long branchId;
-  private final List<Option> branchOptions = new ArrayList<>();
+  private String branchName;
   private Bundle bundle;
   private Integer bundlePrice;
   private final Map<Option, Integer> options = new TreeMap<>();
   private String description;
   private Long id;
+  private final List<Long> photos = new ArrayList<>();
 
   public void addOption(Option option, Integer optionPrice) {
     options.put(option, optionPrice);
@@ -51,12 +52,8 @@ public class Specification implements BeeSerializable {
           branchId = BeeUtils.toLongOrNull(value);
           break;
 
-        case BRANCH_OPTIONS:
-          branchOptions.clear();
-
-          for (String data : Codec.beeDeserializeCollection(value)) {
-            branchOptions.add(Option.restore(data));
-          }
+        case BRANCH_NAME:
+          branchName = value;
           break;
 
         case BUNDLE:
@@ -69,7 +66,6 @@ public class Specification implements BeeSerializable {
 
         case OPTIONS:
           options.clear();
-
           for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(value).entrySet()) {
             options.put(Option.restore(entry.getKey()), BeeUtils.toIntOrNull(entry.getValue()));
           }
@@ -82,6 +78,13 @@ public class Specification implements BeeSerializable {
         case ID:
           id = BeeUtils.toLongOrNull(value);
           break;
+
+        case PHOTOS:
+          photos.clear();
+          for (String photo : Codec.beeDeserializeCollection(value)) {
+            photos.add(BeeUtils.toLongOrNull(photo));
+          }
+          break;
       }
     }
   }
@@ -90,8 +93,8 @@ public class Specification implements BeeSerializable {
     return branchId;
   }
 
-  public List<Option> getBranchOptions() {
-    return branchOptions;
+  public String getBranchName() {
+    return branchName;
   }
 
   public Bundle getBundle() {
@@ -118,6 +121,10 @@ public class Specification implements BeeSerializable {
     return options.keySet();
   }
 
+  public List<Long> getPhotos() {
+    return photos;
+  }
+
   public int getPrice() {
     int price = BeeUtils.unbox(getBundlePrice());
 
@@ -130,12 +137,7 @@ public class Specification implements BeeSerializable {
   public Widget renderSummary(boolean priceMode) {
     HtmlTable summary = new HtmlTable(SpecificationBuilder.STYLE_PREFIX + "-summary");
     int row = 0;
-    List<String> branchNames = new ArrayList<>();
-
-    for (Option option : getBranchOptions()) {
-      branchNames.add(option.getName());
-    }
-    summary.setText(row, 0, BeeUtils.joinWords(branchNames));
+    summary.setText(row, 0, getBranchName());
 
     if (priceMode) {
       summary.setText(row, 1, BeeUtils.toString(getBundlePrice()));
@@ -204,8 +206,8 @@ public class Specification implements BeeSerializable {
           arr[i++] = branchId;
           break;
 
-        case BRANCH_OPTIONS:
-          arr[i++] = branchOptions;
+        case BRANCH_NAME:
+          arr[i++] = branchName;
           break;
 
         case BUNDLE:
@@ -227,15 +229,18 @@ public class Specification implements BeeSerializable {
         case ID:
           arr[i++] = id;
           break;
+
+        case PHOTOS:
+          arr[i++] = photos;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
   }
 
-  public void setBranchOptions(Long brId, List<Option> opt) {
+  public void setBranch(Long brId, String brPath) {
     this.branchId = brId;
-    branchOptions.clear();
-    branchOptions.addAll(opt);
+    this.branchName = brPath;
   }
 
   public void setBundle(Bundle b, Integer price) {

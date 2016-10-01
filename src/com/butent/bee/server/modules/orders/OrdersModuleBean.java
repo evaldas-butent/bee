@@ -1215,10 +1215,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   }
 
   private ResponseObject getObject(Long objectId) {
-    Specification specification = null;
-
     SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addFields(TBL_CONF_OBJECTS, COL_BRANCH)
+        .addFields(TBL_CONF_OBJECTS, COL_BRANCH, OrdersConstants.COL_BRANCH_NAME)
         .addField(TBL_CONF_OBJECTS, OrdersConstants.COL_DESCRIPTION,
             COL_BUNDLE + OrdersConstants.COL_DESCRIPTION)
         .addField(TBL_CONF_OBJECTS, COL_ITEM_PRICE, COL_BUNDLE + COL_ITEM_PRICE)
@@ -1235,16 +1233,17 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         .setWhere(sys.idEquals(TBL_CONF_OBJECTS, objectId))
         .addOrder(TBL_CONF_OBJECT_OPTIONS, sys.getIdName(TBL_CONF_OBJECT_OPTIONS)));
 
-    Long branchId = null;
+    Specification specification = null;
     Integer bundlePrice = null;
-    List<Option> branchOptions = new ArrayList<>();
     List<Option> bundleOptions = new ArrayList<>();
 
     for (SimpleRow row : rs) {
       if (Objects.isNull(specification)) {
         specification = new Specification();
+        specification.setId(objectId);
+        specification.setBranch(row.getLong(COL_BRANCH),
+            row.getValue(OrdersConstants.COL_BRANCH_NAME));
         specification.setDescription(row.getValue(COL_BUNDLE + OrdersConstants.COL_DESCRIPTION));
-        branchId = row.getLong(COL_BRANCH);
         bundlePrice = row.getInt(COL_BUNDLE + COL_ITEM_PRICE);
       }
       Integer price = row.getInt(COL_ITEM_PRICE);
@@ -1256,17 +1255,30 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           .setPhoto(row.getLong(COL_PHOTO));
 
       if (Objects.isNull(price)) {
-        branchOptions.add(option);
-      } else if (BeeConst.isUndef(price)) {
         bundleOptions.add(option);
       } else {
         specification.addOption(option, price);
       }
     }
     if (Objects.nonNull(specification)) {
-      specification.setBranchOptions(branchId, branchOptions);
-      specification.setBundle(new Bundle(bundleOptions), bundlePrice);
-      specification.setId(objectId);
+      if (!BeeUtils.isEmpty(bundleOptions)) {
+        specification.setBundle(new Bundle(bundleOptions), bundlePrice);
+      }
+      if (DataUtils.isId(specification.getBranchId())) {
+        String idName = sys.getIdName(TBL_CONF_PRICELIST);
+
+        rs = qs.getData(new SqlSelect()
+            .addFields(TBL_CONF_PRICELIST, idName, COL_BRANCH, COL_PHOTO)
+            .addFrom(TBL_CONF_PRICELIST));
+
+        SimpleRow row = rs.getRowByKey(idName, BeeUtils.toString(specification.getBranchId()));
+
+        while (Objects.nonNull(row)) {
+          specification.getPhotos().add(0, row.getLong(COL_PHOTO));
+          String id = row.getValue(COL_BRANCH);
+          row = DataUtils.isId(id) ? rs.getRowByKey(idName, id) : null;
+        }
+      }
     }
     return ResponseObject.response(specification);
   }
@@ -1612,20 +1624,15 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   private ResponseObject saveObject(Specification specification) {
     long objectId = qs.insertData(new SqlInsert(TBL_CONF_OBJECTS)
         .addConstant(COL_BRANCH, specification.getBranchId())
+        .addConstant(OrdersConstants.COL_BRANCH_NAME, specification.getBranchName())
         .addConstant(OrdersConstants.COL_DESCRIPTION, specification.getDescription())
         .addConstant(COL_ITEM_PRICE, specification.getBundlePrice()));
 
-    for (Option option : specification.getBranchOptions()) {
-      qs.insertData(new SqlInsert(TBL_CONF_OBJECT_OPTIONS)
-          .addConstant(COL_OBJECT, objectId)
-          .addConstant(COL_OPTION, option.getId()));
-    }
     if (specification.getBundle() != null) {
       for (Option option : specification.getBundle().getOptions()) {
         qs.insertData(new SqlInsert(TBL_CONF_OBJECT_OPTIONS)
             .addConstant(COL_OBJECT, objectId)
-            .addConstant(COL_OPTION, option.getId())
-            .addConstant(COL_ITEM_PRICE, BeeConst.UNDEF));
+            .addConstant(COL_OPTION, option.getId()));
       }
     }
     for (Option option : specification.getOptions()) {

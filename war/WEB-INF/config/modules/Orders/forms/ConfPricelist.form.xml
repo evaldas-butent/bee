@@ -10,30 +10,30 @@
       <DataTree caption="=categories" viewName="ConfPricelist"
                 parentColumn="Branch" orderColumn="Ordinal">
         <calc>
-          <ui:function>
-            var cap = row.OptionName;
-
-            if (row.ValidUntil) {
-              cap += " (&lt; " + row.ValidUntil.toLocaleDateString() + ")";
-            }
-            return cap;
-          </ui:function>
+          <ui:expression>row.BranchName</ui:expression>
         </calc>
         <form name="EditConfiguration">
           <FlowPanel>
             <Table kind="controls">
               <col index="0" kind="label" />
               <row>
-                <Label for="Option" />
-                <DataSelector source="Option" style="width:20em;" />
+                <Label for="BranchName" />
+                <InputText source="BranchName" style="width:20em;" />
               </row>
               <row>
-                <Label for="ValidUntil" />
-                <InputDate source="ValidUntil" />
+                <Label for="PhotoFile" />
+                <Image name="PhotoFile" />
+              </row>
+              <row>
+                <Label for="Description" />
+                <InputArea source="Description" visibleLines="4" style="width:20em;" />
               </row>
               <row>
                 <Label for="Ordinal" />
-                <InputDecimal source="Ordinal" style="width:40px;" />
+                <FlowPanel>
+                  <InputDecimal source="Ordinal" style="width:40px;" />
+                  <CheckBox source="Blocked" style="float:right;" />
+                </FlowPanel>
               </row>
               <row>
                 <Label for="Type" />

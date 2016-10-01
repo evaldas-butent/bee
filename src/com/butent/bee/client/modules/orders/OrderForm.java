@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.orders;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -83,7 +82,7 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
   private final Dictionary loc = Localized.dictionary();
   private Label warehouseLabel;
 
-  private HasWidgets objectContainer;
+  private Flow objectContainer;
   private Specification objectSpecification;
 
   @Override
@@ -188,15 +187,13 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
         && widget instanceof HasClickHandlers) {
       ((HasClickHandlers) widget).addClickHandler(clickEvent -> createObject());
 
-    } else if (BeeUtils.same(name, COL_OBJECT) && widget instanceof HasWidgets) {
-      objectContainer = (HasWidgets) widget;
+    } else if (BeeUtils.same(name, COL_OBJECT) && widget instanceof Flow) {
+      objectContainer = (Flow) widget;
     }
   }
 
   @Override
   public void afterRefresh(final FormView form, final IsRow row) {
-    refreshObject();
-
     Button prepare = new Button(loc.ordPrepare(), event -> {
       updateStatus(form, OrdersStatus.PREPARED);
       form.setEnabled(true);
@@ -361,16 +358,20 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
 
     super.getReportParameters(defaultParameters ->
         ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+
           if (objectSpecification != null) {
             defaultParameters.put(TBL_CONF_OBJECT_OPTIONS,
                 objectSpecification.renderSummary(false).toString());
 
-            for (int i = 0; i < objectSpecification.getBranchOptions().size(); i++) {
-              defaultParameters.put(COL_PHOTO + i,
-                  BeeUtils.toString(objectSpecification.getBranchOptions().get(i).getPhoto()));
+            for (int i = 0; i < objectSpecification.getPhotos().size(); i++) {
+              Long photo = objectSpecification.getPhotos().get(i);
+
+              if (DataUtils.isId(photo)) {
+                defaultParameters.put(COL_PHOTO + i, BeeUtils.toString(photo));
+              }
             }
           }
-          defaultParameters.putAll(companiesInfo);
           parametersConsumer.accept(defaultParameters);
         }));
   }
@@ -389,13 +390,12 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
           response.notify(getFormView());
 
           if (!response.hasErrors()) {
-            objectSpecification = Specification.restore(response.getResponseAsString());
-            refreshObject();
+            refreshObject(Specification.restore(response.getResponseAsString()));
           }
         }
       });
     } else {
-      objectSpecification = null;
+      refreshObject(null);
     }
     super.onSetActiveRow(row);
   }
@@ -525,20 +525,21 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
     }
   }
 
-  private void refreshObject() {
+  private void refreshObject(Specification specification) {
+    objectSpecification = specification;
+
     if (objectContainer != null) {
       objectContainer.clear();
 
       if (objectSpecification != null) {
-        for (Option option : objectSpecification.getBranchOptions()) {
-          if (DataUtils.isId(option.getPhoto())) {
-            Flow thumbnail = new Flow(SpecificationBuilder.STYLE_THUMBNAIL);
-            thumbnail.addStyleName(StyleUtils.NAME_FLEXIBLE);
-            thumbnail.add(new Image(FileUtils.getUrl(option.getPhoto())));
-            objectContainer.add(thumbnail);
-          }
-        }
         objectContainer.add(objectSpecification.renderSummary(false));
+
+        objectSpecification.getPhotos().stream().filter(DataUtils::isId).forEach(photo -> {
+          Flow thumbnail = new Flow(SpecificationBuilder.STYLE_THUMBNAIL);
+          thumbnail.addStyleName(StyleUtils.NAME_FLEXIBLE);
+          thumbnail.add(new Image(FileUtils.getUrl(photo)));
+          objectContainer.insert(thumbnail, objectContainer.getWidgetCount() - 1);
+        });
       }
     }
   }

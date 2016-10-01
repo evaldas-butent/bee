@@ -6,9 +6,12 @@
 >
   <Fields>
     <Relation name="Branch" relation="ConfPricelist" label="=configuration" />
-    <Relation name="Option" relation="ConfOptions" notNull="true" label="=option" />
-    <Date name="ValidUntil" label="=validUntil" />
+    <String name="BranchName" precision="50" notNull="true" label="=name" />
+    <Text name="Description" label="=description" />
+    <Relation name="PhotoFile" relation="Files" editable="true" label="=photo" />
+    <Boolean name="Blocked" label="=actionBlock" />
     <Numeric name="Ordinal" precision="3" label="=ordinal" />
     <Relation name="Type" relation="ConfTypes" label="=optionType" />
+    <Relation name="Option" relation="ConfOptions" label="=option" /><!--TODO: remove-->
   </Fields>
 </Table>

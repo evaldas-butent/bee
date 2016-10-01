@@ -654,6 +654,10 @@
   border: 1px solid #ddd;
   padding: 5px;
 }
+.bee-spec-blocked {
+  background-color: red;
+  color:white;
+}
 
 .bee-row-Mode-new,
 .bee-row-Mode-upd {

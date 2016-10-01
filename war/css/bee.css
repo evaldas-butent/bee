@@ -736,6 +736,7 @@
   border: 1px solid #b4b4b4;
   border-radius: 2px;
   background-color: White;
+  overflow: hidden;
 }
 
 .bee-Dialog-header {
