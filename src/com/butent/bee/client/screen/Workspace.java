@@ -37,7 +37,6 @@ import com.butent.bee.client.widget.CustomHasHtml;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Holder;
@@ -63,6 +62,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler,
     HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler,

@@ -55,7 +55,6 @@ import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Line;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -94,6 +93,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAllDataEvents {
 

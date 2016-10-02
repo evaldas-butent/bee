@@ -23,7 +23,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.MotionEvent;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -32,6 +31,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import elemental.js.dom.JsClipboard;
 import elemental.js.dom.JsDataTransferItemList;

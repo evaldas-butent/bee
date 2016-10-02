@@ -36,7 +36,6 @@ import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -63,6 +62,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public final class DocumentsHandler {
 
@@ -227,7 +227,7 @@ public final class DocumentsHandler {
     });
 
     Global.getNewsAggregator().registerFilterHandler(Feed.DOCUMENTS,
-        new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
+        new BiConsumer<GridOptions, PresenterCallback>() {
           @Override
           public void accept(GridOptions gridOptions, PresenterCallback callback) {
             GridFactory.openGrid("NewsDocuments", null, gridOptions, callback);
