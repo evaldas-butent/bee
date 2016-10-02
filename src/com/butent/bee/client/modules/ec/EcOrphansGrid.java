@@ -38,7 +38,6 @@ import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
@@ -58,6 +57,7 @@ import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandler {
 

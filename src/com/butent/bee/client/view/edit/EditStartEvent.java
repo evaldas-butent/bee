@@ -8,11 +8,11 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Manages edit start event, gets column id, type, row value and other necessary parameters.

@@ -31,7 +31,6 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.IntegerLabel;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -45,6 +44,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
 

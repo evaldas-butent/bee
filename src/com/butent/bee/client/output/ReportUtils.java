@@ -12,7 +12,6 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.Frame;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
@@ -29,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public final class ReportUtils {
 

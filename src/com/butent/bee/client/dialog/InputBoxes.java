@@ -34,7 +34,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
@@ -56,6 +55,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Implements a user interface component, which enables to produce a input box for information input

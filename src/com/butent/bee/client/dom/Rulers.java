@@ -11,13 +11,14 @@ import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.function.Consumer;
 
 import elemental.client.Browser;
 import elemental.events.Event;

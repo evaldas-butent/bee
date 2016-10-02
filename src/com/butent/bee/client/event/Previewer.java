@@ -18,7 +18,6 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -32,6 +31,7 @@ import com.butent.bee.shared.utils.Property;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class Previewer implements NativePreviewHandler, HasInfo {
 
