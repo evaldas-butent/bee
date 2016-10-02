@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.ec;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -58,6 +57,7 @@ import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandler {
 

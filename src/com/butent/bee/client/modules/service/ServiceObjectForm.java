@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.service;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
@@ -70,6 +69,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class ServiceObjectForm extends AbstractFormInterceptor implements ClickHandler,
     RowActionEvent.Handler {

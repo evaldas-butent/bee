@@ -1,6 +1,5 @@
 package com.butent.bee.client.dialog;
 
-import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
@@ -56,6 +55,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Implements a user interface component, which enables to produce a input box for information input

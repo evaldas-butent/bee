@@ -1,6 +1,5 @@
 package com.butent.bee.client.grid;
 
-import com.google.common.base.Function;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.grid.cell.FooterCell;
@@ -48,6 +47,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class ColumnFooter extends Header<String> implements HasTextAlign, HasVerticalAlign,
     HasWhiteSpace, HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions, HasValueType,
