@@ -17,6 +17,8 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
@@ -89,6 +91,8 @@ public class CargoSalesGrid extends InvoiceBuilder {
         BeeKeeper.getUser().getCompany());
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SUPPLIER + "Name"),
         BeeKeeper.getUser().getUserData().getCompanyName());
+
+    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_DATE), new DateTime(new JustDate()));
 
     if (customers.size() == 1) {
       Map.Entry<Long, String> entry = BeeUtils.peek(customers.entrySet());
