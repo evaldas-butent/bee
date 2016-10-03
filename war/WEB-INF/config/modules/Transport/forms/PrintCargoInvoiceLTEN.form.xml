@@ -12,7 +12,7 @@
   width="810" widthUnit="px" height="90" heightUnit="%" viewName="PrintCargoInvoice"
   >
   <FlowPanel class="bee-PrintableForm"
-             style="padding: 10px 10px 10px 30px; background-color: white;
+             style="padding: 10px 10px 10px 37px; background-color: white;
              font-size:9pt; font-family: Arial, sans-serif;">
 
       <css id="&form;">
@@ -365,7 +365,7 @@
       </Label>
     </HorizontalPanel>
 
-    <Label style="&section; font-size:smaller; &bold;"
+    <Label style="&section; &bold;"
            html="Pastaba:
              &lt;br>Šios nuorodos negalioja sąskaitoms su 21 % PVM
              &lt;br>0% PVM tarifas: pagal PVM Isr. 45, 52 str.
@@ -377,7 +377,7 @@
       </dynStyle>
     </Label>
 
-    <Label style="&section; font-size:smaller;"
+    <Label style="&section;"
            html="Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai.
              &lt;br>After the due period of payment the fine of 0.2% will be calculated for each day.">
       <dynStyle>
