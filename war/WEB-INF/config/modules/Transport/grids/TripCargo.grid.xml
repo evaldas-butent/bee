@@ -15,12 +15,12 @@
                editSource="Customer" readOnly="true" />
     <RelColumn name="Cargo" renderColumns="Cargo Description" editEnabled="true" maxWidth="300"
                editPopup="false" editSource="Cargo" readOnly="true" />
-    <DataColumn name="Weight" caption="=trWeightInTons" />
-    <DataColumn name="Volume" caption="=volume" />
-    <DataColumn name="Quantity" caption="=quantity" />
-    <DataColumn name="Number" caption="=cargoNumber" />
+    <DataColumn name="Weight" caption="=trWeightInTons" editInPlace="true"/>
+    <DataColumn name="Volume" caption="=volume" editInPlace="true"/>
+    <DataColumn name="Quantity" caption="=quantity" editInPlace="true"/>
+    <DataColumn name="Number" caption="=cargoNumber" editInPlace="true"/>
     <DataColumn name="Cmr" caption="CMR" renderColumns="CmrName CmrNumber" />
-    <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
+    <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" editInPlace="true" />
 
     <DataColumn name="MultipleSegments" editInPlace="true" />
 

@@ -26,10 +26,10 @@
       <SimpleColumn name="MultipleSegments" editable="true" />
 
       <SimpleColumn name="Description" />
-      <SimpleColumn name="Weight" />
-      <SimpleColumn name="Volume" />
-      <SimpleColumn name="Quantity" />
-      <SimpleColumn name="Number" />
+      <SimpleColumn name="Weight" editable="true"/>
+      <SimpleColumn name="Volume" editable="true"/>
+      <SimpleColumn name="Quantity" editable="true"/>
+      <SimpleColumn name="Number" editable="true"/>
 
       <SimpleColumn name="Cmr" />
       <SimpleJoin name="Cmr" joinType="LEFT">
@@ -37,7 +37,7 @@
         <SimpleColumn name="Number" alias="CmrNumber" />
       </SimpleJoin>
 
-      <SimpleColumn name="Notes" />
+      <SimpleColumn name="Notes" editable="true"/>
       <HiddenColumn name="CargoHandling" alias="DefaultHandling" />
 
       <ExternalJoin name="Cargo" joinType="LEFT" source="CargoIncomes">
