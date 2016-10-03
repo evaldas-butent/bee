@@ -109,7 +109,10 @@ public final class Exporter {
       super(Localized.dictionary().exportToMsExcel(), STYLE_PREFIX + "dialog");
       addDefaultCloseBox();
 
-      setPreviewEnabled(false);
+      if (!hasEventPreview()) {
+        setPreviewEnabled(false);
+      }
+
       setResizable(false);
       setAnimationEnabled(false);
 
@@ -288,7 +291,7 @@ public final class Exporter {
   }
 
   public static void clearServerCache(final String id) {
-    doRequest(Service.EXPORT_CLEAR, id, null, null, result -> logger.debug(result));
+    doRequest(Service.EXPORT_CLEAR, id, null, null, logger::debug);
   }
 
   public static void confirm(String fileName, FileNameCallback callback) {
