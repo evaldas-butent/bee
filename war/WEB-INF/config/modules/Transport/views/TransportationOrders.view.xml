@@ -97,6 +97,7 @@
 
       <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
         <HiddenColumn name="Sale" />
+        <AggregateColumn aggregate="MAX" name="Sale" alias="SaleMax"/>
         <AggregateColumn name="SaleID" aggregate="MIN">
           <x:nvl type="LONG">
             <x:number>"Sale"</x:number>

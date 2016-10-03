@@ -4,6 +4,7 @@
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="TransportationOrder" viewName="TransportationOrders" caption="=trOrder"
         showRowId="true" width="70" widthUnit="%" height="80" heightUnit="%"
@@ -17,16 +18,28 @@
       <col index="4" kind="label" />
       <row>
         <Label for="Date" />
-        <InputDateTime source="Date" />
+        <InputDateTime source="Date" >
+          <editable>
+            <ui:expression>!(row.SaleMax)</ui:expression>
+          </editable>
+        </InputDateTime>
         <Label for="OrderNo" />
-        <InputText source="OrderNo" />
+        <InputText source="OrderNo" >
+          <editable>
+            <ui:expression>!(row.SaleMax)</ui:expression>
+          </editable>
+        </InputText>
         <Label for="Status" />
         <ListBox source="Status" style="height: 29px; width: 152px;" />
       </row>
       <row>
         <Label for="Customer" />
         <DataSelector name="Customer" source="Customer" style="&inp;"
-                      choiceColumns="Name TypeName CityName CountryCode"/>
+                      choiceColumns="Name TypeName CityName CountryCode">
+          <editable>
+            <ui:expression>!(row.SaleMax)</ui:expression>
+          </editable>
+        </DataSelector>
         <Label for="CustomerPerson" />
         <DataSelector source="CustomerPerson" renderColumns="PersonFirstName PersonLastName"
                       choiceColumns="FirstName LastName CompanyName" options="Customer"
@@ -38,7 +51,11 @@
                       choiceColumns="Name TypeName CityName CountryCode" />
         <Label for="Manager" />
         <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-                      editSource="ManagerPerson" newRowEnabled="false" style="&inp;" />
+                      editSource="ManagerPerson" newRowEnabled="false" style="&inp;" >
+          <editable>
+            <ui:expression>!(row.SaleMax)</ui:expression>
+          </editable>
+        </DataSelector>
         <Label for="Notes" />
         <cell rowSpan="2">
           <InputArea source="Notes" visibleLines="4" />
