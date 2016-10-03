@@ -1,6 +1,5 @@
 package com.butent.bee.client.output;
 
-import com.google.common.base.Predicates;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -309,7 +308,7 @@ public abstract class ReportItem implements BeeSerializable {
 
     DndHelper.makeSource(widget, contentType, idx, null);
     DndHelper.makeTarget(widget, Collections.singletonList(contentType), STYLE_ITEM + "-over",
-        Predicates.not(Predicates.equalTo((Object) idx)), (ev, index) -> {
+        o -> !Objects.equals(o, idx), (ev, index) -> {
           T element = collection.remove((int) index);
 
           if (idx > collection.size()) {

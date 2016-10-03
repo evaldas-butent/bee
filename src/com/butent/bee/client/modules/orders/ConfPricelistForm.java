@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.orders;
 
-import com.google.common.base.Predicates;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -529,7 +528,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
     }
     DndHelper.makeTarget(widget, Collections.singletonList(STYLE_PREFIX),
         (rowMode ? STYLE_ROW_HEADER : STYLE_COL_HEADER) + "-over",
-        Predicates.not(o -> Objects.equals(o, x)), (ev, index) -> {
+        o -> !Objects.equals(o, x), (ev, index) -> {
           int i = (int) index;
           List<Dimension> source;
           List<Dimension> target = rowMode ? configuration.getRowDimensions()

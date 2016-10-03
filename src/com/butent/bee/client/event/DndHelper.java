@@ -1,23 +1,8 @@
 package com.butent.bee.client.event;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.gwt.dom.client.DataTransfer;
 import com.google.gwt.event.dom.client.DragDropEventBase;
-import com.google.gwt.event.dom.client.DragEndEvent;
-import com.google.gwt.event.dom.client.DragEndHandler;
-import com.google.gwt.event.dom.client.DragEnterEvent;
-import com.google.gwt.event.dom.client.DragEnterHandler;
-import com.google.gwt.event.dom.client.DragEvent;
-import com.google.gwt.event.dom.client.DragHandler;
-import com.google.gwt.event.dom.client.DragLeaveEvent;
-import com.google.gwt.event.dom.client.DragLeaveHandler;
-import com.google.gwt.event.dom.client.DragOverEvent;
-import com.google.gwt.event.dom.client.DragOverHandler;
-import com.google.gwt.event.dom.client.DragStartEvent;
-import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
-import com.google.gwt.event.dom.client.DropHandler;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
@@ -32,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 import elemental.js.dom.JsClipboard;
 import elemental.js.dom.JsDataTransferItemList;
@@ -41,7 +27,7 @@ import elemental.js.util.JsIndexable;
 
 public final class DndHelper {
 
-  public static final Predicate<Object> ALWAYS_TARGET = Predicates.alwaysTrue();
+  public static final Predicate<Object> ALWAYS_TARGET = input -> true;
 
   private static final String TRANSFER_TYPE_FILES = "Files";
 
@@ -186,59 +172,50 @@ public final class DndHelper {
 
     DomUtils.setDraggable(widget.asWidget());
 
-    widget.addDragStartHandler(new DragStartHandler() {
-      @Override
-      public void onDragStart(DragStartEvent event) {
-        if (!BeeUtils.isEmpty(dragStyle)) {
-          widget.asWidget().addStyleName(dragStyle);
-        }
+    widget.addDragStartHandler(event -> {
+      if (!BeeUtils.isEmpty(dragStyle)) {
+        widget.asWidget().addStyleName(dragStyle);
+      }
 
-        EventUtils.allowCopyMove(event);
-        if (contentId != null) {
-          EventUtils.setDndData(event, contentId);
-        } else {
-          EventUtils.setDndData(event, widget.getId());
-        }
+      EventUtils.allowCopyMove(event);
+      if (contentId != null) {
+        EventUtils.setDndData(event, contentId);
+      } else {
+        EventUtils.setDndData(event, widget.getId());
+      }
 
-        fillContent(contentType, contentId, relId, content);
+      fillContent(contentType, contentId, relId, content);
 
-        int x = event.getNativeEvent().getClientX();
-        int y = event.getNativeEvent().getClientY();
+      int x = event.getNativeEvent().getClientX();
+      int y = event.getNativeEvent().getClientY();
 
-        setStartX(x);
-        setStartY(y);
+      setStartX(x);
+      setStartY(y);
 
-        if (fireMotion) {
-          setMotionEvent(new MotionEvent(contentType, widget, x, y));
-        }
+      if (fireMotion) {
+        setMotionEvent(new MotionEvent(contentType, widget, x, y));
       }
     });
 
     if (fireMotion) {
-      widget.addDragHandler(new DragHandler() {
-        @Override
-        public void onDrag(DragEvent event) {
-          if (getMotionEvent() != null) {
-            int x = event.getNativeEvent().getClientX();
-            int y = event.getNativeEvent().getClientY();
+      widget.addDragHandler(event -> {
+        if (getMotionEvent() != null) {
+          int x = event.getNativeEvent().getClientX();
+          int y = event.getNativeEvent().getClientY();
 
-            if (x > 0 || y > 0) {
-              getMotionEvent().moveTo(x, y);
-              BeeKeeper.getBus().fireEvent(getMotionEvent());
-            }
+          if (x > 0 || y > 0) {
+            getMotionEvent().moveTo(x, y);
+            BeeKeeper.getBus().fireEvent(getMotionEvent());
           }
         }
       });
     }
 
-    widget.addDragEndHandler(new DragEndHandler() {
-      @Override
-      public void onDragEnd(DragEndEvent event) {
-        if (!BeeUtils.isEmpty(dragStyle)) {
-          widget.asWidget().removeStyleName(dragStyle);
-        }
-        reset();
+    widget.addDragEndHandler(event -> {
+      if (!BeeUtils.isEmpty(dragStyle)) {
+        widget.asWidget().removeStyleName(dragStyle);
       }
+      reset();
     });
   }
 
@@ -256,60 +233,48 @@ public final class DndHelper {
     Assert.notNull(targetPredicate);
     Assert.notNull(onDrop);
 
-    widget.addDragEnterHandler(new DragEnterHandler() {
-      @Override
-      public void onDragEnter(DragEnterEvent event) {
-        if (isTarget(contentTypes, targetPredicate)) {
-          if (widget.getTargetState() == null) {
-            if (!BeeUtils.isEmpty(overStyle)) {
-              widget.asWidget().addStyleName(overStyle);
-            }
-            widget.setTargetState(State.ACTIVATED);
-
-          } else if (widget.getTargetState() == State.ACTIVATED) {
-            widget.setTargetState(State.PENDING);
-          }
-        }
-      }
-    });
-
-    widget.addDragOverHandler(new DragOverHandler() {
-      @Override
-      public void onDragOver(DragOverEvent event) {
-        if (widget.getTargetState() != null) {
-          if (EventUtils.hasModifierKey(event.getNativeEvent())) {
-            EventUtils.selectDropCopy(event);
-          } else {
-            EventUtils.selectDropMove(event);
-          }
-        }
-      }
-    });
-
-    widget.addDragLeaveHandler(new DragLeaveHandler() {
-      @Override
-      public void onDragLeave(DragLeaveEvent event) {
-        if (widget.getTargetState() == State.ACTIVATED) {
+    widget.addDragEnterHandler(event -> {
+      if (isTarget(contentTypes, targetPredicate)) {
+        if (widget.getTargetState() == null) {
           if (!BeeUtils.isEmpty(overStyle)) {
-            widget.asWidget().removeStyleName(overStyle);
+            widget.asWidget().addStyleName(overStyle);
           }
-          widget.setTargetState(null);
-
-        } else if (widget.getTargetState() == State.PENDING) {
           widget.setTargetState(State.ACTIVATED);
+
+        } else if (widget.getTargetState() == State.ACTIVATED) {
+          widget.setTargetState(State.PENDING);
         }
       }
     });
 
-    widget.addDropHandler(new DropHandler() {
-      @Override
-      public void onDrop(DropEvent event) {
-        if (widget.getTargetState() != null) {
-          event.preventDefault();
-          event.stopPropagation();
-
-          onDrop.accept(event, getData());
+    widget.addDragOverHandler(event -> {
+      if (widget.getTargetState() != null) {
+        if (EventUtils.hasModifierKey(event.getNativeEvent())) {
+          EventUtils.selectDropCopy(event);
+        } else {
+          EventUtils.selectDropMove(event);
         }
+      }
+    });
+
+    widget.addDragLeaveHandler(event -> {
+      if (widget.getTargetState() == State.ACTIVATED) {
+        if (!BeeUtils.isEmpty(overStyle)) {
+          widget.asWidget().removeStyleName(overStyle);
+        }
+        widget.setTargetState(null);
+
+      } else if (widget.getTargetState() == State.PENDING) {
+        widget.setTargetState(State.ACTIVATED);
+      }
+    });
+
+    widget.addDropHandler(event -> {
+      if (widget.getTargetState() != null) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        onDrop.accept(event, getData());
       }
     });
   }
@@ -329,7 +294,8 @@ public final class DndHelper {
 
   private static boolean isTarget(Collection<String> contentTypes,
       Predicate<Object> targetPredicate) {
-    return contentTypes.contains(getDataType()) && targetPredicate.apply(getData());
+
+    return contentTypes.contains(getDataType()) && targetPredicate.test(getData());
   }
 
   private static void setData(Object data) {
