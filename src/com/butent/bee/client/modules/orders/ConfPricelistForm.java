@@ -26,6 +26,7 @@ import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -37,6 +38,7 @@ import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
@@ -60,6 +62,7 @@ import com.butent.bee.shared.modules.orders.Option;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -221,6 +224,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor
           refresh();
         });
       } else {
+        InputBoolean blocked = new InputBoolean(Localized.dictionary().actionBlock());
+        blocked.setChecked(configuration.isBundleBlocked(bundle));
         String price = configuration.getBundlePrice(bundle);
 
         inputPriceAndDescription(bundle.toString(), price, true,
@@ -230,14 +235,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor
               args.addDataItem(COL_BUNDLE, Codec.beeSerialize(bundle));
               Configuration.DataInfo info = Configuration.DataInfo.of(newPrice, newDescription);
               args.addDataItem(Service.VAR_DATA, info.serialize());
+              args.addDataItem(COL_BLOCKED, Codec.pack(blocked.isChecked()));
               BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
 
-              configuration.setBundleInfo(bundle, info);
+              configuration.setBundleInfo(bundle, info, blocked.isChecked());
               refresh();
             }, BeeUtils.isEmpty(price) ? null : dialog -> {
               Runnable exec = () -> {
                 dialog.close();
-                configuration.setBundleInfo(bundle, null);
+                configuration.setBundleInfo(bundle, null, null);
                 removeBundles(Collections.singleton(bundle));
                 refresh();
               };
@@ -246,7 +252,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
               } else {
                 exec.run();
               }
-            }, cell);
+            }, cell, blocked);
       }
     }
   }
@@ -308,7 +314,11 @@ public class ConfPricelistForm extends AbstractFormInterceptor
     if (widget instanceof TreeContainer) {
       tree = (TreeContainer) widget;
       tree.addSelectionHandler(this);
+      TreePresenter treePresenter = tree.getTreePresenter();
 
+      if (Objects.nonNull(treePresenter)) {
+        treePresenter.setEditorInterceptor(new ConfOptionForm());
+      }
     } else if (Objects.equals(name, "Container") && widget instanceof Flow) {
       container = (Flow) widget;
     }
@@ -356,7 +366,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
   private static void inputPriceAndDescription(String title, String price, boolean priceRequired,
       String description, BiConsumer<String, String> consumer, Consumer<DialogBox> destroyer,
-      Element target) {
+      Element target, Widget... widgets) {
 
     HtmlTable table = new HtmlTable();
     table.setWidth("100%");
@@ -374,6 +384,9 @@ public class ConfPricelistForm extends AbstractFormInterceptor
     table.setText(1, 0, Localized.dictionary().description());
     table.setWidget(1, 1, inputDescription);
 
+    if (!ArrayUtils.isEmpty(widgets)) {
+      Arrays.stream(widgets).forEach(w -> table.setWidget(table.getRowCount(), 1, w));
+    }
     Global.inputWidget(title, table, new InputCallback() {
       @Override
       public String getErrorMessage() {
@@ -738,11 +751,14 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
     for (Bundle rowBundle : rows) {
       for (Bundle colBundle : cols) {
+        Bundle bundle = Bundle.of(rowBundle, colBundle);
         Element cell = table.getCellFormatter().ensureElement(rIdx, cIdx);
         cell.setClassName(STYLE_CELL);
-        cell.setInnerText(configuration.getBundlePrice(Bundle.of(rowBundle,
-            colBundle)));
+        cell.setInnerText(configuration.getBundlePrice(bundle));
 
+        if (configuration.isBundleBlocked(bundle)) {
+          cell.addClassName(SpecificationBuilder.STYLE_BLOCKED);
+        }
         DomUtils.setDataIndex(cell, rIdx - colSize - 1);
         DomUtils.setDataColumn(cell, cIdx - rowSize - 1);
         cIdx++;

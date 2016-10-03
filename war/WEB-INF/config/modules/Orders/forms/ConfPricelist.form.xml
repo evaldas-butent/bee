@@ -10,7 +10,8 @@
       <DataTree caption="=categories" viewName="ConfPricelist"
                 parentColumn="Branch" orderColumn="Ordinal">
         <calc>
-          <ui:expression>row.BranchName</ui:expression>
+          <ui:expression>"&#60;span class=" + (row.Blocked ? "\"bee-spec-blocked\"" : "") + ">"
+            + row.BranchName + "&#60;/span>"</ui:expression>
         </calc>
         <form name="EditConfiguration">
           <FlowPanel>
@@ -22,7 +23,7 @@
               </row>
               <row>
                 <Label for="PhotoFile" />
-                <Image name="PhotoFile" />
+                <Image name="PhotoFile" style="width:20em; height:150px; object-fit:contain;" />
               </row>
               <row>
                 <Label for="Description" />

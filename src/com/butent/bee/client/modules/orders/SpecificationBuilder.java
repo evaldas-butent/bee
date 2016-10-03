@@ -130,11 +130,11 @@ public class SpecificationBuilder implements InputCallback {
   public static final String STYLE_PREFIX = "bee-spec";
   private static final String STYLE_DIALOG = STYLE_PREFIX + "-dialog";
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "-container";
-  public static final String STYLE_OPTIONS = STYLE_PREFIX + "-options";
+  private static final String STYLE_OPTIONS = STYLE_PREFIX + "-options";
   private static final String STYLE_BOX = STYLE_PREFIX + "-box";
   public static final String STYLE_THUMBNAIL = STYLE_PREFIX + "-thumbnail";
   private static final String STYLE_SELECTABLE = STYLE_PREFIX + "-selectable";
-  private static final String STYLE_BLOCKED = STYLE_PREFIX + "-blocked";
+  public static final String STYLE_BLOCKED = STYLE_PREFIX + "-blocked";
   private static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
 
   private Specification template;
@@ -450,10 +450,12 @@ public class SpecificationBuilder implements InputCallback {
     Flow bundleBox = new Flow(STYLE_BOX);
 
     List<Dimension> allDimensions = configuration.getAllDimensions();
-    List<Bundle> bundles = configuration.getMetrics(allDimensions);
+    List<Bundle> bundles = configuration.getMetrics(allDimensions).stream()
+        .filter(b -> !configuration.isBundleBlocked(b)).collect(Collectors.toList());
     Set<Option> options = new HashSet<>();
     Holder<Boolean> stop = Holder.of(false);
     Holder<Boolean> proceed = Holder.of(!configuration.isEmpty());
+    boolean blocked = configuration.isBundleBlocked(specification.getBundle());
 
     Configuration.processOptions(specification.getBundle(), allDimensions, (dimension, option) -> {
       Map<Option, Bundle> choices = new LinkedHashMap<>();
@@ -480,10 +482,14 @@ public class SpecificationBuilder implements InputCallback {
           : new Widget[] {getPhoto(o.getPhoto()), new Label(o.toString())}));
 
       if (option != null) {
-        bundleBox.add(buildThumbnail(dimension.getName(), caps,
-            index -> setBundle(choices.get(new ArrayList<>(choices.keySet()).get(index))),
-            new Label(dimension.getName()), getPhoto(option.getPhoto()),
-            new Label(option.toString())));
+        Label label = new Label(option.toString());
+
+        if (blocked) {
+          label.addStyleName(STYLE_BLOCKED);
+        }
+        bundleBox.add(buildThumbnail(dimension.getName(), caps, BeeUtils.isEmpty(caps) ? null
+                : index -> setBundle(choices.get(new ArrayList<>(choices.keySet()).get(index))),
+            new Label(dimension.getName()), getPhoto(option.getPhoto()), label));
         options.add(option);
 
       } else if (!BeeUtils.isEmpty(choices)) {

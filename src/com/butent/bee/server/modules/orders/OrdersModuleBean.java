@@ -159,7 +159,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       case SVC_SET_BUNDLE:
         response = setBundle(reqInfo.getParameterLong(COL_BRANCH),
             Bundle.restore(reqInfo.getParameter(COL_BUNDLE)),
-            Configuration.DataInfo.restore(reqInfo.getParameter(Service.VAR_DATA)));
+            Configuration.DataInfo.restore(reqInfo.getParameter(Service.VAR_DATA)),
+            Codec.unpack(reqInfo.getParameter(COL_BLOCKED)));
         break;
 
       case SVC_DELETE_BUNDLES:
@@ -770,7 +771,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     data = qs.getData(new SqlSelect()
-        .addFields(TBL_CONF_BRANCH_BUNDLES, COL_ITEM_PRICE)
+        .addFields(TBL_CONF_BRANCH_BUNDLES, COL_ITEM_PRICE, COL_BLOCKED)
         .addField(TBL_CONF_BRANCH_BUNDLES, OrdersConstants.COL_DESCRIPTION,
             COL_BUNDLE + OrdersConstants.COL_DESCRIPTION)
         .addFields(TBL_CONF_BUNDLE_OPTIONS, COL_BUNDLE, COL_OPTION)
@@ -786,7 +787,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId)));
 
     Multimap<Long, Option> bundleOptions = HashMultimap.create();
-    Map<Long, Pair<Bundle, Configuration.DataInfo>> bundles = new HashMap<>();
+    Map<Long, Pair<Bundle, Pair<Configuration.DataInfo, Boolean>>> bundles = new HashMap<>();
 
     for (SimpleRow row : data) {
       Long id = row.getLong(COL_BUNDLE);
@@ -799,15 +800,17 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           .setPhoto(row.getLong(COL_PHOTO)));
 
       if (!bundles.containsKey(id)) {
-        bundles.put(id, Pair.of(null, Configuration.DataInfo.of(row.getValue(COL_ITEM_PRICE),
-            row.getValue(COL_BUNDLE + OrdersConstants.COL_DESCRIPTION))));
+        bundles.put(id, Pair.of(null,
+            Pair.of(Configuration.DataInfo.of(row.getValue(COL_ITEM_PRICE),
+                row.getValue(COL_BUNDLE + OrdersConstants.COL_DESCRIPTION)),
+                row.getBoolean(COL_BLOCKED))));
       }
     }
     for (Long bundleId : bundles.keySet()) {
       Bundle bundle = new Bundle(bundleOptions.get(bundleId));
-      Pair<Bundle, Configuration.DataInfo> pair = bundles.get(bundleId);
+      Pair<Bundle, Pair<Configuration.DataInfo, Boolean>> pair = bundles.get(bundleId);
       pair.setA(bundle);
-      configuration.setBundleInfo(bundle, pair.getB());
+      configuration.setBundleInfo(bundle, pair.getB().getA(), pair.getB().getB());
     }
     data = qs.getData(new SqlSelect()
         .addField(TBL_CONF_BRANCH_OPTIONS, sys.getIdName(TBL_CONF_BRANCH_OPTIONS),
@@ -1661,7 +1664,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(objectId);
   }
 
-  private ResponseObject setBundle(Long branchId, Bundle bundle, Configuration.DataInfo info) {
+  private ResponseObject setBundle(Long branchId, Bundle bundle, Configuration.DataInfo info,
+      boolean blocked) {
     int c = 0;
     Long bundleId = qs.getLong(new SqlSelect()
         .addFields(TBL_CONF_BUNDLES, sys.getIdName(TBL_CONF_BUNDLES))
@@ -1681,6 +1685,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       c = qs.updateData(new SqlUpdate(TBL_CONF_BRANCH_BUNDLES)
           .addConstant(COL_ITEM_PRICE, info.getPrice())
           .addConstant(OrdersConstants.COL_DESCRIPTION, info.getDescription())
+          .addConstant(COL_BLOCKED, blocked)
           .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId,
               COL_BUNDLE, bundleId)));
     }
@@ -1689,7 +1694,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           .addConstant(COL_BRANCH, branchId)
           .addConstant(COL_BUNDLE, bundleId)
           .addNotEmpty(COL_ITEM_PRICE, info.getPrice())
-          .addNotEmpty(OrdersConstants.COL_DESCRIPTION, info.getDescription()));
+          .addNotEmpty(OrdersConstants.COL_DESCRIPTION, info.getDescription())
+          .addConstant(COL_BLOCKED, blocked));
     }
     return ResponseObject.emptyResponse();
   }
