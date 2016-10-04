@@ -102,9 +102,12 @@
 
     <SimpleColumn name="Notes" />
 
-    <ExternalJoin name="Order" source="OrderChildInvoices"
-      joinType="LEFT">
-      <AggregateColumn name="Order" aggregate="MAX" />
+    <ExternalJoin name="Order" joinType="LEFT" source="OrderItems">
+      <ExternalJoin name="OrderItem" joinType="LEFT" source="OrderChildInvoices">
+        <SimpleJoin name="OrderItem" joinType="LEFT">
+          <AggregateColumn name="Order" aggregate="MAX"/>
+        </SimpleJoin>
+      </ExternalJoin>
     </ExternalJoin>
   </Columns>
 </View>

@@ -8,8 +8,10 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="OrderInvoice" viewName="OrderChildInvoices" caption="=trdInvoice"
-  width="840" height="600" readOnly="true">
-  <f:properties jasperReports="PrintOrderInvoice:=trdInvoice, PrintOrderProforma:=trdProformaInvoice" />
+  width="840" height="600" readOnly="true" showRowId="true">
+
+  <f:properties jasperReports="PrintOrderInvoice:=trdInvoice,
+    PrintOrderProforma:=trdProformaInvoice" />
   <FlowPanel class="flexBox-vertical">
     <br />
     <Table kind="controls">

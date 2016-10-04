@@ -2864,6 +2864,8 @@ public interface Dictionary {
 
   default String itemTypes() {return g("itemTypes");}
 
+  default String join() {return g("join");}
+
   default String key() {return g("key");}
 
   default String keyNotFound(Object p0) {
@@ -3271,6 +3273,8 @@ public interface Dictionary {
   default String month() {return g("month");}
 
   default String more() {return g("more");}
+
+  default String moreThenOneValue() {return g("moreThenOneValue");}
 
   default String myCompanyMenu() {return g("myCompanyMenu");}
 
@@ -5129,6 +5133,8 @@ public interface Dictionary {
   default String trInvoiceIdShort() {return g("trInvoiceIdShort");}
 
   default String trInvoices() {return g("trInvoices");}
+
+  default String trInvoiceHasNotAttribute() {return g("trInvoiceHasNotAttribute");}
 
   default String trLoaded() {return g("trLoaded");}
 
