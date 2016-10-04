@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.orders;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
@@ -22,10 +23,12 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.CloseCallback;
+import com.butent.bee.client.view.search.SearchBox;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -140,6 +143,7 @@ public class SpecificationBuilder implements InputCallback {
   private Specification template;
   private final Consumer<Specification> callback;
   private final Flow container = new Flow(STYLE_CONTAINER);
+  private String searchTag = "";
 
   private Branch currentBranch;
   private final Specification specification = new Specification();
@@ -339,6 +343,19 @@ public class SpecificationBuilder implements InputCallback {
     }
   }
 
+  private void filter(HtmlTable table, String value) {
+    for (int i = 0; i < table.getRowCount(); i++) {
+      List<TableCellElement> cells = table.getRowCells(i);
+
+      if (cells.size() > 2) {
+        table.getRowFormatter().setVisible(i, BeeUtils.isEmpty(value)
+            || BeeUtils.containsSame(cells.get(1).getInnerText(), value)
+            || BeeUtils.containsSame(cells.get(2).getInnerText(), value));
+      }
+    }
+    searchTag = value;
+  }
+
   private static Branch findBranch(Branch branch, Long id) {
     Branch found = null;
 
@@ -517,10 +534,10 @@ public class SpecificationBuilder implements InputCallback {
     if (!proceed.get()) {
       return;
     }
+    // OPTIONS
     Flow subContainer = new Flow(STYLE_OPTIONS);
     container.add(subContainer);
 
-    // OPTIONS
     Multimap<Dimension, Option> allOptions = getAvailableOptions();
     Flow optionBox = new Flow(STYLE_BOX);
     HtmlTable selectable = new HtmlTable(STYLE_SELECTABLE);
@@ -583,7 +600,18 @@ public class SpecificationBuilder implements InputCallback {
       subContainer.add(defaults);
     }
     subContainer.add(optionBox);
-    subContainer.add(selectable);
+
+    if (selectable.getRowCount() > 0) {
+      InputText search = new SearchBox(Localized.dictionary().search());
+
+      if (!BeeUtils.isEmpty(searchTag)) {
+        search.setValue(searchTag);
+        filter(selectable, searchTag);
+      }
+      search.addInputHandler(inputEvent -> filter(selectable, search.getValue()));
+      subContainer.add(search);
+      subContainer.add(selectable);
+    }
     subContainer.getElement().setScrollTop(scroll);
     header.add(specification.renderSummary(true));
   }
@@ -662,6 +690,7 @@ public class SpecificationBuilder implements InputCallback {
   }
 
   private void setBundle(Bundle bundle) {
+    searchTag = "";
     specification.getOptions().clear();
     Configuration configuration = currentBranch.getConfiguration();
 

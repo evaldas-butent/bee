@@ -134,31 +134,6 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     if (BeeUtils.allNotNull(evaluator, row)) {
       evaluator.update(row);
       value = evaluator.evaluate();
-
-      if (!BeeUtils.isEmpty(value)) {
-        for (String entity : new String[] {"&", "<", ">", "\"", "\'"}) {
-          String code = null;
-
-          switch (entity) {
-            case "&":
-              code = "&#38;";
-              break;
-            case "<":
-              code = "&#60;";
-              break;
-            case ">":
-              code = "&#62;";
-              break;
-            case "\"":
-              code = "&#34;";
-              break;
-            case "\'":
-              code = "&#39;";
-              break;
-          }
-          value.replace(code, entity);
-        }
-      }
     }
     return value;
   }

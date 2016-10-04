@@ -646,6 +646,7 @@
 }
 .bee-spec-selectable {
   border-collapse: collapse;
+  margin-top: 10px;
 }
 .bee-spec-selectable tr td:nth-child(2) {
   text-align: right;

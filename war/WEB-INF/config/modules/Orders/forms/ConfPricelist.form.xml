@@ -10,8 +10,9 @@
       <DataTree caption="=categories" viewName="ConfPricelist"
                 parentColumn="Branch" orderColumn="Ordinal">
         <calc>
-          <ui:expression>"&#60;span class=" + (row.Blocked ? "\"bee-spec-blocked\"" : "") + ">"
-            + row.BranchName + "&#60;/span>"</ui:expression>
+          <ui:expression>String.fromCharCode(60) + "span class="
+            + (row.Blocked ? "\"bee-spec-blocked\"" : "") + ">"
+            + row.BranchName + String.fromCharCode(60) + "/span>"</ui:expression>
         </calc>
         <form name="EditConfiguration">
           <FlowPanel>
