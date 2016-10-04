@@ -42,7 +42,6 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
@@ -88,6 +87,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 final class ServiceCalendar extends TimeBoard {
 

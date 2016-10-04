@@ -3,7 +3,6 @@ package com.butent.bee.shared.utils;
 import com.google.common.base.Ascii;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Contains base methods for development.
@@ -415,7 +415,7 @@ public final class BeeUtils {
    * @return true if {@code predicate} applies to {@code input}.
    */
   public static <T> boolean check(Predicate<T> predicate, T input) {
-    return (predicate == null) ? true : predicate.apply(input);
+    return predicate == null || predicate.test(input);
   }
 
   /**

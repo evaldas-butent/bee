@@ -4,7 +4,8 @@
   <!ENTITY inpdt "width: 10em;">
   <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
 ]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
 
   name="Order" viewName="Orders" width="800" height="600">
   <f:properties jasperReports="Offer" />
@@ -21,7 +22,7 @@
         <DataSelector source="Type" style="&inpw;" visible="true" newRowEnabled="true" />
 
         <Label for="Status" style="&lbl;" />
-        <ListBox source="Status" style="font-weight:bold;" readOnly="true" />
+        <ListBox source="Status" style="font-weight:bold; &inpdt;" readOnly="true" />
       </row>
 
       <row>

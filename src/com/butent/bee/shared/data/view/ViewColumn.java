@@ -1,6 +1,5 @@
 package com.butent.bee.shared.data.view;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Range;
 
 import com.butent.bee.shared.Assert;
@@ -13,6 +12,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public class ViewColumn implements BeeSerializable, HasInfo {
 
@@ -35,7 +35,7 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     }
 
     @Override
-    public boolean apply(ViewColumn input) {
+    public boolean test(ViewColumn input) {
       if (input == null) {
         return false;
       } else if (range == null) {

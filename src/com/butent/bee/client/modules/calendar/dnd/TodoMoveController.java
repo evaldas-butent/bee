@@ -24,8 +24,6 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -40,6 +38,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class TodoMoveController {
 

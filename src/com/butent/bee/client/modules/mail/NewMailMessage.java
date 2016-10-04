@@ -39,7 +39,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -64,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 public final class NewMailMessage extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<FileInfo> {

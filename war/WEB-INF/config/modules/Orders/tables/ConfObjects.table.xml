@@ -6,6 +6,7 @@
 >
   <Fields>
     <Relation name="Branch" relation="ConfPricelist" cascade="SET_NULL" label="=configuration" />
+    <String name="BranchName" precision="100" label="=name" />
     <Text name="Description" label="=description" />
     <Integer name="Price" label="=price" />
   </Fields>

@@ -11,7 +11,6 @@ import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -27,6 +26,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 final class SelfServiceUtils {
 

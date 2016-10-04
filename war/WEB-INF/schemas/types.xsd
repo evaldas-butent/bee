@@ -297,6 +297,7 @@
       <xs:enumeration value="ConfOptions" />
       <xs:enumeration value="ConfPricelist" />
       <xs:enumeration value="Configuration" />
+      <xs:enumeration value="ConfTypes" />
       <xs:enumeration value="CostCenters" />
       <xs:enumeration value="Countries" />
       <xs:enumeration value="CountryDailyCosts" />
@@ -399,6 +400,8 @@
       <xs:enumeration value="Locations" />
       <xs:enumeration value="LossReasons" />
       <xs:enumeration value="Maintenance" />
+      <xs:enumeration value="MaintenanceStates" />
+      <xs:enumeration value="MaintenanceTypes" />
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Newsletters" />
       <xs:enumeration value="NewsletterContacts" />
@@ -501,6 +504,7 @@
       <xs:enumeration value="ServiceDistinctCritValues" />
       <xs:enumeration value="ServiceFiles" />
       <xs:enumeration value="ServiceInvoices" />
+      <xs:enumeration value="ServiceMaintenance" />
       <xs:enumeration value="ServiceObjectCriteria" />
       <xs:enumeration value="ServiceObjects" />
       <xs:enumeration value="Services" />
@@ -513,6 +517,7 @@
       <xs:enumeration value="SpareParts" />
       <xs:enumeration value="SparePartTypes" />
       <xs:enumeration value="SparePartUsage" />
+      <xs:enumeration value="StateProcess" />
       <xs:enumeration value="TaskDurations" />
       <xs:enumeration value="TaskEvents" />
       <xs:enumeration value="TaskFiles" />
@@ -565,6 +570,7 @@
       <xs:enumeration value="TradeDocumentTypes" />
       <xs:enumeration value="TradeExpenditures" />
       <xs:enumeration value="TradeItemCost" />
+      <xs:enumeration value="TradeMovement" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />
       <xs:enumeration value="TradePayments" />
@@ -613,6 +619,7 @@
       <xs:enumeration value="VehicleTracking" />
       <xs:enumeration value="WaitingCargo" />
       <xs:enumeration value="Warehouses" />
+      <xs:enumeration value="WarrantyTypes" />
       <xs:enumeration value="WorkSchedule" />
       <xs:enumeration value="Workspaces" />
 

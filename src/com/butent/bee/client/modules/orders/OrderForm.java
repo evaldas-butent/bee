@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.orders;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -43,8 +42,6 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -60,6 +57,7 @@ import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.orders.Option;
 import com.butent.bee.shared.modules.orders.Specification;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -77,13 +75,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class OrderForm extends PrintFormInterceptor implements Consumer<Specification> {
 
   private final Dictionary loc = Localized.dictionary();
   private Label warehouseLabel;
 
-  private HasWidgets objectContainer;
+  private Flow objectContainer;
   private Specification objectSpecification;
 
   @Override
@@ -188,15 +187,13 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
         && widget instanceof HasClickHandlers) {
       ((HasClickHandlers) widget).addClickHandler(clickEvent -> createObject());
 
-    } else if (BeeUtils.same(name, COL_OBJECT) && widget instanceof HasWidgets) {
-      objectContainer = (HasWidgets) widget;
+    } else if (BeeUtils.same(name, COL_OBJECT) && widget instanceof Flow) {
+      objectContainer = (Flow) widget;
     }
   }
 
   @Override
   public void afterRefresh(final FormView form, final IsRow row) {
-    refreshObject();
-
     Button prepare = new Button(loc.ordPrepare(), event -> {
       updateStatus(form, OrdersStatus.PREPARED);
       form.setEnabled(true);
@@ -204,46 +201,38 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
       update();
     });
 
-    Button cancel = new Button(loc.ordCancel(), event -> {
-      Global.confirm(loc.ordAskCancel(), () -> {
-        updateStatus(form, OrdersStatus.CANCELED);
-        save(form);
-      });
-    });
+    Button cancel = new Button(loc.ordCancel(), event -> Global.confirm(loc.ordAskCancel(), () -> {
+      updateStatus(form, OrdersStatus.CANCELED);
+      save(form);
+    }));
 
-    Button approve = new Button(loc.ordApprove(), event -> {
-      Global.confirm(loc.ordAskApprove(), () -> {
-        String id = row.getString(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE));
-        if (BeeUtils.isEmpty(id)) {
-          form.notifySevere(Localized.dictionary().warehouse() + " "
-              + Localized.dictionary().valueRequired());
-          return;
-        }
+    Button approve = new Button(loc.ordApprove(), event -> Global.confirm(loc.ordAskApprove(),
+        () -> {
+          String id = row.getString(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE));
+      if (BeeUtils.isEmpty(id)) {
+        form.notifySevere(Localized.dictionary().warehouse() + " "
+            + Localized.dictionary().valueRequired());
+        return;
+      }
 
-        ParameterList params = OrdersKeeper.createSvcArgs(SVC_FILL_RESERVED_REMAINDERS);
-        params.addDataItem(COL_ORDER, row.getId());
-        params.addDataItem(COL_WAREHOUSE, form.getLongValue(COL_WAREHOUSE));
+      ParameterList params = OrdersKeeper.createSvcArgs(SVC_FILL_RESERVED_REMAINDERS);
+      params.addDataItem(COL_ORDER, row.getId());
+      params.addDataItem(COL_WAREHOUSE, form.getLongValue(COL_WAREHOUSE));
 
-        BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (!response.hasErrors()) {
-              updateStatus(form, OrdersStatus.APPROVED);
-              save(form);
-            }
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (!response.hasErrors()) {
+            updateStatus(form, OrdersStatus.APPROVED);
+            save(form);
           }
-        });
+        }
       });
-    });
+    }));
 
-    Button send = new Button(loc.send(), event -> {
-      sendMail(form);
-    });
-
-    Button finish = new Button(loc.crmActionFinish(), event -> {
-      Global.confirm(loc.ordAskFinish(), () -> checkIsFinish(form));
-    });
+    Button finish = new Button(loc.crmActionFinish(), event -> Global.confirm(loc.ordAskFinish(),
+        () -> checkIsFinish(form)));
 
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
@@ -264,7 +253,7 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
     if (DataUtils.isNewRow(row)) {
       if (parentGrid == null) {
         return;
-      } else if (parentGrid.getGridName() == VIEW_ORDERS
+      } else if (Objects.equals(parentGrid.getGridName(), VIEW_ORDERS)
           && Objects.equals(status, OrdersStatus.PREPARED.ordinal())) {
         updateStatus(form, OrdersStatus.APPROVED);
       }
@@ -306,7 +295,6 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
         form.setEnabled(false);
       } else if (Objects.equals(status, OrdersStatus.PREPARED.ordinal())) {
         header.addCommandItem(cancel);
-        header.addCommandItem(send);
         header.addCommandItem(approve);
       } else if (Objects.equals(status, OrdersStatus.SENT.ordinal())) {
         header.addCommandItem(cancel);
@@ -314,7 +302,6 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
       }
     } else if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())
         && !DataUtils.isNewRow(row)) {
-      header.addCommandItem(send);
       header.addCommandItem(finish);
     }
 
@@ -343,6 +330,11 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
   }
 
   @Override
+  protected Consumer<FileInfo> getReportCallback() {
+    return this::sendMail;
+  }
+
+  @Override
   protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
     Queries.getRowSet(VIEW_ORDER_ITEMS, null, Filter.equals(COL_ORDER, getActiveRowId()),
         new Queries.RowSetCallback() {
@@ -361,16 +353,20 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
 
     super.getReportParameters(defaultParameters ->
         ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+          defaultParameters.putAll(companiesInfo);
+
           if (objectSpecification != null) {
             defaultParameters.put(TBL_CONF_OBJECT_OPTIONS,
                 objectSpecification.renderSummary(false).toString());
 
-            for (int i = 0; i < objectSpecification.getBranchOptions().size(); i++) {
-              defaultParameters.put(COL_PHOTO + i,
-                  BeeUtils.toString(objectSpecification.getBranchOptions().get(i).getPhoto()));
+            for (int i = 0; i < objectSpecification.getPhotos().size(); i++) {
+              Long photo = objectSpecification.getPhotos().get(i);
+
+              if (DataUtils.isId(photo)) {
+                defaultParameters.put(COL_PHOTO + i, BeeUtils.toString(photo));
+              }
             }
           }
-          defaultParameters.putAll(companiesInfo);
           parametersConsumer.accept(defaultParameters);
         }));
   }
@@ -389,13 +385,12 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
           response.notify(getFormView());
 
           if (!response.hasErrors()) {
-            objectSpecification = Specification.restore(response.getResponseAsString());
-            refreshObject();
+            refreshObject(Specification.restore(response.getResponseAsString()));
           }
         }
       });
     } else {
-      objectSpecification = null;
+      refreshObject(null);
     }
     super.onSetActiveRow(row);
   }
@@ -407,7 +402,7 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
       final String newValue = cv.getNewValue();
       String oldValue = cv.getOldValue();
 
-      if (newValue != oldValue && oldValue != null && DataUtils.hasId(getActiveRow())
+      if (!Objects.equals(newValue, oldValue) && oldValue != null && DataUtils.hasId(getActiveRow())
           && Objects.equals(getActiveRow().getInteger(Data.getColumnIndex(VIEW_ORDERS,
           COL_ORDERS_STATUS)), OrdersStatus.APPROVED.ordinal())) {
 
@@ -430,8 +425,8 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
         });
         return false;
       } else if (!Objects.equals(getActiveRow().getInteger(Data.getColumnIndex(VIEW_ORDERS,
-          COL_ORDERS_STATUS)), OrdersStatus.APPROVED.ordinal()) && newValue != oldValue
-          && DataUtils.hasId(getActiveRow())) {
+          COL_ORDERS_STATUS)), OrdersStatus.APPROVED.ordinal()) && !Objects
+          .equals(newValue, oldValue) && DataUtils.hasId(getActiveRow())) {
 
         getActiveRow().setValue(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE), newValue);
         update();
@@ -444,45 +439,42 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
 
-    Global.getRelationParameter(PRM_MANAGER_WAREHOUSE, new BiConsumer<Long, String>() {
-      @Override
-      public void accept(Long aLong, String s) {
-        GridView parentGrid = getGridView();
-        if (parentGrid == null) {
-          return;
-        }
-
-        if (BeeUtils.isEmpty(newRow.getString(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE)))) {
-          String gridName = GRID_COMPANY_ORDERS.equals(parentGrid.getGridName()) ? GRID_OFFERS
-              : parentGrid.getGridName();
-
-          newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
-        }
-
-        if (GRID_OFFERS.equals(parentGrid.getGridName())) {
-          int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
-          int endDateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
-
-          if (Objects.equals(OrdersStatus.PREPARED.ordinal(), newRow.getInteger(statusIdx))) {
-            DateTime now = TimeUtils.nowMillis();
-            int year = now.getYear();
-            int month = now.getMonth() + 3;
-
-            if (month > 12) {
-              year++;
-              month = month - 12;
-            }
-            newRow.setValue(endDateIdx, new DateTime(year, month, now.getDom()));
-          }
-        }
-
-        newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE), aLong);
-        newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, ALS_WAREHOUSE_CODE), s);
-
-        getFormView().refreshBySource(COL_WAREHOUSE);
-
-        OrderForm.super.onStartNewRow(form, oldRow, newRow);
+    Global.getRelationParameter(PRM_MANAGER_WAREHOUSE, (aLong, s) -> {
+      GridView parentGrid = getGridView();
+      if (parentGrid == null) {
+        return;
       }
+
+      if (BeeUtils.isEmpty(newRow.getString(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE)))) {
+        String gridName = GRID_COMPANY_ORDERS.equals(parentGrid.getGridName()) ? GRID_OFFERS
+            : parentGrid.getGridName();
+
+        newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_SOURCE), gridName);
+      }
+
+      if (GRID_OFFERS.equals(parentGrid.getGridName())) {
+        int statusIdx = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
+        int endDateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_END_DATE);
+
+        if (Objects.equals(OrdersStatus.PREPARED.ordinal(), newRow.getInteger(statusIdx))) {
+          DateTime now = TimeUtils.nowMillis();
+          int year = now.getYear();
+          int month = now.getMonth() + 3;
+
+          if (month > 12) {
+            year++;
+            month = month - 12;
+          }
+          newRow.setValue(endDateIdx, new DateTime(year, month, now.getDom()));
+        }
+      }
+
+      newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE), aLong);
+      newRow.setValue(Data.getColumnIndex(VIEW_ORDERS, ALS_WAREHOUSE_CODE), s);
+
+      getFormView().refreshBySource(COL_WAREHOUSE);
+
+      OrderForm.super.onStartNewRow(form, oldRow, newRow);
     });
   }
 
@@ -525,20 +517,21 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
     }
   }
 
-  private void refreshObject() {
+  private void refreshObject(Specification specification) {
+    objectSpecification = specification;
+
     if (objectContainer != null) {
       objectContainer.clear();
 
       if (objectSpecification != null) {
-        for (Option option : objectSpecification.getBranchOptions()) {
-          if (DataUtils.isId(option.getPhoto())) {
-            Flow thumbnail = new Flow(SpecificationBuilder.STYLE_THUMBNAIL);
-            thumbnail.addStyleName(StyleUtils.NAME_FLEXIBLE);
-            thumbnail.add(new Image(FileUtils.getUrl(option.getPhoto())));
-            objectContainer.add(thumbnail);
-          }
-        }
         objectContainer.add(objectSpecification.renderSummary(false));
+
+        objectSpecification.getPhotos().stream().filter(DataUtils::isId).forEach(photo -> {
+          Flow thumbnail = new Flow(SpecificationBuilder.STYLE_THUMBNAIL);
+          thumbnail.addStyleName(StyleUtils.NAME_FLEXIBLE);
+          thumbnail.add(new Image(FileUtils.getUrl(photo)));
+          objectContainer.insert(thumbnail, objectContainer.getWidgetCount() - 1);
+        });
       }
     }
   }
@@ -571,9 +564,14 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
     command.execute();
   }
 
-  private static void sendMail(final FormView form) {
+  private void sendMail(FileInfo fileInfo) {
+    FormView form = getFormView();
+
+    List<FileInfo> attach = new ArrayList<>();
+    attach.add(fileInfo);
+
     NewMailMessage.create(BeeUtils.notEmpty(form.getStringValue(ALS_CONTACT_EMAIL),
-        form.getStringValue(ALS_COMPANY_EMAIL)), null, null, null, (messageId, saveMode) -> {
+        form.getStringValue(ALS_COMPANY_EMAIL)), null, null, attach, (messageId, saveMode) -> {
       if (!saveMode && !Objects.equals(form.getIntegerValue(COL_ORDERS_STATUS),
           OrdersStatus.APPROVED.ordinal())) {
         updateStatus(form, OrdersStatus.SENT);

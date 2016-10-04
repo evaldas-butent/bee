@@ -13,7 +13,6 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
 

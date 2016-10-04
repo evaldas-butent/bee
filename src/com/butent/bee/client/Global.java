@@ -1,7 +1,6 @@
 package com.butent.bee.client;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
@@ -41,8 +40,6 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssProperties;
@@ -68,6 +65,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * initializes and contains system parameters, which are used globally in the whole system.

@@ -9,6 +9,8 @@
               label="=configuration" />
     <Relation name="Bundle" relation="ConfBundles" notNull="true" label="=bundle" editable="true" />
     <Integer name="Price" label="=price" notNull="true" />
+    <Text name="Description" label="=description" />
+    <Boolean name="Blocked" label="=actionBlock" />
   </Fields>
   <Constraints>
     <Unique fields="Branch Bundle" />

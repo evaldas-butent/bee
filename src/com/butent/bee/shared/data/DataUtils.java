@@ -1,9 +1,7 @@
 package com.butent.bee.shared.data;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
@@ -31,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Contains a set of utility functions for data management.
@@ -89,7 +88,7 @@ public final class DataUtils {
     if (BeeUtils.isEmpty(ids)) {
       return null;
     } else {
-      return ID_JOINER.join(Iterables.filter(ids, IS_ID));
+      return ID_JOINER.join(ids.stream().filter(IS_ID).iterator());
     }
   }
 

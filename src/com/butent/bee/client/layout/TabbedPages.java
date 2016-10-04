@@ -1,13 +1,11 @@
 package com.butent.bee.client.layout;
 
-import com.google.common.base.Predicate;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
@@ -31,13 +29,15 @@ import com.butent.bee.client.style.ComputedStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowConsumer;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -55,7 +55,8 @@ import java.util.Set;
 
 public class TabbedPages extends Flow implements
     HasBeforeSelectionHandlers<Pair<Integer, TabbedPages.SelectionOrigin>>,
-    HasSelectionHandlers<Pair<Integer, TabbedPages.SelectionOrigin>> {
+    HasSelectionHandlers<Pair<Integer, TabbedPages.SelectionOrigin>>,
+    RowConsumer {
 
   public enum SelectionOrigin {
     CLICK, INSERT, REMOVE, INIT, SCRIPT
@@ -170,14 +171,15 @@ public class TabbedPages extends Flow implements
     private final CustomDiv summaryWidget;
     private final Map<String, Value> summaryValues = new LinkedHashMap<>();
 
+    private final Evaluator rowPredicate;
     private boolean enabled = true;
 
-    private Tab(Widget child) {
-      this(child, null, null);
+    private Tab(Widget child, Evaluator rowPredicate) {
+      this(child, null, null, rowPredicate);
     }
 
     private Tab(Widget child, CustomDiv summaryWidget,
-        Collection<HasSummaryChangeHandlers> summarySources) {
+        Collection<HasSummaryChangeHandlers> summarySources, Evaluator rowPredicate) {
 
       setWidget(child);
       addStyleName(getStylePrefix() + TAB_STYLE_SUFFIX);
@@ -192,6 +194,8 @@ public class TabbedPages extends Flow implements
           }
         }
       }
+
+      this.rowPredicate = rowPredicate;
     }
 
     @Override
@@ -227,6 +231,20 @@ public class TabbedPages extends Flow implements
 
     private void setSelected(boolean selected) {
       setStyleName(getStylePrefix() + "tabSelected", selected);
+    }
+
+    private boolean onDataChange(IsRow row) {
+      if (row != null && rowPredicate != null) {
+        rowPredicate.update(row);
+        boolean ok = BeeUtils.toBoolean(rowPredicate.evaluate());
+
+        if (isEnabled() != ok) {
+          setEnabled(ok);
+          return true;
+        }
+      }
+
+      return false;
     }
   }
 
@@ -276,19 +294,46 @@ public class TabbedPages extends Flow implements
   }
 
   @Override
+  public void accept(IsRow row) {
+    if (dependsOnData()) {
+      saveLayout();
+      boolean changed = false;
+
+      for (int i = 0; i < getPageCount(); i++) {
+        changed |= getTab(i).onDataChange(row);
+      }
+
+      if (changed) {
+        if (isIndex(getSelectedIndex()) && !isPageEnabled(getSelectedIndex())) {
+          int page = nextEnabledPage(getSelectedIndex());
+
+          if (isIndex(page)) {
+            selectPage(page, SelectionOrigin.SCRIPT);
+          } else {
+            setSelectedIndex(BeeConst.UNDEF);
+          }
+        }
+
+        checkLayout();
+      }
+    }
+  }
+
+  @Override
   public void add(Widget w) {
     Assert.untouchable(getClass().getName() + ": cannot add widget without tab");
   }
 
   public IdentifiableWidget add(Widget content, String text, String summary,
-      Collection<HasSummaryChangeHandlers> summarySources) {
-    return add(content, createCaption(text), summary, summarySources);
+      Collection<HasSummaryChangeHandlers> summarySources, Evaluator rowPredicate) {
+
+    return add(content, createCaption(text), summary, summarySources, rowPredicate);
   }
 
   public IdentifiableWidget add(Widget content, Widget caption, String summary,
-      Collection<HasSummaryChangeHandlers> summarySources) {
+      Collection<HasSummaryChangeHandlers> summarySources, Evaluator rowPredicate) {
 
-    Tab tab = createTab(caption, summary, summarySources);
+    Tab tab = createTab(caption, summary, summarySources, rowPredicate);
     insertPage(content, tab);
 
     return tab;
@@ -354,13 +399,17 @@ public class TabbedPages extends Flow implements
   }
 
   public void insert(Widget content, String text, String summary,
-      Collection<HasSummaryChangeHandlers> summarySources, int beforeIndex) {
-    insert(content, createCaption(text), summary, summarySources, beforeIndex);
+      Collection<HasSummaryChangeHandlers> summarySources, Evaluator rowPredicate,
+      int beforeIndex) {
+
+    insert(content, createCaption(text), summary, summarySources, rowPredicate, beforeIndex);
   }
 
   public void insert(Widget content, Widget caption, String summary,
-      Collection<HasSummaryChangeHandlers> summarySources, int beforeIndex) {
-    insertPage(content, createTab(caption, summary, summarySources), beforeIndex);
+      Collection<HasSummaryChangeHandlers> summarySources, Evaluator rowPredicate,
+      int beforeIndex) {
+
+    insertPage(content, createTab(caption, summary, summarySources, rowPredicate), beforeIndex);
   }
 
   public boolean isIndex(int index) {
@@ -448,26 +497,23 @@ public class TabbedPages extends Flow implements
       return;
     }
 
-    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        boolean changed = false;
+    Scheduler.get().scheduleDeferred(() -> {
+      boolean changed = false;
 
-        if (getTabBarSize() != null) {
-          switch (orientation) {
-            case HORIZONTAL:
-              changed = !getTabBarSize().sameHeight(tabBar);
-              break;
-            case VERTICAL:
-              changed = !getTabBarSize().sameWidth(tabBar);
-              break;
-          }
-          setTabBarSize(null);
+      if (getTabBarSize() != null) {
+        switch (orientation) {
+          case HORIZONTAL:
+            changed = !getTabBarSize().sameHeight(tabBar);
+            break;
+          case VERTICAL:
+            changed = !getTabBarSize().sameWidth(tabBar);
+            break;
         }
+        setTabBarSize(null);
+      }
 
-        if (changed) {
-          deckPanel.onResize();
-        }
+      if (changed) {
+        deckPanel.onResize();
       }
     });
   }
@@ -498,7 +544,7 @@ public class TabbedPages extends Flow implements
   }
 
   private Tab createTab(Widget caption, String summary,
-      Collection<HasSummaryChangeHandlers> summarySources) {
+      Collection<HasSummaryChangeHandlers> summarySources, Evaluator rowPredicate) {
 
     Tab tab;
 
@@ -506,7 +552,7 @@ public class TabbedPages extends Flow implements
       if (caption != null) {
         caption.addStyleName(getStylePrefix() + "tabSingleton");
       }
-      tab = new Tab(caption);
+      tab = new Tab(caption, rowPredicate);
 
     } else {
       Flow wrapper = new Flow(getStylePrefix() + "tabWrapper");
@@ -523,7 +569,7 @@ public class TabbedPages extends Flow implements
 
       wrapper.add(summaryWidget);
 
-      tab = new Tab(wrapper, summaryWidget, summarySources);
+      tab = new Tab(wrapper, summaryWidget, summarySources, rowPredicate);
     }
 
     return tab;
@@ -534,6 +580,15 @@ public class TabbedPages extends Flow implements
     UiHelper.makePotentiallyBold(widget.getElement(), text);
 
     return widget;
+  }
+
+  private boolean dependsOnData() {
+    for (int i = 0; i < getPageCount(); i++) {
+      if (getTab(i).rowPredicate != null) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private Tab getTab(int index) {
@@ -559,14 +614,11 @@ public class TabbedPages extends Flow implements
 
     final String tabId = tab.getId();
 
-    tab.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        for (int i = 0; i < getPageCount(); i++) {
-          if (getTab(i).getId().equals(tabId)) {
-            selectPage(i, SelectionOrigin.CLICK);
-            break;
-          }
+    tab.addClickHandler(event -> {
+      for (int i = 0; i < getPageCount(); i++) {
+        if (getTab(i).getId().equals(tabId)) {
+          selectPage(i, SelectionOrigin.CLICK);
+          break;
         }
       }
     });
@@ -595,46 +647,40 @@ public class TabbedPages extends Flow implements
       DndHelper.makeSource(tabBar, RESIZER_CONTENT_TYPE, getId(), getStylePrefix() + "drag");
 
       DndHelper.makeTarget((DndTarget) target, Collections.singleton(RESIZER_CONTENT_TYPE), null,
-          new Predicate<Object>() {
-            @Override
-            public boolean apply(Object input) {
-              return getId().equals(input);
+          input -> getId().equals(input),
+          (t, u) -> {
+            int dy = t.getNativeEvent().getClientY() - DndHelper.getStartY();
+
+            int top = getElement().getOffsetTop();
+            int height = getElement().getClientHeight();
+
+            int margin = ComputedStyles.getPixels(getElement(), StyleUtils.STYLE_MARGIN_TOP);
+            int minHeight = ComputedStyles.getPixels(getElement(), StyleUtils.STYLE_MIN_HEIGHT);
+
+            dy += margin;
+            if (minHeight > 0 && height - dy < minHeight) {
+              dy = height - minHeight;
             }
-          },
-          new BiConsumer<DropEvent, Object>() {
-            @Override
-            public void accept(DropEvent t, Object u) {
-              int dy = t.getNativeEvent().getClientY() - DndHelper.getStartY();
 
-              int top = getElement().getOffsetTop();
-              int height = getElement().getClientHeight();
+            if (dy != 0 && top + dy >= 0 && height > dy) {
+              Style style = getElement().getStyle();
 
-              int margin = ComputedStyles.getPixels(getElement(), StyleUtils.STYLE_MARGIN_TOP);
-              int minHeight = ComputedStyles.getPixels(getElement(), StyleUtils.STYLE_MIN_HEIGHT);
-
-              dy += margin;
-              if (minHeight > 0 && height - dy < minHeight) {
-                dy = height - minHeight;
+              if (margin != 0) {
+                StyleUtils.setProperty(style, StyleUtils.STYLE_MARGIN_TOP,
+                    BeeConst.DOUBLE_ZERO, CssUnit.PX);
               }
 
-              if (dy != 0 && top + dy >= 0 && height > dy) {
-                Style style = getElement().getStyle();
+              StyleUtils.setTop(style, top + dy);
+              StyleUtils.setHeight(style, height - dy);
 
-                if (margin != 0) {
-                  StyleUtils.setProperty(style, StyleUtils.STYLE_MARGIN_TOP,
-                      BeeConst.DOUBLE_ZERO, CssUnit.PX);
-                }
+              StyleUtils.makeAbsolute(style);
+              addStyleName(getStylePrefix() + "resized");
 
-                StyleUtils.setTop(style, top + dy);
-                StyleUtils.setHeight(style, height - dy);
-
-                StyleUtils.makeAbsolute(style);
-                addStyleName(getStylePrefix() + "resized");
-
-                Scheduler.get().scheduleDeferred(() -> deckPanel.onResize());
-              }
+              Scheduler.get().scheduleDeferred(deckPanel::onResize);
             }
           });
+
+      this.resizerInitialized = true;
 
     } else {
       logger.warning(NameUtils.getName(this), getId(), "not resizable, parent",

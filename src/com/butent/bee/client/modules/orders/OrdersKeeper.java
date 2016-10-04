@@ -8,9 +8,10 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.function.Consumer;
 
 /**
  * Client-side projects module handler.

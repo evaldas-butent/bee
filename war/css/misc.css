@@ -585,7 +585,16 @@
   content: "\f00d";
 }
 
-.bee-spec {
+.bee-spec-dialog > div {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.bee-spec-dialog .bee-Dialog-content {
+  flex: 1;
+}
+.bee-spec-container {
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -637,6 +646,7 @@
 }
 .bee-spec-selectable {
   border-collapse: collapse;
+  margin-top: 10px;
 }
 .bee-spec-selectable tr td:nth-child(2) {
   text-align: right;
@@ -644,6 +654,9 @@
 .bee-spec-selectable td {
   border: 1px solid #ddd;
   padding: 5px;
+}
+.bee-spec-blocked {
+  color: red;
 }
 
 .bee-row-Mode-new,

@@ -23,7 +23,6 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -45,6 +44,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 public abstract class InvoiceBuilder extends AbstractGridInterceptor
     implements ClickHandler, BiConsumer<BeeRowSet, BeeRow> {

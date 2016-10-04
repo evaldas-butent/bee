@@ -68,19 +68,19 @@ public final class ButentWS {
       }
     }
     dispatch = service.createDispatch(portName, SOAPMessage.class, Service.Mode.MESSAGE);
-    dispatch.getRequestContext().put(Dispatch.SOAPACTION_USE_PROPERTY, new Boolean(true));
+    dispatch.getRequestContext().put(Dispatch.SOAPACTION_USE_PROPERTY, Boolean.TRUE);
   }
 
   public static ButentWS connect(String address, String login, String pass) throws BeeException {
     if (BeeUtils.anyEmpty(address, login, pass)) {
       throw new BeeException("WebService address/login/password not defined");
     }
-    logger.info("Connecting to webservice:", address);
+    logger.debug("Connecting to webservice:", address);
 
     if (instance == null || !BeeUtils.same(address, instance.wsdlAddress)) {
       instance = new ButentWS(address);
     }
-    String answer = null;
+    String answer;
     String error = "Unknown login response";
 
     try {

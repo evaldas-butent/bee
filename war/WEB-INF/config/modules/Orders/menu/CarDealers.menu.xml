@@ -4,6 +4,7 @@
        name="CarDealers" label="=configuration" order="40" parent="Orders" module="Orders.CarDealers"
 >
   <Item name="ConfPricelist" label="=configuration" service="form" parameters="ConfPricelist" />
-  <Item name="ConfOptions" label="=options" service="grid" parameters="ConfOptions" />
+  <Item name="ConfTypes" label="=optionTypes" service="grid" parameters="ConfTypes" separator="true" />
   <Item name="ConfGroups" label="=optionGroups" service="grid" parameters="ConfGroups" />
+  <Item name="ConfOptions" label="=options" service="grid" parameters="ConfOptions" />
 </Entry>

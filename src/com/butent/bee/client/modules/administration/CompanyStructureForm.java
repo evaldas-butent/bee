@@ -1,17 +1,11 @@
 package com.butent.bee.client.modules.administration;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DropEvent;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -55,7 +49,6 @@ import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Line;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -531,89 +524,86 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     Button save = new Button(Localized.dictionary().actionSave());
     save.addStyleName(STYLE_SETTINGS_SAVE);
 
-    save.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        boolean changed = false;
+    save.addClickHandler(event -> {
+      boolean changed = false;
 
-        int value = marginLeftInput.getIntValue();
-        if (value >= 0 && value != marginLeft) {
-          marginLeft = value;
-          store(NAME_MARGIN_LEFT, value);
-          changed = true;
-        }
+      int value = marginLeftInput.getIntValue();
+      if (value >= 0 && value != marginLeft) {
+        marginLeft = value;
+        store(NAME_MARGIN_LEFT, value);
+        changed = true;
+      }
 
-        value = marginTopInput.getIntValue();
-        if (value >= 0 && value != marginTop) {
-          marginTop = value;
-          store(NAME_MARGIN_TOP, value);
-          changed = true;
-        }
+      value = marginTopInput.getIntValue();
+      if (value >= 0 && value != marginTop) {
+        marginTop = value;
+        store(NAME_MARGIN_TOP, value);
+        changed = true;
+      }
 
-        value = nodeMinWidthInput.getIntValue();
-        if (value > 0 && value != nodeMinWidth) {
-          nodeMinWidth = value;
-          store(NAME_NODE_MIN_WIDTH, value);
-          changed = true;
-        }
+      value = nodeMinWidthInput.getIntValue();
+      if (value > 0 && value != nodeMinWidth) {
+        nodeMinWidth = value;
+        store(NAME_NODE_MIN_WIDTH, value);
+        changed = true;
+      }
 
-        value = nodeMaxWidthInput.getIntValue();
-        if (value > 0 && value != nodeMaxWidth) {
-          nodeMaxWidth = value;
-          store(NAME_NODE_MAX_WIDTH, value);
-          changed = true;
-        }
+      value = nodeMaxWidthInput.getIntValue();
+      if (value > 0 && value != nodeMaxWidth) {
+        nodeMaxWidth = value;
+        store(NAME_NODE_MAX_WIDTH, value);
+        changed = true;
+      }
 
-        value = nodeMinHeightInput.getIntValue();
-        if (value > 0 && value != nodeMinHeight) {
-          nodeMinHeight = value;
-          store(NAME_NODE_MIN_HEIGHT, value);
-          changed = true;
-        }
+      value = nodeMinHeightInput.getIntValue();
+      if (value > 0 && value != nodeMinHeight) {
+        nodeMinHeight = value;
+        store(NAME_NODE_MIN_HEIGHT, value);
+        changed = true;
+      }
 
-        value = nodeMaxHeightInput.getIntValue();
-        if (value > 0 && value != nodeMaxHeight) {
-          nodeMaxHeight = value;
-          store(NAME_NODE_MAX_HEIGHT, value);
-          changed = true;
-        }
+      value = nodeMaxHeightInput.getIntValue();
+      if (value > 0 && value != nodeMaxHeight) {
+        nodeMaxHeight = value;
+        store(NAME_NODE_MAX_HEIGHT, value);
+        changed = true;
+      }
 
-        value = nodeGapInput.getIntValue();
-        if (value >= 0 && value != nodeGap) {
-          nodeGap = value;
-          store(NAME_NODE_GAP, value);
-          changed = true;
-        }
+      value = nodeGapInput.getIntValue();
+      if (value >= 0 && value != nodeGap) {
+        nodeGap = value;
+        store(NAME_NODE_GAP, value);
+        changed = true;
+      }
 
-        value = levelGapInput.getIntValue();
-        if (value >= 0 && value != levelGap) {
-          levelGap = value;
-          store(NAME_LEVEL_GAP, value);
-          changed = true;
-        }
+      value = levelGapInput.getIntValue();
+      if (value >= 0 && value != levelGap) {
+        levelGap = value;
+        store(NAME_LEVEL_GAP, value);
+        changed = true;
+      }
 
-        value = alignmentInput.getSelectedIndex();
-        if (EnumUtils.isOrdinal(AlignmentInLevel.class, value)
-            && (alignmentInLevel == null || value != alignmentInLevel.ordinal())) {
+      value = alignmentInput.getSelectedIndex();
+      if (EnumUtils.isOrdinal(AlignmentInLevel.class, value)
+          && (alignmentInLevel == null || value != alignmentInLevel.ordinal())) {
 
-          alignmentInLevel = EnumUtils.getEnumByIndex(AlignmentInLevel.class, value);
-          store(NAME_ALIGNMENT_IN_LEVEL, value);
-          changed = true;
-        }
+        alignmentInLevel = EnumUtils.getEnumByIndex(AlignmentInLevel.class, value);
+        store(NAME_ALIGNMENT_IN_LEVEL, value);
+        changed = true;
+      }
 
-        value = lineTypeInput.getSelectedIndex();
-        if (EnumUtils.isOrdinal(LineType.class, value)
-            && (lineType == null || value != lineType.ordinal())) {
+      value = lineTypeInput.getSelectedIndex();
+      if (EnumUtils.isOrdinal(LineType.class, value)
+          && (lineType == null || value != lineType.ordinal())) {
 
-          lineType = EnumUtils.getEnumByIndex(LineType.class, value);
-          store(NAME_LINE_TYPE, value);
-          changed = true;
-        }
+        lineType = EnumUtils.getEnumByIndex(LineType.class, value);
+        store(NAME_LINE_TYPE, value);
+        changed = true;
+      }
 
-        dialog.close();
-        if (changed) {
-          redraw();
-        }
+      dialog.close();
+      if (changed) {
+        redraw();
       }
     });
 
@@ -622,12 +612,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     Button cancel = new Button(Localized.dictionary().actionCancel());
     cancel.addStyleName(STYLE_SETTINGS_CANCEL);
 
-    cancel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        dialog.close();
-      }
-    });
+    cancel.addClickHandler(event -> dialog.close());
 
     commands.add(cancel);
 
@@ -646,14 +631,11 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     positionToggle.setValue(showPositions);
 
-    positionToggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<Boolean> event) {
-        showPositions = event.getValue();
-        store(NAME_SHOW_POSITIONS, showPositions);
+    positionToggle.addValueChangeHandler(event -> {
+      showPositions = event.getValue();
+      store(NAME_SHOW_POSITIONS, showPositions);
 
-        redraw();
-      }
+      redraw();
     });
 
     header.addCommandItem(positionToggle);
@@ -663,14 +645,11 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     employeeToggle.setValue(showEmployees);
 
-    employeeToggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<Boolean> event) {
-        showEmployees = event.getValue();
-        store(NAME_SHOW_EMPLOYEES, showEmployees);
+    employeeToggle.addValueChangeHandler(event -> {
+      showEmployees = event.getValue();
+      store(NAME_SHOW_EMPLOYEES, showEmployees);
 
-        redraw();
-      }
+      redraw();
     });
 
     header.addCommandItem(employeeToggle);
@@ -840,14 +819,11 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       }
 
       if (!nodeIds.isEmpty()) {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-          @Override
-          public void execute() {
-            NodeExtentProvider<Long> nodeExtentProvider = createNodeExtentProvider(nodeIds);
-            TreeLayout<Long> layoutTree = layoutTree(nodeExtentProvider);
+        Scheduler.get().scheduleDeferred(() -> {
+          NodeExtentProvider<Long> nodeExtentProvider = createNodeExtentProvider(nodeIds);
+          TreeLayout<Long> layoutTree = layoutTree(nodeExtentProvider);
 
-            render(panel, nodeIds, layoutTree);
-          }
+          render(panel, nodeIds, layoutTree);
         });
       }
     }
@@ -1136,12 +1112,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       label.setTitle(fullName);
     }
 
-    label.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        RowEditor.open(VIEW_DEPARTMENTS, id, Opener.MODAL);
-      }
-    });
+    label.addClickHandler(event -> RowEditor.open(VIEW_DEPARTMENTS, id, Opener.MODAL));
 
     DndHelper.makeSource(label, DATA_TYPE_DEPARTMENT, id, STYLE_DEPARTMENT_DRAG);
     panel.add(label);
@@ -1177,24 +1148,18 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     panel.add(content);
 
     DndHelper.makeTarget(panel, DND_TYPES, STYLE_DEPARTMENT_DRAG_OVER,
-        new Predicate<Object>() {
-          @Override
-          public boolean apply(Object input) {
-            if (validateDataType(DndHelper.getDataType()) && validateDndContent(input)) {
-              return isTarget(DndHelper.getDataType(), (Long) input, id);
-            } else {
-              return false;
-            }
+        input -> {
+          if (validateDataType(DndHelper.getDataType()) && validateDndContent(input)) {
+            return isTarget(DndHelper.getDataType(), (Long) input, id);
+          } else {
+            return false;
           }
         },
-        new BiConsumer<DropEvent, Object>() {
-          @Override
-          public void accept(DropEvent t, Object u) {
-            panel.removeStyleName(STYLE_DEPARTMENT_DRAG_OVER);
+        (t, u) -> {
+          panel.removeStyleName(STYLE_DEPARTMENT_DRAG_OVER);
 
-            if (validateDataType(DndHelper.getDataType()) && validateDndContent(u)) {
-              acceptDrop(DndHelper.getDataType(), (Long) u, id);
-            }
+          if (validateDataType(DndHelper.getDataType()) && validateDndContent(u)) {
+            acceptDrop(DndHelper.getDataType(), (Long) u, id);
           }
         });
 
@@ -1480,17 +1445,14 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     Image image = new Image(photoUrl);
     image.setTitle(BeeUtils.buildLines(fullName, positionName, companyName));
 
-    image.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Long person = getEmployeeRelation(emplId, COL_PERSON);
-        RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            refresh();
-          }
-        });
-      }
+    image.addClickHandler(event -> {
+      Long person = getEmployeeRelation(emplId, COL_PERSON);
+      RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          refresh();
+        }
+      });
     });
 
     photoContainer.add(image);
@@ -1501,17 +1463,14 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     DndDiv label = new DndDiv();
     label.setText(fullName);
 
-    label.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Long cp = getEmployeeRelation(emplId, COL_COMPANY_PERSON);
-        RowEditor.open(VIEW_COMPANY_PERSONS, cp, Opener.MODAL, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            refresh();
-          }
-        });
-      }
+    label.addClickHandler(event -> {
+      Long cp = getEmployeeRelation(emplId, COL_COMPANY_PERSON);
+      RowEditor.open(VIEW_COMPANY_PERSONS, cp, Opener.MODAL, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          refresh();
+        }
+      });
     });
 
     styleName = boss ? STYLE_BOSS_LABEL : STYLE_EMPLOYEE_LABEL;
@@ -1605,23 +1564,20 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         label.addStyleName(STYLE_POSITION_STAFFED);
         DomUtils.setDataProperty(label.getElement(), KEY_STAFF, DataUtils.buildIdList(dp.staff));
 
-        label.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            Element target = EventUtils.getEventTargetElement(event);
-            String idList = DomUtils.getDataProperty(target, KEY_STAFF);
-            List<Long> emplIds = DataUtils.parseIdList(idList);
-            List<BeeRow> posEmployees = DataUtils.filterRows(employees.getRows(), emplIds);
+        label.addClickHandler(event -> {
+          Element target = EventUtils.getEventTargetElement(event);
+          String idList = DomUtils.getDataProperty(target, KEY_STAFF);
+          List<Long> emplIds = DataUtils.parseIdList(idList);
+          List<BeeRow> posEmployees = DataUtils.filterRows(employees.getRows(), emplIds);
 
-            if (!posEmployees.isEmpty()) {
-              String caption = target.getInnerText();
-              Widget widget = renderEmployees(caption, posEmployees, true, false);
+          if (!posEmployees.isEmpty()) {
+            String caption = target.getInnerText();
+            Widget widget = renderEmployees(caption, posEmployees, true, false);
 
-              Flow content = new Flow(STYLE_POPUP_CONTENT);
-              content.add(widget);
+            Flow content = new Flow(STYLE_POPUP_CONTENT);
+            content.add(widget);
 
-              Global.showModalWidget(caption, content, target);
-            }
+            Global.showModalWidget(caption, content, target);
           }
         });
       }
@@ -1656,14 +1612,11 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
       Label label = new Label(Localized.dictionary().employees());
 
-      label.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Widget widget = renderEmployees(caption, depEmployees, true, true);
-          Flow content = new Flow(STYLE_POPUP_CONTENT);
-          content.add(widget);
-          Global.showModalWidget(caption, content, EventUtils.getEventTargetElement(event));
-        }
+      label.addClickHandler(event -> {
+        Widget widget = renderEmployees(caption, depEmployees, true, true);
+        Flow content = new Flow(STYLE_POPUP_CONTENT);
+        content.add(widget);
+        Global.showModalWidget(caption, content, EventUtils.getEventTargetElement(event));
       });
 
       table.setWidgetAndStyle(row, 0, label, STYLE_EMPLOYEE_LABEL);

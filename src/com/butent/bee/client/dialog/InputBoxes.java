@@ -1,15 +1,9 @@
 package com.butent.bee.client.dialog;
 
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -18,7 +12,6 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printer;
@@ -34,8 +27,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
@@ -56,6 +47,10 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Implements a user interface component, which enables to produce a input box for information input
@@ -80,16 +75,13 @@ public class InputBoxes {
       confirm.addStyleName(STYLE_INPUT_COMMAND);
       confirm.addStyleName(STYLE_INPUT_CONFIRM);
 
-      confirm.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          String message = errorSupplier.get();
-          if (BeeUtils.isEmpty(message)) {
-            state.set(State.CONFIRMED);
-            dialog.close();
-          } else {
-            showError(errorDisplay.get(), message);
-          }
+      confirm.addClickHandler(event -> {
+        String message = errorSupplier.get();
+        if (BeeUtils.isEmpty(message)) {
+          state.set(State.CONFIRMED);
+          dialog.close();
+        } else {
+          showError(errorDisplay.get(), message);
         }
       });
 
@@ -101,12 +93,9 @@ public class InputBoxes {
       cancel.addStyleName(STYLE_INPUT_COMMAND);
       cancel.addStyleName(STYLE_INPUT_CANCEL);
 
-      cancel.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          state.set(State.CANCELED);
-          dialog.close();
-        }
+      cancel.addClickHandler(event -> {
+        state.set(State.CANCELED);
+        dialog.close();
       });
 
       UiHelper.add(commandGroup, cancel, initializer, DialogConstants.WIDGET_CANCEL);
@@ -164,41 +153,35 @@ public class InputBoxes {
     table.getCellFormatter().setHorizontalAlignment(0, 0, TextAlign.CENTER);
     StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 0), 100);
 
-    final Consumer<String> rowCreator = new Consumer<String>() {
-      @Override
-      public void accept(String value) {
-        Editor input = null;
+    final Consumer<String> rowCreator = value -> {
+      Editor input = null;
 
-        if (editorSupplier != null) {
-          input = editorSupplier.apply(value);
-        }
-        if (input == null) {
-          input = new InputText();
-
-          if (!BeeUtils.isEmpty(value)) {
-            input.setValue(value);
-          }
-        }
-        int row = table.getRowCount();
-        table.setWidget(row, 0, input.asWidget());
-
-        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
-        delete.setTitle(Localized.dictionary().delete());
-        delete.getElement().getStyle().setCursor(Cursor.POINTER);
-
-        delete.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            for (int i = 1; i < table.getRowCount(); i++) {
-              if (Objects.equals(delete, table.getWidget(i, 1))) {
-                table.removeRow(i);
-                break;
-              }
-            }
-          }
-        });
-        table.setWidget(row, 1, delete);
+      if (editorSupplier != null) {
+        input = editorSupplier.apply(value);
       }
+      if (input == null) {
+        input = new InputText();
+
+        if (!BeeUtils.isEmpty(value)) {
+          input.setValue(value);
+        }
+      }
+      int row = table.getRowCount();
+      table.setWidget(row, 0, input.asWidget());
+
+      final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
+      delete.setTitle(Localized.dictionary().delete());
+      delete.getElement().getStyle().setCursor(Cursor.POINTER);
+
+      delete.addClickHandler(event -> {
+        for (int i = 1; i < table.getRowCount(); i++) {
+          if (Objects.equals(delete, table.getWidget(i, 1))) {
+            table.removeRow(i);
+            break;
+          }
+        }
+      });
+      table.setWidget(row, 1, delete);
     };
     if (!BeeUtils.isEmpty(defaultCollection)) {
       for (String value : defaultCollection) {
@@ -267,39 +250,33 @@ public class InputBoxes {
     table.getCellFormatter().setHorizontalAlignment(0, 1, TextAlign.CENTER);
     StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 1), 100);
 
-    final BiConsumer<String, String> rowCreator = new BiConsumer<String, String>() {
-      @Override
-      public void accept(String key, String value) {
-        int row = table.getRowCount();
-        InputText input = new InputText();
-        table.setWidget(row, 0, input);
+    final BiConsumer<String, String> rowCreator = (key, value) -> {
+      int row = table.getRowCount();
+      InputText input = new InputText();
+      table.setWidget(row, 0, input);
 
-        if (!BeeUtils.isEmpty(key)) {
-          input.setValue(key);
-        }
-        input = new InputText();
-        table.setWidget(row, 1, input);
-
-        if (!BeeUtils.isEmpty(value)) {
-          input.setValue(value);
-        }
-        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
-        delete.setTitle(Localized.dictionary().delete());
-        delete.getElement().getStyle().setCursor(Cursor.POINTER);
-
-        delete.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            for (int i = 1; i < table.getRowCount(); i++) {
-              if (Objects.equals(delete, table.getWidget(i, 2))) {
-                table.removeRow(i);
-                break;
-              }
-            }
-          }
-        });
-        table.setWidget(row, 2, delete);
+      if (!BeeUtils.isEmpty(key)) {
+        input.setValue(key);
       }
+      input = new InputText();
+      table.setWidget(row, 1, input);
+
+      if (!BeeUtils.isEmpty(value)) {
+        input.setValue(value);
+      }
+      final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
+      delete.setTitle(Localized.dictionary().delete());
+      delete.getElement().getStyle().setCursor(Cursor.POINTER);
+
+      delete.addClickHandler(event -> {
+        for (int i = 1; i < table.getRowCount(); i++) {
+          if (Objects.equals(delete, table.getWidget(i, 2))) {
+            table.removeRow(i);
+            break;
+          }
+        }
+      });
+      table.setWidget(row, 2, delete);
     };
     for (String key : map.keySet()) {
       rowCreator.accept(key, map.get(key));
@@ -401,38 +378,31 @@ public class InputBoxes {
 
     final Holder<Widget> errorDisplay = hold(errorLabel);
 
-    final Supplier<String> errorSupplier = new Supplier<String>() {
-      @Override
-      public String get() {
-        return callback.getMessage(EditorAssistant.getValue(input.get()));
-      }
-    };
+    final Supplier<String> errorSupplier =
+        () -> callback.getMessage(EditorAssistant.getValue(input.get()));
 
-    box.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+    box.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+        event.preventDefault();
+        state.set(State.CANCELED);
+        dialog.close();
+        return;
+      }
+
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        String message = errorSupplier.get();
+        if (BeeUtils.isEmpty(message)) {
           event.preventDefault();
-          state.set(State.CANCELED);
+          state.set(State.CONFIRMED);
           dialog.close();
           return;
+        } else {
+          showError(errorDisplay.get(), message);
         }
+      }
 
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          String message = errorSupplier.get();
-          if (BeeUtils.isEmpty(message)) {
-            event.preventDefault();
-            state.set(State.CONFIRMED);
-            dialog.close();
-            return;
-          } else {
-            showError(errorDisplay.get(), message);
-          }
-        }
-
-        if (timer != null) {
-          timer.schedule(timeout);
-        }
+      if (timer != null) {
+        timer.schedule(timeout);
       }
     });
 
@@ -443,23 +413,20 @@ public class InputBoxes {
     addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
         errorSupplier);
 
-    dialog.addCloseHandler(new CloseEvent.Handler() {
-      @Override
-      public void onClose(CloseEvent event) {
-        if (timer != null) {
-          timer.cancel();
-        }
+    dialog.addCloseHandler(event -> {
+      if (timer != null) {
+        timer.cancel();
+      }
 
-        switch (state.get()) {
-          case CONFIRMED:
-            callback.onSuccess(BeeUtils.trim(EditorAssistant.getValue(input.get())));
-            break;
-          case EXPIRED:
-            callback.onTimeout(BeeUtils.trim(EditorAssistant.getValue(input.get())));
-            break;
-          default:
-            callback.onCancel();
-        }
+      switch (state.get()) {
+        case CONFIRMED:
+          callback.onSuccess(BeeUtils.trim(EditorAssistant.getValue(input.get())));
+          break;
+        case EXPIRED:
+          callback.onTimeout(BeeUtils.trim(EditorAssistant.getValue(input.get())));
+          break;
+        default:
+          callback.onCancel();
       }
     });
 
@@ -532,36 +499,32 @@ public class InputBoxes {
         onSave.execute();
       });
 
-      onClose = () -> {
-        callback.onClose(new CloseCallback() {
-          @Override
-          public void onClose() {
-            dialog.close();
-            callback.onCancel();
-          }
+      onClose = () -> callback.onClose(new CloseCallback() {
+        @Override
+        public void onClose() {
+          dialog.close();
+          callback.onCancel();
+        }
 
-          @Override
-          public void onSave() {
-            onSave.execute();
-          }
-        });
-      };
+        @Override
+        public void onSave() {
+          onSave.execute();
+        }
+      });
 
     } else {
-      onClose = () -> {
-        callback.onClose(new CloseCallback() {
-          @Override
-          public void onClose() {
-            dialog.close();
-            callback.onCancel();
-          }
+      onClose = () -> callback.onClose(new CloseCallback() {
+        @Override
+        public void onClose() {
+          dialog.close();
+          callback.onCancel();
+        }
 
-          @Override
-          public void onSave() {
-            onClose();
-          }
-        });
-      };
+        @Override
+        public void onSave() {
+          onClose();
+        }
+      });
     }
 
     if (enabledActions != null) {

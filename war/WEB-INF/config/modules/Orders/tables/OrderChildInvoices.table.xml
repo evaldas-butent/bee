@@ -5,7 +5,8 @@
        idName="OrderChildInvoiceID"
 >
   <Fields>
-    <Relation name="Order" relation="Orders" notNull="true" />
-    <Relation name="Sale" notNull="true" editable="true" unique="true" relation="Sales" cascade="DELETE" />
+    <Relation name="OrderItem" relation="OrderItems" notNull="true" />
+    <Relation name="SaleItem" notNull="true" editable="true" unique="true" relation="SaleItems"
+              cascade="DELETE" />
   </Fields>
 </Table>

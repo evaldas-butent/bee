@@ -5,26 +5,21 @@
 >
   <Columns>
     <SimpleColumn name="Branch" />
-    <SimpleJoin name="Branch" joinType="LEFT">
-      <SimpleColumn name="Ordinal" alias="ParentOrdinal" />
-    </SimpleJoin>
-    <SimpleColumn name="Option" />
-    <SimpleJoin name="Option" joinType="INNER">
-      <SimpleColumn name="Group" />
-      <SimpleJoin name="Group" joinType="INNER">
-        <SimpleColumn name="GroupName" />
-      </SimpleJoin>
-      <SimpleColumn name="OptionName" />
-      <SimpleColumn name="Code" />
-      <SimpleColumn name="Description" />
-      <SimpleColumn name="PhotoFile" />
-    </SimpleJoin>
-    <SimpleColumn name="ValidUntil" />
+    <SimpleColumn name="BranchName" />
+    <SimpleColumn name="Description" />
+    <SimpleColumn name="PhotoFile" />
+
+    <SimpleColumn name="Blocked" />
     <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="Type" />
+    <SimpleJoin name="Type" joinType="LEFT">
+      <SimpleColumn name="TypeName" />
+    </SimpleJoin>
   </Columns>
   <Order>
-    <OrderBy column="ParentOrdinal" />
+    <OrderBy column="Blocked" descending="true" />
     <OrderBy column="Ordinal" />
-    <OrderBy column="ValidUntil" descending="true" />
+    <OrderBy column="BranchName" />
   </Order>
 </View>

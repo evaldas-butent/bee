@@ -130,7 +130,7 @@
     </SimpleJoin>
     
     <SimpleColumn name="PrivateTask" />
-    
+
     <SimpleColumn name="Product" />
     <SimpleJoin name="Product" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProductName"/>

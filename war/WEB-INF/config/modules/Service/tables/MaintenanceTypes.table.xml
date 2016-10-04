@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="MaintenanceTypes"
+  idName="MaintenanceTypeID"
+  >
+  <Fields>
+    <String name="Name" precision="200" notNull="true" label="=type" />
+    <Boolean name="AddressRequired" label="=scvAddressRequired" />
+  </Fields>
+</Table>

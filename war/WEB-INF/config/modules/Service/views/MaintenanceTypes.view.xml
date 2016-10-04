@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="MaintenanceTypes" source="MaintenanceTypes" module="Service"
+  caption="=svcServiceTypes"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="AddressRequired" />
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

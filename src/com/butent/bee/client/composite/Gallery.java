@@ -34,7 +34,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
@@ -70,6 +69,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class Gallery extends Flow implements HasViewName, HasFosterParent, ParentRowEvent.Handler,
     HasSummaryChangeHandlers, HandlesActions {

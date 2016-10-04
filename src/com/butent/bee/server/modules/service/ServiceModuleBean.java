@@ -116,7 +116,19 @@ public class ServiceModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    String module = getModule().getName();
+
+    List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createRelation(module, PRM_DEFAULT_MAINTENANCE_TYPE, TBL_MAINTENANCE_TYPES,
+            COL_TYPE_NAME),
+        BeeParameter.createRelation(module, PRM_DEFAULT_WARRANTY_TYPE, TBL_WARRANTY_TYPES,
+            COL_TYPE_NAME),
+        BeeParameter.createRelation(module, PRM_MAINTENANCE_SERVICE_GROUP, TBL_ITEM_CATEGORY_TREE,
+            COL_SERVICE_CATEGORY_NAME),
+        BeeParameter.createNumber(module, PRM_URGENT_RATE)
+    );
+
+    return params;
   }
 
   @Override

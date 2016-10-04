@@ -191,12 +191,12 @@ public class Totalizer {
 
   private boolean isFalse(String key, IsRow row) {
     RowPredicate predicate = predicates.get(key);
-    return predicate != null && !predicate.apply(row);
+    return predicate != null && !predicate.test(row);
   }
 
   private boolean isTrue(String key, IsRow row) {
     RowPredicate predicate = predicates.get(key);
-    return predicate != null && predicate.apply(row);
+    return predicate != null && predicate.test(row);
   }
 
   private void setFunction(String key, RowToDouble function) {

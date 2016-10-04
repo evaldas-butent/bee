@@ -12,7 +12,6 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.modules.transport.TripCostsGrid;
 import com.butent.bee.client.timeboard.HasColorSource;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -29,6 +28,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 class OrderCargo extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo,
     HasCargoType {

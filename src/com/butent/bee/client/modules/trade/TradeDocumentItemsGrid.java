@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
@@ -191,14 +192,14 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       }
 
       if (!BeeUtils.isEmpty(rows)) {
-        int qtyIndex = getDataIndex(COL_TRADE_ITEM_QUANTITY);
-        int priceIndex = getDataIndex(COL_TRADE_ITEM_PRICE);
+        int qtyIndex = getQuantityIndex();
+        int priceIndex = getPriceIndex();
 
-        int discountIndex = getDataIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
-        int dipIndex = getDataIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT);
+        int discountIndex = getDiscountIndex();
+        int dipIndex = getDiscountIsPercentIndex();
 
-        int vatIndex = getDataIndex(COL_TRADE_DOCUMENT_ITEM_VAT);
-        int vipIndex = getDataIndex(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
+        int vatIndex = getVatIndex();
+        int vipIndex = getVatIsPercentIndex();
 
         for (IsRow row : rows) {
           tdsSupplier.get().add(row.getId(), row.getDouble(qtyIndex), row.getDouble(priceIndex),
@@ -289,9 +290,60 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     return super.previewRowDelete(event);
   }
 
+  @Override
+  public boolean previewRowUpdate(RowUpdateEvent event) {
+    if (tdsSupplier != null && tdsSupplier.get().containsItem(event.getRowId())) {
+      IsRow row = event.getRow();
+      long id = row.getId();
+
+      boolean fire = false;
+
+      fire |= tdsSupplier.get().updateQuantity(id, row.getDouble(getQuantityIndex()));
+      fire |= tdsSupplier.get().updatePrice(id, row.getDouble(getPriceIndex()));
+
+      fire |= tdsSupplier.get().updateDiscount(id, row.getDouble(getDiscountIndex()));
+      fire |= tdsSupplier.get().updateDiscountIsPercent(id,
+          row.getBoolean(getDiscountIsPercentIndex()));
+
+      fire |= tdsSupplier.get().updateVat(id, row.getDouble(getVatIndex()));
+      fire |= tdsSupplier.get().updateVatIsPercent(id,
+          row.getBoolean(getVatIsPercentIndex()));
+
+      if (fire) {
+        fireTdsChange();
+      }
+    }
+
+    return super.previewRowUpdate(event);
+  }
+
   private void fireTdsChange() {
     if (tdsListener != null) {
       tdsListener.run();
     }
+  }
+
+  private int getQuantityIndex() {
+    return getDataIndex(COL_TRADE_ITEM_QUANTITY);
+  }
+
+  private int getPriceIndex() {
+    return getDataIndex(COL_TRADE_ITEM_PRICE);
+  }
+
+  private int getDiscountIndex() {
+    return getDataIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
+  }
+
+  private int getDiscountIsPercentIndex() {
+    return getDataIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT);
+  }
+
+  private int getVatIndex() {
+    return getDataIndex(COL_TRADE_DOCUMENT_ITEM_VAT);
+  }
+
+  private int getVatIsPercentIndex() {
+    return getDataIndex(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
   }
 }

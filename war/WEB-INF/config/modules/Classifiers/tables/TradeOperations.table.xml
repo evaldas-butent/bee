@@ -23,6 +23,8 @@
 
     <String name="CashRegisterNo" precision="50" label="=trdCashRegisterNo" />
 
+    <Boolean name="Join" label="=join" />
+
     <Boolean name="IsDefault" label="=trdOperationDefault" />
 
     <String name="Background" precision="100" label="=backgroundColor" />

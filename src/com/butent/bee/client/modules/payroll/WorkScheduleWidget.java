@@ -62,7 +62,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -102,6 +101,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandlers, Printable,
     VisibilityChangeEvent.Handler {

@@ -134,7 +134,6 @@ import com.butent.bee.client.widget.Svg;
 import com.butent.bee.client.widget.Video;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Resource;
@@ -211,6 +210,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import elemental.js.JsBrowser;
 import elemental.js.css.JsCSSRuleList;

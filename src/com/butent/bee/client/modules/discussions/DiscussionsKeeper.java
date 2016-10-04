@@ -16,7 +16,6 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.menu.MenuService;
@@ -24,6 +23,8 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
+
+import java.util.function.BiConsumer;
 
 public final class DiscussionsKeeper {
 

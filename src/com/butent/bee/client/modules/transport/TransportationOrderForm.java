@@ -33,7 +33,6 @@ import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -60,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 class TransportationOrderForm extends PrintFormInterceptor implements ClickHandler {
 

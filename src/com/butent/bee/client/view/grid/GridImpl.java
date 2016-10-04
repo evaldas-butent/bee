@@ -101,7 +101,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
@@ -111,6 +110,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasPercentageTag;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
@@ -164,6 +164,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Creates cell grid elements, connecting view and presenter elements of them.
@@ -3306,6 +3307,20 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       if (!Objects.equals(oldCurrency, newCurrency)) {
         String v = DataUtils.isId(newCurrency) ? BeeUtils.toString(newCurrency) : null;
         rowValue.preliminaryUpdate(currencyIndex, v);
+      }
+    }
+
+    String percentageTag = (editableColumn == null) ? null : editableColumn.getPercentageTag();
+    int percentageTagIndex = BeeUtils.isEmpty(percentageTag)
+        ? BeeConst.UNDEF : getDataIndex(percentageTag);
+
+    if (!BeeConst.isUndef(percentageTagIndex)) {
+      boolean oldPercentageTag = BeeUtils.isTrue(rowValue.getBoolean(percentageTagIndex));
+      boolean newPercentageTag = HasPercentageTag.isPercentage(BeeUtils.toDoubleOrNull(newValue));
+
+      if (oldPercentageTag != newPercentageTag) {
+        String v = newPercentageTag ? BooleanValue.pack(newPercentageTag) : null;
+        rowValue.preliminaryUpdate(percentageTagIndex, v);
       }
     }
 

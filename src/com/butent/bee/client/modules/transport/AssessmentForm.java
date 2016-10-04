@@ -72,7 +72,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
@@ -116,6 +115,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class AssessmentForm extends PrintFormInterceptor implements SelectorEvent.Handler,
     ValueChangeHandler<String> {

@@ -25,7 +25,6 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Legend;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.SelectableValue;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
@@ -43,6 +42,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 class SearchByGroup extends EcView implements HasCaption {
 

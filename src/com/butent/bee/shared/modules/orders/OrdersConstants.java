@@ -48,12 +48,7 @@ public final class OrdersConstants {
 
   public static final String SVC_GET_TEMPLATE_ITEMS = "GetTemplateItems";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
-  public static final String SVC_GET_NEXT_NUMBER = "GetNextNumber";
-  public static final String SVC_EXPORT_ITEM_REMAINDERS = "ExportItemReminder";
-  public static final String SVC_CREATE_PDF_FILE = "CreatePDFFile";
   public static final String SVC_FILL_RESERVED_REMAINDERS = "FillReservedRemainders";
-  public static final String SVC_GET_ITEMS_SUPPLIERS = "GetItemsSuppliers";
-  public static final String SVC_GET_FILTERED_INVOICES = "GetFilteredInvoices";
   public static final String SVC_GET_ERP_STOCKS = "GetERPStocks";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
 
@@ -100,11 +95,8 @@ public final class OrdersConstants {
 
   public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
   public static final String ALS_CONTACT_EMAIL = "ContactEmail";
-  public static final String ALS_TOTAL_QTY = "TotalQty";
   public static final String ALS_MANAGER_FIRST_NAME = "ManagerFirstName";
   public static final String ALS_MANAGER_LAST_NAME = "ManagerLastName";
-  public static final String ALS_CUSTOMER_EMAIL = "CustomerEmail";
-  public static final String ALS_PAYER_EMAIL = "PayerEmail";
   public static final String ALS_RESERVATIONS = "Reservations";
 
   public static final String COL_END_DATE = "EndDate";
@@ -116,19 +108,21 @@ public final class OrdersConstants {
   public static final String COL_UNPACKING = "Unpacking";
   public static final String COL_ORDER_ITEM = "OrderItem";
   public static final String COL_COMPLETED_QTY = "CompletedQty";
-  public static final String COL_SUPPLIER_TERM = "SupplierTerm";
   public static final String COL_INVISIBLE_DISCOUNT = "InvisibleDiscount";
+  public static final String COL_SALE_ITEM = "SaleItem";
 
   public static final String COL_BRANCH = "Branch";
+  public static final String COL_BRANCH_NAME = "BranchName";
   public static final String COL_OPTION = "Option";
   public static final String COL_OPTION_NAME = "OptionName";
   public static final String COL_CODE = "Code";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_BUNDLE = "Bundle";
   public static final String COL_KEY = "Key";
+  public static final String COL_TYPE = "Type";
   public static final String COL_GROUP = "Group";
   public static final String COL_GROUP_NAME = "GroupName";
-  public static final String COL_VALID_UNTIL = "ValidUntil";
+  public static final String COL_BLOCKED = "Blocked";
   public static final String COL_ORDINAL = "Ordinal";
   public static final String COL_REQUIRED = "Required";
   public static final String COL_BRANCH_BUNDLE = "BranchBundle";
@@ -138,11 +132,9 @@ public final class OrdersConstants {
 
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
   public static final String PRP_COMPLETED_INVOICES = "CompletedInvoices";
-  public static final String PRP_SUPPLIER_TERM = "SupplierTerm";
   public static final String PRP_AMOUNT_WO_VAT = "AmountWoVAT";
   public static final String PRM_MANAGER_WAREHOUSE = "ManagerWarehouse";
 
-  public static final String PRM_AUTO_RESERVATION = "AutoReservation";
   public static final String PRM_UPDATE_ITEMS_PRICES = "UpdateItemsPrices";
   public static final String PRM_IMPORT_ERP_ITEMS_TIME = "ImportERPItemsTime";
   public static final String PRM_IMPORT_ERP_STOCKS_TIME = "ImportERPStocksTime";

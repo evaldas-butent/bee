@@ -9,7 +9,7 @@
     <col index="0" kind="label" />
     <row>
       <Label for="Group" />
-      <DataSelector source="Group" renderColumns="GroupName" />
+      <DataSelector source="Group" renderColumns="TypeName GroupName" />
 
       <Label for="Description" />
       <cell rowSpan="4">

@@ -12,7 +12,6 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.modules.trade.InvoiceBuilder;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -23,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 
 public class CargoPurchasesGrid extends InvoiceBuilder {
 

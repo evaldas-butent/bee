@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -51,7 +50,6 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -91,6 +89,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
