@@ -271,7 +271,14 @@ class TaskEditor extends ProductSupportInterceptor {
         } else {
           if (callback != null) {
             callback.onSuccess(response);
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
+
+            if (response.hasResponse(BeeRow.class)) {
+              BeeRow row = BeeRow.restore((String) response.getResponse());
+
+              if (row != null) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, row);
+              }
+            }
           }
         }
       }
@@ -850,17 +857,8 @@ class TaskEditor extends ProductSupportInterceptor {
       @Override
       public void onSuccess(ResponseObject result) {
         BeeRow data = getResponseRow(TaskEvent.EDIT.getCaption(), result, this);
-
-        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECT_STAGES);
         if (data != null) {
-          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
-          if (DataUtils.isId(Data.getLong(VIEW_TASKS, data, ProjectConstants.COL_PROJECT))) {
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS);
-          }
-
-          if (TaskUtils.hasRelations(oldRow) || TaskUtils.hasRelations(data)) {
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
-          }
+          TasksKeeper.fireRelatedDataRefresh(data, oldRow);
         }
       }
     });
