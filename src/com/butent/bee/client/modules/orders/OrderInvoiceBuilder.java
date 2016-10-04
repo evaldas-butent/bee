@@ -28,8 +28,6 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.validation.CellValidateEvent;
-import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.GridView;
@@ -64,7 +62,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
 
 public class OrderInvoiceBuilder extends AbstractGridInterceptor implements ClickHandler {
 
@@ -72,13 +69,7 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
   public void afterCreatePresenter(GridPresenter presenter) {
 
     Button amount = new Button(Localized.dictionary().amount());
-    amount.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent event) {
-        getItemsAmount(event);
-      }
-    });
+    amount.addClickHandler(this::getItemsAmount);
     presenter.getHeader().addCommandItem(amount);
     presenter.getHeader().addCommandItem(new Button(Localized.dictionary().createInvoice(),
         this));
@@ -90,41 +81,37 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
       EditableColumn editableColumn) {
 
     if (BeeUtils.same(columnName, COL_COMPLETED_QTY)) {
-      editableColumn.addCellValidationHandler(new Handler() {
+      editableColumn.addCellValidationHandler(event -> {
+        CellValidation cv = event.getCellValidation();
+        IsRow row = cv.getRow();
+        int qtyIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_TRADE_ITEM_QUANTITY);
+        int resRemainderIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_RESERVED_REMAINDER);
+        Double qty = row.getDouble(qtyIdx);
+        Double free = Double.valueOf(row.getProperty(PRP_FREE_REMAINDER));
+        Double compInvc = Double.valueOf(row.getProperty(PRP_COMPLETED_INVOICES));
+        Double resRemainder =
+            (row.getDouble(resRemainderIdx) == null) ? 0 : row.getDouble(resRemainderIdx);
+        Double newValue = BeeUtils.toDouble(cv.getNewValue());
+        Double complQty = null;
 
-        @Override
-        public Boolean validateCell(CellValidateEvent event) {
-          CellValidation cv = event.getCellValidation();
-          IsRow row = cv.getRow();
-          int qtyIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_TRADE_ITEM_QUANTITY);
-          int resRemainderIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_RESERVED_REMAINDER);
-          Double qty = row.getDouble(qtyIdx);
-          Double free = Double.valueOf(row.getProperty(PRP_FREE_REMAINDER));
-          Double compInvc = Double.valueOf(row.getProperty(PRP_COMPLETED_INVOICES));
-          Double resRemainder =
-              (row.getDouble(resRemainderIdx) == null) ? 0 : row.getDouble(resRemainderIdx);
-          Double newValue = BeeUtils.toDouble(cv.getNewValue());
-          Double complQty = null;
+        if (BeeUtils.isPositive(newValue)) {
+          if (qty - compInvc <= free + resRemainder) {
+            complQty = qty - compInvc;
+          } else if (qty - compInvc > free + resRemainder) {
+            complQty = free + resRemainder;
+          }
 
-          if (BeeUtils.isPositive(newValue)) {
-            if (qty - compInvc <= free + resRemainder) {
-              complQty = qty - compInvc;
-            } else if (qty - compInvc > free + resRemainder) {
-              complQty = free + resRemainder;
-            }
-
-            if (complQty < newValue) {
-              getGridPresenter().getGridView().notifySevere(
-                  Localized.dictionary().maxValue() + " " + complQty);
-              return false;
-            }
-          } else {
+          if (complQty < newValue) {
             getGridPresenter().getGridView().notifySevere(
-                Localized.dictionary().minValue() + " 1");
+                Localized.dictionary().maxValue() + " " + complQty);
             return false;
           }
-          return true;
+        } else {
+          getGridPresenter().getGridView().notifySevere(
+              Localized.dictionary().minValue() + " 1");
+          return false;
         }
+        return true;
       });
     }
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
@@ -199,8 +186,6 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     final BeeRow newRow = RowFactory.createEmptyRow(targetInfo, true);
 
     if (data != null) {
-      newRow.setValue(getDataIndex(COL_ORDER), data.getRow(0).getLong(getDataIndex(COL_ORDER)));
-
       newRow.setValue(targetInfo.getColumnIndex(TradeConstants.COL_TRADE_CUSTOMER), data.getRow(0)
           .getLong(Data.getColumnIndex(VIEW_ORDER_SALES, COL_COMPANY)));
       newRow.setValue(targetInfo.getColumnIndex(ALS_CUSTOMER_NAME), data.getRow(0)
@@ -242,26 +227,22 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     newRow.setValue(targetInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER
         + ClassifierConstants.COL_LAST_NAME), BeeKeeper.getUser().getLastName());
 
-    Global.getRelationParameter(PRM_DEFAULT_SALE_OPERATION, new BiConsumer<Long, String>() {
+    Global.getRelationParameter(PRM_DEFAULT_SALE_OPERATION, (t, u) -> {
+      if (DataUtils.isId(t)) {
+        newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), t);
+        newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), u);
+        Queries.getValue(TBL_TRADE_OPERATIONS, t, COL_OPERATION_CASH_REGISTER_NO,
+            new RpcCallback<String>() {
 
-      @Override
-      public void accept(Long t, String u) {
-        if (DataUtils.isId(t)) {
-          newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), t);
-          newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), u);
-          Queries.getValue(TBL_TRADE_OPERATIONS, t, COL_OPERATION_CASH_REGISTER_NO,
-              new RpcCallback<String>() {
-
-                @Override
-                public void onSuccess(String result) {
-                  newRow
-                      .setValue(targetInfo.getColumnIndex(COL_OPERATION_CASH_REGISTER_NO), result);
-                  getInvoiceItems(data, newRow);
-                }
-              });
-        } else {
-          getInvoiceItems(data, newRow);
-        }
+              @Override
+              public void onSuccess(String result) {
+                newRow
+                    .setValue(targetInfo.getColumnIndex(COL_OPERATION_CASH_REGISTER_NO), result);
+                getInvoiceItems(data, newRow);
+              }
+            });
+      } else {
+        getInvoiceItems(data, newRow);
       }
     });
   }
@@ -274,8 +255,8 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
 
     if (!itemAbsent) {
       for (BeeRow row : data) {
-        idsQty.put(Long.valueOf(row.getId()), row
-            .getDouble(Data.getColumnIndex(VIEW_ORDER_SALES, COL_COMPLETED_QTY)));
+        idsQty.put(row.getId(), row.getDouble(Data.getColumnIndex(VIEW_ORDER_SALES,
+            COL_COMPLETED_QTY)));
         if (!DataUtils.isId(row.getLong(item))) {
           itemAbsent = true;
           break;

@@ -170,6 +170,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_DEBT = "Debt";
   public static final String COL_TRADE_DEBT_COUNT = "DebtCount";
   public static final String COL_TRADE_CHECK_NO = "CheckNo";
+  public static final String COL_TRADE_JOIN = "Join";
 
   public static final String COL_TRADE_VAT_PLUS = "VatPlus";
   public static final String COL_TRADE_VAT = "Vat";
