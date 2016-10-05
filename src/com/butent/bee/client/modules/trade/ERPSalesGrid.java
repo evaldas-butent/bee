@@ -15,11 +15,16 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.ui.Action;
+
+import java.util.Collection;
 
 class ERPSalesGrid extends AbstractGridInterceptor {
 
@@ -49,6 +54,17 @@ class ERPSalesGrid extends AbstractGridInterceptor {
         }, Data.getIdColumn(presenter.getViewName()),
         presenter.getGridView()));
     header.addCommandItem(action);
+  }
+
+  @Override
+  public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
+                                  Collection<RowInfo> selectedRows, DeleteMode defMode) {
+    if (BeeKeeper.getUser().canDeleteData(TradeConstants.TBL_ERP_SALES)) {
+      return DeleteMode.SINGLE;
+    } else {
+      presenter.getGridView().notifySevere(Localized.dictionary().rowIsNotRemovable());
+      return DeleteMode.CANCEL;
+    }
   }
 
   @Override
