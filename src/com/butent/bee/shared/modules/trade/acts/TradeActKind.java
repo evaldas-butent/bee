@@ -104,7 +104,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   /* 7 */
   CONTINUOUS(null, Option.AUTO_NUMBER, Option.HAS_SERVICES, Option.SHOW_STOCK,
-      Option.ENABLE_RETURN) {
+      Option.ENABLE_RETURN, Option.BUILD_INVOICES) {
     @Override
     public  String getCaption(Dictionary constants) {
       return constants.taKindContinuous();
