@@ -2028,7 +2028,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     MutationEvent.fire(this);
 
-    logger.info("grid updated row:", rowId, TimeUtils.toTimeString(version));
+    logger.info(getId(), "updated row:", rowId, TimeUtils.toTimeString(version));
   }
 
   @Override
@@ -2123,7 +2123,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   public int refreshCell(long rowId, String sourceName) {
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
-      logger.warning("refreshCell: row id", rowId, "is not visible");
+      logger.warning(getId(), "refreshCell: row id", rowId, "is not visible");
       return 0;
     }
 
@@ -2365,19 +2365,29 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   @Override
   public void setRowData(List<? extends IsRow> rows, boolean refresh) {
-    fireEvent(new DataReceivedEvent(rows));
-
-    getRowData().clear();
-    if (!BeeUtils.isEmpty(rows)) {
-      getRowData().addAll(rows);
-
-      if (!areColumnWidthsEstimated) {
-        estimateColumnWidths(true);
-      }
+    boolean same = !getRowData().isEmpty() && DataUtils.sameRows(rows, getRowData());
+    if (same && refresh) {
+      same = areRowsRendered(rows);
     }
 
-    if (refresh) {
-      refresh();
+    if (same) {
+      logger.debug(getId(), "setRowData: same rows");
+
+    } else {
+      fireEvent(new DataReceivedEvent(rows));
+
+      getRowData().clear();
+      if (!BeeUtils.isEmpty(rows)) {
+        getRowData().addAll(rows);
+
+        if (!areColumnWidthsEstimated) {
+          estimateColumnWidths(true);
+        }
+      }
+
+      if (refresh) {
+        refresh();
+      }
     }
   }
 
@@ -2544,6 +2554,22 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private void activateRow(int index, NavigationOrigin origin) {
     activateRow(index, BeeConst.UNDEF, origin);
+  }
+
+  private boolean areRowsRendered(List<? extends IsRow> rows) {
+    if (BeeUtils.size(rows) != getRenderedRows().size()) {
+      return false;
+    }
+
+    if (!getRenderedRows().isEmpty()) {
+      for (int i = 0; i < getRenderedRows().size(); i++) {
+        if (!Objects.equals(getRenderedRows().get(i), rows.get(i).getId())) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   private void bringToFront(int row, int col) {
@@ -4967,7 +4993,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     Element cellElement = getCellElement(rowIndex, col);
     if (cellElement == null) {
-      logger.severe("cell not found: row " + rowIndex + " col " + col);
+      logger.severe(getId(), "cell not found: row " + rowIndex + " col " + col);
       return false;
 
     } else {
