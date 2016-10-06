@@ -76,5 +76,7 @@
     <DataColumn name="CmrCopy" caption="=trCmrCopy" sortable="false" />
 
     <DataColumn name="CargoTypeName" caption="=trCargoType" />
+
+    <DataColumn name="CargoGroupName" caption="=group" />
   </g:columns>
 </g:Grid>
