@@ -20,7 +20,11 @@
     <DataColumn name="Phase" visible="true" />
     <RelColumn name="Status" renderColumns="StatusName" visible="false" />
 
-    <DataColumn name="Article" />
+    <DataColumn name="Article" sortBy="PrimaryArticle Article" searchBy="Article PrimaryArticle">
+      <render>
+        <ui:expression>row.Parent ? row.PrimaryArticle : row.Article</ui:expression>
+      </render>
+    </DataColumn>
 
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" visible="false" />
