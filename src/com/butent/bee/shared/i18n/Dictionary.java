@@ -4558,7 +4558,11 @@ public interface Dictionary {
 
   default String svcDefects() {return g("svcDefects");}
 
+  default String svcDevice() {return g("svcDevice");}
+
   default String svcDeviceCategory() {return g("svcDeviceCategory");}
+
+  default String svcDevices() {return g("svcDevices");}
 
   default String svcEquipment() {return g("svcEquipment");}
 
@@ -4572,7 +4576,7 @@ public interface Dictionary {
 
   default String svcMaintenance() {return g("svcMaintenance");}
 
-  default String svcMaintenanceItems() {return g("svcMaintenanceItems");}
+  default String svcMaintenanceItemsServices() {return g("svcMaintenanceItemsServices");}
 
   default String svcMaster() {return g("svcMaster");}
 
@@ -4585,6 +4589,8 @@ public interface Dictionary {
   default String svcNewDate() {return g("svcNewDate");}
 
   default String svcNewDefect() {return g("svcNewDefect");}
+
+  default String svcNewDevice() {return g("svcNewDevice");}
 
   default String svcNewMaintenance() {return g("svcNewMaintenance");}
 
@@ -5130,11 +5136,11 @@ public interface Dictionary {
 
   default String trIncomeInvoices() {return g("trIncomeInvoices");}
 
+  default String trInvoiceHasNotAttribute() {return g("trInvoiceHasNotAttribute");}
+
   default String trInvoiceIdShort() {return g("trInvoiceIdShort");}
 
   default String trInvoices() {return g("trInvoices");}
-
-  default String trInvoiceHasNotAttribute() {return g("trInvoiceHasNotAttribute");}
 
   default String trLoaded() {return g("trLoaded");}
 

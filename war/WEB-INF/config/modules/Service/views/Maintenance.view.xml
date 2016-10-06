@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Maintenance" source="Maintenance"
-  caption="=svcMaintenanceItems" newRowCaption="=svcNewMaintenanceItem"
+  caption="=svcMaintenanceItemsServices" newRowCaption="=svcNewMaintenanceItemService"
   >
   <Columns>
     <SimpleColumn name="ServiceObject"/>

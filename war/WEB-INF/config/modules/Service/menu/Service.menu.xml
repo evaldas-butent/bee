@@ -3,7 +3,7 @@
 
 name="Service" label="=svcMenu" order="110" module="Service"
 >
-  <Item name="ServiceObjects" label="=svcObjects" service="grid" parameters="ServiceObjects" />
+  <Item name="ServiceObjects" label="=svcDevices" service="grid" parameters="ServiceObjects" />
 
   <Item name="ServiceInvoices" label="=svcInvoices" service="grid" parameters="ServiceInvoices"
     separator="true" />
