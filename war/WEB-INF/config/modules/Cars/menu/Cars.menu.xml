@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+       name="Cars" label="=cars" order="109" module="Cars"
+>
+  <Item name="Orders" label="=orders" service="grid" parameters="CarOrders" />
+
+  <Item name="ConfPricelist" label="=configuration" service="form" parameters="ConfPricelist"
+        separator="true" />
+  <Item name="ConfTypes" label="=optionTypes" service="grid" parameters="ConfTypes" />
+  <Item name="ConfGroups" label="=optionGroups" service="grid" parameters="ConfGroups" />
+  <Item name="ConfOptions" label="=options" service="grid" parameters="ConfOptions" />
+
+  <Item name="Vehicles" label="=vehicles" service="grid" parameters="Vehicles" separator="true" />
+  <Item name="VehicleTypes" label="=trVehicleTypes" service="grid" parameters="VehicleTypes" />
+</Entry>

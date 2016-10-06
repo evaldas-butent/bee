@@ -605,8 +605,6 @@ public interface Dictionary {
 
   default String car() {return g("car");}
 
-  default String carDealers() {return g("carDealers");}
-
   default String cargo() {return g("cargo");}
 
   default String cargoChangeOfPallets() {return g("cargoChangeOfPallets");}
@@ -640,6 +638,8 @@ public interface Dictionary {
   default String carrier() {return g("carrier");}
 
   default String carriers() {return g("carriers");}
+
+  default String cars() {return g("cars");}
 
   default String cash() {return g("cash");}
 

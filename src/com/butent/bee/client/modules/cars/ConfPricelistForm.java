@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.orders;
+package com.butent.bee.client.modules.cars;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
@@ -8,7 +8,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -55,10 +55,10 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.orders.Bundle;
-import com.butent.bee.shared.modules.orders.Configuration;
-import com.butent.bee.shared.modules.orders.Dimension;
-import com.butent.bee.shared.modules.orders.Option;
+import com.butent.bee.shared.modules.cars.Bundle;
+import com.butent.bee.shared.modules.cars.Configuration;
+import com.butent.bee.shared.modules.cars.Dimension;
+import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.Relation;
@@ -80,8 +80,7 @@ import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class ConfPricelistForm extends AbstractFormInterceptor
-    implements SelectionHandler<IsRow> {
+public class ConfPricelistForm extends AbstractFormInterceptor implements SelectionHandler<IsRow> {
 
   private class GroupChoice implements ClickHandler {
     private final boolean rowMode;
@@ -230,7 +229,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
 
         inputPriceAndDescription(bundle.toString(), price, true,
             configuration.getBundleDescription(bundle), (newPrice, newDescription) -> {
-              ParameterList args = OrdersKeeper.createSvcArgs(SVC_SET_BUNDLE);
+              ParameterList args = CarsKeeper.createSvcArgs(SVC_SET_BUNDLE);
               args.addDataItem(COL_BRANCH, getBranchId());
               args.addDataItem(COL_BUNDLE, Codec.beeSerialize(bundle));
               Configuration.DataInfo info = Configuration.DataInfo.of(newPrice, newDescription);
@@ -317,7 +316,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
       TreePresenter treePresenter = tree.getTreePresenter();
 
       if (Objects.nonNull(treePresenter)) {
-        treePresenter.setEditorInterceptor(new ConfOptionForm());
+        treePresenter.setEditorInterceptor(new PhotoHandler());
       }
     } else if (Objects.equals(name, "Container") && widget instanceof Flow) {
       container = (Flow) widget;
@@ -508,7 +507,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
               data.get(opt.getId()).put(entry.getKey().getId(), entry.getValue());
             }
           }
-          ParameterList args = OrdersKeeper.createSvcArgs(SVC_SET_RESTRICTIONS);
+          ParameterList args = CarsKeeper.createSvcArgs(SVC_SET_RESTRICTIONS);
           args.addDataItem(COL_BRANCH, getBranchId());
           args.addDataItem(TBL_CONF_RESTRICTIONS, Codec.beeSerialize(data));
           BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
@@ -573,7 +572,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
       for (Bundle bundle : bundles) {
         keys.add(bundle.getKey());
       }
-      ParameterList args = OrdersKeeper.createSvcArgs(SVC_DELETE_BUNDLES);
+      ParameterList args = CarsKeeper.createSvcArgs(SVC_DELETE_BUNDLES);
       args.addDataItem(COL_BRANCH, getBranchId());
       args.addDataItem(COL_KEY, Codec.beeSerialize(keys));
       BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
@@ -588,7 +587,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
     if (!DataUtils.isId(branchId)) {
       return;
     }
-    ParameterList args = OrdersKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
+    ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
     args.addDataItem(COL_BRANCH, branchId);
 
     rpcId = BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -824,7 +823,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
       CustomSpan remove = new CustomSpan(STYLE_REMOVE);
       remove.addClickHandler(clickEvent ->
           Global.confirmRemove(null, BeeUtils.bracket(option.toString()), () -> {
-            ParameterList args = OrdersKeeper.createSvcArgs(SVC_DELETE_OPTION);
+            ParameterList args = CarsKeeper.createSvcArgs(SVC_DELETE_OPTION);
             args.addDataItem(COL_BRANCH, getBranchId());
             args.addDataItem(COL_OPTION, option.getId());
             BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
@@ -985,7 +984,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
       String description = configuration.getRelationDescription(option, bundle);
 
       BiConsumer<String, Configuration.DataInfo> consumer = (svc, info) -> {
-        ParameterList args = OrdersKeeper.createSvcArgs(svc);
+        ParameterList args = CarsKeeper.createSvcArgs(svc);
         args.addDataItem(COL_BRANCH, getBranchId());
         args.addDataItem(COL_KEY, bundle.getKey());
         args.addDataItem(COL_OPTION, option.getId());
@@ -1025,7 +1024,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
   }
 
   private void saveDimensions() {
-    ParameterList args = OrdersKeeper.createSvcArgs(SVC_SAVE_DIMENSIONS);
+    ParameterList args = CarsKeeper.createSvcArgs(SVC_SAVE_DIMENSIONS);
     args.addDataItem(COL_BRANCH, getBranchId());
 
     List<Long> rowDimensions = new ArrayList<>();
@@ -1044,7 +1043,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor
   }
 
   private void setOptionPrice(Option option, String price, String description) {
-    ParameterList args = OrdersKeeper.createSvcArgs(SVC_SET_OPTION);
+    ParameterList args = CarsKeeper.createSvcArgs(SVC_SET_OPTION);
     args.addDataItem(COL_BRANCH, getBranchId());
     args.addDataItem(COL_OPTION, option.getId());
     Configuration.DataInfo info = Configuration.DataInfo.of(BeeUtils.isNonNegativeInt(price)

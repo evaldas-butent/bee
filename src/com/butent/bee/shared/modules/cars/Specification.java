@@ -1,10 +1,10 @@
-package com.butent.bee.shared.modules.orders;
+package com.butent.bee.shared.modules.cars;
 
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.modules.orders.SpecificationBuilder;
+import com.butent.bee.client.modules.cars.SpecificationBuilder;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;

@@ -1,4 +1,4 @@
-package com.butent.bee.shared.modules.orders;
+package com.butent.bee.shared.modules.cars;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
