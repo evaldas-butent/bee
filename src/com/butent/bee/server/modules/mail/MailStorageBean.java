@@ -375,7 +375,9 @@ public class MailStorageBean {
         p.set("recipients" + BeeUtils.parenthesize(envelope.getRecipients().size()));
         try {
           is.reset();
-          Multimap<String, String> parsed = parsePart(messageId.getA(), new MimeMessage(null, is));
+          Message msg = new MimeMessage(null, is);
+          p.set("load");
+          Multimap<String, String> parsed = parsePart(messageId.getA(), msg);
           p.set("parse");
 
           for (Entry<String, String> entry : parsed.entries()) {
