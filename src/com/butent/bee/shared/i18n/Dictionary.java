@@ -4596,7 +4596,7 @@ public interface Dictionary {
 
   default String svcNewMaintenance() {return g("svcNewMaintenance");}
 
-  default String svcNewMaintenanceItem() {return g("svcNewMaintenanceItem");}
+  default String svcNewMaintenanceItemService() {return g("svcNewMaintenanceItemService");}
 
   default String svcNewObject() {return g("svcNewObject");}
 
