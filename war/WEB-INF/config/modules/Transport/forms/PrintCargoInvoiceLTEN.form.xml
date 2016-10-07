@@ -44,7 +44,7 @@
         <FlowPanel >
           <TextLabel style="&bold; font-size: 13.5pt;">
             <render>
-              <ui:expression>row.Proforma ? 'Sąskaita išankstiniam apmokėjimui | Proforma Invoice' : 'PVM Sąskaita | Invoice No'
+              <ui:expression>(row.Proforma ? 'Sąskaita išankstiniam apmokėjimui | Proforma Invoice No' : 'PVM Sąskaita | Invoice No')
                 + (row.InvoicePrefix ? ' ' + row.InvoicePrefix : '')
                 + (row.InvoiceNo ? ' ' + row.InvoiceNo : '')</ui:expression>
             </render>
@@ -399,10 +399,12 @@
       </row>
       <row style="font-size:6.5pt">
         <Label
-                html="(Vardas, pavardė, pareigos ir parašas | name, last name, position and signature)" />
+                html="(Vardas, pavardė, pareigos ir parašas | name, last name, position and signature)"
+                style="white-space: nowrap;"/>
         <br />
         <Label
-                html="(Vardas, pavardė, pareigos ir parašas | name, last name, position and signature)" />
+                html="(Vardas, pavardė, pareigos ir parašas | name, last name, position and signature)"
+                style="white-space: nowrap;"/>
       </row>
       <row>
         <cell style="border-bottom: 1px solid black; width:7cm">

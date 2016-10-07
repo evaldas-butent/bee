@@ -44,7 +44,7 @@
         <FlowPanel >
           <TextLabel style="&bold; font-size: 13.5pt;">
             <render>
-              <ui:expression>row.Proforma ? 'Sąskaita išankstiniam apmokėjimui | Proforma Invoice' : 'PVM Sąskaita | Invoice No'
+              <ui:expression>(row.Proforma ? 'Sąskaita išankstiniam apmokėjimui | Proforma Invoice No' : 'PVM Sąskaita | Invoice No')
                 + ( row.InvoicePrefix ? ' ' + row.InvoicePrefix : '' )
                 + ( row.InvoiceNo ? ' ' + row.InvoiceNo : '' )</ui:expression>
             </render>
@@ -215,6 +215,11 @@
             <properties name="OrderNo" />
           </Label>
         </cell>
+        <cell rowSpan="2" style="vertical-align: top">
+          <Label style="white-space: nowrap;" html="CMR Nr. &lt;br /&gt;CMR No.">
+            <properties name="CmrNumber" />
+          </Label>
+        </cell>
         <cell style="vertical-align: top; border-bottom: none">
           <FlowPanel class="flex-Vertical">
             <Label html="Pakrovimo data ir laikas | Loading date and time">
@@ -276,7 +281,7 @@
         </cell>
       </row>
       <row>
-        <cell colSpan="4">
+        <cell colSpan="5">
           <FlowPanel style="text-align:right;">
             <Label text="Suma | Amount:" />
             <Label text="PVM | VAT:" />
@@ -384,10 +389,12 @@
       </row>
       <row style="font-size:6.5pt">
         <Label
-                html="(Vardas, pavardė, pareigos ir parašas | name, last name, position and signature)" />
+                html="(Vardas, pavardė, pareigos ir parašas | name, last name, position and signature)"
+                style="white-space: nowrap;"/>
         <br />
         <Label
-                html="(Vardas, pavardė, pareigos ir parašas | name, last name, position and signature)" />
+                html="(Vardas, pavardė, pareigos ir parašas | name, last name, position and signature)"
+                style="white-space: nowrap;" />
       </row>
       <row>
         <cell style="border-bottom: 1px solid black; width:7cm">
