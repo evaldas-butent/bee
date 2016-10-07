@@ -44,7 +44,7 @@ public class CargoSalesGrid extends InvoiceBuilder {
     Map<Long, String> currencies = new HashMap<>();
 
     DataInfo info = Data.getDataInfo(getViewName());
-    int order = info.getColumnIndex(COL_ORDER_NO);
+    int order = info.getColumnIndex(COL_ASSESSMENT);
     int vehicle = info.getColumnIndex(COL_VEHICLE);
     int trailer = info.getColumnIndex(COL_TRAILER);
     int forwarderVehicle = info.getColumnIndex(COL_FORWARDER_VEHICLE);
@@ -72,7 +72,7 @@ public class CargoSalesGrid extends InvoiceBuilder {
       if (DataUtils.isId(id)) {
         currencies.put(id, row.getString(currName));
       }
-      orders.add(row.getString(order));
+      orders.add(BeeUtils.nvl(row.getString(order), ""));
       vehicles.add(BeeUtils.join("/", row.getString(vehicle), row.getString(trailer),
           row.getString(forwarderVehicle)));
       drivers.add(BeeUtils.joinItems(row.getString(driver), row.getString(forwarderDriver)));
