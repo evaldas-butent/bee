@@ -243,6 +243,11 @@
               &forservice;
             </InputInteger>
           </row>
+
+          <row module="Trade">
+            <Label for="DefaultQuantity" />
+            <InputInteger source="DefaultQuantity" style="width: 80px;" summarize="true" />
+          </row>
         </Table>
       </page>
 

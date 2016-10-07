@@ -1465,6 +1465,8 @@ public interface Dictionary {
 
   default String defaultCompanyUserShort() {return g("defaultCompanyUserShort");}
 
+  default String defaultQuantity() {return g("defaultQuantity");}
+
   default String delete() {return g("delete");}
 
   default String deleteActiveRow() {return g("deleteActiveRow");}
