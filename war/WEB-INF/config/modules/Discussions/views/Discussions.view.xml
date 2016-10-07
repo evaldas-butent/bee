@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression"
+<View xmlns="http://www.butent.com/view"
   name="Discussions" source="Discussions"
   caption="=discussions" rowCaption="Subject" newRowForm="NewDiscussion"
   editForm="Discussion"
@@ -38,43 +38,12 @@
     <SimpleColumn name="Important" />
     <SimpleColumn name="PermitComment" />
 
-    <ExternalJoin source="DiscussionsFiles" joinType="LEFT"
-      name="Discussion" filter="!(FileComment)">
-      <HiddenColumn name="Comment" alias="FileComment"></HiddenColumn>
-      <AggregateColumn alias="DiscussionsFilesCount" aggregate="COUNT_DISTINCT"
-        name="File" />
-    </ExternalJoin>
-
-    <ExternalJoin source="DiscussionsComments" joinType="LEFT"
-        name="Discussion" filter="!(CommentDeleted)">
-      <HiddenColumn name="Deleted" alias="CommentDeleted"></HiddenColumn>
-      <ExternalJoin source="DiscussionsFiles" joinType="LEFT" name="Comment" >
-        <AggregateColumn alias="CommentsFilesCount" aggregate="COUNT_DISTINCT"
-          name="File" />
-      </ExternalJoin>
-    </ExternalJoin>
-
-    <SimpleColumn name="FilesCount" >
-      <x:plus>
-        <x:number>"DiscussionsFilesCount"</x:number>
-        <x:number>"CommentsFilesCount"</x:number>
-      </x:plus>
-    </SimpleColumn>
-
-    <ExternalJoin source="Relations" joinType="LEFT"
-      name="Discussion">
-      <AggregateColumn alias="RelCount" aggregate="COUNT_DISTINCT"
-        name="Discussion" />
-    </ExternalJoin> 
-
     <ExternalJoin source="DiscussionsComments" joinType="LEFT"
       name="Discussion">
       <AggregateColumn alias="LastCommentPublishTime" aggregate="MAX"
-        name="PublishTime" />    
-      <AggregateColumn alias="CommentCount" aggregate="COUNT_DISTINCT"
         name="PublishTime" />
     </ExternalJoin>
-    
+
     <ExternalJoin name="Discussion" source="DiscussionsUsers" joinType="LEFT" filter="DiscussionUser = {u}">
       <HiddenColumn name="User" alias="DiscussionUser"></HiddenColumn>
       <SimpleColumn name="Star"/>

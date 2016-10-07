@@ -53,6 +53,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -78,7 +79,10 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
 
-    if (BeeUtils.same(columnName, NAME_MODE) && column instanceof HasCellRenderer) {
+    if (BeeUtils.same(columnName, NAME_MODE) && column instanceof HasCellRenderer
+        && EnumUtils.in(type, DiscussionsListType.ACTIVE, DiscussionsListType.OBSERVED,
+        DiscussionsListType.STARRED, DiscussionsListType.ANNOUNCEMENTSBOARDLIST)) {
+
       ((HasCellRenderer) column).setRenderer(new DiscussModeRenderer());
     }
 
@@ -198,6 +202,10 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   public boolean initDescription(GridDescription gridDescription) {
     if (currentUser != null) {
       gridDescription.setFilter(type.getFilter(new LongValue(currentUser.getUserId())));
+    }
+
+    if (DiscussionsListType.CLOSED.equals(type)) {
+      gridDescription.setRowStyles(Lists.newArrayList());
     }
     return true;
   }
