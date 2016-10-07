@@ -21,6 +21,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
@@ -48,6 +49,7 @@ final class ShippingSchedule extends VehicleTimeBoard {
   private static final String STYLE_TRIP_GROUP_TRAILER = STYLE_TRIP_GROUP_PREFIX + "trailer";
   private static final String STYLE_TRIP_GROUP_OVERLAP = STYLE_TRIP_GROUP_PREFIX + "overlap";
   private static final String STYLE_TRIP_GROUP_DRAG_OVER = STYLE_TRIP_GROUP_PREFIX + "dragOver";
+  private static final String STYLE_TRIP_GROUP_MAIN_DRIVER = STYLE_TRIP_GROUP_PREFIX + "mainDriver";
 
   private static final Set<String> SETTINGS_COLUMNS_TRIGGERING_REFRESH =
       Sets.newHashSet(COL_SS_MIN_DATE, COL_SS_MAX_DATE,
@@ -341,6 +343,13 @@ final class ShippingSchedule extends VehicleTimeBoard {
       bindOpener(trailer, VIEW_VEHICLES, trip.getTrailerId());
 
       panel.add(trailer);
+    }
+
+    if (DataUtils.isId(trip.getMainDriverId())) {
+      Label managerWidget = new Label(trip.getMainDriverName());
+      managerWidget.addStyleName(STYLE_TRIP_GROUP_MAIN_DRIVER);
+
+      panel.add(managerWidget);
     }
 
     return panel;

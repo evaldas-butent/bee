@@ -192,6 +192,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
   private final Long trailerId;
   private final String trailerNumber;
 
+  private final Long mainDriverId;
   private final Long managerId;
 
   private final Range<JustDate> range;
@@ -217,6 +218,7 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
     this.tripVersion = row.getLong(ALS_TRIP_VERSION);
     this.tripNo = row.getValue(COL_TRIP_NO);
     this.managerId = row.getLong(COL_TRIP_MANAGER);
+    this.mainDriverId = row.getLong(COL_DRIVER);
 
     this.status = EnumUtils.getEnumByIndex(TripStatus.class, row.getInt(COL_TRIP_STATUS));
 
@@ -288,6 +290,23 @@ class Trip extends Filterable implements HasColorSource, HasDateRange, HasItemNa
 
   Collection<Driver> getDrivers() {
     return drivers;
+  }
+
+  Long getMainDriverId() {
+    return mainDriverId;
+  }
+
+  String getMainDriverName() {
+    if (mainDriverId == null) {
+      return null;
+    } else {
+      for (Driver driver: drivers) {
+        if (driver.getId().equals(mainDriverId)) {
+          return driver.getItemName();
+        }
+      }
+    }
+    return null;
   }
 
   Long getManagerId() {

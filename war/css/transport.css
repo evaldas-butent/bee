@@ -43,7 +43,8 @@
 .bee-tr-fx-Order-number,
 .bee-tr-fx-Order-manager,
 .bee-tr-ss-trip-Group-label,
-.bee-tr-ss-trip-Group-trailer {
+.bee-tr-ss-trip-Group-trailer,
+ bee-tr-ss-trip-Group-mainDriver{
   word-wrap: break-word;
 }
 

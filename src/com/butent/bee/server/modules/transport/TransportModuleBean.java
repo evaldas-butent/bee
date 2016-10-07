@@ -3309,6 +3309,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SqlUtils.join(truckJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_VEHICLE))
         .addFromLeft(TBL_VEHICLES, trailerJoinAlias,
             SqlUtils.join(trailerJoinAlias, COL_VEHICLE_ID, TBL_TRIPS, COL_TRAILER))
+        .addFromLeft(TBL_TRIP_DRIVERS,
+            sys.joinTables(TBL_TRIP_DRIVERS, TBL_TRIPS, COL_MAIN_DRIVER))
         .addFields(TBL_TRIPS, COL_TRIP_ID, COL_TRIP_NO, COL_VEHICLE, COL_TRAILER,
             COL_TRIP_DATE, COL_TRIP_PLANNED_END_DATE, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO,
             COL_TRIP_STATUS, COL_TRIP_NOTES)
@@ -3316,6 +3318,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFields(TBL_TRIPS, COL_TRIP_MANAGER)
         .addField(truckJoinAlias, COL_NUMBER, ALS_VEHICLE_NUMBER)
         .addField(trailerJoinAlias, COL_NUMBER, ALS_TRAILER_NUMBER)
+        .addFields(TBL_TRIP_DRIVERS, COL_DRIVER)
         .setWhere(where);
   }
 
