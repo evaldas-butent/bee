@@ -189,6 +189,9 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_LINK = "Link";
   public static final String COL_ITEM_NOT_MANUFACTURED = "NotManufactured";
   public static final String COL_ITEM_REMAINDER_ID = "Id";
+  public static final String COL_ITEM_VAT = "Vat";
+  public static final String COL_ITEM_VAT_PERCENT = "VatPercent";
+  public static final String COL_ITEM_DEFAULT_QUANTITY = "DefaultQuantity";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";

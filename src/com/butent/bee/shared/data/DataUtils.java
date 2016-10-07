@@ -648,6 +648,10 @@ public final class DataUtils {
     return value;
   }
 
+  public static int getNumberOfRows(BeeRowSet rowSet) {
+    return (rowSet == null) ? 0 : rowSet.getNumberOfRows();
+  }
+
   public static String getRowCaption(DataInfo dataInfo, IsRow row) {
     Assert.notNull(dataInfo);
     if (row == null) {
@@ -1279,14 +1283,6 @@ public final class DataUtils {
     return result;
   }
 
-  /**
-   * Sets a String value to the cell.
-   * 
-   * @param rowSet
-   * @param row target row
-   * @param columnId column ID
-   * @param value String value
-   */
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
   }
