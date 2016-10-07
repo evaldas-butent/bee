@@ -46,6 +46,8 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportUtils;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -64,6 +66,16 @@ public class TripCostsGrid extends AbstractGridInterceptor
   final Flow invoice = new Flow();
   final FaLabel finance = new FaLabel(FontAwesome.CLOUD_UPLOAD);
   final FaLabel dailyCosts = new FaLabel(FontAwesome.MONEY);
+
+  private boolean hideFooter;
+
+  public TripCostsGrid() {
+  }
+
+  public TripCostsGrid(boolean hideFooter) {
+    super();
+    this.hideFooter = hideFooter;
+  }
 
   @Override
   public void afterCreateEditor(String source, Editor editor, boolean embedded) {
@@ -120,6 +132,19 @@ public class TripCostsGrid extends AbstractGridInterceptor
   @Override
   public GridInterceptor getInstance() {
     return null;
+  }
+
+  @Override
+  public boolean initDescription(GridDescription gridDescription) {
+    if(hideFooter) {
+      for (ColumnDescription column : gridDescription.getColumns()) {
+        if (BeeUtils.inListSame(column.getId(), COL_COSTS_ITEM, "Total", "Ratio")) {
+          column.setFooterDescription(null);
+        }
+      }
+    }
+
+    return super.initDescription(gridDescription);
   }
 
   @Override

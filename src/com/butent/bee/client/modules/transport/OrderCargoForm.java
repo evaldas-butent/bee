@@ -166,7 +166,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           break;
 
         case VIEW_TRIP_COSTS:
-          ((ChildGrid) widget).setGridInterceptor(new TripCostsGrid());
+          ((ChildGrid) widget).setGridInterceptor(new TripCostsGrid(true));
           break;
       }
     }

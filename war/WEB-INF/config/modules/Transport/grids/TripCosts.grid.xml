@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="TripCosts" viewName="TripCosts" caption="=trTripCosts"
+  name="TripCosts" viewName="TripCosts" caption="=trTripCosts" cacheDescription="false"
   >
 
   <g:columns>
