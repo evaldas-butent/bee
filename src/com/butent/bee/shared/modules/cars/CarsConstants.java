@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.cars;
 
-public class CarsConstants {
+public final class CarsConstants {
   public static final String SVC_GET_CONFIGURATION = "GetConfiguration";
   public static final String SVC_SAVE_DIMENSIONS = "SaveDimensions";
   public static final String SVC_SET_BUNDLE = "SetBundle";

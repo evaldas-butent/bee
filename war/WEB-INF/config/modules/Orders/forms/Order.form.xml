@@ -8,7 +8,6 @@
         xmlns:f="http://www.butent.com/form"
 
   name="Order" viewName="Orders" width="800" height="600">
-  <f:properties jasperReports="Offer" />
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
       <row data="OrdersTemplates" class="bee-ta-template-selection">
@@ -62,44 +61,6 @@
     </Table>
     <br />
     <TabbedPages class="flexible" name="TabbedPages">
-      <page module="Orders.CarDealers">
-        <text>=car</text>
-        <FlowPanel class="flexBox-horizontal">
-          <FieldSet class="flexible" style="margin:5px; border:1px solid #ccc">
-            <Legend name="SpecificationBuilder" class="bee-Button" text="=specification" />
-            <FlowPanel class="flexBox-vertical" style="height:94%;">
-              <FlowPanel name="Object" class="flexBox-horizontal" />
-              <Label text="=description" style="font-weight:bold;" />
-              <RichTextEditor source="Description" class="flexible" />
-            </FlowPanel>
-          </FieldSet>
-          <Table kind="controls">
-            <col index="0" kind="label" />
-            <row>
-              <Label for="Amount"  />
-              <InputInteger source="Amount" style="width:8em;" />
-              <DataSelector source="Currency" style="width:5em;"
-                            editEnabled="false" placeholder="=currencyShort" />
-            </row>
-            <row>
-              <Label for="Discount"  />
-              <InputDecimal source="Discount" style="width:8em;" />
-            </row>
-            <row>
-              <CheckBox source="VatPlus" text="=vatPlus" />
-              <InputMoney source="Vat" style="width:8em;" placeholder="=vat" />
-              <CheckBox source="VatPercent" text="%" />
-            </row>
-            <row>
-              <Label text="=totalOf"  />
-              <DoubleLabel style="font-weight:bold;">
-                <renderer type="total" />
-              </DoubleLabel>
-            </row>
-          </Table>
-        </FlowPanel>
-      </page>
-
       <page>
         <text>=goods</text>
         <ChildGrid name="OrderItems" relColumn="Order" />

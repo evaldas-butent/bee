@@ -18,7 +18,5 @@
     <Numeric name="Unpacking" precision="15" scale="5" label="=unpacking" />
     <Date name="SupplierTerm" label="=ordSupplierTerm" />
     <Text name="Note" label="=note" />
-
-    <Relation name="Object" relation="ConfObjects" label="=specification" cascade="DELETE" />
   </Fields>
 </Table>

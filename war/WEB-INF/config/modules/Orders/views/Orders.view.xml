@@ -85,21 +85,6 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="Object" />
-    <SimpleJoin name="Object" joinType="LEFT">
-      <SimpleColumn name="Description" />
-    </SimpleJoin>
-
-    <SimpleColumn name="Amount" />
-    <SimpleColumn name="Currency" />
-    <SimpleJoin joinType="LEFT" name="Currency">
-      <SimpleColumn name="Name" alias="CurrencyName" />
-    </SimpleJoin>
-    <SimpleColumn name="Discount" />
-    <SimpleColumn name="VatPlus" />
-    <SimpleColumn name="Vat" />
-    <SimpleColumn name="VatPercent" />
-
     <SimpleColumn name="Notes" />
 
     <ExternalJoin name="Order" joinType="LEFT" source="OrderItems">
