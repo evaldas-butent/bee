@@ -6,15 +6,22 @@
         flexGrow="1" autoFlex="true"
 >
   <g:columns>
-    <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" editEnabled="true"
-               visible="true">
+    <DataColumn name="ItemName" editSource="Item" visible="true">
       <dynStyle>
         <ui:inline>color: blue;</ui:inline>
         <ui:expression>row.IsService</ui:expression>
       </dynStyle>
       <footer text="=totalOf" horizontalAlignment="right" />
-    </RelColumn>
-    <DataColumn name="Article" />
+    </DataColumn>
+
+    <DataColumn name="Article" sortBy="PrimaryArticle Article" searchBy="Article PrimaryArticle">
+      <render>
+        <ui:expression>row.Parent ? row.PrimaryArticle : row.Article</ui:expression>
+      </render>
+      <editable>
+        <ui:expression>!row.Parent</ui:expression>
+      </editable>
+    </DataColumn>
 
     <DataColumn name="Quantity" scale="0" visible="true">
       <footer aggregate="sum" />

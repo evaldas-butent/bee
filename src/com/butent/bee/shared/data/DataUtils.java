@@ -265,31 +265,6 @@ public final class DataUtils {
     return isEmpty(rowSet) ? null : rowSet;
   }
 
-  public static boolean equals(IsRow r1, IsRow r2) {
-    if (r1 == null) {
-      return r2 == null;
-    } else if (r2 == null) {
-      return false;
-    } else if (r1 == r2) {
-      return true;
-
-    } else if (r1.getId() != r2.getId()) {
-      return false;
-    } else if (r1.getVersion() != r2.getVersion()) {
-      return false;
-    } else if (r1.getNumberOfCells() != r2.getNumberOfCells()) {
-      return false;
-
-    } else {
-      for (int i = 0; i < r1.getNumberOfCells(); i++) {
-        if (!BeeUtils.equalsTrimRight(r1.getString(i), r2.getString(i))) {
-          return false;
-        }
-      }
-      return true;
-    }
-  }
-
   public static List<BeeRow> filterRows(Collection<BeeRow> rows, Collection<Long> ids) {
     List<BeeRow> result = new ArrayList<>();
 
@@ -671,6 +646,10 @@ public final class DataUtils {
         value = null;
     }
     return value;
+  }
+
+  public static int getNumberOfRows(BeeRowSet rowSet) {
+    return (rowSet == null) ? 0 : rowSet.getNumberOfRows();
   }
 
   public static String getRowCaption(DataInfo dataInfo, IsRow row) {
@@ -1246,17 +1225,24 @@ public final class DataUtils {
     return sameIdSet(s1, parseIdSet(s2));
   }
 
-  /**
-   * Checks if the rows have same values.
-   * 
-   * @param r1 first row
-   * @param r2 second row
-   * @return true if the rows have same values, otherwise false.
-   */
-  public static boolean sameValues(IsRow r1, IsRow r2) {
-    if (r1 != null && r2 != null && r1.getNumberOfCells() == r2.getNumberOfCells()) {
-      for (int i = 0; i < r1.getNumberOfCells(); i++) {
-        if (!Objects.equals(r1.getString(i), r2.getString(i))) {
+  public static boolean sameRows(List<? extends IsRow> c1, List<? extends IsRow> c2) {
+    if (BeeUtils.isEmpty(c1)) {
+      return BeeUtils.isEmpty(c2);
+
+    } else if (BeeUtils.isEmpty(c2)) {
+      return BeeUtils.isEmpty(c1);
+
+    } else if (c1.size() == c2.size()) {
+      for (int i = 0; i < c1.size(); i++) {
+        IsRow r1 = c1.get(i);
+        IsRow r2 = c2.get(i);
+
+        if (r1 == null) {
+          if (r2 != null) {
+            return false;
+          }
+
+        } else if (!r1.deepEquals(r2)) {
           return false;
         }
       }
@@ -1297,14 +1283,6 @@ public final class DataUtils {
     return result;
   }
 
-  /**
-   * Sets a String value to the cell.
-   * 
-   * @param rowSet
-   * @param row target row
-   * @param columnId column ID
-   * @param value String value
-   */
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
   }

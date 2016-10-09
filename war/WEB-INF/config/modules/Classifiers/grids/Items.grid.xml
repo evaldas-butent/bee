@@ -64,6 +64,7 @@
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
 
   <g:columns>
+    <DataColumn name="DefaultQuantity" visible="false" />
     <DataColumn name="ExternalCode" visible="false" />
 
     <DataColumn name="Description" visible="false" />

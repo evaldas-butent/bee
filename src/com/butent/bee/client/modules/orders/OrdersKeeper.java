@@ -36,9 +36,6 @@ public final class OrdersKeeper {
     FormFactory.registerFormInterceptor("OrderInvoice", new OrderInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_NEW_ORDER_INVOICE, new NewOrderInvoiceForm());
 
-    FormFactory.registerFormInterceptor(TBL_CONF_PRICELIST, new ConfPricelistForm());
-    FormFactory.registerFormInterceptor(FORM_CONF_OPTION, new ConfOptionForm());
-
     GridFactory.registerGridInterceptor(VIEW_ORDER_SALES, new OrderInvoiceBuilder());
     GridFactory.registerGridInterceptor(GRID_ORDERS_INVOICES, new OrdersInvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_ORDER_TMPL_ITEMS, new OrderTmplItemsGrid());

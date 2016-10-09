@@ -2,6 +2,7 @@ package com.butent.bee.client.modules;
 
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
+import com.butent.bee.client.modules.cars.CarsKeeper;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.modules.discussions.DiscussionsKeeper;
 import com.butent.bee.client.modules.documents.DocumentsHandler;
@@ -69,6 +70,10 @@ public final class ModuleManager {
 
     if (Module.ORDERS.isEnabled()) {
       OrdersKeeper.register();
+    }
+
+    if (Module.CARS.isEnabled()) {
+      CarsKeeper.register();
     }
 
     if (Module.PAYROLL.isEnabled()) {

@@ -22,6 +22,8 @@ public interface IsRow extends HasCustomProperties {
 
   void clearCell(int index);
 
+  boolean deepEquals(IsRow other);
+
   Boolean getBoolean(int index);
 
   IsCell getCell(int index);

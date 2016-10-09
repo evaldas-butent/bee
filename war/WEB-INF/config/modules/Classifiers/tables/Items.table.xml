@@ -65,6 +65,8 @@
     <Numeric name="DaysPerWeek" precision="1" label="=taDaysPerWeek" />
     <Numeric name="MinTerm" precision="3" label="=taMinTerm" />
 
+    <Integer name="DefaultQuantity" label="=defaultQuantity" />
+
     <Integer name="Ordinal" label="=ordinal" />
     <String name="ExternalCode" precision="10" label="=externalCode" />
 

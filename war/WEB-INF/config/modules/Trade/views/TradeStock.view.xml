@@ -14,6 +14,8 @@
           <SimpleColumn name="Name" alias="SupplierName" label="=trdSupplier" />
         </SimpleJoin>
       </SimpleJoin>
+
+      <SimpleColumn name="Article" />
     </SimpleJoin>
 
     <SimpleColumn name="TradeDocumentItem" />
@@ -30,8 +32,6 @@
           <SimpleColumn name="Name" alias="UnitName" />
         </SimpleJoin>
       </SimpleJoin>
-
-      <SimpleColumn name="Article" />
     </SimpleJoin>
 
     <SimpleColumn name="Warehouse" />

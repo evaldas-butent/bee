@@ -605,8 +605,6 @@ public interface Dictionary {
 
   default String car() {return g("car");}
 
-  default String carDealers() {return g("carDealers");}
-
   default String cargo() {return g("cargo");}
 
   default String cargoChangeOfPallets() {return g("cargoChangeOfPallets");}
@@ -640,6 +638,8 @@ public interface Dictionary {
   default String carrier() {return g("carrier");}
 
   default String carriers() {return g("carriers");}
+
+  default String cars() {return g("cars");}
 
   default String cash() {return g("cash");}
 
@@ -1464,6 +1464,8 @@ public interface Dictionary {
   default String defaultCompanyUser() {return g("defaultCompanyUser");}
 
   default String defaultCompanyUserShort() {return g("defaultCompanyUserShort");}
+
+  default String defaultQuantity() {return g("defaultQuantity");}
 
   default String delete() {return g("delete");}
 
@@ -4560,7 +4562,11 @@ public interface Dictionary {
 
   default String svcDefects() {return g("svcDefects");}
 
+  default String svcDevice() {return g("svcDevice");}
+
   default String svcDeviceCategory() {return g("svcDeviceCategory");}
+
+  default String svcDevices() {return g("svcDevices");}
 
   default String svcEquipment() {return g("svcEquipment");}
 
@@ -4574,7 +4580,7 @@ public interface Dictionary {
 
   default String svcMaintenance() {return g("svcMaintenance");}
 
-  default String svcMaintenanceItems() {return g("svcMaintenanceItems");}
+  default String svcMaintenanceItemsServices() {return g("svcMaintenanceItemsServices");}
 
   default String svcMaster() {return g("svcMaster");}
 
@@ -4588,9 +4594,11 @@ public interface Dictionary {
 
   default String svcNewDefect() {return g("svcNewDefect");}
 
+  default String svcNewDevice() {return g("svcNewDevice");}
+
   default String svcNewMaintenance() {return g("svcNewMaintenance");}
 
-  default String svcNewMaintenanceItem() {return g("svcNewMaintenanceItem");}
+  default String svcNewMaintenanceItemService() {return g("svcNewMaintenanceItemService");}
 
   default String svcNewObject() {return g("svcNewObject");}
 
@@ -5136,11 +5144,11 @@ public interface Dictionary {
 
   default String trIncomeInvoices() {return g("trIncomeInvoices");}
 
+  default String trInvoiceHasNotAttribute() {return g("trInvoiceHasNotAttribute");}
+
   default String trInvoiceIdShort() {return g("trInvoiceIdShort");}
 
   default String trInvoices() {return g("trInvoices");}
-
-  default String trInvoiceHasNotAttribute() {return g("trInvoiceHasNotAttribute");}
 
   default String trLoaded() {return g("trLoaded");}
 

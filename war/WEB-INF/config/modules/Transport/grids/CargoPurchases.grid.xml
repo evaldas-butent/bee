@@ -16,14 +16,14 @@
     <DataColumn name="SupplierName" />
     <DataColumn name="Number" />
 
-    <RelColumn name="LoadingCountryName" visible="false" readOnly="true" label="=trLoadingCountry"/>
+    <RelColumn name="LoadingCountry" renderColumns="LoadingCountryName" visible="false" />
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
       horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
     <DataColumn name="LoadingDate" />
 
-    <RelColumn name="UnloadingCountryName" visible="false" readOnly="true"  label="=trUnloadingCountry"/>
+    <RelColumn name="UnloadingCountry" renderColumns="UnloadingCountryName" visible="false" />
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
       horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
       <renderer type="flag" />

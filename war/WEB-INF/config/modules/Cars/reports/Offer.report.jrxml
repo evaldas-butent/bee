@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-09-22T08:56:30 -->
+<!-- 2016-10-06T14:31:55 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Offer" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="ebed3f98-42bf-4dea-bdfb-41ad487be1da">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.i18n.Localizations"/>
@@ -24,7 +24,7 @@
 	</style>
 	<subDataset name="OrderItems" uuid="7cb75107-faea-4d8c-9419-f7e54bea73cc">
 		<parameter name="d" class="com.butent.bee.shared.i18n.Dictionary"/>
-		<parameter name="OrderItemsDataSet" class="com.butent.bee.server.RsDataSource"/>
+		<parameter name="CarOrderItemsDataSet" class="com.butent.bee.server.RsDataSource"/>
 		<parameter name="currency" class="java.lang.String"/>
 		<queryString>
 			<![CDATA[]]>
@@ -38,13 +38,13 @@
 		</variable>
 		<variable name="totalizer" class="com.butent.bee.shared.modules.trade.Totalizer">
 			<variableExpression><![CDATA[$V{totalizer}]]></variableExpression>
-			<initialValueExpression><![CDATA[new com.butent.bee.shared.modules.trade.Totalizer($P{OrderItemsDataSet}.getRowSet().getColumns())]]></initialValueExpression>
+			<initialValueExpression><![CDATA[new com.butent.bee.shared.modules.trade.Totalizer($P{CarOrderItemsDataSet}.getRowSet().getColumns())]]></initialValueExpression>
 		</variable>
 		<variable name="vatAmount" class="java.lang.Double">
-			<variableExpression><![CDATA[$V{totalizer}.getVat($P{OrderItemsDataSet}.getRowValue())]]></variableExpression>
+			<variableExpression><![CDATA[$V{totalizer}.getVat($P{CarOrderItemsDataSet}.getRowValue())]]></variableExpression>
 		</variable>
 		<variable name="amount" class="java.lang.Double">
-			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{OrderItemsDataSet}.getRowValue()) - BeeUtils.unbox($V{vatAmount})]]></variableExpression>
+			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{CarOrderItemsDataSet}.getRowValue()) - BeeUtils.unbox($V{vatAmount})]]></variableExpression>
 		</variable>
 		<variable name="totalVatAmount" class="java.lang.Double" calculation="Sum">
 			<variableExpression><![CDATA[$V{vatAmount}]]></variableExpression>
@@ -53,7 +53,7 @@
 			<variableExpression><![CDATA[$V{amount}]]></variableExpression>
 		</variable>
 	</subDataset>
-	<parameter name="OrderItemsDataSet" class="com.butent.bee.server.RsDataSource" isForPrompting="false"/>
+	<parameter name="CarOrderItemsDataSet" class="com.butent.bee.server.RsDataSource" isForPrompting="false"/>
 	<parameter name="ConfObjectOptions" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="PhotoFile0" class="java.lang.String"/>
 	<parameter name="PhotoFile1" class="java.lang.String"/>
@@ -80,9 +80,8 @@
 	<parameter name="VatPlus" class="java.lang.String"/>
 	<parameter name="Vat" class="java.lang.String"/>
 	<parameter name="VatPercent" class="java.lang.String"/>
-	<parameter name="SeriesName" class="java.lang.String"/>
-	<parameter name="Number" class="java.lang.String"/>
-	<parameter name="StartDate" class="java.lang.String"/>
+	<parameter name="OrderNo" class="java.lang.String"/>
+	<parameter name="Date" class="java.lang.String"/>
 	<parameter name="ContactFirstName" class="java.lang.String"/>
 	<parameter name="ContactLastName" class="java.lang.String"/>
 	<queryString>
@@ -186,14 +185,14 @@
 						<textElement textAlignment="Right">
 							<font size="12" isBold="true"/>
 						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords($V{d}.offer(), $V{d}.numeroSign(), $P{SeriesName}, $P{Number})]]></textFieldExpression>
+						<textFieldExpression><![CDATA[BeeUtils.joinWords($V{d}.offer(), $V{d}.numeroSign(), $P{OrderNo})]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true">
 						<reportElement positionType="Float" x="0" y="55" width="274" height="10" isRemoveLineWhenBlank="true" uuid="47956718-52e7-4cf4-9e2f-ce7fc4bf749e"/>
 						<textElement textAlignment="Right">
 							<font size="8" isBold="false"/>
 						</textElement>
-						<textFieldExpression><![CDATA[new DateTime(BeeUtils.toLong($P{StartDate})).getDate()]]></textFieldExpression>
+						<textFieldExpression><![CDATA[new DateTime(BeeUtils.toLong($P{Date})).getDate()]]></textFieldExpression>
 					</textField>
 				</frame>
 				<textField isStretchWithOverflow="true">
@@ -252,17 +251,17 @@
 					<property name="com.jaspersoft.studio.components.autoresize.proportional" value="true"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="OrderItems" uuid="71a960ca-853f-49bd-8ec2-b0e0a0d6d3c9">
+					<datasetRun subDataset="OrderItems" uuid="6e7a04b5-64f5-400f-9697-715343c97ddc">
 						<datasetParameter name="d">
 							<datasetParameterExpression><![CDATA[$V{d}]]></datasetParameterExpression>
 						</datasetParameter>
-						<datasetParameter name="OrderItemsDataSet">
-							<datasetParameterExpression><![CDATA[$P{OrderItemsDataSet}]]></datasetParameterExpression>
+						<datasetParameter name="CarOrderItemsDataSet">
+							<datasetParameterExpression><![CDATA[$P{CarOrderItemsDataSet}]]></datasetParameterExpression>
 						</datasetParameter>
 						<datasetParameter name="currency">
 							<datasetParameterExpression><![CDATA[$P{CurrencyName}]]></datasetParameterExpression>
 						</datasetParameter>
-						<dataSourceExpression><![CDATA[$P{OrderItemsDataSet}]]></dataSourceExpression>
+						<dataSourceExpression><![CDATA[$P{CarOrderItemsDataSet}]]></dataSourceExpression>
 					</datasetRun>
 					<jr:column width="28" uuid="e2d44bf5-f01f-4b82-865b-b550c799b262">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
@@ -448,7 +447,7 @@
 			</componentElement>
 			<textField>
 				<reportElement positionType="Float" x="0" y="11" width="174" height="14" isRemoveLineWhenBlank="true" uuid="144744ce-5008-4a23-97d4-7daacc177210">
-					<printWhenExpression><![CDATA[$P{OrderItemsDataSet}.getRowSet().getNumberOfRows() > 0]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$P{CarOrderItemsDataSet}.getRowSet().getNumberOfRows() > 0]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font isBold="true"/>

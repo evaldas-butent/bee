@@ -214,7 +214,8 @@
       <xs:enumeration value="Service" />
       <xs:enumeration value="Administration" />
       <xs:enumeration value="Orders" />
-      <xs:enumeration value="Orders.CarDealers" />
+      <xs:enumeration value="Cars" />
+      <xs:enumeration value="Cars.Service" />
       <xs:enumeration value="Payroll" />
     </xs:restriction>
   </xs:simpleType>
@@ -268,6 +269,8 @@
       <xs:enumeration value="CargoSales" />
       <xs:enumeration value="CargoTrips" />
       <xs:enumeration value="CargoTypes" />
+      <xs:enumeration value="CarOrderItems" />
+      <xs:enumeration value="CarOrders" />
       <xs:enumeration value="CategoryTree" />
       <xs:enumeration value="ChartOfAccounts" />
       <xs:enumeration value="ChatFiles" />

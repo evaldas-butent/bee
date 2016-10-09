@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="CarOrders"
+       idName="OrderID"
+>
+  <Fields>
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
+
+    <String name="OrderNo" precision="30" unique="true" label="=orderNumber" defExpr="NEXT_NUMBER"
+            defValue="AUTO/" />
+
+    <Relation name="Customer" relation="Companies" notNull="true" label="=customer" />
+    <Relation name="CustomerPerson" relation="CompanyPersons" label="=personContact" />
+
+    <Relation name="Manager" relation="Users" defExpr="CURRENT_USER" label="=manager" />
+
+    <Numeric name="Amount" precision="12" scale="2" label="=amount" />
+    <Relation name="Currency" relation="Currencies" label="=currencyShort"
+              defExpr="MAIN_CURRENCY" />
+    <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
+    <Boolean name="VatPlus" label="=vatPlus" />
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatPercent" label="=vatPercent" />
+
+    <Relation name="Object" relation="ConfObjects" unique="true" label="=specification"
+              editable="true" />
+
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

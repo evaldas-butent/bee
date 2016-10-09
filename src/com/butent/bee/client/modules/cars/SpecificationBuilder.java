@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.orders;
+package com.butent.bee.client.modules.cars;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -6,7 +6,7 @@ import com.google.common.collect.TreeMultimap;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -40,12 +40,11 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.orders.Bundle;
-import com.butent.bee.shared.modules.orders.Configuration;
-import com.butent.bee.shared.modules.orders.Dimension;
-import com.butent.bee.shared.modules.orders.Option;
-import com.butent.bee.shared.modules.orders.Specification;
+import com.butent.bee.shared.modules.cars.Bundle;
+import com.butent.bee.shared.modules.cars.Configuration;
+import com.butent.bee.shared.modules.cars.Dimension;
+import com.butent.bee.shared.modules.cars.Option;
+import com.butent.bee.shared.modules.cars.Specification;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -161,7 +160,7 @@ public class SpecificationBuilder implements InputCallback {
         for (int i = 0; i < result.getNumberOfRows(); i++) {
           hierarchy.put(result.getLong(i, COL_BRANCH), new Branch(result.getRow(i).getId(),
               result.getString(i, COL_BRANCH_NAME),
-              result.getLong(i, ClassifierConstants.COL_PHOTO), result.getBoolean(i, COL_BLOCKED)));
+              result.getLong(i, COL_PHOTO), result.getBoolean(i, COL_BLOCKED)));
         }
         fillTree(tree, hierarchy);
         setBranch(tree);
@@ -229,7 +228,7 @@ public class SpecificationBuilder implements InputCallback {
           specification.getDescription(), BeeUtils.join("<br>", selectedOptions.stream()
               .map(s -> s.replace("\n", "<br>")).collect(Collectors.toList()))));
 
-      ParameterList args = OrdersKeeper.createSvcArgs(SVC_SAVE_OBJECT);
+      ParameterList args = CarsKeeper.createSvcArgs(SVC_SAVE_OBJECT);
       args.addDataItem(COL_OBJECT, Codec.beeSerialize(specification));
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -667,7 +666,7 @@ public class SpecificationBuilder implements InputCallback {
 
     if (Objects.isNull(currentBranch.getConfiguration())) {
       if (DataUtils.isId(currentBranch.getId())) {
-        ParameterList args = OrdersKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
+        ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_CONFIGURATION);
         args.addDataItem(COL_BRANCH, currentBranch.getId());
 
         BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

@@ -240,6 +240,7 @@ public final class MailConstants {
   public static final String COL_FOLDER_PARENT = "Parent";
   public static final String COL_FOLDER_NAME = "Name";
   public static final String COL_FOLDER_UID = "UIDValidity";
+  public static final String COL_FOLDER_MODSEQ = "ModSeq";
 
   public static final String COL_PLACE = "Place";
   public static final String COL_FOLDER = "Folder";

@@ -103,6 +103,7 @@ public class MailAccount {
       MailFolder folder = new MailFolder(parent, row.getLong(COL_FOLDER),
           row.getValue(COL_FOLDER_NAME), row.getLong(COL_FOLDER_UID));
 
+      folder.setModSeq(row.getLong(COL_FOLDER_MODSEQ));
       folder.setUnread(BeeUtils.unbox(row.getInt(COL_MESSAGE)));
 
       fillTree(folder, folders);
@@ -352,6 +353,8 @@ public class MailAccount {
       String pfx = "mail." + protocol + ".";
 
       props.put("mail.mime.address.strict", "false");
+      props.put(pfx + "partialfetch", "false");
+      props.put(pfx + "compress.enable", "true");
       props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
       props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
 

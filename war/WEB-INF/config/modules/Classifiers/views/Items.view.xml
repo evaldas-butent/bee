@@ -122,6 +122,8 @@
     <SimpleColumn name="DaysPerWeek" />
     <SimpleColumn name="MinTerm" />
 
+    <SimpleColumn name="DefaultQuantity" />
+
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="ExternalCode" />
 

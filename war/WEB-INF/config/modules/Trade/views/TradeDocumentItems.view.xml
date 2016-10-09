@@ -16,6 +16,12 @@
     </SimpleJoin>
 
     <SimpleColumn name="Article" />
+    <ExternalJoin joinType="LEFT" targetName="Parent" source="TradeStock"
+                  name="TradeDocumentItem">
+      <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
+        <SimpleColumn name="Article" alias="PrimaryArticle" />
+      </SimpleJoin>
+    </ExternalJoin>
 
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
