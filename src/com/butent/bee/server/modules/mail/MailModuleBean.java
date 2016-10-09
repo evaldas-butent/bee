@@ -1287,24 +1287,28 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       mail.validateFolder(localFolder, hasUid ? ((UIDFolder) remoteFolder).getUIDValidity() : null);
 
       try {
-        remoteFolder.open(Folder.READ_ONLY);
         int first = 1;
-        int count = remoteFolder.getMessageCount();
-        int start;
-        int end = count;
+        int count;
 
         if (hasUid) {
           Pair<Integer, Integer> pair = mail.syncFolder(account, localFolder, remoteFolder,
               progressId, syncAll);
 
-          if (BeeUtils.isPositive(pair.getA())) {
-            first = pair.getA() + 1;
-            count = count - first + 1;
-          }
+          c += Math.abs(pair.getB());
+
           if (BeeUtils.isNegative(pair.getB())) {
             count = 0;
+          } else {
+            count = remoteFolder.getMessageCount();
+
+            if (BeeUtils.isPositive(pair.getA())) {
+              first = pair.getA() + 1;
+              count = count - first + 1;
+            }
           }
-          c += Math.abs(pair.getB());
+        } else {
+          remoteFolder.open(Folder.READ_ONLY);
+          count = remoteFolder.getMessageCount();
         }
         if (!BeeUtils.isPositive(count)) {
           return c;
@@ -1313,6 +1317,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         double l = 0;
         long progressUpdated = System.currentTimeMillis();
         boolean stop = false;
+        int start;
+        int end = remoteFolder.getMessageCount();
 
         do {
           start = Math.max(end - MailStorageBean.CHUNK + 1, first);

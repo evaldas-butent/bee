@@ -15,20 +15,15 @@ public class MailFolder implements BeeSerializable {
 
   private static final long DISCONNECTED_MODE = -1;
 
-  public static MailFolder restore(String s) {
-    MailFolder folder = new MailFolder();
-    folder.deserialize(s);
-    return folder;
-  }
-
   private enum Serial {
-    ID, NAME, UID, UNREAD, CHILDS
+    ID, NAME, UID, MODSEQ, UNREAD, CHILDS
   }
 
   private MailFolder parent;
   private Long id;
   private String name;
   private Long uidValidity;
+  private Long modSeq;
   private int unread;
 
   private final Map<String, MailFolder> childs = new LinkedHashMap<>();
@@ -73,6 +68,9 @@ public class MailFolder implements BeeSerializable {
         case ID:
           id = BeeUtils.toLongOrNull(value);
           break;
+        case MODSEQ:
+          modSeq = BeeUtils.toLongOrNull(value);
+          break;
         case NAME:
           name = value;
           break;
@@ -88,6 +86,7 @@ public class MailFolder implements BeeSerializable {
 
   public void disconnect() {
     setUidValidity(DISCONNECTED_MODE);
+    setModSeq(null);
   }
 
   public MailFolder findFolder(Long folderId) {
@@ -102,6 +101,10 @@ public class MailFolder implements BeeSerializable {
       }
     }
     return null;
+  }
+
+  public Long getModSeq() {
+    return modSeq;
   }
 
   public Long getId() {
@@ -136,6 +139,12 @@ public class MailFolder implements BeeSerializable {
     return childs.remove(BeeUtils.normalize(subFolderName));
   }
 
+  public static MailFolder restore(String s) {
+    MailFolder folder = new MailFolder();
+    folder.deserialize(s);
+    return folder;
+  }
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -150,6 +159,9 @@ public class MailFolder implements BeeSerializable {
         case ID:
           arr[i++] = id;
           break;
+        case MODSEQ:
+          arr[i++] = modSeq;
+          break;
         case NAME:
           arr[i++] = name;
           break;
@@ -162,6 +174,10 @@ public class MailFolder implements BeeSerializable {
       }
     }
     return Codec.beeSerialize(arr);
+  }
+
+  public void setModSeq(Long modSeq) {
+    this.modSeq = modSeq;
   }
 
   public void setUidValidity(Long uidValidity) {
