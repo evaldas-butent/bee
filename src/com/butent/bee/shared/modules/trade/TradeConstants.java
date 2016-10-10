@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.trade;
 
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class TradeConstants {
@@ -279,6 +280,8 @@ public final class TradeConstants {
 
   public static final String ALS_EXPENDITURE_TYPE_SUPPLIER = "TypeSupplier";
 
+  public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
+
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";
   public static final String PROP_STOCK = "Stock";
@@ -316,6 +319,10 @@ public final class TradeConstants {
   public static final String FORM_TRADE_DOCUMENT = "TradeDocument";
 
   public static final int MAX_STOCK_DEPTH = 1_000;
+
+  public static String keyStockWarehouse(String warehouseCode) {
+    return PROP_STOCK + BeeUtils.trim(warehouseCode);
+  }
 
   private TradeConstants() {
   }

@@ -416,7 +416,7 @@ public class ClassifiersModuleBean implements BeeModule {
             for (BeeRow row : rowSet.getRows()) {
               if (stock.containsRow(row.getId())) {
                 stock.row(row.getId()).forEach((warehouseCode, quantity) ->
-                    row.setProperty(PROP_STOCK + warehouseCode, quantity));
+                    row.setProperty(keyStockWarehouse(warehouseCode), quantity));
               }
             }
           }

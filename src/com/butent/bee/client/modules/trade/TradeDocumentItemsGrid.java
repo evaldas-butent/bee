@@ -37,8 +37,10 @@ import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -172,6 +174,9 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
   }
 
+  private static final String STYLE_ITEM_SELECTOR =
+      BeeConst.CSS_CLASS_PREFIX + "trade-document-new-item-selector";
+
   private Supplier<TradeDocumentSums> tdsSupplier;
   private Runnable tdsListener;
 
@@ -204,6 +209,25 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       return false;
     }
 
+    ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(parentRow);
+
+    Relation relation = Relation.create();
+    relation.setViewName(VIEW_ITEMS);
+
+    relation.disableNewRow();
+    relation.setSelectorClass(STYLE_ITEM_SELECTOR);
+
+    List<String> renderColumns = Arrays.asList(COL_ITEM_NAME, COL_ITEM_ARTICLE);
+
+    List<String> searchableColumns = new ArrayList<>(renderColumns);
+    relation.setSearchableColumns(searchableColumns);
+
+    List<String> choiceColumns = new ArrayList<>(renderColumns);
+    if (itemPrice != null) {
+      choiceColumns.add(itemPrice.getPriceColumn());
+      choiceColumns.add(itemPrice.getCurrencyNameAlias());
+    }
+
     final String caption;
     final MultiSelector selector;
 
@@ -215,21 +239,42 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
         return false;
       }
 
-      caption = Localized.dictionary().trdStock();
-      selector = MultiSelector.autonomous(VIEW_TRADE_STOCK, Arrays.asList(ALS_ITEM_NAME,
-          COL_TRADE_ITEM_ARTICLE, COL_STOCK_QUANTITY));
+      caption = BeeUtils.joinItems(Localized.dictionary().trdStock(),
+          Localized.dictionary().services());
 
-      selector.setAdditionalFilter(Filter.and(Filter.equals(COL_STOCK_WAREHOUSE, warehouseFrom),
-          Filter.isPositive(COL_STOCK_QUANTITY)));
+      String wfCode = Data.getString(VIEW_TRADE_DOCUMENTS, parentRow, ALS_WAREHOUSE_FROM_CODE);
+      if (!BeeUtils.isEmpty(wfCode)) {
+        choiceColumns.add(keyStockWarehouse(wfCode));
+      }
+
+      relation.setChoiceColumns(choiceColumns);
+
+      if (phase.modifyStock()) {
+        Filter filter = Filter.or(Filter.notNull(COL_ITEM_IS_SERVICE),
+            Filter.in(Data.getIdColumn(VIEW_ITEMS), VIEW_TRADE_DOCUMENT_ITEMS, COL_ITEM,
+                Filter.in(Data.getIdColumn(VIEW_TRADE_DOCUMENT_ITEMS),
+                    VIEW_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM,
+                    Filter.and(Filter.equals(COL_STOCK_WAREHOUSE, warehouseFrom),
+                        Filter.isPositive(COL_STOCK_QUANTITY)))));
+
+        relation.setFilter(filter);
+        relation.setCaching(Relation.Caching.NONE);
+      }
+
+      selector = MultiSelector.autonomous(relation, renderColumns);
 
     } else {
-      caption = Localized.dictionary().itemOrService();
-      selector = MultiSelector.autonomous(VIEW_ITEMS, Arrays.asList(COL_ITEM_NAME,
-          COL_ITEM_ARTICLE));
+      caption = BeeUtils.joinItems(Localized.dictionary().goods(),
+          Localized.dictionary().services());
+
+      relation.setChoiceColumns(choiceColumns);
+      selector = MultiSelector.autonomous(relation, renderColumns);
     }
 
     int width = presenter.getGridView().asWidget().getOffsetWidth();
-    StyleUtils.setWidth(selector, BeeUtils.clamp(width - 50, 300, 600));
+    if (width > 300) {
+      StyleUtils.setWidth(selector, width - 50);
+    }
 
     Global.inputWidget(caption, selector, () -> {
       List<Long> input = DataUtils.parseIdList(selector.getValue());
