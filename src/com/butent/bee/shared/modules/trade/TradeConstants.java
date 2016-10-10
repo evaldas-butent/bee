@@ -281,6 +281,7 @@ public final class TradeConstants {
   public static final String ALS_EXPENDITURE_TYPE_SUPPLIER = "TypeSupplier";
 
   public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
+  public static final String ALS_STOCK_PRIMARY_DATE = "PrimaryDate";
 
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";
