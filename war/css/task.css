@@ -207,9 +207,6 @@ td.bee-crm-taskDialog-filesLabelCell{
   height: 2.5em;
   max-width: 2.5em;
   min-width: 2.5em;
-  align-self: center;
-  -webkit-align-self: center;
-  -ms-flex-item-align: center;
  }
 
 .bee-crm-taskEvent-Photo {
