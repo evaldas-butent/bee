@@ -21,11 +21,13 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -215,6 +217,21 @@ public final class ProjectsKeeper {
         }
       }
     });
+  }
+
+  static void fireRowSetUpdateRefresh(String viewName, Filter filter) {
+    if (BeeUtils.isEmpty(viewName) || filter != null) {
+      return;
+    }
+
+    Queries.getRowSet(viewName, null, filter, new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            for (BeeRow row : result) {
+              RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, row);
+            }
+          }
+        });
   }
 
   private ProjectsKeeper() {
