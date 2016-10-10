@@ -29,7 +29,7 @@ public class MailFolder implements BeeSerializable {
   private final Map<String, MailFolder> childs = new LinkedHashMap<>();
 
   public MailFolder() {
-    this(null, null, null, null);
+    this(null, null, "ROOT", null);
   }
 
   public MailFolder(MailFolder parent, Long id, String name, Long uidValidity) {
