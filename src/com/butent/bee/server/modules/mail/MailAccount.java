@@ -358,9 +358,12 @@ public class MailAccount {
       Properties props = new Properties();
       String pfx = "mail." + protocol + ".";
 
+      if (Objects.equals(getStoreProtocol(), Protocol.IMAP)) {
+        props.put(pfx + "partialfetch", "false");
+        props.put(pfx + "compress.enable", "true");
+        props.put(pfx + "connectionpoolsize", "10");
+      }
       props.put("mail.mime.address.strict", "false");
-      props.put(pfx + "partialfetch", "false");
-      props.put(pfx + "compress.enable", "true");
       props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
       props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
 
