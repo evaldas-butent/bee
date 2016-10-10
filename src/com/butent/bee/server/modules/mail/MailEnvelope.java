@@ -92,7 +92,7 @@ public class MailEnvelope {
         }
       }
     }
-    flagMask = getFlagMask(message);
+    flagMask = getFlagMask(msg);
     inReplyTo = msg.getHeader(MailConstants.COL_IN_REPLY_TO, null);
     uniqueId = Codec.md5(BeeUtils.joinWords(msg.getMessageID(), date, sender, subject));
   }

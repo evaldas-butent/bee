@@ -185,12 +185,12 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       try {
         store = account.connectToStore();
-        Folder remoteFolder = account.getRemoteFolder(store, localFolder);
 
         if (account.isInbox(localFolder)) {
           f += syncFolders(account, account.getRemoteFolder(store, account.getRootFolder()),
               account.getRootFolder());
         }
+        Folder remoteFolder = account.getRemoteFolder(store, localFolder);
         f += syncFolders(account, remoteFolder, localFolder);
         c += checkFolder(account, remoteFolder, localFolder, progressId, syncAll);
 
@@ -1999,20 +1999,17 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     if (MailAccount.holdsFolders(remoteFolder)) {
       for (Folder subFolder : remoteFolder.list()) {
         visitedFolders.add(subFolder.getName());
-        MailFolder localSubFolder = null;
+        boolean exists = false;
 
         for (MailFolder sub : localFolder.getSubFolders()) {
           if (BeeUtils.same(sub.getName(), subFolder.getName())) {
-            localSubFolder = sub;
+            exists = true;
             break;
           }
         }
-        if (Objects.isNull(localSubFolder)) {
-          localSubFolder = mail.createFolder(account, localFolder, subFolder.getName());
+        if (!exists) {
+          mail.createFolder(account, localFolder, subFolder.getName());
           c++;
-        }
-        if (localSubFolder.isConnected() && !subFolder.isSubscribed()) {
-          subFolder.setSubscribed(true);
         }
       }
     }

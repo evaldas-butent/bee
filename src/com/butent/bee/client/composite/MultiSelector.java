@@ -189,7 +189,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   public static MultiSelector autonomous(Relation relation, AbstractCellRenderer renderer) {
     Assert.notNull(relation);
 
-    final MultiSelector selector = new MultiSelector(relation, true, null);
+    MultiSelector selector = new MultiSelector(relation, true, null);
     selector.setRenderer(renderer);
 
     selector.addFocusHandler(event -> selector.setEditing(true));
@@ -351,10 +351,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   }
 
   /**
-   * @returns the internal representation.
-   *
-   *          This method is only provided for compatibility with the HasStringValue interface. Use
-   *          getIds(), getValues(), getChoices() instead.
+   * Returns the internal representation.
+   * This method is only provided for compatibility with the HasStringValue interface. Use
+   * getIds(), getValues(), getChoices() instead.
    */
   @Override
   public String getValue() {
@@ -494,7 +493,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   /**
    * Sets the internal representation.
-   *
    * This method is only provided for compatibility with the HasStringValue interface. Use setIds,
    * setValues, setChoices instead.
    */

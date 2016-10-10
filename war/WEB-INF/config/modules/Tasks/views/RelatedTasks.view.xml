@@ -28,6 +28,8 @@
       <SimpleColumn name="Completed" editable="true" />
       <SimpleColumn name="Approved" editable="true" />
       <SimpleColumn name="ExpectedDuration" editable="true" />
+      <SimpleColumn name="Project"  />
+      <SimpleColumn name="ProjectStage" />
 
       <SimpleColumn name="Status" editable="true" />
 

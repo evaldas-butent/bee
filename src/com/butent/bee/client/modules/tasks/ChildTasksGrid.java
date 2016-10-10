@@ -281,25 +281,27 @@ class ChildTasksGrid extends TasksGrid {
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
-    super.onRowUpdate(event);
     if (!event.hasView(TaskConstants.VIEW_TASKS)
         && !event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
       return;
     }
-    String column = getGridView().getRelColumn();
+    String column = null;
     IsRow row = event.getRow();
     IsRow oldRow = null;
 
     if (getGridView() != null && getGridView().getGrid() != null) {
+      column = getGridView().getRelColumn();
       oldRow = getGridView().getGrid().getRowById(row.getId());
     }
 
     if (BeeUtils.isEmpty(column)) {
+      super.onRowUpdate(event);
       return;
     }
 
     FormView parentForm = ViewHelper.getForm(getGridView().asWidget());
     if (parentForm == null || DataUtils.isNewRow(parentForm.getActiveRow())) {
+      super.onRowUpdate(event);
       return;
     }
 

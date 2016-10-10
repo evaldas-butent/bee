@@ -265,7 +265,7 @@ public class MailStorageBean {
 
   public void setFlags(Long placeId, int flags) {
     qs.updateData(new SqlUpdate(TBL_PLACES)
-        .addConstant(COL_FLAGS, flags)
+        .addConstant(COL_FLAGS, flags == 0 ? null : flags)
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
   }
 
@@ -456,70 +456,69 @@ public class MailStorageBean {
     int lastNo = 0;
     int cnt = 0;
 
-    if (!syncAll && size > 1 && modseq > 0 && remoteFolder instanceof IMAPFolder
+    if (remoteFolder instanceof IMAPFolder
         && ((IMAPStore) remoteFolder.getStore()).hasCapability("CONDSTORE")) {
 
       IMAPFolder imapFolder = (IMAPFolder) remoteFolder;
-      long uidLast = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
       imapFolder.open(Folder.READ_ONLY, ResyncData.CONDSTORE);
 
-      Message[] msgs = imapFolder.getMessagesByUID(new long[] {
-          BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID)), uidLast});
+      if (!syncAll && size > 1 && modseq > 0) {
+        long uidLast = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
+        Message[] msgs = imapFolder.getMessagesByUID(new long[] {
+            BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID)), uidLast});
 
-      if (BeeUtils.allNotNull(msgs[0], msgs[1])
-          && msgs[1].getMessageNumber() - msgs[0].getMessageNumber() + 1 == size) {
-        lastNo = msgs[1].getMessageNumber();
+        if (BeeUtils.allNotNull(msgs[0], msgs[1])
+            && msgs[1].getMessageNumber() - msgs[0].getMessageNumber() + 1 == size) {
+          lastNo = msgs[1].getMessageNumber();
 
-        for (Message msg : imapFolder.getMessagesByUIDChangedSince(1, uidLast, modseq)) {
-          int c = qs.updateData(new SqlUpdate(TBL_PLACES)
-              .addConstant(COL_FLAGS, MailEnvelope.getFlagMask(msg))
-              .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId(),
-                  COL_MESSAGE_UID, imapFolder.getUID(msg))));
+          for (Message msg : imapFolder.getMessagesByUIDChangedSince(1, uidLast, modseq)) {
+            Integer flags = MailEnvelope.getFlagMask(msg);
 
-          if (c == 0) {
-            lastNo = 0;
-            break;
+            cnt += qs.updateData(new SqlUpdate(TBL_PLACES)
+                .addConstant(COL_FLAGS, flags)
+                .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId(),
+                    COL_MESSAGE_UID, imapFolder.getUID(msg)),
+                    SqlUtils.notEqual(TBL_PLACES, COL_FLAGS, flags))));
           }
-          cnt += c;
         }
       }
       modseq = imapFolder.getHighestModSeq();
-    }
-    if (!remoteFolder.isOpen()) {
+    } else {
       remoteFolder.open(Folder.READ_ONLY);
     }
-    while (lastNo == 0) {
-      if (size == 0) {
-        break;
-      }
-      Message[] msgs = ((UIDFolder) remoteFolder)
-          .getMessagesByUID(BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID)),
-              BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID)));
+    if (lastNo == 0) {
+      while (size > 0) {
+        Message[] msgs = ((UIDFolder) remoteFolder)
+            .getMessagesByUID(BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID)),
+                BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID)));
 
-      if (!ArrayUtils.isEmpty(msgs)) {
-        start = msgs[0].getMessageNumber();
-        lastNo = msgs[msgs.length - 1].getMessageNumber();
+        if (!ArrayUtils.isEmpty(msgs)) {
+          start = msgs[0].getMessageNumber();
+          lastNo = msgs[msgs.length - 1].getMessageNumber();
 
-        FetchProfile fp = new FetchProfile();
-        fp.add(FetchProfile.Item.FLAGS);
-        remoteFolder.fetch(msgs, fp);
-      }
-      int c = ctx.getBusinessObject(MailStorageBean.class)
-          .syncMessages(data, msgs, account, localFolder, remoteFolder, progressId);
-      cnt += Math.abs(c);
+          FetchProfile fp = new FetchProfile();
+          fp.add(FetchProfile.Item.FLAGS);
+          remoteFolder.fetch(msgs, fp);
+        }
+        int c = ctx.getBusinessObject(MailStorageBean.class)
+            .syncMessages(data, msgs, account, localFolder, remoteFolder, progressId);
+        cnt += Math.abs(c);
 
-      if (c < 0) {
-        start = 0;
-        cnt = cnt * (-1);
-        break;
+        if (lastNo > 0) {
+          if (c < 0) {
+            start = 0;
+            cnt = cnt * (-1);
+          }
+          break;
+        }
+        data = qs.getData(query.setOffset(query.getOffset() + query.getLimit()));
+        size = data.getNumberOfRows();
       }
-      data = qs.getData(query);
-      size = data.getNumberOfRows();
     }
     if (syncAll && start > 0) {
       HasConditions clause = SqlUtils.and();
 
-      query.resetOrder().setLimit(0)
+      query.resetOrder().setOffset(0).setLimit(0)
           .setWhere(SqlUtils.and(query.getWhere(), clause));
 
       int end = start - 1;

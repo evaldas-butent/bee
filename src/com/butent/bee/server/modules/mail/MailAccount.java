@@ -47,6 +47,8 @@ public class MailAccount {
   private static final long TIMEOUT = TimeUtils.MILLIS_PER_MINUTE * 10L;
 
   private static final class MailStore {
+    private static final int MAX_CONCURRENT_THEADS = 15;
+
     final Store store;
     final long start;
     int cnt;
@@ -62,6 +64,10 @@ public class MailAccount {
 
     private boolean expired() {
       return BeeUtils.isMore(System.currentTimeMillis() - start, TIMEOUT);
+    }
+
+    private boolean full() {
+      return cnt == MAX_CONCURRENT_THEADS;
     }
 
     private Store getStore() {
@@ -331,7 +337,7 @@ public class MailAccount {
         storesLock.unlock();
         return connectToStore();
 
-      } else if (mailStore.idle()) {
+      } else if (mailStore.idle() || mailStore.full()) {
         logger.debug("Waiting for connected store...");
         storesLock.unlock();
 
@@ -352,9 +358,12 @@ public class MailAccount {
       Properties props = new Properties();
       String pfx = "mail." + protocol + ".";
 
+      if (Objects.equals(getStoreProtocol(), Protocol.IMAP)) {
+        props.put(pfx + "partialfetch", "false");
+        props.put(pfx + "compress.enable", "true");
+        props.put(pfx + "connectionpoolsize", "10");
+      }
       props.put("mail.mime.address.strict", "false");
-      props.put(pfx + "partialfetch", "false");
-      props.put(pfx + "compress.enable", "true");
       props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
       props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
 
@@ -507,13 +516,13 @@ public class MailAccount {
     Assert.noNulls(remoteStore, localFolder);
 
     if (localFolder.getParent() == null) {
-      logger.debug("Looking for root folder");
+      logger.debug("Looking for remote", localFolder.getName(), "folder");
       return remoteStore.getDefaultFolder();
     }
     Folder remoteParent = getRemoteFolder(remoteStore, localFolder.getParent());
 
     String name = localFolder.getName();
-    logger.debug("Looking for remote folder", BeeUtils.join(" in ", name, remoteParent.getName()));
+    logger.debug("Looking for remote folder", name, "in", localFolder.getParent().getName());
 
     Folder remote = remoteParent.getFolder(name);
 
@@ -521,7 +530,8 @@ public class MailAccount {
       if (isInbox(localFolder) || !isSystemFolder(localFolder)
           || !createRemoteFolder(localFolder.getParent(), name, false)) {
 
-        throw new MessagingException("Remote folder does not exist: " + name);
+        throw new MessagingException(BeeUtils.joinWords("Remote folder", name, "in",
+            localFolder.getParent().getName(), "does not exist"));
       }
     }
     return remote;
