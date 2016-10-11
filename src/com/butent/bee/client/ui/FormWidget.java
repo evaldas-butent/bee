@@ -76,6 +76,7 @@ import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
@@ -141,6 +142,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasPercentageTag;
 import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.font.FontAwesome;
@@ -529,6 +531,11 @@ public enum FormWidget {
     String currencySource = attributes.get(HasRelatedCurrency.ATTR_CURRENCY_SOURCE);
     if (!BeeUtils.isEmpty(currencySource)) {
       widget.setCurrencySource(currencySource);
+    }
+
+    String percentageTag = attributes.get(HasPercentageTag.ATTR_PERCENTAGE_TAG);
+    if (!BeeUtils.isEmpty(percentageTag)) {
+      widget.setPercentageTag(percentageTag);
     }
 
     return widget;
@@ -1025,6 +1032,8 @@ public enum FormWidget {
   private static final String ATTR_RESIZABLE = "resizable";
 
   private static final String ATTR_SPELL_CHECK = "spellcheck";
+
+  private static final String ATTR_PREDICATE = "predicate";
 
   private static final String TAG_CSS = "css";
 
@@ -2373,10 +2382,16 @@ public enum FormWidget {
         Widget content = hc.getContent().asWidget();
         Collection<HasSummaryChangeHandlers> sources = SummaryChangeEvent.findSources(content);
 
+        String predicate = child.getAttribute(ATTR_PREDICATE);
+        Evaluator rowPredicate = BeeUtils.isEmpty(predicate)
+            ? null : Evaluator.create(new Calculation(predicate, null), null, columns);
+
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), null, sources);
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), null, sources,
+              rowPredicate);
         } else {
-          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), null, sources);
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), null, sources,
+              rowPredicate);
         }
 
         StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),

@@ -13,14 +13,14 @@
     <FlowPanel class="flexBox-horizontal" style="margin-top: 2ex;">
       <Label text="=name" class="bee-required" style="&lbl;" />
       <InputText source="Name" style="width: 200px;" />
-      <Label text="=code" style="&lbl;" />
+      <Label for="Code" style="&lbl;" />
       <InputText source="Code" style="width: 100px;" />
     </FlowPanel>
 
     <FlowPanel class="flexBox-horizontal-top" style="margin: 2ex 0;">
-      <Label text="=primaryWarehouse" style="&lbl;" />
+      <Label for="PrimaryWarehouse" style="&lbl;" />
       <DataSelector source="PrimaryWarehouse" style="width: 200px;" />
-      <Label text="=description" style="&lbl;" />
+      <Label for="Description" style="&lbl;" />
       <InputArea source="Description" visibleLines="4" style="width: 200px;" />
     </FlowPanel>
 

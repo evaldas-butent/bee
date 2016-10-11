@@ -26,5 +26,8 @@
 
     <Text name="Description" label="=description" />
     <Text name="Notes" label="=notes" />
+
+    <Relation name="ServiceMaintenance" relation="ServiceMaintenance" cascade="DELETE"
+              label="=svcMaintenance" />
   </Fields>
 </Table>

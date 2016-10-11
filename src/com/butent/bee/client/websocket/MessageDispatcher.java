@@ -31,7 +31,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Paragraph;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.DataUtils;
@@ -72,6 +71,7 @@ import com.butent.bee.shared.websocket.messages.UsersMessage;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 class MessageDispatcher {
 

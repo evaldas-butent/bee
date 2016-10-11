@@ -75,4 +75,9 @@ public class TableRow extends AbstractRow {
   protected void assertIndex(int index) {
     Assert.isIndex(cells, index);
   }
+
+  @Override
+  protected boolean sameValues(IsRow other) {
+    return cells.equals(other.getCells());
+  }
 }

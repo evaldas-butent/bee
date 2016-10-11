@@ -11,7 +11,6 @@ import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
@@ -32,6 +31,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Extends {@code Provider} class and implements data range management from asynchronous data

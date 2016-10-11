@@ -64,6 +64,7 @@
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
 
   <g:columns>
+    <DataColumn name="DefaultQuantity" visible="false" />
     <DataColumn name="ExternalCode" visible="false" />
 
     <DataColumn name="Description" visible="false" />
@@ -84,6 +85,10 @@
     </CalcColumn>
 
     <PropColumn name="Remainder" type="string" dynamic="true" module="Orders" />
-
+    <PropColumn name="Stock" type="double" dynamic="true" module="Trade" />
   </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>[row.Name, row.Article].join(' ')</ui:expression>
+  </g:rowMessage>
 </g:Grid>

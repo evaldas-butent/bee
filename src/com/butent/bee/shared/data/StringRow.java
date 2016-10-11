@@ -10,6 +10,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,9 +33,7 @@ public class StringRow extends AbstractRow {
     super(id);
 
     if (arr != null) {
-      for (String value : arr) {
-        this.values.add(value);
-      }
+      Collections.addAll(this.values, arr);
     }
   }
 
@@ -235,13 +234,16 @@ public class StringRow extends AbstractRow {
     }
 
     if (arr != null) {
-      for (String value : arr) {
-        values.add(value);
-      }
+      Collections.addAll(values, arr);
     }
   }
 
   protected void assertIndex(int index) {
     Assert.isIndex(index, getNumberOfCells());
+  }
+
+  @Override
+  protected boolean sameValues(IsRow other) {
+    return (other instanceof StringRow) && values.equals(((StringRow) other).getValues());
   }
 }

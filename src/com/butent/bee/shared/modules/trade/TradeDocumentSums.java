@@ -221,7 +221,12 @@ public class TradeDocumentSums {
   public TradeDocumentSums() {
   }
 
-  public void add(long id, Double quantity, Double price,
+  public TradeDocumentSums(TradeVatMode vatMode, TradeDiscountMode discountMode) {
+    this.vatMode = vatMode;
+    this.discountMode = discountMode;
+  }
+
+  public TradeDocumentSums add(long id, Double quantity, Double price,
       Double discount, Boolean discountIsPercent, Double vat, Boolean vatIsPercent) {
 
     Item item = new Item();
@@ -236,6 +241,7 @@ public class TradeDocumentSums {
     item.setVatIsPercent(vatIsPercent);
 
     items.put(id, item);
+    return this;
   }
 
   public void addPayment(long id, Double amount) {
@@ -304,6 +310,15 @@ public class TradeDocumentSums {
     }
 
     return changed;
+  }
+
+  public void disableRounding() {
+    setAmountScale(BeeConst.UNDEF);
+    setDiscountScale(BeeConst.UNDEF);
+    setVatScale(BeeConst.UNDEF);
+
+    setPriceScale(BeeConst.UNDEF);
+    setDocumentScale(BeeConst.UNDEF);
   }
 
   public int getAmountScale() {

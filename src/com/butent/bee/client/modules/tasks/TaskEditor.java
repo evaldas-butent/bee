@@ -66,8 +66,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -110,6 +108,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 class TaskEditor extends ProductSupportInterceptor {
 
@@ -271,7 +271,14 @@ class TaskEditor extends ProductSupportInterceptor {
         } else {
           if (callback != null) {
             callback.onSuccess(response);
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
+
+            if (response.hasResponse(BeeRow.class)) {
+              BeeRow row = BeeRow.restore((String) response.getResponse());
+
+              if (row != null) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, row);
+              }
+            }
           }
         }
       }
@@ -850,17 +857,8 @@ class TaskEditor extends ProductSupportInterceptor {
       @Override
       public void onSuccess(ResponseObject result) {
         BeeRow data = getResponseRow(TaskEvent.EDIT.getCaption(), result, this);
-
-        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECT_STAGES);
         if (data != null) {
-          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
-          if (DataUtils.isId(Data.getLong(VIEW_TASKS, data, ProjectConstants.COL_PROJECT))) {
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), ProjectConstants.VIEW_PROJECTS);
-          }
-
-          if (TaskUtils.hasRelations(oldRow) || TaskUtils.hasRelations(data)) {
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
-          }
+          TasksKeeper.fireRelatedDataRefresh(data, oldRow);
         }
       }
     });
@@ -2088,7 +2086,7 @@ class TaskEditor extends ProductSupportInterceptor {
   }
 
   private Map<String, String> setDurations(TaskDialog dialog) {
-    final String durId = dialog.addTime(Localized.dictionary().crmSpentTime());
+    final String durId = dialog.addTime(Localized.dictionary().crmSpentTime(), false);
     String durTypeId = dialog.addSelector(Localized.dictionary().crmDurationType(),
         VIEW_TASK_DURATION_TYPES, Lists.newArrayList(ALS_DURATION_TYPE_NAME), false, null, null,
         COL_DURATION_TYPE);
@@ -2107,16 +2105,16 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private void setCommentsLayout() {
     if (isDefaultLayout) {
-      split.remove(taskWidget);
-      split.remove(taskEventsWidget);
-      split.addNorth(taskWidget, 575);
+      int height = getFormView().getWidgetByName("TaskContainer").getElement().getScrollHeight();
+      if (height == 0) {
+        height = 600;
+      }
+      split.addNorth(taskWidget, height + 60);
       split.updateCenter(taskEventsWidget);
 
     } else {
       Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_TASK_TREE));
-      split.remove(taskWidget);
-      split.remove(taskEventsWidget);
-      split.addWest(taskWidget, size == null ? 650 : size);
+      split.addWest(taskWidget, size == null ? 660 : size);
       StyleUtils.autoHeight(taskWidget.getElement());
       split.updateCenter(taskEventsWidget);
     }

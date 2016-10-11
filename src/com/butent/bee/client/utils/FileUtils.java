@@ -23,7 +23,6 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Service;
@@ -48,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import elemental.client.Browser;
 import elemental.events.Event;

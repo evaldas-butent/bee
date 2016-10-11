@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TradeStock" source="TradeStock" caption="=trdStock"
-  >
+      name="TradeStock" source="TradeStock" caption="=trdStock"
+>
   <Columns>
     <SimpleColumn name="PrimaryDocumentItem" />
     <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
@@ -14,6 +14,8 @@
           <SimpleColumn name="Name" alias="SupplierName" label="=trdSupplier" />
         </SimpleJoin>
       </SimpleJoin>
+
+      <SimpleColumn name="Article" />
     </SimpleJoin>
 
     <SimpleColumn name="TradeDocumentItem" />
@@ -30,8 +32,6 @@
           <SimpleColumn name="Name" alias="UnitName" />
         </SimpleJoin>
       </SimpleJoin>
-
-      <SimpleColumn name="Article" />
     </SimpleJoin>
 
     <SimpleColumn name="Warehouse" />
@@ -41,8 +41,16 @@
     </SimpleJoin>
 
     <SimpleColumn name="Quantity" />
+
+    <ExternalJoin joinType="LEFT" targetName="PrimaryDocumentItem" source="TradeItemCost"
+                  name="TradeDocumentItem">
+      <SimpleColumn name="Cost" />
+      <SimpleJoin joinType="LEFT" name="Currency">
+        <SimpleColumn name="Name" alias="CurrencyName" />
+      </SimpleJoin>
+    </ExternalJoin>
   </Columns>
-  
+
   <Order>
     <OrderBy column="ItemName" />
     <OrderBy column="Article" />

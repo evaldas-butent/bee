@@ -240,6 +240,7 @@ public final class MailConstants {
   public static final String COL_FOLDER_PARENT = "Parent";
   public static final String COL_FOLDER_NAME = "Name";
   public static final String COL_FOLDER_UID = "UIDValidity";
+  public static final String COL_FOLDER_MODSEQ = "ModSeq";
 
   public static final String COL_PLACE = "Place";
   public static final String COL_FOLDER = "Folder";
@@ -260,6 +261,8 @@ public final class MailConstants {
   public static final String COL_NEWSLETTER = "Newsletter";
   public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_RECIPIENTS_GROUP = "RecipientsGroup";
+
+  public static final String COL_NEWSLETTER_VISIBLE_COPIES = "VisibleCopies";
 
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";

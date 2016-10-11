@@ -11,16 +11,40 @@
 
   <row>
     <Label for="Category" />
-    <DataSelector source="Category" renderColumns="CategoryName" choiceColumns="ParentName Name"
-      style="&inp;" />
-    <Label for="Address" />
-    <InputText source="Address" style="&inp;" />
-  </row>
-
-  <row>
+    <DataSelector source="Category" viewName="ServiceTree" renderColumns="CategoryName" choiceColumns="ParentName Name"
+                  style="&inp;" />
     <Label for="Customer" />
     <DataSelector source="Customer" renderColumns="CustomerName" style="&inp;" />
-    <Label for="Contractor" />
-    <DataSelector source="Contractor" style="&inp;" />
+  </row>
+  <row>
+    <Label for="Manufacturer" />
+    <DataSelector source="Manufacturer" viewName="Companies" renderColumns="ManufacturerName" style="&inp;" />
+    <Label for="ContactPerson" />
+    <DataSelector source="ContactPerson" viewName="CompanyPersons"
+                  renderColumns="ContactPersonFirstName ContactPersonLastName" style="&inp;"/>
+  </row>
+  <row>
+    <Label for="Model"/>
+    <InputText source="Model" style="&inp;"/>
+    <Label for="ContactPerson" text="=address"/>
+    <DataSelector source="ContactPerson" viewName="CompanyPersons"
+                  choiceColumns="Address FirstName LastName CompanyName"
+                  renderColumns="ContactPersonAddress" style="&inp;"/>
+  </row>
+  <row>
+    <Label for="SerialNo"/>
+    <InputText source="SerialNo" style="&inp;"/>
+    <Label for="ContactPerson" text="=phone" />
+    <DataSelector source="ContactPerson" viewName="CompanyPersons"
+                 choiceColumns="Phone FirstName LastName"
+                 renderColumns="ContactPersonPhone" style="&inp;"/>
+  </row>
+  <row>
+    <Label for="Address" />
+    <InputText source="Address" style="&inp;" />
+    <Label for="ContactPerson" text="=email"/>
+    <DataSelector source="ContactPerson" viewName="CompanyPersons"
+                  choiceColumns="Email FirstName LastName"
+                  renderColumns="ContactPersonEmailAddress" style="&inp;"/>
   </row>
 </Table>

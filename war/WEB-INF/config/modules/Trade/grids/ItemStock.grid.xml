@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="ItemStock" viewName="TradeStock"
+        filter="Quantity > 0" readOnly="true" autoFlex="true"
+>
+  <g:columns>
+    <DataColumn name="TradeDocumentItem" visible="false" />
+    <DataColumn name="TradeDocument" editSource="TradeDocument" editViewName="TradeDocuments" />
+
+    <DataColumn name="Date" />
+    <DataColumn name="SupplierName" flexGrow="1" />
+
+    <DataColumn name="Article" flexGrow="1" />
+
+    <DataColumn name="WarehouseCode" label="=warehouse" editPopup="true">
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </DataColumn>
+
+    <DataColumn name="Quantity" scale="0" visible="true">
+      <footer aggregate="sum" />
+    </DataColumn>
+
+    <DataColumn name="Cost" scale="2" />
+    <DataColumn name="CurrencyName" label="=currencyShort" />
+
+    <CalcColumn name="Amount" type="decimal" scale="2" label="=amount">
+      <render>
+        <ui:expression>row.Quantity * row.Cost</ui:expression>
+      </render>
+      <footer aggregate="sum" scale="2" />
+    </CalcColumn>
+
+    <DataColumn name="PrimaryDocumentItem" visible="false" />
+    <DataColumn name="PrimaryDocument" editSource="PrimaryDocument" editViewName="TradeDocuments" />
+
+    <DataColumn name="PrimaryDate" />
+  </g:columns>
+</g:Grid>

@@ -21,7 +21,7 @@ public final class RowActionEvent extends Event<RowActionEvent.Handler> implemen
   }
 
   private enum Kind {
-    CELL_CLICK, CREATE_ROW, EDIT_ROW, OPEN_FAVORITE;
+    CELL_CLICK, CREATE_ROW, EDIT_ROW, OPEN_FAVORITE
   }
 
   private static final Type<Handler> TYPE = new Type<>();
@@ -38,8 +38,8 @@ public final class RowActionEvent extends Event<RowActionEvent.Handler> implemen
     return !event.isConsumed();
   }
 
-  public static boolean fireEditRow(String viewName, IsRow row, Opener opener) {
-    RowActionEvent event = new RowActionEvent(Kind.EDIT_ROW, viewName, row, null, opener, null);
+  public static boolean fireEditRow(String viewName, IsRow row, Opener opener, String options) {
+    RowActionEvent event = new RowActionEvent(Kind.EDIT_ROW, viewName, row, null, opener, options);
     BeeKeeper.getBus().fireEvent(event);
     return !event.isConsumed();
   }

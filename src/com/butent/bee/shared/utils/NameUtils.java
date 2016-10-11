@@ -1,7 +1,6 @@
 package com.butent.bee.shared.utils;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 
 import com.butent.bee.shared.Assert;
@@ -12,6 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public final class NameUtils {
 
@@ -22,12 +22,7 @@ public final class NameUtils {
   public static final Splitter NAME_SPLITTER =
       Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
 
-  public static final Function<Enum<?>, String> GET_NAME = new Function<Enum<?>, String>() {
-    @Override
-    public String apply(Enum<?> input) {
-      return input.name();
-    }
-  };
+  public static final Function<Enum<?>, String> GET_NAME = Enum::name;
 
   private static int nameCounter;
 

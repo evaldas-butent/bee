@@ -29,7 +29,6 @@ import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -56,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class MultiSelector extends DataSelector implements HandlesRendering, HandlesValueChange {
 
@@ -189,7 +189,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   public static MultiSelector autonomous(Relation relation, AbstractCellRenderer renderer) {
     Assert.notNull(relation);
 
-    final MultiSelector selector = new MultiSelector(relation, true, null);
+    MultiSelector selector = new MultiSelector(relation, true, null);
     selector.setRenderer(renderer);
 
     selector.addFocusHandler(event -> selector.setEditing(true));
@@ -351,10 +351,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   }
 
   /**
-   * @returns the internal representation.
-   *
-   *          This method is only provided for compatibility with the HasStringValue interface. Use
-   *          getIds(), getValues(), getChoices() instead.
+   * Returns the internal representation.
+   * This method is only provided for compatibility with the HasStringValue interface. Use
+   * getIds(), getValues(), getChoices() instead.
    */
   @Override
   public String getValue() {
@@ -494,7 +493,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   /**
    * Sets the internal representation.
-   *
    * This method is only provided for compatibility with the HasStringValue interface. Use setIds,
    * setValues, setChoices instead.
    */

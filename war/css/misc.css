@@ -547,12 +547,14 @@
 .bee-conf-remove:after, .bee-conf-row-hdr .bee-Label:before, .bee-conf-col-hdr .bee-Label:before {
   margin-left: 1px;
   content: "\00d7";
+  font-weight: bold;
   font-size: 15px;
   color: red;
   cursor: pointer;
   visibility: hidden;
 }
-.bee-conf-row-hdr:hover .bee-conf-remove:after, .bee-conf-col-hdr:hover .bee-conf-remove:after {
+.bee-conf-row-hdr:hover .bee-conf-remove:after, .bee-conf-col-hdr:hover .bee-conf-remove:after,
+.bee-conf-row:hover .bee-conf-remove:after {
   visibility: visible;
 }
 .bee-conf-row-add:after, .bee-conf-col-add:after {
@@ -583,7 +585,21 @@
   content: "\f00d";
 }
 
-.bee-spec {
+.bee-spec-dialog > div {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.bee-spec-dialog .bee-Dialog-content {
+  flex: 1;
+}
+.bee-spec-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.bee-spec-options {
+  flex: 1;
   overflow: auto;
 }
 .bee-spec-box {
@@ -626,12 +642,11 @@
   font-weight: bold;
 }
 .bee-spec-description {
-  max-height: 100px;
-  overflow: auto;
   background-color: lightgoldenrodyellow;
 }
 .bee-spec-selectable {
   border-collapse: collapse;
+  margin-top: 10px;
 }
 .bee-spec-selectable tr td:nth-child(2) {
   text-align: right;
@@ -639,6 +654,9 @@
 .bee-spec-selectable td {
   border: 1px solid #ddd;
   padding: 5px;
+}
+.bee-spec-blocked {
+  color: red;
 }
 
 .bee-row-Mode-new,

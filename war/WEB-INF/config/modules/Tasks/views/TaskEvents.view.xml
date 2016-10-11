@@ -6,6 +6,10 @@
   >
   <Columns>
     <SimpleColumn name="Task" />
+    <SimpleJoin name="Task" joinType="INNER">
+      <SimpleColumn name="Project" />
+      <SimpleColumn name="ProjectStage" />
+    </SimpleJoin>
     <SimpleJoin name="Publisher" joinType="LEFT">
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">

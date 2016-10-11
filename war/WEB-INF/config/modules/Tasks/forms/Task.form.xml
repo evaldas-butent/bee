@@ -27,13 +27,13 @@
   >
 
   <SplitPanel splitterSize="1" style="margin:5px;" name="Split" >
-    <west size="650">
+    <west size="660">
       <TabbedPages resizable="false" name="TabbedPages" >
         <page>
           <text>=mainInformation</text>
 
           <FlowPanel class="flexBox-horizontal bee-crm-taskEdit-form">
-            <FlowPanel style="margin-left: 5px; overflow:scroll; min-width:650px;">
+            <FlowPanel name="TaskContainer" style="margin-left: 5px; overflow:scroll; min-width:650px;">
               <Table kind="controls" style="&tbl;" cellStyle="&cell;">
                 <col index="0" cellStyle="&col1;" />
 
@@ -104,20 +104,21 @@
                 </row>
 
                 <row>
-                  <Label for="Type" class="bee-required" />
-                  <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2x;"
-                    disablable="true" required="true" />
+                  <Label for="Type" />
+                  <DataSelector source="Type" name="Type" renderColumns="TypeName"
+                                newRowEnabled="true" style="&inp2x;" disablable="true" />
                 </row>
 
                 <row>
                   <Label for="Product" name="Product" />
-                  <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2x;" filter="Visible" />
+                  <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true"
+                                style="&inp2x;" filter="Visible" />
                 </row>
 
                 <row>
-                 <Label for="Company" class="bee-required" />
+                 <Label for="Company" />
                   <DataSelector source="Company" editPopup="true" newRowEnabled="true" choiceColumns="Name TypeName"
-                      renderColumns="CompanyName CompanyTypeName" style="&inp2x;" required="true" />
+                      renderColumns="CompanyName CompanyTypeName" style="&inp2x;" />
                 </row>
 
                 <row>

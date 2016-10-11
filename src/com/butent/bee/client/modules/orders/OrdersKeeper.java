@@ -8,9 +8,10 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.function.Consumer;
 
 /**
  * Client-side projects module handler.
@@ -34,9 +35,6 @@ public final class OrdersKeeper {
     FormFactory.registerFormInterceptor(COL_ORDER, new OrderForm());
     FormFactory.registerFormInterceptor("OrderInvoice", new OrderInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_NEW_ORDER_INVOICE, new NewOrderInvoiceForm());
-
-    FormFactory.registerFormInterceptor(TBL_CONF_PRICELIST, new ConfPricelistForm());
-    FormFactory.registerFormInterceptor(FORM_CONF_OPTION, new ConfOptionForm());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_SALES, new OrderInvoiceBuilder());
     GridFactory.registerGridInterceptor(GRID_ORDERS_INVOICES, new OrdersInvoicesGrid());

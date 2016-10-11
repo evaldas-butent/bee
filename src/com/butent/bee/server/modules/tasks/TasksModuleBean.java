@@ -1470,9 +1470,6 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     long currentUser = usr.getCurrentUserId();
     long now = System.currentTimeMillis();
-    TaskStatus status =
-        EnumUtils.getEnumByIndex(TaskStatus.class, taskRow.getInteger(taskData
-            .getColumnIndex(COL_STATUS)));
 
     String eventNote;
 
@@ -1540,13 +1537,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       case ACTIVATE:
       case OUT_OF_OBSERVERS:
 
-        if (TaskEvent.EDIT.equals(event) && TaskStatus.NOT_SCHEDULED.equals(status)) {
-          response = ResponseObject.emptyResponse();
-        } else {
-          response =
-              updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
-                  eventNote, now);
-        }
+        response = updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
+            eventNote, now);
+
         break;
     }
 
@@ -3310,10 +3303,17 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     long taskId = taskRow.getId();
     Long finishTime = BeeUtils.toLongOrNull(reqInfo.get(VAR_TASK_FINISH_TIME));
     Long eventId = null;
+    TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class, taskRow.getInteger(
+        DataUtils.getColumnIndex(COL_STATUS, taskData.getColumns())));
 
-    ResponseObject response =
-        registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
-            now);
+    ResponseObject response = null;
+
+    if (status != TaskStatus.NOT_SCHEDULED) {
+      response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime, now);
+    } else {
+      response = ResponseObject.emptyResponse();
+    }
+
     if (response.hasResponse(Long.class)) {
       eventId = (Long) response.getResponse();
     }
@@ -3321,7 +3321,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       response = registerTaskVisit(taskId, currentUser, now);
     }
 
-    if (!response.hasErrors()) {
+    if (!response.hasErrors() || status == TaskStatus.NOT_SCHEDULED) {
       response = commitTaskData(taskData, DataUtils.parseIdSet(reqInfo.get(VAR_TASK_USERS)),
           updatedRelations, eventId);
     }

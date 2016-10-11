@@ -35,7 +35,6 @@ import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.font.FontAwesome;
@@ -51,6 +50,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 public class MailController extends Flow implements HasDomain, HandlesStateChange {
 

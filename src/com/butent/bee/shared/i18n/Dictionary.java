@@ -132,6 +132,8 @@ public interface Dictionary {
 
   default String additionalContacts() {return g("additionalContacts");}
 
+  default String additionalEquipment() {return g("additionalEquipment");}
+
   default String additionalInfo() {return g("additionalInfo");}
 
   default String additionalServices() {return g("additionalServices");}
@@ -603,8 +605,6 @@ public interface Dictionary {
 
   default String car() {return g("car");}
 
-  default String carDealers() {return g("carDealers");}
-
   default String cargo() {return g("cargo");}
 
   default String cargoChangeOfPallets() {return g("cargoChangeOfPallets");}
@@ -638,6 +638,8 @@ public interface Dictionary {
   default String carrier() {return g("carrier");}
 
   default String carriers() {return g("carriers");}
+
+  default String cars() {return g("cars");}
 
   default String cash() {return g("cash");}
 
@@ -958,6 +960,8 @@ public interface Dictionary {
   default String crmEnterConfirmDate() {return g("crmEnterConfirmDate");}
 
   default String crmEnterDueDate() {return g("crmEnterDueDate");}
+
+  default String crmEnterDuration() {return g("crmEnterDuration");}
 
   default String crmEnterDurationType() {return g("crmEnterDurationType");}
 
@@ -1347,6 +1351,8 @@ public interface Dictionary {
 
   default String crmTasksDelegatedTasks() {return g("crmTasksDelegatedTasks");}
 
+  default String crmTasksNotScheduledTask() {return g("crmTasksNotScheduledTask");}
+
   default String crmTasksNotScheduledTasks() {return g("crmTasksNotScheduledTasks");}
 
   default String crmTasksObserved() {return g("crmTasksObserved");}
@@ -1458,6 +1464,8 @@ public interface Dictionary {
   default String defaultCompanyUser() {return g("defaultCompanyUser");}
 
   default String defaultCompanyUserShort() {return g("defaultCompanyUserShort");}
+
+  default String defaultQuantity() {return g("defaultQuantity");}
 
   default String delete() {return g("delete");}
 
@@ -2858,6 +2866,8 @@ public interface Dictionary {
 
   default String itemTypes() {return g("itemTypes");}
 
+  default String join() {return g("join");}
+
   default String key() {return g("key");}
 
   default String keyNotFound(Object p0) {
@@ -3166,6 +3176,8 @@ public interface Dictionary {
 
   default String mailSMTPServerSettings() {return g("mailSMTPServerSettings");}
 
+  default String mailSendVisibleCopies() {return g("mailSendVisibleCopies");}
+
   default String mailSender() {return g("mailSender");}
 
   default String mailServerAddress() {return g("mailServerAddress");}
@@ -3263,6 +3275,8 @@ public interface Dictionary {
   default String month() {return g("month");}
 
   default String more() {return g("more");}
+
+  default String moreThenOneValue() {return g("moreThenOneValue");}
 
   default String myCompanyMenu() {return g("myCompanyMenu");}
 
@@ -3509,6 +3523,10 @@ public interface Dictionary {
   default String optionGroup() {return g("optionGroup");}
 
   default String optionGroups() {return g("optionGroups");}
+
+  default String optionType() {return g("optionType");}
+
+  default String optionTypes() {return g("optionTypes");}
 
   default String options() {return g("options");}
 
@@ -4085,7 +4103,11 @@ public interface Dictionary {
 
   default String prmClearReservationsTime() {return g("prmClearReservationsTime");}
 
+  default String prmDefaultMaintenanceType() {return g("prmDefaultMaintenanceType");}
+
   default String prmDefaultSaleOperation() {return g("prmDefaultSaleOperation");}
+
+  default String prmDefaultWarrantyType() {return g("prmDefaultWarrantyType");}
 
   default String prmDiscussBirthdays() {return g("prmDiscussBirthdays");}
 
@@ -4104,6 +4126,8 @@ public interface Dictionary {
   default String prmImportERPItemsTime() {return g("prmImportERPItemsTime");}
 
   default String prmImportERPStocksTime() {return g("prmImportERPStocksTime");}
+
+  default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
 
   default String prmManagerDiscount() {return g("prmManagerDiscount");}
 
@@ -4130,6 +4154,8 @@ public interface Dictionary {
   default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
 
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
+
+  default String prmUrgentRate() {return g("prmUrgentRate");}
 
   default String productService() {return g("productService");}
 
@@ -4182,6 +4208,16 @@ public interface Dictionary {
   default String rebuildTradeStockNotification() {return g("rebuildTradeStockNotification");}
 
   default String rebuildTradeStockQuestion() {return g("rebuildTradeStockQuestion");}
+
+  default String recalculateTradeItemCostsCaption() {return g("recalculateTradeItemCostsCaption");}
+
+  default String recalculateTradeItemCostsNotification(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("recalculateTradeItemCostsNotification"), _m);
+  }
+
+  default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
 
   default String received() {return g("received");}
 
@@ -4386,6 +4422,8 @@ public interface Dictionary {
 
   default String scheduledStartingTime() {return g("scheduledStartingTime");}
 
+  default String scvAddressRequired() {return g("scvAddressRequired");}
+
   default String search() {return g("search");}
 
   default String searchQueryRestriction(Object p0) {
@@ -4500,9 +4538,13 @@ public interface Dictionary {
 
   default String svcCalendarSeparateObjects() {return g("svcCalendarSeparateObjects");}
 
+  default String svcComment() {return g("svcComment");}
+
   default String svcContractor() {return g("svcContractor");}
 
   default String svcDates() {return g("svcDates");}
+
+  default String svcDaysActive() {return g("svcDaysActive");}
 
   default String svcDefect() {return g("svcDefect");}
 
@@ -4518,13 +4560,31 @@ public interface Dictionary {
 
   default String svcDefects() {return g("svcDefects");}
 
+  default String svcDevice() {return g("svcDevice");}
+
+  default String svcDeviceCategory() {return g("svcDeviceCategory");}
+
+  default String svcDevices() {return g("svcDevices");}
+
+  default String svcEquipment() {return g("svcEquipment");}
+
+  default String svcFaultInfo() {return g("svcFaultInfo");}
+
+  default String svcFinite() {return g("svcFinite");}
+
+  default String svcInitial() {return g("svcInitial");}
+
   default String svcInvoices() {return g("svcInvoices");}
 
   default String svcMaintenance() {return g("svcMaintenance");}
 
+  default String svcMaintenanceItemsServices() {return g("svcMaintenanceItemsServices");}
+
   default String svcMaster() {return g("svcMaster");}
 
   default String svcMenu() {return g("svcMenu");}
+
+  default String svcModel() {return g("svcModel");}
 
   default String svcModule() {return g("svcModule");}
 
@@ -4532,9 +4592,21 @@ public interface Dictionary {
 
   default String svcNewDefect() {return g("svcNewDefect");}
 
+  default String svcNewDevice() {return g("svcNewDevice");}
+
   default String svcNewMaintenance() {return g("svcNewMaintenance");}
 
+  default String svcNewMaintenanceItemService() {return g("svcNewMaintenanceItemService");}
+
   default String svcNewObject() {return g("svcNewObject");}
+
+  default String svcNewServiceState() {return g("svcNewServiceState");}
+
+  default String svcNewServiceType() {return g("svcNewServiceType");}
+
+  default String svcNewWarrantyType() {return g("svcNewWarrantyType");}
+
+  default String svcNotifyCustomer() {return g("svcNotifyCustomer");}
 
   default String svcObject() {return g("svcObject");}
 
@@ -4542,9 +4614,35 @@ public interface Dictionary {
 
   default String svcObjects() {return g("svcObjects");}
 
+  default String svcSerialNo() {return g("svcSerialNo");}
+
+  default String svcServiceState() {return g("svcServiceState");}
+
+  default String svcServiceStates() {return g("svcServiceStates");}
+
+  default String svcServiceType() {return g("svcServiceType");}
+
+  default String svcServiceTypes() {return g("svcServiceTypes");}
+
   default String svcSpecification() {return g("svcSpecification");}
 
+  default String svcStateProcess() {return g("svcStateProcess");}
+
+  default String svcTerm() {return g("svcTerm");}
+
   default String svcTypeOfWork() {return g("svcTypeOfWork");}
+
+  default String svcUrgent() {return g("svcUrgent");}
+
+  default String svcWarranty() {return g("svcWarranty");}
+
+  default String svcWarrantyBasis() {return g("svcWarrantyBasis");}
+
+  default String svcWarrantyType() {return g("svcWarrantyType");}
+
+  default String svcWarrantyTypes() {return g("svcWarrantyTypes");}
+
+  default String svcWarrantyValidTo() {return g("svcWarrantyValidTo");}
 
   default String swift() {return g("swift");}
 
@@ -5040,6 +5138,8 @@ public interface Dictionary {
 
   default String trIncomeInvoices() {return g("trIncomeInvoices");}
 
+  default String trInvoiceHasNotAttribute() {return g("trInvoiceHasNotAttribute");}
+
   default String trInvoiceIdShort() {return g("trInvoiceIdShort");}
 
   default String trInvoices() {return g("trInvoices");}
@@ -5474,6 +5574,10 @@ public interface Dictionary {
 
   default String trTbSettingsCountryFlags() {return g("trTbSettingsCountryFlags");}
 
+  default String trTbSettingsOrderCustomer() {return g("trTbSettingsOrderCustomer");}
+
+  default String trTbSettingsOrderNo() {return g("trTbSettingsOrderNo");}
+
   default String trTbSettingsPixelsPerCustomer() {return g("trTbSettingsPixelsPerCustomer");}
 
   default String trTbSettingsPixelsPerDriver() {return g("trTbSettingsPixelsPerDriver");}
@@ -5539,6 +5643,8 @@ public interface Dictionary {
   default String trTripStatus() {return g("trTripStatus");}
 
   default String trTripStatusActive() {return g("trTripStatusActive");}
+
+  default String trTripStatusArranged() {return g("trTripStatusArranged");}
 
   default String trTripStatusCanceled() {return g("trTripStatusCanceled");}
 
@@ -5788,6 +5894,8 @@ public interface Dictionary {
   default String trdInvoices() {return g("trdInvoices");}
 
   default String trdManager() {return g("trdManager");}
+
+  default String trdMovement() {return g("trdMovement");}
 
   default String trdMovementOfGoods() {return g("trdMovementOfGoods");}
 

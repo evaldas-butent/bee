@@ -16,6 +16,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Theme;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.widget.FaLabel;
@@ -366,6 +367,20 @@ public class HeaderImpl extends Flow implements HeaderView {
   public void removeCaptionStyle(String style) {
     Assert.notEmpty(style);
     captionWidget.removeStyleName(style);
+  }
+
+  @Override
+  public boolean removeCommandByStyleName(String styleName) {
+    if (BeeUtils.isEmpty(styleName)) {
+      return false;
+    }
+
+    Widget command = UiHelper.getChildByStyleName(getCommandPanel(), styleName);
+    if (command == null) {
+      return false;
+    } else {
+      return getCommandPanel().remove(command);
+    }
   }
 
   @Override

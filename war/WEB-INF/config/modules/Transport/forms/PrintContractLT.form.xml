@@ -22,7 +22,7 @@
     </css>
     <Image url="images/logo.png" style="display:block; margin:auto;" />
     <TextLabel style="text-align:center; &bold;">
-      <render><ui:expression>'Krovinio pervežimo sutartis Nr. ' + row.Assessment + '-' + (row.Number ? row.Number : rowId)</ui:expression></render>
+      <render><ui:expression>'Krovinio pervežimo sutartis Nr. ' + row.OrderNo + '-' + (row.Number ? row.Number : rowId)</ui:expression></render>
     </TextLabel>
     <DateLabel source="Date" style="text-align:center;" />
 

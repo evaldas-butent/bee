@@ -2,24 +2,27 @@ package com.butent.bee.shared.modules.trade;
 
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class TradeConstants {
 
   public enum OperationType implements HasLocalizedCaption {
-    PURCHASE(false, true) {
+    PURCHASE(false, true, true) {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.trdTypePurchase();
       }
     },
-    SALE(true, false) {
+
+    SALE(true, false, false) {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.trdTypeSale();
       }
     },
-    TRANSFER(true, true) {
+
+    TRANSFER(true, true, false) {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.trdTypeTransfer();
@@ -29,9 +32,13 @@ public final class TradeConstants {
     private final boolean consumesStock;
     private final boolean producesStock;
 
-    OperationType(boolean consumesStock, boolean producesStock) {
+    private final boolean providesCost;
+
+    OperationType(boolean consumesStock, boolean producesStock, boolean providesCost) {
       this.consumesStock = consumesStock;
       this.producesStock = producesStock;
+
+      this.providesCost = providesCost;
     }
 
     public boolean consumesStock() {
@@ -40,6 +47,10 @@ public final class TradeConstants {
 
     public boolean producesStock() {
       return producesStock;
+    }
+
+    public boolean providesCost() {
+      return providesCost;
     }
   }
 
@@ -67,6 +78,7 @@ public final class TradeConstants {
 
   public static final String SVC_DOCUMENT_PHASE_TRANSITION = "TradeDocumentPhaseTransition";
   public static final String SVC_REBUILD_STOCK = "RebuildStock";
+  public static final String SVC_CALCULATE_COST = "CalculateCost";
 
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
@@ -81,6 +93,7 @@ public final class TradeConstants {
 
   public static final String TBL_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String TBL_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String TBL_TRADE_ITEM_COST = "TradeItemCost";
   public static final String TBL_TRADE_STOCK = "TradeStock";
 
   public static final String TBL_TRADE_TYPE_OPERATIONS = "TradeTypeOperations";
@@ -118,6 +131,7 @@ public final class TradeConstants {
 
   public static final String VIEW_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String VIEW_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
+  public static final String VIEW_TRADE_ITEM_COST = "TradeItemCost";
   public static final String VIEW_TRADE_PAYMENTS = "TradePayments";
   public static final String VIEW_TRADE_STOCK = "TradeStock";
 
@@ -126,6 +140,8 @@ public final class TradeConstants {
 
   public static final String VIEW_EXPENDITURE_TYPES = "ExpenditureTypes";
   public static final String VIEW_TRADE_EXPENDITURES = "TradeExpenditures";
+
+  public static final String VIEW_TRADE_MOVEMENT = "TradeMovement";
 
   public static final String COL_PURCHASE = "Purchase";
 
@@ -155,6 +171,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_DEBT = "Debt";
   public static final String COL_TRADE_DEBT_COUNT = "DebtCount";
   public static final String COL_TRADE_CHECK_NO = "CheckNo";
+  public static final String COL_TRADE_JOIN = "Join";
 
   public static final String COL_TRADE_VAT_PLUS = "VatPlus";
   public static final String COL_TRADE_VAT = "Vat";
@@ -242,6 +259,9 @@ public final class TradeConstants {
   public static final String COL_EXPENDITURE_SUPPLIER = "Supplier";
   public static final String COL_EXPENDITURE_GENERATED_DOCUMENT = "GeneratedDocument";
 
+  public static final String COL_TRADE_ITEM_COST = "Cost";
+  public static final String COL_TRADE_ITEM_COST_CURRENCY = "Currency";
+
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_PAYER_NAME = "PayerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";
@@ -260,8 +280,12 @@ public final class TradeConstants {
 
   public static final String ALS_EXPENDITURE_TYPE_SUPPLIER = "TypeSupplier";
 
+  public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
+  public static final String ALS_STOCK_PRIMARY_DATE = "PrimaryDate";
+
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";
+  public static final String PROP_STOCK = "Stock";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
@@ -288,12 +312,18 @@ public final class TradeConstants {
   public static final String GRID_EXPENDITURE_TYPES = "ExpenditureTypes";
   public static final String GRID_TRADE_EXPENDITURES = "TradeExpenditures";
 
+  public static final String GRID_ITEM_MOVEMENT = "ItemMovement";
+
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
 
   public static final String FORM_TRADE_DOCUMENT = "TradeDocument";
 
   public static final int MAX_STOCK_DEPTH = 1_000;
+
+  public static String keyStockWarehouse(String warehouseCode) {
+    return PROP_STOCK + BeeUtils.trim(warehouseCode);
+  }
 
   private TradeConstants() {
   }

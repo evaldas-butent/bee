@@ -245,3 +245,8 @@
 .bee-trade-expenditures-gen-link:hover {
   color: #00e;
 }
+
+.bee-trade-document-new-item-selector td:nth-child(3),
+.bee-trade-document-new-item-selector td:nth-child(5) {
+  text-align: right;
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="StateProcess"
+  idName="StateProcessID"
+  >
+  <Fields>
+    <Relation name="Role" relation="Roles" notNull="true" label="=role" />
+    <Relation name="MaintenanceType" relation="MaintenanceTypes" notNull="true" label="=svcServiceType" />
+    <Relation name="MaintenanceState" relation="MaintenanceStates" notNull="true" label="=svcServiceState" />
+    <Boolean name="Initial" label="=svcInitial" />
+    <Boolean name="Finite" label="=svcFinite" />
+    <Boolean name="NotifyCustomer" label="=svcNotifyCustomer" />
+    <Text name="Message" label="=message" />
+    <Boolean name="Comment" label="=svcComment" />
+    <Relation name="Item" relation="Items" label="=service" />
+    <Boolean name="Term" label="=svcTerm" />
+    <Boolean name="Warranty" label="=svcWarranty" />
+    <Integer name="DaysActive" label="=svcDaysActive" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Role MaintenanceType MaintenanceState" />
+  </Constraints>
+</Table>

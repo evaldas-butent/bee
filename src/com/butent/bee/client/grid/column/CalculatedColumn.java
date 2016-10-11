@@ -1,7 +1,6 @@
 package com.butent.bee.client.grid.column;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.AbstractCell;
@@ -107,11 +106,14 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   }
 
   @Override
-  public void render(CellContext context, SafeHtmlBuilder sb) {
+  public String render(CellContext context) {
     String value = getString(context);
+
     if (!BeeUtils.isEmpty(value)) {
-      getCell().render(context, Format.render(value, getValueType(), getDateTimeFormat(),
-          getNumberFormat(), getScale()), sb);
+      return getCell().render(context, Format.render(value, getValueType(), getDateTimeFormat(),
+          getNumberFormat(), getScale()));
+    } else {
+      return null;
     }
   }
 

@@ -11,7 +11,6 @@ import com.butent.bee.client.data.SelectionOracle.Request;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.logging.LogUtils;
@@ -19,6 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> implements Consumable {
 

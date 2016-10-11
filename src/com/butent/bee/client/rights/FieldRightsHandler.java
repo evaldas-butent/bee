@@ -6,7 +6,6 @@ import com.google.common.collect.Ordering;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -20,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
 
 final class FieldRightsHandler extends MultiStateForm {
 

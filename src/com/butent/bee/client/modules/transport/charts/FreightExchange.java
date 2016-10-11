@@ -272,6 +272,16 @@ final class FreightExchange extends ChartBase {
   }
 
   @Override
+  protected String getShowOrderCustomerColumnName() {
+    return null;
+  }
+
+  @Override
+  protected String getShowOderNoColumnName() {
+    return null;
+  }
+
+  @Override
   protected String getShowPlaceInfoColumnName() {
     return COL_FX_PLACE_INFO;
   }

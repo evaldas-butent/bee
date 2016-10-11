@@ -7,7 +7,6 @@ import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
@@ -33,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Extends {@code Provider} class, enables to manage data ranges from sources stored directly in

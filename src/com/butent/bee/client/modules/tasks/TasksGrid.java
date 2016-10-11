@@ -2,12 +2,9 @@ package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
@@ -21,11 +18,10 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ChoiceCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
@@ -36,7 +32,6 @@ import com.butent.bee.client.modules.projects.ProjectsKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.HasCellRenderer;
-import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -44,7 +39,6 @@ import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridSettings;
@@ -57,8 +51,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -68,6 +60,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
@@ -81,7 +74,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
@@ -100,8 +94,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
-class TasksGrid extends AbstractGridInterceptor {
+class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handler {
 
   private static final String NAME_MODE = "Mode";
   private static final String NAME_SLACK = "Slack";
@@ -113,12 +108,9 @@ class TasksGrid extends AbstractGridInterceptor {
     final TaskType type = TaskType.getByFeed(feed);
     Assert.notNull(type);
 
-    return new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
-      @Override
-      public void accept(GridOptions gridOptions, PresenterCallback callback) {
-        String cap = BeeUtils.notEmpty(gridOptions.getCaption(), type.getCaption());
-        GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, cap), gridOptions, callback);
-      }
+    return (gridOptions, callback) -> {
+      String cap = BeeUtils.notEmpty(gridOptions.getCaption(), type.getCaption());
+      GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, cap), gridOptions, callback);
     };
   }
 
@@ -126,6 +118,7 @@ class TasksGrid extends AbstractGridInterceptor {
   private final String caption;
 
   private final Long userId;
+  private final Collection<HandlerRegistration> eventRegistry = new ArrayList<>();
 
   protected TasksGrid(TaskType type, String caption) {
     this.type = type;
@@ -159,13 +152,7 @@ class TasksGrid extends AbstractGridInterceptor {
     if (type.equals(TaskType.ALL) || type.equals(TaskType.DELEGATED)) {
       FaLabel confirmTask = new FaLabel(FontAwesome.CHECK_SQUARE_O);
       confirmTask.setTitle(Localized.dictionary().crmTaskConfirm());
-      confirmTask.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent arg0) {
-          confirmTasksClick();
-        }
-      });
+      confirmTask.addClickHandler(arg0 -> confirmTasksClick());
 
       presenter.getHeader().addCommandItem(confirmTask);
     }
@@ -174,13 +161,7 @@ class TasksGrid extends AbstractGridInterceptor {
         && !presenter.getGridView().isChild()) {
       FaLabel createProject = new FaLabel(FontAwesome.ROCKET);
       createProject.setTitle(Localized.dictionary().prjCreateFromTasks());
-      createProject.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent arg0) {
-          createProjectClick();
-        }
-      });
+      createProject.addClickHandler(arg0 -> createProjectClick());
 
       presenter.getHeader().addCommandItem(createProject);
     }
@@ -197,36 +178,33 @@ class TasksGrid extends AbstractGridInterceptor {
             Localized.dictionary().crmNewRecurringTask(), Localized.dictionary().cancel());
         int defValue = options.size() - 1;
 
-        Global.messageBox(title, Icon.QUESTION, msg, options, defValue, new ChoiceCallback() {
-          @Override
-          public void onSuccess(final int value) {
-            if (value < 0 || value > 1 || presenter.getActiveRow() == null) {
-              return;
-            }
+        Global.messageBox(title, Icon.QUESTION, msg, options, defValue, value -> {
+          if (value < 0 || value > 1 || presenter.getActiveRow() == null) {
+            return;
+          }
 
-            ParameterList params = TasksKeeper.createArgs(SVC_GET_TASK_DATA);
-            params.addQueryItem(VAR_TASK_ID, getTaskId(presenter.getActiveRow()));
-            params.addQueryItem(VAR_TASK_PROPERTIES, PROP_OBSERVERS);
-            params.addQueryItem(VAR_TASK_RELATIONS, 1);
+          ParameterList params = TasksKeeper.createArgs(SVC_GET_TASK_DATA);
+          params.addQueryItem(VAR_TASK_ID, getTaskId(presenter.getActiveRow()));
+          params.addQueryItem(VAR_TASK_PROPERTIES, PROP_OBSERVERS);
+          params.addQueryItem(VAR_TASK_RELATIONS, 1);
 
-            BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                if (Queries.checkRowResponse(SVC_GET_TASK_DATA, VIEW_TASKS, response)) {
-                  BeeRow original = BeeRow.restore(response.getResponseAsString());
+          BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              if (Queries.checkRowResponse(SVC_GET_TASK_DATA, VIEW_TASKS, response)) {
+                BeeRow original = BeeRow.restore(response.getResponseAsString());
 
-                  switch (value) {
-                    case 0:
-                      copyTask(original);
-                      break;
-                    case 1:
-                      copyAsRecurringTask(original);
-                      break;
-                  }
+                switch (value) {
+                  case 0:
+                    copyTask(original);
+                    break;
+                  case 1:
+                    copyAsRecurringTask(original);
+                    break;
                 }
               }
-            });
-          }
+            }
+          });
         });
       }
 
@@ -354,11 +332,86 @@ class TasksGrid extends AbstractGridInterceptor {
   }
 
   @Override
+  public void onLoad(GridView gridView) {
+    super.onLoad(gridView);
+
+    if (!BeeUtils.isEmpty(eventRegistry)) {
+      EventUtils.clearRegistry(eventRegistry);
+    }
+
+    eventRegistry.add(BeeKeeper.getBus().registerRowUpdateHandler(this, false));
+  }
+
+  @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
     if (TaskType.NOT_SCHEDULED.equals(type)) {
       newRow.setValue(gridView.getDataIndex(COL_STATUS), TaskStatus.NOT_SCHEDULED.ordinal());
     }
     return super.onStartNewRow(gridView, oldRow, newRow);
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (!event.hasView(TaskConstants.VIEW_TASKS)
+        && !event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+      return;
+    }
+    IsRow row = event.getRow();
+    IsRow oldRow = null;
+
+    if (getGridView() != null && getGridView().getGrid() != null) {
+      oldRow = getGridView().getGrid().getRowById(row.getId());
+    }
+
+    boolean isNew = false;
+    boolean changed = false;
+
+    switch (type) {
+      case ALL:
+      case RELATED:
+        Long id = row.getId();
+        Long oldId = oldRow != null ? oldRow.getId() : null;
+
+        isNew = !Objects.equals(id, oldId);
+        changed = !Objects.equals(id, oldId) && oldRow != null;
+        break;
+      case ASSIGNED:
+        Long executor = Data.getLong(VIEW_TASKS, row, COL_EXECUTOR);
+        Long oldExecutor = oldRow != null ? Data.getLong(VIEW_TASKS, oldRow, COL_EXECUTOR) : null;
+
+        isNew = !Objects.equals(executor, oldExecutor) && Objects.equals(executor, userId);
+        changed = !Objects.equals(oldExecutor, userId) && oldRow != null;
+
+        break;
+      case DELEGATED:
+      case NOT_SCHEDULED:
+        Long owner = Data.getLong(VIEW_TASKS, row, COL_OWNER);
+        Long oldOwner = oldRow != null ? Data.getLong(VIEW_TASKS, oldRow, COL_OWNER) : null;
+
+        isNew = !Objects.equals(owner, oldOwner) && Objects.equals(owner, userId);
+        changed = !Objects.equals(oldOwner, userId) && oldRow != null;
+
+        break;
+      case OBSERVED:
+        List<Long> observers = DataUtils.parseIdList(row.getProperty(PROP_OBSERVERS));
+        List<Long> oldObservers = oldRow != null
+            ? DataUtils.parseIdList(oldRow.getProperty(PROP_OBSERVERS)) : null;
+
+        isNew = !Objects.equals(observers, oldObservers) && observers != null
+            && observers.contains(userId);
+        changed = oldObservers != null && !oldObservers.contains(userId) && oldRow != null;
+        break;
+    }
+
+    if ((isNew || changed) && getGridPresenter() != null) {
+      getGridPresenter().handleAction(Action.REFRESH);
+    }
+  }
+
+  @Override
+  public void onUnload(GridView gridView) {
+    super.onUnload(gridView);
+    EventUtils.clearRegistry(eventRegistry);
   }
 
   protected void afterCopyAsRecurringTask() {
@@ -377,12 +430,8 @@ class TasksGrid extends AbstractGridInterceptor {
 
       final CellSource source = CellSource.forProperty(PROP_STAR, userId, ValueType.INTEGER);
 
-      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
-        @Override
-        public void accept(Integer parameter) {
-          updateStar(event, source, parameter);
-        }
-      });
+      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source,
+          parameter -> updateStar(event, source, parameter));
 
       return true;
     } else {
@@ -442,13 +491,10 @@ class TasksGrid extends AbstractGridInterceptor {
 
     FormFactory.createFormView(ProjectConstants.FORM_NEW_PROJECT_FROM_TASK, null, null, false,
         getNewProjectFormInterceptor(selectedRow),
-        new FormFactory.FormViewCallback() {
-          @Override
-          public void onSuccess(FormDescription formDescription, FormView form) {
-            if (form != null) {
-              form.start(null);
-              Global.showModalWidget(form.getCaption(), form.asWidget());
-            }
+        (formDescription, form) -> {
+          if (form != null) {
+            form.start(null);
+            Global.showModalWidget(form.getCaption(), form.asWidget());
           }
         });
   }
@@ -586,47 +632,44 @@ class TasksGrid extends AbstractGridInterceptor {
             .nowMinutes());
     final String cid = dialog.addComment(false);
 
-    dialog.addAction(Localized.dictionary().crmTaskConfirm(), new ScheduledCommand() {
-      @Override
-      public void execute() {
-        DateTime approved = dialog.getDateTime(did);
-        if (approved == null) {
-          gridView.notifySevere(Localized.dictionary().crmEnterConfirmDate());
-          return;
-        }
-
-        List<String> notes = new ArrayList<>();
-
-        BeeRow newRow = DataUtils.cloneRow(row);
-        newRow.setValue(info.getColumnIndex(COL_STATUS), TaskStatus.APPROVED.ordinal());
-        newRow.setValue(info.getColumnIndex(COL_APPROVED), approved);
-
-        notes.add(TaskUtils.getUpdateNote(Localized.getLabel(info.getColumn(COL_STATUS)),
-            DataUtils.render(info, row, info.getColumn(COL_STATUS),
-                info.getColumnIndex(COL_STATUS)),
-            DataUtils.render(info, newRow, info.getColumn(COL_STATUS),
-                info.getColumnIndex(COL_STATUS))));
-
-        notes.add(TaskUtils.getInsertNote(Localized.getLabel(info.getColumn(COL_APPROVED)),
-            DataUtils.render(info, newRow, info.getColumn(COL_APPROVED),
-                info.getColumnIndex(COL_APPROVED))));
-
-        ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
-        params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(Lists.newArrayList(row.getId())));
-        params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
-
-        String comment = dialog.getComment(cid);
-        if (!BeeUtils.isEmpty(comment)) {
-          params.addDataItem(VAR_TASK_COMMENT, comment);
-        }
-
-        if (!notes.isEmpty()) {
-          params.addDataItem(VAR_TASK_NOTES, Codec.beeSerialize(notes));
-        }
-
-        sendRequest(params, gridView);
-        dialog.close();
+    dialog.addAction(Localized.dictionary().crmTaskConfirm(), () -> {
+      DateTime approved = dialog.getDateTime(did);
+      if (approved == null) {
+        gridView.notifySevere(Localized.dictionary().crmEnterConfirmDate());
+        return;
       }
+
+      List<String> notes = new ArrayList<>();
+
+      BeeRow newRow = DataUtils.cloneRow(row);
+      newRow.setValue(info.getColumnIndex(COL_STATUS), TaskStatus.APPROVED.ordinal());
+      newRow.setValue(info.getColumnIndex(COL_APPROVED), approved);
+
+      notes.add(TaskUtils.getUpdateNote(Localized.getLabel(info.getColumn(COL_STATUS)),
+          DataUtils.render(info, row, info.getColumn(COL_STATUS),
+              info.getColumnIndex(COL_STATUS)),
+          DataUtils.render(info, newRow, info.getColumn(COL_STATUS),
+              info.getColumnIndex(COL_STATUS))));
+
+      notes.add(TaskUtils.getInsertNote(Localized.getLabel(info.getColumn(COL_APPROVED)),
+          DataUtils.render(info, newRow, info.getColumn(COL_APPROVED),
+              info.getColumnIndex(COL_APPROVED))));
+
+      ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
+      params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(Lists.newArrayList(row.getId())));
+      params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
+
+      String comment = dialog.getComment(cid);
+      if (!BeeUtils.isEmpty(comment)) {
+        params.addDataItem(VAR_TASK_COMMENT, comment);
+      }
+
+      if (!notes.isEmpty()) {
+        params.addDataItem(VAR_TASK_NOTES, Codec.beeSerialize(notes));
+      }
+
+      sendRequest(params, gridView);
+      dialog.close();
     });
 
     dialog.display();
@@ -648,17 +691,14 @@ class TasksGrid extends AbstractGridInterceptor {
         }
 
         Global.confirm(Localized.dictionary().crmTasksConfirmQuestion(),
-            new ConfirmationCallback() {
-              @Override
-              public void onConfirm() {
-                DateTime approved = new DateTime();
+            () -> {
+              DateTime approved = new DateTime();
 
-                ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
-                params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(result.getRowIds()));
-                params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
+              ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
+              params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(result.getRowIds()));
+              params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
 
-                sendRequest(params, gridView);
-              }
+              sendRequest(params, gridView);
             });
       }
     });
@@ -851,18 +891,15 @@ class TasksGrid extends AbstractGridInterceptor {
               break;
             }
 
-            createButton.addClickHandler(new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                Popup.getActivePopup().close();
+            createButton.addClickHandler(event -> {
+              Popup.getActivePopup().close();
 
-                if (templateSelector == null) {
-                  createSimpleProject(selectedRow);
-                } else if (BeeUtils.isEmpty(templateSelector.getValue())) {
-                  createSimpleProject(selectedRow);
-                } else {
-                  createProjectFromTemplate(selectedRow, templateSelector.getRelatedRow());
-                }
+              if (templateSelector == null) {
+                createSimpleProject(selectedRow);
+              } else if (BeeUtils.isEmpty(templateSelector.getValue())) {
+                createSimpleProject(selectedRow);
+              } else {
+                createProjectFromTemplate(selectedRow, templateSelector.getRelatedRow());
               }
             });
             break;
@@ -873,14 +910,11 @@ class TasksGrid extends AbstractGridInterceptor {
               break;
             }
 
-            cancelButton.addClickHandler(new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                if (templateSelector != null) {
-                  templateSelector.setValue(null, true);
-                }
-                Popup.getActivePopup().close();
+            cancelButton.addClickHandler(event -> {
+              if (templateSelector != null) {
+                templateSelector.setValue(null, true);
               }
+              Popup.getActivePopup().close();
             });
             break;
           default:

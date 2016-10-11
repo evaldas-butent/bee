@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Entry xmlns="http://www.butent.com/menu"
-
-       name="CarDealers" label="=configuration" order="40" parent="Orders" module="Orders.CarDealers"
->
-  <Item name="ConfPricelist" label="=configuration" service="form" parameters="ConfPricelist" />
-  <Item name="ConfOptions" label="=options" service="grid" parameters="ConfOptions" />
-  <Item name="ConfGroups" label="=optionGroups" service="grid" parameters="ConfGroups" />
-</Entry>

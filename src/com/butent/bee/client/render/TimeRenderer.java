@@ -1,7 +1,5 @@
 package com.butent.bee.client.render;
 
-import com.google.common.base.Function;
-
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
@@ -9,6 +7,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasValueFormatter;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.function.Function;
 
 public class TimeRenderer extends AbstractCellRenderer implements HasValueFormatter {
 

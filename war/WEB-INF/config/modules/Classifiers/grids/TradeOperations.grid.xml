@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="TradeOperations" viewName="TradeOperations" caption="=trdOperations"
-  >
+        name="TradeOperations" viewName="TradeOperations" caption="=trdOperations"
+>
   <g:columns>
     <DataColumn name="OperationType" readOnly="true" carry="true" visible="true" />
     <DataColumn name="OperationName" minWidth="100" visible="true" />
@@ -18,6 +20,8 @@
 
     <DataColumn name="CashRegisterNo" />
 
+    <DataColumn name="Join" />
+
     <DataColumn name="IsDefault" />
 
     <DataColumn name="Background" updateMode="row">
@@ -30,4 +34,8 @@
     <DataColumn name="Description" visible="false" />
     <DataColumn name="Ordinal" visible="false" />
   </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.OperationName</ui:expression>
+  </g:rowMessage>
 </g:Grid>

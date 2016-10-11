@@ -8,12 +8,12 @@ import com.butent.bee.client.modules.ec.widget.ItemPanel;
 import com.butent.bee.client.modules.ec.widget.ItemSelector;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 class SearchByItem extends EcView implements SelectionHandler<InputText> {
 

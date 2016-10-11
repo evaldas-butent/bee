@@ -19,7 +19,6 @@ import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -33,6 +32,7 @@ import com.butent.bee.shared.ui.GridDescription;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Specifies necessary methods for grid view user interface component.

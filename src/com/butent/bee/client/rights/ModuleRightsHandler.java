@@ -1,7 +1,6 @@
 package com.butent.bee.client.rights;
 
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RightsObjectType;
@@ -10,6 +9,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 final class ModuleRightsHandler extends MultiRoleForm {
 

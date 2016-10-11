@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="CarOrderItems" viewName="CarOrderItems"
+        flexGrow="1" newRowCaption="=newItem">
+  <g:columns>
+    <RelColumn name="Item" renderColumns="ItemName"
+               choiceColumns="Name Article" filter="!(IsService)" editPopup="true" visible="true" />
+
+    <DataColumn name="Article" />
+    <DataColumn name="Quantity" visible="true" scale="3" />
+    <DataColumn name="UnitName" caption="=unitShort" flexGrow="0" />
+    <DataColumn name="Price" visible="true" />
+
+    <DataColumn name="Discount" />
+    <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" />
+    <DataColumn name="Vat" scale="0" carry="true" flexGrow="0">
+      <editor type="number" percentageTag="VatPercent" />
+    </DataColumn>
+    <DataColumn name="VatPercent" width="20" sortable="false" caption="%" format="%" carry="true" />
+
+    <CalcColumn name="Total" type="decimal" caption="=trdAmount" scale="2">
+      <style>
+        <bodyStyle>
+          <ui:font>bold</ui:font>
+        </bodyStyle>
+      </style>
+      <renderer type="total" />
+    </CalcColumn>
+  </g:columns>
+</g:Grid>

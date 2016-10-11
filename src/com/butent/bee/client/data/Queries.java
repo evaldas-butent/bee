@@ -3,6 +3,7 @@ package com.butent.bee.client.data;
 import static com.butent.bee.shared.Service.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -484,6 +485,36 @@ public final class Queries {
     });
   }
 
+  public static void getRowSequence(String viewName, final List<Long> rowIds,
+      final Callback<List<BeeRow>> callback) {
+
+    Assert.notEmpty(rowIds);
+    Assert.notNull(callback);
+
+    getRowSet(viewName, null, Filter.idIn(rowIds), null, new RowSetCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        callback.onFailure(reason);
+      }
+
+      @Override
+      public void onSuccess(BeeRowSet rowSet) {
+        List<BeeRow> result = new ArrayList<>();
+
+        if (!DataUtils.isEmpty(rowSet)) {
+          for (long id : rowIds) {
+            BeeRow row = rowSet.getRowById(id);
+            if (row != null) {
+              result.add(row);
+            }
+          }
+        }
+
+        callback.onSuccess(result);
+      }
+    });
+  }
+
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
       CachingPolicy cachingPolicy, RowSetCallback callback) {
 
@@ -559,21 +590,6 @@ public final class Queries {
         }
       }
     });
-  }
-
-  private static boolean isCacheable(Collection<Property> options) {
-    if (BeeUtils.isEmpty(options)) {
-      return true;
-
-    } else {
-      for (Property property : options) {
-        if (property != null && VAR_RIGHTS.equals(property.getName())) {
-          return false;
-        }
-      }
-
-      return true;
-    }
   }
 
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
@@ -1090,6 +1106,21 @@ public final class Queries {
 
     if (callback != null) {
       callback.onFailure(messages);
+    }
+  }
+
+  private static boolean isCacheable(Collection<Property> options) {
+    if (BeeUtils.isEmpty(options)) {
+      return true;
+
+    } else {
+      for (Property property : options) {
+        if (property != null && VAR_RIGHTS.equals(property.getName())) {
+          return false;
+        }
+      }
+
+      return true;
     }
   }
 
