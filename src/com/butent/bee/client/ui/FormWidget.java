@@ -24,6 +24,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.composite.TabGroup;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.data.Data;
@@ -75,6 +76,7 @@ import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
@@ -140,6 +142,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasPercentageTag;
 import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.font.FontAwesome;
@@ -264,6 +267,7 @@ public enum FormWidget {
   SUMMARY_PROXY("SummaryProxy", null),
   SVG("Svg", EnumSet.of(Type.DISPLAY)),
   TAB_BAR("TabBar", EnumSet.of(Type.DISPLAY)),
+  TAB_GROUP("TabGroup", EnumSet.of(Type.DISPLAY)),
   TABBED_PAGES("TabbedPages", EnumSet.of(Type.PANEL)),
   TABLE("Table", EnumSet.of(Type.IS_TABLE)),
   TEXT_LABEL("TextLabel", EnumSet.of(Type.DISPLAY)),
@@ -393,10 +397,6 @@ public enum FormWidget {
       }
     }
     return null;
-  }
-
-  public static boolean isFormWidget(String tagName) {
-    return getByTagName(tagName) != null;
   }
 
   private static void addHandler(IdentifiableWidget widget, String event, String handler) {
@@ -533,6 +533,11 @@ public enum FormWidget {
       widget.setCurrencySource(currencySource);
     }
 
+    String percentageTag = attributes.get(HasPercentageTag.ATTR_PERCENTAGE_TAG);
+    if (!BeeUtils.isEmpty(percentageTag)) {
+      widget.setPercentageTag(percentageTag);
+    }
+
     return widget;
   }
 
@@ -554,7 +559,7 @@ public enum FormWidget {
       int row, int col, String viewName, List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
       WidgetInterceptor widgetInterceptor) {
 
-    boolean ok = false;
+    boolean ok;
     String tag = XmlUtils.getLocalName(element);
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
@@ -1026,6 +1031,10 @@ public enum FormWidget {
 
   private static final String ATTR_RESIZABLE = "resizable";
 
+  private static final String ATTR_SPELL_CHECK = "spellcheck";
+
+  private static final String ATTR_PREDICATE = "predicate";
+
   private static final String TAG_CSS = "css";
 
   private static final String TAG_HANDLER = "handler";
@@ -1279,7 +1288,7 @@ public enum FormWidget {
 
       case FILE_COLLECTOR:
         IdentifiableWidget face = null;
-        for (Iterator<Element> it = children.iterator(); it.hasNext();) {
+        for (Iterator<Element> it = children.iterator(); it.hasNext(); ) {
           Element child = it.next();
           if (BeeUtils.same(XmlUtils.getLocalName(child), TAG_FACE)) {
             face = createFace(child);
@@ -1390,6 +1399,10 @@ public enum FormWidget {
 
       case INPUT_AREA:
         widget = new InputArea();
+        String spellCheck = attributes.get(ATTR_SPELL_CHECK);
+        if (BeeUtils.isBoolean(spellCheck)) {
+          ((InputArea) widget).setSpellCheck(BeeUtils.toBoolean(spellCheck));
+        }
         break;
 
       case INPUT_DATE:
@@ -1738,6 +1751,11 @@ public enum FormWidget {
             ? new TabBar(orientation) : new TabBar(stylePrefix, orientation);
         break;
 
+      case TAB_GROUP:
+        stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
+        widget = new TabGroup(stylePrefix);
+        break;
+
       case TABBED_PAGES:
         stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
         widget = BeeUtils.isEmpty(stylePrefix) ? new TabbedPages() : new TabbedPages(stylePrefix);
@@ -1763,11 +1781,29 @@ public enum FormWidget {
 
       case TOGGLE:
         String upFace = attributes.get(ATTR_UP_FACE);
-        String downFace = attributes.get(ATTR_DOWN_FACE);
-        if (BeeUtils.allEmpty(upFace, downFace)) {
-          widget = new Toggle();
+        String dnFace = attributes.get(ATTR_DOWN_FACE);
+
+        if (BeeUtils.allNotEmpty(upFace, dnFace)) {
+          stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
+          boolean checked = BeeConst.isTrue(attributes.get(ATTR_CHECKED));
+
+          if (Localized.maybeTranslatable(upFace) && Localized.maybeTranslatable(dnFace)) {
+            widget = new Toggle(Localized.maybeTranslate(upFace), Localized.maybeTranslate(dnFace),
+                stylePrefix, checked);
+
+          } else {
+            FontAwesome faUp = FontAwesome.parse(upFace);
+            FontAwesome faDn = FontAwesome.parse(dnFace);
+
+            if (faUp != null && faDn != null) {
+              widget = new Toggle(faUp, faDn, stylePrefix, checked);
+            } else {
+              widget = new Toggle(upFace, dnFace, stylePrefix, checked);
+            }
+          }
+
         } else {
-          widget = new Toggle(Localized.maybeTranslate(upFace), Localized.maybeTranslate(downFace));
+          widget = new Toggle();
         }
         break;
 
@@ -2346,10 +2382,16 @@ public enum FormWidget {
         Widget content = hc.getContent().asWidget();
         Collection<HasSummaryChangeHandlers> sources = SummaryChangeEvent.findSources(content);
 
+        String predicate = child.getAttribute(ATTR_PREDICATE);
+        Evaluator rowPredicate = BeeUtils.isEmpty(predicate)
+            ? null : Evaluator.create(new Calculation(predicate, null), null, columns);
+
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), null, sources);
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), null, sources,
+              rowPredicate);
         } else {
-          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), null, sources);
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), null, sources,
+              rowPredicate);
         }
 
         StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),
@@ -2384,12 +2426,14 @@ public enum FormWidget {
     } else if (this == TREE && parent instanceof Tree) {
       processTree((Tree) parent, child);
 
-    } else if (this == TAB_BAR && parent instanceof TabBar && BeeUtils.same(childTag, TAG_TAB)) {
+    } else if ((this == TAB_BAR || this == TAB_GROUP) && parent instanceof TabGroup
+        && BeeUtils.same(childTag, TAG_TAB)) {
+
       for (Element tabContent : XmlUtils.getChildrenElements(child)) {
         if (XmlUtils.tagIs(tabContent, TAG_TEXT)) {
           String text = Localized.maybeTranslate(XmlUtils.getText(tabContent));
           if (!BeeUtils.isEmpty(text)) {
-            ((TabBar) parent).addItem(text);
+            ((TabGroup) parent).addItem(text);
             break;
           }
         }
@@ -2397,7 +2441,7 @@ public enum FormWidget {
         if (XmlUtils.tagIs(tabContent, TAG_HTML)) {
           String html = XmlUtils.getText(tabContent);
           if (!BeeUtils.isEmpty(html)) {
-            ((TabBar) parent).addItem(html);
+            ((TabGroup) parent).addItem(html);
             break;
           }
         }
@@ -2405,14 +2449,14 @@ public enum FormWidget {
         IdentifiableWidget w = createIfWidget(formName, tabContent, viewName, columns, wdcb,
             widgetInterceptor);
         if (w != null) {
-          ((TabBar) parent).addItem(w.asWidget());
+          ((TabGroup) parent).addItem(w.asWidget());
           break;
         }
       }
     }
   }
 
-  private void processTree(HasTreeItems parent, Element child) {
+  private static void processTree(HasTreeItems parent, Element child) {
     if (!XmlUtils.tagIs(child, TAG_TREE_ITEM)) {
       return;
     }

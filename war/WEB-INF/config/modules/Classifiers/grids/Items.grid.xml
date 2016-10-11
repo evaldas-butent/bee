@@ -64,9 +64,31 @@
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
 
   <g:columns>
+    <DataColumn name="DefaultQuantity" visible="false" />
     <DataColumn name="ExternalCode" visible="false" />
 
     <DataColumn name="Description" visible="false" />
     <DataColumn name="Notes" visible="false" />
+
+    <PropColumn name="ResRemainder" type="string" label="=ordResRemainder" module="Orders" >
+      <dynStyle>
+        <ui:inline>text-decoration: underline; cursor: pointer;</ui:inline>
+        <ui:expression>row.ResRemainder > -1</ui:expression>
+      </dynStyle>
+    </PropColumn>
+
+    <CalcColumn name="FreeRemainder" type="string" label="=ordFreeRemainder" module="Orders" >
+      <render>
+        <ui:expression>(row.WarehouseRemainder ? row.WarehouseRemainder : 0 )
+          - (row.ResRemainder ? row.ResRemainder : 0) </ui:expression>
+      </render>
+    </CalcColumn>
+
+    <PropColumn name="Remainder" type="string" dynamic="true" module="Orders" />
+    <PropColumn name="Stock" type="double" dynamic="true" module="Trade" />
   </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>[row.Name, row.Article].join(' ')</ui:expression>
+  </g:rowMessage>
 </g:Grid>

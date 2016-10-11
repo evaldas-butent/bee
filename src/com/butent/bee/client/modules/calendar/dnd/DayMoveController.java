@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.logical.MoveEvent;
+import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarPanel;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
@@ -67,6 +68,8 @@ public class DayMoveController implements MoveEvent.Handler {
   private int selectedColumn = BeeConst.UNDEF;
   private int selectedMinutes = BeeConst.UNDEF;
 
+  private Element sourceWidget;
+
   private int maxTop;
 
   public DayMoveController(CalendarView calendarView, Element scrollArea) {
@@ -121,6 +124,7 @@ public class DayMoveController implements MoveEvent.Handler {
       }
 
       updatePosition();
+      CalendarUtils.updateWidgetStyleByModifiers(event.getModifiers(), getItemWidget());
 
     } else if (event.isFinished()) {
       if (getPositioner() != null) {
@@ -128,8 +132,17 @@ public class DayMoveController implements MoveEvent.Handler {
         setPositioner(null);
       }
 
+      if (sourceWidget != null) {
+        sourceWidget.removeFromParent();
+        sourceWidget = null;
+      }
+
       if (getItemWidget() != null) {
-        drop();
+        if (CalendarUtils.isCopying(event.getModifiers(), getItemWidget())) {
+          copyAppointment();
+        } else {
+          drop();
+        }
         setItemWidget(null);
       }
     }
@@ -174,6 +187,13 @@ public class DayMoveController implements MoveEvent.Handler {
     }
 
     calendarView.getCalendarWidget().refresh(false);
+  }
+
+  private void copyAppointment() {
+    CalendarItem item = getItemWidget().getItem();
+    Appointment itemCopy  = (Appointment) item.copy();
+    Range<DateTime> range = getRange(getSelectedColumn(), getSelectedMinutes());
+    calendarView.copyAppointment(itemCopy, range.lowerEndpoint(), range.upperEndpoint());
   }
 
   private ItemWidget getItemWidget() {
@@ -384,6 +404,12 @@ public class DayMoveController implements MoveEvent.Handler {
     setItemWidget(widget);
 
     Widget target = widget.getParent();
+
+    if (sourceWidget == null) {
+      sourceWidget = CalendarUtils.createSourceElement(getItemWidget());
+      target.getElement().appendChild(sourceWidget);
+    }
+
     CalendarPanel panel = CalendarUtils.getCalendarPanel(widget);
 
     setColumnWidth(CalendarUtils.getColumnWidth(target, getColumnCount()));
@@ -399,7 +425,7 @@ public class DayMoveController implements MoveEvent.Handler {
         && panel != null && panel.isTodoVisible()) {
 
       width = panel.getElement().getClientWidth();
-      setTodoWidth(panel.getWidgetSize(panel.getTodoContainer()));
+      setTodoWidth(Split.getWidgetSize(panel.getTodoContainer()));
 
     } else {
       width = target.getElement().getClientWidth();

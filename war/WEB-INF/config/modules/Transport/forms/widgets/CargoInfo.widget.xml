@@ -28,7 +28,7 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=date" style="&labelLeft;" />
+    <Label for="LoadingDate" text="=date" style="&labelLeft;" />
     <InputDateTime source="LoadingDate" style="&inp;" />
     <Label text="=date" class="bee-required" style="&labelRight; width:80px;" />
     <InputDateTime source="UnloadingDate" style="&inp;" required="true" />
@@ -71,35 +71,35 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=city" style="&labelLeft;" />
+    <Label for="LoadingCity" text="=city" style="&labelLeft;" />
     <DataSelector source="LoadingCity" style="&inp; margin-right:20px;" />
-    <Label text="=city" style="&labelRight;" />
+    <Label for="UnloadingCity" text="=city" style="&labelRight;" />
     <DataSelector source="UnloadingCity" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=address" style="&labelLeft;" />
+    <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
     <InputText source="LoadingAddress" style="&inp; margin-right:20px;" />
-    <Label text="=address" style="&labelRight;" />
+    <Label for="UnloadingAddress" text="=address" style="&labelRight;" />
     <InputText source="UnloadingAddress" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=postIndex" style="&labelLeft;" />
+    <Label for="LoadingPostIndex" text="=postIndex" style="&labelLeft;" />
     <InputText source="LoadingPostIndex" style="&inp;" />
-    <Label text="=postIndex" style="&labelRight; width:80px;" />
+    <Label for="UnloadingPostIndex" text="=postIndex" style="&labelRight; width:80px;" />
     <InputText source="UnloadingPostIndex" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=contact" style="&labelLeft;" />
+    <Label for="LoadingContact" text="=contact" style="&labelLeft;" />
     <InputText source="LoadingContact" style="&inp; margin-right:20px;" />
-    <Label text="=contact" style="&labelRight;" />
+    <Label for="UnloadingContact" text="=contact" style="&labelRight;" />
     <InputText source="UnloadingContact" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=additionalInfo" style="&labelLeft; vertical-align:top;" />
+    <Label for="CargoNotes" text="=additionalInfo" style="&labelLeft; vertical-align:top;" />
     <InputArea source="CargoNotes" style="width:400px;" />
   </FlowPanel>
 
@@ -126,19 +126,19 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=quantity" style="&labelLeft;" />
+    <Label for="Quantity" style="&labelLeft;" />
     <InputDecimal source="Quantity" format="#.00" style="&input;" />
     <DataSelector source="QuantityUnit" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
-    <Label text="=weight" style="&labelRight;" />
+    <Label for="Weight" style="&labelRight;" />
     <InputDecimal source="Weight" format="#.000" style="&input;" />
     <DataSelector source="WeightUnit" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=volume" style="&labelLeft;" />
+    <Label for="Volume" style="&labelLeft;" />
     <InputDecimal source="Volume" format="#.000" style="&input;" />
     <DataSelector source="VolumeUnit" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
-    <Label text="=valuation" style="&labelRight;" />
+    <Label for="Value" style="&labelRight;" />
     <InputMoney source="Value" style="&input;" currencySource="ValueCurrency" />
     <DataSelector source="ValueCurrency" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
   </FlowPanel>

@@ -4,23 +4,24 @@
   <!ENTITY inpdt "width: 10em;">
   <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
 ]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
 
   name="Order" viewName="Orders" width="800" height="600">
-  <FlowPanel>
+  <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
       <row data="OrdersTemplates" class="bee-ta-template-selection">
         <Label style="margin-right: 1em; text-align: right; padding-left: 30px" text="=template" />
         <UnboundSelector viewName="OrdersTemplates" name="Template" style="width: 200px;" newRowEnabled="false"
           choiceColumns="Template" />
       </row>
-      
+
       <row>
         <Label for="Type" visible="true" style="&lbl;" />
         <DataSelector source="Type" style="&inpw;" visible="true" newRowEnabled="true" />
 
         <Label for="Status" style="&lbl;" />
-        <ListBox source="Status" style="font-weight:bold;" readOnly="true" />
+        <ListBox source="Status" style="font-weight:bold; &inpdt;" readOnly="true" />
       </row>
 
       <row>
@@ -32,8 +33,8 @@
       </row>
 
       <row>
-        <Label for="Series" style="&lbl;" />
-        <DataSelector source="Series" newRowEnabled="true" style="width: &inpw;" />
+        <Label for="Series" style="&lbl;" class="bee-required" />
+        <DataSelector source="Series" newRowEnabled="true" style="width: &inpw;" required="true" />
 
         <Label for="Number" visible="true" style="&lbl;" />
         <InputText source="Number" style="&inpw;" visible="true" />
@@ -45,7 +46,7 @@
 
         <Label for="Company" visible="true" style="&lbl;" class="bee-required" />
         <DataSelector source="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName"
-          renderColumns="CompanyName TypeName" />
+          renderColumns="CompanyName TypeName" required="true" />
       </row>
 
       <row>
@@ -59,10 +60,15 @@
       </row>
     </Table>
     <br />
-    <TabbedPages style="height: 400px;">
+    <TabbedPages class="flexible" name="TabbedPages">
       <page>
         <text>=goods</text>
         <ChildGrid name="OrderItems" relColumn="Order" />
+      </page>
+
+      <page>
+        <text>=trInvoices</text>
+        <ChildGrid name="OrderChildInvoices" relColumn="Order" />
       </page>
 
       <page>

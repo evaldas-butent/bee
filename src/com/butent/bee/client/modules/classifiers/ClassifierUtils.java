@@ -15,7 +15,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -36,6 +35,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class ClassifierUtils {
 
@@ -156,7 +156,8 @@ public final class ClassifierUtils {
         if (response.hasErrors()) {
           return;
         }
-        Map<String, String> entries = Codec.deserializeMap(response.getResponseAsString());
+        Map<String, String> entries =
+            Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
         if (BeeUtils.isEmpty(entries)) {
           return;

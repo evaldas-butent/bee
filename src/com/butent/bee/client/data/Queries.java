@@ -3,6 +3,7 @@ package com.butent.bee.client.data;
 import static com.butent.bee.shared.Service.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -359,6 +360,32 @@ public final class Queries {
     });
   }
 
+  public static void getLastUpdated(final String tableName, long rowId, String column,
+      final RpcCallback<DateTime> callback) {
+
+    Assert.notEmpty(tableName);
+    Assert.notEmpty(column);
+    Assert.notNull(callback);
+
+    List<Property> lst = PropertyUtils.createProperties(VAR_TABLE, tableName,
+        VAR_ID, BeeUtils.toString(rowId), VAR_COLUMN, column);
+
+    ParameterList params = new ParameterList(GET_LAST_UPDATED, RpcParameter.Section.QUERY, lst);
+    params.setSummary(tableName, rowId, column);
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(GET_LAST_UPDATED, getRpcId(), tableName, response, null, callback)) {
+          String s = response.hasResponse() ? response.getResponseAsString() : null;
+          DateTime dt = BeeUtils.isLong(s) ? DateTime.restore(s) : null;
+
+          callback.onSuccess(dt);
+        }
+      }
+    });
+  }
+
   public static void getRelatedValues(final String tableName, String filterColumn,
       long filterValue, String resultColumn, final IdListCallback callback) {
 
@@ -458,6 +485,36 @@ public final class Queries {
     });
   }
 
+  public static void getRowSequence(String viewName, final List<Long> rowIds,
+      final Callback<List<BeeRow>> callback) {
+
+    Assert.notEmpty(rowIds);
+    Assert.notNull(callback);
+
+    getRowSet(viewName, null, Filter.idIn(rowIds), null, new RowSetCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        callback.onFailure(reason);
+      }
+
+      @Override
+      public void onSuccess(BeeRowSet rowSet) {
+        List<BeeRow> result = new ArrayList<>();
+
+        if (!DataUtils.isEmpty(rowSet)) {
+          for (long id : rowIds) {
+            BeeRow row = rowSet.getRowById(id);
+            if (row != null) {
+              result.add(row);
+            }
+          }
+        }
+
+        callback.onSuccess(result);
+      }
+    });
+  }
+
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
       CachingPolicy cachingPolicy, RowSetCallback callback) {
 
@@ -533,21 +590,6 @@ public final class Queries {
         }
       }
     });
-  }
-
-  private static boolean isCacheable(Collection<Property> options) {
-    if (BeeUtils.isEmpty(options)) {
-      return true;
-
-    } else {
-      for (Property property : options) {
-        if (property != null && VAR_RIGHTS.equals(property.getName())) {
-          return false;
-        }
-      }
-
-      return true;
-    }
   }
 
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
@@ -1064,6 +1106,21 @@ public final class Queries {
 
     if (callback != null) {
       callback.onFailure(messages);
+    }
+  }
+
+  private static boolean isCacheable(Collection<Property> options) {
+    if (BeeUtils.isEmpty(options)) {
+      return true;
+
+    } else {
+      for (Property property : options) {
+        if (property != null && VAR_RIGHTS.equals(property.getName())) {
+          return false;
+        }
+      }
+
+      return true;
     }
   }
 

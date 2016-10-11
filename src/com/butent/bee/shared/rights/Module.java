@@ -155,6 +155,18 @@ public enum Module implements HasLocalizedCaption {
 
     @Override
     public String getStyleSheet(SubModule subModule) {
+      return "orders";
+    }
+  },
+
+  CARS(SubModule.SERVICE) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.cars();
+    }
+
+    @Override
+    public String getStyleSheet(SubModule subModule) {
       return null;
     }
   },

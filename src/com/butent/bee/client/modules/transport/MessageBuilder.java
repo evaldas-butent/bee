@@ -16,6 +16,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -62,6 +63,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class MessageBuilder extends FaLabel implements ClickHandler {
@@ -73,6 +75,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
     private final InputArea messagePanel = new InputArea();
     private final Map<String, Collection<String>> templates = new LinkedHashMap<>();
 
+    private BeeRowSet tripInfo;
     private BeeRowSet cargoInfo;
     private final Map<Long, Map<String, String>> additionalPlaces = new HashMap<>();
     private final Map<Long, Map<String, String>> revisedPlaces = new HashMap<>();
@@ -80,7 +83,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
     private final Collection<Long> selectedIds = new HashSet<>();
     private final TabBar tabs = new TabBar(Orientation.HORIZONTAL);
 
-    private MessageDialog(Set<Long> driverIds, Set<Long> cargoIds, Set<Long> ids) {
+    private MessageDialog(BeeRowSet trip, Set<Long> driverIds, Set<Long> cargoIds, Set<Long> ids) {
       super(Localized.dictionary().message());
 
       setAnimationEnabled(true);
@@ -112,7 +115,8 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       setWidget(panel);
 
       Global.getParameter(PRM_MESSAGE_TEMPLATE, parameter -> {
-        for (Map.Entry<String, String> entry : Codec.deserializeMap(parameter).entrySet()) {
+        for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(
+            parameter).entrySet()) {
           String[] items;
 
           try {
@@ -141,6 +145,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
               setDrivers(drivers);
             }
           });
+      tripInfo = trip;
       setCargoInfo(Data.createRowSet(TBL_ORDER_CARGO), Data.createRowSet(VIEW_CARGO_HANDLING));
 
       Queries.getRowSet(TBL_ORDER_CARGO, null, Filter.idIn(cargoIds), new Queries.RowSetCallback() {
@@ -213,10 +218,12 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
               final List<String> caps = new ArrayList<>();
               final List<String> keys = new ArrayList<>();
 
-              for (BeeColumn col : cargoInfo.getColumns()) {
-                if (col.getType() != ValueType.LONG) {
-                  caps.add(Localized.getLabel(col));
-                  keys.add(col.getId());
+              for (BeeRowSet rowSet : new BeeRowSet[] {cargoInfo, tripInfo}) {
+                for (BeeColumn col : rowSet.getColumns()) {
+                  if (col.getType() != ValueType.LONG) {
+                    caps.add(Localized.getLabel(col));
+                    keys.add(col.getId());
+                  }
                 }
               }
               Global.choice(Localized.dictionary().value(), null, caps,
@@ -247,11 +254,17 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
               if (m != null) {
                 String chunk = m.getGroup(0);
                 String col = chunk.substring(1, chunk.length() - 1);
-                int idx = cargoInfo.getColumnIndex(col);
+                int idx = DataUtils.getColumnIndex(col, cargoInfo.getColumns());
                 String value;
 
                 if (BeeConst.isUndef(idx)) {
-                  value = chunk;
+                  idx = tripInfo.getColumnIndex(col);
+
+                  if (BeeConst.isUndef(idx)) {
+                    value = chunk;
+                  } else {
+                    value = parseValue(tripInfo, 0, idx);
+                  }
                 } else {
                   Long cargoId = cargoInfo.getRow(i).getId();
 
@@ -353,25 +366,35 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       cargoInfo = cargo;
       additionalPlaces.clear();
       revisedPlaces.clear();
+      int aCnt = 1;
+      int rCnt = 0;
 
       for (int i = 0; i < handling.getNumberOfRows(); i++) {
         Long cargoId = handling.getLong(i, COL_CARGO);
         Map<String, String> map;
+        int c;
 
         if (DataUtils.isId(handling.getLong(i, COL_CARGO_TRIP))) {
           if (!revisedPlaces.containsKey(cargoId)) {
             revisedPlaces.put(cargoId, new HashMap<>());
           }
           map = revisedPlaces.get(cargoId);
+          c = ++rCnt;
         } else {
           if (!additionalPlaces.containsKey(cargoId)) {
             additionalPlaces.put(cargoId, new HashMap<>());
           }
           map = additionalPlaces.get(cargoId);
+          c = ++aCnt;
         }
         for (int j = 0; j < handling.getNumberOfColumns(); j++) {
           String col = handling.getColumnId(j);
-          map.put(col, BeeUtils.joinItems(map.get(col), parseValue(handling, i, j)));
+          String val = parseValue(handling, i, j);
+
+          if (!BeeUtils.isEmpty(val)) {
+            map.put(col, BeeUtils.joinItems(map.get(col),
+                BeeUtils.joinWords(c == 1 ? "" : c + ".", val)));
+          }
         }
       }
       renderMessage();
@@ -424,27 +447,36 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
     if (BeeUtils.isEmpty(ids) && gridView.getActiveRow() != null) {
       ids.add(gridView.getActiveRow().getId());
     }
-    if (BeeUtils.isEmpty(ids)) {
-      gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
-      return;
-    }
-    Set<Long> tripIds = new HashSet<>();
+    Long tripId = null;
     Set<Long> cargoIds = new HashSet<>();
 
     for (IsRow row : gridView.getRowData()) {
       if (ids.contains(row.getId())) {
-        tripIds.add(row.getLong(gridView.getDataIndex(COL_TRIP)));
+        if (DataUtils.isId(tripId)
+            && !Objects.equals(tripId, row.getLong(gridView.getDataIndex(COL_TRIP)))) {
+          tripId = null;
+          break;
+        }
+        tripId = row.getLong(gridView.getDataIndex(COL_TRIP));
         cargoIds.add(row.getLong(gridView.getDataIndex(COL_CARGO)));
       }
     }
-    Queries.getRowSet(TBL_TRIP_DRIVERS, Lists.newArrayList(COL_DRIVER),
-        Filter.any(COL_TRIP, tripIds), new Queries.RowSetCallback() {
-          @SuppressWarnings("unused")
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            new MessageDialog(result.getDistinctLongs(0), cargoIds, ids);
-          }
-        });
+    if (!DataUtils.isId(tripId)) {
+      gridView.notifyWarning(Localized.dictionary().selectAtLeastOneRow());
+      return;
+    }
+    Queries.getRowSet(VIEW_TRIPS, null, Filter.compareId(tripId), new Queries.RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet trip) {
+        Queries.getDistinctLongs(TBL_TRIP_DRIVERS, COL_DRIVER,
+            Filter.equals(COL_TRIP, trip.getRow(0).getId()), new RpcCallback<Set<Long>>() {
+              @Override
+              public void onSuccess(Set<Long> driverIds) {
+                new MessageDialog(trip, driverIds, cargoIds, ids);
+              }
+            });
+      }
+    });
   }
 
   private static String parseValue(BeeRowSet rs, int row, int col) {

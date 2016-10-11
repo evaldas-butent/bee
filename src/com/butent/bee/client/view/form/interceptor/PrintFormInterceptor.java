@@ -13,7 +13,6 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -31,20 +30,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
 
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {
-      if (getFormView().isAdding()) {
-        return saveOnPrintNewRow() || DataUtils.hasId(getActiveRow());
-      }
       if (DataUtils.isNewRow(getActiveRow())) {
-        return false;
-      }
-      if (printJasperReport()) {
-        return false;
+        return saveOnPrintNewRow();
       }
       String[] reports = BeeUtils.split(getFormView().getProperty("reports"), BeeConst.CHAR_COMMA);
 
@@ -54,18 +48,23 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
           forms.add(null);
         }
         final ChoiceCallback choice = value -> {
-          FormDescription form = forms.get(value);
-          String viewName = form.getViewName();
-          IsRow row = getFormView().getActiveRow();
+          if (BeeUtils.isIndex(forms, value)) {
+            FormDescription form = forms.get(value);
 
-          if (BeeUtils.isEmpty(viewName)
-              || BeeUtils.same(viewName, getFormView().getViewName())) {
+            String viewName = form.getViewName();
+            IsRow row = getFormView().getActiveRow();
 
-            RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
-                row, Opener.MODAL, null, getPrintFormInterceptor());
+            if (BeeUtils.isEmpty(viewName)
+                || BeeUtils.same(viewName, getFormView().getViewName())) {
+
+              RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
+                  row, Opener.MODAL, null, getPrintFormInterceptor());
+            } else {
+              RowEditor.openForm(form.getName(), Data.getDataInfo(viewName),
+                  Filter.compareId(row.getId()), Opener.MODAL, null, getPrintFormInterceptor());
+            }
           } else {
-            RowEditor.openForm(form.getName(), Data.getDataInfo(viewName),
-                Filter.compareId(row.getId()), Opener.MODAL, null, getPrintFormInterceptor());
+            printJasperReport();
           }
         };
         final Holder<Integer> counter = Holder.of(0);
@@ -99,6 +98,9 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
                     descriptions.add(dscr);
                   }
                 }
+                if (!ArrayUtils.isEmpty(getReports())) {
+                  captions.add(Localized.dictionary().otherInfo() + "...");
+                }
                 BeeUtils.overwrite(forms, descriptions);
 
                 if (captions.size() > 1) {
@@ -112,6 +114,9 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
             }
           });
         }
+        return false;
+
+      } else if (printJasperReport()) {
         return false;
       }
     }

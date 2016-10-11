@@ -18,7 +18,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.BeeColumn;
@@ -37,7 +36,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collections;
 import java.util.List;
 
-class TripCargoGrid extends AbstractGridInterceptor {
+public class TripCargoGrid extends PercentEditor {
 
   private static final class Action implements ClickHandler {
 
@@ -156,10 +155,5 @@ class TripCargoGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new TripCargoGrid();
-  }
-
-  @Override
-  public void onLoad(GridView gridView) {
-    gridView.getViewPresenter().getHeader().addCommandItem(new MessageBuilder(gridView));
   }
 }

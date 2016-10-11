@@ -32,6 +32,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.CssUnit;
@@ -46,11 +47,11 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.elements.Div;
-import com.butent.bee.shared.html.builder.elements.H2;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.io.FileInfo;
@@ -137,9 +138,20 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    return qs.getSearchResults(VIEW_DISCUSSIONS,
+    List<SearchResult> result = new ArrayList<>();
+    result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS,
         Filter.anyContains(Sets.newHashSet(COL_SUBJECT, COL_DESCRIPTION, ALS_OWNER_FIRST_NAME,
-            ALS_OWNER_LAST_NAME), query));
+            ALS_OWNER_LAST_NAME), query)));
+
+    result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS_FILES, Filter.and(
+        Filter.anyContains(Sets.newHashSet(AdministrationConstants.COL_FILE_CAPTION,
+            AdministrationConstants.ALS_FILE_NAME, COL_COMMENT_TEXT), query),
+        Filter.in(COL_COMMENT, VIEW_DISCUSSIONS_COMMENTS, COL_DISCUSSION_COMMENT_ID,
+            Filter.or(Filter.isNull(COL_DELETED),
+                Filter.isEqual(COL_DELETED, BooleanValue.FALSE))))));
+
+    return result;
+
   }
 
   @Override
@@ -200,80 +212,66 @@ public class DiscussionsModuleBean implements BeeModule {
           BeeRowSet rowSet = event.getRowset();
 
           Set<Long> discussionsIds = new HashSet<>();
-
-          if (rowSet.getNumberOfRows() < MAX_NUMBERS_OF_ROWS) {
-            for (BeeRow row : rowSet.getRows()) {
-              discussionsIds.add(row.getId());
-            }
-          }
+          discussionsIds.addAll(rowSet.getRowIds().subList(0, BeeUtils.min(rowSet
+              .getNumberOfRows(), MAX_NUMBERS_OF_ROWS)));
 
           Long userId = usr.getCurrentUserId();
+          setRowAccessProperties(discussionsIds, rowSet);
 
-          SqlSelect discussUsers = new SqlSelect()
-              .addFields(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, COL_LAST_ACCESS, COL_STAR)
-              .addFrom(TBL_DISCUSSIONS_USERS);
+          SimpleRowSet markCounts = getDiscussionsMarksCount(discussionsIds);
+          SimpleRowSet commentData = getDiscussionsLastComment(discussionsIds);
+          SimpleRowSet fileData = getDiscussionFileData(discussionsIds);
+          Set<Long> relDiscussionData = getRelatedDiscussionIds(discussionsIds);
 
-          IsCondition usersWhere =
-              SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER, userId);
+          for (BeeRow row : rowSet.getRows().subList(0,
+              BeeUtils.min(rowSet.getNumberOfRows(), MAX_NUMBERS_OF_ROWS))) {
 
-          discussUsers.setWhere(usersWhere);
+            if (markCounts != null) {
+              SimpleRow mark = markCounts.getRowByKey(COL_DISCUSSION,
+                  BeeUtils.toString(row.getId()));
 
-          if (!discussionsIds.isEmpty()) {
-            discussUsers.setWhere(SqlUtils.and(usersWhere, SqlUtils.inList(TBL_DISCUSSIONS_USERS,
-                COL_DISCUSSION, discussionsIds)));
-          }
+              String markValue = mark != null
+                  ? BeeUtils.nvl(mark.getValue(PROP_MARK_COUNT), BeeConst.STRING_EMPTY)
+                  : BeeConst.STRING_EMPTY;
 
-          SimpleRowSet discussUsersData = qs.getData(discussUsers);
-
-          int discussIndex = discussUsersData.getColumnIndex(COL_DISCUSSION);
-          int accessIndex = discussUsersData.getColumnIndex(COL_LAST_ACCESS);
-          int starIndex = discussUsersData.getColumnIndex(COL_STAR);
-
-          for (SimpleRow discussUserRow : discussUsersData) {
-            long discussionId = discussUserRow.getLong(discussIndex);
-            BeeRow row = rowSet.getRowById(discussionId);
-
-            if (row == null) {
-              continue;
+              row.setProperty(PROP_MARK_COUNT, markValue);
+            } else {
+              row.setProperty(PROP_MARK_COUNT, BeeConst.STRING_EMPTY);
             }
 
-            row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
+            if (commentData != null) {
+              SimpleRow lastCommentData = commentData.getRowByKey(COL_DISCUSSION,
+                  BeeUtils.toString(row.getId()));
 
-            row.setProperty(PROP_LAST_ACCESS, userId, discussUserRow.getValue(accessIndex));
-            row.setProperty(PROP_STAR, userId, discussUserRow.getValue(starIndex));
-          }
+              String lastCommentVal = lastCommentData != null
+                  ? BeeUtils.joinWords(TimeUtils.renderDateTime(
+                  BeeUtils.unbox(lastCommentData.getLong(COL_PUBLISH_TIME)))
+                      + ",", lastCommentData.getValue(COL_FIRST_NAME),
+                  lastCommentData.getValue(COL_LAST_NAME))
+                  : BeeConst.STRING_EMPTY;
 
-          Map<Long, Integer> markCounts = getDiscussionsMarksCount(discussionsIds);
-          Map<Long, String> lastCommentData = getDisscussionsLastComment(discussionsIds);
-          for (BeeRow row : rowSet.getRows()) {
-            String markValue =
-                markCounts.get(row.getId()) != null ? BeeUtils
-                    .toString(markCounts.get(row.getId())) : "0";
-            row.setProperty(PROP_MARK_COUNT, markValue);
-
-            String lastCommentVal = lastCommentData.get(row.getId());
-
-            row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
-
-            String filesCountVal = "";
-            if (BeeUtils.isPositive(DataUtils.getColumnIndex(ALS_FILES_COUNT,
-                rowSet.getColumns(), false))) {
-              filesCountVal = row.getString(rowSet.getColumnIndex(ALS_FILES_COUNT));
+              row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
+              row.setProperty(PROP_COMMENT_COUNT, lastCommentData != null
+                  ? BeeUtils.nvl(lastCommentData.getValue(PROP_COMMENT_COUNT),
+                  BeeConst.STRING_EMPTY)
+                  : BeeConst.STRING_EMPTY);
+            } else {
+              row.setProperty(PROP_LAST_COMMENT_DATA, BeeConst.STRING_EMPTY);
+              row.setProperty(PROP_COMMENT_COUNT, BeeConst.STRING_EMPTY);
             }
 
-            row.setProperty(PROP_FILES_COUNT, filesCountVal);
+            if (fileData != null) {
+              SimpleRow fileDataRow = fileData.getRowByKey(COL_DISCUSSION,
+                  BeeUtils.toString(row.getId()));
 
-            String relValue = "";
-
-            if (BeeUtils.isPositive(DataUtils.getColumnIndex(ALS_RELATIONS_COUNT, rowSet
-                .getColumns(), false))) {
-              int rc =
-                  BeeUtils.unbox(row.getInteger(rowSet.getColumnIndex(ALS_RELATIONS_COUNT)));
-
-              if (rc > 0) {
-                relValue += IMG_LINK;
-              }
+              row.setProperty(PROP_FILES_COUNT, fileDataRow != null
+                  ? BeeUtils.nvl(fileDataRow.getValue(PROP_FILES_COUNT), BeeConst.STRING_EMPTY)
+                  : BeeConst.STRING_EMPTY);
+            } else {
+              row.setProperty(PROP_FILES_COUNT, BeeConst.STRING_EMPTY);
             }
+
+            String relValue = relDiscussionData.contains(row.getId()) ? IMG_LINK : "";
 
             row.setProperty(PROP_RELATIONS_COUNT, relValue);
 
@@ -894,10 +892,29 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     if (!rs.isEmpty()) {
-      return ResponseObject.response(rs);
+      return ResponseObject.response(Pair.of(rs, getDiscussionFiles(rs)));
     }
 
     return ResponseObject.emptyResponse();
+  }
+
+  private SimpleRowSet getDiscussionFiles(SimpleRowSet discussionRs) {
+    SqlSelect query = new SqlSelect()
+    .addFields(TBL_DISCUSSIONS_FILES, COL_DISCUSSION, AdministrationConstants.COL_FILE,
+        AdministrationConstants.COL_FILE_CAPTION)
+    .addFields(TBL_FILES, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
+    .addFrom(TBL_DISCUSSIONS_FILES)
+    .addFromInner(TBL_FILES,
+        sys.joinTables(TBL_FILES, TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE))
+    .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
+        sys.joinTables(TBL_DISCUSSIONS_COMMENTS, TBL_DISCUSSIONS_FILES, COL_COMMENT))
+    .setWhere(SqlUtils.and(SqlUtils.inList(TBL_DISCUSSIONS_FILES, COL_DISCUSSION,
+        (Object[]) discussionRs.getColumn(discussionRs
+        .getColumnIndex(sys.getIdName(TBL_DISCUSSIONS)))),
+        SqlUtils.or(SqlUtils.isNull(TBL_DISCUSSIONS_COMMENTS, COL_DELETED),
+            SqlUtils.equals(TBL_DISCUSSIONS_COMMENTS, COL_DELETED, false))));
+
+    return qs.getData(query);
   }
 
   private ResponseObject getBirthdays() {
@@ -1045,14 +1062,35 @@ public class DiscussionsModuleBean implements BeeModule {
     return markList;
   }
 
-  private Map<Long, String> getDisscussionsLastComment(Set<Long> discussionIds) {
-    Map<Long, String> ls = new HashMap<>();
+  private SimpleRowSet getDiscussionFileData(Set<Long> discussionIds) {
+    if (BeeUtils.isEmpty(discussionIds)) {
+      return null;
+    }
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_DISCUSSIONS_FILES, COL_DISCUSSION)
+        .addCount(TBL_DISCUSSIONS_FILES, COL_FILE, PROP_FILES_COUNT)
+        .addFrom(TBL_DISCUSSIONS_FILES)
+        .addFromLeft(TBL_DISCUSSIONS_COMMENTS, sys.joinTables(TBL_DISCUSSIONS_COMMENTS,
+            TBL_DISCUSSIONS_FILES, COL_COMMENT))
+        .setWhere(SqlUtils.and(
+            SqlUtils.isNull(TBL_DISCUSSIONS_COMMENTS, COL_DELETED),
+            SqlUtils.inList(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, discussionIds)
+        ))
+        .addGroup(TBL_DISCUSSIONS_FILES, COL_DISCUSSION);
+
+    return qs.getData(query);
+  }
+
+  private SimpleRowSet getDiscussionsLastComment(Set<Long> discussionIds) {
+//    Map<Long, String> ls = new HashMap<>();
 
     SqlSelect select =
         new SqlSelect()
             .addField(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, COL_DISCUSSION)
             .addMax(TBL_DISCUSSIONS_COMMENTS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS),
                 ALS_LAST_COMMET)
+            .addCount(TBL_DISCUSSIONS_COMMENTS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS),
+                PROP_COMMENT_COUNT)
 
             .addFrom(TBL_DISCUSSIONS)
             .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
@@ -1068,7 +1106,7 @@ public class DiscussionsModuleBean implements BeeModule {
     SimpleRowSet maxComments = qs.getData(select);
 
     if (maxComments.isEmpty()) {
-      return ls;
+      return null;
     }
 
     select =
@@ -1079,6 +1117,7 @@ public class DiscussionsModuleBean implements BeeModule {
                 COL_FIRST_NAME)
             .addField(TBL_PERSONS, COL_LAST_NAME,
                 COL_LAST_NAME)
+            .addEmptyInt(PROP_COMMENT_COUNT)
             .addFrom(TBL_DISCUSSIONS)
             .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
                 sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
@@ -1109,21 +1148,19 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SimpleRowSet rs = qs.getData(select);
 
-    for (String[] row : rs.getRows()) {
-      ls.put(BeeUtils.toLong(row[rs.getColumnIndex(COL_DISCUSSION)]),
-          BeeUtils.joinWords(TimeUtils.renderDateTime(BeeUtils.unbox(BeeUtils.toLong(row[rs
-              .getColumnIndex(COL_PUBLISH_TIME)])))
-              + ",", row[rs
-              .getColumnIndex(COL_FIRST_NAME)], row[rs
-              .getColumnIndex(COL_LAST_NAME)]));
+    for (SimpleRow row : rs) {
+      row.setValue(PROP_COMMENT_COUNT, maxComments.getValueByKey(ALS_LAST_COMMET,
+          row.getValue(COL_DISCUSSION), PROP_COMMENT_COUNT));
     }
-
-    return ls;
+    return rs;
   }
 
-  private Map<Long, Integer> getDiscussionsMarksCount(Set<Long> discussionIds) {
+  private SimpleRowSet getDiscussionsMarksCount(Set<Long> discussionIds) {
+    if (BeeUtils.isEmpty(discussionIds)) {
+      return null;
+    }
     SqlSelect select = new SqlSelect()
-        .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
+        .addFields(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION)
         .addCount(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_MARK, PROP_MARK_COUNT)
         .addFrom(TBL_DISCUSSIONS_COMMENTS_MARKS)
         .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_COMMENT),
@@ -1131,14 +1168,9 @@ public class DiscussionsModuleBean implements BeeModule {
         .addGroup(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION);
 
     SimpleRowSet rs = qs.getData(select);
-    Map<Long, Integer> ls = new HashMap<>();
 
-    for (String[] row : rs.getRows()) {
-      ls.put(BeeUtils.toLong(row[rs.getColumnIndex(COL_DISCUSSION)]),
-          BeeUtils.toInt(row[rs.getColumnIndex(PROP_MARK_COUNT)]));
-    }
 
-    return ls;
+    return rs;
   }
 
   private SimpleRowSet getDiscussionMarksData(List<Long> filter) {
@@ -1195,27 +1227,32 @@ public class DiscussionsModuleBean implements BeeModule {
     return Lists.newArrayList(qs.getLongColumn(query));
   }
 
+  private Set<Long> getRelatedDiscussionIds(Set<Long> discussions) {
+    if (BeeUtils.isEmpty(discussions)) {
+      return new HashSet<>();
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_RELATIONS, COL_DISCUSSION)
+        .addFrom(TBL_RELATIONS)
+        .setWhere(SqlUtils.and(
+            SqlUtils.inList(TBL_RELATIONS, COL_DISCUSSION, discussions),
+            SqlUtils.notNull(TBL_RELATIONS, COL_DISCUSSION)
+        ))
+        .addGroup(TBL_RELATIONS, COL_DISCUSSION);
+
+    return qs.getLongSet(query);
+  }
+
   private Document renderDiscussionDocument(long discussionId, boolean typeAnnoucement,
       String anouncmentTopic, SimpleRow discussMailRow, Dictionary constants,
       boolean isPublic) {
 
-    String discussSubject = BeeUtils.joinWords(
-        (typeAnnoucement ? constants.announcement()
-            : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
-            .getValue(COL_SUBJECT));
-
     Document doc = new Document();
-    doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(discussSubject));
+    doc.getHead().append(meta().encodingDeclarationUtf8());
 
     Div panel = div();
     doc.getBody().append(panel);
-
-    boolean important = BeeUtils.unbox(discussMailRow.getBoolean(COL_IMPORTANT));
-    String subjectColor = important ? Colors.RED : Colors.BLACK;
-
-    H2 subjectElement = h2().text(discussSubject);
-    subjectElement.setColor(subjectColor);
-    panel.append(subjectElement);
 
     Tbody tableFields = tbody().append(
         tr().append(td().text(constants.date()),
@@ -1228,14 +1265,14 @@ public class DiscussionsModuleBean implements BeeModule {
           );
     }
 
-    Div discussDescriptionContent = div().text(discussMailRow.getValue(COL_DESCRIPTION));
+    Div discussDescriptionContent = div().text(discussMailRow.getValue(COL_SUMMARY));
     // discussDescriptionContent.setMaxHeight(4, CssUnit.EM);
     // discussDescriptionContent.setOverflow(Overflow.HIDDEN);
 
     tableFields.append(
         tr().append(td().text(constants.discussOwner()),
             td().text(usr.getUserSign(discussMailRow.getLong(COL_OWNER)))),
-        tr().append(td().text(constants.discussDescription()),
+        tr().append(td().text(constants.discussSummary()),
             td().append(discussDescriptionContent))
         );
 
@@ -1299,6 +1336,45 @@ public class DiscussionsModuleBean implements BeeModule {
     return qs.insertDataWithResponse(insert);
   }
 
+  private void setRowAccessProperties(Set<Long> discussIds, BeeRowSet rowSet) {
+    if (BeeUtils.isEmpty(discussIds)) {
+      return;
+    }
+
+    Long userId = usr.getCurrentUserId();
+
+    SqlSelect discussUsers = new SqlSelect()
+        .addFields(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, COL_LAST_ACCESS, COL_STAR)
+        .addFrom(TBL_DISCUSSIONS_USERS);
+
+    IsCondition usersWhere =
+        SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER, userId);
+
+    discussUsers.setWhere(usersWhere);
+    discussUsers.setWhere(SqlUtils.and(usersWhere, SqlUtils.inList(TBL_DISCUSSIONS_USERS,
+        COL_DISCUSSION, discussIds)));
+
+    SimpleRowSet discussUsersData = qs.getData(discussUsers);
+
+    int discussIndex = discussUsersData.getColumnIndex(COL_DISCUSSION);
+    int accessIndex = discussUsersData.getColumnIndex(COL_LAST_ACCESS);
+    int starIndex = discussUsersData.getColumnIndex(COL_STAR);
+
+    for (SimpleRow discussUserRow : discussUsersData) {
+      long discussionId = discussUserRow.getLong(discussIndex);
+      BeeRow row = rowSet.getRowById(discussionId);
+
+      if (row == null) {
+        continue;
+      }
+
+      row.setProperty(PROP_USER, userId, BeeConst.STRING_PLUS);
+
+      row.setProperty(PROP_LAST_ACCESS, userId, discussUserRow.getValue(accessIndex));
+      row.setProperty(PROP_STAR, userId, discussUserRow.getValue(starIndex));
+    }
+  }
+
   private static SimpleRowSet sortBirhdaysList(SimpleRowSet birthdays) {
     List<Integer> ordinals = Lists.newArrayList(birthdays.getIntColumn(COL_ORDINAL));
     Collections.sort(ordinals);
@@ -1336,7 +1412,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SqlSelect discussMailList =
         new SqlSelect()
-            .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_DESCRIPTION, COL_OWNER,
+            .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUMMARY, COL_OWNER,
                 COL_CREATED, COL_TOPIC, COL_IMPORTANT)
             .addFrom(TBL_DISCUSSIONS)
             .setDistinctMode(true);
@@ -1433,14 +1509,27 @@ public class DiscussionsModuleBean implements BeeModule {
               constants, sendAll);
 
       String htmlDiscussMailContent = discussMailDocument.buildLines();
+      String discussSubject = BeeUtils.joinWords(
+          (typeAnnoucement ? constants.announcement()
+              : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
+              .getValue(COL_SUBJECT));
+
+      Div subjectElement = div().text(discussSubject);
+      String content;
+      if (BeeUtils.unbox(discussMailRow.getBoolean(COL_IMPORTANT))) {
+        content = BeeUtils.join("",
+            mail.styleMailHeader(subjectElement.build(), Colors.RED), htmlDiscussMailContent);
+      } else {
+        content = BeeUtils.join("",
+            mail.styleMailHeader(subjectElement.build(), null), htmlDiscussMailContent);
+      }
 
       logger.info(label, discussionId, "mail to", member, memberEmail);
 
       String subject = typeAnnoucement ? constants.discussMailNewAnnouncementSubject()
           : constants.discussMailNewDiscussionSubject();
 
-      ResponseObject mailResponse = mail.sendMail(senderAccountId, memberEmail, subject,
-          htmlDiscussMailContent);
+      ResponseObject mailResponse = mail.sendMail(senderAccountId, memberEmail, subject, content);
 
       if (mailResponse.hasErrors()) {
         response.addWarning("Send mail failed");

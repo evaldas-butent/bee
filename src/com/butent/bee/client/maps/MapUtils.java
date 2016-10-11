@@ -11,7 +11,6 @@ import com.google.gwt.geolocation.client.PositionError;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -20,6 +19,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class MapUtils {
 

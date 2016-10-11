@@ -58,7 +58,6 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputText;
@@ -958,7 +957,7 @@ public class MailPanel extends AbstractFormInterceptor {
     final boolean purge = getCurrentAccount().isTrashFolder(getCurrentFolder())
         || getCurrentAccount().isDraftsFolder(getCurrentFolder());
 
-    Global.confirm(purge ? Localized.dictionary().delete()
+    Global.confirmDelete(purge ? Localized.dictionary().delete()
             : Localized.dictionary().mailActionMoveToTrash(), purge ? Icon.ALARM : Icon.WARNING,
         Collections.singletonList(Localized.dictionary().mailMessages(ids.size())), () -> {
           ParameterList params = MailKeeper.createArgs(SVC_REMOVE_MESSAGES);

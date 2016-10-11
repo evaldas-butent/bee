@@ -1,69 +1,48 @@
 package com.butent.bee.shared.data;
 
-import com.butent.bee.shared.Assert;
+@FunctionalInterface
+public interface RowToDouble extends RowFunction<Double> {
 
-public abstract class RowToDouble implements RowFunction<Double> {
+  static RowToDouble at(int index) {
+    return input -> (input == null) ? null : input.getDouble(index);
+  }
 
-  public static RowToDouble at(final int index) {
-    return new RowToDouble() {
-      @Override
-      public Double apply(IsRow input) {
-        return (input == null) ? null : input.getDouble(index);
+  default RowToDouble minus(RowToDouble other) {
+    return input -> {
+      Double v1 = apply(input);
+      Double v2 = (other == null) ? null : other.apply(input);
+
+      if (v1 == null) {
+        return v2;
+      } else if (v2 == null) {
+        return v1;
+      } else {
+        return v1 - v2;
       }
     };
   }
 
-  public RowToDouble minus(final RowToDouble other) {
-    Assert.notNull(other);
+  default RowToDouble plus(RowToDouble other) {
+    return input -> {
+      Double v1 = apply(input);
+      Double v2 = (other == null) ? null : other.apply(input);
 
-    return new RowToDouble() {
-      @Override
-      public Double apply(IsRow input) {
-        Double v1 = RowToDouble.this.apply(input);
-        Double v2 = other.apply(input);
-
-        if (v1 == null) {
-          return v2;
-        } else if (v2 == null) {
-          return v1;
-        } else {
-          return v1 - v2;
-        }
+      if (v1 == null) {
+        return v2;
+      } else if (v2 == null) {
+        return v1;
+      } else {
+        return v1 + v2;
       }
     };
   }
 
-  public RowToDouble plus(final RowToDouble other) {
-    Assert.notNull(other);
+  default RowToDouble times(RowToDouble other) {
+    return input -> {
+      Double v1 = apply(input);
+      Double v2 = (other == null) ? null : other.apply(input);
 
-    return new RowToDouble() {
-      @Override
-      public Double apply(IsRow input) {
-        Double v1 = RowToDouble.this.apply(input);
-        Double v2 = other.apply(input);
-
-        if (v1 == null) {
-          return v2;
-        } else if (v2 == null) {
-          return v1;
-        } else {
-          return v1 + v2;
-        }
-      }
-    };
-  }
-
-  public RowToDouble times(final RowToDouble other) {
-    Assert.notNull(other);
-
-    return new RowToDouble() {
-      @Override
-      public Double apply(IsRow input) {
-        Double v1 = RowToDouble.this.apply(input);
-        Double v2 = other.apply(input);
-
-        return (v1 == null || v2 == null) ? null : (v1 * v2);
-      }
+      return (v1 == null || v2 == null) ? null : (v1 * v2);
     };
   }
 }

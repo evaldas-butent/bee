@@ -240,6 +240,7 @@ public final class MailConstants {
   public static final String COL_FOLDER_PARENT = "Parent";
   public static final String COL_FOLDER_NAME = "Name";
   public static final String COL_FOLDER_UID = "UIDValidity";
+  public static final String COL_FOLDER_MODSEQ = "ModSeq";
 
   public static final String COL_PLACE = "Place";
   public static final String COL_FOLDER = "Folder";
@@ -249,7 +250,6 @@ public final class MailConstants {
 
   public static final String COL_RULE = "Rule";
   public static final String COL_RULE_ACTIVE = "Active";
-  public static final String COL_RULE_ORDINAL = "Ordinal";
   public static final String COL_RULE_CONDITION = "Condition";
   public static final String COL_RULE_CONDITION_OPTIONS = "ConditionOptions";
   public static final String COL_RULE_ACTION = "Action";
@@ -261,6 +261,8 @@ public final class MailConstants {
   public static final String COL_NEWSLETTER = "Newsletter";
   public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_RECIPIENTS_GROUP = "RecipientsGroup";
+
+  public static final String COL_NEWSLETTER_VISIBLE_COPIES = "VisibleCopies";
 
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";
@@ -274,10 +276,20 @@ public final class MailConstants {
 
   public static final String DATA_TYPE_MESSAGE = "Message";
 
+  public static final String PRM_SIGNATURE_POSITION = "MailSignatureAboveQuotedText";
   public static final String PRM_DEFAULT_ACCOUNT = "DefaultAccount";
   public static final String PRM_MAIL_CHECK_INTERVAL = "MailCheckIntervalInMinutes";
   public static final String PRM_SEND_NEWSLETTERS_COUNT = "SendNewslettersCount";
   public static final String PRM_SEND_NEWSLETTERS_INTERVAL = "SendNewslettersInterval";
+  public static final String PRM_REMINDERS_MAIL_TEMPLATE = "RemindersMailTemplate";
+
+  public static final String REMINDERS_MAIL_TEMPLATE_HEADER_TEXT = "{template_header_text}";
+  public static final String REMINDERS_MAIL_TEMPLATE_HEADER_COLOR = "{template_header_color}";
+  public static final String REMINDERS_MAIL_DEFAULT_COLOR = "#6bae45";
+  public static final String DEFAULT_REMINDERS_MAIL_TEMPLATE_VALUE =
+      "<h3 style=\"background-color: " + REMINDERS_MAIL_TEMPLATE_HEADER_COLOR
+          + "; color: white; text-transform: uppercase;"
+          + " padding: 10px;\">" + REMINDERS_MAIL_TEMPLATE_HEADER_TEXT + "</h3>";
 
   public static void register() {
     EnumUtils.register(RuleCondition.class);

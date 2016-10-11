@@ -19,6 +19,8 @@
     <ExternalJoin source="NewsletterContacts" joinType="LEFT" name="Newsletter" >
       <AggregateColumn name="Date" alias="MaxDate" aggregate="MAX" />   
     </ExternalJoin>
+
+    <SimpleColumn name="VisibleCopies" />
   </Columns>
   <Order>
     <OrderBy column="Subject" />

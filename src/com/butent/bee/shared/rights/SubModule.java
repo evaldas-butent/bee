@@ -46,6 +46,12 @@ public enum SubModule implements HasLocalizedCaption {
       return constants.classifiers();
     }
   },
+  SERVICE {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.service();
+    }
+  },
   ACTS {
     @Override
     public String getCaption(Dictionary constants) {

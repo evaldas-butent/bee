@@ -36,6 +36,9 @@ class AllProjectsGrid extends TreeGridInterceptor {
       EditableColumn editableColumn) {
     if (BeeUtils.same(columnName, NAME_SLACK) && column instanceof HasCellRenderer) {
       ((HasCellRenderer) column).setRenderer(new ProjectSlackRenderer(dataColumns));
+
+    } else if (BeeUtils.same(columnName, NAME_MODE) && column instanceof HasCellRenderer) {
+      ((HasCellRenderer) column).setRenderer(new ModeRenderer());
     }
     return true;
   }

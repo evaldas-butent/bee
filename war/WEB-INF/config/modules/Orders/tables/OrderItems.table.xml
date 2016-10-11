@@ -3,16 +3,20 @@
   <Fields>
 
     <Relation name="Order" notNull="true" relation="Orders" cascade="DELETE" label="=order" />
-    <Date name="Date" label="=date" notNull="true" defExpr="CURRENT_TIME" />
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
-    <Numeric name="ResRemainder" precision="12" label="=ordResRemainder" />
-    <Numeric name="Quantity" precision="12" notNull="true" label="=quantity" />
+    <Numeric name="ResRemainder" precision="12" scale="5" label="=ordResRemainder" />
+    <Numeric name="Quantity" precision="12" scale="5" notNull="true" label="=quantity" />
+    <Numeric name="CompletedQty" precision="12" scale="5" label="=quantity" />
     <Numeric name="Price" precision="15" scale="5" label="=price" />
     <Relation name="Currency" relation="Currencies" notNull="true" label="=currency" defExpr="MAIN_CURRENCY" />
     <Boolean name="VatPlus" label="=vatPlus" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="=vatPercent" />
     <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
-    <Relation name="Sale" relation="Sales" cascade="SET_NULL" label="=trdInvoiceId" />
+    <Numeric name="InvisibleDiscount" precision="7" scale="3" label="=discountPercent" />
+    <Relation name="Supplier" relation="Companies" label="=supplier" />
+    <Numeric name="Unpacking" precision="15" scale="5" label="=unpacking" />
+    <Date name="SupplierTerm" label="=ordSupplierTerm" />
+    <Text name="Note" label="=note" />
   </Fields>
 </Table>

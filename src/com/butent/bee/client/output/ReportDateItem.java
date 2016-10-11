@@ -62,7 +62,7 @@ public class ReportDateItem extends ReportItem {
 
   @Override
   public void deserialize(String data) {
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
       setFormat(EnumUtils.getEnumByName(DateTimeFunction.class, map.get(FORMAT)));

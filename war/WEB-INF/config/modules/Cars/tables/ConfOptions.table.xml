@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfOptions"
+       idName="OptionID"
+>
+  <Fields>
+    <Relation name="Group" relation="ConfGroups" notNull="true" label="=optionGroup" />
+    <String name="OptionName" precision="100" notNull="true" label="=option" />
+    <String name="Code" precision="20" label="=code" />
+    <Text name="Description" label="=description" />
+    <Relation name="PhotoFile" relation="Files" editable="true" label="=photo" />
+    <Relation name="Bundle" relation="ConfBundles" label="=bundle" editable="true" />
+    <Relation name="Item" relation="Items" label="=item" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Group Code" />
+  </Constraints>
+</Table>

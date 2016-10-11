@@ -86,23 +86,21 @@ public class FileServiceApplication extends Application {
   }
 
   @GET
-  @Path("{name}")
+  @Path("zip/{name}")
   public Response getFiles(@PathParam("name") String fileName,
       @QueryParam(Service.VAR_FILES) String files) {
 
     if (BeeUtils.isEmpty(files)) {
       throw new BadRequestException();
     }
-    Map<String, String> fileMap = Codec.deserializeMap(Codec.decodeBase64(files));
+    Map<String, String> fileMap = Codec.deserializeLinkedHashMap(Codec.decodeBase64(files));
     File tmp;
 
     try {
       tmp = File.createTempFile("bee_", ".zip");
       tmp.deleteOnExit();
 
-      try (
-          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))
-      ) {
+      try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))) {
         Set<String> names = new HashSet<>();
 
         for (Map.Entry<String, String> entry : fileMap.entrySet()) {

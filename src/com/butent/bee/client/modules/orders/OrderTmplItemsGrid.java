@@ -28,7 +28,6 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -39,11 +38,11 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
@@ -109,25 +108,19 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
           IsRow parentRow = (form == null) ? null : form.getActiveRow();
 
           if (DataUtils.idEquals(parentRow, result)) {
-            ItemPrice itemPrice = null;
-
-            String ip = rowSet.getTableProperty(PRP_ITEM_PRICE);
-            if (BeeUtils.isDigit(ip)) {
-              itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
-            }
-
-            addItems(parentRow, form.getDataColumns(), itemPrice, getDefaultDiscount(), rowSet);
+            addItems(parentRow, form.getDataColumns(), rowSet);
           }
         }
       });
     }
   }
 
-  private void addItems(IsRow parentRow, List<BeeColumn> parentColumns, ItemPrice defPrice,
-      Double discount, BeeRowSet items) {
+  private void addItems(IsRow parentRow, List<BeeColumn> parentColumns, BeeRowSet items) {
 
-    List<String> colNames = Lists.newArrayList(COL_TEMPLATE, COL_TA_ITEM,
-        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT);
+    List<String> colNames = Lists.newArrayList(COL_TEMPLATE, COL_TA_ITEM, COL_TRADE_ITEM_QUANTITY,
+        COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
+        COL_INVISIBLE_DISCOUNT);
+
     final BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
     final int tmplIndex = rowSet.getColumnIndex(COL_TEMPLATE);
@@ -135,6 +128,13 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
     final int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
     final int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
     final int discountIndex = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
+    final int invisibleDiscountIndex = rowSet.getColumnIndex(COL_INVISIBLE_DISCOUNT);
+    final int vatIdx = rowSet.getColumnIndex(COL_TRADE_VAT);
+    final int vatPrcIndex = rowSet.getColumnIndex(COL_TRADE_VAT_PERC);
+
+    final int vatPrcItemIdx = items.getColumnIndex(COL_TRADE_VAT_PERC);
+    final int vatPrcDefaultIdx = items.getNumberOfColumns() - 1;
+    final int vatItemIdx = items.getColumnIndex(COL_TRADE_VAT);
 
     Map<Long, Double> quantities = new HashMap<>();
     Map<Long, ItemPrice> priceNames = new HashMap<>();
@@ -152,24 +152,14 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
 
         quantities.put(item.getId(), qty);
 
-        ItemPrice itemPrice = defPrice;
+        if (BeeUtils.unbox(item.getBoolean(vatItemIdx))) {
 
-        String ip = item.getProperty(PRP_ITEM_PRICE);
-        if (BeeUtils.isDigit(ip)) {
-          itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
-        }
-
-        if (itemPrice != null) {
-          Double price = item.getDouble(items.getColumnIndex(itemPrice.getPriceColumn()));
-          if (BeeUtils.isDouble(price)) {
-            row.setValue(priceIndex, Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
+          if (BeeUtils.unbox(item.getInteger(vatPrcItemIdx)) > 0) {
+            row.setValue(vatIdx, item.getInteger(vatPrcItemIdx));
+          } else {
+            row.setValue(vatIdx, item.getInteger(vatPrcDefaultIdx));
           }
-
-          priceNames.put(item.getId(), itemPrice);
-        }
-
-        if (BeeUtils.nonZero(discount)) {
-          row.setValue(discountIndex, discount);
+          row.setValue(vatPrcIndex, true);
         }
 
         rowSet.addRow(row);
@@ -206,8 +196,10 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
                   if (BeeUtils.isDouble(percent)) {
                     if (BeeUtils.nonZero(percent)) {
                       row.setValue(discountIndex, percent);
+                      row.setValue(invisibleDiscountIndex, percent);
                     } else {
                       row.clearCell(discountIndex);
+                      row.setValue(invisibleDiscountIndex, 0);
                     }
                   }
                 }
@@ -230,15 +222,6 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
     QuantityReader quantityReader = new QuantityReader(index);
 
     renderer.getTotalizer().setQuantityFunction(quantityReader);
-  }
-
-  private Double getDefaultDiscount() {
-    IsRow row = getGridView().getActiveRow();
-    if (row == null) {
-      row = BeeUtils.getLast(getGridView().getRowData());
-    }
-
-    return (row == null) ? null : row.getDouble(getDataIndex(COL_TRADE_DISCOUNT));
   }
 
   @Override

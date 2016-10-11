@@ -13,7 +13,6 @@ import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.style.HasVerticalAlign;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
@@ -21,8 +20,8 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public abstract class CellVector extends ComplexPanel implements IdentifiableWidget,
-    HasIndexedWidgets, HasTextAlign, HasVerticalAlign, IsHtmlTable {
+public abstract class CellVector extends ComplexPanel
+    implements HasIndexedWidgets, HasTextAlign, HasVerticalAlign, IsHtmlTable {
 
   private static final String STYLE_SUFFIX_CELL = "-cell";
 

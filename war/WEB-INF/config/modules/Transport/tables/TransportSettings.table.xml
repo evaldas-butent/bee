@@ -159,5 +159,8 @@
 
     <Text name="TrailerFilterDataTypes" />
     <Text name="TrailerFilters" />
+
+    <Boolean name="SsOrderCustomer" />
+    <Boolean name="SsOrderNo" />
   </Fields>
 </Table>

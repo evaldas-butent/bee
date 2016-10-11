@@ -47,7 +47,7 @@
       </row>
       <row>
         <Label text="Antras vairuotojas" />
-        <Label name="TripDrivers1" />
+        <Label name="TripDriversAll" />
       </row>
       <row>
         <Label for="Route" />

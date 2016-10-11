@@ -6,6 +6,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.ui.HasSortingOrder;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
@@ -160,6 +161,17 @@ public final class TransportConstants {
       public String getDefaultContent() {
         return "Your request has been received. Will contact You soon!";
       }
+    },
+    REQUEST_COMMON_TERMS {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trRequestCommonTerms();
+      }
+
+      @Override
+      public String getDefaultContent() {
+        return "";
+      }
     };
 
     public String getDefaultContent() {
@@ -213,23 +225,31 @@ public final class TransportConstants {
     }
   }
 
-  public enum TripStatus implements HasCaption {
-    NEW(Localized.dictionary().trTripStatusNew(), true),
-    ACTIVE(Localized.dictionary().trTripStatusActive(), true),
-    CANCELED(Localized.dictionary().trTripStatusCanceled(), false),
-    COMPLETED(Localized.dictionary().trTripStatusCompleted(), false);
+  public enum TripStatus implements HasCaption, HasSortingOrder {
+    NEW(Localized.dictionary().trTripStatusNew(), true, 0),
+    ACTIVE(Localized.dictionary().trTripStatusActive(), true, 1),
+    CANCELED(Localized.dictionary().trTripStatusCanceled(), false, 2),
+    COMPLETED(Localized.dictionary().trTripStatusCompleted(), false, 4),
+    ARRANGED(Localized.dictionary().trTripStatusArranged(), true, 3);
 
     private final String caption;
     private final boolean editable;
+    private final int sortingOrder;
 
-    TripStatus(String caption, boolean editable) {
+    TripStatus(String caption, boolean editable, int sortingOrder) {
       this.caption = caption;
       this.editable = editable;
+      this.sortingOrder = sortingOrder;
     }
 
     @Override
     public String getCaption() {
       return caption;
+    }
+
+    @Override
+    public int getSortingOrder() {
+      return sortingOrder;
     }
 
     public boolean isEditable() {
@@ -325,11 +345,13 @@ public final class TransportConstants {
   public static final String SVC_GET_ASSESSMENT_AMOUNTS = "GetAssessmentAmounts";
   public static final String SVC_GET_ASSESSMENT_QUANTITY_REPORT = "GetAssessmentQuantityReport";
   public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";
+  public static final String SVC_UPDATE_PERCENT = "UpdatePercent";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
   public static final String SVC_GET_TRIP_INFO = "GetTripInfo";
   public static final String SVC_GET_VEHICLE_BUSY_DATES = "GetVehicleBusyDates";
   public static final String SVC_GET_DRIVER_BUSY_DATES = "GetDriverBusyDates";
+  public static final String SVC_GET_TEXT_CONSTANT = "GetTextConstant";
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
@@ -426,6 +448,7 @@ public final class TransportConstants {
   public static final String VIEW_CARGO_CREDIT_INVOICES = "CargoCreditInvoices";
   public static final String VIEW_CARGO_PURCHASE_INVOICES = "CargoPurchaseInvoices";
   public static final String VIEW_CARGO_INCOMES = "CargoIncomes";
+  public static final String VIEW_CARGO_FILES = "CargoFiles";
 
   public static final String VIEW_CARGO_TYPES = "CargoTypes";
   public static final String VIEW_CARGO_GROUPS = "CargoGroups";
@@ -463,7 +486,6 @@ public final class TransportConstants {
   public static final String VIEW_ACCUMULATIONS = "Accumulations";
 
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
-  public static final String VIEW_SHIPMENT_REQUEST_FILES = "ShipmentRequestFiles";
 
   public static final String VIEW_TEXT_CONSTANTS = "TextConstants";
 
@@ -698,6 +720,9 @@ public final class TransportConstants {
 
   public static final String COL_SS_ADDITIONAL_INFO = "SsAdditionalInfo";
 
+  public static final String COL_SS_ORDER_CUSTOMER = "SsOrderCustomer";
+  public static final String COL_SS_ORDER_NO = "SsOrderNo";
+
   public static final String COL_SS_PIXELS_PER_DAY = "SsPixelsPerDay";
   public static final String COL_SS_PIXELS_PER_ROW = "SsPixelsPerRow";
 
@@ -836,6 +861,7 @@ public final class TransportConstants {
   public static final String COL_QUERY_CUSTOMER_COUNTRY = "CustomerCountry";
   public static final String COL_QUERY_CUSTOMER_CITY = "CustomerCity";
   public static final String COL_QUERY_CUSTOMER_ADDRESS = "CustomerAddress";
+  public static final String COL_QUERY_CUSTOMER_POST_INDEX = "CustomerPostIndex";
   public static final String COL_QUERY_CUSTOMER_PHONE = "CustomerPhone";
   public static final String COL_QUERY_CUSTOMER_FAX = "CustomerFax";
   public static final String COL_QUERY_CUSTOMER_EMAIL = "CustomerEmail";

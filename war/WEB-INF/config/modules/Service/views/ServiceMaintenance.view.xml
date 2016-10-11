@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ServiceMaintenance" source="ServiceMaintenance" module="Service"
+  caption="=svcMaintenance" newRowCaption="=svcNewMaintenance"
+  >
+  <Columns>
+    <SimpleColumn name="Type"/>
+    <SimpleJoin joinType="INNER" name="Type">
+      <SimpleColumn name="Name" alias="TypeName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="State"/>
+    <SimpleJoin joinType="INNER" name="State">
+      <SimpleColumn name="Name" alias="StateName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ServiceObject"/>
+    <SimpleJoin name="ServiceObject" joinType="INNER">
+      <SimpleColumn name="Customer" />
+      <SimpleJoin joinType="LEFT" name="Customer">
+        <SimpleColumn name="Name" alias="CustomerName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="ContactPerson" />
+      <SimpleJoin joinType="LEFT" name="ContactPerson">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="ContactFirstName" name="FirstName" />
+          <SimpleColumn alias="ContactLastName" name="LastName" />
+        </SimpleJoin>
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Phone" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="Category" />
+      <SimpleJoin joinType="LEFT" name="Category">
+        <SimpleColumn name="Name" alias="CategoryName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Model" />
+      <SimpleColumn name="SerialNo" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Date"/>
+    <SimpleColumn name="Description" />
+    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Urgent" />
+
+    <SimpleColumn name="WarrantyType"/>
+    <SimpleJoin joinType="LEFT" name="WarrantyType">
+      <SimpleColumn name="Name" alias="WarrantyTypeName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Repairer" />
+    <SimpleJoin name="Repairer" joinType="LEFT">
+      <SimpleColumn alias="RepairerCompanyPerson" name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="RepairerFirstName" name="FirstName" />
+          <SimpleColumn alias="RepairerLastName" name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Creator" />
+    <SimpleJoin name="Creator" joinType="LEFT">
+      <SimpleColumn alias="CreatorCompanyPerson" name="CompanyPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Department" joinType="LEFT">
+          <SimpleColumn alias="CreatorDepartmentName" name="Name" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="WarrantyMaintenance"/>
+    <SimpleColumn name="WarrantyValidTo"/>
+    <SimpleColumn name="EndingDate"/>
+    </Columns>
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>

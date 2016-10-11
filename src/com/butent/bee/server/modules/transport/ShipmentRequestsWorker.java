@@ -37,8 +37,6 @@ import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.transport.TransportConstants.ShipmentRequestStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.TextConstant;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -189,12 +187,12 @@ public class ShipmentRequestsWorker {
 
         deb.commitRow(handlingRs);
       }
-      view = sys.getView(VIEW_SHIPMENT_REQUEST_FILES);
+      view = sys.getView(VIEW_CARGO_FILES);
 
       for (JsonObject file : files) {
         BeeRowSet filesRs = buildRowSet(view, file);
-        filesRs.getColumns().add(view.getBeeColumn(COL_SHIPMENT_REQUEST));
-        filesRs.getRow(0).getValues().add(BeeUtils.toString(row.getId()));
+        filesRs.getColumns().add(view.getBeeColumn(COL_CARGO));
+        filesRs.getRow(0).getValues().add(cargo);
 
         deb.commitRow(filesRs);
       }

@@ -9,13 +9,42 @@
   from {transform: rotate(0deg);}
   to {transform: rotate(360deg);}
 }
-@-webkit-keyframes rotate {
-  from {-webkit-transform: rotate(0deg);}
-  to {-webkit-transform: rotate(360deg);}
+@keyframes rotateX {
+  from {transform: rotateX(0deg);}
+  to {transform: rotateX(360deg);}
+}
+@keyframes rotateY {
+  from {transform: rotateY(0deg);}
+  to {transform: rotateY(360deg);}
+}
+@keyframes rotateZ {
+  from {transform: rotateZ(0deg);}
+  to {transform: rotateZ(360deg);}
 }
 
 @keyframes blinker {
   50% { opacity: 0.0; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes indeterminate {
+  0% {transform: translateX(-100%) scaleX(0.2);}
+  20% {transform: translateX(-40%) scaleX(0.2);}
+  30% {transform: translateX(0%) scaleX(0.5);}
+  55% {transform: translateX(100%) scaleX(0.7);}
+  55.99% {transform: scaleX(0);}
+  56% {transform: translateX(-100%) scaleX(0);}
+  56.99% {transform: translateX(-100%) scaleX(0.6);}
+  75% {transform: translateX(-5%) scaleX(0.6);}
+  85% {transform: translateX(30%) scaleX(0.3);}
+  98% {transform: translateX(100%) scaleX(0.2);}
+  99.99% {transform: scaleX(0);}
+  100% {transform: translateX(-100%);}
 }
 
 .bee-Body {
@@ -429,15 +458,14 @@
 }
 
 .bee-Header-container .bee-auto-fit {
+  padding: 2px 3px;
   font-size: 16px;
   color: #999;
-  padding-left: 3px;
   align-self: flex-end;
   -webkit-align-self: flex-end;
   -ms-flex-item-align: end;
 }
 .bee-Header-container .bee-auto-fit:hover {
-  color: black;
   cursor: ew-resize;
 }
 
@@ -469,10 +497,11 @@
   border-collapse: collapse;
 }
 .bee-Header-commandPanel .bee-Button {
-  padding: 2px 6px;
+  margin-right: 3px;
+  padding: 3px 8px;
   background-color: #fafafa;
   border: 1px solid #ccc;
-  border-radius: 2px;
+  border-radius: 5px;
 }
 .bee-Header-commandPanel .bee-Button:hover {
   cursor: pointer;
@@ -498,36 +527,20 @@
   font-size: 20px;
 }
 
-.bee-Header-commandPanel .bee-fa-label, .bee-Dialog-header .bee-fa-label {
-  margin-left: 4px;
-  margin-right: 4px;
-  font-size: large;
-  color: #414142;
-}
-
-.bee-Header-commandPanel .bee-fa-label:active {
-  color: black;
-}
-
-.bee-Header-commandPanel .bee-fa-label:hover, .bee-Dialog-header .bee-fa-label:hover {
-  color: black;
-}
-
+.bee-Header-commandPanel .bee-fa-label,
+.bee-Dialog-header .bee-fa-label,
 .bee-Header-control.bee-fa-label,
 .bee-TreeView-action.bee-fa-label,
 .bee-Gallery-command.bee-fa-label {
-  margin-right: 10px;
+  margin-right: 3px;
+  padding: 3px 5px;
   font-size: large;
   color: #414142;
-}
-.bee-Header-control.bee-fa-label:hover,
-.bee-TreeView-action.bee-fa-label:hover,
-.bee-Gallery-command.bee-fa-label:hover {
-  color: black;
 }
 
 .bee-Header-control.bee-Action-removeFilter {
   margin-right: 0;
+  padding: 2px;
   font-size: 12px;
   color: red;
   position: relative;
@@ -540,6 +553,36 @@
 }
 .bee-Header-control-hidden {
   display: none;
+}
+
+.bee-fa-label.bee-animate-hover:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  transition: background-color 300ms;
+}
+
+@keyframes fa-ripple {
+  from { transform: scale(5); opacity: 1;}
+  to { transform: scale(24); opacity: 0;}
+}
+
+.bee-fa-label.bee-animate-active {
+  position: relative;
+}
+.bee-fa-label.bee-animate-active.bee-active:hover {
+  background-color: transparent;
+  transition: background-color 0s;
+}
+.bee-fa-label.bee-animate-active.bee-active::after {
+  content: "";
+  background: #ccc;
+  display: block;
+  position: absolute;
+  left: calc(50% - 1px);
+  top: calc(50% - 1px);
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  animation: fa-ripple 500ms;
 }
 
 .bee-CellGrid {
@@ -640,6 +683,13 @@
   outline-offset: -1px;
 }
 
+.bee-CellGridUpdatingCell {
+  animation: rotateX 1s linear;
+}
+.bee-CellGridCell.bee-CellGridBody.bee-CellGridUpdatedCell {
+  background-color: palegreen;
+}
+
 .bee-CellGridResizerHorizontal {
   cursor: col-resize;
 }
@@ -701,6 +751,7 @@
   border: 1px solid #b4b4b4;
   border-radius: 2px;
   background-color: White;
+  overflow: hidden;
 }
 
 .bee-Dialog-header {
@@ -733,10 +784,6 @@
   -ms-flex: 1;
   font-weight: bold;
   cursor: default;
-}
-
-.bee-Dialog-header .bee-Dialog-action {
-  margin-right: 0.5em;
 }
 
 .bee-Dialog-content {
@@ -1122,7 +1169,8 @@
   outline: none !important;
 }
 
-.bee-TabBar-item {
+.bee-TabBar-item,
+.bee-TabGroup-item {
   margin-left: 4px;
   padding: 4px 8px 4px 8px;
   cursor: pointer;
@@ -1132,14 +1180,16 @@
   border-radius: 3px 3px 0px 0px;
 }
 
-.bee-TabBar-item-selected {
+.bee-TabBar-item-selected,
+.bee-TabGroup-item-selected {
   cursor: default;
   background-color: #eee;
   font-weight: bold;
   border: 1px solid #ccc;
 }
 
-.bee-TabBar-item-disabled {
+.bee-TabBar-item-disabled,
+.bee-TabGroup-item-disabled {
   cursor: default;
   color: #999;
 }
@@ -1154,6 +1204,8 @@
 }
 .bee-TabbedPages-resized {
   background-color: inherit;
+  left: 0;
+  width: 100%;
 }
 
 .bee-TabbedPages-tabPanel {
@@ -1493,6 +1545,134 @@
   height: 1px;
   margin: 2px 0;
   background-color: #e7e7e7;
+}
+
+.bee-MessageBox-decide,
+.bee-MessageBox-delete,
+.bee-MessageBox-confirm {
+  min-width:360px;
+  min-height:215px;
+  max-height:430px;
+}
+
+.bee-MessageBox-decide .bee-Dialog-header,
+.bee-MessageBox-delete .bee-Dialog-header,
+.bee-MessageBox-confirm .bee-Dialog-header{
+  padding: 0 15px 0 15px;
+  height: 45px;
+}
+
+.bee-MessageBox-decide .bee-Dialog-caption,
+.bee-MessageBox-delete .bee-Dialog-caption,
+.bee-MessageBox-confirm .bee-Dialog-caption{
+  font-size: 16pt;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bee-MessageBox-decide .bee-Dialog-header .bee-Dialog-action,
+.bee-MessageBox-delete .bee-Dialog-header .bee-Dialog-action,
+.bee-MessageBox-confirm .bee-Dialog-header .bee-Dialog-action {
+  margin-right: 0;
+}
+
+.bee-MessageBox-decide .bee-Dialog-content,
+.bee-MessageBox-delete .bee-Dialog-content,
+.bee-MessageBox-confirm .bee-Dialog-content {
+  margin: 4px 0 15px 0;
+  font-size: 14px;
+  width: 100%;
+}
+.bee-MessageBox-decide .bee-MessageBox-icon-cell,
+.bee-MessageBox-delete .bee-MessageBox-icon-cell,
+.bee-MessageBox-confirm .bee-MessageBox-icon-cell {
+  width: 80px;
+}
+.bee-MessageBox-decide .bee-MessageBox-icon,
+.bee-MessageBox-delete .bee-MessageBox-icon,
+.bee-MessageBox-confirm .bee-MessageBox-icon {
+  padding: 4px;
+  font-size: 80px;
+  color: whitesmoke;
+  text-align: center;
+  max-width: 80px;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-icon,
+.bee-MessageBox-confirm .bee-MessageBox-icon {
+  color: #E3E3E3;
+}
+
+.bee-MessageBox-delete .bee-MessageBox-icon {
+  color:  #cc0000;
+}
+
+
+.bee-MessageBox-decide .bee-MessageBox-buttonGroup,
+.bee-MessageBox-delete .bee-MessageBox-buttonGroup,
+.bee-MessageBox-confirm .bee-MessageBox-buttonGroup {
+  margin: auto;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-message,
+.bee-MessageBox-delete .bee-MessageBox-message,
+.bee-MessageBox-confirm .bee-MessageBox-message {
+  padding-top: 10px;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-message-cell,
+.bee-MessageBox-delete .bee-MessageBox-message-cell,
+.bee-MessageBox-confirm .bee-MessageBox-message-cell {
+  padding: 5px 0 0 0;
+  max-height: 305px;
+  display: inline-block;
+  overflow: scroll;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-message tr:last-child,
+.bee-MessageBox-delete .bee-MessageBox-message tr:last-child,
+.bee-MessageBox-confirm .bee-MessageBox-message tr:last-child {
+  color: #414142;
+  font-weight: bold;
+  font-size: 14pt;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-message,
+.bee-MessageBox-delete .bee-MessageBox-message,
+.bee-MessageBox-confirm .bee-MessageBox-message {
+  margin-left: 0px;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-button,
+.bee-MessageBox-delete .bee-MessageBox-button,
+.bee-MessageBox-confirm .bee-MessageBox-button {
+  min-width: 60px;
+  min-height: 32px;
+  height: 100%;
+  text-transform: uppercase;
+  font-weight: bold;
+  margin: 4px;
+}
+
+.bee-MessageBox-decide .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button,
+.bee-MessageBox-confirm .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button {
+    color: white;
+    background-color: #6bae45;
+}
+
+.bee-MessageBox-delete .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button {
+    color: white;
+    background-color:  #cc0000
+}
+
+.bee-MessageBox-decide .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button:hover,
+.bee-MessageBox-confirm .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button:hover {
+    background-color: #63a140;
+}
+
+.bee-MessageBox-delete .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button:hover {
+    background-color: #c0392b;
 }
 
 .bee-MessageBox-message-cell {
@@ -2007,7 +2187,6 @@
 .bee-ColorEditor-container {
   position: relative;
   width: 120px;
-  height: 23px;
 }
 .bee-ColorEditor-container .bee-ColorEditor-textBox {
   width: calc(100% - 30px);
@@ -2540,7 +2719,6 @@
 }
 .bee-Badge-updated {
   animation: rotate 1s;
-  -webkit-animation: rotate 1s;
 }
 
 .bee-MapContainer .bee-Map {
@@ -2597,19 +2775,19 @@
   left: 45%;
   font-size: 20px;
   animation: rotate 1s linear infinite;
-  -webkit-animation: rotate 1s linear infinite;
 }
 .bee-News-not-loading {
   display: none;
 }
 
 .bee-News-content {
-  position: absolute;
+  /*position: absolute;
   top: 200px;
   bottom: 0;
   left: 0;
   right: 0;
   overflow: auto;
+  */
 }
 
 .bee-News-subscription-panel {
@@ -3309,22 +3487,31 @@ textarea,
   border: 1px solid black;
 }
 
-.bee-CreateNew {
+.bee-CreateNew,
+.bee-SaveLarge {
   margin-right: 10px;
-  background-color: #6bae45;
   color: white;
   border-radius: 5px;
+  cursor: pointer;
+}
+.bee-CreateNew {
+  background-color: #6bae45;
+  text-transform: uppercase;
   padding: 4px 8px;
   font-weight: bold;
   font-size: 13px;
-  text-transform: uppercase;
-  cursor: pointer;
 }
 .bee-CreateNew:hover {
   background-color: #63a140;
 }
 .bee-CreateNew:active {
   background-color: #578d37;
+}
+.bee-SaveLarge {
+  background-color: #0099ff;
+  padding: 0.4vh 1em;
+  font-weight: bolder;
+  font-size: larger;
 }
 
 .bee-CreateButton {
@@ -3444,11 +3631,21 @@ textarea,
   border-radius: 50%;
 }
 .bee-PopupUsersLabel {
-  font-size: 14px;
   color: #414142;
+  font-size: 14px;
+}
+
+.bee-PopupUsersPosition {
+  color: gray;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.bee-PopupUsersSignFlow {
   white-space: nowrap;
   margin-left: -10px;
 }
+
 .bee-PopupUsersPresence {
   font-size: 14px;
   cursor: default;
@@ -3473,6 +3670,24 @@ textarea,
 }
 .bee-PopupUsersChat:hover {
   color: black;
+}
+
+.bee-PopupUsersSearch-Icon {
+  text-align: center;
+  font-size: 26px;
+  color: gray;
+  margin: 4px;
+}
+
+.bee-PopupUsersSearch-Input.bee-PopupUsersSearch-Input {
+  width: 100%;
+  height: 4ex;
+  border-style: none;
+  border-left: 2px solid #ccc;
+}
+
+.bee-PopupUsersSearch-NotFound {
+  color: red;
 }
 
 .bee-DataSelector,
@@ -3516,6 +3731,7 @@ textarea,
   height: 100%;
   outline: 9999px solid rgba(0,0,0,0.7);
   background-color: #f2f2f2;
+  overflow: auto;
 }
 
 .bee-NotificationBar-Content {
@@ -3528,6 +3744,30 @@ textarea,
   display: -ms-flexbox;
   background-color: #F2F2F2;
   height: 100px;
+}
+
+.bee-InfoContainer {
+  display: inline;
+  background-color: #F2F2F2;
+  min-height: 100px;
+  padding: 3px;
+}
+
+.bee-InfoTable-label {
+  text-align: right;
+  padding: 2px;
+  font-size: smaller;
+}
+
+.bee-InfoTable .bee-Image {
+  padding-right: 1em;
+}
+
+.bee-InfoTable-value {
+  text-align: left;
+  padding: 2px;
+  color: #414142;
+  font-weight: bolder;
 }
 
 .bee-MonthDay {
@@ -3557,25 +3797,28 @@ textarea,
 
 .bee-UserControlIcon {
   font-size: 20px;
-  padding: 0 15px 0 20px;
+  padding: 0 10px 0 15px;
   color: #989898;
 }
 
 .bee-UserMenuIcon {
   font-size: 20px;
-  padding: 0 15px 0 20px;
+  padding: 0 10px 0 15px;
   color: #989898;
-  -webkit-transform: rotate(30deg);
   transform: rotate(30deg);
 }
 
 .bee-UserMenuIcon-Selected {
   font-size: 20px;
-  padding: 0 15px 0 20px;
+  padding: 0 10px 0 15px;
   color: black;
 }
 
 .bee-UserControlIcon:hover {
+  color: black;
+}
+
+.bee-UserControlIcon-InfoClicked {
   color: black;
 }
 
@@ -3703,20 +3946,30 @@ textarea,
   color: #888;
 }
 
-.bee-Grid-Spinner {
+.bee-Grid-ProgressContainer {
   display: none;
-}
-.bee-loading .bee-CellGrid {
-  opacity: 0.25;
-}
-.bee-loading .bee-Grid-Spinner {
-  display: block;
   position: absolute;
-  left: 45%;
-  top: 45%;
-  font-size: xx-large;
-  animation: rotate 1s linear infinite;
-  -webkit-animation: rotate 1s linear infinite;
+  overflow: hidden;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #b0d0ef;
+}
+.bee-Grid-ProgressBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #3a81f0;
+}
+
+.bee-loading .bee-Grid-ProgressContainer {
+  display: block;
+}
+.bee-loading .bee-Grid-ProgressBar {
+  animation: indeterminate 2s linear infinite;
 }
 
 .bee-MenuRoot .bee-potentially-bold::after,

@@ -399,7 +399,7 @@
 
 .bee-EventsBoard-content {
   overflow: auto;
-  height: calc(100% - 35px);
+  height: calc(100% - 50px);
   width: 100%;
 }
 
@@ -418,7 +418,6 @@
   min-width: 150px;
   vertical-align: top;
   overflow: auto;
-  max-height: 9em;
 }
 
 .bee-EventsBoard-content-col-PublisherPhoto {
@@ -426,9 +425,6 @@
   height: 3.5em;
   max-width: 2.5em;
   min-width: 2.5em;
-  align-self: center;
-  -webkit-align-self: center;
-  -ms-flex-item-align: center;
 }
 
 .bee-EventsBoard-content-Photo {
@@ -444,7 +440,9 @@
 }
 
 .bee-EventsBoard-content-EventNote {
-  white-space: pre-wrap;
+   white-space: pre-wrap;
+   width: 100%;
+   margin-top: 10px;
 }
 
 .bee-EventsBoard-content-col.bee-EventsBoard-content-col-EventNote.bee-prj-Events-EventNote {
@@ -455,10 +453,210 @@
   width: calc(100% - 10px);
 }
 
+.bee-EventsBoard-content-EventPublisher {
+  font-weight: bolder;
+}
+
+.bee-EventsBoard-content-col-PublisherInfo {
+  display: -webkit-flex;
+}
+
+.bee-EventsBoard-content-EventPublisher, .bee-EventsBoard-content-EventPublished,
+.bee-EventsBoard-content-EventType {
+  padding-right: 10px;
+}
+
+.bee-EventsBoard-content-Properties, .bee-EventsBoard-content-col-EventFiles {
+  margin-top: 10px;
+}
+
+.bee-EventsBoard-content-Properties {
+  font-style: italic;
+  font-weight: bold;
+}
+
+.bee-EventsBoard-content-EventPublished {
+  color: #c5c5c5
+}
+
 .bee-rtc-local,
 .bee-rtc-remote {
   margin-left: 10px;
   width: calc(50% - 10px);
+}
+
+.bee-conf {
+  margin: auto;
+}
+.bee-conf td {
+  border: 1px solid #ddd;
+  padding: 0 5px 0 5px;
+}
+.bee-conf-choice {
+  margin: 0 auto 5px auto;
+}
+.bee-conf-choice .bee-TabBar-item {
+  outline: none;
+}
+.bee-conf-hdr {
+  text-align: center;
+  font-style: italic;
+}
+.bee-conf-grp {
+  font-weight: bold;
+  background-color: lightyellow;
+}
+.bee-conf-row-hdr {
+  font-weight: bold;
+}
+.bee-conf-col-hdr {
+  text-align: right;
+  font-weight: bold;
+}
+.bee-conf-row-hdr, .bee-conf-col, .bee-conf-cell, .bee-conf-row-del, .bee-conf-col-del {
+  text-align: center;
+}
+.bee-conf-row-hdr-over, .bee-conf-col-hdr-over {
+  background-color: #ddd;
+}
+ .bee-conf-row.bee-conf-cell {
+  text-align: left;
+ }
+.bee-conf-restricted {
+  cursor: pointer;
+  color: red;
+  text-align: center;
+}
+.bee-conf-restricted-unchecked {
+  color: green;
+}
+.bee-conf-add {
+  display: flex;
+  flex-direction: row;
+}
+.bee-conf-add div {
+  flex: 1;
+  background-color: #ddd;
+  background: linear-gradient(to top right,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0) calc(50% - 0.5px),
+    #ddd 50%,
+    rgba(0,0,0,0) calc(50% + 0.5px),
+    rgba(0,0,0,0) 100%);
+}
+.bee-conf-remove:after, .bee-conf-row-hdr .bee-Label:before, .bee-conf-col-hdr .bee-Label:before {
+  margin-left: 1px;
+  content: "\00d7";
+  font-weight: bold;
+  font-size: 15px;
+  color: red;
+  cursor: pointer;
+  visibility: hidden;
+}
+.bee-conf-row-hdr:hover .bee-conf-remove:after, .bee-conf-col-hdr:hover .bee-conf-remove:after,
+.bee-conf-row:hover .bee-conf-remove:after {
+  visibility: visible;
+}
+.bee-conf-row-add:after, .bee-conf-col-add:after {
+  font-family: FontAwesome;
+  content: "\f067";
+  cursor: pointer;
+}
+.bee-conf-default:after {
+  font-family: FontAwesome;
+  content: "\f111";
+  cursor: pointer;
+}
+.bee-conf-optional:after {
+  font-family: FontAwesome;
+  content: "\f1db";
+  cursor: pointer;
+}
+.bee-conf-cell:hover {
+  cursor: pointer;
+  outline: black solid 1px;
+}
+.bee-conf-row-del:after, .bee-conf-col-del:after {
+  font-family: FontAwesome;
+  color: red;
+  cursor: pointer;
+}
+.bee-conf-row-del:hover:after, .bee-conf-col-del:hover:after {
+  content: "\f00d";
+}
+
+.bee-spec-dialog > div {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.bee-spec-dialog .bee-Dialog-content {
+  flex: 1;
+}
+.bee-spec-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.bee-spec-options {
+  flex: 1;
+  overflow: auto;
+}
+.bee-spec-box {
+  overflow: auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.bee-spec-summary tr td:nth-child(2) {
+  font-weight: bold;
+  text-align: right;
+}
+.bee-Popup .bee-spec-box {
+  max-width: 620px;
+  max-height: 500px;
+  padding: 0 5px;
+}
+.bee-spec-thumbnail {
+  width: 150px;
+  height: 150px;
+  margin: 10px;
+  background-color: white;
+  border: 1px solid silver;
+  display: flex;
+  justify-content: space-around;
+  flex-direction: column;
+  text-align: center;
+}
+.bee-spec-thumbnail-active:hover {
+  cursor: pointer;
+  background-color: lightyellow;
+}
+.bee-spec-thumbnail .bee-Image {
+  flex: 1;
+  overflow: hidden;
+  object-fit: contain;
+}
+.bee-spec-thumbnail .bee-Label:last-child {
+  font-weight: bold;
+}
+.bee-spec-description {
+  background-color: lightgoldenrodyellow;
+}
+.bee-spec-selectable {
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.bee-spec-selectable tr td:nth-child(2) {
+  text-align: right;
+}
+.bee-spec-selectable td {
+  border: 1px solid #ddd;
+  padding: 5px;
+}
+.bee-spec-blocked {
+  color: red;
 }
 
 .bee-row-Mode-new,
@@ -471,4 +669,49 @@
 }
 .bee-row-Mode-upd {
   background-color: #ffb300;
+}
+
+.bee-reminder-dialog-panel{
+  padding: 10px 0px;
+}
+
+.bee-reminder-dialog-infoPanel{
+  background-color: #FEF9D3;
+  padding: 10px 10px;
+  height: 40px;
+}
+
+.bee-reminder-dialog-infoText{
+  display: table-cell;
+}
+
+.bee-reminder-dialog-dateText{
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.bee-reminder-dialog-suspendButton {
+  background-color: #cc0000;
+  color: white;
+}
+
+.bee-reminder-dialog-remindButton {
+   background-color: #1eb2d8;
+   color: white;
+}
+
+.bee-reminder-dialog-text {
+   padding-right: 8px;
+}
+
+.bee-reminder-dialog-component {
+   margin-right: 10px;
+}
+
+.bee-Header-commandPanel .bee-reminder-dialog-active {
+  color: #6bae45;
+}
+
+.bee-reminder-dialog-not-visible {
+  display: none;
 }

@@ -1,8 +1,8 @@
 package com.butent.bee.shared.ui;
 
-import com.google.common.base.Function;
-
 import com.butent.bee.shared.data.value.Value;
+
+import java.util.function.Function;
 
 @FunctionalInterface
 public interface HasValueFormatter {

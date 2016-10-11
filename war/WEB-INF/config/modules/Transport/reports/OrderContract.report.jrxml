@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-06-30T14:36:40 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
+<!-- 2016-09-08T12:19:20 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" whenResourceMissingType="Error" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -126,13 +126,21 @@
 	<field name="Value" class="java.lang.Number"/>
 	<field name="ValueCurrencyName" class="java.lang.String"/>
 	<field name="Income" class="java.lang.String"/>
+	<field name="Vat" class="java.lang.String"/>
 	<variable name="grp" class="java.lang.String"/>
-	<variable name="Amount" class="java.math.BigDecimal" calculation="Sum">
-		<variableExpression><![CDATA[BeeUtils.toDecimalOrNull(BeeUtils.round($F{Income}, 2))]]></variableExpression>
-	</variable>
 	<variable name="Currency" class="java.lang.String">
 		<variableExpression><![CDATA[$V{Currency}]]></variableExpression>
 		<initialValueExpression><![CDATA[Invocation.locateRemoteBean(ParamHolderBean.class).getRelationInfo("MainCurrency").getB()]]></initialValueExpression>
+	</variable>
+	<variable name="ExcludeVAT" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$V{ExcludeVAT}]]></variableExpression>
+		<initialValueExpression><![CDATA[BeeUtils.unbox(Invocation.locateRemoteBean(ParamHolderBean.class).getBoolean("ExcludeVAT"))]]></initialValueExpression>
+	</variable>
+	<variable name="Amount" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[BeeUtils.toDecimalOrNull(BeeUtils.round($F{Income}, 2))]]></variableExpression>
+	</variable>
+	<variable name="Vat" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[BeeUtils.toDecimalOrNull(BeeUtils.round($F{Vat}, 2))]]></variableExpression>
 	</variable>
 	<variable name="d" class="com.butent.bee.shared.i18n.Dictionary">
 		<variableExpression><![CDATA[$V{d}]]></variableExpression>
@@ -405,34 +413,13 @@
 						</jr:list>
 					</componentElement>
 				</frame>
-				<frame>
-					<reportElement positionType="Float" x="0" y="205" width="220" height="30" isRemoveLineWhenBlank="true" uuid="e784d251-4da0-49cd-8916-b63b64e5d48b"/>
-					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="10" width="220" height="10" isRemoveLineWhenBlank="true" uuid="dee83763-462e-460b-8714-a703ba61cc45">
-							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ExpeditionType})]]></printWhenExpression>
-						</reportElement>
-						<textElement markup="html">
-							<font size="8" isBold="false"/>
-						</textElement>
-						<textFieldExpression><![CDATA["<b>" + $V{d}.trRequestExpeditionType() + "</b> " + BeeUtils.notEmpty($V{qs}.getLocalizedValue("ExpeditionTypes", "Name", $P{ExpeditionType}, $P{REPORT_LOCALE}), $P{ExpeditionType})]]></textFieldExpression>
-					</textField>
-					<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="0" width="220" height="10" isRemoveLineWhenBlank="true" uuid="9f1f3150-298e-4b9d-9f65-b728a89d112a"/>
-						<textElement markup="html">
-							<font size="8" isBold="false"/>
-						</textElement>
-						<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>" + $R{contractAmount} + "</b>", $V{Amount}, $V{Currency})]]></textFieldExpression>
-					</textField>
-					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="20" width="220" height="10" isRemoveLineWhenBlank="true" uuid="bfc9045a-620f-4b87-be37-502ea55a4893">
-							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Driver})]]></printWhenExpression>
-						</reportElement>
-						<textElement markup="html">
-							<font size="8" isBold="false"/>
-						</textElement>
-						<textFieldExpression><![CDATA["<b>" + $V{d}.vehicleDriver() + "</b> " + $P{Driver}]]></textFieldExpression>
-					</textField>
-				</frame>
+				<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="0" y="195" width="450" height="10" isRemoveLineWhenBlank="true" uuid="9f1f3150-298e-4b9d-9f65-b728a89d112a"/>
+					<textElement markup="html">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>" + $R{contractAmount} + "</b>", $V{Amount}.add($V{ExcludeVAT} ? $V{Vat} : BigDecimal.ZERO), $V{Currency}, "(<b>" + $V{d}.vat() + "</b>", $V{Vat} + ",", "<b>" + $V{d}.withoutVat() + "</b>", $V{Amount}.subtract($V{ExcludeVAT} ? BigDecimal.ZERO : $V{Vat}) + ")")]]></textFieldExpression>
+				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="0" y="0" width="380" height="13" isRemoveLineWhenBlank="true" uuid="97d6d31e-b75b-46bd-83fb-e4409b38ad50"/>
 					<textElement markup="html">
@@ -440,10 +427,19 @@
 					</textElement>
 					<textFieldExpression><![CDATA["<b>" + $R{orderNo} + "</b> " + $P{OrderNo}]]></textFieldExpression>
 				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement positionType="Float" x="0" y="205" width="450" height="10" isRemoveLineWhenBlank="true" uuid="799215e0-7946-4090-9d3b-5c275cd1f59a">
+						<printWhenExpression><![CDATA[BeeUtils.anyNotEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></printWhenExpression>
+					</reportElement>
+					<textElement markup="html">
+						<font size="8" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["<b>" + $R{paymentTerm} + "</b> " + BeeUtils.notEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></textFieldExpression>
+				</textField>
 				<frame>
-					<reportElement positionType="Float" x="220" y="205" width="230" height="30" isRemoveLineWhenBlank="true" uuid="6043a675-f5fd-456a-a253-ccca0e26d072"/>
+					<reportElement positionType="Float" x="220" y="215" width="230" height="20" isRemoveLineWhenBlank="true" uuid="6043a675-f5fd-456a-a253-ccca0e26d072"/>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="20" width="230" height="10" isRemoveLineWhenBlank="true" uuid="84af4651-3759-4cde-a7c1-d8ee604aa2cd">
+						<reportElement positionType="Float" x="0" y="10" width="230" height="10" isRemoveLineWhenBlank="true" uuid="84af4651-3759-4cde-a7c1-d8ee604aa2cd">
 							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Vehicle})]]></printWhenExpression>
 						</reportElement>
 						<textElement markup="html">
@@ -452,7 +448,7 @@
 						<textFieldExpression><![CDATA["<b>" + $V{d}.trVehicle() + "</b> " + $P{Vehicle}]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="10" width="230" height="10" isRemoveLineWhenBlank="true" uuid="f5bd289a-a801-40eb-baa4-fb1fa01b15ed">
+						<reportElement positionType="Float" x="0" y="0" width="230" height="10" isRemoveLineWhenBlank="true" uuid="f5bd289a-a801-40eb-baa4-fb1fa01b15ed">
 							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ShippingTermName})]]></printWhenExpression>
 						</reportElement>
 						<textElement markup="html">
@@ -460,14 +456,26 @@
 						</textElement>
 						<textFieldExpression><![CDATA["<b>" + $V{d}.trRequestShippingTerms() + "</b> " + $P{ShippingTermName}]]></textFieldExpression>
 					</textField>
+				</frame>
+				<frame>
+					<reportElement positionType="Float" x="0" y="215" width="220" height="20" isRemoveLineWhenBlank="true" uuid="e784d251-4da0-49cd-8916-b63b64e5d48b"/>
 					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-						<reportElement positionType="Float" x="0" y="0" width="230" height="10" isRemoveLineWhenBlank="true" uuid="799215e0-7946-4090-9d3b-5c275cd1f59a">
-							<printWhenExpression><![CDATA[BeeUtils.anyNotEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></printWhenExpression>
+						<reportElement positionType="Float" x="0" y="0" width="220" height="10" isRemoveLineWhenBlank="true" uuid="dee83763-462e-460b-8714-a703ba61cc45">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{ExpeditionType})]]></printWhenExpression>
 						</reportElement>
 						<textElement markup="html">
 							<font size="8" isBold="false"/>
 						</textElement>
-						<textFieldExpression><![CDATA["<b>" + $R{paymentTerm} + "</b> " + BeeUtils.notEmpty($P{PayerCreditDays}, $P{CustomerCreditDays})]]></textFieldExpression>
+						<textFieldExpression><![CDATA["<b>" + $V{d}.trRequestExpeditionType() + "</b> " + BeeUtils.notEmpty($V{qs}.getLocalizedValue("ExpeditionTypes", "Name", $P{ExpeditionType}, $P{REPORT_LOCALE}), $P{ExpeditionType})]]></textFieldExpression>
+					</textField>
+					<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+						<reportElement positionType="Float" x="0" y="10" width="220" height="10" isRemoveLineWhenBlank="true" uuid="bfc9045a-620f-4b87-be37-502ea55a4893">
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Driver})]]></printWhenExpression>
+						</reportElement>
+						<textElement markup="html">
+							<font size="8" isBold="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA["<b>" + $V{d}.vehicleDriver() + "</b> " + $P{Driver}]]></textFieldExpression>
 					</textField>
 				</frame>
 			</band>

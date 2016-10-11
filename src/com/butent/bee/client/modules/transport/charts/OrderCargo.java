@@ -11,7 +11,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.timeboard.HasColorSource;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -27,17 +26,14 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 class OrderCargo extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo,
     HasCargoType {
 
-  @SuppressWarnings("unused")
-  private static final String cargoLabel =
-      Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
-
   private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
   private static final String managerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_MANAGER);
-  private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
+  private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, ALS_CARGO_NOTES);
 
   private static final String orderDateLabel = Data.getColumnLabel(VIEW_ORDERS, COL_ORDER_DATE);
   private static final String orderStatusLabel = Data.getColumnLabel(VIEW_ORDERS, COL_STATUS);

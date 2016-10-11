@@ -99,7 +99,6 @@
   margin-top: -4px;
   border: 4px solid #FF7F6E;
   transform: rotate(45deg);
-  -webkit-transform: rotate(45deg);
 }
 
 .bee-cal .appointment-grid {
@@ -599,7 +598,7 @@
 }
 
 .bee-cal-Controller-datePicker img {
-  -webkit-filter: grayscale(100%);
+  filter: grayscale(100%);
 }
 .bee-cal-Controller-datePicker .bee-DatePicker-days td {
   height: 16px;
@@ -721,4 +720,20 @@
 
 .bee-cal-Panel .status-completed {
   background-image: repeating-linear-gradient(330deg, rgba(211,211,211,1) 10px, rgba(211,211,211,0) 20px);
+}
+
+.bee-cal .copy {
+ opacity: 1;
+}
+
+.bee-cal .source {
+  outline: #aaa dashed 2px;
+}
+
+.bee-cal-MonthView .copy {
+  outline: none;
+}
+
+.bee-cal-MonthView .source {
+  outline: #aaa dashed 2px;
 }

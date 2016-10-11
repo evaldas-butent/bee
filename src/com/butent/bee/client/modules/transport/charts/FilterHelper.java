@@ -2,21 +2,17 @@ package com.butent.bee.client.modules.transport.charts;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.HasNativeEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.modules.transport.charts.ChartData.Item;
 import com.butent.bee.client.modules.transport.charts.ChartData.Type;
 import com.butent.bee.client.modules.transport.charts.ChartFilter.FilterValue;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
@@ -47,17 +43,13 @@ final class FilterHelper {
 
   interface DialogCallback {
 
-    void applySavedFilter(int index, Popup popup);
-
-    void onClear();
+    boolean applySavedFilter(int index);
 
     void onDataTypesChange(Set<ChartData.Type> types);
 
-    void onFilter();
+    boolean onFilter();
 
     void onSave(Callback<List<ChartFilter>> callback);
-
-    void onSelectionChange(HasWidgets dataContainer);
 
     void removeSavedFilter(int index, Callback<List<ChartFilter>> callback);
 
@@ -131,66 +123,6 @@ final class FilterHelper {
     filters.add(filter);
   }
 
-  static void enableData(List<ChartData> allData, List<ChartData> tentativeData,
-      HasWidgets dataContainer) {
-
-    ChartData.Type typeOfSingleDataHavingSelection = null;
-    for (ChartData data : allData) {
-      if (data.hasSelection()) {
-        if (typeOfSingleDataHavingSelection == null) {
-          typeOfSingleDataHavingSelection = data.getType();
-        } else {
-          typeOfSingleDataHavingSelection = null;
-          break;
-        }
-      }
-    }
-
-    FilterDataWidget dataWidget = null;
-
-    for (ChartData data : allData) {
-      ChartData.Type type = data.getType();
-
-      if (dataContainer != null) {
-        dataWidget = getDataWidget(dataContainer, type);
-      }
-
-      ChartData tentative = getDataByType(tentativeData, data.getType());
-
-      int size = data.getItems().size();
-      boolean changed = false;
-
-      for (int i = 0; i < size; i++) {
-        ChartData.Item item = data.getItems().get(i);
-
-        boolean itemEnabled;
-        if (typeOfSingleDataHavingSelection != null && typeOfSingleDataHavingSelection == type) {
-          itemEnabled = true;
-        } else if (tentative == null || tentative.isEmpty()) {
-          itemEnabled = false;
-        } else {
-          itemEnabled = tentative.contains(item.getName());
-        }
-
-        boolean selected = item.isSelected();
-
-        if (data.setItemEnabled(item, itemEnabled) && dataWidget != null) {
-          if (itemEnabled) {
-            dataWidget.addItem(item, i);
-          } else {
-            dataWidget.removeItem(i, selected);
-          }
-
-          changed = true;
-        }
-      }
-
-      if (changed && dataWidget != null) {
-        dataWidget.refresh();
-      }
-    }
-  }
-
   static void enableDataTypes(Collection<ChartData> data, Set<ChartData.Type> types) {
     if (BeeUtils.isEmpty(data)) {
       return;
@@ -235,15 +167,6 @@ final class FilterHelper {
     return null;
   }
 
-  static FilterDataWidget getDataWidget(HasWidgets container, ChartData.Type type) {
-    for (Widget widget : container) {
-      if (widget instanceof FilterDataWidget && ((FilterDataWidget) widget).hasType(type)) {
-        return (FilterDataWidget) widget;
-      }
-    }
-    return null;
-  }
-
   static <T extends Filterable & HasDateRange> List<HasDateRange> getPersistentItems(
       Collection<T> items) {
 
@@ -267,7 +190,10 @@ final class FilterHelper {
       for (ChartData input : data) {
         if (input != null && input.hasSelection()) {
           ChartData selected = new ChartData(input.getType());
-          selected.getItems().addAll(input.getSelectedItems());
+
+          for (String item : input.getSelectedItems()) {
+            selected.add(item, input.getItemId(item));
+          }
 
           result.add(selected);
         }
@@ -284,10 +210,10 @@ final class FilterHelper {
       for (ChartData cd : data) {
         if (cd != null && cd.hasSelection()) {
           Type type = cd.getType();
-          List<Item> selectedItems = cd.getSelectedItems();
+          List<String> selectedItems = cd.getSelectedItems();
 
-          for (Item item : selectedItems) {
-            FilterValue fv = new FilterValue(type, item.getName(), item.getId());
+          for (String item : selectedItems) {
+            FilterValue fv = new FilterValue(type, item, cd.getItemId(item));
             if (fv.isValid()) {
               result.add(fv);
             }
@@ -303,7 +229,7 @@ final class FilterHelper {
     StringList labels = StringList.uniqueCaseInsensitive();
 
     for (ChartData cd : data) {
-      Collection<String> selectedNames = cd.getSelectedNames();
+      Collection<String> selectedNames = cd.getSelectedItems();
       if (!selectedNames.isEmpty()) {
         labels.addAll(selectedNames);
       }
@@ -427,7 +353,6 @@ final class FilterHelper {
     int dataWrapperWidth = Math.min(dataContainerWidth, dialogMaxWidth);
     int dataWrapperHeight = dataContainerHeight + DomUtils.getScrollBarHeight();
 
-    int contentWidth = dataWrapperWidth;
     int contentHeight = dataWrapperHeight + SAVED_FILTERS_HEIGHT + COMMAND_GROUP_HEIGHT;
 
     final DialogBox dialog = DialogBox.create(Localized.dictionary().filter(), STYLE_DIALOG);
@@ -436,16 +361,12 @@ final class FilterHelper {
     dataContainer.addStyleName(STYLE_DATA_CONTAINER);
     StyleUtils.setSize(dataContainer, dataContainerWidth, dataContainerHeight);
 
-    SelectionHandler<ChartData.Type> selectionHandler =
-        event -> callback.onSelectionChange(dataContainer);
-
     int dataIndex = 0;
     for (ChartData data : filterData) {
-      if (data.isEnabled() && !data.isEmpty()) {
-        data.saveState();
+      data.saveState();
 
+      if (data.isEnabled() && !data.isEmpty()) {
         FilterDataWidget dataWidget = new FilterDataWidget(data);
-        dataWidget.addSelectionHandler(selectionHandler);
 
         dataIndex++;
         if (dataIndex < dataCounter) {
@@ -462,8 +383,9 @@ final class FilterHelper {
     Flow commands = new Flow(STYLE_COMMAND_GROUP);
 
     Button filter = new Button(Localized.dictionary().doFilter(), event -> {
-      dialog.close();
-      callback.onFilter();
+      if (callback.onFilter()) {
+        dialog.close();
+      }
     });
     filter.addStyleName(STYLE_COMMAND_FILTER);
     commands.add(filter);
@@ -474,18 +396,16 @@ final class FilterHelper {
           ((FilterDataWidget) widget).reset(true);
         }
       }
-      callback.onClear();
     });
     clear.addStyleName(STYLE_COMMAND_CLEAR);
     commands.add(clear);
 
-    Button configure = new Button(Localized.dictionary().actionConfigure(), event -> {
-      configureDataTypes(filterData, EventUtils.getEventTargetElement(event), result -> {
-        dialog.setAnimationEnabled(false);
-        dialog.close();
-        callback.onDataTypesChange(result);
-      });
-    });
+    Button configure = new Button(Localized.dictionary().actionConfigure(),
+        event -> configureDataTypes(filterData, EventUtils.getEventTargetElement(event), result -> {
+          dialog.setAnimationEnabled(false);
+          dialog.close();
+          callback.onDataTypesChange(result);
+        }));
     configure.addStyleName(STYLE_COMMAND_CONFIGURE);
     commands.add(configure);
 
@@ -507,7 +427,7 @@ final class FilterHelper {
     StyleUtils.setSize(dataWrapper, dataWrapperWidth, dataWrapperHeight);
 
     Flow content = new Flow(STYLE_CONTENT);
-    StyleUtils.setSize(content, contentWidth, contentHeight);
+    StyleUtils.setSize(content, dataWrapperWidth, contentHeight);
 
     content.add(dataWrapper);
     content.add(savedContainer);
@@ -527,7 +447,7 @@ final class FilterHelper {
 
     if (items != null) {
       for (Filterable item : items) {
-        if (item != null && !item.persistFilter()) {
+        if (item != null && item.persistFilter()) {
           filtered = true;
         }
       }
@@ -639,8 +559,11 @@ final class FilterHelper {
     Label label = new Label(cf.getLabel());
     label.addStyleName(STYLE_SAVED_LABEL);
 
-    label.addClickHandler(event -> callback.applySavedFilter(getSaveFilterIndex(event),
-        UiHelper.getParentPopup(container.asWidget())));
+    label.addClickHandler(event -> {
+      if (callback.applySavedFilter(getSaveFilterIndex(event))) {
+        UiHelper.closeDialog(container.asWidget());
+      }
+    });
 
     panel.add(label);
 

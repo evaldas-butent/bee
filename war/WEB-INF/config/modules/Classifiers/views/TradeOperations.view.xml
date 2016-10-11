@@ -12,6 +12,9 @@
     <SimpleColumn name="Kind" />
     <SimpleColumn name="Price" />
 
+    <SimpleColumn name="OperationVatMode" />
+    <SimpleColumn name="OperationDiscountMode" />
+
     <SimpleColumn name="WarehouseFrom" />
     <SimpleJoin joinType="LEFT" name="WarehouseFrom">
       <SimpleColumn alias="WarehouseFromCode" name="Code" />
@@ -23,6 +26,10 @@
       <SimpleColumn alias="WarehouseToCode" name="Code" />
       <SimpleColumn alias="WarehouseToName" name="Name" />
     </SimpleJoin>
+
+    <SimpleColumn name="Join" />
+
+    <SimpleColumn name="CashRegisterNo" />
 
     <SimpleColumn name="IsDefault" />
 

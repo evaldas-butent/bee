@@ -4,7 +4,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.event.EventUtils;
@@ -15,6 +14,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.HasViewName;
+import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -94,6 +94,11 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
   }
 
   @Override
+  public CellType getCellType() {
+    return CellType.HTML;
+  }
+
+  @Override
   public String getOptions() {
     return options;
   }
@@ -116,10 +121,8 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
   }
 
   @Override
-  public void render(CellContext context, String value, SafeHtmlBuilder sb) {
-    if (!BeeUtils.isEmpty(value)) {
-      sb.append(type.render(value));
-    }
+  public String render(CellContext context, String value) {
+    return BeeUtils.isEmpty(value) ? null : type.render(value).asString();
   }
 
   @Override

@@ -8,8 +8,6 @@ import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -26,7 +24,6 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
@@ -36,7 +33,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -60,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 abstract class MultiRoleForm extends RightsForm {
 
@@ -137,55 +134,46 @@ abstract class MultiRoleForm extends RightsForm {
       userClear.addStyleName(STYLE_USER_EMPTY);
       userClear.setText(String.valueOf(BeeConst.CHAR_TIMES));
 
-      userSelector.addSelectorHandler(new SelectorEvent.Handler() {
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          if (event.isChanged()) {
-            long value = event.getValue();
+      userSelector.addSelectorHandler(event -> {
+        if (event.isChanged()) {
+          long value = event.getValue();
 
-            if (DataUtils.isId(value) && !Objects.equals(value, getUserId())) {
-              setUserId(value);
-              userCommand.setHtml(Global.getUsers().getSignature(value));
+          if (DataUtils.isId(value) && !Objects.equals(value, getUserId())) {
+            setUserId(value);
+            userCommand.setHtml(Global.getUsers().getSignature(value));
 
-              userCommand.removeStyleName(STYLE_USER_EMPTY);
-              userCommand.addStyleName(STYLE_USER_NOT_EMPTY);
+            userCommand.removeStyleName(STYLE_USER_EMPTY);
+            userCommand.addStyleName(STYLE_USER_NOT_EMPTY);
 
-              userClear.removeStyleName(STYLE_USER_EMPTY);
-              userClear.addStyleName(STYLE_USER_NOT_EMPTY);
-
-              resetFilter();
-
-              checkUserRights();
-            }
-          }
-        }
-      });
-
-      userCommand.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          userSelector.clearValue();
-          userSelector.setFocus(true);
-
-          userSelector.startEdit(null, DataSelector.SHOW_SELECTOR, null, null);
-        }
-      });
-
-      userClear.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (getUserId() != null) {
-            setUserId(null);
-
-            userCommand.setHtml(Localized.dictionary().user());
-            userCommand.removeStyleName(STYLE_USER_NOT_EMPTY);
-            userCommand.addStyleName(STYLE_USER_EMPTY);
-
-            userClear.removeStyleName(STYLE_USER_NOT_EMPTY);
-            userClear.addStyleName(STYLE_USER_EMPTY);
+            userClear.removeStyleName(STYLE_USER_EMPTY);
+            userClear.addStyleName(STYLE_USER_NOT_EMPTY);
 
             resetFilter();
+
+            checkUserRights();
           }
+        }
+      });
+
+      userCommand.addClickHandler(event -> {
+        userSelector.clearValue();
+        userSelector.setFocus(true);
+
+        userSelector.startEdit(null, DataSelector.SHOW_SELECTOR, null, null);
+      });
+
+      userClear.addClickHandler(event -> {
+        if (getUserId() != null) {
+          setUserId(null);
+
+          userCommand.setHtml(Localized.dictionary().user());
+          userCommand.removeStyleName(STYLE_USER_NOT_EMPTY);
+          userCommand.addStyleName(STYLE_USER_EMPTY);
+
+          userClear.removeStyleName(STYLE_USER_NOT_EMPTY);
+          userClear.addStyleName(STYLE_USER_EMPTY);
+
+          resetFilter();
         }
       });
 
@@ -224,77 +212,75 @@ abstract class MultiRoleForm extends RightsForm {
 
   @Override
   protected void initData(final Consumer<Boolean> callback) {
-    Roles.getData(new Consumer<Map<Long, String>>() {
-      @Override
-      public void accept(Map<Long, String> roleData) {
-        if (BeeUtils.isEmpty(roleData)) {
-          callback.accept(false);
-          return;
-        }
+    Roles.getData(roleData -> {
+      if (BeeUtils.isEmpty(roleData)) {
+        callback.accept(false);
+        return;
+      }
 
-        if (!roles.isEmpty()) {
-          roles.clear();
-        }
-        roles.putAll(roleData);
+      if (!roles.isEmpty()) {
+        roles.clear();
+      }
+      roles.putAll(roleData);
 
-        ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_STATE_RIGHTS);
-        params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
-        params.addQueryItem(COL_STATE, getRightsState().ordinal());
+      ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_STATE_RIGHTS);
+      params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
+      params.addQueryItem(COL_STATE, getRightsState().ordinal());
 
-        BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (response.hasErrors()) {
-              response.notify(BeeKeeper.getScreen());
-              callback.accept(false);
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasErrors()) {
+            response.notify(BeeKeeper.getScreen());
+            callback.accept(false);
 
-            } else {
-              if (!initialValues.isEmpty()) {
-                initialValues.clear();
-              }
-              if (!changes.isEmpty()) {
-                changes.clear();
-              }
+          } else {
+            if (!initialValues.isEmpty()) {
+              initialValues.clear();
+            }
+            if (!changes.isEmpty()) {
+              changes.clear();
+            }
 
-              if (response.hasResponse()) {
-                Map<String, String> rights = Codec.deserializeMap(response.getResponseAsString());
+            if (response.hasResponse()) {
+              Map<String, String> rights =
+                  Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
-                if (getRightsState().isChecked()) {
-                  Set<Long> ids = new HashSet<>(roles.keySet());
-
-                  for (RightsObject object : getObjects()) {
-                    if (rights.containsKey(object.getName())) {
-                      Set<Long> values = new HashSet<>(ids);
-                      values.removeAll(DataUtils.parseIdSet(rights.get(object.getName())));
-
-                      if (!values.isEmpty()) {
-                        initialValues.putAll(object.getName(), values);
-                      }
-
-                    } else {
-                      initialValues.putAll(object.getName(), ids);
-                    }
-                  }
-
-                } else if (!rights.isEmpty()) {
-                  for (Map.Entry<String, String> entry : rights.entrySet()) {
-                    initialValues.putAll(entry.getKey(), DataUtils.parseIdSet(entry.getValue()));
-                  }
-                }
-
-              } else if (getRightsState().isChecked()) {
+              if (getRightsState().isChecked()) {
                 Set<Long> ids = new HashSet<>(roles.keySet());
 
                 for (RightsObject object : getObjects()) {
-                  initialValues.putAll(object.getName(), ids);
+                  if (rights.containsKey(object.getName())) {
+                    Set<Long> values = new HashSet<>(ids);
+                    values.removeAll(DataUtils.parseIdSet(rights.get(object.getName())));
+
+                    if (!values.isEmpty()) {
+                      initialValues.putAll(object.getName(), values);
+                    }
+
+                  } else {
+                    initialValues.putAll(object.getName(), ids);
+                  }
+                }
+
+              } else if (!rights.isEmpty()) {
+                for (Map.Entry<String, String> entry : rights.entrySet()) {
+                  initialValues.putAll(entry.getKey(), DataUtils.parseIdSet(entry.getValue()));
                 }
               }
 
-              callback.accept(true);
+            } else if (getRightsState().isChecked()) {
+              Set<Long> ids = new HashSet<>(roles.keySet());
+
+              for (RightsObject object : getObjects()) {
+                initialValues.putAll(object.getName(), ids);
+              }
             }
+
+            callback.accept(true);
           }
-        });
-      }
+        }
+      });
     });
   }
 
@@ -333,12 +319,7 @@ abstract class MultiRoleForm extends RightsForm {
     if (roleOrientationToggle == null) {
       this.roleOrientationToggle = new FaLabel(FontAwesome.EXCHANGE, STYLE_ROLE_ORIENTATION);
 
-      roleOrientationToggle.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          switchRoleOrientation();
-        }
-      });
+      roleOrientationToggle.addClickHandler(event -> switchRoleOrientation());
     }
 
     addRoleOrientationToggle();
@@ -348,12 +329,7 @@ abstract class MultiRoleForm extends RightsForm {
           FontAwesome.ELLIPSIS_V, STYLE_COLUMN_LABEL_ORIENTATION,
           columnLabelOrientation.isVertical());
 
-      columnLabelOrientationToggle.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          switchColumnLabelOrientation();
-        }
-      });
+      columnLabelOrientationToggle.addClickHandler(event -> switchColumnLabelOrientation());
     }
 
     addColumnLabelOrientationToggle();
@@ -411,7 +387,7 @@ abstract class MultiRoleForm extends RightsForm {
   @Override
   protected void save(final Consumer<Boolean> callback) {
     if (changes.isEmpty()) {
-      BeeKeeper.getScreen().notifyInfo("no changes");
+      BeeKeeper.getScreen().notifyInfo(Localized.dictionary().noChanges());
       if (callback != null) {
         callback.accept(false);
       }
@@ -450,8 +426,9 @@ abstract class MultiRoleForm extends RightsForm {
             changes.clear();
             onClearChanges();
 
-            String message = BeeUtils.joinWords(getObjectType(), getRightsState(),
-                "saved", size, "changes");
+            String message = Localized.dictionary().roleRightsSaved(BeeUtils.joinWords(
+                BeeUtils.bracket(getObjectType().getCaption()), Localized.dictionary().roleState(),
+                getRightsState().getCaption()), size);
             debug(message);
             BeeKeeper.getScreen().notifyInfo(message);
 
@@ -523,7 +500,7 @@ abstract class MultiRoleForm extends RightsForm {
           @Override
           public void onSuccess(BeeRowSet result) {
             if (DataUtils.isEmpty(result)) {
-              BeeKeeper.getScreen().notifyWarning("user has no roles");
+              BeeKeeper.getScreen().notifyWarning(Localized.dictionary().userHasNotRoles());
 
             } else {
               int index = result.getColumnIndex(COL_ROLE);
@@ -546,10 +523,8 @@ abstract class MultiRoleForm extends RightsForm {
     DomUtils.setDataProperty(widget.getElement(), DATA_KEY_ROLE, roleId);
     setDataType(widget, DATA_TYPE_ROLE_LABEL);
 
-    widget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        RowEditor.open(VIEW_ROLES, roleId, Opener.MODAL, new RowCallback() {
+    widget.addClickHandler(
+        event -> RowEditor.open(VIEW_ROLES, roleId, Opener.MODAL, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             String name = Data.getString(VIEW_ROLES, result, COL_ROLE_NAME);
@@ -559,9 +534,7 @@ abstract class MultiRoleForm extends RightsForm {
               widget.setHtml(name);
             }
           }
-        });
-      }
-    });
+        }));
 
     return widget;
   }
@@ -581,20 +554,17 @@ abstract class MultiRoleForm extends RightsForm {
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ROLE, roleId);
     setDataType(toggle, DATA_TYPE_ROLE_TOGGLE);
 
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof Toggle) {
-          Toggle rt = (Toggle) event.getSource();
-          updateRoleValueToggles(getRoleId(rt), rt.isChecked());
+    toggle.addClickHandler(event -> {
+      if (event.getSource() instanceof Toggle) {
+        Toggle rt = (Toggle) event.getSource();
+        updateRoleValueToggles(getRoleId(rt), rt.isChecked());
 
-          List<Toggle> objectToggles = getObjectToggles();
-          for (Toggle ot : objectToggles) {
-            if (rt.isChecked()) {
-              ot.setChecked(isObjectChecked(getObjectName(ot)));
-            } else if (ot.isChecked()) {
-              ot.setChecked(false);
-            }
+        List<Toggle> objectToggles = getObjectToggles();
+        for (Toggle ot : objectToggles) {
+          if (rt.isChecked()) {
+            ot.setChecked(isObjectChecked(getObjectName(ot)));
+          } else if (ot.isChecked()) {
+            ot.setChecked(false);
           }
         }
       }
@@ -613,34 +583,31 @@ abstract class MultiRoleForm extends RightsForm {
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ROLE, roleId);
 
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof Toggle) {
-          Toggle t = (Toggle) event.getSource();
+    toggle.addClickHandler(event -> {
+      if (event.getSource() instanceof Toggle) {
+        Toggle t = (Toggle) event.getSource();
 
-          String name = getObjectName(t);
-          Long role = getRoleId(t);
+        String name = getObjectName(t);
+        Long role = getRoleId(t);
 
-          boolean isChanged = toggleValue(name, role);
-          updateValueCell(t, isChanged);
+        boolean isChanged = toggleValue(name, role);
+        updateValueCell(t, isChanged);
 
-          Toggle objectToggle = getObjectToggle(name);
-          Toggle roleToggle = getRoleToggle(role);
+        Toggle objectToggle = getObjectToggle(name);
+        Toggle roleToggle = getRoleToggle(role);
 
-          if (t.isChecked()) {
-            objectToggle.setChecked(isObjectChecked(name));
-            roleToggle.setChecked(isRoleChecked(role));
+        if (t.isChecked()) {
+          objectToggle.setChecked(isObjectChecked(name));
+          roleToggle.setChecked(isRoleChecked(role));
 
-          } else {
-            objectToggle.setChecked(false);
-            roleToggle.setChecked(false);
-          }
+        } else {
+          objectToggle.setChecked(false);
+          roleToggle.setChecked(false);
+        }
 
-          RightsObject object = findObject(name);
-          if (object != null && object.hasChildren()) {
-            enableChildren(object, role, t.isChecked());
-          }
+        RightsObject object = findObject(name);
+        if (object != null && object.hasChildren()) {
+          enableChildren(object, role, t.isChecked());
         }
       }
     });

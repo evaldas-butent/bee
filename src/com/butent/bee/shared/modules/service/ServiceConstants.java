@@ -23,6 +23,11 @@ public final class ServiceConstants {
     public static final ServiceCompanyKind DETAULT = CUSTOMER;
   }
 
+  public static final String PRM_DEFAULT_MAINTENANCE_TYPE = "DefaultMaintenanceType";
+  public static final String PRM_DEFAULT_WARRANTY_TYPE = "DefaultWarrantyType";
+  public static final String PRM_MAINTENANCE_SERVICE_GROUP = "MaintenanceServiceGroup";
+  public static final String PRM_URGENT_RATE = "UrgentRate";
+
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_CREATE_DEFECT_ITEMS = "CreateDefectItems";
   public static final String SVC_GET_CALENDAR_DATA = "getServiceCalendarData";
@@ -31,11 +36,13 @@ public final class ServiceConstants {
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";
   public static final String TBL_MAINTENANCE = "Maintenance";
+  public static final String TBL_MAINTENANCE_TYPES = "MaintenanceTypes";
   public static final String TBL_SERVICE_DATES = "ServiceDates";
   public static final String TBL_SERVICE_SETTINGS = "ServiceSettings";
   public static final String TBL_SERVICE_DEFECT_ITEMS = "ServiceDefectItems";
   public static final String TBL_SERVICE_CRITERIA_GROUPS = "ServiceCritGroups";
   public static final String TBL_SERVICE_CRITERIA = "ServiceCriteria";
+  public static final String TBL_WARRANTY_TYPES = "WarrantyTypes";
 
   public static final String VIEW_SERVICE_OBJECTS = "ServiceObjects";
 
@@ -93,6 +100,8 @@ public final class ServiceConstants {
   public static final String COL_DEFECT = "Defect";
   public static final String COL_DEFECT_ITEM = "Item";
   public static final String COL_DEFECT_NOTE = "Note";
+
+  public static final String COL_TYPE_NAME = "Name";
 
   public static final String ALS_SERVICE_CATEGORY_NAME = "CategoryName";
   public static final String ALS_SERVICE_CUSTOMER_NAME = "CustomerName";

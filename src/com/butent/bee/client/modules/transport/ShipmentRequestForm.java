@@ -1,10 +1,11 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.PreElement;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -27,6 +28,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.HtmlPanel;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
@@ -36,6 +38,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.JsonUtils;
+import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
@@ -47,11 +50,11 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -71,6 +74,8 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HasCheckedness;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -84,6 +89,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 class ShipmentRequestForm extends CargoPlaceUnboundForm {
 
@@ -101,15 +108,26 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   private Button lostCommand = new Button(loc.trRequestStatusLost(), clickEvent -> onLoss(true));
 
   private static final String NAME_VALUE_LABEL = "ValueLabel";
+  private static final String NAME_LOADED_KILOMETERS_LABEL = "LoadedKilometersLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
+  private static final String NAME_AGREE_TERMS = "AgreeTerms";
+  private static final String WIDGET_AGREE_TERMS_NAME = "agreeTermsCheckBox";
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
     if (BeeUtils.same(editableWidget.getColumnId(), COL_QUERY_FREIGHT_INSURANCE)) {
 
       editableWidget.addCellValidationHandler(event -> {
-        styleRequiredField(event.getNewValue());
+        styleRequiredField(NAME_VALUE_LABEL, event.getNewValue() != null);
         return true;
+      });
+    } else if (BeeUtils.same(editableWidget.getColumnId(), COL_CARGO_PARTIAL)) {
+      editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
+        @Override
+        public Boolean validateCell(CellValidateEvent event) {
+          styleRequiredField(NAME_LOADED_KILOMETERS_LABEL, event.getNewValue() == null);
+          return true;
+        }
       });
     }
     super.afterCreateEditableWidget(editableWidget, widget);
@@ -134,6 +152,34 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         StyleUtils.setHeight(image, BeeKeeper.getScreen().getHeight() * 0.5, CssUnit.PX);
 
         Global.showModalWidget(image);
+      });
+    }
+
+    if (BeeUtils.same(name, NAME_AGREE_TERMS) && widget instanceof FaLabel) {
+      ((FaLabel) widget).addClickHandler(event -> {
+
+        ParameterList args = TransportHandler.createArgs(SVC_GET_TEXT_CONSTANT);
+        args.addDataItem(COL_TEXT_CONSTANT, TextConstant.REQUEST_COMMON_TERMS.ordinal());
+        args.addDataItem(COL_USER_LOCALE, getIntegerValue(COL_USER_LOCALE));
+
+        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            String message = (String) response.getResponse();
+
+            if (!BeeUtils.isEmpty(message)) {
+              PreElement pre = Document.get().createPreElement();
+              pre.setInnerHTML(message);
+
+              StyleUtils.setMaxHeight(pre, 80, CssUnit.VH);
+              StyleUtils.setMaxWidth(pre, 80,  CssUnit.VH);
+              StyleUtils.setOverflow(pre, StyleUtils.ScrollBars.BOTH, Overflow.AUTO);
+
+              Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(),
+                  new HtmlPanel(pre.getString()));
+            }
+          }
+        });
       });
     }
 
@@ -204,12 +250,24 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         String value = row.getString(getDataIndex(COL_CARGO_VALUE));
         if (BeeUtils.isEmpty(value)) {
           getFormView().notifySevere(BeeUtils.join(" ", dic.valuation(), dic.valueRequired()));
+          getFormView().focus(COL_CARGO_VALUE);
           return false;
         }
 
         Long currency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
         if (!DataUtils.isId(currency)) {
           getFormView().notifySevere(BeeUtils.join(" ", dic.currency(), dic.valueRequired()));
+          getFormView().focus(COL_CARGO_VALUE_CURRENCY);
+          return false;
+        }
+      }
+
+      if (!BeeUtils.unbox(row.getBoolean(getDataIndex(COL_CARGO_PARTIAL)))) {
+        String value = row.getString(getDataIndex(COL_LOADED_KILOMETERS));
+        if (BeeUtils.isEmpty(value)) {
+          getFormView().notifySevere(BeeUtils.join(" ", dic.trLoadedKilometers(),
+              dic.valueRequired()));
+          getFormView().focus(COL_LOADED_KILOMETERS);
           return false;
         }
       }
@@ -220,6 +278,15 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
                 dic.length(), dic.trRequestCargoLdm()) + ")");
         return false;
       }
+
+      Widget agreeTermWidget = getFormView().getWidgetByName(WIDGET_AGREE_TERMS_NAME);
+      if (agreeTermWidget instanceof HasCheckedness
+          && !((HasCheckedness) agreeTermWidget).isChecked()) {
+        getFormView().notifySevere(BeeUtils.joinWords(dic.trAgreeWithConditions(),
+            dic.valueRequired()));
+        return false;
+      }
+
     }
     return super.beforeAction(action, presenter);
   }
@@ -233,7 +300,10 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
           && !ShipmentRequestStatus.CONFIRMED.is(status)
           && (!isSelfService() || ShipmentRequestStatus.NEW.is(status)));
     }
-    styleRequiredField(row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)));
+    styleRequiredField(NAME_VALUE_LABEL, row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE))
+        != null);
+    styleRequiredField(NAME_LOADED_KILOMETERS_LABEL, row.getString(getDataIndex(COL_CARGO_PARTIAL))
+        == null);
 
     super.beforeRefresh(form, row);
   }
@@ -387,6 +457,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     FormView form = getFormView();
     BeeRow oldRow = DataUtils.cloneRow(form.getOldRow());
     BeeRow row = DataUtils.cloneRow(form.getActiveRow());
+    List<Long> mails = new ArrayList<>();
 
     Long manager = row.getLong(form.getDataIndex(COL_QUERY_MANAGER));
     Holder<String> department = Holder.absent();
@@ -403,6 +474,13 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
               department.set(result);
             }
           });
+      Widget grid = getWidgetByName("RelatedMessages");
+
+      if (grid instanceof ChildGrid) {
+        for (IsRow mail : ((ChildGrid) grid).getGridView().getRowData()) {
+          mails.add(Data.getLong("RelatedMessages", mail, MailConstants.COL_MESSAGE));
+        }
+      }
     }
     messages.add(loc.trCommandCreateNewOrder());
 
@@ -452,6 +530,19 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
                                 SelfServiceUtils.update(form,
                                     DataUtils.getUpdated(form.getViewName(), form.getDataColumns(),
                                         oldRow, row, null));
+
+                                if (!BeeUtils.isEmpty(mails)) {
+                                  BeeRowSet rs = new BeeRowSet(TBL_RELATIONS,
+                                      Data.getColumns(TBL_RELATIONS, Arrays.asList(COL_ASSESSMENT,
+                                          MailConstants.COL_MESSAGE)));
+
+                                  for (Long message : mails) {
+                                    BeeRow row = rs.addEmptyRow();
+                                    row.setValue(0, assessment.getId());
+                                    row.setValue(1, message);
+                                  }
+                                  Queries.insertRows(rs);
+                                }
                               }
                             });
                       }
@@ -472,7 +563,20 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     BeeRow oldRow = DataUtils.cloneRow(form.getOldRow());
     BeeRow row = DataUtils.cloneRow(form.getActiveRow());
 
-    messages.add(loc.trCommandCreateNewUser());
+    Dictionary dic = Localized.dictionary();
+
+    messages.add(BeeUtils.join(": ", dic.client(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_NAME))));
+    messages.add(BeeUtils.join(": ", dic.companyCode(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CODE))));
+    messages.add(BeeUtils.join(": ", dic.companyVATCode(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_VAT_CODE))));
+    messages.add(BeeUtils.join(": ", dic.address(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_ADDRESS))));
+    messages.add(BeeUtils.join(": ", dic.postIndex(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_POST_INDEX))));
+    messages.add(BeeUtils.join(": ", dic.trRegistrationContact(),
+        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT))));
 
     String email = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_EMAIL));
     String login;
@@ -490,8 +594,11 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       login = null;
       password = null;
     }
+
+    messages.add(loc.trCommandCreateNewUser());
+
     Global.confirm(loc.register(), Icon.QUESTION, messages,
-        Localized.dictionary().actionCreate(), Localized.dictionary().actionCancel(), () -> {
+        dic.actionCreate(), dic.actionCancel(), () -> {
           Map<String, String> companyInfo = new HashMap<>();
 
           for (String col : new String[] {
@@ -569,9 +676,13 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     return Objects.equals(BeeKeeper.getScreen().getUserInterface(), UserInterface.SELF_SERVICE);
   }
 
-  private void styleRequiredField(String value) {
-    getFormView().getWidgetByName(NAME_VALUE_LABEL).setStyleName(StyleUtils.NAME_REQUIRED,
-        !BeeUtils.isEmpty(value));
+  private void styleRequiredField(String name, boolean value) {
+    Widget label =  getFormView().getWidgetByName(name);
+    if (label == null) {
+      return;
+    }
+
+    label.setStyleName(StyleUtils.NAME_REQUIRED, value);
   }
 
   private void onAnswer() {
@@ -766,8 +877,12 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
     comment.setWidth("100%");
     comment.setVisibleLines(4);
 
-    UnboundSelector reason = UnboundSelector.create(TBL_LOSS_REASONS,
+    Relation relation = Relation.create(TBL_LOSS_REASONS,
         Collections.singletonList(COL_LOSS_REASON_NAME));
+
+    relation.disableNewRow();
+    relation.disableEdit();
+    UnboundSelector reason = UnboundSelector.create(relation);
 
     reason.addSelectorHandler(event -> {
       if (event.isChanged()) {

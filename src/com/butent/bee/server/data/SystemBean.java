@@ -450,6 +450,10 @@ public class SystemBean {
     RightsUtils.setViewModules(viewModules);
   }
 
+  public boolean isAuditable(String tblName) {
+    return isTable(tblName) && getTable(tblName).isAuditable();
+  }
+
   public boolean isExtField(String tblName, String fldName) {
     return getTable(tblName).getField(fldName).isExtended();
   }

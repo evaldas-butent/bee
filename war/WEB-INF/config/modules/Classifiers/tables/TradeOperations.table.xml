@@ -15,8 +15,15 @@
     <Enum name="Kind" key="TradeActKind" label="=taKind" />
     <Enum name="Price" key="ItemPrice" label="=price" />
 
+    <Enum name="OperationVatMode" key="TradeVatMode" label="=vatMode" />
+    <Enum name="OperationDiscountMode" key="TradeDiscountMode" label="=discountMode" />
+
     <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
     <Relation name="WarehouseTo" relation="Warehouses" label="=trdWarehouseTo" />
+
+    <String name="CashRegisterNo" precision="50" label="=trdCashRegisterNo" />
+
+    <Boolean name="Join" label="=join" />
 
     <Boolean name="IsDefault" label="=trdOperationDefault" />
 

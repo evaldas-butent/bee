@@ -38,6 +38,7 @@
           <ui:font>bold</ui:font>
         </bodyStyle>
       </style>
+      <renderer type="total" />
     </CalcColumn>
 
     <DataColumn name="AdditionalRoute" />
@@ -81,8 +82,8 @@
       </render>
     </RelColumn>
     <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true"
-               editEnabled="true" editForm="CargoPurchaseInvoice"
-               editViewName="CargoPurchaseInvoices" />
+               renderColumns="Purchase PurchasePrefix PurchaseNo" editEnabled="true"
+               editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
   </g:columns>
 
   <g:rowEditable>

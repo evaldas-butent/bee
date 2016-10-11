@@ -42,7 +42,6 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
@@ -60,6 +59,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 class CompanyForm extends CustomCompanyForm {
 
@@ -326,7 +326,8 @@ class CompanyForm extends CustomCompanyForm {
           if (response.hasErrors()) {
             return;
           }
-          Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
+          Map<String, String> result =
+              Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
           if (!BeeUtils.isEmpty(result)) {
             HtmlTable table = new HtmlTable();

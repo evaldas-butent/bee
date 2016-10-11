@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.classifiers;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -19,11 +20,12 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.modules.calendar.CalendarHelper;
-import com.butent.bee.shared.utils.*;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
@@ -90,7 +92,6 @@ import com.butent.bee.shared.modules.classifiers.PriceInfo;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
@@ -100,6 +101,11 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 
 import java.awt.*;
@@ -110,7 +116,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -351,6 +356,72 @@ public class ClassifiersModuleBean implements BeeModule {
           }
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setItemRemainders(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_ITEMS) && usr.isModuleVisible(ModuleAndSub.of(Module.ORDERS))
+            && hasGoods(event.getRowset())) {
+
+          Map<Long, IsRow> indexedRows = new HashMap<>();
+          BeeRowSet rowSet = event.getRowset();
+          List<Long> ids = rowSet.getRowIds();
+
+          Map<Long, Double> resRemainders =
+              getRemainders(ids, TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+          Map<Long, Double> wrhRemainders =
+              getRemainders(ids, VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER);
+
+          for (BeeRow row : rowSet.getRows()) {
+            Long id = row.getId();
+
+            if (DataUtils.isId(id)) {
+              indexedRows.put(id, row);
+              row.setProperty(COL_RESERVED_REMAINDER, resRemainders.get(id));
+              row.setProperty(PROP_WAREHOUSE_REMAINDER, wrhRemainders.get(id));
+            }
+          }
+          if (!indexedRows.isEmpty()) {
+            BeeView view = sys.getView(VIEW_ITEM_REMAINDERS);
+            SqlSelect query = view.getQuery(usr.getCurrentUserId());
+
+            query.setWhere(SqlUtils.and(query.getWhere(), SqlUtils.inList(view.getSourceAlias(),
+                COL_ITEM, indexedRows.keySet())));
+
+            for (SimpleRow row : qs.getData(query)) {
+              IsRow r = indexedRows.get(row.getLong(COL_ITEM));
+
+              if (r != null) {
+                r.setProperty(COL_WAREHOUSE_REMAINDER + row.getValue(ALS_WAREHOUSE_CODE),
+                    row.getValue(COL_WAREHOUSE_REMAINDER));
+              }
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setItemStock(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_ITEMS)
+            && usr.isModuleVisible(ModuleAndSub.of(Module.TRADE))
+            && usr.isDataVisible(VIEW_TRADE_STOCK)
+            && hasGoods(event.getRowset())) {
+
+          BeeRowSet rowSet = event.getRowset();
+          com.google.common.collect.Table<Long, String, String> stock =
+              getStock(rowSet.getRowIds());
+
+          if (!stock.isEmpty()) {
+            for (BeeRow row : rowSet.getRows()) {
+              if (stock.containsRow(row.getId())) {
+                stock.row(row.getId()).forEach((warehouseCode, quantity) ->
+                    row.setProperty(keyStockWarehouse(warehouseCode), quantity));
+              }
+            }
+          }
+        }
+      }
     });
 
     news.registerUsageQueryProvider(Feed.COMPANIES_MY, new UsageQueryProvider() {
@@ -388,379 +459,373 @@ public class ClassifiersModuleBean implements BeeModule {
     });
 
     BeeView.registerConditionProvider(FILTER_COMPANY_CREATION_AND_TYPE,
-        new BeeView.ConditionProvider() {
-          @Override
-          public IsCondition getCondition(BeeView view, List<String> args) {
-            Long start = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 0));
-            Long end = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 1));
+        (view, args) -> {
+          Long start = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 0));
+          Long end = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 1));
 
-            String type = BeeUtils.getQuietly(args, 2);
+          String type = BeeUtils.getQuietly(args, 2);
 
-            String idName = view.getSourceIdName();
+          String idName = view.getSourceIdName();
 
-            HasConditions conditions = SqlUtils.and();
+          HasConditions conditions = SqlUtils.and();
 
-            if (start != null || end != null) {
-              String auditSource = sys.getAuditSource(view.getSourceName());
+          if (start != null || end != null) {
+            String auditSource = sys.getAuditSource(view.getSourceName());
 
-              IsExpression created = SqlUtils.aggregate(SqlFunction.MIN,
-                  SqlUtils.field(auditSource, AUDIT_FLD_TIME));
+            IsExpression created = SqlUtils.aggregate(SqlFunction.MIN,
+                SqlUtils.field(auditSource, AUDIT_FLD_TIME));
 
-              SqlSelect auditQuery = new SqlSelect()
-                  .addFields(auditSource, AUDIT_FLD_ID)
-                  .addExpr(created, AUDIT_FLD_TIME)
-                  .addFrom(auditSource)
-                  .addGroup(auditSource, AUDIT_FLD_ID);
+            SqlSelect auditQuery = new SqlSelect()
+                .addFields(auditSource, AUDIT_FLD_ID)
+                .addExpr(created, AUDIT_FLD_TIME)
+                .addFrom(auditSource)
+                .addGroup(auditSource, AUDIT_FLD_ID);
 
-              HasConditions having = SqlUtils.and();
-              if (start != null) {
-                having.add(SqlUtils.moreEqual(created, start));
-              }
-              if (end != null) {
-                having.add(SqlUtils.less(created, end));
-              }
-              auditQuery.setHaving(having);
-
-              String auditAlias = "audit" + SqlUtils.uniqueName();
-
-              SqlSelect subQuery = new SqlSelect()
-                  .addFields(auditAlias, AUDIT_FLD_ID)
-                  .addFrom(auditQuery, auditAlias);
-
-              conditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
+            HasConditions having = SqlUtils.and();
+            if (start != null) {
+              having.add(SqlUtils.moreEqual(created, start));
             }
-
-            if (!BeeUtils.isEmpty(type)) {
-              if (type.equals(BeeConst.STRING_ZERO)) {
-                conditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName,
-                    TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY)));
-
-              } else {
-                Set<Long> types = DataUtils.parseIdSet(type);
-                if (!types.isEmpty()) {
-                  conditions.add(SqlUtils.in(TBL_COMPANIES, idName,
-                      TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY,
-                      SqlUtils.inList(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE, types)));
-                }
-              }
+            if (end != null) {
+              having.add(SqlUtils.less(created, end));
             }
+            auditQuery.setHaving(having);
 
-            return conditions;
+            String auditAlias = "audit" + SqlUtils.uniqueName();
+
+            SqlSelect subQuery = new SqlSelect()
+                .addFields(auditAlias, AUDIT_FLD_ID)
+                .addFrom(auditQuery, auditAlias);
+
+            conditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
           }
+
+          if (!BeeUtils.isEmpty(type)) {
+            if (type.equals(BeeConst.STRING_ZERO)) {
+              conditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName,
+                  TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY)));
+
+            } else {
+              Set<Long> types = DataUtils.parseIdSet(type);
+              if (!types.isEmpty()) {
+                conditions.add(SqlUtils.in(TBL_COMPANIES, idName,
+                    TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY,
+                    SqlUtils.inList(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE, types)));
+              }
+            }
+          }
+
+          return conditions;
         });
 
-    BeeView.registerConditionProvider(FILTER_COMPANY_USAGE, new BeeView.ConditionProvider() {
-      @Override
-      public IsCondition getCondition(BeeView view, List<String> args) {
-        if (view == null || BeeUtils.size(args) < 2) {
-          return null;
+    BeeView.registerConditionProvider(FILTER_COMPANY_USAGE, (view, args) -> {
+      if (view == null || BeeUtils.size(args) < 2) {
+        return null;
+      }
+
+      HasConditions conditions = SqlUtils.and();
+
+      String idName = view.getSourceIdName();
+
+      String relation = null;
+      Operator operator = null;
+      Integer count = null;
+
+      Long start = null;
+      Long end = null;
+
+      for (int i = 0; i < args.size() - 1; i += 2) {
+        String key = args.get(i);
+        String value = args.get(i + 1);
+
+        if (BeeUtils.isEmpty(key) || BeeUtils.isEmpty(value)) {
+          continue;
         }
 
-        HasConditions conditions = SqlUtils.and();
+        switch (key) {
+          case Service.VAR_VIEW_NAME:
+            relation = value;
+            break;
+          case Service.VAR_OPERATOR:
+            operator = Operator.getOperator(value);
+            break;
+          case Service.VAR_VALUE:
+            count = BeeUtils.toIntOrNull(value);
+            break;
 
-        String idName = view.getSourceIdName();
+          case Service.VAR_FROM:
+            start = BeeUtils.toLongOrNull(value);
+            break;
+          case Service.VAR_TO:
+            end = BeeUtils.toLongOrNull(value);
+            break;
 
-        String relation = null;
-        Operator operator = null;
-        Integer count = null;
+          case COL_COMPANY_TYPE:
+          case COL_COMPANY_GROUP:
+          case COL_COMPANY_PRIORITY:
+          case COL_COMPANY_RELATION_TYPE_STATE:
+          case COL_COMPANY_FINANCIAL_STATE:
+          case COL_COMPANY_SIZE:
+          case COL_COMPANY_INFORMATION_SOURCE:
+            conditions.add(SqlUtils.inList(TBL_COMPANIES, key, DataUtils.parseIdSet(value)));
+            break;
 
-        Long start = null;
-        Long end = null;
+          case COL_RELATION_TYPE:
+            conditions.add(SqlUtils.in(TBL_COMPANIES, idName,
+                TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY,
+                SqlUtils.inList(TBL_COMPANY_RELATION_TYPE_STORE, key,
+                    DataUtils.parseIdSet(value))));
+            break;
 
-        for (int i = 0; i < args.size() - 1; i += 2) {
-          String key = args.get(i);
-          String value = args.get(i + 1);
+          case COL_ACTIVITY:
+            conditions.add(SqlUtils.in(TBL_COMPANIES, idName,
+                TBL_COMPANY_ACTIVITY_STORE, COL_COMPANY,
+                SqlUtils.inList(TBL_COMPANY_ACTIVITY_STORE, key, DataUtils.parseIdSet(value))));
+            break;
 
-          if (BeeUtils.isEmpty(key) || BeeUtils.isEmpty(value)) {
-            continue;
-          }
+          case COL_COUNTRY:
+          case COL_CITY:
+            conditions.add(SqlUtils.inList(view.getColumnSource(key), key,
+                DataUtils.parseIdSet(value)));
+            break;
+        }
+      }
 
-          switch (key) {
-            case Service.VAR_VIEW_NAME:
-              relation = value;
-              break;
-            case Service.VAR_OPERATOR:
-              operator = Operator.getOperator(value);
-              break;
-            case Service.VAR_VALUE:
-              count = BeeUtils.toIntOrNull(value);
-              break;
+      if (sys.isView(relation) && operator != null) {
+        BeeView relView = sys.getView(relation);
 
-            case Service.VAR_FROM:
-              start = BeeUtils.toLongOrNull(value);
-              break;
-            case Service.VAR_TO:
-              end = BeeUtils.toLongOrNull(value);
-              break;
+        String source = relView.getSourceName();
+        String sourceField = null;
+        String dtField = null;
 
-            case COL_COMPANY_TYPE:
-            case COL_COMPANY_GROUP:
-            case COL_COMPANY_PRIORITY:
-            case COL_COMPANY_RELATION_TYPE_STATE:
-            case COL_COMPANY_FINANCIAL_STATE:
-            case COL_COMPANY_SIZE:
-            case COL_COMPANY_INFORMATION_SOURCE:
-              conditions.add(SqlUtils.inList(TBL_COMPANIES, key, DataUtils.parseIdSet(value)));
-              break;
+        String relationsField = null;
 
-            case COL_RELATION_TYPE:
-              conditions.add(SqlUtils.in(TBL_COMPANIES, idName,
-                  TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY,
-                  SqlUtils.inList(TBL_COMPANY_RELATION_TYPE_STORE, key,
-                      DataUtils.parseIdSet(value))));
-              break;
+        switch (relation) {
+          case VIEW_SALES:
+            sourceField = COL_TRADE_CUSTOMER;
+            dtField = COL_TRADE_DATE;
+            break;
 
-            case COL_ACTIVITY:
-              conditions.add(SqlUtils.in(TBL_COMPANIES, idName,
-                  TBL_COMPANY_ACTIVITY_STORE, COL_COMPANY,
-                  SqlUtils.inList(TBL_COMPANY_ACTIVITY_STORE, key, DataUtils.parseIdSet(value))));
-              break;
+          case VIEW_PURCHASES:
+            sourceField = COL_TRADE_SUPPLIER;
+            dtField = COL_TRADE_DATE;
+            break;
 
-            case COL_COUNTRY:
-            case COL_CITY:
-              conditions.add(SqlUtils.inList(view.getColumnSource(key), key,
-                  DataUtils.parseIdSet(value)));
-              break;
-          }
+          case DocumentConstants.VIEW_DOCUMENTS:
+            dtField = DocumentConstants.COL_DOCUMENT_DATE;
+            relationsField = DocumentConstants.COL_DOCUMENT;
+            break;
+
+          case TaskConstants.VIEW_TASKS:
+            sourceField = COL_COMPANY;
+            dtField = TaskConstants.COL_FINISH_TIME;
+            relationsField = TaskConstants.COL_TASK;
+            break;
+
+          case TaskConstants.VIEW_RECURRING_TASKS:
+            sourceField = COL_COMPANY;
+            dtField = TaskConstants.COL_RT_SCHEDULE_FROM;
+            relationsField = TaskConstants.COL_RECURRING_TASK;
+            break;
+
+          case CalendarConstants.VIEW_APPOINTMENTS:
+            sourceField = COL_COMPANY;
+            dtField = CalendarConstants.COL_START_DATE_TIME;
+            break;
+
+          case ServiceConstants.VIEW_SERVICE_OBJECTS:
+            sourceField = ServiceConstants.COL_SERVICE_CUSTOMER;
+            dtField = relView.getSourceVersionName();
+            break;
+
+          case TransportConstants.VIEW_ORDERS:
+            sourceField = TransportConstants.COL_CUSTOMER;
+            dtField = TransportConstants.COL_ORDER_DATE;
+            break;
+
+          case TransportConstants.VIEW_VEHICLES:
+            sourceField = TransportConstants.COL_OWNER;
+            dtField = relView.getSourceVersionName();
+            break;
+
+          case VIEW_COMPANY_CONTACTS:
+          case VIEW_COMPANY_DEPARTMENTS:
+          case VIEW_COMPANY_PERSONS:
+          case VIEW_COMPANY_USERS:
+          case VIEW_COMPANY_RELATION_TYPE_STORE:
+          case VIEW_COMPANY_ACTIVITY_STORE:
+            sourceField = COL_COMPANY;
+            dtField = relView.getSourceVersionName();
+            break;
         }
 
-        if (sys.isView(relation) && operator != null) {
-          BeeView relView = sys.getView(relation);
+        if (BeeUtils.allEmpty(sourceField, relationsField)) {
+          logger.severe("filter", FILTER_COMPANY_USAGE, "relation", relation, "not supported");
 
-          String source = relView.getSourceName();
-          String sourceField = null;
-          String dtField = null;
+        } else if (!BeeUtils.isPositive(count) && operator == Operator.LT) {
+          conditions.add(SqlUtils.sqlFalse());
 
-          String relationsField = null;
-
-          switch (relation) {
-            case TradeConstants.VIEW_SALES:
-              sourceField = TradeConstants.COL_TRADE_CUSTOMER;
-              dtField = TradeConstants.COL_TRADE_DATE;
-              break;
-
-            case TradeConstants.VIEW_PURCHASES:
-              sourceField = TradeConstants.COL_TRADE_SUPPLIER;
-              dtField = TradeConstants.COL_TRADE_DATE;
-              break;
-
-            case DocumentConstants.VIEW_DOCUMENTS:
-              dtField = DocumentConstants.COL_DOCUMENT_DATE;
-              relationsField = DocumentConstants.COL_DOCUMENT;
-              break;
-
-            case TaskConstants.VIEW_TASKS:
-              sourceField = COL_COMPANY;
-              dtField = TaskConstants.COL_FINISH_TIME;
-              relationsField = TaskConstants.COL_TASK;
-              break;
-
-            case TaskConstants.VIEW_RECURRING_TASKS:
-              sourceField = COL_COMPANY;
-              dtField = TaskConstants.COL_RT_SCHEDULE_FROM;
-              relationsField = TaskConstants.COL_RECURRING_TASK;
-              break;
-
-            case CalendarConstants.VIEW_APPOINTMENTS:
-              sourceField = COL_COMPANY;
-              dtField = CalendarConstants.COL_START_DATE_TIME;
-              break;
-
-            case ServiceConstants.VIEW_SERVICE_OBJECTS:
-              sourceField = ServiceConstants.COL_SERVICE_CUSTOMER;
-              dtField = relView.getSourceVersionName();
-              break;
-
-            case TransportConstants.VIEW_ORDERS:
-              sourceField = TransportConstants.COL_CUSTOMER;
-              dtField = TransportConstants.COL_ORDER_DATE;
-              break;
-
-            case TransportConstants.VIEW_VEHICLES:
-              sourceField = TransportConstants.COL_OWNER;
-              dtField = relView.getSourceVersionName();
-              break;
-
-            case VIEW_COMPANY_CONTACTS:
-            case VIEW_COMPANY_DEPARTMENTS:
-            case VIEW_COMPANY_PERSONS:
-            case VIEW_COMPANY_USERS:
-            case VIEW_COMPANY_RELATION_TYPE_STORE:
-            case VIEW_COMPANY_ACTIVITY_STORE:
-              sourceField = COL_COMPANY;
-              dtField = relView.getSourceVersionName();
-              break;
+        } else if (BeeUtils.isPositive(count) || operator != Operator.GE) {
+          if (!BeeUtils.isPositive(count)) {
+            count = 0;
           }
 
-          if (BeeUtils.allEmpty(sourceField, relationsField)) {
-            logger.severe("filter", FILTER_COMPANY_USAGE, "relation", relation, "not supported");
-
-          } else if (!BeeUtils.isPositive(count) && operator == Operator.LT) {
-            conditions.add(SqlUtils.sqlFalse());
-
-          } else if (BeeUtils.isPositive(count) || operator != Operator.GE) {
-            if (!BeeUtils.isPositive(count)) {
-              count = 0;
+          HasConditions dtWhere;
+          if (!BeeUtils.isEmpty(dtField) && (start != null || end != null)) {
+            dtWhere = SqlUtils.and();
+            if (start != null) {
+              dtWhere.add(SqlUtils.moreEqual(source, dtField, start));
             }
+            if (end != null) {
+              dtWhere.add(SqlUtils.less(source, dtField, end));
+            }
+          } else {
+            dtWhere = null;
+          }
 
-            HasConditions dtWhere;
-            if (!BeeUtils.isEmpty(dtField) && (start != null || end != null)) {
-              dtWhere = SqlUtils.and();
-              if (start != null) {
-                dtWhere.add(SqlUtils.moreEqual(source, dtField, start));
-              }
-              if (end != null) {
-                dtWhere.add(SqlUtils.less(source, dtField, end));
-              }
+          HasConditions sourceWhere = BeeUtils.isEmpty(sourceField)
+              ? null : SqlUtils.and(SqlUtils.notNull(source, sourceField), dtWhere);
+          HasConditions relationsWhere = BeeUtils.isEmpty(relationsField)
+              ? null : SqlUtils.and(SqlUtils.notNull(TBL_RELATIONS, COL_COMPANY), dtWhere);
+
+          HasConditions relConditions = SqlUtils.or();
+
+          SqlSelect subQuery;
+
+          if (operator == Operator.LT && count > 0
+              || operator == Operator.LE
+              || operator == Operator.EQ && count == 0) {
+
+            if (BeeUtils.isEmpty(relationsField)) {
+              relConditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName,
+                  source, sourceField, sourceWhere)));
+
+            } else if (BeeUtils.isEmpty(sourceField)) {
+              subQuery = new SqlSelect().setDistinctMode(true)
+                  .addFields(TBL_RELATIONS, COL_COMPANY)
+                  .addFrom(TBL_RELATIONS)
+                  .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                  .setWhere(relationsWhere);
+
+              relConditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName, subQuery)));
+
             } else {
-              dtWhere = null;
+              subQuery = new SqlSelect()
+                  .addField(source, sourceField, COL_COMPANY)
+                  .addFrom(source)
+                  .setWhere(sourceWhere);
+
+              subQuery.addUnion(new SqlSelect()
+                  .addFields(TBL_RELATIONS, COL_COMPANY)
+                  .addFrom(TBL_RELATIONS)
+                  .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                  .setWhere(relationsWhere));
+
+              relConditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName, subQuery)));
             }
+          }
 
-            HasConditions sourceWhere = BeeUtils.isEmpty(sourceField)
-                ? null : SqlUtils.and(SqlUtils.notNull(source, sourceField), dtWhere);
-            HasConditions relationsWhere = BeeUtils.isEmpty(relationsField)
-                ? null : SqlUtils.and(SqlUtils.notNull(TBL_RELATIONS, COL_COMPANY), dtWhere);
+          if (operator == Operator.GE && count == 1
+              || operator == Operator.GT && count == 0) {
 
-            HasConditions relConditions = SqlUtils.or();
+            if (BeeUtils.isEmpty(relationsField)) {
+              relConditions.add(SqlUtils.in(TBL_COMPANIES, idName,
+                  source, sourceField, sourceWhere));
 
-            SqlSelect subQuery;
+            } else if (BeeUtils.isEmpty(sourceField)) {
+              subQuery = new SqlSelect().setDistinctMode(true)
+                  .addFields(TBL_RELATIONS, COL_COMPANY)
+                  .addFrom(TBL_RELATIONS)
+                  .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                  .setWhere(relationsWhere);
 
-            if (operator == Operator.LT && count > 0
-                || operator == Operator.LE
-                || operator == Operator.EQ && count == 0) {
+              relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
 
-              if (BeeUtils.isEmpty(relationsField)) {
-                relConditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName,
-                    source, sourceField, sourceWhere)));
+            } else {
+              subQuery = new SqlSelect()
+                  .addField(source, sourceField, COL_COMPANY)
+                  .addFrom(source)
+                  .setWhere(sourceWhere);
 
-              } else if (BeeUtils.isEmpty(sourceField)) {
-                subQuery = new SqlSelect().setDistinctMode(true)
-                    .addFields(TBL_RELATIONS, COL_COMPANY)
-                    .addFrom(TBL_RELATIONS)
-                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
-                    .setWhere(relationsWhere);
-
-                relConditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName, subQuery)));
-
-              } else {
-                subQuery = new SqlSelect()
-                    .addField(source, sourceField, COL_COMPANY)
-                    .addFrom(source)
-                    .setWhere(sourceWhere);
-
-                subQuery.addUnion(new SqlSelect()
-                    .addFields(TBL_RELATIONS, COL_COMPANY)
-                    .addFrom(TBL_RELATIONS)
-                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
-                    .setWhere(relationsWhere));
-
-                relConditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName, subQuery)));
-              }
-            }
-
-            if (operator == Operator.GE && count == 1
-                || operator == Operator.GT && count == 0) {
-
-              if (BeeUtils.isEmpty(relationsField)) {
-                relConditions.add(SqlUtils.in(TBL_COMPANIES, idName,
-                    source, sourceField, sourceWhere));
-
-              } else if (BeeUtils.isEmpty(sourceField)) {
-                subQuery = new SqlSelect().setDistinctMode(true)
-                    .addFields(TBL_RELATIONS, COL_COMPANY)
-                    .addFrom(TBL_RELATIONS)
-                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
-                    .setWhere(relationsWhere);
-
-                relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
-
-              } else {
-                subQuery = new SqlSelect()
-                    .addField(source, sourceField, COL_COMPANY)
-                    .addFrom(source)
-                    .setWhere(sourceWhere);
-
-                subQuery.addUnion(new SqlSelect()
-                    .addFields(TBL_RELATIONS, COL_COMPANY)
-                    .addFrom(TBL_RELATIONS)
-                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
-                    .setWhere(relationsWhere));
-
-                relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
-              }
-            }
-
-            if (operator == Operator.LT && count > 1
-                || operator == Operator.LE && count > 0
-                || operator == Operator.EQ && count > 0
-                || operator == Operator.GE && count > 1
-                || operator == Operator.GT && count > 0) {
-
-              subQuery = new SqlSelect();
-
-              if (BeeUtils.isEmpty(relationsField)) {
-                subQuery
-                    .addFields(source, sourceField)
-                    .addFrom(source)
-                    .setWhere(sourceWhere)
-                    .addGroup(source, sourceField);
-
-              } else if (BeeUtils.isEmpty(sourceField)) {
-                subQuery
-                    .addFields(TBL_RELATIONS, COL_COMPANY)
-                    .addFrom(TBL_RELATIONS)
-                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
-                    .setWhere(relationsWhere)
-                    .addGroup(TBL_RELATIONS, COL_COMPANY);
-
-              } else {
-                SqlSelect unionQuery = new SqlSelect()
-                    .addField(source, sourceField, COL_COMPANY)
-                    .addFrom(source)
-                    .setWhere(sourceWhere);
-
-                unionQuery.setUnionAllMode(true).addUnion(new SqlSelect()
-                    .addFields(TBL_RELATIONS, COL_COMPANY)
-                    .addFrom(TBL_RELATIONS)
-                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
-                    .setWhere(relationsWhere));
-
-                String unionAlias = "Un" + SqlUtils.uniqueName();
-
-                subQuery
-                    .addFields(unionAlias, COL_COMPANY)
-                    .addFrom(unionQuery, unionAlias)
-                    .addGroup(unionAlias, COL_COMPANY);
-              }
-
-              IsExpression xpr = SqlUtils.aggregate(SqlFunction.COUNT, null);
-              subQuery.setHaving(SqlUtils.compare(xpr, operator, SqlUtils.constant(count)));
+              subQuery.addUnion(new SqlSelect()
+                  .addFields(TBL_RELATIONS, COL_COMPANY)
+                  .addFrom(TBL_RELATIONS)
+                  .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                  .setWhere(relationsWhere));
 
               relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
             }
+          }
 
-            if (!relConditions.isEmpty()) {
-              conditions.add(relConditions);
+          if (operator == Operator.LT && count > 1
+              || operator == Operator.LE && count > 0
+              || operator == Operator.EQ && count > 0
+              || operator == Operator.GE && count > 1
+              || operator == Operator.GT && count > 0) {
+
+            subQuery = new SqlSelect();
+
+            if (BeeUtils.isEmpty(relationsField)) {
+              subQuery
+                  .addFields(source, sourceField)
+                  .addFrom(source)
+                  .setWhere(sourceWhere)
+                  .addGroup(source, sourceField);
+
+            } else if (BeeUtils.isEmpty(sourceField)) {
+              subQuery
+                  .addFields(TBL_RELATIONS, COL_COMPANY)
+                  .addFrom(TBL_RELATIONS)
+                  .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                  .setWhere(relationsWhere)
+                  .addGroup(TBL_RELATIONS, COL_COMPANY);
+
+            } else {
+              SqlSelect unionQuery = new SqlSelect()
+                  .addField(source, sourceField, COL_COMPANY)
+                  .addFrom(source)
+                  .setWhere(sourceWhere);
+
+              unionQuery.setUnionAllMode(true).addUnion(new SqlSelect()
+                  .addFields(TBL_RELATIONS, COL_COMPANY)
+                  .addFrom(TBL_RELATIONS)
+                  .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                  .setWhere(relationsWhere));
+
+              String unionAlias = "Un" + SqlUtils.uniqueName();
+
+              subQuery
+                  .addFields(unionAlias, COL_COMPANY)
+                  .addFrom(unionQuery, unionAlias)
+                  .addGroup(unionAlias, COL_COMPANY);
             }
+
+            IsExpression xpr = SqlUtils.aggregate(SqlFunction.COUNT, null);
+            subQuery.setHaving(SqlUtils.compare(xpr, operator, SqlUtils.constant(count)));
+
+            relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
+          }
+
+          if (!relConditions.isEmpty()) {
+            conditions.add(relConditions);
           }
         }
-
-        return conditions;
       }
+
+      return conditions;
     });
   }
 
   public Document createRemindTemplate(SimpleRowSet data, Map<String, String> labels,
-                                       Map<String, ValueType> format, Map<String, String> enumKeys,
-                                       String subject, String reminderText, Long userId) {
+      Map<String, ValueType> format, Map<String, String> enumKeys,
+      String subject, String reminderText, Long userId) {
     return createRemindTemplate(data, labels, format, enumKeys, null, subject, reminderText,
-            userId);
+        userId);
   }
 
   public Document createRemindTemplate(SimpleRowSet data, Map<String, String> labels,
-                                       Map<String, ValueType> format, Map<String, String> enumKeys,
-                                       List<String> excludedColumns, String subject,
-                                       String reminderText, Long userId) {
+      Map<String, ValueType> format, Map<String, String> enumKeys,
+      List<String> excludedColumns, String subject,
+      String reminderText, Long userId) {
     Assert.notNull(data);
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(subject));
@@ -774,7 +839,7 @@ public class ClassifiersModuleBean implements BeeModule {
       }
 
       String label = BeeUtils.containsKey(labels, data.getColumnName(i))
-              ? labels.get(data.getColumnName(i)) : data.getColumnName(i);
+          ? labels.get(data.getColumnName(i)) : data.getColumnName(i);
 
       Th th = th().text(label);
       th.setBorderWidth("1px");
@@ -786,8 +851,8 @@ public class ClassifiersModuleBean implements BeeModule {
     table.append(trHead);
 
     Range<Long> maybeTime = Range.closed(
-            TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
-            TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+        TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
+        TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
 
     for (SimpleRow row : data) {
       Tr tr = tr();
@@ -798,12 +863,16 @@ public class ClassifiersModuleBean implements BeeModule {
         }
 
         if (BeeUtils.isEmpty(row.getValue(i))) {
-          tr.append(td());
+          Td td = td();
+          tr.append(td);
+          td.setBorderWidth("1px");
+          td.setBorderStyle(BorderStyle.SOLID);
+          td.setBorderColor("black");
           continue;
         }
 
         ValueType type = format.get(data.getColumnName(i)) == null
-                ? ValueType.TEXT : format.get(data.getColumnName(i));
+            ? ValueType.TEXT : format.get(data.getColumnName(i));
         String value = BeeUtils.nvl(row.getValue(i), BeeConst.STRING_EMPTY);
 
         switch (type) {
@@ -817,7 +886,7 @@ public class ClassifiersModuleBean implements BeeModule {
           case INTEGER:
             if (BeeUtils.containsKey(enumKeys, data.getColumnName(i))) {
               value = EnumUtils.getLocalizedCaption(enumKeys.get(data.getColumnName(i)),
-                      row.getInt(i), usr.getDictionary(userId));
+                  row.getInt(i), usr.getDictionary(userId));
             }
             break;
           case DATE_TIME:
@@ -827,7 +896,6 @@ public class ClassifiersModuleBean implements BeeModule {
             value = BeeUtils.nvl(row.getValue(i), BeeConst.STRING_EMPTY);
         }
 
-
         Td td = td();
         tr.append(td);
         td.text(value);
@@ -836,7 +904,7 @@ public class ClassifiersModuleBean implements BeeModule {
         td.setBorderColor("black");
 
         if (ValueType.isNumeric(type) || ValueType.TEXT == type
-                && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
+            && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
           td.setTextAlign(TextAlign.RIGHT);
         }
       }
@@ -868,17 +936,17 @@ public class ClassifiersModuleBean implements BeeModule {
     String appointmentIdName = sys.getIdName(CalendarConstants.TBL_APPOINTMENTS);
 
     Map<String, String> labels =
-            CalendarHelper.getAppointmentReminderDataLabels(dic, appointmentIdName);
+        CalendarHelper.getAppointmentReminderDataLabels(dic, appointmentIdName);
     Map<String, ValueType> format =
-            CalendarHelper.getAppointmentReminderDataTypes(appointmentIdName);
+        CalendarHelper.getAppointmentReminderDataTypes(appointmentIdName);
     Map<String, String> enumKeys = CalendarHelper.getAppointmentReminderDataEnumKeys();
     Document doc = createRemindTemplate(appointments, labels, format, enumKeys,
-            BeeConst.STRING_EMPTY, reminderText, userId);
+        BeeConst.STRING_EMPTY, reminderText, userId);
 
     mail.sendMail(accountId, to, subject, doc.buildLines());
     setRemindedAppointments(Lists.newArrayList(appointments.getLongColumn(appointmentIdName)));
     logger.info(TIMER_REMIND_COMPANY_ACTIONS, "mail send, user id", userId,
-            ", company action count", appointments.getRows().size());
+        ", company action count", appointments.getRows().size());
   }
 
   private ResponseObject createCompany(Map<String, String> companyInfo) {
@@ -1508,35 +1576,32 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     List<PriceInfo> input = new ArrayList<>(discounts);
-    Collections.sort(input, new Comparator<PriceInfo>() {
-      @Override
-      public int compare(PriceInfo o1, PriceInfo o2) {
-        boolean x1 = o1.hasPrice() && o1.hasPercent();
-        boolean x2 = o2.hasPrice() && o2.hasPercent();
+    Collections.sort(input, (o1, o2) -> {
+      boolean x1 = o1.hasPrice() && o1.hasPercent();
+      boolean x2 = o2.hasPrice() && o2.hasPercent();
 
-        if (x1 && x2) {
-          return BeeUtils.compareNullsLast(
-              BeeUtils.minusPercent(o1.getPrice(), o1.getDiscountPercent()),
-              BeeUtils.minusPercent(o2.getPrice(), o2.getDiscountPercent()));
+      if (x1 && x2) {
+        return BeeUtils.compareNullsLast(
+            BeeUtils.minusPercent(o1.getPrice(), o1.getDiscountPercent()),
+            BeeUtils.minusPercent(o2.getPrice(), o2.getDiscountPercent()));
 
-        } else if (x1 || x2) {
-          return Boolean.compare(x2, x1);
+      } else if (x1 || x2) {
+        return Boolean.compare(x2, x1);
 
-        } else if (o1.hasPrice() || o2.hasPrice()) {
-          return BeeUtils.compareNullsLast(o1.getPrice(), o2.getPrice());
+      } else if (o1.hasPrice() || o2.hasPrice()) {
+        return BeeUtils.compareNullsLast(o1.getPrice(), o2.getPrice());
 
-        } else if (o1.hasPercent() || o2.hasPercent()) {
-          return BeeUtils.compareNullsLast(o2.getDiscountPercent(), o1.getDiscountPercent());
+      } else if (o1.hasPercent() || o2.hasPercent()) {
+        return BeeUtils.compareNullsLast(o2.getDiscountPercent(), o1.getDiscountPercent());
 
-        } else {
-          return BeeConst.COMPARE_EQUAL;
-        }
+      } else {
+        return BeeConst.COMPARE_EQUAL;
       }
     });
 
     if (explain > 0) {
       explain("ordered input", BeeUtils.bracket(input.size()));
-      input.stream().forEach(e -> explain(e));
+      input.forEach(this::explain);
     }
 
     Pair<Double, Double> result = Pair.empty();
@@ -1589,12 +1654,8 @@ public class ClassifiersModuleBean implements BeeModule {
         List<Long> branch = new ArrayList<>(roots.get(root));
 
         if (branch.size() > 1) {
-          Collections.sort(branch, new Comparator<Long>() {
-            @Override
-            public int compare(Long o1, Long o2) {
-              return BeeUtils.compareNullsLast(categoryLevels.get(o2), categoryLevels.get(o1));
-            }
-          });
+          Collections.sort(branch, (o1, o2) ->
+              BeeUtils.compareNullsLast(categoryLevels.get(o2), categoryLevels.get(o1)));
         }
 
         categoryBranches.add(branch);
@@ -1653,7 +1714,7 @@ public class ClassifiersModuleBean implements BeeModule {
         OptionalDouble maxPercent = candidates
             .stream()
             .filter(e -> e.getA() == null && e.getB() != null)
-            .mapToDouble(e -> e.getB())
+            .mapToDouble(Pair::getB)
             .max();
 
         if (maxPercent.isPresent()) {
@@ -1668,7 +1729,7 @@ public class ClassifiersModuleBean implements BeeModule {
         OptionalDouble minPrice = candidates
             .stream()
             .filter(e -> e.getA() != null && e.getB() == null)
-            .mapToDouble(e -> e.getA())
+            .mapToDouble(Pair::getA)
             .min();
 
         if (minPrice.isPresent()) {
@@ -1699,7 +1760,7 @@ public class ClassifiersModuleBean implements BeeModule {
         OptionalDouble maxPercent = candidates
             .stream()
             .filter(e -> e.getB() != null)
-            .mapToDouble(e -> e.getB())
+            .mapToDouble(Pair::getB)
             .max();
 
         if (maxPercent.isPresent()) {
@@ -1726,27 +1787,27 @@ public class ClassifiersModuleBean implements BeeModule {
     IsCondition hasCompany = SqlUtils.notNull(CalendarConstants.TBL_APPOINTMENTS, COL_COMPANY);
 
     IsCondition isCompleted = SqlUtils.inList(CalendarConstants.TBL_APPOINTMENTS,
-            CalendarConstants.COL_STATUS, AppointmentStatus.COMPLETED.ordinal(),
-            AppointmentStatus.CONFIRMED.ordinal());
+        CalendarConstants.COL_STATUS, AppointmentStatus.COMPLETED.ordinal(),
+        AppointmentStatus.CONFIRMED.ordinal());
 
     IsCondition isActive = SqlUtils.not(isCompleted);
 
     IsCondition notResult = SqlUtils.isNull(CalendarConstants.TBL_APPOINTMENTS,
-            CalendarConstants.COL_ACTION_RESULT);
+        CalendarConstants.COL_ACTION_RESULT);
     IsCondition notRemind = SqlUtils.isNull(CalendarConstants.TBL_APPOINTMENTS,
-            CalendarConstants.COL_ACTION_REMINDED);
+        CalendarConstants.COL_ACTION_REMINDED);
     IsCondition validStart = SqlUtils.more(CalendarConstants.TBL_APPOINTMENTS,
-            CalendarConstants.COL_START_DATE_TIME,
-            today);
+        CalendarConstants.COL_START_DATE_TIME,
+        today);
     IsCondition isOwner = SqlUtils.equals(CalendarConstants.TBL_APPOINTMENTS,
-            CalendarConstants.COL_CREATOR, user);
+        CalendarConstants.COL_CREATOR, user);
 
     IsExpression remindStartHrs = SqlUtils.divide(
-            SqlUtils.field(CalendarConstants.TBL_APPOINTMENTS,
-                    CalendarConstants.COL_START_DATE_TIME), TimeUtils.MILLIS_PER_HOUR);
+        SqlUtils.field(CalendarConstants.TBL_APPOINTMENTS,
+            CalendarConstants.COL_START_DATE_TIME), TimeUtils.MILLIS_PER_HOUR);
 
     IsCondition canRemind = SqlUtils.moreEqual(SqlUtils.minus(remindStartHrs, nowInHours),
-            remindBefore);
+        remindBefore);
 
     return SqlUtils.and(hasCompany, isActive, notResult, notRemind, validStart, canRemind, isOwner);
   }
@@ -1976,10 +2037,9 @@ public class ClassifiersModuleBean implements BeeModule {
 
   private Map<Long, Integer> getRemindActionsUserSettings() {
     Map<Long, Integer> userSettings = Maps.newHashMap();
-    Filter isSetReminder = Filter.notNull(COL_REMIND_ACTIONS);
     Filter timeIsSet = Filter.isPositive(COL_REMIND_ACTION_BEFORE);
 
-    BeeRowSet rows = qs.getViewData(VIEW_USER_SETTINGS, Filter.and(isSetReminder, timeIsSet));
+    BeeRowSet rows = qs.getViewData(VIEW_USER_SETTINGS, timeIsSet);
 
     for (IsRow row : rows) {
       Long userId = row.getLong(rows.getColumnIndex(COL_USER));
@@ -1991,6 +2051,54 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     return userSettings;
+  }
+
+  private Map<Long, Double> getRemainders(List<Long> ids, String source, String field) {
+
+    Map<Long, Double> remainders = new HashMap<>();
+    Map<Long, Double> invoices = new HashMap<>();
+
+    if (!BeeUtils.isEmpty(ids)) {
+      SqlSelect select = new SqlSelect()
+          .addFields(source, COL_ITEM)
+          .addSum(source, field)
+          .addFrom(source)
+          .setWhere(SqlUtils.inList(source, COL_ITEM, ids))
+          .addGroup(source, COL_ITEM);
+
+      if (Objects.equals(source, TBL_ORDER_ITEMS)) {
+        SqlSelect slcInvoices =
+            new SqlSelect()
+                .addFields(TBL_SALE_ITEMS, COL_ITEM)
+                .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+                .addFrom(TBL_SALE_ITEMS)
+                .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                .setWhere(
+                    SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_ITEM, ids), SqlUtils.isNull(
+                        TBL_SALES, COL_TRADE_EXPORTED)))
+                .addGroup(TBL_SALE_ITEMS, COL_ITEM);
+
+        for (SimpleRow row : qs.getData(slcInvoices)) {
+          invoices.put(row.getLong(COL_ITEM), BeeUtils
+              .unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY)));
+        }
+
+        for (SimpleRow row : qs.getData(select)) {
+          if (invoices.containsKey(row.getLong(COL_ITEM))) {
+            remainders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field))
+                + BeeUtils.unbox(invoices.get(row.getLong(COL_ITEM))));
+          } else {
+            remainders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+          }
+        }
+      } else {
+        for (SimpleRow row : qs.getData(select)) {
+          remainders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+        }
+      }
+    }
+
+    return remainders;
   }
 
   @Schedule(hour = "*/1", persistent = false)
@@ -2019,39 +2127,38 @@ public class ClassifiersModuleBean implements BeeModule {
     IsCondition filter = getCompanyActionsFilter(user, remindBefore);
 
     SqlSelect appointmentsQuery = new SqlSelect()
-            .addFields(CalendarConstants.TBL_APPOINTMENTS,
-                    sys.getIdName(CalendarConstants.TBL_APPOINTMENTS),
-                    CalendarConstants.COL_CREATED, CalendarConstants.COL_SUMMARY,
-                    CalendarConstants.COL_STATUS,
-                    CalendarConstants.COL_START_DATE_TIME, CalendarConstants.COL_END_DATE_TIME)
-            .addField(CalendarConstants.TBL_APPOINTMENT_TYPES,
-                    CalendarConstants.COL_APPOINTMENT_TYPE_NAME,
-                    CalendarConstants.ALS_APPOINTMENT_TYPE_NAME)
-            .addExpr(SqlUtils.concat(
-                    SqlUtils.nvl(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "''"), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME), "''")),
-                    ALS_COMPANY_NAME)
-            .addExpr(SqlUtils.concat(
-                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "''"), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
-                    ALS_CONTACT_PERSON)
-            .addFrom(CalendarConstants.TBL_APPOINTMENTS)
-            .addFromLeft(CalendarConstants.TBL_APPOINTMENT_TYPES,
-                    sys.joinTables(CalendarConstants.TBL_APPOINTMENT_TYPES,
-                            CalendarConstants.TBL_APPOINTMENTS,
-                            CalendarConstants.COL_APPOINTMENT_TYPE))
-            .addFromLeft(TBL_COMPANIES,
-                    sys.joinTables(TBL_COMPANIES, CalendarConstants.TBL_APPOINTMENTS, COL_COMPANY))
-            .addFromLeft(TBL_COMPANY_TYPES,
-                    sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
-            .addFromLeft(TBL_COMPANY_PERSONS,
-                    sys.joinTables(TBL_COMPANY_PERSONS, CalendarConstants.TBL_APPOINTMENTS,
-                            COL_COMPANY_PERSON))
-            .addFromLeft(TBL_PERSONS,
-                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-            .setWhere(filter)
-            .addOrder(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_START_DATE_TIME);
-
+        .addFields(CalendarConstants.TBL_APPOINTMENTS,
+            sys.getIdName(CalendarConstants.TBL_APPOINTMENTS),
+            CalendarConstants.COL_CREATED, CalendarConstants.COL_SUMMARY,
+            CalendarConstants.COL_STATUS,
+            CalendarConstants.COL_START_DATE_TIME, CalendarConstants.COL_END_DATE_TIME)
+        .addField(CalendarConstants.TBL_APPOINTMENT_TYPES,
+            CalendarConstants.COL_APPOINTMENT_TYPE_NAME,
+            CalendarConstants.ALS_APPOINTMENT_TYPE_NAME)
+        .addExpr(SqlUtils.concat(
+            SqlUtils.nvl(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "''"), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME), "''")),
+            ALS_COMPANY_NAME)
+        .addExpr(SqlUtils.concat(
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "''"), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
+            ALS_CONTACT_PERSON)
+        .addFrom(CalendarConstants.TBL_APPOINTMENTS)
+        .addFromLeft(CalendarConstants.TBL_APPOINTMENT_TYPES,
+            sys.joinTables(CalendarConstants.TBL_APPOINTMENT_TYPES,
+                CalendarConstants.TBL_APPOINTMENTS,
+                CalendarConstants.COL_APPOINTMENT_TYPE))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, CalendarConstants.TBL_APPOINTMENTS, COL_COMPANY))
+        .addFromLeft(TBL_COMPANY_TYPES,
+            sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, CalendarConstants.TBL_APPOINTMENTS,
+                COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .setWhere(filter)
+        .addOrder(CalendarConstants.TBL_APPOINTMENTS, CalendarConstants.COL_START_DATE_TIME);
 
     SimpleRowSet appointments = qs.getData(appointmentsQuery);
 
@@ -2070,7 +2177,7 @@ public class ClassifiersModuleBean implements BeeModule {
     SqlUpdate update = new SqlUpdate(CalendarConstants.TBL_APPOINTMENTS);
     update.addConstant(CalendarConstants.COL_ACTION_REMINDED, Boolean.TRUE);
     update.setWhere(SqlUtils.inList(CalendarConstants.TBL_APPOINTMENTS,
-            sys.getIdName(CalendarConstants.TBL_APPOINTMENTS), appointments));
+        sys.getIdName(CalendarConstants.TBL_APPOINTMENTS), appointments));
     qs.updateData(update);
   }
 
@@ -2155,5 +2262,80 @@ public class ClassifiersModuleBean implements BeeModule {
     baos.close();
     qrBase64 = Codec.toBase64(imageInByte);
     return qrBase64;
+  }
+
+  public DateTime calculateReminderTime(Long time, Integer dataIndicator,
+      Integer hours, Integer minutes) {
+
+    DateTime reminderTime = new DateTime();
+    reminderTime.setTime(time);
+
+    if (time != null && dataIndicator != null) {
+      if (BeeUtils.same(dataIndicator.toString(),
+          BeeUtils.toString(ReminderDateIndicator.AFTER.ordinal()))) {
+        if (hours != null) {
+          TimeUtils.addHour(reminderTime, hours);
+        }
+        if (minutes != null) {
+          TimeUtils.addMinute(reminderTime, minutes);
+        }
+      }
+      if (BeeUtils.same(dataIndicator.toString(),
+          BeeUtils.toString(ReminderDateIndicator.BEFORE.ordinal()))) {
+        if (hours != null) {
+          TimeUtils.addHour(reminderTime, hours * -1);
+        }
+        if (minutes != null) {
+          TimeUtils.addMinute(reminderTime, minutes * -1);
+        }
+      }
+    }
+    return reminderTime;
+  }
+
+  private static boolean hasGoods(BeeRowSet rowSet) {
+    if (!DataUtils.isEmpty(rowSet) && rowSet.containsColumn(COL_ITEM_IS_SERVICE)) {
+      int index = rowSet.getColumnIndex(COL_ITEM_IS_SERVICE);
+
+      for (BeeRow row : rowSet) {
+        if (row.isNull(index)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private com.google.common.collect.Table<Long, String, String> getStock(Collection<Long> items) {
+    com.google.common.collect.Table<Long, String, String> result = HashBasedTable.create();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addSum(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)
+        .addFrom(TBL_TRADE_STOCK)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+            TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
+        .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES,
+            TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE))
+        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items),
+            SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)))
+        .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        Double quantity = row.getDouble(COL_STOCK_QUANTITY);
+
+        if (BeeUtils.nonZero(quantity)) {
+          result.put(row.getLong(COL_ITEM), row.getValue(COL_WAREHOUSE_CODE),
+              BeeUtils.toString(quantity));
+        }
+      }
+    }
+
+    return result;
   }
 }

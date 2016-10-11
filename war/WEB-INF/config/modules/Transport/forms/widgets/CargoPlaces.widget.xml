@@ -17,25 +17,25 @@
       </cell>
     </row>
     <row>
-      <Label text="=date" style="&lbl1;" />
+      <Label for="LoadingDate" text="=date" style="&lbl1;" />
       <InputDateTime source="LoadingDate" style="&inp;" />
-      <Label text="=date" style="&lbl1;" />
+      <Label for="UnloadingDate" text="=date" style="&lbl1;" />
       <InputDateTime source="UnloadingDate" style="&inp;" />
     </row>
     <row>
-      <Label text="=company" style="&lbl1;" />
+      <Label for="LoadingCompany" text="=company" style="&lbl1;" />
       <InputText source="LoadingCompany" autocompleteKey="cargo-place-company" />
-      <Label text="=company" style="&lbl1;" />
+      <Label for="UnloadingCompany" text="=company" style="&lbl1;" />
       <InputText source="UnloadingCompany" autocompleteKey="cargo-place-company" />
     </row>
     <row>
-      <Label text="=address" style="&lbl1;" />
+      <Label for="LoadingAddress" text="=address" style="&lbl1;" />
       <InputText source="LoadingAddress" autocompleteKey="cargo-place-address" />
-      <Label text="=address" style="&lbl1;" />
+      <Label for="UnloadingAddress" text="=address" style="&lbl1;" />
       <InputText source="UnloadingAddress" autocompleteKey="cargo-place-address" />
     </row>
     <row>
-      <Label text="=city" style="&lbl1;" />
+      <Label for="LoadingCity" text="=city" style="&lbl1;" />
       <DataSelector source="LoadingCity" style="&inp;" options="LoadingCountry">
         <selectorColumn source="Name" />
         <selectorColumn source="CountryName" />
@@ -43,7 +43,7 @@
           <ui:renderer type="flag" />
         </selectorColumn>
       </DataSelector>
-      <Label text="=city" style="&lbl1;" />
+      <Label for="UnloadingCity" text="=city" style="&lbl1;" />
       <DataSelector source="UnloadingCity" style="&inp;" options="UnloadingCountry">
         <selectorColumn source="Name" />
         <selectorColumn source="CountryName" />
@@ -53,15 +53,15 @@
       </DataSelector>
     </row>
     <row>
-      <Label text="=postIndex" style="&lbl1;" />
+      <Label for="LoadingPostIndex" text="=postIndex" style="&lbl1;" />
       <InputText source="LoadingPostIndex" style="&inp;"
                  autocompleteKey="cargo-place-postal-code" />
-      <Label text="=postIndex" style="&lbl1;" />
+      <Label for="UnloadingPostIndex" text="=postIndex" style="&lbl1;" />
       <InputText source="UnloadingPostIndex" style="&inp;"
                  autocompleteKey="cargo-place-postal-code" />
     </row>
     <row>
-      <Label text="=country" style="&lbl1;" />
+      <Label for="LoadingCountry" text="=country" style="&lbl1;" />
       <FlowPanel>
         <DataSelector source="LoadingCountry" style="width: 135px;">
           <renderToken source="LoadingCountryName" />
@@ -74,7 +74,7 @@
 
         <Flag source="LoadingCountryCode" style="padding-left: 2px;" />
       </FlowPanel>
-      <Label text="=country" style="&lbl1;" />
+      <Label for="UnloadingCountry" text="=country" style="&lbl1;" />
       <FlowPanel>
         <DataSelector source="UnloadingCountry" style="width: 135px;">
           <renderToken source="UnloadingCountryName" />
@@ -89,24 +89,24 @@
       </FlowPanel>
     </row>
     <row>
-      <Label text="=personContact" style="&lbl1;" />
+      <Label for="LoadingContact" text="=personContact" style="&lbl1;" />
       <InputText source="LoadingContact" autocompleteKey="cargo-place-contact" />
-      <Label text="=personContact" style="&lbl1;" />
+      <Label for="UnloadingContact" text="=personContact" style="&lbl1;" />
       <InputText source="UnloadingContact" autocompleteKey="cargo-place-contact" />
     </row>
     <row>
-      <Label text="=ref" style="&lbl1;" />
+      <Label for="LoadingNumber" text="=ref" style="&lbl1;" />
       <InputText source="LoadingNumber" />
-      <Label text="=ref" style="&lbl1;" />
+      <Label for="UnloadingNumber" text="=ref" style="&lbl1;" />
       <InputText source="UnloadingNumber" />
     </row>
     <row>
       <cell style="vertical-align:top;">
-        <Label text="=note" style="&lbl1;" />
+        <Label for="LoadingNote" text="=note" style="&lbl1;" />
       </cell>
       <InputArea source="LoadingNote" visibleLines="2" />
       <cell style="vertical-align:top;">
-        <Label text="=note" style="&lbl1;" />
+        <Label for="UnloadingNote" text="=note" style="&lbl1;" />
       </cell>
       <InputArea source="UnloadingNote" visibleLines="2" />
     </row>
@@ -115,11 +115,11 @@
     <Label for="LoadedKilometers" style="&inline;" />
     <InputInteger name="LoadedKilometers" source="LoadedKilometers"
                   style="&inline; width:70px; margin-left:5px;" />
-    <Label for="CargoWeight" style="&inline; margin-left:20px;" />
-    <InputDecimal source="CargoWeight" format="0.000"
-                  style="&inline; width:70px; margin-left:5px; margin-right:20px;" />
-    <Label for="EmptyKilometers" style="&inline;" />
+    <Label for="EmptyKilometers" style="&inline; margin-left:20px;" />
     <InputInteger name="EmptyKilometers" source="EmptyKilometers"
+                  style="&inline; width:70px; margin-left:5px; margin-right:20px;" />
+    <Label for="CargoWeight" style="&inline;" />
+    <InputDecimal source="CargoWeight" format="0.000"
                   style="&inline; width:70px; margin-left:5px;" />
   </FlowPanel>
 </FlowPanel>

@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
+import java.util.Map;
 
 public class ChatItem implements BeeSerializable, Comparable<ChatItem> {
 
@@ -26,12 +27,22 @@ public class ChatItem implements BeeSerializable, Comparable<ChatItem> {
   private String text;
   private List<FileInfo> files;
 
+  Map<String, String> linkData;
+
   public ChatItem(long userId, String text) {
     this(userId, System.currentTimeMillis(), text, null);
   }
 
   public ChatItem(long userId, List<FileInfo> files) {
     this(userId, System.currentTimeMillis(), null, files);
+  }
+
+  public ChatItem(long userId, String text, Map<String, String> linkData) {
+    this.userId = userId;
+    this.time = System.currentTimeMillis();
+
+    this.text = text;
+    this.linkData = linkData;
   }
 
   public ChatItem(long userId, long time, String text, List<FileInfo> files) {
@@ -53,7 +64,7 @@ public class ChatItem implements BeeSerializable, Comparable<ChatItem> {
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 4);
+    Assert.lengthEquals(arr, 5);
 
     int i = 0;
 
@@ -67,10 +78,17 @@ public class ChatItem implements BeeSerializable, Comparable<ChatItem> {
     } else {
       setFiles(FileInfo.restoreCollection(fs));
     }
+
+    setLinkData(Codec.deserializeLinkedHashMap(arr[i++]));
+
   }
 
   public List<FileInfo> getFiles() {
     return files;
+  }
+
+  public Map<String, String>  getLinkData() {
+    return linkData;
   }
 
   public String getText() {
@@ -99,7 +117,8 @@ public class ChatItem implements BeeSerializable, Comparable<ChatItem> {
 
   @Override
   public String serialize() {
-    List<Object> values = Lists.newArrayList(getUserId(), getTime(), getText(), getFiles());
+    List<Object> values = Lists.newArrayList(getUserId(), getTime(), getText(), getFiles(),
+                                                                                    getLinkData());
     return Codec.beeSerialize(values);
   }
 
@@ -112,11 +131,16 @@ public class ChatItem implements BeeSerializable, Comparable<ChatItem> {
     return BeeUtils.joinOptions("userId", getUserId(),
         "time", (getTime() > 0) ? TimeUtils.renderDateTime(getTime(), true) : null,
         "text", BeeUtils.clip(getText(), 50),
-        "files", BeeUtils.isEmpty(getFiles()) ? null : BeeUtils.bracket(BeeUtils.size(getFiles())));
+        "files", BeeUtils.isEmpty(getFiles()) ? null : BeeUtils.bracket(BeeUtils.size(getFiles())),
+        "linkData", Codec.beeSerialize(getLinkData()));
   }
 
   private void setFiles(List<FileInfo> files) {
     this.files = files;
+  }
+
+  private void setLinkData(Map<String, String> linkData) {
+    this.linkData = linkData;
   }
 
   private void setText(String text) {

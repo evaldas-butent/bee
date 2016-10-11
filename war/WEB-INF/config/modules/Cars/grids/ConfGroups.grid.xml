@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="ConfGroups" viewName="ConfGroups" caption="=optionGroups"
+>
+  <g:columns>
+    <RelColumn name="Type" />
+    <DataColumn name="GroupName" />
+    <DataColumn name="Required" />
+  </g:columns>
+</g:Grid>

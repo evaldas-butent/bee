@@ -37,7 +37,7 @@ public class ReportExpressionItem extends ReportItem {
 
   @Override
   public void deserialize(String data) {
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
       for (String itemData : Codec.beeDeserializeCollection(map.get(EXPRESSION))) {

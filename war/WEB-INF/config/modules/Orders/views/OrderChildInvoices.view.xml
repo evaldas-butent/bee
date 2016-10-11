@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression"
+      name="OrderChildInvoices" source="Sales" caption="=trInvoices"
+      editForm="OrderInvoice" newRowForm="NewOrderInvoice">
+
+  <Columns>
+    <ExternalJoin name="Sale" joinType="LEFT" source="SaleItems">
+      <ExternalJoin name="SaleItem" joinType="LEFT" source="OrderChildInvoices">
+        <SimpleJoin name="OrderItem" joinType="LEFT">
+          <HiddenColumn name="Order" />
+          <AggregateColumn name="Order" aggregate="COUNT_DISTINCT" alias="OrderCount" />
+        </SimpleJoin>
+      </ExternalJoin>
+    </ExternalJoin>
+
+    <SimpleColumn name="Date" />
+
+    <SimpleColumn name="Operation" />
+    <SimpleJoin name="Operation" joinType="LEFT">
+      <SimpleColumn name="OperationName" />
+      <SimpleColumn name="CashRegisterNo" />
+      <SimpleColumn name="Join" />
+    </SimpleJoin>
+
+    <SimpleColumn name="WarehouseFrom" />
+    <SimpleJoin joinType="LEFT" name="WarehouseFrom">
+      <SimpleColumn alias="WarehouseFromCode" name="Code" />
+    </SimpleJoin>
+
+    <SimpleColumn name="SaleSeries" />
+    <SimpleJoin name="SaleSeries" joinType="LEFT">
+      <SimpleColumn name="SeriesName" alias="InvoicePrefix" />
+    </SimpleJoin>
+    <SimpleColumn name="InvoiceNo" />
+    <SimpleColumn name="Term" />
+
+    <SimpleColumn name="CheckNo" />
+
+    <SimpleColumn name="Vehicle" />
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Exported" />
+    <SimpleColumn name="Proforma" />
+
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+      <SimpleColumn name="MinorName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="PaymentTime" />
+    <SimpleColumn name="Paid" />
+
+    <SimpleColumn name="Debt">
+      <x:minus>
+        <x:number>"Amount"</x:number>
+        <x:nvl type="DECIMAL">
+          <x:number>"Paid"</x:number>
+          <x:number>0</x:number>
+        </x:nvl>
+      </x:minus>
+    </SimpleColumn>
+
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin joinType="LEFT" name="Supplier">
+      <SimpleColumn name="Name" alias="SupplierName" label="=trdSupplier" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Customer" />
+    <SimpleJoin joinType="LEFT" name="Customer">
+      <SimpleColumn name="Name" alias="CustomerName" label="=trdCustomer" />
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="CustomerEmail" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Payer" />
+    <SimpleJoin joinType="LEFT" name="Payer">
+      <SimpleColumn name="Name" alias="PayerName" label="=trdPayer" />
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="PayerEmail" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="PositionName" />
+        </SimpleJoin>
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+        <SimpleJoin joinType="LEFT" name="Contact">
+          <SimpleColumn name="Phone" alias="ManagerPhone" />
+          <SimpleColumn name="Mobile" alias="ManagerMobile" />
+          <SimpleJoin joinType="LEFT" name="Email">
+            <SimpleColumn name="Email" alias="ManagerEmail" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>

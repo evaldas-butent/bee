@@ -110,6 +110,12 @@ public class ParameterList extends ArrayList<RpcParameter> {
     }
   }
 
+  public void addNotEmptyQuery(String name, String value) {
+    if (!BeeUtils.anyEmpty(name, value)) {
+      addQueryItem(name, value);
+    }
+  }
+
   public void addNotNullData(String name, Integer value) {
     if (!BeeUtils.isEmpty(name) && value != null) {
       addDataItem(name, value);

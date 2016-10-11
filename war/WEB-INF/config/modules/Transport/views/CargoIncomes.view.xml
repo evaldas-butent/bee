@@ -41,6 +41,7 @@
       </SimpleJoin>
       <SimpleColumn name="InvoiceNo" alias="SaleNo" />
     </SimpleJoin>
+
     <SimpleColumn name="Purchase" />
     <SimpleJoin name="Purchase" joinType="LEFT">
       <SimpleColumn name="InvoicePrefix" alias="PurchasePrefix" />

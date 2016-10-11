@@ -11,8 +11,10 @@ import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -97,7 +99,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     this.contentLen = BeeUtils.length(this.content);
 
     if (isData()) {
-      this.vars = Codec.deserializeMap(content);
+      this.vars = Codec.deserializeLinkedHashMap(content);
     } else {
       this.vars = null;
     }
@@ -249,8 +251,16 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return value;
   }
 
+  public DateTime getParameterDateTime(String name) {
+    return DateTime.restore(getParameter(name));
+  }
+
   public Double getParameterDouble(String name) {
     return BeeUtils.toDoubleOrNull(getParameter(name));
+  }
+
+  public <E extends Enum<?>> E getParameterEnum(String name, Class<E> clazz) {
+    return EnumUtils.getEnumByIndex(clazz, getParameterInt(name));
   }
 
   public Integer getParameterInt(String name) {

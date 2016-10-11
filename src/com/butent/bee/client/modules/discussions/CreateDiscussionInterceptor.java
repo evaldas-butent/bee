@@ -39,7 +39,6 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -49,6 +48,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
@@ -522,6 +523,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           @Override
           public void onSuccess(BeeRow discussFile) {
             consumer.accept(FileStoreMode.NEW);
+            RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS_FILES, discussFile);
           }
         });
 

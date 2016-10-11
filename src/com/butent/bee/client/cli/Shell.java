@@ -20,6 +20,8 @@ public class Shell extends InputArea {
       addStyleName(styleName);
     }
 
+    setSpellCheck(false);
+
     sinkEvents(Event.ONKEYDOWN | Event.ONCLICK);
   }
 

@@ -30,12 +30,14 @@
           <ui:font>bold</ui:font>
         </bodyStyle>
       </style>
+      <renderer type="total" />
     </CalcColumn>
 
     <RelColumn name="Supplier" renderColumns="SupplierName SupplierTypeName"
                choiceColumns="Name TypeName" required="true" />
     <DataColumn name="Number" />
     <DataColumn name="Note" />
+
     <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true" cellType="html"
                editEnabled="true" editForm="CargoPurchaseInvoice"
                editViewName="CargoPurchaseInvoices">
@@ -46,7 +48,7 @@
         </ui:expression>
       </render>
     </RelColumn>
-    <RelColumn name="Income" required="true" choiceColumns="ID Date ServiceName Amount CurrencyName" />
+    <RelColumn name="Income" newRowEnabled="false" required="true" choiceColumns="ID Date ServiceName Amount CurrencyName" />
   </g:columns>
 
   <g:rowEditable>

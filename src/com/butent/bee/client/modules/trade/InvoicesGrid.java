@@ -17,7 +17,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -32,6 +31,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandler {
 
@@ -91,12 +91,16 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
             response.notify(view);
 
             if (!response.hasErrors()) {
+              getERPStocks(ids);
               Data.onViewChange(view.getViewName(), DataChangeEvent.RESET_REFRESH);
             }
           }
         });
       }
     });
+  }
+
+  public void getERPStocks(Set<Long> ids) {
   }
 
   private void setWaiting(boolean waiting) {

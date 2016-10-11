@@ -1,14 +1,15 @@
 package com.butent.bee.shared.utils;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.TreeMultimap;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -29,12 +30,14 @@ import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.ui.HasSortingOrder;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public final class EnumUtils {
 
@@ -50,19 +53,11 @@ public final class EnumUtils {
   private static final Splitter splitter =
       Splitter.on(LIST_SEPARATOR).omitEmptyStrings().trimResults();
 
-  private static final Function<Enum<?>, Integer> indexFunction = new Function<Enum<?>, Integer>() {
-    @Override
-    public Integer apply(Enum<?> input) {
-      return (input == null) ? null : input.ordinal();
-    }
-  };
+  private static final Function<Enum<?>, Integer> indexFunction =
+      input -> (input == null) ? null : input.ordinal();
 
-  private static final Function<Enum<?>, String> nameFunction = new Function<Enum<?>, String>() {
-    @Override
-    public String apply(Enum<?> input) {
-      return (input == null) ? null : input.name();
-    }
-  };
+  private static final Function<Enum<?>, String> nameFunction =
+      input -> (input == null) ? null : input.name();
 
   static {
     AdministrationConstants.register();
@@ -103,6 +98,16 @@ public final class EnumUtils {
 
   public static List<String> getCaptions(String key) {
     return getLocalizedCaptions(key, Localized.dictionary());
+  }
+
+  public static Class<? extends Enum<?>> getClassByKey(String key) {
+    Assert.notEmpty(key);
+    Class<? extends Enum<?>> clazz = CLASSES.get(BeeUtils.normalize(key));
+
+    if (clazz == null) {
+      logger.severe("Captions not registered: " + key);
+    }
+    return clazz;
   }
 
   public static <E extends Enum<?>> E getEnumByIndex(Class<E> clazz, Integer idx) {
@@ -221,10 +226,8 @@ public final class EnumUtils {
     for (Enum<?> constant : clazz.getEnumConstants()) {
       if (constant instanceof HasLocalizedCaption) {
         result.add(((HasLocalizedCaption) constant).getCaption(constants));
-      } else if (constant instanceof HasCaption) {
-        result.add(((HasCaption) constant).getCaption());
       } else {
-        result.add(proper(constant));
+        result.add(getCaption(constant));
       }
     }
     return result;
@@ -232,10 +235,9 @@ public final class EnumUtils {
 
   public static List<String> getLocalizedCaptions(String key, Dictionary constants) {
     Assert.notEmpty(key);
-    Class<? extends Enum<?>> clazz = CLASSES.get(BeeUtils.normalize(key));
+    Class<? extends Enum<?>> clazz = getClassByKey(key);
 
     if (clazz == null) {
-      logger.severe("Captions not registered: " + key);
       return null;
     } else {
       return getLocalizedCaptions(clazz, constants);
@@ -253,6 +255,27 @@ public final class EnumUtils {
       key = register(clazz);
     }
     return key;
+  }
+
+  public static Collection<Pair<Integer, String>> getSortedCaptions(Class<? extends Enum<?>> cls) {
+    Assert.notNull(cls);
+
+    TreeMultimap<Integer, Pair<Integer, String>> result = TreeMultimap.create(Ordering.natural(),
+        (o1, o2) -> o1.getA().compareTo(o2.getA()));
+
+    for (Enum<?> constant : cls.getEnumConstants()) {
+      String caption;
+
+      if (constant instanceof HasLocalizedCaption) {
+        caption = ((HasLocalizedCaption) constant).getCaption(Localized.dictionary());
+      } else {
+        caption = getCaption(constant);
+      }
+      result.put(constant instanceof HasSortingOrder
+              ? ((HasSortingOrder) constant).getSortingOrder() : constant.ordinal(),
+          Pair.of(constant.ordinal(), caption));
+    }
+    return result.values();
   }
 
   @SafeVarargs
@@ -296,7 +319,7 @@ public final class EnumUtils {
     if (values == null) {
       return null;
     } else {
-      return joiner.join(Iterables.transform(values, indexFunction));
+      return joiner.join(values.stream().map(indexFunction).iterator());
     }
   }
 
@@ -304,7 +327,7 @@ public final class EnumUtils {
     if (values == null) {
       return null;
     } else {
-      return joiner.join(Iterables.transform(values, nameFunction));
+      return joiner.join(values.stream().map(nameFunction).iterator());
     }
   }
 

@@ -62,7 +62,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -102,6 +101,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandlers, Printable,
     VisibilityChangeEvent.Handler {
@@ -2272,6 +2272,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     FaLabel refresh = new FaLabel(Action.REFRESH.getIcon(), STYLE_ACTION);
     refresh.addStyleName(STYLE_PREFIX + Action.REFRESH.getStyleSuffix());
     refresh.setTitle(Action.REFRESH.getCaption());
+    StyleUtils.enableAnimation(Action.REFRESH, refresh);
 
     refresh.addClickHandler(event -> refresh());
     headerPanel.add(refresh);
@@ -2279,6 +2280,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     FaLabel print = new FaLabel(Action.PRINT.getIcon(), STYLE_ACTION);
     print.addStyleName(STYLE_PREFIX + Action.PRINT.getStyleSuffix());
     print.setTitle(Action.PRINT.getCaption());
+    StyleUtils.enableAnimation(Action.PRINT, print);
 
     print.addClickHandler(event -> Printer.print(WorkScheduleWidget.this));
     headerPanel.add(print);

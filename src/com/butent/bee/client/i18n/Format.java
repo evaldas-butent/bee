@@ -10,6 +10,7 @@ import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.HasYearMonth;
@@ -140,8 +141,6 @@ public final class Format {
     }
   }
 
-  private static final int DEFAULT_MONEY_SCALE = 2;
-
   private static final String DEFAULT_MONEY_PATTERN = "#,##0.00;(#)";
 
   private static final String DEFAULT_DECIMAL_PATTERN_INTEGER = "#,##0";
@@ -155,23 +154,23 @@ public final class Format {
 
   private static final String DEFAULT_GROUPING_SEPARATOR = BeeConst.STRING_SPACE;
 
-  private static NumberFormat defaultDoubleFormat = getNumberFormat("#.#######");
+  private static final NumberFormat defaultDoubleFormat = getNumberFormat("#.#######");
 
-  private static NumberFormat defaultIntegerFormat = getNumberFormat("#");
+  private static final NumberFormat defaultIntegerFormat = getNumberFormat("#");
 
-  private static NumberFormat defaultLongFormat = getNumberFormat("#,###");
+  private static final NumberFormat defaultLongFormat = getNumberFormat("#,###");
 
-  private static NumberFormat defaultMoneyFormat = getNumberFormat(DEFAULT_MONEY_PATTERN);
+  private static final NumberFormat defaultMoneyFormat = getNumberFormat(DEFAULT_MONEY_PATTERN);
 
-  private static NumberFormat defaultPercentFormat = getNumberFormat("0.0%");
+  private static final NumberFormat defaultPercentFormat = getNumberFormat("0.0%");
 
-  private static DateTimeFormat defaultDateFormat =
+  private static final DateTimeFormat defaultDateFormat =
       DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT);
 
-  private static DateTimeFormat defaultDateTimeFormat =
+  private static final DateTimeFormat defaultDateTimeFormat =
       DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
 
-  private static DateTimeFormat defaultTimeFormat =
+  private static final DateTimeFormat defaultTimeFormat =
       DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT);
 
   public static DateTimeFormat getDateTimeFormat(String pattern) {
@@ -234,7 +233,7 @@ public final class Format {
   }
 
   public static int getDefaultMoneyScale() {
-    return DEFAULT_MONEY_SCALE;
+    return Localized.MONEY_SCALE;
   }
 
   public static DateTimeFormat getDefaultDateFormat() {
@@ -462,6 +461,14 @@ public final class Format {
     }
   }
 
+  public static String renderDateTime(DateTime dateTime) {
+    if (dateTime == null) {
+      return null;
+    } else {
+      return getDefaultDateTimeFormat().format(dateTime);
+    }
+  }
+
   public static String renderDateTimeFull(DateTime dateTime) {
     if (dateTime == null) {
       return null;
@@ -545,8 +552,8 @@ public final class Format {
       }
     }
 
-    boolean isDt = false;
-    boolean isNum = false;
+    boolean isDt;
+    boolean isNum;
 
     if (target instanceof HasDateTimeFormat && target instanceof HasNumberFormat) {
       isDt = ValueType.isDateOrDateTime(type);

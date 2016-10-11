@@ -96,6 +96,34 @@
   outline: none;
 }
 
-.bee-prj-Events-Properties {
-    width: calc(100% - 2em);
+.bee-form-Project-container .bee-Header-row-message {
+  font-size: 23px;
+  color: #484849;
+  font-weight: lighter;
+}
+
+.bee-header-caption_state_active:before {
+  background: #5BC0DE;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_active_with_border:before {
+  background: #5BC0DE;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state_suspended:before {
+  background: #EA7F77;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_suspended_with_border:before {
+  background: #EA7F77;
+  border: 2px solid orangered;
+}
+
+.bee-prj-Event-row-new {
+  border-left-width: 3px;
+  border-left-color: #1ca5c7;
+  border-left-style: solid;
 }
