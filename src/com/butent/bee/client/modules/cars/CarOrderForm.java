@@ -16,6 +16,8 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
+import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -35,6 +37,9 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfoList;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -159,6 +164,23 @@ public class CarOrderForm extends PrintFormInterceptor implements Consumer<Speci
   @Override
   public FormInterceptor getInstance() {
     return new CarOrderForm();
+  }
+
+  @Override
+  protected ReportUtils.ReportCallback getReportCallback() {
+    return new ReportUtils.ReportCallback() {
+      @Override
+      public void accept(FileInfo fileInfo) {
+        NewMailMessage.create(BeeUtils.notEmpty(getStringValue("ContactEmail"),
+            getStringValue("CustomerEmail")), BeeUtils.joinWords(Localized.dictionary().offer(),
+            getStringValue("OrderNo")), null, Collections.singleton(fileInfo), null);
+      }
+
+      @Override
+      public FontAwesome getIcon() {
+        return FontAwesome.ENVELOPE_O;
+      }
+    };
   }
 
   @Override

@@ -32,6 +32,7 @@ import com.butent.bee.client.layout.HtmlPanel;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -67,6 +68,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
@@ -172,7 +174,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
               pre.setInnerHTML(message);
 
               StyleUtils.setMaxHeight(pre, 80, CssUnit.VH);
-              StyleUtils.setMaxWidth(pre, 80,  CssUnit.VH);
+              StyleUtils.setMaxWidth(pre, 80, CssUnit.VH);
               StyleUtils.setOverflow(pre, StyleUtils.ScrollBars.BOTH, Overflow.AUTO);
 
               Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(),
@@ -342,34 +344,45 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   }
 
   @Override
-  protected Consumer<FileInfo> getReportCallback() {
-    Consumer<FileInfo> callback = null;
+  protected ReportUtils.ReportCallback getReportCallback() {
+    ReportUtils.ReportCallback callback = null;
 
     if (!ShipmentRequestStatus.CONFIRMED.is(getIntegerValue(COL_QUERY_STATUS))) {
-      callback = fileInfo -> Queries.getRowSet(VIEW_TEXT_CONSTANTS, null,
-          Filter.equals(COL_TEXT_CONSTANT, TextConstant.CONTRACT_MAIL_CONTENT),
-          new Queries.RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet result) {
-              String text;
-              String localizedContent = Localized.column(COL_TEXT_CONTENT,
-                  EnumUtils.getEnumByIndex(SupportedLocale.class, getIntegerValue(COL_USER_LOCALE))
-                      .getLanguage());
+      callback = new ReportUtils.ReportCallback() {
+        @Override
+        public void accept(FileInfo fileInfo) {
+          Queries.getRowSet(VIEW_TEXT_CONSTANTS, null,
+              Filter.equals(COL_TEXT_CONSTANT, TextConstant.CONTRACT_MAIL_CONTENT),
+              new Queries.RowSetCallback() {
+                @Override
+                public void onSuccess(BeeRowSet result) {
+                  String text;
+                  String localizedContent = Localized.column(COL_TEXT_CONTENT,
+                      EnumUtils.getEnumByIndex(SupportedLocale.class,
+                          getIntegerValue(COL_USER_LOCALE)).getLanguage());
 
-              if (DataUtils.isEmpty(result)) {
-                text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
-              } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
-                  result.getColumns()))) {
-                text = result.getString(0, COL_TEXT_CONTENT);
-              } else {
-                text = BeeUtils.notEmpty(result.getString(0, localizedContent),
-                    result.getString(0, COL_TEXT_CONTENT));
-              }
-              sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-                  ? null : text.replace("{CONTRACT_PATH}",
-                  "rest/transport/confirm/" + getActiveRowId()), Collections.singleton(fileInfo));
-            }
-          });
+                  if (DataUtils.isEmpty(result)) {
+                    text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
+                  } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
+                      result.getColumns()))) {
+                    text = result.getString(0, COL_TEXT_CONTENT);
+                  } else {
+                    text = BeeUtils.notEmpty(result.getString(0, localizedContent),
+                        result.getString(0, COL_TEXT_CONTENT));
+                  }
+                  sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
+                          ? null : text.replace("{CONTRACT_PATH}",
+                      "rest/transport/confirm/" + getActiveRowId()),
+                      Collections.singleton(fileInfo));
+                }
+              });
+        }
+
+        @Override
+        public FontAwesome getIcon() {
+          return FontAwesome.ENVELOPE_O;
+        }
+      };
     }
     return callback;
   }
@@ -673,7 +686,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
   }
 
   private void styleRequiredField(String name, boolean value) {
-    Widget label =  getFormView().getWidgetByName(name);
+    Widget label = getFormView().getWidgetByName(name);
     if (label == null) {
       return;
     }

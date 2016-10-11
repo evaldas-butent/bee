@@ -50,6 +50,7 @@ import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.TotalRenderer;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -817,8 +818,18 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   @Override
-  protected Consumer<FileInfo> getReportCallback() {
-    return fileInfo -> sendMail(null, fileInfo);
+  protected ReportUtils.ReportCallback getReportCallback() {
+    return new ReportUtils.ReportCallback() {
+      @Override
+      public void accept(FileInfo fileInfo) {
+        sendMail(null, fileInfo);
+      }
+
+      @Override
+      public FontAwesome getIcon() {
+        return FontAwesome.ENVELOPE_O;
+      }
+    };
   }
 
   @Override
