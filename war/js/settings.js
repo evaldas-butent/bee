@@ -18,7 +18,7 @@ var BeeSettings = {
     "default": "NotificationUserPanel",
     "showUserPhoto": true,
     "showUserPresence": true,
-    "showLogout": false},
+    "showLogout": true},
   "onStartup": {"content": "grid_AssessmentRequests", "force": "*"},
   "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10,

@@ -2,9 +2,8 @@ package com.butent.bee.client.output;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_RS_REPORT;
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_USER;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_NAME;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -32,13 +31,11 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectPriority;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.report.ReportInfo;
@@ -295,10 +292,9 @@ public enum Report implements HasWidgetSupplier {
       return Arrays.asList(
           new ReportTextItem("IncomeID", "Pajamų ID"),
           new ReportTextItem(COL_ASSESSMENT, "Užsakymo Nr."),
-          new ReportDateTimeItem(COL_ORDER + COL_DATE, "Užsakymo data"),
-          new ReportTextItem(AdministrationConstants.COL_DEPARTMENT_NAME,
-              Data.getColumnLabel(AdministrationConstants.TBL_DEPARTMENTS,
-                  AdministrationConstants.COL_DEPARTMENT_NAME)),
+          new ReportDateTimeItem(TransportConstants.COL_ORDER + COL_DATE, "Užsakymo data"),
+          new ReportTextItem(COL_DEPARTMENT_NAME,
+              Data.getColumnLabel(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME)),
           new ReportTextItem(COL_SERVICE_NAME, Data.getColumnLabel(TBL_SERVICES, "Name")),
           new ReportDateTimeItem(TradeConstants.COL_TRADE_DATE, "Pajamų sąsk.data"),
           new ReportTextItem(TradeConstants.COL_SALE + COL_ORDER_MANAGER, "Sąskaitą išrašė"),
@@ -345,7 +341,7 @@ public enum Report implements HasWidgetSupplier {
       report.addRowItem(items.get(TradeConstants.COL_TRADE_CUSTOMER));
       report.addRowItem(items.get(TradeConstants.COL_SALE + COL_ORDER_MANAGER));
 
-      report.setRowGrouping(items.get(AdministrationConstants.COL_DEPARTMENT_NAME));
+      report.setRowGrouping(items.get(COL_DEPARTMENT_NAME));
 
       report.addColItem(items.get(VAR_EXPENSE + COL_SERVICE_NAME));
       report.addColItem(items.get(VAR_EXPENSE + TradeConstants.COL_TRADE_DATE));
@@ -491,7 +487,7 @@ public enum Report implements HasWidgetSupplier {
                   Data.getColumnLabel(TBL_EVENT_DURATIONS,
                       COL_DURATION), loc.unitHourShort()))
 
-          );
+      );
     }
 
     @Override

@@ -41,10 +41,10 @@
         </ExternalJoin>
 
         <SimpleColumn name="Description" />
-        <SimpleColumn name="LoadedKilometers" label="=trAssessmentPlannedKm" />
         <SimpleColumn name="Partial" />
 
         <SimpleJoin name="CargoHandling" joinType="LEFT">
+          <SimpleColumn name="LoadedKilometers" label="=trAssessmentPlannedKm" />
           <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
         </SimpleJoin>
 

@@ -1242,6 +1242,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     if (DataUtils.isId(companyId)) {
       data = qs.getRow(new SqlSelect()
           .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+          .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
           .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, COL_COMPANY_TYPE)
           .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
           .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
@@ -1264,7 +1265,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             data.getValue(COL_COMPANY_TYPE));
 
         company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-            .importClient(company, data.getValue(COL_COMPANY_CODE),
+            .importClient(data.getValue(COL_COMPANY), company, data.getValue(COL_COMPANY_CODE),
                 data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
                 data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
                 data.getValue(COL_COUNTRY));
