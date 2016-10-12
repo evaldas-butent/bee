@@ -2683,7 +2683,13 @@ public interface Dictionary {
 
   default String filters() {return g("filters");}
 
+  default String finance() {return g("finance");}
+
   default String financialInfo() {return g("financialInfo");}
+
+  default String financialRecord() {return g("financialRecord");}
+
+  default String financialRecords() {return g("financialRecords");}
 
   default String financialState() {return g("financialState");}
 
@@ -2867,6 +2873,10 @@ public interface Dictionary {
   default String itemTypes() {return g("itemTypes");}
 
   default String join() {return g("join");}
+
+  default String journal() {return g("journal");}
+
+  default String journals() {return g("journals");}
 
   default String key() {return g("key");}
 
@@ -3356,11 +3366,15 @@ public interface Dictionary {
 
   default String newEmployee() {return g("newEmployee");}
 
+  default String newFinancialRecord() {return g("newFinancialRecord");}
+
   default String newItem() {return g("newItem");}
 
   default String newItemGroup() {return g("newItemGroup");}
 
   default String newItemType() {return g("newItemType");}
+
+  default String newJournal() {return g("newJournal");}
 
   default String newKey() {return g("newKey");}
 
