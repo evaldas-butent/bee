@@ -526,7 +526,7 @@ public class ChatBean {
         .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId)));
 
     if (BeeUtils.isTrue(activeAssistant)) {
-      String messageText = BeeUtils.joinItems(
+      String messageText = BeeUtils.joinWords(
           usr.getDictionary(userId).chatReminderTitle(),
           input);
 

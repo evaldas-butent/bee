@@ -1756,9 +1756,12 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
           linkData.put(VIEW_APPOINTMENTS, data.getValue(sys.getIdName(TBL_APPOINTMENTS)));
           if (DataUtils.isId(userId)) {
             chat.putMessage(
-                BeeUtils.joinWords(usr.getDictionary(userId).event(), data.getValue(COL_SUMMARY),
-                    usr.getDictionary(userId).scheduledStartingTime(),
-                    data.getDateTime(COL_START_DATE_TIME).toCompactString()),
+                BeeUtils.joinWords(usr.getDictionary(userId).event(),
+                    BeeConst.STRING_QUOT + data.getValue(COL_SUMMARY) + BeeConst.STRING_QUOT
+                        + BeeConst.STRING_POINT,
+                    usr.getDictionary(userId).scheduledStartingTime() + BeeConst.STRING_COLON,
+                    data.getDateTime(COL_START_DATE_TIME).toCompactString()
+                        + BeeConst.STRING_POINT),
                 userId,
                 linkData);
           }
