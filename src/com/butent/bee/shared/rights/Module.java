@@ -183,6 +183,18 @@ public enum Module implements HasLocalizedCaption {
     }
   },
 
+  FINANCE {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.finance();
+    }
+
+    @Override
+    public String getStyleSheet(SubModule subModule) {
+      return null;
+    }
+  },
+
   ADMINISTRATION {
     @Override
     public String getCaption(Dictionary constants) {

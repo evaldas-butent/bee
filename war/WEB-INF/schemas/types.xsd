@@ -217,6 +217,7 @@
       <xs:enumeration value="Cars" />
       <xs:enumeration value="Cars.Service" />
       <xs:enumeration value="Payroll" />
+      <xs:enumeration value="Finance" />
     </xs:restriction>
   </xs:simpleType>
 
