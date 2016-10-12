@@ -4863,6 +4863,8 @@ public interface Dictionary {
 
   default String trAbsenceTypes() {return g("trAbsenceTypes");}
 
+  default String trAccountant() {return g("trAccountant");}
+
   default String trAccountingItem() {return g("trAccountingItem");}
 
   default String trAdditionalHandlingPlaces() {return g("trAdditionalHandlingPlaces");}

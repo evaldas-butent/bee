@@ -637,6 +637,42 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       @Subscribe
       @AllowConcurrentEvents
+      public void fillTripAccountants(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_TRIPS) && event.hasData()) {
+          BeeRowSet rowSet = event.getRowset();
+          Collection<Long> tripIDs = rowSet.getRowIds();
+
+          SimpleRowSet accountantsRs = qs.getData(new SqlSelect()
+              .addFields(TBL_TRIP_COSTS, COL_TRIP)
+              .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+              .addFrom(TBL_TRIP_COSTS)
+              .addFromInner(TBL_USERS,
+                  sys.joinTables(TBL_USERS, TBL_TRIP_COSTS, COL_TRIP_COST_CREATOR))
+              .addFromInner(TBL_COMPANY_PERSONS,
+                  sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+              .addFromLeft(TBL_PERSONS,
+                  sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+              .setWhere(SqlUtils.inList(TBL_TRIP_COSTS, COL_TRIP, tripIDs))
+          .addOrderDesc(TBL_TRIP_COSTS, sys.getVersionName(TBL_TRIP_COSTS)));
+
+          Map<Long, String> accountantsMap = new HashMap<>();
+
+          for (SimpleRow accountantRow : accountantsRs) {
+            Long tripId = accountantRow.getLong(COL_TRIP);
+
+            if (!accountantsMap.containsKey(tripId)) {
+              accountantsMap.put(tripId,
+                BeeUtils.joinWords(accountantRow.getValue(COL_FIRST_NAME),
+                  accountantRow.getValue(COL_LAST_NAME)));
+            }
+          }
+          rowSet.getRows().forEach(beeRow ->
+              beeRow.setProperty(COL_TRIP_COST_CREATOR, accountantsMap.get(beeRow.getId())));
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
       public void fillTripNumber(ViewInsertEvent event) {
         if (event.isBefore(VIEW_TRIPS, VIEW_EXPEDITION_TRIPS)
             && BeeConst.isUndef(DataUtils.getColumnIndex(COL_TRIP_NO, event.getColumns()))) {

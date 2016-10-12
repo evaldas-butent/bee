@@ -512,6 +512,7 @@ public final class TransportConstants {
   public static final String COL_TRIP_STATUS = "Status";
   public static final String COL_TRIP_MANAGER = "Manager";
   public static final String COL_TRIP_COST_ID = "CostID";
+  public static final String COL_TRIP_COST_CREATOR = "Creator";
 
   public static final String COL_SPEEDOMETER = "Speedometer";
   public static final String COL_SPEEDOMETER_BEFORE = "SpeedometerBefore";
