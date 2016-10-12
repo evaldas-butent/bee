@@ -276,6 +276,11 @@ public final class ClassifierKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CHART_OF_ACCOUNTS, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CHART_OF_ACCOUNTS, COL_FOREGROUND, csp);
 
+    csp = ColorStyleProvider.createDefault(VIEW_JOURNALS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_JOURNALS, COL_JOURNAL_CODE, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_JOURNALS, COL_BACKGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_JOURNALS, COL_FOREGROUND, csp);
+
     FormFactory.registerFormInterceptor("Item", new ItemForm());
 
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonForm());
