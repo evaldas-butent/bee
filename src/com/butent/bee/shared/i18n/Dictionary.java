@@ -917,7 +917,15 @@ public interface Dictionary {
 
   default String creditDays() {return g("creditDays");}
 
+  default String creditDocument() {return g("creditDocument");}
+
+  default String creditDocumentShort() {return g("creditDocumentShort");}
+
   default String creditLimit() {return g("creditLimit");}
+
+  default String creditSeries() {return g("creditSeries");}
+
+  default String creditSeriesShort() {return g("creditSeriesShort");}
 
   default String creditTolerance() {return g("creditTolerance");}
 
@@ -1452,6 +1460,14 @@ public interface Dictionary {
   default String daysShort() {return g("daysShort");}
 
   default String debit() {return g("debit");}
+
+  default String debitDocument() {return g("debitDocument");}
+
+  default String debitDocumentShort() {return g("debitDocumentShort");}
+
+  default String debitSeries() {return g("debitSeries");}
+
+  default String debitSeriesShort() {return g("debitSeriesShort");}
 
   default String debt() {return g("debt");}
 
@@ -2682,6 +2698,8 @@ public interface Dictionary {
   default String filterRemove() {return g("filterRemove");}
 
   default String filters() {return g("filters");}
+
+  default String finContent() {return g("finContent");}
 
   default String finance() {return g("finance");}
 
@@ -5856,6 +5874,8 @@ public interface Dictionary {
 
   default String trdDocumentItems() {return g("trdDocumentItems");}
 
+  default String trdDocumentLong() {return g("trdDocumentLong");}
+
   default String trdDocumentPhase() {return g("trdDocumentPhase");}
 
   default String trdDocumentPhaseActive() {return g("trdDocumentPhaseActive");}
@@ -5876,6 +5896,8 @@ public interface Dictionary {
   }
 
   default String trdDocumentPhases() {return g("trdDocumentPhases");}
+
+  default String trdDocumentShort() {return g("trdDocumentShort");}
 
   default String trdDocumentTags() {return g("trdDocumentTags");}
 
