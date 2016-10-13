@@ -3666,6 +3666,8 @@ public interface Dictionary {
 
   default String partialShort() {return g("partialShort");}
 
+  default String passportNo() {return g("passportNo");}
+
   default String password() {return g("password");}
 
   default String payer() {return g("payer");}
@@ -3691,6 +3693,8 @@ public interface Dictionary {
   default String person() {return g("person");}
 
   default String personAccountingCode() {return g("personAccountingCode");}
+
+  default String personCode() {return g("personCode");}
 
   default String personCompanies() {return g("personCompanies");}
 
