@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="FinancialRecords" viewName="FinancialRecords"
+        caption="=financialRecords"
+>
+  <g:columns>
+    <IdColumn name="Id" visible="false" />
+
+    <RelColumn name="Journal" renderColumns="JournalCode" choiceColumns="JournalCode JournalName"
+               carry="true" newRowEnabled="false" visible="false" />
+
+    <DataColumn name="Date" carry="true" visible="true" />
+
+    <RelColumn name="Company" renderColumns="CompanyName" choiceColumns="Name" flexGrow="1" />
+    <DataColumn name="Content" flexGrow="1" />
+
+    <RelColumn name="Debit" renderColumns="DebitCode" choiceColumns="AccountCode AccountName"
+               newRowEnabled="false" visible="true" />
+
+    <DataColumn name="DebitSeries" />
+    <DataColumn name="DebitDocument" />
+
+    <RelColumn name="Credit" renderColumns="CreditCode" choiceColumns="AccountCode AccountName"
+               newRowEnabled="false" visible="true" />
+
+    <DataColumn name="CreditSeries" />
+    <DataColumn name="CreditDocument" />
+
+    <DataColumn name="Amount" minWidth="80" visible="true" />
+    <RelColumn name="Currency" newRowEnabled="false" visible="true" />
+
+    <DataColumn name="TradeDocument" editEnabled="true" readOnly="true" />
+    <DataColumn name="TradePayment" readOnly="true" visible="false" />
+
+    <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"
+               sortBy="EmployeeLastName EmployeeFirstName" />
+  </g:columns>
+
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+</g:Grid>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+       name="Finance" label="=finance" order="130" module="Finance"
+>
+  <Item name="FinancialRecords" label="=financialRecords" service="grid"
+        parameters="FinancialRecords" />
+
+  <Item name="ChartOfAccounts" label="=chartOfAccounts" service="grid" parameters="ChartOfAccounts"
+        separator="true" />
+  <Item name="Journals" label="=journals" service="grid" parameters="Journals" />
+</Entry>
