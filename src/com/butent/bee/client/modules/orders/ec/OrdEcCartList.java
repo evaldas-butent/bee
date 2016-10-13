@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.orders.ec;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -12,7 +10,6 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
@@ -68,12 +65,7 @@ public class OrdEcCartList extends HtmlTable {
     super(STYLE_PRIMARY);
 
     Label label = new Label(cart.getCaption());
-    label.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        onLabelClick();
-      }
-    });
+    label.addClickHandler(event -> onLabelClick());
 
     setWidgetAndStyle(0, COL_LABEL, label, STYLE_LABEL);
 
@@ -84,18 +76,15 @@ public class OrdEcCartList extends HtmlTable {
 
   public void addToCart(OrdEcItem ecItem, int quantity) {
 
-    OrdEcKeeper.maybeRecalculatePrices(ecItem, quantity, new Consumer<Boolean>() {
-      @Override
-      public void accept(Boolean input) {
-        OrdEcCartItem cartItem = cart.add(ecItem, quantity);
-        if (cartItem != null) {
-          BeeKeeper.getScreen().notifyInfo(
-              Localized.dictionary()
-                  .ecUpdateCartItem(Localized.dictionary().ecShoppingCartMainShort(),
-                      ecItem.getName(), cartItem.getQuantity()));
-          refresh();
-          OrdEcKeeper.persistCartItem(cartItem);
-        }
+    OrdEcKeeper.maybeRecalculatePrices(ecItem, quantity, input -> {
+      OrdEcCartItem cartItem = cart.add(ecItem, quantity);
+      if (cartItem != null) {
+        BeeKeeper.getScreen().notifyInfo(
+            Localized.dictionary()
+                .ecUpdateCartItem(Localized.dictionary().ecShoppingCartMainShort(),
+                    ecItem.getName(), cartItem.getQuantity()));
+        refresh();
+        OrdEcKeeper.persistCartItem(cartItem);
       }
     });
   }
@@ -121,12 +110,9 @@ public class OrdEcCartList extends HtmlTable {
 
     if (updated) {
       rowElement.removeClassName(STYLE_UPDATED);
-      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          if (!StyleUtils.hasClassName(rowElement, STYLE_UPDATED)) {
-            rowElement.addClassName(STYLE_UPDATED);
-          }
+      Scheduler.get().scheduleDeferred(() -> {
+        if (!StyleUtils.hasClassName(rowElement, STYLE_UPDATED)) {
+          rowElement.addClassName(STYLE_UPDATED);
         }
       });
     }

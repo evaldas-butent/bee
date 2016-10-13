@@ -20,8 +20,6 @@ public class OrdEcItemPanel extends Flow {
 
   private final List<OrdEcItem> items = new ArrayList<>();
 
-  private OrdEcItemList itemWrapper;
-
   private boolean byCategory;
   private String service;
   private String query;
@@ -51,15 +49,13 @@ public class OrdEcItemPanel extends Flow {
       clear();
     }
 
-    int size = ecItems.size();
-    for (int i = 0; i < size; i++) {
-      OrdEcItem ecItem = ecItems.get(i);
+    for (OrdEcItem ecItem : ecItems) {
       items.add(ecItem);
     }
 
     Flow itemsFlow = new Flow(EcStyles.name(STYLE_ITEMS, STYLE_WRAPPER));
 
-    this.itemWrapper = new OrdEcItemList(items, byCategory, service, query);
+    OrdEcItemList itemWrapper = new OrdEcItemList(items, byCategory, service, query);
     EcStyles.add(itemWrapper, STYLE_ITEMS, STYLE_WRAPPER);
     itemsFlow.add(itemWrapper);
 

@@ -7,8 +7,9 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="OrderInvoice" viewName="Sales" caption="=trdInvoice" showRowId="true"
-  width="840" height="600" readOnly="true">
+  name="OrderInvoice" viewName="OrderChildInvoices" caption="=trdInvoice"
+  width="840" height="600" readOnly="true" showRowId="true">
+
   <f:properties jasperReports="PrintInvoice:=trdInvoice, PrintInvoice_ee:=trdInvoice+_EE,
   PrintProforma:=trdProformaInvoice, PrintProforma_ee:=trdProformaInvoice+_EE,
   PrintTransportationAct:=printInvoiceBoL, PrintTransportationAct_ee:=printInvoiceBoL+_EE" />
@@ -22,6 +23,9 @@
       <row>
         <Label for="Date" />
         <InputDateTime source="Date" visible="true" />
+
+        <Label for="CheckNo" />
+        <InputText source="CheckNo" />
       </row>
 
       <row>
@@ -116,4 +120,8 @@
       </page>
     </TabbedPages>
   </FlowPanel>
+
+  <f:rowMessage>
+    <ui:expression>row.Sale</ui:expression>
+  </f:rowMessage>
 </f:Form>

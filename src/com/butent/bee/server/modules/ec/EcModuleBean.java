@@ -265,12 +265,12 @@ public class EcModuleBean implements BeeModule {
       try {
         rows = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv"
-                + " FROM prekes"
-                + " INNER JOIN grupes"
-                + " ON prekes.grupe = grupes.grupe"
-                + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
-                + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
-                + " AND grupes.pos_mode = 'E'",
+                    + " FROM prekes"
+                    + " INNER JOIN grupes"
+                    + " ON prekes.grupe = grupes.grupe"
+                    + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
+                    + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
+                    + " AND grupes.pos_mode = 'E'",
                 "pr", "gr", "sv");
 
         ok = !rows.isEmpty();
@@ -335,7 +335,7 @@ public class EcModuleBean implements BeeModule {
         }
         if (!BeeUtils.isEmpty(progressId)
             && !Endpoint.updateProgress(progressId,
-                1 - (++c / (double) orphans.getNumberOfRows()))) {
+            1 - (++c / (double) orphans.getNumberOfRows()))) {
           break;
         }
       }
@@ -1794,10 +1794,10 @@ public class EcModuleBean implements BeeModule {
       try {
         SimpleRow row = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT klientas, max_skola, dienos"
-                + " FROM klientai"
-                + " WHERE " + wh + " OR kodas = '" + companyInfo.getValue(COL_COMPANY_CODE)
-                + "'"
-                + " ORDER BY " + wh + " DESC",
+                    + " FROM klientai"
+                    + " WHERE " + wh + " OR kodas = '" + companyInfo.getValue(COL_COMPANY_CODE)
+                    + "'"
+                    + " ORDER BY " + wh + " DESC",
                 "klientas", "max_skola", "dienos").getRow(0);
 
         if (row != null) {
@@ -1812,10 +1812,10 @@ public class EcModuleBean implements BeeModule {
         try {
           SimpleRow row = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getSQLData("SELECT SUM(kiekis * kaina) AS suma"
-                  + " FROM likuciai"
-                  + " INNER JOIN sand ON likuciai.sandelis = sand.sandelis"
-                  + "   AND sand.konsign IS NOT NULL"
-                  + " WHERE likuciai.kiekis > 0 AND likuciai.gavejas = '" + company + "'",
+                      + " FROM likuciai"
+                      + " INNER JOIN sand ON likuciai.sandelis = sand.sandelis"
+                      + "   AND sand.konsign IS NOT NULL"
+                      + " WHERE likuciai.kiekis > 0 AND likuciai.gavejas = '" + company + "'",
                   "suma").getRow(0);
 
           if (row != null) {
@@ -1830,15 +1830,15 @@ public class EcModuleBean implements BeeModule {
 
           SimpleRowSet data = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
               .getSQLData("SELECT data, dokumentas, dok_serija, kitas_dok, viso, skola_w, terminas"
-                  + " FROM apyvarta"
-                  + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
-                  + "   AND operac.oper_apm IS NOT NULL AND operac.oper_pirk IS NOT NULL"
-                  + " INNER JOIN klientai ON apyvarta.gavejas = klientai.klientas"
-                  + " WHERE apyvarta.pajamos = 0 AND apyvarta.ivestas IS NOT NULL"
-                  + "   AND apyvarta.skola_w > 0"
-                  + "   AND (klientai.klientas = '" + company + "'"
-                  + "     OR klientai.moketojas = '" + company + "')"
-                  + " ORDER BY data",
+                      + " FROM apyvarta"
+                      + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
+                      + "   AND operac.oper_apm IS NOT NULL AND operac.oper_pirk IS NOT NULL"
+                      + " INNER JOIN klientai ON apyvarta.gavejas = klientai.klientas"
+                      + " WHERE apyvarta.pajamos = 0 AND apyvarta.ivestas IS NOT NULL"
+                      + "   AND apyvarta.skola_w > 0"
+                      + "   AND (klientai.klientas = '" + company + "'"
+                      + "     OR klientai.moketojas = '" + company + "')"
+                      + " ORDER BY data",
                   "data", "dokumentas", "dok_serija", "kitas_dok", "viso", "skola_w", "terminas");
 
           for (SimpleRow row : data) {
@@ -2759,8 +2759,9 @@ public class EcModuleBean implements BeeModule {
     Document document = orderToHtml(orderData.getColumns(), orderRow, constants);
     String content = document.buildLines();
 
-    ResponseObject mailResponse = mail.sendMail(account, recipients.toArray(new String[0]),
-        status.getSubject(constants), content);
+    ResponseObject mailResponse = mail.sendMail(account, recipients.toArray(new String[0]), null,
+        null, status.getSubject(constants), content, null, false);
+
     if (mailResponse.hasErrors()) {
       if (isClient) {
         return ResponseObject.warning(usr.getDictionary().ecMailFailed());
@@ -3180,7 +3181,8 @@ public class EcModuleBean implements BeeModule {
           .addFields(TBL_ORDERS, COL_ORDER_NUMBER)
           .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_SUPPLIER_CODE)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY)
-          .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+          .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
+              sys.getIdName(TBL_COMPANIES))
           .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
           .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
           .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
@@ -3204,10 +3206,10 @@ public class EcModuleBean implements BeeModule {
 
       try {
         company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
-            .importClient(order.getValue(COL_COMPANY), order.getValue(COL_COMPANY_CODE),
-                order.getValue(COL_COMPANY_VAT_CODE), order.getValue(COL_ADDRESS),
-                order.getValue(COL_POST_INDEX), order.getValue(COL_CITY),
-                order.getValue(COL_COUNTRY));
+            .importClient(order.getValue(sys.getIdName(TBL_COMPANIES)), order.getValue(COL_COMPANY),
+                order.getValue(COL_COMPANY_CODE), order.getValue(COL_COMPANY_VAT_CODE),
+                order.getValue(COL_ADDRESS), order.getValue(COL_POST_INDEX),
+                order.getValue(COL_CITY), order.getValue(COL_COUNTRY));
       } catch (BeeException e) {
         response = response.addError(e);
       }

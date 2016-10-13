@@ -15,7 +15,7 @@
     <String name="Article4" precision="30" label="=article4" />
     <String name="Barcode" precision="30" unique="true" label="=itemBarcode" />
     <String name="KPNCode" precision="30" unique="true" label="=kpnCode" />
-  
+
     <Relation name="Unit" notNull="true" relation="Units" label="=unit" />
     <Numeric name="PackageUnits" label="=packageUnits" precision="10" scale="2" />
     <Enum name="TimeUnit" key="TradeActTimeUnit" label="=taTimeUnit" />

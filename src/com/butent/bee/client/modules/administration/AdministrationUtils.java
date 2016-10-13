@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.administration;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
@@ -12,7 +10,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.IdCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.layout.Flow;
@@ -52,34 +49,31 @@ public final class AdministrationUtils {
 
     Global.confirm(caption, Icon.WARNING, Lists.newArrayList(host),
         Localized.dictionary().actionBlock(), Localized.dictionary().actionCancel(),
-        new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            ParameterList args = AdministrationKeeper.createArgs(SVC_BLOCK_HOST);
-            args.addDataItem(COL_IP_FILTER_HOST, host);
+        () -> {
+          ParameterList args = AdministrationKeeper.createArgs(SVC_BLOCK_HOST);
+          args.addDataItem(COL_IP_FILTER_HOST, host);
 
-            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                if (response.hasResponse()) {
-                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_IP_FILTERS);
-                }
+          BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              if (response.hasResponse()) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_IP_FILTERS);
+              }
 
+              if (notificationListener != null) {
+                response.notify(notificationListener);
+              }
+
+              if (response.is(host)) {
                 if (notificationListener != null) {
-                  response.notify(notificationListener);
+                  notificationListener.notifyInfo(Localized.dictionary().ipBlocked(), host);
                 }
-
-                if (response.is(host)) {
-                  if (notificationListener != null) {
-                    notificationListener.notifyInfo(Localized.dictionary().ipBlocked(), host);
-                  }
-                  if (callback != null) {
-                    callback.onSuccess(host);
-                  }
+                if (callback != null) {
+                  callback.onSuccess(host);
                 }
               }
-            });
-          }
+            }
+          });
         });
   }
 
@@ -102,45 +96,42 @@ public final class AdministrationUtils {
 
     Global.confirm(caption, Icon.QUESTION, Lists.newArrayList(msgLogin, msgPswd),
         Localized.dictionary().actionCreate(), Localized.dictionary().actionCancel(),
-        new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            ParameterList args = AdministrationKeeper.createArgs(SVC_CREATE_USER);
-            args.addDataItem(COL_LOGIN, login);
-            args.addDataItem(COL_PASSWORD, Codec.encodePassword(pswd));
+        () -> {
+          ParameterList args = AdministrationKeeper.createArgs(SVC_CREATE_USER);
+          args.addDataItem(COL_LOGIN, login);
+          args.addDataItem(COL_PASSWORD, Codec.encodePassword(pswd));
 
-            if (userInterface != null) {
-              args.addDataItem(COL_USER_INTERFACE, userInterface.ordinal());
-            }
-            if (!BeeUtils.isEmpty(parameters)) {
-              for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                if (!BeeUtils.anyEmpty(entry.getKey(), entry.getValue())) {
-                  args.addDataItem(entry.getKey(), entry.getValue());
-                }
-              }
-            }
-
-            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                if (notificationListener != null) {
-                  response.notify(notificationListener);
-                }
-
-                if (response.hasResponse(Long.class)) {
-                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_USERS);
-
-                  if (notificationListener != null) {
-                    notificationListener.notifyInfo(Localized.dictionary().newUser(), msgLogin,
-                        msgPswd);
-                  }
-                  if (callback != null) {
-                    callback.onSuccess(response.getResponseAsLong());
-                  }
-                }
-              }
-            });
+          if (userInterface != null) {
+            args.addDataItem(COL_USER_INTERFACE, userInterface.ordinal());
           }
+          if (!BeeUtils.isEmpty(parameters)) {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+              if (!BeeUtils.anyEmpty(entry.getKey(), entry.getValue())) {
+                args.addDataItem(entry.getKey(), entry.getValue());
+              }
+            }
+          }
+
+          BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              if (notificationListener != null) {
+                response.notify(notificationListener);
+              }
+
+              if (response.hasResponse(Long.class)) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_USERS);
+
+                if (notificationListener != null) {
+                  notificationListener.notifyInfo(Localized.dictionary().newUser(), msgLogin,
+                      msgPswd);
+                }
+                if (callback != null) {
+                  callback.onSuccess(response.getResponseAsLong());
+                }
+              }
+            }
+          });
         });
   }
 
@@ -193,68 +184,60 @@ public final class AdministrationUtils {
 
     dialog.center();
 
-    submit.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        JustDate lowDate = lowInput.getDate();
-        if (lowDate == null) {
-          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().valueRequired());
-          lowInput.setFocus(true);
-          return;
-        }
+    submit.addClickHandler(event -> {
+      JustDate lowDate = lowInput.getDate();
+      if (lowDate == null) {
+        BeeKeeper.getScreen().notifyWarning(Localized.dictionary().valueRequired());
+        lowInput.setFocus(true);
+        return;
+      }
 
-        JustDate hightDate = highInput.getDate();
-        if (hightDate == null) {
-          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().valueRequired());
-          highInput.setFocus(true);
-          return;
-        }
+      JustDate hightDate = highInput.getDate();
+      if (hightDate == null) {
+        BeeKeeper.getScreen().notifyWarning(Localized.dictionary().valueRequired());
+        highInput.setFocus(true);
+        return;
+      }
 
-        if (TimeUtils.isMore(lowDate, hightDate)) {
-          BeeKeeper.getScreen().notifyWarning(Localized.dictionary().invalidRange(),
-              BeeUtils.joinWords(lowDate, hightDate));
-          return;
-        }
+      if (TimeUtils.isMore(lowDate, hightDate)) {
+        BeeKeeper.getScreen().notifyWarning(Localized.dictionary().invalidRange(),
+            BeeUtils.joinWords(lowDate, hightDate));
+        return;
+      }
 
-        submit.setEnabled(false);
+      submit.setEnabled(false);
 
-        output.clear();
-        output.add(new Image(Global.getImages().loading()));
+      output.clear();
+      output.add(new Image(Global.getImages().loading()));
 
-        ParameterList params = AdministrationKeeper.createArgs(SVC_UPDATE_EXCHANGE_RATES);
-        params.addQueryItem(VAR_DATE_LOW, lowDate.getDays());
-        params.addQueryItem(VAR_DATE_HIGH, hightDate.getDays());
+      ParameterList params = AdministrationKeeper.createArgs(SVC_UPDATE_EXCHANGE_RATES);
+      params.addQueryItem(VAR_DATE_LOW, lowDate.getDays());
+      params.addQueryItem(VAR_DATE_HIGH, hightDate.getDays());
 
-        BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            output.clear();
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          output.clear();
 
-            if (response.hasMessages()) {
-              for (ResponseMessage rm : response.getMessages()) {
-                Label label = new Label(rm.getMessage());
-                String styleSuffix = (rm.getLevel() == null)
-                    ? "message" : rm.getLevel().name().toLowerCase();
-                label.addStyleName(STYLE_UPDATE_RATES_PREFIX + styleSuffix);
+          if (response.hasMessages()) {
+            for (ResponseMessage rm : response.getMessages()) {
+              Label label = new Label(rm.getMessage());
+              String styleSuffix = (rm.getLevel() == null)
+                  ? "message" : rm.getLevel().name().toLowerCase();
+              label.addStyleName(STYLE_UPDATE_RATES_PREFIX + styleSuffix);
 
-                output.add(label);
-              }
+              output.add(label);
             }
-
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CURRENCY_RATES);
-
-            submit.setEnabled(true);
           }
-        });
-      }
+
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CURRENCY_RATES);
+
+          submit.setEnabled(true);
+        }
+      });
     });
 
-    cancel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        dialog.close();
-      }
-    });
+    cancel.addClickHandler(event -> dialog.close());
   }
 
   private AdministrationUtils() {

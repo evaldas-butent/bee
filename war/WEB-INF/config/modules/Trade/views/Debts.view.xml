@@ -1,107 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression"
 
- name="Debts" source="Sales" caption="=trdDebts">
- <Columns>
-  <SimpleColumn name="Date" />
+      name="Debts" source="Sales" caption="=trdDebts">
+  <Columns>
+    <SimpleColumn name="Date" />
 
-  <SimpleColumn name="Number" />
-  <SimpleColumn name="SaleSeries" />
-  <SimpleJoin name="SaleSeries" joinType="LEFT">
-   <SimpleColumn name="SeriesName" />
-  </SimpleJoin>
-  <SimpleColumn name="InvoiceNo" />
-
-  <SimpleColumn name="Term" />
-
-  <SimpleColumn name="Amount" />
-  <SimpleColumn name="Currency" />
-  <SimpleJoin joinType="LEFT" name="Currency">
-   <SimpleColumn name="Name" alias="CurrencyName" />
-   <SimpleColumn name="MinorName" />
-  </SimpleJoin>
-
-  <SimpleColumn name="PaymentTime" />
-  <SimpleColumn name="Paid" />
-
-  <SimpleColumn name="Debt" label="=trdDebt">
-   <x:minus>
-    <x:number>"Amount"</x:number>
-    <x:nvl type="DECIMAL">
-     <x:number>"Paid"</x:number>
-     <x:number>0</x:number>
-    </x:nvl>
-   </x:minus>
-  </SimpleColumn>
-
-  <SimpleColumn name="DaysForPayment" label="=trdDaysForPayment">
-   <x:cast type="LONG">
-    <x:divide>
-     <x:minus>
-      <x:nvl type="LONG">
-       <x:number>"Term"</x:number>
-       <x:number>"Date"</x:number>
-      </x:nvl>
-      <x:number>"Date"</x:number>
-     </x:minus>
-     <x:number>86400000</x:number>
-    </x:divide>
-   </x:cast>
-  </SimpleColumn>
-
-  <SimpleColumn name="Customer" />
-  <SimpleJoin joinType="LEFT" name="Customer">
-   <SimpleColumn name="Name" alias="CustomerName" />
-   <SimpleColumn name="Code" alias="CustomerCode" />
-   <SimpleJoin name="CompanyType" joinType="LEFT">
-      <SimpleColumn name="Name" alias="CustomerTypeName"/>
-   </SimpleJoin>
-   <SimpleColumn name="FinancialState" />
-   <SimpleJoin name="FinancialState" joinType="LEFT">
-    <SimpleColumn name="Name" alias="FinancialStateName" />
-   </SimpleJoin>
-   <ExternalJoin name="Company" source="Appointments"
-    joinType="LEFT">
-    <AggregateColumn name="Created" alias="AppointmentsCount"
-     aggregate="COUNT_DISTINCT" />
-    <AggregateColumn name="Created" alias="LastAppointment"
-     aggregate="MAX" />
-   </ExternalJoin>
-  </SimpleJoin>
-
-  <SimpleColumn name="Payer" />
-  <SimpleJoin joinType="LEFT" name="Payer">
-   <SimpleColumn name="Name" alias="PayerName" />
-   <SimpleJoin name="CompanyType" joinType="LEFT">
-      <SimpleColumn name="Name" alias="PayerTypeName"/>
-   </SimpleJoin>
-   <SimpleColumn name="Code" alias="PayerCode" />
-   <SimpleColumn name="FinancialState" alias="PayerFinancialState" />
-   <SimpleJoin name="FinancialState" joinType="LEFT">
-    <SimpleColumn name="Name" alias="PayerFinancialStateName" />
-   </SimpleJoin>
-   <ExternalJoin name="Company" source="Appointments"
-    joinType="LEFT">
-    <AggregateColumn name="Created" alias="PayerAppointmentsCount"
-     aggregate="COUNT_DISTINCT" />
-    <AggregateColumn name="Created" alias="PayerLastAppointment"
-     aggregate="MAX" />
-   </ExternalJoin>
-  </SimpleJoin>
-
-  <SimpleColumn name="Manager" />
-  <SimpleJoin name="Manager" joinType="LEFT">
-   <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
-   <SimpleJoin name="CompanyPerson" joinType="LEFT">
-    <SimpleJoin name="Person" joinType="LEFT">
-     <SimpleColumn name="FirstName" alias="ManagerFirstName" />
-     <SimpleColumn name="LastName" alias="ManagerLastName" />
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="SaleSeries" />
+    <SimpleJoin name="SaleSeries" joinType="LEFT">
+      <SimpleColumn name="SeriesName" />
     </SimpleJoin>
-   </SimpleJoin>
-  </SimpleJoin>
- </Columns>
+    <SimpleColumn name="InvoiceNo" />
 
- <Order>
-  <OrderBy column="Date" descending="true" />
- </Order>
+    <SimpleColumn name="Term" />
+
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+      <SimpleColumn name="MinorName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="PaymentTime" />
+    <SimpleColumn name="Paid" />
+
+    <SimpleColumn name="Debt" label="=trdDebt">
+      <x:minus>
+        <x:number>"Amount"</x:number>
+        <x:nvl type="DECIMAL">
+          <x:number>"Paid"</x:number>
+          <x:number>0</x:number>
+        </x:nvl>
+      </x:minus>
+    </SimpleColumn>
+
+    <SimpleColumn name="DaysForPayment" label="=trdDaysForPayment">
+      <x:cast type="LONG">
+        <x:divide>
+          <x:minus>
+            <x:nvl type="LONG">
+              <x:number>"Term"</x:number>
+              <x:number>"Date"</x:number>
+            </x:nvl>
+            <x:number>"Date"</x:number>
+          </x:minus>
+          <x:number>86400000</x:number>
+        </x:divide>
+      </x:cast>
+    </SimpleColumn>
+
+    <SimpleColumn name="Customer" />
+    <SimpleJoin joinType="LEFT" name="Customer">
+      <SimpleColumn name="Name" alias="CustomerName" />
+      <SimpleColumn name="Code" alias="CustomerCode" />
+      <SimpleJoin name="CompanyType" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CustomerTypeName"/>
+      </SimpleJoin>
+      <SimpleColumn name="FinancialState" />
+      <SimpleJoin name="FinancialState" joinType="LEFT">
+        <SimpleColumn name="Name" alias="FinancialStateName" />
+      </SimpleJoin>
+      <ExternalJoin name="Company" source="Appointments"
+                    joinType="LEFT">
+        <AggregateColumn name="Created" alias="AppointmentsCount"
+                         aggregate="COUNT_DISTINCT" />
+        <AggregateColumn name="Created" alias="LastAppointment"
+                         aggregate="MAX" />
+      </ExternalJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Payer" />
+    <SimpleJoin joinType="LEFT" name="Payer">
+      <SimpleColumn name="Name" alias="PayerName" />
+      <SimpleJoin name="CompanyType" joinType="LEFT">
+        <SimpleColumn name="Name" alias="PayerTypeName"/>
+      </SimpleJoin>
+      <SimpleColumn name="Code" alias="PayerCode" />
+      <SimpleColumn name="FinancialState" alias="PayerFinancialState" />
+      <SimpleJoin name="FinancialState" joinType="LEFT">
+        <SimpleColumn name="Name" alias="PayerFinancialStateName" />
+      </SimpleJoin>
+      <ExternalJoin name="Company" source="Appointments"
+                    joinType="LEFT">
+        <AggregateColumn name="Created" alias="PayerAppointmentsCount"
+                         aggregate="COUNT_DISTINCT" />
+        <AggregateColumn name="Created" alias="PayerLastAppointment"
+                         aggregate="MAX" />
+      </ExternalJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
 </View>

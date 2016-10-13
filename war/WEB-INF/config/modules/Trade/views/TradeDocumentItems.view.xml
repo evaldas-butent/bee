@@ -12,6 +12,7 @@
       <SimpleJoin joinType="LEFT" name="Unit">
         <SimpleColumn name="Name" alias="UnitName" />
       </SimpleJoin>
+      <SimpleColumn name="IsService" />
     </SimpleJoin>
 
     <SimpleColumn name="Article" />
@@ -19,8 +20,22 @@
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
 
-    <SimpleColumn name="DiscountPercent" />
-    <SimpleColumn name="VatPercent" />
+    <SimpleColumn name="Discount" />
+    <SimpleColumn name="DiscountIsPercent" />
+
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatIsPercent" />
+
+    <ExternalJoin joinType="LEFT" source="TradeItemCost" name="TradeDocumentItem">
+      <SimpleColumn name="Cost" />
+    </ExternalJoin>
+    <ExternalJoin joinType="LEFT" targetName="Parent" source="TradeStock"
+                  name="TradeDocumentItem">
+      <ExternalJoin joinType="LEFT" targetName="PrimaryDocumentItem" source="TradeItemCost"
+                    name="TradeDocumentItem">
+        <SimpleColumn name="Cost" alias="ParentCost" />
+      </ExternalJoin>
+    </ExternalJoin>
 
     <SimpleColumn name="Warehouse" />
     <SimpleJoin joinType="LEFT" name="Warehouse">

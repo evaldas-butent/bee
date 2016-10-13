@@ -194,7 +194,6 @@
 
 .bee-ec-cartList-updated .bee-ec-cartList-info {
   animation: rotate 1s;
-  -webkit-animation: rotate 1s;
 }
 
 .bee-ec-UserContainer {
@@ -283,7 +282,6 @@
   font-size: medium;
   padding: 5px 10px; 
   transform: rotate(350deg);
-  -webkit-transform: rotate(350deg);
 }
 .bee-ec-Featured-picture,
 .bee-ec-Novelty-picture {
@@ -1080,7 +1078,6 @@
   font-family: Verdana;
   padding: 3px 5px; 
   transform: rotate(350deg);
-  -webkit-transform: rotate(350deg);
 }
 
 .bee-ec-finInfo-fin-table {

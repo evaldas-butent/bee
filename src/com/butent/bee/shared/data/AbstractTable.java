@@ -51,11 +51,8 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   }
 
   protected class RowIdOrdering implements Comparator<R> {
-    private final boolean ascending;
 
-    RowIdOrdering() {
-      this(true);
-    }
+    private final boolean ascending;
 
     RowIdOrdering(boolean ascending) {
       this.ascending = ascending;
@@ -384,11 +381,18 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
 
   @Override
   public List<Long> getRowIds() {
-    List<Long> result = new ArrayList<>();
-    for (R row : this) {
-      result.add(row.getId());
+    int size = getNumberOfRows();
+
+    if (size > 0) {
+      List<Long> result = new ArrayList<>(size);
+      for (R row : this) {
+        result.add(row.getId());
+      }
+      return result;
+
+    } else {
+      return new ArrayList<>();
     }
-    return result;
   }
 
   @Override
@@ -418,7 +422,7 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
       rowIndexes.add(i);
     }
 
-    Collections.sort(rowIndexes, new IndexOrdering(new RowOrdering<R>(getColumns(),
+    Collections.sort(rowIndexes, new IndexOrdering(new RowOrdering<>(getColumns(),
         sortInfo, collator)));
     return Ints.toArray(rowIndexes);
   }

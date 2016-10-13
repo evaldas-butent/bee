@@ -6,6 +6,7 @@
   <!ENTITY labelLeft "&inline; width:100px; padding-top:1px;">
   <!ENTITY labelRight "&inline; width:60px; padding-top:1px; text-align:right; margin-right:10px;">
   <!ENTITY input "&inline; width:110px;">
+  <!ENTITY inp "&inline; width:170px;">
 ]>
 <FlowPanel xmlns="http://www.butent.com/widget"
            xmlns:ui="http://www.butent.com/ui"
@@ -16,7 +17,7 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=trAssessmentPlannedKm" style="&labelLeft;" />
+    <Label for="LoadedKilometers" text="=trAssessmentPlannedKm" style="&labelLeft;" />
     <InputInteger source="LoadedKilometers" style="&inline; width:70px;" />
   </FlowPanel>
 
@@ -26,16 +27,16 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=date" style="&labelLeft;" />
-    <InputDateTime source="LoadingDate" style="&inline; width:11em; margin-right:47px;" />
-    <Label text="=date" class="bee-required" style="&labelRight;" />
-    <InputDateTime source="UnloadingDate" style="&inline; width:11em;" required="true" />
+    <Label for="LoadingDate" text="=date" style="&labelLeft;" />
+    <InputDateTime source="LoadingDate" style="&inp;" />
+    <Label text="=date" class="bee-required" style="&labelRight; width:80px;" />
+    <InputDateTime source="UnloadingDate" style="&inp;" required="true" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
     <Label text="=country" class="bee-required" style="&labelLeft;" />
     <FlowPanel style="&inline; width:190px;">
-      <DataSelector source="LoadingCountry" style="&inline; width:130px;" required="true" >
+      <DataSelector source="LoadingCountry" style="&inp;" required="true" >
         <renderToken source="LoadingCountryName" />
         <renderToken source="LoadingCountryCode" prefix=" (" suffix=")" />
         <selectorColumn source="Name" />
@@ -47,7 +48,7 @@
     </FlowPanel>
     <Label text="=country" class="bee-required" style="&labelRight;" />
     <FlowPanel style="&inline; width:190px;">
-      <DataSelector source="UnloadingCountry" style="&inline; width:130px;" required="true" >
+      <DataSelector source="UnloadingCountry" style="&inp;" required="true" >
         <renderToken source="UnloadingCountryName" />
         <renderToken source="UnloadingCountryCode" prefix=" (" suffix=")" />
         <selectorColumn source="Name" />
@@ -60,42 +61,42 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=city" style="&labelLeft;" />
-    <DataSelector source="LoadingCity" style="&inline; width:170px; margin-right:20px;" />
-    <Label text="=city" style="&labelRight;" />
-    <DataSelector source="UnloadingCity" style="&inline; width:170px;" />
+    <Label for="LoadingCity" text="=city" style="&labelLeft;" />
+    <DataSelector source="LoadingCity" style="&inp; margin-right:20px;" />
+    <Label for="UnloadingCity" text="=city" style="&labelRight;" />
+    <DataSelector source="UnloadingCity" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=address" style="&labelLeft;" />
-    <InputText source="LoadingAddress" style="&inline; width:170px; margin-right:20px;" />
-    <Label text="=address" style="&labelRight;" />
-    <InputText source="UnloadingAddress" style="&inline; width:170px;" />
+    <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
+    <InputText source="LoadingAddress" style="&inp; margin-right:20px;" />
+    <Label for="UnloadingAddress" text="=address" style="&labelRight;" />
+    <InputText source="UnloadingAddress" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=postIndex" style="&labelLeft;" />
-    <InputText source="LoadingPostIndex" style="&inline; width:90px; margin-right:60px;" />
-    <Label text="=postIndex" style="&labelRight; width:100px" />
-    <InputText source="UnloadingPostIndex" style="&inline; width:90px;" />
+    <Label for="LoadingPostIndex" text="=postIndex" style="&labelLeft;" />
+    <InputText source="LoadingPostIndex" style="&inp;" />
+    <Label for="UnloadingPostIndex" text="=postIndex" style="&labelRight; width:80px;" />
+    <InputText source="UnloadingPostIndex" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=company" style="&labelLeft;" />
-    <InputText source="LoadingCompany" style="&inline; width:170px; margin-right:20px;" />
-    <Label text="=company" style="&labelRight;" />
-    <InputText source="UnloadingCompany" style="&inline; width:170px;" />
+    <Label for="LoadingCompany" text="=company" style="&labelLeft;" />
+    <InputText source="LoadingCompany" style="&inp; margin-right:20px;" />
+    <Label for="UnloadingCompany" text="=company" style="&labelRight;" />
+    <InputText source="UnloadingCompany" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=contact" style="&labelLeft;" />
-    <InputText source="LoadingContact" style="&inline; width:170px; margin-right:20px;" />
-    <Label text="=contact" style="&labelRight;" />
-    <InputText source="UnloadingContact" style="&inline; width:170px;" />
+    <Label for="LoadingContact" text="=contact" style="&labelLeft;" />
+    <InputText source="LoadingContact" style="&inp; margin-right:20px;" />
+    <Label for="UnloadingContact" text="=contact" style="&labelRight;" />
+    <InputText source="UnloadingContact" style="&inp;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=additionalInfo" style="&labelLeft; vertical-align:top;" />
+    <Label for="CargoNotes" text="=additionalInfo" style="&labelLeft; vertical-align:top;" />
     <InputArea source="CargoNotes" style="width:400px;" />
   </FlowPanel>
 
@@ -117,19 +118,19 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=quantity" style="&labelLeft;" />
+    <Label for="Quantity" style="&labelLeft;" />
     <InputDecimal source="Quantity" format="#.00" style="&input;" />
     <DataSelector source="QuantityUnit" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
-    <Label text="=weight" style="&labelRight;" />
+    <Label for="Weight" style="&labelRight;" />
     <InputDecimal source="Weight" format="#.000" style="&input;" />
     <DataSelector source="WeightUnit" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
-    <Label text="=volume" style="&labelLeft;" />
+    <Label for="Volume" style="&labelLeft;" />
     <InputDecimal source="Volume" format="#.000" style="&input;" />
     <DataSelector source="VolumeUnit" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
-    <Label text="=valuation" style="&labelRight;" />
+    <Label for="Value" style="&labelRight;" />
     <InputMoney source="Value" style="&input;" currencySource="ValueCurrency" />
     <DataSelector source="ValueCurrency" style="&inline; width:5em; margin-left:5px;" editEnabled="false" />
   </FlowPanel>

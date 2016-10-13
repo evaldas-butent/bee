@@ -20,6 +20,27 @@ import java.util.Set;
 
 public final class RelationUtils {
 
+  public static int clearRelatedValues(DataInfo dataInfo, String colName, IsRow row) {
+    int result = 0;
+    if (dataInfo == null || BeeUtils.isEmpty(colName) || row == null) {
+      return result;
+    }
+
+    Collection<ViewColumn> descendants = dataInfo.getDescendants(colName, false);
+    if (descendants.isEmpty()) {
+      return result;
+    }
+
+    for (ViewColumn vc : descendants) {
+      int index = dataInfo.getColumnIndex(vc.getName());
+      if (!BeeConst.isUndef(index)) {
+        row.clearCell(index);
+        result++;
+      }
+    }
+    return result;
+  }
+
   public static Collection<String> copyWithDescendants(DataInfo sourceInfo, String sourceColumn,
       IsRow sourceRow, DataInfo targetInfo, String targetColumn, IsRow targetRow) {
 

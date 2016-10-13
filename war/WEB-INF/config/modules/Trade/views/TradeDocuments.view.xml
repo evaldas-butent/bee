@@ -83,17 +83,26 @@
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerCompanyName" />
+        </SimpleJoin>
       </SimpleJoin>
       
       <SimpleColumn name="TabNumber" alias="ManagerTabNumber" />
     </SimpleJoin>
 
-    <SimpleColumn name="Discount" />
+    <SimpleColumn name="DocumentDiscount" />
     <SimpleColumn name="PriceName" />
 
     <SimpleJoin name="Dimensions" joinType="LEFT">
       <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     </SimpleJoin>
+
+    <SimpleColumn name="DocumentVatMode" />
+    <SimpleColumn name="DocumentDiscountMode" />
+
+    <SimpleColumn name="ReceivedDate" />
 
     <SimpleColumn name="Notes" />
   </Columns>

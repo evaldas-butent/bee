@@ -45,6 +45,8 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   void removeCaptionStyle(String style);
 
+  boolean removeCommandByStyleName(String styleName);
+
   void setCaption(String caption);
 
   void setCaptionTitle(String title);

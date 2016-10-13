@@ -14,13 +14,13 @@
         <row>
           <Label text="=firstName" style="&lbl1;" class="bee-required" />
           <InputText style="&inp1;" source="FirstName" />
-          <Label text="=lastName" style="&lbl1;"   />
+          <Label for="LastName" style="&lbl1;"   />
           <InputText style="&inp1;" source="LastName" class="bee-required" />
-          <Label text="=contactFamilyRelation" style="&lbl1;"   />
+          <Label for="Relation" style="&lbl1;"   />
           <DataSelector source="Relation" style="&inp1;" summarize="true" />
         </row>
         <row>
-          <Label text="=dateOfBirth" style="&lbl1;" />
+          <Label for="DateOfBirth" style="&lbl1;" />
           <InputDate source="DateOfBirth" style="&inp1;" minValue="1900" maxValue="2000" />
           <Label text="=phone" style="&lbl1;" for="Phone" />
           <InputText style="&inp1;" source="Phone" />

@@ -37,7 +37,6 @@ import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -56,6 +55,7 @@ import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class ImportsForm extends AbstractFormInterceptor implements ClickHandler {
   private final class ImportCallback extends ResponseCallback {
@@ -79,7 +79,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
         response.notify(getFormView());
         return;
       }
-      Map<String, String> data = Codec.deserializeMap(response.getResponseAsString());
+      Map<String, String> data = Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
       HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
       int r = 0;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="Rights" label="=rights" order="3" parent="Administration" separator="true"
+name="Rights" label="=rights" order="1" parent="Administration" separator="true"
 >
   <Item name="Roles" label="=roles" service="grid" parameters="Roles" />
 

@@ -31,7 +31,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -58,6 +57,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class RowFactory {
 
@@ -354,8 +354,13 @@ public final class RowFactory {
       FormWidget widgetType = dataInfo.hasRelation(column.getId())
           ? FormWidget.DATA_SELECTOR : FormFactory.getWidgetType(column);
       Element input = doc.createElement(widgetType.getTagName());
+
       input.setAttribute(UiConstants.ATTR_SOURCE, column.getId());
       input.setAttribute(UiConstants.ATTR_CLASS, STYLE_NEW_ROW_INPUT);
+
+      if (widgetType == FormWidget.CHECK_BOX) {
+        input.setAttribute(UiConstants.ATTR_HTML, BeeConst.STRING_MINUS);
+      }
 
       inputCell.appendChild(input);
       row.appendChild(inputCell);

@@ -83,11 +83,11 @@ public class OrdEcInvoice implements BeeSerializable {
           setAmount(BeeUtils.toDoubleOrNull(value));
           break;
 
-        case DEBT:
+        case PAID:
           setPaid(BeeUtils.toDoubleOrNull(value));
           break;
 
-        case PAID:
+        case DEBT:
           setDebt(BeeUtils.toDoubleOrNull(value));
           break;
 

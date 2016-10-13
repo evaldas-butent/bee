@@ -1,17 +1,12 @@
 package com.butent.bee.client.modules.orders.ec;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
@@ -21,7 +16,6 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.administration.PasswordService;
-import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.orders.ec.OrdEcCommandWidget.Type;
 import com.butent.bee.client.screen.Domain;
@@ -29,7 +23,6 @@ import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
@@ -38,7 +31,6 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
-import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -132,10 +124,8 @@ public class OrdersScreen extends ScreenImpl {
     } else if (UiHelper.isModal(widget.asWidget())) {
       return UiHelper.closeDialog(widget.asWidget());
 
-    } else if (Objects.equals(widget, getActiveWidget())) {
-      return getScreenPanel().remove(widget);
     } else {
-      return false;
+      return Objects.equals(widget, getActiveWidget()) && getScreenPanel().remove(widget);
     }
   }
 
@@ -194,6 +184,11 @@ public class OrdersScreen extends ScreenImpl {
   }
 
   @Override
+  protected void onUserSignatureClick(ClickEvent event) {
+    PasswordService.change();
+  }
+
+  @Override
   public void onWidgetChange(IdentifiableWidget widget) {
   }
 
@@ -240,12 +235,7 @@ public class OrdersScreen extends ScreenImpl {
     Flow panel = new Flow();
     EcStyles.add(panel, "NorthContainer");
 
-    Widget logo = createLogo(new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        OrdEcKeeper.showPromo(false);
-      }
-    });
+    Widget logo = createLogo(() -> OrdEcKeeper.showPromo(false));
 
     if (logo != null) {
       EcStyles.add(logo, "Logo");
@@ -291,11 +281,6 @@ public class OrdersScreen extends ScreenImpl {
   }
 
   @Override
-  protected void onUserSignatureClick() {
-    PasswordService.change();
-  }
-
-  @Override
   protected void showProgressPanel() {
   }
 
@@ -310,44 +295,38 @@ public class OrdersScreen extends ScreenImpl {
 
     AutocompleteProvider.enableAutocomplete(input, EcConstants.NAME_PREFIX + styleName);
 
-    input.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        int keyCode = event.getNativeKeyCode();
+    input.addKeyDownHandler(event -> {
+      int keyCode = event.getNativeKeyCode();
 
-        switch (keyCode) {
-          case KeyCodes.KEY_ENTER:
-            String query = BeeUtils.trim(input.getValue());
-            if (!BeeUtils.isEmpty(query)) {
-              OrdEcKeeper.doGlobalSearch(query, input);
-            }
-            break;
+      switch (keyCode) {
+        case KeyCodes.KEY_ENTER:
+          String query = BeeUtils.trim(input.getValue());
+          if (!BeeUtils.isEmpty(query)) {
+            OrdEcKeeper.doGlobalSearch(query, input);
+          }
+          break;
 
-          case KeyCodes.KEY_LEFT:
-          case KeyCodes.KEY_RIGHT:
-            if (input.isEmpty()) {
-              Direction dir = (keyCode == KeyCodes.KEY_LEFT) ? Direction.WEST : Direction.EAST;
+        case KeyCodes.KEY_LEFT:
+        case KeyCodes.KEY_RIGHT:
+          if (input.isEmpty()) {
+            Direction dir = (keyCode == KeyCodes.KEY_LEFT) ? Direction.WEST : Direction.EAST;
 
-              int oldSize = getScreenPanel().getDirectionSize(dir);
-              int newSize = (oldSize > 0) ? 0 : getActivePanelWidth() / 5;
+            int oldSize = getScreenPanel().getDirectionSize(dir);
+            int newSize = (oldSize > 0) ? 0 : getActivePanelWidth() / 5;
 
-              getScreenPanel().setDirectionSize(dir, newSize, true);
-            }
-            break;
-        }
+            getScreenPanel().setDirectionSize(dir, newSize, true);
+          }
+          break;
       }
     });
 
     Image submit = new Image(EcUtils.imageUrl("search_button.png"));
     EcStyles.add(submit, styleName, "submit");
 
-    submit.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        String query = BeeUtils.trim(input.getValue());
-        if (!BeeUtils.isEmpty(query)) {
-          OrdEcKeeper.doGlobalSearch(query, input);
-        }
+    submit.addClickHandler(event -> {
+      String query = BeeUtils.trim(input.getValue());
+      if (!BeeUtils.isEmpty(query)) {
+        OrdEcKeeper.doGlobalSearch(query, input);
       }
     });
 

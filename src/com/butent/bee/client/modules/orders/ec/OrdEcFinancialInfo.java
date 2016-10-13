@@ -3,8 +3,6 @@ package com.butent.bee.client.modules.orders.ec;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
@@ -282,13 +280,7 @@ public class OrdEcFinancialInfo extends OrdEcView {
     dialog.setWidget(panel);
 
     FaLabel print = new FaLabel(FontAwesome.PRINT);
-    print.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        Printer.print(panel);
-      }
-    });
+    print.addClickHandler(arg0 -> Printer.print(panel));
     dialog.addAction(Action.PRINT, print);
     dialog.addDefaultCloseBox();
 
@@ -422,13 +414,7 @@ public class OrdEcFinancialInfo extends OrdEcView {
     dialog.setWidget(panel);
 
     FaLabel print = new FaLabel(FontAwesome.PRINT);
-    print.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        Printer.print(panel);
-      }
-    });
+    print.addClickHandler(arg0 -> Printer.print(panel));
     dialog.addAction(Action.PRINT, print);
     dialog.addDefaultCloseBox();
 
@@ -576,12 +562,7 @@ public class OrdEcFinancialInfo extends OrdEcView {
     for (OrdEcInvoice invoice : invoices) {
 
       Label idWidget = new Label(BeeUtils.toString(invoice.getInvoiceId()));
-      idWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          openInvoice(invoice);
-        }
-      });
+      idWidget.addClickHandler(event -> openInvoice(invoice));
       table.setWidgetAndStyle(row, INVOICE_ID_COL, idWidget, STYLE_ORDER_NUMBER);
 
       if (invoice.getDate() != null) {
@@ -712,12 +693,7 @@ public class OrdEcFinancialInfo extends OrdEcView {
       }
 
       Label numberWidget = new Label(BeeUtils.toString(order.getOrderId()));
-      numberWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          openOrder(order);
-        }
-      });
+      numberWidget.addClickHandler(event -> openOrder(order));
 
       table.setWidgetAndStyle(row, ORDER_NUMBER_COL, numberWidget, STYLE_ORDER_NUMBER);
 

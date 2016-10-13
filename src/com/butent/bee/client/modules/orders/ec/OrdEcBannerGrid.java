@@ -20,7 +20,6 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.CellSource;
@@ -91,13 +90,10 @@ public class OrdEcBannerGrid extends AbstractGridInterceptor {
 
   private FileCollector ensureCollector() {
     if (collector == null) {
-      collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
-        @Override
-        public void accept(Collection<? extends FileInfo> input) {
-          Collection<? extends FileInfo> files = Images.sanitizeInput(input, getGridView());
-          if (!files.isEmpty()) {
-            uploadBanners(files);
-          }
+      collector = FileCollector.headless(input -> {
+        Collection<? extends FileInfo> files = Images.sanitizeInput(input, getGridView());
+        if (!files.isEmpty()) {
+          uploadBanners(files);
         }
       });
 
@@ -113,23 +109,19 @@ public class OrdEcBannerGrid extends AbstractGridInterceptor {
 
     for (FileInfo fileInfo : files) {
       if (fileInfo instanceof NewFileInfo) {
-        FileUtils.readAsDataURL(((NewFileInfo) fileInfo).getNewFile(), new Consumer<String>() {
+        FileUtils.readAsDataURL(((NewFileInfo) fileInfo).getNewFile(), input -> {
+          ParameterList params = OrdersKeeper.createSvcArgs(SVC_UPLOAD_BANNERS);
+          params.addDataItem(COL_BANNER_PICTURE, input);
 
-          @Override
-          public void accept(String input) {
-            ParameterList params = OrdersKeeper.createSvcArgs(SVC_UPLOAD_BANNERS);
-            params.addDataItem(COL_BANNER_PICTURE, input);
-
-            BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                latch.set(latch.get() - 1);
-                if (!BeeUtils.isPositive(latch.get())) {
-                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
-                }
+          BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              latch.set(latch.get() - 1);
+              if (!BeeUtils.isPositive(latch.get())) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
               }
-            });
-          }
+            }
+          });
         });
       }
     }

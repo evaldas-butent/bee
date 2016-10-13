@@ -88,7 +88,9 @@ public final class CalendarStyleManager {
   public static final String TODAY_MARKER = BeeConst.CSS_CLASS_PREFIX + "cal-todayMarker";
 
   public static final String DRAG = "drag";
+  public static final String COPY = "copy";
   public static final String POSITIONER = "positioner";
+  public static final String SOURCE = "source";
   public static final String TARGET = "target";
 
   static void applyStyle(Widget widget, String styles) {

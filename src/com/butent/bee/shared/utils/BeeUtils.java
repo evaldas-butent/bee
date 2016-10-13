@@ -3,7 +3,6 @@ package com.butent.bee.shared.utils;
 import com.google.common.base.Ascii;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Contains base methods for development.
@@ -415,7 +415,7 @@ public final class BeeUtils {
    * @return true if {@code predicate} applies to {@code input}.
    */
   public static <T> boolean check(Predicate<T> predicate, T input) {
-    return (predicate == null) ? true : predicate.apply(input);
+    return predicate == null || predicate.test(input);
   }
 
   /**
@@ -780,6 +780,16 @@ public final class BeeUtils {
 
   public static <T> Collection<T> emptyToNull(Collection<T> col) {
     return isEmpty(col) ? null : col;
+  }
+
+  public static boolean equals(String s1, String s2) {
+    if (s1 == null) {
+      return isEmpty(s2);
+    } else if (s2 == null) {
+      return isEmpty(s1);
+    } else {
+      return s1.equals(s2);
+    }
   }
 
   /**
@@ -1664,7 +1674,7 @@ public final class BeeUtils {
   /**
    * Checks if the first character in a CharSequence is a prefix.
    *
-   * @param src sequence to ceck
+   * @param src sequence to check
    * @param pfx a prefix to check for
    * @return true if the first character equals {@code pfx}, otherwise false.
    */
@@ -1933,7 +1943,7 @@ public final class BeeUtils {
 
   public static Double minusPercent(Double d, Double p) {
     if (isDouble(d) && isDouble(p)) {
-      return d - d * p / 100d;
+      return d - d * p / BeeConst.DOUBLE_ONE_HUNDRED;
     } else {
       return d;
     }
@@ -1998,6 +2008,10 @@ public final class BeeUtils {
 
   public static String notEmpty(String s1, String s2, String def) {
     return isEmpty(s1) ? (isEmpty(s2) ? def : s2) : s1;
+  }
+
+  public static String nullOrTrim(String s) {
+    return (s == null) ? null : s.trim();
   }
 
   /**
@@ -2096,15 +2110,23 @@ public final class BeeUtils {
 
   public static Double percent(Double d, Double p) {
     if (isDouble(d) && isDouble(p)) {
-      return d * p / 100d;
+      return d * p / BeeConst.DOUBLE_ONE_HUNDRED;
     } else {
       return null;
     }
   }
 
+  public static int percent(int x, Double p) {
+    if (x != 0 && isDouble(p)) {
+      return round(x * p / BeeConst.DOUBLE_ONE_HUNDRED);
+    } else {
+      return 0;
+    }
+  }
+
   public static Double percentInclusive(Double d, Double p) {
     if (isDouble(d) && isPositive(p)) {
-      return d * p / (p + 100d);
+      return d * p / (p + BeeConst.DOUBLE_ONE_HUNDRED);
     } else {
       return null;
     }
@@ -2112,7 +2134,7 @@ public final class BeeUtils {
 
   public static Double plusPercent(Double d, Double p) {
     if (isDouble(d) && isDouble(p)) {
-      return d + d * p / 100d;
+      return d + d * p / BeeConst.DOUBLE_ONE_HUNDRED;
     } else {
       return d;
     }
@@ -2120,7 +2142,7 @@ public final class BeeUtils {
 
   public static int plusPercent(int x, Double p) {
     if (x != 0 && isDouble(p)) {
-      return x + round(x * p / 100d);
+      return x + round(x * p / BeeConst.DOUBLE_ONE_HUNDRED);
     } else {
       return x;
     }
@@ -2821,14 +2843,14 @@ public final class BeeUtils {
     }
   }
 
-  public static int sum(Collection<Integer> col) {
-    int result = 0;
+  public static double sum(Collection<Double> col) {
+    double result = BeeConst.DOUBLE_ZERO;
     if (col == null) {
       return result;
     }
 
-    for (Integer item : col) {
-      if (item != null) {
+    for (Double item : col) {
+      if (isDouble(item)) {
         result += item;
       }
     }
@@ -3180,6 +3202,10 @@ public final class BeeUtils {
    */
   public static String toString(long x) {
     return Long.toString(x);
+  }
+
+  public static String toStringOrNull(Double x) {
+    return isDouble(x) ? toString(x) : null;
   }
 
   public static String trim(String s) {

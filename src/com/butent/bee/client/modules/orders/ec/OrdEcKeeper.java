@@ -25,21 +25,16 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HtmlEditor;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
-import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
@@ -52,12 +47,11 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import org.apache.commons.collections.MultiMap;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public final class OrdEcKeeper {
 
@@ -76,7 +70,7 @@ public final class OrdEcKeeper {
 
   public static void addPictureCellHandlers(AbstractCell<?> cell, String primaryStyle) {
     Assert.notNull(cell);
-    pictures.addCellHandlers(cell, primaryStyle);
+    OrdEcPictures.addCellHandlers(cell, primaryStyle);
   }
 
   public static void closeView(IdentifiableWidget view) {
@@ -104,17 +98,14 @@ public final class OrdEcKeeper {
     params.addDataItem(ClassifierConstants.COL_COMPANY, BeeKeeper.getUser().getCompany());
     params.addDataItem("Clicked", 0);
 
-    requestItems(SVC_GLOBAL_SEARCH, params, new Consumer<List<OrdEcItem>>() {
-      @Override
-      public void accept(List<OrdEcItem> items) {
-        AutocompleteProvider.retainValue(inputWidget);
-        resetActiveCommand();
+    requestItems(SVC_GLOBAL_SEARCH, params, items -> {
+      AutocompleteProvider.retainValue(inputWidget);
+      resetActiveCommand();
 
-        OrdEcItemPanel widget = new OrdEcItemPanel(false, SVC_GLOBAL_SEARCH);
-        widget.setQuery(query);
-        BeeKeeper.getScreen().show(widget);
-        renderItems(widget, items);
-      }
+      OrdEcItemPanel widget = new OrdEcItemPanel(false, SVC_GLOBAL_SEARCH);
+      widget.setQuery(query);
+      BeeKeeper.getScreen().show(widget);
+      renderItems(widget, items);
     });
   }
 
@@ -161,30 +152,28 @@ public final class OrdEcKeeper {
     return cartList.getQuantity(itemId);
   }
 
-  public static void maybeRecalculatePrices(OrdEcItem item, int quantity, Consumer<Boolean> consumer) {
+  public static void maybeRecalculatePrices(OrdEcItem item, int quantity,
+      Consumer<Boolean> consumer) {
     Map<String, Long> options = new HashMap<>();
     Map<Long, Double> quantities = new HashMap<>();
     Map<Long, ItemPrice> priceNames = new HashMap<>();
 
-    quantities.put(item.getId(), new Double(quantity));
+    quantities.put(item.getId(), (double) quantity);
     options.put(ClassifierConstants.COL_DISCOUNT_COMPANY, BeeKeeper.getUser().getCompany());
 
     ClassifierKeeper.getPricesAndDiscounts(options, quantities.keySet(), quantities, priceNames,
-        new Consumer<Map<Long, Pair<Double, Double>>>() {
-          @Override
-          public void accept(Map<Long, Pair<Double, Double>> result) {
-            Pair<Double, Double> prices = result.get(item.getId());
+        result -> {
+          Pair<Double, Double> prices = result.get(item.getId());
 
-            if (prices != null && BeeUtils.isDouble(prices.getA())
-                && BeeUtils.isDouble(prices.getB())) {
-              item.setPrice(prices.getA() - prices.getA() * prices.getB() / 100.0);
-            } else {
-              item.setPrice((double) item.getDefPrice() / 100);
-            }
+          if (prices != null && BeeUtils.isDouble(prices.getA())
+              && BeeUtils.isDouble(prices.getB())) {
+            item.setPrice(prices.getA() - prices.getA() * prices.getB() / 100.0);
+          } else {
+            item.setPrice((double) item.getDefPrice() / 100);
+          }
 
-            if (consumer != null) {
-              consumer.accept(true);
-            }
+          if (consumer != null) {
+            consumer.accept(true);
           }
         });
   }
@@ -258,19 +247,9 @@ public final class OrdEcKeeper {
   }
 
   public static void register() {
-    MenuService.EDIT_ORD_EC_CONTACTS.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        editEcContacts(null);
-      }
-    });
+    MenuService.EDIT_ORD_EC_CONTACTS.setHandler(parameters -> editEcContacts(null));
 
-    ViewFactory.registerSupplier(KEY_EC_CONTACTS, new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        editEcContacts(callback);
-      }
-    });
+    ViewFactory.registerSupplier(KEY_EC_CONTACTS, OrdEcKeeper::editEcContacts);
   }
 
   public static OrdEcCart removeFromCart(OrdEcItem ecItem) {
@@ -284,12 +263,9 @@ public final class OrdEcKeeper {
     Assert.notNull(panel);
     Assert.notNull(items);
 
-    ensureStockLabel(new Consumer<Boolean>() {
-      @Override
-      public void accept(Boolean input) {
-        if (BeeUtils.isTrue(input)) {
-          panel.render(items);
-        }
+    ensureStockLabel(input -> {
+      if (BeeUtils.isTrue(input)) {
+        panel.render(items);
       }
     });
   }
@@ -411,13 +387,13 @@ public final class OrdEcKeeper {
 
   static void getConfiguration(final Consumer<Map<String, String>> callback) {
     if (configuration.isEmpty()) {
-      ParameterList params = createArgs(SVC_GET_CONFIGURATION);
+      ParameterList params = createArgs(SVC_EC_GET_CONFIGURATION);
       BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
           dispatchMessages(response);
 
-          Map<String, String> map = Codec.deserializeMap(response.getResponseAsString());
+          Map<String, String> map = Codec.deserializeHashMap(response.getResponseAsString());
           if (!map.isEmpty()) {
             configuration.clear();
             configuration.putAll(map);
@@ -432,7 +408,7 @@ public final class OrdEcKeeper {
     }
   }
 
-  static void getDocuments (Long itemId, Consumer<Multimap<String, Pair<String, String>>> consumer) {
+  static void getDocuments(Long itemId, Consumer<Multimap<String, Pair<String, String>>> consumer) {
     ParameterList params = createArgs(SVC_EC_GET_DOCUMENTS);
     params.addDataItem(ClassifierConstants.COL_ITEM, itemId);
 
@@ -441,9 +417,9 @@ public final class OrdEcKeeper {
       public void onResponse(ResponseObject response) {
         if (!response.hasErrors()) {
           Multimap<String, Pair<String, String>> documents = HashMultimap.create();
-          Map<String, String> map = Codec.deserializeMap(response.getResponseAsString());
+          Map<String, String> map = Codec.deserializeHashMap(response.getResponseAsString());
           for (String key : map.keySet()) {
-            for(String value : Codec.beeDeserializeCollection(map.get(key))) {
+            for (String value : Codec.beeDeserializeCollection(map.get(key))) {
               documents.put(key, Pair.restore(value));
             }
           }
@@ -461,10 +437,10 @@ public final class OrdEcKeeper {
     ParameterList params;
 
     if (BeeUtils.isEmpty(value)) {
-      params = createArgs(SVC_CLEAR_CONFIGURATION);
+      params = createArgs(SVC_EC_CLEAR_CONFIGURATION);
       params.addDataItem(Service.VAR_COLUMN, key);
     } else {
-      params = createArgs(SVC_SAVE_CONFIGURATION);
+      params = createArgs(SVC_EC_SAVE_CONFIGURATION);
       params.addQueryItem(Service.VAR_COLUMN, key);
       params.addDataItem(Service.VAR_VALUE, value);
     }
@@ -509,30 +485,24 @@ public final class OrdEcKeeper {
   private static void editConfigurationHtml(final String supplierKey, final String caption,
       final String urlColumn, final String htmlColumn, final ViewCallback callback) {
 
-    getConfiguration(new Consumer<Map<String, String>>() {
-      @Override
-      public void accept(Map<String, String> input) {
-        final String url = input.get(urlColumn);
-        final String html = input.get(htmlColumn);
+    getConfiguration(input -> {
+      final String url = input.get(urlColumn);
+      final String html = input.get(htmlColumn);
 
-        HtmlEditor editor =
-            new HtmlEditor(supplierKey, caption, url, html, new BiConsumer<String, String>() {
-              @Override
-              public void accept(String newUrl, String newHtml) {
-                if (!BeeUtils.equalsTrim(url, newUrl)) {
-                  saveConfiguration(urlColumn, newUrl);
-                }
-                if (!BeeUtils.equalsTrim(html, newHtml)) {
-                  saveConfiguration(htmlColumn, newHtml);
-                }
-              }
-            });
+      HtmlEditor editor =
+          new HtmlEditor(supplierKey, caption, url, html, (newUrl, newHtml) -> {
+            if (!BeeUtils.equalsTrim(url, newUrl)) {
+              saveConfiguration(urlColumn, newUrl);
+            }
+            if (!BeeUtils.equalsTrim(html, newHtml)) {
+              saveConfiguration(htmlColumn, newHtml);
+            }
+          });
 
-        if (callback == null) {
-          BeeKeeper.getScreen().show(editor);
-        } else {
-          callback.onSuccess(editor);
-        }
+      if (callback == null) {
+        BeeKeeper.getScreen().show(editor);
+      } else {
+        callback.onSuccess(editor);
       }
     });
   }

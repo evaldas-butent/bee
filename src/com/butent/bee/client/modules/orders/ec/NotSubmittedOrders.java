@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.orders.ec;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
@@ -11,17 +9,14 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.NotSubmittedOrdersInfo;
 import com.butent.bee.shared.modules.orders.ec.OrdEcCart;
 import com.butent.bee.shared.time.TimeUtils;
@@ -63,14 +58,10 @@ public class NotSubmittedOrders extends OrdEcView {
         OrdEcKeeper.dispatchMessages(response);
 
         if (!response.hasErrors()) {
-          OrdEcKeeper.openShoppinCart(new Consumer<Boolean>() {
-
-            @Override
-            public void accept(Boolean input) {
-              OrdEcCart cart = OrdEcKeeper.getCart();
-              OrdEcShoppingCart widget = new OrdEcShoppingCart(cart);
-              BeeKeeper.getScreen().show(widget);
-            }
+          OrdEcKeeper.openShoppinCart(input -> {
+            OrdEcCart cart = OrdEcKeeper.getCart();
+            OrdEcShoppingCart widget = new OrdEcShoppingCart(cart);
+            BeeKeeper.getScreen().show(widget);
           });
         }
       }
@@ -108,46 +99,34 @@ public class NotSubmittedOrders extends OrdEcView {
       }
 
       Label nameWidget = new Label(info.getName());
-      nameWidget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          String cartName = event.getRelativeElement().getInnerText();
-          if (OrdEcKeeper.getCart().getItems().size() > 0) {
-            List<String> options =
-                Lists.newArrayList(Localized.dictionary().yes(), Localized.dictionary().no());
+      nameWidget.addClickHandler(event -> {
+        String cartName = event.getRelativeElement().getInnerText();
+        if (OrdEcKeeper.getCart().getItems().size() > 0) {
+          List<String> options1 =
+              Lists.newArrayList(Localized.dictionary().yes(), Localized.dictionary().no());
 
-            Global.choice(null, Localized.dictionary().ordSaveShoppingCart(), options,
-                new ChoiceCallback() {
+          Global.choice(null, Localized.dictionary().ordSaveShoppingCart(), options1,
+              value -> {
+                if (value == 0) {
+                  OrdEcKeeper.saveOrder(null, NotSubmittedOrders.this,
+                      input -> openShoppingCart(cartName));
+                } else {
+                  ParameterList params = OrdEcKeeper.createArgs(SVC_EC_CLEAN_SHOPPING_CART);
+                  BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
-                  @Override
-                  public void onSuccess(int value) {
-                    if (value == 0) {
-                      OrdEcKeeper.saveOrder(null, NotSubmittedOrders.this, new Consumer<Boolean>() {
-
-                        @Override
-                        public void accept(Boolean input) {
-                          openShoppingCart(cartName);
-                        }
-                      });
-                    } else {
-                      ParameterList params = OrdEcKeeper.createArgs(SVC_EC_CLEAN_SHOPPING_CART);
-                      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-
-                        @Override
-                        public void onResponse(ResponseObject response) {
-                          if (!response.hasErrors()) {
-                            OrdEcKeeper.resetCart();
-                            OrdEcKeeper.closeView(NotSubmittedOrders.this);
-                            openShoppingCart(cartName);
-                          }
-                        }
-                      });
+                    @Override
+                    public void onResponse(ResponseObject response) {
+                      if (!response.hasErrors()) {
+                        OrdEcKeeper.resetCart();
+                        OrdEcKeeper.closeView(NotSubmittedOrders.this);
+                        openShoppingCart(cartName);
+                      }
                     }
-                  }
-                });
-          } else {
-            openShoppingCart(cartName);
-          }
+                  });
+                }
+              });
+        } else {
+          openShoppingCart(cartName);
         }
       });
 

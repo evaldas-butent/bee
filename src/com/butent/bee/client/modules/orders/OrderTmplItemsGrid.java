@@ -10,7 +10,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -28,7 +27,6 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -101,15 +99,12 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
 
   private void addItems(final BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet) && VIEW_ITEMS.equals(rowSet.getViewName())) {
-      getGridView().ensureRelId(new IdCallback() {
-        @Override
-        public void onSuccess(Long result) {
-          FormView form = ViewHelper.getForm(getGridView());
-          IsRow parentRow = (form == null) ? null : form.getActiveRow();
+      getGridView().ensureRelId(result -> {
+        FormView form = ViewHelper.getForm(getGridView());
+        IsRow parentRow = (form == null) ? null : form.getActiveRow();
 
-          if (DataUtils.idEquals(parentRow, result)) {
-            addItems(parentRow, form.getDataColumns(), rowSet);
-          }
+        if (DataUtils.idEquals(parentRow, result)) {
+          addItems(parentRow, form.getDataColumns(), rowSet);
         }
       });
     }
@@ -183,38 +178,35 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
       }
 
       ClassifierKeeper.getPricesAndDiscounts(options, quantities.keySet(), quantities, priceNames,
-          new Consumer<Map<Long, Pair<Double, Double>>>() {
-            @Override
-            public void accept(Map<Long, Pair<Double, Double>> input) {
-              for (BeeRow row : rowSet) {
-                Pair<Double, Double> pair = input.get(row.getLong(itemIndex));
+          input -> {
+            for (BeeRow row : rowSet) {
+              Pair<Double, Double> pair = input.get(row.getLong(itemIndex));
 
-                if (pair != null) {
-                  Double price = pair.getA();
-                  double percent = BeeUtils.unbox(pair.getB());
-                  if (BeeUtils.isPositive(price)) {
-                    row.setValue(priceIndex,
-                        Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
-                  }
+              if (pair != null) {
+                Double price = pair.getA();
+                double percent = BeeUtils.unbox(pair.getB());
+                if (BeeUtils.isPositive(price)) {
+                  row.setValue(priceIndex,
+                      Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
+                }
 
-                  if (BeeUtils.nonZero(percent)) {
-                    double maxDiscount = BeeUtils.unbox(row.getDouble(discountIndex));
-                    if (percent > maxDiscount && maxDiscount !=0) {
-                      percent = maxDiscount;
-                    }
-                    row.setValue(discountIndex, percent);
-                    row.setValue(invisibleDiscountIndex, percent);
-                  } else {
-                    row.clearCell(discountIndex);
-                    row.setValue(invisibleDiscountIndex, 0);
+                if (BeeUtils.nonZero(percent)) {
+                  double maxDiscount = BeeUtils.unbox(row.getDouble(discountIndex));
+                  if (percent > maxDiscount && maxDiscount != 0) {
+                    percent = maxDiscount;
                   }
+                  row.setValue(discountIndex, percent);
+                  row.setValue(invisibleDiscountIndex, percent);
                 } else {
                   row.clearCell(discountIndex);
                   row.setValue(invisibleDiscountIndex, 0);
                 }
+              } else {
+                row.clearCell(discountIndex);
+                row.setValue(invisibleDiscountIndex, 0);
               }
-              Queries.insertRows(rowSet);
             }
+            Queries.insertRows(rowSet);
           });
 
     } else if (!rowSet.isEmpty()) {

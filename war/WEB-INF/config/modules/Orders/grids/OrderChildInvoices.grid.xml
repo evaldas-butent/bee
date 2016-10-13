@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui" name="OrderChildInvoices"
-  viewName="OrderChildInvoices" flexGrow="1" disabledActions="add"
-  caption="=trdInvoices" readOnly="true">
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="OrderChildInvoices" viewName="OrderChildInvoices"
+        flexGrow="1" disabledActions="add" caption="=trdInvoices" readOnly="true">
   <g:columns>
-    <RelColumn name="Sale" renderColumns="Sale" label="=trdInvoiceId"
-      editEnabled="true" editForm="OrderInvoice" editViewName="OrdersInvoices" readOnly="true" />
+    <IdColumn name="Sale" caption="=trdInvoiceId" />
     <DataColumn name="Date" />
     <RelColumn name="InvoicePrefix" />
     <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNo">

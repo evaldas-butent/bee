@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.orders.ec;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.event.Binder;
@@ -56,12 +54,7 @@ public class OrdEcCommandWidget {
     EcStyles.add(widget, STYLE_NAME, type.getStyle());
     EcStyles.add(widget, STYLE_NAME, service);
 
-    Binder.addClickHandler(widget, new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        OrdEcKeeper.doCommand(OrdEcCommandWidget.this);
-      }
-    });
+    Binder.addClickHandler(widget, event -> OrdEcKeeper.doCommand(OrdEcCommandWidget.this));
   }
 
   void activate() {

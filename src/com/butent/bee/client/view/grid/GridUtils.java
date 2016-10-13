@@ -3,23 +3,57 @@ package com.butent.bee.client.view.grid;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.HasCustomProperties;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class GridUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(GridUtils.class);
+
+  public static Set<Action> getDisabledActions(GridDescription description,
+      GridInterceptor interceptor) {
+
+    Set<Action> result = new HashSet<>();
+
+    Set<Action> actions = (interceptor == null)
+        ? description.getDisabledActions()
+        : interceptor.getDisabledActions(description.getDisabledActions());
+
+    if (!BeeUtils.isEmpty(actions)) {
+      result.addAll(actions);
+    }
+    return result;
+  }
+
+  public static Set<Action> getEnabledActions(GridDescription description,
+      GridInterceptor interceptor) {
+
+    Set<Action> result = new HashSet<>();
+
+    Set<Action> actions = (interceptor == null)
+        ? description.getEnabledActions()
+        : interceptor.getEnabledActions(description.getEnabledActions());
+
+    if (!BeeUtils.isEmpty(actions)) {
+      result.addAll(actions);
+    }
+    return result;
+  }
 
   public static boolean hasPaging(GridDescription gridDescription, Collection<UiOption> uiOptions,
       GridFactory.GridOptions gridOptions) {

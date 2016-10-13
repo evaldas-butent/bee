@@ -33,7 +33,7 @@ public class ReportResultItem extends ReportNumericItem {
 
   @Override
   public void deserialize(String data) {
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
       setLevel(EnumUtils.getEnumByName(ResultHolder.ResultLevel.class, map.get(LEVEL)));

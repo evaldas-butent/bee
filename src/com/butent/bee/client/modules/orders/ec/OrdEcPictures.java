@@ -6,12 +6,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -72,20 +68,12 @@ class OrdEcPictures {
   OrdEcPictures() {
   }
 
-  void addCellHandlers(AbstractCell<?> cell, final String primaryStyle) {
-    cell.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        onCellEvent(event, primaryStyle);
-      }
-    });
+  static void addCellHandlers(AbstractCell<?> cell, final String primaryStyle) {
+    cell.addClickHandler(event -> onCellEvent(event, primaryStyle));
 
-    cell.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          onCellEvent(event, primaryStyle);
-        }
+    cell.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        onCellEvent(event, primaryStyle);
       }
     });
   }
@@ -106,7 +94,7 @@ class OrdEcPictures {
     return result;
   }
 
-  void onCellEvent(DomEvent<?> event, String primaryStyle) {
+  static void onCellEvent(DomEvent<?> event, String primaryStyle) {
     Element cellElement = event.getRelativeElement();
     if (cellElement == null) {
       return;

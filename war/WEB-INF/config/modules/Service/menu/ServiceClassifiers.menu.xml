@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="ServiceClassifiers" label="=classifiers" order="50" parent="Service" module="Service" separator="true"
+>
+  <Item name="MaintenanceStates" label="=svcServiceStates" service="grid" parameters="MaintenanceStates" />
+  <Item name="MaintenanceTypes" label="=svcServiceTypes" service="grid" parameters="MaintenanceTypes" />
+  <Item name="WarrantyTypes" label="=svcWarrantyTypes" service="grid" parameters="WarrantyTypes" />
+  <Item name="StateProcess" label="=svcStateProcess" service="grid" parameters="StateProcess" />
+  <Item name="ServiceParameters" label="=parameters" service="parameters" parameters="Service" separator="true"/>
+</Entry>

@@ -25,7 +25,6 @@ import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -48,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 public final class MailKeeper {
 
@@ -107,7 +107,7 @@ public final class MailKeeper {
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     Global.getNewsAggregator().registerFilterHandler(Feed.MAIL,
-        new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
+        new BiConsumer<GridOptions, PresenterCallback>() {
           @Override
           public void accept(GridOptions gridOptions, PresenterCallback callback) {
           }

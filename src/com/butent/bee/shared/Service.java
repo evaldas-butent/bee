@@ -15,8 +15,6 @@ public final class Service {
   public static final String PROPERTY_IDLE_TIMEOUT = "IdleSessionTimeoutInMinutes";
 
   public static final String RPC_SERVICE_PREFIX = "rpc_";
-  public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
-  public static final String UPLOAD_SERVICE_PREFIX = "upl_";
   public static final String EXPORT_SERVICE_PREFIX = "exp_";
 
   public static final String DB_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "db_";
@@ -84,6 +82,7 @@ public final class Service {
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
   public static final String UPDATE_RELATED_VALUES = DATA_SERVICE_PREFIX + "update_related_values";
   public static final String MERGE_ROWS = DATA_SERVICE_PREFIX + "merge_rows";
+  public static final String GET_LAST_UPDATED = DATA_SERVICE_PREFIX + "get_last_updated";
 
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
@@ -123,6 +122,7 @@ public final class Service {
   public static final String L10N_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "l10n_";
 
   public static final String PREPARE_DICTIONARY = L10N_SERVICE_PREFIX + "prepare_dictionary";
+  public static final String CUSTOMIZE_DICTIONARY = L10N_SERVICE_PREFIX + "customize_dictionary";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
@@ -137,7 +137,6 @@ public final class Service {
   public static final String RPC_VAR_URI = RPC_VAR_SYS_PREFIX + "uri";
   public static final String RPC_VAR_MD5 = RPC_VAR_SYS_PREFIX + "md5";
 
-  public static final String RPC_VAR_MSG = RPC_VAR_SYS_PREFIX + "msg";
   public static final String RPC_VAR_PRM_CNT = RPC_VAR_SYS_PREFIX + "p_c";
   public static final String RPC_VAR_PRM = RPC_VAR_SYS_PREFIX + "prm";
 
@@ -169,7 +168,6 @@ public final class Service {
   public static final String VAR_VIEW_ORDER = RPC_VAR_PREFIX + "view_order";
   public static final String VAR_VIEW_OFFSET = RPC_VAR_PREFIX + "view_offset";
   public static final String VAR_VIEW_LIMIT = RPC_VAR_PREFIX + "view_limit";
-  public static final String VAR_VIEW_STATES = RPC_VAR_PREFIX + "view_states";
   public static final String VAR_VIEW_ROWS = RPC_VAR_PREFIX + "view_rows";
   public static final String VAR_VIEW_COLUMNS = RPC_VAR_PREFIX + "view_columns";
 
@@ -198,7 +196,6 @@ public final class Service {
   public static final String VAR_FILES = RPC_VAR_PREFIX + "files";
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
 
-  public static final String VAR_OLD_VALUE = RPC_VAR_PREFIX + "old_value";
   public static final String VAR_OPTIONS = RPC_VAR_PREFIX + "options";
 
   public static final String VAR_REPORT = RPC_VAR_PREFIX + "report";

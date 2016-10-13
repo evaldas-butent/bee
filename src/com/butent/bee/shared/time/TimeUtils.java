@@ -2,6 +2,7 @@ package com.butent.bee.shared.time;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -114,6 +115,10 @@ public final class TimeUtils {
     if (amount != 0) {
       date.setDays(date.getDays() + amount);
     }
+  }
+
+  public static void addDay(DateTime date, int amount) {
+    add(date, FIELD_DATE, amount);
   }
 
   public static void addHour(DateTime date, int amount) {
@@ -341,7 +346,7 @@ public final class TimeUtils {
     int min = 0;
     int max = 1;
 
-    for (; ; ) {
+    while (true) {
       long ms = startMs + getDelta(start, field, max);
       if (ms == endMs) {
         return max;
@@ -397,7 +402,7 @@ public final class TimeUtils {
       return ref;
     } else {
       YearMonth ym = YearMonth.of(ref).shiftMonth(increment);
-      return new JustDate(ym.getYear(), ym.getMonth(), ref.getDom());
+      return new JustDate(ym.getYear(), ym.getMonth(), Math.min(ref.getDom(), ym.getLength()));
     }
   }
 
@@ -1269,6 +1274,13 @@ public final class TimeUtils {
 
     return renderTime(days, dayLabel, hour, minute,
         (showSeconds || showMillis) ? second : 0, showMillis ? millis : 0, true);
+  }
+
+  public static void restart(Stopwatch stopwatch) {
+    Assert.notNull(stopwatch);
+
+    stopwatch.reset();
+    stopwatch.start();
   }
 
   public static boolean sameDate(HasDateValue x, HasDateValue y) {

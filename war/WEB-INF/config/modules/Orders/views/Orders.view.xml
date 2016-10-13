@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:x="http://www.butent.com/expression"
+<View xmlns="http://www.butent.com/view"
 
   name="Orders" source="Orders" module="Orders" editForm="Order"
   newRowForm="Order">
@@ -91,11 +91,24 @@
       </SimpleJoin>
     </SimpleJoin>
 
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+    <SimpleColumn name="Discount" />
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+
     <SimpleColumn name="Notes" />
 
-    <ExternalJoin name="Order" source="OrderChildInvoices"
-      joinType="LEFT">
-      <AggregateColumn name="Order" aggregate="MAX" />
+    <ExternalJoin name="Order" joinType="LEFT" source="OrderItems">
+      <ExternalJoin name="OrderItem" joinType="LEFT" source="OrderChildInvoices">
+        <SimpleJoin name="OrderItem" joinType="LEFT">
+          <AggregateColumn name="Order" aggregate="MAX"/>
+        </SimpleJoin>
+      </ExternalJoin>
     </ExternalJoin>
   </Columns>
 </View>

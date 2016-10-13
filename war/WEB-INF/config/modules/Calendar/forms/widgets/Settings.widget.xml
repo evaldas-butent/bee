@@ -4,55 +4,55 @@
   <col index="1" width="160" />
   
   <row>
-    <Label text="=calIntervalsPerHour" />
+    <Label for="IntervalsPerHour" />
     <InputSpinner source="IntervalsPerHour" minValue="1" maxValue="30" />
     <Label text="=calViews" />
   </row>
 
   <row>
-    <Label text="=calPixelsPerInterval" />
+    <Label for="PixelsPerInterval" />
     <InputSpinner source="PixelsPerInterval" minValue="1" maxValue="30" />
     <CheckBox source="DayView" text="=calDayView" />
   </row>
 
   <row>
-    <Label text="=calDefaultDisplayedDays" />
+    <Label for="DefaultDisplayedDays" />
     <InputSpinner source="DefaultDisplayedDays" minValue="2" maxValue="99" />
     <CheckBox source="DaysView" text="=calDaysView" />
   </row>
 
   <row>
-    <Label text="=calWorkingHourStart" />
+    <Label for="WorkingHourStart" />
     <InputSpinner source="WorkingHourStart" minValue="0" maxValue="23" />
     <CheckBox source="WorkWeekView" text="=calWorkWeekView" />
   </row>
 
   <row>
-    <Label text="=calWorkingHourEnd" />
+    <Label for="WorkingHourEnd" />
     <InputSpinner source="WorkingHourEnd" minValue="0" maxValue="23" />
     <CheckBox source="WeekView" text="=calWeekView" />
   </row>
 
   <row>
-    <Label text="=calScrollToHour" />
+    <Label for="ScrollToHour" />
     <InputSpinner source="ScrollToHour" minValue="0" maxValue="23" />
     <CheckBox source="MonthView" text="=calMonthView" />
   </row>
 
   <row>
-    <Label text="=calTimeBlockClickNumber" />
+    <Label for="TimeBlockClickNumber" />
     <Radio source="TimeBlockClickNumber" />
     <CheckBox source="ResourceView" text="=calResourceView" />
   </row>
 
   <row>
-    <Label text="=calMultidayLayout" />
+    <Label for="MultidayLayout" />
     <ListBox source="MultidayLayout" />
     <CheckBox source="SeparateAttendees" text="=calSeparateAttendees" />
   </row>
 
   <row>
-    <Label text="=calMultidayTaskLayout" />
+    <Label for="MultidayTaskLayout" />
     <ListBox source="MultidayTaskLayout" />
   </row>
 </Table>

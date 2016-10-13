@@ -48,7 +48,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumable;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -70,6 +69,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class Autocomplete extends Composite implements Editor, HasVisibleLines, HasTextBox,
     HasCapsLock, HasKeyDownHandlers, Launchable {

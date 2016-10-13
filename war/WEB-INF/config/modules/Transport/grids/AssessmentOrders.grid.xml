@@ -13,7 +13,8 @@
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="Date" width="110" readOnly="true" />
     <DataColumn name="OrderNo" />
-    <RelColumn name="Manager" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+    <RelColumn name="Department" />
     <DataColumn name="OrderStatus" width="70" />
     <DataColumn name="Number" width="70" />
 

@@ -542,12 +542,12 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     return null;
   }
 
-  public Direction getWidgetDirection(Widget child) {
+  public static Direction getWidgetDirection(Widget child) {
     LayoutData data = getLayoutData(child);
     return (data == null) ? null : data.getDirection();
   }
 
-  public int getWidgetSize(Widget child) {
+  public static int getWidgetSize(Widget child) {
     LayoutData data = getLayoutData(child);
     return (data == null) ? 0 : data.getSize();
   }
@@ -766,7 +766,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     return info;
   }
 
-  protected LayoutData getLayoutData(Widget child) {
+  protected static LayoutData getLayoutData(Widget child) {
     if (child == null) {
       return null;
     }
@@ -925,16 +925,16 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     if (z != data.getSize()) {
       data.setSize(z);
       layoutChildren();
-      MutationEvent.fire(this);
+      MutationEvent.fire(this, data.getDirection().name());
     }
   }
 
-  private boolean isHorizontal(Widget w) {
+  private static boolean isHorizontal(Widget w) {
     Direction dir = getWidgetDirection(w);
     return dir != null && dir.isHorizontal();
   }
 
-  private boolean isVertical(Widget w) {
+  private static boolean isVertical(Widget w) {
     Direction dir = getWidgetDirection(w);
     return dir != null && dir.isVertical();
   }

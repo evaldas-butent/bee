@@ -21,6 +21,8 @@
       </ExternalJoin>
     </SimpleJoin>
 
+    <SimpleColumn name="BlockAfter" />
+    <SimpleColumn name="BlockBefore" />
   </Columns>
   <Order>
     <OrderBy column="DepartmentName" />

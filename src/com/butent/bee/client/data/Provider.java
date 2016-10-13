@@ -20,6 +20,10 @@ import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.ModificationPreviewer;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
@@ -55,6 +59,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private HasDataTable display;
   private final HasDataProvider presenter;
+  private final ModificationPreviewer modificationPreviewer;
   private final NotificationListener notificationListener;
 
   private final String viewName;
@@ -75,12 +80,13 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   private final Set<RightsState> rightsStates = new HashSet<>();
 
   protected Provider(HasDataTable display, HasDataProvider presenter,
-      NotificationListener notificationListener,
+      ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, Map<String, Filter> parentFilters, Filter userFilter) {
 
     this.display = display;
     this.presenter = presenter;
+    this.modificationPreviewer = modificationPreviewer;
     this.notificationListener = notificationListener;
 
     this.viewName = viewName;
@@ -189,14 +195,18 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
-    if (BeeUtils.same(getViewName(), event.getViewName())) {
+    if (event.hasView(getViewName()) && (modificationPreviewer == null
+        || modificationPreviewer.previewCellUpdate(event))) {
+
       getDisplay().onCellUpdate(event);
     }
   }
 
   @Override
   public void onDataChange(DataChangeEvent event) {
-    if (event.hasView(getViewName())) {
+    if (event.hasView(getViewName()) && (modificationPreviewer == null
+        || modificationPreviewer.previewDataChange(event))) {
+
       if (event.hasReset()) {
         getDisplay().reset();
       }
@@ -212,8 +222,17 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   @Override
+  public void onRowInsert(RowInsertEvent event) {
+    if (event.hasView(getViewName()) && modificationPreviewer != null) {
+      modificationPreviewer.previewRowInsert(event);
+    }
+  }
+
+  @Override
   public void onRowUpdate(RowUpdateEvent event) {
-    if (BeeUtils.same(getViewName(), event.getViewName())) {
+    if (event.hasView(getViewName()) && (modificationPreviewer == null
+        || modificationPreviewer.previewRowUpdate(event))) {
+
       getDisplay().onRowUpdate(event);
     }
   }
@@ -298,6 +317,16 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   protected abstract void onRequest(boolean preserveActiveRow);
+
+  protected boolean previewMultiDelete(MultiDeleteEvent event) {
+    return event.hasView(getViewName()) && (modificationPreviewer == null
+        || modificationPreviewer.previewMultiDelete(event));
+  }
+
+  protected boolean previewRowDelete(RowDeleteEvent event) {
+    return event.hasView(getViewName()) && (modificationPreviewer == null
+        || modificationPreviewer.previewRowDelete(event));
+  }
 
   protected void rejectFilter(Filter filter, boolean notify) {
     if (filter != null && notify && notificationListener != null) {

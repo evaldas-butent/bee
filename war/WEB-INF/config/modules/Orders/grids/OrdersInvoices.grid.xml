@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
-  name="OrdersInvoices" viewName="OrdersInvoices" editShowId="true" flexGrow="1" disabledActions="add"
-  caption="=trdInvoices" filter="Sale AND !(Proforma)" >
+  name="OrdersInvoices" viewName="OrderChildInvoices" flexGrow="1" disabledActions="add"
+  caption="=trdInvoices" filter="!(Proforma) AND OrderCount > 0" >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
-    <IdColumn name="ID" caption="=trdInvoiceId" />
+    <IdColumn name="Sale" caption="=trdInvoiceId" />
     <DataColumn name="Date" />
     <RelColumn name="SaleSeries" />
     <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNo">
@@ -21,6 +21,8 @@
         </ui:function>
       </render>
     </DataColumn>
+    <DataColumn name="CheckNo" />
+    <DataColumn name="OperationName" />
     <DataColumn name="CustomerName" />
     <DataColumn name="PayerName" />
     <RelColumn name="Manager" renderColumns= "ManagerFirstName ManagerLastName" />

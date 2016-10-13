@@ -18,6 +18,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.HistoryHandler;
@@ -49,11 +50,9 @@ import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -64,6 +63,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.ModificationPreviewer;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -96,6 +96,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasDataProvider, HasActiveRow,
@@ -140,7 +141,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
             @Override
             public void onFailure(String... reason) {
-              showFailure("Error deleting row", reason);
+              showFailure(Localized.dictionary().deleteRowError(), reason);
             }
 
             @Override
@@ -167,7 +168,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
             @Override
             public void onFailure(String... reason) {
-              showFailure("Error deleting rows", reason);
+              showFailure(Localized.dictionary().deleteRowsError(), reason);
             }
 
             @Override
@@ -259,7 +260,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       this.filterManager = null;
     }
 
-    this.menu = new GridMenu(gridDescription, uiOptions);
+    this.menu = new GridMenu(gridDescription, uiOptions, gridInterceptor);
 
     if (!BeeUtils.isEmpty(gridDescription.getFavorite())) {
       favorite.addAll(NameUtils.toList(gridDescription.getFavorite()));
@@ -331,8 +332,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
               DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
               deleteCallback.onConfirm();
             }
-          }, BeeConst.UNDEF, null, StyleUtils.className(FontSize.XX_LARGE),
-          StyleUtils.className(FontSize.MEDIUM), null, null);
+          }, BeeConst.UNDEF, MessageBoxes.STYLE_MESSAGE_BOX_DELETE, null, null, null, null);
     }
   }
 
@@ -632,10 +632,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           @Override
           public void onSuccess(BeeRow result) {
-            RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), result, event.getSourceId());
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(result);
             }
+            RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), result, event.getSourceId());
           }
         });
   }
@@ -707,10 +707,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           @Override
           public void onSuccess(BeeRow row) {
-            RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(row);
             }
+            RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
           }
         });
   }
@@ -864,23 +864,25 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     Provider provider;
     CellGrid display = view.getGridView().getGrid();
+    ModificationPreviewer modificationPreviewer = view.getGridView();
     NotificationListener notificationListener = view.getGridView();
 
     switch (providerType) {
       case ASYNC:
-        provider = new AsyncProvider(display, this, notificationListener, viewName, columns,
-            idColumnName, versionColumnName, immutableFilter, cachingPolicy, parentFilters,
-            userFilter);
+        provider = new AsyncProvider(display, this, modificationPreviewer, notificationListener,
+            viewName, columns, idColumnName, versionColumnName,
+            immutableFilter, cachingPolicy, parentFilters, userFilter);
         break;
 
       case CACHED:
-        provider = new CachedProvider(display, this, notificationListener, viewName, columns,
-            idColumnName, versionColumnName, immutableFilter, rowSet, parentFilters, userFilter);
+        provider = new CachedProvider(display, this, modificationPreviewer, notificationListener,
+            viewName, columns, idColumnName, versionColumnName,
+            immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
       case LOCAL:
-        provider = new LocalProvider(display, this, notificationListener, viewName, columns,
-            immutableFilter, rowSet, parentFilters, userFilter);
+        provider = new LocalProvider(display, this, modificationPreviewer, notificationListener,
+            viewName, columns, immutableFilter, rowSet, parentFilters, userFilter);
         break;
 
       default:

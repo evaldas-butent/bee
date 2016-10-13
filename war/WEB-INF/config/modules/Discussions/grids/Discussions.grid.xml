@@ -52,7 +52,8 @@
           </ui:function>
         </render>
     </CalcColumn>
-    
+    <PropColumn name="LastAccess" type="date" userMode="true"></PropColumn>
+    <DataColumn name="LastCommentPublishTime" ></DataColumn>
     <PropColumn name="LastCommentData" type="string" cellType="html"
       caption="=discussLastComment" label="=discussLastComment" width="180"
       sortBy="LastCommentPublishTime">      

@@ -1,12 +1,8 @@
 package com.butent.bee.client.modules.orders.ec;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
@@ -19,7 +15,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -99,23 +94,22 @@ public class OrdEcRegistrationForm extends AbstractFormInterceptor {
 
     String caption = Localized.dictionary().ecRegistrationCommandCreate();
     AdministrationUtils.createUser(caption, login, password, UserInterface.ORDERS, userFields,
-        getFormView(), new IdCallback() {
-          @Override
-          public void onSuccess(Long result) {
-            if (getFormView().isInteractive()) {
-              getHeaderView().clearCommandPanel();
+        getFormView(), result -> {
+          if (getFormView().isInteractive()) {
+            getHeaderView().clearCommandPanel();
 
-              Queries.update(VIEW_ORD_EC_REGISTRATIONS, Filter.compareId(getActiveRowId()),
-                  COL_REGISTRATION_REGISTERED, "t", new Queries.IntCallback() {
-                    @Override
-                    public void onSuccess(Integer result) {
-                      final String msgLogin = Localized.dictionary().userLogin() + ": " + login.trim();
-                      final String msgPswd = Localized.dictionary().password() + ": " + password.trim();
+            Queries.update(VIEW_ORD_EC_REGISTRATIONS, Filter.compareId(getActiveRowId()),
+                COL_REGISTRATION_REGISTERED, "t", new Queries.IntCallback() {
+                  @Override
+                  public void onSuccess(Integer result) {
+                    final String msgLogin = Localized.dictionary().userLogin() + ": "
+                        + login.trim();
+                    final String msgPswd = Localized.dictionary().password() + ": "
+                        + password.trim();
 
-                      NewMailMessage.create(email, null, msgLogin + " " + msgPswd, null, null);
-                    }
-                  });
-            }
+                    NewMailMessage.create(email, null, msgLogin + " " + msgPswd, null, null);
+                  }
+                });
           }
         });
   }
@@ -142,12 +136,7 @@ public class OrdEcRegistrationForm extends AbstractFormInterceptor {
         if (this.registerCommand == null) {
           this.registerCommand =
               new Button(Localized.dictionary().ordRegistrationCommandCreate(),
-                  new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                      onCreateUser();
-                    }
-                  });
+                  event -> onCreateUser());
         }
         header.addCommandItem(this.registerCommand);
       }

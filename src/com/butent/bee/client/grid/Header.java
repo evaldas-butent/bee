@@ -1,7 +1,7 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.grid.cell.AbstractCell;
@@ -19,13 +19,13 @@ public abstract class Header<H> {
     return cell;
   }
 
-  public abstract H getValue();
+  public abstract H getValue(CellContext context);
 
   public EventState onBrowserEvent(CellContext context, Element elem, Event event) {
-    return cell.onBrowserEvent(context, elem, getValue(), event);
+    return cell.onBrowserEvent(context, elem, getValue(context), event);
   }
 
-  public void render(CellContext context, SafeHtmlBuilder sb) {
-    cell.render(context, getValue(), sb);
+  public SafeHtml renderSafeHtml(CellContext context) {
+    return cell.getCellType().renderSafeHtml(cell.render(context, getValue(context)));
   }
 }

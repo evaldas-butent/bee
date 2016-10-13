@@ -1,11 +1,7 @@
 package com.butent.bee.client.modules.orders.ec;
 
 import com.google.common.collect.Multimap;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
-
-import static com.butent.bee.client.modules.orders.ec.OrdEcKeeper.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -15,7 +11,6 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.modules.ec.EcWidgetFactory;
-import com.butent.bee.client.modules.orders.OrdersKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.CustomDiv;
@@ -23,18 +18,15 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class OrdEcItemDetails extends Flow {
 
@@ -80,7 +72,6 @@ public class OrdEcItemDetails extends Flow {
       table.setText(row, colCurrency, EcConstants.CURRENCY, pfx + STYLE_CURRENCY);
 
       EcStyles.markPrice(table.getRow(row));
-      row++;
     }
 
     container.add(table);
@@ -131,7 +122,8 @@ public class OrdEcItemDetails extends Flow {
     return container;
   }
 
-  private static void renderDocuments(Long itemId, Consumer<Multimap<String, Pair<String, String>>> consumer) {
+  private static void renderDocuments(Long itemId, Consumer<Multimap<String, Pair<String,
+      String>>> consumer) {
     OrdEcKeeper.getDocuments(itemId, consumer);
   }
 
@@ -151,18 +143,15 @@ public class OrdEcItemDetails extends Flow {
 
     if (pictures != null) {
       if (pictures.size() > 0) {
-        for (int i = 0; i < pictures.size(); i++) {
+        for (String picture : pictures) {
           Flow flow = new Flow(STYLE_ITEM_GALLERY_PICTURE);
-          Image image = new Image(pictures.get(i));
+          Image image = new Image(picture);
           image.addStyleName(STYLE_ITEM_GALLERY_IMAGE);
 
-          image.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              Image biggerImg = new Image(image.getUrl());
-              biggerImg.addStyleName(STYLE_OPEN);
-              Global.showModalWidget(biggerImg);
-            }
+          image.addClickHandler(event -> {
+            Image biggerImg = new Image(image.getUrl());
+            biggerImg.addStyleName(STYLE_OPEN);
+            Global.showModalWidget(biggerImg);
           });
 
           flow.add(image);
@@ -183,15 +172,12 @@ public class OrdEcItemDetails extends Flow {
 
     final HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
 
-    OrdEcKeeper.ensureStockLabel(new Consumer<Boolean>() {
-      @Override
-      public void accept(Boolean input) {
-        Label warehouseWidget = new Label(OrdEcKeeper.getStockLabel());
-        table.setWidgetAndStyle(0, 0, warehouseWidget, stylePrefix + "warehouse");
+    OrdEcKeeper.ensureStockLabel(input -> {
+      Label warehouseWidget = new Label(OrdEcKeeper.getStockLabel());
+      table.setWidgetAndStyle(0, 0, warehouseWidget, stylePrefix + "warehouse");
 
-        Label stockWidget = new Label(item.getRemainder());
-        table.setWidgetAndStyle(0, 1, stockWidget, stylePrefix + "stock");
-      }
+      Label stockWidget = new Label(item.getRemainder());
+      table.setWidgetAndStyle(0, 1, stockWidget, stylePrefix + "stock");
     });
 
     Simple wrapper = new Simple(table);
@@ -211,30 +197,27 @@ public class OrdEcItemDetails extends Flow {
 
     Widget remainders = renderRemainders(item);
     if (remainders != null) {
-      widget.add(remainders, Localized.dictionary().ecItemDetailsRemainders(), null, null);
+      widget.add(remainders, Localized.dictionary().ecItemDetailsRemainders(), null, null, null);
     }
 
     Widget pictures = renderPictures(item);
     if (pictures != null) {
-      widget.add(pictures, Localized.dictionary().pictures(), null, null);
+      widget.add(pictures, Localized.dictionary().pictures(), null, null, null);
     }
 
-    renderDocuments(item.getId(), new Consumer<Multimap<String, Pair<String, String>>>() {
-      @Override
-      public void accept(Multimap<String, Pair<String, String>> input) {
-        if (input.size() > 0) {
-          for (String key : input.keySet()) {
-            final String stylePrefix = EcStyles.name(STYLE_PRIMARY, "documents-");
-            Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
-            for (Pair<String, String> pair : input.get(key)) {
-              Flow flow = new Flow();
-              Link link = new Link(pair.getA(), FileUtils.getUrl(Long.valueOf(pair.getB()),
-                  pair.getA()));
-              flow.add(link);
-              container.add(flow);
-            }
-            widget.add(container, key, null, null);
+    renderDocuments(item.getId(), input -> {
+      if (input.size() > 0) {
+        for (String key : input.keySet()) {
+          final String stylePrefix = EcStyles.name(STYLE_PRIMARY, "documents-");
+          Flow container = new Flow(stylePrefix + STYLE_CONTAINER);
+          for (Pair<String, String> pair : input.get(key)) {
+            Flow flow = new Flow();
+            Link link = new Link(pair.getA(), FileUtils.getUrl(Long.valueOf(pair.getB()),
+                pair.getA()));
+            flow.add(link);
+            container.add(flow);
           }
+          widget.add(container, key, null, null, null);
         }
       }
     });

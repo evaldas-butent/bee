@@ -57,6 +57,7 @@
       <xs:enumeration value="trade_act_new" />
       <xs:enumeration value="trade_act_list" />
       <xs:enumeration value="trade_documents" />
+      <xs:enumeration value="rebuild_trade_stock" />
     </xs:restriction>
   </xs:simpleType>
 

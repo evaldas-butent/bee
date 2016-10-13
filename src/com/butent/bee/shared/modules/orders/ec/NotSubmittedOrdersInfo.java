@@ -3,7 +3,6 @@ package com.butent.bee.shared.modules.orders.ec;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 public class NotSubmittedOrdersInfo implements BeeSerializable {

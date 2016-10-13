@@ -164,20 +164,24 @@
 
         <row>
           <Label for="ShippingTerm" class="bee-required" />
-          <DataSelector source="ShippingTerm" required="true" filter="SelfService"
-                        order="SelfService, Name" newRowEnabled="false" />
+          <FlowPanel>
+            <DataSelector source="ShippingTerm" required="true" filter="SelfService"
+              order="SelfService, Name" newRowEnabled="false" />
+            <FaLabel name="Incoterms" char="question_circle" disablable="false"
+              style="display: inline-block; margin-left: 5px;"/>
+          </FlowPanel>
         </row>
 
         <row>
-          <CheckBox source="CustomsBrokerage" />
+          <CheckBox source="CustomsBrokerage" title="=trRequestCustomsBrokeragePlaceholder" />
           <cell horizontalAlignment="right">
-            <CheckBox source="FreightInsurance" />
+            <CheckBox source="FreightInsurance" title="=trRequestFreightInsurancePlaceholder" />
           </cell>
           <Label for="Value" name="ValueLabel" />
           <FlowPanel>
             <InputMoney source="Value" style="&decimal;" />
             <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false"
-                          placeholder="=currencyShort" style="&unit;" />
+                          placeholder="=currencyShort" style="&unit;" filter="SelfService" />
           </FlowPanel>
         </row>
       </Table>
@@ -240,11 +244,22 @@
           <Label for="LDM" />
           <InputDecimal source="LDM" style="&decimal;" />
           <text />
-          <CheckBox source="Partial" />
+          <Toggle source="Partial" upFace="=full" downFace="=partial" />
+        </row>
+
+        <row>
+          <Label for="LoadedKilometers" name="LoadedKilometersLabel"/>
+          <InputDecimal source="LoadedKilometers" style="&decimal;" />
         </row>
       </Table>
     </Details>
     &separator;
+
+    <FlowPanel style="padding-bottom: 3px; padding-left: 1em;">
+      <CheckBox name="agreeTermsCheckBox" text="=trAgreeWithConditions"/>
+      <FaLabel name="AgreeTerms" char="question_circle" disablable="false"
+               style="display: inline-block; margin-left: 5px;"/>
+    </FlowPanel>
 
     <Details name="AdditionalInfo" open="true">
       <Summary text="=trRequestAdditionalInfo" style="&summary;" />
@@ -287,11 +302,11 @@
     <TabbedPages style="height:300px;">
       <page>
         <text>=files</text>
-        <ChildGrid name="ShipmentRequestFiles" relColumn="ShipmentRequest" />
+        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" />
       </page>
       <page>
         <text>=mails</text>
-        <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" paging="true" />
+        <ChildGrid name="RelatedMessages" relColumn="ShipmentRequest" />
       </page>
       <page>
         <text>=trOrderCargoServices</text>

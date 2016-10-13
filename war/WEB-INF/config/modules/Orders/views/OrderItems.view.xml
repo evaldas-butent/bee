@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View 
+<View
   xmlns="http://www.butent.com/view"
-  xmlns:x="http://www.butent.com/expression"
   name="OrderItems" source="OrderItems"
   module="Orders" caption="=feedGoods">
   <Columns>
     <IdColumn name="ID"/>
-    
+
     <SimpleColumn name="Order" />
-      
-    <SimpleColumn name="Date" />
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="LEFT" name="Item">

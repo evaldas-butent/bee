@@ -13,6 +13,7 @@ import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
+import com.butent.bee.shared.data.HasPercentageTag;
 import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
@@ -28,7 +29,7 @@ import java.util.List;
  */
 
 public class InputNumber extends InputText implements HasBounds, HasIntStep,
-    HasNumberFormat, HasPrecision, HasScale, HasRelatedCurrency {
+    HasNumberFormat, HasPrecision, HasScale, HasRelatedCurrency, HasPercentageTag {
 
   public static final CharMatcher INT_CHAR_MATCHER =
       CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE)
@@ -50,6 +51,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   private NumberFormat format;
 
   private String currencySource;
+  private String percentageTag;
 
   public InputNumber() {
     super();
@@ -101,6 +103,11 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   @Override
   public NumberFormat getNumberFormat() {
     return format;
+  }
+
+  @Override
+  public String getPercentageTag() {
+    return percentageTag;
   }
 
   @Override
@@ -158,6 +165,11 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   @Override
   public void setNumberFormat(NumberFormat numberFormat) {
     this.format = numberFormat;
+  }
+
+  @Override
+  public void setPercentageTag(String percentageTag) {
+    this.percentageTag = percentageTag;
   }
 
   @Override

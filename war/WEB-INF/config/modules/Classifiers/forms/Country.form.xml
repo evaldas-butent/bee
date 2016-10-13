@@ -14,7 +14,7 @@
 		<InputText source="Name" />
 		</row>
 		<row>
-		<Label text="=code" horizontalAlignment="right" style="&lbl1;"/>
+		<Label for="Code" horizontalAlignment="right" style="&lbl1;"/>
 		<InputText source="Code"/>
 		</row>
 		<row>

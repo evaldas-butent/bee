@@ -8,7 +8,7 @@
   <SplitPanel>
     <west size="300" splitterSize="2">
       <DataTree name="Tree" caption="=documentCategories" viewName="DocumentTree"
-                parentColumn="Parent" orderColumn="Ordinal">
+                parentColumn="Parent" orderColumn="Ordinal" >
         <calc>
           <ui:expression>row.CategoryName</ui:expression>
         </calc>

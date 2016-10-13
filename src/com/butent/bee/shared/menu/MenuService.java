@@ -100,7 +100,10 @@ public enum MenuService {
   TRADE_ACT_LIST(RightsState.VIEW, TradeActConstants.VIEW_TRADE_ACTS),
 
   @XmlEnumValue("trade_documents")
-  TRADE_DOCUMENTS(RightsState.VIEW, TradeConstants.VIEW_TRADE_DOCUMENTS);
+  TRADE_DOCUMENTS(RightsState.VIEW, TradeConstants.VIEW_TRADE_DOCUMENTS),
+  @XmlEnumValue("rebuild_trade_stock")
+  REBUILD_TRADE_STOCK(EnumSet.of(RightsState.CREATE, RightsState.EDIT, RightsState.DELETE),
+      TradeConstants.VIEW_TRADE_STOCK);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;
@@ -171,7 +174,7 @@ public enum MenuService {
   }
 
   public void setDataIsParameter() {
-    this.dataNameProvider = input -> Sets.newHashSet(input);
+    this.dataNameProvider = Sets::newHashSet;
   }
 
   public void setDataNameProvider(DataNameProvider dataNameProvider) {

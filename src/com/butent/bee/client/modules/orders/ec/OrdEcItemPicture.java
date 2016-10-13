@@ -1,10 +1,7 @@
 package com.butent.bee.client.modules.orders.ec;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.SlideDeck;
 import com.butent.bee.client.dialog.DialogBox;
@@ -77,40 +74,31 @@ public class OrdEcItemPicture extends Flow {
         count.addStyleName(STYLE_MORE_COUNT);
         more.add(count);
 
-        more.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            event.stopPropagation();
+        more.addClickHandler(event -> {
+          event.stopPropagation();
 
-            SlideDeck.create(pictures, new Callback<SlideDeck>() {
-              @Override
-              public void onSuccess(SlideDeck result) {
-                DialogBox dialog = DialogBox.create(getItemCaption(), STYLE_SLIDES);
-                StyleUtils.setWidth(dialog.getHeader(), result.getWidth());
+          SlideDeck.create(pictures, result -> {
+            DialogBox dialog = DialogBox.create(getItemCaption(), STYLE_SLIDES);
+            StyleUtils.setWidth(dialog.getHeader(), result.getWidth());
 
-                dialog.setWidget(result);
+            dialog.setWidget(result);
 
-                dialog.setAnimationEnabled(true);
-                dialog.setHideOnEscape(true);
+            dialog.setAnimationEnabled(true);
+            dialog.setHideOnEscape(true);
 
-                dialog.center();
-                result.handleKeyboard();
-              }
-            });
-          }
+            dialog.center();
+            result.handleKeyboard();
+          });
         });
 
         add(more);
       }
 
-      addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Image image = new Image(pictures.get(0));
-          image.addStyleName(STYLE_OPEN);
+      addClickHandler(event -> {
+        Image image = new Image(pictures.get(0));
+        image.addStyleName(STYLE_OPEN);
 
-          Global.showModalWidget(image, getElement());
-        }
+        Global.showModalWidget(image, getElement());
       });
     }
   }

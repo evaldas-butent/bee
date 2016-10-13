@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.discussions;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
@@ -71,13 +69,10 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
     Button star = new Button(Localized.dictionary().crmTaskFilterStarred());
     star.addStyleName(getStylePrefix() + "starred");
 
-    star.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        boolean changed = !isStarred();
-        setStarred(true);
-        update(changed);
-      }
+    star.addClickHandler(event -> {
+      boolean changed = !isStarred();
+      setStarred(true);
+      update(changed);
     });
 
     container.add(star);
@@ -85,13 +80,10 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
     Button all = new Button(Localized.dictionary().crmTaskFilterAll());
     all.addStyleName(getStylePrefix() + "all");
 
-    all.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        boolean changed = isStarred();
-        setStarred(false);
-        update(changed);
-      }
+    all.addClickHandler(event -> {
+      boolean changed = isStarred();
+      setStarred(false);
+      update(changed);
     });
 
     container.add(all);
@@ -99,12 +91,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
     Button cancel = new Button(Localized.dictionary().cancel());
     cancel.addStyleName(getStylePrefix() + "cancel");
 
-    cancel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        closeDialog();
-      }
-    });
+    cancel.addClickHandler(event -> closeDialog());
 
     container.add(cancel);
 

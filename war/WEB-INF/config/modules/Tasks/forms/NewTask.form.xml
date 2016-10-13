@@ -93,8 +93,8 @@
 
       <row>
         <Label text="=crmTaskTemplate" data="TaskTemplates" />
-        <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
-          newRowEnabled="false" style="&inp2x;" data="TaskTemplates" />
+        <UnboundSelector viewName="TaskTemplates" choiceColumns="Name" newRowEnabled="false"
+                         style="&inp2x;" data="TaskTemplates" />
       </row>
       
       <row>
@@ -127,7 +127,7 @@
       <col index="2" cellStyle="&col3;" />
 
       <row>
-        <Label for="StartTime" />
+        <Label for="StartTime" name="StartTimeLabel" />
         <FlowPanel>
           <InputDate name="Start_Date" style="&dateStyle;" />
           <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
@@ -152,21 +152,10 @@
       </row>
 
       <row>
-        <Label for="Reminder" />
-        <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
-          style="&inp2;" />
-        <Label for="ReminderTime" />
-        <FlowPanel for="ReminderTime">
-          <InputDate name="Reminder_Date" style="&dateStyle;" />
-          <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
-        </FlowPanel>
-      </row>
-
-      <row>
         <Label />
         <CheckBox name="Mail" text="=mailNotify" />
-        <Label />
         <CheckBox source="PrivateTask" />
+        <CheckBox name="NotScheduledTask" text="=crmTasksNotScheduledTask"/>
       </row>
     </Table>
 

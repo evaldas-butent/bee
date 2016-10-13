@@ -29,7 +29,6 @@
       <SimpleColumn name="Mobile" />
       <SimpleColumn name="Fax" />
 
-      <SimpleColumn name="RemindEmail" />
       <SimpleColumn name="Email" alias="EmailId" />
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
@@ -93,14 +92,6 @@
       <SimpleColumn alias="FinancialStateName" name="Name" />
     </SimpleJoin>
     <SimpleColumn name="DefaultBankAccount" />
-    <SimpleJoin name="DefaultBankAccount" joinType="LEFT" >
-      <SimpleColumn name="BankAccount" />
-      <SimpleJoin name="Bank" joinType="LEFT" >
-        <SimpleColumn name="Name" alias="BankName" />
-        <SimpleColumn name="BankCode" />
-        <SimpleColumn name="SWIFTCode" />
-      </SimpleJoin>
-    </SimpleJoin>
     <SimpleColumn name="DefaultCompanyUser" />
     <SimpleJoin name="DefaultCompanyUser" joinType="LEFT" >
      <SimpleJoin name="User" joinType="LEFT">
@@ -140,7 +131,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="PriceName" />
-    
+
     <SimpleColumn name="Notes" />
    </Columns>
   <Order>

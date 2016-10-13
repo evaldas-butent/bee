@@ -24,7 +24,6 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Service;
@@ -49,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import elemental.client.Browser;
 import elemental.events.Event;
@@ -153,17 +153,32 @@ public final class FileUtils {
     return result;
   }
 
+  public static String getUrl() {
+    return GWT.getHostPageBaseURL() + AdministrationConstants.FILE_URL;
+  }
+
   public static String getUrl(Long fileId) {
-    return GWT.getHostPageBaseURL() + AdministrationConstants.FILE_URL
-        + (DataUtils.isId(fileId) ? "/" + BeeUtils.toString(fileId) : "");
+    Assert.state(DataUtils.isId(fileId));
+    return getUrl() + "/" + BeeUtils.toString(fileId);
   }
 
   public static String getUrl(Long fileId, String fileName) {
     return getUrl(fileId) + "/" + URL.encodePathSegment(Assert.notEmpty(fileName));
   }
 
+  public static String getUrl(String... path) {
+    StringBuilder url = new StringBuilder(getUrl());
+
+    if (!ArrayUtils.isEmpty(path)) {
+      for (String part : path) {
+        url.append("/").append(URL.encodePathSegment(part));
+      }
+    }
+    return url.toString();
+  }
+
   public static String getUrl(String fileName, Map<Long, String> files) {
-    return CommUtils.getPath(getUrl(null, fileName),
+    return CommUtils.getPath(getUrl("zip", fileName),
         Collections.singletonMap(Service.VAR_FILES, Codec.beeSerialize(Assert.notEmpty(files))),
         true);
   }
@@ -339,7 +354,7 @@ public final class FileUtils {
     String progressId = maybeCreateProgress(fileName, fileInfo.getSize());
 
     XMLHttpRequest xhr = RpcUtils.createXhr();
-    xhr.open(RequestBuilder.POST.toString(), getUrl(null, fileName), true);
+    xhr.open(RequestBuilder.POST.toString(), getUrl(fileName), true);
 
     RpcUtils.addSessionId(xhr);
 

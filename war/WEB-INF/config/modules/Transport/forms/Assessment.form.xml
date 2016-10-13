@@ -3,7 +3,7 @@
   <!ENTITY section "margin-top: 4px;">
   <!ENTITY separator "<hr/>">
   <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:120px; padding-top:1px; white-space:nowrap;">
+  <!ENTITY labelLeft "&inline; width:120px; padding-top:1px;">
   <!ENTITY labelRight "&labelLeft; width:60px; text-align:right; margin-right:10px;">
   <!ENTITY input "&inline; width:10em;">
 ]>
@@ -22,21 +22,23 @@
       <FlowPanel style="&section;">
         <Label for="Status" style="&labelLeft;" />
         <FlowPanel name="Status" style="&input; font-weight:bold;" />
-        <Label for="OrderNo" style="&labelRight; width:120px;" />
-        <InputText source="OrderNo" style="&input;" />
+        <Label for="Customer" style="&labelRight; width:120px;" />
+        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName"
+                      choiceColumns="Name TypeName" style="&input; width:200px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
         <Label for="Date" style="&labelLeft;" />
         <InputDateTime source="Date" style="&input;" />
-        <Label for="Customer" style="&labelRight; width:120px;" />
-        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName"
-            choiceColumns="Name TypeName" style="&input; width:200px;" />
-      </FlowPanel>
-      <FlowPanel style="&section;">
-        <Label for="CustomerPerson" style="&labelRight; width:120px; margin-left:10em; padding-left:120px;" />
+        <Label for="CustomerPerson" style="&labelRight; width:120px;" />
         <DataSelector source="CustomerPerson" style="&input; width:200px;"
           choiceColumns="FirstName LastName CompanyName" renderColumns="PersonFirstName PersonLastName"
           options="Customer" />
+      </FlowPanel>
+      <FlowPanel style="&section;">
+        <Label for="OrderNo" style="&labelLeft;" />
+        <InputText source="OrderNo" style="&input;" readOnly="true" />
+        <Label for="Payer" style="&labelRight; width:120px;" />
+        <DataSelector source="Payer" style="&input; width:200px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
@@ -132,8 +134,12 @@
         <ChildGrid name="ChildAssessments" relColumn="Assessment" />
       </page>
       <page>
+        <text>=files</text>
+        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" />
+      </page>
+      <page>
       <text>=relatedInformation</text>
-      <Relations relColumn="Assessment" inline="true"
+      <Relations relColumn="Assessment" inline="true" summarize="true"
                  defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
       </page>
     </TabbedPages>

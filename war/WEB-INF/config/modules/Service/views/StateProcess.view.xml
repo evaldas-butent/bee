@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="StateProcess" source="StateProcess" module="Service"
+  caption="=svcStateProcess" newRowCaption="=svcStateProcess"
+  >
+  <Columns>
+    <SimpleColumn name="Role" />
+    <SimpleJoin name="Role" joinType="LEFT">
+      <SimpleColumn name="Name" alias="RoleName" />
+    </SimpleJoin>
+    <SimpleColumn name="MaintenanceType" />
+    <SimpleJoin name="MaintenanceType" joinType="LEFT">
+      <SimpleColumn name="Name" alias="MaintenanceTypesName" />
+    </SimpleJoin>
+    <SimpleColumn name="MaintenanceState" />
+    <SimpleJoin name="MaintenanceState" joinType="LEFT">
+      <SimpleColumn name="Name" alias="MaintenanceStateName" />
+    </SimpleJoin>
+    <SimpleColumn name="Initial"/>
+    <SimpleColumn name="Finite"/>
+    <SimpleColumn name="NotifyCustomer"/>
+    <SimpleColumn name="Message"/>
+    <SimpleColumn name="Comment"/>
+    <SimpleColumn name="Item" />
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+    </SimpleJoin>
+    <SimpleColumn name="Term" />
+    <SimpleColumn name="Warranty" />
+    <SimpleColumn name="DaysActive" />
+  </Columns>
+  <Order>
+    <OrderBy column="Role" />
+  </Order>
+</View>

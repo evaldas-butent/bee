@@ -3,16 +3,15 @@ package com.butent.bee.client.modules.documents;
 import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -78,7 +77,7 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
       int idxParCmpName = parentForm.getDataIndex(ProjectConstants.ALS_PROJECT_COMPANY_NAME);
 
       if (!BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)
-          && !BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)) {
+          && !BeeConst.isUndef(idxParCmp) && !BeeConst.isUndef(idxParCmpName)) {
 
         docRow.setValue(idxCmp, parentRow.getLong(idxParCmp));
         docRow.setValue(idxCmpName, parentRow.getString(idxParCmpName));
@@ -90,47 +89,40 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
       Dictionary dic = Localized.dictionary();
 
       Global.choice(null, dic.chooseDocumentSource(),
-          Arrays.asList(dic.documents(), dic.documentNew()), new ChoiceCallback() {
-            @Override
-            public void onSuccess(int value) {
-              switch (value) {
-                case 0:
-                  final UnboundSelector us = UnboundSelector.create(Relation.create(
-                      VIEW_DOCUMENTS, Arrays.asList(COL_DOCUMENT_NAME, COL_DOCUMENT_TYPE_NAME)));
+          Arrays.asList(dic.documents(), dic.documentNew()), value -> {
+            switch (value) {
+              case 0:
+                final UnboundSelector us = UnboundSelector.create(Relation.create(
+                    VIEW_DOCUMENTS, Arrays.asList(COL_DOCUMENT_NAME, ALS_TYPE_NAME)));
 
-                  Global.inputWidget(dic.documents(), us, new InputCallback() {
-                    @Override
-                    public void onSuccess() {
-                      presenter.getGridView().ensureRelId(new IdCallback() {
-                        @Override
-                        public void onSuccess(Long relId) {
-                          Queries.insert(AdministrationConstants.VIEW_RELATIONS,
-                              Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
-                                  Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
-                              Queries.asList(us.getRelatedId(), relId), null, new RowCallback() {
-                                @Override
-                                public void onSuccess(BeeRow row) {
-                                  presenter.handleAction(Action.REFRESH);
-                                  ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
-                                }
-                              });
-                        }
-                      });
-                    }
+                Global.inputWidget(dic.documents(), us, new InputCallback() {
+                  @Override
+                  public void onSuccess() {
+                    presenter.getGridView().ensureRelId(relId -> Queries.insert(VIEW_RELATIONS,
+                        Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+                            Lists.newArrayList(COL_DOCUMENT, presenter.getGridView()
+                                .getRelColumn())),
+                        Queries.asList(us.getRelatedId(), relId), null, new RowCallback() {
+                          @Override
+                          public void onSuccess(BeeRow row) {
+                            presenter.handleAction(Action.REFRESH);
+                            ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+                          }
+                        }));
+                  }
 
-                    @Override
-                    public String getErrorMessage() {
-                      if (!DataUtils.isId(us.getRelatedId())) {
-                        return Localized.dictionary().valueRequired();
-                      }
-                      return InputCallback.super.getErrorMessage();
+                  @Override
+                  public String getErrorMessage() {
+                    if (!DataUtils.isId(us.getRelatedId())) {
+                      return Localized.dictionary().valueRequired();
                     }
-                  });
-                  break;
-                case 1:
-                  createDocument(presenter, info, docRow);
-                  break;
-              }
+                    return InputCallback.super.getErrorMessage();
+                  }
+                });
+                break;
+              case 1:
+                createDocument(presenter, info, docRow);
+                break;
             }
           });
       return false;
@@ -163,27 +155,22 @@ public class RelatedDocumentsHandler extends AbstractGridInterceptor {
     }
   }
 
-  private void createDocument (final GridPresenter presenter, DataInfo info, BeeRow docRow) {
+  private static void createDocument(final GridPresenter presenter, DataInfo info, BeeRow docRow) {
     RowFactory.createRow(info, docRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(final BeeRow result) {
         final long docId = result.getId();
 
-        presenter.getGridView().ensureRelId(new IdCallback() {
-          @Override
-          public void onSuccess(Long relId) {
-            Queries.insert(AdministrationConstants.VIEW_RELATIONS,
-                Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
-                    Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
-                Queries.asList(docId, relId), null, new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow row) {
-                    presenter.handleAction(Action.REFRESH);
-                    ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
-                  }
-                });
-          }
-        });
+        presenter.getGridView().ensureRelId(relId -> Queries.insert(VIEW_RELATIONS,
+            Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+                Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
+            Queries.asList(docId, relId), null, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow row) {
+                presenter.handleAction(Action.REFRESH);
+                ViewHelper.getForm(presenter.getGridView().asWidget()).refresh();
+              }
+            }));
       }
     });
   }

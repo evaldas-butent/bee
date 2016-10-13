@@ -79,6 +79,11 @@
 
       <SimpleColumn name="ReminderTime" editable="true" />
       <SimpleColumn name="ReminderSent" editable="true" />
+
+      <SimpleColumn name="Product" />
+      <SimpleJoin name="Product" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ProductName"/>
+      </SimpleJoin>
     </SimpleJoin>
   </Columns>
 

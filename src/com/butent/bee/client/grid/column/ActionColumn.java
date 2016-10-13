@@ -1,7 +1,5 @@
 package com.butent.bee.client.grid.column;
 
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.ActionCell;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -9,7 +7,6 @@ import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
-import com.butent.bee.shared.utils.BeeUtils;
 
 public class ActionColumn extends AbstractColumn<String> implements HasCellRenderer {
 
@@ -61,11 +58,8 @@ public class ActionColumn extends AbstractColumn<String> implements HasCellRende
   }
 
   @Override
-  public void render(CellContext context, SafeHtmlBuilder sb) {
-    String value = getString(context);
-    if (!BeeUtils.isEmpty(value)) {
-      getCell().render(context, value, sb);
-    }
+  public String render(CellContext context) {
+    return getCell().render(context, getString(context));
   }
 
   @Override

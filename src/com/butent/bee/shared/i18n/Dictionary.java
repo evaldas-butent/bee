@@ -10,6 +10,8 @@ public interface Dictionary {
 
   String g(String key);
 
+  default String account() {return g("account");}
+
   default String actionAdd() {return g("actionAdd");}
 
   default String actionAppend() {return g("actionAppend");}
@@ -130,6 +132,8 @@ public interface Dictionary {
 
   default String additionalContacts() {return g("additionalContacts");}
 
+  default String additionalEquipment() {return g("additionalEquipment");}
+
   default String additionalInfo() {return g("additionalInfo");}
 
   default String additionalServices() {return g("additionalServices");}
@@ -141,6 +145,8 @@ public interface Dictionary {
   default String adsTopics() {return g("adsTopics");}
 
   default String advance() {return g("advance");}
+
+  default String after() {return g("after");}
 
   default String allValuesCannotBeEmpty() {return g("allValuesCannotBeEmpty");}
 
@@ -162,6 +168,10 @@ public interface Dictionary {
   default String allowPhotoSize() {return g("allowPhotoSize");}
 
   default String amount() {return g("amount");}
+
+  default String amountWithoutDiscount() {return g("amountWithoutDiscount");}
+
+  default String amountWithoutVat() {return g("amountWithoutVat");}
 
   default String announcement() {return g("announcement");}
 
@@ -201,6 +211,8 @@ public interface Dictionary {
 
   default String assignTruckToTripQuestion() {return g("assignTruckToTripQuestion");}
 
+  default String assistant() {return g("assistant");}
+
   default String attribute() {return g("attribute");}
 
   default String author() {return g("author");}
@@ -208,6 +220,8 @@ public interface Dictionary {
   default String autoFit() {return g("autoFit");}
 
   default String autocompletion() {return g("autocompletion");}
+
+  default String bAssistant() {return g("bAssistant");}
 
   default String background() {return g("background");}
 
@@ -226,6 +240,8 @@ public interface Dictionary {
   default String banksAccounts() {return g("banksAccounts");}
 
   default String baseUnit() {return g("baseUnit");}
+
+  default String before() {return g("before");}
 
   default String birthdaysParties() {return g("birthdaysParties");}
 
@@ -587,6 +603,10 @@ public interface Dictionary {
 
   default String captionPid() {return g("captionPid");}
 
+  default String car() {return g("car");}
+
+  default String carDealers() {return g("carDealers");}
+
   default String cargo() {return g("cargo");}
 
   default String cargoChangeOfPallets() {return g("cargoChangeOfPallets");}
@@ -637,6 +657,8 @@ public interface Dictionary {
 
   default String changedValues() {return g("changedValues");}
 
+  default String chartOfAccounts() {return g("chartOfAccounts");}
+
   default String chat() {return g("chat");}
 
   default String chatDeleteQuestion() {return g("chatDeleteQuestion");}
@@ -653,6 +675,8 @@ public interface Dictionary {
 
   default String chatNew() {return g("chatNew");}
 
+  default String chatReminderTitle() {return g("chatReminderTitle");}
+
   default String chatSettings() {return g("chatSettings");}
 
   default String chatStartNew() {return g("chatStartNew");}
@@ -664,6 +688,8 @@ public interface Dictionary {
   default String chats() {return g("chats");}
 
   default String chatsShowAll() {return g("chatsShowAll");}
+
+  default String checkNo() {return g("checkNo");}
 
   default String chief() {return g("chief");}
 
@@ -809,6 +835,8 @@ public interface Dictionary {
 
   default String companyVATCode() {return g("companyVATCode");}
 
+  default String configuration() {return g("configuration");}
+
   default String constant() {return g("constant");}
 
   default String contact() {return g("contact");}
@@ -838,6 +866,8 @@ public interface Dictionary {
   default String contractNo() {return g("contractNo");}
 
   default String cost() {return g("cost");}
+
+  default String costBasis() {return g("costBasis");}
 
   default String costCenter() {return g("costCenter");}
 
@@ -889,6 +919,8 @@ public interface Dictionary {
 
   default String creator() {return g("creator");}
 
+  default String credit() {return g("credit");}
+
   default String creditDays() {return g("creditDays");}
 
   default String creditLimit() {return g("creditLimit");}
@@ -935,6 +967,8 @@ public interface Dictionary {
 
   default String crmEnterDueDate() {return g("crmEnterDueDate");}
 
+  default String crmEnterDuration() {return g("crmEnterDuration");}
+
   default String crmEnterDurationType() {return g("crmEnterDurationType");}
 
   default String crmEnterExecutor() {return g("crmEnterExecutor");}
@@ -958,6 +992,12 @@ public interface Dictionary {
   default String crmMailAssignedTasks() {return g("crmMailAssignedTasks");}
 
   default String crmMailTaskSubject() {return g("crmMailTaskSubject");}
+
+  default String crmMailTasksSummary() {return g("crmMailTasksSummary");}
+
+  default String crmMailTasksSummarySubject() {return g("crmMailTasksSummarySubject");}
+
+  default String crmMailTasksSummaryText() {return g("crmMailTasksSummaryText");}
 
   default String crmNewDurationType() {return g("crmNewDurationType");}
 
@@ -1199,6 +1239,8 @@ public interface Dictionary {
 
   default String crmTaskForwardingForExecution() {return g("crmTaskForwardingForExecution");}
 
+  default String crmTaskLabelDelayedHours() {return g("crmTaskLabelDelayedHours");}
+
   default String crmTaskLabelLate() {return g("crmTaskLabelLate");}
 
   default String crmTaskLabelScheduled() {return g("crmTaskLabelScheduled");}
@@ -1220,6 +1262,12 @@ public interface Dictionary {
   default String crmTaskObservers() {return g("crmTaskObservers");}
 
   default String crmTaskOutOfObservers() {return g("crmTaskOutOfObservers");}
+
+  default String crmTaskOwnerCanNotBe(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("crmTaskOwnerCanNotBe"), _m);
+  }
 
   default String crmTaskParameters() {return g("crmTaskParameters");}
 
@@ -1308,6 +1356,8 @@ public interface Dictionary {
   default String crmTasksDelegated() {return g("crmTasksDelegated");}
 
   default String crmTasksDelegatedTasks() {return g("crmTasksDelegatedTasks");}
+
+  default String crmTasksNotScheduledTask() {return g("crmTasksNotScheduledTask");}
 
   default String crmTasksNotScheduledTasks() {return g("crmTasksNotScheduledTasks");}
 
@@ -1407,6 +1457,8 @@ public interface Dictionary {
 
   default String daysShort() {return g("daysShort");}
 
+  default String debit() {return g("debit");}
+
   default String debt() {return g("debt");}
 
   default String defaultBankAccount() {return g("defaultBankAccount");}
@@ -1429,7 +1481,11 @@ public interface Dictionary {
 
   default String deleteRecordQuestion() {return g("deleteRecordQuestion");}
 
+  default String deleteRowError() {return g("deleteRowError");}
+
   default String deleteRowQuestion() {return g("deleteRowQuestion");}
+
+  default String deleteRowsError() {return g("deleteRowsError");}
 
   default String deleteSelectedRow() {return g("deleteSelectedRow");}
 
@@ -1475,9 +1531,21 @@ public interface Dictionary {
 
   default String discount() {return g("discount");}
 
+  default String discountAmountShort() {return g("discountAmountShort");}
+
   default String discountDateFrom() {return g("discountDateFrom");}
 
   default String discountDateTo() {return g("discountDateTo");}
+
+  default String discountForDocument() {return g("discountForDocument");}
+
+  default String discountFromAmount() {return g("discountFromAmount");}
+
+  default String discountFromPrice() {return g("discountFromPrice");}
+
+  default String discountIsPercent() {return g("discountIsPercent");}
+
+  default String discountMode() {return g("discountMode");}
 
   default String discountNew() {return g("discountNew");}
 
@@ -1669,6 +1737,8 @@ public interface Dictionary {
 
   default String discussion() {return g("discussion");}
 
+  default String discussionFiles() {return g("discussionFiles");}
+
   default String discussions() {return g("discussions");}
 
   default String displayInBoard() {return g("displayInBoard");}
@@ -1690,6 +1760,8 @@ public interface Dictionary {
   default String documentDate() {return g("documentDate");}
 
   default String documentDescription() {return g("documentDescription");}
+
+  default String documentExpireReminderMailSubject() {return g("documentExpireReminderMailSubject");}
 
   default String documentExpires() {return g("documentExpires");}
 
@@ -2453,6 +2525,8 @@ public interface Dictionary {
 
   default String expeditionShort() {return g("expeditionShort");}
 
+  default String expenditures() {return g("expenditures");}
+
   default String expenses() {return g("expenses");}
 
   default String exportToMsExcel() {return g("exportToMsExcel");}
@@ -2460,6 +2534,13 @@ public interface Dictionary {
   default String exporting() {return g("exporting");}
 
   default String expression() {return g("expression");}
+
+  default String extendWorkSchedule(Object year, Object month) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{year}", year);
+    _m.put("{month}", month);
+    return Localized.format(g("extendWorkSchedule"), _m);
+  }
 
   default String externalCode() {return g("externalCode");}
 
@@ -2630,6 +2711,8 @@ public interface Dictionary {
 
   default String firstName() {return g("firstName");}
 
+  default String footer() {return g("footer");}
+
   default String foreground() {return g("foreground");}
 
   default String foregroundColor() {return g("foregroundColor");}
@@ -2641,6 +2724,8 @@ public interface Dictionary {
   default String freightExchange() {return g("freightExchange");}
 
   default String from() {return g("from");}
+
+  default String full() {return g("full");}
 
   default String goods() {return g("goods");}
 
@@ -2806,6 +2891,8 @@ public interface Dictionary {
   default String itemType() {return g("itemType");}
 
   default String itemTypes() {return g("itemTypes");}
+
+  default String join() {return g("join");}
 
   default String key() {return g("key");}
 
@@ -3117,6 +3204,8 @@ public interface Dictionary {
 
   default String mailSMTPServerSettings() {return g("mailSMTPServerSettings");}
 
+  default String mailSendVisibleCopies() {return g("mailSendVisibleCopies");}
+
   default String mailSender() {return g("mailSender");}
 
   default String mailServerAddress() {return g("mailServerAddress");}
@@ -3217,9 +3306,15 @@ public interface Dictionary {
 
   default String more() {return g("more");}
 
+  default String moreThenOneValue() {return g("moreThenOneValue");}
+
+  default String myCompanyMenu() {return g("myCompanyMenu");}
+
   default String myEnvironment() {return g("myEnvironment");}
 
   default String name() {return g("name");}
+
+  default String newAccount() {return g("newAccount");}
 
   default String newActivityType() {return g("newActivityType");}
 
@@ -3312,6 +3407,8 @@ public interface Dictionary {
   default String newPasswordIsRequired() {return g("newPasswordIsRequired");}
 
   default String newPasswordsDoesNotMatch() {return g("newPasswordsDoesNotMatch");}
+
+  default String newPayment() {return g("newPayment");}
 
   default String newPerson() {return g("newPerson");}
 
@@ -3451,6 +3548,18 @@ public interface Dictionary {
 
   default String operator() {return g("operator");}
 
+  default String option() {return g("option");}
+
+  default String optionGroup() {return g("optionGroup");}
+
+  default String optionGroups() {return g("optionGroups");}
+
+  default String optionType() {return g("optionType");}
+
+  default String optionTypes() {return g("optionTypes");}
+
+  default String options() {return g("options");}
+
   default String ordApprove() {return g("ordApprove");}
 
   default String ordApproved() {return g("ordApproved");}
@@ -3478,6 +3587,8 @@ public interface Dictionary {
   default String ordDebtExceedsCreditLimit() {return g("ordDebtExceedsCreditLimit");}
 
   default String ordDriverInfo() {return g("ordDriverInfo");}
+
+  default String ordInvoiceQty() {return g("ordInvoiceQty");}
 
   default String ordIssued() {return g("ordIssued");}
 
@@ -3510,6 +3621,8 @@ public interface Dictionary {
   default String ordRegistrationCommandCreate() {return g("ordRegistrationCommandCreate");}
 
   default String ordResNotIncrease() {return g("ordResNotIncrease");}
+
+  default String ordResQty() {return g("ordResQty");}
 
   default String ordResQtyIsTooBig() {return g("ordResQtyIsTooBig");}
 
@@ -3587,6 +3700,8 @@ public interface Dictionary {
 
   default String payer() {return g("payer");}
 
+  default String paymentDueDate() {return g("paymentDueDate");}
+
   default String paymentType() {return g("paymentType");}
 
   default String paymentTypes() {return g("paymentTypes");}
@@ -3614,6 +3729,8 @@ public interface Dictionary {
   default String personContact() {return g("personContact");}
 
   default String personContacts() {return g("personContacts");}
+
+  default String personContactsTML() {return g("personContactsTML");}
 
   default String personDateOfDismissal() {return g("personDateOfDismissal");}
 
@@ -3646,6 +3763,8 @@ public interface Dictionary {
   default String picture() {return g("picture");}
 
   default String pictures() {return g("pictures");}
+
+  default String places() {return g("places");}
 
   default String plan() {return g("plan");}
 
@@ -3710,6 +3829,10 @@ public interface Dictionary {
   default String price9Label() {return g("price9Label");}
 
   default String priceName() {return g("priceName");}
+
+  default String priceWithVat() {return g("priceWithVat");}
+
+  default String priceWithoutVat() {return g("priceWithoutVat");}
 
   default String prices() {return g("prices");}
 
@@ -3920,6 +4043,8 @@ public interface Dictionary {
 
   default String prjActualTaskDuration() {return g("prjActualTaskDuration");}
 
+  default String prjColumnMode() {return g("prjColumnMode");}
+
   default String prjComments() {return g("prjComments");}
 
   default String prjCreateFromTasks() {return g("prjCreateFromTasks");}
@@ -3943,6 +4068,8 @@ public interface Dictionary {
   default String prjExpectedTaskExpenses() {return g("prjExpectedTaskExpenses");}
 
   default String prjExpenses() {return g("prjExpenses");}
+
+  default String prjFiles() {return g("prjFiles");}
 
   default String prjFilterActive() {return g("prjFilterActive");}
 
@@ -4002,6 +4129,8 @@ public interface Dictionary {
 
   default String prjStages() {return g("prjStages");}
 
+  default String prjStagesTML() {return g("prjStagesTML");}
+
   default String prjStatusActive() {return g("prjStatusActive");}
 
   default String prjStatusApproved() {return g("prjStatusApproved");}
@@ -4011,6 +4140,8 @@ public interface Dictionary {
   default String prjStatusSuspended() {return g("prjStatusSuspended");}
 
   default String prjTeam() {return g("prjTeam");}
+
+  default String prjTeamTML() {return g("prjTeamTML");}
 
   default String prjTemplate() {return g("prjTemplate");}
 
@@ -4030,9 +4161,15 @@ public interface Dictionary {
 
   default String prmAutoReservation() {return g("prmAutoReservation");}
 
+  default String prmCheckDebt() {return g("prmCheckDebt");}
+
   default String prmClearReservationsTime() {return g("prmClearReservationsTime");}
 
+  default String prmDefaultMaintenanceType() {return g("prmDefaultMaintenanceType");}
+
   default String prmDefaultSaleOperation() {return g("prmDefaultSaleOperation");}
+
+  default String prmDefaultWarrantyType() {return g("prmDefaultWarrantyType");}
 
   default String prmDiscussBirthdays() {return g("prmDiscussBirthdays");}
 
@@ -4052,9 +4189,13 @@ public interface Dictionary {
 
   default String prmImportERPStocksTime() {return g("prmImportERPStocksTime");}
 
+  default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
+
   default String prmManagerDiscount() {return g("prmManagerDiscount");}
 
-  default String prmMaxUploadFileSize() {return g("prmMaxUploadFileSize");}
+  default String prmManagerWarehouse() {return g("prmManagerWarehouse");}
+
+  default String prmNotifyAboutDebts() {return g("prmNotifyAboutDebts");}
 
   default String prmOverdueInvoices() {return g("prmOverdueInvoices");}
 
@@ -4070,7 +4211,13 @@ public interface Dictionary {
 
   default String prmSQLMessagesPOSTGRESQL() {return g("prmSQLMessagesPOSTGRESQL");}
 
+  default String prmSendNewslettersCount() {return g("prmSendNewslettersCount");}
+
+  default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
+
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
+
+  default String prmUrgentRate() {return g("prmUrgentRate");}
 
   default String productService() {return g("productService");}
 
@@ -4094,6 +4241,8 @@ public interface Dictionary {
 
   default String projectsAll() {return g("projectsAll");}
 
+  default String projectsMy() {return g("projectsMy");}
+
   default String properties() {return g("properties");}
 
   default String property() {return g("property");}
@@ -4115,6 +4264,22 @@ public interface Dictionary {
   default String reason() {return g("reason");}
 
   default String reasons() {return g("reasons");}
+
+  default String rebuildTradeStockCaption() {return g("rebuildTradeStockCaption");}
+
+  default String rebuildTradeStockNotification() {return g("rebuildTradeStockNotification");}
+
+  default String rebuildTradeStockQuestion() {return g("rebuildTradeStockQuestion");}
+
+  default String recalculateTradeItemCostsCaption() {return g("recalculateTradeItemCostsCaption");}
+
+  default String recalculateTradeItemCostsNotification(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("recalculateTradeItemCostsNotification"), _m);
+  }
+
+  default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
 
   default String received() {return g("received");}
 
@@ -4140,6 +4305,8 @@ public interface Dictionary {
 
   default String relatedInformation() {return g("relatedInformation");}
 
+  default String relatedMessages() {return g("relatedMessages");}
+
   default String relatedTo() {return g("relatedTo");}
 
   default String relation() {return g("relation");}
@@ -4150,7 +4317,13 @@ public interface Dictionary {
 
   default String reminderCaption() {return g("reminderCaption");}
 
+  default String reminderDateField() {return g("reminderDateField");}
+
+  default String reminderDateIndicator() {return g("reminderDateIndicator");}
+
   default String reminderMethod() {return g("reminderMethod");}
+
+  default String reminderModule() {return g("reminderModule");}
 
   default String reminderName() {return g("reminderName");}
 
@@ -4196,6 +4369,8 @@ public interface Dictionary {
 
   default String requestUpdatingQuestion() {return g("requestUpdatingQuestion");}
 
+  default String required() {return g("required");}
+
   default String resource() {return g("resource");}
 
   default String responsibilities() {return g("responsibilities");}
@@ -4207,6 +4382,8 @@ public interface Dictionary {
   default String responsiblePerson() {return g("responsiblePerson");}
 
   default String responsiblePersons() {return g("responsiblePersons");}
+
+  default String restrictions() {return g("restrictions");}
 
   default String result() {return g("result");}
 
@@ -4235,6 +4412,13 @@ public interface Dictionary {
   default String roleAddUsers() {return g("roleAddUsers");}
 
   default String roleRights() {return g("roleRights");}
+
+  default String roleRightsSaved(Object p0, Object p1) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    _m.put("{1}", p1);
+    return Localized.format(g("roleRightsSaved"), _m);
+  }
 
   default String roleState() {return g("roleState");}
 
@@ -4306,6 +4490,8 @@ public interface Dictionary {
 
   default String scheduledStartingTime() {return g("scheduledStartingTime");}
 
+  default String scvAddressRequired() {return g("scvAddressRequired");}
+
   default String search() {return g("search");}
 
   default String searchQueryRestriction(Object p0) {
@@ -4354,15 +4540,29 @@ public interface Dictionary {
 
   default String shippingSchedule() {return g("shippingSchedule");}
 
+  default String showAvailableEmployees() {return g("showAvailableEmployees");}
+
+  default String showNewMessagesNotifier() {return g("showNewMessagesNotifier");}
+
   default String signDate() {return g("signDate");}
 
   default String signOut() {return g("signOut");}
 
   default String socialContacts() {return g("socialContacts");}
 
+  default String softwareBuild() {return g("softwareBuild");}
+
+  default String softwareLicenceNo() {return g("softwareLicenceNo");}
+
+  default String softwareReleaseDate() {return g("softwareReleaseDate");}
+
+  default String softwareVersion() {return g("softwareVersion");}
+
   default String sorry() {return g("sorry");}
 
   default String sort() {return g("sort");}
+
+  default String specification() {return g("specification");}
 
   default String specifyCondition() {return g("specifyCondition");}
 
@@ -4381,6 +4581,8 @@ public interface Dictionary {
   default String stateVisible() {return g("stateVisible");}
 
   default String status() {return g("status");}
+
+  default String statusUpdated() {return g("statusUpdated");}
 
   default String statuses() {return g("statuses");}
 
@@ -4404,9 +4606,13 @@ public interface Dictionary {
 
   default String svcCalendarSeparateObjects() {return g("svcCalendarSeparateObjects");}
 
+  default String svcComment() {return g("svcComment");}
+
   default String svcContractor() {return g("svcContractor");}
 
   default String svcDates() {return g("svcDates");}
+
+  default String svcDaysActive() {return g("svcDaysActive");}
 
   default String svcDefect() {return g("svcDefect");}
 
@@ -4422,13 +4628,27 @@ public interface Dictionary {
 
   default String svcDefects() {return g("svcDefects");}
 
+  default String svcDeviceCategory() {return g("svcDeviceCategory");}
+
+  default String svcEquipment() {return g("svcEquipment");}
+
+  default String svcFaultInfo() {return g("svcFaultInfo");}
+
+  default String svcFinite() {return g("svcFinite");}
+
+  default String svcInitial() {return g("svcInitial");}
+
   default String svcInvoices() {return g("svcInvoices");}
 
   default String svcMaintenance() {return g("svcMaintenance");}
 
+  default String svcMaintenanceItems() {return g("svcMaintenanceItems");}
+
   default String svcMaster() {return g("svcMaster");}
 
   default String svcMenu() {return g("svcMenu");}
+
+  default String svcModel() {return g("svcModel");}
 
   default String svcModule() {return g("svcModule");}
 
@@ -4438,15 +4658,53 @@ public interface Dictionary {
 
   default String svcNewMaintenance() {return g("svcNewMaintenance");}
 
+  default String svcNewMaintenanceItem() {return g("svcNewMaintenanceItem");}
+
   default String svcNewObject() {return g("svcNewObject");}
+
+  default String svcNewServiceState() {return g("svcNewServiceState");}
+
+  default String svcNewServiceType() {return g("svcNewServiceType");}
+
+  default String svcNewWarrantyType() {return g("svcNewWarrantyType");}
+
+  default String svcNotifyCustomer() {return g("svcNotifyCustomer");}
 
   default String svcObject() {return g("svcObject");}
 
+  default String svcObjectFiles() {return g("svcObjectFiles");}
+
   default String svcObjects() {return g("svcObjects");}
+
+  default String svcSerialNo() {return g("svcSerialNo");}
+
+  default String svcServiceState() {return g("svcServiceState");}
+
+  default String svcServiceStates() {return g("svcServiceStates");}
+
+  default String svcServiceType() {return g("svcServiceType");}
+
+  default String svcServiceTypes() {return g("svcServiceTypes");}
 
   default String svcSpecification() {return g("svcSpecification");}
 
+  default String svcStateProcess() {return g("svcStateProcess");}
+
+  default String svcTerm() {return g("svcTerm");}
+
   default String svcTypeOfWork() {return g("svcTypeOfWork");}
+
+  default String svcUrgent() {return g("svcUrgent");}
+
+  default String svcWarranty() {return g("svcWarranty");}
+
+  default String svcWarrantyBasis() {return g("svcWarrantyBasis");}
+
+  default String svcWarrantyType() {return g("svcWarrantyType");}
+
+  default String svcWarrantyTypes() {return g("svcWarrantyTypes");}
+
+  default String svcWarrantyValidTo() {return g("svcWarrantyValidTo");}
 
   default String swift() {return g("swift");}
 
@@ -4946,6 +5204,8 @@ public interface Dictionary {
 
   default String trInvoices() {return g("trInvoices");}
 
+  default String trInvoiceHasNotAttribute() {return g("trInvoiceHasNotAttribute");}
+
   default String trLoaded() {return g("trLoaded");}
 
   default String trLoadedKilometers() {return g("trLoadedKilometers");}
@@ -5047,6 +5307,8 @@ public interface Dictionary {
   default String trNewTransportGroup() {return g("trNewTransportGroup");}
 
   default String trNewTrip() {return g("trNewTrip");}
+
+  default String trNewValues() {return g("trNewValues");}
 
   default String trNewVehicle() {return g("trNewVehicle");}
 
@@ -5202,6 +5464,8 @@ public interface Dictionary {
 
   default String trRequestCargoWidth() {return g("trRequestCargoWidth");}
 
+  default String trRequestCommonTerms() {return g("trRequestCommonTerms");}
+
   default String trRequestConfirmedMailContent() {return g("trRequestConfirmedMailContent");}
 
   default String trRequestCustomer() {return g("trRequestCustomer");}
@@ -5230,7 +5494,11 @@ public interface Dictionary {
 
   default String trRequestCustomsBrokerage() {return g("trRequestCustomsBrokerage");}
 
+  default String trRequestCustomsBrokeragePlaceholder() {return g("trRequestCustomsBrokeragePlaceholder");}
+
   default String trRequestDate() {return g("trRequestDate");}
+
+  default String trRequestDateTitle() {return g("trRequestDateTitle");}
 
   default String trRequestDeliveryDate() {return g("trRequestDeliveryDate");}
 
@@ -5241,6 +5509,8 @@ public interface Dictionary {
   default String trRequestExpeditionType() {return g("trRequestExpeditionType");}
 
   default String trRequestFreightInsurance() {return g("trRequestFreightInsurance");}
+
+  default String trRequestFreightInsurancePlaceholder() {return g("trRequestFreightInsurancePlaceholder");}
 
   default String trRequestLostMailContent() {return g("trRequestLostMailContent");}
 
@@ -5277,6 +5547,8 @@ public interface Dictionary {
   default String trRequestStatusNew() {return g("trRequestStatusNew");}
 
   default String trRequestStatusRejected() {return g("trRequestStatusRejected");}
+
+  default String trRequestSubmittedContent() {return g("trRequestSubmittedContent");}
 
   default String trRequestTemplate() {return g("trRequestTemplate");}
 
@@ -5364,6 +5636,10 @@ public interface Dictionary {
 
   default String trTbSettingsCountryFlags() {return g("trTbSettingsCountryFlags");}
 
+  default String trTbSettingsOrderCustomer() {return g("trTbSettingsOrderCustomer");}
+
+  default String trTbSettingsOrderNo() {return g("trTbSettingsOrderNo");}
+
   default String trTbSettingsPixelsPerCustomer() {return g("trTbSettingsPixelsPerCustomer");}
 
   default String trTbSettingsPixelsPerDriver() {return g("trTbSettingsPixelsPerDriver");}
@@ -5429,6 +5705,8 @@ public interface Dictionary {
   default String trTripStatus() {return g("trTripStatus");}
 
   default String trTripStatusActive() {return g("trTripStatusActive");}
+
+  default String trTripStatusArranged() {return g("trTripStatusArranged");}
 
   default String trTripStatusCanceled() {return g("trTripStatusCanceled");}
 
@@ -5604,6 +5882,8 @@ public interface Dictionary {
 
   default String trdAmountWoVat() {return g("trdAmountWoVat");}
 
+  default String trdCashRegisterNo() {return g("trdCashRegisterNo");}
+
   default String trdCustomer() {return g("trdCustomer");}
 
   default String trdDate() {return g("trdDate");}
@@ -5615,6 +5895,8 @@ public interface Dictionary {
   default String trdDebts() {return g("trdDebts");}
 
   default String trdDocument() {return g("trdDocument");}
+
+  default String trdDocumentExpenditures() {return g("trdDocumentExpenditures");}
 
   default String trdDocumentFiles() {return g("trdDocumentFiles");}
 
@@ -5653,7 +5935,15 @@ public interface Dictionary {
 
   default String trdDriver() {return g("trdDriver");}
 
+  default String trdExpenditureType() {return g("trdExpenditureType");}
+
+  default String trdExpenditureTypes() {return g("trdExpenditureTypes");}
+
   default String trdExported() {return g("trdExported");}
+
+  default String trdGenerateDocument() {return g("trdGenerateDocument");}
+
+  default String trdGeneratedDocument() {return g("trdGeneratedDocument");}
 
   default String trdInvoice() {return g("trdInvoice");}
 
@@ -5667,11 +5957,17 @@ public interface Dictionary {
 
   default String trdManager() {return g("trdManager");}
 
+  default String trdMovement() {return g("trdMovement");}
+
   default String trdMovementOfGoods() {return g("trdMovementOfGoods");}
 
   default String trdNewDocument() {return g("trdNewDocument");}
 
   default String trdNewDocumentType() {return g("trdNewDocumentType");}
+
+  default String trdNewExpenditure() {return g("trdNewExpenditure");}
+
+  default String trdNewExpenditureType() {return g("trdNewExpenditureType");}
 
   default String trdNewInvoice() {return g("trdNewInvoice");}
 
@@ -5721,7 +6017,11 @@ public interface Dictionary {
 
   default String trdPayer() {return g("trdPayer");}
 
+  default String trdPayment() {return g("trdPayment");}
+
   default String trdPaymentTime() {return g("trdPaymentTime");}
+
+  default String trdPayments() {return g("trdPayments");}
 
   default String trdPrice() {return g("trdPrice");}
 
@@ -5742,6 +6042,8 @@ public interface Dictionary {
   default String trdPurchases() {return g("trdPurchases");}
 
   default String trdQuantity() {return g("trdQuantity");}
+
+  default String trdReceivedDate() {return g("trdReceivedDate");}
 
   default String trdRemainders() {return g("trdRemainders");}
 
@@ -5835,6 +6137,8 @@ public interface Dictionary {
 
   default String unitMinutes() {return g("unitMinutes");}
 
+  default String unitPrice() {return g("unitPrice");}
+
   default String unitShort() {return g("unitShort");}
 
   default String unitWeekShort() {return g("unitWeekShort");}
@@ -5879,6 +6183,8 @@ public interface Dictionary {
 
   default String userGroups() {return g("userGroups");}
 
+  default String userHasNotRoles() {return g("userHasNotRoles");}
+
   default String userInterface() {return g("userInterface");}
 
   default String userLocale() {return g("userLocale");}
@@ -5893,11 +6199,35 @@ public interface Dictionary {
 
   default String userProperties() {return g("userProperties");}
 
+  default String userRemind() {return g("userRemind");}
+
+  default String userReminder() {return g("userReminder");}
+
+  default String userReminderCancel() {return g("userReminderCancel");}
+
+  default String userReminderCreated() {return g("userReminderCreated");}
+
+  default String userReminderDataLabel() {return g("userReminderDataLabel");}
+
+  default String userReminderDisabled() {return g("userReminderDisabled");}
+
+  default String userReminderOtherTime() {return g("userReminderOtherTime");}
+
+  default String userReminderSendRemind() {return g("userReminderSendRemind");}
+
+  default String userReminderSendRemindDateError() {return g("userReminderSendRemindDateError");}
+
+  default String userReminderSuspend() {return g("userReminderSuspend");}
+
+  default String userReminderUpdate() {return g("userReminderUpdate");}
+
   default String userRoles() {return g("userRoles");}
 
   default String userSettings() {return g("userSettings");}
 
   default String users() {return g("users");}
+
+  default String validUntil() {return g("validUntil");}
 
   default String valuation() {return g("valuation");}
 
@@ -5930,6 +6260,14 @@ public interface Dictionary {
   default String vat() {return g("vat");}
 
   default String vatAmount() {return g("vatAmount");}
+
+  default String vatIsPercent() {return g("vatIsPercent");}
+
+  default String vatMode() {return g("vatMode");}
+
+  default String vatModeInclusive() {return g("vatModeInclusive");}
+
+  default String vatModePlus() {return g("vatModePlus");}
 
   default String vatPercent() {return g("vatPercent");}
 
@@ -6037,6 +6375,8 @@ public interface Dictionary {
 
   default String winter() {return g("winter");}
 
+  default String withoutVat() {return g("withoutVat");}
+
   default String withoutRemainder() {return g("withoutRemainder");}
 
   default String workSchedule() {return g("workSchedule");}
@@ -6045,9 +6385,18 @@ public interface Dictionary {
 
   default String workScheduleActualShort() {return g("workScheduleActualShort");}
 
-  default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
+  default String workScheduleExtension(Object fromyear, Object frommonth, Object toyear, Object tomonth) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{fromyear}", fromyear);
+    _m.put("{frommonth}", frommonth);
+    _m.put("{toyear}", toyear);
+    _m.put("{tomonth}", tomonth);
+    return Localized.format(g("workScheduleExtension"), _m);
+  }
 
   default String workScheduleHolidaysInclusiveShort() {return g("workScheduleHolidaysInclusiveShort");}
+
+  default String workScheduleHolihoursInclusiveShort() {return g("workScheduleHolihoursInclusiveShort");}
 
   default String workSchedulePlanned() {return g("workSchedulePlanned");}
 

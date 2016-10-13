@@ -8,7 +8,7 @@
       newRowForm="Assessment"
       editForm="Assessment"
 >
-  <Relation renderColumns="ID Date CustomerName" />
+  <Relation renderColumns="OrderNo Date CustomerName" />
   <Columns>
     <IdColumn name="ID" />
     <SimpleColumn name="Assessment" label="=captionPid" />
@@ -57,6 +57,13 @@
           </SimpleJoin>
         </SimpleJoin>
 
+        <SimpleColumn name="Payer" editable="true" />
+        <SimpleJoin joinType="LEFT" name="Payer">
+          <SimpleColumn name="Name" alias="PayerName" />
+          <SimpleJoin joinType="LEFT" name="CompanyType">
+            <SimpleColumn name="Name" alias="PayerTypeName" />
+          </SimpleJoin>
+        </SimpleJoin>
 
         <SimpleColumn name="Manager" editable="true" />
         <SimpleJoin name="Manager" joinType="LEFT">

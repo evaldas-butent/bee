@@ -2,24 +2,19 @@ package com.butent.bee.client.modules.orders.ec;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.EcStyles;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,18 +35,15 @@ public class OrdEcItemList extends Flow {
 
   private static final String STYLE_ITEM_NAME = EcStyles.name(STYLE_PRIMARY, "name");
 
-  private static final int PAGE_SIZE = 50;
-
   Dictionary lc = Localized.dictionary();
 
   private final HtmlTable table;
-  private final Button moreWidget;
   private String stockLabel;
 
   private boolean byCategory;
   private String service;
   private String query;
-  private int clickedTimes = 0;
+  private int clickedTimes;
 
   private final Set<OrdEcItem> data = new HashSet<>();
 
@@ -71,14 +63,9 @@ public class OrdEcItemList extends Flow {
     EcStyles.add(table, STYLE_PRIMARY, "table");
     add(table);
 
-    this.moreWidget = new Button(Localized.dictionary().ecMoreItems());
+    Button moreWidget = new Button(Localized.dictionary().ecMoreItems());
     EcStyles.add(moreWidget, STYLE_PRIMARY, "more");
-    moreWidget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        showMoreItems();
-      }
-    });
+    moreWidget.addClickHandler(event -> showMoreItems());
     add(moreWidget);
 
     this.stockLabel = OrdEcKeeper.getStockLabel();
@@ -144,8 +131,6 @@ public class OrdEcItemList extends Flow {
 
       Multimap<Long, OrdEcItemPicture> pictureWidgets = ArrayListMultimap.create();
 
-      int pageSize = (items.size() > PAGE_SIZE * 3 / 2) ? PAGE_SIZE : items.size();
-
       row++;
       for (OrdEcItem item : data) {
 
@@ -182,12 +167,7 @@ public class OrdEcItemList extends Flow {
       Label itemName = new Label(name);
       itemName.addStyleName(STYLE_ITEM_NAME);
 
-      itemName.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          OrdEcKeeper.openItem(item, true);
-        }
-      });
+      itemName.addClickHandler(event -> OrdEcKeeper.openItem(item, true));
 
       table.setWidgetAndStyle(row, col, itemName, STYLE_INFO);
     }
@@ -224,12 +204,7 @@ public class OrdEcItemList extends Flow {
     clickedTimes++;
 
     OrdEcKeeper.searchItems(byCategory, service, query, clickedTimes,
-        new Consumer<List<OrdEcItem>>() {
-          @Override
-          public void accept(List<OrdEcItem> input) {
-            render(input);
-          }
-        });
+        this::render);
 
   }
 

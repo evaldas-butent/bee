@@ -5,7 +5,7 @@
     <Relation name="Warehouse" relation="Warehouses" notNull="true" label="=warehouse" />
     <Numeric name="Remainder" precision="12" scale="3" label="=ecRemainder" />
   </Fields>
-  
+
   <Constraints>
     <Unique fields="Item Warehouse" />
   </Constraints>

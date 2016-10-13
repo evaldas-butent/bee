@@ -12,7 +12,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
@@ -24,6 +23,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 class EcPricingHandler extends AbstractGridInterceptor {
 

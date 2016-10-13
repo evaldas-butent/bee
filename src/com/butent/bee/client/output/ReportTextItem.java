@@ -56,7 +56,7 @@ public class ReportTextItem extends ReportItem {
   @Override
   public void deserialize(String data) {
     if (data != null) {
-      Map<String, String> map = Codec.deserializeMap(data);
+      Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
       filterNegation = BeeUtils.toBoolean(map.get(NEGATION));
 

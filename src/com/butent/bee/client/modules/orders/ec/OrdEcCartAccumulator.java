@@ -1,10 +1,7 @@
 package com.butent.bee.client.modules.orders.ec;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
@@ -56,21 +53,18 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
     this.input = new InputInteger();
     input.setValue(quantity);
 
-    input.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          int value = input.getIntValue();
+    input.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        int value = input.getIntValue();
 
-          if (value > 0 && DomUtils.isInView(input)) {
-            if (item.getMinQuantity() > value) {
-              showQuantityWarning(item);
-            } else {
-              OrdEcKeeper.addToCart(item, value);
-              input.setValue(0);
+        if (value > 0 && DomUtils.isInView(input)) {
+          if (item.getMinQuantity() > value) {
+            showQuantityWarning(item);
+          } else {
+            OrdEcKeeper.addToCart(item, value);
+            input.setValue(0);
 
-              onAddToCart();
-            }
+            onAddToCart();
           }
         }
       }
@@ -83,24 +77,18 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
     FaLabel plus = new FaLabel(FontAwesome.PLUS_SQUARE_O);
     plus.addStyleName(STYLE_PLUS);
 
-    plus.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        int value = Math.max(input.getIntValue() + 1, 1);
-        input.setValue(value);
-      }
+    plus.addClickHandler(event -> {
+      int value = Math.max(input.getIntValue() + 1, 1);
+      input.setValue(value);
     });
     spin.add(plus);
 
     FaLabel minus = new FaLabel(FontAwesome.MINUS_SQUARE_O);
     minus.addStyleName(STYLE_MINUS);
 
-    minus.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        int value = Math.max(input.getIntValue() - 1, 0);
-        input.setValue(value);
-      }
+    minus.addClickHandler(event -> {
+      int value = Math.max(input.getIntValue() - 1, 0);
+      input.setValue(value);
     });
     spin.add(minus);
 
@@ -109,19 +97,16 @@ public class OrdEcCartAccumulator extends HtmlTable implements HasKeyDownHandler
     Image cart = new Image(EcUtils.imageUrl("shoppingcart_add.png"));
     cart.setAlt("cart");
 
-    cart.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        int value = input.getIntValue();
-        if (value > 0) {
-          if (item.getMinQuantity() > value) {
-            showQuantityWarning(item);
-          } else {
-            OrdEcKeeper.addToCart(item, value);
-            input.setValue(0);
+    cart.addClickHandler(event -> {
+      int value = input.getIntValue();
+      if (value > 0) {
+        if (item.getMinQuantity() > value) {
+          showQuantityWarning(item);
+        } else {
+          OrdEcKeeper.addToCart(item, value);
+          input.setValue(0);
 
-            onAddToCart();
-          }
+          onAddToCart();
         }
       }
     });

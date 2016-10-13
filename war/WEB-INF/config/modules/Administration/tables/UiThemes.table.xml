@@ -17,6 +17,8 @@
     <Boolean name="GridActionCreateNew" />
     <Boolean name="ChildActionCreateNew" />
 
+    <Boolean name="ActionSaveLarge" />
+
     <String name="GridHeaderRowHeight" precision="50" />
     <String name="GridBodyRowHeight" precision="50" />
     <String name="GridFooterRowHeight" precision="50" />

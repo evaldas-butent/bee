@@ -8,7 +8,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.grid.GridView;
@@ -17,7 +16,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -38,13 +36,10 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
 
   @Override
   public void afterCreatePresenter(final GridPresenter presenter) {
-    Global.getParameter(AdministrationConstants.PRM_ERP_ADDRESS, new Consumer<String>() {
-      @Override
-      public void accept(String address) {
-        if (!BeeUtils.isEmpty(address)) {
-          presenter.getHeader().addCommandItem(panel);
-          setWaiting(false);
-        }
+    Global.getParameter(AdministrationConstants.PRM_ERP_ADDRESS, address -> {
+      if (!BeeUtils.isEmpty(address)) {
+        presenter.getHeader().addCommandItem(panel);
+        setWaiting(false);
       }
     });
   }
@@ -67,27 +62,24 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
       return;
     }
 
-    Global.confirm(Localized.dictionary().trSendToERPConfirm(), new ConfirmationCallback() {
-      @Override
-      public void onConfirm() {
-        setWaiting(true);
-        ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_TO_ERP);
-        args.addDataItem(TradeConstants.VAR_VIEW_NAME, view.getViewName());
-        args.addDataItem(TradeConstants.VAR_ID_LIST, DataUtils.buildIdList(ids));
+    Global.confirm(Localized.dictionary().trSendToERPConfirm(), () -> {
+      setWaiting(true);
+      ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_TO_ERP);
+      args.addDataItem(TradeConstants.VAR_VIEW_NAME, view.getViewName());
+      args.addDataItem(TradeConstants.VAR_ID_LIST, DataUtils.buildIdList(ids));
 
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            setWaiting(false);
-            response.notify(view);
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          setWaiting(false);
+          response.notify(view);
 
-            if (!response.hasErrors()) {
-              getERPStocks(ids);
-              Data.onViewChange(view.getViewName(), DataChangeEvent.RESET_REFRESH);
-            }
+          if (!response.hasErrors()) {
+            getERPStocks(ids);
+            Data.onViewChange(view.getViewName(), DataChangeEvent.RESET_REFRESH);
           }
-        });
-      }
+        }
+      });
     });
   }
 

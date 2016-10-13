@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      
+      name="DistinctOrderValues" source="SaleItems"
+>
+  <Columns>
+    <SimpleColumn name="Sale" />
+    <ExternalJoin name="SaleItem" joinType="INNER" source="OrderChildInvoices">
+      <SimpleJoin name="OrderItem" joinType="INNER">
+        <SimpleJoin name="Order" joinType="INNER">
+          <SimpleJoin joinType="LEFT" name="Series">
+            <SimpleColumn name="SeriesName" />
+          </SimpleJoin>
+          <SimpleColumn name="Number" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </ExternalJoin>
+  </Columns>
+  <GroupBy columns="Sale SeriesName Number" />
+  <Order>
+    <OrderBy column="SeriesName" />
+  </Order>
+</View>

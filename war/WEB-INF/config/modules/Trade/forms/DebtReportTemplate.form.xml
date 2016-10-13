@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
+        xmlns:f="http://www.butent.com/form"
 
-  name="DebtReportTemplate" caption="=sendReminderMail"
-  width="400" height="500" 
-  >
+        name="DebtReportTemplate" caption="=sendReminderMail"
+        width="400" height="500"
+>
   <FlowPanel class="flexBox-vertical">
     <br/>
     <Table kind="controls">
       <col index="0" kind="label" />
       <row>
         <Label text="=template"/>
-        <UnboundSelector name="Template" viewName="DebtReminderTemplates" 
-        renderColumns="Name Subject" style="width: 350px;" />
+        <UnboundSelector name="Template" viewName="DebtReminderTemplates"
+                         renderColumns="Name Subject" style="width: 350px;" />
       </row>
       <row>
         <Label for="Subject" text="=mailSubject" class="bee-required" />

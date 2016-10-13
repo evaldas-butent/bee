@@ -3,7 +3,6 @@
   <Fields>
 
     <Relation name="Order" notNull="true" relation="Orders" cascade="DELETE" label="=order" />
-    <Date name="Date" label="=date" notNull="true" defExpr="CURRENT_TIME" />
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
     <Numeric name="ResRemainder" precision="12" scale="5" label="=ordResRemainder" />
     <Numeric name="Quantity" precision="12" scale="5" notNull="true" label="=quantity" />

@@ -31,5 +31,11 @@
         <SimpleColumn name="Name" alias="ContractorTypeName" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="ContactPerson" />
+    <SimpleColumn name="Manufacturer" />
+    <SimpleColumn name="Model" />
+    <SimpleColumn name="SerialNo" />
+    <SimpleColumn name="Equipment" />
   </Columns>
 </View>

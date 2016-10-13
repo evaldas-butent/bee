@@ -56,7 +56,7 @@ public class ReportNumericItem extends ReportItem {
 
   @Override
   public void deserialize(String data) {
-    Map<String, String> map = Codec.deserializeMap(data);
+    Map<String, String> map = Codec.deserializeLinkedHashMap(data);
 
     if (!BeeUtils.isEmpty(map)) {
       setPrecision(BeeUtils.toInt(map.get(PRECISION)));

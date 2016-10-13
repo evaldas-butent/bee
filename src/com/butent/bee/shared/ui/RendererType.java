@@ -22,7 +22,8 @@ public enum RendererType {
   VAT("vat", false),
   DISCOUNT("discount", false),
   TIME("time", true),
-  BRANCH("branch", true);
+  BRANCH("branch", true),
+  PLACE("place", false);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

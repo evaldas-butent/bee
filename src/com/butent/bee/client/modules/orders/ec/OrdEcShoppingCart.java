@@ -4,13 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -32,7 +26,6 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -162,22 +155,12 @@ public class OrdEcShoppingCart extends Split {
 
     Button submitWidget = new Button(Localized.dictionary().ecShoppingCartSubmit());
     submitWidget.addStyleName(STYLE_PRIMARY + "-submit");
-    submitWidget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        doSubmit(copyByMail.getValue());
-      }
-    });
+    submitWidget.addClickHandler(event -> doSubmit(copyByMail.getValue()));
     panel.add(submitWidget);
 
     Button saveWidget = new Button(Localized.dictionary().actionSave());
     saveWidget.addStyleName(STYLE_PRIMARY + "-save");
-    saveWidget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        doSave();
-      }
-    });
+    saveWidget.addClickHandler(event -> doSave());
     panel.add(saveWidget);
 
     addSouth(panel, SIZE_SOUTH);
@@ -200,12 +183,8 @@ public class OrdEcShoppingCart extends Split {
     if (!BeeUtils.isEmpty(cart.getComment())) {
       inputComment.setValue(BeeUtils.trim(cart.getComment()));
     }
-    inputComment.addBlurHandler(new BlurHandler() {
-      @Override
-      public void onBlur(BlurEvent event) {
-        cart.setComment(Strings.emptyToNull(BeeUtils.trim(inputComment.getValue())));
-      }
-    });
+    inputComment.addBlurHandler(
+        event -> cart.setComment(Strings.emptyToNull(BeeUtils.trim(inputComment.getValue()))));
 
     panel.add(inputComment);
 
@@ -316,12 +295,7 @@ public class OrdEcShoppingCart extends Split {
   private static Widget renderName(final OrdEcCartItem item) {
     Label nameWidget = new Label(item.getEcItem().getName());
 
-    nameWidget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        OrdEcKeeper.openItem(item.getEcItem(), false);
-      }
-    });
+    nameWidget.addClickHandler(event -> OrdEcKeeper.openItem(item.getEcItem(), false));
 
     return nameWidget;
   }
@@ -339,30 +313,24 @@ public class OrdEcShoppingCart extends Split {
     input.setValue(item.getQuantity());
     input.addStyleName(stylePrefix + "input");
 
-    input.addKeyDownHandler(new KeyDownHandler() {
-      @Override
-      public void onKeyDown(KeyDownEvent event) {
-        switch (event.getNativeKeyCode()) {
-          case KeyCodes.KEY_ENTER:
-            int value = input.getIntValue();
-            if (value > 0 && DomUtils.isInView(input) && item.getQuantity() != value) {
-              OrdEcKeeper.maybeRecalculatePrices(item.getEcItem(), value, new Consumer<Boolean>() {
-                @Override
-                public void accept(Boolean input) {
-                  OrdEcCart cart = OrdEcKeeper.refreshCart();
-                  updatePrice(cart);
-                  updateQuantity(item, value);
-                }
-              });
-            }
-            break;
+    input.addKeyDownHandler(event -> {
+      switch (event.getNativeKeyCode()) {
+        case KeyCodes.KEY_ENTER:
+          int value = input.getIntValue();
+          if (value > 0 && DomUtils.isInView(input) && item.getQuantity() != value) {
+            OrdEcKeeper.maybeRecalculatePrices(item.getEcItem(), value, input1 -> {
+              OrdEcCart cart = OrdEcKeeper.refreshCart();
+              updatePrice(cart);
+              updateQuantity(item, value);
+            });
+          }
+          break;
 
-          case KeyCodes.KEY_ESCAPE:
-            if (DomUtils.isInView(input) && item.getQuantity() != input.getIntValue()) {
-              input.setValue(item.getQuantity());
-            }
-            break;
-        }
+        case KeyCodes.KEY_ESCAPE:
+          if (DomUtils.isInView(input) && item.getQuantity() != input.getIntValue()) {
+            input.setValue(item.getQuantity());
+          }
+          break;
       }
     });
 
@@ -373,44 +341,32 @@ public class OrdEcShoppingCart extends Split {
     FaLabel plus = new FaLabel(FontAwesome.PLUS_SQUARE_O);
     plus.addStyleName(stylePrefix + "plus");
 
-    plus.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        int value = item.getQuantity() + 1;
-        input.setValue(value);
+    plus.addClickHandler(event -> {
+      int value = item.getQuantity() + 1;
+      input.setValue(value);
 
-        OrdEcKeeper.maybeRecalculatePrices(item.getEcItem(), value, new Consumer<Boolean>() {
-          @Override
-          public void accept(Boolean input) {
-            OrdEcCart cart = OrdEcKeeper.refreshCart();
-            updatePrice(cart);
-            updateQuantity(item, value);
-          }
-        });
-      }
+      OrdEcKeeper.maybeRecalculatePrices(item.getEcItem(), value, input12 -> {
+        OrdEcCart cart = OrdEcKeeper.refreshCart();
+        updatePrice(cart);
+        updateQuantity(item, value);
+      });
     });
     spin.add(plus);
 
     FaLabel minus = new FaLabel(FontAwesome.MINUS_SQUARE_O);
     minus.addStyleName(stylePrefix + "minus");
 
-    minus.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        int value = item.getQuantity() - 1;
+    minus.addClickHandler(event -> {
+      int value = item.getQuantity() - 1;
 
-        if (value > 0) {
-          input.setValue(value);
+      if (value > 0) {
+        input.setValue(value);
 
-          OrdEcKeeper.maybeRecalculatePrices(item.getEcItem(), value, new Consumer<Boolean>() {
-            @Override
-            public void accept(Boolean input) {
-              OrdEcCart cart = OrdEcKeeper.refreshCart();
-              updatePrice(cart);
-              updateQuantity(item, value);
-            }
-          });
-        }
+        OrdEcKeeper.maybeRecalculatePrices(item.getEcItem(), value, input13 -> {
+          OrdEcCart cart = OrdEcKeeper.refreshCart();
+          updatePrice(cart);
+          updateQuantity(item, value);
+        });
       }
     });
     spin.add(minus);
@@ -424,17 +380,14 @@ public class OrdEcShoppingCart extends Split {
     Image remove = new Image(EcUtils.imageUrl("shoppingcart_remove.png"));
     remove.setAlt("remove");
 
-    remove.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        OrdEcCart cart = OrdEcKeeper.removeFromCart(item.getEcItem());
-        if (cart != null) {
-          if (cart.isEmpty()) {
-            OrdEcKeeper.closeView(OrdEcShoppingCart.this);
-          } else {
-            renderItems(cart.getItems());
-            updateTotal(cart);
-          }
+    remove.addClickHandler(event -> {
+      OrdEcCart cart = OrdEcKeeper.removeFromCart(item.getEcItem());
+      if (cart != null) {
+        if (cart.isEmpty()) {
+          OrdEcKeeper.closeView(OrdEcShoppingCart.this);
+        } else {
+          renderItems(cart.getItems());
+          updateTotal(cart);
         }
       }
     });

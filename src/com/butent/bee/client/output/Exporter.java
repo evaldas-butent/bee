@@ -33,7 +33,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.CommUtils;
@@ -71,6 +70,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import elemental.xml.XMLHttpRequest;
 
@@ -109,7 +109,10 @@ public final class Exporter {
       super(Localized.dictionary().exportToMsExcel(), STYLE_PREFIX + "dialog");
       addDefaultCloseBox();
 
-      setPreviewEnabled(false);
+      if (!hasEventPreview()) {
+        setPreviewEnabled(false);
+      }
+
       setResizable(false);
       setAnimationEnabled(false);
 
@@ -288,7 +291,7 @@ public final class Exporter {
   }
 
   public static void clearServerCache(final String id) {
-    doRequest(Service.EXPORT_CLEAR, id, null, null, result -> logger.debug(result));
+    doRequest(Service.EXPORT_CLEAR, id, null, null, logger::debug);
   }
 
   public static void confirm(String fileName, FileNameCallback callback) {

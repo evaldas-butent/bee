@@ -40,14 +40,39 @@
     </CalcColumn>
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
-    <DataColumn name="CargoPercent" minValue="0" />
-    <DataColumn name="TripPercent" minValue="0" editInPlace="true">
+
+    <DataColumn name="TripPercent" horizontalAlignment="right">
       <style>
-        <headerStyle><ui:inline>font-weight:bold;</ui:inline></headerStyle>
-        <bodyStyle><ui:inline>font-weight:bold;</ui:inline></bodyStyle>
+        <headerStyle>
+          <ui:inline>font-weight:bold;</ui:inline>
+        </headerStyle>
+        <bodyStyle>
+          <ui:inline>font-weight:bold;</ui:inline>
+        </bodyStyle>
       </style>
+      <dynStyle>
+        <ui:inline>color:silver;</ui:inline>
+        <ui:expression>row.TripPercent==null</ui:expression>
+      </dynStyle>
+      <render>
+        <ui:expression>row.Income</ui:expression>
+      </render>
+    </DataColumn>
+
+    <DataColumn name="CargoPercent" horizontalAlignment="right">
+      <dynStyle>
+        <ui:inline>color:silver;</ui:inline>
+        <ui:expression>row.CargoPercent==null</ui:expression>
+      </dynStyle>
+      <render>
+        <ui:expression>row.Expense</ui:expression>
+      </render>
     </DataColumn>
   </g:columns>
 
   <xi:include href="columns/Handling.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="Message" readOnly="true" />
+  </g:columns>
 </g:Grid>

@@ -51,7 +51,7 @@ public abstract class OrdEcView extends Flow {
     UiHelper.focus(this);
   }
 
-  protected Widget renderNoData(String key) {
+  protected static Widget renderNoData(String key) {
     Label label = new Label(Localized.dictionary().dataNotAvailable(key));
     EcStyles.add(label, "noData");
     return label;

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="ChartOfAccounts"
+  idName="AccountID"
+  >
+  <Fields>
+    <String name="AccountCode" precision="20" notNull="true" unique="true" label="=code" />
+    <String name="AccountName" precision="140" notNull="true" translatable="true" label="=name" />
+
+    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+              label="=dimensions" />
+
+    <Text name="Description" label="=description" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+  </Fields>
+</Table>

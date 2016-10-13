@@ -19,6 +19,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -161,7 +162,7 @@ public class MailAccount {
     storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD))
         ? null : Codec.decodeBase64(data.getValue(COL_STORE_PASSWORD));
     storeSSL = BeeUtils.isTrue(data.getBoolean(COL_STORE_SSL));
-    storeProperties = Codec.deserializeMap(data.getValue(COL_STORE_PROPERTIES));
+    storeProperties = Codec.deserializeLinkedHashMap(data.getValue(COL_STORE_PROPERTIES));
 
     transportHost = data.getValue(COL_TRANSPORT_SERVER);
     transportPort = data.getInt(COL_TRANSPORT_PORT);
@@ -170,7 +171,7 @@ public class MailAccount {
     transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD))
         ? null : Codec.decodeBase64(data.getValue(COL_TRANSPORT_PASSWORD));
     transportSSL = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL));
-    transportProperties = Codec.deserializeMap(data.getValue(COL_TRANSPORT_PROPERTIES));
+    transportProperties = Codec.deserializeLinkedHashMap(data.getValue(COL_TRANSPORT_PROPERTIES));
 
     accountInfo = new AccountInfo(data);
   }
@@ -302,7 +303,7 @@ public class MailAccount {
       return false;
     }
     Store store = null;
-    Folder folder = null;
+    Folder folder;
 
     try {
       store = connectToStore();
@@ -350,6 +351,7 @@ public class MailAccount {
       Properties props = new Properties();
       String pfx = "mail." + protocol + ".";
 
+      props.put("mail.mime.address.strict", "false");
       props.put(pfx + "connectiontimeout", BeeUtils.toString(CONNECTION_TIMEOUT));
       props.put(pfx + "timeout", BeeUtils.toString(TIMEOUT));
 
@@ -421,7 +423,7 @@ public class MailAccount {
       return ok;
     }
     Store store = null;
-    Folder folder = null;
+    Folder folder;
 
     try {
       store = connectToStore();
@@ -479,7 +481,7 @@ public class MailAccount {
       return ok;
     }
     Store store = null;
-    Folder folder = null;
+    Folder folder;
 
     try {
       store = connectToStore();
@@ -625,7 +627,7 @@ public class MailAccount {
       return ok;
     }
     Store store = null;
-    Folder folder = null;
+    Folder folder;
 
     try {
       store = connectToStore();
@@ -695,9 +697,7 @@ public class MailAccount {
     accountUsers.add(getUserId());
 
     if (!ArrayUtils.isEmpty(users)) {
-      for (Long user : users) {
-        accountUsers.add(user);
-      }
+      Collections.addAll(accountUsers, users);
     }
   }
 }

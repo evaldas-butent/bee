@@ -6,12 +6,8 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.butent.bee.client.modules.ec.widget.ItemSelector;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.orders.ec.OrdEcItem;
 import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.List;
 
 public class SearchByArticle extends OrdEcView implements SelectionHandler<InputText> {
 
@@ -35,13 +31,10 @@ public class SearchByArticle extends OrdEcView implements SelectionHandler<Input
     final InputText editor = event.getSelectedItem();
 
     OrdEcKeeper.searchItems(false, service, BeeUtils.trim(editor.getValue()), 0,
-        new Consumer<List<OrdEcItem>>() {
-          @Override
-          public void accept(List<OrdEcItem> input) {
-            itemPanel.setQuery(BeeUtils.trim(editor.getValue()));
-            AutocompleteProvider.retainValue(editor);
-            OrdEcKeeper.renderItems(itemPanel, input);
-          }
+        input -> {
+          itemPanel.setQuery(BeeUtils.trim(editor.getValue()));
+          AutocompleteProvider.retainValue(editor);
+          OrdEcKeeper.renderItems(itemPanel, input);
         });
   }
 

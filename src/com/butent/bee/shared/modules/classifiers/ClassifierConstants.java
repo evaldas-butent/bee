@@ -12,8 +12,14 @@ public final class ClassifierConstants {
   public static final String SVC_GENERATE_QR_CODE_PERSON = "GenerateQrCodePerson";
   public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
   public static final String SVC_GET_PRICE_AND_DISCOUNT = "GetPriceAndDiscount";
+  public static final String SVC_FILTER_ORDERS = "FilterOrders";
 
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
+  public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
+  public static final String TIMER_REMIND_CALENDAR_EVENTS = "timer_remind_calendar_events";
+  public static final String TIMER_REMIND_USER_TASKS = "timer_remind_user_tasks";
+  public static final String TIMER_REMIND_DOCUMENT_END = "timer_remind_document_end_";
+  public static final String TIMER_REMIND_PROJECT_DATES = "timer_remind_project_dates";
 
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
@@ -53,8 +59,6 @@ public final class ClassifierConstants {
   public static final String TBL_PAYMENT_TYPES = "PaymentTypes";
 
   public static final String TBL_DISCOUNTS = "Discounts";
-
-  public static final String TBL_ITEM_REMAINDERS_TMP = "ItemRemaindersTmp";
 
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
@@ -97,13 +101,15 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_OBJECTS = "CompanyObjects";
 
   public static final String VIEW_HOLIDAYS = "Holidays";
+  public static final String VIEW_CHART_OF_ACCOUNTS = "ChartOfAccounts";
 
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
   public static final String GRID_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
-
   public static final String GRID_COMPANY_USERS = "CompanyUsers";
+
   public static final String GRID_ITEMS = "Items";
+  public static final String GRID_CHART_OF_ACCOUNTS = "ChartOfAccounts";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
@@ -148,6 +154,9 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_NAME_2 = "Name2";
   public static final String COL_ITEM_NAME_3 = "Name3";
   public static final String COL_ITEM_ARTICLE = "Article";
+  public static final String COL_ITEM_ARTICLE_2 = "Article2";
+  public static final String COL_ITEM_ARTICLE_3 = "Article3";
+  public static final String COL_ITEM_ARTICLE_4 = "Article4";
   public static final String COL_ITEM_ATTRIBUTE = "Attribute";
   public static final String COL_ITEM_BARCODE = "Barcode";
   public static final String COL_ITEM_IS_SERVICE = "IsService";
@@ -208,8 +217,8 @@ public final class ClassifierConstants {
   public static final String COL_WEBSITE = "Website";
   public static final String COL_NOTES = "Notes";
   public static final String COL_REMIND_EMAIL = "RemindEmail";
-  public static final String COL_REMIND_ACTIONS = "MailCompanyActions";
   public static final String COL_REMIND_ACTION_BEFORE = "CompanyActionRemindBefore";
+  public static final String COL_TASKS_MAILING_TIME = "TasksMailingTime";
   public static final String COL_EMAIL_INVOICES = "EmailInvoices";
 
   public static final String COL_CITY = "City";
@@ -282,6 +291,8 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_PRICE = "Price";
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
 
+  public static final String COL_ACCOUNT_CODE = "AccountCode";
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "CompanyType";
@@ -335,8 +346,7 @@ public final class ClassifierConstants {
   public static final String QR_PERSON = "qrPerson";
 
   public static final long DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_HOUR;
-
-  public static final String PRM_OVERDUE_INVOICES = "OverdueInvoices";
+  public static final long DEFAULT_REMIND_TASKS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
 
   public static void register() {
     EnumUtils.register(ItemPrice.class);

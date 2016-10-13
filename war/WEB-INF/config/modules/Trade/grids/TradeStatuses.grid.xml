@@ -13,5 +13,11 @@
     <DataColumn name="Foreground" updateMode="row" minWidth="100">
       <editor type="color" />
     </DataColumn>
+
+    <DataColumn name="PhaseOrder" />
+    <DataColumn name="PhasePending" />
+    <DataColumn name="PhaseActive" />
+    <DataColumn name="PhaseCompleted" />
+    <DataColumn name="PhaseApproved" />
   </g:columns>
 </g:Grid>

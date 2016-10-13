@@ -37,16 +37,13 @@
       </row>
 
       <row for="Address">
-        <Label text="=address" style="&lbl;" />
+        <Label for="Address" style="&lbl;" />
         <cell colSpan="4">
           <InputText source="Address" style="width: 525px;" />
         </cell>
         <Label for="EmailId" style="&lbl;" />
         <cell colSpan="1" for="EmailId">
-          <FlowPanel>
-            <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
-            <CheckBox html="-" name="RemindEmail" source="RemindEmail" title="=sendReminder"/>
-          </FlowPanel>
+          <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
         </cell>
       </row>
 
@@ -82,7 +79,7 @@
           <row>
             <Label text="=website" style="&lbl;" for="Website" />
             <InputText source="Website" style="width: 280px;" />
-            <Label text="=socialContacts" style="&lbl;" />
+            <Label for="SocialContacts" style="&lbl;"  />
             <InputText source="SocialContacts" style="width: 280px;" />
           </row>
           <row>
@@ -123,27 +120,27 @@
             </row>
 
             <row for="CreditTolerance">
-              <Label text="=creditTolerance" style="&lbl;" />
+              <Label for="CreditTolerance" style="&lbl;" />
               <InputInteger source="CreditTolerance" style="width: 60px;" summarize="true" />
             </row>
 
             <row for="CreditDays">
-              <Label text="=creditDays" style="&lbl;"/>
+              <Label for="CreditDays" style="&lbl;"/>
               <InputDecimal source="CreditDays" style="width: 60px;" summarize="true" />
             </row>
 
-            <row for="ToleratedDays">
+            <row for="ToleratedDays" module="Orders">
               <Label for="ToleratedDays" style="&lbl;"/>
               <InputDecimal source="ToleratedDays" style="width: 60px;" summarize="true" />
             </row>
-            
+
             <row for="FinancialState">
-              <Label text="=financialState" style="&lbl;" />
+              <Label for="FinancialState" style="&lbl;" />
               <DataSelector source="FinancialState" summarize="true" />
             </row>
 
             <row for="SupplierCreditDays">
-              <Label text="=supplierCreditDays" style="&lbl;"/>
+              <Label for="SupplierCreditDays" style="&lbl;"/>
               <InputDecimal source="SupplierCreditDays" style="width: 60px;" summarize="true" />
             </row>
           </Table>
@@ -159,7 +156,7 @@
         <text>=responsibilities</text>
         <ChildGrid name="CompanyUsers" relColumn="Company" />
       </page>
-      
+
       <page>
         <text>=additionalInfo</text>
         <FlowPanel style="margin:5px;">
@@ -188,7 +185,7 @@
               </cell>
             </row>
             <row>
-              <Label text="=trdTurnover" style="&lbl;"/>
+              <Label for="Turnover" text="=trdTurnover" style="&lbl;"/>
               <DataSelector source="Turnover" summarize="true" />
               <DataSelector source="TurnoverCurrency" editEnabled="false"
                 placeholder="=currencyShort"
@@ -200,9 +197,11 @@
             </row>
             <row>
               <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />
-              <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
-                targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
-                label="=companyRelationType" data="CompRelTypeStore" summarize="true" />
+              <cell colSpan="2">
+                <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
+                  targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
+                  label="=companyRelationType" data="CompRelTypeStore" summarize="true" />
+              </cell>
               <Label style="&lbl;" for="CompanyRelationTypeState" />
               <DataSelector source="CompanyRelationTypeState" summarize="true" />
             </row>
@@ -264,6 +263,11 @@
         <ChildGrid name="CompanyProjects" relColumn="Company" paging="true" />
       </page>
 
+      <page data="Orders">
+        <text>=offers</text>
+        <ChildGrid name="CompanyOrders" relColumn="Company" />
+      </page>
+
       <page>
         <text>=ecModule</text>
         <FlowPanel style="margin:5px;">
@@ -279,11 +283,6 @@
         </FlowPanel>
       </page>
 
-      <page data="Orders">
-        <text>=offers</text>
-        <ChildGrid name="CompanyOrders" relColumn="Company" />
-      </page>
-      
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>

@@ -65,8 +65,6 @@ public class ParameterList extends ArrayList<RpcParameter> {
       case QUERY:
         addQueryItems(items);
         break;
-      default:
-        Assert.untouchable();
     }
   }
 
@@ -109,6 +107,12 @@ public class ParameterList extends ArrayList<RpcParameter> {
   public void addNotEmptyData(String name, String value) {
     if (!BeeUtils.anyEmpty(name, value)) {
       addDataItem(name, value);
+    }
+  }
+
+  public void addNotEmptyQuery(String name, String value) {
+    if (!BeeUtils.anyEmpty(name, value)) {
+      addQueryItem(name, value);
     }
   }
 

@@ -1,7 +1,6 @@
 package com.butent.bee.server.modules.administration;
 
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -9,10 +8,6 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.server.data.BeeTable;
-import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.data.BeeTable.BeeIndex;
-import com.butent.bee.server.data.BeeTable.BeeUniqueKey;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -42,6 +37,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
@@ -79,6 +75,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -134,7 +131,7 @@ public class ImportBean {
         BeeView view = sys.getView(viewName);
 
         for (ViewColumn col : view.getViewColumns()) {
-          if (col.isHidden() || col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
+          if (col.isHidden() || col.isReadOnly() || !col.isEditable()
               && BeeUtils.isPositive(col.getLevel())) {
             continue;
           }
@@ -294,13 +291,7 @@ public class ImportBean {
   private static final String COL_REC_NO = "_RecNo_";
   private static final String COL_REASON = "_Reason_";
 
-  private static Function<SQLException, ResponseObject> errorHandler = new Function<SQLException,
-      ResponseObject>() {
-    @Override
-    public ResponseObject apply(SQLException ex) {
-      return ResponseObject.error(ex);
-    }
-  };
+  private static Function<SQLException, ResponseObject> errorHandler = ResponseObject::error;
 
   @EJB
   SystemBean sys;
@@ -316,7 +307,7 @@ public class ImportBean {
   EJBContext ctx;
 
   public ResponseObject doImport(RequestInfo reqInfo) {
-    ResponseObject response = null;
+    ResponseObject response;
 
     ImportType type = EnumUtils.getEnumByIndex(ImportType.class,
         BeeUtils.toIntOrNull(reqInfo.getParameter(COL_IMPORT_TYPE)));
@@ -420,7 +411,7 @@ public class ImportBean {
       applyMappings(io, data, parentName);
     }
     BeeView view = sys.getView(io.getViewName());
-    Map<String, BeeField> cols = new LinkedHashMap<>();
+    Set<String> cols = new LinkedHashSet<>();
     String tmp = SqlUtils.temporaryName();
     String progressCap = BeeUtils.join("->", parentCap,
         Localized.maybeTranslate(view.getCaption(), dict));
@@ -460,7 +451,7 @@ public class ImportBean {
           SqlUtils.isNull(data, realCol)), SqlUtils.and(SqlUtils.notNull(tmp, col),
           SqlUtils.notNull(data, realCol), SqlUtils.join(tmp, col, data, realCol))));
 
-      cols.put(col, sys.getTable(view.getColumnTable(col)).getField(view.getColumnField(col)));
+      cols.add(col);
     }
     if (BeeUtils.isEmpty(cols)) {
       return null;
@@ -472,48 +463,28 @@ public class ImportBean {
       return null;
     }
     // GET UNIQUE KEYS
-    List<Set<String>> uniqueKeys = new ArrayList<>();
+    Set<Set<String>> uniqueKeys = new LinkedHashSet<>();
 
-    for (Entry<String, BeeField> entry : cols.entrySet()) {
-      if (entry.getValue().isUnique()) {
-        uniqueKeys.add(Sets.newHashSet(entry.getKey()));
-      }
-    }
-    BeeTable table = sys.getTable(view.getSourceName());
+    for (Set<String> uniqueness : sys.getTable(view.getSourceName()).getUniqueness()) {
+      boolean ok = true;
 
-    for (int i = 0; i < 2; i++) {
-      List<List<String>> unique = new ArrayList<>();
+      for (String fld : uniqueness) {
+        boolean found = false;
 
-      switch (i) {
-        case 0:
-          for (BeeUniqueKey key : table.getUniqueKeys()) {
-            unique.add(key.getFields());
-          }
-          break;
-        case 1:
-          for (BeeIndex index : table.getIndexes()) {
-            if (index.isUnique() && !BeeUtils.isEmpty(index.getFields())) {
-              unique.add(index.getFields());
-            }
-          }
-          break;
-      }
-      for (List<String> key : unique) {
-        Set<String> keys = new HashSet<>();
-
-        for (String fld : key) {
-          for (Entry<String, BeeField> entry : cols.entrySet()) {
-            BeeField field = entry.getValue();
-
-            if (BeeUtils.same(field.getName(), fld)
-                && BeeUtils.same(field.getStorageTable(), table.getName())) {
-              keys.add(entry.getKey());
-            }
+        for (String col : cols) {
+          if (BeeUtils.isEmpty(view.getColumnLocale(col))
+              && BeeUtils.same(view.getColumnField(col), fld)) {
+            found = true;
+            break;
           }
         }
-        if (keys.size() == key.size() && !uniqueKeys.contains(keys)) {
-          uniqueKeys.add(keys);
+        if (!found) {
+          ok = false;
+          break;
         }
+      }
+      if (ok) {
+        uniqueKeys.add(uniqueness);
       }
     }
     Dictionary consts = usr.getDictionary();
@@ -522,8 +493,8 @@ public class ImportBean {
 
     // CHECK REQUIRED FIELDS
     if (!readOnly) {
-      for (String col : cols.keySet()) {
-        if (cols.get(col).isNotNull()) {
+      for (String col : cols) {
+        if (!view.isColNullable(col)) {
           qs.updateData(new SqlUpdate(tmp)
               .addConstant(COL_REASON,
                   consts.valueEmpty(BeeUtils.join("_", parentName, col)) + "\n")
@@ -534,7 +505,7 @@ public class ImportBean {
     // FIND MATCHING ROWS FROM DATABASE
     String vw = SqlUtils.temporaryName();
     qs.updateData(new SqlCreate(vw)
-        .setDataSource(view.getQuery(usr.getCurrentUserId(), null, null, cols.keySet())));
+        .setDataSource(view.getQuery(usr.getCurrentUserId(), null, null, cols)));
 
     SqlUpdate update = new SqlUpdate(tmp)
         .addExpression(idName, SqlUtils.field(vw, view.getSourceIdName()))
@@ -545,7 +516,7 @@ public class ImportBean {
 
       for (String col : keys) {
         condition.add(SqlUtils.notNull(tmp, col),
-            cols.get(col).isNotNull() ? null : SqlUtils.notNull(vw, col),
+            view.isColNullable(col) ? SqlUtils.notNull(vw, col) : null,
             SqlUtils.joinUsing(tmp, vw, col));
       }
       qs.updateData(update.setWhere(condition));
@@ -553,16 +524,16 @@ public class ImportBean {
     if (qs.sqlExists(tmp, validClause)) {
       clause = SqlUtils.and();
 
-      for (String col : cols.keySet()) {
+      for (String col : cols) {
         IsCondition condition = SqlUtils.and(SqlUtils.notNull(tmp, col),
             SqlUtils.joinUsing(tmp, vw, col));
 
-        if (cols.get(col).isNotNull()) {
-          clause.add(condition);
-        } else {
+        if (view.isColNullable(col)) {
           condition = SqlUtils.and(SqlUtils.notNull(vw, col), condition);
           clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col), SqlUtils.isNull(vw, col)),
               condition));
+        } else {
+          clause.add(condition);
         }
       }
       qs.updateData(update.setWhere(clause));
@@ -578,7 +549,7 @@ public class ImportBean {
           .addFromInner(tmp, SqlUtils.join(vw, view.getSourceIdName(), tmp, idName))
           .setWhere(clause);
 
-      for (String col : cols.keySet()) {
+      for (String col : cols) {
         boolean ok = usr.canEditColumn(view.getName(), col);
 
         if (ok) {
@@ -597,12 +568,12 @@ public class ImportBean {
           IsCondition wh = SqlUtils.compare(SqlUtils.field(tmp, col), Operator.NE,
               SqlUtils.field(vw, col));
 
-          if (cols.get(col).isNotNull()) {
-            clause.add(wh);
-          } else {
+          if (view.isColNullable(col)) {
             clause.add(SqlUtils.and(SqlUtils.notNull(tmp, col), SqlUtils.notNull(vw, col), wh),
                 SqlUtils.and(SqlUtils.isNull(tmp, col), SqlUtils.notNull(vw, col)),
                 SqlUtils.and(SqlUtils.notNull(tmp, col), SqlUtils.isNull(vw, col)));
+          } else {
+            clause.add(wh);
           }
         }
       }
@@ -634,8 +605,22 @@ public class ImportBean {
             if (!Objects.equals(oldValue, newValue)) {
               BeeColumn column = view.getBeeColumn(col);
 
-              if (column.getType() == ValueType.DATE && !BeeUtils.isEmpty(newValue)) {
-                newValue = TimeUtils.toDateTimeOrNull(newValue).getDate().serialize();
+              switch (column.getType()) {
+                case BOOLEAN:
+                  if (!BeeUtils.isEmpty(oldValue)) {
+                    oldValue = BooleanValue.pack(row.getBoolean(col));
+                  }
+                  break;
+                case DATE:
+                  if (!BeeUtils.isEmpty(oldValue)) {
+                    oldValue = row.getDate(col).serialize();
+                  }
+                  if (!BeeUtils.isEmpty(newValue)) {
+                    newValue = row.getDateTime(col).getDate().serialize();
+                  }
+                  break;
+                default:
+                  break;
               }
               columns.add(column);
               oldValues.add(oldValue);
@@ -741,7 +726,7 @@ public class ImportBean {
         List<BeeColumn> columns = new ArrayList<>();
         List<String> values = new ArrayList<>();
 
-        for (String col : cols.keySet()) {
+        for (String col : cols) {
           BeeColumn column = view.getBeeColumn(col);
           String value = row.getValue(col);
 
@@ -853,7 +838,7 @@ public class ImportBean {
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    String error = null;
+    String error;
 
     try (FileInfo fileInfo = fs.getFile(fileId)) {
       error = loadXLSData(io, fileInfo.getFile(), tmp, progress, (values) -> {
@@ -1083,7 +1068,7 @@ public class ImportBean {
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    String error = null;
+    String error;
 
     try (FileInfo fileInfo = fs.getFile(fileId)) {
       error = loadXLSData(io, fileInfo.getFile(), tmp, progress, (values) -> {

@@ -12,18 +12,22 @@
             <Label for="Subject" class="bee-required" style="&lbl;" />
             <InputText source="Subject" style="width:300px" autocomplete="true" required="true" />
           </row>
+          <row>
+            <FlowPanel />
+            <CheckBox source="VisibleCopies" style="line-height: 25px;"/>
+          </row>
         </Table>
       </FlowPanel>
       <RichTextEditor source="Content" class="bee-mail-Content flexible" required="true" />
     </FlowPanel>
     <TabbedPages style="height: 400px;">
       <page>
-        <text>=files</text>
-        <ChildGrid name="NewsletterFiles" relColumn="Newsletter" />
-      </page>
-      <page>
         <text>=contacts</text>
         <ChildGrid name="NewsletterContacts" relColumn="Newsletter" />
+      </page>
+      <page>
+        <text>=files</text>
+        <ChildGrid name="NewsletterFiles" relColumn="Newsletter" />
       </page>
     </TabbedPages>
   </FlowPanel>

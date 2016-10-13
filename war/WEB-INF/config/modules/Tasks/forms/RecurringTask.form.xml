@@ -40,7 +40,7 @@
             choiceColumns="Summary StartDateTime EndDateTime" />
           <Relation viewName="Discussions" renderColumns="Subject" newRowEnabled="false" editPopup="true" />
           <Relation viewName="ServiceObjects" renderColumns="Address" newRowEnabled="false" editPopup="true"
-            choiceColumns="Address CustomerName" />
+            choiceColumns="Address CustomerName" property="ServiceObjects" />
           <Relation viewName="Tasks" renderColumns="Summary ExecutorFirstName ExecutorLastName"
             newRowEnabled="false" editPopup="true"
             choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
