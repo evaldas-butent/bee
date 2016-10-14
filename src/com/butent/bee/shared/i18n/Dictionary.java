@@ -3623,6 +3623,8 @@ public interface Dictionary {
 
   default String price3Label() {return g("price3Label");}
 
+  default String priceDiscount() {return g("priceDiscount");}
+
   default String priceName() {return g("priceName");}
 
   default String prices() {return g("prices");}

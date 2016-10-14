@@ -70,7 +70,8 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
       @Override
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
-        return rowSet.getString(rowIndex, ALS_ITEM_NAME);
+        return BeeUtils.join(BeeConst.STRING_SLASH, rowSet.getString(rowIndex, ALS_ITEM_NAME),
+            rowSet.getString(rowIndex, COL_TRADE_ITEM_NOTE));
       }
     },
 
@@ -207,6 +208,19 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
         Double discount = rowSet.getDouble(rowIndex, COL_TRADE_DISCOUNT);
         return discount == null ? "" : PRICE_FORMAT.format(discount);
+      }
+    },
+
+    PRICE_DISCOUNT("price", true) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.priceDiscount();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        Double price = rowSet.getDouble(rowIndex, VAR_PRICE_DISCOUNT);
+        return PRICE_FORMAT.format(BeeUtils.unbox(price));
       }
     };
 

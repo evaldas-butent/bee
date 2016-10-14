@@ -650,7 +650,9 @@ public class TradeActBean implements HasTimerService {
             TradeConstants.COL_TRADE_VAT, TradeConstants.COL_TRADE_VAT_PERC, COL_INCOME_ITEM,
             TradeConstants.COL_TRADE_ITEM_PRICE, TradeConstants.COL_TRADE_DISCOUNT,
             TradeConstants.COL_TRADE_ITEM_QUANTITY, COL_INCOME_NOTE)
+        .addFields(TBL_ITEMS, COL_ITEM_ARTICLE)
         .addFrom(TBL_TRADE_ACT_ITEMS)
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_ITEM))
         .setWhere(where);
 
     SimpleRowSet data = qs.getData(query);
@@ -673,6 +675,10 @@ public class TradeActBean implements HasTimerService {
         vat = row.getDouble(TradeConstants.COL_TRADE_VAT);
       } else {
         vat = row.getDouble(TradeConstants.COL_TRADE_VAT);
+      }
+
+      if (!BeeUtils.isEmpty(row.getValue(COL_ITEM_ARTICLE))) {
+        insert.addConstant(COL_ITEM_ARTICLE, row.getValue(COL_ITEM_ARTICLE));
       }
 
       if (BeeUtils.nonZero(vat)) {

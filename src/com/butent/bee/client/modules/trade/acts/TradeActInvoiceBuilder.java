@@ -174,7 +174,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     private Double amount(int index, Long toCurrency, DateTime date) {
-      Double amount = TradeActUtils.serviceAmount(quantity, price, discounts.get(index), timeUnit,
+      Double amount = TradeActUtils.serviceAmount(quantity, price, null, timeUnit,
           factors.get(index));
 
       if (BeeUtils.nonZero(amount) && Money.canExchange(currency, toCurrency)) {
@@ -862,7 +862,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       Multimap<Long, Integer> selectedRanges, Long currency) {
 
     List<String> colNames = Lists.newArrayList(COL_SALE, COL_ITEM, COL_TRADE_ITEM_ARTICLE,
-        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT,
         COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
         COL_TRADE_ITEM_NOTE);
 
@@ -885,10 +885,12 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     int priceIndex = invoiceItems.getColumnIndex(COL_TRADE_ITEM_PRICE);
     int priceScale = invoiceItems.getColumn(COL_TRADE_ITEM_PRICE).getScale();
+    int discountScale = invoiceItems.getColumn(COL_TRADE_DISCOUNT).getScale();
 
     int vatPlusIndex = invoiceItems.getColumnIndex(COL_TRADE_VAT_PLUS);
     int vatIndex = invoiceItems.getColumnIndex(COL_TRADE_VAT);
     int vatPercentIndex = invoiceItems.getColumnIndex(COL_TRADE_VAT_PERC);
+    int discountIndex = invoiceItems.getColumnIndex(COL_TRADE_DISCOUNT);
 
     DateTime date = TimeUtils.nowMinutes();
 
@@ -908,11 +910,18 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           inv.setProperty(COL_TA_INVOICE_SERVICE, BeeUtils.toString(row.getId()));
 
           Double amount = svc.amount(idx, currency, date);
+          Double discount = svc.discounts.get(idx);
 
           if (BeeUtils.isPositive(amount) && BeeUtils.isPositive(svc.quantity)) {
             inv.setValue(priceIndex, BeeUtils.round(amount / svc.quantity, priceScale));
           } else {
             inv.clearCell(priceIndex);
+          }
+
+          if (BeeUtils.isPositive(discount)) {
+            inv.setValue(discountIndex, BeeUtils.round(discount, discountScale));
+          } else {
+            inv.clearCell(discountIndex);
           }
 
           if (BeeUtils.isPositive(svc.vatPercent)) {

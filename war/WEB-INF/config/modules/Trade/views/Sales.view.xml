@@ -77,6 +77,9 @@
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPositionName" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 

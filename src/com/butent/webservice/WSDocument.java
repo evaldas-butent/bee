@@ -113,9 +113,9 @@ public class WSDocument {
       if (!BeeUtils.isEmpty(item.price)) {
         sb.append(XmlUtils.tag("kaina", item.price));
 
-        if (!BeeUtils.isEmpty(item.discount)) {
-          sb.append(XmlUtils.tag("nuolaida", item.discount));
-        }
+//        if (!BeeUtils.isEmpty(item.discount)) {
+//          sb.append(XmlUtils.tag("nuolaida", item.discount));
+//        }
 
         if (!BeeUtils.isEmpty(item.vat)) {
           sb.append(XmlUtils.tag("pvm_stat", item.vatMode))

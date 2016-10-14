@@ -14,12 +14,13 @@
      </FlowPanel>
     <FlowPanel class="bee-trade-print-document-header flexBox-horizontal">
       <FlowPanel class="flexible" style="text-align: center">
-        <TextLabel class="bee-trade-print-document-number" style="&bold; text-transform: uppercase;">
+        <!--TextLabel class="bee-trade-print-document-number" style="&bold; text-transform:
+        uppercase;">
             <render>
               <ui:expression>row.Proforma ? 'Sąskaita išankstiniam apmokėjimui'
                 : 'PVM Sąskaita-faktūra'</ui:expression>
             </render>
-        </TextLabel>
+        </TextLabel -->
         <Label name="DocTitle" class="bee-trade-print-document-title" />
         <Label name="DocNumber" class="bee-trade-print-document-number" />
         <DateTimeLabel source="Date" format="DATE_LONG" class="bee-trade-print-document-date" />
@@ -119,7 +120,9 @@
     </Table>
 
     <Table name="Items" class="bee-trade-print-items" kind="output">
-      <properties columns="Ordinal, Name, Article, Quantity, Unit, Price, Discount, Amount" />
+      <properties
+              columns="Ordinal, Name, Article, Quantity, Unit, Price, Discount, PriceDiscount,
+              Amount" />
     </Table>
 
     <FlowPanel class="bee-trade-print-document-footer">
@@ -138,8 +141,13 @@
       <br/>
       <FlowPanel class="bee-trade-print-dispenser-receiver flexBox-horizontal" >
         <Label text="=printDocumentDispenser" class="bee-trade-print-dispenser" />
-        <FlowPanel class="bee-trade-print-signature flexible">
-          <hr/>
+        <FlowPanel class="flexible">
+          <TextLabel source="Manager">
+            <renderToken source="ManagerPositionName" />
+            <renderToken source="ManagerLastName" />
+            <renderToken source="ManagerFirstName" />
+          </TextLabel>
+          <hr />
           <Label text="=printSignature" class="bee-trade-print-signature-label" />
         </FlowPanel>
 
