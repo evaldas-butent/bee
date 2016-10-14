@@ -366,6 +366,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
     boolean isNew = false;
     boolean changed = false;
 
+    /* Fast switch list type and show new records */
     switch (type) {
       case ALL:
       case RELATED:
@@ -403,8 +404,19 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
         break;
     }
 
-    if ((isNew || changed) && getGridPresenter() != null) {
-      getGridPresenter().handleAction(Action.REFRESH);
+    if (getGridPresenter() != null) {
+    /* check if cell not contains in current user filter */
+      if (!(changed || isNew) && DataUtils.idEquals(oldRow, row.getId())
+          && getGridPresenter().getDataProvider() != null
+          && getGridPresenter().getDataProvider().getFilter() != null) {
+
+        Filter filter = getGridPresenter().getDataProvider().getFilter();
+        changed = !filter.isMatch(Data.getColumns(VIEW_TASKS), row);
+      }
+
+      if (isNew || changed) {
+        getGridPresenter().handleAction(Action.REFRESH);
+      }
     }
   }
 
