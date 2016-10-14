@@ -501,12 +501,21 @@ public class TradeActBean implements HasTimerService {
     Long series = parentActs.getLong(0, COL_TA_SERIES);
     DateTime now = TimeUtils.nowMinutes();
 
+    SqlSelect actNumbersQuery = new SqlSelect()
+        .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
+        .addFrom(TBL_TRADE_ACTS)
+        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), parentIds));
+    actNumbersQuery
+        .addGroup(SqlUtils.field(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS)));
+
     SqlInsert actInsert = new SqlInsert(TBL_TRADE_ACTS)
         .addConstant(COL_TA_KIND, TradeActKind.CONTINUOUS.ordinal())
         .addConstant(COL_TA_NUMBER, number + " T-" + getNextChildActNumber(TradeActKind
             .CONTINUOUS, series, parentIds.get(0), COL_TA_NUMBER))
         .addConstant(COL_TA_DATE, now)
-        .addConstant(COL_TA_MANAGER, usr.getCurrentUserId());
+        .addConstant(COL_TA_MANAGER, usr.getCurrentUserId())
+        .addConstant(COL_TA_NOTES, BeeUtils.joinItems(Lists.newArrayList(qs.getColumn(
+            actNumbersQuery))));
 
     for (String colName : COPY_TA_COLUMN_NAMES) {
       if (!parentActs.containsColumn(colName)) {
@@ -1715,7 +1724,7 @@ public class TradeActBean implements HasTimerService {
     int qtyIndex = parentItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
     for (BeeRow parentRow : parentItems) {
-      double qty = parentRow.getDouble(qtyIndex);
+      double qty = BeeUtils.unbox(parentRow.getDouble(qtyIndex));
       Double returnedQty = BeeConst.DOUBLE_ZERO;
 
       if (!BeeUtils.isEmpty(returnedItems)) {
@@ -1736,6 +1745,11 @@ public class TradeActBean implements HasTimerService {
         }
 
         result.addRow(row);
+      }
+
+      if(BeeUtils.isDouble(returnedQty)) {
+        returnedItems.put(parentRow.getLong(itemIndex), returnedQty - BeeUtils.unbox(parentRow
+            .getDouble(qtyIndex)));
       }
     }
 

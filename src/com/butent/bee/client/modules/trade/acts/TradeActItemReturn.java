@@ -385,8 +385,17 @@ final class TradeActItemReturn {
 
           double min = BeeUtils.toDouble(source.getInnerText());
           double max = BeeUtils.toDouble(overall.getInnerText());
+          double number = BeeUtils.unbox(w.getNumber());
 
-          if (w.getNumber().equals(BeeUtils.clamp(BeeUtils.unbox(w.getNumber()), min, max))) {
+          if (number != BeeUtils.min(number, max) && number == BeeUtils.max(number, 0D)) {
+            w.setValue(BeeUtils.min(number, max));
+          } else if (number == BeeUtils.min(number, max) && number != BeeUtils.max(number, 0D)) {
+            w.setValue(BeeUtils.max(number, 0D));
+          }
+
+          number = BeeUtils.unbox(w.getNumber());
+
+          if (number == BeeUtils.clamp(number, min, max)) {
             selectQuantity(w.getElement());
             return;
           }
