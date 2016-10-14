@@ -2,8 +2,8 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="FinancialRecords" viewName="FinancialRecords"
-        caption="=financialRecords"
+        name="TradeFinancialRecords" viewName="FinancialRecords"
+        order="Date"
 >
   <g:columns>
     <IdColumn name="Id" visible="false" />
@@ -35,8 +35,6 @@
     <DataColumn name="Amount" minWidth="80" visible="true" />
     <RelColumn name="Currency" newRowEnabled="false" visible="true" />
 
-    <DataColumn name="TradeDocument" caption="=trdDocumentShort" editEnabled="true"
-                readOnly="true" />
     <DataColumn name="TradePayment" readOnly="true" visible="false" />
 
     <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"

@@ -99,6 +99,11 @@
             <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
           </page>
 
+          <page module="Finance">
+            <text>=financialRecords</text>
+            <ChildGrid name="TradeFinancialRecords" relColumn="TradeDocument" />
+          </page>
+
           <page>
             <text>=files</text>
             <ChildGrid name="TradeDocumentFiles" relColumn="TradeDocument" />

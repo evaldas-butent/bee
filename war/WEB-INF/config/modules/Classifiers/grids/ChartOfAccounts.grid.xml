@@ -8,7 +8,7 @@
 >
   <g:columns>
     <DataColumn name="AccountCode" minWidth="80" flexGrow="0" visible="true" />
-    <DataColumn name="AccountName" visible="true" />
+    <DataColumn name="AccountName" verticalAlignment="top" visible="true" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
