@@ -1121,6 +1121,10 @@ public interface Dictionary {
 
   default String crmTaskAddSenderToObservers() {return g("crmTaskAddSenderToObservers");}
 
+  default String crmTaskAddToProject() {return g("crmTaskAddToProject");}
+
+  default String crmTaskAskRemoveFromProject() {return g("crmTaskAskRemoveFromProject");}
+
   default String crmTaskCancel() {return g("crmTaskCancel");}
 
   default String crmTaskCancellation() {return g("crmTaskCancellation");}
@@ -1292,6 +1296,8 @@ public interface Dictionary {
   default String crmTaskPublishTime() {return g("crmTaskPublishTime");}
 
   default String crmTaskReminder() {return g("crmTaskReminder");}
+
+  default String crmTaskRemoveFromProject() {return g("crmTaskRemoveFromProject");}
 
   default String crmTaskReports() {return g("crmTaskReports");}
 
