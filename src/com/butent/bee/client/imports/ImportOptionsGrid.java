@@ -1,27 +1,30 @@
 package com.butent.bee.client.imports;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.Objects;
 
 public class ImportOptionsGrid extends AbstractGridInterceptor {
 
@@ -48,24 +51,35 @@ public class ImportOptionsGrid extends AbstractGridInterceptor {
 
           case DATA:
             event.consume();
-            final ListBox listBox = new ListBox();
-            Map<String, String> map = new TreeMap<>();
+            Tree tree = new Tree(Localized.dictionary().modules());
+            tree.setPixelSize(500, 600);
+            Multimap<String, String> multi = TreeMultimap.create();
 
             for (DataInfo dataInfo : Data.getDataInfoProvider().getViews()) {
               String viewName = dataInfo.getViewName();
-              map.put(BeeUtils.parenthesize(dataInfo.getModule() + "." + viewName), viewName);
-            }
-            for (Entry<String, String> entry : map.entrySet()) {
-              listBox.addItem(BeeUtils.joinWords(Data.getViewCaption(entry.getValue()),
-                  entry.getKey()), entry.getValue());
-            }
-            Global.inputWidget(Localized.dictionary().data(), listBox, () -> {
-              String viewName = listBox.getValue();
+              String module = dataInfo.getModule();
+              ModuleAndSub moduleAndSub = ModuleAndSub.parse(module);
 
-              if (!BeeUtils.isEmpty(viewName)) {
-                event.getColumns()
-                    .add(DataUtils.getColumn(COL_IMPORT_DATA, gridView.getDataColumns()));
-                event.getValues().add(viewName);
+              if (Objects.nonNull(moduleAndSub)) {
+                module = moduleAndSub.getModule().getCaption();
+
+                if (moduleAndSub.hasSubModule()) {
+                  module += " (" + moduleAndSub.getSubModule().getCaption() + ")";
+                }
+              }
+              multi.put(module, viewName);
+            }
+            for (String module : multi.keySet()) {
+              TreeItem item = tree.addItem(module);
+              multi.get(module).forEach(vw -> item.addItem(Data.getViewCaption(vw)).setTitle(vw));
+            }
+            Global.inputWidget(Localized.dictionary().data(), tree, () -> {
+              TreeItem selected = tree.getSelectedItem();
+
+              if (Objects.nonNull(selected)) {
+                event.getColumns().add(DataUtils.getColumn(COL_IMPORT_DATA,
+                    gridView.getDataColumns()));
+                event.getValues().add(selected.getTitle());
                 gridView.fireEvent(event);
               }
             });
