@@ -7,6 +7,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
@@ -70,6 +71,23 @@ public enum ImportType implements HasLocalizedCaption {
     protected void init() {
       addSimpleProperty(VAR_IMPORT_SHEET, Localized.dictionary().sheetName());
       addSimpleProperty(VAR_IMPORT_START_ROW, Localized.dictionary().startRow());
+    }
+  },
+  CONFIGURATION {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.configuration();
+    }
+
+    @Override
+    protected void init() {
+      Dictionary locale = Localized.dictionary();
+
+      addSimpleProperty(VAR_IMPORT_SHEET, locale.sheetName());
+      addSimpleProperty(VAR_IMPORT_START_ROW, locale.startRow());
+      addSimpleProperty(CarsConstants.TBL_CONF_OPTIONS, locale.options());
+      addDataProperty(CarsConstants.COL_PRICE, locale.price());
+      addDataProperty(CarsConstants.COL_DESCRIPTION, locale.description());
     }
   };
 

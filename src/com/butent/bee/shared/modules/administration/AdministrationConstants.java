@@ -438,8 +438,8 @@ public final class AdministrationConstants {
   public static final String FORM_COMPANY_STRUCTURE = "CompanyStructure";
   public static final String FORM_NEW_ROLE = "NewRole";
 
-  public static final String FORM_IMPORTS = "Imports";
-  public static final String FORM_IMPORT_DATA = "ImportData";
+  public static final String FORM_IMPORT_MAPPINGS = "ImportOptionMappings";
+  public static final String FORM_IMPORT_OPTION = "ImportOption";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 

@@ -5,12 +5,10 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -62,7 +60,7 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
 
   @Override
   public GridInterceptor getInstance() {
-    return null;
+    return new ImportPropertiesGrid();
   }
 
   @Override
@@ -106,14 +104,7 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
                 Collections.singletonList(COL_IMPORT_VALUE)), Queries.asList(ov),
             Queries.asList(nv), null, new RowUpdateCallback(getViewName()));
       } else {
-        Queries.getRow(TBL_IMPORT_OPTIONS, relId, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            RowEditor.openForm(FORM_IMPORT_DATA, Data.getDataInfo(TBL_IMPORT_OPTIONS), result,
-                Opener.MODAL, null,
-                new ImportDataForm(Data.getString(TBL_IMPORT_OPTIONS, result, COL_IMPORT_DATA)));
-          }
-        });
+        RowEditor.open(TBL_IMPORT_OPTIONS, relId, Opener.MODAL);
       }
     } else {
       super.onEditStart(event);
@@ -135,18 +126,11 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
     if (type == null) {
       return;
     }
-    boolean isRoot = BeeUtils.isEmpty(Data.getString(parentView, parentRow,
-        COL_IMPORT_RELATION_OPTION));
-
-    for (ImportProperty prop : type.getProperties()) {
-      if (prop.isDataProperty() || isRoot) {
-        propMap.put(prop.getName(), prop);
-      }
-    }
+    type.getProperties().forEach(prop -> propMap.put(prop.getName(), prop));
     String viewName = Data.getString(parentView, parentRow, COL_IMPORT_DATA);
 
     if (!BeeUtils.isEmpty(viewName)) {
-      propMap.putAll(ImportDataForm.getDataProperties(viewName));
+      propMap.putAll(ImportOptionMappingsForm.getDataProperties(viewName));
     }
     super.onParentRow(event);
   }
@@ -170,44 +154,31 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
       return;
     }
     Global.choice(Localized.dictionary().trImportNewProperty(), null,
-        new ArrayList<>(choices.values()), new ChoiceCallback() {
-          @Override
-          public void onSuccess(int value) {
-            final ImportProperty prop = propMap.get(new ArrayList<>(choices.keySet()).get(value));
+        new ArrayList<>(choices.values()), value -> {
+          ImportProperty prop = propMap.get(new ArrayList<>(choices.keySet()).get(value));
 
-            final Consumer<Long> consumer = new Consumer<Long>() {
-              @Override
-              public void accept(final Long dataOption) {
-                getGridView().ensureRelId(new IdCallback() {
-                  @Override
-                  public void onSuccess(Long id) {
-                    Queries.insert(getViewName(),
-                        Data.getColumns(getViewName(), Arrays.asList(COL_IMPORT_OPTION,
-                            COL_IMPORT_PROPERTY, COL_IMPORT_RELATION_OPTION)),
-                        Queries.asList(id, prop.getName(), dataOption), null,
-                        new RowCallback() {
-                          @Override
-                          public void onSuccess(BeeRow result) {
-                            getGridView().getGrid().insertRow(result, true);
-                          }
-                        });
-                  }
-                });
-              }
-            };
-            if (!BeeUtils.isEmpty(prop.getRelation())) {
-              Queries.insert(TBL_IMPORT_OPTIONS, Data.getColumns(TBL_IMPORT_OPTIONS,
-                      Arrays.asList(COL_IMPORT_TYPE, COL_IMPORT_DATA)),
-                  Queries.asList(ImportType.DATA.ordinal(), prop.getRelation()), null,
-                  new RowCallback() {
+          Consumer<Long> consumer = dataOption -> getGridView().ensureRelId(id ->
+              Queries.insert(getViewName(), Data.getColumns(getViewName(),
+                  Arrays.asList(COL_IMPORT_OPTION, COL_IMPORT_PROPERTY,
+                      COL_IMPORT_RELATION_OPTION)), Queries.asList(id, prop.getName(), dataOption),
+                  null, new RowCallback() {
                     @Override
                     public void onSuccess(BeeRow result) {
-                      consumer.accept(result.getId());
+                      getGridView().getGrid().insertRow(result, true);
                     }
-                  });
-            } else {
-              consumer.accept(null);
-            }
+                  }));
+          if (!BeeUtils.isEmpty(prop.getRelation())) {
+            Queries.insert(TBL_IMPORT_OPTIONS, Data.getColumns(TBL_IMPORT_OPTIONS,
+                Arrays.asList(COL_IMPORT_TYPE, COL_IMPORT_DESCRIPTION, COL_IMPORT_DATA)),
+                Queries.asList(ImportType.DATA.ordinal(), Data.getViewCaption(prop.getRelation()),
+                    prop.getRelation()), null, new RowCallback() {
+                  @Override
+                  public void onSuccess(BeeRow result) {
+                    consumer.accept(result.getId());
+                  }
+                });
+          } else {
+            consumer.accept(null);
           }
         });
   }

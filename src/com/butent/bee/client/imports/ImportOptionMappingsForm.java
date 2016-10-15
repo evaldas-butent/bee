@@ -9,20 +9,21 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.imports.ImportProperty;
+import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ImportDataForm extends AbstractFormInterceptor {
+public class ImportOptionMappingsForm extends AbstractFormInterceptor {
 
   private final String viewName;
 
-  public ImportDataForm(String viewName) {
+  public ImportOptionMappingsForm(String viewName) {
     this.viewName = viewName;
   }
 
@@ -31,26 +32,19 @@ public class ImportDataForm extends AbstractFormInterceptor {
       WidgetDescriptionCallback callback) {
 
     if (widget instanceof ChildGrid) {
-      GridInterceptor interceptor = null;
-
-      if (BeeUtils.same(name, TBL_IMPORT_PROPERTIES)) {
-        interceptor = new ImportPropertiesGrid();
-
-      } else if (BeeUtils.same(name, TBL_IMPORT_MAPPINGS)) {
-        interceptor = new ImportMappingsGrid(viewName);
+      if (BeeUtils.same(name, TBL_IMPORT_MAPPINGS)) {
+        ((ChildGrid) widget).setGridInterceptor(new ImportMappingsGrid(viewName));
 
       } else if (BeeUtils.same(name, TBL_IMPORT_CONDITIONS)) {
-        interceptor = new ImportConditionsGrid();
-      }
-      if (interceptor != null) {
-        ((ChildGrid) widget).setGridInterceptor(interceptor);
+        ((ChildGrid) widget).setGridInterceptor(new ImportConditionsGrid());
       }
     }
   }
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    getHeaderView().setCaption(BeeUtils.join(": ", form.getCaption(),
+    getHeaderView().setCaption(BeeUtils.join(": ", EnumUtils.getEnumByIndex(ImportType.class,
+        getIntegerValue(COL_IMPORT_TYPE)).getCaption(),
         Data.getViewCaption(getStringValue(COL_IMPORT_DATA))));
   }
 

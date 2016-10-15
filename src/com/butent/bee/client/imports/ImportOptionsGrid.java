@@ -4,7 +4,6 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -60,17 +59,14 @@ public class ImportOptionsGrid extends AbstractGridInterceptor {
               listBox.addItem(BeeUtils.joinWords(Data.getViewCaption(entry.getValue()),
                   entry.getKey()), entry.getValue());
             }
-            Global.inputWidget(Localized.dictionary().data(), listBox, new InputCallback() {
-              @Override
-              public void onSuccess() {
-                String viewName = listBox.getValue();
+            Global.inputWidget(Localized.dictionary().data(), listBox, () -> {
+              String viewName = listBox.getValue();
 
-                if (!BeeUtils.isEmpty(viewName)) {
-                  event.getColumns()
-                      .add(DataUtils.getColumn(COL_IMPORT_DATA, gridView.getDataColumns()));
-                  event.getValues().add(viewName);
-                  gridView.fireEvent(event);
-                }
+              if (!BeeUtils.isEmpty(viewName)) {
+                event.getColumns()
+                    .add(DataUtils.getColumn(COL_IMPORT_DATA, gridView.getDataColumns()));
+                event.getValues().add(viewName);
+                gridView.fireEvent(event);
               }
             });
             return;
