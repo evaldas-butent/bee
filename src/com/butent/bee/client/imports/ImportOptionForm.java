@@ -7,7 +7,9 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.DialogBox;
@@ -19,6 +21,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -30,15 +33,19 @@ import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportType;
+import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class ImportOptionForm extends AbstractFormInterceptor implements ClickHandler {
@@ -108,13 +115,52 @@ public class ImportOptionForm extends AbstractFormInterceptor implements ClickHa
           getFormView().notifyWarning(Localized.dictionary().actionNotAllowed());
           return;
         }
-        upload(args);
+        upload(args, importAction);
         break;
     }
   }
 
+  public static void upload(ParameterList args, CustomAction action) {
+    Popup popup = new Popup(Popup.OutsideClick.CLOSE);
+    InputFile file = new InputFile(false);
+
+    file.addChangeHandler(event -> {
+      popup.close();
+      action.running();
+      NewFileInfo fileInfo = BeeUtils.peek(FileUtils.getNewFileInfos(file.getFiles()));
+
+      FileUtils.uploadFile(fileInfo, new Callback<Long>() {
+        @Override
+        public void onFailure(String... reason) {
+          action.idle();
+          Callback.super.onFailure(reason);
+        }
+
+        @Override
+        public void onSuccess(Long result) {
+          args.addDataItem(VAR_IMPORT_FILE, result);
+          ImportCallback.makeRequest(args, action, fileInfo.getName());
+        }
+      });
+    });
+    popup.setWidget(file);
+    popup.center();
+  }
+
   private void importConfiguration(ParameterList args) {
-    upload(args);
+    Relation relation = Relation.create(CarsConstants.TBL_CONF_PRICELIST,
+        Arrays.asList("ParentName", CarsConstants.COL_BRANCH_NAME));
+    relation.disableNewRow();
+    relation.disableEdit();
+    UnboundSelector selector = UnboundSelector.create(relation);
+
+    Global.inputWidget(Localized.dictionary().category(), selector, () -> {
+          if (DataUtils.isId(selector.getRelatedId())) {
+            args.addDataItem(CarsConstants.COL_BRANCH, selector.getRelatedId());
+            upload(args, importAction);
+          }
+        }
+    );
   }
 
   private void importTracking(ParameterList args) {
@@ -183,34 +229,7 @@ public class ImportOptionForm extends AbstractFormInterceptor implements ClickHa
       args.addDataItem(VAR_DATE_LOW, lowDate.getDays());
       args.addDataItem(VAR_DATE_HIGH, hightDate.getDays());
 
-      ImportCallback.makeRequest(args, importAction);
+      ImportCallback.makeRequest(args, importAction, getStringValue(COL_IMPORT_DESCRIPTION));
     });
-  }
-
-  private void upload(ParameterList args) {
-    Popup popup = new Popup(Popup.OutsideClick.CLOSE);
-    InputFile file = new InputFile(false);
-
-    file.addChangeHandler(event -> {
-      popup.close();
-      importAction.running();
-
-      FileUtils.uploadFile(BeeUtils.peek(FileUtils.getNewFileInfos(file.getFiles())),
-          new Callback<Long>() {
-            @Override
-            public void onFailure(String... reason) {
-              importAction.idle();
-              Callback.super.onFailure(reason);
-            }
-
-            @Override
-            public void onSuccess(Long result) {
-              args.addDataItem(VAR_IMPORT_FILE, result);
-              ImportCallback.makeRequest(args, importAction);
-            }
-          });
-    });
-    popup.setWidget(file);
-    popup.center();
   }
 }

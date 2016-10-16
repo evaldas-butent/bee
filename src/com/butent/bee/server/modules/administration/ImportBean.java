@@ -331,9 +331,9 @@ public class ImportBean {
           break;
 
         case CONFIGURATION:
-          response = importConfiguration(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
-              BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_IMPORT_FILE)),
-              reqInfo.getParameter(Service.VAR_PROGRESS));
+          response = importConfiguration(reqInfo.getParameterLong(COL_IMPORT_OPTION),
+              reqInfo.getParameterLong(VAR_IMPORT_FILE), reqInfo.getParameter(Service.VAR_PROGRESS),
+              reqInfo.getParameterLong(COL_BRANCH));
           break;
 
         default:
@@ -827,7 +827,8 @@ public class ImportBean {
     return null;
   }
 
-  private ResponseObject importConfiguration(Long optId, Long fileId, String progress) {
+  private ResponseObject importConfiguration(Long optId, Long fileId, String progress,
+      Long branchId) {
     ImportObject io = initImport(optId, usr.getGlossary());
 
     String[] opts = BeeUtils.split(io.getPropertyValue(TBL_CONF_OPTIONS),
@@ -859,7 +860,7 @@ public class ImportBean {
       return ResponseObject.error(error);
     }
     Map<String, Pair<Pair<Integer, Integer>, BeeRowSet>> status = new LinkedHashMap<>();
-    status.put(tmp, Pair.of(Pair.of(0, 0),
+    status.put(null, Pair.of(null,
         (BeeRowSet) qs.doSql(new SqlSelect().addAllFields(tmp).addFrom(tmp).getQuery())));
 
     SimpleRowSet rs = qs.getData(new SqlSelect()
@@ -924,7 +925,7 @@ public class ImportBean {
     }
     if (BeeUtils.isEmpty(errors)) {
       CarsModuleBean cars = Invocation.locateRemoteBean(CarsModuleBean.class);
-      bundles.forEach((bundle, dataInfo) -> cars.setBundle(null, bundle, dataInfo, false));
+      bundles.forEach((bundle, dataInfo) -> cars.setBundle(branchId, bundle, dataInfo, false));
     } else {
       for (String err : errors.keySet()) {
         BeeRowSet rSet = new BeeRowSet(new BeeColumn(Localized.dictionary().value()),
@@ -933,7 +934,7 @@ public class ImportBean {
         errors.get(err).forEach((value, count) ->
             rSet.addRow(0, new String[] {value, BeeUtils.toString(count)}));
 
-        status.put(err, Pair.of(Pair.of(0, 0), rSet));
+        status.put(err, Pair.of(null, rSet));
       }
     }
     return ResponseObject.response(status);

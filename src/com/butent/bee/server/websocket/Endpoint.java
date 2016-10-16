@@ -183,6 +183,9 @@ public class Endpoint {
       return false;
 
     } else {
+      if (!BeeUtils.isEmpty(label)) {
+        pair.setB(0L);
+      }
       if ((System.currentTimeMillis() - pair.getB()) > 10) {
         Session session = findOpenSession(pair.getA(), true);
 
@@ -316,8 +319,9 @@ public class Endpoint {
           send(session, ProgressMessage.activate(progressId));
 
         } else if (pm.isClosed() || pm.isCanceled()) {
-          String removed = progressToSession.remove(progressId).getA();
-          logger.debug("ws remove progress:", progressId, "session:", removed);
+          Pair<String, Long> removed = progressToSession.remove(progressId);
+          logger.debug("ws remove progress:", progressId, "session:",
+              Objects.nonNull(removed) ? removed.getA() : null);
 
         } else {
           WsUtils.onInvalidState(message, toLog(session));
