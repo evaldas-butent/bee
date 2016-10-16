@@ -2705,7 +2705,45 @@ public interface Dictionary {
 
   default String filters() {return g("filters");}
 
+  default String finAdvancePaymentsGiven() {return g("finAdvancePaymentsGiven");}
+
+  default String finAdvancePaymentsReceived() {return g("finAdvancePaymentsReceived");}
+
+  default String finCashInBank() {return g("finCashInBank");}
+
   default String finContent() {return g("finContent");}
+
+  default String finCostOfGoodsSold() {return g("finCostOfGoodsSold");}
+
+  default String finCostOfMerchandise() {return g("finCostOfMerchandise");}
+
+  default String finDefaultAccounts() {return g("finDefaultAccounts");}
+
+  default String finDefaultJournal() {return g("finDefaultJournal");}
+
+  default String finForeignExchangeGain() {return g("finForeignExchangeGain");}
+
+  default String finForeignExchangeLoss() {return g("finForeignExchangeLoss");}
+
+  default String finLiabilitiesToEmployees() {return g("finLiabilitiesToEmployees");}
+
+  default String finPettyCash() {return g("finPettyCash");}
+
+  default String finReceivablesFromEmployees() {return g("finReceivablesFromEmployees");}
+
+  default String finRevenueAndExpenseSummary() {return g("finRevenueAndExpenseSummary");}
+
+  default String finSalesRevenue() {return g("finSalesRevenue");}
+
+  default String finTradePayables() {return g("finTradePayables");}
+
+  default String finTradeReceivables() {return g("finTradeReceivables");}
+
+  default String finTransitoryAccount() {return g("finTransitoryAccount");}
+
+  default String finVatPayable() {return g("finVatPayable");}
+
+  default String finVatReceivable() {return g("finVatReceivable");}
 
   default String finance() {return g("finance");}
 

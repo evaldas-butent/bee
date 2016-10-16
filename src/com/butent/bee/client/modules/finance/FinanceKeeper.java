@@ -6,6 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.rights.Module;
 
 public final class FinanceKeeper {
@@ -25,6 +26,8 @@ public final class FinanceKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_CREDIT,
         ColorStyleProvider.create(VIEW_FINANCIAL_RECORDS,
             ALS_CREDIT_BACKGROUND, ALS_CREDIT_FOREGROUND));
+
+    FormFactory.registerFormInterceptor(FORM_FINANCE_CONFIGURATION, new FinanceConfigurationForm());
   }
 
   private FinanceKeeper() {

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+    <!ENTITY sw "width: 6em;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+        name="FinanceConfiguration" viewName="FinanceConfiguration"
+        caption="=finDefaultAccounts" disabledActions="add delete"
+>
+  <Table kind="controls">
+    <col index="0" kind="label" />
+    <col index="2" kind="label" />
+
+    <row>
+      <Label for="DefaultJournal" />
+      <DataSelector source="DefaultJournal" style="&sw;" newRowEnabled="false"
+                    choiceColumns="JournalCode JournalName" renderColumns="JournalCode" />
+    </row>
+
+    <row>
+      <Label for="PettyCash" />
+      <DataSelector source="PettyCash" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="PettyCashCode" />
+      <Label for="CashInBank" />
+      <DataSelector source="CashInBank" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="CashInBankCode" />
+    </row>
+
+    <row>
+      <Label for="ReceivablesFromEmployees" />
+      <DataSelector source="ReceivablesFromEmployees" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName"
+                    renderColumns="ReceivablesFromEmployeesCode" />
+      <Label for="LiabilitiesToEmployees" />
+      <DataSelector source="LiabilitiesToEmployees" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName"
+                    renderColumns="LiabilitiesToEmployeesCode" />
+    </row>
+
+    <row>
+      <Label for="RevenueAndExpenseSummary" />
+      <DataSelector source="RevenueAndExpenseSummary" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName"
+                    renderColumns="RevenueAndExpenseSummaryCode" />
+      <Label for="TransitoryAccount" />
+      <DataSelector source="TransitoryAccount" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="TransitoryAccountCode" />
+    </row>
+
+    <row>
+      <Label for="ForeignExchangeGain" />
+      <DataSelector source="ForeignExchangeGain" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName"
+                    renderColumns="ForeignExchangeGainCode" />
+      <Label for="ForeignExchangeLoss" />
+      <DataSelector source="ForeignExchangeLoss" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName"
+                    renderColumns="ForeignExchangeLossCode" />
+    </row>
+
+    <row>
+      <Label for="VatPayable" />
+      <DataSelector source="VatPayable" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="VatPayableCode" />
+      <Label for="VatReceivable" />
+      <DataSelector source="VatReceivable" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="VatReceivableCode" />
+    </row>
+
+    <row>
+      <Label for="TradePayables" />
+      <DataSelector source="TradePayables" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="TradePayablesCode" />
+      <Label for="TradeReceivables" />
+      <DataSelector source="TradeReceivables" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="TradeReceivablesCode" />
+    </row>
+
+    <row>
+      <Label for="AdvancePaymentsGiven" />
+      <DataSelector source="AdvancePaymentsGiven" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName"
+                    renderColumns="AdvancePaymentsGivenCode" />
+      <Label for="AdvancePaymentsReceived" />
+      <DataSelector source="AdvancePaymentsReceived" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName"
+                    renderColumns="AdvancePaymentsReceivedCode" />
+    </row>
+
+    <row>
+      <Label for="SalesRevenue" />
+      <DataSelector source="SalesRevenue" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="SalesRevenueCode" />
+      <Label for="CostOfGoodsSold" />
+      <DataSelector source="CostOfGoodsSold" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="CostOfGoodsSoldCode" />
+    </row>
+
+    <row>
+      <Label for="CostOfMerchandise" />
+      <DataSelector source="CostOfMerchandise" style="&sw;" newRowEnabled="false"
+                    choiceColumns="AccountCode AccountName" renderColumns="CostOfMerchandiseCode" />
+    </row>
+  </Table>
+</f:Form>
