@@ -37,12 +37,15 @@
       <editor type="number" percentageTag="DiscountIsPercent" />
     </DataColumn>
     <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" carry="true" />
-    <CalcColumn name="DiscountAmount" type="decimal" caption="=discountAmountShort" scale="2">
+    <CalcColumn name="DiscountAmount" type="decimal" caption="=discountAmountShort" scale="2"
+                visible="false">
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <CalcColumn name="PriceWithoutVat" type="decimal" caption="=priceWithoutVat" scale="2" />
-    <CalcColumn name="AmountWithoutVat" type="decimal" caption="=amountWithoutVat" scale="2">
+    <CalcColumn name="PriceWithoutVat" type="decimal" caption="=priceWithoutVat" scale="2"
+                visible="false" />
+    <CalcColumn name="AmountWithoutVat" type="decimal" caption="=amountWithoutVat" scale="2"
+                visible="false">
       <footer aggregate="sum" />
     </CalcColumn>
 
@@ -50,11 +53,12 @@
       <editor type="number" percentageTag="VatIsPercent" />
     </DataColumn>
     <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" carry="true" />
-    <CalcColumn name="VatAmount" type="decimal" caption="=vatAmount" scale="2">
+    <CalcColumn name="VatAmount" type="decimal" caption="=vatAmount" scale="2" visible="false">
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <CalcColumn name="PriceWithVat" type="decimal" caption="=priceWithVat" scale="2" />
+    <CalcColumn name="PriceWithVat" type="decimal" caption="=priceWithVat" scale="2"
+                visible="false" />
     <CalcColumn name="Total" type="decimal" caption="=total" scale="2">
       <style>
         <bodyStyle>
