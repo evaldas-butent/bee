@@ -111,6 +111,17 @@ public class DocumentForm extends DocumentDataForm {
             }
             break;
         }
+      } else if (event.getCallback() == null && event.isRowCreated()) {
+        final String viewName = event.getRelatedViewName();
+
+        switch (viewName) {
+
+          case TaskConstants.TBL_TASKS:
+            if (rel != null) {
+              rel.requery(null, getActiveRowId());
+            }
+            break;
+        }
       }
     }
   }
@@ -428,6 +439,7 @@ public class DocumentForm extends DocumentDataForm {
   private void createNewTaskRelation(final SelectorEvent event) {
     final BeeRow row = event.getNewRow();
     String summary = BeeUtils.notEmpty(event.getDefValue(), getStringValue(COL_DOCUMENT_NAME));
+    row.setProperty(TaskConstants.PROP_DOCUMENTS, DataUtils.buildIdList(getActiveRowId()));
 
     if (!BeeUtils.isEmpty(summary)) {
       Data.squeezeValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_SUMMARY,
