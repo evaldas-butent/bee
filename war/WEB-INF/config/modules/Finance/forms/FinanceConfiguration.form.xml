@@ -5,7 +5,8 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
         name="FinanceConfiguration" viewName="FinanceConfiguration"
-        caption="=finDefaultAccounts" disabledActions="add delete"
+        caption="=finDefaultAccounts"
+        width="600" widthUnit="px" height="70" heightUnit="vh"
 >
   <Table kind="controls">
     <col index="0" kind="label" />

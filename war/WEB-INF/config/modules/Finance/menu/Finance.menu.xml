@@ -10,6 +10,6 @@
         separator="true" />
   <Item name="Journals" label="=journals" service="grid" parameters="Journals" />
 
-  <Item name="FinanceConfiguration" label="=finDefaultAccounts" service="form"
-        parameters="FinanceConfiguration" separator="true" />
+  <Item name="FinanceConfiguration" label="=finDefaultAccounts" service="finance_configuration"
+        module="Administration" separator="true" />
 </Entry>

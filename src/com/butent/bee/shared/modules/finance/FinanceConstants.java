@@ -4,7 +4,11 @@ public final class FinanceConstants {
 
   public static final String TBL_FINANCIAL_RECORDS = "FinancialRecords";
 
+  public static final String TBL_FINANCE_CONFIGURATION = "FinanceConfiguration";
+
   public static final String VIEW_FINANCIAL_RECORDS = "FinancialRecords";
+
+  public static final String VIEW_FINANCE_CONFIGURATION = "FinanceConfiguration";
 
   public static final String COL_FIN_JOURNAL = "Journal";
   public static final String COL_FIN_DATE = "Date";
