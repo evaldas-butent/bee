@@ -7,6 +7,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.Opener;
@@ -24,16 +25,30 @@ public final class FinanceKeeper {
   public static void register() {
     MenuService.FINANCE_CONFIGURATION.setHandler(parameters -> openConfiguration());
 
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_JOURNAL,
-        ColorStyleProvider.create(VIEW_FINANCIAL_RECORDS,
-            ALS_JOURNAL_BACKGROUND, ALS_JOURNAL_FOREGROUND));
+    ColorStyleProvider csp = ColorStyleProvider.create(VIEW_FINANCIAL_RECORDS,
+        ALS_JOURNAL_BACKGROUND, ALS_JOURNAL_FOREGROUND);
 
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_DEBIT,
-        ColorStyleProvider.create(VIEW_FINANCIAL_RECORDS,
-            ALS_DEBIT_BACKGROUND, ALS_DEBIT_FOREGROUND));
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_CREDIT,
-        ColorStyleProvider.create(VIEW_FINANCIAL_RECORDS,
-            ALS_CREDIT_BACKGROUND, ALS_CREDIT_FOREGROUND));
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_JOURNAL, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_FINANCIAL_RECORDS, COL_FIN_JOURNAL,
+        csp);
+
+    csp = ColorStyleProvider.create(VIEW_FINANCIAL_RECORDS,
+        ALS_DEBIT_BACKGROUND, ALS_DEBIT_FOREGROUND);
+
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_DEBIT, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_FINANCIAL_RECORDS, COL_FIN_DEBIT,
+        csp);
+
+    csp = ColorStyleProvider.create(VIEW_FINANCIAL_RECORDS,
+        ALS_CREDIT_BACKGROUND, ALS_CREDIT_FOREGROUND);
+
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_CREDIT, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_FINANCIAL_RECORDS, COL_FIN_CREDIT,
+        csp);
+
+    GridFactory.registerGridInterceptor(GRID_FINANCIAL_RECORDS, new FinancialRecordsGrid());
+    GridFactory.registerGridInterceptor(GRID_TRADE_FINANCIAL_RECORDS,
+        new TradeFinancialRecordsGrid());
   }
 
   private static void openConfiguration() {

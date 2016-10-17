@@ -2729,6 +2729,8 @@ public interface Dictionary {
 
   default String finPettyCash() {return g("finPettyCash");}
 
+  default String finPostAction() {return g("finPostAction");}
+
   default String finReceivablesFromEmployees() {return g("finReceivablesFromEmployees");}
 
   default String finRevenueAndExpenseSummary() {return g("finRevenueAndExpenseSummary");}

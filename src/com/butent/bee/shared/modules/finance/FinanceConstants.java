@@ -55,6 +55,7 @@ public final class FinanceConstants {
   public static final String ALS_CREDIT_FOREGROUND = "CreditForeground";
 
   public static final String GRID_FINANCIAL_RECORDS = "FinancialRecords";
+  public static final String GRID_TRADE_FINANCIAL_RECORDS = "TradeFinancialRecords";
 
   public static final String FORM_FINANCE_CONFIGURATION = "FinanceConfiguration";
 
