@@ -114,7 +114,7 @@ public class ImportBean {
     private String value;
     private ImportObject relation;
 
-    public PropertyData(ImportProperty property) {
+    private PropertyData(ImportProperty property) {
       this.property = Assert.notNull(property);
     }
   }

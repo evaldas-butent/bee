@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
-public class ImportCallback extends ResponseCallback {
+public final class ImportCallback extends ResponseCallback {
 
   private String progressId;
   private final CustomAction action;

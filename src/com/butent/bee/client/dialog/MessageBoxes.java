@@ -45,7 +45,7 @@ import java.util.List;
  * Implements a message box user interface component, sending text messages to the user.
  */
 
-public class MessageBoxes {
+public final class MessageBoxes {
 
   public static final String STYLE_MESSAGE_BOX = BeeConst.CSS_CLASS_PREFIX + "MessageBox";
   public static final String STYLE_MESSAGE_BOX_DECIDE = STYLE_MESSAGE_BOX + "-decide";
@@ -574,5 +574,8 @@ public class MessageBoxes {
     if (newIndex >= 0 && newIndex != oldIndex) {
       UiHelper.focus(panel.getWidget(newIndex));
     }
+  }
+
+  private MessageBoxes() {
   }
 }
