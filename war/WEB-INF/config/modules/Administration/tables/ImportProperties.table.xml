@@ -9,6 +9,7 @@
               label="=trImportOption" />
     <String name="Property" precision="30" notNull="true" label="=trImportProperty" />
     <String name="Value" precision="30" label="=trImportValue" />
+    <Numeric name="Ordinal" precision="2" scale="0" label="=ordinal" />
     <Relation name="RelationOption" unique="true" relation="ImportOptions" cascade="DELETE"
               editable="true" />
   </Fields>

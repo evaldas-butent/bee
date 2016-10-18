@@ -7,6 +7,10 @@
     <SimpleColumn name="Option" />
     <SimpleColumn name="Property" />
     <SimpleColumn name="Value" />
+    <SimpleColumn name="Ordinal" />
     <SimpleColumn name="RelationOption" />
   </Columns>
+  <Order>
+    <OrderBy column="Ordinal" />
+  </Order>
 </View>

@@ -44,9 +44,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 @Stateless
+@LocalBean
 public class CarsModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(CarsModuleBean.class);

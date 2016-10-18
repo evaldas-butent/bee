@@ -62,42 +62,46 @@ public final class ImportCallback extends ResponseCallback {
     if (Objects.nonNull(action.getCallback())) {
       action.getCallback().accept(response);
     } else {
-      Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
-
-      HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
-      int r = 0;
-      table.setColumnCellClasses(1, StyleUtils.className(TextAlign.CENTER));
-      table.setColumnCellClasses(2, StyleUtils.className(TextAlign.CENTER));
-      table.setText(r, 1, Localized.dictionary().imported() + " / "
-          + Localized.dictionary().updated(), StyleUtils.className(FontWeight.BOLD));
-      table.setText(r, 2, Localized.dictionary().errors(), StyleUtils.className(FontWeight.BOLD));
-
-      for (String viewName : data.keySet()) {
-        String cap = Objects.isNull(Data.getDataInfo(viewName, false)) ? viewName
-            : Data.getViewCaption(viewName);
-        table.setText(++r, 0, cap);
-
-        Pair<String, String> pair = Pair.restore(data.get(viewName));
-
-        if (Objects.nonNull(pair.getA())) {
-          Pair<String, String> counters = Pair.restore(pair.getA());
-          table.setText(r, 1, counters.getA() + " / " + counters.getB());
-        }
-        InternalLink lbl = null;
-
-        if (pair.getB() != null) {
-          BeeRowSet rs = BeeRowSet.restore(pair.getB());
-          lbl = new InternalLink(BeeUtils.toString(rs.getNumberOfRows()));
-
-          lbl.addClickHandler(arg0 -> Global.showModalGrid(cap, rs, StyleUtils.NAME_INFO_TABLE));
-        }
-        table.setWidget(r, 2, lbl);
-      }
-      Global.showModalWidget(table);
+      showResponse(response);
     }
   }
 
   public void setProgressId(String progressId) {
     this.progressId = progressId;
+  }
+
+  public static void showResponse(ResponseObject response) {
+    Map<String, String> data = Codec.deserializeLinkedHashMap(response.getResponseAsString());
+
+    HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
+    int r = 0;
+    table.setColumnCellClasses(1, StyleUtils.className(TextAlign.CENTER));
+    table.setColumnCellClasses(2, StyleUtils.className(TextAlign.CENTER));
+    table.setText(r, 1, Localized.dictionary().imported() + " / "
+        + Localized.dictionary().updated(), StyleUtils.className(FontWeight.BOLD));
+    table.setText(r, 2, Localized.dictionary().errors(), StyleUtils.className(FontWeight.BOLD));
+
+    for (String viewName : data.keySet()) {
+      String cap = Objects.isNull(Data.getDataInfo(viewName, false)) ? viewName
+          : Data.getViewCaption(viewName);
+      table.setText(++r, 0, cap);
+
+      Pair<String, String> pair = Pair.restore(data.get(viewName));
+
+      if (Objects.nonNull(pair.getA())) {
+        Pair<String, String> counters = Pair.restore(pair.getA());
+        table.setText(r, 1, counters.getA() + " / " + counters.getB());
+      }
+      InternalLink lbl = null;
+
+      if (pair.getB() != null) {
+        BeeRowSet rs = BeeRowSet.restore(pair.getB());
+        lbl = new InternalLink(BeeUtils.toString(rs.getNumberOfRows()));
+
+        lbl.addClickHandler(arg0 -> Global.showModalGrid(cap, rs, StyleUtils.NAME_INFO_TABLE));
+      }
+      table.setWidget(r, 2, lbl);
+    }
+    Global.showModalWidget(table);
   }
 }

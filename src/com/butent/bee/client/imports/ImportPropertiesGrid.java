@@ -142,44 +142,48 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
     for (IsRow row : getGridView().getRowData()) {
       exists.add(row.getString(propIdx));
     }
-    final Map<String, String> choices = new LinkedHashMap<>();
+    Map<String, Integer> choices = new LinkedHashMap<>();
+    List<String> captions = new ArrayList<>();
+    int idx = 0;
 
     for (ImportProperty prop : propMap.values()) {
       if (!exists.contains(prop.getName())) {
-        choices.put(prop.getName(), prop.getCaption());
+        captions.add(prop.getCaption());
+        choices.put(prop.getName(), idx);
       }
+      idx++;
     }
     if (choices.isEmpty()) {
       getGridView().notifyWarning(Localized.dictionary().noData());
       return;
     }
-    Global.choice(Localized.dictionary().trImportNewProperty(), null,
-        new ArrayList<>(choices.values()), value -> {
-          ImportProperty prop = propMap.get(new ArrayList<>(choices.keySet()).get(value));
+    Global.choice(Localized.dictionary().trImportNewProperty(), null, captions, value -> {
+      String propName = new ArrayList<>(choices.keySet()).get(value);
+      ImportProperty prop = propMap.get(propName);
 
-          Consumer<Long> consumer = dataOption -> getGridView().ensureRelId(id ->
-              Queries.insert(getViewName(), Data.getColumns(getViewName(),
-                  Arrays.asList(COL_IMPORT_OPTION, COL_IMPORT_PROPERTY,
-                      COL_IMPORT_RELATION_OPTION)), Queries.asList(id, prop.getName(), dataOption),
-                  null, new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow result) {
-                      getGridView().getGrid().insertRow(result, true);
-                    }
-                  }));
-          if (!BeeUtils.isEmpty(prop.getRelation())) {
-            Queries.insert(TBL_IMPORT_OPTIONS, Data.getColumns(TBL_IMPORT_OPTIONS,
-                Arrays.asList(COL_IMPORT_TYPE, COL_IMPORT_DESCRIPTION, COL_IMPORT_DATA)),
-                Queries.asList(ImportType.DATA.ordinal(), Data.getViewCaption(prop.getRelation()),
-                    prop.getRelation()), null, new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    consumer.accept(result.getId());
-                  }
-                });
-          } else {
-            consumer.accept(null);
-          }
-        });
+      Consumer<Long> consumer = dataOption -> getGridView().ensureRelId(id ->
+          Queries.insert(getViewName(), Data.getColumns(getViewName(),
+              Arrays.asList(COL_IMPORT_OPTION, COL_IMPORT_PROPERTY, COL_FILTER_ORDINAL,
+                  COL_IMPORT_RELATION_OPTION)), Queries.asList(id, prop.getName(),
+              choices.get(propName), dataOption), null, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              getGridView().getGrid().insertRow(result, true);
+            }
+          }));
+      if (!BeeUtils.isEmpty(prop.getRelation())) {
+        Queries.insert(TBL_IMPORT_OPTIONS, Data.getColumns(TBL_IMPORT_OPTIONS,
+            Arrays.asList(COL_IMPORT_TYPE, COL_IMPORT_DESCRIPTION, COL_IMPORT_DATA)),
+            Queries.asList(ImportType.DATA.ordinal(), Data.getViewCaption(prop.getRelation()),
+                prop.getRelation()), null, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                consumer.accept(result.getId());
+              }
+            });
+      } else {
+        consumer.accept(null);
+      }
+    });
   }
 }

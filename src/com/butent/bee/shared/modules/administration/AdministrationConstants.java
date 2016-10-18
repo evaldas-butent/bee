@@ -164,7 +164,8 @@ public final class AdministrationConstants {
   public static final String VAR_IMPORT_TEST = "Test";
   public static final String VAR_IMPORT_FILE = "File";
   public static final String VAR_IMPORT_SHEET = "Sheet";
-  public static final String VAR_IMPORT_START_ROW = "Row";
+  public static final String VAR_IMPORT_START_ROW = "StartRow";
+  public static final String VAR_IMPORT_END_ROW = "EndRow";
   public static final String VAR_IMPORT_DATE_FORMAT = "DateFormat";
 
   public static final String VAR_IMPORT_LOGIN = "Login";

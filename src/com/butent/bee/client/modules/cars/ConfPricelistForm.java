@@ -26,11 +26,11 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.imports.ImportCallback;
 import com.butent.bee.client.imports.ImportOptionForm;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.presenter.TreePresenter;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -46,7 +46,6 @@ import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputSpinner;
-import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
@@ -54,8 +53,6 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.values.FontWeight;
-import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -296,7 +293,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   private TreeContainer tree;
   private Configuration configuration;
   private Integer rpcId;
-  private CustomAction importAction = new CustomAction(FontAwesome.DOWNLOAD, this);
+  private CustomAction importAction = new CustomAction(FontAwesome.CLOUD_UPLOAD, this);
 
   private ResponseCallback defaultResponse = new ResponseCallback() {
     @Override
@@ -383,31 +380,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         if (BeeUtils.isPositive(cnt)) {
           importAction.setTitle(Localized.dictionary().actionImport());
           importAction.setCallback(response -> {
-            Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
-
-            if (BeeUtils.isEmpty(data)) {
-              requery();
-            } else {
-              HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
-              int r = 0;
-              table.setColumnCellClasses(1, StyleUtils.className(TextAlign.CENTER));
-              table.setText(r, 0, Localized.dictionary().error(),
-                  StyleUtils.className(FontWeight.BOLD));
-              table.setText(r, 1, Localized.dictionary().quantity(),
-                  StyleUtils.className(FontWeight.BOLD));
-
-              for (String error : data.keySet()) {
-                table.setText(++r, 0, error);
-
-                BeeRowSet rs = BeeRowSet.restore(Pair.restore(data.get(error)).getB());
-                InternalLink lbl = new InternalLink(BeeUtils.toString(rs.getNumberOfRows()));
-                lbl.addClickHandler(arg0 -> Global.showModalGrid(error, rs,
-                    StyleUtils.NAME_INFO_TABLE));
-
-                table.setWidget(r, 1, lbl);
-              }
-              Global.showModalWidget(table);
-            }
+            ImportCallback.showResponse(response);
+            requery();
           });
           getHeaderView().addCommandItem(importAction);
         }
@@ -715,7 +689,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     if (configuration == null) {
       return;
     }
-    bar.setTabEnabled(1, configuration.hasBundles());
+    bar.setTabEnabled(1, !BeeUtils.isEmpty(configuration.getBundles()));
 
     container.add(bar);
 

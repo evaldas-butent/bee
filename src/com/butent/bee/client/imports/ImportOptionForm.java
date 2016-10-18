@@ -52,8 +52,8 @@ public class ImportOptionForm extends AbstractFormInterceptor implements ClickHa
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "co-updateRates-";
 
-  private CustomAction importAction = new CustomAction(FontAwesome.DOWNLOAD, this);
-  private FaLabel mappings = new FaLabel(FontAwesome.EXCHANGE);
+  private CustomAction importAction = new CustomAction(FontAwesome.CLOUD_UPLOAD, this);
+  private FaLabel mappings = new FaLabel(FontAwesome.RANDOM);
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -145,6 +145,7 @@ public class ImportOptionForm extends AbstractFormInterceptor implements ClickHa
     });
     popup.setWidget(file);
     popup.center();
+    file.click();
   }
 
   private void importConfiguration(ParameterList args) {

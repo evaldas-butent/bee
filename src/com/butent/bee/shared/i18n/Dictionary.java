@@ -2490,6 +2490,8 @@ public interface Dictionary {
 
   default String enabledShort() {return g("enabledShort");}
 
+  default String endRow() {return g("endRow");}
+
   default String endSession(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);

@@ -55,6 +55,9 @@ public final class CarsConstants {
   public static final String FORM_CONF_OPTION = "ConfOption";
   public static final String FORM_CAR_ORDER = "CarOrder";
 
+  public static final String VAR_PRICE_DEFAULT = "PriceDefault";
+  public static final String VAR_PRICE_OPTIONAL = "PriceOptional";
+
   private CarsConstants() {
   }
 }

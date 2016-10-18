@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.cars.CarsConstants;
@@ -29,6 +30,7 @@ public enum ImportType implements HasLocalizedCaption {
 
       addSimpleProperty(VAR_IMPORT_SHEET, locale.sheetName());
       addSimpleProperty(VAR_IMPORT_START_ROW, locale.startRow());
+      addSimpleProperty(VAR_IMPORT_END_ROW, locale.endRow());
       addSimpleProperty(VAR_IMPORT_DATE_FORMAT, locale.dateFormat());
       addRelationProperty(COL_VEHICLE, locale.trVehicle(), TBL_VEHICLES);
       addDataProperty(COL_COSTS_DATE, locale.date());
@@ -71,6 +73,7 @@ public enum ImportType implements HasLocalizedCaption {
     protected void init() {
       addSimpleProperty(VAR_IMPORT_SHEET, Localized.dictionary().sheetName());
       addSimpleProperty(VAR_IMPORT_START_ROW, Localized.dictionary().startRow());
+      addSimpleProperty(VAR_IMPORT_END_ROW, Localized.dictionary().endRow());
     }
   },
   CONFIGURATION {
@@ -82,12 +85,53 @@ public enum ImportType implements HasLocalizedCaption {
     @Override
     protected void init() {
       Dictionary locale = Localized.dictionary();
+      String prfx = CarsConstants.TBL_CONF_BRANCH_BUNDLES;
+      String capPrfx = locale.configuration() + ": ";
 
-      addSimpleProperty(VAR_IMPORT_SHEET, locale.sheetName());
-      addSimpleProperty(VAR_IMPORT_START_ROW, locale.startRow());
-      addSimpleProperty(CarsConstants.TBL_CONF_OPTIONS, locale.options());
-      addDataProperty(CarsConstants.COL_PRICE, locale.price());
-      addDataProperty(CarsConstants.COL_DESCRIPTION, locale.description());
+      addRelationProperty(CarsConstants.TBL_CONF_OPTIONS, locale.options(),
+          CarsConstants.TBL_CONF_OPTIONS);
+      addSimpleProperty(prfx + VAR_IMPORT_SHEET, capPrfx + locale.sheetName());
+      addSimpleProperty(prfx + VAR_IMPORT_START_ROW, capPrfx + locale.startRow());
+      addSimpleProperty(prfx + VAR_IMPORT_END_ROW, capPrfx + locale.endRow());
+      addSimpleProperty(prfx + CarsConstants.TBL_CONF_OPTIONS, capPrfx + locale.criteria()
+          + " (" + locale.code() + ",...)");
+      addDataProperty(prfx + CarsConstants.COL_PRICE, capPrfx + locale.price());
+      addDataProperty(prfx + CarsConstants.COL_DESCRIPTION, capPrfx + locale.description());
+
+      prfx = CarsConstants.TBL_CONF_BRANCH_OPTIONS;
+      capPrfx = locale.options() + ": ";
+      addSimpleProperty(prfx + VAR_IMPORT_SHEET, capPrfx + locale.sheetName());
+      addSimpleProperty(prfx + VAR_IMPORT_START_ROW, capPrfx + locale.startRow());
+      addSimpleProperty(prfx + VAR_IMPORT_END_ROW, capPrfx + locale.endRow());
+      addDataProperty(prfx + CarsConstants.COL_CODE, capPrfx + locale.code());
+      addDataProperty(prfx + CarsConstants.COL_PRICE, capPrfx + locale.price());
+      addDataProperty(prfx + CarsConstants.COL_DESCRIPTION, capPrfx + locale.description());
+
+      prfx = CarsConstants.TBL_CONF_RELATIONS;
+      capPrfx = locale.relations() + ": ";
+      addSimpleProperty(prfx + VAR_IMPORT_SHEET, capPrfx + locale.sheetName());
+      addSimpleProperty(prfx + VAR_IMPORT_START_ROW, capPrfx + locale.startRow());
+      addSimpleProperty(prfx + VAR_IMPORT_END_ROW, capPrfx + locale.endRow());
+      addSimpleProperty(prfx + CarsConstants.TBL_CONF_OPTIONS, capPrfx + locale.criteria()
+          + " (" + locale.code() + ",...)");
+      addDataProperty(prfx + CarsConstants.COL_CODE, capPrfx + locale.code());
+      addDataProperty(prfx + CarsConstants.COL_PRICE, capPrfx + locale.price());
+      addSimpleProperty(prfx + CarsConstants.VAR_PRICE_DEFAULT, capPrfx + locale.trImportMapping()
+          + " <span style=\"font-family:" + FontAwesome.class.getSimpleName() + ";\">"
+          + FontAwesome.CIRCLE.getCode() + "</span>");
+      addSimpleProperty(prfx + CarsConstants.VAR_PRICE_OPTIONAL, capPrfx + locale.trImportMapping()
+          + " <span style=\"font-family:" + FontAwesome.class.getSimpleName() + ";\">"
+          + FontAwesome.CIRCLE_THIN.getCode() + "</span>");
+      addDataProperty(prfx + CarsConstants.COL_DESCRIPTION, capPrfx + locale.description());
+
+      prfx = CarsConstants.TBL_CONF_RESTRICTIONS;
+      capPrfx = locale.restrictions() + ": ";
+      addSimpleProperty(prfx + VAR_IMPORT_SHEET, capPrfx + locale.sheetName());
+      addSimpleProperty(prfx + VAR_IMPORT_START_ROW, capPrfx + locale.startRow());
+      addSimpleProperty(prfx + VAR_IMPORT_END_ROW, capPrfx + locale.endRow());
+      addDataProperty(prfx + CarsConstants.COL_CODE + 1, capPrfx + locale.code() + 1);
+      addDataProperty(prfx + CarsConstants.COL_CODE + 2, capPrfx + locale.code() + 2);
+      addDataProperty(prfx + CarsConstants.COL_DENIED, capPrfx + locale.actionBlock());
     }
   };
 
