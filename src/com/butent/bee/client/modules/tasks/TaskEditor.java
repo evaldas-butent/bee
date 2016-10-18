@@ -2406,13 +2406,15 @@ class TaskEditor extends ProductSupportInterceptor {
 
 
     setEnabled(ownerSelector, canChangeOwner);
+    setEnabled(observersSelector, isOwner());
 
     if (!DataUtils.isId(projectId)) {
       setSelectorFilter(ownerSelector, null);
+      setSelectorFilter(observersSelector, null);
       return;
     }
 
-    setEnabled(observersSelector, false);
+    setEnabled(observersSelector, isOwner() || (projectOwner == userId && validStatus));
     setEnabled(ownerSelector, canChangeOwner || (projectOwner == userId && validStatus));
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
