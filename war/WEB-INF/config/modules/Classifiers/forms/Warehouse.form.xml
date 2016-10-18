@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form []>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="Warehouse" viewName="Warehouses" caption="=warehouse"
-  height="300" width="800"
-  >
-  <FlowPanel>
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="Warehouse" viewName="Warehouses" caption="=warehouse"
+        width="900" widthUnit="px" height="70" heightUnit="vh"
+>
+  <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin: 1ex 1em;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
@@ -32,6 +32,21 @@
       </row>
     </Table>
 
-    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
+    <TabbedPages class="flexible">
+      <page>
+        <text>=contactInfo</text>
+        <xi:include href="widgets/ContactDetails.widget.xml" />
+      </page>
+
+      <page data="Dimensions">
+        <text>=dimensions</text>
+        <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
+      </page>
+
+      <page module="Finance" data="TradeAccounts">
+        <text>=finAccounts</text>
+        <xi:include href="widgets/TradeAccounts.widget.xml" />
+      </page>
+    </TabbedPages>
   </FlowPanel>
 </f:Form>  

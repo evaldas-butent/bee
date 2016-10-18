@@ -24,7 +24,7 @@
 
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
                 caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-                filterOptions="-">
+                filterOptions="-" visible="false">
       <renderer type="flag" />
     </CalcColumn>
 
@@ -35,6 +35,6 @@
     <DataColumn name="Website" visible="false" />
   </g:columns>
 
-  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
   <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
 </g:Grid>
