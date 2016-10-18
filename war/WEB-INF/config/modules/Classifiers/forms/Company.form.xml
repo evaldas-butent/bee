@@ -229,7 +229,7 @@
         </FlowPanel>
       </page>
 
-      <page module="Orders">
+      <page module="Trade Orders">
         <text>=discounts</text>
         <FlowPanel class="flexBox-vertical">
           <HorizontalPanel style="margin-bottom: 1em;">
