@@ -84,6 +84,7 @@
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="../../Classifiers/grids/columns/HiddenTradeAccounts.columns.xml" />
 
   <g:columns>
     <DataColumn name="Note" maxWidth="300" />

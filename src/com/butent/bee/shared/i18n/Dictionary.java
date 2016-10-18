@@ -2705,6 +2705,8 @@ public interface Dictionary {
 
   default String filters() {return g("filters");}
 
+  default String finAccounts() {return g("finAccounts");}
+
   default String finAdvancePaymentsGiven() {return g("finAdvancePaymentsGiven");}
 
   default String finAdvancePaymentsReceived() {return g("finAdvancePaymentsReceived");}

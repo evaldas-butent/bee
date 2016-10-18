@@ -2,6 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column"
         xmlns:g="http://www.butent.com/grid"
         xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="TradeOperations" viewName="TradeOperations" caption="=trdOperations"
 >
@@ -23,7 +24,12 @@
     <DataColumn name="Join" />
 
     <DataColumn name="IsDefault" />
+  </g:columns>
 
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="columns/TradeAccounts.columns.xml" />
+
+  <g:columns>
     <DataColumn name="Background" updateMode="row">
       <editor type="color" />
     </DataColumn>
