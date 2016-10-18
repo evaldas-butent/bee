@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="CategoryTree"
-  idName="CategoryID"
-  >
+       name="CategoryTree"
+       idName="CategoryID"
+>
   <Fields>
     <String name="Name" precision="60" notNull="true" label="=name" />
     <Relation name="Parent" relation="CategoryTree" label="=category" />
 
     <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
-      label="=dimensions" />
+              label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+              label="=finTradeAccounts" />
   </Fields>
 
   <Constraints>

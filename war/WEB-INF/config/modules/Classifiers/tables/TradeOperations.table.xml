@@ -27,6 +27,11 @@
 
     <Boolean name="IsDefault" label="=trdOperationDefault" />
 
+    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+              label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+              label="=finTradeAccounts" />
+
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />
 
