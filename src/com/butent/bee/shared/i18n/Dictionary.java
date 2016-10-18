@@ -2713,6 +2713,8 @@ public interface Dictionary {
 
   default String finContent() {return g("finContent");}
 
+  default String finCostAccount() {return g("finCostAccount");}
+
   default String finCostOfGoodsSold() {return g("finCostOfGoodsSold");}
 
   default String finCostOfMerchandise() {return g("finCostOfMerchandise");}
@@ -2735,7 +2737,11 @@ public interface Dictionary {
 
   default String finRevenueAndExpenseSummary() {return g("finRevenueAndExpenseSummary");}
 
+  default String finSalesDiscounts() {return g("finSalesDiscounts");}
+
   default String finSalesRevenue() {return g("finSalesRevenue");}
+
+  default String finTradeAccounts() {return g("finTradeAccounts");}
 
   default String finTradePayables() {return g("finTradePayables");}
 
@@ -2746,6 +2752,8 @@ public interface Dictionary {
   default String finVatPayable() {return g("finVatPayable");}
 
   default String finVatReceivable() {return g("finVatReceivable");}
+
+  default String finWriteOffAccount() {return g("finWriteOffAccount");}
 
   default String finance() {return g("finance");}
 
