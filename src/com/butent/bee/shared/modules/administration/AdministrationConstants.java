@@ -115,6 +115,7 @@ public final class AdministrationConstants {
   }
 
   public static final String FILE_URL = "file";
+  public static final String FILE_COMMIT = "CommitFile";
 
   public static final String PARAMETERS_PREFIX = "parameters_";
 

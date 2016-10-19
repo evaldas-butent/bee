@@ -381,11 +381,7 @@ public class ChatBean {
       logger.warning("chat", chatId, "not found for user", userId);
       return null;
     }
-
-    SimpleRow row = chatData.getRow(0);
-    Chat chat = createChat(row, userId);
-
-    return chat;
+    return createChat(chatData.getRow(0), userId);
   }
 
   private Map<Long, List<FileInfo>> getChatFiles(long chatId) {
