@@ -27,6 +27,34 @@ public final class TradeConstants {
       public String getCaption(Dictionary constants) {
         return constants.trdTypeTransfer();
       }
+    },
+
+    WRITE_OFF(true, false, false) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trdTypeWriteOff();
+      }
+    },
+
+    POS(true, false, false) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trdTypePointOfSale();
+      }
+    },
+
+    CUSTOMER_RETURN(false, true, true) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trdTypeCustomerReturn();
+      }
+    },
+
+    RETURN_TO_SUPPLIER(true, false, false) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trdTypeReturnToSupplier();
+      }
     };
 
     private final boolean consumesStock;

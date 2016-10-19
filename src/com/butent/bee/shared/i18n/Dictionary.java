@@ -6123,11 +6123,19 @@ public interface Dictionary {
 
   default String trdTurnovers() {return g("trdTurnovers");}
 
+  default String trdTypeCustomerReturn() {return g("trdTypeCustomerReturn");}
+
+  default String trdTypePointOfSale() {return g("trdTypePointOfSale");}
+
   default String trdTypePurchase() {return g("trdTypePurchase");}
+
+  default String trdTypeReturnToSupplier() {return g("trdTypeReturnToSupplier");}
 
   default String trdTypeSale() {return g("trdTypeSale");}
 
   default String trdTypeTransfer() {return g("trdTypeTransfer");}
+
+  default String trdTypeWriteOff() {return g("trdTypeWriteOff");}
 
   default String trdVat() {return g("trdVat");}
 
