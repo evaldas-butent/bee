@@ -77,8 +77,6 @@ public final class Global {
 
   private static final BeeLogger logger = LogUtils.getLogger(Global.class);
 
-  private static final InputBoxes inpBoxen = new InputBoxes();
-
   private static final CacheManager cache = new CacheManager();
 
   private static final Images.Resources images = Images.createResources();
@@ -299,13 +297,13 @@ public final class Global {
   public static void inputCollection(String caption, String valueCaption, boolean unique,
       Collection<String> defaultCollection, Consumer<Collection<String>> consumer,
       Function<String, Editor> editorSupplier) {
-    inpBoxen.inputCollection(caption, valueCaption, unique, defaultCollection, consumer,
+    InputBoxes.inputCollection(caption, valueCaption, unique, defaultCollection, consumer,
         editorSupplier);
   }
 
   public static void inputMap(String caption, String keyCaption, String valueCaption,
       Map<String, String> map, Consumer<Map<String, String>> consumer) {
-    inpBoxen.inputMap(caption, keyCaption, valueCaption, map, consumer);
+    InputBoxes.inputMap(caption, keyCaption, valueCaption, map, consumer);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
@@ -341,7 +339,7 @@ public final class Global {
       String styleName, String defaultValue, int maxLength, Element target, double width,
       CssUnit widthUnit, int timeout, String confirmHtml, String cancelHtml,
       WidgetInitializer initializer) {
-    inpBoxen.inputString(caption, prompt, callback, styleName, defaultValue, maxLength, target,
+    InputBoxes.inputString(caption, prompt, callback, styleName, defaultValue, maxLength, target,
         width, widthUnit, timeout, confirmHtml, cancelHtml, initializer);
   }
 
@@ -371,7 +369,7 @@ public final class Global {
   public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle, Element target, Set<Action> enabledActions,
       WidgetInitializer initializer) {
-    return inpBoxen.inputWidget(caption, input, callback, dialogStyle, target, enabledActions,
+    return InputBoxes.inputWidget(caption, input, callback, dialogStyle, target, enabledActions,
         initializer);
   }
 

@@ -39,7 +39,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.utils.JsonUtils;
-import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
@@ -124,12 +123,9 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         return true;
       });
     } else if (BeeUtils.same(editableWidget.getColumnId(), COL_CARGO_PARTIAL)) {
-      editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
-        @Override
-        public Boolean validateCell(CellValidateEvent event) {
-          styleRequiredField(NAME_LOADED_KILOMETERS_LABEL, event.getNewValue() == null);
-          return true;
-        }
+      editableWidget.addCellValidationHandler(event -> {
+        styleRequiredField(NAME_LOADED_KILOMETERS_LABEL, event.getNewValue() == null);
+        return true;
       });
     }
     super.afterCreateEditableWidget(editableWidget, widget);
@@ -379,8 +375,10 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         }
 
         @Override
-        public FontAwesome getIcon() {
-          return FontAwesome.ENVELOPE_O;
+        public Widget getActionWidget() {
+          FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
+          action.setTitle(Localized.dictionary().trWriteEmail());
+          return action;
         }
       };
     }

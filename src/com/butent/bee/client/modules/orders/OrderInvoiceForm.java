@@ -1,8 +1,10 @@
 package com.butent.bee.client.modules.orders;
 
+import com.google.gwt.user.client.ui.Widget;
+
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -20,6 +22,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -115,8 +118,10 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
       }
 
       @Override
-      public FontAwesome getIcon() {
-        return FontAwesome.ENVELOPE_O;
+      public Widget getActionWidget() {
+        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
+        action.setTitle(Localized.dictionary().trWriteEmail());
+        return action;
       }
     };
   }

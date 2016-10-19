@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.cars;
 
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_ITEM;
@@ -25,6 +26,7 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -177,8 +179,10 @@ public class CarOrderForm extends PrintFormInterceptor implements Consumer<Speci
       }
 
       @Override
-      public FontAwesome getIcon() {
-        return FontAwesome.ENVELOPE_O;
+      public Widget getActionWidget() {
+        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
+        action.setTitle(Localized.dictionary().trWriteEmail());
+        return action;
       }
     };
   }

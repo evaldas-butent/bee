@@ -826,8 +826,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       }
 
       @Override
-      public FontAwesome getIcon() {
-        return FontAwesome.ENVELOPE_O;
+      public Widget getActionWidget() {
+        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
+        action.setTitle(Localized.dictionary().trWriteEmail());
+        return action;
       }
     };
   }

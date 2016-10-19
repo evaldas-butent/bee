@@ -3,6 +3,7 @@ package com.butent.bee.client.dialog;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasEnabled;
@@ -57,7 +58,7 @@ import java.util.function.Supplier;
  * from the user.
  */
 
-public class InputBoxes {
+public final class InputBoxes {
 
   private static boolean addCommandGroup(final Popup dialog, HasWidgets panel, String confirmHtml,
       String cancelHtml, WidgetInitializer initializer, final Holder<State> state,
@@ -142,9 +143,9 @@ public class InputBoxes {
 
   private static final String STYLE_INPUT_CLOSE = BeeConst.CSS_CLASS_PREFIX + "InputClose";
 
-  public void inputCollection(String caption, String valueCaption, final boolean unique,
-      Collection<String> defaultCollection, final Consumer<Collection<String>> consumer,
-      final Function<String, Editor> editorSupplier) {
+  public static void inputCollection(String caption, String valueCaption, boolean unique,
+      Collection<String> defaultCollection, Consumer<Collection<String>> consumer,
+      Function<String, Editor> editorSupplier) {
 
     Assert.notNull(consumer);
 
@@ -238,8 +239,8 @@ public class InputBoxes {
     }, null, null, EnumSet.of(Action.ADD), null);
   }
 
-  public void inputMap(String caption, final String keyCaption, final String valueCaption,
-      Map<String, String> map, final Consumer<Map<String, String>> consumer) {
+  public static void inputMap(String caption, String keyCaption, String valueCaption,
+      Map<String, String> map, Consumer<Map<String, String>> consumer) {
 
     final HtmlTable table = new HtmlTable();
     table.setText(0, 0, keyCaption);
@@ -326,9 +327,9 @@ public class InputBoxes {
     }, null, null, EnumSet.of(Action.ADD), null);
   }
 
-  public void inputString(String caption, String prompt, final StringCallback callback,
+  public static void inputString(String caption, String prompt, StringCallback callback,
       String styleName, String defaultValue, int maxLength, Element target, double width,
-      CssUnit widthUnit, final int timeout, String confirmHtml, String cancelHtml,
+      CssUnit widthUnit, int timeout, String confirmHtml, String cancelHtml,
       WidgetInitializer initializer) {
 
     Assert.notNull(callback);
@@ -442,7 +443,7 @@ public class InputBoxes {
     }
   }
 
-  public DialogBox inputWidget(String caption, IsWidget widget, final InputCallback callback,
+  public static DialogBox inputWidget(String caption, IsWidget widget, InputCallback callback,
       String dialogStyle, Element target, Set<Action> enabledActions,
       WidgetInitializer initializer) {
 
@@ -458,7 +459,7 @@ public class InputBoxes {
     widget.asWidget().addStyleName(STYLE_INPUT_WIDGET);
     UiHelper.add(panel, widget.asWidget(), initializer, DialogConstants.WIDGET_INPUT);
 
-    boolean enabled = (widget instanceof HasEnabled) ? ((HasEnabled) widget).isEnabled() : true;
+    boolean enabled = !(widget instanceof HasEnabled) || ((HasEnabled) widget).isEnabled();
 
     final ScheduledCommand onClose;
 
@@ -485,11 +486,13 @@ public class InputBoxes {
         }
       };
 
-      FaLabel save = new FaLabel(FontAwesome.SAVE);
+      Widget save = UiHelper.initialize(new FaLabel(FontAwesome.SAVE), initializer,
+          DialogConstants.WIDGET_SAVE);
       save.addStyleName(STYLE_INPUT_SAVE);
-      save.addClickHandler(event -> onSave.execute());
 
-      UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
+      if (save instanceof HasClickHandlers) {
+        ((HasClickHandlers) save).addClickHandler(event -> onSave.execute());
+      }
       dialog.addAction(Action.SAVE, save);
 
       dialog.setOnSave(input -> {
@@ -578,5 +581,8 @@ public class InputBoxes {
     dialog.showRelativeTo(target);
 
     return dialog;
+  }
+
+  private InputBoxes() {
   }
 }
