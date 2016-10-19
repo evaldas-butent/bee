@@ -4656,6 +4656,8 @@ public interface Dictionary {
 
   default String svcDevice() {return g("svcDevice");}
 
+  default String svcDeviceAddress() {return g("svcDeviceAddress");}
+
   default String svcDeviceCategory() {return g("svcDeviceCategory");}
 
   default String svcDevices() {return g("svcDevices");}
@@ -4707,6 +4709,8 @@ public interface Dictionary {
   default String svcObjectFiles() {return g("svcObjectFiles");}
 
   default String svcObjects() {return g("svcObjects");}
+
+  default String svcRelatedCustomerInfo() {return g("svcRelatedCustomerInfo");}
 
   default String svcSerialNo() {return g("svcSerialNo");}
 
