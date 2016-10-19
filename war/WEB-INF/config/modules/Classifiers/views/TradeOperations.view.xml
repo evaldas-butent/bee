@@ -3,6 +3,7 @@
 
       name="TradeOperations" source="TradeOperations"
       caption="=trdOperations" newRowCaption="=trdNewOperation"
+      newRowForm="TradeOperation" editForm="TradeOperation"
 >
   <Columns>
     <SimpleColumn name="OperationName" />

@@ -5,7 +5,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="Warehouse" viewName="Warehouses" caption="=warehouse"
-        width="900" widthUnit="px" height="70" heightUnit="vh"
+        width="888" widthUnit="px" height="60" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin: 1ex 1em;">
@@ -15,20 +15,17 @@
       <row>
         <Label for="Code" />
         <InputText source="Code" style="width: 100px;" />
+
         <Label for="Name" />
         <InputText source="Name" style="width: 400px;" />
       </row>
+
       <row module="Ec">
         <Label for="SupplierCode" />
         <InputText source="SupplierCode" style="width: 100px;" />
+
         <Label for="Branch" />
         <DataSelector source="Branch" />
-      </row>
-      <row>
-        <Label for="Description" />
-        <cell colSpan="3">
-          <InputArea source="Description" visibleLines="3" style="width: 100%;" />
-        </cell>
       </row>
     </Table>
 
@@ -46,6 +43,13 @@
       <page module="Finance" data="TradeAccounts">
         <text>=finAccounts</text>
         <xi:include href="widgets/TradeAccounts.widget.xml" />
+      </page>
+
+      <page for="Description">
+        <text>=description</text>
+        <SimplePanel>
+          <InputArea source="Description" class="occupy-1" summarize="true" />
+        </SimplePanel>
       </page>
     </TabbedPages>
   </FlowPanel>

@@ -21,9 +21,9 @@
 
     <DataColumn name="CashRegisterNo" />
 
-    <DataColumn name="Join" />
+    <DataColumn name="Join" module="Orders" />
 
-    <DataColumn name="IsDefault" />
+    <DataColumn name="IsDefault" module="Trade.Acts" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
