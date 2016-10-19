@@ -260,6 +260,7 @@ public final class TradeConstants {
   public static final String COL_DOCUMENT_TYPE = "DocumentType";
 
   public static final String COL_TRADE_TAG = "TradeTag";
+  public static final String COL_TAG_NAME = "TagName";
 
   public static final String COL_PRIMARY_DOCUMENT_ITEM = "PrimaryDocumentItem";
   public static final String COL_STOCK_QUANTITY = "Quantity";
