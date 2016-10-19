@@ -27,7 +27,6 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
@@ -60,7 +59,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class TripCostsGrid extends AbstractGridInterceptor
+public class TripCostsGrid extends TransportVatGridInterceptor
     implements ClickHandler, SelectorEvent.Handler {
 
   Long trip;
