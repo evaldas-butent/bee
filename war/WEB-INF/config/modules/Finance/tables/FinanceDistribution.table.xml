@@ -18,5 +18,11 @@
 
     <Relation name="DebitReplacement" relation="ChartOfAccounts" label="=debitReplacement" />
     <Relation name="CreditReplacement" relation="ChartOfAccounts" label="=creditReplacement" />
+
+    <Relation name="Item" relation="Items" cascade="DELETE" label="=item" />
+    <Relation name="Operation" relation="TradeOperations" cascade="DELETE" label="=trdOperation" />
+
+    <Relation name="TradeDocument" relation="TradeDocuments" cascade="DELETE"
+              label="=trdDocumentLong" />
   </Fields>
 </Table>

@@ -2735,6 +2735,8 @@ public interface Dictionary {
 
   default String finDefaultJournal() {return g("finDefaultJournal");}
 
+  default String finDistribution() {return g("finDistribution");}
+
   default String finForeignExchangeGain() {return g("finForeignExchangeGain");}
 
   default String finForeignExchangeLoss() {return g("finForeignExchangeLoss");}
@@ -3449,6 +3451,8 @@ public interface Dictionary {
   default String newEmailAddress() {return g("newEmailAddress");}
 
   default String newEmployee() {return g("newEmployee");}
+
+  default String newFinDistribution() {return g("newFinDistribution");}
 
   default String newFinancialRecord() {return g("newFinancialRecord");}
 
