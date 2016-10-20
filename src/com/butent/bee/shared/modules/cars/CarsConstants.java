@@ -57,6 +57,8 @@ public final class CarsConstants {
 
   public static final String VAR_PRICE_DEFAULT = "PriceDefault";
   public static final String VAR_PRICE_OPTIONAL = "PriceOptional";
+  public static final String VAR_REL_REQUIRED = "RelRequired";
+  public static final String VAR_REL_DENIED = "RelDenied";
 
   private CarsConstants() {
   }

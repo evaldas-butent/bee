@@ -1003,36 +1003,30 @@ public class ImportBean {
       rl.addProperty(property);
       rl.setPropertyValue(property.getName(), opts[i]);
     }
-    String priceDefault = rl.getPropertyValue(prfx + VAR_PRICE_DEFAULT);
-    String priceOptional = rl.getPropertyValue(prfx + VAR_PRICE_OPTIONAL);
-    tmp = null;
+    create = rl.createStructure(sys, null, null);
+    tmp = create.getTarget();
+    qs.updateData(create);
 
-    if (BeeUtils.isEmpty(priceDefault)) {
-      error = loc.valueEmpty(rl.getProperty(prfx + VAR_PRICE_DEFAULT).getCaption());
-    } else if (BeeUtils.isEmpty(priceOptional)) {
-      error = loc.valueEmpty(rl.getProperty(prfx + VAR_PRICE_OPTIONAL).getCaption());
-    } else {
-      create = rl.createStructure(sys, null, null);
-      tmp = create.getTarget();
-      qs.updateData(create);
+    error = loadXLSData(rl, file, tmp, progress, null,
+        rl.getPropertyValue(prfx + VAR_IMPORT_SHEET),
+        BeeUtils.toInt(rl.getPropertyValue(prfx + VAR_IMPORT_START_ROW)),
+        BeeUtils.toInt(rl.getPropertyValue(prfx + VAR_IMPORT_END_ROW)));
 
-      error = loadXLSData(rl, file, tmp, progress, null,
-          rl.getPropertyValue(prfx + VAR_IMPORT_SHEET),
-          BeeUtils.toInt(rl.getPropertyValue(prfx + VAR_IMPORT_START_ROW)),
-          BeeUtils.toInt(rl.getPropertyValue(prfx + VAR_IMPORT_END_ROW)));
-    }
     if (!BeeUtils.isEmpty(error)) {
       qs.sqlDropTemp(tmp);
       file.delete();
       return ResponseObject.error(error);
     }
+    String priceDefault = rl.getPropertyValue(prfx + VAR_PRICE_DEFAULT);
+    String priceOptional = rl.getPropertyValue(prfx + VAR_PRICE_OPTIONAL);
+
     for (SimpleRow row : qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp))) {
       String price = row.getValue(prfx + COL_PRICE);
       boolean ok = true;
 
-      if (Objects.equals(price, priceDefault)) {
+      if (!BeeUtils.isEmpty(priceDefault) && Objects.equals(price, priceDefault)) {
         price = Configuration.DEFAULT_PRICE;
-      } else if (Objects.equals(price, priceOptional)) {
+      } else if (!BeeUtils.isEmpty(priceOptional) && Objects.equals(price, priceOptional)) {
         price = null;
       } else if (!BeeUtils.isNonNegativeInt(price)) {
         errorProcessor.accept(loc.relations() + ": " + loc.price(), price);
@@ -1095,22 +1089,44 @@ public class ImportBean {
       file.delete();
       return ResponseObject.error(error);
     }
+    String relRequired = rs.getPropertyValue(prfx + VAR_REL_REQUIRED);
+    String relDenied = rs.getPropertyValue(prfx + VAR_REL_DENIED);
+
     for (SimpleRow row : qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp))) {
       String code = row.getValue(prfx + COL_CODE + 1);
       Option option1 = options.get(code);
-      boolean ok = Objects.nonNull(option1);
+      boolean ok = true;
 
-      if (!ok) {
+      if (Objects.isNull(option1)) {
         errorProcessor.accept(loc.restrictions() + ": " + loc.code(), code);
+        ok = false;
+      } else if (!configuration.getOptions().contains(option1)) {
+        errorProcessor.accept(loc.restrictions() + ": " + loc.option(), option1.toString());
+        ok = false;
       }
       code = row.getValue(prfx + COL_CODE + 2);
       Option option2 = options.get(code);
 
       if (Objects.isNull(option2)) {
         errorProcessor.accept(loc.restrictions() + ": " + loc.code(), code);
-      } else if (ok) {
-        configuration.setRestriction(option1, option2,
-            !BeeUtils.isEmpty(row.getValue(prfx + CarsConstants.COL_DENIED)));
+        ok = false;
+      } else if (!configuration.getOptions().contains(option2)) {
+        errorProcessor.accept(loc.restrictions() + ": " + loc.option(), option2.toString());
+        ok = false;
+      }
+      String relStatus = row.getValue(prfx + CarsConstants.COL_DENIED);
+      boolean denied = false;
+
+      if (!BeeUtils.isEmpty(relRequired) && Objects.equals(relStatus, relRequired)) {
+        denied = false;
+      } else if (!BeeUtils.isEmpty(relDenied) && Objects.equals(relStatus, relDenied)) {
+        denied = true;
+      } else {
+        errorProcessor.accept(loc.restrictions() + ": " + loc.status(), relStatus);
+        ok = false;
+      }
+      if (ok) {
+        configuration.setRestriction(option1, option2, denied);
       }
     }
     qs.sqlDropTemp(tmp);

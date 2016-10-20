@@ -40,12 +40,13 @@
       <page>
         <text>=car</text>
         <FlowPanel class="flexBox-horizontal">
-          <FieldSet class="flexible" style="margin:5px; border:1px solid #ccc">
+          <FieldSet class="flexible" style="margin:5px; border:1px solid #ccc; position:relative;">
             <Legend name="SpecificationBuilder" class="bee-Button" text="=specification" />
-            <FlowPanel class="flexBox-vertical" style="height:94%;">
+            <FlowPanel
+                style="position:absolute; top:35px; right:5px; bottom:5px; left:5px; overflow:auto;">
               <FlowPanel name="Object" class="flexBox-horizontal" />
               <Label text="=description" style="font-weight:bold;" />
-              <RichTextEditor source="Description" class="flexible" />
+              <RichTextEditor source="Description" style="min-height:400px;" />
             </FlowPanel>
           </FieldSet>
           <Table kind="controls">

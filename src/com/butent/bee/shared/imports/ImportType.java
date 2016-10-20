@@ -116,10 +116,10 @@ public enum ImportType implements HasLocalizedCaption {
           + " (" + locale.code() + ",...)");
       addDataProperty(prfx + CarsConstants.COL_CODE, capPrfx + locale.code());
       addDataProperty(prfx + CarsConstants.COL_PRICE, capPrfx + locale.price());
-      addSimpleProperty(prfx + CarsConstants.VAR_PRICE_DEFAULT, capPrfx + locale.trImportMapping()
+      addSimpleProperty(prfx + CarsConstants.VAR_PRICE_DEFAULT, capPrfx + locale.price()
           + " <span style=\"font-family:" + FontAwesome.class.getSimpleName() + ";\">"
           + FontAwesome.CIRCLE.getCode() + "</span>");
-      addSimpleProperty(prfx + CarsConstants.VAR_PRICE_OPTIONAL, capPrfx + locale.trImportMapping()
+      addSimpleProperty(prfx + CarsConstants.VAR_PRICE_OPTIONAL, capPrfx + locale.price()
           + " <span style=\"font-family:" + FontAwesome.class.getSimpleName() + ";\">"
           + FontAwesome.CIRCLE_THIN.getCode() + "</span>");
       addDataProperty(prfx + CarsConstants.COL_DESCRIPTION, capPrfx + locale.description());
@@ -131,7 +131,13 @@ public enum ImportType implements HasLocalizedCaption {
       addSimpleProperty(prfx + VAR_IMPORT_END_ROW, capPrfx + locale.endRow());
       addDataProperty(prfx + CarsConstants.COL_CODE + 1, capPrfx + locale.code() + 1);
       addDataProperty(prfx + CarsConstants.COL_CODE + 2, capPrfx + locale.code() + 2);
-      addDataProperty(prfx + CarsConstants.COL_DENIED, capPrfx + locale.actionBlock());
+      addDataProperty(prfx + CarsConstants.COL_DENIED, capPrfx + locale.status());
+      addSimpleProperty(prfx + CarsConstants.VAR_REL_REQUIRED, capPrfx + locale.status()
+          + " <span style=\"font-family:" + FontAwesome.class.getSimpleName() + "; color:green;\">"
+          + FontAwesome.PLUS_CIRCLE.getCode() + "</span>");
+      addSimpleProperty(prfx + CarsConstants.VAR_REL_DENIED, capPrfx + locale.status()
+          + " <span style=\"font-family:" + FontAwesome.class.getSimpleName() + "; color:red;\">"
+          + FontAwesome.BAN.getCode() + "</span>");
     }
   };
 
