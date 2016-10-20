@@ -29,26 +29,26 @@ public final class FinanceKeeper {
         ALS_JOURNAL_BACKGROUND, ALS_JOURNAL_FOREGROUND);
 
     ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_JOURNAL, csp);
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_FINANCIAL_RECORDS, COL_FIN_JOURNAL,
-        csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
+        COL_FIN_JOURNAL, csp);
 
     csp = ColorStyleProvider.create(VIEW_FINANCIAL_RECORDS,
         ALS_DEBIT_BACKGROUND, ALS_DEBIT_FOREGROUND);
 
     ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_DEBIT, csp);
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_FINANCIAL_RECORDS, COL_FIN_DEBIT,
-        csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
+        COL_FIN_DEBIT, csp);
 
     csp = ColorStyleProvider.create(VIEW_FINANCIAL_RECORDS,
         ALS_CREDIT_BACKGROUND, ALS_CREDIT_FOREGROUND);
 
     ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_RECORDS, COL_FIN_CREDIT, csp);
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_FINANCIAL_RECORDS, COL_FIN_CREDIT,
-        csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
+        COL_FIN_CREDIT, csp);
 
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_RECORDS, new FinancialRecordsGrid());
-    GridFactory.registerGridInterceptor(GRID_TRADE_FINANCIAL_RECORDS,
-        new TradeFinancialRecordsGrid());
+    GridFactory.registerGridInterceptor(GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
+        new TradeDocumentFinancialRecordsGrid());
   }
 
   private static void openConfiguration() {

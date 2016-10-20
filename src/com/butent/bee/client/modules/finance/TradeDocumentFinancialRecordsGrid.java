@@ -7,15 +7,15 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.finance.FinanceConstants;
 
-class TradeFinancialRecordsGrid extends FinanceGrid {
+class TradeDocumentFinancialRecordsGrid extends FinanceGrid {
 
-  TradeFinancialRecordsGrid() {
+  TradeDocumentFinancialRecordsGrid() {
     super();
   }
 
   @Override
   public GridInterceptor getInstance() {
-    return new TradeFinancialRecordsGrid();
+    return new TradeDocumentFinancialRecordsGrid();
   }
 
   @Override
