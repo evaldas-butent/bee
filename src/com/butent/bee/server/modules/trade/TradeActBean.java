@@ -378,6 +378,33 @@ public class TradeActBean implements HasTimerService {
     });
   }
 
+  private static SqlInsert appendInsertConstants(SqlInsert query, BeeRowSet values, Long valueId,
+                                                 Collection<BeeColumn> columns) {
+    int valueIndex = values.getRowIndex(valueId);
+    if (BeeConst.isUndef(valueIndex)) {
+      return query;
+    }
+
+    for (BeeColumn col : columns) {
+      if (values.getColumn(col.getId()).isEditable()) {
+
+        switch (values.getColumn(col.getId()).getType()) {
+          case BOOLEAN:
+            Boolean boolValue = values.getBoolean(valueIndex, col.getId());
+            query.addConstant(col.getId(), boolValue);
+            break;
+          default:
+            String strValue = values.getString(valueIndex, col.getId());
+            if (!BeeUtils.isEmpty(strValue)) {
+              query.addConstant(col.getId(), strValue);
+            }
+        }
+      }
+    }
+
+    return query;
+  }
+
   private Map<String, Long> getReferences(String tableName, String keyName) {
     return getReferences(tableName, keyName, null);
   }
@@ -542,14 +569,12 @@ public class TradeActBean implements HasTimerService {
       return response;
     }
 
-    SqlUpdate updateService = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
-        .addConstant(COL_TA_SERVICE_TO, now)
-        .setWhere(SqlUtils.and(
-            SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, parentIds),
-            SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO)
-        ));
+    BeeRowSet services = qs.getViewData(VIEW_TRADE_ACT_SERVICES, Filter.and(Filter.isNull(
+        COL_TA_SERVICE_TO), Filter.any(COL_TRADE_ACT, parentIds)));
 
-    response = qs.updateDataWithResponse(updateService);
+    if (!DataUtils.isEmpty(services)) {
+      response = createServices(continuousActId, services, now);
+    }
 
     if (response.hasErrors()) {
       return response;
@@ -733,6 +758,54 @@ public class TradeActBean implements HasTimerService {
 
     return response;
 
+  }
+
+  private ResponseObject createServices(Long continuousId, BeeRowSet services, DateTime svcTimes) {
+    List<BeeColumn> colData = new ArrayList<>();
+    int idxSvcActs = services.getColumnIndex(COL_TRADE_ACT);
+
+    Set<Long> actIds = services.getDistinctLongs(idxSvcActs);
+
+    BeeRowSet items = getRemainingItems(actIds.toArray(new Long[actIds.size()]));
+
+    if (!DataUtils.isEmpty(items)) {
+      Set<Long> notReturnedActs = items.getDistinctLongs(items.getColumnIndex(COL_TRADE_ACT));
+
+      for (BeeColumn col : services.getColumns()) {
+        if (BeeUtils.inListSame(col.getId(), COL_TRADE_ACT, COL_TA_SERVICE_FROM)) {
+          continue;
+        }
+        colData.add(col);
+      }
+
+      for (BeeRow service : services) {
+
+        if (!notReturnedActs.contains(service.getLong(services.getColumnIndex(COL_TRADE_ACT)))) {
+          continue;
+        }
+
+        SqlInsert itemInsert = new SqlInsert(TBL_TRADE_ACT_SERVICES)
+            .addConstant(COL_TRADE_ACT, continuousId)
+            .addConstant(COL_TA_SERVICE_FROM, svcTimes);
+
+
+        appendInsertConstants(itemInsert, services, service.getId(), colData);
+
+        ResponseObject serviceResponse = qs.insertDataWithResponse(itemInsert);
+        if (serviceResponse.hasErrors()) {
+          return serviceResponse;
+        }
+      }
+    }
+
+    SqlUpdate updateService = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
+        .addConstant(COL_TA_SERVICE_TO, svcTimes)
+        .setWhere(SqlUtils.and(
+            SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actIds),
+            SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO)
+        ));
+
+    return qs.updateDataWithResponse(updateService);
   }
 
   private long exchange(String target, String fromCol, long to, long time, String... columns) {
@@ -1543,11 +1616,11 @@ public class TradeActBean implements HasTimerService {
       return ResponseObject.error(reqInfo.getService(), VIEW_TRADE_ACTS, parentIds, "not found");
     }
 
-    Set<Integer> copyColIndexes = new HashSet<>();
+    Set<BeeColumn> copyColIndexes = new HashSet<>();
     for (String colName : COPY_TA_COLUMN_NAMES) {
       int index = parentActs.getColumnIndex(colName);
       if (index >= 0) {
-        copyColIndexes.add(index);
+        copyColIndexes.add(parentActs.getColumn(colName));
       }
     }
 
@@ -1578,12 +1651,7 @@ public class TradeActBean implements HasTimerService {
         actInsert.addConstant(COL_TA_OPERATION, operation);
       }
 
-      for (int index : copyColIndexes) {
-        String value = parentAct.getString(index);
-        if (!BeeUtils.isEmpty(value)) {
-          actInsert.addConstant(parentActs.getColumnId(index), value);
-        }
-      }
+      appendInsertConstants(actInsert, parentActs, parentAct.getId(), copyColIndexes);
 
       ResponseObject actInsResponse = qs.insertDataWithResponse(actInsert);
       if (actInsResponse.hasErrors()) {
@@ -1611,6 +1679,19 @@ public class TradeActBean implements HasTimerService {
         ResponseObject splitResponse = splitActServices(parentId, date.getTime());
         if (splitResponse.hasErrors()) {
           return splitResponse;
+        }
+      } else {
+        SqlUpdate updateService = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
+            .addConstant(COL_TA_SERVICE_TO, new DateTime(date.getTime()).getDate())
+            .setWhere(SqlUtils.and(
+                SqlUtils.equals(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, parentId),
+                SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO)
+            ));
+
+        ResponseObject updSvc = qs.updateDataWithResponse(updateService);
+
+        if (updSvc.hasErrors()) {
+          return updSvc;
         }
       }
 
@@ -3356,29 +3437,21 @@ public class TradeActBean implements HasTimerService {
 
   private ResponseObject insertChildItems(Long actId, BeeRowSet parentItems) {
     int itemActIndex = parentItems.getColumnIndex(COL_TRADE_ACT);
+    List<BeeColumn> colData = new ArrayList<>();
+
+    for (BeeColumn col : parentItems.getColumns()) {
+      if (BeeUtils.inListSame(col.getId(), COL_TRADE_ACT, COL_TA_PARENT)) {
+        continue;
+      }
+      colData.add(col);
+    }
+
     for (BeeRow parentItem : parentItems) {
         SqlInsert itemInsert = new SqlInsert(TBL_TRADE_ACT_ITEMS)
             .addConstant(COL_TRADE_ACT, actId)
             .addConstant(COL_TA_PARENT, parentItem.getLong(itemActIndex));
+        appendInsertConstants(itemInsert, parentItems, parentItem.getId(), colData);
 
-        for (int index = 0; index < parentItems.getNumberOfColumns(); index++) {
-          if (index != itemActIndex && parentItems.getColumn(index).isEditable()) {
-
-            switch (parentItems.getColumn(index).getType()) {
-              case BOOLEAN:
-                Boolean boolValue = parentItem
-                    .getBoolean(index);
-                itemInsert.addConstant(parentItems.getColumnId(index), boolValue);
-                break;
-              default:
-                String value = parentItem.getString(index);
-                if (!BeeUtils.isEmpty(value)) {
-                  itemInsert.addConstant(parentItems.getColumnId(index), value);
-                }
-            }
-
-          }
-        }
         ResponseObject itemInsResponse = qs.insertDataWithResponse(itemInsert);
         if (itemInsResponse.hasErrors()) {
           return itemInsResponse;
