@@ -32,7 +32,9 @@
     <TabbedPages class="flexible">
       <page>
         <text>=contactInfo</text>
-        <xi:include href="widgets/ContactDetails.widget.xml" />
+        <SimplePanel>
+          <xi:include href="widgets/ContactDetails.widget.xml" />
+        </SimplePanel>
       </page>
 
       <page data="Dimensions">
