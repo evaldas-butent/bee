@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Category" relation="ServiceTree" notNull="true" label="=category" />
-    <String name="Address" precision="100" notNull="true" label="=address" />
+    <String name="Address" precision="100" label="=address" />
 
     <Relation name="Customer" relation="Companies" label="=customer" />
     <Relation name="Contractor" relation="Companies" label="=svcContractor" />
@@ -15,6 +15,5 @@
     <Relation name="Manufacturer" relation="Companies" label="=tcdBrand" />
     <String name="Model" precision="200" label="=svcModel" />
     <String name="SerialNo" precision="200" label="=svcSerialNo" />
-    <Text name="Equipment" label="=svcEquipment" />
   </Fields>
 </Table>

@@ -10,8 +10,7 @@
   name="OrderInvoice" viewName="OrderChildInvoices" caption="=trdInvoice"
   width="840" height="600" readOnly="true" showRowId="true">
 
-  <f:properties jasperReports="PrintOrderInvoice:=trdInvoice,
-    PrintOrderProforma:=trdProformaInvoice" />
+  <f:properties jasperReports="SalesInvoice:=trdInvoice" />
   <FlowPanel class="flexBox-vertical">
     <br />
     <Table kind="controls">

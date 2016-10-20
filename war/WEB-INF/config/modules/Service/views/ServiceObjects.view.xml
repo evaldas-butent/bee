@@ -50,10 +50,12 @@
     <SimpleColumn name="Manufacturer" />
     <SimpleJoin joinType="LEFT" name="Manufacturer">
       <SimpleColumn name="Name" alias="ManufacturerName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="ManufacturerTypeName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Model" />
     <SimpleColumn name="SerialNo" />
-    <SimpleColumn name="Equipment" />
   </Columns>
 </View>

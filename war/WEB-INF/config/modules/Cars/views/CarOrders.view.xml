@@ -14,6 +14,11 @@
       <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="CustomerTypeName" />
       </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="Contact">
+        <SimpleJoin joinType="LEFT" name="Email">
+          <SimpleColumn name="Email" alias="CustomerEmail" />
+        </SimpleJoin>
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="CustomerPerson" />
@@ -21,6 +26,11 @@
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn name="FirstName" alias="ContactFirstName" />
         <SimpleColumn name="LastName" alias="ContactLastName" />
+      </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="Contact">
+        <SimpleJoin joinType="LEFT" name="Email">
+          <SimpleColumn name="Email" alias="ContactEmail" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 

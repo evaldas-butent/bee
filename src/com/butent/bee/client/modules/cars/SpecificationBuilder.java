@@ -170,7 +170,7 @@ public class SpecificationBuilder implements InputCallback {
     dialog.addStyleName(STYLE_DIALOG);
 
     StyleUtils.setWidth(dialog, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
-    StyleUtils.setHeight(dialog, BeeKeeper.getScreen().getHeight() * 0.8, CssUnit.PX);
+    StyleUtils.setHeight(dialog, BeeKeeper.getScreen().getHeight() * 0.9, CssUnit.PX);
   }
 
   @Override

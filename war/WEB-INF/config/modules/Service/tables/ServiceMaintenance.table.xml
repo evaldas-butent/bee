@@ -18,5 +18,8 @@
     <DateTime name="WarrantyValidTo"  label="=svcWarrantyValidTo" />
     <DateTime name="EndingDate"  label="=endingDate" />
     <Text name="Notes" label="=notes" />
+    <Text name="Equipment" label="=svcEquipment" />
+    <Relation name="Company" relation="Companies" label="=company" />
+    <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
   </Fields>
 </Table>

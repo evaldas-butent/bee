@@ -19,6 +19,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -30,6 +31,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
@@ -42,6 +44,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.NumberValue;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
@@ -55,7 +58,6 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 public class OrderForm extends PrintFormInterceptor {
 
@@ -215,8 +217,20 @@ public class OrderForm extends PrintFormInterceptor {
   }
 
   @Override
-  protected Consumer<FileInfo> getReportCallback() {
-    return this::sendMail;
+  protected ReportUtils.ReportCallback getReportCallback() {
+    return new ReportUtils.ReportCallback() {
+      @Override
+      public void accept(FileInfo fileInfo) {
+        sendMail(fileInfo);
+      }
+
+      @Override
+      public Widget getActionWidget() {
+        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
+        action.setTitle(Localized.dictionary().trWriteEmail());
+        return action;
+      }
+    };
   }
 
   @Override

@@ -917,7 +917,15 @@ public interface Dictionary {
 
   default String creditDays() {return g("creditDays");}
 
+  default String creditDocument() {return g("creditDocument");}
+
+  default String creditDocumentShort() {return g("creditDocumentShort");}
+
   default String creditLimit() {return g("creditLimit");}
+
+  default String creditSeries() {return g("creditSeries");}
+
+  default String creditSeriesShort() {return g("creditSeriesShort");}
 
   default String creditTolerance() {return g("creditTolerance");}
 
@@ -1113,6 +1121,10 @@ public interface Dictionary {
 
   default String crmTaskAddSenderToObservers() {return g("crmTaskAddSenderToObservers");}
 
+  default String crmTaskAddToProject() {return g("crmTaskAddToProject");}
+
+  default String crmTaskAskRemoveFromProject() {return g("crmTaskAskRemoveFromProject");}
+
   default String crmTaskCancel() {return g("crmTaskCancel");}
 
   default String crmTaskCancellation() {return g("crmTaskCancellation");}
@@ -1285,6 +1297,8 @@ public interface Dictionary {
 
   default String crmTaskReminder() {return g("crmTaskReminder");}
 
+  default String crmTaskRemoveFromProject() {return g("crmTaskRemoveFromProject");}
+
   default String crmTaskReports() {return g("crmTaskReports");}
 
   default String crmTaskReturnExecution() {return g("crmTaskReturnExecution");}
@@ -1452,6 +1466,14 @@ public interface Dictionary {
   default String daysShort() {return g("daysShort");}
 
   default String debit() {return g("debit");}
+
+  default String debitDocument() {return g("debitDocument");}
+
+  default String debitDocumentShort() {return g("debitDocumentShort");}
+
+  default String debitSeries() {return g("debitSeries");}
+
+  default String debitSeriesShort() {return g("debitSeriesShort");}
 
   default String debt() {return g("debt");}
 
@@ -2468,6 +2490,8 @@ public interface Dictionary {
 
   default String enabledShort() {return g("enabledShort");}
 
+  default String endRow() {return g("endRow");}
+
   default String endSession(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
@@ -2685,7 +2709,65 @@ public interface Dictionary {
 
   default String filters() {return g("filters");}
 
+  default String finAccounts() {return g("finAccounts");}
+
+  default String finAdvancePaymentsGiven() {return g("finAdvancePaymentsGiven");}
+
+  default String finAdvancePaymentsReceived() {return g("finAdvancePaymentsReceived");}
+
+  default String finCashInBank() {return g("finCashInBank");}
+
+  default String finContent() {return g("finContent");}
+
+  default String finCostAccount() {return g("finCostAccount");}
+
+  default String finCostOfGoodsSold() {return g("finCostOfGoodsSold");}
+
+  default String finCostOfMerchandise() {return g("finCostOfMerchandise");}
+
+  default String finDefaultAccounts() {return g("finDefaultAccounts");}
+
+  default String finDefaultJournal() {return g("finDefaultJournal");}
+
+  default String finForeignExchangeGain() {return g("finForeignExchangeGain");}
+
+  default String finForeignExchangeLoss() {return g("finForeignExchangeLoss");}
+
+  default String finLiabilitiesToEmployees() {return g("finLiabilitiesToEmployees");}
+
+  default String finPettyCash() {return g("finPettyCash");}
+
+  default String finPostAction() {return g("finPostAction");}
+
+  default String finReceivablesFromEmployees() {return g("finReceivablesFromEmployees");}
+
+  default String finRevenueAndExpenseSummary() {return g("finRevenueAndExpenseSummary");}
+
+  default String finSalesDiscounts() {return g("finSalesDiscounts");}
+
+  default String finSalesRevenue() {return g("finSalesRevenue");}
+
+  default String finTradeAccounts() {return g("finTradeAccounts");}
+
+  default String finTradePayables() {return g("finTradePayables");}
+
+  default String finTradeReceivables() {return g("finTradeReceivables");}
+
+  default String finTransitoryAccount() {return g("finTransitoryAccount");}
+
+  default String finVatPayable() {return g("finVatPayable");}
+
+  default String finVatReceivable() {return g("finVatReceivable");}
+
+  default String finWriteOffAccount() {return g("finWriteOffAccount");}
+
+  default String finance() {return g("finance");}
+
   default String financialInfo() {return g("financialInfo");}
+
+  default String financialRecord() {return g("financialRecord");}
+
+  default String financialRecords() {return g("financialRecords");}
 
   default String financialState() {return g("financialState");}
 
@@ -2869,6 +2951,10 @@ public interface Dictionary {
   default String itemTypes() {return g("itemTypes");}
 
   default String join() {return g("join");}
+
+  default String journal() {return g("journal");}
+
+  default String journals() {return g("journals");}
 
   default String key() {return g("key");}
 
@@ -3358,11 +3444,15 @@ public interface Dictionary {
 
   default String newEmployee() {return g("newEmployee");}
 
+  default String newFinancialRecord() {return g("newFinancialRecord");}
+
   default String newItem() {return g("newItem");}
 
   default String newItemGroup() {return g("newItemGroup");}
 
   default String newItemType() {return g("newItemType");}
+
+  default String newJournal() {return g("newJournal");}
 
   default String newKey() {return g("newKey");}
 
@@ -3636,6 +3726,8 @@ public interface Dictionary {
 
   default String partialShort() {return g("partialShort");}
 
+  default String passportNo() {return g("passportNo");}
+
   default String password() {return g("password");}
 
   default String payer() {return g("payer");}
@@ -3661,6 +3753,8 @@ public interface Dictionary {
   default String person() {return g("person");}
 
   default String personAccountingCode() {return g("personAccountingCode");}
+
+  default String personCode() {return g("personCode");}
 
   default String personCompanies() {return g("personCompanies");}
 
@@ -4564,6 +4658,8 @@ public interface Dictionary {
 
   default String svcDevice() {return g("svcDevice");}
 
+  default String svcDeviceAddress() {return g("svcDeviceAddress");}
+
   default String svcDeviceCategory() {return g("svcDeviceCategory");}
 
   default String svcDevices() {return g("svcDevices");}
@@ -4616,6 +4712,8 @@ public interface Dictionary {
 
   default String svcObjects() {return g("svcObjects");}
 
+  default String svcRelatedCustomerInfo() {return g("svcRelatedCustomerInfo");}
+
   default String svcSerialNo() {return g("svcSerialNo");}
 
   default String svcServiceState() {return g("svcServiceState");}
@@ -4639,6 +4737,8 @@ public interface Dictionary {
   default String svcWarranty() {return g("svcWarranty");}
 
   default String svcWarrantyBasis() {return g("svcWarrantyBasis");}
+
+  default String svcWarrantyMaintenance() {return g("svcWarrantyMaintenance");}
 
   default String svcWarrantyType() {return g("svcWarrantyType");}
 
@@ -5852,6 +5952,8 @@ public interface Dictionary {
 
   default String trdDocumentItems() {return g("trdDocumentItems");}
 
+  default String trdDocumentLong() {return g("trdDocumentLong");}
+
   default String trdDocumentPhase() {return g("trdDocumentPhase");}
 
   default String trdDocumentPhaseActive() {return g("trdDocumentPhaseActive");}
@@ -5872,6 +5974,8 @@ public interface Dictionary {
   }
 
   default String trdDocumentPhases() {return g("trdDocumentPhases");}
+
+  default String trdDocumentShort() {return g("trdDocumentShort");}
 
   default String trdDocumentTags() {return g("trdDocumentTags");}
 
@@ -6031,11 +6135,19 @@ public interface Dictionary {
 
   default String trdTurnovers() {return g("trdTurnovers");}
 
+  default String trdTypeCustomerReturn() {return g("trdTypeCustomerReturn");}
+
+  default String trdTypePointOfSale() {return g("trdTypePointOfSale");}
+
   default String trdTypePurchase() {return g("trdTypePurchase");}
+
+  default String trdTypeReturnToSupplier() {return g("trdTypeReturnToSupplier");}
 
   default String trdTypeSale() {return g("trdTypeSale");}
 
   default String trdTypeTransfer() {return g("trdTypeTransfer");}
+
+  default String trdTypeWriteOff() {return g("trdTypeWriteOff");}
 
   default String trdVat() {return g("trdVat");}
 

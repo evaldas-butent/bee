@@ -7,6 +7,7 @@ import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.modules.discussions.DiscussionsKeeper;
 import com.butent.bee.client.modules.documents.DocumentsHandler;
 import com.butent.bee.client.modules.ec.EcKeeper;
+import com.butent.bee.client.modules.finance.FinanceKeeper;
 import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.modules.orders.OrdersKeeper;
 import com.butent.bee.client.modules.payroll.PayrollKeeper;
@@ -78,6 +79,10 @@ public final class ModuleManager {
 
     if (Module.PAYROLL.isEnabled()) {
       PayrollKeeper.register();
+    }
+
+    if (Module.FINANCE.isEnabled()) {
+      FinanceKeeper.register();
     }
   }
 

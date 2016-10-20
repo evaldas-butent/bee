@@ -5,6 +5,10 @@
 >
   <Columns>
     <SimpleColumn name="Branch" />
+    <SimpleJoin name="Branch" joinType="LEFT">
+      <SimpleColumn name="BranchName" alias="ParentName" />
+      <SimpleColumn name="Ordinal" alias="ParentOrdinal" />
+    </SimpleJoin>
     <SimpleColumn name="BranchName" />
     <SimpleColumn name="Description" />
     <SimpleColumn name="PhotoFile" />
@@ -19,6 +23,8 @@
   </Columns>
   <Order>
     <OrderBy column="Blocked" descending="true" />
+    <OrderBy column="ParentOrdinal" />
+    <OrderBy column="ParentName" />
     <OrderBy column="Ordinal" />
     <OrderBy column="BranchName" />
   </Order>

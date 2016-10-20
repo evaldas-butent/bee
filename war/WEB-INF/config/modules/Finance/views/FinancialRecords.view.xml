@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="FinancialRecords" source="FinancialRecords"
+      caption="=financialRecords" newRowCaption="=newFinancialRecord"
+>
+  <Columns>
+    <SimpleColumn name="Journal" />
+    <SimpleJoin joinType="LEFT" name="Journal">
+      <SimpleColumn name="JournalCode" />
+      <SimpleColumn name="Background" alias="JournalBackground" />
+      <SimpleColumn name="Foreground" alias="JournalForeground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Date" />
+
+    <SimpleColumn name="Company" />
+    <SimpleJoin joinType="LEFT" name="Company">
+      <SimpleColumn name="Name" alias="CompanyName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CompanyTypeName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Content" />
+
+    <SimpleColumn name="Debit" />
+    <SimpleJoin joinType="LEFT" name="Debit">
+      <SimpleColumn name="AccountCode" alias="DebitCode" />
+      <SimpleColumn name="AccountName" alias="DebitName" />
+      <SimpleColumn name="Background" alias="DebitBackground" />
+      <SimpleColumn name="Foreground" alias="DebitForeground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="DebitSeries" />
+    <SimpleColumn name="DebitDocument" />
+
+    <SimpleColumn name="Credit" />
+    <SimpleJoin joinType="LEFT" name="Credit">
+      <SimpleColumn name="AccountCode" alias="CreditCode" />
+      <SimpleColumn name="AccountName" alias="CreditName" />
+      <SimpleColumn name="Background" alias="CreditBackground" />
+      <SimpleColumn name="Foreground" alias="CreditForeground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CreditSeries" />
+    <SimpleColumn name="CreditDocument" />
+
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="TradeDocument" />
+    <SimpleColumn name="TradePayment" />
+
+    <SimpleColumn name="Employee" />
+    <SimpleJoin joinType="LEFT" name="Employee">
+      <SimpleColumn name="CompanyPerson" alias="EmployeeCompanyPerson" />
+      <SimpleJoin joinType="LEFT" name="CompanyPerson">
+        <SimpleJoin joinType="LEFT" name="Person">
+          <SimpleColumn name="FirstName" alias="EmployeeFirstName" />
+          <SimpleColumn name="LastName" alias="EmployeeLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+
+      <SimpleColumn name="TabNumber" alias="EmployeeTabNumber" />
+    </SimpleJoin>
+
+    <SimpleJoin joinType="LEFT" name="Dimensions">
+      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>

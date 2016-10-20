@@ -57,6 +57,7 @@ import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.NotificationOptions;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -2438,7 +2439,7 @@ public final class CliWorker {
       }
     }
 
-    Global.getMsgBoxen().choice(caption, prompt, options, new ChoiceCallback() {
+    MessageBoxes.choice(caption, prompt, options, new ChoiceCallback() {
       @Override
       public void onCancel() {
         logger.info("cancel");
@@ -2454,15 +2455,12 @@ public final class CliWorker {
         logger.info("timeout");
       }
 
-    }, defaultValue, timeout, cancelHtml, new WidgetInitializer() {
-      @Override
-      public Widget initialize(Widget widget, String name) {
-        if (BeeUtils.containsSame(name, widgetName.get())) {
-          StyleUtils.updateAppearance(widget, null, widgetStyle.get());
-          logger.info(name, StyleUtils.getCssText(widget));
-        }
-        return widget;
+    }, defaultValue, timeout, cancelHtml, (widget, name) -> {
+      if (BeeUtils.containsSame(name, widgetName.get())) {
+        StyleUtils.updateAppearance(widget, null, widgetStyle.get());
+        logger.info(name, StyleUtils.getCssText(widget));
       }
+      return widget;
     });
   }
 

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="TradeOperations" source="TradeOperations"
-  caption="=trdOperations" newRowCaption="=trdNewOperation"
-  >
+      name="TradeOperations" source="TradeOperations"
+      caption="=trdOperations" newRowCaption="=trdNewOperation"
+      newRowForm="TradeOperation" editForm="TradeOperation"
+>
   <Columns>
     <SimpleColumn name="OperationName" />
     <SimpleColumn name="OperationType" />
@@ -32,6 +33,13 @@
     <SimpleColumn name="CashRegisterNo" />
 
     <SimpleColumn name="IsDefault" />
+
+    <SimpleJoin name="Dimensions" joinType="LEFT">
+      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    </SimpleJoin>
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
+    </SimpleJoin>
 
     <SimpleColumn name="Background" />
     <SimpleColumn name="Foreground" />

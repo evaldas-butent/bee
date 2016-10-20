@@ -3,7 +3,7 @@
 
        name="ImportConditions"
        idName="ConditionID"
-    >
+>
   <Fields>
     <Relation name="Mapping" notNull="true" relation="ImportMappings" cascade="DELETE"
               label="=trImportMapping" />

@@ -564,15 +564,11 @@ public class MailStorageBean {
     int cnt = 0;
     Map<Long, Holder<Integer>> syncedMsgs = new HashMap<>();
     double l = messages.length;
-    long progressUpdated = System.currentTimeMillis();
 
     for (int i = messages.length - 1; i >= 0; i--) {
       if (!BeeUtils.isEmpty(progressId)) {
-        if ((System.currentTimeMillis() - progressUpdated) > 10) {
-          if (!Endpoint.updateProgress(progressId, l / messages.length)) {
-            return cnt * (-1);
-          }
-          progressUpdated = System.currentTimeMillis();
+        if (!Endpoint.updateProgress(progressId, l / messages.length)) {
+          return cnt * (-1);
         }
         l--;
       }

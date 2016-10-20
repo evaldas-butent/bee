@@ -217,6 +217,7 @@
       <xs:enumeration value="Cars" />
       <xs:enumeration value="Cars.Service" />
       <xs:enumeration value="Payroll" />
+      <xs:enumeration value="Finance" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -377,6 +378,8 @@
       <xs:enumeration value="Favorites" />
       <xs:enumeration value="FamilyRelationTypes" />
       <xs:enumeration value="Filters" />
+      <xs:enumeration value="FinanceConfiguration" />
+      <xs:enumeration value="FinancialRecords" />
       <xs:enumeration value="FinancialStates" />
       <xs:enumeration value="Folders" />
       <xs:enumeration value="FuelConsumptions" />
@@ -400,6 +403,7 @@
       <xs:enumeration value="ItemManufacturers" />
       <xs:enumeration value="ItemRemainders" />
       <xs:enumeration value="Items" />
+      <xs:enumeration value="Journals" />
       <xs:enumeration value="Locations" />
       <xs:enumeration value="LossReasons" />
       <xs:enumeration value="Maintenance" />
@@ -557,6 +561,7 @@
       <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
+      <xs:enumeration value="TradeAccounts" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
       <xs:enumeration value="TradeActNames" />

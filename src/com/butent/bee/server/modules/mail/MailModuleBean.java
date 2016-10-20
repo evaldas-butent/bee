@@ -1315,7 +1315,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         }
         boolean isInbox = account.isInbox(localFolder);
         double l = 0;
-        long progressUpdated = System.currentTimeMillis();
         boolean stop = false;
         int start;
         int end = remoteFolder.getMessageCount();
@@ -1337,11 +1336,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
           for (int i = newMessages.length - 1; i >= 0; i--) {
             if (!BeeUtils.isEmpty(progressId)) {
-              if ((System.currentTimeMillis() - progressUpdated) > 10) {
-                if (!Endpoint.updateProgress(progressId, l / count)) {
-                  return c;
-                }
-                progressUpdated = System.currentTimeMillis();
+              if (!Endpoint.updateProgress(progressId, l / count)) {
+                return c;
               }
               l++;
             }

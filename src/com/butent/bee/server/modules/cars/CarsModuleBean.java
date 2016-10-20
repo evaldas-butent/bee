@@ -44,9 +44,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 @Stateless
+@LocalBean
 public class CarsModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(CarsModuleBean.class);
@@ -170,6 +172,182 @@ public class CarsModuleBean implements BeeModule {
   @Override
   public Module getModule() {
     return Module.CARS;
+  }
+
+  public ResponseObject setBundle(Long branchId, Bundle bundle, Configuration.DataInfo info,
+      boolean blocked) {
+    int c = 0;
+    Long bundleId = qs.getLong(new SqlSelect()
+        .addFields(TBL_CONF_BUNDLES, sys.getIdName(TBL_CONF_BUNDLES))
+        .addFrom(TBL_CONF_BUNDLES)
+        .setWhere(SqlUtils.equals(TBL_CONF_BUNDLES, COL_KEY, bundle.getKey())));
+
+    if (!DataUtils.isId(bundleId)) {
+      bundleId = qs.insertData(new SqlInsert(TBL_CONF_BUNDLES)
+          .addConstant(COL_KEY, bundle.getKey()));
+
+      for (Option option : bundle.getOptions()) {
+        qs.insertData(new SqlInsert(TBL_CONF_BUNDLE_OPTIONS)
+            .addConstant(COL_BUNDLE, bundleId)
+            .addConstant(COL_OPTION, option.getId()));
+      }
+    } else {
+      c = qs.updateData(new SqlUpdate(TBL_CONF_BRANCH_BUNDLES)
+          .addConstant(COL_PRICE, info.getPrice())
+          .addConstant(COL_DESCRIPTION, info.getDescription())
+          .addConstant(COL_BLOCKED, blocked)
+          .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId, COL_BUNDLE,
+              bundleId)));
+    }
+    if (!BeeUtils.isPositive(c)) {
+      qs.insertData(new SqlInsert(TBL_CONF_BRANCH_BUNDLES)
+          .addConstant(COL_BRANCH, branchId)
+          .addConstant(COL_BUNDLE, bundleId)
+          .addNotEmpty(COL_PRICE, info.getPrice())
+          .addNotEmpty(COL_DESCRIPTION, info.getDescription())
+          .addConstant(COL_BLOCKED, blocked));
+    }
+    return ResponseObject.emptyResponse();
+  }
+
+  public ResponseObject setOption(Long branchId, Long optionId, Configuration.DataInfo info) {
+    int c = qs.updateData(new SqlUpdate(TBL_CONF_BRANCH_OPTIONS)
+        .addConstant(COL_PRICE, info.getPrice())
+        .addConstant(COL_DESCRIPTION, info.getDescription())
+        .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_OPTIONS, COL_BRANCH, branchId, COL_OPTION,
+            optionId)));
+
+    if (!BeeUtils.isPositive(c)) {
+      qs.insertData(new SqlInsert(TBL_CONF_BRANCH_OPTIONS)
+          .addConstant(COL_BRANCH, branchId)
+          .addConstant(COL_OPTION, optionId)
+          .addNotEmpty(COL_PRICE, info.getPrice())
+          .addNotEmpty(COL_DESCRIPTION, info.getDescription()));
+    }
+    return ResponseObject.emptyResponse();
+  }
+
+  public ResponseObject setRelation(Long branchId, String key, Long optionId,
+      Configuration.DataInfo info) {
+
+    SimpleRowSet.SimpleRow row = qs.getRow(new SqlSelect()
+        .addField(TBL_CONF_BRANCH_BUNDLES, sys.getIdName(TBL_CONF_BRANCH_BUNDLES),
+            COL_BRANCH_BUNDLE)
+        .addField(TBL_CONF_BRANCH_OPTIONS, sys.getIdName(TBL_CONF_BRANCH_OPTIONS),
+            COL_BRANCH_OPTION)
+        .addFields(TBL_CONF_RELATIONS, sys.getIdName(TBL_CONF_RELATIONS))
+        .addFrom(TBL_CONF_BRANCH_BUNDLES)
+        .addFromInner(TBL_CONF_BUNDLES,
+            SqlUtils.and(sys.joinTables(TBL_CONF_BUNDLES, TBL_CONF_BRANCH_BUNDLES, COL_BUNDLE),
+                SqlUtils.equals(TBL_CONF_BUNDLES, COL_KEY, key)))
+        .addFromLeft(TBL_CONF_BRANCH_OPTIONS,
+            SqlUtils.and(SqlUtils.joinUsing(TBL_CONF_BRANCH_BUNDLES, TBL_CONF_BRANCH_OPTIONS,
+                COL_BRANCH), SqlUtils.equals(TBL_CONF_BRANCH_OPTIONS, COL_OPTION, optionId)))
+        .addFromLeft(TBL_CONF_RELATIONS, SqlUtils.and(sys.joinTables(TBL_CONF_BRANCH_BUNDLES,
+            TBL_CONF_RELATIONS, COL_BRANCH_BUNDLE), sys.joinTables(TBL_CONF_BRANCH_OPTIONS,
+            TBL_CONF_RELATIONS, COL_BRANCH_OPTION)))
+        .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId)));
+
+    Assert.notNull(row);
+    Long relationId = row.getLong(sys.getIdName(TBL_CONF_RELATIONS));
+
+    if (DataUtils.isId(relationId)) {
+      qs.updateData(new SqlUpdate(TBL_CONF_RELATIONS)
+          .addConstant(COL_PRICE, info.getPrice())
+          .addConstant(COL_DESCRIPTION, info.getDescription())
+          .setWhere(sys.idEquals(TBL_CONF_RELATIONS, relationId)));
+    } else {
+      Long branchOptionId = row.getLong(COL_BRANCH_OPTION);
+
+      if (!DataUtils.isId(branchOptionId)) {
+        branchOptionId = qs.insertData(new SqlInsert(TBL_CONF_BRANCH_OPTIONS)
+            .addConstant(COL_BRANCH, branchId)
+            .addConstant(COL_OPTION, optionId));
+      }
+      qs.insertData(new SqlInsert(TBL_CONF_RELATIONS)
+          .addConstant(COL_BRANCH_BUNDLE, row.getLong(COL_BRANCH_BUNDLE))
+          .addConstant(COL_BRANCH_OPTION, branchOptionId)
+          .addNotEmpty(COL_PRICE, info.getPrice())
+          .addNotEmpty(COL_DESCRIPTION, info.getDescription()));
+    }
+    return ResponseObject.emptyResponse();
+  }
+
+  public ResponseObject setRestrictions(Long branchId, Map<Long, Map<Long, Boolean>> data) {
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(TBL_CONF_BRANCH_OPTIONS, COL_OPTION)
+        .addField(TBL_CONF_BRANCH_OPTIONS, sys.getIdName(TBL_CONF_BRANCH_OPTIONS),
+            COL_BRANCH_OPTION)
+        .addField(TBL_CONF_RESTRICTIONS, COL_OPTION, TBL_CONF_RELATIONS + COL_OPTION)
+        .addFields(TBL_CONF_RESTRICTIONS, COL_DENIED)
+        .addFrom(TBL_CONF_BRANCH_OPTIONS)
+        .addFromLeft(TBL_CONF_RESTRICTIONS,
+            sys.joinTables(TBL_CONF_BRANCH_OPTIONS, TBL_CONF_RESTRICTIONS, COL_BRANCH_OPTION))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CONF_BRANCH_OPTIONS, COL_BRANCH, branchId),
+            SqlUtils.inList(TBL_CONF_BRANCH_OPTIONS, COL_OPTION, data.keySet()))));
+
+    Map<Long, Pair<Long, Map<Long, Boolean>>> map = new HashMap<>();
+
+    for (SimpleRowSet.SimpleRow row : rs) {
+      Long option = row.getLong(COL_OPTION);
+
+      if (!map.containsKey(option)) {
+        map.put(option, Pair.of(row.getLong(COL_BRANCH_OPTION), new HashMap<>()));
+      }
+      Long relatedOption = row.getLong(TBL_CONF_RELATIONS + COL_OPTION);
+
+      if (DataUtils.isId(relatedOption)) {
+        map.get(option).getB().put(relatedOption, BeeUtils.unbox(row.getBoolean(COL_DENIED)));
+      }
+    }
+    for (Long option : map.keySet()) {
+      Map<Long, Boolean> restrictions = data.remove(option);
+      Long branchOption = map.get(option).getA();
+
+      for (Map.Entry<Long, Boolean> entry : map.get(option).getB().entrySet()) {
+        Long opt = entry.getKey();
+        Boolean denied = restrictions.remove(opt);
+
+        if (!Objects.equals(denied, entry.getValue())) {
+          IsQuery query;
+          IsCondition clause = SqlUtils.equals(TBL_CONF_RESTRICTIONS, COL_BRANCH_OPTION,
+              branchOption, COL_OPTION, opt);
+
+          if (denied == null) {
+            query = new SqlDelete(TBL_CONF_RESTRICTIONS)
+                .setWhere(clause);
+          } else {
+            query = new SqlUpdate(TBL_CONF_RESTRICTIONS)
+                .addConstant(COL_DENIED, denied)
+                .setWhere(clause);
+          }
+          qs.updateData(query);
+        }
+      }
+      for (Long opt : restrictions.keySet()) {
+        qs.insertData(new SqlInsert(TBL_CONF_RESTRICTIONS)
+            .addConstant(COL_BRANCH_OPTION, branchOption)
+            .addConstant(COL_OPTION, opt)
+            .addConstant(COL_DENIED, restrictions.get(opt)));
+      }
+    }
+    for (Long option : data.keySet()) {
+      Map<Long, Boolean> restrictions = data.get(option);
+
+      if (!BeeUtils.isEmpty(restrictions)) {
+        Long branchOption = qs.insertData(new SqlInsert(TBL_CONF_BRANCH_OPTIONS)
+            .addConstant(COL_BRANCH, branchId)
+            .addConstant(COL_OPTION, option));
+
+        for (Long opt : restrictions.keySet()) {
+          qs.insertData(new SqlInsert(TBL_CONF_RESTRICTIONS)
+              .addConstant(COL_BRANCH_OPTION, branchOption)
+              .addConstant(COL_OPTION, opt)
+              .addConstant(COL_DENIED, restrictions.get(opt)));
+        }
+      }
+    }
+    return ResponseObject.emptyResponse();
   }
 
   private ResponseObject getConfiguration(Long branchId) {
@@ -442,181 +620,5 @@ public class CarsModuleBean implements BeeModule {
           .addConstant(COL_PRICE, specification.getOptionPrice(option)));
     }
     return ResponseObject.response(objectId);
-  }
-
-  private ResponseObject setBundle(Long branchId, Bundle bundle, Configuration.DataInfo info,
-      boolean blocked) {
-    int c = 0;
-    Long bundleId = qs.getLong(new SqlSelect()
-        .addFields(TBL_CONF_BUNDLES, sys.getIdName(TBL_CONF_BUNDLES))
-        .addFrom(TBL_CONF_BUNDLES)
-        .setWhere(SqlUtils.equals(TBL_CONF_BUNDLES, COL_KEY, bundle.getKey())));
-
-    if (!DataUtils.isId(bundleId)) {
-      bundleId = qs.insertData(new SqlInsert(TBL_CONF_BUNDLES)
-          .addConstant(COL_KEY, bundle.getKey()));
-
-      for (Option option : bundle.getOptions()) {
-        qs.insertData(new SqlInsert(TBL_CONF_BUNDLE_OPTIONS)
-            .addConstant(COL_BUNDLE, bundleId)
-            .addConstant(COL_OPTION, option.getId()));
-      }
-    } else {
-      c = qs.updateData(new SqlUpdate(TBL_CONF_BRANCH_BUNDLES)
-          .addConstant(COL_PRICE, info.getPrice())
-          .addConstant(COL_DESCRIPTION, info.getDescription())
-          .addConstant(COL_BLOCKED, blocked)
-          .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId, COL_BUNDLE,
-              bundleId)));
-    }
-    if (!BeeUtils.isPositive(c)) {
-      qs.insertData(new SqlInsert(TBL_CONF_BRANCH_BUNDLES)
-          .addConstant(COL_BRANCH, branchId)
-          .addConstant(COL_BUNDLE, bundleId)
-          .addNotEmpty(COL_PRICE, info.getPrice())
-          .addNotEmpty(COL_DESCRIPTION, info.getDescription())
-          .addConstant(COL_BLOCKED, blocked));
-    }
-    return ResponseObject.emptyResponse();
-  }
-
-  private ResponseObject setOption(Long branchId, Long optionId, Configuration.DataInfo info) {
-    int c = qs.updateData(new SqlUpdate(TBL_CONF_BRANCH_OPTIONS)
-        .addConstant(COL_PRICE, info.getPrice())
-        .addConstant(COL_DESCRIPTION, info.getDescription())
-        .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_OPTIONS, COL_BRANCH, branchId, COL_OPTION,
-            optionId)));
-
-    if (!BeeUtils.isPositive(c)) {
-      qs.insertData(new SqlInsert(TBL_CONF_BRANCH_OPTIONS)
-          .addConstant(COL_BRANCH, branchId)
-          .addConstant(COL_OPTION, optionId)
-          .addNotEmpty(COL_PRICE, info.getPrice())
-          .addNotEmpty(COL_DESCRIPTION, info.getDescription()));
-    }
-    return ResponseObject.emptyResponse();
-  }
-
-  private ResponseObject setRelation(Long branchId, String key, Long optionId,
-      Configuration.DataInfo info) {
-
-    SimpleRowSet.SimpleRow row = qs.getRow(new SqlSelect()
-        .addField(TBL_CONF_BRANCH_BUNDLES, sys.getIdName(TBL_CONF_BRANCH_BUNDLES),
-            COL_BRANCH_BUNDLE)
-        .addField(TBL_CONF_BRANCH_OPTIONS, sys.getIdName(TBL_CONF_BRANCH_OPTIONS),
-            COL_BRANCH_OPTION)
-        .addFields(TBL_CONF_RELATIONS, sys.getIdName(TBL_CONF_RELATIONS))
-        .addFrom(TBL_CONF_BRANCH_BUNDLES)
-        .addFromInner(TBL_CONF_BUNDLES,
-            SqlUtils.and(sys.joinTables(TBL_CONF_BUNDLES, TBL_CONF_BRANCH_BUNDLES, COL_BUNDLE),
-                SqlUtils.equals(TBL_CONF_BUNDLES, COL_KEY, key)))
-        .addFromLeft(TBL_CONF_BRANCH_OPTIONS,
-            SqlUtils.and(SqlUtils.joinUsing(TBL_CONF_BRANCH_BUNDLES, TBL_CONF_BRANCH_OPTIONS,
-                COL_BRANCH), SqlUtils.equals(TBL_CONF_BRANCH_OPTIONS, COL_OPTION, optionId)))
-        .addFromLeft(TBL_CONF_RELATIONS, SqlUtils.and(sys.joinTables(TBL_CONF_BRANCH_BUNDLES,
-            TBL_CONF_RELATIONS, COL_BRANCH_BUNDLE), sys.joinTables(TBL_CONF_BRANCH_OPTIONS,
-            TBL_CONF_RELATIONS, COL_BRANCH_OPTION)))
-        .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId)));
-
-    Assert.notNull(row);
-    Long relationId = row.getLong(sys.getIdName(TBL_CONF_RELATIONS));
-
-    if (DataUtils.isId(relationId)) {
-      qs.updateData(new SqlUpdate(TBL_CONF_RELATIONS)
-          .addConstant(COL_PRICE, info.getPrice())
-          .addConstant(COL_DESCRIPTION, info.getDescription())
-          .setWhere(sys.idEquals(TBL_CONF_RELATIONS, relationId)));
-    } else {
-      Long branchOptionId = row.getLong(COL_BRANCH_OPTION);
-
-      if (!DataUtils.isId(branchOptionId)) {
-        branchOptionId = qs.insertData(new SqlInsert(TBL_CONF_BRANCH_OPTIONS)
-            .addConstant(COL_BRANCH, branchId)
-            .addConstant(COL_OPTION, optionId));
-      }
-      qs.insertData(new SqlInsert(TBL_CONF_RELATIONS)
-          .addConstant(COL_BRANCH_BUNDLE, row.getLong(COL_BRANCH_BUNDLE))
-          .addConstant(COL_BRANCH_OPTION, branchOptionId)
-          .addNotEmpty(COL_PRICE, info.getPrice())
-          .addNotEmpty(COL_DESCRIPTION, info.getDescription()));
-    }
-    return ResponseObject.emptyResponse();
-  }
-
-  private ResponseObject setRestrictions(Long branchId, Map<Long, Map<Long, Boolean>> data) {
-    SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addFields(TBL_CONF_BRANCH_OPTIONS, COL_OPTION)
-        .addField(TBL_CONF_BRANCH_OPTIONS, sys.getIdName(TBL_CONF_BRANCH_OPTIONS),
-            COL_BRANCH_OPTION)
-        .addField(TBL_CONF_RESTRICTIONS, COL_OPTION, TBL_CONF_RELATIONS + COL_OPTION)
-        .addFields(TBL_CONF_RESTRICTIONS, COL_DENIED)
-        .addFrom(TBL_CONF_BRANCH_OPTIONS)
-        .addFromLeft(TBL_CONF_RESTRICTIONS,
-            sys.joinTables(TBL_CONF_BRANCH_OPTIONS, TBL_CONF_RESTRICTIONS, COL_BRANCH_OPTION))
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CONF_BRANCH_OPTIONS, COL_BRANCH, branchId),
-            SqlUtils.inList(TBL_CONF_BRANCH_OPTIONS, COL_OPTION, data.keySet()))));
-
-    Map<Long, Pair<Long, Map<Long, Boolean>>> map = new HashMap<>();
-
-    for (SimpleRowSet.SimpleRow row : rs) {
-      Long option = row.getLong(COL_OPTION);
-
-      if (!map.containsKey(option)) {
-        map.put(option, Pair.of(row.getLong(COL_BRANCH_OPTION), new HashMap<>()));
-      }
-      Long relatedOption = row.getLong(TBL_CONF_RELATIONS + COL_OPTION);
-
-      if (DataUtils.isId(relatedOption)) {
-        map.get(option).getB().put(relatedOption, BeeUtils.unbox(row.getBoolean(COL_DENIED)));
-      }
-    }
-    for (Long option : map.keySet()) {
-      Map<Long, Boolean> restrictions = data.remove(option);
-      Long branchOption = map.get(option).getA();
-
-      for (Map.Entry<Long, Boolean> entry : map.get(option).getB().entrySet()) {
-        Long opt = entry.getKey();
-        Boolean denied = restrictions.remove(opt);
-
-        if (!Objects.equals(denied, entry.getValue())) {
-          IsQuery query;
-          IsCondition clause = SqlUtils.equals(TBL_CONF_RESTRICTIONS, COL_BRANCH_OPTION,
-              branchOption, COL_OPTION, opt);
-
-          if (denied == null) {
-            query = new SqlDelete(TBL_CONF_RESTRICTIONS)
-                .setWhere(clause);
-          } else {
-            query = new SqlUpdate(TBL_CONF_RESTRICTIONS)
-                .addConstant(COL_DENIED, denied)
-                .setWhere(clause);
-          }
-          qs.updateData(query);
-        }
-      }
-      for (Long opt : restrictions.keySet()) {
-        qs.insertData(new SqlInsert(TBL_CONF_RESTRICTIONS)
-            .addConstant(COL_BRANCH_OPTION, branchOption)
-            .addConstant(COL_OPTION, opt)
-            .addConstant(COL_DENIED, restrictions.get(opt)));
-      }
-    }
-    for (Long option : data.keySet()) {
-      Map<Long, Boolean> restrictions = data.get(option);
-
-      if (!BeeUtils.isEmpty(restrictions)) {
-        Long branchOption = qs.insertData(new SqlInsert(TBL_CONF_BRANCH_OPTIONS)
-            .addConstant(COL_BRANCH, branchId)
-            .addConstant(COL_OPTION, option));
-
-        for (Long opt : restrictions.keySet()) {
-          qs.insertData(new SqlInsert(TBL_CONF_RESTRICTIONS)
-              .addConstant(COL_BRANCH_OPTION, branchOption)
-              .addConstant(COL_OPTION, opt)
-              .addConstant(COL_DENIED, restrictions.get(opt)));
-        }
-      }
-    }
-    return ResponseObject.emptyResponse();
   }
 }

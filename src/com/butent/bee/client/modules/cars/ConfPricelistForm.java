@@ -8,6 +8,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -25,14 +26,19 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.imports.ImportCallback;
+import com.butent.bee.client.imports.ImportOptionForm;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.TreeContainer;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.FaLabel;
@@ -55,7 +61,9 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.modules.cars.Bundle;
+import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.modules.cars.Configuration;
 import com.butent.bee.shared.modules.cars.Dimension;
 import com.butent.bee.shared.modules.cars.Option;
@@ -79,8 +87,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-public class ConfPricelistForm extends AbstractFormInterceptor implements SelectionHandler<IsRow> {
+public class ConfPricelistForm extends AbstractFormInterceptor implements SelectionHandler<IsRow>,
+    ClickHandler {
 
   private class GroupChoice implements ClickHandler {
     private final boolean rowMode;
@@ -283,6 +293,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   private TreeContainer tree;
   private Configuration configuration;
   private Integer rpcId;
+  private CustomAction importAction = new CustomAction(FontAwesome.CLOUD_UPLOAD, this);
 
   private ResponseCallback defaultResponse = new ResponseCallback() {
     @Override
@@ -330,8 +341,70 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   }
 
   @Override
+  public void onClick(ClickEvent clickEvent) {
+    if (DataUtils.isId(getBranchId())) {
+      int importType = ImportType.CONFIGURATION.ordinal();
+      boolean testMode = clickEvent.isShiftKeyDown();
+
+      Queries.getRowSet(TBL_IMPORT_OPTIONS, Collections.singletonList(COL_IMPORT_DESCRIPTION),
+          Filter.equals(COL_IMPORT_TYPE, importType), new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              switch (result.getNumberOfRows()) {
+                case 0:
+                  getFormView().notifyWarning(Localized.dictionary().noData());
+                  break;
+
+                case 1:
+                  doImport(importType, result.getRow(0).getId(), testMode);
+                  break;
+
+                default:
+                  Global.choice(Localized.dictionary().selectImport(), null, result.getRows()
+                      .stream().map(row -> row.getString(0)).collect(Collectors.toList()), idx ->
+                      doImport(importType, result.getRow(idx).getId(), testMode));
+                  break;
+              }
+
+            }
+          });
+    }
+  }
+
+  @Override
+  public void onLoad(FormView form) {
+    Queries.getRowCount(TBL_IMPORT_OPTIONS, Filter.equals(COL_IMPORT_TYPE,
+        ImportType.CONFIGURATION.ordinal()), new Queries.IntCallback() {
+      @Override
+      public void onSuccess(Integer cnt) {
+        if (BeeUtils.isPositive(cnt)) {
+          importAction.setTitle(Localized.dictionary().actionImport());
+          importAction.setCallback(response -> {
+            ImportCallback.showResponse(response);
+            requery();
+          });
+          getHeaderView().addCommandItem(importAction);
+        }
+      }
+    });
+    super.onLoad(form);
+  }
+
+  @Override
   public void onSelection(SelectionEvent<IsRow> selectionEvent) {
     requery();
+  }
+
+  private void doImport(int importType, Long optionId, boolean testMode) {
+    ParameterList args = AdministrationKeeper.createArgs(SVC_DO_IMPORT);
+    args.addDataItem(COL_IMPORT_OPTION, optionId);
+    args.addDataItem(COL_IMPORT_TYPE, importType);
+
+    if (testMode) {
+      args.addDataItem(VAR_IMPORT_TEST, 1);
+    }
+    args.addDataItem(CarsConstants.COL_BRANCH, getBranchId());
+    ImportOptionForm.upload(args, importAction);
   }
 
   private String getBranchCaption() {
@@ -583,6 +656,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     configuration = null;
     refresh();
     Long branchId = getBranchId();
+    importAction.setVisible(DataUtils.isId(branchId));
 
     if (!DataUtils.isId(branchId)) {
       return;
@@ -615,7 +689,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     if (configuration == null) {
       return;
     }
-    bar.setTabEnabled(1, configuration.hasBundles());
+    bar.setTabEnabled(1, !BeeUtils.isEmpty(configuration.getBundles()));
 
     container.add(bar);
 

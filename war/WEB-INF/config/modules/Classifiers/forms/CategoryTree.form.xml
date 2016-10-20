@@ -1,52 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-  
-  name="CategoryTree" caption="=itemCategoryTree" data="CategoryTree">
-  
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="CategoryTree" caption="=itemCategoryTree" data="CategoryTree"
+>
+
   <DataTree caption="=itemCategories" viewName="CategoryTree" parentColumn="Parent">
     <calc>
       <ui:expression>row.Name + ' [' + rowId + ']'</ui:expression>
     </calc>
 
     <form>
-      <FlowPanel>
+      <FlowPanel class="flexBox-vertical" style="width: 50vw; height: 50vh;">
         <Table kind="controls" style="margin-bottom: 1em;">
           <col index="0" kind="label" />
-      
+
           <row>
             <Label for="Name" text="=category" />
             <InputText source="Name" style="width: 300px;" />
           </row>
-
-          <row data="Departments">
-            <Label for="Department" />
-            <DataSelector source="Department" renderColumns="DepartmentName"
-              choiceColumns="FullName" searchableColumns="DepartmentName" visibleLines="7"
-              selectorClass="bee-BranchSelector" newRowEnabled="false">
-              <ui:rowRenderer type="branch" />
-            </DataSelector>
-          </row>
-
-          <row data="ActivityTypes">
-            <Label for="ActivityType" />
-            <DataSelector source="ActivityType" />
-          </row>
-
-          <row data="CostCenters">
-            <Label for="CostCenter" />
-            <DataSelector source="CostCenter" />
-          </row>
-
-          <row data="Locations">
-            <Label for="Object" />
-            <DataSelector source="Object" />
-          </row>
         </Table>
 
-        <ChildGrid name="CategoryDiscounts" relColumn="Category" style="height: 150px;" 
-          module="Orders" />
+        <TabbedPages class="flexible" resizable="false">
+          <page module="Trade Orders" predicate="rowId > 0">
+            <text>=discounts</text>
+            <ChildGrid name="CategoryDiscounts" relColumn="Category" />
+          </page>
+
+          <page data="Dimensions">
+            <text>=dimensions</text>
+            <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
+          </page>
+
+          <page module="Finance" data="TradeAccounts">
+            <text>=finAccounts</text>
+            <xi:include href="widgets/TradeAccounts.widget.xml" />
+          </page>
+        </TabbedPages>
       </FlowPanel>
     </form>
   </DataTree>

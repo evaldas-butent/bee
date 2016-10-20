@@ -65,6 +65,9 @@
     <SimpleJoin name="Dimensions" joinType="LEFT">
       <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     </SimpleJoin>
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="../../Classifiers/views/viewcolumns/TradeAccounts.viewcolumns.xml" />
+    </SimpleJoin>
 
     <SimpleColumn name="Note" />
 

@@ -52,7 +52,7 @@
     <SimpleColumn name="PaymentTime" />
     <SimpleColumn name="Paid" />
 
-    <SimpleColumn name="Debt">
+    <SimpleColumn name="Debt" label="=trdDebt">
       <x:minus>
         <x:number>"Amount"</x:number>
         <x:nvl type="DECIMAL">

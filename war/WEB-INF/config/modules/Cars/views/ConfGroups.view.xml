@@ -4,6 +4,7 @@
       name="ConfGroups" source="ConfGroups"
       caption="=optionGroups"
 >
+  <Relation renderColumns="TypeName GroupName" />
   <Columns>
     <SimpleColumn name="Type" />
     <SimpleJoin name="Type" joinType="INNER">

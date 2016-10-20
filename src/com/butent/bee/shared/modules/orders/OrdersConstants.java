@@ -73,6 +73,8 @@ public final class OrdersConstants {
   public static final String ALS_MANAGER_FIRST_NAME = "ManagerFirstName";
   public static final String ALS_MANAGER_LAST_NAME = "ManagerLastName";
   public static final String ALS_RESERVATIONS = "Reservations";
+  public static final String ALS_CUSTOMER_EMAIL = "CustomerEmail";
+  public static final String ALS_PAYER_EMAIL = "PayerEmail";
 
   public static final String COL_END_DATE = "EndDate";
   public static final String COL_ORDER = "Order";

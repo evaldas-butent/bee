@@ -27,6 +27,34 @@ public final class TradeConstants {
       public String getCaption(Dictionary constants) {
         return constants.trdTypeTransfer();
       }
+    },
+
+    WRITE_OFF(true, false, false) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trdTypeWriteOff();
+      }
+    },
+
+    POS(true, false, false) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trdTypePointOfSale();
+      }
+    },
+
+    CUSTOMER_RETURN(false, true, true) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trdTypeCustomerReturn();
+      }
+    },
+
+    RETURN_TO_SUPPLIER(true, false, false) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trdTypeReturnToSupplier();
+      }
     };
 
     private final boolean consumesStock;
@@ -232,6 +260,7 @@ public final class TradeConstants {
   public static final String COL_DOCUMENT_TYPE = "DocumentType";
 
   public static final String COL_TRADE_TAG = "TradeTag";
+  public static final String COL_TAG_NAME = "TagName";
 
   public static final String COL_PRIMARY_DOCUMENT_ITEM = "PrimaryDocumentItem";
   public static final String COL_STOCK_QUANTITY = "Quantity";

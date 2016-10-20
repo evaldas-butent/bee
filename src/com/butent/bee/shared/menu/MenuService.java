@@ -9,6 +9,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -100,7 +101,10 @@ public enum MenuService {
   TRADE_DOCUMENTS(RightsState.VIEW, TradeConstants.VIEW_TRADE_DOCUMENTS),
   @XmlEnumValue("rebuild_trade_stock")
   REBUILD_TRADE_STOCK(EnumSet.of(RightsState.CREATE, RightsState.EDIT, RightsState.DELETE),
-      TradeConstants.VIEW_TRADE_STOCK);
+      TradeConstants.VIEW_TRADE_STOCK),
+
+  @XmlEnumValue("finance_configuration")
+  FINANCE_CONFIGURATION(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;

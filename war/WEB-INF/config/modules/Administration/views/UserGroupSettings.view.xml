@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="UserGroupSettings" source="UserGroupSettings" module="Administration"
+  name="UserGroupSettings" source="UserGroupSettings" module="Classifiers.Contacts"
   caption="=userGroups" newRowCaption="=newUserGroup"
   editForm="UserGroup" newRowForm="UserGroup"
   >

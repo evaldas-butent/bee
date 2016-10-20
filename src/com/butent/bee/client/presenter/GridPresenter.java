@@ -322,7 +322,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     } else {
       options.add(Localized.dictionary().cancel());
 
-      Global.getMsgBoxen().display(getCaption(), Icon.ALARM,
+      MessageBoxes.display(getCaption(), Icon.ALARM,
           Collections.singletonList(Localized.dictionary().deleteQuestion()), options, 2,
           value -> {
             if (value == 0) {
@@ -980,7 +980,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             options.add(Localized.dictionary().actionMerge());
             options.add(Localized.dictionary().cancel());
 
-            Global.getMsgBoxen().display(getCaption(), Icon.ALARM, messages, options, 1,
+            MessageBoxes.display(getCaption(), Icon.ALARM, messages, options, 1,
                 value -> {
                   if (value == 0) {
                     long from = rows.get(1 - index).getId();

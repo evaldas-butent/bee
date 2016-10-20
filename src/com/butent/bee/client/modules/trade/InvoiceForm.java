@@ -107,19 +107,14 @@ public class InvoiceForm extends PrintFormInterceptor implements SelectorEvent.H
       List<String> fields = new ArrayList<>();
 
       if (type != null) {
-        switch (type) {
-          case PURCHASE:
-            fields.add(COL_OPERATION_WAREHOUSE_TO);
-            break;
-          case SALE:
-            fields.add(COL_TRADE_WAREHOUSE_FROM);
-            break;
-          case TRANSFER:
-            fields.add(COL_TRADE_WAREHOUSE_FROM);
-            fields.add(COL_OPERATION_WAREHOUSE_TO);
-            break;
+        if (type.consumesStock()) {
+          fields.add(COL_TRADE_WAREHOUSE_FROM);
+        }
+        if (type.producesStock()) {
+          fields.add(COL_OPERATION_WAREHOUSE_TO);
         }
       }
+
       for (String field : fields) {
         Long warehouse = Data.getLong(viewName, relatedRow, field);
 

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="FinanceConfiguration" source="FinanceConfiguration"
+      newRowForm="FinanceConfiguration" editForm="FinanceConfiguration"
+      caption="=finDefaultAccounts"
+>
+  <Columns>
+    <SimpleColumn name="DefaultJournal" />
+    <SimpleJoin joinType="LEFT" name="DefaultJournal">
+      <SimpleColumn name="JournalCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="PettyCash" />
+    <SimpleJoin joinType="LEFT" name="PettyCash">
+      <SimpleColumn name="AccountCode" alias="PettyCashCode" />
+    </SimpleJoin>
+    <SimpleColumn name="CashInBank" />
+    <SimpleJoin joinType="LEFT" name="CashInBank">
+      <SimpleColumn name="AccountCode" alias="CashInBankCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ReceivablesFromEmployees" />
+    <SimpleJoin joinType="LEFT" name="ReceivablesFromEmployees">
+      <SimpleColumn name="AccountCode" alias="ReceivablesFromEmployeesCode" />
+    </SimpleJoin>
+    <SimpleColumn name="LiabilitiesToEmployees" />
+    <SimpleJoin joinType="LEFT" name="LiabilitiesToEmployees">
+      <SimpleColumn name="AccountCode" alias="LiabilitiesToEmployeesCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="RevenueAndExpenseSummary" />
+    <SimpleJoin joinType="LEFT" name="RevenueAndExpenseSummary">
+      <SimpleColumn name="AccountCode" alias="RevenueAndExpenseSummaryCode" />
+    </SimpleJoin>
+    <SimpleColumn name="TransitoryAccount" />
+    <SimpleJoin joinType="LEFT" name="TransitoryAccount">
+      <SimpleColumn name="AccountCode" alias="TransitoryAccountCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ForeignExchangeGain" />
+    <SimpleJoin joinType="LEFT" name="ForeignExchangeGain">
+      <SimpleColumn name="AccountCode" alias="ForeignExchangeGainCode" />
+    </SimpleJoin>
+    <SimpleColumn name="ForeignExchangeLoss" />
+    <SimpleJoin joinType="LEFT" name="ForeignExchangeLoss">
+      <SimpleColumn name="AccountCode" alias="ForeignExchangeLossCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="VatPayable" />
+    <SimpleJoin joinType="LEFT" name="VatPayable">
+      <SimpleColumn name="AccountCode" alias="VatPayableCode" />
+    </SimpleJoin>
+    <SimpleColumn name="VatReceivable" />
+    <SimpleJoin joinType="LEFT" name="VatReceivable">
+      <SimpleColumn name="AccountCode" alias="VatReceivableCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="TradePayables" />
+    <SimpleJoin joinType="LEFT" name="TradePayables">
+      <SimpleColumn name="AccountCode" alias="TradePayablesCode" />
+    </SimpleJoin>
+    <SimpleColumn name="TradeReceivables" />
+    <SimpleJoin joinType="LEFT" name="TradeReceivables">
+      <SimpleColumn name="AccountCode" alias="TradeReceivablesCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="AdvancePaymentsGiven" />
+    <SimpleJoin joinType="LEFT" name="AdvancePaymentsGiven">
+      <SimpleColumn name="AccountCode" alias="AdvancePaymentsGivenCode" />
+    </SimpleJoin>
+    <SimpleColumn name="AdvancePaymentsReceived" />
+    <SimpleJoin joinType="LEFT" name="AdvancePaymentsReceived">
+      <SimpleColumn name="AccountCode" alias="AdvancePaymentsReceivedCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="SalesRevenue" />
+    <SimpleJoin joinType="LEFT" name="SalesRevenue">
+      <SimpleColumn name="AccountCode" alias="SalesRevenueCode" />
+    </SimpleJoin>
+    <SimpleColumn name="CostOfGoodsSold" />
+    <SimpleJoin joinType="LEFT" name="CostOfGoodsSold">
+      <SimpleColumn name="AccountCode" alias="CostOfGoodsSoldCode" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CostOfMerchandise" />
+    <SimpleJoin joinType="LEFT" name="CostOfMerchandise">
+      <SimpleColumn name="AccountCode" alias="CostOfMerchandiseCode" />
+    </SimpleJoin>
+  </Columns>
+</View>

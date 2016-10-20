@@ -6,7 +6,7 @@
   <g:columns>
     <DataColumn name="Date" visible="true" />
     <DataColumn name="OrderNo" visible="true" />
-    <RelColumn name="Customer" visible="true" />
+    <RelColumn name="Customer" visible="true" renderColumns="CustomerName CustomerTypeName" />
     <RelColumn name="CustomerPerson" renderColumns="ContactFirstName ContactLastName" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
   </g:columns>

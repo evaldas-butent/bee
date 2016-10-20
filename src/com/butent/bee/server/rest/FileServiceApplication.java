@@ -147,10 +147,16 @@ public class FileServiceApplication extends Application {
   @Produces(RestResponse.JSON_TYPE)
   @Trusted(secret = "B-NOVO File Upload")
   public RestResponse upload(@PathParam("name") String fileName,
-      @HeaderParam(HttpHeaders.CONTENT_TYPE) String fileType, InputStream is) {
+      @HeaderParam(HttpHeaders.CONTENT_TYPE) String fileType,
+      @HeaderParam(AdministrationConstants.FILE_COMMIT) String commit, InputStream is) {
 
     try {
-      return RestResponse.ok(fs.storeFile(is, fileName, fileType));
+      Long fileId = fs.storeFile(is, fileName, fileType);
+
+      if (BeeUtils.toBoolean(commit)) {
+        fileId = fs.commitFile(fileId);
+      }
+      return RestResponse.ok(fileId);
     } catch (IOException e) {
       return RestResponse.error(e);
     }

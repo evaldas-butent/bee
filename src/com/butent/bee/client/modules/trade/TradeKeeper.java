@@ -84,18 +84,24 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     ColorStyleProvider csp = ColorStyleProvider.createDefault(VIEW_TRADE_OPERATIONS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_FOREGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_OPERATION_NAME,
+        csp);
 
     csp = ColorStyleProvider.createDefault(VIEW_TRADE_STATUSES);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_FOREGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_STATUS_NAME, csp);
 
     csp = ColorStyleProvider.createDefault(VIEW_TRADE_TAGS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_FOREGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_TAG_NAME, csp);
 
     csp = ColorStyleProvider.createDefault(VIEW_EXPENDITURE_TYPES);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_EXPENDITURE_TYPES, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_EXPENDITURE_TYPES, COL_FOREGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_EXPENDITURE_TYPES,
+        COL_EXPENDITURE_TYPE_NAME, csp);
 
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENTS, COL_TRADE_OPERATION,
         ColorStyleProvider.create(VIEW_TRADE_DOCUMENTS,
