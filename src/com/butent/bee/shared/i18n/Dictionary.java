@@ -923,6 +923,10 @@ public interface Dictionary {
 
   default String creditLimit() {return g("creditLimit");}
 
+  default String creditReplacement() {return g("creditReplacement");}
+
+  default String creditReplacementShort() {return g("creditReplacementShort");}
+
   default String creditSeries() {return g("creditSeries");}
 
   default String creditSeriesShort() {return g("creditSeriesShort");}
@@ -1470,6 +1474,10 @@ public interface Dictionary {
   default String debitDocument() {return g("debitDocument");}
 
   default String debitDocumentShort() {return g("debitDocumentShort");}
+
+  default String debitReplacement() {return g("debitReplacement");}
+
+  default String debitReplacementShort() {return g("debitReplacementShort");}
 
   default String debitSeries() {return g("debitSeries");}
 
@@ -3745,6 +3753,8 @@ public interface Dictionary {
   default String payrollEarningsTotal() {return g("payrollEarningsTotal");}
 
   default String payrollEarningsWithoutHolidays() {return g("payrollEarningsWithoutHolidays");}
+
+  default String percent() {return g("percent");}
 
   default String period() {return g("period");}
 
