@@ -143,9 +143,9 @@ public class ImportOptionForm extends AbstractFormInterceptor implements ClickHa
         }
       });
     });
+    popup.addOpenHandler(event -> file.click());
     popup.setWidget(file);
     popup.center();
-    file.click();
   }
 
   private void importConfiguration(ParameterList args) {
