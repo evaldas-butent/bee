@@ -144,7 +144,8 @@ public final class ButentWS {
       throw BeeException.error(e);
     }
     SimpleRowSet data = xmlToSimpleRowSet(answer, "CODE", "NAME", "SURNAME", "BIRTHDAY",
-        "DEPARTCODE", "POSITIONCODE", "ADDRESS1", "MOBILEPHONE", "EMAIL", "DIRBA_NUO", "DISMISSED");
+        "DEPARTCODE", "POSITIONCODE", "ADDRESS1", "MOBILEPHONE", "EMAIL", "DIRBA_NUO", "DISMISSED",
+        "PERSONALCODE", "PASSPORTNO");
     logger.debug("GetEmployees cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
     return data;
   }

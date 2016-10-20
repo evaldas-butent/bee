@@ -3902,6 +3902,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             .addConstant(COL_DATE_OF_BIRTH, TimeUtils.parseDate(row.getValue("BIRTHDAY")))
             .setWhere(sys.idEquals(TBL_PERSONS, person)));
 
+        qs.updateData(new SqlUpdate(PayrollConstants.TBL_EMPLOYEES)
+            .addConstant("PersonCode", row.getValue("PERSONALCODE"))
+            .addConstant("PassportNo", row.getValue("PASSPORTNO"))
+            .setWhere(SqlUtils.equals(PayrollConstants.TBL_EMPLOYEES, COL_COMPANY_PERSON,
+                companyPerson)));
+
         qs.updateData(new SqlUpdate(TBL_COMPANY_PERSONS)
             .addConstant(COL_DEPARTMENT, departments.get(department))
             .addConstant(COL_POSITION, positions.get(position))

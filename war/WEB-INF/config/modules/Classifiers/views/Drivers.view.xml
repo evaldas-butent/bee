@@ -16,6 +16,7 @@
       <SimpleJoin name="Person" joinType="INNER">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
+        <SimpleColumn name="DateOfBirth" />
       </SimpleJoin>
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn name="Phone" />
@@ -29,6 +30,8 @@
       </SimpleJoin>
       <ExternalJoin name="CompanyPerson" joinType="LEFT" source="Employees">
         <SimpleColumn name="TabNumber" />
+        <SimpleColumn name="PersonCode" />
+        <SimpleColumn name="PassportNo" />
       </ExternalJoin>
       <SimpleColumn name="DateOfEmployment" alias="StartDate" />
       <SimpleColumn name="DateOfDismissal" alias="EndDate" />

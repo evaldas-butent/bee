@@ -61,6 +61,23 @@
             <DateLabel source="EndDate" style="&inpdt; color: red;" />
           </SimplePanel>
         </row>
+        <row>
+          <Label for="PersonCode" style="&lbl;" />
+          <SimplePanel style="&w2;">
+            <TextLabel source="PersonCode" style="&inpdt;" />
+          </SimplePanel>
+
+          <Label for="DateOfBirth" style="&lbl;" />
+          <SimplePanel style="&w2;">
+            <DateLabel source="DateOfBirth" style="&inpdt;" />
+          </SimplePanel>
+        </row>
+        <row>
+          <Label for="PassportNo" style="&lbl;" />
+          <SimplePanel style="&w2;">
+            <TextLabel source="PassportNo" style="&inpdt;" />
+          </SimplePanel>
+        </row>
       </Table>
     </FlowPanel>
 
