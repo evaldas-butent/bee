@@ -105,16 +105,13 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
                     if (popup != null) {
                       popup.close();
                     }
-
-                    if (BeeUtils.equals(
-                                getGridView().getViewName(), TransportConstants.VIEW_CARGO_SALES)) {
-                      Data.onViewChange(
-                          TransportConstants.TBL_ORDERS, DataChangeEvent.CANCEL_RESET_REFRESH);
-                      Data.onViewChange(
-                          TransportConstants.TBL_ORDER_CARGO, DataChangeEvent.CANCEL_RESET_REFRESH);
-                      return;
+                    if (BeeUtils.equals(getGridView().getViewName(),
+                        TransportConstants.VIEW_CARGO_SALES)) {
+                      Data.onViewChange(TransportConstants.TBL_ORDERS,
+                        DataChangeEvent.CANCEL_RESET_REFRESH);
+                      Data.onViewChange(TransportConstants.TBL_ORDER_CARGO,
+                        DataChangeEvent.CANCEL_RESET_REFRESH);
                     }
-
                     Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
                     RowEditor.openForm(dataInfo.getEditForm(), dataInfo,
                         Filter.compareId(row.getId()), Opener.MODAL);

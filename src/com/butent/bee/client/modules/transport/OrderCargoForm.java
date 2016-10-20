@@ -28,7 +28,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.shared.BeeConst;
@@ -96,7 +95,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
         case TBL_CARGO_INCOMES:
           final FormView form = getFormView();
 
-          ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+          ((ChildGrid) widget).setGridInterceptor(new TransportVatGridInterceptor() {
             @Override
             public void afterDeleteRow(long rowId) {
               refresh(form.getLongValue(COL_CURRENCY));
@@ -124,7 +123,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           break;
 
         case TBL_CARGO_EXPENSES:
-          ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+          ((ChildGrid) widget).setGridInterceptor(new TransportVatGridInterceptor() {
             @Override
             public void afterCreateEditor(String source, Editor editor, boolean embedded) {
               if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {

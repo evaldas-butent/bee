@@ -30,7 +30,7 @@ public class TransportSelectorHandler implements Handler {
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (BeeUtils.same(event.getRelatedViewName(), TBL_SERVICES)) {
+    if (BeeUtils.inList(event.getRelatedViewName(), TBL_SERVICES, ClassifierConstants.TBL_ITEMS)) {
       handleServices(event);
 
     } else if (BeeUtils.same(event.getRelatedViewName(), ClassifierConstants.TBL_COMPANIES)) {

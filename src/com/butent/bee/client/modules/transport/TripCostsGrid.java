@@ -12,6 +12,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -26,18 +27,17 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -51,13 +51,15 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class TripCostsGrid extends AbstractGridInterceptor
+public class TripCostsGrid extends TransportVatGridInterceptor
     implements ClickHandler, SelectorEvent.Handler {
 
   Long trip;
@@ -115,10 +117,36 @@ public class TripCostsGrid extends AbstractGridInterceptor
   public void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
       boolean rowMode) {
 
+    List<String> columns = new ArrayList<>();
+    List<String> newValues = new ArrayList<>();
+    List<String> oldValues = new ArrayList<>();
+
     if (Objects.equals(column.getId(), COL_TRIP)) {
-      Queries.updateAndFire(getViewName(), result.getId(), result.getVersion(), COL_DRIVER,
-          result.getString(getDataIndex(COL_DRIVER)), null, ModificationEvent.Kind.UPDATE_ROW);
+      columns.add(COL_DRIVER);
+      oldValues.add(oldValue);
+      newValues.add(null);
     }
+
+    IsRow currentRow = getActiveRow();
+    int creatorIndex = Data.getColumnIndex(getViewName(), COL_TRIP_COST_CREATOR);
+
+    if (currentRow != null) {
+      Long oldCreatorId = currentRow.getLong(creatorIndex);
+      Long newCreatorId = BeeKeeper.getUser().getUserId();
+
+      if (oldCreatorId == null || !oldCreatorId.equals(newCreatorId)) {
+        columns.add(COL_TRIP_COST_CREATOR);
+        newValues.add(BeeUtils.toString(newCreatorId));
+        oldValues.add(currentRow.getString(creatorIndex));
+      }
+    }
+
+    if (!columns.isEmpty()) {
+      List<BeeColumn> cols = Data.getColumns(getViewName(), columns);
+      Queries.update(getViewName(), result.getId(), result.getVersion(), cols, oldValues,
+          newValues, null, new RowUpdateCallback(getViewName()));
+    }
+
     super.afterUpdateCell(column, oldValue, newValue, result, rowMode);
   }
 

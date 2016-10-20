@@ -12,6 +12,7 @@ import com.google.gwt.xml.client.impl.DOMParseException;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_TRIP_COST_CREATOR;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -113,6 +114,13 @@ public final class TradeUtils {
       columns.add(Data.getColumn(viewName, COL_TRADE_CURRENCY));
       oldValues.add(oldCurrency);
       newValues.add(newCurrency);
+
+      BeeColumn creatorColumn = Data.getDataInfo(viewName).getColumn(COL_TRIP_COST_CREATOR);
+      if (creatorColumn != null) {
+        columns.add(creatorColumn);
+        oldValues.add(Data.getString(viewName, row, COL_TRIP_COST_CREATOR));
+        newValues.add(BeeUtils.toString(BeeKeeper.getUser().getUserId()));
+      }
 
       Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues,
           null, new RowUpdateCallback(viewName));

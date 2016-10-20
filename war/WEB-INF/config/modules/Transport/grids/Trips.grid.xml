@@ -35,5 +35,7 @@
     <DataColumn name="PlannedEndDate" caption="=trPlannedEndDate" />
     <RelColumn name="Manager" />
     <DataColumn name="Created" />
+    <PropColumn name="Creator" type="string" caption="=trAccountant"
+                verticalAlignment="top" flexGrow="1" />
   </g:columns>
 </g:Grid>
