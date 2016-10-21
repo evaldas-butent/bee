@@ -11,5 +11,5 @@
   <Item name="Journals" label="=journals" service="grid" parameters="Journals" />
 
   <Item name="FinanceConfiguration" label="=finDefaultAccounts" service="finance_configuration"
-        module="Administration" separator="true" />
+        order="100" module="Administration" separator="true" />
 </Entry>

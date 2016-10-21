@@ -98,7 +98,7 @@
         <xi:include href="widgets/TradeAccounts.widget.xml" />
       </page>
 
-      <page module="Finance">
+      <page module="Finance Trade">
         <text>=finDistributionShort</text>
         <ChildGrid name="OperationFinanceDistribution" relColumn="Operation" />
       </page>

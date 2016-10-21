@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="FinanceDistributionOfTradeOperations" viewName="FinanceDistributionOfTradeOperations"
+        caption="=finDistributionOfTradeOperations"
+>
+  <g:columns>
+    <RelColumn name="Operation" choiceColumns="OperationName" renderColumns="OperationName"
+               newRowEnabled="false" required="true" visible="true" />
+  </g:columns>
+
+  <xi:include href="columns/DistributionTarget.columns.xml" />
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+  <xi:include href="columns/DistributionReplacement.columns.xml" />
+</g:Grid>

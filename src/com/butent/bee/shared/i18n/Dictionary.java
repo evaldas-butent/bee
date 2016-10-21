@@ -2737,6 +2737,12 @@ public interface Dictionary {
 
   default String finDistribution() {return g("finDistribution");}
 
+  default String finDistributionOfItems() {return g("finDistributionOfItems");}
+
+  default String finDistributionOfTradeDocuments() {return g("finDistributionOfTradeDocuments");}
+
+  default String finDistributionOfTradeOperations() {return g("finDistributionOfTradeOperations");}
+
   default String finDistributionShort() {return g("finDistributionShort");}
 
   default String finForeignExchangeGain() {return g("finForeignExchangeGain");}

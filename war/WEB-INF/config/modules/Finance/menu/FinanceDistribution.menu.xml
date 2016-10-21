@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+       name="FinanceDistribution" label="=finDistribution" parent="Finance" order="90"
+       module="Trade" separator="true"
+>
+  <Item name="FinanceDistributionOfItems" label="=finDistributionOfItems"
+        service="grid" parameters="FinanceDistributionOfItems" />
+  <Item name="FinanceDistributionOfTradeOperations" label="=finDistributionOfTradeOperations"
+        service="grid" parameters="FinanceDistributionOfTradeOperations" />
+
+  <Item name="FinanceDistributionOfTradeDocuments" label="=finDistributionOfTradeDocuments"
+        service="grid" parameters="FinanceDistributionOfTradeDocuments" separator="true" />
+</Entry>
