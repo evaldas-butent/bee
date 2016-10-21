@@ -261,6 +261,11 @@
         <xi:include href="widgets/TradeAccounts.widget.xml" />
       </page>
 
+      <page module="Finance">
+        <text>=finDistributionShort</text>
+        <ChildGrid name="ItemFinanceDistribution" relColumn="Item" />
+      </page>
+
       <page>
         <text>=pictures</text>
         <Gallery viewName="ItemGraphics" relColumn="Item" pictureColumn="Picture"

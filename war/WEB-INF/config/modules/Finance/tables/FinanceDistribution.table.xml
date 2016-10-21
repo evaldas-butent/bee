@@ -5,8 +5,8 @@
        idName="FinanceDistributionID"
 >
   <Fields>
-    <DateTime name="DateFrom" label="=discountDateFrom" />
-    <DateTime name="DateTo" label="=discountDateTo" />
+    <DateTime name="DateFrom" label="=dateFrom" />
+    <DateTime name="DateTo" label="=dateTo" />
 
     <Relation name="Debit" relation="ChartOfAccounts" label="=debit" />
     <Relation name="Credit" relation="ChartOfAccounts" label="=credit" />
