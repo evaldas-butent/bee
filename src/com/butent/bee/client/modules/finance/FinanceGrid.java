@@ -6,6 +6,10 @@ import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Objects;
 
@@ -41,5 +45,23 @@ abstract class FinanceGrid extends AbstractGridInterceptor {
     }
 
     super.onReadyForUpdate(gridView, event);
+  }
+
+  @Override
+  public boolean validateRow(IsRow row, NotificationListener notificationListener) {
+    if (row != null) {
+      Long debit = row.getLong(getDataIndex(COL_FIN_DEBIT));
+      Long credit = row.getLong(getDataIndex(COL_FIN_CREDIT));
+
+      if (Objects.equals(debit, credit)) {
+        if (notificationListener != null) {
+          notificationListener.notifySevere(BeeUtils.joinWords(Localized.dictionary().debit(),
+              BeeConst.STRING_EQ, Localized.dictionary().credit()));
+        }
+        return false;
+      }
+    }
+
+    return super.validateRow(row, notificationListener);
   }
 }

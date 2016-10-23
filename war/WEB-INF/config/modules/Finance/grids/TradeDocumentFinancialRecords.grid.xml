@@ -1,55 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-        xmlns:ui="http://www.butent.com/ui"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="TradeDocumentFinancialRecords" viewName="FinancialRecords"
         order="Date"
 >
-  <g:columns>
-    <IdColumn name="Id" visible="false" />
+  <xi:include href="columns/FinancialRecordsMain.columns.xml" />
 
-    <RelColumn name="Journal" renderColumns="JournalCode" choiceColumns="JournalCode JournalName"
-               carry="true" newRowEnabled="false" visible="false" />
+  <xi:include href="columns/FinancialRecordsTradePayment.columns.xml" />
 
-    <DataColumn name="Date" carry="true" visible="true" />
-
-    <RelColumn name="Company" renderColumns="CompanyName" choiceColumns="Name" flexGrow="1" />
-    <DataColumn name="Content" flexGrow="1" />
-
-    <RelColumn name="Debit" renderColumns="DebitCode" choiceColumns="AccountCode AccountName"
-               newRowEnabled="false" visible="true" />
-
-    <DataColumn name="DebitSeries" caption="=debitSeriesShort">
-      <editor type="string" upperCase="true" />
-    </DataColumn>
-    <DataColumn name="DebitDocument" caption="=debitDocumentShort" />
-
-    <RelColumn name="Credit" renderColumns="CreditCode" choiceColumns="AccountCode AccountName"
-               newRowEnabled="false" visible="true" />
-
-    <DataColumn name="CreditSeries" caption="=creditSeriesShort">
-      <editor type="string" upperCase="true" />
-    </DataColumn>
-    <DataColumn name="CreditDocument" caption="=creditDocumentShort" />
-
-    <DataColumn name="Amount" minWidth="80" visible="true" />
-    <RelColumn name="Currency" newRowEnabled="false" visible="true" />
-
-    <DataColumn name="TradePayment" readOnly="true" visible="false" />
-
-    <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"
-               sortBy="EmployeeLastName EmployeeFirstName" />
-  </g:columns>
-
+  <xi:include href="columns/FinancialRecordsEmployee.columns.xml" />
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
-
-  <g:rowValidation>
-    <ui:function>
-      if (row.Debit == row.Credit) {
-      return $wnd.Bee_maybeTranslate("=debit+ = +=credit");
-      }
-      return null;
-    </ui:function>
-  </g:rowValidation>
 </g:Grid>
