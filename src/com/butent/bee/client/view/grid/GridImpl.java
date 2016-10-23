@@ -1941,6 +1941,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
     }
 
+    if (ok && getGridInterceptor() != null) {
+      ok = getGridInterceptor().validateRow(newRow, notificationListener);
+    }
+
     if (ok && getRowValidation() != null) {
       ok = ValidationHelper.validateRow(newRow, getRowValidation(), notificationListener);
     }

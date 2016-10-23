@@ -26,6 +26,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.DynamicColumnEnumerator;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -165,4 +166,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
   void onUnload(GridView gridView);
 
   void setGridPresenter(GridPresenter gridPresenter);
+
+  boolean validateRow(IsRow row, NotificationListener notificationListener);
 }
