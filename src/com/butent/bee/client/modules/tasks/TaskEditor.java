@@ -2173,13 +2173,12 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private void setCommentsLayout() {
     if (isDefaultLayout) {
-      int height = getFormView().getWidgetByName("TaskContainer").getElement().getScrollHeight();
-      if (height == 0) {
-        height = 600;
+      if (taskWidget != null) {
+        int height = getFormView().getWidgetByName("TaskContainer").getElement().getScrollHeight();
+        split.addNorth(taskWidget, height + 52);
+        StyleUtils.autoWidth(taskWidget.getElement());
+        split.updateCenter(taskEventsWidget);
       }
-      split.addNorth(taskWidget, height + 60);
-      split.updateCenter(taskEventsWidget);
-
     } else {
       Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_TASK_TREE));
       split.addWest(taskWidget, size == null ? 660 : size);
