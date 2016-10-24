@@ -100,6 +100,10 @@
             <Label text="Slaptažodis" style="&lbl;" for="ERPPassword" />
             <InputText source="ERPPassword" />
           </row>
+          <row>
+            <Label text="Naujinti įrašus nuo" style="&lbl;" for="ERPLastEvent" />
+            <InputDateTime source="ERPLastEvent" />
+          </row>
         </Table>
       </FlowPanel>
     </Disclosure>

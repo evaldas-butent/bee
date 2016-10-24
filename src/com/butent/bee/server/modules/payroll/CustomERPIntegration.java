@@ -24,7 +24,6 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants.ObjectStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -44,8 +43,6 @@ import javax.ejb.TimerService;
 
 abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTimerService {
 
-  private static final String PRM_ERP_SYNC_HOURS = "VitarestaSyncHours";
-
   @EJB
   private QueryServiceBean qs;
 
@@ -62,11 +59,12 @@ abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTim
 
   @Override
   public void ejbTimeout(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_ERP_SYNC_HOURS)) {
+    if (cb.isParameterTimer(timer, PRM_ERP_SYNC_HOURS_VITARESTA)) {
       cb.asynchronousCall(new ConcurrencyBean.AsynchronousRunnable() {
         @Override
         public String getId() {
-          return BeeUtils.join("-", PayrollModuleBean.class.getSimpleName(), PRM_ERP_SYNC_HOURS);
+          return BeeUtils.join("-", PayrollModuleBean.class.getSimpleName(),
+              PRM_ERP_SYNC_HOURS_VITARESTA);
         }
 
         @Override
@@ -88,12 +86,12 @@ abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTim
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
 
-    return Collections.singleton(BeeParameter.createNumber(module, PRM_ERP_SYNC_HOURS));
+    return Collections.singleton(BeeParameter.createNumber(module, PRM_ERP_SYNC_HOURS_VITARESTA));
   }
 
   @Override
   public void init() {
-    cb.createIntervalTimer(this.getClass(), PRM_ERP_SYNC_HOURS);
+    cb.createIntervalTimer(this.getClass(), PRM_ERP_SYNC_HOURS_VITARESTA);
   }
 
   private Map<String, Long> getReferences(String tableName, String keyName) {
@@ -115,28 +113,23 @@ abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTim
   }
 
   public void importERPData() {
-    long historyId = sys.eventStart(PRM_ERP_SYNC_HOURS);
-
     SimpleRowSet companies = qs.getData(new SqlSelect()
         .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
         .addFields(TBL_COMPANIES, COL_COMPANY_NAME, PRM_ERP_ADDRESS, PRM_ERP_LOGIN,
-            PRM_ERP_PASSWORD)
+            PRM_ERP_PASSWORD, "ERPLastEvent")
         .addFrom(TBL_COMPANIES)
         .setWhere(SqlUtils.notNull(TBL_COMPANIES, PRM_ERP_ADDRESS)));
 
     Map<String, Long> positions = getReferences(TBL_POSITIONS, COL_POSITION_NAME);
     String companyDepartments = "CompanyDepartments";
-    String log = null;
 
-    DateTime lastSyncTime = qs.getDateTime(new SqlSelect()
-        .addMax(TBL_EVENT_HISTORY, COL_EVENT_STARTED)
-        .addFrom(TBL_EVENT_HISTORY)
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_EVENT_HISTORY, COL_EVENT,
-            PRM_ERP_SYNC_HOURS),
-            SqlUtils.startsWith(TBL_EVENT_HISTORY, COL_EVENT_RESULT, "OK"))));
 
     for (SimpleRow companyInfo : companies) {
+      String log = null;
       Long company = companyInfo.getLong(COL_COMPANY);
+      long historyId = sys.eventStart(PRM_ERP_SYNC_HOURS_VITARESTA);
+      DateTime lastSyncTime = companyInfo.getDateTime("ERPLastEvent");
+
       SimpleRowSet rs = null;
       String erpAddress = companyInfo.getValue(PRM_ERP_ADDRESS);
       String erpLogin = companyInfo.getValue(PRM_ERP_LOGIN);
@@ -147,8 +140,8 @@ abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTim
             .getEmployees(lastSyncTime);
       } catch (BeeException e) {
         ctx.setRollbackOnly();
-        sys.eventError(historyId, e);
-        return;
+        sys.eventError(historyId, e, companyInfo.getValue(COL_COMPANY_NAME));
+        continue;
       }
       int emplNew = 0;
       int emplUpd = 0;
@@ -228,7 +221,7 @@ abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTim
           String address = row.getValue("ADDRESS1");
 
           if (!BeeUtils.isEmpty(address)) {
-            if (!DataUtils.isId(personContact)) {
+            if (!DataUtils.isId(personContact) && DataUtils.isId(person)) {
               personContact = qs.insertData(new SqlInsert(TBL_CONTACTS)
                   .addConstant(COL_ADDRESS, address));
 
@@ -243,7 +236,7 @@ abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTim
           }
           String phone = row.getValue("MOBILEPHONE");
 
-          if (!BeeUtils.isEmpty(phone)) {
+          if (!BeeUtils.isEmpty(phone) && DataUtils.isId(companyPerson)) {
             if (!DataUtils.isId(contact)) {
               contact = qs.insertData(new SqlInsert(TBL_CONTACTS)
                   .addConstant(COL_MOBILE, phone));
@@ -299,27 +292,39 @@ abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTim
                 .addConstant(COL_POSITION_NAME, position)));
             posNew++;
           }
-          qs.updateData(new SqlUpdate(TBL_PERSONS)
-              .addConstant(COL_DATE_OF_BIRTH, TimeUtils.parseDate(row.getValue("BIRTHDAY")))
-              .setWhere(sys.idEquals(TBL_PERSONS, person)));
 
-          qs.updateData(new SqlUpdate(TBL_COMPANY_PERSONS)
-              .addConstant(AdministrationConstants.COL_DEPARTMENT, departments.get(department))
-              .addConstant(COL_POSITION, positions.get(position))
-              .addConstant(COL_DATE_OF_EMPLOYMENT, TimeUtils.parseDate(row.getValue("DIRBA_NUO")))
-              .addConstant(COL_DATE_OF_DISMISSAL, TimeUtils.parseDate(row.getValue("DISMISSED")))
-              .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, companyPerson)));
+          if (DataUtils.isId(person)) {
+            qs.updateData(new SqlUpdate(TBL_PERSONS)
+                .addConstant(COL_DATE_OF_BIRTH, TimeUtils.parseDate(row.getValue("BIRTHDAY")))
+                .setWhere(sys.idEquals(TBL_PERSONS, person)));
+          }
 
-          qs.updateData(new SqlUpdate(TBL_EMPLOYEES)
-              .addConstant(COL_PART_TIME, row.getDecimal("ETATAS"))
-              .setWhere(sys.idEquals(TBL_EMPLOYEES, employee)));
+          if (DataUtils.isId(companyPerson)) {
+            qs.updateData(new SqlUpdate(TBL_COMPANY_PERSONS)
+                .addConstant(AdministrationConstants.COL_DEPARTMENT, departments.get(department))
+                .addConstant(COL_POSITION, positions.get(position))
+                .addConstant(COL_DATE_OF_EMPLOYMENT, TimeUtils.parseDate(row.getValue("DIRBA_NUO")))
+                .addConstant(COL_DATE_OF_DISMISSAL, TimeUtils.parseDate(row.getValue("DISMISSED")))
+                .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, companyPerson)));
+          }
+
+          if (DataUtils.isId(employee)) {
+            qs.updateData(new SqlUpdate(TBL_EMPLOYEES)
+                .addConstant(COL_PART_TIME, row.getDecimal("ETATAS"))
+                .setWhere(sys.idEquals(TBL_EMPLOYEES, employee)));
+          }
         }
         locNew = importLocations(erpAddress, erpLogin, erpPassword);
         cardsInfo = importTimeCards(erpAddress, erpLogin, erpPassword, lastSyncTime, company);
 
+        qs.updateData(new SqlUpdate(TBL_COMPANIES)
+            .addConstant("ERPLastEvent", System.currentTimeMillis())
+            .setWhere(sys.idEquals(TBL_COMPANIES, company)));
+
       } catch (Throwable e) {
         ctx.setRollbackOnly();
-        sys.eventError(historyId, e, BeeUtils.join(": ", COL_TAB_NUMBER, tabNr));
+        sys.eventError(historyId, e, BeeUtils.join(": ", companyInfo.getValue(COL_COMPANY_NAME),
+            COL_TAB_NUMBER, tabNr));
         return;
       }
       log = BeeUtils.join(BeeConst.STRING_EOL, log, companyInfo.getValue(COL_COMPANY_NAME),
@@ -328,8 +333,8 @@ abstract class CustomERPIntegration implements BeeModule, ConcurrencyBean.HasTim
           locNew > 0 ? TBL_LOCATIONS + ": +" + locNew : null,
           (emplNew + emplUpd) > 0 ? TBL_EMPLOYEES + ":" + (emplNew > 0 ? " +" + emplNew : "")
               + (emplUpd > 0 ? " " + emplUpd : "") : null, cardsInfo);
+      sys.eventEnd(historyId, "OK", log);
     }
-    sys.eventEnd(historyId, "OK", log);
   }
 
   private int importLocations(String erpAddress, String erpLogin, String erpPassword)

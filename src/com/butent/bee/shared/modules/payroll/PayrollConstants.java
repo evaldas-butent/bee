@@ -216,6 +216,7 @@ public final class PayrollConstants {
   public static final String FORM_TIME_SHEET = "TimeSheet";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
   public static final String FORM_NEW_SUBSTITUTION = "NewSubstitution";
+  public static final String PRM_ERP_SYNC_HOURS_VITARESTA = "VitarestaSyncHours";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);

@@ -61,7 +61,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
 
-class CompanyForm extends AbstractFormInterceptor {
+class CompanyForm extends CustomERPSync {
 
   private FaLabel switchAction;
 
@@ -266,6 +266,10 @@ class CompanyForm extends AbstractFormInterceptor {
         BeeKeeper.getScreen().notifySevere(Localized.dictionary().companyStatus(),
             Localized.dictionary().valueRequired());
       }
+    }
+
+    if (!event.isConsumed()) {
+      super.onSaveChanges(listener, event);
     }
   }
 

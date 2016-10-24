@@ -47,5 +47,6 @@
     <String name="ERPAddress" precision="100" />
     <String name="ERPLogin" precision="20" />
     <String name="ERPPassword" precision="20" />
+    <DateTime name="ERPLastEvent" />
   </Fields>
 </Table>

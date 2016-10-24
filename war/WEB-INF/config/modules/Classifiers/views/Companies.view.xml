@@ -117,6 +117,7 @@
     <SimpleColumn name="ERPAddress" />
     <SimpleColumn name="ERPLogin" />
     <SimpleColumn name="ERPPassword" />
+    <SimpleColumn name="ERPLastEvent" />
 
     <SimpleColumn name="Notes" />
    </Columns>
