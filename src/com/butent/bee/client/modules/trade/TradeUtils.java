@@ -274,6 +274,9 @@ public final class TradeUtils {
                 } else {
                   value = row.getValue(fld);
                 }
+                if (BeeUtils.isEmpty(value)) {
+                  value = CustomTradeUtils.format(fld, sum, currSum);
+                }
                 for (Element element : elements.get(fld)) {
                   element.addClassName(STYLE_ITEMS + fld);
                   element.setInnerText(value);
@@ -339,7 +342,8 @@ public final class TradeUtils {
                 value = BeeUtils.toString(rate, 7);
 
               } else {
-                value = null;
+                value = CustomTradeUtils.format(fld, sumTotal, vatTotal, sumTotal + vatTotal,
+                    currSumTotal, currVatTotal, currSumTotal + currVatTotal);
               }
               for (Element element : elements.get(fld)) {
                 element.addClassName(STYLE_ITEMS + fld);

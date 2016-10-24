@@ -200,7 +200,7 @@
         </row>
       </Table>
     </FlowPanel>
-    <br />
+
     <Table name="InvoiceDetails" kind="output"
            style="&section; width:100%; font-size:7.5pt;">
       <properties rateCurrency="EUR" />
@@ -249,7 +249,7 @@
         </cell>
         <cell rowSpan="2" style="vertical-align: top;">
           <Label html="Suma be PVM &lt;br /&gt;Amount">
-            <properties name="Amount" />
+            <properties name="AmountLocalized"  />
           </Label>
         </cell>
 
@@ -261,7 +261,7 @@
 
         <cell rowSpan="2" style="vertical-align: top">
           <Label html="Suma pagal kursą &lt;br /&gt;Amount by rate">
-            <properties name="RateAmount" />
+            <properties name="RateAmountLocalized" />
           </Label>
         </cell>
         <cell rowSpan="2" style="vertical-align: top">
@@ -300,13 +300,13 @@
         </cell>
         <FlowPanel>
           <Label>
-            <properties name="AmountTotal" />
+            <properties name="AmountTotalLocalized" />
           </Label>
           <Label>
-            <properties name="VatTotal" />
+            <properties name="VatTotalLocalized" />
           </Label>
           <Label style="&bold;">
-            <properties name="Total" />
+            <properties name="TotalLocalized" />
           </Label>
          </FlowPanel>
         <FlowPanel>
@@ -322,13 +322,13 @@
         </FlowPanel>
         <FlowPanel>
           <Label>
-            <properties name="RateAmountTotal" />
+            <properties name="RateAmountTotalLocalized" />
           </Label>
           <Label>
-            <properties name="RateVatTotal" />
+            <properties name="RateVatTotalLocalized" />
           </Label>
           <Label>
-            <properties name="RateTotal" />
+            <properties name="RateTotalLocalized" />
           </Label>
         </FlowPanel>
         <FlowPanel>
@@ -344,8 +344,8 @@
         </FlowPanel>
       </row>
     </Table>
-
-    <TextLabel source="Term" style="&section; &bold;">
+    <br/>
+    <TextLabel source="Term" style="&bold;">
       <dynStyle>
         <ui:inline>display:none;</ui:inline>
         <ui:expression>row.Proforma</ui:expression>

@@ -28,7 +28,16 @@
 .bee-trade-itemsInfo-Total,
 .bee-trade-itemsInfo-RateAmountTotal,
 .bee-trade-itemsInfo-RateVatTotal,
-.bee-trade-itemsInfo-RateTotal {
+.bee-trade-itemsInfo-RateTotal,
+.bee-trade-itemsInfo-AmountLocalized,
+.bee-trade-itemsInfo-RateAmountLocalized,
+.bee-trade-itemsInfo-AmountTotalLocalized,
+.bee-trade-itemsInfo-VatTotalLocalized,
+.bee-trade-itemsInfo-TotalLocalized,
+.bee-trade-itemsInfo-RateAmountTotalLocalized,
+.bee-trade-itemsInfo-RateVatTotalLocalized,
+.bee-trade-itemsInfo-RateTotalLocalized
+ {
   text-align: right;
 }
 
