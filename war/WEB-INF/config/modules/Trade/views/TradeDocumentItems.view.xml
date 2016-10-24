@@ -34,12 +34,14 @@
 
     <ExternalJoin joinType="LEFT" source="TradeItemCost" name="TradeDocumentItem">
       <SimpleColumn name="Cost" />
+      <SimpleColumn name="Currency" alias="CostCurrency" />
     </ExternalJoin>
     <ExternalJoin joinType="LEFT" targetName="Parent" source="TradeStock"
                   name="TradeDocumentItem">
       <ExternalJoin joinType="LEFT" targetName="PrimaryDocumentItem" source="TradeItemCost"
                     name="TradeDocumentItem">
         <SimpleColumn name="Cost" alias="ParentCost" />
+        <SimpleColumn name="Currency" alias="ParentCostCurrency" />
       </ExternalJoin>
     </ExternalJoin>
 

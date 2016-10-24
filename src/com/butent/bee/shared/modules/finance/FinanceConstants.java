@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.finance;
 
 public final class FinanceConstants {
 
+  public static final String SVC_POST_TRADE_DOCUMENT = "postTradeDocument";
+
   public static final String TBL_FINANCIAL_RECORDS = "FinancialRecords";
 
   public static final String TBL_FINANCE_CONFIGURATION = "FinanceConfiguration";
@@ -43,14 +45,8 @@ public final class FinanceConstants {
   public static final String COL_TRANSITORY_ACCOUNT = "TransitoryAccount";
   public static final String COL_FOREIGN_EXCHANGE_GAIN = "ForeignExchangeGain";
   public static final String COL_FOREIGN_EXCHANGE_LOSS = "ForeignExchangeLoss";
-  public static final String COL_VAT_PAYABLE = "VatPayable";
-  public static final String COL_VAT_RECEIVABLE = "VatReceivable";
-  public static final String COL_TRADE_PAYABLES = "TradePayables";
-  public static final String COL_TRADE_RECEIVABLES = "TradeReceivables";
   public static final String COL_ADVANCE_PAYMENTS_GIVEN = "AdvancePaymentsGiven";
   public static final String COL_ADVANCE_PAYMENTS_RECEIVED = "AdvancePaymentsReceived";
-  public static final String COL_SALES_REVENUE = "SalesRevenue";
-  public static final String COL_COST_OF_GOODS_SOLD = "CostOfGoodsSold";
   public static final String COL_COST_OF_MERCHANDISE = "CostOfMerchandise";
 
   public static final String COL_FIN_DISTR_DATE_FROM = "DateFrom";

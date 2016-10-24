@@ -191,6 +191,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_WAREHOUSE_TO = "WarehouseTo";
   public static final String COL_TRADE_SUPPLIER = "Supplier";
   public static final String COL_TRADE_CUSTOMER = "Customer";
+  public static final String COL_TRADE_PAYER = "Payer";
   public static final String COL_TRADE_MANAGER = "Manager";
   public static final String COL_TRADE_TERM = "Term";
   public static final String COL_TRADE_NOTES = "Notes";
@@ -214,6 +215,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_NOTE = "Note";
   public static final String COL_TRADE_ITEM_PARENT = "Parent";
   public static final String COL_TRADE_ITEM_WAREHOUSE = "Warehouse";
+  public static final String COL_TRADE_ITEM_EMPLOYEE = "Employee";
 
   public static final String COL_SERIES = "Series";
   public static final String COL_SERIES_NAME = "SeriesName";
@@ -242,6 +244,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_DOCUMENT_STATUS = "Status";
   public static final String COL_TRADE_DOCUMENT_NUMBER_1 = "Number1";
   public static final String COL_TRADE_DOCUMENT_NUMBER_2 = "Number2";
+  public static final String COL_TRADE_DOCUMENT_RECEIVED_DATE = "ReceivedDate";
 
   public static final String COL_TRADE_DOCUMENT_DISCOUNT = "DocumentDiscount";
   public static final String COL_TRADE_DOCUMENT_PRICE_NAME = "PriceName";
@@ -311,6 +314,10 @@ public final class TradeConstants {
 
   public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
   public static final String ALS_STOCK_PRIMARY_DATE = "PrimaryDate";
+
+  public static final String ALS_COST_CURRENCY = "CostCurrency";
+  public static final String ALS_PARENT_COST = "ParentCost";
+  public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
 
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";
