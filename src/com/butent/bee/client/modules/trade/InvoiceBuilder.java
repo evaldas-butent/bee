@@ -40,6 +40,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -108,9 +109,9 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
                     if (BeeUtils.equals(getGridView().getViewName(),
                         TransportConstants.VIEW_CARGO_SALES)) {
                       Data.onViewChange(TransportConstants.TBL_ORDERS,
-                        DataChangeEvent.CANCEL_RESET_REFRESH);
+                          EnumSet.of(DataChangeEvent.Effect.REFRESH));
                       Data.onViewChange(TransportConstants.TBL_ORDER_CARGO,
-                        DataChangeEvent.CANCEL_RESET_REFRESH);
+                          EnumSet.of(DataChangeEvent.Effect.REFRESH));
                     }
                     Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
                     RowEditor.openForm(dataInfo.getEditForm(), dataInfo,
