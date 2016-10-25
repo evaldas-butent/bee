@@ -1457,6 +1457,8 @@ public final class TimeUtils {
   public static JustDate toDateOrNull(String s) {
     if (BeeUtils.isInt(s)) {
       return new JustDate(BeeUtils.toInt(s));
+    } else if (BeeUtils.isLong(s)) {
+      return new DateTime(BeeUtils.toLong(s)).getDate();
     } else {
       return null;
     }
