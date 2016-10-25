@@ -29,6 +29,10 @@ public final class TradeAccounts {
     return create(rowSet.getColumns(), row);
   }
 
+  public static TradeAccounts createAvailable(BeeRowSet rowSet, IsRow row) {
+    return (rowSet == null) ? null : createAvailable(rowSet.getColumns(), row);
+  }
+
   public static TradeAccounts create(List<? extends IsColumn> columns, IsRow row) {
     Assert.notEmpty(columns);
     Assert.notNull(row);
@@ -42,6 +46,21 @@ public final class TradeAccounts {
     Long salesDiscounts = DataUtils.getLong(columns, row, COL_SALES_DISCOUNTS);
     Long costOfGoodsSold = DataUtils.getLong(columns, row, COL_COST_OF_GOODS_SOLD);
     Long writeOffAccount = DataUtils.getLong(columns, row, COL_WRITE_OFF_ACCOUNT);
+
+    return new TradeAccounts(costAccount, tradePayables, tradeReceivables,
+        vatPayable, vatReceivable, salesRevenue, salesDiscounts, costOfGoodsSold, writeOffAccount);
+  }
+
+  public static TradeAccounts createAvailable(List<? extends IsColumn> columns, IsRow row) {
+    Long costAccount = DataUtils.getLongQuietly(columns, row, COL_COST_ACCOUNT);
+    Long tradePayables = DataUtils.getLongQuietly(columns, row, COL_TRADE_PAYABLES);
+    Long tradeReceivables = DataUtils.getLongQuietly(columns, row, COL_TRADE_RECEIVABLES);
+    Long vatPayable = DataUtils.getLongQuietly(columns, row, COL_VAT_PAYABLE);
+    Long vatReceivable = DataUtils.getLongQuietly(columns, row, COL_VAT_RECEIVABLE);
+    Long salesRevenue = DataUtils.getLongQuietly(columns, row, COL_SALES_REVENUE);
+    Long salesDiscounts = DataUtils.getLongQuietly(columns, row, COL_SALES_DISCOUNTS);
+    Long costOfGoodsSold = DataUtils.getLongQuietly(columns, row, COL_COST_OF_GOODS_SOLD);
+    Long writeOffAccount = DataUtils.getLongQuietly(columns, row, COL_WRITE_OFF_ACCOUNT);
 
     return new TradeAccounts(costAccount, tradePayables, tradeReceivables,
         vatPayable, vatReceivable, salesRevenue, salesDiscounts, costOfGoodsSold, writeOffAccount);

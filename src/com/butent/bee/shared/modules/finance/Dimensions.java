@@ -76,6 +76,24 @@ public final class Dimensions {
     this.object = object;
   }
 
+  public void applyTo(List<? extends IsColumn> columns, IsRow row) {
+    Assert.notEmpty(columns);
+    Assert.notNull(row);
+
+    if (getDepartment() != null) {
+      row.setValue(DataUtils.getColumnIndex(COL_DEPARTMENT, columns), getDepartment());
+    }
+    if (getActivityType() != null) {
+      row.setValue(DataUtils.getColumnIndex(COL_ACTIVITY_TYPE, columns), getActivityType());
+    }
+    if (getCostCenter() != null) {
+      row.setValue(DataUtils.getColumnIndex(COL_COST_CENTER, columns), getCostCenter());
+    }
+    if (getObject() != null) {
+      row.setValue(DataUtils.getColumnIndex(COL_OBJECT, columns), getObject());
+    }
+  }
+
   public Long getDepartment() {
     return department;
   }

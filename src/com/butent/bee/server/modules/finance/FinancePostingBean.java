@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -15,6 +16,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.FinanceUtils;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.time.DateTime;
@@ -29,6 +31,8 @@ public class FinancePostingBean {
   private static BeeLogger logger = LogUtils.getLogger(FinancePostingBean.class);
 
   @EJB
+  SystemBean sys;
+  @EJB
   QueryServiceBean qs;
   @EJB
   UserServiceBean usr;
@@ -40,9 +44,9 @@ public class FinancePostingBean {
       return ResponseObject.warning(dictionary.trdDocument(), docId, dictionary.nothingFound());
     }
 
-    BeeRowSet docItems = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
+    BeeRowSet docLines = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
         Filter.equals(COL_TRADE_DOCUMENT, docId));
-    if (DataUtils.isEmpty(docItems)) {
+    if (DataUtils.isEmpty(docLines)) {
       Dictionary dictionary = usr.getDictionary();
       return ResponseObject.warning(dictionary.trdDocumentItems(), docId,
           dictionary.nothingFound());
@@ -54,7 +58,10 @@ public class FinancePostingBean {
       return ResponseObject.warning(dictionary.dataNotAvailable(dictionary.finDefaultAccounts()));
     }
 
-//    TradeAccounts defaultAccounts = TradeAccounts.create(config, config.getRow(0));
+    TradeAccounts defaultAccounts = TradeAccounts.createAvailable(config, config.getRow(0));
+
+    Long defaultJournal = config.getLong(0, COL_DEFAULT_JOURNAL);
+    Long costOfMerchandise = config.getLong(0, COL_COST_OF_MERCHANDISE);
 
     int rowIndex = 0;
     DateTime date = docData.getDateTime(rowIndex, COL_TRADE_DOCUMENT_RECEIVED_DATE);
@@ -84,37 +91,137 @@ public class FinancePostingBean {
     Long supplier = docData.getLong(rowIndex, COL_TRADE_SUPPLIER);
     Long customer = docData.getLong(rowIndex, COL_TRADE_CUSTOMER);
 
-    Long warehouseFrom = docData.getLong(rowIndex, COL_TRADE_WAREHOUSE_FROM);
-    Long warehouseTo = docData.getLong(rowIndex, COL_TRADE_WAREHOUSE_TO);
-
     Long currency = docData.getLong(rowIndex, COL_TRADE_CURRENCY);
     Long payer = docData.getLong(rowIndex, COL_TRADE_PAYER);
 
+    Long warehouseFrom = docData.getLong(rowIndex, COL_TRADE_WAREHOUSE_FROM);
+    Long warehouseTo = docData.getLong(rowIndex, COL_TRADE_WAREHOUSE_TO);
+
     Long manager = docData.getLong(rowIndex, COL_TRADE_MANAGER);
 
-    TradeDocumentSums tdSums = TradeDocumentSums.of(docData, docItems);
+    TradeDocumentSums tdSums = TradeDocumentSums.of(docData, docLines);
 
-    Dimensions docDimensions = Dimensions.create(docData, docData.getRow(rowIndex));
-    TradeAccounts docAccounts = TradeAccounts.create(docData, docData.getRow(rowIndex));
+    Dimensions documentDimensions = Dimensions.create(docData, docData.getRow(rowIndex));
+    TradeAccounts documentAccounts = TradeAccounts.create(docData, docData.getRow(rowIndex));
 
-    int itemIndex = docItems.getColumnIndex(COL_ITEM);
-    int isServiceIndex = docItems.getColumnIndex(COL_ITEM_IS_SERVICE);
+    Dimensions operationDimensions = getDimensions(VIEW_TRADE_OPERATIONS, operation);
+    TradeAccounts operationAccounts = getTradeAccounts(VIEW_TRADE_OPERATIONS, operation);
 
-    int warehouseIndex = docItems.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE);
-    int employeeIndex = docItems.getColumnIndex(COL_TRADE_ITEM_EMPLOYEE);
+    Dimensions supplierDimensions = getDimensions(VIEW_COMPANIES, supplier);
+    TradeAccounts supplierAccounts = getTradeAccounts(VIEW_COMPANIES, supplier);
 
-    int parentIndex = docItems.getColumnIndex(COL_TRADE_ITEM_PARENT);
+    Dimensions customerDimensions = getDimensions(VIEW_COMPANIES, customer);
+    TradeAccounts customerAccounts = getTradeAccounts(VIEW_COMPANIES, customer);
 
-    int costIndex = docItems.getColumnIndex(COL_TRADE_ITEM_COST);
-    int costCurrencyIndex = docItems.getColumnIndex(ALS_COST_CURRENCY);
+    Dimensions payerDimensions = getDimensions(VIEW_COMPANIES, payer);
+    TradeAccounts payerAccounts = getTradeAccounts(VIEW_COMPANIES, payer);
 
-    int parentCostIndex = docItems.getColumnIndex(ALS_PARENT_COST);
-    int parentCostCurrencyIndex = docItems.getColumnIndex(ALS_PARENT_COST_CURRENCY);
+    Dimensions warehouseFromDimensions = getDimensions(VIEW_WAREHOUSES, warehouseFrom);
+    TradeAccounts warehouseFromAccounts = getTradeAccounts(VIEW_WAREHOUSES, warehouseFrom);
 
-    for (BeeRow row : docItems) {
+    Dimensions warehouseToDimensions = getDimensions(VIEW_WAREHOUSES, warehouseTo);
+    TradeAccounts warehouseToAccounts = getTradeAccounts(VIEW_WAREHOUSES, warehouseTo);
+
+    int itemIndex = docLines.getColumnIndex(COL_ITEM);
+    int isServiceIndex = docLines.getColumnIndex(COL_ITEM_IS_SERVICE);
+
+    int warehouseIndex = docLines.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE);
+    int employeeIndex = docLines.getColumnIndex(COL_TRADE_ITEM_EMPLOYEE);
+
+    int parentIndex = docLines.getColumnIndex(COL_TRADE_ITEM_PARENT);
+
+    int costIndex = docLines.getColumnIndex(COL_TRADE_ITEM_COST);
+    int costCurrencyIndex = docLines.getColumnIndex(ALS_COST_CURRENCY);
+
+    int parentCostIndex = docLines.getColumnIndex(ALS_PARENT_COST);
+    int parentCostCurrencyIndex = docLines.getColumnIndex(ALS_PARENT_COST_CURRENCY);
+
+    BeeRowSet buffer = new BeeRowSet(VIEW_FINANCIAL_RECORDS,
+        sys.getView(VIEW_FINANCIAL_RECORDS).getRowSetColumns());
+
+    for (BeeRow row : docLines) {
       Long item = row.getLong(itemIndex);
+      boolean isService = BeeUtils.isTrue(row.getBoolean(isServiceIndex));
+
+      Long warehouse = row.getLong(warehouseIndex);
+      Long employee = row.getLong(employeeIndex);
+
+      Long parent = row.getLong(parentIndex);
+
+      Double cost = row.getDouble(costIndex);
+      Long costCurrency = row.getLong(costCurrencyIndex);
+
+      Double parentCost = row.getDouble(parentCostIndex);
+      Long parentCostCurrency = row.getLong(parentCostCurrencyIndex);
+
+      Long parentWarehouse = getParentWarehouse(parent);
+
+      Dimensions lineDimensions = Dimensions.create(docLines, row);
+      TradeAccounts lineAccounts = TradeAccounts.create(docLines, row);
+
+      Dimensions itemDimensions = getDimensions(VIEW_ITEMS, item);
+      TradeAccounts itemAccounts = getTradeAccounts(VIEW_ITEMS, item);
     }
 
     return ResponseObject.emptyResponse();
+  }
+
+  private Dimensions getDimensions(String viewName, Long id) {
+    if (DataUtils.isId(id)) {
+      BeeRowSet rowSet = qs.getViewData(viewName, Filter.compareId(id));
+
+      if (!DataUtils.isEmpty(rowSet)) {
+        return Dimensions.create(rowSet, rowSet.getRow(0));
+      }
+    }
+    return null;
+  }
+
+  private TradeAccounts getTradeAccounts(String viewName, Long id) {
+    if (DataUtils.isId(id)) {
+      BeeRowSet rowSet = qs.getViewData(viewName, Filter.compareId(id));
+
+      if (!DataUtils.isEmpty(rowSet)) {
+        return TradeAccounts.create(rowSet, rowSet.getRow(0));
+      }
+    }
+    return null;
+  }
+
+  private Long getParentWarehouse(Long parent) {
+    if (DataUtils.isId(parent)) {
+      return qs.getLong(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, COL_TRADE_DOCUMENT_ITEM, parent);
+    } else {
+      return null;
+    }
+  }
+
+  private void write(BeeRowSet rowSet, DateTime date, Long company,
+      Long debit, Long credit, Double amount, Long currency,
+      Long employee, Dimensions dimensions) {
+
+    if (FinanceUtils.isValidEntry(date, debit, credit, amount, currency)) {
+      BeeRow row = rowSet.addEmptyRow();
+
+      row.setValue(rowSet.getColumnIndex(COL_FIN_DATE), date);
+
+      if (DataUtils.isId(company)) {
+        row.setValue(rowSet.getColumnIndex(COL_FIN_COMPANY), company);
+      }
+
+      row.setValue(rowSet.getColumnIndex(COL_FIN_DEBIT), debit);
+      row.setValue(rowSet.getColumnIndex(COL_FIN_CREDIT), credit);
+
+      row.setValue(rowSet.getColumnIndex(COL_FIN_AMOUNT), amount);
+      row.setValue(rowSet.getColumnIndex(COL_FIN_CURRENCY), currency);
+
+      if (DataUtils.isId(employee)) {
+        row.setValue(rowSet.getColumnIndex(COL_FIN_EMPLOYEE), employee);
+      }
+
+      if (dimensions != null && !dimensions.isEmpty()) {
+        dimensions.applyTo(rowSet.getColumns(), row);
+      }
+    }
   }
 }

@@ -548,6 +548,10 @@ public final class DataUtils {
     return row.getLong(getColumnIndex(columnId, columns));
   }
 
+  public static Long getLongQuietly(List<? extends IsColumn> columns, IsRow row, String columnId) {
+    return getLongQuietly(row, getColumnIndex(columnId, columns));
+  }
+
   public static Long getLongQuietly(IsRow row, int index) {
     if (row == null) {
       return null;
