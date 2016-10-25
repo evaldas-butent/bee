@@ -1057,11 +1057,15 @@ public class ImportBean {
       } else if (ok && !BeeUtils.isEmpty(bundleOptions)) {
         Bundle bundle = new Bundle(bundleOptions);
 
-        if (!configuration.getOptions().contains(option)
-            || !configuration.getAllBundles().contains(bundle)) {
-          errorProcessor.accept(loc.relations() + ": " + loc.relation(),
-              BeeUtils.joinWords(bundle, option));
-        } else {
+        if (!configuration.getAllBundles().contains(bundle)) {
+          errorProcessor.accept(loc.relations() + ": " + loc.configuration(), bundle.toString());
+          ok = false;
+        }
+        if (!configuration.getOptions().contains(option)) {
+          errorProcessor.accept(loc.relations() + ": " + loc.option(), option.toString());
+          ok = false;
+        }
+        if (ok) {
           configuration.setRelationInfo(option, bundle,
               Configuration.DataInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION)));
         }
