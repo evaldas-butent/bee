@@ -1,17 +1,24 @@
 package com.butent.bee.server.modules.finance;
 
+import com.google.common.collect.ImmutableList;
+
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.sql.SqlDelete;
+import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -21,6 +28,11 @@ import com.butent.bee.shared.modules.finance.TradeAccounts;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -36,16 +48,21 @@ public class FinancePostingBean {
   QueryServiceBean qs;
   @EJB
   UserServiceBean usr;
+  @EJB
+  DataEditorBean deb;
 
   public ResponseObject postTradeDocument(long docId) {
     BeeRowSet docData = qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.compareId(docId));
+
     if (DataUtils.isEmpty(docData)) {
       Dictionary dictionary = usr.getDictionary();
       return ResponseObject.warning(dictionary.trdDocument(), docId, dictionary.nothingFound());
     }
 
     BeeRowSet docLines = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
-        Filter.equals(COL_TRADE_DOCUMENT, docId));
+        Filter.and(Filter.equals(COL_TRADE_DOCUMENT, docId),
+            Filter.notEquals(COL_TRADE_ITEM_QUANTITY, BeeConst.DOUBLE_ZERO)));
+
     if (DataUtils.isEmpty(docLines)) {
       Dictionary dictionary = usr.getDictionary();
       return ResponseObject.warning(dictionary.trdDocumentItems(), docId,
@@ -125,6 +142,8 @@ public class FinancePostingBean {
     int itemIndex = docLines.getColumnIndex(COL_ITEM);
     int isServiceIndex = docLines.getColumnIndex(COL_ITEM_IS_SERVICE);
 
+    int quantityIndex = docLines.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+
     int warehouseIndex = docLines.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE);
     int employeeIndex = docLines.getColumnIndex(COL_TRADE_ITEM_EMPLOYEE);
 
@@ -143,8 +162,14 @@ public class FinancePostingBean {
       Long item = row.getLong(itemIndex);
       boolean isService = BeeUtils.isTrue(row.getBoolean(isServiceIndex));
 
+      Double quantity = row.getDouble(quantityIndex);
+
       Long warehouse = row.getLong(warehouseIndex);
+
       Long employee = row.getLong(employeeIndex);
+      if (!DataUtils.isId(employee)) {
+        employee = manager;
+      }
 
       Long parent = row.getLong(parentIndex);
 
@@ -161,9 +186,24 @@ public class FinancePostingBean {
 
       Dimensions itemDimensions = getDimensions(VIEW_ITEMS, item);
       TradeAccounts itemAccounts = getTradeAccounts(VIEW_ITEMS, item);
+
+      if (DataUtils.isId(parent) && BeeUtils.nonZero(parentCost)
+          && DataUtils.isId(parentCostCurrency)) {
+
+        write(buffer, date, customer,
+            defaultAccounts.getCostOfGoodsSold(), costOfMerchandise,
+            parentCost * quantity, parentCostCurrency, employee,
+            Dimensions.merge(ImmutableList.of(lineDimensions, documentDimensions,
+                itemDimensions, operationDimensions)));
+      }
     }
 
-    return ResponseObject.emptyResponse();
+    BeeRowSet output = aggregate(buffer);
+
+    updateJournal(output, defaultJournal);
+    updateDocumentNumbers(output, series, number);
+
+    return commitTradeDocument(docId, output);
   }
 
   private Dimensions getDimensions(String viewName, Long id) {
@@ -196,7 +236,49 @@ public class FinancePostingBean {
     }
   }
 
-  private void write(BeeRowSet rowSet, DateTime date, Long company,
+  private static void updateDocumentNumbers(BeeRowSet rowSet, String series, String number) {
+    if (!DataUtils.isEmpty(rowSet) && !BeeUtils.isEmpty(number)) {
+      int debitSeriesIndex = rowSet.getColumnIndex(COL_FIN_DEBIT_SERIES);
+      int debitDocumentIndex = rowSet.getColumnIndex(COL_FIN_DEBIT_DOCUMENT);
+
+      int creditSeriesIndex = rowSet.getColumnIndex(COL_FIN_CREDIT_SERIES);
+      int creditDocumentIndex = rowSet.getColumnIndex(COL_FIN_CREDIT_DOCUMENT);
+
+      for (BeeRow row : rowSet) {
+        if (BeeUtils.allEmpty(row.getString(debitSeriesIndex),
+            row.getString(debitDocumentIndex))) {
+
+          if (!BeeUtils.isEmpty(series)) {
+            row.setValue(debitSeriesIndex, series);
+          }
+          row.setValue(debitDocumentIndex, number);
+        }
+
+        if (BeeUtils.allEmpty(row.getString(creditSeriesIndex),
+            row.getString(creditDocumentIndex))) {
+
+          if (!BeeUtils.isEmpty(series)) {
+            row.setValue(creditSeriesIndex, series);
+          }
+          row.setValue(creditDocumentIndex, number);
+        }
+      }
+    }
+  }
+
+  private static void updateJournal(BeeRowSet rowSet, Long journal) {
+    if (!DataUtils.isEmpty(rowSet) && DataUtils.isId(journal)) {
+      int index = rowSet.getColumnIndex(COL_FIN_JOURNAL);
+
+      for (BeeRow row : rowSet) {
+        if (!DataUtils.isId(row.getLong(index))) {
+          row.setValue(index, journal);
+        }
+      }
+    }
+  }
+
+  private static void write(BeeRowSet rowSet, DateTime date, Long company,
       Long debit, Long credit, Double amount, Long currency,
       Long employee, Dimensions dimensions) {
 
@@ -223,5 +305,59 @@ public class FinancePostingBean {
         dimensions.applyTo(rowSet.getColumns(), row);
       }
     }
+  }
+
+  private static BeeRowSet aggregate(BeeRowSet input) {
+    if (DataUtils.getNumberOfRows(input) <= 1) {
+      return input;
+    }
+
+    int amountIndex = input.getColumnIndex(COL_FIN_AMOUNT);
+
+    Map<List<String>, Double> map = input.getRows().stream().collect(
+        Collectors.groupingBy(row -> FinanceUtils.groupingFunction(row, amountIndex),
+            Collectors.summingDouble(row -> BeeUtils.unbox(row.getDouble(amountIndex)))));
+
+    if (map.size() == input.getNumberOfRows()) {
+      return input;
+    }
+
+    BeeRowSet result = new BeeRowSet(input.getViewName(), input.getColumns());
+    int amountScale = input.getColumn(amountIndex).getScale();
+
+    map.forEach((values, amount) -> {
+      List<String> list = new ArrayList<>(values);
+      list.set(amountIndex, BeeUtils.toString(amount, amountScale));
+
+      result.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, list);
+    });
+
+    return result;
+  }
+
+  private ResponseObject commitTradeDocument(long docId, BeeRowSet rowSet) {
+    SqlDelete delete = new SqlDelete(TBL_FINANCIAL_RECORDS)
+        .setWhere(SqlUtils.equals(TBL_FINANCIAL_RECORDS, COL_FIN_TRADE_DOCUMENT, docId));
+
+    ResponseObject deleteResponse = qs.updateDataWithResponse(delete);
+    if (deleteResponse.hasErrors() || DataUtils.isEmpty(rowSet)) {
+      return deleteResponse;
+    }
+
+    int index = rowSet.getColumnIndex(COL_FIN_TRADE_DOCUMENT);
+    for (BeeRow row : rowSet) {
+      row.setValue(index, docId);
+    }
+
+    BeeRowSet insert = DataUtils.createRowSetForInsert(rowSet);
+
+    for (int i = 0; i < insert.getNumberOfRows(); i++) {
+      ResponseObject insertResponse = deb.commitRow(insert, i, RowInfo.class);
+      if (insertResponse.hasErrors()) {
+        return insertResponse;
+      }
+    }
+
+    return ResponseObject.response(insert.getNumberOfRows());
   }
 }
