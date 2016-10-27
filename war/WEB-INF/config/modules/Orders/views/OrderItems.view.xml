@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View
   xmlns="http://www.butent.com/view"
-  xmlns:x="http://www.butent.com/expression"
   name="OrderItems" source="OrderItems"
   module="Orders" caption="=feedGoods">
   <Columns>

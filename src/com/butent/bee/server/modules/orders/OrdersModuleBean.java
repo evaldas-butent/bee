@@ -451,12 +451,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       return ResponseObject.error(TBL_ORDER_ITEMS, idsQty, "not found");
     }
 
-    Map<Long, Double> freeRemainders =
-        getFreeRemainders(Arrays.asList(data.getLongColumn(COL_ITEM)), data.getRow(0).getLong(
-            COL_ORDER), null);
-    Map<Long, Double> compInvoices = getCompletedInvoices(data.getRow(0).getLong(
-        COL_ORDER));
-
     ResponseObject response = new ResponseObject();
 
     for (SimpleRow row : data) {
@@ -505,22 +499,6 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         response.addMessagesFrom(insResponse);
         break;
       } else {
-        double quantity = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY));
-        double invoiceQty =
-            BeeUtils.unbox(compInvoices.get(row.getLong(sys.getIdName(TBL_ORDER_ITEMS))));
-        double resRemainder = BeeUtils.unbox(row.getDouble(COL_RESERVED_REMAINDER));
-        double freeRemainder = BeeUtils.unbox(freeRemainders.get(row.getLong(COL_ITEM)));
-        double value;
-
-        if (quantity == invoiceQty + saleQuantity) {
-          value = 0;
-        } else if (quantity - invoiceQty - saleQuantity <= freeRemainder + resRemainder
-            - saleQuantity) {
-          value = quantity - invoiceQty - saleQuantity;
-        } else {
-          value = freeRemainder + resRemainder - saleQuantity;
-        }
-
         SqlInsert si = new SqlInsert(VIEW_ORDER_CHILD_INVOICES)
             .addConstant(COL_SALE_ITEM, insResponse.getResponseAsLong())
             .addConstant(COL_ORDER_ITEM, row.getLong(sys.getIdName(TBL_ORDER_ITEMS)));
@@ -528,7 +506,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         qs.insertData(si);
 
         SqlUpdate update = new SqlUpdate(TBL_ORDER_ITEMS)
-            .addConstant(COL_RESERVED_REMAINDER, value)
+            .addConstant(COL_RESERVED_REMAINDER, BeeConst.DOUBLE_ZERO)
             .setWhere(sys.idEquals(TBL_ORDER_ITEMS, row.getLong(sys.getIdName(TBL_ORDER_ITEMS))));
 
         qs.updateData(update);
@@ -1210,9 +1188,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_WAREHOUSE);
     }
 
-    SqlSelect itemsQry =
-        new SqlSelect()
-            .addField(VIEW_ORDER_ITEMS, sys.getIdName(VIEW_ORDER_ITEMS), "OrderItem")
+    SqlSelect itemsQry = new SqlSelect()
+            .addField(VIEW_ORDER_ITEMS, sys.getIdName(VIEW_ORDER_ITEMS), COL_ORDER_ITEM)
             .addFields(VIEW_ORDER_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
             .addFrom(VIEW_ORDER_ITEMS)
             .setWhere(SqlUtils.equals(VIEW_ORDER_ITEMS, COL_ORDER, orderId));
@@ -1222,19 +1199,22 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         getFreeRemainders(Arrays.asList(srs.getLongColumn(COL_ITEM)), null, warehouseId);
 
     for (SimpleRow sr : srs) {
+      Long item = sr.getLong(COL_ITEM);
       Double resRemainder;
       Double qty = sr.getDouble(COL_TRADE_ITEM_QUANTITY);
-      Double free = rem.get(sr.getLong(COL_ITEM));
+      Double free = rem.get(item);
+
       if (qty <= free) {
         resRemainder = qty;
+        rem.put(item, free - qty);
       } else {
         resRemainder = free;
+        rem.put(item, BeeConst.DOUBLE_ZERO);
       }
 
-      SqlUpdate update =
-          new SqlUpdate(VIEW_ORDER_ITEMS)
-              .addConstant(COL_RESERVED_REMAINDER, resRemainder)
-              .setWhere(sys.idEquals(VIEW_ORDER_ITEMS, sr.getLong("OrderItem")));
+      SqlUpdate update = new SqlUpdate(VIEW_ORDER_ITEMS)
+          .addConstant(COL_RESERVED_REMAINDER, resRemainder)
+          .setWhere(sys.idEquals(VIEW_ORDER_ITEMS, sr.getLong(COL_ORDER_ITEM)));
 
       qs.updateData(update);
     }
