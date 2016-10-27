@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-    <!ENTITY sw "width: 20em;">
+    <!ENTITY lbl "margin-top: 2vh; margin-bottom: 2vh;">
     ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
@@ -8,11 +8,15 @@
         caption="=finPostingPrecedence"
         width="600" widthUnit="px" height="70" heightUnit="vh"
 >
-  <FlowPanel>
-    <Label for="TradeAccountsPrecedence" />
-    <InputArea source="TradeAccountsPrecedence" style="&sw;" />
+  <FlowPanel class="flexBox-horizontal-space-around">
+    <FlowPanel>
+      <Label for="TradeAccountsPrecedence" style="&lbl;" />
+      <FlowPanel name="TradeAccountsPrecedence" />
+    </FlowPanel>
 
-    <Label for="TradeDimensionsPrecedence" />
-    <InputArea source="TradeDimensionsPrecedence" style="&sw;" />
+    <FlowPanel>
+      <Label for="TradeDimensionsPrecedence" style="&lbl;" />
+      <FlowPanel name="TradeDimensionsPrecedence" />
+    </FlowPanel>
   </FlowPanel>
 </f:Form>
