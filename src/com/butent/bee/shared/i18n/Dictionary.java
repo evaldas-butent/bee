@@ -5972,6 +5972,8 @@ public interface Dictionary {
 
   default String trdDocumentItems() {return g("trdDocumentItems");}
 
+  default String trdDocumentLine() {return g("trdDocumentLine");}
+
   default String trdDocumentLong() {return g("trdDocumentLong");}
 
   default String trdDocumentPhase() {return g("trdDocumentPhase");}
