@@ -91,7 +91,8 @@ public final class FinanceConstants {
   public static final String GRID_FINANCE_DISTRIBUTION_OF_TRADE_DOCUMENTS =
       "FinanceDistributionOfTradeDocuments";
 
-  public static final String FORM_FINANCE_CONFIGURATION = "FinanceConfiguration";
+  public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
+  public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";
 
   private FinanceConstants() {
   }

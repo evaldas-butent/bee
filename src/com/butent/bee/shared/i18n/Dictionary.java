@@ -2723,6 +2723,8 @@ public interface Dictionary {
 
   default String finCashInBank() {return g("finCashInBank");}
 
+  default String finConfiguration() {return g("finConfiguration");}
+
   default String finContent() {return g("finContent");}
 
   default String finCostAccount() {return g("finCostAccount");}
@@ -2755,6 +2757,8 @@ public interface Dictionary {
 
   default String finPostAction() {return g("finPostAction");}
 
+  default String finPostingPrecedence() {return g("finPostingPrecedence");}
+
   default String finReceivablesFromEmployees() {return g("finReceivablesFromEmployees");}
 
   default String finRevenueAndExpenseSummary() {return g("finRevenueAndExpenseSummary");}
@@ -2764,6 +2768,10 @@ public interface Dictionary {
   default String finSalesRevenue() {return g("finSalesRevenue");}
 
   default String finTradeAccounts() {return g("finTradeAccounts");}
+
+  default String finTradeAccountsPrecedence() {return g("finTradeAccountsPrecedence");}
+
+  default String finTradeDimensionsPrecedence() {return g("finTradeDimensionsPrecedence");}
 
   default String finTradePayables() {return g("finTradePayables");}
 

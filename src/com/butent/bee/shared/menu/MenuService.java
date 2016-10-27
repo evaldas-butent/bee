@@ -103,8 +103,10 @@ public enum MenuService {
   REBUILD_TRADE_STOCK(EnumSet.of(RightsState.CREATE, RightsState.EDIT, RightsState.DELETE),
       TradeConstants.VIEW_TRADE_STOCK),
 
-  @XmlEnumValue("finance_configuration")
-  FINANCE_CONFIGURATION(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION);
+  @XmlEnumValue("finance_default_accounts")
+  FINANCE_DEFAULT_ACCOUNTS(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION),
+  @XmlEnumValue("finance_posting_precedence")
+  FINANCE_POSTING_PRECEDENCE(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;

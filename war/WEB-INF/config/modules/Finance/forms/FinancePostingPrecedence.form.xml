@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+    <!ENTITY sw "width: 20em;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+        name="FinancePostingPrecedence" viewName="FinanceConfiguration"
+        caption="=finPostingPrecedence"
+        width="600" widthUnit="px" height="70" heightUnit="vh"
+>
+  <FlowPanel>
+    <Label for="TradeAccountsPrecedence" />
+    <InputArea source="TradeAccountsPrecedence" style="&sw;" />
+
+    <Label for="TradeDimensionsPrecedence" />
+    <InputArea source="TradeDimensionsPrecedence" style="&sw;" />
+  </FlowPanel>
+</f:Form>

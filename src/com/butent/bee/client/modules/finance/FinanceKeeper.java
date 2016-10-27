@@ -29,7 +29,10 @@ public final class FinanceKeeper {
   }
 
   public static void register() {
-    MenuService.FINANCE_CONFIGURATION.setHandler(parameters -> openConfiguration());
+    MenuService.FINANCE_DEFAULT_ACCOUNTS.setHandler(parameters ->
+        openConfiguration(FORM_FINANCE_DEFAULT_ACCOUNTS));
+    MenuService.FINANCE_POSTING_PRECEDENCE.setHandler(parameters ->
+        openConfiguration(FORM_FINANCE_POSTING_PRECEDENCE));
 
     List<String> gridNames = ImmutableList.of(GRID_FINANCIAL_RECORDS,
         GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS);
@@ -97,14 +100,15 @@ public final class FinanceKeeper {
         viewName, ALS_CREDIT_REPLACEMENT_BACKGROUND, ALS_CREDIT_REPLACEMENT_FOREGROUND);
   }
 
-  private static void openConfiguration() {
+  private static void openConfiguration(final String formName) {
     Queries.getRowSet(VIEW_FINANCE_CONFIGURATION, null, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
         if (DataUtils.isEmpty(result)) {
-          RowFactory.createRow(VIEW_FINANCE_CONFIGURATION);
+          RowFactory.createRowUsingForm(VIEW_FINANCE_CONFIGURATION, formName, null);
         } else {
-          RowEditor.open(VIEW_FINANCE_CONFIGURATION, result.getRow(0), Opener.modeless());
+          RowEditor.openForm(formName, VIEW_FINANCE_CONFIGURATION, result.getRow(0),
+              Opener.modeless(), null);
         }
       }
     });

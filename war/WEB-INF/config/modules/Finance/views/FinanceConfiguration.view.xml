@@ -2,8 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
       name="FinanceConfiguration" source="FinanceConfiguration"
-      newRowForm="FinanceConfiguration" editForm="FinanceConfiguration"
-      caption="=finDefaultAccounts"
+      caption="=finConfiguration"
 >
   <Columns>
     <SimpleColumn name="DefaultJournal" />
@@ -87,5 +86,8 @@
     <SimpleJoin joinType="LEFT" name="CostOfMerchandise">
       <SimpleColumn name="AccountCode" alias="CostOfMerchandiseCode" />
     </SimpleJoin>
+
+    <SimpleColumn name="TradeAccountsPrecedence" />
+    <SimpleColumn name="TradeDimensionsPrecedence" />
   </Columns>
 </View>
