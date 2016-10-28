@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-    <!ENTITY lbl "margin-top: 2vh; margin-bottom: 2vh;">
+    <!ENTITY lbl "margin-top: 3vh; margin-bottom: 2vh; font-size: larger; font-weight: bolder;">
+    <!ENTITY panel "margin-left: 2em;">
     ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
@@ -11,12 +12,12 @@
   <FlowPanel class="flexBox-horizontal-space-around">
     <FlowPanel>
       <Label for="TradeAccountsPrecedence" style="&lbl;" />
-      <FlowPanel name="TradeAccountsPrecedence" />
+      <FlowPanel name="TradeAccountsPrecedence" style="&panel;" />
     </FlowPanel>
 
     <FlowPanel>
       <Label for="TradeDimensionsPrecedence" style="&lbl;" />
-      <FlowPanel name="TradeDimensionsPrecedence" />
+      <FlowPanel name="TradeDimensionsPrecedence" style="&panel;" />
     </FlowPanel>
   </FlowPanel>
 </f:Form>

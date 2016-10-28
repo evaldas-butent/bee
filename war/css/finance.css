@@ -1,5 +1,19 @@
+.bee-fin-posting-precedence-table {
+  border-collapse: collapse;
+}
+.bee-fin-posting-precedence-table td {
+  border: 1px solid #ccc;
+}
+.bee-fin-posting-precedence-table tr:hover {
+  background-color: #f2f2f2;
+}
+
+.bee-fin-posting-precedence-label {
+  padding: 3px 8px;
+  border: 1px solid transparent;
+}
+
 .bee-fin-posting-precedence-drag {
   background-color: yellow;
-  box-sizing: border-box;
-  border: 1px solid darkgreen;
+  border-color: darkgreen;
 }

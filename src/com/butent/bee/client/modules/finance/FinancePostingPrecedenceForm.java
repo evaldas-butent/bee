@@ -18,33 +18,59 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.TradeAccountsPrecedence;
 import com.butent.bee.shared.modules.finance.TradeDimensionsPrecedence;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 class FinancePostingPrecedenceForm extends AbstractFormInterceptor {
 
+  private static final class Entry {
+    private final int ordinal;
+    private final String caption;
+
+    private Entry(int ordinal, String caption) {
+      this.ordinal = ordinal;
+      this.caption = caption;
+    }
+  }
+
   private enum Type {
     TRADE_ACCOUNTS(COL_TRADE_ACCOUNTS_PRECEDENCE) {
-      @SuppressWarnings("unchecked")
       @Override
-      <E extends Enum<?>> List<E> parse(String value) {
-        return (List<E>) TradeAccountsPrecedence.parse(value);
+      String asString(List<Integer> list) {
+        return TradeAccountsPrecedence.asString(list.stream()
+            .map(ordinal -> TradeAccountsPrecedence.values()[ordinal])
+            .collect(Collectors.toList()));
+      }
+
+      @Override
+      List<Entry> parse(String value) {
+        return TradeAccountsPrecedence.parse(value).stream()
+            .map(tap -> new Entry(tap.ordinal(), tap.getCaption()))
+            .collect(Collectors.toList());
       }
     },
 
     TRADE_DIMENSIONS(COL_TRADE_DIMENSIONS_PRECEDENCE) {
-      @SuppressWarnings("unchecked")
       @Override
-      <E extends Enum<?>> List<E> parse(String value) {
-        return (List<E>) TradeDimensionsPrecedence.parse(value);
+      String asString(List<Integer> list) {
+        return TradeDimensionsPrecedence.asString(list.stream()
+            .map(ordinal -> TradeDimensionsPrecedence.values()[ordinal])
+            .collect(Collectors.toList()));
+      }
+
+      @Override
+      List<Entry> parse(String value) {
+        return TradeDimensionsPrecedence.parse(value).stream()
+            .map(tdp -> new Entry(tdp.ordinal(), tdp.getCaption()))
+            .collect(Collectors.toList());
       }
     };
 
@@ -54,7 +80,9 @@ class FinancePostingPrecedenceForm extends AbstractFormInterceptor {
       this.source = source;
     }
 
-    abstract <E extends Enum<?>> List<E> parse(String value);
+    abstract String asString(List<Integer> list);
+
+    abstract List<Entry> parse(String value);
   }
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "fin-posting-precedence-";
@@ -64,6 +92,7 @@ class FinancePostingPrecedenceForm extends AbstractFormInterceptor {
   private static final String STYLE_DRAG = STYLE_PREFIX + "drag";
 
   private final Map<Type, Flow> containers = new HashMap<>();
+  private final Map<Type, List<Integer>> ordinals = new HashMap<>();
 
   FinancePostingPrecedenceForm() {
   }
@@ -134,32 +163,50 @@ class FinancePostingPrecedenceForm extends AbstractFormInterceptor {
       }
     }
 
-    if (!BeeConst.isUndef(targetOrdinal) && sourceOrdinal != targetOrdinal) {
-      LogUtils.getRootLogger().debug(sourceOrdinal, targetOrdinal);
+    if (!BeeConst.isUndef(targetOrdinal) && sourceOrdinal != targetOrdinal
+        && ordinals.containsKey(type)) {
+
+      List<Integer> list = new ArrayList<>(ordinals.get(type));
+      int sourceIndex = list.indexOf(sourceOrdinal);
+      int targetIndex = list.indexOf(targetOrdinal);
+
+      if (sourceIndex >= 0 && targetIndex >= 0 && sourceIndex != targetIndex) {
+        if (sourceIndex < targetIndex) {
+          Collections.rotate(list.subList(sourceIndex, targetIndex + 1), -1);
+        } else {
+          Collections.rotate(list.subList(targetIndex, sourceIndex + 1), 1);
+        }
+
+        String value = type.asString(list);
+
+        if (getActiveRow() != null) {
+          getActiveRow().setValue(getDataIndex(type.source), value);
+          render(type, containers.get(type), value);
+        }
+      }
     }
   }
 
-  private static void render(Type type, Flow container, String value) {
+  private void render(Type type, Flow container, String value) {
     if (!container.isEmpty()) {
       container.clear();
     }
 
-    List<Enum<?>> list = type.parse(value);
+    List<Entry> list = type.parse(value);
+    ordinals.put(type, list.stream().map(entry -> entry.ordinal).collect(Collectors.toList()));
 
-    if (!BeeUtils.isEmpty(list)) {
-      Vertical table = new Vertical(STYLE_TABLE);
+    Vertical table = new Vertical(STYLE_TABLE);
 
-      for (Enum<?> e : list) {
-        DndDiv widget = new DndDiv(STYLE_LABEL);
-        widget.setText(EnumUtils.getCaption(e));
+    for (Entry entry : list) {
+      DndDiv widget = new DndDiv(STYLE_LABEL);
+      widget.setText(entry.caption);
 
-        DomUtils.setDataIndex(widget.getElement(), e.ordinal());
-        DndHelper.makeSource(widget, type.name(), e.ordinal(), STYLE_DRAG);
+      DomUtils.setDataIndex(widget.getElement(), entry.ordinal);
+      DndHelper.makeSource(widget, type.name(), entry.ordinal, STYLE_DRAG);
 
-        table.add(widget);
-      }
-
-      container.add(table);
+      table.add(widget);
     }
+
+    container.add(table);
   }
 }
