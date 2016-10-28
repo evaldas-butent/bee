@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <DataColumn name="Ordinal" width="30" visible="false" editInPlace="true" />
+
+  <DataColumn name="Date" />
+  <DataColumn name="Company" />
+  <DataColumn name="Address" />
+
+  <DataColumn name="CityName" />
+  <DataColumn name="PostIndex" />
+  <DataColumn name="CountryName" />
+  <DataColumn name="Flag" source="CountryCode" cellType="html" width="30"
+              caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+              filterOptions="-" exportWidthFactor="0.5" visible="false">
+    <renderer type="flag" />
+  </DataColumn>
+  <DataColumn name="Contact" />
+  <DataColumn name="Number" />
+  <DataColumn name="Note" />
+</g:columns>

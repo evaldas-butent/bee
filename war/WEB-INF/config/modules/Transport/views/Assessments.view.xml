@@ -102,6 +102,13 @@
         </SimpleJoin>
       </SimpleJoin>
 
+      <ExternalJoin name="Cargo" source="CargoUnloading" joinType="LEFT">
+        <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+          <AggregateColumn name="Date" alias="MinUnloadingDate" aggregate="MIN"
+                           label="=taMinTermShort+=trUnloadingDateShort" />
+        </SimpleJoin>
+      </ExternalJoin>
+
       <xi:include href="viewcolumns/CargoInfo.viewcolumns.xml" />
 
       <SimpleColumn name="Number" label="=refNumber" />
@@ -154,7 +161,4 @@
       </SimpleJoin>
     </ExternalJoin>
   </Columns>
-  <Order>
-    <OrderBy column="LoadingDate" />
-  </Order>
 </View>

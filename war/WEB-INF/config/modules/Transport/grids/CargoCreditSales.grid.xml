@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+  xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="CargoCreditSales" viewName="CargoCreditSales"
   flexGrow="1"
@@ -17,19 +17,11 @@
     <DataColumn name="InvoiceNo" renderColumns="SeriesName InvoiceNo" searchBy="SeriesName InvoiceNo" />
     <DataColumn name="CustomerName" />
     <DataColumn name="PayerName" />
+  </g:columns>
 
-    <RelColumn name="LoadingCountry" renderColumns="LoadingCountryName" visible="false" />
-    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
+  <xi:include href="columns/Places.columns.xml" />
 
-    <RelColumn name="UnloadingCountry" renderColumns="UnloadingCountryName" visible="false" />
-    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-
+  <g:columns>
     <DataColumn name="ServiceName" />
     <DataColumn name="Amount" format="0.00" />
     <DataColumn name="CurrencyName" flexGrow="0" />

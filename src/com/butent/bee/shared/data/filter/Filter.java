@@ -96,7 +96,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Assert.notNull(values);
 
     if (values.isEmpty()) {
-      return null;
+      return Filter.isFalse();
     }
 
     List<Value> vals = new ArrayList<>();

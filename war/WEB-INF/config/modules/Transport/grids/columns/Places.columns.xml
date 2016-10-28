@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <PropColumn type="datetime" name="LoadingDate" label="=trLoadingDate" visible="false" />
+  <PropColumn type="string" name="LoadingAddress" label="=trLoadingAddress" visible="false" />
+  <PropColumn type="string" name="LoadingCityName" label="=trLoadingCity" visible="false" />
+  <PropColumn type="string" name="LoadingPostIndex" label="=trLoadingPostIndex" visible="false" />
+  <PropColumn type="string" name="LoadingCountryName" label="=trLoadingCountry" visible="false" />
+  <PropColumn type="string" name="LoadingCountryCode" cellType="html"
+              width="30" caption="-" label="=from" sortable="false"
+              horizontalAlignment="center" exportWidthFactor="0.5" visible="false">
+    <renderer type="flag" />
+  </PropColumn>
+  <PropColumn type="string" name="LoadingNumber" label="=trLoadingNumber" visible="false" />
+
+  <PropColumn type="datetime" name="UnloadingDate" label="=trUnloadingDate" visible="false" />
+  <PropColumn type="string" name="UnloadingAddress" label="=trUnloadingAddress" visible="false" />
+  <PropColumn type="string" name="UnloadingCityName" label="=trUnloadingCity" visible="false" />
+  <PropColumn type="string" name="UnloadingPostIndex" label="=trUnloadingPostIndex"
+              visible="false" />
+  <PropColumn type="string" name="UnloadingCountryName" label="=trUnloadingCountry"
+              visible="false" />
+  <PropColumn type="string" name="UnloadingCountryCode" cellType="html"
+              width="30" caption="-" label="=to" sortable="false"
+              horizontalAlignment="center" exportWidthFactor="0.5" visible="false">
+    <renderer type="flag" />
+  </PropColumn>
+  <PropColumn type="string" name="UnloadingNumber" label="=trUnloadingNumber" visible="false" />
+</g:columns>

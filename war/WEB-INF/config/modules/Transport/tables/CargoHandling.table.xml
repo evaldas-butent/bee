@@ -4,6 +4,7 @@
        name="CargoHandling"
        idName="HandlingID"
 >
+  <!--TODO: remove-->
   <Fields>
     <Relation name="Cargo" relation="OrderCargo" cascade="DELETE" label="=cargo" />
     <Relation name="CargoTrip" relation="CargoTrips" cascade="DELETE" label="=cargos" />

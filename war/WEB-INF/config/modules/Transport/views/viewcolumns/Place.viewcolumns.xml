@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Columns xmlns="http://www.butent.com/view">
+  <SimpleColumn name="Ordinal" />
+
+  <SimpleColumn name="Date" />
+  <SimpleColumn name="Note" />
+  <SimpleColumn name="Number" />
+  <SimpleColumn name="Contact" />
+  <SimpleColumn name="Company" />
+  <SimpleColumn name="Address" />
+  <SimpleColumn name="PostIndex" />
+
+  <SimpleColumn name="City" />
+  <SimpleJoin joinType="LEFT" name="City">
+    <SimpleColumn name="Name" alias="CityName" />
+  </SimpleJoin>
+  <SimpleColumn name="Country" />
+  <SimpleJoin joinType="LEFT" name="Country">
+    <SimpleColumn name="Name" alias="CountryName" />
+    <SimpleColumn name="Code" alias="CountryCode" />
+  </SimpleJoin>
+
+  <SimpleColumn name="EmptyKilometers" />
+  <SimpleColumn name="LoadedKilometers" />
+  <SimpleColumn name="Weight" alias="CargoWeight" />
+</Columns>

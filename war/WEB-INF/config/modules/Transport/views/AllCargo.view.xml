@@ -63,11 +63,6 @@
 
     <ExternalJoin source="OrderCargo" name="Order" joinType="INNER">
       <IdColumn name="Cargo" />
-
-      <SimpleJoin name="CargoHandling" joinType="LEFT">
-        <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
-      </SimpleJoin>
-
       <SimpleColumn name="Description" />
       <SimpleColumn name="Number" />
 
@@ -116,7 +111,4 @@
       </ExternalJoin>
     </ExternalJoin>
   </Columns>
-  <Order>
-    <OrderBy column="LoadingDate" />
-  </Order>
 </View>

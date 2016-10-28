@@ -6,8 +6,6 @@
         editForm="CargoHandling"
         caption="=trips" flexGrow="1"
     >
-  <g:body height="50" />
-
   <g:columns>
     <ActionColumn element="link" name="TripNo" caption="=trTripNo" />
     <DataColumn name="ExpeditionType" caption="=trExpeditionType" />
@@ -70,7 +68,7 @@
     </DataColumn>
   </g:columns>
 
-  <xi:include href="columns/Handling.columns.xml" />
+  <xi:include href="columns/Places.columns.xml" />
 
   <g:columns>
     <DataColumn name="Message" readOnly="true" />

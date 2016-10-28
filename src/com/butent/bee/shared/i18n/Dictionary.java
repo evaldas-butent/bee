@@ -3482,6 +3482,8 @@ public interface Dictionary {
 
   default String newKey() {return g("newKey");}
 
+  default String newLoadingPlace() {return g("newLoadingPlace");}
+
   default String newObject() {return g("newObject");}
 
   default String newOffer() {return g("newOffer");}
@@ -3555,6 +3557,8 @@ public interface Dictionary {
   default String newUiTheme() {return g("newUiTheme");}
 
   default String newUnit() {return g("newUnit");}
+
+  default String newUnloadingPlace() {return g("newUnloadingPlace");}
 
   default String newUser() {return g("newUser");}
 

@@ -262,14 +262,15 @@
       <xs:enumeration value="CargoExpenses" />
       <xs:enumeration value="CargoFiles" />
       <xs:enumeration value="CargoGroups" />
-      <xs:enumeration value="CargoHandling" />
       <xs:enumeration value="CargoIncomes" />
       <xs:enumeration value="CargoInvoices" />
+      <xs:enumeration value="CargoLoading" />
       <xs:enumeration value="CargoPurchaseInvoices" />
       <xs:enumeration value="CargoPurchases" />
       <xs:enumeration value="CargoSales" />
       <xs:enumeration value="CargoTrips" />
       <xs:enumeration value="CargoTypes" />
+      <xs:enumeration value="CargoUnloading" />
       <xs:enumeration value="CarOrderItems" />
       <xs:enumeration value="CarOrders" />
       <xs:enumeration value="CategoryTree" />
