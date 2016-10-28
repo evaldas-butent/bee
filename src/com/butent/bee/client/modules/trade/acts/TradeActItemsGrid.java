@@ -223,12 +223,12 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
               final Map<Long, Double> quantities = TradeActUtils.getItemQuantities(parentItems);
 
               /* Shows dialog of items for return */
-              TradeActItemReturn.show(kind.getCaption(), parentActs, parentItems, false,
+              TradeActItemReturn.show(kind.getCaption(), parentActs, parentItems, true,
                   actItems -> {
                     final boolean allReturned = quantities.equals(TradeActUtils
                         .getItemQuantities(actItems));
                     addActItems(parentAct, actItems, () -> {
-                      if (!allReturned) {
+                      if (!allReturned && !parentAct.hasPropertyValue(PROP_CONTINUOUS_COUNT)) {
                         ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
                         ps.addQueryItem(COL_TRADE_ACT, parent);
                         ps.addQueryItem(COL_TA_DATE, date.getTime());
@@ -287,70 +287,82 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   public void beforeRender(GridView gridView, RenderingEvent event) {
     IsRow parentRow = getParentRow(gridView);
     TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
+    TradeActKind parentKind = TradeActKeeper.getKind(parentRow,
+        Data.getColumnIndex(VIEW_TRADE_ACTS, ALS_TA_PARENT_KIND));
     Integer contCnt = parentRow != null && parentRow.hasPropertyValue(PROP_CONTINUOUS_COUNT)
         ? parentRow.getPropertyInteger(PROP_CONTINUOUS_COUNT) : null;
 
-    boolean showReturn = kind != null && kind.enableReturn();
-    boolean returnVisible = gridView.getGrid().isColumnVisible(COLUMN_RETURNED_QTY);
+    Map<String, Boolean> showColumn = new HashMap<>();
+    Map<String, Boolean> columnVisible = new HashMap<>();
+
+    showColumn.put(COL_TA_PARENT, kind != null && (TradeActKind.CONTINUOUS.equals(kind)
+        || TradeActKind.CONTINUOUS.equals(parentKind)));
+    showColumn.put(COLUMN_RETURNED_QTY, kind != null && kind.enableReturn()
+        && !TradeActKind.CONTINUOUS.equals(kind));
+
+    columnVisible.put(COL_TA_PARENT, gridView.getGrid().isColumnVisible(COL_TA_PARENT));
+    columnVisible.put(COLUMN_RETURNED_QTY, gridView.getGrid().isColumnVisible(COLUMN_RETURNED_QTY));
 
     if (commandImportItems != null) {
       commandImportItems.setVisible(!BeeUtils.isPositive(contCnt)
           && kind != TradeActKind.CONTINUOUS);
     }
 
-    if (showReturn != returnVisible) {
-      List<ColumnInfo> predefinedColumns = gridView.getGrid().getPredefinedColumns();
-      List<Integer> visibleColumns = gridView.getGrid().getVisibleColumns();
+    if (!showColumn.equals(columnVisible)) {
+      for (String col : showColumn.keySet()) {
+        List<ColumnInfo> predefinedColumns = gridView.getGrid().getPredefinedColumns();
+        List<Integer> visibleColumns = gridView.getGrid().getVisibleColumns();
+        List<Integer> showColumnResult = new ArrayList<>();
 
-      List<Integer> showColumns = new ArrayList<>();
+        if (BeeUtils.isTrue(showColumn.get(col))) {
+          int qtyPosition = BeeConst.UNDEF;
+          int unitPosition = BeeConst.UNDEF;
 
-      if (showReturn) {
-        int qtyPosition = BeeConst.UNDEF;
-        int unitPosition = BeeConst.UNDEF;
+          for (int i = 0; i < visibleColumns.size(); i++) {
+            ColumnInfo columnInfo = predefinedColumns.get(visibleColumns.get(i));
 
-        for (int i = 0; i < visibleColumns.size(); i++) {
-          ColumnInfo columnInfo = predefinedColumns.get(visibleColumns.get(i));
+            if (columnInfo.is(COL_TRADE_ITEM_QUANTITY)) {
+              qtyPosition = i;
+            } else if (columnInfo.is(ALS_UNIT_NAME)) {
+              unitPosition = i;
+            }
+          }
 
-          if (columnInfo.is(COL_TRADE_ITEM_QUANTITY)) {
-            qtyPosition = i;
-          } else if (columnInfo.is(ALS_UNIT_NAME)) {
-            unitPosition = i;
+          int colIndex = BeeConst.UNDEF;
+          int remIndex = BeeConst.UNDEF;
+
+          for (int i = 0; i < predefinedColumns.size(); i++) {
+            ColumnInfo columnInfo = predefinedColumns.get(i);
+
+            if (columnInfo.is(col)) {
+              colIndex = i;
+            } else if (columnInfo.is(COLUMN_REMAINING_QTY)) {
+              remIndex = i;
+            }
+          }
+
+          showColumnResult.addAll(visibleColumns);
+
+          int pos = (unitPosition == qtyPosition + 1) ? unitPosition : qtyPosition;
+          if (!BeeConst.isUndef(colIndex) && !showColumnResult.contains(colIndex)) {
+            showColumnResult.add(pos + 1, colIndex);
+          }
+          if (!BeeConst.isUndef(colIndex) && !showColumnResult.contains(remIndex)) {
+            showColumnResult.add(pos + 2, remIndex);
+          }
+
+        } else {
+          for (int index : visibleColumns) {
+            if (!predefinedColumns.get(index).is(col)
+                && !predefinedColumns.get(index).is(COLUMN_REMAINING_QTY)) {
+              showColumnResult.add(index);
+            }
           }
         }
 
-        int retIndex = BeeConst.UNDEF;
-        int remIndex = BeeConst.UNDEF;
-
-        for (int i = 0; i < predefinedColumns.size(); i++) {
-          ColumnInfo columnInfo = predefinedColumns.get(i);
-
-          if (columnInfo.is(COLUMN_RETURNED_QTY)) {
-            retIndex = i;
-          } else if (columnInfo.is(COLUMN_REMAINING_QTY)) {
-            remIndex = i;
-          }
-        }
-
-        showColumns.addAll(visibleColumns);
-
-        int pos = (unitPosition == qtyPosition + 1) ? unitPosition : qtyPosition;
-        if (!BeeConst.isUndef(retIndex) && !showColumns.contains(retIndex)) {
-          showColumns.add(pos + 1, retIndex);
-        }
-        if (!BeeConst.isUndef(retIndex) && !showColumns.contains(remIndex)) {
-          showColumns.add(pos + 2, remIndex);
-        }
-
-      } else {
-        for (int index : visibleColumns) {
-          if (!predefinedColumns.get(index).is(COLUMN_RETURNED_QTY)
-              && !predefinedColumns.get(index).is(COLUMN_REMAINING_QTY)) {
-            showColumns.add(index);
-          }
-        }
+        gridView.getGrid().overwriteVisibleColumns(showColumnResult);
       }
 
-      gridView.getGrid().overwriteVisibleColumns(showColumns);
       event.setDataChanged();
     }
 

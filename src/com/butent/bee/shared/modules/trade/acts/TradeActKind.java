@@ -30,6 +30,11 @@ public enum TradeActKind implements HasLocalizedCaption {
       return Filter.or(Lists.newArrayList(super.getFilter(), SUPPLEMENT.getFilter(),
           RETURN.getFilter(), CONTINUOUS.getFilter()));
     }
+
+    @Override
+    public boolean enableMultiReturn(TradeActKind other) {
+      return super.enableMultiReturn(other) && other != CONTINUOUS;
+    }
   },
 
   /* 1 */
@@ -44,6 +49,11 @@ public enum TradeActKind implements HasLocalizedCaption {
     @Override
     public String getGridSupplierKey() {
       return null;
+    }
+
+    @Override
+    public boolean enableMultiReturn(TradeActKind other) {
+      return super.enableMultiReturn(other) && other != CONTINUOUS;
     }
   },
 
@@ -108,6 +118,11 @@ public enum TradeActKind implements HasLocalizedCaption {
     @Override
     public  String getCaption(Dictionary constants) {
       return constants.taKindContinuous();
+    }
+
+    @Override
+    public boolean enableMultiReturn(TradeActKind other) {
+      return super.enableMultiReturn(other) && other == CONTINUOUS;
     }
   };
 
@@ -176,6 +191,10 @@ public enum TradeActKind implements HasLocalizedCaption {
     return options.contains(Option.ENABLE_RETURN);
   }
 
+  public boolean enableMultiReturn(TradeActKind other) {
+    return enableReturn() && other != null && other.enableReturn();
+  }
+
   public boolean enableServices() {
     return options.contains(Option.HAS_SERVICES);
   }
@@ -207,4 +226,5 @@ public enum TradeActKind implements HasLocalizedCaption {
   public boolean showStock() {
     return options.contains(Option.SHOW_STOCK);
   }
+
 }

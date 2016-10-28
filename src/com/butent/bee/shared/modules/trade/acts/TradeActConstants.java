@@ -11,7 +11,7 @@ public final class TradeActConstants {
   public static final String SVC_GET_TEMPLATE_ITEMS_AND_SERVICES = "GetTemplateItemsAndServices";
   public static final String SVC_GET_ITEMS_FOR_RETURN = "GetItemsForReturn";
   public static final String SVC_GET_ITEMS_FOR_MULTI_RETURN = "GetItemsForMultiReturn";
-  public static final String SVC_RETURN_ACT_ITEMS = "ReturnActItems";
+  public static final String SVC_MULTI_RETURN_ACT_ITEMS = "MultiReturnActItems";
   public static final String SVC_SPLIT_ACT_SERVICES = "SplitActServices";
   public static final String SVC_ALTER_ACT_KIND = "AlterActKind";
 
@@ -109,6 +109,7 @@ public final class TradeActConstants {
   public static final String ALS_TOTAL_AMOUNT = "TotalAmount";
   public static final String ALS_ITEM_TOTAL = "ItemTotal";
   public static final String ALS_CONTACT_PHYSICAL = "ContactPhysical";
+  public static final String ALS_TA_PARENT_KIND = "ParentKind";
 
   public static final String GRID_TRADE_ACTS = "TradeActs";
   public static final String GRID_TRADE_ACT_TEMPLATES = "TradeActTemplates";

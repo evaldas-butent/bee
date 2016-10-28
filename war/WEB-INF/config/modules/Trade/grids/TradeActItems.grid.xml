@@ -16,6 +16,15 @@
 
   <xi:include href="columns/TradeActItem.columns.xml" />
 
+  <g:columns>
+    <RelColumn name="Parent" editEnabled="true"  >
+      <renderToken source="ParentSeriesName"  suffix=" " />
+      <renderToken source="ParentNumber" suffix="/" />
+      <renderToken source="ParentId" prefix="=captionId" />
+    </RelColumn>
+
+  </g:columns>
+
   <xi:include href="columns/TradeActQuantity.columns.xml" />
 
   <g:columns>

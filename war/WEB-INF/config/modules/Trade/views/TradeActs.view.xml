@@ -145,6 +145,9 @@
     <SimpleColumn name="Notes" />
 
     <SimpleColumn name="Parent" />
+    <SimpleJoin name="Parent" joinType="LEFT">
+      <SimpleColumn name="Kind" alias="ParentKind" />
+    </SimpleJoin>
 
     <ExternalJoin name="Parent" joinType="LEFT" source="TradeActs" filter="ChildKind = 2">
       <HiddenColumn name="Kind" alias="ChildKind" />

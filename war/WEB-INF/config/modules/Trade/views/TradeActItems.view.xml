@@ -13,6 +13,13 @@
     </SimpleJoin>
 
     <SimpleColumn name="Parent" />
+    <SimpleJoin name="Parent" joinType="LEFT">
+      <IdColumn name="ParentId" />
+      <SimpleColumn name="Number" alias="ParentNumber" />
+      <SimpleJoin joinType="LEFT" name="Series">
+        <SimpleColumn name="SeriesName" alias="ParentSeriesName" />
+      </SimpleJoin>
+    </SimpleJoin>
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">

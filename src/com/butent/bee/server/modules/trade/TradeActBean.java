@@ -161,8 +161,8 @@ public class TradeActBean implements HasTimerService {
         response = getItemsForMultiReturn(reqInfo);
         break;
 
-      case SVC_RETURN_ACT_ITEMS:
-        response = doReturnActItems(reqInfo);
+      case SVC_MULTI_RETURN_ACT_ITEMS:
+        response = doMultiReturnActItems(reqInfo);
         break;
 
       case SVC_SPLIT_ACT_SERVICES:
@@ -1066,17 +1066,24 @@ public class TradeActBean implements HasTimerService {
       columnName) {
     Assert.notNull(childKind);
 
+    String parentTbl = TradeActKind.CONTINUOUS.equals(childKind) ? TBL_TRADE_ACT_ITEMS
+        : TBL_TRADE_ACTS;
+
     IsCondition where =
         SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, seriesId),
             SqlUtils.notNull(TBL_TRADE_ACTS, columnName),
             SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, childKind.ordinal()),
-            SqlUtils.equals(TBL_TRADE_ACTS,
-                COL_TA_PARENT, parentId));
+            SqlUtils.equals(parentTbl, COL_TA_PARENT, parentId));
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_ACTS, columnName)
         .addFrom(TBL_TRADE_ACTS)
         .setWhere(where);
+
+    if (!BeeUtils.same(parentTbl, TBL_TRADE_ACTS)) {
+      query.addFromLeft(parentTbl, sys.joinTables(TBL_TRADE_ACTS, parentTbl, COL_TRADE_ACT));
+      query.setDistinctMode(true);
+    }
 
     String[] values = qs.getColumn(query);
 
@@ -1599,7 +1606,7 @@ public class TradeActBean implements HasTimerService {
     }
   }
 
-  private ResponseObject doReturnActItems(RequestInfo reqInfo) {
+  private ResponseObject doMultiReturnActItems(RequestInfo reqInfo) {
     String input = reqInfo.getParameter(VIEW_TRADE_ACT_ITEMS);
     if (BeeUtils.isEmpty(input)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_TRADE_ACT_ITEMS);
@@ -1675,12 +1682,14 @@ public class TradeActBean implements HasTimerService {
 
       boolean hasItems = !DataUtils.isEmpty(getRemainingItems(parentId));
 
-      if (hasItems) {
-        ResponseObject splitResponse = splitActServices(parentId, date.getTime());
-        if (splitResponse.hasErrors()) {
-          return splitResponse;
-        }
-      } else {
+//      ***DEPRECATED***
+//      if (hasItems) {
+//        ResponseObject splitResponse = splitActServices(parentId, date.getTime());
+//        if (splitResponse.hasErrors()) {
+//          return splitResponse;
+//        }
+//      } else {
+      if (!hasItems) {
         SqlUpdate updateService = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
             .addConstant(COL_TA_SERVICE_TO, new DateTime(date.getTime()).getDate())
             .setWhere(SqlUtils.and(
@@ -1832,7 +1841,7 @@ public class TradeActBean implements HasTimerService {
         result.addRow(row);
       }
 
-      if(BeeUtils.isDouble(returnedQty)) {
+      if (BeeUtils.isDouble(returnedQty)) {
         returnedItems.put(parentRow.getLong(itemIndex), returnedQty - BeeUtils.unbox(parentRow
             .getDouble(qtyIndex)));
       }
