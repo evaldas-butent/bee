@@ -1727,10 +1727,8 @@ public class TradeActBean implements HasTimerService {
 
     CompoundFilter filter = Filter.and();
 
-    // filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
-
     Set<Long> actItems =
-        BeeUtils.same(source, TBL_TRADE_ACT_SERVICES) ? getActServices(actId) : getActItems(actId);
+        BeeUtils.same(source, TBL_TRADE_ACT_SERVICES) ? new HashSet<>()  : getActItems(actId);
     if (!actItems.isEmpty()) {
       filter.add(Filter.idNotIn(actItems));
     }
