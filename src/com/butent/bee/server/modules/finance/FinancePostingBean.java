@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.finance;
 
+import com.google.common.base.Stopwatch;
+
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -27,6 +29,7 @@ import com.butent.bee.shared.modules.finance.FinanceUtils;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
 import com.butent.bee.shared.modules.finance.TradeAccountsPrecedence;
 import com.butent.bee.shared.modules.finance.TradeDimensionsPrecedence;
+import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -59,6 +62,8 @@ public class FinancePostingBean {
   DataEditorBean deb;
 
   public ResponseObject postTradeDocument(long docId) {
+    Stopwatch stopwatch = Stopwatch.createStarted();
+
     BeeRowSet docData = qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.compareId(docId));
 
     if (DataUtils.isEmpty(docData)) {
@@ -244,11 +249,30 @@ public class FinancePostingBean {
       Dimensions dim = computeTradeDimensions(dimensionsPrecedence, dimensions);
       TradeAccounts acc = computeTradeAccounts(accountsPrecedence, accounts, defaultAccounts);
 
-      if (DataUtils.isId(parent) && BeeUtils.nonZero(parentCost)
-          && DataUtils.isId(parentCostCurrency)) {
+      Double costAmount = BeeUtils.nonZero(cost) && DataUtils.isId(costCurrency)
+          ? cost * quantity : null;
+      Double parentCostAmount = DataUtils.isId(parent) && BeeUtils.nonZero(parentCost)
+          && DataUtils.isId(parentCostCurrency) ? parentCost * quantity : null;
 
-        write(buffer, date, customer, acc.getCostOfGoodsSold(), costOfMerchandise,
-            parentCost * quantity, parentCostCurrency, employee, dim);
+      double discount = tdSums.getItemDiscount(row.getId());
+      double vat = tdSums.getItemVat(row.getId());
+      double total = tdSums.getItemTotal(row.getId());
+
+      if (BeeUtils.nonZero(total - vat)) {
+        write(buffer, date, company,
+            operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
+            total - vat, currency, employee, dim);
+      }
+
+      if (BeeUtils.nonZero(parentCostAmount)) {
+        write(buffer, date, company, acc.getCostOfGoodsSold(), costOfMerchandise,
+            parentCostAmount, parentCostCurrency, employee, dim);
+      }
+
+      if (BeeUtils.nonZero(vat)) {
+        write(buffer, date, company,
+            operationType.getVatDebit(acc), operationType.getVatCredit(acc),
+            vat, currency, employee, dim);
       }
     }
 
@@ -257,7 +281,16 @@ public class FinancePostingBean {
     updateJournal(output, defaultJournal);
     updateDocumentNumbers(output, series, number);
 
-    return commitTradeDocument(docId, output);
+    ResponseObject response = commitTradeDocument(docId, output);
+    stopwatch.stop();
+
+    if (!response.hasErrors()) {
+      logger.info(SVC_POST_TRADE_DOCUMENT, docId,
+          buffer.getNumberOfRows(), output.getNumberOfRows(), response.getResponse(),
+          BeeUtils.bracket(stopwatch.toString()));
+    }
+
+    return response;
   }
 
   private Dimensions getDimensions(String viewName, Long id) {

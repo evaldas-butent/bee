@@ -1,10 +1,12 @@
 package com.butent.bee.shared.modules.finance;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -112,5 +114,15 @@ public final class Dimensions {
 
   public boolean isEmpty() {
     return department == null && activityType == null && costCenter == null && object == null;
+  }
+
+  @Override
+  public String toString() {
+    if (isEmpty()) {
+      return BeeConst.EMPTY;
+    } else {
+      return BeeUtils.joinOptions(COL_DEPARTMENT, department, COL_ACTIVITY_TYPE, activityType,
+          COL_COST_CENTER, costCenter, COL_OBJECT, object);
+    }
   }
 }

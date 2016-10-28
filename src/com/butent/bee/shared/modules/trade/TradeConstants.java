@@ -1,86 +1,9 @@
 package com.butent.bee.shared.modules.trade;
 
-import com.butent.bee.shared.i18n.Dictionary;
-import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class TradeConstants {
-
-  public enum OperationType implements HasLocalizedCaption {
-    PURCHASE(false, true, true) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypePurchase();
-      }
-    },
-
-    SALE(true, false, false) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypeSale();
-      }
-    },
-
-    TRANSFER(true, true, false) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypeTransfer();
-      }
-    },
-
-    WRITE_OFF(true, false, false) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypeWriteOff();
-      }
-    },
-
-    POS(true, false, false) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypePointOfSale();
-      }
-    },
-
-    CUSTOMER_RETURN(false, true, true) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypeCustomerReturn();
-      }
-    },
-
-    RETURN_TO_SUPPLIER(true, false, false) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypeReturnToSupplier();
-      }
-    };
-
-    private final boolean consumesStock;
-    private final boolean producesStock;
-
-    private final boolean providesCost;
-
-    OperationType(boolean consumesStock, boolean producesStock, boolean providesCost) {
-      this.consumesStock = consumesStock;
-      this.producesStock = producesStock;
-
-      this.providesCost = providesCost;
-    }
-
-    public boolean consumesStock() {
-      return consumesStock;
-    }
-
-    public boolean producesStock() {
-      return producesStock;
-    }
-
-    public boolean providesCost() {
-      return providesCost;
-    }
-  }
 
   public static void register() {
     EnumUtils.register(OperationType.class);

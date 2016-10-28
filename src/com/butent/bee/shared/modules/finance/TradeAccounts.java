@@ -1,10 +1,12 @@
 package com.butent.bee.shared.modules.finance;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -53,6 +55,11 @@ public final class TradeAccounts {
 
   public static TradeAccounts createAvailable(List<? extends IsColumn> columns, IsRow row) {
     Long costAccount = DataUtils.getLongQuietly(columns, row, COL_COST_ACCOUNT);
+    if (costAccount == null) {
+      costAccount = DataUtils.getLongQuietly(columns, row,
+          FinanceConstants.COL_COST_OF_MERCHANDISE);
+    }
+
     Long tradePayables = DataUtils.getLongQuietly(columns, row, COL_TRADE_PAYABLES);
     Long tradeReceivables = DataUtils.getLongQuietly(columns, row, COL_TRADE_RECEIVABLES);
     Long vatPayable = DataUtils.getLongQuietly(columns, row, COL_VAT_PAYABLE);
@@ -195,5 +202,18 @@ public final class TradeAccounts {
         && vatPayable == null && vatReceivable == null
         && salesRevenue == null && salesDiscounts == null
         && costOfGoodsSold == null && writeOffAccount == null;
+  }
+
+  @Override
+  public String toString() {
+    if (isEmpty()) {
+      return BeeConst.EMPTY;
+    } else {
+      return BeeUtils.joinOptions(COL_COST_ACCOUNT, costAccount,
+          COL_TRADE_PAYABLES, tradePayables, COL_TRADE_RECEIVABLES, tradeReceivables,
+          COL_VAT_PAYABLE, vatPayable, COL_VAT_RECEIVABLE, vatReceivable,
+          COL_SALES_REVENUE, salesRevenue, COL_SALES_DISCOUNTS, salesDiscounts,
+          COL_COST_OF_GOODS_SOLD, costOfGoodsSold, COL_WRITE_OFF_ACCOUNT, writeOffAccount);
+    }
   }
 }
