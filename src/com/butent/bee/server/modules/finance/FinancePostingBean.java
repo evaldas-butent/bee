@@ -1,7 +1,5 @@
 package com.butent.bee.server.modules.finance;
 
-import com.google.common.collect.ImmutableList;
-
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -11,12 +9,14 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.sql.SqlDelete;
+import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Dictionary;
@@ -25,13 +25,20 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.FinanceUtils;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
+import com.butent.bee.shared.modules.finance.TradeAccountsPrecedence;
+import com.butent.bee.shared.modules.finance.TradeDimensionsPrecedence;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -77,10 +84,16 @@ public class FinancePostingBean {
 
     TradeAccounts defaultAccounts = TradeAccounts.createAvailable(config, config.getRow(0));
 
-    Long defaultJournal = config.getLong(0, COL_DEFAULT_JOURNAL);
-    Long costOfMerchandise = config.getLong(0, COL_COST_OF_MERCHANDISE);
-
     int rowIndex = 0;
+    Long defaultJournal = config.getLong(rowIndex, COL_DEFAULT_JOURNAL);
+    Long costOfMerchandise = config.getLong(rowIndex, COL_COST_OF_MERCHANDISE);
+
+    List<TradeDimensionsPrecedence> dimensionsPrecedence = TradeDimensionsPrecedence
+        .parse(config.getString(rowIndex, COL_TRADE_DIMENSIONS_PRECEDENCE));
+    List<TradeAccountsPrecedence> accountsPrecedence =
+        TradeAccountsPrecedence.parse(config.getString(rowIndex, COL_TRADE_ACCOUNTS_PRECEDENCE));
+
+    rowIndex = 0;
     DateTime date = docData.getDateTime(rowIndex, COL_TRADE_DOCUMENT_RECEIVED_DATE);
     if (date == null) {
       date = docData.getDateTime(rowIndex, COL_TRADE_DATE);
@@ -111,27 +124,37 @@ public class FinancePostingBean {
     Long currency = docData.getLong(rowIndex, COL_TRADE_CURRENCY);
     Long payer = docData.getLong(rowIndex, COL_TRADE_PAYER);
 
+    Long company;
+    if (DataUtils.isId(payer)) {
+      company = payer;
+    } else if (operationType.consumesStock()) {
+      company = BeeUtils.nvl(customer, supplier);
+    } else {
+      company = BeeUtils.nvl(supplier, customer);
+    }
+
     Long warehouseFrom = docData.getLong(rowIndex, COL_TRADE_WAREHOUSE_FROM);
     Long warehouseTo = docData.getLong(rowIndex, COL_TRADE_WAREHOUSE_TO);
 
     Long manager = docData.getLong(rowIndex, COL_TRADE_MANAGER);
 
-    TradeDocumentSums tdSums = TradeDocumentSums.of(docData, docLines);
+    EnumMap<TradeDimensionsPrecedence, Dimensions> dimensions =
+        new EnumMap<>(TradeDimensionsPrecedence.class);
+    EnumMap<TradeAccountsPrecedence, TradeAccounts> accounts =
+        new EnumMap<>(TradeAccountsPrecedence.class);
 
-    Dimensions documentDimensions = Dimensions.create(docData, docData.getRow(rowIndex));
-    TradeAccounts documentAccounts = TradeAccounts.create(docData, docData.getRow(rowIndex));
+    dimensions.put(TradeDimensionsPrecedence.DOCUMENT,
+        Dimensions.create(docData, docData.getRow(rowIndex)));
+    accounts.put(TradeAccountsPrecedence.DOCUMENT,
+        TradeAccounts.create(docData, docData.getRow(rowIndex)));
 
-    Dimensions operationDimensions = getDimensions(VIEW_TRADE_OPERATIONS, operation);
-    TradeAccounts operationAccounts = getTradeAccounts(VIEW_TRADE_OPERATIONS, operation);
+    dimensions.put(TradeDimensionsPrecedence.OPERATION,
+        getDimensions(VIEW_TRADE_OPERATIONS, operation));
+    accounts.put(TradeAccountsPrecedence.OPERATION,
+        getTradeAccounts(VIEW_TRADE_OPERATIONS, operation));
 
-    Dimensions supplierDimensions = getDimensions(VIEW_COMPANIES, supplier);
-    TradeAccounts supplierAccounts = getTradeAccounts(VIEW_COMPANIES, supplier);
-
-    Dimensions customerDimensions = getDimensions(VIEW_COMPANIES, customer);
-    TradeAccounts customerAccounts = getTradeAccounts(VIEW_COMPANIES, customer);
-
-    Dimensions payerDimensions = getDimensions(VIEW_COMPANIES, payer);
-    TradeAccounts payerAccounts = getTradeAccounts(VIEW_COMPANIES, payer);
+    dimensions.put(TradeDimensionsPrecedence.COMPANY, getDimensions(VIEW_COMPANIES, company));
+    accounts.put(TradeAccountsPrecedence.COMPANY, getTradeAccounts(VIEW_COMPANIES, company));
 
     Dimensions warehouseFromDimensions = getDimensions(VIEW_WAREHOUSES, warehouseFrom);
     TradeAccounts warehouseFromAccounts = getTradeAccounts(VIEW_WAREHOUSES, warehouseFrom);
@@ -155,6 +178,10 @@ public class FinancePostingBean {
     int parentCostIndex = docLines.getColumnIndex(ALS_PARENT_COST);
     int parentCostCurrencyIndex = docLines.getColumnIndex(ALS_PARENT_COST_CURRENCY);
 
+    TradeDocumentSums tdSums = TradeDocumentSums.of(docData, docLines);
+
+    Map<Long, Long> itemCategoryTree = getItemCategoryTree();
+
     BeeRowSet buffer = new BeeRowSet(VIEW_FINANCIAL_RECORDS,
         sys.getView(VIEW_FINANCIAL_RECORDS).getRowSetColumns());
 
@@ -163,8 +190,6 @@ public class FinancePostingBean {
       boolean isService = BeeUtils.isTrue(row.getBoolean(isServiceIndex));
 
       Double quantity = row.getDouble(quantityIndex);
-
-      Long warehouse = row.getLong(warehouseIndex);
 
       Long employee = row.getLong(employeeIndex);
       if (!DataUtils.isId(employee)) {
@@ -179,22 +204,51 @@ public class FinancePostingBean {
       Double parentCost = row.getDouble(parentCostIndex);
       Long parentCostCurrency = row.getLong(parentCostCurrencyIndex);
 
+      Long lineWarehouse = row.getLong(warehouseIndex);
       Long parentWarehouse = getParentWarehouse(parent);
 
-      Dimensions lineDimensions = Dimensions.create(docLines, row);
-      TradeAccounts lineAccounts = TradeAccounts.create(docLines, row);
+      dimensions.put(TradeDimensionsPrecedence.DOCUMENT_LINE, Dimensions.create(docLines, row));
+      accounts.put(TradeAccountsPrecedence.DOCUMENT_LINE, TradeAccounts.create(docLines, row));
 
-      Dimensions itemDimensions = getDimensions(VIEW_ITEMS, item);
-      TradeAccounts itemAccounts = getTradeAccounts(VIEW_ITEMS, item);
+      dimensions.put(TradeDimensionsPrecedence.ITEM, getDimensions(VIEW_ITEMS, item));
+      accounts.put(TradeAccountsPrecedence.ITEM, getTradeAccounts(VIEW_ITEMS, item));
+
+      Long itemGroup = qs.getLongById(TBL_ITEMS, item, COL_ITEM_GROUP);
+      Long itemType = qs.getLongById(TBL_ITEMS, item, COL_ITEM_TYPE);
+      Set<Long> itemCategories = getItemCategories(item);
+
+      dimensions.put(TradeDimensionsPrecedence.ITEM_GROUP,
+          getItemCategoryDimensions(itemGroup, itemCategoryTree));
+      accounts.put(TradeAccountsPrecedence.ITEM_GROUP,
+          getItemCategoryTradeAccounts(itemGroup, itemCategoryTree));
+
+      dimensions.put(TradeDimensionsPrecedence.ITEM_TYPE,
+          getItemCategoryDimensions(itemType, itemCategoryTree));
+      accounts.put(TradeAccountsPrecedence.ITEM_TYPE,
+          getItemCategoryTradeAccounts(itemType, itemCategoryTree));
+
+      dimensions.put(TradeDimensionsPrecedence.ITEM_CATEGORY,
+          getItemCategoriesDimensions(itemCategories, itemCategoryTree));
+      accounts.put(TradeAccountsPrecedence.ITEM_CATEGORY,
+          getItemCategoriesTradeAccounts(itemCategories, itemCategoryTree));
+
+      dimensions.put(TradeDimensionsPrecedence.WAREHOUSE,
+          getWarehouseDimensions(operationType,
+              warehouseFrom, warehouseFromDimensions, warehouseTo, warehouseToDimensions,
+              lineWarehouse, parentWarehouse));
+      accounts.put(TradeAccountsPrecedence.WAREHOUSE,
+          getWarehouseTradeAccounts(operationType,
+              warehouseFrom, warehouseFromAccounts, warehouseTo, warehouseToAccounts,
+              lineWarehouse, parentWarehouse));
+
+      Dimensions dim = computeTradeDimensions(dimensionsPrecedence, dimensions);
+      TradeAccounts acc = computeTradeAccounts(accountsPrecedence, accounts, defaultAccounts);
 
       if (DataUtils.isId(parent) && BeeUtils.nonZero(parentCost)
           && DataUtils.isId(parentCostCurrency)) {
 
-        write(buffer, date, customer,
-            defaultAccounts.getCostOfGoodsSold(), costOfMerchandise,
-            parentCost * quantity, parentCostCurrency, employee,
-            Dimensions.merge(ImmutableList.of(lineDimensions, documentDimensions,
-                itemDimensions, operationDimensions)));
+        write(buffer, date, customer, acc.getCostOfGoodsSold(), costOfMerchandise,
+            parentCost * quantity, parentCostCurrency, employee, dim);
       }
     }
 
@@ -217,6 +271,90 @@ public class FinancePostingBean {
     return null;
   }
 
+  private Set<Long> getItemCategories(Long item) {
+    return qs.getDistinctLongs(TBL_ITEM_CATEGORIES, COL_CATEGORY,
+        SqlUtils.equals(TBL_ITEM_CATEGORIES, COL_ITEM, item));
+  }
+
+  private Map<Long, Long> getItemCategoryTree() {
+    Map<Long, Long> result = new HashMap<>();
+
+    String idName = sys.getIdName(TBL_ITEM_CATEGORY_TREE);
+    SqlSelect treeQuery = new SqlSelect()
+        .addFields(TBL_ITEM_CATEGORY_TREE, idName, COL_CATEGORY_PARENT)
+        .addFrom(TBL_ITEM_CATEGORY_TREE)
+        .setWhere(SqlUtils.notNull(TBL_ITEM_CATEGORY_TREE, COL_CATEGORY_PARENT));
+
+    SimpleRowSet treeData = qs.getData(treeQuery);
+    if (!DataUtils.isEmpty(treeData)) {
+      for (SimpleRowSet.SimpleRow row : treeData) {
+        result.put(row.getLong(idName), row.getLong(COL_CATEGORY_PARENT));
+      }
+    }
+
+    return result;
+  }
+
+  private Dimensions getItemCategoryDimensions(Long id, Map<Long, Long> parents) {
+    if (!DataUtils.isId(id)) {
+      return null;
+    }
+
+    Dimensions dimensions = getDimensions(VIEW_ITEM_CATEGORY_TREE, id);
+
+    Long parent = parents.get(id);
+    if (!DataUtils.isId(parent)) {
+      return dimensions;
+    }
+
+    List<Dimensions> list = new ArrayList<>();
+    list.add(dimensions);
+    list.add(getItemCategoryDimensions(parent, parents));
+
+    return Dimensions.merge(list);
+  }
+
+  private Dimensions getItemCategoriesDimensions(Collection<Long> ids, Map<Long, Long> parents) {
+    if (BeeUtils.isEmpty(ids)) {
+      return null;
+    } else {
+      return Dimensions.merge(ids.stream()
+          .map(id -> getItemCategoryDimensions(id, parents))
+          .collect(Collectors.toList()));
+    }
+  }
+
+  private TradeAccounts getItemCategoryTradeAccounts(Long id, Map<Long, Long> parents) {
+    if (!DataUtils.isId(id)) {
+      return null;
+    }
+
+    TradeAccounts tradeAccounts = getTradeAccounts(VIEW_ITEM_CATEGORY_TREE, id);
+
+    Long parent = parents.get(id);
+    if (!DataUtils.isId(parent)) {
+      return tradeAccounts;
+    }
+
+    List<TradeAccounts> list = new ArrayList<>();
+    list.add(tradeAccounts);
+    list.add(getItemCategoryTradeAccounts(parent, parents));
+
+    return TradeAccounts.merge(list);
+  }
+
+  private TradeAccounts getItemCategoriesTradeAccounts(Collection<Long> ids,
+      Map<Long, Long> parents) {
+
+    if (BeeUtils.isEmpty(ids)) {
+      return null;
+    } else {
+      return TradeAccounts.merge(ids.stream()
+          .map(id -> getItemCategoryTradeAccounts(id, parents))
+          .collect(Collectors.toList()));
+    }
+  }
+
   private TradeAccounts getTradeAccounts(String viewName, Long id) {
     if (DataUtils.isId(id)) {
       BeeRowSet rowSet = qs.getViewData(viewName, Filter.compareId(id));
@@ -234,6 +372,63 @@ public class FinancePostingBean {
     } else {
       return null;
     }
+  }
+
+  private Dimensions getWarehouseDimensions(OperationType operationType,
+      Long warehouseFrom, Dimensions warehouseFromDimensions,
+      Long warehouseTo, Dimensions warehouseToDimensions,
+      Long lineWarehouse, Long parentWarehouse) {
+
+    if (operationType.consumesStock()) {
+      if (!DataUtils.isId(parentWarehouse) || Objects.equals(parentWarehouse, warehouseFrom)) {
+        return warehouseFromDimensions;
+      } else {
+        return getDimensions(VIEW_WAREHOUSES, parentWarehouse);
+      }
+
+    } else {
+      if (!DataUtils.isId(lineWarehouse) || Objects.equals(lineWarehouse, warehouseTo)) {
+        return warehouseToDimensions;
+      } else {
+        return getDimensions(VIEW_WAREHOUSES, lineWarehouse);
+      }
+    }
+  }
+
+  private TradeAccounts getWarehouseTradeAccounts(OperationType operationType,
+      Long warehouseFrom, TradeAccounts warehouseFromAccounts,
+      Long warehouseTo, TradeAccounts warehouseToAccounts,
+      Long lineWarehouse, Long parentWarehouse) {
+
+    if (operationType.consumesStock()) {
+      if (!DataUtils.isId(parentWarehouse) || Objects.equals(parentWarehouse, warehouseFrom)) {
+        return warehouseFromAccounts;
+      } else {
+        return getTradeAccounts(VIEW_WAREHOUSES, parentWarehouse);
+      }
+
+    } else {
+      if (!DataUtils.isId(lineWarehouse) || Objects.equals(lineWarehouse, warehouseTo)) {
+        return warehouseToAccounts;
+      } else {
+        return getTradeAccounts(VIEW_WAREHOUSES, lineWarehouse);
+      }
+    }
+  }
+
+  private static Dimensions computeTradeDimensions(List<TradeDimensionsPrecedence> precedence,
+      Map<TradeDimensionsPrecedence, Dimensions> input) {
+
+    return Dimensions.merge(precedence.stream().map(input::get).collect(Collectors.toList()));
+  }
+
+  private static TradeAccounts computeTradeAccounts(List<TradeAccountsPrecedence> precedence,
+      Map<TradeAccountsPrecedence, TradeAccounts> input, TradeAccounts defaultAccounts) {
+
+    List<TradeAccounts> list = precedence.stream().map(input::get).collect(Collectors.toList());
+    list.add(defaultAccounts);
+
+    return TradeAccounts.merge(list);
   }
 
   private static void updateDocumentNumbers(BeeRowSet rowSet, String series, String number) {
