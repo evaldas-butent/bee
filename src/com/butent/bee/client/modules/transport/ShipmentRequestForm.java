@@ -331,9 +331,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
         BeeKeeper.getUser().getUserData().getCompanyPerson());
 
     SelfServiceUtils.setDefaultPerson(form, newRow, COL_COMPANY_PERSON);
-    SelfServiceUtils.setDefaultExpeditionType(form, newRow, COL_QUERY_EXPEDITION);
-    SelfServiceUtils.setDefaultShippingTerm(form, newRow, COL_SHIPPING_TERM);
-
+    
     newRow.setValue(form.getDataIndex(COL_USER_LOCALE),
         SupportedLocale.getByLanguage(SupportedLocale.normalizeLanguage(loc.languageTag()))
             .ordinal());
