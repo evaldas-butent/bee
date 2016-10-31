@@ -78,6 +78,7 @@ public class TripPurchasesGrid extends InvoiceBuilder {
         BeeKeeper.getUser().getFirstName());
     newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_MANAGER + COL_LAST_NAME),
         BeeKeeper.getUser().getLastName());
+    newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_NUMBER), BeeUtils.joinItems(trips));
 
     if (suppliers.size() == 1) {
       Map.Entry<Long, String> entry = BeeUtils.peek(suppliers.entrySet());
