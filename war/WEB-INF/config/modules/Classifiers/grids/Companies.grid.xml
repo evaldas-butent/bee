@@ -48,16 +48,16 @@
     <DataColumn name="PriceName" visible="false" />
   </g:columns>
 
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
+
+  <g:columns>
     <DataColumn name="ERPType" />
     <DataColumn name="ERPGroup" />
 
     <DataColumn name="Created" readOnly="true" />
     <RelColumn name="Creator" readOnly="true" />
 
-  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
-  <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
-
-  <g:columns>
     <DataColumn name="Notes" visible="false" />
   </g:columns>
 </g:Grid>
