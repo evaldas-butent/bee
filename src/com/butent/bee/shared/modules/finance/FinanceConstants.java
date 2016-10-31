@@ -68,9 +68,11 @@ public final class FinanceConstants {
   public static final String ALS_JOURNAL_BACKGROUND = "JournalBackground";
   public static final String ALS_JOURNAL_FOREGROUND = "JournalForeground";
 
+  public static final String ALS_DEBIT_CODE = "DebitCode";
   public static final String ALS_DEBIT_BACKGROUND = "DebitBackground";
   public static final String ALS_DEBIT_FOREGROUND = "DebitForeground";
 
+  public static final String ALS_CREDIT_CODE = "CreditCode";
   public static final String ALS_CREDIT_BACKGROUND = "CreditBackground";
   public static final String ALS_CREDIT_FOREGROUND = "CreditForeground";
 

@@ -59,6 +59,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_DISCOUNTS = "Discounts";
 
+  public static final String TBL_CHART_OF_ACCOUNTS = "ChartOfAccounts";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";

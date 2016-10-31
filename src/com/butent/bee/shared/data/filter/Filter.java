@@ -334,6 +334,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     }
   }
 
+  public static Filter equalsOrIsNull(String column, Long value) {
+    if (value == null) {
+      return isNull(column);
+    } else {
+      return or(equals(column, value), isNull(column));
+    }
+  }
+
   public static Filter exclude(String column, Collection<Long> values) {
     Filter flt = any(column, values);
     return (flt == null) ? null : isNot(flt);

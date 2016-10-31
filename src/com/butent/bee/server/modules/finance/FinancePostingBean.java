@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Dictionary;
@@ -64,7 +65,7 @@ public class FinancePostingBean {
   public ResponseObject postTradeDocument(long docId) {
     Stopwatch stopwatch = Stopwatch.createStarted();
 
-    BeeRowSet docData = qs.getViewData(VIEW_TRADE_DOCUMENTS, Filter.compareId(docId));
+    BeeRowSet docData = qs.getViewDataById(VIEW_TRADE_DOCUMENTS, docId);
 
     if (DataUtils.isEmpty(docData)) {
       Dictionary dictionary = usr.getDictionary();
@@ -114,7 +115,6 @@ public class FinancePostingBean {
     }
 
     Long operation = docData.getLong(rowIndex, COL_TRADE_OPERATION);
-    String operationName = docData.getString(rowIndex, COL_OPERATION_NAME);
 
     OperationType operationType = docData.getEnum(rowIndex, COL_OPERATION_TYPE,
         OperationType.class);
@@ -280,6 +280,7 @@ public class FinancePostingBean {
 
     updateJournal(output, defaultJournal);
     updateDocumentNumbers(output, series, number);
+    updateContents(output, operation);
 
     ResponseObject response = commitTradeDocument(docId, output);
     stopwatch.stop();
@@ -295,7 +296,7 @@ public class FinancePostingBean {
 
   private Dimensions getDimensions(String viewName, Long id) {
     if (DataUtils.isId(id)) {
-      BeeRowSet rowSet = qs.getViewData(viewName, Filter.compareId(id));
+      BeeRowSet rowSet = qs.getViewDataById(viewName, id);
 
       if (!DataUtils.isEmpty(rowSet)) {
         return Dimensions.create(rowSet, rowSet.getRow(0));
@@ -390,7 +391,7 @@ public class FinancePostingBean {
 
   private TradeAccounts getTradeAccounts(String viewName, Long id) {
     if (DataUtils.isId(id)) {
-      BeeRowSet rowSet = qs.getViewData(viewName, Filter.compareId(id));
+      BeeRowSet rowSet = qs.getViewDataById(viewName, id);
 
       if (!DataUtils.isEmpty(rowSet)) {
         return TradeAccounts.create(rowSet, rowSet.getRow(0));
@@ -462,6 +463,136 @@ public class FinancePostingBean {
     list.add(defaultAccounts);
 
     return TradeAccounts.merge(list);
+  }
+
+  private void updateContents(BeeRowSet rowSet, Long operation) {
+    if (!DataUtils.isEmpty(rowSet)) {
+      int contentIndex = rowSet.getColumnIndex(COL_FIN_CONTENT);
+
+      int debitIndex = rowSet.getColumnIndex(COL_FIN_DEBIT);
+      int creditIndex = rowSet.getColumnIndex(COL_FIN_CREDIT);
+
+      Map<String, String> contentTranslationColumns =
+          sys.getView(rowSet.getViewName()).getTranslationColumns(COL_FIN_CONTENT);
+
+      int precision = rowSet.getColumn(contentIndex).getPrecision();
+
+      int updated = 0;
+
+      for (BeeRow row : rowSet) {
+        Long debit = row.getLong(debitIndex);
+        Long credit = row.getLong(creditIndex);
+
+        if (BeeUtils.isEmpty(row.getString(contentIndex))
+            && FinanceUtils.isValidEntry(debit, credit)) {
+
+          BeeRowSet contents = getContents(debit, credit, Dimensions.create(rowSet, row));
+          if (!DataUtils.isEmpty(contents)) {
+            int rowIndex = 0;
+            row.setValue(contentIndex,
+                clampContent(contents.getString(rowIndex, COL_FIN_CONTENT), precision));
+
+            if (!BeeUtils.isEmpty(contentTranslationColumns)) {
+              for (String colName : contentTranslationColumns.values()) {
+                int sourceIndex = contents.getColumnIndex(colName);
+                int targetIndex = rowSet.getColumnIndex(colName);
+
+                if (sourceIndex >= 0 && targetIndex >= 0) {
+                  row.setValue(targetIndex,
+                      clampContent(contents.getString(rowIndex, sourceIndex), precision));
+                }
+              }
+            }
+
+            updated++;
+          }
+        }
+      }
+
+      if (updated < rowSet.getNumberOfRows() && DataUtils.isId(operation)) {
+        BeeRowSet operationData = qs.getViewDataById(VIEW_TRADE_OPERATIONS, operation);
+
+        if (!DataUtils.isEmpty(operationData)) {
+          int operationNameIndex = operationData.getColumnIndex(COL_OPERATION_NAME);
+          Map<String, String> operationNameTranslationColumns =
+              sys.getView(operationData.getViewName()).getTranslationColumns(COL_OPERATION_NAME);
+
+          int rowIndex = 0;
+
+          Map<Integer, String> values = new HashMap<>();
+          values.put(contentIndex,
+              clampContent(operationData.getString(rowIndex, operationNameIndex), precision));
+
+          if (!BeeUtils.isEmpty(operationNameTranslationColumns)
+              && !BeeUtils.isEmpty(contentTranslationColumns)) {
+
+            operationNameTranslationColumns.forEach((locale, colName) -> {
+              if (contentTranslationColumns.containsKey(locale)) {
+                int sourceIndex = operationData.getColumnIndex(colName);
+                int targetIndex = rowSet.getColumnIndex(contentTranslationColumns.get(locale));
+
+                if (sourceIndex >= 0 && targetIndex >= 0) {
+                  String value = operationData.getString(rowIndex, sourceIndex);
+                  if (!BeeUtils.isEmpty(value)) {
+                    values.put(targetIndex, clampContent(value, precision));
+                  }
+                }
+              }
+            });
+          }
+
+          for (BeeRow row : rowSet) {
+            if (BeeUtils.isEmpty(row.getString(contentIndex))) {
+              values.forEach(row::setValue);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private BeeRowSet getContents(Long debit, Long credit, Dimensions dimensions) {
+    String debitCode = qs.getValueById(TBL_CHART_OF_ACCOUNTS, debit, COL_ACCOUNT_CODE);
+    String creditCode = qs.getValueById(TBL_CHART_OF_ACCOUNTS, credit, COL_ACCOUNT_CODE);
+
+    CompoundFilter filter = Filter.and();
+    filter.add(getContentsAccountFilter(debitCode, ALS_DEBIT_CODE));
+    filter.add(getContentsAccountFilter(creditCode, ALS_CREDIT_CODE));
+
+    if (dimensions != null) {
+      filter.add(dimensions.getFilter());
+    }
+
+    return qs.getViewData(VIEW_FINANCE_CONTENTS, filter);
+  }
+
+  private static Filter getContentsAccountFilter(String code, String column) {
+    if (BeeUtils.isEmpty(code)) {
+      return Filter.isFalse();
+    }
+
+    CompoundFilter filter = Filter.or();
+    int length = BeeUtils.trimRight(code).length();
+
+    for (int i = 1; i <= length; i++) {
+      String value = code.substring(0, i);
+
+      if (!BeeUtils.isEmpty(value)) {
+        filter.add(Filter.equals(column, value));
+      }
+    }
+
+    return filter;
+  }
+
+  private static String clampContent(String value, int precision) {
+    if (BeeUtils.isEmpty(value)) {
+      return null;
+    } else if (precision > 0) {
+      return BeeUtils.left(value.trim(), precision);
+    } else {
+      return value.trim();
+    }
   }
 
   private static void updateDocumentNumbers(BeeRowSet rowSet, String series, String number) {
