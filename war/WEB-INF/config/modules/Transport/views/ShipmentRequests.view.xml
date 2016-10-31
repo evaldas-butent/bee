@@ -72,6 +72,10 @@
       </ExternalJoin>
 
       <SimpleColumn name="Order" />
+      <SimpleJoin name="Order" joinType="LEFT">
+        <SimpleColumn name="OrderNo" alias="TransportationOrderNo" />
+      </SimpleJoin>
+
       <xi:include href="viewcolumns/CargoInfo.viewcolumns.xml" />
     </SimpleJoin>
 

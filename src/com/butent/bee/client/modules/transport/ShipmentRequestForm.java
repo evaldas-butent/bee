@@ -219,7 +219,7 @@ class ShipmentRequestForm extends CargoPlaceUnboundForm {
       if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
         if (!isRegistered()) {
           header.addCommandItem(registerCommand);
-        } else if (!ShipmentRequestStatus.REJECTED.is(status)) {
+        } else if (ShipmentRequestStatus.ANSWERED.is(status)) {
           header.addCommandItem(confirmCommand);
         }
         header.addCommandItem(lostCommand);

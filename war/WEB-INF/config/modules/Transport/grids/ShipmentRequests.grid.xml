@@ -11,6 +11,8 @@
     <DataColumn name="Date" />
     <DataColumn name="Status" />
 
+    <DataColumn name="TransportationOrderNo" />
+
     <DataColumn name="CustomerName" />
     <DataColumn name="CustomerCode" />
     <DataColumn name="CustomerVatCode" />
