@@ -132,7 +132,7 @@ public class SelfServiceScreen extends ScreenImpl {
         event -> openRequests()));
 
     addCommandItem(new Button(Localized.dictionary().ecInvoices(),
-        event -> openGrid(VIEW_CARGO_INVOICES, Filter.or(
+        event -> openGrid(GRID_SELF_SERVICE_INVOICES, Filter.or(
             Filter.equals(TradeConstants.COL_TRADE_CUSTOMER, BeeKeeper.getUser().getCompany()),
             Filter.equals(TradeConstants.COL_SALE_PAYER, BeeKeeper.getUser().getCompany())),
             new AbstractGridInterceptor() {

@@ -931,6 +931,8 @@ public final class TransportConstants {
   public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";
   public static final String GRID_SHIPMENT_REQUESTS = "ShipmentRegisteredRequests";
 
+  public static final String GRID_SELF_SERVICE_INVOICES = "SelfServiceInvoices";
+
   public static final String PROP_COLORS = "Colors";
   public static final String PROP_COUNTRIES = "Countries";
   public static final String PROP_CITIES = "Cities";
