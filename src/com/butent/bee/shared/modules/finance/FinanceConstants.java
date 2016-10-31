@@ -7,11 +7,13 @@ public final class FinanceConstants {
   public static final String TBL_FINANCIAL_RECORDS = "FinancialRecords";
 
   public static final String TBL_FINANCE_CONFIGURATION = "FinanceConfiguration";
+  public static final String TBL_FINANCE_CONTENTS = "FinanceContents";
   public static final String TBL_FINANCE_DISTRIBUTION = "FinanceDistribution";
 
   public static final String VIEW_FINANCIAL_RECORDS = "FinancialRecords";
 
   public static final String VIEW_FINANCE_CONFIGURATION = "FinanceConfiguration";
+  public static final String VIEW_FINANCE_CONTENTS = "FinanceContents";
 
   public static final String VIEW_FINANCE_DISTRIBUTION = "FinanceDistribution";
   public static final String VIEW_FINANCE_DISTRIBUTION_OF_ITEMS = "FinanceDistributionOfItems";
@@ -93,6 +95,8 @@ public final class FinanceConstants {
       "FinanceDistributionOfTradeOperations";
   public static final String GRID_FINANCE_DISTRIBUTION_OF_TRADE_DOCUMENTS =
       "FinanceDistributionOfTradeDocuments";
+
+  public static final String GRID_FINANCE_CONTENTS = "FinanceContents";
 
   public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
   public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";

@@ -2727,6 +2727,8 @@ public interface Dictionary {
 
   default String finContent() {return g("finContent");}
 
+  default String finContents() {return g("finContents");}
+
   default String finCostAccount() {return g("finCostAccount");}
 
   default String finCostOfGoodsSold() {return g("finCostOfGoodsSold");}
@@ -3467,6 +3469,8 @@ public interface Dictionary {
   default String newEmailAddress() {return g("newEmailAddress");}
 
   default String newEmployee() {return g("newEmployee");}
+
+  default String newFinContent() {return g("newFinContent");}
 
   default String newFinDistribution() {return g("newFinDistribution");}
 

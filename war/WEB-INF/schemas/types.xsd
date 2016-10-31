@@ -374,6 +374,7 @@
       <xs:enumeration value="FamilyRelationTypes" />
       <xs:enumeration value="Filters" />
       <xs:enumeration value="FinanceConfiguration" />
+      <xs:enumeration value="FinanceContents" />
       <xs:enumeration value="FinanceDistribution" />
       <xs:enumeration value="FinanceDistributionOfItems" />
       <xs:enumeration value="FinanceDistributionOfTradeDocuments" />

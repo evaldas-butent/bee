@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="FinanceContents" viewName="FinanceContents"
+        caption="=finContents"
+>
+  <g:columns>
+
+    <RelColumn name="Debit" renderColumns="DebitCode" choiceColumns="AccountCode AccountName"
+               newRowEnabled="false" visible="true" />
+
+    <RelColumn name="Credit" renderColumns="CreditCode" choiceColumns="AccountCode AccountName"
+               newRowEnabled="false" visible="true" />
+
+    <DataColumn name="Content" flexGrow="1" visible="true" />
+  </g:columns>
+
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+</g:Grid>

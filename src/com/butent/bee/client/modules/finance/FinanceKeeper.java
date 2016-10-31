@@ -45,6 +45,9 @@ public final class FinanceKeeper {
 
     registerDebitCreditColor(gridNames, COL_FIN_DEBIT, COL_FIN_CREDIT, viewName);
 
+    registerDebitCreditColor(Collections.singleton(GRID_FINANCE_CONTENTS),
+        COL_FIN_DEBIT, COL_FIN_CREDIT, VIEW_FINANCE_CONTENTS);
+
     gridNames = ImmutableList.of(GRID_ITEM_FINANCE_DISTRIBUTION,
         GRID_TRADE_OPERATION_FINANCE_DISTRIBUTION, GRID_TRADE_DOCUMENT_FINANCE_DISTRIBUTION);
     viewName = VIEW_FINANCE_DISTRIBUTION;
