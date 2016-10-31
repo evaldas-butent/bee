@@ -6,8 +6,7 @@
       editForm="OrderCargo"
       caption="=cargos"
     >
-  <Relation renderColumns="Description"
-            choiceColumns="Description LoadingDate LoadingCountryCode UnloadingDate UnloadingCountryCode" />
+  <Relation renderColumns="Description" />
   <Columns>
     <SimpleColumn name="Order" />
     <SimpleJoin joinType="LEFT" name="Order">
@@ -54,7 +53,4 @@
 
     <SimpleColumn name="CmrCopy" />
   </Columns>
-  <Order>
-    <OrderBy column="LoadingDate" />
-  </Order>
 </View>

@@ -225,6 +225,19 @@ public final class RowFactory {
     createRow(formName, caption, dataInfo, row, modality, null, null, null, rowCallback);
   }
 
+  public static void createRowUsingForm(String viewName, String formName, RowCallback rowCallback) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(formName);
+
+    DataInfo dataInfo = Data.getDataInfo(viewName);
+
+    if (dataInfo != null) {
+      BeeRow row = createEmptyRow(dataInfo, true);
+      createRow(formName, dataInfo.getNewRowCaption(),
+          dataInfo, row, DEFAULT_MODALITY, null, null, null, rowCallback);
+    }
+  }
+
   public static void showMenu(Widget target) {
     Vertical panel = new Vertical();
     panel.addStyleName(STYLE_MENU_PANEL);
@@ -306,7 +319,7 @@ public final class RowFactory {
 
     return DataUtils.setDefaults(row, colNames, dataInfo.getColumns(), Global.getDefaults())
         + RelationUtils.setDefaults(dataInfo, row, colNames, dataInfo.getColumns(),
-            BeeKeeper.getUser().getUserData());
+        BeeKeeper.getUser().getUserData());
   }
 
   private static FormDescription createFormDescription(String formName, DataInfo dataInfo,

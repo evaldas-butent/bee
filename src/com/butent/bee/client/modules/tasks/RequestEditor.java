@@ -765,11 +765,13 @@ public class RequestEditor extends ProductSupportInterceptor {
         height = 600;
       }
       split.addNorth(requestWidget, height + 60);
+      StyleUtils.autoWidth(requestWidget.getElement());
       split.updateCenter(requestComments);
 
     } else {
       Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_REQUEST_TREE));
       split.addWest(requestWidget, size == null ? 650 : size);
+      StyleUtils.autoHeight(requestWidget.getElement());
       split.updateCenter(requestComments);
     }
   }

@@ -35,6 +35,7 @@
 
     <Boolean name="MultipleSegments" label="Kelios atkarpos" />
 
+    <!--TODO: remove-->
     <Relation name="CargoHandling" unique="true" relation="CargoHandling" cascade="SET_NULL"
               editable="true" label="=cargoHandlingPlaces" />
 

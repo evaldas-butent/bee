@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="CargoPlaces"
-  idName="PlaceID"
-  >
+       name="CargoPlaces"
+       idName="PlaceID"
+>
   <Fields>
+    <Numeric name="Ordinal" precision="2" scale="0" label="=ordinal" />
+
     <DateTime name="Date" label="=date" />
     <String name="Number" precision="50" label="=ref" />
     <String name="Contact" precision="50" label="=contact" />
@@ -14,5 +16,9 @@
     <Relation name="City" relation="Cities" label="=city" />
     <Relation name="Country" relation="Countries" label="=country" />
     <Text name="Note" label="=note" />
+
+    <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
+    <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
+    <Numeric name="Weight" precision="10" scale="3" label="=trWeightInTons" />
   </Fields>
 </Table>

@@ -133,6 +133,21 @@ public final class ConditionalStyle {
     return gridRowStyleProviders.get(gridName);
   }
 
+  public static void registerGridColumnColorProvider(Collection<String> gridNames,
+      Collection<String> columnNames, String viewName, String bgName, String fgName) {
+
+    Assert.notEmpty(gridNames);
+    Assert.notEmpty(columnNames);
+
+    ColorStyleProvider styleProvider = ColorStyleProvider.create(viewName, bgName, fgName);
+
+    for (String gridName : gridNames) {
+      for (String columnName : columnNames) {
+        registerGridColumnStyleProvider(gridName, columnName, styleProvider);
+      }
+    }
+  }
+
   public static void registerGridColumnStyleProvider(String gridName, String columnName,
       StyleProvider styleProvider) {
     Assert.notEmpty(gridName);

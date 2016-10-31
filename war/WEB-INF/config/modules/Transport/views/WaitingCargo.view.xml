@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+<View xmlns="http://www.butent.com/view"
       name="WaitingCargo"
       source="OrderCargo"
       readOnly="true"
       filter="!(Cargo) OR MultipleSegments"
-    >
+>
   <Columns>
     <SimpleJoin name="Order" joinType="INNER">
       <SimpleColumn name="Status" />
@@ -15,10 +15,6 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleJoin name="CargoHandling" joinType="LEFT">
-      <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
-    </SimpleJoin>
-
     <SimpleColumn name="Description" />
     <SimpleColumn name="MultipleSegments" />
 
@@ -26,7 +22,4 @@
       <AggregateColumn name="Cargo" aggregate="MIN"/>
     </ExternalJoin>
   </Columns>
-  <Order>
-    <OrderBy column="LoadingDate" />
-  </Order>
 </View>

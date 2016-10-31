@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <RelColumn name="DebitReplacement" renderColumns="DebitReplacementCode"
+             choiceColumns="AccountCode AccountName" newRowEnabled="false" />
+  <RelColumn name="CreditReplacement" renderColumns="CreditReplacementCode"
+             choiceColumns="AccountCode AccountName" newRowEnabled="false" />
+</g:columns>

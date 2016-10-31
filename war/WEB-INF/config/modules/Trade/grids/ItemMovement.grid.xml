@@ -6,7 +6,7 @@
         readOnly="true" autoFlex="true"
 >
   <g:columns>
-    <DataColumn name="TradeDocument" editSource="TradeDocument" editViewName="TradeDocuments" />
+    <DataColumn name="TradeDocument" caption="=trdDocumentShort" editEnabled="true" />
 
     <DataColumn name="Date" visible="true" />
 

@@ -4,6 +4,7 @@
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="Trip" viewName="Trips" caption="=trip"
         width="900" height="600"
@@ -68,45 +69,64 @@
       <page>
         <text>=transportTripMainData</text>
         <FlowPanel class="flexBox-horizontal">
-          <FlowPanel style="margin-left: 1em">
-            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-              <Label text="=transportDeparture" style="font-weight: bold;" />
-              <Label text="=transportArrival" style="font-weight: bold;" />
-            </FlowPanel>
-
-            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-              <SimplePanel>
-                <InputDate source="DateFrom" style="width: 7em;" summarize="true" />
-              </SimplePanel>
-              <Label text="=date" class="flexible" style="text-align:center; margin:0 1em;" />
-              <SimplePanel>
-                <InputDate source="DateTo" style="width: 7em;" summarize="true" />
-              </SimplePanel>
-            </FlowPanel>
-
-            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-              <SimplePanel>
-                <InputDouble source="SpeedometerBefore" style="width: 6em;" summarize="true" />
-              </SimplePanel>
+          <Table kind="output" style="text-align:center; margin-left: 1em;" cellStyle="padding-bottom: 1ex;">
+            <col index="0" cellStyle="text-align:left; " />
+            <col index="2" cellStyle="text-align:right;" />
+            <col index="3" cellStyle="text-align:left; white-space: nowrap;" />
+            <row>
+              <Label text="=transportDeparture" style="font-weight: bold;"/>
+              <text />
+              <Label text="=transportArrival" style="font-weight: bold;"/>
+            </row>
+            <row>
+              <InputDate source="DateFrom" style="width: 7em;" summarize="true" />
+              <Label text="=date" class="flexible" style="text-align:center;" />
+              <InputDate source="DateTo" style="width: 7em;" summarize="true" />
+              <TextLabel>
+                <render>
+                  <ui:expression>
+                    row.DateFrom &amp;&amp; row.DateTo ? "( " +
+                      (Math.floor((row.DateTo - row.DateFrom) / (1000 * 24 * 3600)) + 1) + " )" : ''
+                  </ui:expression>
+                </render>
+              </TextLabel>
+            </row>
+            <row>
+              <InputDouble source="SpeedometerBefore" style="width: 6em;" summarize="true" />
               <Label text="=transportSpeedometer" class="flexible"
                      style="text-align:center; margin:0 1em;" />
-              <SimplePanel>
-                <InputDouble source="SpeedometerAfter" style="width: 6em;" summarize="true" />
-              </SimplePanel>
-            </FlowPanel>
+              <InputDouble source="SpeedometerAfter" style="width: 6em;" summarize="true" />
+              <TextLabel>
+                <render>
+                  <ui:function>
+                    if ((row.SpeedometerBefore || row.SpeedometerBefore == 0)
+                      &amp;&amp; (row.SpeedometerAfter || row.SpeedometerAfter == 0)) {
+                      var difference = row.SpeedometerAfter - row.SpeedometerBefore;
 
-            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-              <SimplePanel>
-                <InputDecimal source="FuelBefore" style="width: 5em;" summarize="true" />
-              </SimplePanel>
+                      if (difference &lt; 0) {
+                        var maxValue = Math.pow(10, Math.floor(row.SpeedometerBefore).toString().length);
+                        difference = maxValue + difference;
+                      }
+                      return "( " + difference + " )";
+                    }
+                    return "";
+                  </ui:function>
+                </render>
+              </TextLabel>
+            </row>
+            <row>
+              <InputDecimal source="FuelBefore" style="width: 5em;" summarize="true" />
               <Label text="=transportFuelBalanceInTank" class="flexible"
                      style="text-align:center; margin:0 1em;" />
-              <SimplePanel>
-                <InputDecimal source="FuelAfter" style="width: 5em;" summarize="true" />
-              </SimplePanel>
-            </FlowPanel>
-            <InputArea source="Notes" placeholder="=notes" style="width:100%;" visibleLines="5" />
-          </FlowPanel>
+              <InputDecimal source="FuelAfter" style="width: 5em;" summarize="true" />
+              <TextLabel name="FuelConsumptions"/>
+            </row>
+            <row>
+              <cell colSpan="3">
+                <InputArea source="Notes" placeholder="=notes" style="width:100%;" visibleLines="5" />
+              </cell>
+            </row>
+          </Table>
 
           <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em;">
             <ChildGrid name="DriverAdvances" parent="TripDrivers" relColumn="Driver"

@@ -22,7 +22,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -149,13 +148,13 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           });
           break;
 
-        case VIEW_CARGO_HANDLING:
+        case TBL_CARGO_LOADING:
+        case TBL_CARGO_UNLOADING:
           ((ChildGrid) widget).addReadyHandler(re -> {
-            GridView gridView = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
+            GridView gridView = ViewHelper.getChildGrid(getFormView(), name);
 
             if (gridView != null) {
-              gridView.getGrid().addMutationHandler(mu ->
-                  refreshKilometers(getActiveRow(), null, null));
+              gridView.getGrid().addMutationHandler(mu -> refreshKilometers());
             }
           });
           break;
@@ -174,7 +173,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     refresh(row.getLong(form.getDataIndex(COL_CURRENCY)));
-    refreshKilometers(row, null, null);
+    refreshKilometers();
 
     Widget cmrWidget = form.getWidgetBySource(COL_CARGO_CMR);
     if (cmrWidget instanceof DataSelector) {
@@ -201,16 +200,6 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   public void onDataSelector(SelectorEvent event) {
     if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES) && event.isOpened()) {
       event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getActiveRowId()));
-    }
-  }
-
-  @Override
-  public void onEditEnd(EditEndEvent event, Object source) {
-    String colId = event.getColumnId();
-    if ((COL_EMPTY_KILOMETERS.equals(colId) || COL_LOADED_KILOMETERS.equals(colId)
-        || COL_UNPLANNED_KILOMETERS.equals(colId))
-        && event.valueChanged()) {
-      refreshKilometers(getActiveRow(), colId, BeeUtils.toIntOrNull(event.getNewValue()));
     }
   }
 
@@ -301,26 +290,17 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     }
   }
 
-  private void refreshKilometers(IsRow row, String colId, Integer km) {
-    if (row == null) {
-      return;
-    }
+  private void refreshKilometers() {
+    Integer emptyKm = null;
+    Integer loadedKm = null;
 
-    Integer emptyKm = COL_EMPTY_KILOMETERS.equals(colId)
-        ? km : getIntegerValue(COL_EMPTY_KILOMETERS);
-    Integer loadedKm = BeeUtils.unbox(COL_LOADED_KILOMETERS.equals(colId)
-        ? km : getIntegerValue(COL_LOADED_KILOMETERS));
-    loadedKm += BeeUtils.unbox(COL_UNPLANNED_KILOMETERS.equals(colId)
-        ? km : getIntegerValue(COL_UNPLANNED_KILOMETERS));
-
-    if (DataUtils.hasId(row)) {
-      GridView grid = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
+    for (String view : new String[] {TBL_CARGO_LOADING, TBL_CARGO_UNLOADING}) {
+      GridView grid = ViewHelper.getChildGrid(getFormView(), view);
 
       if (grid != null && !grid.isEmpty()) {
         List<? extends IsRow> childRows = grid.getRowData();
         int emptyKmIndex = grid.getDataIndex(COL_EMPTY_KILOMETERS);
         int loadedKmIndex = grid.getDataIndex(COL_LOADED_KILOMETERS);
-        int unplannedKmIndex = grid.getDataIndex(COL_UNPLANNED_KILOMETERS);
 
         for (IsRow childRow : childRows) {
           Integer v = childRow.getInteger(emptyKmIndex);
@@ -340,24 +320,13 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
               loadedKm += v;
             }
           }
-
-          v = childRow.getInteger(unplannedKmIndex);
-          if (v != null) {
-            if (loadedKm == null) {
-              loadedKm = v;
-            } else {
-              loadedKm += v;
-            }
-          }
         }
       }
     }
-
     Widget widget = getFormView().getWidgetByName("TotalEmpty");
     if (widget instanceof IntegerLabel) {
       ((IntegerLabel) widget).setValue(emptyKm);
     }
-
     widget = getFormView().getWidgetByName("TotalLoaded");
     if (widget instanceof IntegerLabel) {
       ((IntegerLabel) widget).setValue(loadedKm);

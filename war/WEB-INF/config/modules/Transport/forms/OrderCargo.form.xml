@@ -6,7 +6,6 @@
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
-        xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="OrderCargo" viewName="OrderCargo" caption="=cargo" showRowId="true"
         width="900" height="870"
@@ -54,64 +53,55 @@
 
     <TabbedPages class="flexible" resizable="false">
       <page>
+        <text>=cargoHandlingPlaces</text>
+        <FlowPanel class="flexBox-vertical">
+          <ChildGrid name="CargoLoading" relColumn="Cargo" class="flexible" />
+          <ChildGrid name="CargoUnloading" relColumn="Cargo" class="flexible" />
+        </FlowPanel>
+      </page>
+      <page>
         <text>=cargoInformation</text>
         <FlowPanel style="overflow:auto;">
-          <FlowPanel class="flexBox-horizontal-center">
-            <xi:include href="widgets/CargoPlaces.widget.xml" />
-
-            <Table kind="controls">
-              <col index="0" kind="label" />
-              <row>
-                <text />
-                <CheckBox source="MultipleSegments" />
-              </row>
-              <row>
-                <Label for="ExchangeOfPalettes" />
-                <InputInteger source="ExchangeOfPalettes" style="&decimal;" />
-              </row>
-              <row>
-                <Label for="Palettes" />
-                <InputInteger source="Palettes" style="&decimal;" />
-              </row>
-              <row>
-                <text />
-                <CheckBox source="Dangerous" />
-              </row>
-              <row>
-                <text />
-                <CheckBox source="Outsized" />
-              </row>
-              <row>
-                <text />
-                <CheckBox source="Partial" />
-              </row>
-              <row>
-                <Label for="Length" />
-                <InputDecimal source="Length" style="&decimal;" />
-              </row>
-              <row>
-                <Label for="Width" />
-                <InputDecimal source="Width" style="&decimal;" />
-              </row>
-              <row>
-                <Label for="Height" />
-                <InputDecimal source="Height" style="&decimal;" />
-              </row>
-              <row>
-                <Label for="LDM" />
-                <InputDecimal source="LDM" style="&decimal;" />
-              </row>
-              <row>
+          <Table kind="controls">
+            <col index="0" kind="label" />
+            <row>
+              <text />
+              <CheckBox source="MultipleSegments" />
+            </row>
+            <row>
+              <Label for="ExchangeOfPalettes" />
+              <InputInteger source="ExchangeOfPalettes" style="&decimal;" />
+              <cell rowSpan="2">
+                <FlowPanel>
+                  <CheckBox source="Partial" style="display:block;" />
+                  <CheckBox source="Outsized" style="display:block;" />
+                  <CheckBox source="Dangerous" style="display:block;" />
+                </FlowPanel>
+              </cell>
+              <Label for="Length" />
+              <InputDecimal source="Length" style="&decimal;" />
+            </row>
+            <row>
+              <Label for="Palettes" />
+              <InputInteger source="Palettes" style="&decimal;" />
+              <Label for="Width" />
+              <InputDecimal source="Width" style="&decimal;" />
+            </row>
+            <row>
+              <cell rowSpan="2">
                 <Label for="Directions" />
-                <InputArea source="Directions" visibleLines="3" style="width:200px;" />
-              </row>
-            </Table>
-          </FlowPanel>
-
-          <Disclosure>
-            <Summary text="=trAdditionalHandlingPlaces" />
-            <ChildGrid name="CargoHandling" caption="-" relColumn="Cargo" style="height:200px;" />
-          </Disclosure>
+              </cell>
+              <cell colSpan="2" rowSpan="2">
+                <InputArea source="Directions" visibleLines="3" style="width:100%;" />
+              </cell>
+              <Label for="Height" />
+              <InputDecimal source="Height" style="&decimal;" />
+            </row>
+            <row>
+              <Label for="LDM" />
+              <InputDecimal source="LDM" style="&decimal;" />
+            </row>
+          </Table>
 
           &separator;
 

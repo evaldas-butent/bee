@@ -3281,7 +3281,7 @@ public final class BeeUtils {
    * @return unboxed double value or 0 if {@code box} is null
    */
   public static double unbox(Double box) {
-    return (box == null) ? 0 : box;
+    return (box == null) ? BeeConst.DOUBLE_ZERO : box;
   }
 
   /**

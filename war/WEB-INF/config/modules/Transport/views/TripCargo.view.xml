@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+<View xmlns="http://www.butent.com/view"
 
-      name="TripCargo"
-      source="CargoTrips"
+      name="TripCargo" source="CargoTrips" caption="=trip+ +=cargos"
 >
   <Columns>
     <SimpleColumn name="Trip" />
@@ -37,31 +36,7 @@
         <SimpleColumn name="Number" alias="CmrNumber" />
       </SimpleJoin>
 
-      <SimpleColumn name="Notes" editable="true"/>
-      <HiddenColumn name="CargoHandling" alias="DefaultHandling" />
-
-      <ExternalJoin name="Cargo" joinType="LEFT" source="CargoIncomes">
-        <SimpleJoin name="Sale" joinType="LEFT">
-          <AggregateColumn name="InvoiceNo" aggregate="MAX" />
-        </SimpleJoin>
-      </ExternalJoin>
-
-      <SimpleColumn name="Directions" editable="true"/>
-      <SimpleColumn name="CmrCopy" editable="true" />
-    </SimpleJoin>
-
-    <SimpleColumn name="CargoHandling" />
-    <SimpleJoin name="CargoHandling" joinType="LEFT"
-                filter="OR !(CargoHandling) AND Handling=DefaultHandling">
-
-      <IdColumn name="Handling" hidden="true" />
-
-      <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
-
-      <SimpleColumn name="EmptyKilometers" />
-      <SimpleColumn name="LoadedKilometers" />
-      <SimpleColumn name="UnplannedKilometers" />
-      <SimpleColumn name="Weight" alias="CargoWeight" />
+      <SimpleColumn name="Notes" />
     </SimpleJoin>
 
     <SimpleColumn name="Trailer" />
@@ -71,7 +46,5 @@
   </Columns>
   <Order>
     <OrderBy column="Ordinal" />
-    <OrderBy column="LoadingDate" />
-    <OrderBy column="UnloadingDate" />
   </Order>
 </View>

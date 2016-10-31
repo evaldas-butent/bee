@@ -105,8 +105,13 @@
           </page>
 
           <page module="Finance">
+            <text>=finDistributionShort</text>
+            <ChildGrid name="TradeDocumentFinanceDistribution" relColumn="TradeDocument" />
+          </page>
+
+          <page module="Finance">
             <text>=financialRecords</text>
-            <ChildGrid name="TradeFinancialRecords" relColumn="TradeDocument" />
+            <ChildGrid name="TradeDocumentFinancialRecords" relColumn="TradeDocument" />
           </page>
 
           <page>

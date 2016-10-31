@@ -114,6 +114,18 @@
   -ms-flex-pack: justify;
 }
 
+.flexBox-horizontal-space-around {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+}
+
 .flexBox-vertical,
 .bee-TreeView,
 .bee-TabbedPages-container,

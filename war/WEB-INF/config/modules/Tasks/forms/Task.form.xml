@@ -39,7 +39,8 @@
 
                 <row>
                   <Label for="Summary" />
-                  <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" maxLength="70" />
+                  <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true"
+                             maxLength="70" />
                 </row>
 
                 <row for="Description">

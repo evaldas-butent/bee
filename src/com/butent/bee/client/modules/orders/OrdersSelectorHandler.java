@@ -85,8 +85,8 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
       }
 
       ParameterList params = OrdersKeeper.createSvcArgs(SVC_GET_TEMPLATE_ITEMS);
-
       params.addQueryItem(COL_TEMPLATE, templRow.getId());
+
       if (DataUtils.hasId(targetRow)) {
         params.addQueryItem(COL_ORDER, targetRow.getId());
       }
@@ -155,8 +155,7 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
     int ordIndex = orderItems.getColumnIndex(COL_ORDER);
     int qtyIndex = orderItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
-    boolean qtyNullable = BeeConst.isUndef(qtyIndex)
-        ? true : orderItems.getColumn(qtyIndex).isNullable();
+    boolean qtyNullable = BeeConst.isUndef(qtyIndex) || orderItems.getColumn(qtyIndex).isNullable();
 
     for (BeeRow templItem : templChildren) {
       BeeRow ordItem = DataUtils.createEmptyRow(orderItems.getNumberOfColumns());

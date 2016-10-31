@@ -220,8 +220,6 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_TRIPS, new CargoTripChecker());
     GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
 
-    GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoHandlingGrid());
-
     GridFactory.registerGridInterceptor("CargoDocuments", new TransportDocumentsGrid(COL_CARGO));
     GridFactory.registerGridInterceptor("TranspOrderDocuments",
         new TransportDocumentsGrid(COL_TRANSPORTATION_ORDER));
@@ -285,6 +283,7 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_TRIP_PURCHASE_INVOICE, new InvoiceForm(null));
 
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_PLACE, new CargoPlaceForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_PLACE_UNBOUND, new CargoPlaceUnboundForm());
 
     FormFactory.registerFormInterceptor(FORM_VEHICLE, new VehicleForm());

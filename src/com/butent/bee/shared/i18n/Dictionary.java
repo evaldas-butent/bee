@@ -923,6 +923,10 @@ public interface Dictionary {
 
   default String creditLimit() {return g("creditLimit");}
 
+  default String creditReplacement() {return g("creditReplacement");}
+
+  default String creditReplacementShort() {return g("creditReplacementShort");}
+
   default String creditSeries() {return g("creditSeries");}
 
   default String creditSeriesShort() {return g("creditSeriesShort");}
@@ -1470,6 +1474,10 @@ public interface Dictionary {
   default String debitDocument() {return g("debitDocument");}
 
   default String debitDocumentShort() {return g("debitDocumentShort");}
+
+  default String debitReplacement() {return g("debitReplacement");}
+
+  default String debitReplacementShort() {return g("debitReplacementShort");}
 
   default String debitSeries() {return g("debitSeries");}
 
@@ -2717,7 +2725,11 @@ public interface Dictionary {
 
   default String finCashInBank() {return g("finCashInBank");}
 
+  default String finConfiguration() {return g("finConfiguration");}
+
   default String finContent() {return g("finContent");}
+
+  default String finContents() {return g("finContents");}
 
   default String finCostAccount() {return g("finCostAccount");}
 
@@ -2729,6 +2741,16 @@ public interface Dictionary {
 
   default String finDefaultJournal() {return g("finDefaultJournal");}
 
+  default String finDistribution() {return g("finDistribution");}
+
+  default String finDistributionOfItems() {return g("finDistributionOfItems");}
+
+  default String finDistributionOfTradeDocuments() {return g("finDistributionOfTradeDocuments");}
+
+  default String finDistributionOfTradeOperations() {return g("finDistributionOfTradeOperations");}
+
+  default String finDistributionShort() {return g("finDistributionShort");}
+
   default String finForeignExchangeGain() {return g("finForeignExchangeGain");}
 
   default String finForeignExchangeLoss() {return g("finForeignExchangeLoss");}
@@ -2739,6 +2761,8 @@ public interface Dictionary {
 
   default String finPostAction() {return g("finPostAction");}
 
+  default String finPostingPrecedence() {return g("finPostingPrecedence");}
+
   default String finReceivablesFromEmployees() {return g("finReceivablesFromEmployees");}
 
   default String finRevenueAndExpenseSummary() {return g("finRevenueAndExpenseSummary");}
@@ -2748,6 +2772,10 @@ public interface Dictionary {
   default String finSalesRevenue() {return g("finSalesRevenue");}
 
   default String finTradeAccounts() {return g("finTradeAccounts");}
+
+  default String finTradeAccountsPrecedence() {return g("finTradeAccountsPrecedence");}
+
+  default String finTradeDimensionsPrecedence() {return g("finTradeDimensionsPrecedence");}
 
   default String finTradePayables() {return g("finTradePayables");}
 
@@ -3446,6 +3474,10 @@ public interface Dictionary {
 
   default String newEmployee() {return g("newEmployee");}
 
+  default String newFinContent() {return g("newFinContent");}
+
+  default String newFinDistribution() {return g("newFinDistribution");}
+
   default String newFinancialRecord() {return g("newFinancialRecord");}
 
   default String newItem() {return g("newItem");}
@@ -3457,6 +3489,8 @@ public interface Dictionary {
   default String newJournal() {return g("newJournal");}
 
   default String newKey() {return g("newKey");}
+
+  default String newLoadingPlace() {return g("newLoadingPlace");}
 
   default String newObject() {return g("newObject");}
 
@@ -3531,6 +3565,8 @@ public interface Dictionary {
   default String newUiTheme() {return g("newUiTheme");}
 
   default String newUnit() {return g("newUnit");}
+
+  default String newUnloadingPlace() {return g("newUnloadingPlace");}
 
   default String newUser() {return g("newUser");}
 
@@ -3749,6 +3785,8 @@ public interface Dictionary {
   default String payrollEarningsTotal() {return g("payrollEarningsTotal");}
 
   default String payrollEarningsWithoutHolidays() {return g("payrollEarningsWithoutHolidays");}
+
+  default String percent() {return g("percent");}
 
   default String period() {return g("period");}
 
@@ -5953,6 +5991,8 @@ public interface Dictionary {
   default String trdDocumentItem() {return g("trdDocumentItem");}
 
   default String trdDocumentItems() {return g("trdDocumentItems");}
+
+  default String trdDocumentLine() {return g("trdDocumentLine");}
 
   default String trdDocumentLong() {return g("trdDocumentLong");}
 

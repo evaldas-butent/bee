@@ -28,6 +28,7 @@ import com.butent.bee.client.view.grid.DynamicColumnIdentity;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -452,5 +453,10 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public void setGridPresenter(GridPresenter gridPresenter) {
     this.gridPresenter = gridPresenter;
+  }
+
+  @Override
+  public boolean validateRow(IsRow row, NotificationListener notificationListener) {
+    return true;
   }
 }

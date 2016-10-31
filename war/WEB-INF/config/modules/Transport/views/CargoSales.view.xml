@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
       xmlns:xpr="http://www.butent.com/expression"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
 
       name="CargoSales" source="CargoIncomes" caption="=trCargoIncomes"
     >
@@ -35,10 +34,6 @@
         <SimpleJoin joinType="LEFT" name="Payer">
           <SimpleColumn name="Name" alias="PayerName" label="=payer" />
         </SimpleJoin>
-      </SimpleJoin>
-
-      <SimpleJoin name="CargoHandling" joinType="LEFT">
-        <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
       </SimpleJoin>
 
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">

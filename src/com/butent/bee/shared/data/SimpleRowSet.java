@@ -119,12 +119,12 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       return getRowSet().getValue(rowIndex, colIndex);
     }
 
-    public String[] getValues() {
-      return getRowSet().getValues(rowIndex);
-    }
-
     public String getValue(String colName) {
       return getRowSet().getValue(rowIndex, colName);
+    }
+
+    public String[] getValues() {
+      return getRowSet().getValues(rowIndex);
     }
 
     public boolean hasColumn(String colName) {

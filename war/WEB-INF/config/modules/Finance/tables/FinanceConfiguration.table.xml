@@ -39,5 +39,8 @@
     <Relation name="CostOfGoodsSold" relation="ChartOfAccounts" label="=finCostOfGoodsSold" />
 
     <Relation name="CostOfMerchandise" relation="ChartOfAccounts" label="=finCostOfMerchandise" />
+
+    <Text name="TradeAccountsPrecedence" label="=finTradeAccountsPrecedence" />
+    <Text name="TradeDimensionsPrecedence" label="=finTradeDimensionsPrecedence" />
   </Fields>
 </Table>

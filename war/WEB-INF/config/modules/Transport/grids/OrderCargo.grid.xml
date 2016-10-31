@@ -6,14 +6,12 @@
         newRowForm="OrderCargo" newRowCaption="=newCargo"
         editForm="OrderCargo" flexGrow="1"
     >
-  <g:body height="50" />
-
   <g:columns>
     <IdColumn name="ID" width="50" />
     <DataColumn name="Description" maxWidth="300" caption="=cargo" />
   </g:columns>
 
-  <xi:include href="columns/Handling.columns.xml" />
+  <xi:include href="columns/Places.columns.xml" />
 
   <g:columns>
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />

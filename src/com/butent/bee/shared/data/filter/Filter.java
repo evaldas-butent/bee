@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -95,7 +96,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Assert.notNull(values);
 
     if (values.isEmpty()) {
-      return null;
+      return Filter.isFalse();
     }
 
     List<Value> vals = new ArrayList<>();
@@ -423,6 +424,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
       return notNull(column);
     } else {
       return compareWithValue(column, Operator.NE, new LongValue(value));
+    }
+  }
+
+  public static Filter notEquals(String column, Double value) {
+    if (value == null) {
+      return notNull(column);
+    } else {
+      return compareWithValue(column, Operator.NE, new NumberValue(value));
     }
   }
 

@@ -1,11 +1,11 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -14,10 +14,14 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Objects;
 
 public class AssessmentForwarderForm extends PrintFormInterceptor {
 
@@ -26,36 +30,44 @@ public class AssessmentForwarderForm extends PrintFormInterceptor {
       WidgetDescriptionCallback callback) {
 
     if (BeeUtils.same(name, VAR_INCOME) && widget instanceof DataSelector) {
-      ((DataSelector) widget).addSelectorHandler(new SelectorEvent.Handler() {
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          if (event.isOpened()) {
-            FormView form = ViewHelper.getForm(getGridView());
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isOpened()) {
+          FormView form = ViewHelper.getForm(getGridView());
 
-            if (form != null) {
-              event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO,
-                  form.getLongValue(COL_CARGO)));
-            }
+          if (form != null) {
+            event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO,
+                form.getLongValue(COL_CARGO)));
           }
         }
       });
     }
-    if (BeeUtils.same(name, TransportConstants.TBL_CARGO_HANDLING)) {
-      ((ChildGrid) widget).setGridInterceptor(new CargoHandlingGrid() {
+    if (BeeUtils.inList(name, TBL_CARGO_LOADING, TBL_CARGO_UNLOADING)) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
 
         @Override
         public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-          FormView form = ViewHelper.getForm(AssessmentForwarderForm.this.getGridView());
+          if (gridView.isEmpty()) {
+            FormView form = ViewHelper.getForm(AssessmentForwarderForm.this.getGridView());
 
-          if (form != null && gridView.isEmpty()) {
-            for (String prefix : new String[] {VAR_LOADING, VAR_UNLOADING}) {
-              for (String col : new String[] {
-                  COL_PLACE_DATE, COL_PLACE_ADDRESS,
-                  COL_PLACE_POST_INDEX, COL_PLACE_COMPANY, COL_PLACE_CONTACT,
-                  COL_PLACE_CITY, "CityName", COL_PLACE_COUNTRY, "CountryName", "CountryCode"}) {
+            if (Objects.nonNull(form)) {
+              Widget grid = form.getWidgetByName(gridView.getViewName());
+              IsRow parentRow = grid instanceof ChildGrid
+                  ? BeeUtils.peek(((ChildGrid) grid).getGridView().getRowData()) : null;
 
-                newRow.setValue(gridView.getDataIndex(prefix + col),
-                    form.getStringValue(prefix + col));
+              if (Objects.nonNull(parentRow)) {
+                for (BeeColumn column : gridView.getDataColumns()) {
+                  String col = column.getId();
+
+                  if (!BeeUtils.inList(col, COL_CARGO, COL_CARGO_TRIP)) {
+                    int idx = gridView.getDataIndex(col);
+                    newRow.setValue(idx, parentRow.getValue(idx));
+                  }
+                }
               }
             }
           }

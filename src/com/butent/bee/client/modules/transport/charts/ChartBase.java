@@ -128,7 +128,7 @@ public abstract class ChartBase extends TimeBoard {
   private boolean showOrderNo;
 
   private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_ORDER_CARGO,
-      VIEW_CARGO_TYPES, VIEW_CARGO_HANDLING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
+      VIEW_CARGO_TYPES, TBL_CARGO_LOADING, TBL_CARGO_UNLOADING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
       VIEW_TRANSPORT_GROUPS, ClassifierConstants.VIEW_COUNTRIES,
       AdministrationConstants.VIEW_COLORS, AdministrationConstants.VIEW_THEME_COLORS);
 
@@ -461,7 +461,7 @@ public abstract class ChartBase extends TimeBoard {
   }
 
   protected void renderCargoShipment(HasWidgets panel, OrderCargo cargo, String parentTitle,
-                                                                                String styleInfo) {
+      String styleInfo) {
     if (panel == null || cargo == null) {
       return;
     }
@@ -871,7 +871,7 @@ public abstract class ChartBase extends TimeBoard {
             String chUnloading = entry.getValue().contains(CargoEvent.Type.UNLOADING)
                 ? Places.getUnloadingInfo(entry.getKey()) : null;
 
-            title.add(entry.getKey().getTitle(chLoading, chUnloading));
+            title.add(CargoHandling.getTitle(chLoading, chUnloading));
           }
         }
       }
