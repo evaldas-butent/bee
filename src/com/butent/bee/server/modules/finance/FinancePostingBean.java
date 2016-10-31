@@ -88,9 +88,15 @@ public class FinancePostingBean {
       return ResponseObject.warning(dictionary.dataNotAvailable(dictionary.finDefaultAccounts()));
     }
 
-    TradeAccounts defaultAccounts = TradeAccounts.createAvailable(config, config.getRow(0));
+    BeeRowSet docPayments = qs.getViewData(VIEW_TRADE_PAYMENTS,
+        Filter.and(Filter.equals(COL_TRADE_DOCUMENT, docId),
+            Filter.or(Filter.notNull(COL_TRADE_PAYMENT_ACCOUNT),
+                Filter.notNull(COL_TRADE_PAYMENT_TYPE_ACCOUNT)),
+            Filter.notEquals(COL_TRADE_PAYMENT_AMOUNT, BeeConst.DOUBLE_ZERO)));
 
     int rowIndex = 0;
+    TradeAccounts defaultAccounts = TradeAccounts.createAvailable(config, config.getRow(rowIndex));
+
     Long defaultJournal = config.getLong(rowIndex, COL_DEFAULT_JOURNAL);
     Long costOfMerchandise = config.getLong(rowIndex, COL_COST_OF_MERCHANDISE);
 
@@ -184,6 +190,7 @@ public class FinancePostingBean {
     int parentCostCurrencyIndex = docLines.getColumnIndex(ALS_PARENT_COST_CURRENCY);
 
     TradeDocumentSums tdSums = TradeDocumentSums.of(docData, docLines);
+    double docTotal = tdSums.getTotal();
 
     Map<Long, Long> itemCategoryTree = getItemCategoryTree();
 
@@ -254,31 +261,36 @@ public class FinancePostingBean {
       Double parentCostAmount = DataUtils.isId(parent) && BeeUtils.nonZero(parentCost)
           && DataUtils.isId(parentCostCurrency) ? parentCost * quantity : null;
 
-      double discount = tdSums.getItemDiscount(row.getId());
-      double vat = tdSums.getItemVat(row.getId());
-      double total = tdSums.getItemTotal(row.getId());
+      double lineVat = tdSums.getItemVat(row.getId());
+      double lineTotal = tdSums.getItemTotal(row.getId());
 
-      if (BeeUtils.nonZero(total - vat)) {
-        write(buffer, date, company,
-            operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
-            total - vat, currency, employee, dim);
+      if (BeeUtils.nonZero(lineTotal - lineVat)) {
+        write(buffer, date, operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
+            lineTotal - lineVat, currency, employee, dim);
       }
 
       if (BeeUtils.nonZero(parentCostAmount)) {
-        write(buffer, date, company, acc.getCostOfGoodsSold(), costOfMerchandise,
+        write(buffer, date, acc.getCostOfGoodsSold(), costOfMerchandise,
             parentCostAmount, parentCostCurrency, employee, dim);
       }
 
-      if (BeeUtils.nonZero(vat)) {
-        write(buffer, date, company,
-            operationType.getVatDebit(acc), operationType.getVatCredit(acc),
-            vat, currency, employee, dim);
+      if (BeeUtils.nonZero(lineVat)) {
+        write(buffer, date, operationType.getVatDebit(acc), operationType.getVatCredit(acc),
+            lineVat, currency, employee, dim);
+      }
+
+      if (!DataUtils.isEmpty(docPayments)
+          && BeeUtils.nonZero(lineTotal) && BeeUtils.nonZero(docTotal)) {
+
+        postPayments(buffer, docPayments, operationType.consumesStock(),
+            operationType.getDebtAccount(acc), lineTotal / docTotal, currency, employee, dim);
       }
     }
 
     BeeRowSet output = aggregate(buffer);
 
     updateJournal(output, defaultJournal);
+    updateCompany(output, company);
     updateDocumentNumbers(output, series, number);
     updateContents(output, operation);
 
@@ -465,6 +477,60 @@ public class FinancePostingBean {
     return TradeAccounts.merge(list);
   }
 
+  private static void postPayments(BeeRowSet buffer, BeeRowSet payments, boolean asDebit,
+      Long debtAccount, double factor, Long currency, Long employee, Dimensions dimensions) {
+
+    int dateIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_DATE);
+    int amountIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_AMOUNT);
+
+    int accountIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_ACCOUNT);
+    int typeAccountIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_TYPE_ACCOUNT);
+
+    int seriesIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_SERIES);
+    int numberIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_NUMBER);
+
+    int outputPaymentIndex = buffer.getColumnIndex(COL_FIN_TRADE_PAYMENT);
+
+    int outputSeriesIndex = buffer.getColumnIndex(asDebit
+        ? COL_FIN_DEBIT_SERIES : COL_FIN_CREDIT_SERIES);
+    int outputDocumentIndex = buffer.getColumnIndex(asDebit
+        ? COL_FIN_DEBIT_DOCUMENT : COL_FIN_CREDIT_DOCUMENT);
+
+    for (BeeRow row : payments) {
+      DateTime date = row.getDateTime(dateIndex);
+
+      Double amount = row.getDouble(amountIndex);
+      if (BeeUtils.nonZero(amount)) {
+        amount *= factor;
+      }
+
+      Long account = row.getLong(accountIndex);
+      if (account == null) {
+        account = row.getLong(typeAccountIndex);
+      }
+
+      String series = row.getString(seriesIndex);
+      String number = row.getString(numberIndex);
+
+      Long debit = asDebit ? account : debtAccount;
+      Long credit = asDebit ? debtAccount : account;
+
+      BeeRow output = write(buffer, date, debit, credit, amount, currency, employee, dimensions);
+
+      if (output != null) {
+        output.setValue(outputPaymentIndex, row.getId());
+
+        if (!BeeUtils.isEmpty(number)) {
+          output.setValue(outputDocumentIndex, number.trim());
+
+          if (!BeeUtils.isEmpty(series)) {
+            output.setValue(outputSeriesIndex, series.trim());
+          }
+        }
+      }
+    }
+  }
+
   private void updateContents(BeeRowSet rowSet, Long operation) {
     if (!DataUtils.isEmpty(rowSet)) {
       int contentIndex = rowSet.getColumnIndex(COL_FIN_CONTENT);
@@ -637,7 +703,19 @@ public class FinancePostingBean {
     }
   }
 
-  private static void write(BeeRowSet rowSet, DateTime date, Long company,
+  private static void updateCompany(BeeRowSet rowSet, Long company) {
+    if (!DataUtils.isEmpty(rowSet) && DataUtils.isId(company)) {
+      int index = rowSet.getColumnIndex(COL_FIN_COMPANY);
+
+      for (BeeRow row : rowSet) {
+        if (!DataUtils.isId(row.getLong(index))) {
+          row.setValue(index, company);
+        }
+      }
+    }
+  }
+
+  private static BeeRow write(BeeRowSet rowSet, DateTime date,
       Long debit, Long credit, Double amount, Long currency,
       Long employee, Dimensions dimensions) {
 
@@ -645,10 +723,6 @@ public class FinancePostingBean {
       BeeRow row = rowSet.addEmptyRow();
 
       row.setValue(rowSet.getColumnIndex(COL_FIN_DATE), date);
-
-      if (DataUtils.isId(company)) {
-        row.setValue(rowSet.getColumnIndex(COL_FIN_COMPANY), company);
-      }
 
       row.setValue(rowSet.getColumnIndex(COL_FIN_DEBIT), debit);
       row.setValue(rowSet.getColumnIndex(COL_FIN_CREDIT), credit);
@@ -663,6 +737,11 @@ public class FinancePostingBean {
       if (dimensions != null && !dimensions.isEmpty()) {
         dimensions.applyTo(rowSet.getColumns(), row);
       }
+
+      return row;
+
+    } else {
+      return null;
     }
   }
 

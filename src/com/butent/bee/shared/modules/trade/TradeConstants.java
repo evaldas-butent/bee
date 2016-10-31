@@ -192,7 +192,13 @@ public final class TradeConstants {
   public static final String COL_STOCK_QUANTITY = "Quantity";
   public static final String COL_STOCK_WAREHOUSE = "Warehouse";
 
+  public static final String COL_TRADE_PAYMENT_DATE = "PaymentDate";
   public static final String COL_TRADE_PAYMENT_AMOUNT = "PaymentAmount";
+  public static final String COL_TRADE_PAYMENT_ACCOUNT = "PaymentAccount";
+  public static final String COL_TRADE_PAYMENT_SERIES = "PaymentSeries";
+  public static final String COL_TRADE_PAYMENT_NUMBER = "PaymentNumber";
+
+  public static final String COL_TRADE_PAYMENT_TYPE_ACCOUNT = "PaymentTypeAccount";
 
   public static final String COL_EXPENDITURE_TYPE_NAME = "ExpenditureTypeName";
   public static final String COL_EXPENDITURE_TYPE_DEBIT = "Debit";
