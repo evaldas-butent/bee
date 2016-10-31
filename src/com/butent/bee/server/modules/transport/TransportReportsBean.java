@@ -996,7 +996,7 @@ public class TransportReportsBean {
                     .addSum(TBL_CARGO_PLACES, COL_EMPTY_KILOMETERS)
                     .addFrom(tmpTripCargo)
                     .addFromInner(tbl, SqlUtils.joinUsing(tmpTripCargo, tbl, COL_CARGO_TRIP))
-                    .addFromInner(TBL_CARGO_PLACES, SqlUtils.joinUsing(TBL_CARGO_PLACES, tbl, col))
+                    .addFromInner(TBL_CARGO_PLACES, sys.joinTables(TBL_CARGO_PLACES, tbl, col))
                     .addGroup(tmpTripCargo, COL_CARGO_TRIP),
                 als, SqlUtils.joinUsing(tmpTripCargo, als, COL_CARGO_TRIP)));
 
@@ -1010,15 +1010,15 @@ public class TransportReportsBean {
                     .addSum(TBL_CARGO_PLACES, COL_EMPTY_KILOMETERS)
                     .addFrom(tmpTripCargo)
                     .addFromInner(tbl, SqlUtils.joinUsing(tmpTripCargo, tbl, COL_CARGO))
-                    .addFromInner(TBL_CARGO_PLACES, SqlUtils.joinUsing(TBL_CARGO_PLACES, tbl, col))
+                    .addFromInner(TBL_CARGO_PLACES, sys.joinTables(TBL_CARGO_PLACES, tbl, col))
                     .addGroup(tmpTripCargo, COL_CARGO_TRIP),
                 als, SqlUtils.joinUsing(tmpTripCargo, als, COL_CARGO_TRIP))
             .setWhere(SqlUtils.isNull(tmpTripCargo, col)));
       }
       qs.updateData(new SqlUpdate(tmpTripCargo)
           .addExpression(plannedKilometers,
-              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(als, COL_LOADING_PLACE), 0),
-                  SqlUtils.nvl(SqlUtils.field(als, COL_UNLOADING_PLACE), 0))));
+              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_LOADING_PLACE), 0),
+                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_UNLOADING_PLACE), 0))));
     }
     // Planned fuel costs
     if (report.requiresField(plannedFuelCosts)) {
