@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="SelfServiceInvoices" viewName="CargoInvoices"
+        editShowId="true" flexGrow="1"
+        disabledActions="add"
+        caption="=trInvoices"
+        filter="Sale AND !(Proforma)"
+>
+  <g:columns>
+    <IdColumn name="ID" caption="=trdInvoiceId" >
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </IdColumn>
+    <DataColumn name="Date" />
+    <DataColumn name="Number" />
+    <RelColumn name="Operation" />
+    <DataColumn name="InvoiceNo" renderColumns="InvoicePrefix InvoiceNo"
+                searchBy="InvoicePrefix InvoiceNo" />
+    <RelColumn name="Customer" filterSupplier="value" />
+    <RelColumn name="Payer" filterSupplier="value" />
+    <DataColumn name="Amount" >
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="CurrencyName" />
+    <DataColumn name="Term" />
+
+    <DataColumn name="PaymentTime" />
+    <DataColumn name="Paid" >
+      <footer aggregate="sum" />
+    </DataColumn>
+
+    <DataColumn name="Debt" format="0.00" >
+      <footer aggregate="sum" format="0.00"/>
+    </DataColumn>
+
+    <DataColumn name="Vehicle" />
+    <DataColumn name="Driver" />
+    <DataColumn name="Exported" />
+
+    <DataColumn name="SentDate" />
+    <DataColumn name="OtherDate" />
+    <RelColumn name="Creator" readOnly="true" />
+  </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>="color:red"</ui:inline>
+    <ui:expression>row.Debt &gt; 0 &amp;&amp; row.Term &lt; new Date().getTime()</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>="color:green"</ui:inline>
+    <ui:expression>row.Debt == 0</ui:expression>
+  </g:rowStyle>
+</g:Grid>

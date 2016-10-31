@@ -2908,6 +2908,8 @@ public interface Dictionary {
 
   default String invalidRange() {return g("invalidRange");}
 
+  default String invalidDateRange() {return g("invalidDateRange");}
+
   default String invalidTime() {return g("invalidTime");}
 
   default String ipBlockCommand() {return g("ipBlockCommand");}

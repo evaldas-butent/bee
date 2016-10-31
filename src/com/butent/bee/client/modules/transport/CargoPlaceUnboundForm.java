@@ -100,8 +100,8 @@ public class CargoPlaceUnboundForm extends PrintFormInterceptor {
     DateTime end = getDateTimeValue(ALS_UNLOADING_DATE);
 
     if (TimeUtils.isMeq(start, end)) {
-      getFormView().notifyWarning(Localized.dictionary().invalidRange(),
-          TimeUtils.renderPeriod(start, end));
+      getFormView().notifyWarning(Localized.dictionary().invalidDateRange() + " "
+              + TimeUtils.nowMinutes().toCompactString(), TimeUtils.renderPeriod(start, end));
       return false;
     }
     return true;
