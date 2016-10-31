@@ -11,6 +11,8 @@
     <row>
       <Label for="Date" class="bee-required" />
       <InputDateTime source="Date" required="true" />
+      <Label for="CargoWeight" />
+      <InputDecimal source="CargoWeight" format="0.000" style="width:70px;" />
     </row>
     <row>
       <Label for="Company" />
@@ -56,18 +58,20 @@
 
         <Flag source="CountryCode" style="padding-left: 2px;" />
       </FlowPanel>
-      <Label for="CargoWeight" />
-      <InputDecimal source="CargoWeight" format="0.000" style="width:70px;" />
+      <Label for="UnplannedManagerKm" />
+      <InputInteger source="UnplannedManagerKm" style="width:70px;" />
+    </row>
+    <row>
+      <Label for="Number" />
+      <InputText source="Number" />
+      <Label for="UnplannedDriverKm" />
+      <InputInteger source="UnplannedDriverKm" style="width:70px;" />
     </row>
     <row>
       <Label for="Contact" />
       <cell colSpan="3">
         <InputText source="Contact" style="width:100%;" autocompleteKey="cargo-place-contact" />
       </cell>
-    </row>
-    <row>
-      <Label for="Number" />
-      <InputText source="Number" />
     </row>
     <row>
       <cell style="vertical-align:top;">

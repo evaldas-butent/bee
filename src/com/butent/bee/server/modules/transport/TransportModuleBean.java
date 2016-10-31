@@ -397,7 +397,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       response = getTextConstant(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_MANUAL_DAILY_COST)) {
-        response = getManualDailyCost(BeeUtils.toLong(reqInfo.getParameter(COL_TRIP_COST_ID)));
+      response = getManualDailyCost(BeeUtils.toLong(reqInfo.getParameter(COL_TRIP_COST_ID)));
 
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
@@ -427,9 +427,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 .setHaving(SqlUtils.more(SqlUtils.aggregate(SqlFunction.COUNT,
                     SqlUtils.field(TBL_CARGO_TRIPS, COL_TRIP)), 1)), "subq",
             SqlUtils.joinUsing(TBL_CARGO_TRIPS, "subq", COL_CARGO))
-        .addFromLeft(TBL_CARGO_HANDLING,
-            sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP))
-        .setWhere(SqlUtils.isNull(TBL_CARGO_HANDLING, COL_CARGO_TRIP)));
+        .addFromLeft(TBL_CARGO_LOADING,
+            sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_LOADING, COL_CARGO_TRIP))
+        .addFromLeft(TBL_CARGO_UNLOADING,
+            sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_UNLOADING, COL_CARGO_TRIP))
+        .setWhere(SqlUtils.or(SqlUtils.isNull(TBL_CARGO_LOADING, COL_CARGO_TRIP),
+            SqlUtils.isNull(TBL_CARGO_UNLOADING, COL_CARGO_TRIP))));
 
     return ResponseObject.response(rs.getColumn(COL_CARGO));
   }
@@ -712,7 +715,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               .addFromLeft(TBL_PERSONS,
                   sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
               .setWhere(SqlUtils.inList(TBL_TRIP_COSTS, COL_TRIP, tripIDs))
-          .addOrderDesc(TBL_TRIP_COSTS, sys.getVersionName(TBL_TRIP_COSTS)));
+              .addOrderDesc(TBL_TRIP_COSTS, sys.getVersionName(TBL_TRIP_COSTS)));
 
           Map<Long, String> accountantsMap = new HashMap<>();
 
@@ -721,8 +724,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
             if (!accountantsMap.containsKey(tripId)) {
               accountantsMap.put(tripId,
-                BeeUtils.joinWords(accountantRow.getValue(COL_FIRST_NAME),
-                  accountantRow.getValue(COL_LAST_NAME)));
+                  BeeUtils.joinWords(accountantRow.getValue(COL_FIRST_NAME),
+                      accountantRow.getValue(COL_LAST_NAME)));
             }
           }
           rowSet.getRows().forEach(beeRow ->
@@ -1972,7 +1975,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFields(als, COL_CARGO_TRIP, VAR_UNLOADING)
         .addFields(TBL_ORDER_CARGO, COL_CARGO_PARTIAL)
         .addFields(TBL_CARGO_PLACES, COL_PLACE_DATE, COL_PLACE_COUNTRY, COL_PLACE_CITY,
-            COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS, COL_CARGO_WEIGHT)
+            COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS, COL_CARGO_WEIGHT,
+            COL_UNPLANNED_MANAGER_KM, COL_UNPLANNED_DRIVER_KM)
         .addFrom(TBL_CARGO_PLACES)
         .addFromInner(getHandlingQuery(sys.idEquals(TBL_TRIPS, tripId)), als,
             SqlUtils.joinUsing(TBL_CARGO_PLACES, als, sys.getIdName(TBL_CARGO_PLACES)))
@@ -2013,7 +2017,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         Pair<Integer, Integer> pair = stack.get(orderCargo);
 
         int emptyKm = BeeUtils.unbox(row.getInt(COL_EMPTY_KILOMETERS));
-        pair.setA(pair.getA() + BeeUtils.unbox(row.getInt(COL_LOADED_KILOMETERS)) + emptyKm);
+        pair.setA(pair.getA() + BeeUtils.unbox(row.getInt(COL_LOADED_KILOMETERS)) + emptyKm
+            + BeeUtils.unbox(row.getInt(COL_UNPLANNED_MANAGER_KM))
+            + BeeUtils.unbox(row.getInt(COL_UNPLANNED_DRIVER_KM)));
         pair.setB(pair.getB() + emptyKm);
 
         currentWeight -= weight;

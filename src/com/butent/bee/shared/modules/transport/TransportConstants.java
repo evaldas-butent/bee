@@ -622,8 +622,9 @@ public final class TransportConstants {
   public static final String COL_ROUTE_CONSUMPTION = "Consumption";
 
   public static final String COL_LOADED_KILOMETERS = "LoadedKilometers";
-  public static final String COL_UNPLANNED_KILOMETERS = "UnplannedKilometers";
   public static final String COL_EMPTY_KILOMETERS = "EmptyKilometers";
+  public static final String COL_UNPLANNED_MANAGER_KM = "UnplannedManagerKm";
+  public static final String COL_UNPLANNED_DRIVER_KM = "UnplannedDriverKm";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CARGO_DIRECTIONS = "Directions";
 

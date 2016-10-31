@@ -1054,6 +1054,9 @@ public class UiServiceBean {
               update.addConstant(s, row.getValue(s));
             }
           }
+          if (!BeeUtils.isEmpty(row.getValue("UnplannedKilometers"))) {
+            update.addConstant(COL_UNPLANNED_DRIVER_KM, row.getValue("UnplannedKilometers"));
+          }
           if (!update.isEmpty()) {
             qs.updateData(update);
           }
