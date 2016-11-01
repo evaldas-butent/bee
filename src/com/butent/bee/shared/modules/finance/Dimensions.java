@@ -6,6 +6,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -114,6 +116,17 @@ public final class Dimensions {
 
   public boolean isEmpty() {
     return department == null && activityType == null && costCenter == null && object == null;
+  }
+
+  public Filter getFilter() {
+    CompoundFilter filter = Filter.and();
+
+    filter.add(Filter.equalsOrIsNull(COL_DEPARTMENT, getDepartment()));
+    filter.add(Filter.equalsOrIsNull(COL_ACTIVITY_TYPE, getActivityType()));
+    filter.add(Filter.equalsOrIsNull(COL_COST_CENTER, getCostCenter()));
+    filter.add(Filter.equalsOrIsNull(COL_OBJECT, getObject()));
+
+    return filter;
   }
 
   @Override

@@ -22,9 +22,8 @@
 
   <SimpleColumn name="EmptyKilometers" />
   <SimpleColumn name="LoadedKilometers" />
+  <SimpleColumn name="CargoWeight" />
 
   <SimpleColumn name="UnplannedManagerKm" />
   <SimpleColumn name="UnplannedDriverKm" />
-
-  <SimpleColumn name="Weight" alias="CargoWeight" />
 </Columns>

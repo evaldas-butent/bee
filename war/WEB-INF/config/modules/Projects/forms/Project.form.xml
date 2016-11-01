@@ -179,6 +179,10 @@
         <FlowPanel name="ChartData" />
       </page>
       <page>
+        <text>=calAppointments</text>
+        <ChildGrid name="ProjectAppointments" relColumn="Project"  />
+      </page>
+      <page>
         <text>=personContacts</text>
         <ChildGrid name="ProjectContacts" relColumn="Project"  />
       </page>

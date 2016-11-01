@@ -228,7 +228,10 @@ public class UiServiceBean {
         response = getRelatedValues(reqInfo);
         break;
       case UPDATE_RELATED_VALUES:
-        response = updateRelatedValues(reqInfo);
+        String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+        Long parentId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_VIEW_ROW_ID));
+        String serialized = reqInfo.getParameter(VAR_CHILDREN);
+        response = updateRelatedValues(viewName, parentId, serialized);
         break;
 
       case GET_DECORATORS:
@@ -1025,6 +1028,7 @@ public class UiServiceBean {
       response.addInfo("Recreate structure OK");
 
     } else if (BeeUtils.same(cmd, "handling")) {
+      // TODO: remove
       qs.updateData(new SqlUpdate(TBL_CARGO_HANDLING)
           .addExpression(COL_CARGO,
               SqlUtils.field(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)))
@@ -1047,12 +1051,13 @@ public class UiServiceBean {
           SqlUpdate update = new SqlUpdate(TBL_CARGO_PLACES)
               .setWhere(sys.idEquals(TBL_CARGO_PLACES, place));
 
-          for (String s : new String[] {
-              COL_EMPTY_KILOMETERS, COL_LOADED_KILOMETERS, COL_CARGO_WEIGHT}) {
-
+          for (String s : new String[] {COL_EMPTY_KILOMETERS, COL_LOADED_KILOMETERS}) {
             if (!BeeUtils.isEmpty(row.getValue(s))) {
               update.addConstant(s, row.getValue(s));
             }
+          }
+          if (!BeeUtils.isEmpty(row.getValue(COL_CARGO_WEIGHT))) {
+            update.addConstant(COL_ROUTE_WEIGHT, row.getValue(COL_CARGO_WEIGHT));
           }
           if (!BeeUtils.isEmpty(row.getValue("UnplannedKilometers"))) {
             update.addConstant(COL_UNPLANNED_DRIVER_KM, row.getValue("UnplannedKilometers"));
@@ -1336,18 +1341,15 @@ public class UiServiceBean {
     return response;
   }
 
-  private ResponseObject updateRelatedValues(RequestInfo reqInfo) {
-    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+  public ResponseObject updateRelatedValues(String viewName, Long parentId, String serialized) {
     if (BeeUtils.isEmpty(viewName)) {
       return ResponseObject.parameterNotFound(VAR_VIEW_NAME);
     }
 
-    Long parentId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_VIEW_ROW_ID));
     if (!DataUtils.isId(parentId)) {
       return ResponseObject.parameterNotFound(VAR_VIEW_ROW_ID);
     }
 
-    String serialized = reqInfo.getParameter(VAR_CHILDREN);
     if (BeeUtils.isEmpty(serialized)) {
       return ResponseObject.parameterNotFound(VAR_CHILDREN);
     }
