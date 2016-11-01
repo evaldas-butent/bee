@@ -15,6 +15,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -194,8 +195,8 @@ public class FinancePostingBean {
 
     Map<Long, Long> itemCategoryTree = getItemCategoryTree();
 
-    BeeRowSet buffer = new BeeRowSet(VIEW_FINANCIAL_RECORDS,
-        sys.getView(VIEW_FINANCIAL_RECORDS).getRowSetColumns());
+    List<BeeColumn> columns = sys.getView(VIEW_FINANCIAL_RECORDS).getRowSetColumns();
+    BeeRowSet buffer = new BeeRowSet(VIEW_FINANCIAL_RECORDS, columns);
 
     for (BeeRow row : docLines) {
       Long item = row.getLong(itemIndex);
@@ -264,26 +265,37 @@ public class FinancePostingBean {
       double lineVat = tdSums.getItemVat(row.getId());
       double lineTotal = tdSums.getItemTotal(row.getId());
 
+      List<BeeRow> lineRows = new ArrayList<>();
+
       if (BeeUtils.nonZero(lineTotal - lineVat)) {
-        write(buffer, date, operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
-            lineTotal - lineVat, currency, employee, dim);
+        BeeUtils.addNotNull(lineRows,
+            post(columns, date,
+                operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
+                lineTotal - lineVat, currency, employee, dim));
       }
 
       if (BeeUtils.nonZero(parentCostAmount)) {
-        write(buffer, date, acc.getCostOfGoodsSold(), costOfMerchandise,
-            parentCostAmount, parentCostCurrency, employee, dim);
+        BeeUtils.addNotNull(lineRows,
+            post(columns, date, acc.getCostOfGoodsSold(), costOfMerchandise,
+                parentCostAmount, parentCostCurrency, employee, dim));
       }
 
       if (BeeUtils.nonZero(lineVat)) {
-        write(buffer, date, operationType.getVatDebit(acc), operationType.getVatCredit(acc),
-            lineVat, currency, employee, dim);
+        BeeUtils.addNotNull(lineRows,
+            post(columns, date, operationType.getVatDebit(acc), operationType.getVatCredit(acc),
+                lineVat, currency, employee, dim));
       }
 
       if (!DataUtils.isEmpty(docPayments)
           && BeeUtils.nonZero(lineTotal) && BeeUtils.nonZero(docTotal)) {
 
-        postPayments(buffer, docPayments, operationType.consumesStock(),
-            operationType.getDebtAccount(acc), lineTotal / docTotal, currency, employee, dim);
+        lineRows.addAll(postPayments(columns, docPayments, operationType.consumesStock(),
+            operationType.getDebtAccount(acc), lineTotal / docTotal, currency, employee, dim));
+      }
+
+      if (!lineRows.isEmpty()) {
+        buffer.addRows(
+            maybeDistribute(lineRows, columns, docId, operation, item, dimensionsPrecedence));
       }
     }
 
@@ -477,8 +489,11 @@ public class FinancePostingBean {
     return TradeAccounts.merge(list);
   }
 
-  private static void postPayments(BeeRowSet buffer, BeeRowSet payments, boolean asDebit,
-      Long debtAccount, double factor, Long currency, Long employee, Dimensions dimensions) {
+  private static List<BeeRow> postPayments(List<BeeColumn> columns, BeeRowSet payments,
+      boolean asDebit, Long debtAccount, double factor, Long currency,
+      Long employee, Dimensions dimensions) {
+
+    List<BeeRow> result = new ArrayList<>();
 
     int dateIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_DATE);
     int amountIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_AMOUNT);
@@ -489,12 +504,12 @@ public class FinancePostingBean {
     int seriesIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_SERIES);
     int numberIndex = payments.getColumnIndex(COL_TRADE_PAYMENT_NUMBER);
 
-    int outputPaymentIndex = buffer.getColumnIndex(COL_FIN_TRADE_PAYMENT);
+    int outputPaymentIndex = DataUtils.getColumnIndex(COL_FIN_TRADE_PAYMENT, columns);
 
-    int outputSeriesIndex = buffer.getColumnIndex(asDebit
-        ? COL_FIN_DEBIT_SERIES : COL_FIN_CREDIT_SERIES);
-    int outputDocumentIndex = buffer.getColumnIndex(asDebit
-        ? COL_FIN_DEBIT_DOCUMENT : COL_FIN_CREDIT_DOCUMENT);
+    int outputSeriesIndex = DataUtils.getColumnIndex(asDebit
+        ? COL_FIN_DEBIT_SERIES : COL_FIN_CREDIT_SERIES, columns);
+    int outputDocumentIndex = DataUtils.getColumnIndex(asDebit
+        ? COL_FIN_DEBIT_DOCUMENT : COL_FIN_CREDIT_DOCUMENT, columns);
 
     for (BeeRow row : payments) {
       DateTime date = row.getDateTime(dateIndex);
@@ -515,7 +530,7 @@ public class FinancePostingBean {
       Long debit = asDebit ? account : debtAccount;
       Long credit = asDebit ? debtAccount : account;
 
-      BeeRow output = write(buffer, date, debit, credit, amount, currency, employee, dimensions);
+      BeeRow output = post(columns, date, debit, credit, amount, currency, employee, dimensions);
 
       if (output != null) {
         output.setValue(outputPaymentIndex, row.getId());
@@ -527,8 +542,211 @@ public class FinancePostingBean {
             output.setValue(outputSeriesIndex, series.trim());
           }
         }
+
+        result.add(output);
       }
     }
+
+    return result;
+  }
+
+  private List<BeeRow> maybeDistribute(List<BeeRow> input, List<BeeColumn> columns,
+      long document, long operation, long item, List<TradeDimensionsPrecedence> precedence) {
+
+    List<BeeRow> result = new ArrayList<>();
+
+    int dateIndex = DataUtils.getColumnIndex(COL_FIN_DATE, columns);
+
+    int debitIndex = DataUtils.getColumnIndex(COL_FIN_DEBIT, columns);
+    int creditIndex = DataUtils.getColumnIndex(COL_FIN_CREDIT, columns);
+
+    for (BeeRow row : input) {
+      DateTime date = row.getDateTime(dateIndex);
+
+      Long debit = row.getLong(debitIndex);
+      Long credit = row.getLong(creditIndex);
+
+      String debitCode = qs.getValueById(TBL_CHART_OF_ACCOUNTS, debit, COL_ACCOUNT_CODE);
+      String creditCode = qs.getValueById(TBL_CHART_OF_ACCOUNTS, credit, COL_ACCOUNT_CODE);
+
+      CompoundFilter filter = Filter.and();
+
+      filter.add(
+          Filter.or(
+              Filter.equals(COL_FIN_DISTR_TRADE_DOCUMENT, document),
+              Filter.equals(COL_FIN_DISTR_TRADE_OPERATION, operation),
+              Filter.equals(COL_FIN_DISTR_ITEM, item)),
+          FinanceUtils.getPeriodFilter(date, COL_FIN_DISTR_DATE_FROM, COL_FIN_DISTR_DATE_TO),
+          Filter.or(Filter.isNull(COL_FIN_DISTR_DEBIT),
+              FinanceUtils.getStartFilter(debitCode, ALS_DEBIT_CODE)),
+          Filter.or(Filter.isNull(COL_FIN_DISTR_CREDIT),
+              FinanceUtils.getStartFilter(creditCode, ALS_CREDIT_CODE)),
+          Filter.nonNegative(COL_FIN_DISTR_PERCENT));
+
+      BeeRowSet distribution = qs.getViewData(VIEW_FINANCE_DISTRIBUTION, filter);
+
+      if (DataUtils.isEmpty(distribution)) {
+        result.add(row);
+      } else {
+        result.addAll(distribute(row, columns, distribution, precedence));
+      }
+    }
+
+    return result;
+  }
+
+  private static List<BeeRow> distribute(BeeRow input, List<BeeColumn> columns,
+      BeeRowSet distribution, List<TradeDimensionsPrecedence> precedence) {
+
+    List<BeeRow> result = new ArrayList<>();
+
+    List<List<BeeRow>> rowsByPrecedence = distributionByPrecedence(distribution, precedence);
+
+    int debitIndex = DataUtils.getColumnIndex(COL_FIN_DEBIT, columns);
+    int creditIndex = DataUtils.getColumnIndex(COL_FIN_CREDIT, columns);
+
+    int amountIndex = DataUtils.getColumnIndex(COL_FIN_AMOUNT, columns);
+
+    int percentIndex = distribution.getColumnIndex(COL_FIN_DISTR_PERCENT);
+
+    int debitReplacementIndex = distribution.getColumnIndex(COL_FIN_DISTR_DEBIT_REPLACEMENT);
+    int creditReplacementIndex = distribution.getColumnIndex(COL_FIN_DISTR_CREDIT_REPLACEMENT);
+
+    List<BeeRow> inputRows = new ArrayList<>();
+    inputRows.add(input);
+
+    List<BeeRow> outputRows = new ArrayList<>();
+
+    for (List<BeeRow> distributionRows : rowsByPrecedence) {
+      List<Double> factors = normalizeDistributionFactors(distributionRows.stream()
+          .map(row -> BeeUtils.unbox(row.getDouble(percentIndex))).collect(Collectors.toList()));
+
+      outputRows.clear();
+
+      for (BeeRow inputRow : inputRows) {
+        double inputAmount = inputRow.getDouble(amountIndex);
+
+        for (int i = 0; i < distributionRows.size(); i++) {
+          BeeRow distributionRow = distributionRows.get(i);
+          double factor = factors.get(i);
+
+          BeeRow outputRow = DataUtils.cloneRow(inputRow);
+          outputRow.setValue(amountIndex, inputAmount * factor);
+
+          Long debitReplacement = distributionRow.getLong(debitReplacementIndex);
+          if (DataUtils.isId(debitReplacement)) {
+            outputRow.setValue(debitIndex, debitReplacement);
+          }
+
+          Long creditReplacement = distributionRow.getLong(creditReplacementIndex);
+          if (DataUtils.isId(creditReplacement)) {
+            outputRow.setValue(creditIndex, creditReplacement);
+          }
+
+          Dimensions.create(distribution, distributionRow).applyTo(columns, outputRow);
+
+          outputRows.add(outputRow);
+        }
+
+        double remainingFactor = BeeConst.DOUBLE_ONE - BeeUtils.sum(factors);
+
+        if (remainingFactor >= BeeConst.DOUBLE_ONE / BeeConst.DOUBLE_ONE_HUNDRED) {
+          BeeRow outputRow = DataUtils.cloneRow(inputRow);
+          outputRow.setValue(amountIndex, inputAmount * remainingFactor);
+
+          outputRows.add(outputRow);
+        }
+      }
+
+      inputRows.clear();
+      inputRows.addAll(outputRows);
+    }
+
+    if (!outputRows.isEmpty()) {
+      result.addAll(outputRows.stream()
+          .filter(
+              row -> FinanceUtils.isValidEntry(row.getLong(debitIndex), row.getLong(creditIndex))
+                  && BeeUtils.isPositive(row.getDouble(amountIndex)))
+          .collect(Collectors.toList()));
+    }
+
+    if (result.isEmpty()) {
+      result.add(input);
+    }
+
+    return result;
+  }
+
+  private static List<Double> normalizeDistributionFactors(List<Double> percentages) {
+    List<Double> factors = new ArrayList<>();
+
+    double total = BeeUtils.sum(percentages);
+    long countEmpty = percentages.stream().filter(p -> !BeeUtils.isPositive(p)).count();
+
+    double factor;
+    for (Double p : percentages) {
+      if (BeeUtils.isPositive(p)) {
+        factor = p / BeeConst.DOUBLE_ONE_HUNDRED;
+
+      } else if (total < BeeConst.DOUBLE_ONE_HUNDRED && countEmpty > 0) {
+        factor = (1 - total / BeeConst.DOUBLE_ONE_HUNDRED) / countEmpty;
+
+      } else {
+        factor = BeeConst.DOUBLE_ZERO;
+      }
+
+      factors.add(factor);
+    }
+
+    return factors;
+  }
+
+  private static List<List<BeeRow>> distributionByPrecedence(BeeRowSet distribution,
+      List<TradeDimensionsPrecedence> precedence) {
+
+    List<List<BeeRow>> result = new ArrayList<>();
+
+    List<BeeRow> documentDistribution = new ArrayList<>();
+    List<BeeRow> operationDistribution = new ArrayList<>();
+    List<BeeRow> itemDistribution = new ArrayList<>();
+
+    int documentIndex = distribution.getColumnIndex(COL_FIN_DISTR_TRADE_DOCUMENT);
+    int operationIndex = distribution.getColumnIndex(COL_FIN_DISTR_TRADE_OPERATION);
+    int itemIndex = distribution.getColumnIndex(COL_FIN_DISTR_ITEM);
+
+    for (BeeRow row : distribution) {
+      if (DataUtils.isId(row.getLong(documentIndex))) {
+        documentDistribution.add(row);
+
+      } else if (DataUtils.isId(row.getLong(operationIndex))) {
+        operationDistribution.add(row);
+
+      } else if (DataUtils.isId(row.getLong(itemIndex))) {
+        itemDistribution.add(row);
+      }
+    }
+
+    for (int i = precedence.size() - 1; i >= 0; i--) {
+      TradeDimensionsPrecedence tdp = precedence.get(i);
+
+      if (tdp == TradeDimensionsPrecedence.DOCUMENT) {
+        if (!documentDistribution.isEmpty()) {
+          result.add(documentDistribution);
+        }
+
+      } else if (tdp == TradeDimensionsPrecedence.OPERATION) {
+        if (!operationDistribution.isEmpty()) {
+          result.add(operationDistribution);
+        }
+
+      } else if (tdp == TradeDimensionsPrecedence.ITEM) {
+        if (!itemDistribution.isEmpty()) {
+          result.add(itemDistribution);
+        }
+      }
+    }
+
+    return result;
   }
 
   private void updateContents(BeeRowSet rowSet, Long operation) {
@@ -622,33 +840,14 @@ public class FinancePostingBean {
     String creditCode = qs.getValueById(TBL_CHART_OF_ACCOUNTS, credit, COL_ACCOUNT_CODE);
 
     CompoundFilter filter = Filter.and();
-    filter.add(getContentsAccountFilter(debitCode, ALS_DEBIT_CODE));
-    filter.add(getContentsAccountFilter(creditCode, ALS_CREDIT_CODE));
+    filter.add(FinanceUtils.getStartFilter(debitCode, ALS_DEBIT_CODE));
+    filter.add(FinanceUtils.getStartFilter(creditCode, ALS_CREDIT_CODE));
 
     if (dimensions != null) {
       filter.add(dimensions.getFilter());
     }
 
     return qs.getViewData(VIEW_FINANCE_CONTENTS, filter);
-  }
-
-  private static Filter getContentsAccountFilter(String code, String column) {
-    if (BeeUtils.isEmpty(code)) {
-      return Filter.isFalse();
-    }
-
-    CompoundFilter filter = Filter.or();
-    int length = BeeUtils.trimRight(code).length();
-
-    for (int i = 1; i <= length; i++) {
-      String value = code.substring(0, i);
-
-      if (!BeeUtils.isEmpty(value)) {
-        filter.add(Filter.equals(column, value));
-      }
-    }
-
-    return filter;
   }
 
   private static String clampContent(String value, int precision) {
@@ -715,27 +914,27 @@ public class FinancePostingBean {
     }
   }
 
-  private static BeeRow write(BeeRowSet rowSet, DateTime date,
+  private static BeeRow post(List<BeeColumn> columns, DateTime date,
       Long debit, Long credit, Double amount, Long currency,
       Long employee, Dimensions dimensions) {
 
     if (FinanceUtils.isValidEntry(date, debit, credit, amount, currency)) {
-      BeeRow row = rowSet.addEmptyRow();
+      BeeRow row = DataUtils.createEmptyRow(columns.size());
 
-      row.setValue(rowSet.getColumnIndex(COL_FIN_DATE), date);
+      row.setValue(DataUtils.getColumnIndex(COL_FIN_DATE, columns), date);
 
-      row.setValue(rowSet.getColumnIndex(COL_FIN_DEBIT), debit);
-      row.setValue(rowSet.getColumnIndex(COL_FIN_CREDIT), credit);
+      row.setValue(DataUtils.getColumnIndex(COL_FIN_DEBIT, columns), debit);
+      row.setValue(DataUtils.getColumnIndex(COL_FIN_CREDIT, columns), credit);
 
-      row.setValue(rowSet.getColumnIndex(COL_FIN_AMOUNT), amount);
-      row.setValue(rowSet.getColumnIndex(COL_FIN_CURRENCY), currency);
+      row.setValue(DataUtils.getColumnIndex(COL_FIN_AMOUNT, columns), amount);
+      row.setValue(DataUtils.getColumnIndex(COL_FIN_CURRENCY, columns), currency);
 
       if (DataUtils.isId(employee)) {
-        row.setValue(rowSet.getColumnIndex(COL_FIN_EMPLOYEE), employee);
+        row.setValue(DataUtils.getColumnIndex(COL_FIN_EMPLOYEE, columns), employee);
       }
 
       if (dimensions != null && !dimensions.isEmpty()) {
-        dimensions.applyTo(rowSet.getColumns(), row);
+        dimensions.applyTo(columns, row);
       }
 
       return row;

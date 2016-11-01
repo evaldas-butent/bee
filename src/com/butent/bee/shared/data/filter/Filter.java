@@ -419,6 +419,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new IsTrueFilter();
   }
 
+  public static Filter nonNegative(String column) {
+    return or(isNull(column), isMoreEqual(column, IntegerValue.ZERO));
+  }
+
   public static Filter notEquals(String column, Enum<?> value) {
     if (value == null) {
       return notNull(column);
