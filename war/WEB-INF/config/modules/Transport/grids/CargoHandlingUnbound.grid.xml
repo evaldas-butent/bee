@@ -7,7 +7,5 @@
         editForm="CargoPlaceUnbound"
         flexGrow="1" flexShrink="1"
     >
-  <g:body height="50" />
-
-  <xi:include href="columns/Handling.columns.xml" />
+  <xi:include href="columns/Places.columns.xml" />
 </g:Grid>

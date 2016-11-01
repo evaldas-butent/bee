@@ -3,6 +3,7 @@ package com.butent.bee.server.ui;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -10,6 +11,7 @@ import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.Service.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
@@ -226,7 +228,10 @@ public class UiServiceBean {
         response = getRelatedValues(reqInfo);
         break;
       case UPDATE_RELATED_VALUES:
-        response = updateRelatedValues(reqInfo);
+        String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+        Long parentId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_VIEW_ROW_ID));
+        String serialized = reqInfo.getParameter(VAR_CHILDREN);
+        response = updateRelatedValues(viewName, parentId, serialized);
         break;
 
       case GET_DECORATORS:
@@ -1022,6 +1027,54 @@ public class UiServiceBean {
       sys.rebuildActiveTables();
       response.addInfo("Recreate structure OK");
 
+    } else if (BeeUtils.same(cmd, "handling")) {
+      // TODO: remove
+      qs.updateData(new SqlUpdate(TBL_CARGO_HANDLING)
+          .addExpression(COL_CARGO,
+              SqlUtils.field(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)))
+          .setFrom(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, "CargoHandling"))
+          .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_CARGO_HANDLING, COL_CARGO),
+              SqlUtils.isNull(TBL_CARGO_HANDLING, COL_CARGO_TRIP))));
+
+      ImmutableMap.of(COL_LOADING_PLACE, TBL_CARGO_LOADING,
+          COL_UNLOADING_PLACE, TBL_CARGO_UNLOADING).forEach((col, tbl) -> {
+
+        SimpleRowSet rs = qs.getData(new SqlSelect()
+            .addAllFields(TBL_CARGO_HANDLING)
+            .addFrom(TBL_CARGO_HANDLING)
+            .setWhere(SqlUtils.notNull(TBL_CARGO_HANDLING, col)));
+
+        for (SimpleRow row : rs) {
+          Long place = row.getLong(col);
+
+          SqlUpdate update = new SqlUpdate(TBL_CARGO_PLACES)
+              .setWhere(sys.idEquals(TBL_CARGO_PLACES, place));
+
+          for (String s : new String[] {COL_EMPTY_KILOMETERS, COL_LOADED_KILOMETERS}) {
+            if (!BeeUtils.isEmpty(row.getValue(s))) {
+              update.addConstant(s, row.getValue(s));
+            }
+          }
+          if (!BeeUtils.isEmpty(row.getValue(COL_CARGO_WEIGHT))) {
+            update.addConstant(COL_ROUTE_WEIGHT, row.getValue(COL_CARGO_WEIGHT));
+          }
+          if (!update.isEmpty()) {
+            qs.updateData(update);
+          }
+          SqlInsert insert = new SqlInsert(tbl)
+              .addConstant(col, place);
+
+          for (String s : new String[] {COL_CARGO, COL_CARGO_TRIP}) {
+            if (DataUtils.isId(row.getLong(s))) {
+              qs.insertData(insert.addConstant(s, row.getLong(s)));
+              break;
+            }
+          }
+        }
+      });
+      response.addInfo("OK");
+
     } else if (BeeUtils.same(cmd, "tables")) {
       sys.initTables();
       response.addInfo("Tables OK");
@@ -1285,18 +1338,15 @@ public class UiServiceBean {
     return response;
   }
 
-  private ResponseObject updateRelatedValues(RequestInfo reqInfo) {
-    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+  public ResponseObject updateRelatedValues(String viewName, Long parentId, String serialized) {
     if (BeeUtils.isEmpty(viewName)) {
       return ResponseObject.parameterNotFound(VAR_VIEW_NAME);
     }
 
-    Long parentId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_VIEW_ROW_ID));
     if (!DataUtils.isId(parentId)) {
       return ResponseObject.parameterNotFound(VAR_VIEW_ROW_ID);
     }
 
-    String serialized = reqInfo.getParameter(VAR_CHILDREN);
     if (BeeUtils.isEmpty(serialized)) {
       return ResponseObject.parameterNotFound(VAR_CHILDREN);
     }

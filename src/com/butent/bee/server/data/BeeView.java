@@ -897,6 +897,19 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return result;
   }
 
+  public Map<String, String> getTranslationColumns(String fieldName) {
+    Map<String, String> result = new HashMap<>();
+
+    columns.forEach((colName, columnInfo) -> {
+      if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()
+          && BeeUtils.same(columnInfo.getField(), fieldName)) {
+        result.put(columnInfo.getLocale(), colName);
+      }
+    });
+
+    return result;
+  }
+
   public List<ViewColumn> getViewColumns() {
     List<ViewColumn> result = new ArrayList<>();
 

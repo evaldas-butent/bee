@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+  xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
   flexGrow="1" order="AssessmentID desc" disabledActions="edit delete"
-  enableCopy="- Assessment OrderNo Cargo CargoHandling *Status *Date Number Manager ExpensesRegistered, Log*, Finished*"
+  enableCopy="- Assessment OrderNo Cargo *Status *Date Number Manager ExpensesRegistered, Log"
   filter="Status"
   >
   <g:columns>
@@ -17,27 +17,12 @@
     <RelColumn name="Department" />
     <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
+  </g:columns>
 
-    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
-    <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
+  <xi:include href="columns/Places.columns.xml" />
 
+  <g:columns>
     <DataColumn name="CustomerName" />
-
-    <RelColumn name="LoadingCountry" visible="false" readOnly="true"/>
-    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-
-    <RelColumn name="UnloadingCountry" visible="false" readOnly="true"/>
-    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-
-    <DataColumn name="LoadingCompany" readOnly="true" />
-    <DataColumn name="UnloadingCompany" readOnly="true" />
-
     <DataColumn name="OrderNotes" minWidth="100" whiteSpace="nowrap" />
     <DataColumn name="Description" minWidth="100" whiteSpace="nowrap" />
 

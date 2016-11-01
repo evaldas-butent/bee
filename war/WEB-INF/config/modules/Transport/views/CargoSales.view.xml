@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
       xmlns:xpr="http://www.butent.com/expression"
-      xmlns:xi="http://www.w3.org/2001/XInclude"
 
       name="CargoSales" source="CargoIncomes" caption="=trCargoIncomes"
       filter="Status!=0"
@@ -50,9 +49,6 @@
       </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleJoin name="CargoHandling" joinType="LEFT">
-        <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
-      </SimpleJoin>
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
         <SimpleJoin name="Trip" joinType="LEFT">
           <AggregateColumn name="ForwarderVehicle" aggregate="MAX" />

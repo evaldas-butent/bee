@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="TradeAccounts"
+       idName="TradeAccountsID"
+>
+  <Fields>
+    <Relation name="CostAccount" relation="ChartOfAccounts" label="=finCostAccount" />
+
+    <Relation name="TradePayables" relation="ChartOfAccounts" label="=finTradePayables" />
+    <Relation name="TradeReceivables" relation="ChartOfAccounts" label="=finTradeReceivables" />
+
+    <Relation name="VatPayable" relation="ChartOfAccounts" label="=finVatPayable" />
+    <Relation name="VatReceivable" relation="ChartOfAccounts" label="=finVatReceivable" />
+
+    <Relation name="SalesRevenue" relation="ChartOfAccounts" label="=finSalesRevenue" />
+    <Relation name="SalesDiscounts" relation="ChartOfAccounts" label="=finSalesDiscounts" />
+
+    <Relation name="CostOfGoodsSold" relation="ChartOfAccounts" label="=finCostOfGoodsSold" />
+    <Relation name="WriteOffAccount" relation="ChartOfAccounts" label="=finWriteOffAccount" />
+  </Fields>
+</Table>

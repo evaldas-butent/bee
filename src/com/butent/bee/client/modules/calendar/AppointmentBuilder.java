@@ -47,6 +47,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.calendar.view.AppointmentForm;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
@@ -57,7 +58,6 @@ import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputNumber;
@@ -80,6 +80,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -97,7 +98,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEvent.Handler {
+class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handler {
 
   private class DateOrTimeKeyDownHandler implements KeyDownHandler {
 
@@ -395,6 +396,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private final List<Long> ucAttendees = new ArrayList<>();
 
+  private FormView appointmentView;
+
   AppointmentBuilder(boolean isNew) {
     super();
     this.isNew = isNew;
@@ -522,6 +525,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     } else if (BeeUtils.same(name, NAME_BUILD_INFO)) {
       setBuildInfoWidgetId(widget.getId());
     }
+
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
@@ -719,6 +724,10 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         }
       }
     }
+  }
+
+  public void setProjectData(IsRow projectRow) {
+    getProjectSelector().setSelection((BeeRow) projectRow, null, true);
   }
 
   void setProperties(List<Long> properties) {
@@ -1361,7 +1370,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, end);
       Data.clearCell(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
     }
-    Data.clearCell(VIEW_APPOINTMENTS, row, COL_DESCRIPTION);
+    Data.clearCell(VIEW_APPOINTMENTS, row, CalendarConstants.COL_DESCRIPTION);
 
     getFormView().updateRow(row, false);
   }
@@ -1379,7 +1388,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     final Long reminderType = getSelectedId(getReminderWidgetId(), reminderTypes);
 
     return CalendarUtils.saveAppointment(callback, isNew, this, getFormView().getActiveRow(),
-        getStart(), getEnd(getStart()), propList, reminderType, getFormView());
+        getStart(), getEnd(getStart()), propList, reminderType, getFormView(), appointmentView);
 
   }
 
@@ -1443,6 +1452,10 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private void setResourceWidgetId(String resourceWidgetId) {
     this.resourceWidgetId = resourceWidgetId;
+  }
+
+  public void setAppointmentView(FormView appointmentView) {
+    this.appointmentView = appointmentView;
   }
 
   public void setSaving(boolean saving) {

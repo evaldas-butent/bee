@@ -114,6 +114,18 @@
   -ms-flex-pack: justify;
 }
 
+.flexBox-horizontal-space-around {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+}
+
 .flexBox-vertical,
 .bee-TreeView,
 .bee-TabbedPages-container,
@@ -171,6 +183,10 @@
   top: 1px;
   width: calc(100% - 2px);
   height: calc(100% - 2px);
+}
+
+.bee-rotate {
+  animation: rotate 1s linear infinite;
 }
 
 .bee-Screen {

@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gwt.json.client.JSONObject;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -18,14 +19,14 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 final class SelfServiceUtils {
@@ -62,54 +63,60 @@ final class SelfServiceUtils {
     }
   }
 
+  static void getCargoPlaces(Filter filter, BiConsumer<BeeRowSet, BeeRowSet> places) {
+    Queries.getData(Arrays.asList(TBL_CARGO_LOADING, TBL_CARGO_UNLOADING),
+        ImmutableMap.of(TBL_CARGO_LOADING, filter, TBL_CARGO_UNLOADING, filter), null,
+        new Queries.DataCallback() {
+          @Override
+          public void onSuccess(Collection<BeeRowSet> data) {
+            BeeRowSet loading = null;
+            BeeRowSet unloading = null;
+
+            for (BeeRowSet rowSet : data) {
+              if (Objects.isNull(loading)) {
+                loading = rowSet;
+              } else {
+                unloading = rowSet;
+              }
+            }
+            places.accept(loading, unloading);
+          }
+        });
+  }
+
   static void getCargos(Filter cargoFilter, Consumer<BeeRowSet> cargoConsumer) {
     Queries.getRowSet(VIEW_ORDER_CARGO, null, cargoFilter, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet cargo) {
-        List<Long> cargoIds = cargo.getRowIds();
-        int handlingIdx = cargo.getColumnIndex(COL_CARGO_HANDLING);
+        getCargoPlaces(Filter.any(COL_CARGO, cargo.getRowIds()), (loading, unloading) -> {
+          for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
+            int jsonIdx = places.getColumnIndex(COL_PLACE_NOTE);
 
-        Queries.getRowSet(VIEW_CARGO_HANDLING, null, Filter.or(Filter.any(COL_CARGO, cargoIds),
-            Filter.idIn(cargo.getDistinctLongs(handlingIdx))),
-            new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet handling) {
-                cargo.addColumn(ValueType.TEXT, null, TBL_CARGO_PLACES);
-                int placesIdx = cargo.getColumnIndex(TBL_CARGO_PLACES);
-                int cargoIdx = handling.getColumnIndex(COL_CARGO);
+            for (BeeRow cargoRow : cargo) {
+              BeeRowSet current = new BeeRowSet(places.getViewName(), places.getColumns());
 
-                for (BeeRow cargoRow : cargo) {
-                  BeeRowSet currentHandling = new BeeRowSet(handling.getViewName(),
-                      handling.getColumns());
+              for (BeeRow place : DataUtils.filterRows(places, COL_CARGO, cargoRow.getId())) {
+                BeeRow cloned = DataUtils.cloneRow(place);
+                String jsonString = place.getString(jsonIdx);
 
-                  for (BeeRow handlingRow : handling) {
-                    if (Objects.equals(handlingRow.getId(), cargoRow.getLong(handlingIdx))
-                        || Objects.equals(handlingRow.getLong(cargoIdx), cargoRow.getId())) {
+                if (JsonUtils.isJson(jsonString)) {
+                  JSONObject json = JsonUtils.parseObject(jsonString);
 
-                      BeeRow cloned = DataUtils.cloneRow(handlingRow);
+                  for (String key : json.keySet()) {
+                    int idx = places.getColumnIndex(key + "Name");
 
-                      String jsonString = handlingRow
-                          .getString(handling.getColumnIndex(ALS_CARGO_HANDLING_NOTES));
-
-                      if (JsonUtils.isJson(jsonString)) {
-                        JSONObject json = JsonUtils.parseObject(jsonString);
-
-                        for (String key : json.keySet()) {
-                          int idx = handling.getColumnIndex(key + "Name");
-
-                          if (!BeeConst.isUndef(idx) && BeeUtils.isEmpty(cloned.getString(idx))) {
-                            cloned.setValue(idx, JsonUtils.getString(json, key));
-                          }
-                        }
-                      }
-                      currentHandling.addRow(cloned);
+                    if (!BeeConst.isUndef(idx) && BeeUtils.isEmpty(cloned.getString(idx))) {
+                      cloned.setValue(idx, JsonUtils.getString(json, key));
                     }
                   }
-                  cargoRow.setValue(placesIdx, currentHandling.serialize());
                 }
-                cargoConsumer.accept(cargo);
+                current.addRow(cloned);
               }
-            });
+              cargoRow.setProperty(places.getViewName(), current.serialize());
+            }
+          }
+          cargoConsumer.accept(cargo);
+        });
       }
     });
   }

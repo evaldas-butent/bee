@@ -33,6 +33,7 @@
     <Boolean name="CustomsBrokerage" label="=trRequestCustomsBrokerage" />
     <Boolean name="FreightInsurance" label="=trRequestFreightInsurance" />
 
+    <!--TODO: remove-->
     <Relation name="CargoHandling" unique="true" relation="CargoHandling" cascade="SET_NULL"
               editable="true" label="=cargoHandlingPlaces" />
 

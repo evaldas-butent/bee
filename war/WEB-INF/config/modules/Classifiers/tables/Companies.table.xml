@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Companies"
-  idName="CompanyID"
-  >
+       name="Companies"
+       idName="CompanyID"
+>
   <Fields>
     <Relation name="Owner" relation="Companies" />
     <String name="Name" precision="100" notNull="true" label="=companyName" />
@@ -27,7 +27,7 @@
     <Relation name="TurnoverCurrency" relation="Currencies" label="=currency" />
 
     <Relation name="CompanyRelationTypeState" relation="RelationTypeStates"
-      label="=companyRelationState" />
+              label="=companyRelationState" />
 
     <Integer name="CreditLimit" label="=creditLimit" />
     <Relation name="LimitCurrency" relation="Currencies" label="=limitCurrency" />
@@ -38,9 +38,9 @@
 
     <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
     <Relation name="DefaultBankAccount" relation="CompanyBankAccounts" unique="true"
-      cascade="SET_NULL" label="=defaultBankAccount" />
+              cascade="SET_NULL" label="=defaultBankAccount" />
     <Relation name="DefaultCompanyUser" relation="CompanyUsers" unique="true"
-      cascade="SET_NULL" label="=defaultCompanyUser" />
+              cascade="SET_NULL" label="=defaultCompanyUser" />
 
     <Numeric name="DiscountPercent" precision="7" scale="3" label="=discountPercent" />
     <Relation name="DiscountParent" relation="Companies" label="=discountParent" />
@@ -50,6 +50,11 @@
 
     <DateTime name="Created" label="Registruota" defExpr="CURRENT_TIME" />
     <Relation name="Creator" relation="Users" label="=creator" defExpr="CURRENT_USER" />
+
+    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+              label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+              label="=finTradeAccounts" />
 
     <Text name="Notes" label="=notes" />
   </Fields>

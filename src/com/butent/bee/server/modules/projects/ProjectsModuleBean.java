@@ -1230,10 +1230,14 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
 
         if (DataUtils.isId(userId) && dic != null) {
           chat.putMessage(
-              BeeUtils.joinWords(dic.project(), row.getValue(COL_PROJECT_NAME),
-                  dic.prjDates(), row.getDateTime(COL_DATES_START_DATE).toCompactString(),
+              BeeUtils.joinWords(dic.project(),
+                  BeeConst.STRING_QUOT + row.getValue(COL_PROJECT_NAME) + BeeConst.STRING_QUOT
+                      + BeeConst.STRING_POINT,
+                  dic.prjDates() + BeeConst.STRING_COLON,
+                  row.getDateTime(COL_DATES_START_DATE).toCompactString() + BeeConst.STRING_POINT,
                   BeeUtils.isEmpty(row.getValue(COL_DATES_NOTE))
-                      ? "" :  dic.note(), row.getValue(COL_DATES_NOTE)),
+                      ? "" :  BeeUtils.joinWords(dic.note() + BeeConst.STRING_COLON,
+                      row.getValue(COL_DATES_NOTE) + BeeConst.STRING_POINT)),
               userId,
               linkData);
         }

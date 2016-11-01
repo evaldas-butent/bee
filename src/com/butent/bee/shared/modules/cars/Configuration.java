@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 public class Configuration implements BeeSerializable {
 
@@ -169,6 +170,10 @@ public class Configuration implements BeeSerializable {
     }
   }
 
+  public Collection<Bundle> getAllBundles() {
+    return data.keySet();
+  }
+
   public List<Dimension> getAllDimensions() {
     List<Dimension> allDimensions = new ArrayList<>(getRowDimensions());
     allDimensions.addAll(getColDimensions());
@@ -183,6 +188,11 @@ public class Configuration implements BeeSerializable {
   public String getBundlePrice(Bundle bundle) {
     Pair<DataInfo, Boolean> pair = data.get(bundle);
     return pair != null && pair.getA() != null ? pair.getA().getPrice() : null;
+  }
+
+  public Collection<Bundle> getBundles() {
+    return getAllBundles().stream().filter(bundle -> getBundlePrice(bundle) != null)
+        .collect(Collectors.toSet());
   }
 
   public boolean isBundleBlocked(Bundle bundle) {
@@ -292,15 +302,6 @@ public class Configuration implements BeeSerializable {
 
   public List<Dimension> getRowDimensions() {
     return rowDimensions;
-  }
-
-  public boolean hasBundles() {
-    for (Pair<DataInfo, Boolean> pair : data.values()) {
-      if (Objects.nonNull(pair) && Objects.nonNull(pair.getA())) {
-        return true;
-      }
-    }
-    return false;
   }
 
   public boolean hasRelation(Option option, Bundle bundle) {

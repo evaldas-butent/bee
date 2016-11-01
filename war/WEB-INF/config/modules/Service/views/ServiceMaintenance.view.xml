@@ -3,8 +3,10 @@
 
   name="ServiceMaintenance" source="ServiceMaintenance" module="Service"
   caption="=svcMaintenance" newRowCaption="=svcNewMaintenance"
+  editForm="ServiceMaintenance" newRowForm="ServiceMaintenance"
   >
   <Columns>
+    <IdColumn name="ID"/>
     <SimpleColumn name="Type"/>
     <SimpleJoin joinType="INNER" name="Type">
       <SimpleColumn name="Name" alias="TypeName" />
@@ -17,20 +19,14 @@
 
     <SimpleColumn name="ServiceObject"/>
     <SimpleJoin name="ServiceObject" joinType="INNER">
-      <SimpleColumn name="Customer" />
-      <SimpleJoin joinType="LEFT" name="Customer">
-        <SimpleColumn name="Name" alias="CustomerName" />
+      <SimpleColumn name="Manufacturer" />
+      <SimpleJoin joinType="LEFT" name="Manufacturer">
+        <SimpleColumn name="Name" alias="ManufacturerName" />
       </SimpleJoin>
 
-      <SimpleColumn name="ContactPerson" />
-      <SimpleJoin joinType="LEFT" name="ContactPerson">
-        <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn alias="ContactFirstName" name="FirstName" />
-          <SimpleColumn alias="ContactLastName" name="LastName" />
-        </SimpleJoin>
-        <SimpleJoin name="Contact" joinType="LEFT">
-          <SimpleColumn name="Phone" />
-        </SimpleJoin>
+      <SimpleColumn name="Contractor" />
+      <SimpleJoin joinType="LEFT" name="Contractor">
+        <SimpleColumn name="Name" alias="ContractorName" />
       </SimpleJoin>
 
       <SimpleColumn name="Category" />
@@ -67,8 +63,13 @@
     <SimpleJoin name="Creator" joinType="LEFT">
       <SimpleColumn alias="CreatorCompanyPerson" name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleColumn name="Department" />
         <SimpleJoin name="Department" joinType="LEFT">
           <SimpleColumn alias="CreatorDepartmentName" name="Name" />
+        </SimpleJoin>
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="CreatorFirstName" name="FirstName" />
+          <SimpleColumn alias="CreatorLastName" name="LastName" />
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
@@ -76,6 +77,32 @@
     <SimpleColumn name="WarrantyMaintenance"/>
     <SimpleColumn name="WarrantyValidTo"/>
     <SimpleColumn name="EndingDate"/>
+
+    <SimpleColumn name="Company" alias="Company"/>
+    <SimpleJoin joinType="LEFT" name="Company">
+      <SimpleColumn name="Name" alias="CompanyName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CompanyTypeName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Contact" />
+    <SimpleJoin joinType="LEFT" name="Contact">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="ContactFirstName" name="FirstName" />
+        <SimpleColumn alias="ContactLastName" name="LastName" />
+      </SimpleJoin>
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Phone" alias="ContactPhone"/>
+        <SimpleColumn name="Email" alias="ContactEmail"/>
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="ContactEmailAddress"/>
+        </SimpleJoin>
+        <SimpleColumn name="Address" alias="ContactAddress"/>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Equipment" />
     </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

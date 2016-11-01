@@ -88,6 +88,7 @@ import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
+import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeCostBasis;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
@@ -1581,40 +1582,37 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     ResponseObject response;
 
-    switch (operationType) {
-      case PURCHASE:
-        if (toStock) {
+    if (operationType.consumesStock() && operationType.producesStock()) {
+      if (toStock) {
+        response = adoptItems(itemCondition, warehouseFrom);
+        if (!response.hasErrors()) {
           response = insertStock(itemCondition, warehouseTo);
-        } else {
+        }
+
+      } else {
+        response = leaveParents(itemCondition);
+        if (!response.hasErrors()) {
           response = deleteStock(itemCondition);
         }
-        break;
+      }
 
-      case SALE:
-        if (toStock) {
-          response = adoptItems(itemCondition, warehouseFrom);
-        } else {
-          response = leaveParents(itemCondition);
-        }
-        break;
+    } else if (operationType.producesStock()) {
+      if (toStock) {
+        response = insertStock(itemCondition, warehouseTo);
+      } else {
+        response = deleteStock(itemCondition);
+      }
 
-      case TRANSFER:
-        if (toStock) {
-          response = adoptItems(itemCondition, warehouseFrom);
-          if (!response.hasErrors()) {
-            response = insertStock(itemCondition, warehouseTo);
-          }
+    } else if (operationType.consumesStock()) {
+      if (toStock) {
+        response = adoptItems(itemCondition, warehouseFrom);
+      } else {
+        response = leaveParents(itemCondition);
+      }
 
-        } else {
-          response = leaveParents(itemCondition);
-          if (!response.hasErrors()) {
-            response = deleteStock(itemCondition);
-          }
-        }
-        break;
-
-      default:
-        response = ResponseObject.error("phase transition: unknown operation type", operationType);
+    } else {
+      response = ResponseObject.error("phase transition: operation type", operationType,
+          "does not modify stock");
     }
 
     return response;
@@ -1819,27 +1817,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     String errorMessage = null;
 
-    switch (operationType) {
-      case PURCHASE:
-        if (!toStock && hasChildren(itemCondition)) {
-          errorMessage = "document has children";
-        }
-        break;
-
-      case SALE:
-        if (toStock && !verifyStock(itemCondition, warehouseFrom)) {
-          errorMessage = "not enough stock";
-        }
-        break;
-
-      case TRANSFER:
-        if (toStock && !verifyStock(itemCondition, warehouseFrom)) {
-          errorMessage = "not enough stock";
-        }
-        if (!toStock && hasChildren(itemCondition)) {
-          errorMessage = "document has children";
-        }
-        break;
+    if (operationType.producesStock() && !toStock && hasChildren(itemCondition)) {
+      errorMessage = "document has children";
+    }
+    if (operationType.consumesStock() && toStock && !verifyStock(itemCondition, warehouseFrom)) {
+      errorMessage = "not enough stock";
     }
 
     return errorMessage;

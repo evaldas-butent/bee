@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  
-  name="Warehouses" viewName="Warehouses" caption="=warehouses"
-  >
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="Warehouses" viewName="Warehouses" caption="=warehouses"
+>
   <g:columns>
     <DataColumn name="Code" visible="true" />
     <DataColumn name="Name" />
@@ -21,8 +23,8 @@
     <DataColumn name="CountryName" />
 
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
-      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-">
+                caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+                filterOptions="-" visible="false">
       <renderer type="flag" />
     </CalcColumn>
 
@@ -32,4 +34,7 @@
     <DataColumn name="PostIndex" visible="false" />
     <DataColumn name="Website" visible="false" />
   </g:columns>
+
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+  <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
 </g:Grid>

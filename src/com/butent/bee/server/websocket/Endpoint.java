@@ -2,6 +2,7 @@ package com.butent.bee.server.websocket;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.Chat;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.data.BeeRow;
@@ -59,8 +60,6 @@ import javax.websocket.OnOpen;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.RemoteEndpoint.Async;
 import javax.websocket.RemoteEndpoint.Basic;
-import javax.websocket.SendHandler;
-import javax.websocket.SendResult;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 import javax.websocket.server.PathParam;
@@ -81,18 +80,18 @@ public class Endpoint {
   private static BeeLogger logger = LogUtils.getLogger(Endpoint.class);
 
   private static Queue<Session> openSessions = new ConcurrentLinkedQueue<>();
-  private static Map<String, String> progressToSession = new ConcurrentHashMap<>();
+  private static Map<String, Pair<String, Long>> progressToSession = new ConcurrentHashMap<>();
 
   private static Class<? extends RemoteEndpoint> remoteEndpointType;
 
   public static boolean closeProgress(String progressId) {
     boolean ok = false;
-    String sessionId = progressToSession.remove(progressId);
+    Pair<String, Long> pair = progressToSession.remove(progressId);
 
-    if (BeeUtils.isEmpty(sessionId)) {
+    if (Objects.isNull(pair)) {
       logger.info("ws session not found for progress:", progressId);
     } else {
-      Session session = findOpenSession(sessionId, true);
+      Session session = findOpenSession(pair.getA(), true);
 
       if (session != null) {
         send(session, ProgressMessage.close(progressId));
@@ -177,18 +176,24 @@ public class Endpoint {
   }
 
   public static boolean updateProgress(String progressId, String label, double value) {
-    String sessionId = progressToSession.get(progressId);
+    Pair<String, Long> pair = progressToSession.get(progressId);
 
-    if (BeeUtils.isEmpty(sessionId)) {
+    if (Objects.isNull(pair)) {
       logger.info("ws session not found for progress:", progressId, "value", value);
       return false;
 
     } else {
-      Session session = findOpenSession(sessionId, true);
-      if (session != null) {
-        send(session, ProgressMessage.update(progressId, label, value));
+      if (!BeeUtils.isEmpty(label)) {
+        pair.setB(0L);
       }
+      if ((System.currentTimeMillis() - pair.getB()) > 10) {
+        Session session = findOpenSession(pair.getA(), true);
 
+        if (session != null) {
+          send(session, ProgressMessage.update(progressId, label, value));
+        }
+        pair.setB(System.currentTimeMillis());
+      }
       return true;
     }
   }
@@ -308,14 +313,15 @@ public class Endpoint {
           WsUtils.onEmptyMessage(message, toLog(session));
 
         } else if (pm.isOpen()) {
-          progressToSession.put(progressId, session.getId());
+          progressToSession.put(progressId, Pair.of(session.getId(), 0L));
           logger.info("ws activated progress:", progressId, "session:", session.getId());
 
           send(session, ProgressMessage.activate(progressId));
 
         } else if (pm.isClosed() || pm.isCanceled()) {
-          String removed = progressToSession.remove(progressId);
-          logger.debug("ws remove progress:", progressId, "session:", removed);
+          Pair<String, Long> removed = progressToSession.remove(progressId);
+          logger.debug("ws remove progress:", progressId, "session:",
+              Objects.nonNull(removed) ? removed.getA() : null);
 
         } else {
           WsUtils.onInvalidState(message, toLog(session));
@@ -595,16 +601,13 @@ public class Endpoint {
       }
 
       if (RemoteEndpoint.Async.class.equals(type)) {
-        session.getAsyncRemote().sendText(text, new SendHandler() {
-          @Override
-          public void onResult(SendResult result) {
-            if (result.isOK()) {
-              if (info != null) {
-                logger.debug("transmitted", info);
-              }
-            } else {
-              logger.error(result.getException());
+        session.getAsyncRemote().sendText(text, result -> {
+          if (result.isOK()) {
+            if (info != null) {
+              logger.debug("transmitted", info);
             }
+          } else {
+            logger.error(result.getException());
           }
         });
 
@@ -669,15 +672,14 @@ public class Endpoint {
   public void onClose(Session session, CloseReason closeReason) {
     openSessions.remove(session);
 
-    if (!progressToSession.isEmpty() && progressToSession.values().contains(session.getId())) {
+    if (!progressToSession.isEmpty()) {
       Set<String> keys = new HashSet<>();
 
-      for (Map.Entry<String, String> entry : progressToSession.entrySet()) {
-        if (entry.getValue().equals(session.getId())) {
-          keys.add(entry.getKey());
+      progressToSession.forEach((key, value) -> {
+        if (value.getA().equals(session.getId())) {
+          keys.add(key);
         }
-      }
-
+      });
       for (String key : keys) {
         progressToSession.remove(key);
       }

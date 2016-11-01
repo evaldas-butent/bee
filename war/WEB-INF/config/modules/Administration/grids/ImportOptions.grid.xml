@@ -3,9 +3,8 @@
         xmlns:ui="http://www.butent.com/ui"
 
         name="ImportOptions" viewName="ImportOptions" caption="=trImportOptions"
-        filter="!(RelationOption)"
-        disabledActions="configure"
-    >
+        filter="!(RelationOption)" disabledActions="configure"
+>
   <g:columns>
     <DataColumn name="Type" readOnly="true">
       <style>

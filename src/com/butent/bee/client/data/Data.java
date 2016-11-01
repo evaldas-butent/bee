@@ -84,7 +84,7 @@ public final class Data {
   }
 
   public static BeeRowSet createRowSet(String viewName) {
-    return new BeeRowSet(viewName, getColumns(viewName));
+    return new BeeRowSet(viewName, new ArrayList<>(getColumns(viewName)));
   }
 
   public static boolean equals(String viewName, IsRow row, String colName, Long value) {

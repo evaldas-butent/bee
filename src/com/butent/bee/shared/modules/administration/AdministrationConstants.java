@@ -115,6 +115,7 @@ public final class AdministrationConstants {
   }
 
   public static final String FILE_URL = "file";
+  public static final String FILE_COMMIT = "CommitFile";
 
   public static final String PARAMETERS_PREFIX = "parameters_";
 
@@ -164,7 +165,8 @@ public final class AdministrationConstants {
   public static final String VAR_IMPORT_TEST = "Test";
   public static final String VAR_IMPORT_FILE = "File";
   public static final String VAR_IMPORT_SHEET = "Sheet";
-  public static final String VAR_IMPORT_START_ROW = "Row";
+  public static final String VAR_IMPORT_START_ROW = "StartRow";
+  public static final String VAR_IMPORT_END_ROW = "EndRow";
   public static final String VAR_IMPORT_DATE_FORMAT = "DateFormat";
 
   public static final String VAR_IMPORT_LOGIN = "Login";
@@ -438,8 +440,8 @@ public final class AdministrationConstants {
   public static final String FORM_COMPANY_STRUCTURE = "CompanyStructure";
   public static final String FORM_NEW_ROLE = "NewRole";
 
-  public static final String FORM_IMPORTS = "Imports";
-  public static final String FORM_IMPORT_DATA = "ImportData";
+  public static final String FORM_IMPORT_MAPPINGS = "ImportOptionMappings";
+  public static final String FORM_IMPORT_OPTION = "ImportOption";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 

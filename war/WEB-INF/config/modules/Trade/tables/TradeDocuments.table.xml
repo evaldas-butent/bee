@@ -37,6 +37,8 @@
 
     <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
       label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+      label="=finTradeAccounts" />
 
     <Enum name="DocumentVatMode" key="TradeVatMode" label="=vatMode" />
     <Enum name="DocumentDiscountMode" key="TradeDiscountMode" label="=discountMode" />

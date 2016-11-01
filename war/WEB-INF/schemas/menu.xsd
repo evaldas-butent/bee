@@ -57,6 +57,8 @@
       <xs:enumeration value="trade_act_list" />
       <xs:enumeration value="trade_documents" />
       <xs:enumeration value="rebuild_trade_stock" />
+      <xs:enumeration value="finance_default_accounts" />
+      <xs:enumeration value="finance_posting_precedence" />
     </xs:restriction>
   </xs:simpleType>
 

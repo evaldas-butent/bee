@@ -12,6 +12,5 @@
     <Boolean name="Blocked" label="=actionBlock" />
     <Numeric name="Ordinal" precision="3" label="=ordinal" />
     <Relation name="Type" relation="ConfTypes" label="=optionType" />
-    <Relation name="Option" relation="ConfOptions" label="=option" /><!--TODO: remove-->
   </Fields>
 </Table>

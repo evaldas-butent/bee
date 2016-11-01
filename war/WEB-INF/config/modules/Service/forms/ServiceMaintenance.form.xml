@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+    <!ENTITY cell "padding-bottom: 2px;">
+    <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
+    <!ENTITY inp "display: inline-block; width: 250px;">
+    <!ENTITY tbl "border-collapse: collapse;">
+    <!ENTITY lbl "vertical-align: top;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+
+  name="ServiceMaintenance" viewName="ServiceMaintenance" caption="=svcMaintenance" showRowId="true"
+  >
+  <FlowPanel class="flexBox-vertical" style="margin:5px; overflow:scroll;">
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;"/>
+      <col index="2" cellStyle="&col1;"/>
+
+      <row>
+        <Label for="Type" class="bee-required" />
+        <DataSelector source="Type" required="true" choiceColumns="Name" style="&inp;"/>
+        <Label for="State" text="=status" class="bee-required" />
+        <DataSelector source="State" required="true" choiceColumns="Name" style="&inp;"/>
+      </row>
+      <row>
+        <text/>
+        <CheckBox source="Urgent" summarize="true"/>
+        <Label text="=companyDepartment" class="bee-required" />
+        <TextLabel source="CreatorDepartmentName"  contentEditable="false" style="&inp;"/>
+      </row>
+      <row>
+        <br/>
+      </row>
+      <row>
+        <Label text="=svcDevice" />
+        <DataSelector source="ServiceObject" viewName="ServiceObjects"
+                      choiceColumns="SerialNo CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
+                      style="&inp;"/>
+        <Label for="Contact" />
+        <DataSelector source="Contact" viewName="CompanyPersons"
+                      choiceColumns="FirstName LastName"
+                      renderColumns="ContactFirstName ContactLastName" style="&inp;"/>
+      </row>
+      <row>
+        <Label text="=category" class="bee-required" />
+        <TextLabel source="CategoryName"  contentEditable="false" style="&inp;"/>
+        <Label text="=phone" class="bee-required" />
+        <DataSelector source="Contact" viewName="CompanyPersons" required="true"
+                      choiceColumns="Phone FirstName LastName CompanyName" renderColumns="ContactPhone"
+                      style="&inp;"/>
+      </row>
+      <row>
+        <Label text="=tcdBrand" />
+        <TextLabel source="ManufacturerName" contentEditable="false" style="&inp;"/>
+        <Label for="Company" text="=client" />
+        <DataSelector source="Company" viewName="Companies"
+                      choiceColumns="Name TypeName" renderColumns="CompanyName CompanyTypeName"
+                      style="&inp;"/>
+      </row>
+      <row>
+        <Label for="Model" />
+        <TextLabel source="Model" contentEditable="false" style="&inp;"/>
+        <Label text="=email" />
+        <DataSelector source="Contact" viewName="CompanyPersons"
+                      choiceColumns="Email FirstName LastName CompanyName"
+                      renderColumns="ContactEmailAddress" style="&inp;"/>
+      </row>
+      <row>
+        <Label text="=svcSerialNo"/>
+        <TextLabel source="SerialNo" contentEditable="false" style="&inp;"/>
+        <Label text="=address" />
+        <DataSelector source="Contact" viewName="CompanyPersons"
+                      choiceColumns="Address FirstName LastName CompanyName"
+                      renderColumns="ContactAddress" style="&inp;"/>
+      </row>
+      <row>
+        <cell rowSpan="3" style="&lbl;">
+          <Label for="Equipment"/>
+        </cell>
+        <cell rowSpan="3">
+          <InputArea source="Equipment" visibleLines="5" style="&inp;"/>
+        </cell>
+        <text/>
+        <CheckBox name="WarrantyMaintenance" text="=svcWarrantyMaintenance" summarize="true" />
+      </row>
+      <row>
+        <Label for="WarrantyType" />
+        <DataSelector source="WarrantyType" style="&inp;"/>
+      </row>
+      <row>
+        <Label for="WarrantyMaintenance" />
+        <DataSelector source="WarrantyMaintenance" viewName="ServiceMaintenance"
+                      choiceColumns="Id" filter="WarrantyValidTo > {t}" style="&inp;"/>
+      </row>
+      <row>
+        <cell rowSpan="2" style="&lbl;">
+          <Label for="Description"/>
+        </cell>
+        <cell rowSpan="2">
+          <InputArea source="Description" visibleLines="4" style="&inp;"/>
+        </cell>
+        <Label for="Contractor" text="=svcDefectSupplier" />
+        <TextLabel source="ContractorName"  contentEditable="false" style="&inp;"/>
+      </row>
+      <row>
+        <Label for="Repairer" />
+        <DataSelector source="Repairer" renderColumns="RepairerFirstName RepairerLastName"
+                      style="&inp;"/>
+      </row>
+      <row>
+        <br/>
+      </row>
+      <row>
+        <Label for="Date" />
+        <InputDateTime source="Date" readOnly="true" />
+        <Label for="EndingDate" />
+        <InputDateTime source="EndingDate"/>
+      </row>
+      <row>
+        <Label for="Creator" />
+        <TextLabel contentEditable="false" style="&inp;">
+          <renderToken source="CreatorFirstName"/>
+          <renderToken source="CreatorLastName"/>
+        </TextLabel>
+        <Label for="WarrantyValidTo" />
+        <InputDateTime source="WarrantyValidTo"  />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

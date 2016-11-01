@@ -51,6 +51,7 @@ import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.TotalRenderer;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -185,7 +186,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
 
             for (String col : new String[] {
-                COL_ORDER_NO, COL_DATE, COL_CARGO, COL_CARGO_HANDLING, COL_ASSESSMENT_STATUS,
+                COL_ORDER_NO, COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
                 COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG,
                 "LogCount", "Finished", "FinishedCount"}) {
               newRow.clearCell(form.getDataIndex(col));
@@ -928,39 +929,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   @Override
-  public FormInterceptor getPrintFormInterceptor() {
-    return new AssessmentPrintForm() {
-      @Override
-      public void beforeRefresh(FormView formView, IsRow row) {
-        super.beforeRefresh(formView, row);
-        updateTotals(formView, row, formView.getWidgetByName(VAR_TOTAL), null, null, null, null);
-        updateVehicles(formView.getWidgetByName(COL_FORWARDER_VEHICLE), form.getActiveRowId());
-      }
-
-      private void updateVehicles(final Widget vehicleWidget, long assessmentId) {
-        if (vehicleWidget != null) {
-          Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS, Lists.newArrayList(COL_FORWARDER_VEHICLE),
-              Filter.and(Filter.isEqual(COL_ASSESSMENT, new LongValue(assessmentId)),
-                  Filter.notNull(COL_FORWARDER_VEHICLE)), new RowSetCallback() {
-                @Override
-                public void onSuccess(BeeRowSet result) {
-                  StringBuilder vehicles = new StringBuilder();
-
-                  for (int i = 0; i < result.getNumberOfRows(); i++) {
-                    if (i > 0) {
-                      vehicles.append(", ");
-                    }
-                    vehicles.append(result.getString(i, COL_FORWARDER_VEHICLE));
-                  }
-                  vehicleWidget.getElement().setInnerText(vehicles.toString());
-                }
-              });
-        }
-      }
-    };
-  }
-
-  @Override
   public FormInterceptor getInstance() {
     return new AssessmentForm();
   }
@@ -1096,8 +1064,20 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   @Override
-  protected Consumer<FileInfo> getReportCallback() {
-    return fileInfo -> sendMail(null, fileInfo);
+  protected ReportUtils.ReportCallback getReportCallback() {
+    return new ReportUtils.ReportCallback() {
+      @Override
+      public void accept(FileInfo fileInfo) {
+        sendMail(null, fileInfo);
+      }
+
+      @Override
+      public Widget getActionWidget() {
+        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
+        action.setTitle(Localized.dictionary().trWriteEmail());
+        return action;
+      }
+    };
   }
 
   @Override
@@ -1128,9 +1108,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     final String cellStyle = "border:1px solid black;padding:3px; white-space:pre-wrap;";
 
     final HtmlTable table = new HtmlTable();
-    table.getElement().getStyle().setProperty("border-collapse", "collapse");
+    table.getElement().setAttribute("style", "border-collapse:collapse;");
     table.setDefaultCellStyles(cellStyle);
-    table.setColumnCellStyles(0, cellStyle + "text-align:right; font-weight:bold;");
     int c = 0;
 
     Multimap<String, String> flds = LinkedListMultimap.create();
@@ -1138,12 +1117,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     flds.put("Date", null);
     flds.put("Number", null);
     flds.put("OrderNotes", null);
-    flds.put("LoadingDate", null);
-    flds.put("UnloadingDate", null);
-    flds.put("LoadingAddress", "LoadingPostIndex");
-    flds.put("LoadingAddress", "LoadingCountryName");
-    flds.put("UnloadingAddress", "UnloadingPostIndex");
-    flds.put("UnloadingAddress", "UnloadingCountryName");
     flds.put("CargoNotes", null);
     flds.put("Description", null);
     flds.put("Quantity", "QuantityUnitName");
@@ -1167,57 +1140,80 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       }
     }
     String total = form.getWidgetByName(VAR_INCOME + VAR_TOTAL).getElement().getInnerText();
-    table.setText(c, 0, Localized.maybeTranslate("=customerPrice"));
+    table.setText(c, 0, Localized.dictionary().customerPrice());
     table.setText(c, 1, BeeUtils.joinWords(total, form.getStringValue("CurrencyName")));
 
-    Queries.getRowSet(VIEW_ASSESSMENTS, Lists.newArrayList(COL_CARGO),
-        Filter.equals(COL_ASSESSMENT, getActiveRowId()), new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet cargos) {
-            Set<Long> cargoIds = new HashSet<>();
-            cargoIds.add(form.getLongValue(COL_CARGO));
+    SelfServiceUtils.getCargoPlaces(Filter.equals(COL_CARGO, form.getLongValue(COL_CARGO)),
+        (loading, unloading) -> {
+          for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
+            int r = table.getRowCount();
 
-            for (IsRow row : cargos) {
-              cargoIds.add(row.getLong(0));
+            table.getCellFormatter().setColSpan(r, 0, 2);
+            table.getCellFormatter().setHorizontalAlignment(r, 0, TextAlign.CENTER);
+            table.setText(r, 0, Data.getViewCaption(places.getViewName()));
+            r++;
+
+            for (int i = 0; i < places.getNumberOfRows(); i++) {
+              table.getCellFormatter().setColSpan(r, 0, 2);
+              table.setText(r, 0, BeeUtils.joinItems(TimeUtils.renderCompact(places
+                      .getDateTime(i, COL_PLACE_DATE)), places.getString(i, COL_PLACE_ADDRESS),
+                  places.getString(i, COL_PLACE_POST_INDEX),
+                  places.getString(i, ALS_COUNTRY_NAME)));
+              r++;
             }
-            Queries.getRowSet(VIEW_CARGO_INCOMES, null,
-                Filter.any(COL_CARGO, cargoIds), new RowSetCallback() {
-                  @Override
-                  public void onSuccess(BeeRowSet incomes) {
-                    if (!DataUtils.isEmpty(incomes)) {
-                      int r = table.getRowCount();
-
-                      table.getCellFormatter().setColSpan(r, 0, 2);
-                      table.getCellFormatter().setHorizontalAlignment(r, 0, TextAlign.CENTER);
-                      table.setText(r, 0, Localized.maybeTranslate("=trOrderCargoServices"));
-                      r++;
-
-                      TotalRenderer totalRenderer = new TotalRenderer(incomes.getColumns());
-                      table.setColumnCellStyles(0, cellStyle);
-
-                      for (IsRow row : incomes) {
-                        table.setText(r, 0,
-                            Data.getString(VIEW_CARGO_INCOMES, row, ALS_SERVICE_NAME));
-
-                        String currency = Data.getString(VIEW_CARGO_INCOMES, row, "CurrencyName");
-                        String amount = BeeUtils.joinWords(totalRenderer.render(row), currency);
-
-                        String vat = Data.getString(VIEW_CARGO_INCOMES, row, "Vat");
-
-                        if (!BeeUtils.isEmpty(vat)) {
-                          boolean percent = BeeUtils.unbox(Data.getBoolean(VIEW_CARGO_INCOMES, row,
-                              "VatPercent"));
-                          amount += " (" + Localized.dictionary().vat() + " " + vat
-                              + (percent ? "%" : " " + currency) + ")";
-                        }
-                        table.setText(r, 1, amount);
-                        r++;
-                      }
-                    }
-                    sendMail(Document.get().createBRElement().getString() + table.toString());
-                  }
-                });
           }
+          Queries.getRowSet(VIEW_ASSESSMENTS, Lists.newArrayList(COL_CARGO),
+              Filter.equals(COL_ASSESSMENT, getActiveRowId()), new RowSetCallback() {
+                @Override
+                public void onSuccess(BeeRowSet cargos) {
+                  Set<Long> cargoIds = new HashSet<>();
+                  cargoIds.add(form.getLongValue(COL_CARGO));
+
+                  for (IsRow row : cargos) {
+                    cargoIds.add(row.getLong(0));
+                  }
+                  Queries.getRowSet(VIEW_CARGO_INCOMES, null,
+                      Filter.any(COL_CARGO, cargoIds), new RowSetCallback() {
+                        @Override
+                        public void onSuccess(BeeRowSet incomes) {
+                          if (!DataUtils.isEmpty(incomes)) {
+                            int r = table.getRowCount();
+
+                            table.getCellFormatter().setColSpan(r, 0, 2);
+                            table.getCellFormatter().setHorizontalAlignment(r, 0,
+                                TextAlign.CENTER);
+                            table.setText(r, 0, Localized.dictionary().trOrderCargoServices());
+                            r++;
+
+                            TotalRenderer totalRenderer = new TotalRenderer(incomes.getColumns());
+                            table.setColumnCellStyles(0, cellStyle);
+
+                            for (IsRow row : incomes) {
+                              table.setText(r, 0,
+                                  Data.getString(VIEW_CARGO_INCOMES, row, ALS_SERVICE_NAME));
+
+                              String currency = Data.getString(VIEW_CARGO_INCOMES, row,
+                                  "CurrencyName");
+                              String amount = BeeUtils.joinWords(totalRenderer.render(row),
+                                  currency);
+
+                              String vat = Data.getString(VIEW_CARGO_INCOMES, row, "Vat");
+
+                              if (!BeeUtils.isEmpty(vat)) {
+                                boolean percent = BeeUtils.unbox(Data
+                                    .getBoolean(VIEW_CARGO_INCOMES, row, "VatPercent"));
+                                amount += " (" + Localized.dictionary().vat() + " " + vat
+                                    + (percent ? "%" : " " + currency) + ")";
+                              }
+                              table.setText(r, 1, amount);
+                              r++;
+                            }
+                          }
+                          sendMail(Document.get().createBRElement().getString() + table);
+                        }
+                      });
+                }
+              });
         });
   }
 
@@ -1233,14 +1229,11 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     if (Objects.equals(oldLog, newLog)) {
       final Map<String, DateTime> dates = new LinkedHashMap<>();
 
-      for (String col : new String[] {COL_DATE, ALS_LOADING_DATE, ALS_UNLOADING_DATE}) {
-        int idx = form.getDataIndex(col);
-        DateTime oldValue = form.getOldRow().getDateTime(idx);
-        DateTime value = form.getActiveRow().getDateTime(idx);
+      int idx = form.getDataIndex(COL_DATE);
+      DateTime value = form.getActiveRow().getDateTime(idx);
 
-        if (!Objects.equals(oldValue, value)) {
-          dates.put(Localized.maybeTranslate(form.getDataColumns().get(idx).getLabel()), value);
-        }
+      if (!Objects.equals(form.getOldRow().getDateTime(idx), value)) {
+        dates.put(Localized.maybeTranslate(form.getDataColumns().get(idx).getLabel()), value);
       }
       if (!BeeUtils.isEmpty(dates)) {
         Global.inputString(BeeUtils.join("/", dates.keySet()), loc.trAssessmentReason(),

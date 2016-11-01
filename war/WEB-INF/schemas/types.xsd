@@ -217,6 +217,7 @@
       <xs:enumeration value="Cars" />
       <xs:enumeration value="Cars.Service" />
       <xs:enumeration value="Payroll" />
+      <xs:enumeration value="Finance" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -263,14 +264,15 @@
       <xs:enumeration value="CargoExpenses" />
       <xs:enumeration value="CargoFiles" />
       <xs:enumeration value="CargoGroups" />
-      <xs:enumeration value="CargoHandling" />
       <xs:enumeration value="CargoIncomes" />
       <xs:enumeration value="CargoInvoices" />
+      <xs:enumeration value="CargoLoading" />
       <xs:enumeration value="CargoPurchaseInvoices" />
       <xs:enumeration value="CargoPurchases" />
       <xs:enumeration value="CargoSales" />
       <xs:enumeration value="CargoTrips" />
       <xs:enumeration value="CargoTypes" />
+      <xs:enumeration value="CargoUnloading" />
       <xs:enumeration value="CarOrderItems" />
       <xs:enumeration value="CarOrders" />
       <xs:enumeration value="CategoryTree" />
@@ -376,6 +378,13 @@
       <xs:enumeration value="Favorites" />
       <xs:enumeration value="FamilyRelationTypes" />
       <xs:enumeration value="Filters" />
+      <xs:enumeration value="FinanceConfiguration" />
+      <xs:enumeration value="FinanceContents" />
+      <xs:enumeration value="FinanceDistribution" />
+      <xs:enumeration value="FinanceDistributionOfItems" />
+      <xs:enumeration value="FinanceDistributionOfTradeDocuments" />
+      <xs:enumeration value="FinanceDistributionOfTradeOperations" />
+      <xs:enumeration value="FinancialRecords" />
       <xs:enumeration value="FinancialStates" />
       <xs:enumeration value="Folders" />
       <xs:enumeration value="FuelConsumptions" />
@@ -399,6 +408,7 @@
       <xs:enumeration value="ItemManufacturers" />
       <xs:enumeration value="ItemRemainders" />
       <xs:enumeration value="Items" />
+      <xs:enumeration value="Journals" />
       <xs:enumeration value="Locations" />
       <xs:enumeration value="LossReasons" />
       <xs:enumeration value="Maintenance" />
@@ -556,6 +566,7 @@
       <xs:enumeration value="TimeRanges" />
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TodoList" />
+      <xs:enumeration value="TradeAccounts" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
       <xs:enumeration value="TradeActNames" />

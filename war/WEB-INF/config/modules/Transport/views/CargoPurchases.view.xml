@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+<View xmlns="http://www.butent.com/view"
 
       name="CargoPurchases" source="CargoExpenses"
       caption="=transportTripCosts"
@@ -34,10 +34,6 @@
             </SimpleJoin>
           </SimpleJoin>
         </SimpleJoin>
-      </SimpleJoin>
-
-      <SimpleJoin name="CargoHandling" joinType="LEFT">
-        <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
       </SimpleJoin>
     </SimpleJoin>
 

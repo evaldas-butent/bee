@@ -251,6 +251,8 @@ public final class CalendarConstants {
 
   public static final String VIEW_REPORT_OPTIONS = "ReportOptions";
 
+  public static final String FORM_APPOINTMENT = "Appointment";
+
   public static final String GRID_CALENDAR_EXECUTORS = "CalendarExecutors";
   public static final String GRID_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
 

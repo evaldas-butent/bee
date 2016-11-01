@@ -24,6 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ImportMappingsGrid extends AbstractGridInterceptor implements SelectorEvent.Handler {
 
@@ -58,6 +59,14 @@ public class ImportMappingsGrid extends AbstractGridInterceptor implements Selec
         }
         relation = Relation.create(viewName, columns);
         LogUtils.getRootLogger().warning("Missing relation info:", viewName);
+      }
+      Relation rel = descr.getRelation();
+
+      if (Objects.isNull(rel) || !rel.isNewRowEnabled()) {
+        relation.disableNewRow();
+      }
+      if (Objects.isNull(rel) || !rel.isEditEnabled(true)) {
+        relation.disableEdit();
       }
       descr.setRelation(relation);
 

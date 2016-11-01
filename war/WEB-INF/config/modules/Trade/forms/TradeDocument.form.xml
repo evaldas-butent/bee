@@ -99,6 +99,21 @@
             <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
           </page>
 
+          <page module="Finance" data="TradeAccounts">
+            <text>=finAccounts</text>
+            <xi:include href="../../Classifiers/forms/widgets/TradeAccounts.widget.xml" />
+          </page>
+
+          <page module="Finance">
+            <text>=finDistributionShort</text>
+            <ChildGrid name="TradeDocumentFinanceDistribution" relColumn="TradeDocument" />
+          </page>
+
+          <page module="Finance">
+            <text>=financialRecords</text>
+            <ChildGrid name="TradeDocumentFinancialRecords" relColumn="TradeDocument" />
+          </page>
+
           <page>
             <text>=files</text>
             <ChildGrid name="TradeDocumentFiles" relColumn="TradeDocument" />
@@ -241,8 +256,8 @@
 
             <FlowPanel style="&mfld; &mwn;">
               <Label for="WarehouseFrom" style="&flbl;" />
-              <DataSelector source="WarehouseFrom" style="&finp;" visible="true"
-                            choiceColumns="Code Name"
+              <DataSelector source="WarehouseFrom" style="&finp;" newRowEnabled="false"
+                            visible="true" choiceColumns="Code Name"
                             renderColumns="WarehouseFromCode WarehouseFromName" />
             </FlowPanel>
           </FlowPanel>
@@ -258,7 +273,7 @@
             <FlowPanel style="&mfld; &mwn;">
               <Label for="WarehouseTo" style="&flbl;" />
               <DataSelector source="WarehouseTo" style="&finp;" visible="true"
-                            choiceColumns="Code Name"
+                            newRowEnabled="false" choiceColumns="Code Name"
                             renderColumns="WarehouseToCode WarehouseToName" />
             </FlowPanel>
           </FlowPanel>

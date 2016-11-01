@@ -77,9 +77,6 @@ public final class Global {
 
   private static final BeeLogger logger = LogUtils.getLogger(Global.class);
 
-  private static final MessageBoxes msgBoxen = new MessageBoxes();
-  private static final InputBoxes inpBoxen = new InputBoxes();
-
   private static final CacheManager cache = new CacheManager();
 
   private static final Images.Resources images = Images.createResources();
@@ -138,12 +135,13 @@ public final class Global {
 
   public static void choice(String caption, String prompt, List<String> options,
       ChoiceCallback callback) {
-    msgBoxen.choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF, null, null);
+    MessageBoxes.choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF,
+        null, null);
   }
 
   public static void choiceWithCancel(String caption, String prompt, List<String> options,
       ChoiceCallback callback) {
-    msgBoxen.choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF,
+    MessageBoxes.choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF,
         Localized.dictionary().cancel(), null);
   }
 
@@ -164,7 +162,7 @@ public final class Global {
 
   public static void confirm(String caption, Icon icon, List<String> messages,
       String optionYes, String optionNo, ConfirmationCallback callback, Element target) {
-    msgBoxen.confirm(caption, icon, messages, optionYes, optionNo, callback,
+    MessageBoxes.confirm(caption, icon, messages, optionYes, optionNo, callback,
         MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null, null, target);
   }
 
@@ -175,7 +173,7 @@ public final class Global {
 
   public static void confirmDelete(String caption, Icon icon, List<String> messages,
       ConfirmationCallback callback, Element target) {
-    msgBoxen.confirm(caption, icon, messages, Localized.dictionary().delete(),
+    MessageBoxes.confirm(caption, icon, messages, Localized.dictionary().delete(),
         Localized.dictionary().cancel(), callback,
         MessageBoxes.STYLE_MESSAGE_BOX_DELETE, null, null, target);
   }
@@ -187,9 +185,9 @@ public final class Global {
   public static void confirmRemove(String caption, String item, ConfirmationCallback callback,
       Element target) {
     List<String> messages = Lists.newArrayList(Localized.dictionary().removeQuestion(item));
-    msgBoxen.confirm(caption, Icon.WARNING, messages, Localized.dictionary().actionRemove(),
+    MessageBoxes.confirm(caption, Icon.WARNING, messages, Localized.dictionary().actionRemove(),
         Localized.dictionary().cancel(), callback, MessageBoxes.STYLE_MESSAGE_BOX_DELETE,
-       null, null, target);
+        null, null, target);
   }
 
   public static void debug(String s) {
@@ -198,7 +196,7 @@ public final class Global {
 
   public static void decide(String caption, List<String> messages, DecisionCallback callback,
       int defaultValue) {
-    msgBoxen.decide(caption, messages, callback, defaultValue, null, null, null, null);
+    MessageBoxes.decide(caption, messages, callback, defaultValue, null, null, null, null);
   }
 
   public static CacheManager getCache() {
@@ -227,10 +225,6 @@ public final class Global {
 
   public static Images.Resources getImages() {
     return images;
-  }
-
-  public static MessageBoxes getMsgBoxen() {
-    return msgBoxen;
   }
 
   public static NewsAggregator getNewsAggregator() {
@@ -303,13 +297,13 @@ public final class Global {
   public static void inputCollection(String caption, String valueCaption, boolean unique,
       Collection<String> defaultCollection, Consumer<Collection<String>> consumer,
       Function<String, Editor> editorSupplier) {
-    inpBoxen.inputCollection(caption, valueCaption, unique, defaultCollection, consumer,
+    InputBoxes.inputCollection(caption, valueCaption, unique, defaultCollection, consumer,
         editorSupplier);
   }
 
   public static void inputMap(String caption, String keyCaption, String valueCaption,
       Map<String, String> map, Consumer<Map<String, String>> consumer) {
-    inpBoxen.inputMap(caption, keyCaption, valueCaption, map, consumer);
+    InputBoxes.inputMap(caption, keyCaption, valueCaption, map, consumer);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
@@ -345,7 +339,7 @@ public final class Global {
       String styleName, String defaultValue, int maxLength, Element target, double width,
       CssUnit widthUnit, int timeout, String confirmHtml, String cancelHtml,
       WidgetInitializer initializer) {
-    inpBoxen.inputString(caption, prompt, callback, styleName, defaultValue, maxLength, target,
+    InputBoxes.inputString(caption, prompt, callback, styleName, defaultValue, maxLength, target,
         width, widthUnit, timeout, confirmHtml, cancelHtml, initializer);
   }
 
@@ -375,7 +369,7 @@ public final class Global {
   public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle, Element target, Set<Action> enabledActions,
       WidgetInitializer initializer) {
-    return inpBoxen.inputWidget(caption, input, callback, dialogStyle, target, enabledActions,
+    return InputBoxes.inputWidget(caption, input, callback, dialogStyle, target, enabledActions,
         initializer);
   }
 
@@ -385,7 +379,7 @@ public final class Global {
 
   public static void messageBox(String caption, Icon icon, List<String> messages,
       List<String> options, int defaultValue, ChoiceCallback callback) {
-    msgBoxen.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
+    MessageBoxes.display(caption, icon, messages, options, defaultValue, callback, BeeConst.UNDEF,
         null, null, null, null, null);
   }
 
@@ -395,7 +389,7 @@ public final class Global {
   }
 
   public static boolean nativeConfirm(String... lines) {
-    return msgBoxen.nativeConfirm(lines);
+    return MessageBoxes.nativeConfirm(lines);
   }
 
   public static HtmlTable renderTable(String caption, IsTable<?, ?> data) {
@@ -520,7 +514,7 @@ public final class Global {
 
   public static void showError(String caption, List<String> messages, String dialogStyle,
       String closeHtml) {
-    msgBoxen.showError(caption, messages, dialogStyle, closeHtml);
+    MessageBoxes.showError(caption, messages, dialogStyle, closeHtml);
   }
 
   public static void showInfo(List<String> messages) {
@@ -546,11 +540,11 @@ public final class Global {
 
   public static void showInfo(String caption, List<String> messages, String dialogStyle,
       String closeHtml) {
-    msgBoxen.showInfo(caption, messages, dialogStyle, closeHtml);
+    MessageBoxes.showInfo(caption, messages, dialogStyle, closeHtml);
   }
 
   public static void showModalGrid(String caption, IsTable<?, ?> table, String... styles) {
-    msgBoxen.showTable(caption, table, styles);
+    MessageBoxes.showTable(caption, table, styles);
   }
 
   public static void showModalWidget(String caption, Widget widget) {
@@ -558,7 +552,7 @@ public final class Global {
   }
 
   public static void showModalWidget(String caption, Widget widget, Element target) {
-    msgBoxen.showWidget(caption, widget, target);
+    MessageBoxes.showWidget(caption, widget, target);
   }
 
   public static void showModalWidget(Widget widget) {

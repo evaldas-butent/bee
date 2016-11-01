@@ -13,6 +13,7 @@
     <SimpleColumn name="PaymentType" />
     <SimpleJoin joinType="LEFT" name="PaymentType">
       <SimpleColumn name="PaymentName" />
+      <SimpleColumn name="PaymentTypeAccount" />
     </SimpleJoin>
 
     <SimpleColumn name="PaymentAccount" />

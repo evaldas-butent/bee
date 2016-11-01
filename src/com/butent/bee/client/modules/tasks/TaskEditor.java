@@ -28,6 +28,7 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
@@ -35,6 +36,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -42,7 +44,9 @@ import com.butent.bee.client.dialog.ReminderDialog;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.grid.TableKind;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
@@ -93,6 +97,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -1060,6 +1065,52 @@ class TaskEditor extends ProductSupportInterceptor {
     return Data.createRowSet(VIEW_TASK_EVENTS);
   }
 
+  private UnboundSelector getProjectSelector() {
+    Relation relation = Relation.create();
+    relation.setViewName(ProjectConstants.VIEW_PROJECTS);
+    relation.disableNewRow();
+    relation.disableEdit();
+    relation.setChoiceColumns(Lists.newArrayList("ID", ProjectConstants.COL_PROJECT_NAME,
+        ALS_COMPANY_NAME));
+    relation.setSearchableColumns(Lists.newArrayList("ID", ProjectConstants.COL_PROJECT_NAME,
+        ALS_COMPANY_NAME));
+
+    Filter filter = Filter.and(Filter.notEquals(COL_STATUS, ProjectStatus.APPROVED),
+        Filter.in(Data.getIdColumn(ProjectConstants.VIEW_PROJECTS),
+            ProjectConstants.VIEW_PROJECT_USERS, ProjectConstants.COL_PROJECT,
+            Filter.equals(COL_USER, getOwner())),
+        Filter.in(Data.getIdColumn(ProjectConstants.VIEW_PROJECTS),
+            ProjectConstants.VIEW_PROJECT_USERS, ProjectConstants.COL_PROJECT,
+            Filter.equals(COL_USER, getExecutor())));
+
+    relation.setFilter(filter);
+
+    UnboundSelector selector = UnboundSelector.create(relation,
+        Lists.newArrayList("ID", ProjectConstants.COL_PROJECT_NAME));
+
+    selector.setWidth("100%");
+
+    return selector;
+  }
+
+  private static UnboundSelector getProjectStageSelector() {
+    Relation relation = Relation.create();
+    relation.setViewName(ProjectConstants.VIEW_PROJECT_STAGES);
+    relation.disableNewRow();
+    relation.disableEdit();
+    relation.setChoiceColumns(Lists.newArrayList(ProjectConstants.COL_STAGE_NAME,
+        ProjectConstants.COL_STAGE_START_DATE, ProjectConstants.COL_STAGE_END_DATE));
+    relation.setSearchableColumns(Lists.newArrayList(ProjectConstants.COL_STAGE_NAME,
+        ProjectConstants.COL_STAGE_START_DATE, ProjectConstants.COL_STAGE_END_DATE));
+
+    UnboundSelector selector = UnboundSelector.create(relation,
+        Lists.newArrayList(ProjectConstants.COL_STAGE_NAME));
+
+    selector.setWidth("100%");
+
+    return selector;
+  }
+
   private static FaLabel getOrderLabelInfo() {
     FaLabel label =
             readBoolean(NAME_ORDER) ? new FaLabel(FontAwesome.SORT_NUMERIC_ASC) : new FaLabel(
@@ -2024,6 +2075,23 @@ class TaskEditor extends ProductSupportInterceptor {
     sendRequest(params, callback);
   }
 
+  private static HtmlTable renderProjectChoiceTable(UnboundSelector prjSelector,
+      UnboundSelector prjStageSelector) {
+
+    HtmlTable table = new HtmlTable();
+    table.setKind(TableKind.CONTROLS);
+    table.setColumnCellKind(0, CellKind.LABEL);
+    table.setColumnCellStyles(1, "width:300px");
+
+
+    table.setText(0, 0, Localized.dictionary().project(), StyleUtils.NAME_REQUIRED);
+    table.setWidget(0, 1, prjSelector);
+    table.setText(1, 0, Localized.dictionary().prjStage());
+    table.setWidget(1, 1, prjStageSelector);
+
+    return table;
+  }
+
   private void sendFiles(final List<FileInfo> files, final long taskId, final long teId) {
 
     final Holder<Integer> counter = Holder.of(0);
@@ -2105,13 +2173,12 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private void setCommentsLayout() {
     if (isDefaultLayout) {
-      int height = getFormView().getWidgetByName("TaskContainer").getElement().getScrollHeight();
-      if (height == 0) {
-        height = 600;
+      if (taskWidget != null) {
+        int height = getFormView().getWidgetByName("TaskContainer").getElement().getScrollHeight();
+        split.addNorth(taskWidget, height + 52);
+        StyleUtils.autoWidth(taskWidget.getElement());
+        split.updateCenter(taskEventsWidget);
       }
-      split.addNorth(taskWidget, height + 60);
-      split.updateCenter(taskEventsWidget);
-
     } else {
       Integer size = BeeKeeper.getStorage().getInteger(getStorageKey(NAME_TASK_TREE));
       split.addWest(taskWidget, size == null ? 660 : size);
@@ -2170,6 +2237,31 @@ class TaskEditor extends ProductSupportInterceptor {
       tb.setWidget(1, 0, orderLbl);
       tb.setText(1, 1, orderLbl.getTitle());
 
+      int projectIdx = Data.getColumnIndex(VIEW_TASKS, ProjectConstants.COL_PROJECT);
+      int prjStatusIdx = Data.getColumnIndex(VIEW_TASKS, ALS_PROJECT_STATUS);
+      int idxProjectOwner = getFormView().getDataIndex(ALS_PROJECT_OWNER);
+
+      final long projectOwner = BeeUtils.unbox(getActiveRow().getLong(idxProjectOwner));
+      final long projectId = BeeUtils.unbox(getActiveRow().getLong(projectIdx));
+      Integer prjStatus = getActiveRow().getInteger(prjStatusIdx);
+
+      String caption = null;
+      FaLabel label = null;
+
+      if (projectId > 0 && !Objects.equals(prjStatus, ProjectStatus.APPROVED.ordinal())
+          && Objects.equals(projectOwner, userId)) {
+        label = new FaLabel(FontAwesome.OUTDENT);
+        caption = Localized.dictionary().crmTaskRemoveFromProject();
+      } else if (projectId == 0 && isOwner()) {
+        label = new FaLabel(FontAwesome.INDENT);
+        caption = Localized.dictionary().crmTaskAddToProject();
+      }
+
+      if (label != null && caption != null) {
+        tb.setWidget(2, 0, label);
+        tb.setText(2, 1, caption);
+      }
+
       tb.addClickHandler(ev -> {
         Element targetElement = EventUtils.getEventTargetElement(ev);
         TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
@@ -2196,6 +2288,46 @@ class TaskEditor extends ProductSupportInterceptor {
             doEvent(TaskEvent.REFRESH);
             break;
 
+          case 2:
+            UiHelper.closeDialog(tb);
+
+            if (projectId > 0) {
+
+              Global.confirmRemove(null, Localized.dictionary().crmTaskAskRemoveFromProject(),
+                  () -> updateProjectInfo(BeeConst.STRING_EMPTY, BeeConst.STRING_EMPTY));
+            } else {
+              UnboundSelector prjSelector = getProjectSelector();
+              UnboundSelector prjStageSelector = getProjectStageSelector();
+              prjStageSelector.addSelectorHandler(event -> {
+                if (event.isOpened()) {
+                  Filter filter = Filter.equals(ProjectConstants.COL_PROJECT,
+                      prjSelector.getRelatedId());
+                  event.getSelector().setAdditionalFilter(filter);
+                }
+              });
+
+              Global.inputWidget(Localized.dictionary().crmTaskAddToProject(),
+                  renderProjectChoiceTable(prjSelector, prjStageSelector), new InputCallback() {
+                    @Override
+                    public void onSuccess() {
+
+                      String prjStageId = prjStageSelector.getRelatedId() == null
+                          ? BeeConst.STRING_EMPTY : prjStageSelector.getRelatedId().toString();
+
+                      updateProjectInfo(prjSelector.getRelatedId().toString(), prjStageId);
+                    }
+
+                    @Override
+                    public String getErrorMessage() {
+                      if (BeeUtils.isEmpty(prjSelector.getValue())) {
+                        return Localized.dictionary().project() + " "
+                            + Localized.dictionary().valueRequired().toLowerCase();
+                      }
+                      return InputCallback.super.getErrorMessage();
+                    }
+                  });
+            }
+            break;
           default:
         }
       });
@@ -2273,13 +2405,15 @@ class TaskEditor extends ProductSupportInterceptor {
 
 
     setEnabled(ownerSelector, canChangeOwner);
+    setEnabled(observersSelector, isOwner());
 
     if (!DataUtils.isId(projectId)) {
       setSelectorFilter(ownerSelector, null);
+      setSelectorFilter(observersSelector, null);
       return;
     }
 
-    setEnabled(observersSelector, false);
+    setEnabled(observersSelector, isOwner() || (projectOwner == userId && validStatus));
     setEnabled(ownerSelector, canChangeOwner || (projectOwner == userId && validStatus));
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
@@ -2318,6 +2452,16 @@ class TaskEditor extends ProductSupportInterceptor {
       MultiSelector selector = getMultiSelector(getFormView(), relation);
       setEnabled(selector, true);
     }
+  }
+
+  private void updateProjectInfo(String projectId, String stageId) {
+    BeeRow newRow = getNewRow();
+
+    newRow.setValue(getFormView().getDataIndex(ProjectConstants.COL_PROJECT), projectId);
+    newRow.setValue(getFormView().getDataIndex(ProjectConstants.COL_PROJECT_STAGE), stageId);
+
+    ParameterList params = createParams(TaskEvent.EDIT, newRow, null);
+    sendRequest(params, TaskEvent.EDIT);
   }
 
   private void changeTaskOwner(SelectorEvent event) {

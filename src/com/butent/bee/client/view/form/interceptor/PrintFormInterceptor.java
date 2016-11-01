@@ -21,7 +21,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
-import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -127,7 +126,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     return null;
   }
 
-  protected Consumer<FileInfo> getReportCallback() {
+  protected ReportUtils.ReportCallback getReportCallback() {
     return null;
   }
 

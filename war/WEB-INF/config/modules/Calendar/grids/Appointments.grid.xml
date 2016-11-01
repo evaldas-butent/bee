@@ -30,5 +30,7 @@
     <DataColumn name="ColorName" label="=color" visible="false" />
 
     <DataColumn name="StyleName" label="=style" visible="false" />
+
+    <RelColumn name="Project" visible="false" />
   </g:columns>
 </g:Grid>

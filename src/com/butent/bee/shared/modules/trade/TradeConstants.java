@@ -1,58 +1,9 @@
 package com.butent.bee.shared.modules.trade;
 
-import com.butent.bee.shared.i18n.Dictionary;
-import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class TradeConstants {
-
-  public enum OperationType implements HasLocalizedCaption {
-    PURCHASE(false, true, true) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypePurchase();
-      }
-    },
-
-    SALE(true, false, false) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypeSale();
-      }
-    },
-
-    TRANSFER(true, true, false) {
-      @Override
-      public String getCaption(Dictionary constants) {
-        return constants.trdTypeTransfer();
-      }
-    };
-
-    private final boolean consumesStock;
-    private final boolean producesStock;
-
-    private final boolean providesCost;
-
-    OperationType(boolean consumesStock, boolean producesStock, boolean providesCost) {
-      this.consumesStock = consumesStock;
-      this.producesStock = producesStock;
-
-      this.providesCost = providesCost;
-    }
-
-    public boolean consumesStock() {
-      return consumesStock;
-    }
-
-    public boolean producesStock() {
-      return producesStock;
-    }
-
-    public boolean providesCost() {
-      return providesCost;
-    }
-  }
 
   public static void register() {
     EnumUtils.register(OperationType.class);
@@ -164,6 +115,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_WAREHOUSE_TO = "WarehouseTo";
   public static final String COL_TRADE_SUPPLIER = "Supplier";
   public static final String COL_TRADE_CUSTOMER = "Customer";
+  public static final String COL_TRADE_PAYER = "Payer";
   public static final String COL_TRADE_MANAGER = "Manager";
   public static final String COL_TRADE_TERM = "Term";
   public static final String COL_TRADE_NOTES = "Notes";
@@ -187,6 +139,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_NOTE = "Note";
   public static final String COL_TRADE_ITEM_PARENT = "Parent";
   public static final String COL_TRADE_ITEM_WAREHOUSE = "Warehouse";
+  public static final String COL_TRADE_ITEM_EMPLOYEE = "Employee";
 
   public static final String COL_SERIES = "Series";
   public static final String COL_SERIES_NAME = "SeriesName";
@@ -215,6 +168,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_DOCUMENT_STATUS = "Status";
   public static final String COL_TRADE_DOCUMENT_NUMBER_1 = "Number1";
   public static final String COL_TRADE_DOCUMENT_NUMBER_2 = "Number2";
+  public static final String COL_TRADE_DOCUMENT_RECEIVED_DATE = "ReceivedDate";
 
   public static final String COL_TRADE_DOCUMENT_DISCOUNT = "DocumentDiscount";
   public static final String COL_TRADE_DOCUMENT_PRICE_NAME = "PriceName";
@@ -233,12 +187,19 @@ public final class TradeConstants {
   public static final String COL_DOCUMENT_TYPE = "DocumentType";
 
   public static final String COL_TRADE_TAG = "TradeTag";
+  public static final String COL_TAG_NAME = "TagName";
 
   public static final String COL_PRIMARY_DOCUMENT_ITEM = "PrimaryDocumentItem";
   public static final String COL_STOCK_QUANTITY = "Quantity";
   public static final String COL_STOCK_WAREHOUSE = "Warehouse";
 
+  public static final String COL_TRADE_PAYMENT_DATE = "PaymentDate";
   public static final String COL_TRADE_PAYMENT_AMOUNT = "PaymentAmount";
+  public static final String COL_TRADE_PAYMENT_ACCOUNT = "PaymentAccount";
+  public static final String COL_TRADE_PAYMENT_SERIES = "PaymentSeries";
+  public static final String COL_TRADE_PAYMENT_NUMBER = "PaymentNumber";
+
+  public static final String COL_TRADE_PAYMENT_TYPE_ACCOUNT = "PaymentTypeAccount";
 
   public static final String COL_EXPENDITURE_TYPE_NAME = "ExpenditureTypeName";
   public static final String COL_EXPENDITURE_TYPE_DEBIT = "Debit";
@@ -283,6 +244,10 @@ public final class TradeConstants {
 
   public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
   public static final String ALS_STOCK_PRIMARY_DATE = "PrimaryDate";
+
+  public static final String ALS_COST_CURRENCY = "CostCurrency";
+  public static final String ALS_PARENT_COST = "ParentCost";
+  public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
 
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";

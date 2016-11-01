@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="FinanceDistributionOfTradeDocuments" source="FinanceDistribution"
+      caption="=finDistributionOfTradeDocuments" newRowCaption="=newFinDistribution"
+>
+  <Columns>
+    <xi:include href="viewcolumns/FinanceDistribution.viewcolumns.xml" />
+
+    <SimpleJoin joinType="INNER" name="TradeDocument">
+      <SimpleColumn name="Date" alias="TradeDocumentDate" />
+      <SimpleColumn name="Series" alias="TradeDocumentSeries" />
+      <SimpleColumn name="Number" alias="TradeDocumentNumber" />
+    </SimpleJoin>
+  </Columns>
+
+  <Order>
+    <OrderBy column="TradeDocumentDate" />
+    <OrderBy column="TradeDocument" />
+
+    <OrderBy column="DateFrom" />
+    <OrderBy column="DateTo" />
+  </Order>
+</View>

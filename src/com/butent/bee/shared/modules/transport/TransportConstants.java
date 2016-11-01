@@ -341,6 +341,7 @@ public final class TransportConstants {
   public static final String SVC_GET_COLORS = "GetColors";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
   public static final String SVC_GET_CARGO_TOTAL = "GetCargoTotal";
+  public static final String SVC_GET_CARGO_PLACES = "GetCargoPlaces";
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
   public static final String SVC_GET_ASSESSMENT_AMOUNTS = "GetAssessmentAmounts";
   public static final String SVC_GET_ASSESSMENT_QUANTITY_REPORT = "GetAssessmentQuantityReport";
@@ -409,6 +410,8 @@ public final class TransportConstants {
   public static final String TBL_CARGO_INCOMES_USAGE = "CargoIncomesUsage";
   public static final String TBL_CARGO_EXPENSES = "CargoExpenses";
   public static final String TBL_CARGO_EXPENSES_USAGE = "CargoExpensesUsage";
+  public static final String TBL_CARGO_LOADING = "CargoLoading";
+  public static final String TBL_CARGO_UNLOADING = "CargoUnloading";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
   public static final String TBL_CARGO_TYPES = "CargoTypes";
 
@@ -547,9 +550,6 @@ public final class TransportConstants {
   public static final String COL_CARGO_VALUE_CURRENCY = "ValueCurrency";
   public static final String COL_CARGO_TYPE = "CargoType";
 
-  public static final String COL_CARGO_HANDLING = "CargoHandling";
-  public static final String COL_CARGO_HANDLING_NOTES = "Notes";
-
   public static final String COL_DAILY_COSTS_ITEM = "DailyCostsItem";
   public static final String COL_ROAD_COSTS_ITEM = "RoadCostsItem";
   public static final String COL_COUNTRY_NORM = "CountryNorm";
@@ -626,6 +626,7 @@ public final class TransportConstants {
   public static final String COL_UNLOADING_PLACE = "UnloadingPlace";
   public static final String COL_LOADING_PLACE = "LoadingPlace";
 
+  public static final String COL_PLACE_ORDINAL = "Ordinal";
   public static final String COL_PLACE_DATE = "Date";
   public static final String COL_PLACE_COMPANY = "Company";
   public static final String COL_PLACE_CONTACT = "Contact";
@@ -633,8 +634,6 @@ public final class TransportConstants {
   public static final String COL_PLACE_COUNTRY = "Country";
   public static final String COL_PLACE_ADDRESS = "Address";
   public static final String COL_PLACE_POST_INDEX = "PostIndex";
-  public static final String COL_PLACE_PHONE = "Phone";
-  public static final String COL_PLACE_FAX = "Fax";
   public static final String COL_PLACE_NUMBER = "Number";
   public static final String COL_PLACE_NOTE = "Note";
 
@@ -924,8 +923,8 @@ public final class TransportConstants {
   public static final String FORM_TRAILER_SETTINGS = "TrailerTbSettings";
 
   public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
+  public static final String FORM_CARGO_PLACE = "CargoPlace";
   public static final String FORM_CARGO_PLACE_UNBOUND = "CargoPlaceUnbound";
-  public static final String GRID_CARGO_HANDLING_UNBOUND = "CargoHandlingUnbound";
 
   public static final String GRID_ASSESSMENT_REQUESTS = "AssessmentRequests";
   public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";
@@ -1033,14 +1032,6 @@ public final class TransportConstants {
 
   public static final List<String> TRIP_DATE_COLUMNS = Lists.newArrayList(COL_TRIP_DATE,
       COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_PLANNED_END_DATE);
-
-  public static String defaultLoadingColumnAlias(String colName) {
-    return "DefLoad" + colName;
-  }
-
-  public static String defaultUnloadingColumnAlias(String colName) {
-    return "DefUnload" + colName;
-  }
 
   public static String loadingColumnAlias(String colName) {
     return VAR_LOADING + colName;

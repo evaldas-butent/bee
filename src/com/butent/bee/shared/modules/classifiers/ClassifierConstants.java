@@ -59,6 +59,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_DISCOUNTS = "Discounts";
 
+  public static final String TBL_CHART_OF_ACCOUNTS = "ChartOfAccounts";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
@@ -100,7 +102,9 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_OBJECTS = "CompanyObjects";
 
   public static final String VIEW_HOLIDAYS = "Holidays";
+
   public static final String VIEW_CHART_OF_ACCOUNTS = "ChartOfAccounts";
+  public static final String VIEW_JOURNALS = "Journals";
 
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
@@ -108,7 +112,9 @@ public final class ClassifierConstants {
   public static final String GRID_COMPANY_USERS = "CompanyUsers";
 
   public static final String GRID_ITEMS = "Items";
+
   public static final String GRID_CHART_OF_ACCOUNTS = "ChartOfAccounts";
+  public static final String GRID_JOURNALS = "Journals";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
@@ -281,6 +287,7 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
 
   public static final String COL_ACCOUNT_CODE = "AccountCode";
+  public static final String COL_JOURNAL_CODE = "JournalCode";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

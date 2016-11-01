@@ -24,6 +24,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -111,19 +112,14 @@ public class InvoiceForm extends CustomInvoiceForm implements SelectorEvent.Hand
       List<String> fields = new ArrayList<>();
 
       if (type != null) {
-        switch (type) {
-          case PURCHASE:
-            fields.add(COL_OPERATION_WAREHOUSE_TO);
-            break;
-          case SALE:
-            fields.add(COL_TRADE_WAREHOUSE_FROM);
-            break;
-          case TRANSFER:
-            fields.add(COL_TRADE_WAREHOUSE_FROM);
-            fields.add(COL_OPERATION_WAREHOUSE_TO);
-            break;
+        if (type.consumesStock()) {
+          fields.add(COL_TRADE_WAREHOUSE_FROM);
+        }
+        if (type.producesStock()) {
+          fields.add(COL_OPERATION_WAREHOUSE_TO);
         }
       }
+
       for (String field : fields) {
         Long warehouse = Data.getLong(viewName, relatedRow, field);
 

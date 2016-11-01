@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY lbl "text-align: right; padding: 0 10px 0 30px;">
-]>
+    <!ENTITY lbl "text-align: right; padding: 0 10px 0 30px;">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-  name="Company"
-  viewName="Companies"
-  favorite="Name"
-  caption="=client"
-  width="80" widthUnit="%"
-  height="90" heightUnit="%"
-  >
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="Company"
+        viewName="Companies"
+        favorite="Name"
+        caption="=client"
+        width="80" widthUnit="%"
+        height="90" heightUnit="%"
+>
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
       <row>
@@ -19,7 +21,7 @@
         <cell colSpan="3">
           <InputText source="Name" style="width: 425px;" visible="true" />
         </cell>
-        <DataSelector source="CompanyType" style="width: 80px;" required="true"/>
+        <DataSelector source="CompanyType" style="width: 80px;" required="true" />
         <Label style="&lbl;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="width: 180px" />
         <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
@@ -79,7 +81,7 @@
           <row>
             <Label text="=website" style="&lbl;" for="Website" />
             <InputText source="Website" style="width: 280px;" />
-            <Label for="SocialContacts" style="&lbl;"  />
+            <Label for="SocialContacts" style="&lbl;" />
             <InputText source="SocialContacts" style="width: 280px;" />
           </row>
           <row>
@@ -106,13 +108,15 @@
       <page data="Sales">
         <text>=financialInfo</text>
         <FlowPanel>
-          <Table kind="controls" style="margin-right: 8px;" >
+          <Table kind="controls" style="margin-right: 8px;">
             <row>
-              <Label text="=creditLimit" for="CreditLimit" style="&lbl;"/>
+              <Label text="=creditLimit" for="CreditLimit" style="&lbl;" />
               <FlowPanel>
                 <InputInteger source="CreditLimit" style="text-align: right" summarize="true" />
-                <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
-                  style="width:5em; margin-left:5px; display:inline-block;" for="CreditLimit" />
+                <DataSelector source="LimitCurrency" editEnabled="false"
+                              placeholder="=currencyShort"
+                              style="width:5em; margin-left:5px; display:inline-block;"
+                              for="CreditLimit" />
               </FlowPanel>
               <cell rowSpan="5" verticalAlignment="top">
                 <FlowPanel name="CreditInfo" />
@@ -125,12 +129,12 @@
             </row>
 
             <row for="CreditDays">
-              <Label for="CreditDays" style="&lbl;"/>
+              <Label for="CreditDays" style="&lbl;" />
               <InputDecimal source="CreditDays" style="width: 60px;" summarize="true" />
             </row>
 
             <row for="ToleratedDays" module="Orders">
-              <Label for="ToleratedDays" style="&lbl;"/>
+              <Label for="ToleratedDays" style="&lbl;" />
               <InputDecimal source="ToleratedDays" style="width: 60px;" summarize="true" />
             </row>
 
@@ -140,7 +144,7 @@
             </row>
 
             <row for="SupplierCreditDays">
-              <Label for="SupplierCreditDays" style="&lbl;"/>
+              <Label for="SupplierCreditDays" style="&lbl;" />
               <InputDecimal source="SupplierCreditDays" style="width: 60px;" summarize="true" />
             </row>
           </Table>
@@ -157,6 +161,16 @@
         <ChildGrid name="CompanyUsers" relColumn="Company" />
       </page>
 
+      <page data="Dimensions">
+        <text>=dimensions</text>
+        <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
+      </page>
+
+      <page module="Finance" data="TradeAccounts">
+        <text>=finAccounts</text>
+        <xi:include href="widgets/TradeAccounts.widget.xml" />
+      </page>
+
       <page>
         <text>=additionalInfo</text>
         <FlowPanel style="margin:5px;">
@@ -171,25 +185,29 @@
               <Label text="=companyActivities" style="&lbl;" />
               <cell colSpan="3">
                 <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
-                  targetRelColumn="Company" sourceRelColumn="Activity"
-                  label="=companyActivities" style="width: 100%;" summarize="true" />
+                               targetRelColumn="Company" sourceRelColumn="Activity"
+                               label="=companyActivities" style="width: 100%;" summarize="true" />
               </cell>
             </row>
             <row>
               <Label text="=mailRecipientsGroups" style="&lbl;" />
               <cell colSpan="3">
-                <ChildSelector name="RecipientsGroup" viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
-                  targetRelColumn="Company" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
-                  choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true"
-                  filter="Creator {u} or Visibility = 0" />
+                <ChildSelector name="RecipientsGroup" viewName="RecipientsGroups"
+                               childTable="RcpsGroupsContacts"
+                               targetRelColumn="Company" sourceRelColumn="RecipientsGroup"
+                               renderColumns="GroupName"
+                               choiceColumns="GroupName" label="=mailRecipientsGroups"
+                               style="width: 100%;" summarize="true"
+                               filter="Creator {u} or Visibility = 0" />
               </cell>
             </row>
             <row>
-              <Label for="Turnover" text="=trdTurnover" style="&lbl;"/>
+              <Label for="Turnover" text="=trdTurnover" style="&lbl;" />
               <DataSelector source="Turnover" summarize="true" />
               <DataSelector source="TurnoverCurrency" editEnabled="false"
-                placeholder="=currencyShort"
-                style="width:5em; margin-left:5px; display:inline-block;" for="Turnover" />
+                            placeholder="=currencyShort"
+                            style="width:5em; margin-left:5px; display:inline-block;"
+                            for="Turnover" />
             </row>
             <row>
               <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" class="bee-required" />
@@ -200,8 +218,10 @@
               <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />
               <cell colSpan="2">
                 <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
-                  targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
-                  label="=companyRelationType" data="CompRelTypeStore" summarize="true" />
+                               targetRelColumn="Company" sourceRelColumn="RelationType"
+                               newRowEnabled="true"
+                               label="=companyRelationType" data="CompRelTypeStore"
+                               summarize="true" />
               </cell>
               <Label style="&lbl;" for="CompanyRelationTypeState" />
               <DataSelector source="CompanyRelationTypeState" summarize="true" />
@@ -224,7 +244,7 @@
         </FlowPanel>
       </page>
 
-      <page module="Orders">
+      <page module="Trade Orders">
         <text>=discounts</text>
         <FlowPanel class="flexBox-vertical">
           <HorizontalPanel style="margin-bottom: 1em;">
