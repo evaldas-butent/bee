@@ -119,24 +119,12 @@ public final class Dimensions {
   }
 
   public Filter getFilter() {
-    if (isEmpty()) {
-      return null;
-    }
-
     CompoundFilter filter = Filter.and();
 
-    if (getDepartment() != null) {
-      filter.add(Filter.equalsOrIsNull(COL_DEPARTMENT, getDepartment()));
-    }
-    if (getActivityType() != null) {
-      filter.add(Filter.equalsOrIsNull(COL_ACTIVITY_TYPE, getActivityType()));
-    }
-    if (getCostCenter() != null) {
-      filter.add(Filter.equalsOrIsNull(COL_COST_CENTER, getCostCenter()));
-    }
-    if (getObject() != null) {
-      filter.add(Filter.equalsOrIsNull(COL_OBJECT, getObject()));
-    }
+    filter.add(Filter.equalsOrIsNull(COL_DEPARTMENT, getDepartment()));
+    filter.add(Filter.equalsOrIsNull(COL_ACTIVITY_TYPE, getActivityType()));
+    filter.add(Filter.equalsOrIsNull(COL_COST_CENTER, getCostCenter()));
+    filter.add(Filter.equalsOrIsNull(COL_OBJECT, getObject()));
 
     return filter;
   }
