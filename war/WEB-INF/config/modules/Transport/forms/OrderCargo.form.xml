@@ -67,6 +67,9 @@
             <row>
               <text />
               <CheckBox source="MultipleSegments" />
+              <text />
+              <text />
+              <CheckBox source="CmrCopy" />
             </row>
             <row>
               <Label for="ExchangeOfPalettes" />
@@ -148,9 +151,7 @@
               <CheckBox source="FreightInsurance" />
             </row>
             <row>
-              <text />
-              <CheckBox source="CmrCopy" />
-              <cell colSpan="3">
+              <cell colSpan="5">
                 <text />
               </cell>
               <CheckBox source="CustomsBrokerage" />

@@ -974,17 +974,17 @@ public class TransportReportsBean {
           .addField(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), COL_CARGO_TRIP)
           .addFields(tmp, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_DATE)
           .addFields(TBL_ORDER_CARGO, COL_CARGO_TYPE)
-          .addEmptyDouble(VAR_LOADING)
-          .addEmptyDouble(VAR_UNLOADING)
+          .addEmptyDouble(COL_LOADING_PLACE)
+          .addEmptyDouble(COL_UNLOADING_PLACE)
           .addEmptyDouble(plannedKilometers)
-          .addEmptyDouble(VAR_LOADING + COL_EMPTY_KILOMETERS)
-          .addEmptyDouble(VAR_UNLOADING + COL_EMPTY_KILOMETERS)
+          .addEmptyDouble(COL_LOADING_PLACE + COL_EMPTY_KILOMETERS)
+          .addEmptyDouble(COL_UNLOADING_PLACE + COL_EMPTY_KILOMETERS)
           .addEmptyDouble(COL_EMPTY_KILOMETERS)
-          .addEmptyDouble(VAR_LOADING + COL_UNPLANNED_MANAGER_KM)
-          .addEmptyDouble(VAR_UNLOADING + COL_UNPLANNED_MANAGER_KM)
+          .addEmptyDouble(COL_LOADING_PLACE + COL_UNPLANNED_MANAGER_KM)
+          .addEmptyDouble(COL_UNLOADING_PLACE + COL_UNPLANNED_MANAGER_KM)
           .addEmptyDouble(COL_UNPLANNED_MANAGER_KM)
-          .addEmptyDouble(VAR_LOADING + COL_UNPLANNED_DRIVER_KM)
-          .addEmptyDouble(VAR_UNLOADING + COL_UNPLANNED_DRIVER_KM)
+          .addEmptyDouble(COL_LOADING_PLACE + COL_UNPLANNED_DRIVER_KM)
+          .addEmptyDouble(COL_UNLOADING_PLACE + COL_UNPLANNED_DRIVER_KM)
           .addEmptyDouble(COL_UNPLANNED_DRIVER_KM)
           .addEmptyDouble(plannedFuelCosts)
           .addEmptyDouble(plannedDailyCosts)
@@ -996,8 +996,8 @@ public class TransportReportsBean {
 
       String als = SqlUtils.uniqueName();
 
-      for (Map.Entry<String, String> entry : ImmutableMap.of(TBL_CARGO_LOADING, VAR_LOADING,
-          TBL_CARGO_UNLOADING, VAR_UNLOADING).entrySet()) {
+      for (Map.Entry<String, String> entry : ImmutableMap.of(TBL_CARGO_LOADING, COL_LOADING_PLACE,
+          TBL_CARGO_UNLOADING, COL_UNLOADING_PLACE).entrySet()) {
         String tbl = entry.getKey();
         String col = entry.getValue();
 
@@ -1046,30 +1046,30 @@ public class TransportReportsBean {
       }
       qs.updateData(new SqlUpdate(tmpTripCargo)
           .addExpression(plannedKilometers,
-              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_LOADING), 0),
-                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_UNLOADING), 0),
+              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_LOADING_PLACE), 0),
+                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_UNLOADING_PLACE), 0),
                   SqlUtils.nvl(SqlUtils.field(tmpTripCargo,
-                      VAR_LOADING + COL_UNPLANNED_MANAGER_KM), 0),
+                      COL_LOADING_PLACE + COL_UNPLANNED_MANAGER_KM), 0),
                   SqlUtils.nvl(SqlUtils.field(tmpTripCargo,
-                      VAR_UNLOADING + COL_UNPLANNED_MANAGER_KM), 0),
+                      COL_UNLOADING_PLACE + COL_UNPLANNED_MANAGER_KM), 0),
                   SqlUtils.nvl(SqlUtils.field(tmpTripCargo,
-                      VAR_LOADING + COL_UNPLANNED_DRIVER_KM), 0),
+                      COL_LOADING_PLACE + COL_UNPLANNED_DRIVER_KM), 0),
                   SqlUtils.nvl(SqlUtils.field(tmpTripCargo,
-                      VAR_UNLOADING + COL_UNPLANNED_DRIVER_KM), 0)))
+                      COL_UNLOADING_PLACE + COL_UNPLANNED_DRIVER_KM), 0)))
           .addExpression(COL_EMPTY_KILOMETERS,
-              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_LOADING
+              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_LOADING_PLACE
                       + COL_EMPTY_KILOMETERS), 0),
-                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_UNLOADING
+                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_UNLOADING_PLACE
                       + COL_EMPTY_KILOMETERS), 0)))
           .addExpression(COL_UNPLANNED_MANAGER_KM,
-              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_LOADING
+              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_LOADING_PLACE
                       + COL_UNPLANNED_MANAGER_KM), 0),
-                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_UNLOADING
+                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_UNLOADING_PLACE
                       + COL_UNPLANNED_MANAGER_KM), 0)))
           .addExpression(COL_UNPLANNED_DRIVER_KM,
-              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_LOADING
+              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_LOADING_PLACE
                       + COL_UNPLANNED_DRIVER_KM), 0),
-                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_UNLOADING
+                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_UNLOADING_PLACE
                       + COL_UNPLANNED_DRIVER_KM), 0)))
       );
     }

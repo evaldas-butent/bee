@@ -22,7 +22,15 @@
         </SimpleJoin>
       </SimpleJoin>
 
+      <ExternalJoin name="Cargo" joinType="LEFT" source="CargoIncomes">
+        <SimpleJoin name="Sale" joinType="LEFT">
+          <AggregateColumn name="InvoiceNo" aggregate="MAX" />
+        </SimpleJoin>
+      </ExternalJoin>
+
       <SimpleColumn name="MultipleSegments" editable="true" />
+      <SimpleColumn name="Directions" editable="true"/>
+      <SimpleColumn name="CmrCopy" editable="true" />
 
       <SimpleColumn name="Description" />
       <SimpleColumn name="Weight" editable="true"/>
