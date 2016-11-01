@@ -13,10 +13,14 @@
   <SimpleColumn name="City" />
   <SimpleJoin joinType="LEFT" name="City">
     <SimpleColumn name="Name" alias="CityName" />
+    <SimpleColumn name="Name2" alias="CityNameEN" />
+    <SimpleColumn name="Name3" alias="CityNameRU" />
   </SimpleJoin>
   <SimpleColumn name="Country" />
   <SimpleJoin joinType="LEFT" name="Country">
     <SimpleColumn name="Name" alias="CountryName" />
+    <SimpleColumn name="Name2" alias="CountryNameEN" />
+    <SimpleColumn name="Name3" alias="CountryNameRU" />
     <SimpleColumn name="Code" alias="CountryCode" />
   </SimpleJoin>
 

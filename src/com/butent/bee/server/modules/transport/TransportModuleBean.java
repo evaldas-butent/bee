@@ -1372,12 +1372,12 @@ public class TransportModuleBean implements BeeModule {
 
         String value = BeeUtils.join("\n", row.getValue(COL_ADDITIONAL_ROUTE),
             BeeUtils.unbox(row.getBoolean(COL_SHOW_ADDITIONAL_ROUTE))
-            ? BeeUtils.join("-",
-            BeeUtils.joinWords(places.get(cargo, ALS_LOADING_COUNTRY_CODE),
-                BeeUtils.parenthesize(places.get(cargo, ALS_LOADING_COUNTRY_NAME))),
-            BeeUtils.joinWords(places.get(cargo, ALS_UNLOADING_COUNTRY_CODE),
-                BeeUtils.parenthesize(places.get(cargo, ALS_UNLOADING_COUNTRY_NAME))))
-        : null);
+                ? BeeUtils.join("-",
+                BeeUtils.joinWords(places.get(cargo, ALS_LOADING_COUNTRY_CODE),
+                    BeeUtils.parenthesize(places.get(cargo, ALS_LOADING_COUNTRY_NAME))),
+                BeeUtils.joinWords(places.get(cargo, ALS_UNLOADING_COUNTRY_CODE),
+                    BeeUtils.parenthesize(places.get(cargo, ALS_UNLOADING_COUNTRY_NAME))))
+                : null);
 
         if (!BeeUtils.isEmpty(value)) {
           valueMap.put(COL_ORDER_NOTES, value);
