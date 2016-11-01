@@ -1673,7 +1673,7 @@ public class TransportModuleBean implements BeeModule {
         .addFields(als, COL_CARGO_TRIP, VAR_UNLOADING)
         .addFields(TBL_ORDER_CARGO, COL_CARGO_PARTIAL)
         .addFields(TBL_CARGO_PLACES, COL_PLACE_DATE, COL_PLACE_COUNTRY, COL_PLACE_CITY,
-            COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS, COL_CARGO_WEIGHT)
+            COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS, COL_ROUTE_WEIGHT)
         .addFrom(TBL_CARGO_PLACES)
         .addFromInner(getHandlingQuery(sys.idEquals(TBL_TRIPS, tripId)), als,
             SqlUtils.joinUsing(TBL_CARGO_PLACES, als, sys.getIdName(TBL_CARGO_PLACES)))
@@ -1689,7 +1689,7 @@ public class TransportModuleBean implements BeeModule {
       if (unloading && !loaded) {
         continue;
       }
-      double weight = BeeUtils.unbox(row.getDouble(COL_CARGO_WEIGHT));
+      double weight = BeeUtils.unbox(row.getDouble(COL_ROUTE_WEIGHT));
       DateTime date = row.getDateTime(COL_PLACE_DATE);
       Long country = row.getLong(COL_PLACE_COUNTRY);
       Long city = row.getLong(COL_PLACE_CITY);
@@ -2504,6 +2504,9 @@ public class TransportModuleBean implements BeeModule {
         .addFromInner(getHandlingQuery(clause), als,
             SqlUtils.joinUsing(TBL_CARGO_PLACES, als, sys.getIdName(TBL_CARGO_PLACES))));
 
+    String[] calc = new String[] {
+        COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS, COL_ROUTE_WEIGHT};
+
     for (SimpleRow row : rs) {
       String prfx;
       int cmpr;
@@ -2522,9 +2525,13 @@ public class TransportModuleBean implements BeeModule {
           .compareTo(row.getDateTime(COL_PLACE_DATE)) == cmpr) {
 
         Arrays.stream(rs.getColumnNames())
-            .filter(col -> !BeeUtils.inList(col, keyColumn, VAR_UNLOADING))
+            .filter(col -> !BeeUtils.inList(col, keyColumn, VAR_UNLOADING)
+                && !ArrayUtils.contains(calc, col))
             .forEach(col -> data.put(key, prfx + col, BeeUtils.nvl(row.getValue(col), "")));
       }
+      Arrays.stream(calc).forEach(col -> data.put(key, col,
+          BeeUtils.toString(BeeUtils.toDouble(data.get(key, col))
+              + BeeUtils.unbox(row.getDouble(col)))));
     }
     return data;
   }

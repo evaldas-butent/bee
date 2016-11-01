@@ -1028,6 +1028,7 @@ public class UiServiceBean {
       response.addInfo("Recreate structure OK");
 
     } else if (BeeUtils.same(cmd, "handling")) {
+      // TODO: remove
       qs.updateData(new SqlUpdate(TBL_CARGO_HANDLING)
           .addExpression(COL_CARGO,
               SqlUtils.field(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)))
@@ -1050,12 +1051,13 @@ public class UiServiceBean {
           SqlUpdate update = new SqlUpdate(TBL_CARGO_PLACES)
               .setWhere(sys.idEquals(TBL_CARGO_PLACES, place));
 
-          for (String s : new String[] {
-              COL_EMPTY_KILOMETERS, COL_LOADED_KILOMETERS, COL_CARGO_WEIGHT}) {
-
+          for (String s : new String[] {COL_EMPTY_KILOMETERS, COL_LOADED_KILOMETERS}) {
             if (!BeeUtils.isEmpty(row.getValue(s))) {
               update.addConstant(s, row.getValue(s));
             }
+          }
+          if (!BeeUtils.isEmpty(row.getValue(COL_CARGO_WEIGHT))) {
+            update.addConstant(COL_ROUTE_WEIGHT, row.getValue(COL_CARGO_WEIGHT));
           }
           if (!update.isEmpty()) {
             qs.updateData(update);

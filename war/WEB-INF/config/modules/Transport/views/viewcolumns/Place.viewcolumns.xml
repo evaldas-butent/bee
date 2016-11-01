@@ -22,5 +22,5 @@
 
   <SimpleColumn name="EmptyKilometers" />
   <SimpleColumn name="LoadedKilometers" />
-  <SimpleColumn name="Weight" alias="CargoWeight" />
+  <SimpleColumn name="CargoWeight" />
 </Columns>

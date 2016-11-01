@@ -25,4 +25,8 @@
     <renderer type="flag" />
   </PropColumn>
   <PropColumn type="string" name="UnloadingNumber" label="=trUnloadingNumber" visible="false" />
+
+  <PropColumn type="integer" name="EmptyKilometers" label="=trEmptyKilometers" visible="false" />
+  <PropColumn type="integer" name="LoadedKilometers" label="=trLoadedKilometers" visible="false" />
+  <PropColumn type="decimal" scale="3" name="CargoWeight" label="=trWeightInTons" visible="false" />
 </g:columns>

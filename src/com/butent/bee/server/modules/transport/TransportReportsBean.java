@@ -968,8 +968,8 @@ public class TransportReportsBean {
           .addField(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), COL_CARGO_TRIP)
           .addFields(tmp, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_DATE)
           .addFields(TBL_ORDER_CARGO, COL_CARGO_TYPE)
-          .addEmptyDouble(COL_LOADING_PLACE)
-          .addEmptyDouble(COL_UNLOADING_PLACE)
+          .addEmptyDouble(VAR_LOADING)
+          .addEmptyDouble(VAR_UNLOADING)
           .addEmptyDouble(plannedKilometers)
           .addEmptyDouble(plannedFuelCosts)
           .addEmptyDouble(plannedDailyCosts)
@@ -981,8 +981,8 @@ public class TransportReportsBean {
 
       String als = SqlUtils.uniqueName();
 
-      for (Map.Entry<String, String> entry : ImmutableMap.of(TBL_CARGO_LOADING, COL_LOADING_PLACE,
-          TBL_CARGO_UNLOADING, COL_UNLOADING_PLACE).entrySet()) {
+      for (Map.Entry<String, String> entry : ImmutableMap.of(TBL_CARGO_LOADING, VAR_LOADING,
+          TBL_CARGO_UNLOADING, VAR_UNLOADING).entrySet()) {
         String tbl = entry.getKey();
         String col = entry.getValue();
 
@@ -1017,8 +1017,8 @@ public class TransportReportsBean {
       }
       qs.updateData(new SqlUpdate(tmpTripCargo)
           .addExpression(plannedKilometers,
-              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_LOADING_PLACE), 0),
-                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_UNLOADING_PLACE), 0))));
+              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_LOADING), 0),
+                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, VAR_UNLOADING), 0))));
     }
     // Planned fuel costs
     if (report.requiresField(plannedFuelCosts)) {
