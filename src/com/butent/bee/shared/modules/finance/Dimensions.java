@@ -14,6 +14,12 @@ import java.util.List;
 
 public final class Dimensions {
 
+  public static final String COL_ORDINAL = "Ordinal";
+  public static final String COL_PLURAL_NAME = "PluralName";
+  public static final String COL_SINGULAR_NAME = "SingularName";
+
+  public static final String GRID_NAMES = "DimensionNames";
+
   private static final String COL_DEPARTMENT = "Department";
   private static final String COL_ACTIVITY_TYPE = "ActivityType";
   private static final String COL_COST_CENTER = "CostCenter";

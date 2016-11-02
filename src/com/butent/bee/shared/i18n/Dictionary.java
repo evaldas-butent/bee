@@ -1549,6 +1549,12 @@ public interface Dictionary {
 
   default String differences() {return g("differences");}
 
+  default String dimensionNameDefault(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("dimensionNameDefault"), _m);
+  }
+
   default String dimensionNames() {return g("dimensionNames");}
 
   default String dimensions() {return g("dimensions");}
