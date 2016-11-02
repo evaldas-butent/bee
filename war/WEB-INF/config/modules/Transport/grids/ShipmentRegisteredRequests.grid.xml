@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="ShipmentRegisteredRequests" viewName="ShipmentRequests"
         caption="=trRequests"
-        enableCopy="- *Date, Status, Customer*, Notes, Vehicle, Driver, Host, Agent, LossReason, Cargo, CargoHandling, Assessment, Order"
+        enableCopy="- *Date, Status, Customer*, Notes, Vehicle, Driver, Host, Agent, LossReason, Cargo, Assessment, Order"
         filter="CompanyPerson"
 >
   <g:columns>
@@ -13,21 +14,11 @@
 
     <RelColumn name="CompanyPerson" renderColumns="PersonFirstName PersonLastName" />
     <DataColumn name="CompanyName" />
+  </g:columns>
 
-    <DataColumn name="LoadingDate" />
-    <DataColumn name="LoadingCompany" />
-    <DataColumn name="LoadingContact" />
-    <DataColumn name="LoadingCity" />
-    <DataColumn name="LoadingAddress" />
-    <DataColumn name="LoadingNumber" />
+  <xi:include href="columns/Places.columns.xml" />
 
-    <DataColumn name="UnloadingDate" />
-    <DataColumn name="UnloadingCompany" />
-    <DataColumn name="UnloadingContact" />
-    <DataColumn name="UnloadingCity" />
-    <DataColumn name="UnloadingAddress" />
-    <DataColumn name="UnloadingNumber" />
-
+  <g:columns>
     <RelColumn name="Expedition" renderColumns="ExpeditionType" />
     <DataColumn name="Logistics" />
     <RelColumn name="ShippingTerm" />

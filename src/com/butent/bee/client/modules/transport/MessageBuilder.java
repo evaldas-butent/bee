@@ -186,7 +186,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
     @Override
     public void onClick(ClickEvent arg) {
-      final String caption;
+      String caption;
       Collection<String> template;
       Dictionary loc = Localized.dictionary();
 
@@ -212,7 +212,6 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
         }
       }, value -> {
         InputText editor = new InputText();
-        editor.setWidth("30em");
 
         if (!BeeUtils.isEmpty(value)) {
           editor.setValue(value);

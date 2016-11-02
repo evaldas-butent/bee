@@ -20,6 +20,9 @@
     <SimpleColumn name="Code" alias="CountryCode" />
   </SimpleJoin>
 
+  <SimpleColumn name="CityUnbound" />
+  <SimpleColumn name="CountryUnbound" />
+
   <SimpleColumn name="EmptyKilometers" />
   <SimpleColumn name="LoadedKilometers" />
   <SimpleColumn name="CargoWeight" />

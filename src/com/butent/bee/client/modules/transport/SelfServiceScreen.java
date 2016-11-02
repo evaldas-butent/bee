@@ -98,8 +98,8 @@ public class SelfServiceScreen extends ScreenImpl {
   public void start(UserData userData) {
     super.start(userData);
 
-    Data.setVisibleViews(Sets.newHashSet(VIEW_SHIPMENT_REQUESTS, VIEW_CARGO_HANDLING,
-        VIEW_CARGO_FILES, VIEW_CARGO_INVOICES));
+    Data.setVisibleViews(Sets.newHashSet(VIEW_SHIPMENT_REQUESTS, TBL_CARGO_LOADING,
+        TBL_CARGO_UNLOADING, VIEW_CARGO_FILES, VIEW_CARGO_INVOICES));
 
     Data.setReadOnlyViews(Collections.singleton(VIEW_CARGO_INVOICES));
 
@@ -108,6 +108,7 @@ public class SelfServiceScreen extends ScreenImpl {
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
 
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_ORDER_ID);
+    FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_STATUS);
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "AdditionalInfo");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "RelatedMessages");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, VIEW_CARGO_INCOMES);

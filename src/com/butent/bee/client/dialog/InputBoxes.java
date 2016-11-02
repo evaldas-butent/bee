@@ -33,6 +33,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -149,12 +150,14 @@ public final class InputBoxes {
 
     Assert.notNull(consumer);
 
-    final HtmlTable table = new HtmlTable();
+    HtmlTable table = new HtmlTable();
+    StyleUtils.setWidth(table, 100, CssUnit.PCT);
+
     table.setText(0, 0, valueCaption);
     table.getCellFormatter().setHorizontalAlignment(0, 0, TextAlign.CENTER);
-    StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 0), 100);
+    StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 0), 200);
 
-    final Consumer<String> rowCreator = value -> {
+    Consumer<String> rowCreator = value -> {
       Editor input = null;
 
       if (editorSupplier != null) {
@@ -167,10 +170,12 @@ public final class InputBoxes {
           input.setValue(value);
         }
       }
+      StyleUtils.setWidth(input.getElement(), 100, CssUnit.PCT);
+
       int row = table.getRowCount();
       table.setWidget(row, 0, input.asWidget());
 
-      final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
+      FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
       delete.setTitle(Localized.dictionary().delete());
       delete.getElement().getStyle().setCursor(Cursor.POINTER);
 
@@ -189,7 +194,12 @@ public final class InputBoxes {
         rowCreator.accept(value);
       }
     }
-    inputWidget(caption, table, new InputCallback() {
+    Flow flow = new Flow();
+    StyleUtils.setMaxHeight(flow, 80, CssUnit.VH);
+    StyleUtils.setOverflow(flow, StyleUtils.ScrollBars.BOTH, Overflow.AUTO);
+    flow.add(table);
+
+    inputWidget(caption, flow, new InputCallback() {
       @Override
       public String getErrorMessage() {
         String error = InputCallback.super.getErrorMessage();
