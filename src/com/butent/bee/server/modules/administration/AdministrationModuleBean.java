@@ -58,8 +58,12 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.Menu;
+import com.butent.bee.shared.menu.MenuItem;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.SysObject;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
@@ -225,7 +229,9 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, PRM_ERP_ADDRESS),
         BeeParameter.createText(module, PRM_ERP_LOGIN),
         BeeParameter.createText(module, PRM_ERP_PASSWORD),
-        BeeParameter.createText(module, PRM_URL));
+        BeeParameter.createText(module, PRM_URL),
+        BeeParameter.createNumber(module, Dimensions.PRM_DIMENSIONS, false,
+            Dimensions.SPACETIME / 2));
 
     params.addAll(getSqlEngineParameters());
     return params;
@@ -406,6 +412,46 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
           Endpoint.updateUserData(usr.getAllUserData());
         }
       }
+    });
+
+    MenuService.EXTRA_DIMENSIONS.setTransformer(input -> {
+      List<Menu> result = new ArrayList<>();
+
+      Integer count = prm.getInteger(Dimensions.PRM_DIMENSIONS);
+
+      if (input instanceof MenuItem && BeeUtils.isPositive(count)) {
+        Map<Integer, String> labels = new HashMap<>();
+
+        BeeRowSet data = qs.getViewData(Dimensions.VIEW_NAMES);
+
+        if (!DataUtils.isEmpty(data)) {
+          String language = usr.getLanguage();
+          int ordinalIndex = data.getColumnIndex(Dimensions.COL_ORDINAL);
+
+          for (BeeRow row : data) {
+            labels.put(row.getInteger(ordinalIndex),
+                DataUtils.getTranslation(data, row, Dimensions.COL_PLURAL_NAME, language));
+          }
+        }
+
+        Dictionary dictionary = usr.getDictionary();
+
+        for (int i = 1; i <= Math.min(count, Dimensions.SPACETIME); i++) {
+          String viewName = Dimensions.getViewName(i);
+
+          if (usr.isDataVisible(viewName)) {
+            MenuItem item = (MenuItem) input.copy();
+
+            item.setName(viewName);
+            item.setLabel(BeeUtils.notEmpty(labels.get(i), dictionary.dimensionNameDefault(i)));
+            item.setParameters(BeeUtils.toString(i));
+
+            result.add(item);
+          }
+        }
+      }
+
+      return result;
     });
   }
 

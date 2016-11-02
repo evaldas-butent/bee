@@ -4,10 +4,7 @@
        name="Dimensions" label="=dimensions" parent="References" order="100" separator="true"
        module="Administration"
 >
-  <Item name="Departments" label="=departments" service="grid" parameters="Departments" />
-  <Item name="ActivityTypes" label="=activityTypes" service="grid" parameters="ActivityTypes" />
-  <Item name="CostCenters" label="=costCenters" service="grid" parameters="CostCenters" />
-  <Item name="Locations" label="=objects" service="grid" parameters="Locations" />
+  <Item name="ExtraDimensions" label="ExtraDimensions" service="extra_dimensions" />
 
   <Item name="DimensionNames" label="=dimensionNames" service="grid" parameters="DimensionNames"
         separator="true" />

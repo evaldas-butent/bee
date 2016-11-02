@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
@@ -238,6 +239,18 @@ public class DispatcherBean {
               if (!decorators.hasErrors() && decorators.hasResponse()) {
                 data.put(component.key(), decorators.getResponse());
               }
+            }
+            break;
+
+          case DIMENSIONS:
+            BeeRowSet dimensionNames = qs.getViewData(Dimensions.VIEW_NAMES);
+            if (dimensionNames != null) {
+              Integer count = prm.getInteger(Dimensions.PRM_DIMENSIONS);
+              if (BeeUtils.isPositive(count)) {
+                dimensionNames.setTableProperty(Dimensions.PRM_DIMENSIONS,
+                    BeeUtils.toString(count));
+              }
+              data.put(component.key(), dimensionNames);
             }
             break;
 

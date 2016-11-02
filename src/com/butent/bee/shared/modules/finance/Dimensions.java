@@ -2,17 +2,27 @@ package com.butent.bee.shared.modules.finance;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class Dimensions {
+
+  public static final int SPACETIME = 10;
+
+  public static final String VIEW_NAMES = "DimensionNames";
 
   public static final String COL_ORDINAL = "Ordinal";
   public static final String COL_PLURAL_NAME = "PluralName";
@@ -20,10 +30,75 @@ public final class Dimensions {
 
   public static final String GRID_NAMES = "DimensionNames";
 
+  public static final String PRM_DIMENSIONS = "Dimensions";
+
   private static final String COL_DEPARTMENT = "Department";
   private static final String COL_ACTIVITY_TYPE = "ActivityType";
   private static final String COL_COST_CENTER = "CostCenter";
   private static final String COL_OBJECT = "Object";
+
+  private static final BeeLogger logger = LogUtils.getLogger(Dimensions.class);
+
+  private static int compactification;
+
+  private static final Map<Integer, String> pluralNames = new HashMap<>();
+  private static final Map<Integer, String> singularNames = new HashMap<>();
+
+  public static String plural(int ordinal) {
+    if (isValid(ordinal)) {
+      String name = pluralNames.get(ordinal);
+      return BeeUtils.isEmpty(name) ? Localized.dictionary().dimensionNameDefault(ordinal) : name;
+
+    } else {
+      return null;
+    }
+  }
+
+  public static String singular(int ordinal) {
+    if (isValid(ordinal)) {
+      String name = singularNames.get(ordinal);
+      return BeeUtils.isEmpty(name) ? Localized.dictionary().dimensionNameDefault(ordinal) : name;
+
+    } else {
+      return null;
+    }
+  }
+
+  public static String getViewName(int ordinal) {
+    if (isValid(ordinal)) {
+      return "Dimensions" + BeeUtils.toLeadingZeroes(ordinal, 2);
+    } else {
+      return null;
+    }
+  }
+
+  public static void load(String serialized) {
+    BeeRowSet rowSet = BeeRowSet.restore(serialized);
+
+    int count = BeeUtils.toInt(rowSet.getTableProperty(PRM_DIMENSIONS));
+    if (count > 0) {
+      compactification = Math.min(count, SPACETIME);
+    }
+
+    if (!rowSet.isEmpty()) {
+      String language = Localized.dictionary().languageTag();
+      int ordinalIndex = rowSet.getColumnIndex(COL_ORDINAL);
+
+      for (BeeRow row : rowSet) {
+        Integer ordinal = row.getInteger(ordinalIndex);
+
+        if (isValid(ordinal)) {
+          pluralNames.put(ordinal,
+              DataUtils.getTranslation(rowSet, row, COL_PLURAL_NAME, language));
+
+          singularNames.put(ordinal,
+              DataUtils.getTranslation(rowSet, row, COL_SINGULAR_NAME, language));
+        }
+      }
+    }
+
+    logger.info("dimensions", rowSet.getNumberOfRows(), compactification);
+  }
 
   public static Dimensions create(BeeRowSet rowSet, IsRow row) {
     Assert.notNull(rowSet);
@@ -72,6 +147,10 @@ public final class Dimensions {
     }
 
     return new Dimensions(department, activityType, costCenter, object);
+  }
+
+  private static boolean isValid(int ordinal) {
+    return ordinal >= 1 && ordinal <= SPACETIME;
   }
 
   private final Long department;
