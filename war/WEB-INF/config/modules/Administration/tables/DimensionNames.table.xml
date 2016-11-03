@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="DimensionNames"
+       idName="DimensionNameID"
+>
+  <Fields>
+    <Integer name="Ordinal" label="=ordinal" notNull="true" unique="true" />
+
+    <String name="PluralName" precision="100" notNull="true" unique="true" label="=pluralName"
+            translatable="true" />
+    <String name="SingularName" precision="100" notNull="true" unique="true" label="=singularName"
+            translatable="true" />
+
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

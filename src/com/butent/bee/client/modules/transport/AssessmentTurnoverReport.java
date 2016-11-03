@@ -1377,10 +1377,10 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     }
 
     if (start != null) {
-      filter.add(Filter.isMoreEqual(ALS_UNLOADING_DATE, new DateTimeValue(start)));
+      filter.add(Filter.isMoreEqual(COL_DATE, new DateTimeValue(start)));
     }
     if (end != null) {
-      filter.add(Filter.isLess(ALS_UNLOADING_DATE, new DateTimeValue(end)));
+      filter.add(Filter.isLess(COL_DATE, new DateTimeValue(end)));
     }
 
     if (captions.isEmpty() && (start != null || end != null)) {

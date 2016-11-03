@@ -1486,6 +1486,9 @@ public final class CliWorker {
     } else if (BeeUtils.same(args, "load")) {
       BeeKeeper.getMenu().loadMenu();
 
+    } else if (BeeUtils.same(args, "refresh")) {
+      BeeKeeper.getMenu().refresh();
+
     } else if (BeeUtils.isDigit(args)) {
       BeeKeeper.getScreen().closeAll();
 

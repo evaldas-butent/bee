@@ -59,6 +59,7 @@
       <xs:enumeration value="rebuild_trade_stock" />
       <xs:enumeration value="finance_default_accounts" />
       <xs:enumeration value="finance_posting_precedence" />
+      <xs:enumeration value="extra_dimensions" />
     </xs:restriction>
   </xs:simpleType>
 

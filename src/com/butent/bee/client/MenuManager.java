@@ -183,8 +183,6 @@ public class MenuManager {
 
   /**
    * Conditionally hides menu items.
-   * 
-   * @param item
    */
   private static boolean isVisible(Menu item) {
     switch (item.getName()) {
@@ -222,7 +220,7 @@ public class MenuManager {
     }
   }
 
-  public boolean drawMenu() {
+  public boolean refresh() {
     IdentifiableWidget w = createMenu(0, roots, null);
     boolean ok = w != null;
 
@@ -340,7 +338,7 @@ public class MenuManager {
 
       logger.info("menu", size);
 
-      drawMenu();
+      refresh();
     }
   }
 
@@ -360,7 +358,7 @@ public class MenuManager {
     BeeKeeper.getScreen().show(tree);
   }
 
-  private void collectMenuInfo(TreeItem treeItem, Menu menu) {
+  private static void collectMenuInfo(TreeItem treeItem, Menu menu) {
     treeItem.addItem("Name: " + menu.getName());
 
     if (menu.getOrder() != null) {
@@ -426,7 +424,7 @@ public class MenuManager {
     return rw;
   }
 
-  private List<MenuCommand> getCommands(Menu menu) {
+  private static List<MenuCommand> getCommands(Menu menu) {
     List<MenuCommand> commands = new ArrayList<>();
 
     if (menu instanceof MenuItem) {

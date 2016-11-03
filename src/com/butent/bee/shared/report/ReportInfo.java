@@ -37,6 +37,7 @@ public class ReportInfo implements BeeSerializable {
 
   private String caption;
   private Long id;
+  private boolean global;
 
   private final List<ReportInfoItem> colItems = new ArrayList<>();
   private final List<ReportItem> filterItems = new ArrayList<>();
@@ -304,6 +305,10 @@ public class ReportInfo implements BeeSerializable {
     return BeeUtils.isEmpty(getColItems());
   }
 
+  public boolean isGlobal() {
+    return global;
+  }
+
   public boolean requiresField(String field) {
     for (ReportInfoItem infoItem : getRowItems()) {
       for (ReportItem item : infoItem.getItem().getMembers()) {
@@ -413,6 +418,10 @@ public class ReportInfo implements BeeSerializable {
     if (item != null) {
       item.function = Assert.notNull(function);
     }
+  }
+
+  public void setGlobal(boolean global) {
+    this.global = global;
   }
 
   public void setGroupSummary(int colIndex, boolean summary) {

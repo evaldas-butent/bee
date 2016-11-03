@@ -29,7 +29,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,13 +62,14 @@ public final class ReportUtils {
   }
 
   public static void getReports(Report report, Consumer<List<ReportInfo>> consumer) {
-    Queries.getRowSet(VIEW_REPORT_SETTINGS, Collections.singletonList(COL_RS_PARAMETERS),
-        Filter.and(Filter.equals(COL_RS_USER, BeeKeeper.getUser().getUserId()),
+    Queries.getRowSet(VIEW_REPORT_SETTINGS, Arrays.asList(COL_RS_USER, COL_RS_PARAMETERS),
+        Filter.and(Filter.equalsOrIsNull(COL_RS_USER, BeeKeeper.getUser().getUserId()),
             Filter.equals(COL_RS_REPORT, report.getReportName()), Filter.isNull(COL_RS_CAPTION)),
         new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
             List<ReportInfo> reports = new ArrayList<>();
+            int userIdx = result.getColumnIndex(COL_RS_USER);
             int idx = result.getColumnIndex(COL_RS_PARAMETERS);
 
             for (ReportInfo rep : report.getReports()) {
@@ -77,6 +78,7 @@ public final class ReportUtils {
             for (BeeRow row : result) {
               ReportInfo rep = ReportInfo.restore(row.getString(idx));
               rep.setId(row.getId());
+              rep.setGlobal(BeeUtils.isEmpty(row.getString(userIdx)));
               reports.remove(rep);
               reports.add(rep);
             }

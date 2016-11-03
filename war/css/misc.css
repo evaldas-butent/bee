@@ -396,6 +396,10 @@
   color: white;
   background-color: dodgerblue;
 }
+.bee-rep-report-global td:first-child div:before {
+  font-family: FontAwesome;
+  content: "\f0ac";
+}
 
 .bee-EventsBoard-content {
   overflow: auto;

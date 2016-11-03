@@ -273,7 +273,7 @@ public final class TransportHandler {
 
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_PLACE, new CargoPlaceForm());
-    FormFactory.registerFormInterceptor(FORM_CARGO_PLACE_UNBOUND, new CargoPlaceUnboundForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_PLACE_UNBOUND, new CargoPlaceForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler());
 

@@ -106,7 +106,10 @@ public enum MenuService {
   @XmlEnumValue("finance_default_accounts")
   FINANCE_DEFAULT_ACCOUNTS(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION),
   @XmlEnumValue("finance_posting_precedence")
-  FINANCE_POSTING_PRECEDENCE(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION);
+  FINANCE_POSTING_PRECEDENCE(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION),
+
+  @XmlEnumValue("extra_dimensions")
+  EXTRA_DIMENSIONS(RightsState.VIEW);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;

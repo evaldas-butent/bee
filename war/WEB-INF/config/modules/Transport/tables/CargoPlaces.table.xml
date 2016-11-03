@@ -17,6 +17,9 @@
     <Relation name="Country" relation="Countries" label="=country" />
     <Text name="Note" label="=note" />
 
+    <String name="CityUnbound" precision="60" label="=city" />
+    <String name="CountryUnbound" precision="60" label="=country" />
+
     <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
     <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
     <Numeric name="CargoWeight" precision="10" scale="3" label="=trWeightInTons" />

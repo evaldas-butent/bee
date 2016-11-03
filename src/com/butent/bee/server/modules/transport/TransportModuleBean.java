@@ -547,7 +547,8 @@ public class TransportModuleBean implements BeeModule {
       public void fillCargoPlaces(ViewQueryEvent event) {
         if (event.isAfter(VIEW_ORDER_CARGO, VIEW_ALL_CARGO, VIEW_ASSESSMENTS,
             TBL_ASSESSMENT_FORWARDERS, VIEW_CARGO_SALES, VIEW_CARGO_CREDIT_SALES,
-            VIEW_CARGO_PURCHASES, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO) && event.hasData()) {
+            VIEW_CARGO_PURCHASES, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, VIEW_SHIPMENT_REQUESTS)
+            && event.hasData()) {
 
           BeeRowSet rowSet = event.getRowset();
           BeeView view = sys.getView(event.getTargetName());
@@ -2620,8 +2621,7 @@ public class TransportModuleBean implements BeeModule {
         .addFromInner(getHandlingQuery(clause), als,
             SqlUtils.joinUsing(TBL_CARGO_PLACES, als, sys.getIdName(TBL_CARGO_PLACES))));
 
-    String[] calc = new String[] {
-        COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS, COL_ROUTE_WEIGHT};
+    String[] calc = new String[] {COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS};
 
     for (SimpleRow row : rs) {
       String prfx;
@@ -2641,7 +2641,7 @@ public class TransportModuleBean implements BeeModule {
           .compareTo(row.getDateTime(COL_PLACE_DATE)) == cmpr) {
 
         Arrays.stream(rs.getColumnNames())
-            .filter(col -> !BeeUtils.inList(col, keyColumn, VAR_UNLOADING)
+            .filter(col -> !BeeUtils.inList(col, keyColumn, VAR_UNLOADING, COL_ROUTE_WEIGHT)
                 && !ArrayUtils.contains(calc, col))
             .forEach(col -> data.put(key, prfx + col, BeeUtils.nvl(row.getValue(col), "")));
       }
@@ -2749,7 +2749,7 @@ public class TransportModuleBean implements BeeModule {
         .addField(TBL_CARGO_TRIPS, cargoTrip, COL_CARGO_TRIP)
         .addFields(TBL_CARGO_PLACES, sys.getIdName(TBL_CARGO_PLACES))
         .addFrom(TBL_ORDER_CARGO)
-        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromLeft(TBL_CARGO_TRIPS, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
         .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_CARGO_TRIPS, COL_TRIP))
         .setWhere(SqlUtils.and(clause, SqlUtils.notNull(TBL_CARGO_PLACES, COL_PLACE_DATE)));

@@ -11,7 +11,7 @@
   <Item name="Journals" label="=journals" service="grid" parameters="Journals" />
 
   <Item name="FinanceContents" label="=finContents" service="grid" parameters="FinanceContents"
-        separator="true" />
+        order="30" separator="true" />
 
   <Item name="DefaultAccounts" label="=finDefaultAccounts" service="finance_default_accounts"
         order="100" module="Administration" separator="true" />

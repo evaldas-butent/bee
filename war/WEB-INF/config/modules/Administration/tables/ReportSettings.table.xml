@@ -5,11 +5,11 @@
   idName="ReportSettingID"
   >
   <Fields>
-    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+    <Relation name="User" relation="Users" cascade="DELETE" label="=user" />
     <String name="Report" precision="100" notNull="true" label="=report" />
 
     <String name="Caption" precision="200" label="=caption" />
-    
+
     <Text name="Parameters" label="=parameters" />
   </Fields>
 </Table>
