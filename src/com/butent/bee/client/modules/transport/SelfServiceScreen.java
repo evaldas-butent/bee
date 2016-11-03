@@ -105,6 +105,8 @@ public class SelfServiceScreen extends ScreenImpl {
 
     Data.setColumnReadOnly(VIEW_SHIPMENT_REQUESTS, ClassifierConstants.COL_COMPANY_PERSON);
 
+    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_STATUS);
+    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_REASON);
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
 
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_ORDER_ID);
@@ -226,7 +228,7 @@ public class SelfServiceScreen extends ScreenImpl {
         Value.getValue(BeeKeeper.getUser().getUserData().getCompanyPerson())), null);
   }
 
-  private void showSuccessInfo(BeeRow result) {
+  private static void showSuccessInfo(BeeRow result) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_TEXT_CONSTANT);
     args.addDataItem(COL_TEXT_CONSTANT, TextConstant.SUMBMITTED_REQUEST_CONTENT.ordinal());
     args.addDataItem(COL_USER_LOCALE, result.getInteger(
