@@ -13,6 +13,8 @@ import com.google.common.eventbus.Subscribe;
 import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
 import com.butent.bee.server.modules.classifiers.TimerBuilder;
+import com.butent.bee.server.ui.UiServiceBean;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarHelper;
@@ -84,6 +86,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
@@ -94,7 +97,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
@@ -290,6 +292,8 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
   ClassifiersModuleBean cmb;
   @EJB
   ChatBean chat;
+  @EJB
+  UiServiceBean usb;
 
   @EJB
   NewsBean news;
@@ -1854,6 +1858,10 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
     }
 
     String viewName = VIEW_APPOINTMENTS;
+
+    Collection<RowChildren> children = new ArrayList<>();
+    final String propChildren = "_row_children";
+
     BeeRowSet oldRowSet = qs.getViewData(viewName, Filter.compareId(appId));
     if (oldRowSet == null || oldRowSet.isEmpty()) {
       return ResponseObject.error(reqInfo.getService(), ": old row not found", appId);
@@ -1861,11 +1869,27 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
 
     BeeRow oldRow = oldRowSet.getRow(0);
 
+    if (newRowSet.getRow(0).hasPropertyValue(propChildren)) {
+      String serialized = newRowSet.getRow(0).getProperty(propChildren);
+
+      String[] arr = Codec.beeDeserializeCollection(serialized);
+      if (!ArrayUtils.isEmpty(arr)) {
+        for (String s : arr) {
+          children.add(RowChildren.restore(s));
+        }
+      }
+    }
+
     BeeRowSet updated = DataUtils.getUpdated(viewName, oldRowSet.getColumns(), oldRow,
-        newRowSet.getRow(0), null);
+        newRowSet.getRow(0), children);
+
 
     ResponseObject response;
     if (updated == null) {
+      if (!children.isEmpty()) {
+        usb.updateRelatedValues(viewName, appId, Codec.beeSerialize(children));
+      }
+
       response = ResponseObject.response(oldRow);
     } else {
       response = deb.commitRow(updated);

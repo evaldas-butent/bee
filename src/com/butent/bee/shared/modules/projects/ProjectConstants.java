@@ -171,6 +171,7 @@ public final class ProjectConstants {
   public static final String GRID_PROJECT_INCOMES = "ProjectIncomes";
   public static final String GRID_PROJECT_INVOICES = "ProjectInvoices";
   public static final String GRID_PROJECT_DATES = "ProjectDates";
+  public static final String GRID_PROJECT_APPOINTMENTS = "ProjectAppointments";
 
   public static final String GRID_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
   public static final String GRID_PROJECT_TEMPLATES = "ProjectTemplates";

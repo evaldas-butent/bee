@@ -19,6 +19,7 @@ import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -430,9 +431,10 @@ public final class CalendarUtils {
   public static boolean saveAppointment(final RowCallback callback, boolean isNew,
       AppointmentBuilder appointmentBuilder, IsRow originalRow,
       DateTime statDateTime, DateTime endDateTime, String propList, Long reminderType,
-      NotificationListener notificationListener) {
+      NotificationListener notificationListener, FormView appointmentView) {
 
     BeeRow row = DataUtils.cloneRow(originalRow);
+
     final String viewName = VIEW_APPOINTMENTS;
 
     Data.setValue(viewName, row, COL_START_DATE_TIME, statDateTime);
@@ -453,10 +455,18 @@ public final class CalendarUtils {
       }
     }
 
+    if (appointmentView != null) {
+      if (isNew) {
+        row.setChildren(appointmentView.getChildrenForInsert());
+      } else {
+        row.setChildren(appointmentView.getChildrenForUpdate());
+      }
+    }
+
     BeeRowSet rowSet;
     List<BeeColumn> columns = CalendarKeeper.getAppointmentViewColumns();
     if (isNew) {
-      rowSet = DataUtils.createRowSetForInsert(viewName, columns, row);
+      rowSet = DataUtils.createRowSetForInsert(viewName, columns, row, null, true);
     } else {
       rowSet = new BeeRowSet(viewName, columns);
       rowSet.addRow(row);
@@ -470,7 +480,6 @@ public final class CalendarUtils {
     if (!BeeUtils.isEmpty(attList)) {
       rowSet.setTableProperty(TBL_APPOINTMENT_ATTENDEES, attList);
     }
-
 
     final String remindList = DataUtils.isId(reminderType) ? reminderType.toString() : null;
     if (!BeeUtils.isEmpty(remindList)) {

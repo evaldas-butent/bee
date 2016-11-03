@@ -14,10 +14,10 @@
         <xi:include href="widgets/ObjectHeader.widget.xml" />
 
         <TabbedPages class="flexible">
-          <page>
+          <!-- page>
             <text>=svcMaintenance</text>
             <ChildGrid name="ServiceMaintenance" relColumn="ServiceObject" />
-          </page>
+          </page -->
           <page>
             <text>=svcMaintenanceItemsServices</text>
             <ChildGrid name="Maintenance" relColumn="ServiceObject" />

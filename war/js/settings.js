@@ -3,7 +3,7 @@ var BeeSettings = {
   "version": "2.121",
   "licence": "",
   "build": "",
-  "releaseDate": "2016.10.11",
+  "releaseDate": "2016.11.03",
   "logoImage": "images/logo_white.png",
   "logoOpen": "http://www.b-novo.lt",
   "providerSensitivityMillis": 300,

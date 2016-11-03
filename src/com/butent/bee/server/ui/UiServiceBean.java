@@ -226,7 +226,10 @@ public class UiServiceBean {
         response = getRelatedValues(reqInfo);
         break;
       case UPDATE_RELATED_VALUES:
-        response = updateRelatedValues(reqInfo);
+        String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+        Long parentId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_VIEW_ROW_ID));
+        String serialized = reqInfo.getParameter(VAR_CHILDREN);
+        response = updateRelatedValues(viewName, parentId, serialized);
         break;
 
       case GET_DECORATORS:
@@ -1285,18 +1288,15 @@ public class UiServiceBean {
     return response;
   }
 
-  private ResponseObject updateRelatedValues(RequestInfo reqInfo) {
-    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+  public ResponseObject updateRelatedValues(String viewName, Long parentId, String serialized) {
     if (BeeUtils.isEmpty(viewName)) {
       return ResponseObject.parameterNotFound(VAR_VIEW_NAME);
     }
 
-    Long parentId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_VIEW_ROW_ID));
     if (!DataUtils.isId(parentId)) {
       return ResponseObject.parameterNotFound(VAR_VIEW_ROW_ID);
     }
 
-    String serialized = reqInfo.getParameter(VAR_CHILDREN);
     if (BeeUtils.isEmpty(serialized)) {
       return ResponseObject.parameterNotFound(VAR_CHILDREN);
     }
