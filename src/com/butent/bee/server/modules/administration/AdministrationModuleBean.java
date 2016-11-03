@@ -200,6 +200,9 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_DICTIONARY_DATABASE_TO_PROPERTIES)) {
       response = dictionaryDatabaseToProperties(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_INIT_DIMENSION_NAMES)) {
+      response = initDimensionNames();
+
     } else {
       String msg = BeeUtils.joinWords("Administration service not recognized:", svc);
       logger.warning(msg);
@@ -440,11 +443,13 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
           String viewName = Dimensions.getViewName(i);
 
           if (usr.isDataVisible(viewName)) {
+            String label = BeeUtils.notEmpty(labels.get(i), dictionary.dimensionNameDefault(i));
+
             MenuItem item = (MenuItem) input.copy();
 
             item.setName(viewName);
-            item.setLabel(BeeUtils.notEmpty(labels.get(i), dictionary.dimensionNameDefault(i)));
-            item.setParameters(BeeUtils.toString(i));
+            item.setLabel(BeeUtils.trim(label));
+            item.setParameters(Dimensions.menuParameter(i));
 
             result.add(item);
           }
@@ -1049,6 +1054,36 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
           BeeUtils.join(BeeConst.STRING_EMPTY, PRM_SQL_MESSAGES, engine), false, value));
     }
     return params;
+  }
+
+  private ResponseObject initDimensionNames() {
+    int count = BeeUtils.unbox(prm.getInteger(Dimensions.PRM_DIMENSIONS));
+    if (count <= 0) {
+      return ResponseObject.emptyResponse();
+    }
+    count = Math.min(count, Dimensions.SPACETIME);
+
+    Set<Integer> ordinals = qs.getIntSet(new SqlSelect()
+        .addFields(Dimensions.TBL_NAMES, Dimensions.COL_ORDINAL)
+        .addFrom(Dimensions.TBL_NAMES));
+
+    for (int i = 1; i <= count; i++) {
+      if (!ordinals.contains(i)) {
+        String name = Localized.dictionary().dimensionNameDefault(i);
+
+        SqlInsert insert = new SqlInsert(Dimensions.TBL_NAMES)
+            .addConstant(Dimensions.COL_ORDINAL, i)
+            .addConstant(Dimensions.COL_PLURAL_NAME, name)
+            .addConstant(Dimensions.COL_SINGULAR_NAME, name);
+
+        ResponseObject response = qs.insertDataWithResponse(insert);
+        if (response.hasErrors()) {
+          return response;
+        }
+      }
+    }
+
+    return ResponseObject.response(count);
   }
 
   private void refreshCurrencyRates() {

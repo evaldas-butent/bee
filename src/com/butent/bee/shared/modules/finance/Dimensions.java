@@ -22,6 +22,7 @@ public final class Dimensions {
 
   public static final int SPACETIME = 10;
 
+  public static final String TBL_NAMES = "DimensionNames";
   public static final String VIEW_NAMES = "DimensionNames";
 
   public static final String COL_ORDINAL = "Ordinal";
@@ -39,7 +40,7 @@ public final class Dimensions {
 
   private static final BeeLogger logger = LogUtils.getLogger(Dimensions.class);
 
-  private static int compactification;
+  private static int observed;
 
   private static final Map<Integer, String> pluralNames = new HashMap<>();
   private static final Map<Integer, String> singularNames = new HashMap<>();
@@ -72,13 +73,14 @@ public final class Dimensions {
     }
   }
 
+  public static String menuParameter(int ordinal) {
+    return isValid(ordinal) ? BeeUtils.toString(ordinal) : null;
+  }
+
   public static void load(String serialized) {
     BeeRowSet rowSet = BeeRowSet.restore(serialized);
 
-    int count = BeeUtils.toInt(rowSet.getTableProperty(PRM_DIMENSIONS));
-    if (count > 0) {
-      compactification = Math.min(count, SPACETIME);
-    }
+    setObserved(BeeUtils.toIntOrNull(rowSet.getTableProperty(PRM_DIMENSIONS)));
 
     if (!rowSet.isEmpty()) {
       String language = Localized.dictionary().languageTag();
@@ -87,17 +89,34 @@ public final class Dimensions {
       for (BeeRow row : rowSet) {
         Integer ordinal = row.getInteger(ordinalIndex);
 
-        if (isValid(ordinal)) {
-          pluralNames.put(ordinal,
-              DataUtils.getTranslation(rowSet, row, COL_PLURAL_NAME, language));
-
-          singularNames.put(ordinal,
-              DataUtils.getTranslation(rowSet, row, COL_SINGULAR_NAME, language));
-        }
+        setPlural(ordinal, DataUtils.getTranslation(rowSet, row, COL_PLURAL_NAME, language));
+        setSingular(ordinal, DataUtils.getTranslation(rowSet, row, COL_SINGULAR_NAME, language));
       }
     }
 
-    logger.info("dimensions", rowSet.getNumberOfRows(), compactification);
+    logger.info("dimensions", observed);
+  }
+
+  public static int getObserved() {
+    return observed;
+  }
+
+  public static void setObserved(Integer count) {
+    if (count != null) {
+      Dimensions.observed = BeeUtils.clamp(count, 0, SPACETIME);
+    }
+  }
+
+  public static void setPlural(Integer ordinal, String name) {
+    if (isValid(ordinal) && !BeeUtils.isEmpty(name)) {
+      pluralNames.put(ordinal, name.trim());
+    }
+  }
+
+  public static void setSingular(Integer ordinal, String name) {
+    if (isValid(ordinal) && !BeeUtils.isEmpty(name)) {
+      singularNames.put(ordinal, name.trim());
+    }
   }
 
   public static Dimensions create(BeeRowSet rowSet, IsRow row) {
@@ -149,8 +168,8 @@ public final class Dimensions {
     return new Dimensions(department, activityType, costCenter, object);
   }
 
-  private static boolean isValid(int ordinal) {
-    return ordinal >= 1 && ordinal <= SPACETIME;
+  private static boolean isValid(Integer ordinal) {
+    return ordinal != null && ordinal >= 1 && ordinal <= SPACETIME;
   }
 
   private final Long department;
