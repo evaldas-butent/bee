@@ -36,6 +36,7 @@ import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Preloader;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -122,20 +123,6 @@ public final class AdministrationKeeper {
       }
     });
 
-    GridFactory.registerGridInterceptor(Dimensions.GRID_NAMES, new DimensionNamesGrid());
-
-    GridFactory.registerPreloader(Dimensions.GRID_NAMES, command -> {
-      BeeKeeper.getRpc().makeRequest(createArgs(SVC_INIT_DIMENSION_NAMES), new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasResponse(Integer.class)) {
-            Dimensions.setObserved(response.getResponseAsInt());
-          }
-          command.run();
-        }
-      });
-    });
-
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_COLORS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_BACKGROUND, styleProvider);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_FOREGROUND, styleProvider);
@@ -154,6 +141,8 @@ public final class AdministrationKeeper {
     RightsForm.register();
 
     SelectorEvent.register(AdministrationKeeper::onDataSelector);
+
+    registerDimensions();
   }
 
   public static void setCompany(Long company) {
@@ -176,6 +165,49 @@ public final class AdministrationKeeper {
           Filter.and(Filter.notNull(COL_USER_BLOCK_UNTIL),
               Filter.isLess(COL_USER_BLOCK_UNTIL, now))
       ));
+    }
+  }
+
+  private static void openExtraDimensions(Integer ordinal) {
+    String gridName = Dimensions.getGridName(ordinal);
+
+    if (!BeeUtils.isEmpty(gridName)) {
+      GridFactory.openGrid(gridName, null, GridOptions.forCaption(Dimensions.plural(ordinal)));
+    }
+  }
+
+  private static void registerDimensions() {
+    MenuService.EXTRA_DIMENSIONS.setHandler(p -> openExtraDimensions(BeeUtils.toIntOrNull(p)));
+
+    GridFactory.registerGridInterceptor(Dimensions.GRID_NAMES, new DimensionNamesGrid());
+
+    GridFactory.registerPreloader(Dimensions.GRID_NAMES, command ->
+        BeeKeeper.getRpc().makeRequest(createArgs(SVC_INIT_DIMENSION_NAMES),
+            new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                if (response.hasResponse(Integer.class)) {
+                  Dimensions.setObserved(response.getResponseAsInt());
+                }
+                command.run();
+              }
+            }));
+
+    if (Dimensions.getObserved() > 0) {
+      for (int ordinal = 1; ordinal < Dimensions.getObserved(); ordinal++) {
+        String gridName = Dimensions.getGridName(ordinal);
+
+        String bg = Dimensions.getBackgroundColumn(ordinal);
+        String fg = Dimensions.getForegroundColumn(ordinal);
+
+        ColorStyleProvider csp = ColorStyleProvider.create(Dimensions.getViewName(ordinal), bg, fg);
+
+        ConditionalStyle.registerGridColumnStyleProvider(gridName,
+            Dimensions.getNameColumn(ordinal), csp);
+
+        ConditionalStyle.registerGridColumnStyleProvider(gridName, bg, csp);
+        ConditionalStyle.registerGridColumnStyleProvider(gridName, fg, csp);
+      }
     }
   }
 

@@ -322,6 +322,16 @@
       <xs:enumeration value="Dictionary" />
       <xs:enumeration value="DimensionNames" />
       <xs:enumeration value="Dimensions" />
+      <xs:enumeration value="Dimensions01" />
+      <xs:enumeration value="Dimensions02" />
+      <xs:enumeration value="Dimensions03" />
+      <xs:enumeration value="Dimensions04" />
+      <xs:enumeration value="Dimensions05" />
+      <xs:enumeration value="Dimensions06" />
+      <xs:enumeration value="Dimensions07" />
+      <xs:enumeration value="Dimensions08" />
+      <xs:enumeration value="Dimensions09" />
+      <xs:enumeration value="Dimensions10" />
       <xs:enumeration value="Discounts" />
       <xs:enumeration value="Discussions" />
       <xs:enumeration value="DiscussionsComments" />

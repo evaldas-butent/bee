@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="Dimensions05" source="Dimensions05" module="Administration"
+>
+  <Columns>
+    <SimpleColumn name="Dim05Name" />
+
+    <SimpleColumn name="Dim05Background" />
+    <SimpleColumn name="Dim05Foreground" />
+
+    <SimpleColumn name="Notes" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Dim05Name" />
+  </Order>
+</View>

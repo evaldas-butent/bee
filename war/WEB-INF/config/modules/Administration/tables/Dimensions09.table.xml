@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="Dimensions09"
+       idName="Dim09ID"
+>
+  <Fields>
+    <String name="Dim09Name" precision="100" notNull="true" unique="true" translatable="true"
+            label="=name" />
+
+    <String name="Dim09Background" precision="100" label="=backgroundColor" />
+    <String name="Dim09Foreground" precision="100" label="=foregroundColor" />
+
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

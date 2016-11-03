@@ -45,7 +45,7 @@ public final class Dimensions {
   private static final Map<Integer, String> pluralNames = new HashMap<>();
   private static final Map<Integer, String> singularNames = new HashMap<>();
 
-  public static String plural(int ordinal) {
+  public static String plural(Integer ordinal) {
     if (isValid(ordinal)) {
       String name = pluralNames.get(ordinal);
       return BeeUtils.isEmpty(name) ? Localized.dictionary().dimensionNameDefault(ordinal) : name;
@@ -55,7 +55,7 @@ public final class Dimensions {
     }
   }
 
-  public static String singular(int ordinal) {
+  public static String singular(Integer ordinal) {
     if (isValid(ordinal)) {
       String name = singularNames.get(ordinal);
       return BeeUtils.isEmpty(name) ? Localized.dictionary().dimensionNameDefault(ordinal) : name;
@@ -65,7 +65,7 @@ public final class Dimensions {
     }
   }
 
-  public static String getViewName(int ordinal) {
+  public static String getViewName(Integer ordinal) {
     if (isValid(ordinal)) {
       return "Dimensions" + BeeUtils.toLeadingZeroes(ordinal, 2);
     } else {
@@ -73,7 +73,23 @@ public final class Dimensions {
     }
   }
 
-  public static String menuParameter(int ordinal) {
+  public static String getGridName(Integer ordinal) {
+    return getViewName(ordinal);
+  }
+
+  public static String getNameColumn(Integer ordinal) {
+    return isValid(ordinal) ? getColumnPrefix(ordinal) + "Name" : null;
+  }
+
+  public static String getForegroundColumn(Integer ordinal) {
+    return isValid(ordinal) ? getColumnPrefix(ordinal) + "Foreground" : null;
+  }
+
+  public static String getBackgroundColumn(Integer ordinal) {
+    return isValid(ordinal) ? getColumnPrefix(ordinal) + "Background" : null;
+  }
+
+  public static String menuParameter(Integer ordinal) {
     return isValid(ordinal) ? BeeUtils.toString(ordinal) : null;
   }
 
@@ -166,6 +182,10 @@ public final class Dimensions {
     }
 
     return new Dimensions(department, activityType, costCenter, object);
+  }
+
+  private static String getColumnPrefix(int ordinal) {
+    return "Dim" + BeeUtils.toLeadingZeroes(ordinal, 2);
   }
 
   private static boolean isValid(Integer ordinal) {

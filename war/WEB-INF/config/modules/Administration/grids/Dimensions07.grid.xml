@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="Dimensions07" viewName="Dimensions07"
+        flexGrow="1"
+>
+  <g:columns>
+    <DataColumn name="Dim07Name" minWidth="100" visible="true" />
+  </g:columns>
+
+  <g:columns>
+    <DataColumn name="Dim07Background" updateMode="row" minWidth="100" flexGrow="0">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Dim07Foreground" updateMode="row" minWidth="100" flexGrow="0">
+      <editor type="color" />
+    </DataColumn>
+
+    <DataColumn name="Notes" visible="false" />
+  </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.Dim07Name</ui:expression>
+  </g:rowMessage>
+</g:Grid>
