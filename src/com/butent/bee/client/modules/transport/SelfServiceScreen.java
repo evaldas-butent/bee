@@ -98,16 +98,19 @@ public class SelfServiceScreen extends ScreenImpl {
   public void start(UserData userData) {
     super.start(userData);
 
-    Data.setVisibleViews(Sets.newHashSet(VIEW_SHIPMENT_REQUESTS, VIEW_CARGO_HANDLING,
-        VIEW_CARGO_FILES, VIEW_CARGO_INVOICES));
+    Data.setVisibleViews(Sets.newHashSet(VIEW_SHIPMENT_REQUESTS, TBL_CARGO_LOADING,
+        TBL_CARGO_UNLOADING, VIEW_CARGO_FILES, VIEW_CARGO_INVOICES));
 
     Data.setReadOnlyViews(Collections.singleton(VIEW_CARGO_INVOICES));
 
     Data.setColumnReadOnly(VIEW_SHIPMENT_REQUESTS, ClassifierConstants.COL_COMPANY_PERSON);
 
+    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_STATUS);
+    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_REASON);
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
 
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_ORDER_ID);
+    FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_STATUS);
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "AdditionalInfo");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "RelatedMessages");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, VIEW_CARGO_INCOMES);
@@ -225,7 +228,7 @@ public class SelfServiceScreen extends ScreenImpl {
         Value.getValue(BeeKeeper.getUser().getUserData().getCompanyPerson())), null);
   }
 
-  private void showSuccessInfo(BeeRow result) {
+  private static void showSuccessInfo(BeeRow result) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_TEXT_CONSTANT);
     args.addDataItem(COL_TEXT_CONSTANT, TextConstant.SUMBMITTED_REQUEST_CONTENT.ordinal());
     args.addDataItem(COL_USER_LOCALE, result.getInteger(

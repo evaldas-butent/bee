@@ -1070,8 +1070,7 @@ public class TransportReportsBean {
               SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_LOADING_PLACE
                       + COL_UNPLANNED_DRIVER_KM), 0),
                   SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_UNLOADING_PLACE
-                      + COL_UNPLANNED_DRIVER_KM), 0)))
-      );
+                      + COL_UNPLANNED_DRIVER_KM), 0))));
     }
     // Planned fuel costs
     if (report.requiresField(plannedFuelCosts)) {

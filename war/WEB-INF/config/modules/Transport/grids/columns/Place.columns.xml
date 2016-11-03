@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+           xmlns:ui="http://www.butent.com/ui">
+
   <DataColumn name="Ordinal" width="30" visible="false" editInPlace="true" />
 
   <DataColumn name="Date" />
   <DataColumn name="Company" />
   <DataColumn name="Address" />
 
-  <DataColumn name="CityName" />
+  <DataColumn name="CityName">
+    <render>
+      <ui:expression>row.CityName ? row.CityName : row.CityUnbound</ui:expression>
+    </render>
+  </DataColumn>
   <DataColumn name="PostIndex" />
-  <DataColumn name="CountryName" />
+  <DataColumn name="CountryName">
+    <render>
+      <ui:expression>row.CountryName ? row.CountryName : row.CountryUnbound</ui:expression>
+    </render>
+  </DataColumn>
   <DataColumn name="Flag" source="CountryCode" cellType="html" width="30"
               caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
               filterOptions="-" exportWidthFactor="0.5" visible="false">

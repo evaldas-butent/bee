@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gwt.json.client.JSONObject;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -9,7 +8,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -28,6 +26,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 final class SelfServiceUtils {
 
@@ -90,26 +89,19 @@ final class SelfServiceUtils {
       public void onSuccess(BeeRowSet cargo) {
         getCargoPlaces(Filter.any(COL_CARGO, cargo.getRowIds()), (loading, unloading) -> {
           for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
-            int jsonIdx = places.getColumnIndex(COL_PLACE_NOTE);
-
             for (BeeRow cargoRow : cargo) {
               BeeRowSet current = new BeeRowSet(places.getViewName(), places.getColumns());
 
               for (BeeRow place : DataUtils.filterRows(places, COL_CARGO, cargoRow.getId())) {
                 BeeRow cloned = DataUtils.cloneRow(place);
-                String jsonString = place.getString(jsonIdx);
 
-                if (JsonUtils.isJson(jsonString)) {
-                  JSONObject json = JsonUtils.parseObject(jsonString);
+                Stream.of(COL_PLACE_CITY, COL_PLACE_COUNTRY).forEach(key -> {
+                  int idx = current.getColumnIndex(key + "Name");
 
-                  for (String key : json.keySet()) {
-                    int idx = places.getColumnIndex(key + "Name");
-
-                    if (!BeeConst.isUndef(idx) && BeeUtils.isEmpty(cloned.getString(idx))) {
-                      cloned.setValue(idx, JsonUtils.getString(json, key));
-                    }
+                  if (!BeeConst.isUndef(idx) && BeeUtils.isEmpty(cloned.getString(idx))) {
+                    cloned.setValue(idx, cloned.getString(current.getColumnIndex(key + "Unbound")));
                   }
-                }
+                });
                 current.addRow(cloned);
               }
               cargoRow.setProperty(places.getViewName(), current.serialize());

@@ -28,7 +28,7 @@
     </row>
     <row>
       <Label for="City" />
-      <DataSelector source="City" options="Country">
+      <DataSelector source="City">
         <selectorColumn source="Name" />
         <selectorColumn source="CountryName" />
         <selectorColumn source="CountryCode">

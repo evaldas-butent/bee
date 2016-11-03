@@ -15,6 +15,7 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.i18n.DictionaryGrid;
 import com.butent.bee.client.imports.ImportOptionForm;
 import com.butent.bee.client.imports.ImportOptionsGrid;
+import com.butent.bee.client.modules.finance.DimensionNamesGrid;
 import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -30,6 +31,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
@@ -118,6 +120,20 @@ public final class AdministrationKeeper {
       public boolean disposable() {
         return false;
       }
+    });
+
+    GridFactory.registerGridInterceptor(Dimensions.GRID_NAMES, new DimensionNamesGrid());
+
+    GridFactory.registerPreloader(Dimensions.GRID_NAMES, command -> {
+      BeeKeeper.getRpc().makeRequest(createArgs(SVC_INIT_DIMENSION_NAMES), new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasResponse(Integer.class)) {
+            Dimensions.setObserved(response.getResponseAsInt());
+          }
+          command.run();
+        }
+      });
     });
 
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_COLORS);

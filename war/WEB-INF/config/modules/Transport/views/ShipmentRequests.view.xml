@@ -117,6 +117,6 @@
   </Columns>
 
   <Order>
-    <OrderBy column="LoadingDate" />
+    <OrderBy column="Date" />
   </Order>
 </View>

@@ -37,6 +37,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -216,6 +217,10 @@ public class Bee implements EntryPoint, ClosingHandler {
 
           case DECORATORS:
             TuningFactory.parseDecorators(serialized);
+            break;
+
+          case DIMENSIONS:
+            Dimensions.load(serialized);
             break;
 
           case FAVORITES:

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="DimensionNames" viewName="DimensionNames" caption="=dimensionNames"
+        disabledActions="add delete"
+>
+  <g:columns>
+    <DataColumn name="Ordinal" readOnly="true" visible="true" />
+
+    <DataColumn name="PluralName" flexGrow="1" visible="true" />
+    <DataColumn name="SingularName" flexGrow="1" visible="true" />
+
+    <DataColumn name="Notes" visible="false" />
+  </g:columns>
+</g:Grid>

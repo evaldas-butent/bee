@@ -135,6 +135,8 @@ public final class AdministrationConstants {
   public static final String SVC_DICTIONARY_DATABASE_TO_PROPERTIES =
       "dictionary_database_to_properties";
 
+  public static final String SVC_INIT_DIMENSION_NAMES = "init_dimension_names";
+
   public static final String VAR_AMOUNT = Service.RPC_VAR_PREFIX + "amount";
   public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
 
