@@ -434,7 +434,6 @@ public final class TransportConstants {
 
   public static final String VIEW_ORDER_CARGO = "OrderCargo";
   public static final String VIEW_CARGO_TRIPS = "CargoTrips";
-  public static final String VIEW_CARGO_HANDLING = "CargoHandling";
 
   public static final String VIEW_ALL_CARGO = "AllCargo";
   public static final String VIEW_WAITING_CARGO = "WaitingCargo";
@@ -981,7 +980,6 @@ public final class TransportConstants {
   public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";
   public static final String ALS_REQUEST_CUSTOMER_COMPANY = "CustomerCompany";
-  public static final String ALS_CARGO_HANDLING_NOTES = "HandlingNotes";
 
   public static final String ALS_CARGO_CMR_NUMBER = "CmrNumber";
   public static final String ALS_CARGO_NOTES = "CargoNotes";
