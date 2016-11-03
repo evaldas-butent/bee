@@ -1016,14 +1016,6 @@ public final class TransportConstants {
   public static final List<String> TRIP_DATE_COLUMNS = Lists.newArrayList(COL_TRIP_DATE,
       COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_PLANNED_END_DATE);
 
-  public static String loadingColumnAlias(String colName) {
-    return VAR_LOADING + colName;
-  }
-
-  public static String unloadingColumnAlias(String colName) {
-    return VAR_UNLOADING + colName;
-  }
-
   private TransportConstants() {
   }
 }
