@@ -12,6 +12,7 @@ public final class ClassifierConstants {
   public static final String SVC_GENERATE_QR_CODE_PERSON = "GenerateQrCodePerson";
   public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
   public static final String SVC_GET_PRICE_AND_DISCOUNT = "GetPriceAndDiscount";
+  public static final String SVC_FILTER_ORDERS = "FilterOrders";
 
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
   public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";

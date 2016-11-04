@@ -3694,6 +3694,8 @@ public interface Dictionary {
 
   default String ordFreeRemainder() {return g("ordFreeRemainder");}
 
+  default String ordInvoiceQty() {return g("ordInvoiceQty");}
+
   default String ordMaxDiscount() {return g("ordMaxDiscount");}
 
   default String ordOverdueInvoices() {return g("ordOverdueInvoices");}
@@ -3705,6 +3707,8 @@ public interface Dictionary {
   default String ordQtyIsTooBig() {return g("ordQtyIsTooBig");}
 
   default String ordResNotIncrease() {return g("ordResNotIncrease");}
+
+  default String ordResQty() {return g("ordResQty");}
 
   default String ordResQtyIsTooBig() {return g("ordResQtyIsTooBig");}
 
