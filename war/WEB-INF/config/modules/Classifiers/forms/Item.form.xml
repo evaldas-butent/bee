@@ -251,7 +251,7 @@
         </Table>
       </page>
 
-      <page data="Dimensions">
+      <page>
         <text>=dimensions</text>
         <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
       </page>

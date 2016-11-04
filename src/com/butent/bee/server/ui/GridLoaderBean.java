@@ -524,7 +524,7 @@ public class GridLoaderBean {
   @EJB
   UserServiceBean usr;
 
-  public GridDescription getGridDescription(Element gridElement) {
+  public GridDescription getGridDescription(Element gridElement, Set<String> hiddenColumns) {
     if (gridElement == null) {
       logger.severe("grid element is null");
       return null;
@@ -559,7 +559,7 @@ public class GridLoaderBean {
           view.getSourceVersionName());
     }
 
-    xmlToGrid(gridElement, grid, view);
+    xmlToGrid(gridElement, grid, view, hiddenColumns);
 
     List<Element> columnGroups = XmlUtils.getElementsByLocalName(gridElement, TAG_COLUMNS);
     if (columnGroups.isEmpty()) {
@@ -593,7 +593,7 @@ public class GridLoaderBean {
       } else if (grid.hasColumn(colName)) {
         logger.warning("grid", gridName, "column", i, colTag, "duplicate column name:", colName);
 
-      } else if (isColumnVisible(view, colType, colName, columnElement)) {
+      } else if (isColumnVisible(view, colType, colName, columnElement, hiddenColumns)) {
         ColumnDescription column = new ColumnDescription(colType, colName);
 
         Map<String, String> attributes = XmlUtils.getAttributes(columnElement);
@@ -634,7 +634,9 @@ public class GridLoaderBean {
         if (!BeeConst.isUndef(index)) {
           for (String translation : translationColumns.get(original)) {
 
-            if (!grid.hasColumn(translation) && usr.isColumnVisible(view, translation)) {
+            if (!grid.hasColumn(translation) && usr.isColumnVisible(view, translation)
+                && !BeeUtils.contains(hiddenColumns, translation)) {
+
               ColumnDescription column = grid.getColumn(original).copy();
 
               column.setId(translation);
@@ -726,7 +728,9 @@ public class GridLoaderBean {
     return ok;
   }
 
-  private boolean isColumnVisible(BeeView view, ColType colType, String colName, Element element) {
+  private boolean isColumnVisible(BeeView view, ColType colType, String colName, Element element,
+      Set<String> hiddenColumns) {
+
     if (element.hasAttribute(UiConstants.ATTR_VISIBLE)
         && BeeConst.isTrue(element.getAttribute(UiConstants.ATTR_VISIBLE))) {
       return true;
@@ -753,7 +757,8 @@ public class GridLoaderBean {
         }
       }
 
-      if (!BeeUtils.isEmpty(source) && !usr.isColumnVisible(view, source)) {
+      if (!BeeUtils.isEmpty(source)
+          && (!usr.isColumnVisible(view, source) || BeeUtils.contains(hiddenColumns, source))) {
         return false;
       }
     }
@@ -761,7 +766,9 @@ public class GridLoaderBean {
     return true;
   }
 
-  private void xmlToGrid(Element src, GridDescription dst, BeeView view) {
+  private void xmlToGrid(Element src, GridDescription dst, BeeView view,
+      Set<String> hiddenColumns) {
+
     Assert.notNull(src);
     Assert.notNull(dst);
 
@@ -975,7 +982,7 @@ public class GridLoaderBean {
       List<String> widgets = new ArrayList<>();
 
       for (Element widgetElement : widgetElements) {
-        ui.checkWidgetChildrenVisibility(widgetElement);
+        ui.checkWidgetChildrenVisibility(widgetElement, hiddenColumns);
         if (XmlUtils.hasChildElements(widgetElement)) {
           widgets.add(XmlUtils.toString(widgetElement, false));
         }

@@ -31,6 +31,8 @@ public final class Localized {
 
   private static final Dictionary dictionary = key -> BeeUtils.nvl(glossary.get(key), key);
 
+  private static final Map<String, String> columnLabels = new HashMap<>();
+
   public static String column(String colName, String locale) {
     return BeeUtils.join(BeeConst.STRING_UNDER, Assert.notEmpty(colName), Assert.notEmpty(locale));
   }
@@ -56,8 +58,10 @@ public final class Localized {
     if (column == null) {
       logger.severe(NameUtils.getClassName(Localized.class), "getLabel: column is null");
       return null;
+
     } else {
-      return maybeTranslate(column.getLabel());
+      String label = columnLabels.get(column.getId());
+      return (label == null) ? maybeTranslate(column.getLabel()) : label;
     }
   }
 
@@ -133,6 +137,16 @@ public final class Localized {
       return BeeUtils.removeSuffix(name, loc);
     }
     return name;
+  }
+
+  public static void setColumnLabel(String id, String label) {
+    if (!BeeUtils.isEmpty(id)) {
+      if (BeeUtils.isEmpty(label)) {
+        columnLabels.remove(id);
+      } else {
+        columnLabels.put(id, label);
+      }
+    }
   }
 
   public static synchronized void setGlossary(Map<String, String> glossary) {

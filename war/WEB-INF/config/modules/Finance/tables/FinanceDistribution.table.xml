@@ -13,7 +13,7 @@
 
     <Numeric name="Percent" precision="7" scale="3" label="=percent" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
 
     <Relation name="DebitReplacement" relation="ChartOfAccounts" label="=debitReplacement" />

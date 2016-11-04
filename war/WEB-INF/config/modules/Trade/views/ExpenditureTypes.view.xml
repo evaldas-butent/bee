@@ -44,9 +44,7 @@
       <SimpleColumn name="Article" />
     </SimpleJoin>
 
-    <SimpleJoin name="Dimensions" joinType="LEFT">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
-    </SimpleJoin>
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
 
     <SimpleColumn name="Background" />
     <SimpleColumn name="Foreground" />

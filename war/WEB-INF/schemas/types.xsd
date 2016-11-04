@@ -231,7 +231,6 @@
       <xs:enumeration value="Accounts" />
       <xs:enumeration value="AccountUsers" />
       <xs:enumeration value="ActiveTrips" />
-      <xs:enumeration value="ActivityTypes" />
       <xs:enumeration value="Addressbook" />
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
@@ -302,7 +301,6 @@
       <xs:enumeration value="ConfPricelist" />
       <xs:enumeration value="Configuration" />
       <xs:enumeration value="ConfTypes" />
-      <xs:enumeration value="CostCenters" />
       <xs:enumeration value="Countries" />
       <xs:enumeration value="CountryDailyCosts" />
       <xs:enumeration value="CountryNorms" />
@@ -321,7 +319,6 @@
       <xs:enumeration value="DepartmentPositions" />
       <xs:enumeration value="Dictionary" />
       <xs:enumeration value="DimensionNames" />
-      <xs:enumeration value="Dimensions" />
       <xs:enumeration value="Dimensions01" />
       <xs:enumeration value="Dimensions02" />
       <xs:enumeration value="Dimensions03" />

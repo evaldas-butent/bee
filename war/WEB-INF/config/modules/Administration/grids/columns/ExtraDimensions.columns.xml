@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
-  <RelColumn name="Department" />
-  <RelColumn name="ActivityType" />
-  <RelColumn name="CostCenter" />
-  <RelColumn name="Object" />
+  <RelColumn name="Dim01Rel" />
+  <RelColumn name="Dim02Rel" />
+  <RelColumn name="Dim03Rel" />
+  <RelColumn name="Dim04Rel" />
+  <RelColumn name="Dim05Rel" />
+  <RelColumn name="Dim06Rel" />
+  <RelColumn name="Dim07Rel" />
+  <RelColumn name="Dim08Rel" />
+  <RelColumn name="Dim09Rel" />
+  <RelColumn name="Dim10Rel" />
 </g:columns>
