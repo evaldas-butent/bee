@@ -547,7 +547,8 @@ public class TransportModuleBean implements BeeModule {
       public void fillCargoPlaces(ViewQueryEvent event) {
         if (event.isAfter(VIEW_ORDER_CARGO, VIEW_ALL_CARGO, VIEW_ASSESSMENTS,
             TBL_ASSESSMENT_FORWARDERS, VIEW_CARGO_SALES, VIEW_CARGO_CREDIT_SALES,
-            VIEW_CARGO_PURCHASES, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, VIEW_SHIPMENT_REQUESTS)
+            VIEW_CARGO_PURCHASES, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO, VIEW_SHIPMENT_REQUESTS,
+            VIEW_ACCUMULATIONS, "AssessmentTransportationReport")
             && event.hasData()) {
 
           BeeRowSet rowSet = event.getRowset();

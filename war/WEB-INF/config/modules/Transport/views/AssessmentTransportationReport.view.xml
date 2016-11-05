@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+<View xmlns="http://www.butent.com/view"
 
-  name="AssessmentTransportationReport" source="Trips"
-  filter="!(AssessmentForwarder)"  caption="Vežėjų ataskaita"
-  >
+      name="AssessmentTransportationReport" source="Trips"
+      filter="!(AssessmentForwarder)" caption="Vežėjų ataskaita"
+>
   <Columns>
     <SimpleColumn name="TransportationPrice" />
     <SimpleJoin joinType="LEFT" name="TransportationCurrency">
@@ -19,6 +19,7 @@
     </ExternalJoin>
 
     <ExternalJoin name="Trip" source="CargoTrips" joinType="INNER">
+      <IdColumn name="CargoTrip" />
       <SimpleJoin name="Cargo" joinType="INNER">
         <ExternalJoin name="Cargo" source="Assessments" joinType="INNER">
           <IdColumn name="Assessment" />
@@ -42,11 +43,6 @@
 
         <SimpleColumn name="Description" />
         <SimpleColumn name="Partial" />
-
-        <SimpleJoin name="CargoHandling" joinType="LEFT">
-          <SimpleColumn name="LoadedKilometers" label="=trAssessmentPlannedKm" />
-          <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
-        </SimpleJoin>
 
         <SimpleColumn name="Weight" />
         <SimpleJoin joinType="LEFT" name="WeightUnit">
@@ -73,7 +69,4 @@
       </SimpleJoin>
     </ExternalJoin>
   </Columns>
-  <Order>
-    <OrderBy column="LoadingDate" descending="true" />
-  </Order>
 </View>

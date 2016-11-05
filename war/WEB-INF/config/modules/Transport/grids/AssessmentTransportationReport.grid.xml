@@ -1,31 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="AssessmentTransportationReport" viewName="AssessmentTransportationReport"
-  caption="Vežėjų ataskaita" flexGrow="1" readOnly="true"
-  >
+        name="AssessmentTransportationReport" viewName="AssessmentTransportationReport"
+        caption="Vežėjų ataskaita" flexGrow="1" readOnly="true"
+>
   <g:columns>
     <RelColumn name="Assessment" label="=trAssessment" editEnabled="true"
-      editViewName="Assessments" editSource="Assessment" module="Transport.Logistics" />
-
-    <DataColumn name="LoadingDate" format="DATE_SHORT" />
-    <DataColumn name="UnloadingDate" format="DATE_SHORT" />
-
-    <RelColumn name="LoadingCountry" visible="false" readOnly="true"/>
-    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-
-    <RelColumn name="UnloadingCountry" visible="false"  readOnly="true"/>
-    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
+               editViewName="Assessments" editSource="Assessment" module="Transport.Logistics" />
 
     <DataColumn name="OrderNotes" minWidth="100" whiteSpace="nowrap" />
-    <DataColumn name="Description" minWidth="100" whiteSpace="nowrap" />    
+  </g:columns>
+
+  <xi:include href="columns/Places.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="Description" minWidth="100" whiteSpace="nowrap" />
 
     <DataColumn name="Weight" />
     <DataColumn name="WeightUnitName" />
@@ -37,12 +27,9 @@
     <DataColumn name="CustomerName" />
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
 
-    <DataColumn name="LoadingPostIndex" />
-    <DataColumn name="UnloadingPostIndex" />
-    <DataColumn name="LoadedKilometers" />
-
     <RelColumn name="Purchase" caption="=trdPurchaseId"
-      editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices">
+               editEnabled="true" editForm="CargoPurchaseInvoice"
+               editViewName="CargoPurchaseInvoices">
       <renderToken source="InvoicePrefix" />
       <renderToken source="InvoiceNo" />
     </RelColumn>
