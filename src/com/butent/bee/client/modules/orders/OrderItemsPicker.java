@@ -28,10 +28,6 @@ class OrderItemsPicker extends ItemsPicker {
   public void getItems(Filter filter, final RowSetCallback callback) {
     ParameterList params = OrdersKeeper.createSvcArgs(SVC_GET_ITEMS_FOR_SELECTION);
 
-    if (DataUtils.hasId(getLastRow())) {
-      params.addDataItem(COL_ORDER, getLastRow().getId());
-    }
-
     if (DataUtils.isId(getWarehouseFrom())) {
       params.addDataItem(ClassifierConstants.COL_WAREHOUSE, getWarehouseFrom());
     }
@@ -61,6 +57,7 @@ class OrderItemsPicker extends ItemsPicker {
         if (response.hasResponse(BeeRowSet.class)) {
           callback.onSuccess(BeeRowSet.restore(response.getResponseAsString()));
         } else {
+          getSpinner().setStyleName(STYLE_SEARCH_SPINNER_LOADING, false);
           BeeKeeper.getScreen().notifyWarning(Localized.dictionary().nothingFound());
         }
       }

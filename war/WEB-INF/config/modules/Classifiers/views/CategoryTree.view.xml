@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="CategoryTree" source="CategoryTree" module="Classifiers"
-  caption="=itemCategoryTree"
-  >
+      name="CategoryTree" source="CategoryTree" module="Classifiers"
+      caption="=itemCategoryTree"
+>
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Parent" />
@@ -13,6 +13,9 @@
 
     <SimpleJoin name="Dimensions" joinType="LEFT">
       <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    </SimpleJoin>
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>
   </Columns>
 

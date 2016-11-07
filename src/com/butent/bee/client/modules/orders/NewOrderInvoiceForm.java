@@ -7,6 +7,7 @@ import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcCallback;
@@ -15,12 +16,10 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -44,7 +43,7 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
 
   private static final String NAME_SERIES_LABEL = "SeriesLabel";
 
-  private int companyIdx = Data.getColumnIndex(VIEW_ORDERS_INVOICES, COL_TRADE_CUSTOMER);
+  private int companyIdx = Data.getColumnIndex(VIEW_ORDER_CHILD_INVOICES, COL_TRADE_CUSTOMER);
 
   private int debtIdx = Data.getColumnIndex(VIEW_SALES, VAR_DEBT);
   private int termIdx = Data.getColumnIndex(VIEW_SALES, COL_TRADE_TERM);
@@ -65,15 +64,14 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
       WidgetDescriptionCallback callback) {
 
     if (BeeUtils.same(name, COL_TRADE_OPERATION)) {
-      ((DataSelector) widget).addSelectorHandler(new Handler() {
-
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          if (event.isOpened()) {
-            getInfoAboutCompany(event, Holder.of(4), null, null);
-          }
-        }
-      });
+      ((DataSelector) widget).addSelectorHandler(event -> Global.getParameter(PRM_CHECK_DEBT,
+          input -> {
+            if (Boolean.valueOf(input)) {
+              if (event.isOpened()) {
+                getInfoAboutCompany(event, Holder.of(4), null, null);
+              }
+            }
+          }));
     } else if (BeeUtils.same(name, NAME_SERIES_LABEL)) {
       seriesLabel = (Label) widget;
       seriesLabel.setStyleName(StyleUtils.NAME_REQUIRED, true);
@@ -89,12 +87,28 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
   @Override
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
 
-    if (!isProforma()) {
-      event.consume();
+    event.consume();
 
-      final Holder<Integer> holder = Holder.of(4);
-      getInfoAboutCompany(null, holder, listener, event);
-    }
+    Global.getParameter(PRM_CHECK_DEBT, input -> {
+      if (Boolean.valueOf(input)) {
+        if (!isProforma()) {
+          final Holder<Integer> holder = Holder.of(4);
+          getInfoAboutCompany(null, holder, listener, event);
+        } else {
+          listener.fireEvent(event);
+        }
+      } else {
+        if (Data.isNull(VIEW_ORDER_CHILD_INVOICES, getActiveRow(), COL_TRADE_SALE_SERIES)
+            && !isProforma()) {
+          getFormView().notifySevere(
+              Localized.dictionary().trdInvoicePrefix() + " "
+                  + Localized.dictionary().valueRequired());
+          return;
+        }
+
+        listener.fireEvent(event);
+      }
+    });
   }
 
   private void createCellValidationHandler(FormView form, IsRow row) {
@@ -102,13 +116,9 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
       return;
     }
 
-    form.addCellValidationHandler(COL_SALE_PROFORMA, new CellValidateEvent.Handler() {
-
-      @Override
-      public Boolean validateCell(CellValidateEvent event) {
-        getSeriesRequired(event.getNewValue());
-        return true;
-      }
+    form.addCellValidationHandler(COL_SALE_PROFORMA, event -> {
+      getSeriesRequired(event.getNewValue());
+      return true;
     });
   }
 
@@ -148,7 +158,7 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
   }
 
   private boolean isProforma() {
-    int proformaIdx = Data.getColumnIndex(VIEW_ORDERS_INVOICES, COL_SALE_PROFORMA);
+    int proformaIdx = Data.getColumnIndex(VIEW_ORDER_CHILD_INVOICES, COL_SALE_PROFORMA);
 
     return BeeUtils.unbox(getActiveRow().getBoolean(proformaIdx));
   }
@@ -176,7 +186,7 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
         }
 
         holder.set(holder.get() - 1);
-        Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
+        Map<String, String> result = Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
         debt = BeeUtils.toDouble(result.get(VAR_DEBT));
         creditLimit = BeeUtils.toDouble(result.get(COL_COMPANY_CREDIT_LIMIT));
@@ -212,7 +222,7 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
                               row.getDate(termIdx) == null ? 0 : row.getDate(termIdx).getDays();
                           if (BeeUtils.unbox(row.getDouble(debtIdx)) > 0
                               && days + toleratedDays < TimeUtils.nowMillis().getDate()
-                                  .getDays()) {
+                              .getDays()) {
 
                             notValid = true;
                             break;
@@ -227,7 +237,7 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
                         if (listener != null && holder.get() == 0) {
                           boolean emptyCashRegNo =
                               BeeUtils.isEmpty(activeRow.getString(
-                                  Data.getColumnIndex(VIEW_ORDERS_INVOICES,
+                                  Data.getColumnIndex(VIEW_ORDER_CHILD_INVOICES,
                                       COL_OPERATION_CASH_REGISTER_NO)));
 
                           if (BeeUtils.unbox(creditLimit) == 0 && emptyCashRegNo) {
@@ -248,7 +258,8 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
                             return;
                           }
 
-                          if (Data.isNull(VIEW_ORDERS_INVOICES, activeRow, COL_TRADE_SALE_SERIES)) {
+                          if (Data.isNull(VIEW_ORDER_CHILD_INVOICES, activeRow,
+                              COL_TRADE_SALE_SERIES)) {
                             getFormView().notifySevere(
                                 Localized.dictionary().trdInvoicePrefix() + " "
                                     + Localized.dictionary().valueRequired());

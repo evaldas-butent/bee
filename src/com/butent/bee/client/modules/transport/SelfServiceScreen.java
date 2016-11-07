@@ -1,13 +1,18 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Sets;
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_USER_LOCALE;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.cli.Shell;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -31,6 +36,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -92,16 +98,19 @@ public class SelfServiceScreen extends ScreenImpl {
   public void start(UserData userData) {
     super.start(userData);
 
-    Data.setVisibleViews(Sets.newHashSet(VIEW_SHIPMENT_REQUESTS, VIEW_CARGO_HANDLING,
-        VIEW_SHIPMENT_REQUEST_FILES, VIEW_CARGO_INVOICES));
+    Data.setVisibleViews(Sets.newHashSet(VIEW_SHIPMENT_REQUESTS, TBL_CARGO_LOADING,
+        TBL_CARGO_UNLOADING, VIEW_CARGO_FILES, VIEW_CARGO_INVOICES));
 
     Data.setReadOnlyViews(Collections.singleton(VIEW_CARGO_INVOICES));
 
     Data.setColumnReadOnly(VIEW_SHIPMENT_REQUESTS, ClassifierConstants.COL_COMPANY_PERSON);
 
+    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_STATUS);
+    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_REASON);
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
 
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_ORDER_ID);
+    FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_STATUS);
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "AdditionalInfo");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "RelatedMessages");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, VIEW_CARGO_INCOMES);
@@ -118,6 +127,7 @@ public class SelfServiceScreen extends ScreenImpl {
             @Override
             public void onSuccess(BeeRow result) {
               openRequests();
+              showSuccessInfo(result);
             }
           });
         }));
@@ -199,7 +209,7 @@ public class SelfServiceScreen extends ScreenImpl {
   }
 
   @Override
-  protected void onUserSignatureClick() {
+  protected void onUserSignatureClick(ClickEvent event) {
     PasswordService.change();
   }
 
@@ -216,5 +226,22 @@ public class SelfServiceScreen extends ScreenImpl {
   private void openRequests() {
     openGrid(GRID_SHIPMENT_REQUESTS, Filter.isEqual(ClassifierConstants.COL_COMPANY_PERSON,
         Value.getValue(BeeKeeper.getUser().getUserData().getCompanyPerson())), null);
+  }
+
+  private static void showSuccessInfo(BeeRow result) {
+    ParameterList args = TransportHandler.createArgs(SVC_GET_TEXT_CONSTANT);
+    args.addDataItem(COL_TEXT_CONSTANT, TextConstant.SUMBMITTED_REQUEST_CONTENT.ordinal());
+    args.addDataItem(COL_USER_LOCALE, result.getInteger(
+        Data.getColumnIndex(VIEW_SHIPMENT_REQUESTS, COL_USER_LOCALE)));
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        String message = (String) response.getResponse();
+        if (!BeeUtils.isEmpty(message)) {
+          Global.showInfo(message);
+        }
+      }
+    });
   }
 }

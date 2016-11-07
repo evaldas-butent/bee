@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="TradeExpenditures" source="TradeExpenditures"
+      caption="=trdDocumentExpenditures" newRowCaption="=trdNewExpenditure"
+>
+  <Columns>
+    <SimpleColumn name="TradeDocument" />
+
+    <SimpleColumn name="ExpenditureType" />
+    <SimpleJoin joinType="LEFT" name="ExpenditureType">
+      <SimpleColumn name="ExpenditureTypeName" />
+
+      <SimpleJoin joinType="LEFT" name="Debit">
+        <SimpleColumn name="AccountCode" alias="DebitCode" />
+        <SimpleColumn name="AccountName" alias="DebitName" />
+      </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="Credit">
+        <SimpleColumn name="AccountCode" alias="CreditCode" />
+        <SimpleColumn name="AccountName" alias="CreditName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="CostBasis" />
+
+      <SimpleColumn name="Supplier" alias="TypeSupplier" />
+
+      <SimpleColumn name="Operation" />
+      <SimpleJoin name="Operation" joinType="LEFT">
+        <SimpleColumn name="OperationName" />
+        <SimpleColumn name="OperationVatMode" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Warehouse" />
+      <SimpleJoin joinType="LEFT" name="Warehouse">
+        <SimpleColumn name="Code" alias="WarehouseCode" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Item" />
+      <SimpleJoin joinType="LEFT" name="Item">
+        <SimpleColumn name="Name" alias="ItemName" />
+        <SimpleColumn name="Article" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Amount" />
+
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatIsPercent" />
+
+    <SimpleColumn name="Series" />
+    <SimpleColumn name="Number" />
+
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin joinType="LEFT" name="Supplier">
+      <SimpleColumn name="Name" alias="SupplierName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="SupplierTypeName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="GeneratedDocument" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

@@ -11,15 +11,22 @@ import java.util.List;
 
 public interface BeeModule {
 
-  List<SearchResult> doSearch(String query);
+  default List<SearchResult> doSearch(String query) {
+    return null;
+  }
 
   ResponseObject doService(String svc, RequestInfo reqInfo);
 
-  Collection<BeeParameter> getDefaultParameters();
+  default Collection<BeeParameter> getDefaultParameters() {
+    return null;
+  }
 
   Module getModule();
 
-  String getResourcePath();
+  default String getResourcePath() {
+    return getModule().getName();
+  }
 
-  void init();
+  default void init() {
+  }
 }

@@ -32,7 +32,7 @@
     <SimpleColumn name="MailAssignedTasks" />
     <SimpleColumn name="MailNewDiscussions" />
     <SimpleColumn name="MailNewAnnouncements" />
-    <SimpleColumn name="MailCompanyActions" />
+    <SimpleColumn name="TasksMailingTime" />
 
     <SimpleColumn name="OpenInNewTab" />
 
@@ -55,6 +55,8 @@
 
     <SimpleColumn name="Style" />
     <SimpleColumn name="MenuHide" />
+    <SimpleColumn name="ShowNewMessagesNotifier" />
+    <SimpleColumn name="Assistant" />
   </Columns>
   
   <Order>

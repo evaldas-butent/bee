@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="FinancialRecords"
+       idName="FinancialRecordID"
+>
+  <Fields>
+    <Relation name="Journal" relation="Journals" label="=journal" />
+
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
+
+    <Relation name="Company" relation="Companies" label="=company" />
+    <String name="Content" precision="100" label="=finContent" translatable="true" />
+
+    <Relation name="Debit" relation="ChartOfAccounts" label="=debit" notNull="true" />
+    <String name="DebitSeries" precision="10" label="=debitSeries" />
+    <String name="DebitDocument" precision="50" label="=debitDocument" />
+
+    <Relation name="Credit" relation="ChartOfAccounts" label="=credit" notNull="true" />
+    <String name="CreditSeries" precision="10" label="=creditSeries" />
+    <String name="CreditDocument" precision="50" label="=creditDocument" />
+
+    <Numeric name="Amount" notNull="true" precision="18" scale="2" label="=amount" />
+    <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
+              label="=currency" />
+
+    <Relation name="TradeDocument" relation="TradeDocuments" cascade="DELETE"
+              label="=trdDocumentLong" />
+    <Relation name="TradePayment" relation="TradePayments" cascade="DELETE"
+              label="=trdPayment" />
+
+    <Relation name="Employee" relation="Employees" label="=employee" />
+
+    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+              label="=dimensions" />
+  </Fields>
+
+  <Constraints>
+    <Check>
+      <PostgreSql>"Debit" != "Credit"</PostgreSql>
+      <MsSql />
+      <Oracle />
+    </Check>
+  </Constraints>
+</Table>

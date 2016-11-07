@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Table 
-  xmlns="http://www.butent.com/table"
-  name="ItemManufacturers" idName="ItemManufacturerID"
-  >
+<Table
+    xmlns="http://www.butent.com/table"
+    name="ItemManufacturers" idName="ItemManufacturerID"
+>
   <Fields>
     <Relation name="Item" relation="Items" notNull="true" cascade="DELETE" />
     <Relation name="Manufacturer" relation="Companies" notNull="true" label="=tcdManufacturer" />

@@ -38,12 +38,12 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -65,7 +65,6 @@ import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -77,11 +76,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 class TaskBuilder extends ProductSupportInterceptor {
 
   private static final String NAME_START_DATE = "Start_Date";
   private static final String NAME_START_TIME = "Start_Time";
+  private static final String NAME_START_TIME_LABEL = "StartTimeLabel";
   private static final String NAME_END_DATE = "End_Date";
   private static final String NAME_END_TIME = "End_Time";
   private static final String NAME_EXPECTED_DURATION = "ExpectedDuration";
@@ -91,22 +92,28 @@ class TaskBuilder extends ProductSupportInterceptor {
   private static final String NAME_EXECUTORS = "Executors";
   private static final String NAME_OBSERVERS = "Observers";
   private static final String NAME_OBSERVER_GROUPS = "ObserverGroups";
+  private static final String NAME_NOT_SCHEDULED_TASK = "NotScheduledTask";
 
-  private static final String NAME_REMINDER_DATE = "Reminder_Date";
-  private static final String NAME_REMINDER_TIME = "Reminder_Time";
   private static final String NAME_LABEL_SUFFIX = "Label";
 
   private static final String NAME_FILES = "Files";
 
-  private HasCheckedness mailToggle;
+  private String[] widgets = {NAME_START_DATE, NAME_START_TIME, NAME_END_DATE, NAME_END_TIME,
+      NAME_EXPECTED_DURATION, NAME_EXECUTORS, NAME_USER_GROUP_SETTINGS, COL_PRIVATE_TASK,
+      PROP_MAIL, NAME_OBSERVERS, NAME_OBSERVER_GROUPS};
+
+  private InputBoolean mailToggle;
   private InputTime expectedDurationInput;
   private Label endDateInputLabel;
+  private Label startDateInputLabel;
   private Label executorsLabel;
 
   private MultiSelector executors;
   private MultiSelector executorGroups;
   private MultiSelector observers;
   private MultiSelector observerGroups;
+
+  private InputBoolean notScheduledTask;
 
   private final Map<Long, FileInfo> filesToUpload = new HashMap<>();
   private Long executor;
@@ -174,11 +181,14 @@ class TaskBuilder extends ProductSupportInterceptor {
         ((FileCollector) widget).addFiles(filesToUpload.values());
       }
 
-    } else if (BeeUtils.same(name, PROP_MAIL) && (widget instanceof HasCheckedness)) {
-      mailToggle = (HasCheckedness) widget;
+    } else if (BeeUtils.same(name, PROP_MAIL) && (widget instanceof InputBoolean)) {
+      mailToggle = (InputBoolean) widget;
 
     } else if (BeeUtils.same(name, NAME_END_DATE_LABEL) && (widget instanceof Label)) {
       endDateInputLabel = (Label) widget;
+
+    } else if (BeeUtils.same(name, NAME_START_TIME_LABEL) && (widget instanceof Label)) {
+      startDateInputLabel = (Label) widget;
 
     } else if (BeeUtils.same(name, NAME_EXPECTED_DURATION) && (widget instanceof InputTime)) {
       expectedDurationInput = (InputTime) widget;
@@ -237,6 +247,28 @@ class TaskBuilder extends ProductSupportInterceptor {
       observers = (MultiSelector) widget;
     } else if (BeeUtils.same(NAME_OBSERVER_GROUPS, name) && (widget instanceof MultiSelector)) {
       observerGroups = (MultiSelector) widget;
+    }  else if (BeeUtils.same(name, NAME_NOT_SCHEDULED_TASK)) {
+      notScheduledTask = (InputBoolean) widget;
+
+      notScheduledTask.addValueChangeHandler(valueChangeEvent -> {
+        styleRequiredFields(!BeeUtils.toBoolean(valueChangeEvent.getValue()));
+
+        if (!BeeUtils.toBoolean(valueChangeEvent.getValue())) {
+          executors.setStyleName(StyleUtils.NAME_DISABLED, false);
+          observers.setStyleName(StyleUtils.NAME_DISABLED, false);
+          executorGroups.setStyleName(StyleUtils.NAME_DISABLED, false);
+          observerGroups.setStyleName(StyleUtils.NAME_DISABLED, false);
+
+          if (DataUtils.isId(getActiveRow().getLong(getDataIndex(ProjectConstants.COL_PROJECT)))) {
+            executorGroups.setStyleName(StyleUtils.NAME_DISABLED, true);
+            observerGroups.setStyleName(StyleUtils.NAME_DISABLED, true);
+            executorGroups.setEnabled(false);
+            observerGroups.setEnabled(false);
+            executors.setEnabled(true);
+            observers.setEnabled(true);
+          }
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -244,6 +276,12 @@ class TaskBuilder extends ProductSupportInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    Integer status =  getActiveRow().getInteger(getDataIndex(COL_STATUS));
+    if (Objects.equals(TaskStatus.NOT_SCHEDULED.ordinal(), status)) {
+      notScheduledTask.setChecked(true);
+    }
+
+    styleRequiredFields(!notScheduledTask.isChecked());
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
   }
@@ -258,6 +296,22 @@ class TaskBuilder extends ProductSupportInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new TaskBuilder();
+  }
+
+  @Override
+  public boolean isWidgetEditable(EditableWidget editableWidget, IsRow row) {
+    if (editableWidget != null) {
+      boolean value = BeeUtils.unbox(Boolean.valueOf(notScheduledTask.getValue()));
+
+      for (String widget : widgets) {
+        String name = BeeUtils.nvl(editableWidget.getColumnId(), editableWidget.getWidgetName());
+
+        if (!BeeUtils.isEmpty(name) && Objects.equals(name, widget)) {
+          return !value;
+        }
+      }
+    }
+    return super.isWidgetEditable(editableWidget, row);
   }
 
   @Override
@@ -323,10 +377,15 @@ class TaskBuilder extends ProductSupportInterceptor {
     DateTime start = getStart();
     DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
 
+    boolean notSheduledTask = notScheduledTask.isChecked();
+
     boolean noExecutors = BeeUtils.allEmpty(activeRow.getProperty(PROP_EXECUTORS),
         activeRow.getProperty(PROP_EXECUTOR_GROUPS));
 
-    if (start == null && start == end && noExecutors) {
+    if (start == null && start == end && noExecutors && notSheduledTask) {
+      if (maybeNotifyEmptyProduct(msg -> event.getCallback().onFailure(msg))) {
+        return;
+      }
       createNotScheduledTask(event.getCallback());
     } else {
       createTasks(activeRow, event.getCallback(), null);
@@ -340,9 +399,16 @@ class TaskBuilder extends ProductSupportInterceptor {
     DateTime start = getStart();
     DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
 
+    boolean notSheduledTask = notScheduledTask.isChecked();
+
     boolean noExecutors = BeeUtils.allEmpty(activeRow.getProperty(PROP_EXECUTORS),
         activeRow.getProperty(PROP_EXECUTOR_GROUPS));
-    if (start == null && start == end && noExecutors) {
+
+    if (maybeNotifyEmptyProduct(msg -> event.getCallback().onFailure(msg))) {
+      return;
+    }
+
+    if (start == null && start == end && noExecutors && notSheduledTask) {
       updateRow(event, null, null, null, null);
     } else {
       createTasks(activeRow, event.getCallback(), event);
@@ -371,7 +437,27 @@ class TaskBuilder extends ProductSupportInterceptor {
       }
     }
 
-    return true;
+    ParameterList params = TasksKeeper.createArgs(SVC_GET_TASK_DATA);
+    params.addDataItem(VAR_TASK_ID, row.getId());
+    params.addDataItem(VAR_TASK_RELATIONS, BeeConst.STRING_ASTERISK);
+
+    String properties =
+        BeeUtils.join(BeeConst.STRING_COMMA, PROP_OBSERVERS, PROP_FILES, PROP_EVENTS);
+    params.addDataItem(VAR_TASK_PROPERTIES, properties);
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (!response.hasErrors()) {
+          BeeRow r = BeeRow.restore((String) response.getResponse());
+          if (r != null) {
+            form.updateRow(r, true);
+          }
+        }
+      }
+    });
+
+    return false;
   }
 
   private static MultiSelector getMultiSelector(FormView form, String source) {
@@ -380,7 +466,8 @@ class TaskBuilder extends ProductSupportInterceptor {
   }
 
   private static BeeRow getResponseRow(String caption, ResponseObject ro, RowCallback callback) {
-    if (!Queries.checkResponse(caption, BeeConst.UNDEF, VIEW_TASKS, ro, BeeRow.class, null)) {
+    if (!Queries.checkResponse(caption, BeeConst.UNDEF, VIEW_TASKS, ro, BeeRow.class, null)
+        || ro.isEmpty()) {
       return null;
     }
 
@@ -487,24 +574,6 @@ class TaskBuilder extends ProductSupportInterceptor {
     }
   }
 
-  private static void validateReminderTime(DateTime reminderTime, DateTime end,
-      RowCallback callback) {
-    if (reminderTime != null) {
-      DateTime now = TimeUtils.nowMinutes();
-      if (TimeUtils.isLess(reminderTime, now)) {
-        callback.onFailure(BeeUtils.joinWords(
-            Localized.dictionary().crmReminderTimeMustBeGreaterThan(), now));
-        return;
-      }
-
-      if (TimeUtils.isMeq(reminderTime, end)) {
-        callback.onFailure(BeeUtils.joinWords(
-            Localized.dictionary().crmReminderTimeMustBeLessThan(), end));
-        return;
-      }
-    }
-  }
-
   private void clearValue(String widgetName) {
     Widget widget = getFormView().getWidgetByName(widgetName);
     if (widget instanceof Editor) {
@@ -524,13 +593,6 @@ class TaskBuilder extends ProductSupportInterceptor {
       Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
     }
     Data.setValue(VIEW_TASKS, newRow, COL_SUMMARY, summary);
-
-    DateTime reminderTime = getReminderTime(end);
-    validateReminderTime(reminderTime, end, callback);
-
-    if (reminderTime != null) {
-      Data.setValue(VIEW_TASKS, newRow, COL_REMINDER_TIME, reminderTime);
-    }
 
     if (mailToggle != null && mailToggle.isChecked()) {
       newRow.setProperty(PROP_MAIL, BooleanValue.S_TRUE);
@@ -786,19 +848,6 @@ class TaskBuilder extends ProductSupportInterceptor {
     }
   }
 
-  private DateTime getReminderTime(DateTime end) {
-    HasDateValue datePart = getDate(NAME_REMINDER_DATE);
-    Long timePart = getMillis(NAME_REMINDER_TIME);
-
-    if (datePart == null && timePart == null) {
-      return null;
-    } else if (datePart == null) {
-      return TimeUtils.combine(end, timePart);
-    } else {
-      return TimeUtils.combine(datePart, timePart);
-    }
-  }
-
   private DateTime getStart() {
     HasDateValue datePart = getDate(NAME_START_DATE);
     if (datePart == null) {
@@ -832,14 +881,10 @@ class TaskBuilder extends ProductSupportInterceptor {
       clearValue(NAME_START_TIME);
       clearValue(NAME_END_DATE);
       clearValue(NAME_END_TIME);
-      clearValue(NAME_REMINDER_DATE);
-      clearValue(NAME_REMINDER_TIME);
 
       createFiles(tasks.getRowIds());
 
-      if (!taskIdsCallback) {
-        callback.onSuccess(null);
-      } else {
+      if (taskIdsCallback) {
         BeeRow row = new BeeRow(0, new String[] {DataUtils.buildIdList(tasks)});
         callback.onSuccess(row);
       }
@@ -847,8 +892,10 @@ class TaskBuilder extends ProductSupportInterceptor {
       String message = Localized.dictionary().crmCreatedNewTasks(tasks.getNumberOfRows());
       BeeKeeper.getScreen().notifyInfo(message);
 
-      if (!taskIdsCallback) {
+      if (!taskIdsCallback && tasks.getNumberOfRows() == 1) {
         callback.onSuccess(tasks.getRow(0));
+      } else {
+        callback.onSuccess(null);
       }
 
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
@@ -986,6 +1033,61 @@ class TaskBuilder extends ProductSupportInterceptor {
       });
     } else {
       createTasks(activeRow, event.getCallback(), null);
+    }
+  }
+
+  private void styleRequiredFields(boolean value) {
+    FormView form = getFormView();
+
+    executorsLabel.setStyleName(StyleUtils.NAME_REQUIRED, value);
+    startDateInputLabel.setStyleName(StyleUtils.NAME_REQUIRED, value);
+    endDateInputLabel.setStyleName(StyleUtils.NAME_REQUIRED, value);
+
+    InputDate startInputDate = (InputDate) form.getWidgetByName(NAME_START_DATE);
+    startInputDate.setEnabled(value);
+
+    InputTime startInputTime = (InputTime) form.getWidgetByName(NAME_START_TIME);
+    startInputTime.setEnabled(value);
+
+    InputDate endInputDate = (InputDate) form.getWidgetByName(NAME_END_DATE);
+    endInputDate.setEnabled(value);
+
+    InputTime endInputTime = (InputTime) form.getWidgetByName(NAME_END_TIME);
+    endInputTime.setEnabled(value);
+
+    expectedDurationInput.setEnabled(value);
+
+    executors.setEnabled(value);
+    executorGroups.setEnabled(value);
+    observers.setEnabled(value);
+    observerGroups.setEnabled(value);
+
+    InputBoolean privateTask = (InputBoolean) form.getWidgetBySource(COL_PRIVATE_TASK);
+    privateTask.setEnabled(value);
+
+    mailToggle.setEnabled(value);
+
+    if (!value) {
+      startInputDate.clearValue();
+      startInputTime.clearValue();
+      endInputDate.clearValue();
+      endInputTime.clearValue();
+      expectedDurationInput.clearValue();
+      getActiveRow().clearCell(getDataIndex(COL_EXPECTED_DURATION));
+
+      getActiveRow().removeProperty(PROP_EXECUTORS);
+      getActiveRow().removeProperty(PROP_EXECUTOR_GROUPS);
+      getActiveRow().removeProperty(PROP_OBSERVERS);
+      getActiveRow().removeProperty(PROP_OBSERVER_GROUPS);
+
+      executors.clearValue();
+      executorGroups.clearValue();
+      observers.clearValue();
+      observerGroups.clearValue();
+
+      mailToggle.setChecked(false);
+      privateTask.clearValue();
+      getActiveRow().clearCell(getDataIndex(COL_PRIVATE_TASK));
     }
   }
 

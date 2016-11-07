@@ -198,16 +198,18 @@
   <xs:element name="HorizontalPanel" type="cellVector" substitutionGroup="widget" />
   <xs:element name="VerticalPanel" type="cellVector" substitutionGroup="widget" />
 
-  <xs:complexType name="customButton">
-    <xs:complexContent>
-      <xs:extension base="editableWidget">
-        <xs:attribute name="upFace" type="xs:string" />
-        <xs:attribute name="downFace" type="xs:string" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:element name="Toggle" type="customButton" substitutionGroup="widget" />
+  <xs:element name="Toggle" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="editableWidget">
+          <xs:attribute name="upFace" type="xs:string" />
+          <xs:attribute name="downFace" type="xs:string" />
+          <xs:attribute name="stylePrefix" type="xs:normalizedString" />
+          <xs:attribute name="checked" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:complexType name="splitPanel">
     <xs:complexContent>
@@ -261,6 +263,14 @@
   <xs:element name="AbsolutePanel" type="layout" substitutionGroup="widget" />
   <xs:element name="ComplexPanel" type="layout" substitutionGroup="widget" />
 
+  <xs:complexType name="stackElement">
+    <xs:complexContent>
+      <xs:extension base="headerAndContent">
+        <xs:attribute name="headerSize" type="tp:positiveDecimal" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:element name="StackPanel" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
@@ -273,10 +283,10 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="stackElement">
+  <xs:complexType name="pageType">
     <xs:complexContent>
       <xs:extension base="headerAndContent">
-        <xs:attribute name="headerSize" type="tp:positiveDecimal" use="required" />
+        <xs:attribute name="predicate" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -286,7 +296,7 @@
       <xs:complexContent>
         <xs:extension base="widgetType">
           <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="page" type="headerAndContent" />
+            <xs:element name="page" type="pageType" />
           </xs:choice>
           <xs:attribute name="stylePrefix" type="xs:normalizedString" />
           <xs:attribute name="resizable" type="xs:boolean" default="true" />
@@ -636,6 +646,7 @@
             default="caption-left-cell" />
           <xs:attribute name="onFocus" type="ui:focusAction" />
           <xs:attribute name="placeholder" type="xs:normalizedString" />
+          <xs:attribute name="spellcheck" type="xs:boolean" />
           <xs:attributeGroup ref="ui:autocomplete" />
         </xs:extension>
       </xs:complexContent>
@@ -660,6 +671,7 @@
       <xs:extension base="inputWidget">
         <xs:attribute name="scale" type="xs:unsignedByte" />
         <xs:attribute name="currencySource" type="tp:fieldNameType" />
+        <xs:attribute name="percentageTag" type="tp:fieldNameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -808,7 +820,7 @@
         <xs:attribute name="viewName" type="tp:dataView" use="required" />
         <xs:attribute name="parentColumn" type="tp:fieldNameType" use="required" />
         <xs:attribute name="orderColumn" type="tp:fieldNameType" />
-        <xs:attribute name="hideActions" type="xs:boolean" />
+        <xs:attribute name="disabledActions" type="ui:viewActions" />
         <xs:attribute name="favorite" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
@@ -929,6 +941,19 @@
             <xs:element name="face" type="buttonFace" minOccurs="0" maxOccurs="1" />
           </xs:sequence>
           <xs:attribute name="accept" type="xs:normalizedString" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="TabGroup" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="display">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="tab" type="wdhtType" />
+          </xs:choice>
+          <xs:attribute name="stylePrefix" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

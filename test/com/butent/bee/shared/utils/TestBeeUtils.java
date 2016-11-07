@@ -1,7 +1,5 @@
 package com.butent.bee.shared.utils;
 
-import com.google.common.base.Predicate;
-
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -12,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.function.Predicate;
 
 public class TestBeeUtils {
 

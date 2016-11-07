@@ -228,9 +228,9 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
                     if (popup != null) {
                       popup.close();
                     }
-                    // Data.onViewChange(presenter.getViewName(),
-                    // DataChangeEvent.CANCEL_RESET_REFRESH);
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PROJECT_INCOMES);
+
+                    ProjectsKeeper.fireRowSetUpdateRefresh(VIEW_PROJECT_INCOMES,
+                        Filter.idIn(result.getRowIds()));
                     DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PROJECT_INVOICES);
 
                     Map<String, Map<String, String>> oldData = Maps.newHashMap();

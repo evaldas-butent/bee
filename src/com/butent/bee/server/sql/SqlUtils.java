@@ -616,6 +616,14 @@ public final class SqlUtils {
     return lessEqual(source, field, 0);
   }
 
+  public static IsCondition nonZero(IsExpression expr) {
+    return notEqual(expr, 0);
+  }
+
+  public static IsCondition nonZero(String source, String field) {
+    return notEqual(source, field, 0);
+  }
+
   public static IsCondition not(IsCondition condition) {
     return new NegationCondition(condition);
   }

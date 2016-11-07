@@ -7,8 +7,9 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="OrderInvoice" viewName="Sales" caption="=trdInvoice" showRowId="true"
-  width="840" height="600" readOnly="true">
+  name="OrderInvoice" viewName="OrderChildInvoices" caption="=trdInvoice"
+  width="840" height="600" readOnly="true" showRowId="true">
+
   <f:properties jasperReports="PrintOrderInvoice:Sąskaita, PrintOrderProforma:Išankstinė sąskaita" />
   <FlowPanel class="flexBox-vertical">
     <br />
@@ -20,7 +21,7 @@
       <row>
         <Label for="Date" />
         <InputDateTime source="Date" visible="true" />
-        
+
         <Label for="CheckNo" />
         <InputText source="CheckNo" />
       </row>
@@ -91,4 +92,8 @@
       </page>
     </TabbedPages>
   </FlowPanel>
+
+  <f:rowMessage>
+    <ui:expression>row.Sale</ui:expression>
+  </f:rowMessage>
 </f:Form>

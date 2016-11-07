@@ -13,7 +13,9 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.i18n.DictionaryGrid;
-import com.butent.bee.client.imports.ImportsForm;
+import com.butent.bee.client.imports.ImportOptionForm;
+import com.butent.bee.client.imports.ImportOptionsGrid;
+import com.butent.bee.client.modules.finance.DimensionNamesGrid;
 import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -29,12 +31,14 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Preloader;
 
 import java.util.List;
+import java.util.Objects;
 
 public final class AdministrationKeeper {
 
@@ -67,9 +71,10 @@ public final class AdministrationKeeper {
     FormFactory.registerFormInterceptor(FORM_DEPARTMENT, new DepartmentForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY_STRUCTURE, new CompanyStructureForm());
     FormFactory.registerFormInterceptor(FORM_NEW_ROLE, new NewRoleForm());
-    FormFactory.registerFormInterceptor(FORM_IMPORTS, new ImportsForm());
+    FormFactory.registerFormInterceptor(FORM_IMPORT_OPTION, new ImportOptionForm());
     FormFactory.registerFormInterceptor(TBL_CUSTOM_CONFIG, new CustomConfigForm());
 
+    GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
     GridFactory.registerGridInterceptor(TBL_CUSTOM_CONFIG, new CustomConfigGrid());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
@@ -117,6 +122,20 @@ public final class AdministrationKeeper {
       }
     });
 
+    GridFactory.registerGridInterceptor(Dimensions.GRID_NAMES, new DimensionNamesGrid());
+
+    GridFactory.registerPreloader(Dimensions.GRID_NAMES, command -> {
+      BeeKeeper.getRpc().makeRequest(createArgs(SVC_INIT_DIMENSION_NAMES), new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (response.hasResponse(Integer.class)) {
+            Dimensions.setObserved(response.getResponseAsInt());
+          }
+          command.run();
+        }
+      });
+    });
+
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_COLORS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_BACKGROUND, styleProvider);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_FOREGROUND, styleProvider);
@@ -142,7 +161,12 @@ public final class AdministrationKeeper {
   }
 
   private static void onDataSelector(SelectorEvent event) {
-    if (event.isOpened() && event.hasRelatedView(VIEW_USERS)) {
+    String viewName = event.getRelatedViewName();
+
+    if (event.isOpened() && Objects.equals(Data.getViewTable(viewName), TBL_USERS)
+        && Data.containsColumn(viewName, COL_USER_BLOCK_FROM)
+        && Data.containsColumn(viewName, COL_USER_BLOCK_UNTIL)) {
+
       DateTimeValue now = new DateTimeValue(TimeUtils.nowMinutes());
 
       event.getSelector().getOracle().setResponseFilter(Filter.or(
@@ -151,7 +175,7 @@ public final class AdministrationKeeper {
               Filter.isMore(COL_USER_BLOCK_FROM, now)),
           Filter.and(Filter.notNull(COL_USER_BLOCK_UNTIL),
               Filter.isLess(COL_USER_BLOCK_UNTIL, now))
-          ));
+      ));
     }
   }
 

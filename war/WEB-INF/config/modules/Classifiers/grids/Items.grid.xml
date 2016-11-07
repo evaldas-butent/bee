@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Grid[
-  <!ENTITY pricescale "2">
-  <!ENTITY costscale "2">
-]>
+    <!ENTITY pricescale "2">
+    <!ENTITY costscale "2">
+    ]>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:w="http://www.butent.com/widget"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="Items" viewName="Items"
-  newRowForm="Item" editForm="Item" editShowId="true"
-  newRowPopup="true" editPopup="true" editInPlace="true"
-  >
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:w="http://www.butent.com/widget"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="Items" viewName="Items"
+        newRowForm="Item" editForm="Item" editShowId="true"
+        newRowPopup="true" editPopup="true" editInPlace="true"
+>
   <g:west size="200" splitterSize="2">
-    <w:DataTree name="Categories" caption="=categories"
-      viewName="CategoryTree" parentColumn="Parent" hideActions="true">
+    <w:DataTree name="Categories" caption="=categories" viewName="CategoryTree"
+                parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
       </w:calc>
@@ -40,11 +40,9 @@
     <RelColumn name="Unit" caption="=unitShort" carry="true" />
 
     <DataColumn name="TimeUnit" module="Trade.Acts" />
-    <DataColumn name="PackageUnits" />
-    <DataColumn name="DaysPerWeek" caption="=taDaysPerWeekShort"
-      module="Trade.Acts" visible="false" />
-    <DataColumn name="MinTerm" caption="=taMinTermShort"
-      module="Trade.Acts" visible="false" />
+    <DataColumn name="DaysPerWeek" caption="=taDaysPerWeekShort" module="Trade.Acts"
+                visible="false" />
+    <DataColumn name="MinTerm" caption="=taMinTermShort" module="Trade.Acts" visible="false" />
 
     <DataColumn name="Weight" visible="false" />
     <DataColumn name="Area" visible="false" />
@@ -56,39 +54,14 @@
     <RelColumn name="Currency" caption="=currencyShort" />
 
     <DataColumn name="Cost" scale="&costscale;" visible="false" />
-    <RelColumn name="CostCurrency" caption="=currencyShort"
-      visible="false" />
+    <RelColumn name="CostCurrency" caption="=currencyShort" visible="false" />
 
     <DataColumn name="Price1" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency1" caption="=currencyShort"
-      visible="false" />
+    <RelColumn name="Currency1" caption="=currencyShort" visible="false" />
     <DataColumn name="Price2" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency2" caption="=currencyShort"
-      visible="false" />
+    <RelColumn name="Currency2" caption="=currencyShort" visible="false" />
     <DataColumn name="Price3" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency3" caption="=currencyShort"
-      visible="false" />
-    <DataColumn name="Price4" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency4" caption="=currencyShort"
-      visible="false" />
-    <DataColumn name="Price5" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency5" caption="=currencyShort"
-      visible="false" />
-    <DataColumn name="Price6" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency6" caption="=currencyShort"
-      visible="false" />
-    <DataColumn name="Price7" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency7" caption="=currencyShort"
-      visible="false" />
-    <DataColumn name="Price8" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency8" caption="=currencyShort"
-      visible="false" />
-    <DataColumn name="Price9" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency9" caption="=currencyShort"
-      visible="false" />
-    <DataColumn name="Price10" scale="&pricescale;" visible="false" />
-    <RelColumn name="Currency10" caption="=currencyShort"
-      visible="false" />
+    <RelColumn name="Currency3" caption="=currencyShort" visible="false" />
 
     <DataColumn name="Vat" carry="true" />
     <DataColumn name="VatPercent" carry="true" />
@@ -96,28 +69,37 @@
     <DataColumn name="NotManufactured" />
     <DataColumn name="Attribute" />
   </g:columns>
+
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
 
   <g:columns>
+    <DataColumn name="DefaultQuantity" visible="false" />
     <DataColumn name="ExternalCode" visible="false" />
 
     <DataColumn name="Description" visible="false" />
     <DataColumn name="Notes" visible="false" />
 
-    <PropColumn name="ResRemainder" type="string" label="=ordResRemainder" >
+    <PropColumn name="ResRemainder" type="string" label="=ordResRemainder" module="Orders">
       <dynStyle>
         <ui:inline>text-decoration: underline; cursor: pointer;</ui:inline>
         <ui:expression>row.ResRemainder > -1</ui:expression>
       </dynStyle>
     </PropColumn>
 
-    <CalcColumn name="FreeRemainder" type="string" label="=ordFreeRemainder" >
+    <CalcColumn name="FreeRemainder" type="string" label="=ordFreeRemainder" module="Orders">
       <render>
-        <ui:expression>(row.WarehouseRemainder ? row.WarehouseRemainder : 0 ) - (row.ResRemainder ? row.ResRemainder : 0) </ui:expression>
+        <ui:expression>(row.WarehouseRemainder ? row.WarehouseRemainder : 0 )
+          - (row.ResRemainder ? row.ResRemainder : 0)
+        </ui:expression>
       </render>
     </CalcColumn>
-    
-    <PropColumn name="Remainder" type="string" dynamic="true" />
 
+    <PropColumn name="Remainder" type="string" dynamic="true" module="Orders" />
+    <PropColumn name="Stock" type="double" dynamic="true" module="Trade" />
   </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>[row.Name, row.Article].join(' ')</ui:expression>
+  </g:rowMessage>
 </g:Grid>

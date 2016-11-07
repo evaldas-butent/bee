@@ -26,7 +26,7 @@
   </g:columns>
 
   <g:rowStyle>
-    <ui:inline>="color:gold"</ui:inline>
+    <ui:inline>="color:brown"</ui:inline>
     <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.ExpensesRegistered</ui:expression>
   </g:rowStyle>
   <g:rowStyle>

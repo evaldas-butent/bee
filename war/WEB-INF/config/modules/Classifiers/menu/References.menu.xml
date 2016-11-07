@@ -1,50 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="References" label="=references" order="900" module="Classifiers"
+       name="References" label="=references" order="900" module="Classifiers"
 >
   <Item name="Goods" label="=goods" service="items" parameters="g" />
   <Item name="Services" label="=services" service="items" parameters="s" />
 
   <Item name="ItemCategories" label="=itemCategoryTree" service="form" parameters="CategoryTree"
-    data="CategoryTree" separator="true" />
+        data="CategoryTree" separator="true" />
 
   <Item name="Units" label="=units" service="grid" parameters="Units" separator="true" />
 
   <Item name="Currencies" label="=currencies" service="grid" parameters="Currencies"
-    separator="true" />
+        separator="true" />
   <Item name="UpdateExchangeRates" label="=updateExchangeRatesMenu"
-    service="update_exchange_rates" />
+        service="update_exchange_rates" />
 
   <Item name="TradeOperations" label="=trdOperations" service="grid" parameters="TradeOperations"
-    separator="true" module="Orders" />
-    
+        separator="true" module="Trade Orders" />
+
   <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses"
-    separator="true" module="Trade Ec Orders" />
+        separator="true" module="Trade Ec Orders" />
 
   <Item name="Cities" label="=cities" service="grid" parameters="Cities" separator="true" />
   <Item name="Countries" label="=countries" service="grid" parameters="Countries" />
 
-  <Item name="Employees" label="=employees" service="grid" parameters="Employees" 
-    separator="true" />
-  <Item name="Holidays" label="=holidays" service="form" parameters="Holidays" 
-    module="Trade.Acts" />
+  <Item name="Employees" label="=employees" service="grid" parameters="Employees"
+        separator="true" />
+  <Item name="Holidays" label="=holidays" service="form" parameters="Holidays"
+        module="Trade.Acts Payroll" />
 
   <Item name="Banks" label="=banks" service="grid" parameters="Banks" separator="true" />
 
   <Item name="PaymentTypes" label="=paymentTypes" service="grid" parameters="PaymentTypes"
-    separator="true" />
+        separator="true" />
 
-  <Item name="RefVehicles" label="=vehicles" service="grid" parameters="Vehicles" 
-    separator="true" />
+  <Item name="RefVehicles" label="=vehicles" service="grid" parameters="Vehicles"
+        separator="true" />
   <Item name="RefVehicleTypes" label="=trVehicleTypes" service="grid" parameters="VehicleTypes" />
   <Item name="RefDrivers" label="=drivers" service="grid" parameters="Drivers" />
-  <Item name="RefTransportGroups" label="=trTransportGroups" service="grid" 
-    parameters="TransportGroups" />
+  <Item name="RefTransportGroups" label="=trTransportGroups" service="grid"
+        parameters="TransportGroups" />
 
   <Item name="Colors" label="=colors" service="grid" parameters="Colors" separator="true" />
   <Item name="Themes" label="=colorThemes" service="grid" parameters="Themes" />
 
   <Item name="Discounts" label="=discounts" service="grid" parameters="Discounts" separator="true"
-    module="Orders" />
+        module="Trade Orders" />
+
+  <Item name="ChartOfAccounts" label="=chartOfAccounts" service="grid" parameters="ChartOfAccounts"
+        separator="true" module="Finance" />
+  <Item name="Journals" label="=journals" service="grid" parameters="Journals" module="Finance" />
 </Entry>

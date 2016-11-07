@@ -161,12 +161,12 @@ public abstract class DataEvent {
   }
 
   public void addErrorMessage(String message) {
-    Assert.notEmpty(message);
-
-    if (errors == null) {
-      errors = new ArrayList<>();
+    if (!BeeUtils.isEmpty(message)) {
+      if (errors == null) {
+        errors = new ArrayList<>();
+      }
+      errors.add(message);
     }
-    errors.add(message);
   }
 
   public void addErrors(ResponseObject response) {

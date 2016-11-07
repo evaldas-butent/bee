@@ -20,7 +20,9 @@
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
       <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
     </DataColumn>
-    <DataColumn name="Vat" />
+    <DataColumn name="Vat">
+      <editor type="number" percentageTag="VatPercent" />
+    </DataColumn>
     <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center" caption="%">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
     </DataColumn>
@@ -28,6 +30,7 @@
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
+      <renderer type="total" />
     </CalcColumn>
 
     <DataColumn name="Number" />

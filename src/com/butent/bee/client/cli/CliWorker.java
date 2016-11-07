@@ -57,6 +57,7 @@ import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.NotificationOptions;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -134,7 +135,6 @@ import com.butent.bee.client.widget.Svg;
 import com.butent.bee.client.widget.Video;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Resource;
@@ -211,6 +211,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import elemental.js.JsBrowser;
 import elemental.js.css.JsCSSRuleList;
@@ -1228,7 +1229,7 @@ public final class CliWorker {
           public void onResponse(ResponseObject response) {
             if (!response.hasErrors()) {
               if (SVC_GET_DICTIONARY.equals(service)) {
-                Localized.setGlossary(Codec.deserializeMap(response.getResponseAsString()));
+                Localized.setGlossary(Codec.deserializeHashMap(response.getResponseAsString()));
                 logger.debug(service, Localized.getGlossary().size());
 
               } else {
@@ -1484,6 +1485,9 @@ public final class CliWorker {
 
     } else if (BeeUtils.same(args, "load")) {
       BeeKeeper.getMenu().loadMenu();
+
+    } else if (BeeUtils.same(args, "refresh")) {
+      BeeKeeper.getMenu().refresh();
 
     } else if (BeeUtils.isDigit(args)) {
       BeeKeeper.getScreen().closeAll();
@@ -2438,7 +2442,7 @@ public final class CliWorker {
       }
     }
 
-    Global.getMsgBoxen().choice(caption, prompt, options, new ChoiceCallback() {
+    MessageBoxes.choice(caption, prompt, options, new ChoiceCallback() {
       @Override
       public void onCancel() {
         logger.info("cancel");
@@ -2454,15 +2458,12 @@ public final class CliWorker {
         logger.info("timeout");
       }
 
-    }, defaultValue, timeout, cancelHtml, new WidgetInitializer() {
-      @Override
-      public Widget initialize(Widget widget, String name) {
-        if (BeeUtils.containsSame(name, widgetName.get())) {
-          StyleUtils.updateAppearance(widget, null, widgetStyle.get());
-          logger.info(name, StyleUtils.getCssText(widget));
-        }
-        return widget;
+    }, defaultValue, timeout, cancelHtml, (widget, name) -> {
+      if (BeeUtils.containsSame(name, widgetName.get())) {
+        StyleUtils.updateAppearance(widget, null, widgetStyle.get());
+        logger.info(name, StyleUtils.getCssText(widget));
       }
+      return widget;
     });
   }
 

@@ -130,13 +130,20 @@
     </SimpleJoin>
     
     <SimpleColumn name="PrivateTask" />
-    
+
     <SimpleColumn name="Product" />
     <SimpleJoin name="Product" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProductName"/>
       <SimpleColumn name="Background" alias="ProductBackground"/>
       <SimpleColumn name="Foreground" alias="ProductForeground"/>
     </SimpleJoin>
+
+    <ExternalJoin name="Task" joinType="LEFT" source="TaskEvents"
+                  filter="(Status=3 OR Status=4 OR Status=5 OR Status=6)
+                  AND (Event=5 OR Event=8 OR Event=9 OR Event=10)" >
+      <HiddenColumn name="Event"/>
+      <AggregateColumn name="PublishTime" alias="LastBreakEvent" aggregate="MAX" />
+    </ExternalJoin>
     
   </Columns>
 

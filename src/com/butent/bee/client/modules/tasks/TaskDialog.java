@@ -2,8 +2,6 @@ package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
@@ -47,6 +45,8 @@ class TaskDialog extends DialogBox {
   private static final String STYLE_DIALOG = CRM_STYLE_PREFIX + "taskDialog";
   private static final String STYLE_CELL = "Cell";
 
+  private Label durationType;
+
   TaskDialog(String caption) {
     super(caption, STYLE_DIALOG);
     addDefaultCloseBox();
@@ -64,19 +64,14 @@ class TaskDialog extends DialogBox {
     button.addStyleName(styleName);
 
     FaLabel faSave = new FaLabel(FontAwesome.SAVE);
-    faSave.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        command.execute();
-      }
-    });
+    faSave.addClickHandler(arg0 -> command.execute());
 
     HtmlTable table = getContainer();
     int row = table.getRowCount();
     int col = 0;
 
     faSave.setTitle(Action.SAVE.getCaption());
+    StyleUtils.enableAnimation(Action.SAVE, faSave);
 
     insertAction(BeeConst.INT_TRUE, faSave);
 
@@ -148,7 +143,7 @@ class TaskDialog extends DialogBox {
   Map<String, String> addDuration() {
     Map<String, String> result = new HashMap<>();
 
-    result.put(COL_DURATION, addTime(Localized.dictionary().crmSpentTime()));
+    result.put(COL_DURATION, addTime(Localized.dictionary().crmSpentTime(), false));
     result.put(COL_DURATION_TYPE, addSelector(Localized.dictionary().crmDurationType(),
         VIEW_DURATION_TYPES, Lists.newArrayList(COL_DURATION_TYPE_NAME), false, null, null, null));
 
@@ -208,13 +203,13 @@ class TaskDialog extends DialogBox {
     int col = 0;
 
     String styleName = STYLE_DIALOG + "-selectorLabel";
-    Label label = new Label(caption);
-    label.addStyleName(styleName);
+    durationType = new Label(caption);
+    durationType.addStyleName(styleName);
     if (required) {
-      label.addStyleName(StyleUtils.NAME_REQUIRED);
+      durationType.addStyleName(StyleUtils.NAME_REQUIRED);
     }
 
-    table.setWidget(row, col, label);
+    table.setWidget(row, col, durationType);
     table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
     col++;
 
@@ -244,7 +239,7 @@ class TaskDialog extends DialogBox {
     return selector.getId();
   }
 
-  String addTime(String caption) {
+  String addTime(String caption, boolean required) {
     HtmlTable table = getContainer();
     int row = table.getRowCount();
     int col = 0;
@@ -253,6 +248,10 @@ class TaskDialog extends DialogBox {
     Label label = new Label(caption);
     label.addStyleName(styleName);
 
+    if (required) {
+      label.addStyleName(StyleUtils.NAME_REQUIRED);
+    }
+
     table.setWidget(row, col, label);
     table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
     col++;
@@ -260,6 +259,12 @@ class TaskDialog extends DialogBox {
     styleName = STYLE_DIALOG + "-timeInput";
     InputTime input = new InputTime();
     input.addStyleName(styleName);
+
+    input.addEditStopHandler(event -> durationType.setStyleName(StyleUtils.NAME_REQUIRED, true));
+
+    input.addValueChangeHandler(
+        event1 -> durationType.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.isEmpty(
+            event1.getValue())));
 
     SimpleEditorHandler.observe(caption, input);
 
@@ -292,6 +297,15 @@ class TaskDialog extends DialogBox {
     Widget child = getChild(id);
     if (child instanceof InputDateTime) {
       return ((InputDateTime) child).getDateTime();
+    } else {
+      return null;
+    }
+  }
+
+  InputDateTime getInputDateTime(String id) {
+    Widget child = getChild(id);
+    if (child instanceof InputDateTime) {
+      return (InputDateTime) child;
     } else {
       return null;
     }
@@ -333,7 +347,7 @@ class TaskDialog extends DialogBox {
     }
   }
 
-  private Widget getChild(String id) {
+  Widget getChild(String id) {
     return DomUtils.getChildQuietly(getContent(), id);
   }
 

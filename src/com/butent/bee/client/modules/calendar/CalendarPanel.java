@@ -40,6 +40,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.calendar.CalendarView.Type;
 import com.butent.bee.client.modules.calendar.dnd.TodoMoveController;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
+import com.butent.bee.client.modules.calendar.event.CopyEvent;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.event.UpdateEvent;
 import com.butent.bee.client.modules.calendar.view.MonthView;
@@ -199,6 +200,14 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
             event.getOldColumnIndex(), event.getNewColumnIndex())) {
           event.setCanceled(true);
         }
+      }
+    });
+
+    calendar.addCopyHandler(new CopyEvent.Handler() {
+      @Override
+      public void onCopy(CopyEvent event) {
+        copyAppointment(event.getAppointment(), event.getNewStart(), event.getNewEnd());
+        event.setCanceled(true);
       }
     });
 
@@ -862,6 +871,17 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
       addStyleName(STYLE_TODO_HIDDEN);
       setWidgetSize(todoContainer, 0);
     }
+  }
+
+  private void copyAppointment(Appointment appointment, DateTime start, DateTime end) {
+
+    final String propList = appointment.getRow().getProperty(TBL_APPOINTMENT_PROPS);
+    final Long reminderType = BeeUtils.toLong(
+        appointment.getRow().getProperty(TBL_APPOINTMENT_REMINDERS));
+
+    CalendarUtils.saveAppointment(null, true, null, appointment.getRow(), start, end,
+        propList, reminderType, BeeKeeper.getScreen(), null);
+
   }
 
   private boolean updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,

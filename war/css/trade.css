@@ -170,9 +170,83 @@
   margin-top: -5px;
 }
 
-.bee-trade-document-phase {
-  margin-right: 1em;
-  align-self: flex-end;
-  -webkit-align-self: flex-end;
-  -ms-flex-item-align: end;
+.bee-trade-document-phase-item {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 33.3%;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  text-align: center;
+  background-color: white;
+  color: #0099ff;
+  font-size: 105%;
+  font-weight: bolder;
+  border: 1px solid #0099ff;
+  cursor: pointer;
+}
+.bee-trade-document-phase-item-selected {
+  background-color: #0099ff;
+  color: white;
+  cursor: default;
+}
+
+.bee-trade-document-phase-item:nth-child(2),
+.bee-trade-document-phase-item:nth-child(3),
+.bee-trade-document-phase-item:nth-child(5) {
+  border-left: none;
+}
+.bee-trade-document-phase-item:nth-child(4),
+.bee-trade-document-phase-item:nth-child(5) {
+  border-top: none;
+}
+
+.bee-form-TradeDocument > .bee-Split > .bee-Splitter {
+  box-sizing: border-box;
+  background-color: transparent;
+}
+.bee-form-TradeDocument > .bee-Split > .bee-HSplitter {
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+}
+.bee-form-TradeDocument > .bee-Split > .bee-VSplitter {
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+.bee-trade-document-toggle {
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: gray;
+}
+.bee-trade-document-toggle:hover {
+  color: black;
+}
+
+.bee-trade-document-sum-hidable {
+  display: none;
+}
+.bee-trade-document-sum-expanded .bee-trade-document-sum-hidable {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+}
+
+.bee-trade-expenditures-gen-build {
+  display: block;
+  margin: auto;
+  cursor: pointer;
+}
+.bee-trade-expenditures-gen-link {
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.bee-trade-expenditures-gen-link:hover {
+  color: #00e;
+}
+
+.bee-trade-document-new-item-selector td:nth-child(3),
+.bee-trade-document-new-item-selector td:nth-child(5) {
+  text-align: right;
 }

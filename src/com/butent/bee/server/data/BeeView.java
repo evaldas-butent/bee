@@ -265,8 +265,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       }
     }
 
-    public Boolean isEditable() {
-      return editable;
+    public boolean isEditable() {
+      if (editable == null) {
+        return !isReadOnly() && !isHidden() && getLevel() <= 0;
+      } else {
+        return editable;
+      }
     }
 
     public boolean isHidden() {
@@ -376,7 +380,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private enum JoinType {
-    INNER, RIGHT, LEFT, FULL;
+    INNER, RIGHT, LEFT, FULL
   }
 
   private static BeeLogger logger = LogUtils.getLogger(BeeView.class);
@@ -397,22 +401,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     column.setType(info.getType().toValueType());
 
-    column.setNullable(info.isNullable() ? !required : false);
+    column.setNullable(info.isNullable() && !required);
 
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
 
-    boolean ro = info.isReadOnly();
-    column.setReadOnly(ro);
+    column.setReadOnly(info.isReadOnly());
+    column.setEditable(info.isEditable());
 
-    int level = info.getLevel();
-    column.setLevel(level);
-
-    Boolean editable = info.isEditable();
-    if (editable == null) {
-      editable = !ro && level <= 0;
-    }
-    column.setEditable(editable);
+    column.setLevel(info.getLevel());
 
     column.setDefaults(info.getDefaults());
 
@@ -681,7 +678,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Field", getColumnField(col), "Type", getColumnType(col), "Locale", getColumnLocale(col),
           "Aggregate Function", getColumnAggregate(col), "Hidden", isColHidden(col),
           "Read Only", isColReadOnly(col), "Editable", isColEditable(col),
-          "Level", getColumnLevel(col),
+          "Not Null", !isColNullable(col), "Level", getColumnLevel(col),
           "Expression", Objects.nonNull(getColumnExpression(col)) ? getColumnExpression(col)
               .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col),
@@ -900,6 +897,19 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return result;
   }
 
+  public Map<String, String> getTranslationColumns(String fieldName) {
+    Map<String, String> result = new HashMap<>();
+
+    columns.forEach((colName, columnInfo) -> {
+      if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()
+          && BeeUtils.same(columnInfo.getField(), fieldName)) {
+        result.put(columnInfo.getLocale(), colName);
+      }
+    });
+
+    return result;
+  }
+
   public List<ViewColumn> getViewColumns() {
     List<ViewColumn> result = new ArrayList<>();
 
@@ -928,7 +938,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         && Objects.isNull(getColumnSource(colName));
   }
 
-  public Boolean isColEditable(String colName) {
+  public boolean isColEditable(String colName) {
     return getColumnInfo(colName).isEditable();
   }
 
@@ -1040,7 +1050,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
                 relTable.getName() + "." + field.getName(), "View:", getName());
             continue;
           }
-          join = SqlUtils.join(alias, table.getIdName(), relAls, field.getName());
+          join = SqlUtils.join(alias,
+              BeeUtils.notEmpty(((XmlExternalJoin) col).targetName, table.getIdName()),
+              relAls, field.getName());
         } else {
           Assert.state(table.hasField(col.name), BeeUtils.joinWords("View:", getName(),
               "Unknown field name:", table.getName(), col.name));
@@ -1095,14 +1107,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         xpr.type = SqlDataType.LONG.name();
         xpr.content = BeeUtils.join(".", alias, table.getIdName());
         addColumn(alias, null, column.name, null, ((XmlIdColumn) column).aggregate,
-            ((XmlIdColumn) column).hidden, parent, xpr, null, null);
+            ((XmlIdColumn) column).hidden, parent, xpr, ((XmlIdColumn) column).label, null);
 
       } else if (column instanceof XmlVersionColumn) {
         XmlExpression xpr = new XmlName();
         xpr.type = SqlDataType.LONG.name();
         xpr.content = BeeUtils.join(".", alias, table.getVersionName());
         addColumn(alias, null, column.name, null, ((XmlVersionColumn) column).aggregate,
-            ((XmlVersionColumn) column).hidden, parent, xpr, null, null);
+            ((XmlVersionColumn) column).hidden, parent, xpr, ((XmlVersionColumn) column).label,
+            null);
 
       } else if (column instanceof XmlSimpleColumn) {
         XmlSimpleColumn col = (XmlSimpleColumn) column;

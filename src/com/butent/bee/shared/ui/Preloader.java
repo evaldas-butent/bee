@@ -1,6 +1,6 @@
 package com.butent.bee.shared.ui;
 
-import com.butent.bee.shared.Consumer;
+import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface Preloader extends Consumer<Runnable> {

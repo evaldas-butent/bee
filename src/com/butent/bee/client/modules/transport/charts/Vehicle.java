@@ -1,9 +1,7 @@
 package com.butent.bee.client.modules.transport.charts;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
-import com.google.gwt.event.dom.client.DropEvent;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -17,8 +15,6 @@ import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -167,17 +163,9 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
 
   void makeTarget(final DndTarget widget, final String overStyle, final VehicleType vehicleType) {
     DndHelper.makeTarget(widget, acceptsDropTypes, overStyle,
-        new Predicate<Object>() {
-          @Override
-          public boolean apply(Object input) {
-            return Vehicle.this.isTarget(vehicleType, input);
-          }
-        }, new BiConsumer<DropEvent, Object>() {
-          @Override
-          public void accept(DropEvent t, Object u) {
-            widget.asWidget().removeStyleName(overStyle);
-            Vehicle.this.acceptDrop(vehicleType, u);
-          }
+        input -> isTarget(vehicleType, input), (t, u) -> {
+          widget.asWidget().removeStyleName(overStyle);
+          acceptDrop(vehicleType, u);
         });
   }
 
@@ -222,20 +210,17 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
   }
 
   private void afterAssignToNewTrip(OrderCargo orderCargo, final BeeRow tripRow) {
-    orderCargo.maybeUpdateManager(getManager(), new Consumer<Boolean>() {
-      @Override
-      public void accept(Boolean um) {
-        Set<String> viewNames = new HashSet<>();
-        viewNames.add(VIEW_TRIPS);
-        viewNames.add(VIEW_CARGO_TRIPS);
+    orderCargo.maybeUpdateManager(getManager(), um -> {
+      Set<String> viewNames = new HashSet<>();
+      viewNames.add(VIEW_TRIPS);
+      viewNames.add(VIEW_CARGO_TRIPS);
 
-        if (BeeUtils.isTrue(um)) {
-          viewNames.add(VIEW_ORDERS);
-        }
-
-        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewNames);
-        RowEditor.open(VIEW_TRIPS, tripRow, Opener.MODAL);
+      if (BeeUtils.isTrue(um)) {
+        viewNames.add(VIEW_ORDERS);
       }
+
+      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewNames);
+      RowEditor.open(VIEW_TRIPS, tripRow, Opener.MODAL);
     });
   }
 

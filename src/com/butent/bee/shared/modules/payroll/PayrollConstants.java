@@ -44,6 +44,11 @@ public final class PayrollConstants {
       }
 
       @Override
+      public boolean isExtensionEnabled() {
+        return true;
+      }
+
+      @Override
       public boolean isSubstitutionEnabled() {
         return false;
       }
@@ -71,6 +76,11 @@ public final class PayrollConstants {
       }
 
       @Override
+      public boolean isExtensionEnabled() {
+        return false;
+      }
+
+      @Override
       public boolean isSubstitutionEnabled() {
         return true;
       }
@@ -85,6 +95,8 @@ public final class PayrollConstants {
     }
 
     public abstract String getTccColumnName();
+
+    public abstract boolean isExtensionEnabled();
 
     public abstract boolean isSubstitutionEnabled();
   }
@@ -139,6 +151,7 @@ public final class PayrollConstants {
 
   public static final String COL_DATE_OF_EMPLOYMENT = "DateOfEmployment";
   public static final String COL_DATE_OF_DISMISSAL = "DateOfDismissal";
+  public static final String COL_DEPARTMENT = "Department";
 
   public static final String COL_WORK_SCHEDULE_KIND = "Kind";
   public static final String COL_WORK_SCHEDULE_DATE = "Date";

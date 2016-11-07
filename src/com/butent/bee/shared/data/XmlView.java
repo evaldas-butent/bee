@@ -64,6 +64,8 @@ public class XmlView {
     public String aggregate;
     @XmlAttribute
     public boolean hidden;
+    @XmlAttribute
+    public String label;
   }
 
   @XmlRootElement(name = "VersionColumn", namespace = DataUtils.VIEW_NAMESPACE)
@@ -72,6 +74,8 @@ public class XmlView {
     public String aggregate;
     @XmlAttribute
     public boolean hidden;
+    @XmlAttribute
+    public String label;
   }
 
   @XmlRootElement(name = "SimpleJoin", namespace = DataUtils.VIEW_NAMESPACE)
@@ -86,6 +90,8 @@ public class XmlView {
   public static class XmlExternalJoin extends XmlSimpleJoin {
     @XmlAttribute
     public String source;
+    @XmlAttribute
+    public String targetName;
   }
 
   @XmlRootElement(name = "GroupBy", namespace = DataUtils.VIEW_NAMESPACE)

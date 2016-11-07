@@ -210,6 +210,16 @@ final class ShippingSchedule extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getShowOrderCustomerColumnName() {
+    return COL_SS_ORDER_CUSTOMER;
+  }
+
+  @Override
+  protected String getShowOderNoColumnName() {
+    return COL_SS_ORDER_NO;
+  }
+
+  @Override
   protected String getShowPlaceInfoColumnName() {
     return COL_SS_PLACE_INFO;
   }
@@ -304,7 +314,7 @@ final class ShippingSchedule extends VehicleTimeBoard {
     }
   }
 
-  private IdentifiableWidget createTripGroupWidget(Trip trip, boolean hasOverlap) {
+  private static IdentifiableWidget createTripGroupWidget(Trip trip, boolean hasOverlap) {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_TRIP_GROUP_PANEL);
     if (hasOverlap) {

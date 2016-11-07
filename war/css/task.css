@@ -202,26 +202,11 @@ td.bee-crm-taskDialog-filesLabelCell{
   background-image: linear-gradient(to bottom, #4D90FE, #4787ED);  
 }
 
-.bee-crm-Mode-new,
-.bee-crm-Mode-upd {
-  width: 3px;
-  height: 100%;
-}
-.bee-crm-Mode-new {
-  background-color: #1ca5c7;
-}
-.bee-crm-Mode-upd {
-  background-color: #ffb300;
-}
-
 .bee-crm-taskEvent-col-Photo {
   width: 2.5em;
   height: 2.5em;
   max-width: 2.5em;
   min-width: 2.5em;
-  align-self: center;
-  -webkit-align-self: center;
-  -ms-flex-item-align: center;
  }
 
 .bee-crm-taskEvent-Photo {
@@ -417,4 +402,107 @@ td.bee-crm-taskDialog-filesLabelCell{
   font-size: 23px;
   color: #484849;
   font-weight: lighter;
+}
+
+.bee-crm-task-lateKind-late, .bee-crm-task-lateKind-opening, .bee-crm-task-lateKind-endgame,
+.bee-crm-task-lateKind-scheduled {
+  font-weight: bolder;
+  padding: 4px 0 4px 0;
+  text-align: right;
+}
+
+.bee-crm-task-lateKind-late {
+  color: red;
+  border: 1px solid;
+}
+
+.bee-crm-task-lateKind-opening {
+  color: green;
+}
+
+.bee-crm-task-lateKind-endgame {
+   color: orange;
+}
+
+.bee-crm-task-lateKind-scheduled {
+  color: yellow;
+}
+
+.bee-crm-task-break {
+  text-decoration: line-through;
+}
+
+.bee-crm-task-break .bee-misc-Slack-label {
+  text-decoration: line-through;
+}
+
+.bee-header-caption_state_not_visited:before {
+  background: #FFFF00;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_not_visited_with_border:before {
+  background: #FFFF00;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state_active:before {
+  background: #5BC0DE;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_active_with_border:before {
+  background: #5BC0DE;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state_suspended:before {
+  background: #EA7F77;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_suspended_with_border:before {
+  background: #EA7F77;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state_completed:before {
+  background: #63A140;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_canceled:before {
+  background: #DF691A;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_visited:before {
+  background: #F1992B;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_visited_with_border:before {
+  background: #F1992B;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state_not_scheduled:before {
+  background: #F0AD4E;
+  border: 1px solid #e8e8e8;
+}
+
+.bee-header-caption_state_not_scheduled_with_border:before {
+  background: #F0AD4E;
+  border: 2px solid orangered;
+}
+
+.bee-header-caption_state:before{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  content: " ";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translate(0, -50%);
 }

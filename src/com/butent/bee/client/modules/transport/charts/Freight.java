@@ -1,9 +1,7 @@
 package com.butent.bee.client.modules.transport.charts;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.DropEvent;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -11,22 +9,18 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.timeboard.Blender;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -40,14 +34,11 @@ final class Freight extends OrderCargo {
   private static final Set<String> acceptsDropTypes =
       ImmutableSet.of(DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO);
 
-  private static final Blender blender = new Blender() {
-    @Override
-    public boolean willItBlend(HasDateRange x, HasDateRange y) {
-      if (x instanceof Freight && y instanceof Freight) {
-        return Objects.equals(((Freight) x).getTripId(), ((Freight) y).getTripId());
-      } else {
-        return false;
-      }
+  private static final Blender blender = (x, y) -> {
+    if (x instanceof Freight && y instanceof Freight) {
+      return Objects.equals(((Freight) x).getTripId(), ((Freight) y).getTripId());
+    } else {
+      return false;
     }
   };
 
@@ -58,31 +49,7 @@ final class Freight extends OrderCargo {
         row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
         row.getLong(COL_ORDER_MANAGER),
         row.getLong(COL_CARGO), row.getLong(COL_CARGO_TYPE),
-        row.getValue(COL_CARGO_DESCRIPTION), row.getValue(COL_CARGO_NOTES),
-        BeeUtils.nvl(Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE)),
-            Places.getLoadingDate(row, defaultLoadingColumnAlias(COL_PLACE_DATE)), minLoad),
-        BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_PLACE_COUNTRY)),
-            row.getLong(defaultLoadingColumnAlias(COL_PLACE_COUNTRY))),
-        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS)),
-            row.getValue(defaultLoadingColumnAlias(COL_PLACE_ADDRESS))),
-        BeeUtils.nvl(row.getValue(ALS_LOADING_POST_INDEX),
-            row.getValue(defaultLoadingColumnAlias(COL_PLACE_POST_INDEX))),
-        BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_PLACE_CITY)),
-            row.getLong(defaultLoadingColumnAlias(COL_PLACE_CITY))),
-        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_NUMBER)),
-            row.getValue(defaultLoadingColumnAlias(COL_PLACE_NUMBER))),
-        BeeUtils.nvl(Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE)),
-            Places.getUnloadingDate(row, defaultUnloadingColumnAlias(COL_PLACE_DATE)), maxUnload),
-        BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_PLACE_COUNTRY)),
-            row.getLong(defaultUnloadingColumnAlias(COL_PLACE_COUNTRY))),
-        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_ADDRESS)),
-            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_ADDRESS))),
-        BeeUtils.nvl(row.getValue(ALS_UNLOADING_POST_INDEX),
-            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_POST_INDEX))),
-        BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_PLACE_CITY)),
-            row.getLong(defaultUnloadingColumnAlias(COL_PLACE_CITY))),
-        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_NUMBER)),
-            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_NUMBER))),
+        row.getValue(COL_CARGO_DESCRIPTION), row.getValue(COL_CARGO_NOTES), minLoad, maxUnload,
         row.getLong(COL_TRIP_ID), row.getLong(COL_VEHICLE), row.getLong(COL_TRAILER),
         row.getLong(COL_CARGO_TRIP_ID), row.getLong(ALS_CARGO_TRIP_VERSION));
   }
@@ -106,18 +73,11 @@ final class Freight extends OrderCargo {
   private Freight(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
       Long customerId, String customerName, Long manager,
       Long cargoId, Long cargoType, String cargoDescription, String notes,
-      JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
-      Long loadingCity, String loadingNumber,
-      JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
-      String unloadingPostIndex, Long unloadingCity,
-      String unloadingNumber, Long tripId, Long truckId, Long trailerId, Long cargoTripId,
-      Long cargoTripVersion) {
+      JustDate loadingDate, JustDate unloadingDate, Long tripId, Long truckId, Long trailerId,
+      Long cargoTripId, Long cargoTripVersion) {
 
     super(orderId, orderStatus, orderDate, orderNo, customerId, customerName, manager,
-        cargoId, cargoType, cargoDescription, notes,
-        loadingDate, loadingCountry, loadingPlace, loadingPostIndex, loadingCity, loadingNumber,
-        unloadingDate, unloadingCountry, unloadingPlace, unloadingPostIndex, unloadingCity,
-        unloadingNumber);
+        cargoId, cargoType, cargoDescription, notes, loadingDate, unloadingDate);
 
     this.tripId = tripId;
     this.truckId = truckId;
@@ -170,9 +130,9 @@ final class Freight extends OrderCargo {
         return getTruckId();
       case TRAILER:
         return getTrailerId();
-      default:
-        return null;
     }
+
+    return null;
   }
 
   boolean isEditable() {
@@ -181,17 +141,9 @@ final class Freight extends OrderCargo {
 
   void makeTarget(final DndTarget widget, final String overStyle) {
     DndHelper.makeTarget(widget, acceptsDropTypes, overStyle,
-        new Predicate<Object>() {
-          @Override
-          public boolean apply(Object input) {
-            return Freight.this.isTarget(input);
-          }
-        }, new BiConsumer<DropEvent, Object>() {
-          @Override
-          public void accept(DropEvent t, Object u) {
-            widget.asWidget().removeStyleName(overStyle);
-            Freight.this.acceptDrop(u);
-          }
+        this::isTarget, (t, u) -> {
+          widget.asWidget().removeStyleName(overStyle);
+          acceptDrop(u);
         });
   }
 
@@ -199,13 +151,8 @@ final class Freight extends OrderCargo {
     Global.confirm(Localized.dictionary().removeCargoFromTripCaption(), Icon.QUESTION,
         Lists.newArrayList(getCargoAndTripTitle(),
             Localized.dictionary().removeCargoFromTripQuestion()),
-        new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            Queries.delete(VIEW_CARGO_TRIPS, Filter.and(Filter.equals(COL_CARGO, getCargoId()),
-                Filter.equals(COL_TRIP, getTripId())), callback);
-          }
-        });
+        () -> Queries.delete(VIEW_CARGO_TRIPS, Filter.and(Filter.equals(COL_CARGO, getCargoId()),
+            Filter.equals(COL_TRIP, getTripId())), callback));
   }
 
   void setEditable(boolean editable) {
@@ -231,24 +178,15 @@ final class Freight extends OrderCargo {
       final Freight freight = (Freight) data;
       String title = freight.getTitle();
 
-      Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
-        @Override
-        public void onConfirm() {
-          freight.updateTrip(Freight.this.getTripId(), RowCallback.refreshView(VIEW_CARGO_TRIPS));
-        }
-      });
+      Trip.maybeAssignCargo(title, getTripTitle(),
+          () -> freight.updateTrip(getTripId(), RowCallback.refreshView(VIEW_CARGO_TRIPS)));
 
     } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO)) {
       final OrderCargo orderCargo = (OrderCargo) data;
       String title = orderCargo.getTitle();
 
-      Trip.maybeAssignCargo(title, getTripTitle(), new ConfirmationCallback() {
-        @Override
-        public void onConfirm() {
-          orderCargo.assignToTrip(Freight.this.getTripId(),
-              RowCallback.refreshView(VIEW_CARGO_TRIPS));
-        }
-      });
+      Trip.maybeAssignCargo(title, getTripTitle(),
+          () -> orderCargo.assignToTrip(getTripId(), RowCallback.refreshView(VIEW_CARGO_TRIPS)));
     }
   }
 

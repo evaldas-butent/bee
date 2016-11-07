@@ -6,21 +6,21 @@
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   name="ProjectDate" viewName="ProjectDates"
-  caption="=prjDates" width="460" widthUnit="px" height="300" heightUnit="px" >
+  caption="=prjDates" width="510" widthUnit="px" height="140" heightUnit="px" >
   <FlowPanel>
     <Table kind="controls">
 
       <row>
         <Label for="Note" style="&lbl;"  />
+        <cell colSpan="3">
         <InputText source="Note" style="width:100%" />
+        </cell>
       </row>
 
       <row>
-        <Label for="StartDate" style="&lbl;" class="bee-required" />
-        <InputDateTime source="StartDate"  />
-      </row>
+        <Label  for="StartDate" style="&lbl;" class="bee-required" />
+        <InputDateTime name="StartDate" source="StartDate"  />
 
-      <row>
         <Label for="Color" style="&lbl;" />
         <ColorEditor source="Color"  />
       </row>

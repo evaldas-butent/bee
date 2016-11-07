@@ -374,6 +374,7 @@ public final class DomUtils {
 
     for (Element child = parent.getFirstChildElement(); child != null; child =
         child.getNextSiblingElement()) {
+
       if (getDataIndexInt(child) == dataIndex) {
         return child;
       }
@@ -441,6 +442,28 @@ public final class DomUtils {
     for (Widget child : parent) {
       if (idEquals(child, id)) {
         return child;
+      }
+    }
+    return null;
+  }
+
+  public static Element getChildByInnerText(Element parent, String text, boolean recurse) {
+    if (parent == null || text == null) {
+      return null;
+    }
+
+    for (Element child = parent.getFirstChildElement(); child != null; child =
+        child.getNextSiblingElement()) {
+
+      if (BeeUtils.equalsTrimRight(child.getInnerText(), text)) {
+        return child;
+      }
+
+      if (recurse) {
+        Element element = getChildByInnerText(child, text, recurse);
+        if (element != null) {
+          return element;
+        }
       }
     }
     return null;
@@ -907,6 +930,25 @@ public final class DomUtils {
     } else {
       return null;
     }
+  }
+
+  public static String getParentDataProperty(Element child, String key, boolean incl) {
+    if (child == null || BeeUtils.isEmpty(key)) {
+      return null;
+    }
+
+    Element elem = incl ? child : child.getParentElement();
+    String name = Attributes.DATA_PREFIX + key.trim();
+
+    while (elem != null) {
+      if (elem.hasAttribute(name)) {
+        return elem.getAttribute(name);
+      }
+
+      elem = elem.getParentElement();
+    }
+
+    return null;
   }
 
   public static Element getParentElement(Element child, Collection<String> tagNames, boolean incl) {
@@ -1914,6 +1956,11 @@ public final class DomUtils {
 
     OptionElement.as(elem).setSelected(selected);
     OptionElement.as(elem).setDefaultSelected(selected);
+  }
+
+  public static void setSpellCheck(Element elem, boolean check) {
+    Assert.notNull(elem);
+    elem.setAttribute(Attributes.SPELL_CHECK, BeeUtils.toString(check));
   }
 
   public static void setStep(UIObject obj, int step) {

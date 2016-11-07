@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
-  
-  name="Contacts"
-  idName="ContactID"
-  >
+
+       name="Contacts"
+       idName="ContactID"
+>
   <Fields>
     <String name="Phone" precision="50" label="=phone" />
     <String name="Mobile" precision="50" label="=mobile" />

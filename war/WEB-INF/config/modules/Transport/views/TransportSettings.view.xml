@@ -173,5 +173,8 @@
 
     <SimpleColumn name="TrailerFilterDataTypes" />
     <SimpleColumn name="TrailerFilters" />
+
+    <SimpleColumn name="SsOrderCustomer" />
+    <SimpleColumn name="SsOrderNo" />
   </Columns>
 </View>

@@ -1,13 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form>
-<f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoPlace" caption="=cargoHandlingPlaces"
-        width="600" height="600"
-  >
-  <SimplePanel style="margin:10px;">
-    <xi:include href="widgets/CargoPlaces.widget.xml" />
-  </SimplePanel>
+        name="CargoPlace" width="450" height="550"
+>
+  <Table kind="controls">
+    <col index="0" kind="label" />
+    <col index="2" kind="label" />
+    <row>
+      <Label for="Date" class="bee-required" />
+      <InputDateTime source="Date" required="true" />
+    </row>
+    <row>
+      <Label for="Company" />
+      <cell colSpan="3">
+        <InputText source="Company" style="width:100%;" autocompleteKey="cargo-place-company" />
+      </cell>
+    </row>
+    <row>
+      <Label for="Address" />
+      <cell colSpan="3">
+        <InputText source="Address" style="width:100%;" autocompleteKey="cargo-place-address" />
+      </cell>
+    </row>
+    <row>
+      <Label for="City" />
+      <DataSelector source="City">
+        <selectorColumn source="Name" />
+        <selectorColumn source="CountryName" />
+        <selectorColumn source="CountryCode">
+          <ui:renderer type="flag" />
+        </selectorColumn>
+      </DataSelector>
+      <Label for="LoadedKilometers" />
+      <InputInteger source="LoadedKilometers" style="width:70px;" />
+    </row>
+    <row>
+      <Label for="PostIndex" />
+      <InputText source="PostIndex" autocompleteKey="cargo-place-postal-code" />
+      <Label for="EmptyKilometers" />
+      <InputInteger source="EmptyKilometers" style="width:70px;" />
+    </row>
+    <row>
+      <Label for="Country" />
+      <FlowPanel>
+        <DataSelector source="Country" style="width: 132px;">
+          <renderToken source="CountryName" />
+          <renderToken source="CountryCode" prefix=" (" suffix=")" />
+          <selectorColumn source="Name" />
+          <selectorColumn source="Code">
+            <ui:renderer type="flag" />
+          </selectorColumn>
+        </DataSelector>
+
+        <Flag source="CountryCode" style="padding-left: 2px;" />
+      </FlowPanel>
+      <Label for="CargoWeight" />
+      <InputDecimal source="CargoWeight" format="0.000" style="width:70px;" />
+    </row>
+    <row>
+      <Label for="Contact" />
+      <cell colSpan="3">
+        <InputText source="Contact" style="width:100%;" autocompleteKey="cargo-place-contact" />
+      </cell>
+    </row>
+    <row>
+      <Label for="Number" />
+      <InputText source="Number" />
+    </row>
+    <row>
+      <cell style="vertical-align:top;">
+        <Label for="Note" />
+      </cell>
+      <cell colSpan="3">
+        <InputArea source="Note" visibleLines="4" style="width:100%;" />
+      </cell>
+    </row>
+  </Table>
 </f:Form>

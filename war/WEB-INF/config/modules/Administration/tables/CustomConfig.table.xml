@@ -5,7 +5,7 @@
        idName="ConfigID"
 >
   <Fields>
-    <Enum name="ObjectModule" key="Module" notNull="true" label="=objectModule" />
+    <Enum name="ObjectModule" key="Module" notNull="true" label="=objectModule" precision="2"/>
     <Enum name="ObjectType" key="SysObject" notNull="true" label="=objectType" />
     <String name="ObjectName" precision="100" notNull="true" label="=object" />
     <Text name="ObjectData" notNull="true" label="=objectData" />

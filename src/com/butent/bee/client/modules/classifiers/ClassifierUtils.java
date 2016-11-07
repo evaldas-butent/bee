@@ -15,7 +15,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -26,7 +25,6 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -34,6 +32,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public final class ClassifierUtils {
 
@@ -58,14 +57,19 @@ public final class ClassifierUtils {
   public static void getCompaniesInfo(Map<String, Long> companies,
       Consumer<Map<String, String>> infoConsumer) {
 
-    Map<String, Filter> views = ImmutableMap.of(VIEW_COMPANIES, Filter.idIn(companies.values()),
-        VIEW_COMPANY_BANK_ACCOUNTS, Filter.any(COL_COMPANY, companies.values()));
+    Map<String, Filter> childs = ImmutableMap.of(
+        VIEW_COMPANY_BANK_ACCOUNTS, Filter.any(COL_COMPANY, companies.values()),
+        VIEW_COMPANY_CONTACTS, Filter.any(COL_COMPANY, companies.values()));
+
+    Map<String, Filter> views = new HashMap<>();
+    views.put(VIEW_COMPANIES, Filter.idIn(companies.values()));
+    views.putAll(childs);
 
     Queries.getData(views.keySet(), views, null, new Queries.DataCallback() {
       @Override
       public void onSuccess(Collection<BeeRowSet> result) {
         Map<String, String> params = new HashMap<>();
-        Map<Long, BeeRowSet> accounts = new HashMap<>();
+        Map<String, BeeRowSet> childInfo = new HashMap<>();
 
         for (BeeRowSet rowSet : result) {
           switch (rowSet.getViewName()) {
@@ -84,34 +88,38 @@ public final class ClassifierUtils {
                 }
               }
               break;
-            case VIEW_COMPANY_BANK_ACCOUNTS:
-              for (BeeRow accountRow : rowSet) {
-                Long companyId = accountRow.getLong(rowSet.getColumnIndex(COL_COMPANY));
+            default:
+              for (BeeRow row : rowSet) {
+                String key = rowSet.getViewName() + row.getLong(rowSet.getColumnIndex(COL_COMPANY));
 
-                if (!accounts.containsKey(companyId)) {
-                  accounts.put(companyId, new BeeRowSet(rowSet.getViewName(), rowSet.getColumns()));
+                if (!childInfo.containsKey(key)) {
+                  childInfo.put(key, new BeeRowSet(rowSet.getViewName(), rowSet.getColumns()));
                 }
-                accounts.get(companyId).addRow(DataUtils.cloneRow(accountRow));
+                childInfo.get(key).addRow(DataUtils.cloneRow(row));
               }
               break;
           }
         }
         for (Map.Entry<String, Long> entry : companies.entrySet()) {
-          BeeRowSet rs = accounts.get(entry.getValue());
+          for (String child : childs.keySet()) {
+            String key = child + entry.getValue();
+            BeeRowSet rs = childInfo.get(key);
 
-          if (rs == null) {
-            rs = new BeeRowSet();
+            if (rs == null) {
+              rs = new BeeRowSet();
+            }
+            params.put(entry.getKey() + child, rs.serialize());
           }
-          params.put(entry.getKey() + VIEW_COMPANY_BANK_ACCOUNTS, rs.serialize());
         }
         infoConsumer.accept(params);
       }
     });
   }
 
-  public static void getCompanyInfo(Long companyId, final Widget target, final String name) {
+  public static void getCompanyInfo(Long companyId, final Widget target) {
     Assert.notNull(target);
     if (!DataUtils.isId(companyId)) {
+
       return;
     }
     ParameterList args = ClassifierKeeper.createArgs(SVC_COMPANY_INFO);
@@ -132,7 +140,8 @@ public final class ClassifierUtils {
         if (response.hasErrors()) {
           return;
         }
-        Map<String, String> entries = Codec.deserializeMap(response.getResponseAsString());
+        Map<String, String> entries =
+            Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
         if (BeeUtils.isEmpty(entries)) {
           return;
@@ -145,10 +154,6 @@ public final class ClassifierUtils {
 
         for (String col : COMPANY_INFO_COLS) {
           Flow record = new Flow(STYLE_COMPANY + "-" + col.toLowerCase());
-
-          if (!isColumnVisible(name, col)) {
-            continue;
-          }
 
           switch (col) {
             case COL_ADDRESS:
@@ -194,20 +199,6 @@ public final class ClassifierUtils {
                 record.add(bank);
               }
               break;
-            case COL_COMPANY_NAME:
-              value = BeeUtils.joinItems(info.get(COL_COMPANY_NAME).getB(),
-                  info.get(ALS_COMPANY_TYPE).getB());
-
-              if (!BeeUtils.isEmpty(value)) {
-                Widget widget = new Label(info.get(col).getA());
-                widget.setStyleName(STYLE_COMPANY_LABEL);
-                record.add(widget);
-
-                widget = new Label(value);
-                widget.setStyleName(STYLE_COMPANY_ITEM);
-                record.add(widget);
-              }
-              break;
 
             default:
               Pair<String, String> pair = info.get(col);
@@ -229,16 +220,6 @@ public final class ClassifierUtils {
         target.getElement().setInnerHTML(flow.getElement().getString());
       }
     });
-  }
-
-  private static boolean isColumnVisible(String widgetName, String columnName) {
-    if (BeeUtils.same(widgetName, TradeConstants.COL_TRADE_SUPPLIER)) {
-      if (BeeUtils.inListSame(columnName, COL_PHONE, COL_FAX, COL_EMAIL, COL_MOBILE,
-          COL_BANK_ACCOUNT)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   private ClassifierUtils() {

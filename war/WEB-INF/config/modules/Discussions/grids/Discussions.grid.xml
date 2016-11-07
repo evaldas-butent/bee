@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
 
   name="Discussions" viewName="Discussions" caption="=discussions"
   favorite="Subject" flexGrow="1" order="DiscussionID desc" >
@@ -52,18 +53,18 @@
           </ui:function>
         </render>
     </CalcColumn>
-    
+
+    <DataColumn name="LastCommentPublishTime"  caption="=discussLastComment"
+                label="=discussLastComment" visible="false" />
+
     <PropColumn name="LastCommentData" type="string" cellType="html"
-      caption="=discussLastComment" label="=discussLastComment" width="180"
-      sortBy="LastCommentPublishTime">      
+                caption="=discussLastComment" label="=discussLastComment" width="180"
+                sortBy="LastCommentPublishTime">
     </PropColumn>
-    
-    <CalcColumn name="CommentCount" type="integer"
-      maxWidth="90" autoFit="true" caption="=discussTotalComments">
-        <render>
-          <ui:expression>row.CommentCount</ui:expression>
-        </render>
-    </CalcColumn>
+
+    <PropColumn name="CommentCount" type="integer" cellType="html"
+                label="=discussTotalComments" autoFit="true" >
+    </PropColumn>
     
     <PropColumn name="MarkCount" type="decimal"  format="#" horizontalAlignment="center"
       maxWidth="90" autoFit="true" caption="=discussTotalMarks">

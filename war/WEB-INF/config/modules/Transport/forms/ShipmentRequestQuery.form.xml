@@ -486,6 +486,12 @@
                            disabled="disabled" />
                   </td>
                 </tr>
+                <tr>
+                  <td colspan="2">
+                    <label for="CargoNotes">=cargoNotes</label>
+                    <textarea id="CargoNotes" name="CargoNotes" rows="3" style="width:100%"> </textarea>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </fieldset>
@@ -509,6 +515,14 @@
                     </td>
                     <td>
                       <select id="ShippingTerms-Name" name="ShippingTerm" required="required" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label for="LoadedKilometers">=trLoadedKilometers</label>
+                    </td>
+                    <td>
+                      <input id="LoadedKilometers" name="LoadedKilometers" type="number" maxlength="5" />
                     </td>
                   </tr>
                   <tr>

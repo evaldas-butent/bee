@@ -138,7 +138,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
       if (!mainWs.isEmpty() || !mainEo.isEmpty() || !substWs.isEmpty() || !substEo.isEmpty()) {
         int statusIndex = getObData().getColumnIndex(COL_LOCATION_STATUS);
 
-        DateRange employeeRange = getEmployeeRange();
+        DateRange employeeRange = getEmployeeRange(employeeId);
         boolean intersects = employeeRange == null || filterRange.intersects(employeeRange);
 
         for (BeeRow row : getObData()) {
@@ -229,7 +229,7 @@ class EmployeeSchedule extends WorkScheduleWidget {
 
   @Override
   protected boolean isActive(YearMonth ym) {
-    return ym != null && ym.getRange().intersects(getEmployeeRange());
+    return ym != null && ym.getRange().intersects(getEmployeeRange(employeeId));
   }
 
   @Override
@@ -347,20 +347,6 @@ class EmployeeSchedule extends WorkScheduleWidget {
         });
       }
     });
-  }
-
-  private DateRange getEmployeeRange() {
-    if (DataUtils.isEmpty(getEmData())) {
-      return null;
-
-    } else {
-      BeeRow row = getEmData().getRow(0);
-
-      JustDate from = DataUtils.getDate(getEmData(), row, COL_DATE_OF_EMPLOYMENT);
-      JustDate until = DataUtils.getDate(getEmData(), row, COL_DATE_OF_DISMISSAL);
-
-      return DateRange.closed(from, until);
-    }
   }
 
   private void getObjects(final Runnable callback) {

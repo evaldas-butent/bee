@@ -1,32 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-  <!ENTITY foritem "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.IsService</ui:expression></dynStyle>">
-  <!ENTITY forservice "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.IsService</ui:expression></dynStyle>">
-  <!ENTITY pricescale "4">
-  <!ENTITY costscale "4">
-  <!ENTITY pricestyle "width: 120px;">
-  <!ENTITY currencystyle "width: 50px;">
-]>
+    <!ENTITY foritem "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.IsService</ui:expression></dynStyle>">
+    <!ENTITY forservice "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.IsService</ui:expression></dynStyle>">
+    <!ENTITY pricescale "4">
+    <!ENTITY costscale "4">
+    <!ENTITY pricestyle "width: 120px;">
+    <!ENTITY currencystyle "width: 50px;">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
-  name="Item" viewName="Items" caption="=item"
-  width="700" height="720"
-  >
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="Item" viewName="Items" caption="=item"
+        width="820" height="720"
+>
   <FlowPanel class="flexBox-vertical">
-    <Table kind="controls" style="margin-top: 1ex;">
+    <Table kind="controls" style="margin-top: 1ex; margin-bottom: 1em;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
-      
-      <row>
-        <Label for="Type" />
-        <DataSelector source="Type" />
-
-        <Label for="Group" />
-        <DataSelector source="Group" />
-      </row>
+      <col index="4" kind="label" />
 
       <row>
         <Label for="Name" />
@@ -39,54 +32,37 @@
         <Label for="Article" />
         <InputText source="Article" />
 
-        <Label for="Unit" text="=unitShort" />
-        <DataSelector source="Unit" visible="true" editEnabled="false" style="width: 80px;" />
-
-        <Label for="TimeUnit" module="Trade.Acts">
-          &forservice;
-        </Label>
-        <ListBox source="TimeUnit" style="width: 80px;" module="Trade.Acts">
-          &forservice;
-        </ListBox>
-      </row>
-
-      <row>
         <Label for="Barcode" />
         <InputText source="Barcode" />
 
-        <CheckBox source="Vat" text="=vat" />
-        <cell style="padding-left: 6px;">
-          <FlowPanel>
-            <InputDecimal source="VatPercent" style="width: 40px;" />
-            <InlineLabel html="%" style="padding-left: 3px;"/>
-          </FlowPanel>
-        </cell>
+        <Label for="Unit" text="=unitShort" />
+        <DataSelector source="Unit" visible="true" editEnabled="false" style="width: 80px;" />
       </row>
-      
+
       <row>
-        <Label for="Attribute" >
-          &foritem;
-        </Label>
-        <InputText source="Attribute" >
-          &foritem;
-        </InputText>
-        
-        <CheckBox source="NotManufactured" text="=notManufactured" >
-          &foritem;
-        </CheckBox>
+        <Label for="Type" />
+        <DataSelector source="Type" />
+
+        <Label for="Group" />
+        <DataSelector source="Group" />
+
+        <CheckBox source="Vat" text="=vat" />
+        <FlowPanel>
+          <InputDecimal source="VatPercent" style="width: 40px;" />
+          <InlineLabel html="%" style="margin-left: 3px;" />
+        </FlowPanel>
       </row>
 
       <row data="ItemCategories">
         <Label text="=itemCategories" />
         <cell colSpan="5">
-          <ChildSelector name="Categories" childTable="ItemCategories" viewName="CategoryTree" 
-            targetRelColumn="Item" sourceRelColumn="Category" newRowEnabled="false"
-            renderColumns="ParentName Name" label="=categories" style="width: 100%;" />
+          <ChildSelector name="Categories" childTable="ItemCategories" viewName="CategoryTree"
+                         targetRelColumn="Item" sourceRelColumn="Category" newRowEnabled="false"
+                         renderColumns="ParentName Name" label="=categories" style="width: 100%;" />
         </cell>
       </row>
     </Table>
-    
-    <br/>
+
     <TabbedPages class="flexible">
       <page>
         <text>=prices</text>
@@ -96,92 +72,90 @@
             <col index="2" cellStyle="padding-left: 6px;" />
             <col index="3" kind="label" />
             <col index="5" cellStyle="padding-left: 6px;" />
+            <col index="6" kind="label" />
+            <col index="8" cellStyle="padding-left: 6px;" />
 
             <row>
               <Label for="Price" />
               <InputDecimal source="Price" currencySource="Currency" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
-                style="&currencystyle;" />
+                            style="&currencystyle;" />
 
               <Label for="Cost" />
               <InputDecimal source="Cost" currencySource="CostCurrency" scale="&costscale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="CostCurrency" for="Cost" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
-            </row>
+                            editEnabled="false" style="&currencystyle;" />
 
-            <row>
               <Label for="Price1" />
               <InputDecimal source="Price1" currencySource="Currency1" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency1" for="Price1" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
-
-              <Label for="Price2" />
-              <InputDecimal source="Price2" currencySource="Currency2" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
-              <DataSelector source="Currency2" for="Price2" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
+                            editEnabled="false" style="&currencystyle;" />
             </row>
 
             <row>
+              <Label for="Price2" />
+              <InputDecimal source="Price2" currencySource="Currency2" scale="&pricescale;"
+                            style="&pricestyle;" summarize="true" />
+              <DataSelector source="Currency2" for="Price2" newRowEnabled="false"
+                            editEnabled="false" style="&currencystyle;" />
+
               <Label for="Price3" />
               <InputDecimal source="Price3" currencySource="Currency3" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency3" for="Price3" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
-                
+                            editEnabled="false" style="&currencystyle;" />
+
               <Label for="Price4" />
               <InputDecimal source="Price4" currencySource="Currency4" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency4" for="Price4" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
+                            editEnabled="false" style="&currencystyle;" />
             </row>
-            
+
             <row>
               <Label for="Price5" />
               <InputDecimal source="Price5" currencySource="Currency5" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency5" for="Price5" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
-                
+                            editEnabled="false" style="&currencystyle;" />
+
               <Label for="Price6" />
               <InputDecimal source="Price6" currencySource="Currency6" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency6" for="Price6" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
-            </row>
-            
-            <row>
+                            editEnabled="false" style="&currencystyle;" />
+
               <Label for="Price7" />
               <InputDecimal source="Price7" currencySource="Currency7" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency7" for="Price7" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
-                
+                            editEnabled="false" style="&currencystyle;" />
+            </row>
+
+            <row>
               <Label for="Price8" />
               <InputDecimal source="Price8" currencySource="Currency8" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency8" for="Price8" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
-            </row>
-            
-            <row>
+                            editEnabled="false" style="&currencystyle;" />
+
               <Label for="Price9" />
               <InputDecimal source="Price9" currencySource="Currency9" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency9" for="Price9" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
-                
+                            editEnabled="false" style="&currencystyle;" />
+
               <Label for="Price10" />
               <InputDecimal source="Price10" currencySource="Currency10" scale="&pricescale;"
-                style="&pricestyle;" summarize="true" />
+                            style="&pricestyle;" summarize="true" />
               <DataSelector source="Currency10" for="Price10" newRowEnabled="false"
-                editEnabled="false" style="&currencystyle;" />
+                            editEnabled="false" style="&currencystyle;" />
             </row>
           </Table>
-          
+
           <ChildGrid name="ItemDiscounts" relColumn="Item" class="flexible" />
         </FlowPanel>
       </page>
@@ -191,83 +165,68 @@
         <Table kind="controls" style="margin-top: 1ex;">
           <col index="0" kind="label" />
           <col index="2" kind="label" />
-      
+          <col index="4" kind="label" />
+
           <row>
             <Label for="Name2" />
-            <cell colSpan="3">
+            <cell colSpan="5">
               <InputText source="Name2" autocomplete="true" visible="true" style="width: 100%;"
-                summarize="true" />
+                         summarize="true" />
             </cell>
           </row>
+
           <row>
             <Label for="Name3" />
-            <cell colSpan="3">
+            <cell colSpan="5">
               <InputText source="Name3" autocomplete="true" visible="true" style="width: 100%;"
-                summarize="true" />
+                         summarize="true" />
             </cell>
           </row>
+
           <row>
             <Label for="Link">
               &foritem;
             </Label>
-            <cell colSpan="3">
+            <cell colSpan="5">
               <InputText source="Link" style="width: 100%;" summarize="true">
                 &foritem;
               </InputText>
-            </cell>  
+            </cell>
           </row>
 
-          <row>
-            <Label for="ExternalCode" />
-            <InputText source="ExternalCode" summarize="true" />
-          </row>
-
-          <row>
-            <Label for="DaysPerWeek" module="Trade.Acts">
-              &forservice;
-            </Label>
-            <InputInteger source="DaysPerWeek" maxValue="7" style="width: 5em;"
-              module="Trade.Acts" summarize="true">
-              &forservice;
-            </InputInteger>
-
-            <Label for="MinTerm" module="Trade.Acts">
-              &forservice;
-            </Label>
-            <InputInteger source="MinTerm" style="width: 5em;" module="Trade.Acts"
-              summarize="true">
-              &forservice;
-            </InputInteger>
-          </row>
-        </Table>
-      </page>
-
-      <page>
-        <text>=transportOtherDetails</text>
-        <Table kind="controls" style="margin-top: 1ex;">
-          <col index="0" kind="label" />
-          <col index="2" kind="label" />
-          
           <row>
             <Label for="Article2" />
             <InputText source="Article2" summarize="true" />
-            
+
             <Label for="Article3" />
             <InputText source="Article3" summarize="true" />
-          </row>
-          
-          <row>
+
             <Label for="Article4" />
             <InputText source="Article4" summarize="true" />
-            
-            <Label for="KPNCode">
-              &foritem;
-            </Label>
-            <InputText source="KPNCode" summarize="true">
-              &foritem;
-            </InputText>
           </row>
-          
+
+          <row>
+            <Label for="Ordinal" />
+            <InputInteger source="Ordinal" style="width: 80px;" summarize="true" />
+
+            <Label for="ExternalCode" />
+            <InputText source="ExternalCode" summarize="true" />
+
+            <Label for="KPNCode" />
+            <InputText source="KPNCode" summarize="true" />
+          </row>
+
+          <row>
+            <Label for="Height" />
+            <InputDecimal source="Height" style="width: 80px;" summarize="true" />
+
+            <Label for="Width" />
+            <InputDecimal source="Width" style="width: 80px;" summarize="true" />
+
+            <Label for="Length" />
+            <InputDecimal source="Length" style="width: 80px;" summarize="true" />
+          </row>
+
           <row>
             <Label for="Weight">
               &foritem;
@@ -283,50 +242,50 @@
               &foritem;
             </InputDecimal>
           </row>
-          
-          <row>
-            <Label for="Height">
-              &foritem;
+
+          <row module="Trade.Acts">
+            <Label for="TimeUnit">
+              &forservice;
             </Label>
-            <InputDecimal source="Height" style="width: 80px;" summarize="true">
-              &foritem;
-            </InputDecimal>
-            
-            <Label for="PackageUnits">
-              &foritem;
+            <ListBox source="TimeUnit" style="width: 80px;" summarize="true">
+              &forservice;
+            </ListBox>
+
+            <Label for="DaysPerWeek">
+              &forservice;
             </Label>
-            <InputDecimal source="PackageUnits" style="width: 80px;"
-              summarize="true">
-              &foritem;
-            </InputDecimal>
+            <InputInteger source="DaysPerWeek" maxValue="7" style="width: 5em;" summarize="true">
+              &forservice;
+            </InputInteger>
+
+            <Label for="MinTerm">
+              &forservice;
+            </Label>
+            <InputInteger source="MinTerm" style="width: 5em;" summarize="true">
+              &forservice;
+            </InputInteger>
           </row>
-          
-          <row>
-            <Label for="Ordinal" />
-            <InputInteger source="Ordinal" style="width: 80px;" summarize="true" />
-            
-            <Label for="Width">
-              &foritem;
-            </Label>
-            <InputDecimal source="Width" style="width: 80px;" summarize="true">
-              &foritem;
-            </InputDecimal>
-          </row>
-          
-          <row>
-            <Label for="Length">
-              &foritem;
-            </Label>
-            <InputDecimal source="Length" style="width: 80px;" summarize="true">
-              &foritem;
-            </InputDecimal>
+
+          <row module="Trade">
+            <Label for="DefaultQuantity" />
+            <InputInteger source="DefaultQuantity" style="width: 80px;" summarize="true" />
           </row>
         </Table>
       </page>
-      
+
       <page data="Dimensions">
         <text>=dimensions</text>
         <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
+      </page>
+
+      <page module="Finance" data="TradeAccounts">
+        <text>=finAccounts</text>
+        <xi:include href="widgets/TradeAccounts.widget.xml" />
+      </page>
+
+      <page module="Finance Trade">
+        <text>=finDistributionShort</text>
+        <ChildGrid name="ItemFinanceDistribution" relColumn="Item" />
       </page>
 
       <page>
@@ -343,32 +302,54 @@
       </page>
 
       <page>
-        <text>=tcdRemainders</text>
-        <SimplePanel>
-           <ChildGrid name="ItemRemainders" relColumn="Item" class="occupy-1" summarize="true" />
-        </SimplePanel>
-      </page> 
-      
-      <page>
         <text>=suppliers</text>
-        <SimplePanel>
-           <ChildGrid name="ItemSuppliers" relColumn="Item" class="occupy-1" summarize="true" />
-        </SimplePanel>
-      </page> 
-      
+        <ChildGrid name="ItemSuppliers" relColumn="Item" />
+      </page>
+
       <page>
         <text>=manufacturers</text>
-        <SimplePanel>
-           <ChildGrid name="ItemManufacturers" relColumn="Item" class="occupy-1" summarize="true" />
-        </SimplePanel>
-      </page> 
-      
+        <ChildGrid name="ItemManufacturers" relColumn="Item" />
+      </page>
+
+      <page module="Orders" data="Orders" predicate="!row.IsService">
+        <text>=orders</text>
+        <FlowPanel class="flexBox-vertical">
+          <Table kind="controls" style="margin-top: 1ex; margin-bottom: 2em;">
+            <col index="0" kind="label" />
+            <col index="2" kind="label" />
+            <col index="4" kind="label" />
+
+            <row>
+              <Label for="Attribute" />
+              <InputText source="Attribute" summarize="true" />
+
+              <Label for="PackageUnits" />
+              <InputDecimal source="PackageUnits" style="width: 80px;" summarize="true" />
+
+              <CheckBox source="NotManufactured" text="=notManufactured" summarize="true" />
+            </row>
+          </Table>
+
+          <ChildGrid name="ItemRemainders" relColumn="Item" class="flexible" />
+        </FlowPanel>
+      </page>
+
+      <page module="Trade" predicate="!row.IsService &amp;&amp; rowId > 0">
+        <text>=trdStock</text>
+        <ChildGrid name="ItemStock" relColumn="Item" />
+      </page>
+
+      <page module="Trade" predicate="rowId > 0">
+        <text>=trdMovement</text>
+        <ChildGrid name="ItemMovement" relColumn="Item" paging="true" />
+      </page>
+
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
-      </page>  
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>  

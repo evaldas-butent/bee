@@ -118,13 +118,10 @@ public final class FormFactory {
     Assert.notEmpty(formName);
     Assert.notNull(viewCallback);
 
-    getFormDescription(formName, new Callback<FormDescription>() {
-      @Override
-      public void onSuccess(FormDescription result) {
-        FormView view = new FormImpl(formName);
-        view.create(result, viewName, columns, addStyle, formInterceptor);
-        viewCallback.onSuccess(result, view);
-      }
+    getFormDescription(formName, result -> {
+      FormView view = new FormImpl(formName);
+      view.create(result, viewName, columns, addStyle, formInterceptor);
+      viewCallback.onSuccess(result, view);
     });
   }
 
@@ -321,12 +318,8 @@ public final class FormFactory {
    * This method should be used in sync with {@code ViewFactory.registerSupplier}.
    */
   public static void openForm(final String formName, final FormInterceptor formInterceptor) {
-    getFormDescription(formName, new Callback<FormDescription>() {
-      @Override
-      public void onSuccess(FormDescription result) {
-        openForm(result, formInterceptor, ViewHelper.getPresenterCallback());
-      }
-    });
+    getFormDescription(formName,
+        result -> openForm(result, formInterceptor, ViewHelper.getPresenterCallback()));
   }
 
   public static FormDescription parseFormDescription(String xml) {
@@ -402,7 +395,7 @@ public final class FormFactory {
         if (response.hasResponse(String.class)) {
           FormDescription fd = parseFormDescription((String) response.getResponse());
           if (fd == null) {
-            callback.onFailure("form", name, "decription not created");
+            callback.onFailure("form", name, "description not created");
           } else {
             if (fd.cacheDescription()) {
               descriptionCache.put(key, fd);

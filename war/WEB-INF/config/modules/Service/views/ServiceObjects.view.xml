@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="ServiceObjects" source="ServiceObjects"
-  caption="=svcObjects" newRowCaption="=svcNewObject"
+  caption="=svcDevices" newRowCaption="=svcNewDevice"
   editForm="ServiceObject" newRowForm="ServiceObject"
   rowCaption="CategoryName Address CustomerName"
   >
@@ -31,5 +31,31 @@
         <SimpleColumn name="Name" alias="ContractorTypeName" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="ContactPerson" />
+    <SimpleJoin joinType="LEFT" name="ContactPerson">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="ContactPersonFirstName" name="FirstName" />
+        <SimpleColumn alias="ContactPersonLastName" name="LastName" />
+      </SimpleJoin>
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Phone" alias="ContactPersonPhone"/>
+        <SimpleColumn name="Email" alias="ContactPersonEmail"/>
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="ContactPersonEmailAddress"/>
+        </SimpleJoin>
+        <SimpleColumn name="Address" alias="ContactPersonAddress"/>
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="Manufacturer" />
+    <SimpleJoin joinType="LEFT" name="Manufacturer">
+      <SimpleColumn name="Name" alias="ManufacturerName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="ManufacturerTypeName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Model" />
+    <SimpleColumn name="SerialNo" />
   </Columns>
 </View>

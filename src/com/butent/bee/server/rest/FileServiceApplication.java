@@ -86,23 +86,21 @@ public class FileServiceApplication extends Application {
   }
 
   @GET
-  @Path("{name}")
+  @Path("zip/{name}")
   public Response getFiles(@PathParam("name") String fileName,
       @QueryParam(Service.VAR_FILES) String files) {
 
     if (BeeUtils.isEmpty(files)) {
       throw new BadRequestException();
     }
-    Map<String, String> fileMap = Codec.deserializeMap(Codec.decodeBase64(files));
+    Map<String, String> fileMap = Codec.deserializeLinkedHashMap(Codec.decodeBase64(files));
     File tmp;
 
     try {
       tmp = File.createTempFile("bee_", ".zip");
       tmp.deleteOnExit();
 
-      try (
-          ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))
-      ) {
+      try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(tmp))) {
         Set<String> names = new HashSet<>();
 
         for (Map.Entry<String, String> entry : fileMap.entrySet()) {
@@ -149,10 +147,16 @@ public class FileServiceApplication extends Application {
   @Produces(RestResponse.JSON_TYPE)
   @Trusted(secret = "B-NOVO File Upload")
   public RestResponse upload(@PathParam("name") String fileName,
-      @HeaderParam(HttpHeaders.CONTENT_TYPE) String fileType, InputStream is) {
+      @HeaderParam(HttpHeaders.CONTENT_TYPE) String fileType,
+      @HeaderParam(AdministrationConstants.FILE_COMMIT) String commit, InputStream is) {
 
     try {
-      return RestResponse.ok(fs.storeFile(is, fileName, fileType));
+      Long fileId = fs.storeFile(is, fileName, fileType);
+
+      if (BeeUtils.toBoolean(commit)) {
+        fileId = fs.commitFile(fileId);
+      }
+      return RestResponse.ok(fileId);
     } catch (IOException e) {
       return RestResponse.error(e);
     }

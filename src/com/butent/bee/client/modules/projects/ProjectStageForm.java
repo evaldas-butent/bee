@@ -5,6 +5,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.EventUtils;
@@ -202,6 +203,18 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
     if (event.hasView(TaskConstants.VIEW_TASKS)
         || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
         || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+
+      if (!Data.getDataInfo(event.getViewName()).containsColumn(COL_PROJECT_STAGE)) {
+        return;
+      }
+
+      Long relStage = Data.getLong(event.getViewName(), event.getRow(), COL_PROJECT_STAGE);
+
+
+      if (BeeUtils.unbox(relStage) != row.getId()) {
+        return;
+      }
+
       if (!DataUtils.isNewRow(row)) {
         showComputedTimes(form, row, true);
       }
@@ -224,6 +237,17 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
     if (event.hasView(TaskConstants.VIEW_TASKS)
         || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
         || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+
+      if (!Data.getDataInfo(event.getViewName()).containsColumn(COL_PROJECT_STAGE)) {
+        return;
+      }
+
+      Long relStage = Data.getLong(event.getViewName(), event.getRow(), COL_PROJECT_STAGE);
+
+
+      if (BeeUtils.unbox(relStage) != row.getId()) {
+        return;
+      }
 
       if (!DataUtils.isNewRow(row)) {
         showComputedTimes(form, row, true);

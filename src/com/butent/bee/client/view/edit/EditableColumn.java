@@ -40,6 +40,7 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasPercentageTag;
 import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
@@ -326,6 +327,16 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
 
   public String getOldValue(IsRow row) {
     return row.getString(getColIndex());
+  }
+
+  public String getPercentageTag() {
+    if (getEditor() instanceof HasPercentageTag) {
+      return ((HasPercentageTag) getEditor()).getPercentageTag();
+    } else if (getEditorDescription() != null) {
+      return getEditorDescription().getPercentageTag();
+    } else {
+      return null;
+    }
   }
 
   public Relation getRelation() {

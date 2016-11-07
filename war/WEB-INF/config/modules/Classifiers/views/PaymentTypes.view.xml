@@ -6,7 +6,14 @@
   <Columns>
     <SimpleColumn name="PaymentName" />
     <SimpleColumn name="PaymentCash" />
+
+    <SimpleColumn name="PaymentTypeAccount" />
+    <SimpleJoin joinType="LEFT" name="PaymentTypeAccount">
+      <SimpleColumn name="AccountCode" />
+      <SimpleColumn name="AccountName" />
+    </SimpleJoin>
   </Columns>
+
   <Order>
     <OrderBy column="PaymentName" />
   </Order>

@@ -48,9 +48,8 @@ public class DiscountsGrid extends AbstractGridInterceptor {
             @Override
             public void onConfirm() {
 
-              Filter filter =
-                  Filter.or(Filter.notNull(COL_COMPANY), Filter.notNull(COL_ITEM), Filter
-                      .notNull(COL_CATEGORY));
+              Filter filter = Filter.or(Filter.notNull(COL_COMPANY), Filter.notNull(COL_ITEM),
+                  Filter.notNull(COL_CATEGORY));
               Queries.delete(TBL_DISCOUNTS, filter, new IntCallback() {
 
                 @Override

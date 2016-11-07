@@ -935,7 +935,8 @@ public class UserServiceBean {
     SqlSelect query = new SqlSelect()
         .addField(TBL_USERS, sys.getIdName(TBL_USERS), COL_USER)
         .addFields(TBL_USERS, COL_COMPANY_PERSON)
-        .addFields(TBL_COMPANY_PERSONS, COL_COMPANY, COL_PERSON)
+        .addFields(TBL_COMPANY_PERSONS, COL_COMPANY, COL_PERSON, COL_POSITION)
+        .addField(TBL_POSITIONS, COL_POSITION_NAME, ALS_POSITION_NAME)
         .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO)
         .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
         .addFrom(TBL_USERS)
@@ -943,7 +944,9 @@ public class UserServiceBean {
             sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
         .addFromInner(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
         .addFromInner(TBL_COMPANIES,
-            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY));
+            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
+        .addFromLeft(TBL_POSITIONS,
+            sys.joinTables(TBL_POSITIONS, TBL_COMPANY_PERSONS, COL_POSITION));
 
     if (DataUtils.isId(userId)) {
       query.setWhere(sys.idEquals(TBL_USERS, userId));
@@ -963,6 +966,8 @@ public class UserServiceBean {
         userData.setPhotoFile(row.getLong(COL_PHOTO));
         userData.setCompanyName(row.getValue(COL_COMPANY_NAME));
         userData.setCompanyPerson(row.getLong(COL_COMPANY_PERSON));
+        userData.setCompanyPersonPosition(row.getLong(COL_POSITION));
+        userData.setCompanyPersonPositionName(row.getValue(ALS_POSITION_NAME));
         userData.setCompany(row.getLong(COL_COMPANY));
         userData.setPerson(row.getLong(COL_PERSON));
       }

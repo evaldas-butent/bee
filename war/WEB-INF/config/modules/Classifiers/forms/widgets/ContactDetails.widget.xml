@@ -1,45 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Table [
-  <!ENTITY lbl "margin-left: 1em; margin-right: 1em; text-align: right">
+  <!ENTITY lbl "padding-left: 1em; padding-right: 1em; text-align: right;">
+  <!ENTITY inp "width: 250px;">
 ]>
 <Table xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui" kind="controls">
+  <col index="0" cellStyle="&lbl;" />
   <row>
-    <Label text="=phones" style="&lbl;" for="Phone" />
+    <Label text="=phones" for="Phone" />
     <InputText source="Phone" summarize="true" />
-    <Label text="=mobile" style="&lbl;" for="Mobile" />
-    <InputText source="Mobile" summarize="true" />
-    <Label text="=fax" style="&lbl;" for="Fax" />
-    <InputText source="Fax" summarize="true" />
+    <Label for="EmailId" style="&lbl;" />
+    <cell colSpan="2" for="EmailId" >
+      <DataSelector source="EmailId" style="&inp;" maxLength="50" editEnabled="true"
+        summarize="true" />
+    </cell>
   </row>
 
   <row>
-    <Label for="EmailId" style="&lbl;" />
-    <cell colSpan="2" for="EmailId" >
-      <Table kind="controls">
-        <row>
-          <DataSelector source="EmailId" style="width: 100%;" maxLength="50" editEnabled="true"
-            summarize="true" />
-          <CheckBox html="-" name="RemindEmail" class="bee-RemindEmail" source="RemindEmail" 
-            title="=sendReminder" style="display: none;"/>
-        </row>
-      </Table>
-    </cell>
-
+    <Label text="=mobile" for="Mobile" />
+    <InputText source="Mobile" summarize="true" />
     <Label text="=website" style="&lbl;" for="Website" />
     <cell colSpan="2" for="Website" >
-      <InputText source="Website" style="width: 100%" summarize="true" />
+      <InputText source="Website" style="&inp;" summarize="true" />
     </cell>
   </row>
   
+  <row>
+    <Label text="=fax" for="Fax" />
+    <InputText source="Fax" summarize="true" />
+  </row>
+  
+  <row>
+    <Label text="=mailRecipientsGroups" />
+    <cell colSpan="5">
+      <ChildSelector viewName="RecipientsGroups" childTable="RcpsGroupsContacts"
+        targetRelColumn="CompanyPerson" sourceRelColumn="RecipientsGroup" renderColumns="GroupName"
+        choiceColumns="GroupName" label="=mailRecipientsGroups" style="width: 100%;" summarize="true" 
+        filter="Creator {u} or Visibility = 0" />
+    </cell>
+  </row>
   <row for="Address">
-    <Label text="=address" style="&lbl;" />
+    <Label for="Address" />
     <cell colSpan="5">
       <InputText source="Address" style="width: 100%;" summarize="true" />
     </cell>
   </row>
   
   <row>
-    <Label text="=city" style="&lbl;" for="City" />
+    <Label text="=city" for="City" />
     <DataSelector source="City" summarize="true">
       <selectorColumn source="Name" />
       <selectorColumn source="CountryName" />
@@ -66,9 +73,9 @@
   </row>
   
   <row for="SocialContacts">
-    <Label text="=socialContacts" style="&lbl;" />
+    <Label for="SocialContacts" style="margin-bottom: 10px;" />
     <cell colSpan="5">
-      <InputText source="SocialContacts" style="width: 100%;" summarize="true" />
+      <InputText source="SocialContacts" style="width: 100%; margin-bottom: 10px;" summarize="true" />
     </cell>
   </row>
 </Table>

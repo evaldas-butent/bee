@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="CarOrders" source="CarOrders"
+      editForm="CarOrder" newRowForm="CarOrder" caption="=orders">
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="OrderNo" />
+
+    <SimpleColumn name="Customer" />
+    <SimpleJoin name="Customer" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CustomerName" />
+
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CustomerTypeName" />
+      </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="Contact">
+        <SimpleJoin joinType="LEFT" name="Email">
+          <SimpleColumn name="Email" alias="CustomerEmail" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="CustomerPerson" />
+    <SimpleJoin name="CustomerPerson" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" alias="ContactFirstName" />
+        <SimpleColumn name="LastName" alias="ContactLastName" />
+      </SimpleJoin>
+      <SimpleJoin joinType="LEFT" name="Contact">
+        <SimpleJoin joinType="LEFT" name="Email">
+          <SimpleColumn name="Email" alias="ContactEmail" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Manager" />
+    <SimpleJoin name="Manager" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPosition" />
+        </SimpleJoin>
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ManagerFirstName" />
+          <SimpleColumn name="LastName" alias="ManagerLastName" />
+        </SimpleJoin>
+        <SimpleJoin joinType="LEFT" name="Contact">
+          <SimpleColumn name="Phone" alias="ManagerPhone" />
+          <SimpleColumn name="Mobile" alias="ManagerMobile" />
+          <SimpleJoin joinType="LEFT" name="Email">
+            <SimpleColumn name="Email" alias="ManagerEmail" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Object" />
+    <SimpleJoin name="Object" joinType="LEFT">
+      <SimpleColumn name="Description" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+    <SimpleColumn name="Discount" />
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+
+    <SimpleColumn name="Notes" />
+  </Columns>
+</View>

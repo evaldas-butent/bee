@@ -7,9 +7,9 @@
         readOnly="true"
         caption="=trdDebtReports"
         cacheData="false"
-    >
+>
 
-<!-- cacheData="false" due grid dublicate fields by company id in currency position -->
+  <!-- cacheData="false" due grid dublicate fields by company id in currency position -->
 
   <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
     <SelectionColumn name="Select" width="20" label="=trdTerm"/>

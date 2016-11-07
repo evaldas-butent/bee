@@ -133,14 +133,14 @@
         <reportElement x="355" y="0" width="200" height="60" uuid="39774998-ee49-4232-9c96-f877c52a388d">
           <property name="com.jaspersoft.studio.unit.width" value="pixel"/>
         </reportElement>
-        <imageExpression><![CDATA["file/227952"]]></imageExpression>
+        <imageExpression><![CDATA["images/Hettich.png"]]></imageExpression>
       </image>
       <image>
         <reportElement x="0" y="53" width="135" height="30" uuid="6343c328-20d8-4503-b4d4-ef0e8bdd0b23">
           <property name="com.jaspersoft.studio.unit.width" value="pixel"/>
           <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
         </reportElement>
-        <imageExpression><![CDATA["file/241209"]]></imageExpression>
+        <imageExpression><![CDATA["images/Hetlita.png"]]></imageExpression>
       </image>
       <textField>
         <reportElement mode="Opaque" x="0" y="82" width="555" height="17" backcolor="#D6D6D6" uuid="ff04f5d8-efa8-433a-adf3-da4f48541e06">

@@ -1,26 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Table [
+  <!ENTITY cell "padding-bottom: 2px;">
   <!ENTITY clbl "text-align: right; padding-left: 1em; padding-right: 1em;">
-  <!ENTITY inp "width: 200px;">
+  <!ENTITY inp "display: inline-block; width: 500px;">
+  <!ENTITY tbl "border-collapse: collapse; ">
 ]>
 <Table xmlns="http://www.butent.com/widget" kind="controls"
-    style="border-collapse: collapse;" cellStyle="padding-top: 8px;">
-
+    style="&tbl;" cellStyle="&cell;">
   <col index="0" cellStyle="&clbl;" />
-  <col index="2" cellStyle="&clbl;" />
-
   <row>
     <Label for="Category" />
-    <DataSelector source="Category" renderColumns="CategoryName" choiceColumns="ParentName Name"
-      style="&inp;" />
-    <Label for="Address" />
-    <InputText source="Address" style="&inp;" />
+    <DataSelector source="Category" viewName="ServiceTree" renderColumns="CategoryName" choiceColumns="ParentName Name" style="&inp;"/>
   </row>
-
   <row>
-    <Label for="Customer" />
-    <DataSelector source="Customer" renderColumns="CustomerName" style="&inp;" />
+    <Label for="Manufacturer" />
+    <DataSelector source="Manufacturer" viewName="Companies" renderColumns="ManufacturerName" style="&inp;"/>
+  </row>
+  <row>
     <Label for="Contractor" />
-    <DataSelector source="Contractor" style="&inp;" />
+    <DataSelector source="Contractor" viewName="Companies" renderColumns="ContractorName" style="&inp;" />
+  </row>
+  <row>
+    <Label for="Model"/>
+    <InputText source="Model" style="&inp;" />
+  </row>
+  <row>
+    <Label for="SerialNo"/>
+    <InputText source="SerialNo" style="&inp;"/>
+  </row>
+  <row>
+    <Label for="Address" text="=svcDeviceAddress"/>
+    <InputText source="Address" style="&inp;"/>
   </row>
 </Table>

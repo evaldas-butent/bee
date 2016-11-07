@@ -1,11 +1,8 @@
 package com.butent.bee.client.dialog;
 
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -86,9 +83,14 @@ public class DialogBox extends Popup implements Printable {
 
   public void addAction(Action action, Widget widget) {
     if (widget != null) {
-      if (action != null && BeeUtils.isEmpty(widget.getTitle())) {
-        widget.setTitle(action.getCaption());
+      if (action != null) {
+        if (BeeUtils.isEmpty(widget.getTitle())) {
+          widget.setTitle(action.getCaption());
+        }
+
+        StyleUtils.enableAnimation(action, widget);
       }
+
       insertAction(BeeConst.UNDEF, widget);
     }
   }
@@ -164,22 +166,13 @@ public class DialogBox extends Popup implements Printable {
   }
 
   protected void addCloseBox(FaLabel faLabel) {
-    faLabel.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent arg0) {
-        hide(CloseEvent.Cause.MOUSE_CLOSE_BOX, null, true);
-      }
-    });
+    faLabel.addClickHandler(arg0 -> hide(CloseEvent.Cause.MOUSE_CLOSE_BOX, null, true));
     addAction(Action.CLOSE, faLabel);
   }
 
   protected void addCloseBox(ImageResource imageResource) {
-    Image close = new Image(imageResource, new ScheduledCommand() {
-      @Override
-      public void execute() {
-        hide(CloseEvent.Cause.MOUSE_CLOSE_BOX, null, true);
-      }
-    });
+    Image close = new Image(imageResource,
+        () -> hide(CloseEvent.Cause.MOUSE_CLOSE_BOX, null, true));
 
     close.addStyleName(STYLE_CLOSE);
     addAction(Action.CLOSE, close);

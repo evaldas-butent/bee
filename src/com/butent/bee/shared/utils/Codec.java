@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -458,7 +459,20 @@ public final class Codec {
     return Pair.of(x, z + 1);
   }
 
-  public static Map<String, String> deserializeMap(String data) {
+  public static Map<String, String> deserializeHashMap(String data) {
+    Map<String, String> result = new HashMap<>();
+
+    String[] arr = beeDeserializeCollection(data);
+    if (arr != null) {
+      for (int i = 0; i < arr.length - 1; i += 2) {
+        result.put(arr[i], arr[i + 1]);
+      }
+    }
+
+    return result;
+  }
+
+  public static Map<String, String> deserializeLinkedHashMap(String data) {
     Map<String, String> result = new LinkedHashMap<>();
 
     String[] arr = beeDeserializeCollection(data);

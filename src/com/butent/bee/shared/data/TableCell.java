@@ -14,20 +14,17 @@ import java.util.Comparator;
 public class TableCell implements IsCell {
 
   public static Comparator<TableCell> getComparator() {
-    return new Comparator<TableCell>() {
-      @Override
-      public int compare(TableCell cell1, TableCell cell2) {
-        if (cell1 == cell2) {
-          return 0;
-        }
-        if (cell1 == null) {
-          return -1;
-        }
-        if (cell2 == null) {
-          return 1;
-        }
-        return cell1.getValue().compareTo(cell2.getValue());
+    return (cell1, cell2) -> {
+      if (cell1 == cell2) {
+        return 0;
       }
+      if (cell1 == null) {
+        return -1;
+      }
+      if (cell2 == null) {
+        return 1;
+      }
+      return cell1.getValue().compareTo(cell2.getValue());
     };
   }
 
@@ -75,6 +72,36 @@ public class TableCell implements IsCell {
     if (properties != null) {
       result.properties = properties.copy();
     }
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof TableCell)) {
+      return false;
+    }
+
+    TableCell tableCell = (TableCell) o;
+
+    if (value != null ? !value.equals(tableCell.value) : tableCell.value != null) {
+      return false;
+    }
+    if (formattedValue != null
+        ? !formattedValue.equals(tableCell.formattedValue) : tableCell.formattedValue != null) {
+      return false;
+    }
+    return properties != null
+        ? properties.equals(tableCell.properties) : tableCell.properties == null;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = value != null ? value.hashCode() : 0;
+    result = 31 * result + (formattedValue != null ? formattedValue.hashCode() : 0);
+    result = 31 * result + (properties != null ? properties.hashCode() : 0);
     return result;
   }
 

@@ -5,11 +5,10 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.render.AbstractSlackRenderer;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.values.TextAlign;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XFont;
 import com.butent.bee.shared.export.XSheet;
@@ -24,11 +23,11 @@ import java.util.List;
 
 public class TaskSlackRenderer extends AbstractSlackRenderer {
 
-  private final List<? extends IsColumn> isColumns;
+  private final List<? extends IsColumn> dataColumns;
 
   TaskSlackRenderer(List<? extends IsColumn> columns) {
     super();
-    this.isColumns = columns;
+    this.dataColumns = columns;
   }
 
   @Override
@@ -54,8 +53,8 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
       }
       DateTime now = TimeUtils.nowMinutes();
 
-      DateTime start = getStartDateTime(isColumns, row);
-      DateTime finish = getFinishDateTime(isColumns, row);
+      DateTime start = getStartDateTime(dataColumns, row);
+      DateTime finish = getFinishDateTime(dataColumns, row);
 
       SlackKind kind = getKind(start, finish, now);
       if (kind == null) {
@@ -63,7 +62,7 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
       }
 
       long minutes = getMinutes(kind, start, finish, now);
-      String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getLabel(minutes);
+      String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getFormatedTimeLabel(minutes);
 
       XStyle style = new XStyle();
       XFont font;
@@ -107,33 +106,53 @@ public class TaskSlackRenderer extends AbstractSlackRenderer {
 
   @Override
   public String render(IsRow row) {
+    Pair<SlackKind, Long> minutes = getMinutes(row);
+    if (minutes == null) {
+      return null;
+    } else if (minutes.bEquals(0L)) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    String label = getFormatedTimeLabel(minutes.getB());
+    return createSlackBar(minutes.getA(), label);
+  }
+
+  public Pair<SlackKind, Long> getMinutes(IsRow row) {
+    if (row == null) {
+      return null;
+    }
+
     TaskStatus status =
-        EnumUtils.getEnumByIndex(TaskStatus.class, Data.getInteger(VIEW_TASKS, row, COL_STATUS));
-    if (status == null || status == TaskStatus.COMPLETED || status == TaskStatus.CANCELED
-        || status == TaskStatus.APPROVED) {
+            EnumUtils.getEnumByIndex(TaskStatus.class,
+                    Data.getInteger(VIEW_TASKS, row, COL_STATUS));
+    if (status == null) {
       return null;
     } else {
-      if (row == null) {
-        return null;
-      }
       DateTime now = TimeUtils.nowMinutes();
 
-      DateTime start = getStartDateTime(isColumns, row);
-      DateTime finish = getFinishDateTime(isColumns, row);
+      if (TaskStatus.in(status.ordinal(), TaskStatus.COMPLETED, TaskStatus.CANCELED,
+              TaskStatus.APPROVED)) {
+        now = getLastStatusTime(row);
+
+        if (now == null) {
+          return null;
+        }
+      }
+
+      DateTime start = getStartDateTime(dataColumns, row);
+      DateTime finish = getFinishDateTime(dataColumns, row);
 
       SlackKind kind = getKind(start, finish, now);
       if (kind == null) {
-        return BeeConst.STRING_EMPTY;
+        return Pair.of(null, 0L);
       }
 
-      long minutes = getMinutes(kind, start, finish, now);
-      if (minutes == 0L) {
-        return BeeConst.STRING_EMPTY;
-      }
-
-      String label = getLabel(minutes);
-      return format(kind, label);
+      Long minutes = getMinutes(kind, start, finish, now);
+      return Pair.of(kind, minutes);
     }
   }
 
+  private DateTime getLastStatusTime(IsRow row) {
+    return row.getDateTime(DataUtils.getColumnIndex(ALS_LAST_BREAK_EVENT, dataColumns));
+  }
 }

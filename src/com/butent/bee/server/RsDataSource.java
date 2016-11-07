@@ -26,7 +26,7 @@ public class RsDataSource implements JRRewindableDataSource {
     if (BeeConst.isUndef(idx)) {
       return rs.getRow(index).getProperty(field.getName());
     }
-    return CrudWorker.getValue(rs, index, rs.getColumnIndex(field.getName()));
+    return CrudWorker.getValue(rs, index, idx);
   }
 
   public BeeRowSet getRowSet() {

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfPricelist"
+       idName="BranchID"
+>
+  <Fields>
+    <Relation name="Branch" relation="ConfPricelist" label="=configuration" />
+    <String name="BranchName" precision="50" notNull="true" label="=name" />
+    <Text name="Description" label="=description" />
+    <Relation name="PhotoFile" relation="Files" editable="true" label="=photo" />
+    <Boolean name="Blocked" label="=actionBlock" />
+    <Numeric name="Ordinal" precision="3" label="=ordinal" />
+    <Relation name="Type" relation="ConfTypes" label="=optionType" />
+  </Fields>
+</Table>

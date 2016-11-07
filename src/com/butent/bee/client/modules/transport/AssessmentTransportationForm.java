@@ -2,9 +2,11 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COUNTRY_NAME;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.dom.DomUtils;
@@ -17,6 +19,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -24,7 +27,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
@@ -61,6 +64,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
+            int cargoIdx = result.getColumnIndex(COL_CARGO);
             int colWeight = result.getColumnIndex("Weight");
             int colWeightUnit = result.getColumnIndex("WeightUnitName");
             Map<String, Double> weight = new HashMap<>();
@@ -71,93 +75,88 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
             int colVolumeUnit = result.getColumnIndex("VolumeUnitName");
             Map<String, Double> volume = new HashMap<>();
 
-            int colLoadingCountry = result.getColumnIndex("LoadingCountryName");
-            int colLoadingAddress = result.getColumnIndex("LoadingAddress");
-            int colLoadingPostIndex = result.getColumnIndex("LoadingPostIndex");
-            int colLoadingDate = result.getColumnIndex("LoadingDate");
-            int colUnloadingCountry = result.getColumnIndex("UnloadingCountryName");
-            int colUnloadingAddress = result.getColumnIndex("UnloadingAddress");
-            int colUnloadingPostIndex = result.getColumnIndex("UnloadingPostIndex");
-            int colUnloadingDate = result.getColumnIndex("UnloadingDate");
-
             Dictionary loc = Localized.dictionary();
             Map<Integer, Pair<Integer, String>> map = new HashMap<>();
 
-            map.put(colLoadingAddress, Pair.of(0, loc.trLoadingAddress()));
-            map.put(colWeight, Pair.of(1, loc.weight()));
-            map.put(colQuantity, Pair.of(2, loc.trdQuantity()));
-            map.put(colVolume, Pair.of(3, loc.volume()));
-            map.put(colLoadingDate, Pair.of(4, loc.trLoadingDate()));
-            map.put(colUnloadingAddress, Pair.of(5, loc.trUnloadingAddress()));
-            map.put(colUnloadingDate, Pair.of(6, loc.trUnloadingDate()));
+            map.put(colWeight, Pair.of(0, loc.weight()));
+            map.put(colQuantity, Pair.of(1, loc.trdQuantity()));
+            map.put(colVolume, Pair.of(2, loc.volume()));
 
-            HtmlTable cargoInfo = new HtmlTable();
-            int c = 0;
+            SelfServiceUtils.getCargoPlaces(Filter.any(COL_CARGO,
+                result.getDistinctLongs(cargoIdx)), (loading, unloading) -> {
+              HtmlTable cargoInfo = new HtmlTable();
+              int c = 0;
 
-            for (Pair<Integer, String> pair : map.values()) {
-              cargoInfo.setHtml(c, pair.getA(), pair.getB());
-            }
-            for (BeeRow r : result.getRows()) {
-              c++;
-              Double value = r.getDouble(colWeight);
-              if (BeeUtils.isPositive(value)) {
-                String unit = r.getString(colWeightUnit);
-                weight.put(unit, BeeUtils.unbox(weight.get(unit)) + value);
-                cargoInfo.setHtml(c, map.get(colWeight).getA(), BeeUtils.joinWords(value, unit));
+              for (Pair<Integer, String> pair : map.values()) {
+                cargoInfo.setHtml(c, pair.getA(), pair.getB());
               }
-              value = r.getDouble(colQuantity);
-              if (BeeUtils.isPositive(value)) {
-                String unit = r.getString(colQuantityUnit);
-                quantity.put(unit, BeeUtils.unbox(quantity.get(unit)) + value);
-                cargoInfo.setHtml(c, map.get(colQuantity).getA(), BeeUtils.joinWords(value, unit));
-              }
-              value = r.getDouble(colVolume);
-              if (BeeUtils.isPositive(value)) {
-                String unit = r.getString(colVolumeUnit);
-                volume.put(unit, BeeUtils.unbox(volume.get(unit)) + value);
-                cargoInfo.setHtml(c, map.get(colVolume).getA(), BeeUtils.joinWords(value, unit));
-              }
-              for (Integer idx : map.keySet()) {
-                if (BeeUtils.inList(idx, colLoadingDate, colUnloadingDate)) {
-                  DateTime dt = r.getDateTime(idx);
-                  cargoInfo.setHtml(c, map.get(idx).getA(),
-                      dt == null ? null : dt.toCompactString());
+              cargoInfo.setText(c, 3, Data.getViewCaption(loading.getViewName()));
+              cargoInfo.setText(c, 4, Data.getViewCaption(unloading.getViewName()));
 
-                } else if (Objects.equals(idx, colLoadingAddress)) {
-                  cargoInfo.setHtml(c, map.get(idx).getA(),
-                      BeeUtils.joinItems(r.getString(colLoadingCountry), r.getString(idx), r
-                          .getString(colLoadingPostIndex)));
+              for (BeeRow r : result.getRows()) {
+                c++;
+                Double value = r.getDouble(colWeight);
+                if (BeeUtils.isPositive(value)) {
+                  String unit = r.getString(colWeightUnit);
+                  weight.put(unit, BeeUtils.unbox(weight.get(unit)) + value);
+                  cargoInfo.setHtml(c, map.get(colWeight).getA(),
+                      BeeUtils.joinWords(value, unit));
+                }
+                value = r.getDouble(colQuantity);
+                if (BeeUtils.isPositive(value)) {
+                  String unit = r.getString(colQuantityUnit);
+                  quantity.put(unit, BeeUtils.unbox(quantity.get(unit)) + value);
+                  cargoInfo.setHtml(c, map.get(colQuantity).getA(),
+                      BeeUtils.joinWords(value, unit));
+                }
+                value = r.getDouble(colVolume);
+                if (BeeUtils.isPositive(value)) {
+                  String unit = r.getString(colVolumeUnit);
+                  volume.put(unit, BeeUtils.unbox(volume.get(unit)) + value);
+                  cargoInfo.setHtml(c, map.get(colVolume).getA(),
+                      BeeUtils.joinWords(value, unit));
+                }
+                int x = 0;
 
-                } else if (Objects.equals(idx, colUnloadingAddress)) {
-                  cargoInfo.setHtml(c, map.get(idx).getA(),
-                      BeeUtils.joinItems(r.getString(colUnloadingCountry), r.getString(idx), r
-                          .getString(colUnloadingPostIndex)));
+                for (BeeRowSet places : new BeeRowSet[] {loading, unloading}) {
+                  Flow pl = new Flow();
+
+                  for (int i = 0; i < places.getNumberOfRows(); i++) {
+                    if (Objects.equals(places.getLong(i, COL_CARGO), r.getLong(cargoIdx))) {
+                      pl.add(new Label(BeeUtils.joinItems(TimeUtils.renderCompact(places
+                              .getDateTime(i, COL_PLACE_DATE)),
+                          places.getString(i, COL_PLACE_ADDRESS),
+                          places.getString(i, COL_PLACE_POST_INDEX),
+                          places.getString(i, ALS_COUNTRY_NAME))));
+                    }
+                  }
+                  cargoInfo.setWidget(c, 3 + x, pl);
+                  x++;
                 }
               }
-            }
-            if (totals != null) {
-              HtmlTable table = new HtmlTable();
+              if (totals != null) {
+                HtmlTable table = new HtmlTable();
 
-              for (int i = 0; i < 3; i++) {
-                int r = 0;
-                table.setHtml(r++, i, (i == 0) ? loc.weight()
-                    : ((i == 1) ? loc.trdQuantity() : loc.volume()));
+                for (int i = 0; i < 3; i++) {
+                  int r = 0;
+                  table.setHtml(r++, i, (i == 0) ? loc.weight()
+                      : ((i == 1) ? loc.trdQuantity() : loc.volume()));
 
-                Map<String, Double> m = (i == 0) ? weight : ((i == 1) ? quantity : volume);
+                  Map<String, Double> m = (i == 0) ? weight : ((i == 1) ? quantity : volume);
 
-                for (String unit : m.keySet()) {
-                  table.setHtml(r++, i,
-                      BeeUtils.joinWords(BeeUtils.toString(m.get(unit), 3), unit));
+                  for (String unit : m.keySet()) {
+                    table.setHtml(r++, i,
+                        BeeUtils.joinWords(BeeUtils.toString(m.get(unit), 3), unit));
+                  }
                 }
+                totals.getElement().setInnerHTML(table.getElement().getString());
               }
-              totals.getElement().setInnerHTML(table.getElement().getString());
-            }
-            if (cargo != null) {
-              cargo.getElement().setInnerHTML(cargoInfo.getElement().getString());
-            }
+              if (cargo != null) {
+                cargo.getElement().setInnerHTML(cargoInfo.getElement().getString());
+              }
+            });
           }
         });
-
     forwarderDetails = new Flow();
     customerDetails = new Flow();
 
@@ -166,9 +165,8 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
     DomUtils.setDataProperty(customerDetails.getElement(), "locale", Localized.dictionary()
         .languageTag());
 
-    ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex(COL_FORWARDER)),
-        forwarderDetails, null);
-    ClassifierUtils.getCompanyInfo(BeeKeeper.getUser().getCompany(), customerDetails, null);
+    ClassifierUtils.getCompanyInfo(row.getLong(form.getDataIndex(COL_FORWARDER)), forwarderDetails);
+    ClassifierUtils.getCompanyInfo(BeeKeeper.getUser().getCompany(), customerDetails);
 
     super.beforeRefresh(form, row);
   }

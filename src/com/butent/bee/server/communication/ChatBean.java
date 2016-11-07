@@ -381,11 +381,7 @@ public class ChatBean {
       logger.warning("chat", chatId, "not found for user", userId);
       return null;
     }
-
-    SimpleRow row = chatData.getRow(0);
-    Chat chat = createChat(row, userId);
-
-    return chat;
+    return createChat(chatData.getRow(0), userId);
   }
 
   private Map<Long, List<FileInfo>> getChatFiles(long chatId) {
@@ -517,6 +513,26 @@ public class ChatBean {
         .setWhere(SqlUtils.equals(TBL_CHAT_USERS, COL_CHAT, chatId, COL_CHAT_USER, userId));
 
     return qs.updateDataWithResponse(update);
+  }
+
+  public void putMessage(String input, Long userId, Map<String, String> linkData) {
+    Boolean activeAssistant = qs.getBoolean(new SqlSelect()
+        .addFields(TBL_USER_SETTINGS, COL_ASSISTANT)
+        .addFrom(TBL_USER_SETTINGS)
+        .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId)));
+
+    if (BeeUtils.isTrue(activeAssistant)) {
+      String messageText = BeeUtils.joinWords(
+          usr.getDictionary(userId).chatReminderTitle(),
+          input);
+
+      ChatItem chatItem = new ChatItem(0, messageText, linkData);
+      ChatMessage message = new ChatMessage(0, chatItem);
+
+      message.getChatItem().setTime(System.currentTimeMillis());
+
+      Endpoint.sendToUser(userId, message);
+    }
   }
 
   private ResponseObject putMessage(RequestInfo reqInfo) {

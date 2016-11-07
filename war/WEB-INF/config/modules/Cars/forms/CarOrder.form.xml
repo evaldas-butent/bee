@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+    <!ENTITY inpw "width: 200px;">
+    <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="CarOrder" viewName="CarOrders" width="800" height="600" caption="=order">
+  <f:properties jasperReports="Offer" />
+
+  <FlowPanel class="flexBox-vertical">
+    <Table kind="controls">
+      <row>
+        <Label for="Date" style="&lbl;" />
+        <InputDateTime source="Date" style="width: 10em;" />
+
+        <Label for="OrderNo" visible="true" style="&lbl;" />
+        <InputText source="OrderNo" style="&inpw;" />
+      </row>
+      <row>
+        <Label for="Customer" style="&lbl;" />
+        <DataSelector source="Customer" style="&inpw;"
+                      renderColumns="CustomerName CustomerTypeName" />
+
+        <Label for="CustomerPerson" style="&lbl;" />
+        <DataSelector source="CustomerPerson" newRowEnabled="false" style="&inpw;"
+                      renderColumns="ContactFirstName ContactLastName"
+                      choiceColumns="FirstName LastName CompanyName" options="Customer" />
+      </row>
+      <row>
+        <Label for="Manager" style="&lbl;" />
+        <DataSelector source="Manager" editSource="ManagerPerson"
+                      renderColumns="ManagerFirstName ManagerLastName"
+                      newRowEnabled="false" style="&inpw;" />
+      </row>
+    </Table>
+    <br />
+    <TabbedPages class="flexible" name="TabbedPages">
+      <page>
+        <text>=car</text>
+        <FlowPanel class="flexBox-horizontal">
+          <FieldSet class="flexible" style="margin:5px; border:1px solid #ccc; position:relative;">
+            <Legend name="SpecificationBuilder" class="bee-Button" text="=specification" />
+            <FlowPanel
+                style="position:absolute; top:35px; right:5px; bottom:5px; left:5px; overflow:auto;">
+              <FlowPanel name="Object" class="flexBox-horizontal" />
+              <Label text="=description" style="font-weight:bold;" />
+              <RichTextEditor source="Description" style="min-height:400px;" />
+            </FlowPanel>
+          </FieldSet>
+          <Table kind="controls">
+            <col index="0" kind="label" />
+            <row>
+              <Label for="Amount" />
+              <InputInteger source="Amount" style="width:8em;" />
+              <DataSelector source="Currency" style="width:5em;"
+                            editEnabled="false" placeholder="=currencyShort" />
+            </row>
+            <row>
+              <Label for="Discount" />
+              <InputDecimal source="Discount" style="width:8em;" />
+            </row>
+            <row>
+              <CheckBox source="VatPlus" text="=vatPlus" />
+              <InputMoney source="Vat" style="width:8em;" placeholder="=vat"
+                          percentageTag="VatPercent" />
+              <CheckBox source="VatPercent" text="%" />
+            </row>
+            <row>
+              <Label text="=totalOf" />
+              <DoubleLabel style="font-weight:bold;">
+                <renderer type="total" />
+              </DoubleLabel>
+            </row>
+          </Table>
+        </FlowPanel>
+      </page>
+      <page>
+        <text>=ecOrderItems</text>
+        <ChildGrid name="CarOrderItems" relColumn="Order" />
+      </page>
+      <page>
+        <text>=notes</text>
+        <FlowPanel class="flexBox-vertical">
+          <br />
+          <SimplePanel class="flexible" style="position: relative;">
+            <InputArea source="Notes" class="occupy-1" summarize="true" />
+          </SimplePanel>
+        </FlowPanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

@@ -99,6 +99,15 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
     return sourceId;
   }
 
+  public String getValue(String colName) {
+    for (int i = 0; i < columns.size(); i++) {
+      if (BeeUtils.same(columns.get(i).getId(), colName)) {
+        return values.get(i);
+      }
+    }
+    return null;
+  }
+
   public List<String> getValues() {
     return values;
   }

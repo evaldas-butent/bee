@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.documents;
 
-import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
@@ -64,7 +63,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
@@ -98,6 +96,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class DocumentDataForm extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<Pair<Integer, SelectionOrigin>> {

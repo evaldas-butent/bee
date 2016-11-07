@@ -28,6 +28,7 @@ import com.butent.bee.client.view.grid.DynamicColumnIdentity;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -35,8 +36,6 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowInsertEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
@@ -52,6 +51,7 @@ import com.butent.bee.shared.ui.Relation;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractGridInterceptor implements GridInterceptor {
 
@@ -264,8 +264,18 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public Set<Action> getDisabledActions(Set<Action> defaultActions) {
+    return defaultActions;
+  }
+
+  @Override
   public Collection<DynamicColumnIdentity> getDynamicColumns(GridView gridView, String dynGroup) {
     return null;
+  }
+
+  @Override
+  public Set<Action> getEnabledActions(Set<Action> defaultActions) {
+    return defaultActions;
   }
 
   @Override
@@ -395,6 +405,10 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public void onDataReceived(List<? extends IsRow> rows) {
+  }
+
+  @Override
   public void onEditEnd(EditEndEvent event, Object source) {
   }
 
@@ -424,15 +438,6 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public boolean onRowInsert(RowInsertEvent event) {
-    return true;
-  }
-
-  @Override
-  public void onRowUpdate(RowUpdateEvent event) {
-  }
-
-  @Override
   public void onSaveChanges(GridView gridView, SaveChangesEvent event) {
   }
 
@@ -448,5 +453,10 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public void setGridPresenter(GridPresenter gridPresenter) {
     this.gridPresenter = gridPresenter;
+  }
+
+  @Override
+  public boolean validateRow(IsRow row, NotificationListener notificationListener) {
+    return true;
   }
 }

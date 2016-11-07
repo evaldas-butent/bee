@@ -11,18 +11,15 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
@@ -76,31 +73,28 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
       if (BeeUtils.same(name, NAME_TEMPLATE) && widget instanceof UnboundSelector) {
         template = (UnboundSelector) widget;
 
-        template.addSelectorHandler(new SelectorEvent.Handler() {
-          @Override
-          public void onDataSelector(SelectorEvent event) {
-            BeeRow row = event.getSelector().getRelatedRow();
+        template.addSelectorHandler(event -> {
+          BeeRow row = event.getSelector().getRelatedRow();
 
-            if (row == null) {
-              return;
-            }
+          if (row == null) {
+            return;
+          }
 
-            DataInfo info = Data.getDataInfo(TradeConstants.VIEW_DEBT_REMINDER_TEMPLATE);
+          DataInfo info = Data.getDataInfo(TradeConstants.VIEW_DEBT_REMINDER_TEMPLATE);
 
-            if (getSubject() != null) {
-              getSubject().setText(row.getString(info
-                  .getColumnIndex(TradeConstants.COL_TEMPLATE_SUBJECT)));
-            }
+          if (getSubject() != null) {
+            getSubject().setText(row.getString(info
+                .getColumnIndex(TradeConstants.COL_TEMPLATE_SUBJECT)));
+          }
 
-            if (getFirstParagraph() != null) {
-              getFirstParagraph().setText(row.getString(info
-                  .getColumnIndex(TradeConstants.COL_TEMPLATE_FIRST_PARAGRAPH)));
-            }
+          if (getFirstParagraph() != null) {
+            getFirstParagraph().setText(row.getString(info
+                .getColumnIndex(TradeConstants.COL_TEMPLATE_FIRST_PARAGRAPH)));
+          }
 
-            if (getLastParagraph() != null) {
-              getLastParagraph().setText(row.getString(info
-                  .getColumnIndex(TradeConstants.COL_TEMPLATE_LAST_PARAGRAPH)));
-            }
+          if (getLastParagraph() != null) {
+            getLastParagraph().setText(row.getString(info
+                .getColumnIndex(TradeConstants.COL_TEMPLATE_LAST_PARAGRAPH)));
           }
         });
       }
@@ -120,19 +114,15 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
       if (BeeUtils.same(name, NAME_SEND) && widget instanceof Button) {
         final Button button = (Button) widget;
         button.setEnabled(true);
-        button.addClickHandler(new ClickHandler() {
-
-          @Override
-          public void onClick(ClickEvent arg0) {
-            button.setEnabled(false);
-            String subjectText =
-                getSubject() != null ? getSubject().getText() : BeeConst.STRING_EMPTY;
-            String p1 =
-                getFirstParagraph() != null ? getFirstParagraph().getText() : BeeConst.STRING_EMPTY;
-            String p2 =
-                getLastParagraph() != null ? getLastParagraph().getText() : BeeConst.STRING_EMPTY;
-            sendMail(subjectText, p1, p2, ids);
-          }
+        button.addClickHandler(arg0 -> {
+          button.setEnabled(false);
+          String subjectText =
+              getSubject() != null ? getSubject().getText() : BeeConst.STRING_EMPTY;
+          String p1 =
+              getFirstParagraph() != null ? getFirstParagraph().getText() : BeeConst.STRING_EMPTY;
+          String p2 =
+              getLastParagraph() != null ? getLastParagraph().getText() : BeeConst.STRING_EMPTY;
+          sendMail(subjectText, p1, p2, ids);
         });
       }
     }
@@ -232,14 +222,10 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
     FormFactory.createFormView(TradeConstants.FORM_DEBT_REPORT_TEMPLATE, null,
         null, false,
-        new DebtReportTemplateForm(ids), new FormFactory.FormViewCallback() {
-
-          @Override
-          public void onSuccess(FormDescription formDescription, FormView result) {
-            if (result != null) {
-              result.start(null);
-              Global.showModalWidget(result.getCaption(), result.asWidget());
-            }
+        new DebtReportTemplateForm(ids), (formDescription, result) -> {
+          if (result != null) {
+            result.start(null);
+            Global.showModalWidget(result.getCaption(), result.asWidget());
           }
         });
   }
@@ -262,8 +248,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         }
 
         if (response.hasResponse() && response.getResponse() instanceof String) {
-          getGridPresenter().getGridView().notifyInfo(
-              new String[] {(String) response.getResponse()});
+          getGridPresenter().getGridView().notifyInfo(response.getResponseAsString());
         }
 
         if (Popup.getActivePopup() != null) {

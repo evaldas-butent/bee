@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Items"
-  idName="ItemID"
-  >
+       name="Items"
+       idName="ItemID"
+>
   <Fields>
     <String name="Name" precision="100" notNull="true" label="=itemName" />
     <String name="Name2" precision="100" label="=itemName2" />
@@ -64,17 +64,21 @@
     <Relation name="Group" relation="CategoryTree" label="=group" />
 
     <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
-      label="=dimensions" />
+              label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+              label="=finTradeAccounts" />
 
     <Numeric name="DaysPerWeek" precision="1" label="=taDaysPerWeek" />
     <Numeric name="MinTerm" precision="3" label="=taMinTerm" />
+
+    <Integer name="DefaultQuantity" label="=defaultQuantity" />
 
     <Integer name="Ordinal" label="=ordinal" />
     <String name="ExternalCode" precision="10" label="=externalCode" />
 
     <Text name="Description" label="=description" />
     <Text name="Notes" label="=notes" />
-    
+
     <Text name="Link" label="=link" />
   </Fields>
 

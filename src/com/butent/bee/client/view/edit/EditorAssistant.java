@@ -3,13 +3,12 @@ package com.butent.bee.client.view.edit;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.EditorAction;
@@ -17,6 +16,8 @@ import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.function.Consumer;
 
 public final class EditorAssistant {
 
@@ -134,7 +135,7 @@ public final class EditorAssistant {
       }
 
     } else {
-      Global.getMsgBoxen().pickStar(starCount, oldValue, element, new ChoiceCallback() {
+      MessageBoxes.pickStar(starCount, oldValue, element, new ChoiceCallback() {
         @Override
         public void onCancel() {
           refocus();

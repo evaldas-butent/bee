@@ -37,7 +37,7 @@ public class ColumnHeader extends Header<String> implements HasCaption {
   }
 
   @Override
-  public String getValue() {
+  public String getValue(CellContext context) {
     return columnId;
   }
 }

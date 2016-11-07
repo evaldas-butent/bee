@@ -3,6 +3,7 @@ package com.butent.bee.client.widget;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 
+import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.shared.ui.Orientation;
 
@@ -94,7 +95,7 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
           event.preventDefault();
           event.stopPropagation();
 
-          MoveEvent.fireFinish(this, dx, dy);
+          MoveEvent.fireFinish(this, dx, dy, new Modifiers(event));
         }
         break;
 
@@ -110,7 +111,7 @@ public class Mover extends CustomDiv implements MoveEvent.HasMoveHandlers {
           event.stopPropagation();
 
           if (shouldFire(dx, dy)) {
-            MoveEvent.fireMove(this, dx, dy);
+            MoveEvent.fireMove(this, dx, dy, new Modifiers(event));
           }
         }
         break;

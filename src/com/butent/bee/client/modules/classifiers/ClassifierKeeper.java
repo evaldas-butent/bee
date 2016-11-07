@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.Lists;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -13,6 +14,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.form.FormView;
@@ -21,7 +24,6 @@ import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -38,7 +40,6 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
@@ -51,6 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class ClassifierKeeper {
 
@@ -119,31 +121,28 @@ public final class ClassifierKeeper {
   }
 
   public static void getHolidays(final Consumer<Set<Integer>> consumer) {
-    Global.getParameter(AdministrationConstants.PRM_COUNTRY, new Consumer<String>() {
-      @Override
-      public void accept(String input) {
-        if (DataUtils.isId(input)) {
-          Queries.getRowSet(VIEW_HOLIDAYS, Collections.singletonList(COL_HOLY_DAY),
-              Filter.equals(COL_HOLY_COUNTRY, BeeUtils.toLong(input)),
-              new Queries.RowSetCallback() {
-                @Override
-                public void onSuccess(BeeRowSet result) {
-                  Set<Integer> holidays = new HashSet<>();
+    Global.getParameter(AdministrationConstants.PRM_COUNTRY, input -> {
+      if (DataUtils.isId(input)) {
+        Queries.getRowSet(VIEW_HOLIDAYS, Collections.singletonList(COL_HOLY_DAY),
+            Filter.equals(COL_HOLY_COUNTRY, BeeUtils.toLong(input)),
+            new Queries.RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                Set<Integer> holidays = new HashSet<>();
 
-                  if (!DataUtils.isEmpty(result)) {
-                    int index = result.getColumnIndex(COL_HOLY_DAY);
-                    for (BeeRow row : result) {
-                      holidays.add(row.getInteger(index));
-                    }
+                if (!DataUtils.isEmpty(result)) {
+                  int index = result.getColumnIndex(COL_HOLY_DAY);
+                  for (BeeRow row : result) {
+                    holidays.add(row.getInteger(index));
                   }
-
-                  consumer.accept(holidays);
                 }
-              });
 
-        } else {
-          consumer.accept(BeeConst.EMPTY_IMMUTABLE_INT_SET);
-        }
+                consumer.accept(holidays);
+              }
+            });
+
+      } else {
+        consumer.accept(BeeConst.EMPTY_IMMUTABLE_INT_SET);
       }
     });
   }
@@ -248,7 +247,6 @@ public final class ClassifierKeeper {
     }
 
     BeeKeeper.getRpc().makePostRequest(prm, new ResponseCallback() {
-
       @Override
       public void onResponse(ResponseObject response) {
         String qrBase64 = response.getResponseAsString();
@@ -265,16 +263,24 @@ public final class ClassifierKeeper {
     GridFactory.registerGridSupplier(ItemsGrid.getSupplierKey(true), GRID_ITEMS,
         new ItemsGrid(true));
 
-    MenuService.ITEMS.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        String key = ItemsGrid.getSupplierKey(BeeUtils.startsSame(parameters, "s"));
-        ViewFactory.createAndShow(key);
-      }
+    MenuService.ITEMS.setHandler(parameters -> {
+      String key = ItemsGrid.getSupplierKey(BeeUtils.startsSame(parameters, "s"));
+      ViewFactory.createAndShow(key);
     });
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(TBL_DISCOUNTS, new DiscountsGrid());
+
+    ColorStyleProvider csp = ColorStyleProvider.createDefault(VIEW_CHART_OF_ACCOUNTS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CHART_OF_ACCOUNTS, COL_ACCOUNT_CODE, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CHART_OF_ACCOUNTS, COL_BACKGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_CHART_OF_ACCOUNTS, COL_FOREGROUND, csp);
+
+    csp = ColorStyleProvider.createDefault(VIEW_JOURNALS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_JOURNALS, COL_JOURNAL_CODE, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_JOURNALS, COL_BACKGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_JOURNALS, COL_FOREGROUND, csp);
+
     FormFactory.registerFormInterceptor("Item", new ItemForm());
 
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonForm());

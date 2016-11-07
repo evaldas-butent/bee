@@ -4,8 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -16,14 +14,12 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -45,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 abstract class MultiStateForm extends RightsForm {
 
@@ -157,68 +154,55 @@ abstract class MultiStateForm extends RightsForm {
         roleCommand.addStyleName(STYLE_ROLE_EMPTY);
       }
 
-      roleSelector.addSelectorHandler(new SelectorEvent.Handler() {
-        @Override
-        public void onDataSelector(SelectorEvent event) {
-          if (event.isChanged() && event.getRelatedRow() != null) {
-            long id = event.getValue();
-            String name = Data.getString(VIEW_ROLES, event.getRelatedRow(), COL_ROLE_NAME);
+      roleSelector.addSelectorHandler(event -> {
+        if (event.isChanged() && event.getRelatedRow() != null) {
+          long id = event.getValue();
+          String name = Data.getString(VIEW_ROLES, event.getRelatedRow(), COL_ROLE_NAME);
 
-            final Long oldId = getRoleId();
-            final String oldName = getRoleName();
+          final Long oldId = getRoleId();
+          final String oldName = getRoleName();
 
-            if (DataUtils.isId(id) && !BeeUtils.isEmpty(name) && !Objects.equals(id, oldId)) {
-              setRoleId(id);
-              setRoleName(name);
+          if (DataUtils.isId(id) && !BeeUtils.isEmpty(name) && !Objects.equals(id, oldId)) {
+            setRoleId(id);
+            setRoleName(name);
 
-              roleCommand.setHtml(name);
+            roleCommand.setHtml(name);
 
-              if (DataUtils.isId(oldId)) {
-                getRoleData(new Consumer<Boolean>() {
-                  @Override
-                  public void accept(Boolean input) {
-                    if (BeeUtils.isTrue(input)) {
-                      refreshValues();
+            if (DataUtils.isId(oldId)) {
+              getRoleData(input -> {
+                if (BeeUtils.isTrue(input)) {
+                  refreshValues();
 
-                    } else {
-                      setRoleId(oldId);
-                      setRoleName(oldName);
+                } else {
+                  setRoleId(oldId);
+                  setRoleName(oldName);
 
-                      roleCommand.setHtml(oldName);
-                    }
-                  }
-                });
+                  roleCommand.setHtml(oldName);
+                }
+              });
 
-              } else {
-                roleCommand.removeStyleName(STYLE_ROLE_EMPTY);
-                roleCommand.addStyleName(STYLE_ROLE_NOT_EMPTY);
+            } else {
+              roleCommand.removeStyleName(STYLE_ROLE_EMPTY);
+              roleCommand.addStyleName(STYLE_ROLE_NOT_EMPTY);
 
-                init();
-              }
+              init();
             }
           }
         }
       });
 
-      final Runnable activateSelector = new Runnable() {
-        @Override
-        public void run() {
-          roleSelector.clearValue();
-          roleSelector.setFocus(true);
+      final Runnable activateSelector = () -> {
+        roleSelector.clearValue();
+        roleSelector.setFocus(true);
 
-          roleSelector.startEdit(null, DataSelector.SHOW_SELECTOR, null, null);
-        }
+        roleSelector.startEdit(null, DataSelector.SHOW_SELECTOR, null, null);
       };
 
-      roleCommand.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-
-          if (DataUtils.isId(getRoleId()) && !changes.isEmpty()) {
-            onClose(activateSelector);
-          } else {
-            activateSelector.run();
-          }
+      roleCommand.addClickHandler(event -> {
+        if (DataUtils.isId(getRoleId()) && !changes.isEmpty()) {
+          onClose(activateSelector);
+        } else {
+          activateSelector.run();
         }
       });
 
@@ -333,7 +317,7 @@ abstract class MultiStateForm extends RightsForm {
   @Override
   protected void save(final Consumer<Boolean> callback) {
     if (changes.isEmpty() || !DataUtils.isId(getRoleId())) {
-      BeeKeeper.getScreen().notifyInfo("no changes");
+      BeeKeeper.getScreen().notifyInfo(Localized.dictionary().noChanges());
       if (callback != null) {
         callback.accept(false);
       }
@@ -372,8 +356,9 @@ abstract class MultiStateForm extends RightsForm {
             changes.clear();
             onClearChanges();
 
-            String message = BeeUtils.joinWords(getObjectType(), getRoleName(),
-                "saved", size, "changes");
+            String message = Localized.dictionary().roleRightsSaved(BeeUtils.joinWords(
+                BeeUtils.bracket(getObjectType().getCaption()), Localized.dictionary().role(),
+                getRoleName()), size);
             debug(message);
             BeeKeeper.getScreen().notifyInfo(message);
 
@@ -455,24 +440,21 @@ abstract class MultiStateForm extends RightsForm {
     DomUtils.setDataProperty(widget.getElement(), DATA_KEY_MODULE, name);
     setDataType(widget, DATA_TYPE_MODULE);
 
-    widget.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof Widget) {
-          Widget source = (Widget) event.getSource();
-          ModuleAndSub ms = getModule(source);
+    widget.addClickHandler(event -> {
+      if (event.getSource() instanceof Widget) {
+        Widget source = (Widget) event.getSource();
+        ModuleAndSub ms = getModule(source);
 
-          if (!cellHasStyleName(source, STYLE_MODULE_SELECTED)) {
-            TableCellElement cell = getSelectedModuleCell();
-            if (cell != null) {
-              cell.removeClassName(STYLE_MODULE_SELECTED);
-            }
-
-            addCellStyleName(source, STYLE_MODULE_SELECTED);
-
-            clearTable(MODULE_COL + 1);
-            onSelectModule(ms);
+        if (!cellHasStyleName(source, STYLE_MODULE_SELECTED)) {
+          TableCellElement cell = getSelectedModuleCell();
+          if (cell != null) {
+            cell.removeClassName(STYLE_MODULE_SELECTED);
           }
+
+          addCellStyleName(source, STYLE_MODULE_SELECTED);
+
+          clearTable(MODULE_COL + 1);
+          onSelectModule(ms);
         }
       }
     });
@@ -493,24 +475,21 @@ abstract class MultiStateForm extends RightsForm {
     markObjectLabel(widget, object);
 
     if (!isLeaf(col)) {
-      widget.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          if (event.getSource() instanceof Widget) {
-            Widget source = (Widget) event.getSource();
-            String objectName = getObjectName(source);
+      widget.addClickHandler(event -> {
+        if (event.getSource() instanceof Widget) {
+          Widget source = (Widget) event.getSource();
+          String objectName = getObjectName(source);
 
-            if (!BeeUtils.isEmpty(objectName) && !cellHasStyleName(source, STYLE_MSO_SELECTED)) {
-              TableCellElement cell = getSelectedObjectCell(col);
-              if (cell != null) {
-                cell.removeClassName(STYLE_MSO_SELECTED);
-              }
-
-              addCellStyleName(source, STYLE_MSO_SELECTED);
-
-              clearTable(col + 1);
-              onSelectObject(col, objectName);
+          if (!BeeUtils.isEmpty(objectName) && !cellHasStyleName(source, STYLE_MSO_SELECTED)) {
+            TableCellElement cell = getSelectedObjectCell(col);
+            if (cell != null) {
+              cell.removeClassName(STYLE_MSO_SELECTED);
             }
+
+            addCellStyleName(source, STYLE_MSO_SELECTED);
+
+            clearTable(col + 1);
+            onSelectObject(col, objectName);
           }
         }
       });
@@ -546,20 +525,17 @@ abstract class MultiStateForm extends RightsForm {
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_STATE, state.ordinal());
     setDataType(toggle, DATA_TYPE_STATE_TOGGLE);
 
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof Toggle) {
-          Toggle rt = (Toggle) event.getSource();
-          updateStateValueToggles(getRightsState(rt), rt.isChecked());
+    toggle.addClickHandler(event -> {
+      if (event.getSource() instanceof Toggle) {
+        Toggle rt = (Toggle) event.getSource();
+        updateStateValueToggles(getRightsState(rt), rt.isChecked());
 
-          List<Toggle> objectToggles = getObjectToggles();
-          for (Toggle ot : objectToggles) {
-            if (rt.isChecked()) {
-              ot.setChecked(isObjectChecked(getObjectName(ot)));
-            } else if (ot.isChecked()) {
-              ot.setChecked(false);
-            }
+        List<Toggle> objectToggles = getObjectToggles();
+        for (Toggle ot : objectToggles) {
+          if (rt.isChecked()) {
+            ot.setChecked(isObjectChecked(getObjectName(ot)));
+          } else if (ot.isChecked()) {
+            ot.setChecked(false);
           }
         }
       }
@@ -578,29 +554,26 @@ abstract class MultiStateForm extends RightsForm {
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_STATE, state.ordinal());
 
-    toggle.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof Toggle) {
-          Toggle t = (Toggle) event.getSource();
+    toggle.addClickHandler(event -> {
+      if (event.getSource() instanceof Toggle) {
+        Toggle t = (Toggle) event.getSource();
 
-          String name = getObjectName(t);
-          RightsState rs = getRightsState(t);
+        String name = getObjectName(t);
+        RightsState rs = getRightsState(t);
 
-          boolean isChanged = toggleValue(name, rs);
-          updateValueCell(t, isChanged);
+        boolean isChanged = toggleValue(name, rs);
+        updateValueCell(t, isChanged);
 
-          Toggle objectToggle = getObjectToggle(name);
-          Toggle stateToggle = getStateToggle(rs);
+        Toggle objectToggle = getObjectToggle(name);
+        Toggle stateToggle = getStateToggle(rs);
 
-          if (t.isChecked()) {
-            objectToggle.setChecked(isObjectChecked(name));
-            stateToggle.setChecked(isStateChecked(rs));
+        if (t.isChecked()) {
+          objectToggle.setChecked(isObjectChecked(name));
+          stateToggle.setChecked(isStateChecked(rs));
 
-          } else {
-            objectToggle.setChecked(false);
-            stateToggle.setChecked(false);
-          }
+        } else {
+          objectToggle.setChecked(false);
+          stateToggle.setChecked(false);
         }
       }
     });
@@ -656,7 +629,8 @@ abstract class MultiStateForm extends RightsForm {
           }
 
           if (response.hasResponse()) {
-            Map<String, String> rights = Codec.deserializeMap(response.getResponseAsString());
+            Map<String, String> rights =
+                Codec.deserializeLinkedHashMap(response.getResponseAsString());
 
             Multimap<String, RightsState> values = HashMultimap.create();
             for (Map.Entry<String, String> entry : rights.entrySet()) {

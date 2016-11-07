@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="TradeDocuments" source="TradeDocuments"
-  caption="=trdDocuments" newRowCaption="=trdNewDocument"
-  editForm="TradeDocument" newRowForm="TradeDocument"
-  >
+      name="TradeDocuments" source="TradeDocuments"
+      caption="=trdDocuments" newRowCaption="=trdNewDocument"
+      editForm="TradeDocument" newRowForm="TradeDocument"
+>
   <Columns>
     <SimpleColumn name="Date" />
 
@@ -23,14 +23,14 @@
     </SimpleJoin>
 
     <SimpleColumn name="Phase" />
-    
+
     <SimpleColumn name="Status" />
     <SimpleJoin joinType="LEFT" name="Status">
       <SimpleColumn name="StatusName" />
       <SimpleColumn name="Background" alias="StatusBackground" />
       <SimpleColumn name="Foreground" alias="StatusForeground" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
       <SimpleColumn name="Name" alias="SupplierName" />
@@ -83,17 +83,29 @@
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+
+        <SimpleJoin name="Company" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerCompanyName" />
+        </SimpleJoin>
       </SimpleJoin>
-      
+
       <SimpleColumn name="TabNumber" alias="ManagerTabNumber" />
     </SimpleJoin>
 
-    <SimpleColumn name="Discount" />
+    <SimpleColumn name="DocumentDiscount" />
     <SimpleColumn name="PriceName" />
 
     <SimpleJoin name="Dimensions" joinType="LEFT">
       <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     </SimpleJoin>
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="../../Classifiers/views/viewcolumns/TradeAccounts.viewcolumns.xml" />
+    </SimpleJoin>
+
+    <SimpleColumn name="DocumentVatMode" />
+    <SimpleColumn name="DocumentDiscountMode" />
+
+    <SimpleColumn name="ReceivedDate" />
 
     <SimpleColumn name="Notes" />
   </Columns>

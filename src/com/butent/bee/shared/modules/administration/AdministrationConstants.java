@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.imports.ImportType;
@@ -16,6 +17,7 @@ import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.ScheduleDateMode;
 import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -40,6 +42,38 @@ public final class AdministrationConstants {
     @Override
     public String getCaption() {
       return this.name().toLowerCase();
+    }
+  }
+
+  public enum ReminderDateField implements HasLocalizedCaption {
+    START_DATE {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.startingDate();
+      }
+    },
+
+    END_DATE {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.endingDate();
+      }
+    }
+  }
+
+  public enum ReminderDateIndicator implements HasLocalizedCaption {
+    BEFORE {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.before();
+      }
+    },
+
+    AFTER {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.after();
+      }
     }
   }
 
@@ -75,9 +109,13 @@ public final class AdministrationConstants {
     EnumUtils.register(ImportType.class);
     EnumUtils.register(Module.class);
     EnumUtils.register(SysObject.class);
+
+    EnumUtils.register(ReminderDateField.class);
+    EnumUtils.register(ReminderDateIndicator.class);
   }
 
   public static final String FILE_URL = "file";
+  public static final String FILE_COMMIT = "CommitFile";
 
   public static final String PARAMETERS_PREFIX = "parameters_";
 
@@ -96,6 +134,8 @@ public final class AdministrationConstants {
   public static final String SVC_GET_DICTIONARY = "get_dictionary";
   public static final String SVC_DICTIONARY_DATABASE_TO_PROPERTIES =
       "dictionary_database_to_properties";
+
+  public static final String SVC_INIT_DIMENSION_NAMES = "init_dimension_names";
 
   public static final String VAR_AMOUNT = Service.RPC_VAR_PREFIX + "amount";
   public static final String VAR_LOCALE = Service.RPC_VAR_PREFIX + "locale";
@@ -127,7 +167,8 @@ public final class AdministrationConstants {
   public static final String VAR_IMPORT_TEST = "Test";
   public static final String VAR_IMPORT_FILE = "File";
   public static final String VAR_IMPORT_SHEET = "Sheet";
-  public static final String VAR_IMPORT_START_ROW = "Row";
+  public static final String VAR_IMPORT_START_ROW = "StartRow";
+  public static final String VAR_IMPORT_END_ROW = "EndRow";
   public static final String VAR_IMPORT_DATE_FORMAT = "DateFormat";
 
   public static final String VAR_IMPORT_LOGIN = "Login";
@@ -219,6 +260,8 @@ public final class AdministrationConstants {
 
   public static final String VIEW_UI_THEMES = "UiThemes";
 
+  public static final String VIEW_USER_REMINDERS = "UserReminders";
+
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
 
@@ -272,6 +315,9 @@ public final class AdministrationConstants {
   public static final String COL_REMINDER_MINUTES = "Minutes";
   public static final String COL_REMINDER_TEMPLATE_CAPTION = "Caption";
   public static final String COL_REMINDER_TEMPLATE = "Template";
+  public static final String COL_REMINDER_MODULE = "Module";
+  public static final String COL_REMINDER_DATA_FIELD = "ReminderDateField";
+  public static final String COL_REMINDER_DATA_INDICATOR = "ReminderDateIndicator";
 
   public static final String COL_COLOR = "Color";
   public static final String COL_COLOR_NAME = "Name";
@@ -325,6 +371,8 @@ public final class AdministrationConstants {
 
   public static final String COL_OPEN_IN_NEW_TAB = "OpenInNewTab";
   public static final String COL_WORKSPACE_CONTINUE = "WorkspaceContinue";
+  public static final String COL_SHOW_NEW_MESSAGES_NOTIFIER = "ShowNewMessagesNotifier";
+  public static final String COL_ASSISTANT = "Assistant";
   public static final String COL_LAST_WORKSPACE = "LastWorkspace";
 
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
@@ -362,6 +410,14 @@ public final class AdministrationConstants {
 
   public static final String COL_DICTIONARY_KEY = "Key";
 
+  public static final String COL_USER_REMINDER_OBJECT = "Object";
+  public static final String COL_USER_REMINDER_OBJECT_MODULE = "ObjectModule";
+  public static final String COL_USER_REMINDER_USER = "User";
+  public static final String COL_USER_REMINDER_TYPE = "ReminderType";
+  public static final String COL_USER_REMINDER_ACTIVE = "Active";
+  public static final String COL_USER_REMINDER_TIMEOUT = "Timeout";
+  public static final String COL_USER_REMINDER_TIME = "ReminderTime";
+
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";
   public static final String ALS_FILE_TYPE = "FileType";
@@ -386,8 +442,8 @@ public final class AdministrationConstants {
   public static final String FORM_COMPANY_STRUCTURE = "CompanyStructure";
   public static final String FORM_NEW_ROLE = "NewRole";
 
-  public static final String FORM_IMPORTS = "Imports";
-  public static final String FORM_IMPORT_DATA = "ImportData";
+  public static final String FORM_IMPORT_MAPPINGS = "ImportOptionMappings";
+  public static final String FORM_IMPORT_OPTION = "ImportOption";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 

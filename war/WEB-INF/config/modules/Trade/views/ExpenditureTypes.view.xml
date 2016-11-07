@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="ExpenditureTypes" source="ExpenditureTypes"
+      caption="=trdExpenditureTypes" newRowCaption="=trdNewExpenditureType"
+>
+  <Columns>
+    <SimpleColumn name="ExpenditureTypeName" />
+
+    <SimpleColumn name="Debit" />
+    <SimpleJoin joinType="LEFT" name="Debit">
+      <SimpleColumn name="AccountCode" alias="DebitCode" />
+      <SimpleColumn name="AccountName" alias="DebitName" />
+    </SimpleJoin>
+    <SimpleColumn name="Credit" />
+    <SimpleJoin joinType="LEFT" name="Credit">
+      <SimpleColumn name="AccountCode" alias="CreditCode" />
+      <SimpleColumn name="AccountName" alias="CreditName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CostBasis" />
+
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin joinType="LEFT" name="Supplier">
+      <SimpleColumn name="Name" alias="SupplierName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="SupplierTypeName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="Operation" />
+    <SimpleJoin name="Operation" joinType="LEFT">
+      <SimpleColumn name="OperationName" />
+    </SimpleJoin>
+    <SimpleColumn name="Warehouse" />
+    <SimpleJoin joinType="LEFT" name="Warehouse">
+      <SimpleColumn name="Code" alias="WarehouseCode" />
+      <SimpleColumn name="Name" alias="WarehouseName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Item" />
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+      <SimpleColumn name="Article" />
+    </SimpleJoin>
+
+    <SimpleJoin name="Dimensions" joinType="LEFT">
+      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="ExpenditureTypeName" />
+  </Order>
+</View>
+ 

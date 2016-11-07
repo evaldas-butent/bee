@@ -9,6 +9,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -97,7 +98,18 @@ public enum MenuService {
   TRADE_ACT_LIST(RightsState.VIEW, TradeActConstants.VIEW_TRADE_ACTS),
 
   @XmlEnumValue("trade_documents")
-  TRADE_DOCUMENTS(RightsState.VIEW, TradeConstants.VIEW_TRADE_DOCUMENTS);
+  TRADE_DOCUMENTS(RightsState.VIEW, TradeConstants.VIEW_TRADE_DOCUMENTS),
+  @XmlEnumValue("rebuild_trade_stock")
+  REBUILD_TRADE_STOCK(EnumSet.of(RightsState.CREATE, RightsState.EDIT, RightsState.DELETE),
+      TradeConstants.VIEW_TRADE_STOCK),
+
+  @XmlEnumValue("finance_default_accounts")
+  FINANCE_DEFAULT_ACCOUNTS(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION),
+  @XmlEnumValue("finance_posting_precedence")
+  FINANCE_POSTING_PRECEDENCE(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION),
+
+  @XmlEnumValue("extra_dimensions")
+  EXTRA_DIMENSIONS(RightsState.VIEW);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;
@@ -168,7 +180,7 @@ public enum MenuService {
   }
 
   public void setDataIsParameter() {
-    this.dataNameProvider = input -> Sets.newHashSet(input);
+    this.dataNameProvider = Sets::newHashSet;
   }
 
   public void setDataNameProvider(DataNameProvider dataNameProvider) {

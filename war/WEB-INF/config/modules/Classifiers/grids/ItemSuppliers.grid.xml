@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  name="ItemSuppliers" viewName="ItemSuppliers"
-  caption="=suppliers" newRowCaption="=newSupplier"
-  >
+        name="ItemSuppliers" viewName="ItemSuppliers"
+        caption="=suppliers" newRowCaption="=newSupplier"
+>
   <g:columns>
     <RelColumn name="Supplier" />
     <DataColumn name="DateFrom" />

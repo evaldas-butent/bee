@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Companies" viewName="Companies" caption="=clients"
-  newRowForm="NewCompany:=inputSimple, Company:=inputFull"
-  editForm="Company:=inputFull, NewCompany:=inputSimple"
-  editShowId="true" favorite="Name" flexGrow="1"
-  >
+        name="Companies" viewName="Companies" caption="=clients"
+        newRowForm="NewCompany:=inputSimple, Company:=inputFull"
+        editForm="Company:=inputFull, NewCompany:=inputSimple"
+        editShowId="true" favorite="Name" flexGrow="1"
+>
   <g:columns>
     <IdColumn name="Id" visible="false" />
     <DataColumn name="Name" visible="true" />
@@ -26,8 +28,8 @@
     <DataColumn name="CityName" />
     <DataColumn name="CountryName" />
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
-      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-" exportWidthFactor="0.5" visible="false">
+                caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
+                filterOptions="-" exportWidthFactor="0.5" visible="false">
       <renderer type="flag" />
     </CalcColumn>
     <RelColumn name="DefaultCompanyUser" visible="false" filterSupplier="value" />
@@ -44,7 +46,12 @@
     <DataColumn name="DiscountPercent" visible="false" />
     <DataColumn name="DiscountParent" renderColumns="DiscountParentName" visible="false" />
     <DataColumn name="PriceName" visible="false" />
+  </g:columns>
 
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
+
+  <g:columns>
     <DataColumn name="HingeType" visible="false" />
     <DataColumn name="HingeQuantity" visible="false" />
     <DataColumn name="HingeSupply" visible="false" />
@@ -55,7 +62,7 @@
     <DataColumn name="RunnerQuantity" visible="false" />
     <DataColumn name="RunnerSupply" visible="false" />
     <DataColumn name="Catalog" visible="false" />
-    
+
     <DataColumn name="Notes" visible="false" />
   </g:columns>
 </g:Grid>

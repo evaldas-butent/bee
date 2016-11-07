@@ -9,6 +9,7 @@
     <Relation name="Parent" relation="Folders" cascade="DELETE" />
     <String name="Name" precision="100" notNull="true"  label="=mailName"/>
     <Long name="UIDValidity" />
+    <Long name="ModSeq" />
   </Fields>
 
   <Constraints>

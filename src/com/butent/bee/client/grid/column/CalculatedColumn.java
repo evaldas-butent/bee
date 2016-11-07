@@ -1,15 +1,14 @@
 package com.butent.bee.client.grid.column;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.AbstractCell;
-import com.butent.bee.client.grid.cell.CalculatedCell;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.ui.UiHelper;
@@ -18,6 +17,8 @@ import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -39,6 +40,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   public CalculatedColumn(AbstractCell<String> cell, ValueType valueType,
       AbstractCellRenderer renderer) {
+
     super(cell);
 
     this.valueType = valueType;
@@ -48,8 +50,25 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
     UiHelper.setDefaultWhiteSpace(this, valueType);
   }
 
-  public CalculatedColumn(ValueType valueType, AbstractCellRenderer renderer) {
-    this(new CalculatedCell(), valueType, renderer);
+  @Override
+  public XCell export(CellContext context, Integer styleRef, XSheet sheet) {
+    if (context == null || context.getRow() == null || getRenderer() == null) {
+      return null;
+    }
+
+    XCell xc = getRenderer().export(context.getRow(), context.getColumnIndex(), styleRef, sheet);
+    if (xc != null) {
+      return xc;
+    }
+
+    String value = getRenderer().render(context.getRow());
+    ValueType type = BeeUtils.nvl(getRenderer().getExportType(), getValueType());
+
+    if (ValueType.isDateOrDateTime(type) && BeeUtils.isDigit(value)) {
+      value = format(value, type);
+    }
+
+    return Exporter.createCell(value, type, context.getColumnIndex(), styleRef);
   }
 
   @Override
@@ -107,11 +126,13 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   }
 
   @Override
-  public void render(CellContext context, SafeHtmlBuilder sb) {
+  public String render(CellContext context) {
     String value = getString(context);
+
     if (!BeeUtils.isEmpty(value)) {
-      getCell().render(context, Format.render(value, getValueType(), getDateTimeFormat(),
-          getNumberFormat(), getScale()), sb);
+      return getCell().render(context, format(value, getValueType()));
+    } else {
+      return null;
     }
   }
 
@@ -138,5 +159,9 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   @Override
   public void setScale(int scale) {
     this.scale = scale;
+  }
+
+  private String format(String value, ValueType type) {
+    return Format.render(value, type, getDateTimeFormat(), getNumberFormat(), getScale());
   }
 }

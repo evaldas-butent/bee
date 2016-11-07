@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
@@ -24,6 +23,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -35,6 +35,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 class ChildTasksGrid extends TasksGrid {
 
@@ -57,40 +58,37 @@ class ChildTasksGrid extends TasksGrid {
       return true;
     }
 
-    presenter.getGridView().ensureRelId(new IdCallback() {
-      @Override
-      public void onSuccess(Long relId) {
-        DataInfo childTaskDataInfo = Data.getDataInfo(presenter.getViewName());
+    presenter.getGridView().ensureRelId(relId -> {
+      DataInfo childTaskDataInfo = Data.getDataInfo(presenter.getViewName());
 
-        BeeRow childTaskRow = RowFactory.createEmptyRow(childTaskDataInfo, true);
-        String relColumn = presenter.getGridView().getRelColumn();
+      BeeRow childTaskRow = RowFactory.createEmptyRow(childTaskDataInfo, true);
+      String relColumn = presenter.getGridView().getRelColumn();
 
-        FormView parentForm = ViewHelper.getForm(presenter.getMainView());
-        if (parentForm != null) {
-          DataInfo parentFormDataInfo = Data.getDataInfo(parentForm.getViewName());
-          IsRow parentFormRow = parentForm.getActiveRow();
+      FormView parentForm = ViewHelper.getForm(presenter.getMainView());
+      if (parentForm != null) {
+        DataInfo parentFormDataInfo = Data.getDataInfo(parentForm.getViewName());
+        IsRow parentFormRow = parentForm.getActiveRow();
 
-          RelationUtils.updateRow(childTaskDataInfo, relColumn, childTaskRow,
-              parentFormDataInfo, parentFormRow, true);
+        RelationUtils.updateRow(childTaskDataInfo, relColumn, childTaskRow,
+            parentFormDataInfo, parentFormRow, true);
 
-          if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECTS)) {
-            fillProjectData(childTaskDataInfo, childTaskRow, parentFormDataInfo, parentFormRow);
-          }
-
-          if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECT_STAGES)) {
-            fillProjectStageData(childTaskDataInfo, childTaskRow, parentFormDataInfo,
-                parentFormRow);
-            fillProjectData(childTaskDataInfo, childTaskRow, parentFormDataInfo, parentFormRow);
-          }
+        if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECTS)) {
+          fillProjectData(childTaskDataInfo, childTaskRow, parentFormDataInfo, parentFormRow);
         }
 
-        RowFactory.createRow(childTaskDataInfo, childTaskRow, Modality.ENABLED, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            presenter.handleAction(Action.REFRESH);
-          }
-        });
+        if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECT_STAGES)) {
+          fillProjectStageData(childTaskDataInfo, childTaskRow, parentFormDataInfo,
+              parentFormRow);
+          fillProjectData(childTaskDataInfo, childTaskRow, parentFormDataInfo, parentFormRow);
+        }
       }
+
+      RowFactory.createRow(childTaskDataInfo, childTaskRow, Modality.ENABLED, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          presenter.handleAction(Action.REFRESH);
+        }
+      });
     });
 
     return false;
@@ -144,80 +142,6 @@ class ChildTasksGrid extends TasksGrid {
 
       gridView.getGrid().getRowData().add(0, row);
     }
-  }
-
-  @Override
-  public void onEditStart(EditStartEvent event) {
-    if (!BeeUtils.isEmpty(event.getRowValue().getProperty(ProjectConstants.PROP_TEMPLATE))) {
-      event.consume();
-
-      IsRow templRow = event.getRowValue();
-      final Long templateId =
-          BeeUtils.toLong(templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
-
-      if (!DataUtils.isId(templateId)) {
-        return;
-      }
-
-      final DataInfo viewTasks = Data.getDataInfo(TaskConstants.VIEW_TASKS);
-      final BeeRow row = RowFactory.createEmptyRow(viewTasks, true);
-
-      for (String col : COPY_COLUMNS) {
-        row.setValue(viewTasks.getColumnIndex(col),
-            templRow.getValue(viewTasks.getColumnIndex(col)));
-      }
-
-      if (getGridView() != null) {
-
-        getGridView().ensureRelId(new IdCallback() {
-          @Override
-          public void onSuccess(Long result) {
-            FormView parentForm = ViewHelper.getForm(getGridView().asWidget());
-            if (parentForm != null) {
-
-              if (parentForm.getActiveRow() != null) {
-
-                RelationUtils.updateRow(viewTasks, getGridView().getRelColumn(), row,
-                    Data.getDataInfo(parentForm.getViewName()), parentForm.getActiveRow(), true);
-
-                switch (parentForm.getViewName()) {
-                  case ProjectConstants.VIEW_PROJECT_STAGES:
-                    fillProjectStageData(viewTasks, row,
-                        Data.getDataInfo(parentForm.getViewName()),
-                        parentForm.getActiveRow());
-                    fillProjectData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
-                        parentForm.getActiveRow());
-                    break;
-                  case ProjectConstants.VIEW_PROJECTS:
-                    fillProjectData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
-                        parentForm.getActiveRow());
-                    break;
-                  default:
-                    break;
-                }
-              }
-            }
-
-            RowFactory.createRow(viewTasks, row, Modality.ENABLED, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow createdTask) {
-                Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
-                    new Queries.IntCallback() {
-                      @Override
-                      public void onSuccess(Integer templateTask) {
-                        getGridPresenter().handleAction(Action.REFRESH);
-                      }
-                    });
-              }
-            });
-          }
-        });
-      }
-
-      return;
-    }
-
-    super.onEditStart(event);
   }
 
   @Override
@@ -284,8 +208,119 @@ class ChildTasksGrid extends TasksGrid {
     return super.beforeDeleteRow(presenter, row);
   }
 
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (!BeeUtils.isEmpty(event.getRowValue().getProperty(ProjectConstants.PROP_TEMPLATE))) {
+      event.consume();
+
+      IsRow templRow = event.getRowValue();
+      final Long templateId =
+          BeeUtils.toLong(templRow.getProperty(ProjectConstants.PROP_TEMPLATE));
+
+      if (!DataUtils.isId(templateId)) {
+        return;
+      }
+
+      final DataInfo viewTasks = Data.getDataInfo(TaskConstants.VIEW_TASKS);
+      final BeeRow row = RowFactory.createEmptyRow(viewTasks, true);
+
+      for (String col : COPY_COLUMNS) {
+        row.setValue(viewTasks.getColumnIndex(col),
+            templRow.getValue(viewTasks.getColumnIndex(col)));
+      }
+
+      if (getGridView() != null) {
+
+        getGridView().ensureRelId(result -> {
+          FormView parentForm = ViewHelper.getForm(getGridView().asWidget());
+          if (parentForm != null) {
+
+            if (parentForm.getActiveRow() != null) {
+
+              RelationUtils.updateRow(viewTasks, getGridView().getRelColumn(), row,
+                  Data.getDataInfo(parentForm.getViewName()), parentForm.getActiveRow(), true);
+
+              switch (parentForm.getViewName()) {
+                case ProjectConstants.VIEW_PROJECT_STAGES:
+                  fillProjectStageData(viewTasks, row,
+                      Data.getDataInfo(parentForm.getViewName()),
+                      parentForm.getActiveRow());
+                  fillProjectData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
+                      parentForm.getActiveRow());
+                  break;
+                case ProjectConstants.VIEW_PROJECTS:
+                  fillProjectData(viewTasks, row, Data.getDataInfo(parentForm.getViewName()),
+                      parentForm.getActiveRow());
+                  break;
+                default:
+                  break;
+              }
+            }
+          }
+
+          RowFactory.createRow(viewTasks, row, Modality.ENABLED, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow createdTask) {
+              Queries.deleteRow(ProjectConstants.VIEW_PROJECT_TEMPLATE_TASK_COPY, templateId,
+                  new Queries.IntCallback() {
+                    @Override
+                    public void onSuccess(Integer templateTask) {
+                      getGridPresenter().handleAction(Action.REFRESH);
+                    }
+                  });
+            }
+          });
+        });
+      }
+
+      return;
+    }
+
+    super.onEditStart(event);
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (!event.hasView(TaskConstants.VIEW_TASKS)
+        && !event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+      return;
+    }
+    String column = null;
+    IsRow row = event.getRow();
+    IsRow oldRow = null;
+
+    if (getGridView() != null && getGridView().getGrid() != null) {
+      column = getGridView().getRelColumn();
+      oldRow = getGridView().getGrid().getRowById(row.getId());
+    }
+
+    if (BeeUtils.isEmpty(column)) {
+      super.onRowUpdate(event);
+      return;
+    }
+
+    FormView parentForm = ViewHelper.getForm(getGridView().asWidget());
+    if (parentForm == null || DataUtils.isNewRow(parentForm.getActiveRow())) {
+      super.onRowUpdate(event);
+      return;
+    }
+
+    Long parentRowId = parentForm.getActiveRowId();
+    Long relId = Data.getLong(event.getViewName(), row, column);
+    Long oldId = oldRow != null ? Data.getLong(event.getViewName(), oldRow, column)
+        : null;
+
+    boolean isNew = !Objects.equals(relId, oldId) && Objects.equals(relId, parentRowId);
+    boolean changed = !Objects.equals(oldId, parentRowId)
+        && oldRow != null;
+
+    if ((isNew || changed) && getGridPresenter() != null) {
+      getGridPresenter().handleAction(Action.REFRESH);
+    }
+  }
+
   private static void fillProjectStageData(DataInfo taskData, IsRow taskRow,
-      DataInfo parentFormData, IsRow parentRowData) {
+                                           DataInfo parentFormData, IsRow parentRowData) {
     if (taskData == null && taskRow == null && parentFormData == null && parentRowData == null) {
       return;
     }

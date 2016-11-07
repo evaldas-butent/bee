@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Grid[
 ]>
-<g:Grid 
-  xmlns="http://www.butent.com/column" 
+<g:Grid
+  xmlns="http://www.butent.com/column"
   xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui" 
+  xmlns:ui="http://www.butent.com/ui"
   xmlns:xi="http://www.w3.org/2001/XInclude"
-  name="OrderItems" viewName="OrderItems" 
+  name="OrderItems" viewName="OrderItems"
   flexGrow="1" renderMode="full"
   newRowCaption="=newItem" disabledActions="filter">
   <g:columns>
@@ -63,6 +63,13 @@
       </render>
     </CalcColumn>
 
+    <DataColumn name="ItemCost">
+      <dynStyle>
+        <ui:inline>background-color: #ff5252</ui:inline>
+        <ui:expression>row.ItemCost &gt; (row.AmountWoVAT / row.Quantity)</ui:expression>
+      </dynStyle>
+    </DataColumn>
+
     <DataColumn name="Price" visible="true">
       <footer expression="row.Quantity * row.Price" />
     </DataColumn>
@@ -70,6 +77,12 @@
     <CalcColumn name="ItemPrices" type="string" cellType="html"
       label="=taItemPrices" width="100" exportable="false"
       verticalAlignment="middle" />
+
+    <CalcColumn name="UnitPrice" type="double" label="=unitPrice" format="0.00000">
+      <render>
+        <ui:expression>row.Price - row.Price * row.Discount / 100 </ui:expression>
+      </render>
+    </CalcColumn>
 
     <DataColumn name="Discount">
       <footer evaluator="discount" scale="2" />
@@ -85,6 +98,8 @@
     <DataColumn name="VatPercent" width="20" sortable="false"
       caption="%" format="%" carry="true" />
 
+    <PropColumn name="AmountWoVAT" type="double" label="=trdAmountWoVat" scale="2" format="0.00"/>
+
     <CalcColumn name="Total" type="decimal" caption="=trdAmount"
       scale="2">
       <style>
@@ -99,10 +114,10 @@
     <DataColumn name="Unpacking" readOnly="true">
       <footer aggregate="sum" />
     </DataColumn>
-    
+
     <RelColumn name="Supplier" newRowEnabled="false" caching="query"
       renderColumns="SupplierName SupplierTypeName" choiceColumns="Name TypeName" />
-      
+
     <DataColumn name="SupplierTerm" />
     <DataColumn name="Note" />
   </g:columns>

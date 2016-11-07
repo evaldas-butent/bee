@@ -13,15 +13,16 @@
 
     <Relation name="Series" relation="OrderSeries" label="=trdSeries" />
     <String name="Number" precision="30" label="=number" />
-    
+
     <Relation name="Warehouse" relation="Warehouses" label="=warehouse" />
-    
+
     <Relation name="Company" relation="Companies" label="=client" />
     <Relation name="Contact" relation="CompanyPersons" label="=contact" />
     <Relation name="Manager" relation="Users" label="=manager" defExpr="CURRENT_USER" />
+
     <Text name="Notes" label="=notes" />
   </Fields>
-  
+
   <Constraints>
     <Unique fields="Series Number" />
   </Constraints>

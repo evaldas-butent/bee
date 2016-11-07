@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfBundleOptions"
+       idName="BundleOptionID"
+>
+  <Fields>
+    <Relation name="Bundle" relation="ConfBundles" notNull="true" cascade="DELETE"
+              label="=bundle" />
+    <Relation name="Option" relation="ConfOptions" notNull="true" label="=option" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Bundle Option" />
+  </Constraints>
+</Table>

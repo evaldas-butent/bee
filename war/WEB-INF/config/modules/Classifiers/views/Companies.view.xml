@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
-  name="Companies" source="Companies" caption="=clients" module="Classifiers.Contacts"
-  editForm="Company" newRowForm="NewCompany" newRowCaption="=newClient" rowCaption="Name"
-  >
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="Companies" source="Companies" caption="=clients" module="Classifiers.Contacts"
+      editForm="Company" newRowForm="NewCompany" newRowCaption="=newClient" rowCaption="Name"
+>
   <Relation renderColumns="Name TypeName" />
   <Columns>
     <SimpleColumn name="Name" />
@@ -29,7 +30,6 @@
       <SimpleColumn name="Mobile" />
       <SimpleColumn name="Fax" />
 
-      <SimpleColumn name="RemindEmail" />
       <SimpleColumn name="Email" alias="EmailId" />
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
@@ -93,24 +93,16 @@
       <SimpleColumn alias="FinancialStateName" name="Name" />
     </SimpleJoin>
     <SimpleColumn name="DefaultBankAccount" />
-    <SimpleJoin name="DefaultBankAccount" joinType="LEFT" >
-      <SimpleColumn name="BankAccount" />
-      <SimpleJoin name="Bank" joinType="LEFT" >
-        <SimpleColumn name="Name" alias="BankName" />
-        <SimpleColumn name="BankCode" />
-        <SimpleColumn name="SWIFTCode" />
-      </SimpleJoin>
-    </SimpleJoin>
     <SimpleColumn name="DefaultCompanyUser" />
-    <SimpleJoin name="DefaultCompanyUser" joinType="LEFT" >
-     <SimpleJoin name="User" joinType="LEFT">
-      <SimpleJoin name="CompanyPerson" joinType="LEFT">
-        <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn name="FirstName" alias="ResponsibleUserFirstName" />
-          <SimpleColumn name="LastName" alias="ResponsibleUserLastName" />
+    <SimpleJoin name="DefaultCompanyUser" joinType="LEFT">
+      <SimpleJoin name="User" joinType="LEFT">
+        <SimpleJoin name="CompanyPerson" joinType="LEFT">
+          <SimpleJoin name="Person" joinType="LEFT">
+            <SimpleColumn name="FirstName" alias="ResponsibleUserFirstName" />
+            <SimpleColumn name="LastName" alias="ResponsibleUserLastName" />
+          </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
-     </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="DiscountPercent" />
@@ -119,8 +111,15 @@
     <SimpleJoin name="DiscountParent" joinType="LEFT">
       <SimpleColumn name="Name" alias="DiscountParentName" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="PriceName" />
+
+    <SimpleJoin name="Dimensions" joinType="LEFT">
+      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    </SimpleJoin>
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
+    </SimpleJoin>
 
     <SimpleJoin name="Raport" joinType="LEFT">
       <SimpleColumn name="HingeType" />
@@ -130,16 +129,16 @@
       <SimpleColumn name="DrawerType" />
       <SimpleColumn name="DrawerQuantity" />
       <SimpleColumn name="DrawerSupply" />
-      
+
       <SimpleColumn name="RunnerType" />
       <SimpleColumn name="RunnerQuantity" />
       <SimpleColumn name="RunnerSupply" />
-      
+
       <SimpleColumn name="Catalog" />
     </SimpleJoin>
-    
+
     <SimpleColumn name="Notes" />
-   </Columns>
+  </Columns>
   <Order>
     <OrderBy column="Name" />
   </Order>

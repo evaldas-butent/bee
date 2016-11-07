@@ -16,12 +16,13 @@ import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.EventState;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashSet;
@@ -94,12 +95,20 @@ public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHand
     }
   }
 
+  public CellType getCellType() {
+    return CellType.TEXT;
+  }
+
   public Set<String> getConsumedEvents() {
     return consumedEvents;
   }
 
   public CellContext getEventContext() {
     return eventContext;
+  }
+
+  public IsRow getEventRow() {
+    return (getEventContext() == null) ? null : getEventContext().getRow();
   }
 
   public C getEventValue() {
@@ -134,7 +143,7 @@ public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHand
     }
   }
 
-  public abstract void render(CellContext context, C value, SafeHtmlBuilder sb);
+  public abstract String render(CellContext context, C value);
 
   public void setEventCanceled(boolean eventCanceled) {
     this.eventCanceled = eventCanceled;

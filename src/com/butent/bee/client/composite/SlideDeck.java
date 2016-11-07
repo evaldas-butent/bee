@@ -38,7 +38,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.css.CssProperties;
@@ -51,6 +50,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class SlideDeck extends CustomComplex implements PreviewHandler {
 

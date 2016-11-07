@@ -5,14 +5,12 @@
   xmlns="http://www.butent.com/column"
   xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  
+
   name="OrderSales" viewName="OrderSales" flexGrow="1" renderMode="full"
-  newRowCaption="=newItem" filter="!(Completed) OR Completed != Quantity"
+  filter="!(Completed) OR Completed != Quantity"
   disabledActions="add" paging="false" initialRowSetSize="-1">
   <g:columns>
     <SelectionColumn name="Select" width="20" />
-    <DataColumn name="Date" readOnly="true" />
     <RelColumn name="Item" renderColumns="ItemName"
       choiceColumns="Name Article" filter="!(IsService)" visible="true"
       readOnly="true">

@@ -1,58 +1,106 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Form>
+<!DOCTYPE Form [
+    <!ENTITY cell "padding-bottom: 2px;">
+    <!ENTITY clbl "text-align: right; padding-left: 1em; padding-right: 1em;">
+    <!ENTITY inp "display: inline-block; width: 500px;">
+    <!ENTITY tbl "border-collapse: collapse;">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="ServiceObject" viewName="ServiceObjects" caption="=svcObject"
+  name="ServiceObject" viewName="ServiceObjects" caption="=svcDevice"
   width="1000" height="600"
   >
-  <FlowPanel class="flexBox-vertical">
-    <xi:include href="widgets/ObjectHeader.widget.xml" />
-    <xi:include href="widgets/ObjectMainCriteria.widget.xml" />
-    
-    <TabbedPages class="flexible">
-      <page>
-        <text>=svcSpecification</text>
+  <TabbedPages resizable="false">
+    <page>
+      <text>=mainInformation</text>
+      <FlowPanel class="flexBox-vertical">
+        <xi:include href="widgets/ObjectHeader.widget.xml" />
+        <Disclosure open="false" name="RelatedCustomerInfo">
+          <Label text="=svcRelatedCustomerInfo" style="text-transform: uppercase;" />
+          <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+            <col index="0" cellStyle="&clbl;" />
+            <row>
+              <Label for="Customer" />
+              <DataSelector source="Customer" renderColumns="CustomerName" style="&inp;"/>
+            </row>
+            <row>
+              <Label for="ContactPerson" />
+              <DataSelector source="ContactPerson" viewName="CompanyPersons"
+                            renderColumns="ContactPersonFirstName ContactPersonLastName" style="&inp;"/>
+            </row>
+            <row>
+              <Label for="ContactPerson" text="=address"/>
+              <DataSelector source="ContactPerson" viewName="CompanyPersons"
+                            choiceColumns="Address FirstName LastName CompanyName"
+                            renderColumns="ContactPersonAddress" style="&inp;"/>
+            </row>
+            <row>
+              <Label for="ContactPerson" text="=phone" />
+              <DataSelector source="ContactPerson" viewName="CompanyPersons"
+                            choiceColumns="Phone FirstName LastName"
+                            renderColumns="ContactPersonPhone" style="&inp;"/>
+            </row>
+            <row>
+              <Label for="ContactPerson" text="=email"/>
+              <DataSelector source="ContactPerson" viewName="CompanyPersons"
+                            choiceColumns="Email FirstName LastName"
+                            renderColumns="ContactPersonEmailAddress" style="&inp;"/>
+            </row>
+          </Table>
+        </Disclosure>
+        <TabbedPages class="flexible">
+          <page>
+            <text>=svcMaintenance</text>
+            <ChildGrid name="ServiceMaintenance" relColumn="ServiceObject" />
+          </page>
+          <page>
+            <text>=svcMaintenanceItemsServices</text>
+            <ChildGrid name="Maintenance" relColumn="ServiceObject" />
+          </page>
+          <page>
+            <text>=svcInvoices</text>
+            <GridPanel name="ObjectInvoices" parent="{form}" child="true" />
+          </page>
+          <page>
+            <text>=svcDefects</text>
+            <ChildGrid name="ObjectDefects" relColumn="ServiceObject" />
+          </page>
+          <page module="Documents">
+            <text>=documents</text>
+            <ChildGrid name="RelatedDocuments" relColumn="ServiceObject" />
+          </page>
+          <page>
+            <text>=files</text>
+            <ChildGrid name="ServiceFiles" relColumn="ServiceObject" />
+          </page>
+          <page module="Tasks">
+            <text>=crmTasks</text>
+            <ChildGrid name="RelatedTasks" relColumn="ServiceObject" />
+          </page>
+          <page module="Tasks">
+            <text>=crmRecurringTasks</text>
+            <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceObject" />
+          </page>
+          <page>
+            <text>=svcDates</text>
+            <ChildGrid name="ServiceDates" relColumn="ServiceObject" />
+          </page>
+          <page>
+          <text>=relatedInformation</text>
+          <Relations relColumn="ServiceObject" inline="true"
+                     defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
+          </page>
+        </TabbedPages>
+      </FlowPanel>
+    </page>
+    <page>
+      <text>=specification</text>
+      <FlowPanel class="flexBox-vertical">
+        <xi:include href="widgets/ObjectMainCriteria.widget.xml" />
         <xi:include href="widgets/ObjectCriteria.widget.xml" />
-      </page>
-      <page>
-        <text>=svcMaintenance</text>
-        <ChildGrid name="Maintenance" relColumn="ServiceObject" />
-      </page>
-      <page>
-        <text>=svcInvoices</text>
-        <GridPanel name="ObjectInvoices" parent="{form}" child="true" />
-      </page>
-      <page>
-        <text>=svcDefects</text>
-        <ChildGrid name="ObjectDefects" relColumn="ServiceObject" />
-      </page>
-      <page module="Documents">
-        <text>=documents</text>
-        <ChildGrid name="RelatedDocuments" relColumn="ServiceObject" />
-      </page>
-      <page>
-        <text>=files</text>
-        <ChildGrid name="ServiceFiles" relColumn="ServiceObject" />
-      </page>
-      <page module="Tasks">
-        <text>=crmTasks</text>
-        <ChildGrid name="RelatedTasks" relColumn="ServiceObject" />
-      </page>
-      <page module="Tasks">
-        <text>=crmRecurringTasks</text>
-        <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceObject" />
-      </page>
-      <page>
-        <text>=svcDates</text>
-        <ChildGrid name="ServiceDates" relColumn="ServiceObject" />
-      </page>
-      <page>
-      <text>=relatedInformation</text>
-      <Relations relColumn="ServiceObject" inline="true"
-                 defaultRelations="Companies Persons Requests Tasks" style="margin: 0px 15px 0px 15px; min-width:300px;" />
-      </page>
-    </TabbedPages>
-  </FlowPanel>
+      </FlowPanel>
+    </page>
+  </TabbedPages>
 </f:Form>  

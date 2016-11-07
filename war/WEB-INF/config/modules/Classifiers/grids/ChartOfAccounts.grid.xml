@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="ChartOfAccounts" viewName="ChartOfAccounts" caption="=chartOfAccounts"
+        flexGrow="1"
+>
+  <g:columns>
+    <DataColumn name="AccountCode" minWidth="80" flexGrow="0" visible="true" />
+    <DataColumn name="AccountName" verticalAlignment="top" visible="true" />
+  </g:columns>
+
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="Description" visible="false" />
+
+    <DataColumn name="Background" updateMode="row" minWidth="100" flexGrow="0">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row" minWidth="100" flexGrow="0">
+      <editor type="color" />
+    </DataColumn>
+  </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.AccountCode</ui:expression>
+  </g:rowMessage>
+</g:Grid>

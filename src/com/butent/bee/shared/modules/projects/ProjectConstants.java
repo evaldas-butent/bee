@@ -131,6 +131,8 @@ public final class ProjectConstants {
   public static final String COL_PSC_ROW_HEIGHT = "PSCRowHeight";
   public static final String COL_PSC_STRIP_OPACITY = "PSCStripOpacity";
 
+  public static final String COL_ACCESS = "Access";
+
   public static final String COL_STAGE_NAME = "Name";
   public static final String COL_STAGE_START_DATE = "StartDate";
   public static final String COL_STAGE_END_DATE = "EndDate";
@@ -160,6 +162,8 @@ public final class ProjectConstants {
   public static final String FORM_NEW_PROJECT_FROM_TEMPLATE = "NewProjectFromTemplate";
   public static final String FORM_NEW_PROJECT_FROM_TASK = "NewProjectFromTask";
 
+  public static final String FORM_PROJECT_DATE = "ProjectDate";
+
   public static final String GRID_ALL_PROJECTS = "AllProjects";
   public static final String GRID_PROJECTS = "Projects";
   public static final String GRID_PROJECT_USERS = "ProjectUsers";
@@ -167,10 +171,12 @@ public final class ProjectConstants {
   public static final String GRID_PROJECT_INCOMES = "ProjectIncomes";
   public static final String GRID_PROJECT_INVOICES = "ProjectInvoices";
   public static final String GRID_PROJECT_DATES = "ProjectDates";
+  public static final String GRID_PROJECT_APPOINTMENTS = "ProjectAppointments";
 
   public static final String GRID_PROJECT_TEMPLATE_STAGES = "ProjectTMLStages";
   public static final String GRID_PROJECT_TEMPLATES = "ProjectTemplates";
 
+  public static final String NAME_MODE = "Mode";
   public static final String NAME_SLACK = "Slack";
   public static final String NAME_EXPECTED_TASKS_DURATION = "CalcExpectedTasksDuration";
   public static final String NAME_ACTUAL_TASKS_DURATION = "CalcActualTasksDuration";
@@ -186,6 +192,9 @@ public final class ProjectConstants {
   public static final String PROP_ITEM_PRICES = "ItemPrices";
   public static final String PROP_SELECT = "Select";
   public static final String PROP_RS = "RowSet";
+
+  public static final String PROP_LAST_ACCESS = "LastAccess";
+  public static final String PROP_LAST_PUBLISH = "LastPublish";
 
   public static final String PRM_PROJECT_COMMON_RATE = "ProjectCommonRate";
   public static final String PRM_PROJECT_HOUR_UNIT = "ProjectHourUnit";
@@ -230,6 +239,12 @@ public final class ProjectConstants {
   public static final String TBL_PROJECT_EVENTS = "ProjectEvents";
   public static final String TBL_PROJECT_INCOMES = "ProjectIncomes";
   public static final String TBL_PROJECT_USERS = "ProjectUsers";
+
+
+  public static final String PROJECT_STATUS_STYLE = "bee-header-caption_state";
+  public static final String PROJECT_STATUS_STYLE_ACTIVE = PROJECT_STATUS_STYLE + "_active";
+  public static final String PROJECT_STATUS_STYLE_SUSPENDED = PROJECT_STATUS_STYLE + "_suspended";
+  public static final String PROJECT_STATUS_STYLE_WITH_BORDER = "_with_border";
 
   /**
    * Register module Enumerations.

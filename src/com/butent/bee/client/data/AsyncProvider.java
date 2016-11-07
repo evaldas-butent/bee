@@ -11,16 +11,15 @@ import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.ModificationPreviewer;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -32,6 +31,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Extends {@code Provider} class and implements data range management from asynchronous data
@@ -238,12 +238,12 @@ public class AsyncProvider extends Provider {
   private boolean prefetchPending;
 
   public AsyncProvider(HasDataTable display, HasDataProvider presenter,
-      NotificationListener notificationListener,
+      ModificationPreviewer modificationPreviewer, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, CachingPolicy cachingPolicy, Map<String, Filter> parentFilters,
       Filter userFilter) {
 
-    super(display, presenter, notificationListener,
+    super(display, presenter, modificationPreviewer, notificationListener,
         viewName, columns, idColumnName, versionColumnName,
         immutableFilter, parentFilters, userFilter);
 
@@ -310,7 +310,7 @@ public class AsyncProvider extends Provider {
 
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
-    if (BeeUtils.same(event.getViewName(), getViewName())) {
+    if (previewMultiDelete(event)) {
       if (hasPaging()) {
         refresh(false);
         getDisplay().onMultiDelete(event);
@@ -336,7 +336,7 @@ public class AsyncProvider extends Provider {
 
   @Override
   public void onRowDelete(RowDeleteEvent event) {
-    if (BeeUtils.same(event.getViewName(), getViewName()) && getRowCount() > 0) {
+    if (getRowCount() > 0 && previewRowDelete(event)) {
       if (hasPaging()) {
         refresh(false);
         getDisplay().onRowDelete(event);
@@ -351,10 +351,6 @@ public class AsyncProvider extends Provider {
         }
       }
     }
-  }
-
-  @Override
-  public void onRowInsert(RowInsertEvent event) {
   }
 
   @Override

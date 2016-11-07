@@ -54,13 +54,10 @@
 }
 .bee-payroll-ws-action,
 .bee-payroll-earn-action {
-  margin-right: 10px;
+  margin-right: 3px;
+  padding: 2px 5px;
   font-size: large;
   color: #414142;
-}
-.bee-payroll-ws-action:hover,
-.bee-payroll-earn-action:hover {
-  color: black;
 }
 
 .bee-payroll-ws-table .bee-payroll-ws-month-selector-cell,

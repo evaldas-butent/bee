@@ -1,6 +1,5 @@
 package com.butent.bee.client.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -12,10 +11,12 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
+import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
@@ -72,7 +73,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
   private final Set<Action> enabledActions = new HashSet<>();
 
-  public TreeContainer(String caption, boolean hideActions, String viewName, String favorite) {
+  public TreeContainer(String caption, Set<Action> disabledActions, String viewName,
+      String favorite) {
     super(STYLE_NAME);
 
     this.caption = caption;
@@ -87,25 +89,29 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       hdr.add(createActionWidget(Action.BOOKMARK));
       enabledActions.add(Action.BOOKMARK);
     }
-    if (!hideActions) {
-      if (BeeKeeper.getUser().canEditData(viewName)) {
-        this.hasDnD = true;
-
-        if (BeeKeeper.getUser().canCreateData(viewName)) {
-          hdr.add(createActionWidget(Action.ADD));
-          enabledActions.add(Action.ADD);
-        }
-        if (BeeKeeper.getUser().canDeleteData(viewName)) {
-          hdr.add(createActionWidget(Action.DELETE));
-          enabledActions.add(Action.DELETE);
-        }
+    if (BeeKeeper.getUser().canEditData(viewName)) {
+      if (BeeKeeper.getUser().canCreateData(viewName) && !disabledActions.contains(Action.ADD)) {
+        hdr.add(createActionWidget(Action.ADD));
+        enabledActions.add(Action.ADD);
+      }
+      if (BeeKeeper.getUser().canDeleteData(viewName) && !disabledActions.contains(Action.DELETE)) {
+        hdr.add(createActionWidget(Action.DELETE));
+        enabledActions.add(Action.DELETE);
+      }
+      if (!disabledActions.contains(Action.EDIT)) {
         hdr.add(createActionWidget(Action.EDIT));
         enabledActions.add(Action.EDIT);
       }
+      if (!disabledActions.contains(Action.MOVE)) {
+        this.hasDnD = true;
+        enabledActions.add(Action.MOVE);
+      }
     }
-    if (hdr.getWidgetCount() > 0) {
+    if (!disabledActions.contains(Action.REFRESH)) {
       hdr.add(createActionWidget(Action.REFRESH));
       enabledActions.add(Action.REFRESH);
+    }
+    if (!enabledActions.isEmpty()) {
       add(hdr);
     }
     this.tree = new Tree(caption);
@@ -292,8 +298,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
-  public void onCatch(final CatchEvent<TreeItem> event) {
-    final boolean isConsumable = !event.isConsumed();
+  public void onCatch(CatchEvent<TreeItem> event) {
+    boolean isConsumable = !event.isConsumed();
 
     if (isConsumable) {
       event.consume();
@@ -301,13 +307,9 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     TreeItem destination = event.getDestination();
 
     CatchEvent<IsRow> catchEvent = CatchEvent.fire(this, (IsRow) event.getPacket().getUserObject(),
-        destination == null ? null : (IsRow) destination.getUserObject(),
-        new Scheduler.ScheduledCommand() {
-          @Override
-          public void execute() {
-            if (isConsumable) {
-              event.executeScheduled();
-            }
+        destination == null ? null : (IsRow) destination.getUserObject(), () -> {
+          if (isConsumable) {
+            event.executeScheduled();
           }
         });
 
@@ -328,6 +330,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       item = (IsRow) event.getSelectedItem().getUserObject();
     }
     SelectionEvent.fire(this, item);
+    BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(getViewName(), item, item != null),
+        getId());
   }
 
   @Override
@@ -404,6 +408,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     widget.addStyleName(STYLE_NAME + "-action");
     widget.addStyleName(action.getStyleName());
+    StyleUtils.enableAnimation(action, widget);
 
     widget.setTitle(action.getCaption());
 
