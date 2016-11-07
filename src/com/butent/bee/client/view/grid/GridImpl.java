@@ -2209,7 +2209,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           }
         });
 
-    form.setCaption(Localized.dictionary().actionNew());
+    form.setCaption(Localized.dictionary().newRow());
 
     GridForm gridForm = new GridForm(formName);
     newRowForms.add(gridForm);
