@@ -4688,6 +4688,8 @@ public interface Dictionary {
 
   default String svcComment() {return g("svcComment");}
 
+  default String svcComments() {return g("svcComments");}
+
   default String svcContractor() {return g("svcContractor");}
 
   default String svcDates() {return g("svcDates");}
@@ -4721,6 +4723,8 @@ public interface Dictionary {
   default String svcFaultInfo() {return g("svcFaultInfo");}
 
   default String svcFinite() {return g("svcFinite");}
+
+  default String svcInform() {return g("svcInform");}
 
   default String svcInitial() {return g("svcInitial");}
 
@@ -4775,6 +4779,8 @@ public interface Dictionary {
   default String svcServiceType() {return g("svcServiceType");}
 
   default String svcServiceTypes() {return g("svcServiceTypes");}
+
+  default String svcShowCustomer() {return g("svcShowCustomer");}
 
   default String svcSpecification() {return g("svcSpecification");}
 

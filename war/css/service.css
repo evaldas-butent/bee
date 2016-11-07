@@ -118,3 +118,37 @@
 .bee-svc-print-defect-items-total-value {
   text-align: right;
 }
+
+.bee-svc-Events-content-Term,
+.bee-svc-Events-content-ShowCustomer,
+.bee-svc-Events-content-CustomerSent {
+  margin-top: 4px;
+  margin-left: 10px;
+}
+
+.bee-svc-Events-content-Additional {
+  margin-top: 4px;
+  font-weight: bolder;
+}
+
+.bee-svc-Events-EventContent{
+  overflow: hidden;
+  padding-bottom: 5px;
+}
+
+.bee-svc-Events-label{
+  margin-top: 4px;
+  margin-left: 10px;
+  font-size: large;
+}
+
+.bee-svc-Events-EventNote {
+  display: table-cell;
+}
+
+.bee-EventsBoard-content-EventNote {
+  margin-top: 0px;
+}
+.bee-svc-Events-EventContent {
+   width: 400px;
+}

@@ -63,6 +63,8 @@ public final class ServiceKeeper {
     FormFactory.registerFormInterceptor("ServiceObject", new ServiceObjectForm());
     FormFactory.registerFormInterceptor("ServiceInvoice", new ServiceInvoiceForm());
     FormFactory.registerFormInterceptor("ServiceDefect", new ServiceDefectForm());
+    FormFactory.registerFormInterceptor(TBL_SERVICE_MAINTENANCE, new ServiceMaintenanceForm());
+    FormFactory.registerFormInterceptor(TBL_MAINTENANCE_COMMENTS, new MaintenanceCommentForm());
 
     SelectorEvent.register(new SelectorHandler());
 
