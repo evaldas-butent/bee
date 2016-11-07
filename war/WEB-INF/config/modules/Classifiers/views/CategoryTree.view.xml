@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
       name="CategoryTree" source="CategoryTree" module="Classifiers"
-      caption="=itemCategoryTree"
+      caption="=itemCategoryTree" editForm="ItemCategory"
 >
   <Columns>
     <SimpleColumn name="Name" />

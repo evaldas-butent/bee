@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="ItemCategory" viewName="CategoryTree" caption="=itemCategory"
+        width="52" widthUnit="vw" height="60" heightUnit="vh"
+>
+  <xi:include href="widgets/ItemCategory.widget.xml" />
+</f:Form>
