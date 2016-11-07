@@ -16,10 +16,12 @@ import com.butent.bee.client.i18n.DictionaryGrid;
 import com.butent.bee.client.imports.ImportOptionForm;
 import com.butent.bee.client.imports.ImportOptionsGrid;
 import com.butent.bee.client.modules.finance.DimensionNamesGrid;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.grid.interceptor.GridSettingsInterceptor;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
@@ -40,6 +42,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 public final class AdministrationKeeper {
 
@@ -168,16 +171,27 @@ public final class AdministrationKeeper {
     }
   }
 
-  private static void openExtraDimensions(Integer ordinal) {
+  private static String getExtraDimensionsSupplierKey(Integer ordinal) {
+    String gridName = Dimensions.getGridName(ordinal);
+    return BeeUtils.isEmpty(gridName) ? null : GridFactory.getSupplierKey(gridName, null);
+  }
+
+  private static void openExtraDimensions(Integer ordinal, PresenterCallback callback) {
     String gridName = Dimensions.getGridName(ordinal);
 
     if (!BeeUtils.isEmpty(gridName)) {
-      GridFactory.openGrid(gridName, null, GridOptions.forCaption(Dimensions.plural(ordinal)));
+      GridFactory.openGrid(gridName, null, GridOptions.forCaption(Dimensions.plural(ordinal)),
+          callback);
     }
   }
 
   private static void registerDimensions() {
-    MenuService.EXTRA_DIMENSIONS.setHandler(p -> openExtraDimensions(BeeUtils.toIntOrNull(p)));
+    MenuService.EXTRA_DIMENSIONS.setHandler(p -> {
+      String key = getExtraDimensionsSupplierKey(BeeUtils.toIntOrNull(p));
+      if (!BeeUtils.isEmpty(key)) {
+        ViewFactory.createAndShow(key);
+      }
+    });
 
     GridFactory.registerGridInterceptor(Dimensions.GRID_NAMES, new DimensionNamesGrid());
 
@@ -194,7 +208,10 @@ public final class AdministrationKeeper {
             }));
 
     if (Dimensions.getObserved() > 0) {
-      for (int ordinal = 1; ordinal < Dimensions.getObserved(); ordinal++) {
+      IntStream.rangeClosed(1, Dimensions.getObserved()).forEach(ordinal -> {
+        ViewFactory.registerSupplier(getExtraDimensionsSupplierKey(ordinal),
+            callback -> openExtraDimensions(ordinal, ViewFactory.getPresenterCallback(callback)));
+
         String gridName = Dimensions.getGridName(ordinal);
 
         String bg = Dimensions.getBackgroundColumn(ordinal);
@@ -207,7 +224,7 @@ public final class AdministrationKeeper {
 
         ConditionalStyle.registerGridColumnStyleProvider(gridName, bg, csp);
         ConditionalStyle.registerGridColumnStyleProvider(gridName, fg, csp);
-      }
+      });
     }
   }
 
