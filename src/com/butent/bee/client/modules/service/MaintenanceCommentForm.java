@@ -11,14 +11,9 @@ import com.butent.bee.shared.data.IsRow;
 
 public class MaintenanceCommentForm extends AbstractFormInterceptor {
 
-  private IsRow serviceMaintenance;
-
-  public MaintenanceCommentForm() {
-    this.serviceMaintenance = null;
-  }
+  private final IsRow serviceMaintenance;
 
   MaintenanceCommentForm(IsRow serviceMaintenance) {
-    this();
     this.serviceMaintenance = serviceMaintenance;
   }
 

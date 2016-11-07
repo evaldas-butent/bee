@@ -4722,7 +4722,7 @@ public interface Dictionary {
 
   default String svcFaultInfo() {return g("svcFaultInfo");}
 
-  default String svcFinite() {return g("svcFinite");}
+  default String svcFinal() {return g("svcFinal");}
 
   default String svcInform() {return g("svcInform");}
 
