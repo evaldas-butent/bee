@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:ui="http://www.butent.com/ui"
-        xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="Dimensions06" viewName="Dimensions06"
         flexGrow="1"
@@ -17,6 +16,25 @@
     <DataColumn name="Dim06Foreground" updateMode="row" minWidth="100" flexGrow="0">
       <editor type="color" />
     </DataColumn>
+
+    <RelColumn name="Dim01Rel" renderColumns="Dim01Name" choiceColumns="Dim01Name"
+               newRowEnabled="false" visible="false" />
+    <RelColumn name="Dim02Rel" renderColumns="Dim02Name" choiceColumns="Dim02Name"
+               newRowEnabled="false" visible="false" />
+    <RelColumn name="Dim03Rel" renderColumns="Dim03Name" choiceColumns="Dim03Name"
+               newRowEnabled="false" visible="false" />
+    <RelColumn name="Dim04Rel" renderColumns="Dim04Name" choiceColumns="Dim04Name"
+               newRowEnabled="false" visible="false" />
+    <RelColumn name="Dim05Rel" renderColumns="Dim05Name" choiceColumns="Dim05Name"
+               newRowEnabled="false" visible="false" />
+    <RelColumn name="Dim07Rel" renderColumns="Dim07Name" choiceColumns="Dim07Name"
+               newRowEnabled="false" visible="false" />
+    <RelColumn name="Dim08Rel" renderColumns="Dim08Name" choiceColumns="Dim08Name"
+               newRowEnabled="false" visible="false" />
+    <RelColumn name="Dim09Rel" renderColumns="Dim09Name" choiceColumns="Dim09Name"
+               newRowEnabled="false" visible="false" />
+    <RelColumn name="Dim10Rel" renderColumns="Dim10Name" choiceColumns="Dim10Name"
+               newRowEnabled="false" visible="false" />
 
     <DataColumn name="Notes" visible="false" />
   </g:columns>

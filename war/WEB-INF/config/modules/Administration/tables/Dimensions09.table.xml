@@ -11,6 +11,16 @@
     <String name="Dim09Background" precision="100" label="=backgroundColor" />
     <String name="Dim09Foreground" precision="100" label="=foregroundColor" />
 
+    <Relation name="Dim01Rel" relation="Dimensions01" />
+    <Relation name="Dim02Rel" relation="Dimensions02" />
+    <Relation name="Dim03Rel" relation="Dimensions03" />
+    <Relation name="Dim04Rel" relation="Dimensions04" />
+    <Relation name="Dim05Rel" relation="Dimensions05" />
+    <Relation name="Dim06Rel" relation="Dimensions06" />
+    <Relation name="Dim07Rel" relation="Dimensions07" />
+    <Relation name="Dim08Rel" relation="Dimensions08" />
+    <Relation name="Dim10Rel" relation="Dimensions10" />
+
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

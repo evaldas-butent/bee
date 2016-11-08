@@ -1,165 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:columns xmlns="http://www.butent.com/column"
-           xmlns:g="http://www.butent.com/grid"
-           xmlns:ui="http://www.butent.com/ui">
-
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
   <RelColumn name="Dim01Rel" renderColumns="Dim01Name" choiceColumns="Dim01Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim01Background]; color: [row.Dim01Foreground];</ui:inline>
-      <ui:expression>row.Dim01Background &amp;&amp; row.Dim01Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim01Background];</ui:inline>
-      <ui:expression>row.Dim01Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim01Foreground];</ui:inline>
-      <ui:expression>row.Dim01Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
-
+             newRowEnabled="false" />
   <RelColumn name="Dim02Rel" renderColumns="Dim02Name" choiceColumns="Dim02Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim02Background]; color: [row.Dim02Foreground];</ui:inline>
-      <ui:expression>row.Dim02Background &amp;&amp; row.Dim02Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim02Background];</ui:inline>
-      <ui:expression>row.Dim02Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim02Foreground];</ui:inline>
-      <ui:expression>row.Dim02Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
-
+             newRowEnabled="false" />
   <RelColumn name="Dim03Rel" renderColumns="Dim03Name" choiceColumns="Dim03Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim03Background]; color: [row.Dim03Foreground];</ui:inline>
-      <ui:expression>row.Dim03Background &amp;&amp; row.Dim03Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim03Background];</ui:inline>
-      <ui:expression>row.Dim03Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim03Foreground];</ui:inline>
-      <ui:expression>row.Dim03Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
-
+             newRowEnabled="false" />
   <RelColumn name="Dim04Rel" renderColumns="Dim04Name" choiceColumns="Dim04Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim04Background]; color: [row.Dim04Foreground];</ui:inline>
-      <ui:expression>row.Dim04Background &amp;&amp; row.Dim04Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim04Background];</ui:inline>
-      <ui:expression>row.Dim04Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim04Foreground];</ui:inline>
-      <ui:expression>row.Dim04Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
-
+             newRowEnabled="false" />
   <RelColumn name="Dim05Rel" renderColumns="Dim05Name" choiceColumns="Dim05Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim05Background]; color: [row.Dim05Foreground];</ui:inline>
-      <ui:expression>row.Dim05Background &amp;&amp; row.Dim05Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim05Background];</ui:inline>
-      <ui:expression>row.Dim05Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim05Foreground];</ui:inline>
-      <ui:expression>row.Dim05Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
-
+             newRowEnabled="false" />
   <RelColumn name="Dim06Rel" renderColumns="Dim06Name" choiceColumns="Dim06Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim06Background]; color: [row.Dim06Foreground];</ui:inline>
-      <ui:expression>row.Dim06Background &amp;&amp; row.Dim06Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim06Background];</ui:inline>
-      <ui:expression>row.Dim06Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim06Foreground];</ui:inline>
-      <ui:expression>row.Dim06Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
-
+             newRowEnabled="false" />
   <RelColumn name="Dim07Rel" renderColumns="Dim07Name" choiceColumns="Dim07Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim07Background]; color: [row.Dim07Foreground];</ui:inline>
-      <ui:expression>row.Dim07Background &amp;&amp; row.Dim07Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim07Background];</ui:inline>
-      <ui:expression>row.Dim07Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim07Foreground];</ui:inline>
-      <ui:expression>row.Dim07Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
-
+             newRowEnabled="false" />
   <RelColumn name="Dim08Rel" renderColumns="Dim08Name" choiceColumns="Dim08Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim08Background]; color: [row.Dim08Foreground];</ui:inline>
-      <ui:expression>row.Dim08Background &amp;&amp; row.Dim08Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim08Background];</ui:inline>
-      <ui:expression>row.Dim08Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim08Foreground];</ui:inline>
-      <ui:expression>row.Dim08Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
-
+             newRowEnabled="false" />
   <RelColumn name="Dim09Rel" renderColumns="Dim09Name" choiceColumns="Dim09Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim09Background]; color: [row.Dim09Foreground];</ui:inline>
-      <ui:expression>row.Dim09Background &amp;&amp; row.Dim09Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim09Background];</ui:inline>
-      <ui:expression>row.Dim09Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim09Foreground];</ui:inline>
-      <ui:expression>row.Dim09Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
-
+             newRowEnabled="false" />
   <RelColumn name="Dim10Rel" renderColumns="Dim10Name" choiceColumns="Dim10Name"
-             newRowEnabled="false">
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim10Background]; color: [row.Dim10Foreground];</ui:inline>
-      <ui:expression>row.Dim10Background &amp;&amp; row.Dim10Foreground</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>background-color: [row.Dim10Background];</ui:inline>
-      <ui:expression>row.Dim10Background</ui:expression>
-    </dynStyle>
-    <dynStyle>
-      <ui:inline>color: [row.Dim10Foreground];</ui:inline>
-      <ui:expression>row.Dim10Foreground</ui:expression>
-    </dynStyle>
-  </RelColumn>
+             newRowEnabled="false" />
 </g:columns>
