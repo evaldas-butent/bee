@@ -186,6 +186,12 @@ public final class AdministrationKeeper {
   }
 
   private static void registerDimensions() {
+    if (Dimensions.getObserved() > 0) {
+      IntStream.rangeClosed(1, Dimensions.getObserved()).forEach(ordinal ->
+          ViewFactory.registerSupplier(getExtraDimensionsSupplierKey(ordinal), callback ->
+              openExtraDimensions(ordinal, ViewFactory.getPresenterCallback(callback))));
+    }
+
     MenuService.EXTRA_DIMENSIONS.setHandler(p -> {
       String key = getExtraDimensionsSupplierKey(BeeUtils.toIntOrNull(p));
       if (!BeeUtils.isEmpty(key)) {
@@ -206,26 +212,6 @@ public final class AdministrationKeeper {
                 command.run();
               }
             }));
-
-    if (Dimensions.getObserved() > 0) {
-      IntStream.rangeClosed(1, Dimensions.getObserved()).forEach(ordinal -> {
-        ViewFactory.registerSupplier(getExtraDimensionsSupplierKey(ordinal),
-            callback -> openExtraDimensions(ordinal, ViewFactory.getPresenterCallback(callback)));
-
-        String gridName = Dimensions.getGridName(ordinal);
-
-        String bg = Dimensions.getBackgroundColumn(ordinal);
-        String fg = Dimensions.getForegroundColumn(ordinal);
-
-        ColorStyleProvider csp = ColorStyleProvider.create(Dimensions.getViewName(ordinal), bg, fg);
-
-        ConditionalStyle.registerGridColumnStyleProvider(gridName,
-            Dimensions.getNameColumn(ordinal), csp);
-
-        ConditionalStyle.registerGridColumnStyleProvider(gridName, bg, csp);
-        ConditionalStyle.registerGridColumnStyleProvider(gridName, fg, csp);
-      });
-    }
   }
 
   private AdministrationKeeper() {
