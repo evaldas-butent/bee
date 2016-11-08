@@ -21,7 +21,9 @@ import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.interceptor.GridSettingsInterceptor;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
@@ -168,6 +170,19 @@ public final class AdministrationKeeper {
           Filter.and(Filter.notNull(COL_USER_BLOCK_UNTIL),
               Filter.isLess(COL_USER_BLOCK_UNTIL, now))
       ));
+
+    } else if (Dimensions.isDimensionView(viewName) && Dimensions.getObserved() > 1) {
+      if (event.isChanged() && DataUtils.isId(event.getValue()) && event.getRelatedRow() != null) {
+        DataView targetView = ViewHelper.getDataView(event.getSelector());
+
+        if (targetView != null && targetView.getActiveRow() != null
+            && !Dimensions.isDimensionView(targetView.getViewName())) {
+
+          AdministrationUtils.updateRelatedDimensions(targetView, targetView.getActiveRow(),
+              Data.getDataInfo(viewName), event.getRelatedRow(),
+              Dimensions.getViewOrdinal(viewName));
+        }
+      }
     }
   }
 

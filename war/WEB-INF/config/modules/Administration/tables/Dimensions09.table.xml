@@ -5,6 +5,7 @@
        idName="Dim09ID"
 >
   <Fields>
+    <Integer name="Ordinal" label="=ordinal" />
     <String name="Dim09Name" precision="100" notNull="true" unique="true" translatable="true"
             label="=name" />
 

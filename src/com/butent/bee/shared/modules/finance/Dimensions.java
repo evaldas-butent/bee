@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -39,6 +40,7 @@ public final class Dimensions {
 
   private static final BeeLogger logger = LogUtils.getLogger(Dimensions.class);
 
+  private static final String[] VIEWS = new String[SPACETIME];
   private static final String[] RELATION_COLUMNS = new String[SPACETIME];
 
   private static final Map<Integer, String> pluralNames = new HashMap<>();
@@ -48,6 +50,7 @@ public final class Dimensions {
 
   static {
     for (int i = 0; i < SPACETIME; i++) {
+      VIEWS[i] = "Dimensions" + BeeUtils.toLeadingZeroes(i + 1, 2);
       RELATION_COLUMNS[i] = getColumnPrefix(i + 1) + "Rel";
     }
   }
@@ -73,11 +76,16 @@ public final class Dimensions {
   }
 
   public static String getViewName(Integer ordinal) {
-    if (isValid(ordinal)) {
-      return "Dimensions" + BeeUtils.toLeadingZeroes(ordinal, 2);
-    } else {
-      return null;
-    }
+    return isValid(ordinal) ? VIEWS[ordinal - 1] : null;
+  }
+
+  public static Integer getViewOrdinal(String viewName) {
+    int index = ArrayUtils.indexOf(VIEWS, viewName);
+    return (index >= 0) ? index + 1 : null;
+  }
+
+  public static boolean isDimensionView(String viewName) {
+    return ArrayUtils.contains(VIEWS, viewName);
   }
 
   public static String getGridName(Integer ordinal) {

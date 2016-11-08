@@ -6,6 +6,7 @@
         flexGrow="1"
 >
   <g:columns>
+    <DataColumn name="Ordinal" flexGrow="0" />
     <DataColumn name="Dim02Name" minWidth="100" visible="true"
                 backgroundSource="Dim02Background" foregroundSource="Dim02Foreground" />
   </g:columns>

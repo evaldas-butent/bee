@@ -4,6 +4,7 @@
       name="Dimensions02" source="Dimensions02" module="Administration"
 >
   <Columns>
+    <SimpleColumn name="Ordinal" />
     <SimpleColumn name="Dim02Name" />
 
     <SimpleColumn name="Dim02Background" />
@@ -76,6 +77,7 @@
   </Columns>
 
   <Order>
+    <OrderBy column="Ordinal" />
     <OrderBy column="Dim02Name" />
   </Order>
 </View>
