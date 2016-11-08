@@ -8,6 +8,7 @@
 >
   <Relation renderColumns="OrderNo" choiceColumns="CustomerName Date OrderNo" />
   <Columns>
+    <IdColumn name="Id" />
     <SimpleColumn name="Status" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="OrderNo" />

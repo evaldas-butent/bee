@@ -20,7 +20,7 @@
         <Label for="Date" />
         <InputDateTime source="Date" >
           <editable>
-            <ui:expression>!(row.SaleMax)</ui:expression>
+            <ui:expression>!(row.Id)</ui:expression>
           </editable>
         </InputDateTime>
         <Label for="OrderNo" />
