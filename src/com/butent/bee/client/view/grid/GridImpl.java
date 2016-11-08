@@ -57,6 +57,7 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.render.SimpleRenderer;
+import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.StyleProvider;
 import com.butent.bee.client.style.StyleUtils;
@@ -796,24 +797,27 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     columnInfo.initProperties(cd, gridDescription);
 
     ConditionalStyle columnStyles = null;
+    StyleProvider styleProvider = null;
 
     if (gridInterceptor != null) {
-      StyleProvider styleProvider = gridInterceptor.getColumnStyleProvider(columnId);
-      if (styleProvider != null) {
-        columnStyles = ConditionalStyle.create(styleProvider);
-      }
+      styleProvider = gridInterceptor.getColumnStyleProvider(columnId);
     }
-    if (columnStyles == null && cd.getDynStyles() != null) {
+    if (styleProvider == null && cd.getDynStyles() != null) {
       columnStyles = ConditionalStyle.create(cd.getDynStyles(), columnId, dataColumns);
     }
-    if (columnStyles == null) {
-      StyleProvider styleProvider = ConditionalStyle.getGridColumnStyleProvider(getGridName(),
-          columnId);
-      if (styleProvider != null) {
-        columnStyles = ConditionalStyle.create(styleProvider);
-      }
+    if (styleProvider == null && columnStyles == null) {
+      styleProvider = ConditionalStyle.getGridColumnStyleProvider(getGridName(), columnId);
+    }
+    if (styleProvider == null && columnStyles == null
+        && BeeUtils.anyNotEmpty(cd.getBackgroundSource(), cd.getForegroundSource())) {
+
+      styleProvider = ColorStyleProvider.create(getDataColumns(),
+          cd.getBackgroundSource(), cd.getForegroundSource());
     }
 
+    if (columnStyles == null && styleProvider != null) {
+      columnStyles = ConditionalStyle.create(styleProvider);
+    }
     if (columnStyles != null) {
       columnInfo.setDynStyles(columnStyles);
     }
