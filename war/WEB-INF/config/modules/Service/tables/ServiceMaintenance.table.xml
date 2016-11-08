@@ -7,7 +7,7 @@
   <Fields>
     <Relation name="Type" notNull="true" relation="MaintenanceTypes" label="=svcServiceType" />
     <Relation name="State" notNull="true" relation="MaintenanceStates" label="=svcServiceState" />
-    <Relation name="ServiceObject" notNull="true" relation="ServiceObjects" label="=svcObject" />
+    <Relation name="ServiceObject" notNull="true" relation="ServiceObjects" label="=svcDevice" />
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
     <Text name="Description" label="=svcFaultInfo" />
     <Boolean name="Urgent" label="=svcUrgent" />

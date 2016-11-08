@@ -988,6 +988,7 @@ public final class TaskConstants {
   public static final String PROP_APPOINTMENTS = "Appointments";
   public static final String PROP_DISCUSSIONS = "Discussions";
   public static final String PROP_SERVICE_OBJECTS = "ServiceObjects";
+  public static final String PROP_SERVICE_MAINTENANCE = "ServiceMaintenance";
   public static final String PROP_PROJECTS = "Projects";
   public static final String PROP_PROJECT_STAGES = "ProjectStages";
   public static final String PROP_TASKS = "Tasks";

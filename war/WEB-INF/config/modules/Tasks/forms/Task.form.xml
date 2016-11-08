@@ -228,7 +228,7 @@
               </FlowPanel>
 
               <FlowPanel style="&section;" data="Relations" for="ServiceObject" module="Service">
-                <Label text="=svcObjects" style="&top1;" />
+                <Label text="=svcDevices" style="&top1;" />
                 <MultiSelector viewName="ServiceObjects" property="ServiceObjects"
                   renderColumns="Address" choiceColumns="Address CustomerName"
                   newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
@@ -263,6 +263,13 @@
                   targetRelColumn="Task" sourceRelColumn="Message"
                   renderColumns="Date Subject"
                   label="=mails" style="&inp2x;" readOnly="true" summarize="true" />
+              </FlowPanel>
+
+              <FlowPanel style="&section;" data="Relations" for="ServiceMaintenance" module="Service">
+                <Label text="=svcMaintenance" style="&top1;" />
+                <MultiSelector viewName="ServiceMaintenance" property="ServiceMaintenance"
+                  renderColumns="ID" choiceColumns="ID TypeName StateName"
+                  newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
               </FlowPanel>
             </FlowPanel>
           </FlowPanel>

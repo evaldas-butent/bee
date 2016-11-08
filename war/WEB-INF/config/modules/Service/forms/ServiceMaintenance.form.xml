@@ -130,6 +130,30 @@
         <text>=svcComments</text>
         <FlowPanel name="MaintenanceComments" class="flex-horizontal"/>
       </page>
+      <page>
+        <text>=svcMaintenanceItemsServices</text>
+        <ChildGrid name="Maintenance" relColumn="ServiceMaintenance" />
+      </page>
+      <page>
+        <text>=svcInvoices</text>
+        <GridPanel name="ObjectInvoices" parent="{form}" child="true" />
+      </page>
+      <page>
+        <text>=svcDefects</text>
+        <ChildGrid name="ObjectDefects" relColumn="ServiceMaintenance" />
+      </page>
+      <page module="Tasks">
+        <text>=crmTasks</text>
+        <ChildGrid name="RelatedTasks" relColumn="ServiceMaintenance" />
+      </page>
+      <page module="Tasks">
+        <text>=crmRecurringTasks</text>
+        <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceMaintenance" />
+      </page>
+      <page>
+        <text>=svcDates</text>
+        <ChildGrid name="ServiceDates" relColumn="ServiceMaintenance" />
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>

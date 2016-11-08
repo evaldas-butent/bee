@@ -4,6 +4,13 @@ import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
@@ -64,6 +71,28 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
     } else if (widget instanceof Flow && BeeUtils.same(name, WIDGET_MAINTENANCE_COMMENTS)) {
       maintenanceComments = (Flow) widget;
       maintenanceComments.clear();
+
+    } else if (widget instanceof ChildGrid && BeeUtils.same(name, VIEW_SERVICE_DATES)) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+
+        @Override
+        public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+          FormView parentForm = ViewHelper.getForm(gridView.getViewPresenter().getMainView());
+
+          if (parentForm != null
+                  && BeeUtils.same(parentForm.getViewName(), TBL_SERVICE_MAINTENANCE)) {
+            event.getColumns().add(Data.getColumn(getViewName(), COL_SERVICE_OBJECT));
+            event.getValues().add(parentForm.getActiveRow()
+                    .getString(Data.getColumnIndex(parentForm.getViewName(), COL_SERVICE_OBJECT)));
+          }
+
+          super.onReadyForInsert(gridView, event);
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);

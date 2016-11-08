@@ -50,7 +50,7 @@
             </row>
           </Table>
         </Disclosure>
-        <TabbedPages class="flexible">
+        <TabbedPages style="background-color: white;" class="flexible">
           <page>
             <text>=svcMaintenance</text>
             <ChildGrid name="ServiceMaintenance" relColumn="ServiceObject" />

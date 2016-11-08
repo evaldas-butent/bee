@@ -283,6 +283,8 @@ public class ServiceModuleBean implements BeeModule {
         .addFields(TBL_MAINTENANCE, COL_MAINTENANCE_ITEM, COL_TRADE_ITEM_QUANTITY,
             COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_MAINTENANCE_NOTES)
         .addFrom(TBL_MAINTENANCE)
+        .addFields(TBL_ITEMS, COL_ITEM_ARTICLE)
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_MAINTENANCE, COL_MAINTENANCE_ITEM))
         .setWhere(where);
 
     IsExpression priceExch = ExchangeUtils.exchangeFieldTo(query,
@@ -306,10 +308,12 @@ public class ServiceModuleBean implements BeeModule {
 
     for (SimpleRow row : data) {
       Long item = row.getLong(COL_MAINTENANCE_ITEM);
+      String article = row.getValue(COL_ITEM_ARTICLE);
 
       SqlInsert insert = new SqlInsert(TBL_SERVICE_DEFECT_ITEMS)
           .addConstant(COL_DEFECT, dfId)
-          .addConstant(COL_DEFECT_ITEM, item);
+          .addConstant(COL_DEFECT_ITEM, item)
+          .addConstant(COL_ITEM_ARTICLE, article);
 
       Boolean vatPerc = row.getBoolean(COL_TRADE_VAT_PERC);
       Double vat;
@@ -389,7 +393,9 @@ public class ServiceModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_MAINTENANCE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
+        .addFields(TBL_ITEMS, COL_ITEM_ARTICLE)
         .addFrom(TBL_MAINTENANCE)
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_MAINTENANCE, COL_MAINTENANCE_ITEM))
         .setWhere(where);
 
     IsExpression vatExch = ExchangeUtils.exchangeFieldTo(query,
@@ -438,10 +444,12 @@ public class ServiceModuleBean implements BeeModule {
 
     for (SimpleRow row : data) {
       Long item = DataUtils.isId(mainItem) ? mainItem : row.getLong(COL_MAINTENANCE_ITEM);
+      String article = row.getValue(COL_ITEM_ARTICLE);
 
       SqlInsert insert = new SqlInsert(TBL_SALE_ITEMS)
           .addConstant(COL_SALE, invId)
-          .addConstant(COL_ITEM, item);
+          .addConstant(COL_ITEM, item)
+          .addConstant(COL_ITEM_ARTICLE, article);
 
       Boolean vatPerc = row.getBoolean(COL_TRADE_VAT_PERC);
       Double vat;

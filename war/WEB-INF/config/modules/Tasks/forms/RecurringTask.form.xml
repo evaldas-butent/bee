@@ -44,6 +44,8 @@
           <Relation viewName="Tasks" renderColumns="Summary ExecutorFirstName ExecutorLastName"
             newRowEnabled="false" editPopup="true"
             choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
+          <Relation viewName="ServiceMaintenance" renderColumns="ID" newRowEnabled="false" editPopup="true"
+            choiceColumns="ID TypeName StateName" property="ServiceMaintenance" />
         </Relations>
       </page>
       
