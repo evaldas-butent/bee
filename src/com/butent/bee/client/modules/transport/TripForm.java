@@ -388,7 +388,8 @@ public class TripForm extends PrintFormInterceptor {
 
         for (String col : new String[] {
             COL_VEHICLE, "VehicleNumber", COL_EXPEDITION, "ExpeditionType",
-            COL_FORWARDER, "ForwarderName", COL_FORWARDER_VEHICLE, COL_FORWARDER_DRIVER}) {
+            COL_FORWARDER, "ForwarderName", COL_FORWARDER_VEHICLE, COL_FORWARDER_DRIVER,
+            COL_TRAILER, ALS_TRAILER_NUMBER}) {
 
           int idx = info.getColumnIndex(col);
 
