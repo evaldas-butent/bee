@@ -52,6 +52,8 @@
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
 
+    <SimpleColumn name="Quantity" />
+
     <SimpleColumn name="TradeDocument" />
     <SimpleColumn name="TradePayment" />
 

@@ -34,6 +34,7 @@ public final class FinanceConstants {
   public static final String COL_FIN_CREDIT_DOCUMENT = "CreditDocument";
   public static final String COL_FIN_AMOUNT = "Amount";
   public static final String COL_FIN_CURRENCY = "Currency";
+  public static final String COL_FIN_QUANTITY = "Quantity";
   public static final String COL_FIN_TRADE_DOCUMENT = "TradeDocument";
   public static final String COL_FIN_TRADE_PAYMENT = "TradePayment";
   public static final String COL_FIN_EMPLOYEE = "Employee";
