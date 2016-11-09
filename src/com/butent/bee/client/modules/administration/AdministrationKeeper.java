@@ -172,7 +172,9 @@ public final class AdministrationKeeper {
       ));
 
     } else if (Dimensions.isDimensionView(viewName) && Dimensions.getObserved() > 1) {
-      if (event.isChanged() && DataUtils.isId(event.getValue()) && event.getRelatedRow() != null) {
+      if (event.isChangePending() && DataUtils.isId(event.getValue())
+          && event.getRelatedRow() != null) {
+
         DataView targetView = ViewHelper.getDataView(event.getSelector());
 
         if (targetView != null && targetView.getActiveRow() != null

@@ -10,8 +10,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.IdCallback;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.layout.Flow;
@@ -38,10 +36,9 @@ import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.Objects;
 
 public final class AdministrationUtils {
 
@@ -256,10 +253,6 @@ public final class AdministrationUtils {
       List<BeeColumn> targetColumns = targetView.getDataColumns();
       List<BeeColumn> sourceColumns = sourceInfo.getColumns();
 
-      List<BeeColumn> updatedColumns = new ArrayList<>();
-      List<String> oldValues = new ArrayList<>();
-      List<String> newValues = new ArrayList<>();
-
       for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
         if (ordinal != excludeOrdinal) {
           String relationColumn = Dimensions.getRelationColumn(ordinal);
@@ -267,37 +260,33 @@ public final class AdministrationUtils {
           int tri = DataUtils.getColumnIndex(relationColumn, targetColumns);
           int sri = DataUtils.getColumnIndex(relationColumn, sourceColumns);
 
-          if (tri >= 0 && sri >= 0 && DataUtils.isId(sourceRow.getLong(sri))) {
-            targetRow.setValue(tri, sourceRow.getLong(sri));
+          if (tri >= 0 && sri >= 0
+              && DataUtils.isId(sourceRow.getLong(sri))
+              && !Objects.equals(targetRow.getLong(tri), sourceRow.getLong(sri))) {
 
-            Stream.of(Dimensions.getNameColumn(ordinal),
-                Dimensions.getBackgroundColumn(ordinal),
-                Dimensions.getForegroundColumn(ordinal)).forEach(colName -> {
+            if (targetView.isFlushable()) {
+              targetRow.setValue(tri, sourceRow.getLong(sri));
 
-              int ti = DataUtils.getColumnIndex(colName, targetColumns);
-              int si = DataUtils.getColumnIndex(colName, sourceColumns);
+              for (String colName : new String[] {
+                  Dimensions.getNameColumn(ordinal),
+                  Dimensions.getBackgroundColumn(ordinal),
+                  Dimensions.getForegroundColumn(ordinal)}) {
 
-              if (ti >= 0 && si >= 0) {
-                targetRow.setValue(ti, sourceRow.getString(si));
+                int ti = DataUtils.getColumnIndex(colName, targetColumns);
+                int si = DataUtils.getColumnIndex(colName, sourceColumns);
+
+                if (ti >= 0 && si >= 0) {
+                  targetRow.setValue(ti, sourceRow.getString(si));
+                }
               }
-            });
 
-            if (targetView.isFlushable() || !DataUtils.hasId(targetRow)) {
               targetView.refreshBySource(relationColumn);
 
             } else {
-              updatedColumns.add(targetColumns.get(tri));
-              oldValues.add(null);
-              newValues.add(sourceRow.getString(sri));
+              targetRow.preliminaryUpdate(tri, sourceRow.getString(sri));
             }
           }
         }
-      }
-
-      if (!updatedColumns.isEmpty()) {
-        Queries.update(targetView.getViewName(), targetRow.getId(), targetRow.getVersion(),
-            updatedColumns, oldValues, newValues, null,
-            RowCallback.refreshRow(targetView.getViewName()));
       }
     }
   }
