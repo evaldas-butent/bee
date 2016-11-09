@@ -15,5 +15,9 @@
 
     <DataColumn name="Experience" caption="=trDriverExperience" width="88" />
     <DataColumn name="Notes" caption="=notes" />
+    <DataColumn name="PersonCode" />
+    <DataColumn name="DateOfBirth" />
+    <DataColumn name="PassportNo" />
+    <DataColumn name="StartDate" />
   </g:columns>
 </g:Grid>
