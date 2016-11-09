@@ -68,6 +68,7 @@
 
     <DataColumn name="NotManufactured" />
     <DataColumn name="Attribute" />
+    <DataColumn name="PackageUnits" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
