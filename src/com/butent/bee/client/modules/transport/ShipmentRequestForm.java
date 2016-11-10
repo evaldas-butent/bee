@@ -114,7 +114,6 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   private static final String NAME_VALUE_LABEL = "ValueLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
-  private static final String VAR_UNBOUND = "Unbound";
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {

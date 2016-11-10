@@ -372,6 +372,7 @@ public final class TransportConstants {
 
   public static final String VAR_LOADING = "Loading";
   public static final String VAR_UNLOADING = "Unloading";
+  public static final String VAR_UNBOUND = "Unbound";
 
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
@@ -909,7 +910,7 @@ public final class TransportConstants {
 
   public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
   public static final String FORM_CARGO_PLACE = "CargoPlace";
-  public static final String FORM_CARGO_PLACE_UNBOUND = "CargoPlaceUnbound";
+  public static final String FORM_CARGO_PLACE_UNBOUND = FORM_CARGO_PLACE + VAR_UNBOUND;
 
   public static final String GRID_ASSESSMENT_REQUESTS = "AssessmentRequests";
   public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";

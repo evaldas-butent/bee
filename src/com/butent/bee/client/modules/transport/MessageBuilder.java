@@ -232,6 +232,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
           Data.getColumns(TBL_CARGO_LOADING).stream()
               .filter(col -> col.getType() != ValueType.LONG)
+              .filter(col -> !BeeUtils.isSuffix(col.getId(), VAR_UNBOUND))
               .forEach(col -> {
                 caps.add(loc.cargoHandlingPlaces() + " " + Localized.getLabel(col));
                 keys.add(prfx + col.getId());
