@@ -96,6 +96,10 @@ public interface IsRow extends HasCustomProperties {
 
   void setValue(int index, Double value);
 
+  default void setValue(int index, Enum<?> value) {
+    setValue(index, EnumUtils.ordinal(value));
+  }
+
   void setValue(int index, Integer value);
 
   void setValue(int index, JustDate value);

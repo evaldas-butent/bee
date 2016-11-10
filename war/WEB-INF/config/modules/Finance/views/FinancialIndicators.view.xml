@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="FinancialIndicators" source="FinancialIndicators"
+      caption="=finIndicators"
+>
+  <Columns>
+    <SimpleColumn name="IndicatorKind" />
+    <SimpleColumn name="IndicatorName" />
+
+    <SimpleColumn name="IndicatorSource" />
+
+    <SimpleColumn name="IndicatorIsPercent" />
+    <SimpleColumn name="IndicatorScale" />
+
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="IndicatorName" />
+  </Order>
+</View>

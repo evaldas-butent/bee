@@ -2729,6 +2729,8 @@ public interface Dictionary {
 
   default String finAdvancePaymentsReceived() {return g("finAdvancePaymentsReceived");}
 
+  default String finAnalysis() {return g("finAnalysis");}
+
   default String finCashInBank() {return g("finCashInBank");}
 
   default String finConfiguration() {return g("finConfiguration");}
@@ -2760,6 +2762,26 @@ public interface Dictionary {
   default String finForeignExchangeGain() {return g("finForeignExchangeGain");}
 
   default String finForeignExchangeLoss() {return g("finForeignExchangeLoss");}
+
+  default String finIndicator() {return g("finIndicator");}
+
+  default String finIndicatorPrimary() {return g("finIndicatorPrimary");}
+
+  default String finIndicatorPrimaryNew() {return g("finIndicatorPrimaryNew");}
+
+  default String finIndicatorScale() {return g("finIndicatorScale");}
+
+  default String finIndicatorSecondary() {return g("finIndicatorSecondary");}
+
+  default String finIndicatorSecondaryNew() {return g("finIndicatorSecondaryNew");}
+
+  default String finIndicatorSource() {return g("finIndicatorSource");}
+
+  default String finIndicators() {return g("finIndicators");}
+
+  default String finIndicatorsPrimary() {return g("finIndicatorsPrimary");}
+
+  default String finIndicatorsSecondary() {return g("finIndicatorsSecondary");}
 
   default String finLiabilitiesToEmployees() {return g("finLiabilitiesToEmployees");}
 

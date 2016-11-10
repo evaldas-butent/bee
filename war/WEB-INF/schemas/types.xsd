@@ -387,6 +387,7 @@
       <xs:enumeration value="FinanceDistributionOfItems" />
       <xs:enumeration value="FinanceDistributionOfTradeDocuments" />
       <xs:enumeration value="FinanceDistributionOfTradeOperations" />
+      <xs:enumeration value="FinancialIndicators" />
       <xs:enumeration value="FinancialRecords" />
       <xs:enumeration value="FinancialStates" />
       <xs:enumeration value="Folders" />

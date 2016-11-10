@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="FinancialIndicators"
+       idName="FinancialIndicatorID"
+>
+  <Fields>
+    <Enum name="IndicatorKind" key="IndicatorKind" notNull="true" label="=kind" />
+
+    <String name="IndicatorName" precision="20" notNull="true" unique="true" translatable="true"
+            label="=finIndicator" />
+
+    <Enum name="IndicatorSource" key="IndicatorSource" label="=finIndicatorSource" />
+
+    <Boolean name="IndicatorIsPercent" label="=percent" />
+    <Integer name="IndicatorScale" label="=finIndicatorScale" />
+
+    <Text name="Description" label="=description" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+  </Fields>
+</Table>
