@@ -403,6 +403,7 @@
       <xs:enumeration value="ImportMappings" />
       <xs:enumeration value="ImportOptions" />
       <xs:enumeration value="ImportProperties" />
+      <xs:enumeration value="IndicatorAccounts" />
       <xs:enumeration value="InformationSources" />
       <xs:enumeration value="InvoiceTradeActs" />
       <xs:enumeration value="IpFilters" />

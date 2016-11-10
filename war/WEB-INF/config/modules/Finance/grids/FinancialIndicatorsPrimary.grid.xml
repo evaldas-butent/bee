@@ -4,6 +4,7 @@
 
         name="FinancialIndicatorsPrimary" viewName="FinancialIndicators"
         caption="=finIndicatorsPrimary" newRowCaption="=finIndicatorPrimaryNew"
+        editForm="FinancialIndicatorPrimary" newRowForm="FinancialIndicatorPrimary"
         filter="IndicatorKind = 0"
 >
   <g:columns>

@@ -2771,6 +2771,8 @@ public interface Dictionary {
 
   default String finIndicator() {return g("finIndicator");}
 
+  default String finIndicatorAccounts() {return g("finIndicatorAccounts");}
+
   default String finIndicatorBalance() {return g("finIndicatorBalance");}
 
   default String finIndicatorPrimary() {return g("finIndicatorPrimary");}
@@ -3885,6 +3887,8 @@ public interface Dictionary {
   default String plan() {return g("plan");}
 
   default String pluralName() {return g("pluralName");}
+
+  default String plus() {return g("plus");}
 
   default String postIndex() {return g("postIndex");}
 
