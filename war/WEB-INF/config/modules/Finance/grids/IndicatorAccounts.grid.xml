@@ -26,13 +26,14 @@
           <ui:font>large</ui:font>
         </bodyStyle>
       </style>
-      <dynStyle>
-        <ui:inline>color: green;</ui:inline>
-        <ui:expression>row.Plus</ui:expression>
-      </dynStyle>
-      <dynStyle>
-        <ui:inline>color: red;</ui:inline>
-      </dynStyle>
     </DataColumn>
   </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>color: green;</ui:inline>
+    <ui:expression>row.Plus</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>color: red;</ui:inline>
+  </g:rowStyle>
 </g:Grid>
