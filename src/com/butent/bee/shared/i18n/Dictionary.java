@@ -4790,6 +4790,8 @@ public interface Dictionary {
 
   default String svcObjects() {return g("svcObjects");}
 
+  default String svcPublishTime() {return g("svcPublishTime");}
+
   default String svcRelatedCustomerInfo() {return g("svcRelatedCustomerInfo");}
 
   default String svcSerialNo() {return g("svcSerialNo");}
@@ -6007,6 +6009,8 @@ public interface Dictionary {
   default String trdCustomer() {return g("trdCustomer");}
 
   default String trdDate() {return g("trdDate");}
+
+  default String trdDaysForPayment() {return g("trdDaysForPayment");}
 
   default String trdDebt() {return g("trdDebt");}
 
