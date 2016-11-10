@@ -2733,6 +2733,12 @@ public interface Dictionary {
 
   default String finCashInBank() {return g("finCashInBank");}
 
+  default String finClosingBalance() {return g("finClosingBalance");}
+
+  default String finClosingEntries() {return g("finClosingEntries");}
+
+  default String finClosingEntriesShort() {return g("finClosingEntriesShort");}
+
   default String finConfiguration() {return g("finConfiguration");}
 
   default String finContent() {return g("finContent");}
@@ -2765,6 +2771,8 @@ public interface Dictionary {
 
   default String finIndicator() {return g("finIndicator");}
 
+  default String finIndicatorBalance() {return g("finIndicatorBalance");}
+
   default String finIndicatorPrimary() {return g("finIndicatorPrimary");}
 
   default String finIndicatorPrimaryNew() {return g("finIndicatorPrimaryNew");}
@@ -2784,6 +2792,8 @@ public interface Dictionary {
   default String finIndicatorsSecondary() {return g("finIndicatorsSecondary");}
 
   default String finLiabilitiesToEmployees() {return g("finLiabilitiesToEmployees");}
+
+  default String finOpeningBalance() {return g("finOpeningBalance");}
 
   default String finPettyCash() {return g("finPettyCash");}
 
@@ -2810,6 +2820,8 @@ public interface Dictionary {
   default String finTradeReceivables() {return g("finTradeReceivables");}
 
   default String finTransitoryAccount() {return g("finTransitoryAccount");}
+
+  default String finTurnover() {return g("finTurnover");}
 
   default String finVatPayable() {return g("finVatPayable");}
 

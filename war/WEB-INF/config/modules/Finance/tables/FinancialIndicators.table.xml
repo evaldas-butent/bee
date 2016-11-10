@@ -12,6 +12,9 @@
 
     <Enum name="IndicatorSource" key="IndicatorSource" label="=finIndicatorSource" />
 
+    <Enum name="IndicatorBalance" key="IndicatorBalance" label="=finIndicatorBalance" />
+    <Boolean name="IndicatorClosingEntries" label="=finClosingEntries" />
+
     <Boolean name="IndicatorIsPercent" label="=percent" />
     <Integer name="IndicatorScale" label="=finIndicatorScale" />
 

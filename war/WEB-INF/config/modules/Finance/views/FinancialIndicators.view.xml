@@ -10,6 +10,9 @@
 
     <SimpleColumn name="IndicatorSource" />
 
+    <SimpleColumn name="IndicatorBalance" />
+    <SimpleColumn name="IndicatorClosingEntries" />
+
     <SimpleColumn name="IndicatorIsPercent" />
     <SimpleColumn name="IndicatorScale" />
 

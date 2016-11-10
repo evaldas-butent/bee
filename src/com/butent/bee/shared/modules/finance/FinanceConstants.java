@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.finance;
 
+import com.butent.bee.shared.modules.finance.analysis.IndicatorBalance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -73,6 +74,8 @@ public final class FinanceConstants {
   public static final String COL_FIN_INDICATOR_KIND = "IndicatorKind";
   public static final String COL_FIN_INDICATOR_NAME = "IndicatorName";
   public static final String COL_FIN_INDICATOR_SOURCE = "IndicatorSource";
+  public static final String COL_FIN_INDICATOR_BALANCE = "IndicatorBalance";
+  public static final String COL_FIN_INDICATOR_CLOSING_ENTRIES = "IndicatorClosingEntries";
   public static final String COL_FIN_INDICATOR_IS_PERCENT = "IndicatorIsPercent";
   public static final String COL_FIN_INDICATOR_SCALE = "IndicatorScale";
 
@@ -120,6 +123,7 @@ public final class FinanceConstants {
   public static void register() {
     EnumUtils.register(IndicatorKind.class);
     EnumUtils.register(IndicatorSource.class);
+    EnumUtils.register(IndicatorBalance.class);
   }
 
   private FinanceConstants() {

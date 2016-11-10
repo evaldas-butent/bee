@@ -9,6 +9,16 @@ public enum IndicatorKind implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.finIndicatorPrimary();
     }
+
+    @Override
+    public IndicatorBalance getDefaultBalance() {
+      return IndicatorBalance.TURNOVER;
+    }
+
+    @Override
+    public IndicatorSource getDefaultSource() {
+      return IndicatorSource.AMOUNT;
+    }
   },
 
   SECONDARY {
@@ -16,5 +26,19 @@ public enum IndicatorKind implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.finIndicatorSecondary();
     }
-  }
+
+    @Override
+    public IndicatorBalance getDefaultBalance() {
+      return null;
+    }
+
+    @Override
+    public IndicatorSource getDefaultSource() {
+      return null;
+    }
+  };
+
+  public abstract IndicatorBalance getDefaultBalance();
+
+  public abstract IndicatorSource getDefaultSource();
 }
