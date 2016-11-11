@@ -3,44 +3,47 @@
         xmlns:g="http://www.butent.com/grid"
         xmlns:ui="http://www.butent.com/ui"
 
-        name="SelfServiceInvoices" viewName="CargoInvoices"
+        name="SelfServiceInvoices" viewName="SelfServiceInvoices"
         editShowId="true" flexGrow="1"
         disabledActions="add"
         caption="=trInvoices"
         filter="Sale AND !(Proforma)"
 >
   <g:columns>
-    <IdColumn name="ID" caption="=trdInvoiceId" >
-      <footer text="=totalOf" horizontalAlignment="right" />
-    </IdColumn>
     <DataColumn name="Date" />
-    <DataColumn name="Number" />
+    <DataColumn name="Number" >
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </DataColumn>
     <RelColumn name="Operation" />
     <DataColumn name="InvoiceNo" renderColumns="InvoicePrefix InvoiceNo"
                 searchBy="InvoicePrefix InvoiceNo" />
     <RelColumn name="Customer" filterSupplier="value" />
     <RelColumn name="Payer" filterSupplier="value" />
-    <DataColumn name="Amount" >
-      <footer aggregate="sum" />
-    </DataColumn>
+    <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
+    <PropColumn name="AmountInEUR" type="double" format="0.00" caption="=trdTotal+ +EUR">
+      <footer aggregate="sum" />
+    </PropColumn>
+
     <DataColumn name="Term" />
 
     <DataColumn name="PaymentTime" />
-    <DataColumn name="Paid" >
+    <DataColumn name="Paid" />
+    <PropColumn name="PaidInEUR" type="double" format="0.00" caption="=trdPaid+ +EUR">
       <footer aggregate="sum" />
-    </DataColumn>
+    </PropColumn>
 
-    <DataColumn name="Debt" format="0.00" >
-      <footer aggregate="sum" format="0.00"/>
-    </DataColumn>
+    <DataColumn name="Debt" format="0.00" />
+    <CalcColumn name="DebtInEUR" type="double" caption="=trdDebt+ +EUR" format="0.00">
+      <render>
+        <ui:expression>row.AmountInEUR - (row.PaidInEUR == null ? 0 : row.PaidInEUR)</ui:expression>
+      </render>
+      <footer aggregate="sum" />
+    </CalcColumn>
 
     <DataColumn name="Vehicle" />
     <DataColumn name="Driver" />
-    <DataColumn name="Exported" />
 
-    <DataColumn name="SentDate" />
-    <DataColumn name="OtherDate" />
     <RelColumn name="Creator" readOnly="true" />
   </g:columns>
 
