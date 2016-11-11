@@ -43,7 +43,7 @@
         <Label name="SupplierAddress" class="bee-trade-print-company-address" />
         <Label name="SupplierVatCode" class="bee-trade-print-company-vat-code" />
       </row>
-          
+
       <row>
         <text/>
         <cell colSpan="2">
@@ -121,7 +121,7 @@
 
     <Table name="Items" class="bee-trade-print-items" kind="output">
       <properties
-              columns="Ordinal, Name, Article, Quantity, Unit, Price, Discount, PriceDiscount,
+              columns="Ordinal, Name, Article, Quantity, Unit, PriceVatRev, Discount, PriceDiscount,
               Amount" />
     </Table>
 

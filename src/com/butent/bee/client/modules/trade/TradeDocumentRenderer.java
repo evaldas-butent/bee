@@ -124,6 +124,33 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
+    PRICE_VAT_REV("price", true) {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.price();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        double price = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_ITEM_PRICE));
+
+        double itemVat = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_VAT));
+        boolean vatInPercents = BeeUtils.unbox(rowSet.getBoolean(rowIndex, COL_TRADE_VAT_PERC));
+        boolean vatPlus = BeeUtils.unbox(rowSet.getBoolean(rowIndex, COL_TRADE_VAT_PLUS));
+
+        if (!vatPlus) {
+          if (vatInPercents) {
+            itemVat = price - price / (1d + itemVat / 100d);
+          }
+        } else {
+          itemVat = 0;
+        }
+          price -= itemVat;
+
+        return PRICE_FORMAT.format(price);
+      }
+    },
+
     AMOUNT("amount", true) {
       @Override
       public String getCaption(Dictionary constants) {
@@ -219,8 +246,26 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
       @Override
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
-        Double price = rowSet.getDouble(rowIndex, VAR_PRICE_DISCOUNT);
-        return PRICE_FORMAT.format(BeeUtils.unbox(price));
+        double price = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_ITEM_PRICE));
+
+        double disc = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_DISCOUNT));
+        double itemVat = BeeUtils.unbox(rowSet.getDouble(rowIndex, COL_TRADE_VAT));
+        boolean vatInPercents = BeeUtils.unbox(rowSet.getBoolean(rowIndex, COL_TRADE_VAT_PERC));
+        boolean vatPlus = BeeUtils.unbox(rowSet.getBoolean(rowIndex, COL_TRADE_VAT_PLUS));
+
+        double dscSum = price / 100d * disc;
+        price -= dscSum;
+
+        if (!vatPlus) {
+          if (vatInPercents) {
+            itemVat = price - price / (1d + itemVat / 100d);
+          }
+        } else  {
+          itemVat = 0;
+        }
+        price -= itemVat;
+
+        return PRICE_FORMAT.format(price);
       }
     };
 

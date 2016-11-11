@@ -230,7 +230,6 @@ public final class TradeConstants {
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
   public static final String VAR_OVERDUE = "Overdue";
-  public static final String VAR_PRICE_DISCOUNT = "PriceDiscount";
 
   public static final String GRID_TRADE_OPERATIONS = "TradeOperations";
   public static final String GRID_TRADE_STATUSES = "TradeStatuses";

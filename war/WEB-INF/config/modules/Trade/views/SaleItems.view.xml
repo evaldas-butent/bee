@@ -21,27 +21,6 @@
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
     <SimpleColumn name="Discount" label="=discountPercent"/>
-    <SimpleColumn name="PriceDiscount" label="=priceDiscount">
-      <x:minus>
-        <x:nvl type="DECIMAL">
-          <x:number>"Price"</x:number>
-          <x:number>0</x:number>
-        </x:nvl>
-        <x:divide>
-          <x:multiply>
-            <x:nvl type="DECIMAL">
-              <x:number>"Price"</x:number>
-              <x:number>0</x:number>
-            </x:nvl>
-            <x:nvl type="DECIMAL">
-              <x:number>"Discount"</x:number>
-              <x:number>0</x:number>
-            </x:nvl>
-          </x:multiply>
-          <x:number>100</x:number>
-        </x:divide>
-      </x:minus>
-    </SimpleColumn>
     <SimpleColumn name="Note" />
     <SimpleColumn name="Parent" />
     <SimpleColumn name="Ordinal" />
