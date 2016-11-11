@@ -506,6 +506,7 @@
       <xs:enumeration value="SelectCompanyContacts" />
       <xs:enumeration value="SelectCompanyPersons" />
       <xs:enumeration value="SelectPersons" />
+      <xs:enumeration value="SelfServiceInvoices" />
       <xs:enumeration value="SeriesManagers" />
       <xs:enumeration value="ServiceCriteria" />
       <xs:enumeration value="ServiceCritGroups" />

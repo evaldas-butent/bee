@@ -489,6 +489,8 @@ public final class TransportConstants {
 
   public static final String VIEW_SHIPMENT_REQUESTS = "ShipmentRequests";
 
+  public static final String VIEW_SELF_SERVICE_INVOICES = "SelfServiceInvoices";
+
   public static final String VIEW_TEXT_CONSTANTS = "TextConstants";
 
   public static final String VIEW_EXPEDITION_TYPES = "ExpeditionTypes";
@@ -948,6 +950,8 @@ public final class TransportConstants {
   public static final String PROP_TRANSPORT_GROUPS = "TransportGroups";
   public static final String PROP_VEHICLE_GROUPS = "VehicleGroups";
   public static final String PROP_VEHICLE_MANAGER = "VehicleManager";
+  public static final String PROP_AMOUNT_IN_EUR = "AmountInEUR";
+  public static final String PROP_PAID_IN_EUR = "PaidInEUR";
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";
