@@ -14,12 +14,12 @@ import java.util.Set;
 
 public class Stage {
 
-  private class StageCondition {
+  private final class StageCondition {
     private final String field;
     private final Operator op;
     private final String value;
 
-    public StageCondition(String field, Operator op, String value) {
+    private StageCondition(String field, Operator op, String value) {
       this.field = Assert.notEmpty(field);
       this.op = Assert.notNull(op);
       this.value = value;
