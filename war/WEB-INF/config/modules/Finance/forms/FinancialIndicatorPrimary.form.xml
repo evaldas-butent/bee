@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-    <!ENTITY lstw "min-width: 12rem;">
-    <!ENTITY inpw "width: 12rem;">
-    <!ENTITY colorw "width: 12rem;">
+    <!ENTITY inpw "width: 15rem;">
+    <!ENTITY colorw "width: 15rem;">
     <!ENTITY empty "<cell><text/></cell>">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
@@ -10,7 +9,7 @@
 
         name="FinancialIndicatorPrimary" viewName="FinancialIndicators"
         caption="=finIndicatorsPrimary"
-        width="50" widthUnit="px" height="50" heightUnit="vh"
+        width="75" widthUnit="px" height="50" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin: 1ex 1em;">
@@ -24,7 +23,7 @@
 
       <row>
         <Label for="IndicatorBalance" class="bee-required" />
-        <ListBox source="IndicatorBalance" style="&lstw;" required="true" visible="true" />
+        <Radio source="IndicatorBalance" vertical="true" visible="true" />
 
         &empty;
         <CheckBox source="IndicatorClosingEntries" text="=finClosingEntriesShort" />
@@ -32,7 +31,7 @@
 
       <row>
         <Label for="IndicatorSource" class="bee-required" />
-        <ListBox source="IndicatorSource" style="&lstw;" required="true" visible="true" />
+        <Radio source="IndicatorSource" visible="true" />
 
         <Label for="IndicatorScale" />
         <InputInteger source="IndicatorScale" style="width: 2rem;" minValue="0" maxValue="5" />
@@ -51,6 +50,11 @@
       <page>
         <text>=finAccounts</text>
         <ChildGrid name="IndicatorAccounts" relColumn="Indicator" />
+      </page>
+
+      <page>
+        <text>=filters</text>
+        <ChildGrid name="IndicatorFilters" relColumn="Indicator" />
       </page>
 
       <page for="Description">

@@ -2779,6 +2779,14 @@ public interface Dictionary {
 
   default String finIndicatorBalance() {return g("finIndicatorBalance");}
 
+  default String finIndicatorFilterExtra() {return g("finIndicatorFilterExtra");}
+
+  default String finIndicatorFilterInclude() {return g("finIndicatorFilterInclude");}
+
+  default String finIndicatorFilterNew() {return g("finIndicatorFilterNew");}
+
+  default String finIndicatorFilters() {return g("finIndicatorFilters");}
+
   default String finIndicatorPrimary() {return g("finIndicatorPrimary");}
 
   default String finIndicatorPrimaryNew() {return g("finIndicatorPrimaryNew");}
@@ -5310,10 +5318,6 @@ public interface Dictionary {
 
   default String trGroup() {return g("trGroup");}
 
-  default String trigger() {return g("trigger");}
-
-  default String triggers() {return g("triggers");}
-
   default String trImportConditions() {return g("trImportConditions");}
 
   default String trImportCosts() {return g("trImportCosts");}
@@ -6260,6 +6264,10 @@ public interface Dictionary {
   default String trdWarehouseFrom() {return g("trdWarehouseFrom");}
 
   default String trdWarehouseTo() {return g("trdWarehouseTo");}
+
+  default String trigger() {return g("trigger");}
+
+  default String triggers() {return g("triggers");}
 
   default String trip() {return g("trip");}
 
