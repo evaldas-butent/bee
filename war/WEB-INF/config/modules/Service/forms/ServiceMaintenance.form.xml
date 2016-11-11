@@ -30,27 +30,27 @@
       </row>
       <row>
         <Label text="=svcDevice" />
-        <DataSelector source="ServiceObject" viewName="ServiceObjects"
+        <DataSelector name="ServiceObject" source="ServiceObject"
                       choiceColumns="SerialNo CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
                       style="&inp;"/>
         <Label for="Contact" />
-        <DataSelector source="Contact" viewName="CompanyPersons"
-                      choiceColumns="FirstName LastName"
+        <DataSelector name="Contact" source="Contact"
+                      choiceColumns="FirstName LastName Phone Email Address CompanyName"
                       renderColumns="ContactFirstName ContactLastName" style="&inp;" options="Company"/>
       </row>
       <row>
         <Label text="=category" class="bee-required" />
-        <TextLabel source="CategoryName"  class="bee-output" style="&inp;"/>
+        <TextLabel source="CategoryName" class="bee-output" style="&inp;"/>
         <Label text="=phone" class="bee-required" />
-        <DataSelector source="Contact" viewName="CompanyPersons" required="true"
-                      choiceColumns="Phone FirstName LastName CompanyName" renderColumns="ContactPhone"
+        <DataSelector name="Phone" source="Contact" required="true"
+                      choiceColumns="FirstName LastName Phone Email Address CompanyName" renderColumns="ContactPhone"
                       style="&inp;" options="Company" />
       </row>
       <row>
         <Label text="=tcdBrand" />
         <TextLabel source="ManufacturerName" class="bee-output" style="&inp;"/>
         <Label for="Company" text="=client" />
-        <DataSelector source="Company" viewName="Companies"
+        <DataSelector name="Company" source="Company"
                       choiceColumns="Name TypeName" renderColumns="CompanyName CompanyTypeName"
                       style="&inp;"/>
       </row>
@@ -58,17 +58,17 @@
         <Label for="Model" />
         <TextLabel source="Model" class="bee-output" style="&inp;"/>
         <Label text="=email" />
-        <DataSelector source="Contact" viewName="CompanyPersons"
-                      choiceColumns="Email FirstName LastName CompanyName"
-                      renderColumns="ContactEmailAddress" style="&inp;"
+        <DataSelector name="Email" source="Contact" viewName="CompanyPersons"
+                      choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                      renderColumns="ContactEmail" style="&inp;"
                       options="Company"/>
       </row>
       <row>
         <Label text="=svcSerialNo"/>
         <TextLabel source="SerialNo" class="bee-output" style="&inp;"/>
         <Label text="=address" />
-        <DataSelector source="Contact" viewName="CompanyPersons"
-                      choiceColumns="Address FirstName LastName CompanyName"
+        <DataSelector name="Address" source="Contact"
+                      choiceColumns="FirstName LastName Phone Email Address CompanyName"
                       renderColumns="ContactAddress" style="&inp;"
                       options="Company"/>
       </row>
@@ -83,13 +83,13 @@
         <CheckBox name="Warranty" text="=svcWarrantyMaintenance" summarize="true" />
       </row>
       <row>
-        <Label for="WarrantyType" />
+        <Label name="WarrantyTypeName" for="WarrantyType" />
         <DataSelector source="WarrantyType" style="&inp;"/>
       </row>
       <row>
         <Label for="WarrantyMaintenance" />
         <DataSelector name="WarrantyMaintenance" source="WarrantyMaintenance" choiceColumns="Id"
-                      viewName="ServiceMaintenance" filter="WarrantyValidTo > {t}" style="&inp;"/>
+                     filter="WarrantyValidTo > {t}" style="&inp;"/>
       </row>
       <row>
         <cell rowSpan="2">
@@ -99,7 +99,7 @@
           <InputArea source="Description" visibleLines="4" style="&inp;"/>
         </cell>
         <Label for="Contractor" text="=svcContractor" />
-        <TextLabel source="ContractorName"  class="bee-output" style="&inp;"/>
+        <TextLabel source="ContractorName" class="bee-output" style="&inp;"/>
       </row>
       <row>
         <Label for="Repairer" />

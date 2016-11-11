@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
     <!ENTITY cell "padding-bottom: 2px;">
-    <!ENTITY clbl "text-align: right; padding-left: 1em; padding-right: 1em;">
     <!ENTITY inp "display: inline-block; width: 500px;">
-    <!ENTITY tbl "border-collapse: collapse;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -19,34 +17,35 @@
         <xi:include href="widgets/ObjectHeader.widget.xml" />
         <Disclosure open="false" name="RelatedCustomerInfo">
           <Label text="=svcRelatedCustomerInfo" style="text-transform: uppercase;" />
-          <Table kind="controls" style="&tbl;" cellStyle="&cell;">
-            <col index="0" cellStyle="&clbl;" />
+          <Table kind="controls" cellStyle="&cell;">
+            <col index="0" kind="label" />
             <row>
               <Label for="Customer" />
-              <DataSelector source="Customer" renderColumns="CustomerName" style="&inp;"/>
+              <DataSelector name="Customer" source="Customer" renderColumns="CustomerName" style="&inp;"/>
             </row>
             <row>
               <Label for="ContactPerson" />
-              <DataSelector source="ContactPerson" viewName="CompanyPersons"
-                            renderColumns="ContactPersonFirstName ContactPersonLastName" style="&inp;"/>
+              <DataSelector source="ContactPerson" options="Customer"
+                            choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                            renderColumns="ContactFirstName ContactLastName" style="&inp;"/>
             </row>
             <row>
               <Label for="ContactPerson" text="=address"/>
-              <DataSelector source="ContactPerson" viewName="CompanyPersons"
-                            choiceColumns="Address FirstName LastName CompanyName"
-                            renderColumns="ContactPersonAddress" style="&inp;"/>
+              <DataSelector source="ContactPerson" options="Customer"
+                            choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                            renderColumns="ContactAddress" style="&inp;"/>
             </row>
             <row>
               <Label for="ContactPerson" text="=phone" />
-              <DataSelector source="ContactPerson" viewName="CompanyPersons"
-                            choiceColumns="Phone FirstName LastName"
-                            renderColumns="ContactPersonPhone" style="&inp;"/>
+              <DataSelector source="ContactPerson" options="Customer"
+                            choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                            renderColumns="ContactPhone" style="&inp;"/>
             </row>
             <row>
               <Label for="ContactPerson" text="=email"/>
-              <DataSelector source="ContactPerson" viewName="CompanyPersons"
-                            choiceColumns="Email FirstName LastName"
-                            renderColumns="ContactPersonEmailAddress" style="&inp;"/>
+              <DataSelector source="ContactPerson" options="Customer"
+                            choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                            renderColumns="ContactEmail" style="&inp;"/>
             </row>
           </Table>
         </Disclosure>

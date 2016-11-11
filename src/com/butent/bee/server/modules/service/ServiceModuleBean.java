@@ -46,6 +46,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -104,6 +105,9 @@ public class ServiceModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_CRITERIA)) {
       response = copyDocumentCriteria(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_UPDATE_SERVICE_MAINTENANCE_OBJECT)) {
+      response = updateServiceMaintenanceObject(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -833,5 +837,93 @@ public class ServiceModuleBean implements BeeModule {
     } else {
       return qs.getViewData(VIEW_SERVICE_SETTINGS, filter);
     }
+  }
+
+  private ResponseObject updateServiceMaintenanceObject(RequestInfo reqInfo) {
+    Long maintenanceId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SERVICE_MAINTENANCE));
+    Long objectId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SERVICE_OBJECT));
+
+    if (!DataUtils.isId(maintenanceId) && !DataUtils.isId(objectId)) {
+      return ResponseObject.error(reqInfo.getService(), "parameters not found");
+    }
+
+    IsCondition latestMaintenanceCondition = null;
+
+    if (DataUtils.isId(objectId)) {
+      SqlSelect maxServiceMaintenanceDateQuery = new SqlSelect()
+          .addMax(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE)
+          .addFrom(TBL_SERVICE_MAINTENANCE)
+          .setWhere(SqlUtils.equals(TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT, objectId));
+      DateTime maxServiceMaintenanceDate = qs.getDateTime(maxServiceMaintenanceDateQuery);
+
+      if (maxServiceMaintenanceDate != null) {
+        latestMaintenanceCondition = SqlUtils.equals(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE,
+            maxServiceMaintenanceDate);
+      }
+    }
+    IsCondition maintenanceFilter;
+
+    if (DataUtils.isId(maintenanceId)) {
+      maintenanceFilter = sys.idEquals(TBL_SERVICE_MAINTENANCE, maintenanceId);
+    } else {
+      maintenanceFilter = SqlUtils.equals(TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT, objectId);
+    }
+
+    SqlSelect serviceMaintenanceQuery = new SqlSelect()
+        .addFields(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE), COL_ENDING_DATE,
+            COL_COMPANY, COL_CONTACT, COL_SERVICE_OBJECT)
+            .addFields(TBL_SERVICE_OBJECTS,
+                    COL_SERVICE_CUSTOMER, ALS_CONTACT_PERSON)
+            .addFrom(TBL_SERVICE_MAINTENANCE)
+            .addFromLeft(TBL_SERVICE_OBJECTS, sys.joinTables(VIEW_SERVICE_OBJECTS,
+                    TBL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT))
+            .setWhere(SqlUtils.and(latestMaintenanceCondition, maintenanceFilter));
+
+    SimpleRowSet serviceMaintenanceRs = qs.getData(serviceMaintenanceQuery);
+
+    if (!DataUtils.isEmpty(serviceMaintenanceRs)) {
+      SimpleRow maintenanceRow = serviceMaintenanceRs.getRow(0);
+
+      String maintenanceCompany = maintenanceRow.getValue(COL_COMPANY);
+      String maintenanceContact = maintenanceRow.getValue(COL_CONTACT);
+      String objectCompany = maintenanceRow.getValue(COL_SERVICE_CUSTOMER);
+      String objectContact = maintenanceRow.getValue(ALS_CONTACT_PERSON);
+
+      if (!BeeUtils.same(maintenanceCompany, objectCompany)
+              || !BeeUtils.same(maintenanceContact, objectContact)) {
+        SqlUpdate update;
+
+        if (DataUtils.isId(maintenanceId)) {
+          update = new SqlUpdate(TBL_SERVICE_OBJECTS)
+                  .addConstant(COL_SERVICE_CUSTOMER,
+                          maintenanceRow.getValue(COL_COMPANY))
+                  .addConstant(ALS_CONTACT_PERSON,
+                          maintenanceRow.getValue(COL_CONTACT))
+                  .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS,
+                          maintenanceRow.getLong(COL_SERVICE_OBJECT)));
+          return qs.updateDataWithResponse(update);
+
+        } else {
+          maintenanceId = maintenanceRow.getLong(sys.getIdName(TBL_SERVICE_MAINTENANCE));
+
+          if (maintenanceRow.getValue(COL_ENDING_DATE) == null && DataUtils.isId(maintenanceId)) {
+            update = new SqlUpdate(TBL_SERVICE_MAINTENANCE)
+                    .addConstant(COL_COMPANY,
+                            maintenanceRow.getValue(COL_SERVICE_CUSTOMER))
+                    .addConstant(COL_CONTACT,
+                            maintenanceRow.getValue(ALS_CONTACT_PERSON))
+                    .setWhere(sys.idEquals(TBL_SERVICE_MAINTENANCE, maintenanceId));
+            ResponseObject response = qs.updateDataWithResponse(update);
+
+            if (response.hasErrors()) {
+              return response;
+            }
+
+            return ResponseObject.response(maintenanceId);
+          }
+        }
+      }
+    }
+    return ResponseObject.emptyResponse();
   }
 }

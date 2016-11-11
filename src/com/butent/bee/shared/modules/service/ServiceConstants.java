@@ -32,6 +32,8 @@ public final class ServiceConstants {
   public static final String SVC_CREATE_DEFECT_ITEMS = "CreateDefectItems";
   public static final String SVC_GET_CALENDAR_DATA = "getServiceCalendarData";
   public static final String SVC_COPY_DOCUMENT_CRITERIA = "CopyDocumentCriteria";
+  public static final String SVC_UPDATE_SERVICE_MAINTENANCE_OBJECT
+          = "update_service_maintenance_object";
 
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";
@@ -101,7 +103,9 @@ public final class ServiceConstants {
   public static final String COL_MAINTENANCE_DEFECT = "Defect";
   public static final String COL_MAINTENANCE_NOTES = "Notes";
   public static final String COL_MAINTENANCE_TYPE = "MaintenanceType";
+  public static final String COL_MODEL = "Model";
   public static final String COL_PUBLISH_TIME = "PublishTime";
+  public static final String COL_SERIAL_NO = "SerialNo";
   public static final String COL_SERVICE_MAINTENANCE = "ServiceMaintenance";
   public static final String COL_SERVICE_DATE_FROM = "DateFrom";
   public static final String COL_SERVICE_DATE_UNTIL = "DateUntil";
@@ -122,9 +126,17 @@ public final class ServiceConstants {
   public static final String COL_TYPE_NAME = "Name";
   public static final String COL_TERM = "Term";
 
+  public static final String COL_WARRANTY_MAINTENANCE = "WarrantyMaintenance";
+  public static final String COL_WARRANTY = "Warranty";
   public static final String COL_WARRANTY_TYPE = "WarrantyType";
 
+  public static final String ALS_COMPANY_TYPE_NAME = "CompanyTypeName";
+  public static final String ALS_CONTACT_ADDRESS = "ContactAddress";
+  public static final String ALS_CONTACT_EMAIL = "ContactEmail";
+  public static final String ALS_CONTACT_PHONE = "ContactPhone";
+
   public static final String ALS_CREATOR_DEPARTMENT_NAME = "CreatorDepartmentName";
+  public static final String ALS_CUSTOMER_TYPE_NAME = "CustomerTypeName";
   public static final String ALS_DEPARTMENT_NAME = "DepartmentName";
   public static final String ALS_SERVICE_CATEGORY_NAME = "CategoryName";
   public static final String ALS_SERVICE_CUSTOMER_NAME = "CustomerName";
@@ -135,6 +147,8 @@ public final class ServiceConstants {
   public static final String ALS_MAINTENANCE_ITEM_NAME = "ItemName";
   public static final String ALS_MAINTENANCE_STATE_NAME = "MaintenanceStateName";
   public static final String ALS_MAINTENANCE_TYPE_NAME = "TypeName";
+
+  public static final String ALS_MANUFACTURER_NAME = "ManufacturerName";
 
   public static final String ALS_DEFECT_SUPPLIER_NAME = "SupplierName";
   public static final String ALS_DEFECT_ITEM_NAME = "ItemName";

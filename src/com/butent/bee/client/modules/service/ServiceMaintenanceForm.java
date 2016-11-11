@@ -4,6 +4,18 @@ import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HasCheckedness;
+
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -12,6 +24,7 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_TYPE_NAME;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -29,10 +42,6 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -50,6 +59,7 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
   private static final BeeLogger logger = LogUtils.getLogger(ServiceMaintenanceForm.class);
 
   private static final String WIDGET_MAINTENANCE_COMMENTS = "MaintenanceComments";
+  private static final String WIDGET_WARRANTY_TYPE_NAME = "WarrantyTypeName";
   private static final int NEW_MAINTENANCE_DATA_LOAD_PROCESS_COUNT = 7;
 
   private static final String STYLE_PROGRESS_CONTAINER =
@@ -65,7 +75,8 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       FormFactory.WidgetDescriptionCallback callback) {
 
-    if (widget instanceof DataSelector && BeeUtils.same(name, COL_TYPE)) {
+    if (widget instanceof DataSelector && BeeUtils.inList(name, COL_TYPE, COL_SERVICE_OBJECT,
+        COL_WARRANTY_MAINTENANCE, COL_COMPANY, COL_PHONE, COL_CONTACT, COL_EMAIL, COL_ADDRESS)) {
       ((DataSelector) widget).addSelectorHandler(this);
 
     } else if (widget instanceof Flow && BeeUtils.same(name, WIDGET_MAINTENANCE_COMMENTS)) {
@@ -87,7 +98,7 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
                   && BeeUtils.same(parentForm.getViewName(), TBL_SERVICE_MAINTENANCE)) {
             event.getColumns().add(Data.getColumn(getViewName(), COL_SERVICE_OBJECT));
             event.getValues().add(parentForm.getActiveRow()
-                    .getString(Data.getColumnIndex(parentForm.getViewName(), COL_SERVICE_OBJECT)));
+                .getString(Data.getColumnIndex(parentForm.getViewName(), COL_SERVICE_OBJECT)));
           }
 
           super.onReadyForInsert(gridView, event);
@@ -102,6 +113,8 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
   public void afterInsertRow(IsRow result, boolean forced) {
     super.afterInsertRow(result, forced);
 
+    updateServiceObject(result.getId(), null);
+
     fillDataByStateProcessSettings(result, null);
   }
 
@@ -110,6 +123,26 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
     drawComments(row);
 
     updateStateDataSelector(false);
+
+    if (DataUtils.isId(row.getLong(Data.getColumnIndex(getViewName(), COL_WARRANTY_MAINTENANCE)))) {
+      updateWarrantyTypeWidget(true);
+    }
+  }
+
+  @Override
+  public void afterUpdateRow(IsRow result) {
+    super.afterUpdateRow(result);
+
+    updateServiceObject(result.getId(),
+            result.getLong(Data.getColumnIndex(getViewName(), COL_SERVICE_OBJECT)));
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action.equals(Action.SAVE) && getFormView() != null && getActiveRow() != null) {
+      return isValidData(getFormView(), getActiveRow());
+    }
+    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -123,9 +156,41 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (event.isChanged() && BeeUtils.same(event.getRelatedViewName(), VIEW_MAINTENANCE_TYPES)) {
+    if (event.isChanged()) {
+      switch (event.getRelatedViewName()) {
+        case VIEW_MAINTENANCE_TYPES:
+          updateStateDataSelector(true);
+          break;
 
-      updateStateDataSelector(true);
+        case VIEW_COMPANIES :
+          ServiceUtils.clearContactValue(getActiveRow());
+          getFormView().refreshBySource(COL_CONTACT);
+          break;
+
+        case VIEW_COMPANY_PERSONS:
+          ServiceUtils.fillCompanyValues(getActiveRow(), event.getRelatedRow(),
+              event.getRelatedViewName(), COL_COMPANY, ALS_COMPANY_NAME, ALS_COMPANY_TYPE_NAME);
+          getFormView().refreshBySource(COL_COMPANY);
+          break;
+
+        case COL_SERVICE_MAINTENANCE:
+          updateWarrantyTypeWidget(DataUtils.isId(event.getValue()));
+          break;
+
+        case VIEW_SERVICE_OBJECTS:
+          ServiceUtils.fillContactValues(getActiveRow(), event.getRelatedRow());
+          getFormView().refreshBySource(COL_CONTACT);
+
+          ServiceUtils.fillContractorAndManufacturerValues(getActiveRow(), event.getRelatedRow());
+          getFormView().refreshBySource(ALS_MANUFACTURER_NAME);
+          getFormView().refreshBySource(ALS_SERVICE_CONTRACTOR_NAME);
+
+          ServiceUtils.fillCompanyValues(getActiveRow(), event.getRelatedRow(),
+              event.getRelatedViewName(), COL_SERVICE_CUSTOMER, ALS_SERVICE_CUSTOMER_NAME,
+              ALS_CUSTOMER_TYPE_NAME);
+          getFormView().refreshBySource(COL_COMPANY);
+          break;
+      }
     }
   }
 
@@ -259,13 +324,15 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
     if (stateProcessRow != null) {
       String notifyValue = stateProcessRow.
           getString(Data.getColumnIndex(TBL_STATE_PROCESS, COL_NOTIFY_CUSTOMER));
+
       if (BeeUtils.toBoolean(notifyValue)) {
         columns.add(Data.getColumn(TBL_MAINTENANCE_COMMENTS, COL_SHOW_CUSTOMER));
         values.add(notifyValue);
       }
 
-      String commentValue = stateProcessRow.
-          getString(Data.getColumnIndex(TBL_STATE_PROCESS, COL_MESSAGE));
+      String commentValue = stateProcessRow.getString(Data.getColumnIndex(TBL_STATE_PROCESS,
+          COL_MESSAGE));
+
       if (!BeeUtils.isEmpty(commentValue)) {
         columns.add(Data.getColumn(TBL_MAINTENANCE_COMMENTS, COL_COMMENT));
         values.add(commentValue);
@@ -339,8 +406,64 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
     });
   }
 
+  private boolean isValidData(FormView form, IsRow row) {
+    String phone = row.getString(Data.getColumnIndex(getViewName(), ALS_CONTACT_PHONE));
+
+    if (BeeUtils.isEmpty(phone)) {
+      form.notifySevere(Localized.dictionary().phone(), Localized.dictionary().valueRequired());
+      return false;
+    }
+
+    String department = row.getString(Data.getColumnIndex(getViewName(),
+        ALS_CREATOR_DEPARTMENT_NAME));
+
+    if (BeeUtils.isEmpty(department)) {
+      form.notifySevere(Localized.dictionary().companyDepartment(),
+              Localized.dictionary().valueRequired());
+      return false;
+    }
+
+    Long warrantyTypeId = row.getLong(Data.getColumnIndex(getViewName(), COL_WARRANTY_TYPE));
+    Long serviceMaintenanceId = row.getLong(Data.getColumnIndex(getViewName(),
+            COL_WARRANTY_MAINTENANCE));
+
+    if (DataUtils.isId(serviceMaintenanceId) && !DataUtils.isId(warrantyTypeId)) {
+      form.notifySevere(Localized.dictionary().svcWarrantyType(),
+              Localized.dictionary().valueRequired());
+      return false;
+    }
+
+    return true;
+  }
+
+  private static void updateServiceObject(long maintenanceId, Long objectId) {
+    ParameterList params = ServiceKeeper.createArgs(SVC_UPDATE_SERVICE_MAINTENANCE_OBJECT);
+    params.addDataItem(COL_SERVICE_MAINTENANCE, maintenanceId);
+
+    if (DataUtils.isId(objectId)) {
+      params.addDataItem(COL_SERVICE_OBJECT, objectId);
+    }
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (!response.isEmpty() && !response.hasErrors()) {
+          Queries.getRow(VIEW_SERVICE_OBJECTS, objectId, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              if (result != null) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS, result);
+              }
+            }
+          });
+        }
+      }
+    });
+  }
+
   private void updateStateDataSelector(boolean clearValue) {
     Widget stateWidget = getFormView().getWidgetByName(AdministrationConstants.COL_STATE);
+
     if (stateWidget instanceof DataSelector) {
       Filter stateFilter = DataUtils.isNewRow(getActiveRow())
           ? Filter.isPositive(COL_INITIAL) : Filter.isNull(COL_INITIAL);
@@ -360,6 +483,24 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
             AdministrationConstants.COL_STATE));
         getFormView().getActiveRow().clearCell(Data.getColumnIndex(getViewName(), ALS_STATE_NAME));
         getFormView().refreshBySource(AdministrationConstants.COL_STATE);
+      }
+    }
+  }
+
+  private void updateWarrantyTypeWidget(boolean mandatory) {
+    Widget warrantyWidget = getWidgetByName(COL_WARRANTY);
+
+    if (warrantyWidget instanceof HasCheckedness) {
+      ((HasCheckedness) warrantyWidget).setChecked(mandatory);
+    }
+
+    Widget warrantyTypeName = getFormView().getWidgetByName(WIDGET_WARRANTY_TYPE_NAME);
+
+    if (warrantyTypeName != null) {
+      if (mandatory) {
+        warrantyTypeName.addStyleName(StyleUtils.NAME_REQUIRED);
+      } else {
+        warrantyTypeName.removeStyleName(StyleUtils.NAME_REQUIRED);
       }
     }
   }
