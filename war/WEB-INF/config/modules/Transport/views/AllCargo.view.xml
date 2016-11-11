@@ -127,6 +127,20 @@
       <SimpleJoin joinType="LEFT" name="CargoGroup">
         <SimpleColumn name="CargoGroupName" label="=group"/>
       </SimpleJoin>
+
+      <ExternalJoin name="Cargo" source="CargoLoading" joinType="LEFT">
+        <SimpleJoin name="LoadingPlace" joinType="LEFT">
+          <AggregateColumn name="Date" alias="MinLoadingDate" aggregate="MIN"
+                           label="=trMinLoadingDate"/>
+        </SimpleJoin>
+      </ExternalJoin>
+
+      <ExternalJoin name="Cargo" source="CargoUnloading" joinType="LEFT">
+        <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+          <AggregateColumn name="Date" alias="MaxUnloadingDate" aggregate="MAX"
+                           label="=trMaxUnloadingDate"/>
+        </SimpleJoin>
+      </ExternalJoin>
     </ExternalJoin>
   </Columns>
 </View>
