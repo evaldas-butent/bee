@@ -5,7 +5,7 @@
        idName="ConditionID"
 >
   <Fields>
-    <Relation name="Stage" relation="Stages" notNull="true" label="=stage" />
+    <Relation name="Stage" relation="Stages" notNull="true" label="=status" />
     <String name="Field" precision="30" notNull="true" />
     <Numeric name="Operator" precision="2" notNull="true" />
     <Text name="Value" />

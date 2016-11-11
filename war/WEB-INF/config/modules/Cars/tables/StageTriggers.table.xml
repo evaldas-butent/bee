@@ -5,7 +5,7 @@
        idName="TriggerID"
 >
   <Fields>
-    <Relation name="Stage" relation="Stages" notNull="true" label="=stage" />
+    <Relation name="Stage" relation="Stages" notNull="true" label="=status" />
     <String name="Trigger" precision="30" notNull="true" label="=trigger" />
   </Fields>
 </Table>

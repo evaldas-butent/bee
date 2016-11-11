@@ -5,7 +5,7 @@
        idName="ActionID"
 >
   <Fields>
-    <Relation name="Stage" relation="Stages" notNull="true" label="=stage" />
+    <Relation name="Stage" relation="Stages" notNull="true" label="=status" />
     <String name="Action" precision="30" notNull="true" label="=calAction" />
   </Fields>
 </Table>
