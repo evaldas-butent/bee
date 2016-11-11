@@ -9,7 +9,7 @@
     <col index="2" kind="label" />
     <row>
       <Label for="Date" class="bee-required" />
-      <InputDateTime source="Date" required="true" />
+      <InputDateTime source="Date" required="true" title="=trRequestDateTitle"/>
     </row>
     <row>
       <Label for="Company" />
