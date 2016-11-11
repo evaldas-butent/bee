@@ -3,7 +3,7 @@ package com.butent.bee.client.modules.cars;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.cars.CarsConstants.COL_PHOTO;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PHOTO;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.DialogBox;

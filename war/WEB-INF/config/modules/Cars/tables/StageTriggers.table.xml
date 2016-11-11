@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="StageTriggers"
+       idName="TriggerID"
+>
+  <Fields>
+    <Relation name="Stage" relation="Stages" notNull="true" label="=stage" />
+    <String name="Trigger" precision="30" notNull="true" label="=trigger" />
+  </Fields>
+</Table>

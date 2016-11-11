@@ -62,6 +62,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_CHART_OF_ACCOUNTS = "ChartOfAccounts";
 
+  public static final String TBL_LOSS_REASONS = "LossReasons";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
@@ -289,6 +291,11 @@ public final class ClassifierConstants {
 
   public static final String COL_ACCOUNT_CODE = "AccountCode";
   public static final String COL_JOURNAL_CODE = "JournalCode";
+
+  public static final String COL_LOSS_REASON_NAME = "ReasonName";
+  public static final String COL_LOSS_REASON_TEMPLATE = "Template";
+  public static final String COL_LOSS_REASON = "LossReason";
+  public static final String COL_LOSS_NOTES = "LossNotes";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

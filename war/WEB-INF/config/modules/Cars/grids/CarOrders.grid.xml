@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="CarOrders" viewName="CarOrders" caption="=orders"
 >
   <g:columns>
     <DataColumn name="Date" visible="true" />
     <DataColumn name="OrderNo" visible="true" />
+    <RelColumn name="Stage" />
+    <RelColumn name="LossReason">
+      <style>
+        <bodyStyle>
+          <ui:inline>color:red</ui:inline>
+        </bodyStyle>
+      </style>
+    </RelColumn>
     <RelColumn name="Customer" visible="true" renderColumns="CustomerName CustomerTypeName" />
     <RelColumn name="CustomerPerson" renderColumns="ContactFirstName ContactLastName" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />

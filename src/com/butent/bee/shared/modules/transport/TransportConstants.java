@@ -426,7 +426,6 @@ public final class TransportConstants {
   public static final String TBL_FUEL_TYPES = "FuelTypes";
 
   public static final String TBL_SHIPMENT_REQUESTS = "ShipmentRequests";
-  public static final String TBL_LOSS_REASONS = "LossReasons";
 
   public static final String TBL_COUNTRY_NORMS = "CountryNorms";
   public static final String TBL_COUNTRY_DAILY_COSTS = "CountryDailyCosts";
@@ -878,8 +877,6 @@ public final class TransportConstants {
   public static final String COL_SHIPPING_TERM_NAME = "Name";
   public static final String COL_SELF_SERVICE = "SelfService";
   public static final String COL_SHIPMENT_REQUEST = "ShipmentRequest";
-  public static final String COL_LOSS_REASON_NAME = "ReasonName";
-  public static final String COL_LOSS_REASON_TEMPLATE = "Template";
 
   public static final String COL_CARGO_TYPE_NAME = "CargoTypeName";
   public static final String COL_CARGO_TYPE_COLOR = "Color";

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="StageActions"
+       idName="ActionID"
+>
+  <Fields>
+    <Relation name="Stage" relation="Stages" notNull="true" label="=stage" />
+    <String name="Action" precision="30" notNull="true" label="=calAction" />
+  </Fields>
+</Table>

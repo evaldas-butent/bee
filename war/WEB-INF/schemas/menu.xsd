@@ -60,6 +60,7 @@
       <xs:enumeration value="finance_default_accounts" />
       <xs:enumeration value="finance_posting_precedence" />
       <xs:enumeration value="extra_dimensions" />
+      <xs:enumeration value="stages" />
     </xs:restriction>
   </xs:simpleType>
 

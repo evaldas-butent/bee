@@ -29,13 +29,17 @@ public final class CarsConstants {
   public static final String TBL_CAR_ORDERS = "CarOrders";
   public static final String TBL_CAR_ORDER_ITEMS = "CarOrderItems";
 
+  public static final String TBL_STAGES = "Stages";
+  public static final String TBL_STAGE_CONDITIONS = "StageConditions";
+  public static final String TBL_STAGE_ACTIONS = "StageActions";
+  public static final String TBL_STAGE_TRIGGERS = "StageTriggers";
+
   public static final String COL_BRANCH = "Branch";
   public static final String COL_BRANCH_NAME = "BranchName";
   public static final String COL_OPTION = "Option";
   public static final String COL_OPTION_NAME = "OptionName";
   public static final String COL_CODE = "Code";
   public static final String COL_DESCRIPTION = "Description";
-  public static final String COL_PHOTO = "PhotoFile";
   public static final String COL_BUNDLE = "Bundle";
   public static final String COL_KEY = "Key";
   public static final String COL_TYPE = "Type";
@@ -52,13 +56,29 @@ public final class CarsConstants {
 
   public static final String COL_ORDER = "Order";
 
+  public static final String COL_STAGE = "Stage";
+  public static final String COL_STAGE_VIEW = "ViewName";
+  public static final String COL_STAGE_NAME = "StageName";
+
+  public static final String COL_STAGE_FIELD = "Field";
+  public static final String COL_STAGE_OPERATOR = "Operator";
+  public static final String COL_STAGE_VALUE = "Value";
+  public static final String COL_STAGE_ACTION = "Action";
+  public static final String COL_STAGE_TRIGGER = "Trigger";
+
   public static final String FORM_CONF_OPTION = "ConfOption";
   public static final String FORM_CAR_ORDER = "CarOrder";
+  public static final String FORM_STAGES = "StageEditor";
 
   public static final String VAR_PRICE_DEFAULT = "PriceDefault";
   public static final String VAR_PRICE_OPTIONAL = "PriceOptional";
   public static final String VAR_REL_REQUIRED = "RelRequired";
   public static final String VAR_REL_DENIED = "RelDenied";
+
+  public static final String STAGE_ACTION_READONLY = "MakeOrderReadOnly";
+  public static final String STAGE_ACTION_LOST = "EnterOrderLostReason";
+  public static final String STAGE_TRIGGER_NEW = "OnCreateNewOrder";
+  public static final String STAGE_TRIGGER_SENT = "OnSendOrder";
 
   private CarsConstants() {
   }

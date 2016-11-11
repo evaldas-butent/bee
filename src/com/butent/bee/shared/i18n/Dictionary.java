@@ -829,6 +829,10 @@ public interface Dictionary {
 
   default String companyVATCode() {return g("companyVATCode");}
 
+  default String condition() {return g("condition");}
+
+  default String conditions() {return g("conditions");}
+
   default String configuration() {return g("configuration");}
 
   default String constant() {return g("constant");}
@@ -5305,6 +5309,10 @@ public interface Dictionary {
   default String trGenerateRoute() {return g("trGenerateRoute");}
 
   default String trGroup() {return g("trGroup");}
+
+  default String trigger() {return g("trigger");}
+
+  default String triggers() {return g("triggers");}
 
   default String trImportConditions() {return g("trImportConditions");}
 
