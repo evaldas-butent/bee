@@ -48,7 +48,7 @@
     <DateTime name="Created" label="Registruota" defExpr="CURRENT_TIME" />
     <Relation name="Creator" relation="Users" label="=creator" defExpr="CURRENT_USER" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
     <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
               label="=finTradeAccounts" />

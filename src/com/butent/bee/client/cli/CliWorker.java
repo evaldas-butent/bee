@@ -535,6 +535,13 @@ public final class CliWorker {
     } else if ("run".equals(z)) {
       BeeKeeper.getRpc().sendText(new ParameterList(Service.RUN), args, null);
 
+    } else if ("script".equals(z)) {
+      if (args.isEmpty() || "info".equals(args)) {
+        BeeKeeper.getRpc().invoke("scriptEngineInfo", ResponseHandler.callback(v));
+      } else {
+        BeeKeeper.getRpc().invoke("execScript", args, ResponseHandler.callback(args));
+      }
+
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args, errorPopup);
 

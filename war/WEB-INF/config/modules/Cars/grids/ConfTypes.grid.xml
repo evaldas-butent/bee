@@ -4,6 +4,6 @@
         name="ConfTypes" viewName="ConfTypes" caption="=optionTypes"
 >
   <g:columns>
-    <DataColumn name="typeName" />
+    <DataColumn name="TypeName" />
   </g:columns>
 </g:Grid>

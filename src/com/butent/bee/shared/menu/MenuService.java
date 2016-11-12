@@ -34,6 +34,8 @@ public enum MenuService {
   PARAMETERS(RightsState.VIEW),
   @XmlEnumValue("report")
   REPORT(RightsState.VIEW),
+  @XmlEnumValue("stages")
+  STAGES(EnumSet.of(RightsState.VIEW, RightsState.EDIT, RightsState.CREATE), true),
 
   @XmlEnumValue("items")
   ITEMS(RightsState.VIEW, ClassifierConstants.VIEW_ITEMS),

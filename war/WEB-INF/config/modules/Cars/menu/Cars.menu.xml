@@ -4,6 +4,8 @@
        name="Cars" label="=cars" order="109" module="Cars"
 >
   <Item name="Orders" label="=orders" service="grid" parameters="CarOrders" />
+  <Item name="Stages" label="=statuses" service="stages" parameters="CarOrders" separator="true" />
+  <Item name="LossReasons" label="=trLossReasons" service="grid" parameters="LossReasons" />
 
   <Item name="ConfPricelist" label="=configuration" service="form" parameters="ConfPricelist"
         separator="true" />

@@ -3,6 +3,7 @@ package com.butent.bee.client.view.form;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
@@ -19,6 +20,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.TabulationHandler;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -1249,7 +1251,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
           : Localized.dictionary().changedValues();
       messages.add(msg + BeeConst.STRING_SPACE
           + Factory.b().text(BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
-              updatedLabels)).build());
+          updatedLabels)).build());
     }
 
     if (getFormInterceptor() != null) {
@@ -1405,7 +1407,52 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
           }
         }
       }
+
+    } else if (EventUtils.isKeyDown(type)) {
+      Action action = getAction(event.getNativeEvent());
+
+      if (action != null && reactsTo(action) && isActive()) {
+        if (BeeConst.isUndef(getActiveEditableIndex())
+            || getEditableWidgets().get(getActiveEditableIndex()).checkForUpdate(true)) {
+
+          event.getNativeEvent().preventDefault();
+          event.cancel();
+
+          getViewPresenter().handleAction(action);
+        }
+      }
     }
+  }
+
+  private boolean isActive() {
+    if (isInteractive()) {
+      Element activeElement = DomUtils.getActiveElement();
+      if (activeElement != null && getElement().isOrHasChild(activeElement)) {
+        return true;
+      }
+
+      IdentifiableWidget root = Popup.getActivePopup();
+      if (root == null) {
+        root = BeeKeeper.getScreen().getActiveWidget();
+      }
+
+      return root != null && root.getElement().isOrHasChild(getElement());
+
+    } else {
+      return false;
+    }
+  }
+
+  public static Action getAction(NativeEvent event) {
+    if (EventUtils.hasModifierKey(event) && !event.getShiftKey()) {
+      switch (event.getKeyCode()) {
+        case KeyCodes.KEY_S:
+          return Action.SAVE;
+        case KeyCodes.KEY_W:
+          return Action.CLOSE;
+      }
+    }
+    return null;
   }
 
   @Override

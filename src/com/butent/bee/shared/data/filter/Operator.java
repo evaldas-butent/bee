@@ -11,8 +11,18 @@ import com.butent.bee.shared.utils.EnumUtils;
  */
 
 public enum Operator implements HasLocalizedCaption {
-  EQ("="),
-  NE("!="),
+  EQ("=") {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.is();
+    }
+  },
+  NE("!=") {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.isNot();
+    }
+  },
   LT("<"),
   GT(">"),
   LE("<="),

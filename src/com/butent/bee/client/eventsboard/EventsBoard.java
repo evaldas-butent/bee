@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.ComplexPanel;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
@@ -39,6 +40,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.values.Position;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -48,6 +50,7 @@ import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.io.FileInfo;
@@ -227,7 +230,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
     if (event.hasView(getEventsDataViewName())) {
-      refresh(false);
+      refresh(true);
     }
   }
 
@@ -268,6 +271,21 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     refresh(true);
     loadHandlerRegistry();
     widget.add(this);
+  }
+
+  protected Widget createCellWidgetItem(String name, Widget item) {
+    Assert.notNull(name);
+    FlowPanel widget = new FlowPanel();
+    widget.addStyleName(STYLE_PREFIX + STYLE_CONTENT + BeeConst.STRING_MINUS + name);
+    if (!BeeUtils.isEmpty(getStylePrefix())) {
+      widget.addStyleName(getStylePrefix() + STYLE_CONTENT + BeeConst.STRING_MINUS + name);
+    }
+
+    if (item != null) {
+      widget.add(item);
+    }
+
+    return widget;
   }
 
   public long getRelatedId() {
@@ -655,8 +673,13 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
       int idxEvent = rs.getColumnIndex(getEventTypeColumnName());
 
       if (!BeeUtils.isNegative(idxEvent)) {
-        String text =
-            EnumUtils.getCaption(rs.getColumn(idxEvent).getEnumKey(), row.getInteger(idxEvent));
+        BeeColumn column = rs.getColumn(idxEvent);
+        String text;
+        if (column.getType().equals(ValueType.TEXT)) {
+          text = row.getString(idxEvent);
+        } else {
+          text = EnumUtils.getCaption(column.getEnumKey(), row.getInteger(idxEvent));
+        }
 
         cell.add(createCellHtmlItem(CELL_EVENT_TYPE, text));
 

@@ -34,9 +34,7 @@
 
     <SimpleColumn name="IsDefault" />
 
-    <SimpleJoin name="Dimensions" joinType="LEFT">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
-    </SimpleJoin>
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     <SimpleJoin name="TradeAccounts" joinType="LEFT">
       <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>

@@ -5,6 +5,8 @@ import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.rights.Module;
 
 public final class CarsKeeper {
@@ -17,6 +19,13 @@ public final class CarsKeeper {
     FormFactory.registerFormInterceptor(TBL_CONF_PRICELIST, new ConfPricelistForm());
     FormFactory.registerFormInterceptor(FORM_CONF_OPTION, new PhotoHandler());
     FormFactory.registerFormInterceptor(FORM_CAR_ORDER, new CarOrderForm());
+
+    Dictionary loc = Localized.dictionary();
+    StageUtils.registerStageAction(TBL_CAR_ORDERS, STAGE_ACTION_READONLY, loc.rowIsReadOnly());
+    StageUtils.registerStageAction(TBL_CAR_ORDERS, STAGE_ACTION_LOST, loc.reason());
+
+    StageUtils.registerStageTrigger(TBL_CAR_ORDERS, STAGE_TRIGGER_NEW, loc.newOrder());
+    StageUtils.registerStageTrigger(TBL_CAR_ORDERS, STAGE_TRIGGER_SENT, loc.messageSent());
   }
 
   private CarsKeeper() {

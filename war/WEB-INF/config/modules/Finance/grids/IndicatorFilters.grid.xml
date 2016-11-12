@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="IndicatorFilters" viewName="IndicatorFilters"
+        flexGrow="1"
+>
+  <xi:include href="columns/FinancialRecordsEmployee.columns.xml" />
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="ExtraFilter" visible="false" />
+
+    <DataColumn name="Include" caption="&#xf196; / &#xf147;" format="&#xf055; &#xf056;"
+                flexGrow="0" visible="true">
+      <style>
+        <headerStyle>
+          <ui:class>bee-fa-label</ui:class>
+          <ui:font>medium</ui:font>
+        </headerStyle>
+        <bodyStyle>
+          <ui:class>bee-fa-label</ui:class>
+          <ui:font>large</ui:font>
+        </bodyStyle>
+      </style>
+    </DataColumn>
+  </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>color: green;</ui:inline>
+    <ui:expression>row.Include</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>color: red;</ui:inline>
+  </g:rowStyle>
+</g:Grid>

@@ -10,6 +10,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.server.Invocation;
+import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.AsynchronousRunnable;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
@@ -108,7 +109,6 @@ import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.ReadOnlyFolderException;
 import javax.mail.Session;
-import javax.mail.Store;
 import javax.mail.Transport;
 import javax.mail.UIDFolder;
 import javax.mail.internet.AddressException;
@@ -178,19 +178,20 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       return;
     }
     if (localFolder.isConnected()) {
-      Store store = null;
+      MailAccount.MailStore store = null;
       int c = 0;
       int f = 0;
       String error = null;
+      boolean connectError = false;
 
       try {
         store = account.connectToStore();
 
         if (account.isInbox(localFolder)) {
-          f += syncFolders(account, account.getRemoteFolder(store, account.getRootFolder()),
-              account.getRootFolder());
+          f += syncFolders(account, account.getRemoteFolder(store.getStore(),
+              account.getRootFolder()), account.getRootFolder());
         }
-        Folder remoteFolder = account.getRemoteFolder(store, localFolder);
+        Folder remoteFolder = account.getRemoteFolder(store.getStore(), localFolder);
         f += syncFolders(account, remoteFolder, localFolder);
         c += checkFolder(account, remoteFolder, localFolder, progressId, syncAll);
 
@@ -204,8 +205,30 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             localFolder.getName());
         error = ArrayUtils.joinWords(ResponseObject.error(e, account.getStoreProtocol())
             .getErrors());
+        connectError = e instanceof ConnectionFailureException;
       } finally {
         account.disconnectFromStore(store);
+      }
+      if (connectError || account.getConnectFailures() > 0) {
+        SqlUpdate update = new SqlUpdate(TBL_ACCOUNTS)
+            .setWhere(sys.idEquals(TBL_ACCOUNTS, account.getAccountId()));
+
+        if (connectError) {
+          if (account.getConnectFailures() < 10) {
+            update.addExpression(COL_ACCOUNT_CONNECT_FAILURES,
+                SqlUtils.plus(SqlUtils.nvl(SqlUtils.name(COL_ACCOUNT_CONNECT_FAILURES), 0), 1))
+                .setWhere(SqlUtils.and(update.getWhere(),
+                    SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE),
+                        SqlUtils.notEqual(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE,
+                            SyncMode.SYNC_NOTHING))));
+          } else {
+            update.addConstant(COL_ACCOUNT_SYNC_MODE, SyncMode.SYNC_NOTHING)
+                .addConstant(COL_ACCOUNT_CONNECT_FAILURES, null);
+          }
+        } else {
+          update.addConstant(COL_ACCOUNT_CONNECT_FAILURES, null);
+        }
+        Invocation.locateRemoteBean(ProxyBean.class).update(update);
       }
       if (!BeeUtils.isEmpty(error) || c > 0 || f > 0) {
         MailMessage mailMessage = new MailMessage(localFolder.getId());
@@ -1383,16 +1406,29 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private void checkMail() {
+    long now = System.currentTimeMillis();
+    IsExpression blockFrom = SqlUtils.field(AdministrationConstants.TBL_USERS,
+        AdministrationConstants.COL_USER_BLOCK_FROM);
+    IsExpression blockUntil = SqlUtils.field(AdministrationConstants.TBL_USERS,
+        AdministrationConstants.COL_USER_BLOCK_UNTIL);
+
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
-        .addFields(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_ALL)
+        .addFields(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE)
         .addFrom(TBL_ACCOUNTS)
-        .setWhere(SqlUtils.notNull(TBL_ACCOUNTS, COL_STORE_SERVER)));
+        .addFromInner(AdministrationConstants.TBL_USERS,
+            sys.joinTables(AdministrationConstants.TBL_USERS, TBL_ACCOUNTS, COL_USER))
+        .setWhere(SqlUtils.and(
+            SqlUtils.or(SqlUtils.and(SqlUtils.isNull(blockFrom), SqlUtils.isNull(blockUntil)),
+                SqlUtils.and(SqlUtils.notNull(blockFrom), SqlUtils.more(blockFrom, now)),
+                SqlUtils.and(SqlUtils.notNull(blockUntil), SqlUtils.less(blockUntil, now))),
+            SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE),
+                SqlUtils.notEqual(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE, SyncMode.SYNC_NOTHING)))));
 
     for (SimpleRow row : rs) {
       MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
 
-      if (BeeUtils.unbox(row.getBoolean(COL_ACCOUNT_SYNC_ALL))) {
+      if (Objects.equals(row.getInt(COL_ACCOUNT_SYNC_MODE), SyncMode.SYNC_ALL.ordinal())) {
         checkMail(account, account.getRootFolder(), true);
       } else {
         checkMail(account, account.getInboxFolder(), false);

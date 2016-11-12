@@ -4,17 +4,21 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_ITEM;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcCallback;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
@@ -26,8 +30,10 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.StageFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -44,6 +50,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -53,9 +60,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
-public class CarOrderForm extends PrintFormInterceptor implements Consumer<Specification> {
+public class CarOrderForm extends PrintFormInterceptor implements StageFormInterceptor,
+    Consumer<Specification> {
+
+  private Flow stageContainer = new Flow();
+  private List<Stage> orderStages;
 
   private Flow objectContainer;
   private Specification objectSpecification;
@@ -164,8 +176,124 @@ public class CarOrderForm extends PrintFormInterceptor implements Consumer<Speci
   }
 
   @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    StageFormInterceptor.super.beforeRefresh(form, row);
+  }
+
+  @Override
   public FormInterceptor getInstance() {
     return new CarOrderForm();
+  }
+
+  @Override
+  public Flow getStageContainer() {
+    return stageContainer;
+  }
+
+  @Override
+  public List<Stage> getStages() {
+    return orderStages;
+  }
+
+  @Override
+  public void onLoad(FormView form) {
+    getHeaderView().addCommandItem(stageContainer);
+    super.onLoad(form);
+  }
+
+  @Override
+  public void onSetActiveRow(IsRow row) {
+    Long objectId = row.getLong(getDataIndex(COL_OBJECT));
+
+    if (DataUtils.isId(objectId)) {
+      ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_OBJECT);
+      args.addDataItem(COL_OBJECT, objectId);
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          response.notify(getFormView());
+
+          if (!response.hasErrors()) {
+            refreshObject(Specification.restore(response.getResponseAsString()));
+          }
+        }
+      });
+    } else {
+      refreshObject(null);
+    }
+    super.onSetActiveRow(row);
+  }
+
+  @Override
+  public void refreshStages() {
+    StageFormInterceptor.super.refreshStages();
+    Stage stage = StageUtils.findStage(getStages(), getLongValue(COL_STAGE));
+    getFormView().setEnabled(Objects.isNull(stage) || !stage.hasAction(STAGE_ACTION_READONLY));
+
+    if (DataUtils.isNewRow(getActiveRow()) && Objects.isNull(stage)) {
+      triggerStage(STAGE_TRIGGER_NEW);
+    }
+  }
+
+  @Override
+  public void setStages(List<Stage> stages) {
+    orderStages = stages;
+  }
+
+  @Override
+  public void updateStage(Stage stage) {
+    Runnable doDefault = () -> StageFormInterceptor.super.updateStage(stage);
+
+    if (stage.hasAction(STAGE_ACTION_LOST)) {
+      InputArea comment = new InputArea();
+      comment.setWidth("100%");
+      comment.setVisibleLines(4);
+
+      Relation relation = Relation.create(TBL_LOSS_REASONS,
+          Collections.singletonList(COL_LOSS_REASON_NAME));
+
+      relation.disableNewRow();
+      relation.disableEdit();
+      UnboundSelector reason = UnboundSelector.create(relation);
+
+      reason.addSelectorHandler(event -> {
+        if (event.isChanged()) {
+          comment.setValue(event.getRelatedRow() != null
+              ? Data.getString(event.getRelatedViewName(), event.getRelatedRow(),
+              COL_LOSS_REASON_TEMPLATE) : null);
+        }
+      });
+      HtmlTable layout = new HtmlTable();
+      layout.setText(0, 0, Localized.dictionary().reason());
+      layout.setWidget(0, 1, reason);
+      layout.getCellFormatter().setColSpan(1, 0, 2);
+      layout.setText(1, 0, Localized.dictionary().comment());
+      layout.getCellFormatter().setColSpan(2, 0, 2);
+      layout.setWidget(2, 0, comment);
+
+      Global.inputWidget(stage.getName(), layout, new InputCallback() {
+        @Override
+        public String getErrorMessage() {
+          if (!DataUtils.isId(reason.getRelatedId())) {
+            reason.setFocus(true);
+            return Localized.dictionary().valueRequired();
+          }
+          return null;
+        }
+
+        @Override
+        public void onSuccess() {
+          IsRow row = getActiveRow();
+          row.setValue(getFormView().getDataIndex(COL_LOSS_REASON), reason.getRelatedId());
+          row.setValue(getFormView().getDataIndex(COL_LOSS_REASON_NAME), reason.getDisplayValue());
+          row.setValue(getFormView().getDataIndex(COL_LOSS_NOTES), comment.getValue());
+          doDefault.run();
+        }
+      });
+    } else {
+      doDefault.run();
+    }
   }
 
   @Override
@@ -175,7 +303,8 @@ public class CarOrderForm extends PrintFormInterceptor implements Consumer<Speci
       public void accept(FileInfo fileInfo) {
         NewMailMessage.create(BeeUtils.notEmpty(getStringValue("ContactEmail"),
             getStringValue("CustomerEmail")), BeeUtils.joinWords(Localized.dictionary().offer(),
-            getStringValue("OrderNo")), null, Collections.singleton(fileInfo), null);
+            getStringValue("OrderNo")), null, Collections.singleton(fileInfo),
+            (messageId, isSaved) -> triggerStage(STAGE_TRIGGER_SENT));
       }
 
       @Override
@@ -224,31 +353,10 @@ public class CarOrderForm extends PrintFormInterceptor implements Consumer<Speci
         }));
   }
 
-  @Override
-  public void onSetActiveRow(IsRow row) {
-    Long objectId = row.getLong(getDataIndex(COL_OBJECT));
-
-    if (DataUtils.isId(objectId)) {
-      ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_OBJECT);
-      args.addDataItem(COL_OBJECT, objectId);
-
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(getFormView());
-
-          if (!response.hasErrors()) {
-            refreshObject(Specification.restore(response.getResponseAsString()));
-          }
-        }
-      });
-    } else {
-      refreshObject(null);
-    }
-    super.onSetActiveRow(row);
-  }
-
   private void createObject() {
+    if (!getFormView().isEnabled()) {
+      return;
+    }
     if (DataUtils.isId(getActiveRowId())) {
       new SpecificationBuilder(objectSpecification, this);
     } else {

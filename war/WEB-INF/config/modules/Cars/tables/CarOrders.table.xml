@@ -5,6 +5,10 @@
        idName="OrderID"
 >
   <Fields>
+    <Relation name="Stage" relation="Stages" label="=status" />
+    <Relation name="LossReason" relation="LossReasons" label="=reason" />
+    <Text name="LossNotes" />
+
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
 
     <String name="OrderNo" precision="30" unique="true" label="=orderNumber" defExpr="NEXT_NUMBER"

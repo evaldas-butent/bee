@@ -12,6 +12,7 @@ public final class ClassifierConstants {
   public static final String SVC_GENERATE_QR_CODE_PERSON = "GenerateQrCodePerson";
   public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
   public static final String SVC_GET_PRICE_AND_DISCOUNT = "GetPriceAndDiscount";
+  public static final String SVC_FILTER_ORDERS = "FilterOrders";
 
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
   public static final String TIMER_REMIND_TASKS_SUMMARY = "timer_remind_tasks_summary_";
@@ -60,6 +61,8 @@ public final class ClassifierConstants {
   public static final String TBL_DISCOUNTS = "Discounts";
 
   public static final String TBL_CHART_OF_ACCOUNTS = "ChartOfAccounts";
+
+  public static final String TBL_LOSS_REASONS = "LossReasons";
 
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
@@ -288,6 +291,11 @@ public final class ClassifierConstants {
 
   public static final String COL_ACCOUNT_CODE = "AccountCode";
   public static final String COL_JOURNAL_CODE = "JournalCode";
+
+  public static final String COL_LOSS_REASON_NAME = "ReasonName";
+  public static final String COL_LOSS_REASON_TEMPLATE = "Template";
+  public static final String COL_LOSS_REASON = "LossReason";
+  public static final String COL_LOSS_NOTES = "LossNotes";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

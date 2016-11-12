@@ -12,11 +12,16 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class Dimensions {
 
@@ -33,19 +38,24 @@ public final class Dimensions {
 
   public static final String PRM_DIMENSIONS = "Dimensions";
 
-  private static final String COL_DEPARTMENT = "Department";
-  private static final String COL_ACTIVITY_TYPE = "ActivityType";
-  private static final String COL_COST_CENTER = "CostCenter";
-  private static final String COL_OBJECT = "Object";
-
   private static final BeeLogger logger = LogUtils.getLogger(Dimensions.class);
 
-  private static int observed;
+  private static final String[] VIEWS = new String[SPACETIME];
+  private static final String[] RELATION_COLUMNS = new String[SPACETIME];
 
   private static final Map<Integer, String> pluralNames = new HashMap<>();
   private static final Map<Integer, String> singularNames = new HashMap<>();
 
-  public static String plural(int ordinal) {
+  private static int observed;
+
+  static {
+    for (int i = 0; i < SPACETIME; i++) {
+      VIEWS[i] = "Dimensions" + BeeUtils.toLeadingZeroes(i + 1, 2);
+      RELATION_COLUMNS[i] = getColumnPrefix(i + 1) + "Rel";
+    }
+  }
+
+  public static String plural(Integer ordinal) {
     if (isValid(ordinal)) {
       String name = pluralNames.get(ordinal);
       return BeeUtils.isEmpty(name) ? Localized.dictionary().dimensionNameDefault(ordinal) : name;
@@ -55,7 +65,7 @@ public final class Dimensions {
     }
   }
 
-  public static String singular(int ordinal) {
+  public static String singular(Integer ordinal) {
     if (isValid(ordinal)) {
       String name = singularNames.get(ordinal);
       return BeeUtils.isEmpty(name) ? Localized.dictionary().dimensionNameDefault(ordinal) : name;
@@ -65,15 +75,48 @@ public final class Dimensions {
     }
   }
 
-  public static String getViewName(int ordinal) {
-    if (isValid(ordinal)) {
-      return "Dimensions" + BeeUtils.toLeadingZeroes(ordinal, 2);
-    } else {
-      return null;
-    }
+  public static String getViewName(Integer ordinal) {
+    return isValid(ordinal) ? VIEWS[ordinal - 1] : null;
   }
 
-  public static String menuParameter(int ordinal) {
+  public static Integer getViewOrdinal(String viewName) {
+    int index = ArrayUtils.indexOf(VIEWS, viewName);
+    return (index >= 0) ? index + 1 : null;
+  }
+
+  public static boolean isDimensionView(String viewName) {
+    return ArrayUtils.contains(VIEWS, viewName);
+  }
+
+  public static String getGridName(Integer ordinal) {
+    return getViewName(ordinal);
+  }
+
+  public static String getNameColumn(Integer ordinal) {
+    return isValid(ordinal) ? getColumnPrefix(ordinal) + "Name" : null;
+  }
+
+  public static String getRelationColumn(Integer ordinal) {
+    return isValid(ordinal) ? RELATION_COLUMNS[ordinal - 1] : null;
+  }
+
+  public static String getForegroundColumn(Integer ordinal) {
+    return isValid(ordinal) ? getColumnPrefix(ordinal) + "Foreground" : null;
+  }
+
+  public static String getBackgroundColumn(Integer ordinal) {
+    return isValid(ordinal) ? getColumnPrefix(ordinal) + "Background" : null;
+  }
+
+  public static Set<String> getHiddenRelationColumns() {
+    Set<String> result = new HashSet<>();
+    for (int ordinal = observed + 1; ordinal <= SPACETIME; ordinal++) {
+      result.add(getRelationColumn(ordinal));
+    }
+    return result;
+  }
+
+  public static String menuParameter(Integer ordinal) {
     return isValid(ordinal) ? BeeUtils.toString(ordinal) : null;
   }
 
@@ -101,7 +144,7 @@ public final class Dimensions {
     return observed;
   }
 
-  public static void setObserved(Integer count) {
+  public static synchronized void setObserved(Integer count) {
     if (count != null) {
       Dimensions.observed = BeeUtils.clamp(count, 0, SPACETIME);
     }
@@ -116,6 +159,7 @@ public final class Dimensions {
   public static void setSingular(Integer ordinal, String name) {
     if (isValid(ordinal) && !BeeUtils.isEmpty(name)) {
       singularNames.put(ordinal, name.trim());
+      Localized.setColumnLabel(RELATION_COLUMNS[ordinal - 1], name.trim());
     }
   }
 
@@ -128,108 +172,72 @@ public final class Dimensions {
     Assert.notEmpty(columns);
     Assert.notNull(row);
 
-    Long department = DataUtils.getLong(columns, row, COL_DEPARTMENT);
-    Long activityType = DataUtils.getLong(columns, row, COL_ACTIVITY_TYPE);
-    Long costCenter = DataUtils.getLong(columns, row, COL_COST_CENTER);
-    Long object = DataUtils.getLong(columns, row, COL_OBJECT);
+    Long[] values = new Long[observed];
 
-    return new Dimensions(department, activityType, costCenter, object);
+    for (int i = 0; i < values.length; i++) {
+      values[i] = DataUtils.getLong(columns, row, RELATION_COLUMNS[i]);
+    }
+
+    return new Dimensions(values);
   }
 
   public static Dimensions merge(List<Dimensions> list) {
     Assert.notEmpty(list);
 
-    Long department = null;
-    Long activityType = null;
-    Long costCenter = null;
-    Long object = null;
+    Long[] values = new Long[observed];
 
     for (Dimensions dim : list) {
       if (dim != null && !dim.isEmpty()) {
-        if (department == null) {
-          department = dim.getDepartment();
-        }
-        if (activityType == null) {
-          activityType = dim.getActivityType();
-        }
-        if (costCenter == null) {
-          costCenter = dim.getCostCenter();
-        }
-        if (object == null) {
-          object = dim.getObject();
-        }
-
-        if (department != null && activityType != null && costCenter != null && object != null) {
-          break;
+        for (int i = 0; i < Math.min(values.length, dim.values.length); i++) {
+          if (values[i] == null) {
+            values[i] = dim.values[i];
+          }
         }
       }
     }
 
-    return new Dimensions(department, activityType, costCenter, object);
+    return new Dimensions(values);
+  }
+
+  private static String getColumnPrefix(int ordinal) {
+    return "Dim" + BeeUtils.toLeadingZeroes(ordinal, 2);
   }
 
   private static boolean isValid(Integer ordinal) {
     return ordinal != null && ordinal >= 1 && ordinal <= SPACETIME;
   }
 
-  private final Long department;
-  private final Long activityType;
-  private final Long costCenter;
-  private final Long object;
+  private final Long[] values;
 
-  private Dimensions(Long department, Long activityType, Long costCenter, Long object) {
-    this.department = department;
-    this.activityType = activityType;
-    this.costCenter = costCenter;
-    this.object = object;
+  private Dimensions(Long[] values) {
+    this.values = values;
   }
 
   public void applyTo(List<? extends IsColumn> columns, IsRow row) {
     Assert.notEmpty(columns);
     Assert.notNull(row);
 
-    if (getDepartment() != null) {
-      row.setValue(DataUtils.getColumnIndex(COL_DEPARTMENT, columns), getDepartment());
+    for (int i = 0; i < values.length; i++) {
+      if (values[i] != null) {
+        row.setValue(DataUtils.getColumnIndex(RELATION_COLUMNS[i], columns), values[i]);
+      }
     }
-    if (getActivityType() != null) {
-      row.setValue(DataUtils.getColumnIndex(COL_ACTIVITY_TYPE, columns), getActivityType());
-    }
-    if (getCostCenter() != null) {
-      row.setValue(DataUtils.getColumnIndex(COL_COST_CENTER, columns), getCostCenter());
-    }
-    if (getObject() != null) {
-      row.setValue(DataUtils.getColumnIndex(COL_OBJECT, columns), getObject());
-    }
-  }
-
-  public Long getDepartment() {
-    return department;
-  }
-
-  public Long getActivityType() {
-    return activityType;
-  }
-
-  public Long getCostCenter() {
-    return costCenter;
-  }
-
-  public Long getObject() {
-    return object;
   }
 
   public boolean isEmpty() {
-    return department == null && activityType == null && costCenter == null && object == null;
+    for (Long value : values) {
+      if (value != null) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public Filter getFilter() {
     CompoundFilter filter = Filter.and();
-
-    filter.add(Filter.equalsOrIsNull(COL_DEPARTMENT, getDepartment()));
-    filter.add(Filter.equalsOrIsNull(COL_ACTIVITY_TYPE, getActivityType()));
-    filter.add(Filter.equalsOrIsNull(COL_COST_CENTER, getCostCenter()));
-    filter.add(Filter.equalsOrIsNull(COL_OBJECT, getObject()));
-
+    for (int i = 0; i < values.length; i++) {
+      filter.add(Filter.equalsOrIsNull(RELATION_COLUMNS[i], values[i]));
+    }
     return filter;
   }
 
@@ -237,9 +245,15 @@ public final class Dimensions {
   public String toString() {
     if (isEmpty()) {
       return BeeConst.EMPTY;
+
     } else {
-      return BeeUtils.joinOptions(COL_DEPARTMENT, department, COL_ACTIVITY_TYPE, activityType,
-          COL_COST_CENTER, costCenter, COL_OBJECT, object);
+      List<String> items = new ArrayList<>();
+      for (int i = 0; i < values.length; i++) {
+        if (values[i] != null) {
+          items.add(NameUtils.addName(RELATION_COLUMNS[i], BeeUtils.toString(values[i])));
+        }
+      }
+      return BeeUtils.joinItems(items);
     }
   }
 }

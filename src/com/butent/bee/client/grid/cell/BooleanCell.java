@@ -55,12 +55,16 @@ public class BooleanCell extends AbstractCell<Boolean> implements HandlesFormat 
 
       if (length > 0) {
         setTrueText(arr[0]);
-      }
-      if (length > 1) {
-        setFalseText(arr[1]);
-      }
-      if (length > 2) {
-        setNullText(arr[2]);
+
+        if (length > 1) {
+          setFalseText(arr[1]);
+
+          if (length > 2) {
+            setNullText(arr[2]);
+          } else {
+            setNullText(arr[1]);
+          }
+        }
       }
     }
   }

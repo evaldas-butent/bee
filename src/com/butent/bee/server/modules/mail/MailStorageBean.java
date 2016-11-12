@@ -156,8 +156,8 @@ public class MailStorageBean {
     return folder;
   }
 
-  public void detachMessages(IsCondition clause) {
-    qs.updateData(new SqlDelete(TBL_PLACES).setWhere(clause));
+  public int detachMessages(IsCondition clause) {
+    return qs.updateData(new SqlDelete(TBL_PLACES).setWhere(clause));
   }
 
   public void disconnectFolder(MailFolder folder) {
@@ -486,11 +486,14 @@ public class MailStorageBean {
     } else {
       remoteFolder.open(Folder.READ_ONLY);
     }
+    long uidLast = 0;
+
     if (lastNo == 0) {
       while (size > 0) {
-        Message[] msgs = ((UIDFolder) remoteFolder)
-            .getMessagesByUID(BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID)),
-                BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID)));
+        uidLast = BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID));
+
+        Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(uidLast,
+            BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID)));
 
         if (!ArrayUtils.isEmpty(msgs)) {
           start = msgs[0].getMessageNumber();
@@ -533,11 +536,19 @@ public class MailStorageBean {
         fp.add(UIDFolder.FetchProfileItem.UID);
         remoteFolder.fetch(msgs, fp);
 
+        long uidTo = ((UIDFolder) remoteFolder).getUID(msgs[msgs.length - 1]);
+
+        if (uidLast > uidTo + 1) {
+          cnt += ctx.getBusinessObject(MailStorageBean.class)
+              .detachMessages(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
+                  localFolder.getId()),
+                  SqlUtils.more(TBL_PLACES, COL_MESSAGE_UID, uidTo),
+                  SqlUtils.less(TBL_PLACES, COL_MESSAGE_UID, uidLast)));
+        }
+        uidLast = ((UIDFolder) remoteFolder).getUID(msgs[0]);
         clause.clear();
-        clause.add(SqlUtils.moreEqual(TBL_PLACES, COL_MESSAGE_UID,
-            ((UIDFolder) remoteFolder).getUID(msgs[0])),
-            SqlUtils.lessEqual(TBL_PLACES, COL_MESSAGE_UID,
-                ((UIDFolder) remoteFolder).getUID(msgs[msgs.length - 1])));
+        clause.add(SqlUtils.moreEqual(TBL_PLACES, COL_MESSAGE_UID, uidLast),
+            SqlUtils.lessEqual(TBL_PLACES, COL_MESSAGE_UID, uidTo));
 
         int c = ctx.getBusinessObject(MailStorageBean.class)
             .syncMessages(qs.getData(query), msgs, account, localFolder, remoteFolder, progressId);
@@ -547,6 +558,12 @@ public class MailStorageBean {
           cnt = cnt * (-1);
           break;
         }
+      }
+      if (uidLast > 1) {
+        cnt += ctx.getBusinessObject(MailStorageBean.class)
+            .detachMessages(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
+                localFolder.getId()),
+                SqlUtils.less(TBL_PLACES, COL_MESSAGE_UID, uidLast)));
       }
     }
     if (!Objects.equals(modseq, BeeUtils.unbox(localFolder.getModSeq()))) {

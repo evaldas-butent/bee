@@ -8,7 +8,7 @@
     <SimpleColumn name="Description" />
     <SimpleColumn name="Main" />
     <SimpleColumn name="Private" />
-    <SimpleColumn name="SynchronizeAll" />
+    <SimpleColumn name="SyncMode" />
 
     <SimpleColumn name="Address" />
     <SimpleJoin name="Address" joinType="INNER">

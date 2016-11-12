@@ -1,106 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-    <!ENTITY cell "padding-bottom: 2px;">
-    <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
-    <!ENTITY inp "display: inline-block; width: 250px;">
-    <!ENTITY tbl "border-collapse: collapse;">
-    <!ENTITY lbl "vertical-align: top;">
+    <!ENTITY inp "width: 250px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
 
   name="ServiceMaintenance" viewName="ServiceMaintenance" caption="=svcMaintenance" showRowId="true"
-  >
+>
   <FlowPanel class="flexBox-vertical" style="margin:5px; overflow:scroll;">
-    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
-      <col index="0" cellStyle="&col1;"/>
-      <col index="2" cellStyle="&col1;"/>
+    <Table kind="controls" style="height:50%;" cellStyle="vertical-align: top">
+      <col index="0" kind="label"/>
+      <col index="2" kind="label"/>
 
       <row>
         <Label for="Type" class="bee-required" />
-        <DataSelector source="Type" required="true" choiceColumns="Name" style="&inp;"/>
+        <DataSelector name="Type" source="Type" required="true" choiceColumns="Name" style="&inp;"/>
         <Label for="State" text="=status" class="bee-required" />
-        <DataSelector source="State" required="true" choiceColumns="Name" style="&inp;"/>
+        <DataSelector name="State" source="State" required="true" choiceColumns="Name" style="&inp;"
+                      caching="local"/>
       </row>
       <row>
         <text/>
         <CheckBox source="Urgent" summarize="true"/>
         <Label text="=companyDepartment" class="bee-required" />
-        <TextLabel source="CreatorDepartmentName"  contentEditable="false" style="&inp;"/>
+        <TextLabel source="CreatorDepartmentName" class="bee-output" style="&inp;"/>
       </row>
       <row>
         <br/>
       </row>
       <row>
         <Label text="=svcDevice" />
-        <DataSelector source="ServiceObject" viewName="ServiceObjects"
+        <DataSelector name="ServiceObject" source="ServiceObject"
                       choiceColumns="SerialNo CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
                       style="&inp;"/>
         <Label for="Contact" />
-        <DataSelector source="Contact" viewName="CompanyPersons"
-                      choiceColumns="FirstName LastName"
-                      renderColumns="ContactFirstName ContactLastName" style="&inp;"/>
+        <DataSelector name="Contact" source="Contact"
+                      choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                      renderColumns="ContactFirstName ContactLastName" style="&inp;" options="Company"/>
       </row>
       <row>
         <Label text="=category" class="bee-required" />
-        <TextLabel source="CategoryName"  contentEditable="false" style="&inp;"/>
+        <TextLabel source="CategoryName" class="bee-output" style="&inp;"/>
         <Label text="=phone" class="bee-required" />
-        <DataSelector source="Contact" viewName="CompanyPersons" required="true"
-                      choiceColumns="Phone FirstName LastName CompanyName" renderColumns="ContactPhone"
-                      style="&inp;"/>
+        <DataSelector name="Phone" source="Contact" required="true"
+                      choiceColumns="FirstName LastName Phone Email Address CompanyName" renderColumns="ContactPhone"
+                      style="&inp;" options="Company" />
       </row>
       <row>
         <Label text="=tcdBrand" />
-        <TextLabel source="ManufacturerName" contentEditable="false" style="&inp;"/>
+        <TextLabel source="ManufacturerName" class="bee-output" style="&inp;"/>
         <Label for="Company" text="=client" />
-        <DataSelector source="Company" viewName="Companies"
+        <DataSelector name="Company" source="Company"
                       choiceColumns="Name TypeName" renderColumns="CompanyName CompanyTypeName"
                       style="&inp;"/>
       </row>
       <row>
         <Label for="Model" />
-        <TextLabel source="Model" contentEditable="false" style="&inp;"/>
+        <TextLabel source="Model" class="bee-output" style="&inp;"/>
         <Label text="=email" />
-        <DataSelector source="Contact" viewName="CompanyPersons"
-                      choiceColumns="Email FirstName LastName CompanyName"
-                      renderColumns="ContactEmailAddress" style="&inp;"/>
+        <DataSelector name="Email" source="Contact" viewName="CompanyPersons"
+                      choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                      renderColumns="ContactEmail" style="&inp;"
+                      options="Company"/>
       </row>
       <row>
         <Label text="=svcSerialNo"/>
-        <TextLabel source="SerialNo" contentEditable="false" style="&inp;"/>
+        <TextLabel source="SerialNo" class="bee-output" style="&inp;"/>
         <Label text="=address" />
-        <DataSelector source="Contact" viewName="CompanyPersons"
-                      choiceColumns="Address FirstName LastName CompanyName"
-                      renderColumns="ContactAddress" style="&inp;"/>
+        <DataSelector name="Address" source="Contact"
+                      choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                      renderColumns="ContactAddress" style="&inp;"
+                      options="Company"/>
       </row>
       <row>
-        <cell rowSpan="3" style="&lbl;">
+        <cell rowSpan="3">
           <Label for="Equipment"/>
         </cell>
         <cell rowSpan="3">
           <InputArea source="Equipment" visibleLines="5" style="&inp;"/>
         </cell>
         <text/>
-        <CheckBox name="WarrantyMaintenance" text="=svcWarrantyMaintenance" summarize="true" />
+        <CheckBox name="Warranty" text="=svcWarrantyMaintenance" summarize="true" />
       </row>
       <row>
-        <Label for="WarrantyType" />
+        <Label name="WarrantyTypeName" for="WarrantyType" />
         <DataSelector source="WarrantyType" style="&inp;"/>
       </row>
       <row>
         <Label for="WarrantyMaintenance" />
-        <DataSelector source="WarrantyMaintenance" viewName="ServiceMaintenance"
-                      choiceColumns="Id" filter="WarrantyValidTo > {t}" style="&inp;"/>
+        <DataSelector name="WarrantyMaintenance" source="WarrantyMaintenance" choiceColumns="Id"
+                     filter="WarrantyValidTo > {t}" style="&inp;"/>
       </row>
       <row>
-        <cell rowSpan="2" style="&lbl;">
+        <cell rowSpan="2">
           <Label for="Description"/>
         </cell>
         <cell rowSpan="2">
           <InputArea source="Description" visibleLines="4" style="&inp;"/>
         </cell>
-        <Label for="Contractor" text="=svcDefectSupplier" />
-        <TextLabel source="ContractorName"  contentEditable="false" style="&inp;"/>
+        <Label for="Contractor" text="=svcContractor" />
+        <TextLabel source="ContractorName" class="bee-output" style="&inp;"/>
       </row>
       <row>
         <Label for="Repairer" />
@@ -112,13 +111,13 @@
       </row>
       <row>
         <Label for="Date" />
-        <InputDateTime source="Date" readOnly="true" />
+        <DateTimeLabel source="Date" class="bee-output" />
         <Label for="EndingDate" />
-        <InputDateTime source="EndingDate"/>
+        <DateTimeLabel source="EndingDate" format="DATE_TIME_SHORT" class="bee-output"/>
       </row>
       <row>
         <Label for="Creator" />
-        <TextLabel contentEditable="false" style="&inp;">
+        <TextLabel class="bee-output" style="&inp;">
           <renderToken source="CreatorFirstName"/>
           <renderToken source="CreatorLastName"/>
         </TextLabel>
@@ -126,5 +125,35 @@
         <InputDateTime source="WarrantyValidTo"  />
       </row>
     </Table>
+    <TabbedPages name="ChildTabs" style="height: 800px;">
+      <page>
+        <text>=svcComments</text>
+        <FlowPanel name="MaintenanceComments" class="flex-horizontal"/>
+      </page>
+      <page>
+        <text>=svcMaintenanceItemsServices</text>
+        <ChildGrid name="Maintenance" relColumn="ServiceMaintenance" />
+      </page>
+      <page>
+        <text>=svcInvoices</text>
+        <GridPanel name="ObjectInvoices" parent="{form}" child="true" />
+      </page>
+      <page>
+        <text>=svcDefects</text>
+        <ChildGrid name="ObjectDefects" relColumn="ServiceMaintenance" />
+      </page>
+      <page module="Tasks">
+        <text>=crmTasks</text>
+        <ChildGrid name="RelatedTasks" relColumn="ServiceMaintenance" />
+      </page>
+      <page module="Tasks">
+        <text>=crmRecurringTasks</text>
+        <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceMaintenance" />
+      </page>
+      <page>
+        <text>=svcDates</text>
+        <ChildGrid name="ServiceDates" relColumn="ServiceMaintenance" />
+      </page>
+    </TabbedPages>
   </FlowPanel>
 </f:Form>

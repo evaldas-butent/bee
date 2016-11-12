@@ -11,6 +11,8 @@
 .bee-fin-posting-precedence-label {
   padding: 3px 8px;
   border: 1px solid transparent;
+  cursor: grab;
+  cursor: -webkit-grab;
 }
 
 .bee-fin-posting-precedence-drag {

@@ -78,17 +78,39 @@ final class InvoiceBuilder {
     }
 
     final FormView form = ViewHelper.getForm(sourceWidget.asWidget());
-    if (form == null || !form.isEnabled() || !VIEW_SERVICE_OBJECTS.equals(form.getViewName())) {
+    if (form == null || !form.isEnabled()
+        || !BeeUtils.inList(form.getViewName(), VIEW_SERVICE_OBJECTS, COL_SERVICE_MAINTENANCE)) {
       return;
     }
 
-    final long objId = form.getActiveRowId();
+    final long objId;
+    long maintenanceId = 0;
+
+    if (BeeUtils.equals(form.getViewName(), VIEW_SERVICE_OBJECTS)) {
+      objId = form.getActiveRowId();
+
+    } else {
+      objId = form.getActiveRow().getLong(
+          Data.getColumnIndex(form.getViewName(), COL_SERVICE_OBJECT));
+      maintenanceId = form.getActiveRowId();
+    }
+
     if (!DataUtils.isId(objId)) {
       return;
     }
 
-    Filter filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
-        Filter.isNull(COL_MAINTENANCE_INVOICE));
+    Filter filter;
+
+    if (BeeUtils.equals(form.getViewName(), VIEW_SERVICE_OBJECTS)
+        || !DataUtils.isId(maintenanceId)) {
+      filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
+          Filter.isNull(COL_MAINTENANCE_INVOICE));
+
+    } else {
+      filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
+          Filter.isNull(COL_MAINTENANCE_INVOICE),
+          Filter.equals(COL_SERVICE_MAINTENANCE, maintenanceId));
+    }
 
     Queries.getRowSet(VIEW_MAINTENANCE, null, filter, new Queries.RowSetCallback() {
       @Override

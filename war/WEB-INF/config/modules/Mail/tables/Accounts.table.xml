@@ -10,7 +10,8 @@
     <String name="Description" precision="50" notNull="true" label="=mailName" />
     <Boolean name="Main" label="=mailDefault" />
     <Boolean name="Private" label="=mailPrivate" />
-    <Boolean name="SynchronizeAll" label="=mailSynchronizeAll" />
+    <Enum name="SyncMode" key="SyncMode" defValue="0" />
+    <Integer name="ConnectFailures" />
     <Relation name="Address" relation="Emails" notNull="true" unique="true" label="=mailAddress" />
     <Relation name="Signature" relation="Signatures" label="=mailSignature" />
 

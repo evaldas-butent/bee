@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="IndicatorAccounts"
+       idName="IndicatorAccountID"
+>
+  <Fields>
+    <Relation name="Indicator" notNull="true" relation="FinancialIndicators" cascade="DELETE"
+              label="=finIndicator" />
+
+    <Relation name="Debit" relation="ChartOfAccounts" label="=debit" />
+    <Relation name="Credit" relation="ChartOfAccounts" label="=credit" />
+
+    <Boolean name="Plus" label="=plus" />
+  </Fields>
+</Table>

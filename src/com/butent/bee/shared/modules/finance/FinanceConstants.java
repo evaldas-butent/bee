@@ -1,5 +1,10 @@
 package com.butent.bee.shared.modules.finance;
 
+import com.butent.bee.shared.modules.finance.analysis.IndicatorBalance;
+import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
+import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
+import com.butent.bee.shared.utils.EnumUtils;
+
 public final class FinanceConstants {
 
   public static final String SVC_POST_TRADE_DOCUMENT = "postTradeDocument";
@@ -34,6 +39,7 @@ public final class FinanceConstants {
   public static final String COL_FIN_CREDIT_DOCUMENT = "CreditDocument";
   public static final String COL_FIN_AMOUNT = "Amount";
   public static final String COL_FIN_CURRENCY = "Currency";
+  public static final String COL_FIN_QUANTITY = "Quantity";
   public static final String COL_FIN_TRADE_DOCUMENT = "TradeDocument";
   public static final String COL_FIN_TRADE_PAYMENT = "TradePayment";
   public static final String COL_FIN_EMPLOYEE = "Employee";
@@ -64,6 +70,14 @@ public final class FinanceConstants {
   public static final String COL_FIN_DISTR_ITEM = "Item";
   public static final String COL_FIN_DISTR_TRADE_OPERATION = "Operation";
   public static final String COL_FIN_DISTR_TRADE_DOCUMENT = "TradeDocument";
+
+  public static final String COL_FIN_INDICATOR_KIND = "IndicatorKind";
+  public static final String COL_FIN_INDICATOR_NAME = "IndicatorName";
+  public static final String COL_FIN_INDICATOR_SOURCE = "IndicatorSource";
+  public static final String COL_FIN_INDICATOR_BALANCE = "IndicatorBalance";
+  public static final String COL_FIN_INDICATOR_CLOSING_ENTRIES = "IndicatorClosingEntries";
+  public static final String COL_FIN_INDICATOR_IS_PERCENT = "IndicatorIsPercent";
+  public static final String COL_FIN_INDICATOR_SCALE = "IndicatorScale";
 
   public static final String ALS_JOURNAL_BACKGROUND = "JournalBackground";
   public static final String ALS_JOURNAL_FOREGROUND = "JournalForeground";
@@ -100,8 +114,17 @@ public final class FinanceConstants {
 
   public static final String GRID_FINANCE_CONTENTS = "FinanceContents";
 
+  public static final String GRID_FINANCIAL_INDICATORS_PRIMARY = "FinancialIndicatorsPrimary";
+  public static final String GRID_FINANCIAL_INDICATORS_SECONDARY = "FinancialIndicatorsSecondary";
+
   public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
   public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";
+
+  public static void register() {
+    EnumUtils.register(IndicatorKind.class);
+    EnumUtils.register(IndicatorSource.class);
+    EnumUtils.register(IndicatorBalance.class);
+  }
 
   private FinanceConstants() {
   }

@@ -231,7 +231,6 @@
       <xs:enumeration value="Accounts" />
       <xs:enumeration value="AccountUsers" />
       <xs:enumeration value="ActiveTrips" />
-      <xs:enumeration value="ActivityTypes" />
       <xs:enumeration value="Addressbook" />
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
@@ -303,7 +302,6 @@
       <xs:enumeration value="ConfPricelist" />
       <xs:enumeration value="Configuration" />
       <xs:enumeration value="ConfTypes" />
-      <xs:enumeration value="CostCenters" />
       <xs:enumeration value="Countries" />
       <xs:enumeration value="CountryDailyCosts" />
       <xs:enumeration value="CountryNorms" />
@@ -322,7 +320,16 @@
       <xs:enumeration value="DepartmentPositions" />
       <xs:enumeration value="Dictionary" />
       <xs:enumeration value="DimensionNames" />
-      <xs:enumeration value="Dimensions" />
+      <xs:enumeration value="Dimensions01" />
+      <xs:enumeration value="Dimensions02" />
+      <xs:enumeration value="Dimensions03" />
+      <xs:enumeration value="Dimensions04" />
+      <xs:enumeration value="Dimensions05" />
+      <xs:enumeration value="Dimensions06" />
+      <xs:enumeration value="Dimensions07" />
+      <xs:enumeration value="Dimensions08" />
+      <xs:enumeration value="Dimensions09" />
+      <xs:enumeration value="Dimensions10" />
       <xs:enumeration value="Discounts" />
       <xs:enumeration value="Discussions" />
       <xs:enumeration value="DiscussionsComments" />
@@ -386,6 +393,7 @@
       <xs:enumeration value="FinanceDistributionOfItems" />
       <xs:enumeration value="FinanceDistributionOfTradeDocuments" />
       <xs:enumeration value="FinanceDistributionOfTradeOperations" />
+      <xs:enumeration value="FinancialIndicators" />
       <xs:enumeration value="FinancialRecords" />
       <xs:enumeration value="FinancialStates" />
       <xs:enumeration value="Folders" />
@@ -401,6 +409,8 @@
       <xs:enumeration value="ImportMappings" />
       <xs:enumeration value="ImportOptions" />
       <xs:enumeration value="ImportProperties" />
+      <xs:enumeration value="IndicatorAccounts" />
+      <xs:enumeration value="IndicatorFilters" />
       <xs:enumeration value="InformationSources" />
       <xs:enumeration value="InvoiceTradeActs" />
       <xs:enumeration value="IpFilters" />
@@ -520,6 +530,7 @@
       <xs:enumeration value="ServiceFiles" />
       <xs:enumeration value="ServiceInvoices" />
       <xs:enumeration value="ServiceMaintenance" />
+      <xs:enumeration value="MaintenanceComments" />
       <xs:enumeration value="ServiceObjectCriteria" />
       <xs:enumeration value="ServiceObjects" />
       <xs:enumeration value="Services" />
@@ -532,6 +543,10 @@
       <xs:enumeration value="SpareParts" />
       <xs:enumeration value="SparePartTypes" />
       <xs:enumeration value="SparePartUsage" />
+      <xs:enumeration value="StageActions" />
+      <xs:enumeration value="StageConditions" />
+      <xs:enumeration value="Stages" />
+      <xs:enumeration value="StageTriggers" />
       <xs:enumeration value="StateProcess" />
       <xs:enumeration value="TaskDurations" />
       <xs:enumeration value="TaskEvents" />
