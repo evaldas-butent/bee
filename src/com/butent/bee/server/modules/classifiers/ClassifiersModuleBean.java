@@ -245,6 +245,8 @@ public class ClassifiersModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_PRICE_AND_DISCOUNT)) {
       response = getPriceAndDiscount(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_FILTER_ORDERS)) {
+      response = filterOrders(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -1774,6 +1776,56 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     return result;
+  }
+
+  private ResponseObject filterOrders(RequestInfo reqInfo) {
+    String[] orders = Codec.beeDeserializeCollection(reqInfo.getParameter(TBL_ORDERS));
+    Long itemId = reqInfo.getParameterLong(COL_ITEM);
+
+    if (orders.length == 0) {
+      return ResponseObject.parameterNotFound(SVC_FILTER_ORDERS, TBL_ORDERS);
+    }
+    if (!DataUtils.isId(itemId)) {
+      return ResponseObject.parameterNotFound(SVC_FILTER_ORDERS, COL_ITEM);
+    }
+
+    Map<Long, Pair<Double, Double>> remainderMap = new HashMap<>();
+
+    for (String orderId : orders) {
+
+      SqlSelect slcOrderItems = new SqlSelect()
+          .addField(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS), COL_ORDER_ITEM)
+          .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
+          .addFrom(TBL_ORDER_ITEMS)
+          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER, orderId, COL_ITEM,
+              itemId)));
+
+      SimpleRowSet orderItems = qs.getData(slcOrderItems);
+      double resQty = BeeConst.DOUBLE_ZERO;
+
+      for (SimpleRow orderItem : orderItems) {
+        resQty += BeeUtils.unbox(orderItem.getDouble(COL_RESERVED_REMAINDER));
+      }
+
+      SqlSelect slcInvoices = new SqlSelect()
+          .addFields(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
+          .addFrom(VIEW_ORDER_CHILD_INVOICES)
+          .addFromLeft(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS, VIEW_ORDER_CHILD_INVOICES,
+              COL_SALE_ITEM))
+          .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+          .setWhere(SqlUtils.and(SqlUtils.inList(VIEW_ORDER_CHILD_INVOICES, COL_ORDER_ITEM,
+              (Object[]) orderItems.getLongColumn(COL_ORDER_ITEM)),
+              SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED)));
+
+      double invoiceQty = BeeConst.DOUBLE_ZERO;
+      for (SimpleRow invoice : qs.getData(slcInvoices)) {
+        invoiceQty += BeeUtils.unbox(invoice.getDouble(COL_TRADE_ITEM_QUANTITY));
+      }
+
+      remainderMap.put(Long.valueOf(orderId), Pair.of(resQty, invoiceQty));
+    }
+
+   return ResponseObject.response(remainderMap);
   }
 
   private static String format(Pair<Double, Double> pp) {

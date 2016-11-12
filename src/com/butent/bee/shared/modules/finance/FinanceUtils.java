@@ -43,9 +43,12 @@ public final class FinanceUtils {
     return filter;
   }
 
-  public static List<String> groupingFunction(BeeRow row, int amountIndex) {
+  public static List<String> groupingFunction(BeeRow row, int amountIndex, int quantityIndex) {
     List<String> values = new ArrayList<>(row.getValues());
+
     values.set(amountIndex, null);
+    values.set(quantityIndex, null);
+
     return values;
   }
 

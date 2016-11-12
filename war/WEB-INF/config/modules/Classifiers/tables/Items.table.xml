@@ -59,7 +59,7 @@
     <Relation name="Type" relation="CategoryTree" label="=type" />
     <Relation name="Group" relation="CategoryTree" label="=group" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
     <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
               label="=finTradeAccounts" />

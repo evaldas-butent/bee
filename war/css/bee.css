@@ -2357,7 +2357,9 @@
 .bee-GridSettings-label {
   min-width: 80px;
   font-size: 12px;
-  cursor: move;
+  border: 1px solid transparent;
+  cursor: grab;
+  cursor: -webkit-grab;
 }
 .bee-GridSettings-visibility,
 .bee-GridSettings-editInPlace {
@@ -2381,8 +2383,7 @@
 }
 .bee-GridSettings-drag {
   background-color: yellow;
-  box-sizing: border-box;
-  border: 1px solid darkgreen;
+  border-color: darkgreen;
 }
 
 .bee-Photo-embedded {

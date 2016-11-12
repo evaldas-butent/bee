@@ -67,7 +67,7 @@ final class ResponseHandler {
         Global.showTable(caption, rowSet);
       }
 
-    } else if (response.hasResponse(String.class)) {
+    } else if (response.getResponse() instanceof String) {
       if (BeeUtils.isEmpty(response.getResponseAsString())) {
         onEmptyResponse(caption);
       } else {

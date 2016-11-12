@@ -8,7 +8,7 @@
     <String name="AccountCode" precision="20" notNull="true" unique="true" label="=code" />
     <String name="AccountName" precision="140" notNull="true" translatable="true" label="=name" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
 
     <Text name="Description" label="=description" />

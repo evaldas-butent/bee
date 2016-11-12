@@ -1270,6 +1270,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     reset();
 
     if (fire) {
+      SelectorEvent.fire(this, State.CHANGE_PENDING);
       fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
       SelectorEvent.fire(this, State.CHANGED);
     }

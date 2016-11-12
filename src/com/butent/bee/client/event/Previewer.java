@@ -184,11 +184,9 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     if (element.getId() != null && element.getId().startsWith("mce_")) {
       return true;
     }
+
     String className = DomUtils.getClassName(element);
-    if (className != null && className.startsWith("mce-")) {
-      return true;
-    }
-    return false;
+    return className != null && className.startsWith("mce-");
   }
 
   private static void onInteraction() {
@@ -242,8 +240,8 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     String type = event.getNativeEvent().getType();
 
     if (modalCount == 0 && EventUtils.EVENT_TYPE_MOUSE_DOWN.equals(type)) {
-      for (int i = 0; i < mouseDownPriorHandlers.size(); i++) {
-        mouseDownPriorHandlers.get(i).onEventPreview(event, getTargetNode(event));
+      for (PreviewHandler mouseDownPriorHandler : mouseDownPriorHandlers) {
+        mouseDownPriorHandler.onEventPreview(event, getTargetNode(event));
         if (event.isCanceled() || event.isConsumed()) {
           return;
         }

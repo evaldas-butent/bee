@@ -4,6 +4,17 @@
       name="CarOrders" source="CarOrders"
       editForm="CarOrder" newRowForm="CarOrder" caption="=orders">
   <Columns>
+    <SimpleColumn name="Stage" />
+    <SimpleJoin name="Stage" joinType="LEFT">
+      <SimpleColumn name="StageName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="LossReason" />
+    <SimpleJoin name="LossReason" joinType="LEFT">
+      <SimpleColumn name="ReasonName" />
+    </SimpleJoin>
+    <SimpleColumn name="LossNotes" />
+
     <SimpleColumn name="Date" />
     <SimpleColumn name="OrderNo" />
 

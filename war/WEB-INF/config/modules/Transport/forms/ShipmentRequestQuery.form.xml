@@ -327,7 +327,7 @@
                       <label>=companyPerson</label>
                     </td>
                     <td>
-                      <input name="LoadingContact" type="text" required="required" maxlength="50" />
+                      <input name="LoadingContact" type="text" maxlength="50" />
                     </td>
                   </tr>
                   <tr>
@@ -420,7 +420,7 @@
                       <label>=companyPerson</label>
                     </td>
                     <td>
-                      <input name="UnloadingContact" type="text" maxlength="50" />
+                      <input name="UnloadingContact" type="text" required="required" maxlength="50" />
                     </td>
                   </tr>
                   <tr>

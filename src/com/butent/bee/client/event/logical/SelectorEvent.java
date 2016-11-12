@@ -192,6 +192,10 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
     return State.CANCELED.equals(getState());
   }
 
+  public boolean isChangePending() {
+    return State.CHANGE_PENDING.equals(getState());
+  }
+
   public boolean isChanged() {
     return State.CHANGED.equals(getState());
   }

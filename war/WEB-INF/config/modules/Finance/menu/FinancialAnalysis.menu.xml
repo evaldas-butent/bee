@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+       name="FinancialAnalysis" label="=finAnalysis" parent="Finance" order="200" separator="true"
+>
+  <Item name="FinancialIndicatorsPrimary" label="=finIndicatorsPrimary" service="grid"
+        parameters="FinancialIndicatorsPrimary" />
+  <Item name="FinancialIndicatorsSecondary" label="=finIndicatorsSecondary" service="grid"
+        parameters="FinancialIndicatorsSecondary" />
+</Entry>

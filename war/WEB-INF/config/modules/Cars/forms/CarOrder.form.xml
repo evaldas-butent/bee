@@ -17,6 +17,9 @@
 
         <Label for="OrderNo" visible="true" style="&lbl;" />
         <InputText source="OrderNo" style="&inpw;" />
+
+        <Label for="Stage" style="&lbl;" />
+        <TextLabel source="StageName" style="font-weight:bold;" />
       </row>
       <row>
         <Label for="Customer" style="&lbl;" />
@@ -27,6 +30,13 @@
         <DataSelector source="CustomerPerson" newRowEnabled="false" style="&inpw;"
                       renderColumns="ContactFirstName ContactLastName"
                       choiceColumns="FirstName LastName CompanyName" options="Customer" />
+        <text/>
+        <cell rowSpan="2" verticalAlignment="top">
+          <TextLabel source="LossReason" style="color:red; white-space:pre-wrap;">
+            <renderToken source="ReasonName" />
+            <renderToken source="LossNotes" prefix="&lt;br>" />
+          </TextLabel>
+        </cell>
       </row>
       <row>
         <Label for="Manager" style="&lbl;" />

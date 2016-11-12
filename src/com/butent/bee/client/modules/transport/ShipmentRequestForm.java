@@ -114,7 +114,6 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   private static final String NAME_VALUE_LABEL = "ValueLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
-  private static final String VAR_UNBOUND = "Unbound";
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
@@ -132,11 +131,9 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       WidgetDescriptionCallback callback) {
 
     if (BeeUtils.same(name, NAME_INCOTERMS) && widget instanceof HasClickHandlers) {
-      ((HasClickHandlers) widget).addClickHandler(event -> getCommonTerms(message -> {
+      ((HasClickHandlers) widget).addClickHandler(event -> {
         Flow container = new Flow();
-        StyleUtils.setHeight(container, 80, CssUnit.VH);
         StyleUtils.setWidth(container, 80, CssUnit.VW);
-        StyleUtils.setOverflow(container, StyleUtils.ScrollBars.BOTH, Overflow.AUTO);
 
         String suffix = Localized.dictionary().languageTag();
 
@@ -147,14 +144,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         StyleUtils.setWidth(image, 100, CssUnit.PCT);
         container.add(image);
 
-        if (!BeeUtils.isEmpty(message)) {
-          PreElement pre = Document.get().createPreElement();
-          pre.getStyle().setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
-          pre.setInnerHTML(message);
-          container.add(new HtmlPanel(pre.getString()));
-        }
-        Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), container);
-      }));
+        Global.showModalWidget(container);
+      });
     }
     super.afterCreateWidget(name, widget, callback);
   }

@@ -271,26 +271,27 @@ public class FinancePostingBean {
         BeeUtils.addNotNull(lineRows,
             post(columns, date,
                 operationType.getAmountDebit(acc), operationType.getAmountCredit(acc),
-                lineTotal - lineVat, currency, employee, dim));
+                lineTotal - lineVat, currency, quantity, employee, dim));
       }
 
       if (BeeUtils.nonZero(parentCostAmount)) {
         BeeUtils.addNotNull(lineRows,
             post(columns, date, acc.getCostOfGoodsSold(), costOfMerchandise,
-                parentCostAmount, parentCostCurrency, employee, dim));
+                parentCostAmount, parentCostCurrency, quantity, employee, dim));
       }
 
       if (BeeUtils.nonZero(lineVat)) {
         BeeUtils.addNotNull(lineRows,
             post(columns, date, operationType.getVatDebit(acc), operationType.getVatCredit(acc),
-                lineVat, currency, employee, dim));
+                lineVat, currency, quantity, employee, dim));
       }
 
       if (!DataUtils.isEmpty(docPayments)
           && BeeUtils.nonZero(lineTotal) && BeeUtils.nonZero(docTotal)) {
 
         lineRows.addAll(postPayments(columns, docPayments, operationType.consumesStock(),
-            operationType.getDebtAccount(acc), lineTotal / docTotal, currency, employee, dim));
+            operationType.getDebtAccount(acc), lineTotal, docTotal, currency, quantity,
+            employee, dim));
       }
 
       if (!lineRows.isEmpty()) {
@@ -490,8 +491,8 @@ public class FinancePostingBean {
   }
 
   private static List<BeeRow> postPayments(List<BeeColumn> columns, BeeRowSet payments,
-      boolean asDebit, Long debtAccount, double factor, Long currency,
-      Long employee, Dimensions dimensions) {
+      boolean asDebit, Long debtAccount, double lineTotal, double docTotal,
+      Long currency, Double quantity, Long employee, Dimensions dimensions) {
 
     List<BeeRow> result = new ArrayList<>();
 
@@ -515,8 +516,13 @@ public class FinancePostingBean {
       DateTime date = row.getDateTime(dateIndex);
 
       Double amount = row.getDouble(amountIndex);
+      Double qty = null;
+
       if (BeeUtils.nonZero(amount)) {
-        amount *= factor;
+        if (BeeUtils.nonZero(quantity)) {
+          qty = quantity * amount / docTotal;
+        }
+        amount *= lineTotal / docTotal;
       }
 
       Long account = row.getLong(accountIndex);
@@ -530,7 +536,8 @@ public class FinancePostingBean {
       Long debit = asDebit ? account : debtAccount;
       Long credit = asDebit ? debtAccount : account;
 
-      BeeRow output = post(columns, date, debit, credit, amount, currency, employee, dimensions);
+      BeeRow output = post(columns, date, debit, credit, amount, currency, qty,
+          employee, dimensions);
 
       if (output != null) {
         output.setValue(outputPaymentIndex, row.getId());
@@ -606,6 +613,7 @@ public class FinancePostingBean {
     int creditIndex = DataUtils.getColumnIndex(COL_FIN_CREDIT, columns);
 
     int amountIndex = DataUtils.getColumnIndex(COL_FIN_AMOUNT, columns);
+    int quantityIndex = DataUtils.getColumnIndex(COL_FIN_QUANTITY, columns);
 
     int percentIndex = distribution.getColumnIndex(COL_FIN_DISTR_PERCENT);
 
@@ -625,6 +633,7 @@ public class FinancePostingBean {
 
       for (BeeRow inputRow : inputRows) {
         double inputAmount = inputRow.getDouble(amountIndex);
+        Double inputQuantity = inputRow.getDouble(quantityIndex);
 
         for (int i = 0; i < distributionRows.size(); i++) {
           BeeRow distributionRow = distributionRows.get(i);
@@ -632,6 +641,10 @@ public class FinancePostingBean {
 
           BeeRow outputRow = DataUtils.cloneRow(inputRow);
           outputRow.setValue(amountIndex, inputAmount * factor);
+
+          if (BeeUtils.nonZero(inputQuantity)) {
+            outputRow.setValue(quantityIndex, inputQuantity * factor);
+          }
 
           Long debitReplacement = distributionRow.getLong(debitReplacementIndex);
           if (DataUtils.isId(debitReplacement)) {
@@ -653,6 +666,10 @@ public class FinancePostingBean {
         if (remainingFactor >= BeeConst.DOUBLE_ONE / BeeConst.DOUBLE_ONE_HUNDRED) {
           BeeRow outputRow = DataUtils.cloneRow(inputRow);
           outputRow.setValue(amountIndex, inputAmount * remainingFactor);
+
+          if (BeeUtils.nonZero(inputQuantity)) {
+            outputRow.setValue(quantityIndex, inputQuantity * remainingFactor);
+          }
 
           outputRows.add(outputRow);
         }
@@ -915,7 +932,7 @@ public class FinancePostingBean {
   }
 
   private static BeeRow post(List<BeeColumn> columns, DateTime date,
-      Long debit, Long credit, Double amount, Long currency,
+      Long debit, Long credit, Double amount, Long currency, Double quantity,
       Long employee, Dimensions dimensions) {
 
     if (FinanceUtils.isValidEntry(date, debit, credit, amount, currency)) {
@@ -928,6 +945,10 @@ public class FinancePostingBean {
 
       row.setValue(DataUtils.getColumnIndex(COL_FIN_AMOUNT, columns), amount);
       row.setValue(DataUtils.getColumnIndex(COL_FIN_CURRENCY, columns), currency);
+
+      if (BeeUtils.nonZero(quantity)) {
+        row.setValue(DataUtils.getColumnIndex(COL_FIN_QUANTITY, columns), quantity);
+      }
 
       if (DataUtils.isId(employee)) {
         row.setValue(DataUtils.getColumnIndex(COL_FIN_EMPLOYEE, columns), employee);
@@ -950,21 +971,34 @@ public class FinancePostingBean {
     }
 
     int amountIndex = input.getColumnIndex(COL_FIN_AMOUNT);
+    int quantityIndex = input.getColumnIndex(COL_FIN_QUANTITY);
 
-    Map<List<String>, Double> map = input.getRows().stream().collect(
-        Collectors.groupingBy(row -> FinanceUtils.groupingFunction(row, amountIndex),
+    Map<List<String>, Double> amounts = input.getRows().stream().collect(
+        Collectors.groupingBy(row -> FinanceUtils.groupingFunction(row, amountIndex, quantityIndex),
             Collectors.summingDouble(row -> BeeUtils.unbox(row.getDouble(amountIndex)))));
 
-    if (map.size() == input.getNumberOfRows()) {
+    if (amounts.size() == input.getNumberOfRows()) {
       return input;
     }
 
-    BeeRowSet result = new BeeRowSet(input.getViewName(), input.getColumns());
-    int amountScale = input.getColumn(amountIndex).getScale();
+    Map<List<String>, Double> quantities = input.getRows().stream().collect(
+        Collectors.groupingBy(row -> FinanceUtils.groupingFunction(row, amountIndex, quantityIndex),
+            Collectors.summingDouble(row -> BeeUtils.unbox(row.getDouble(quantityIndex)))));
 
-    map.forEach((values, amount) -> {
+    BeeRowSet result = new BeeRowSet(input.getViewName(), input.getColumns());
+
+    int amountScale = input.getColumn(amountIndex).getScale();
+    int quantityScale = input.getColumn(quantityIndex).getScale();
+
+    amounts.forEach((values, amount) -> {
       List<String> list = new ArrayList<>(values);
+
       list.set(amountIndex, BeeUtils.toString(amount, amountScale));
+
+      Double quantity = quantities.get(values);
+      if (BeeUtils.nonZero(quantity)) {
+        list.set(quantityIndex, BeeUtils.toString(quantity, quantityScale));
+      }
 
       result.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, list);
     });

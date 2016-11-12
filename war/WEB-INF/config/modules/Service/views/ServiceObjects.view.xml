@@ -35,16 +35,16 @@
     <SimpleColumn name="ContactPerson" />
     <SimpleJoin joinType="LEFT" name="ContactPerson">
       <SimpleJoin name="Person" joinType="LEFT">
-        <SimpleColumn alias="ContactPersonFirstName" name="FirstName" />
-        <SimpleColumn alias="ContactPersonLastName" name="LastName" />
+        <SimpleColumn alias="ContactFirstName" name="FirstName" />
+        <SimpleColumn alias="ContactLastName" name="LastName" />
       </SimpleJoin>
       <SimpleJoin name="Contact" joinType="LEFT">
-        <SimpleColumn name="Phone" alias="ContactPersonPhone"/>
-        <SimpleColumn name="Email" alias="ContactPersonEmail"/>
+        <SimpleColumn name="Phone" alias="ContactPhone"/>
+        <SimpleColumn name="Email"/>
         <SimpleJoin name="Email" joinType="LEFT">
-          <SimpleColumn name="Email" alias="ContactPersonEmailAddress"/>
+          <SimpleColumn name="Email" alias="ContactEmail"/>
         </SimpleJoin>
-        <SimpleColumn name="Address" alias="ContactPersonAddress"/>
+        <SimpleColumn name="Address" alias="ContactAddress"/>
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Manufacturer" />

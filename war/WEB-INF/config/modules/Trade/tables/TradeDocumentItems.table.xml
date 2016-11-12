@@ -24,7 +24,7 @@
 
     <Relation name="Employee" relation="Employees" label="=employee" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
     <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
               label="=finTradeAccounts" />

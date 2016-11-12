@@ -99,7 +99,8 @@ final class SelfServiceUtils {
                   int idx = current.getColumnIndex(key + "Name");
 
                   if (!BeeConst.isUndef(idx) && BeeUtils.isEmpty(cloned.getString(idx))) {
-                    cloned.setValue(idx, cloned.getString(current.getColumnIndex(key + "Unbound")));
+                    cloned.setValue(idx,
+                        cloned.getString(current.getColumnIndex(key + VAR_UNBOUND)));
                   }
                 });
                 current.addRow(cloned);

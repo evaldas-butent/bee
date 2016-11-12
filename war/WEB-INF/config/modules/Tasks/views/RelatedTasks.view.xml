@@ -6,6 +6,7 @@
   >
   <Columns>
     <SimpleColumn name="ServiceObject" />
+    <SimpleColumn name="ServiceMaintenance" />
 
     <SimpleColumn name="Task" />
     <SimpleJoin name="Task" joinType="INNER">

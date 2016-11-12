@@ -100,7 +100,7 @@ public final class MailConstants {
       public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionAll();
       }
-    };
+    }
   }
 
   public enum RuleAction implements HasLocalizedCaption {
@@ -145,7 +145,28 @@ public final class MailConstants {
       public String getCaption(Dictionary constants) {
         return constants.mailRuleActionForward();
       }
-    };
+    }
+  }
+
+  public enum SyncMode implements HasLocalizedCaption {
+    SYNC_INBOX {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.mailSynchronizeInbox();
+      }
+    },
+    SYNC_ALL {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.mailSynchronizeAll();
+      }
+    },
+    SYNC_NOTHING {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.mailSynchronizeNothing();
+      }
+    }
   }
 
   public static final String SIGNATURE_SEPARATOR = "<br><br><br>";
@@ -220,7 +241,8 @@ public final class MailConstants {
   public static final String COL_ACCOUNT_DESCRIPTION = "Description";
   public static final String COL_ACCOUNT_DEFAULT = "Main";
   public static final String COL_ACCOUNT_PRIVATE = "Private";
-  public static final String COL_ACCOUNT_SYNC_ALL = "SynchronizeAll";
+  public static final String COL_ACCOUNT_SYNC_MODE = "SyncMode";
+  public static final String COL_ACCOUNT_CONNECT_FAILURES = "ConnectFailures";
   public static final String COL_STORE_TYPE = "StoreType";
   public static final String COL_STORE_SERVER = "StoreServer";
   public static final String COL_STORE_SPORT = "StorePort";
@@ -295,6 +317,7 @@ public final class MailConstants {
     EnumUtils.register(RuleCondition.class);
     EnumUtils.register(RuleAction.class);
     EnumUtils.register(RecipientsGroupsVisibility.class);
+    EnumUtils.register(SyncMode.class);
   }
 
   private MailConstants() {

@@ -378,6 +378,7 @@ public final class TransportConstants {
 
   public static final String VAR_LOADING = "Loading";
   public static final String VAR_UNLOADING = "Unloading";
+  public static final String VAR_UNBOUND = "Unbound";
 
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
@@ -431,7 +432,6 @@ public final class TransportConstants {
   public static final String TBL_FUEL_TYPES = "FuelTypes";
 
   public static final String TBL_SHIPMENT_REQUESTS = "ShipmentRequests";
-  public static final String TBL_LOSS_REASONS = "LossReasons";
 
   public static final String TBL_COUNTRY_NORMS = "CountryNorms";
   public static final String TBL_COUNTRY_DAILY_COSTS = "CountryDailyCosts";
@@ -893,8 +893,6 @@ public final class TransportConstants {
   public static final String COL_SHIPPING_TERM_NAME = "Name";
   public static final String COL_SELF_SERVICE = "SelfService";
   public static final String COL_SHIPMENT_REQUEST = "ShipmentRequest";
-  public static final String COL_LOSS_REASON_NAME = "ReasonName";
-  public static final String COL_LOSS_REASON_TEMPLATE = "Template";
 
   public static final String COL_CARGO_TYPE_NAME = "CargoTypeName";
   public static final String COL_CARGO_TYPE_COLOR = "Color";
@@ -925,7 +923,7 @@ public final class TransportConstants {
 
   public static final String FORM_SHIPMENT_REQUEST = "ShipmentRequest";
   public static final String FORM_CARGO_PLACE = "CargoPlace";
-  public static final String FORM_CARGO_PLACE_UNBOUND = "CargoPlaceUnbound";
+  public static final String FORM_CARGO_PLACE_UNBOUND = FORM_CARGO_PLACE + VAR_UNBOUND;
 
   public static final String GRID_ASSESSMENT_REQUESTS = "AssessmentRequests";
   public static final String GRID_ASSESSMENT_ORDERS = "AssessmentOrders";

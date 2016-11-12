@@ -11,12 +11,14 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.finance.analysis.FinancialIndicatorsGrid;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.rights.Module;
 
 import java.util.Collection;
@@ -83,6 +85,15 @@ public final class FinanceKeeper {
 
     FormFactory.registerFormInterceptor(FORM_FINANCE_POSTING_PRECEDENCE,
         new FinancePostingPrecedenceForm());
+
+    registerAnalysis();
+  }
+
+  private static void registerAnalysis() {
+    GridFactory.registerGridInterceptor(GRID_FINANCIAL_INDICATORS_PRIMARY,
+        new FinancialIndicatorsGrid(IndicatorKind.PRIMARY));
+    GridFactory.registerGridInterceptor(GRID_FINANCIAL_INDICATORS_SECONDARY,
+        new FinancialIndicatorsGrid(IndicatorKind.SECONDARY));
   }
 
   private static void registerDebitCreditColor(Collection<String> gridNames,

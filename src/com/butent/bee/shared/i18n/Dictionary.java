@@ -829,6 +829,10 @@ public interface Dictionary {
 
   default String companyVATCode() {return g("companyVATCode");}
 
+  default String condition() {return g("condition");}
+
+  default String conditions() {return g("conditions");}
+
   default String configuration() {return g("configuration");}
 
   default String constant() {return g("constant");}
@@ -2729,7 +2733,15 @@ public interface Dictionary {
 
   default String finAdvancePaymentsReceived() {return g("finAdvancePaymentsReceived");}
 
+  default String finAnalysis() {return g("finAnalysis");}
+
   default String finCashInBank() {return g("finCashInBank");}
+
+  default String finClosingBalance() {return g("finClosingBalance");}
+
+  default String finClosingEntries() {return g("finClosingEntries");}
+
+  default String finClosingEntriesShort() {return g("finClosingEntriesShort");}
 
   default String finConfiguration() {return g("finConfiguration");}
 
@@ -2761,7 +2773,41 @@ public interface Dictionary {
 
   default String finForeignExchangeLoss() {return g("finForeignExchangeLoss");}
 
+  default String finIndicator() {return g("finIndicator");}
+
+  default String finIndicatorAccounts() {return g("finIndicatorAccounts");}
+
+  default String finIndicatorBalance() {return g("finIndicatorBalance");}
+
+  default String finIndicatorFilterExtra() {return g("finIndicatorFilterExtra");}
+
+  default String finIndicatorFilterInclude() {return g("finIndicatorFilterInclude");}
+
+  default String finIndicatorFilterNew() {return g("finIndicatorFilterNew");}
+
+  default String finIndicatorFilters() {return g("finIndicatorFilters");}
+
+  default String finIndicatorPrimary() {return g("finIndicatorPrimary");}
+
+  default String finIndicatorPrimaryNew() {return g("finIndicatorPrimaryNew");}
+
+  default String finIndicatorScale() {return g("finIndicatorScale");}
+
+  default String finIndicatorSecondary() {return g("finIndicatorSecondary");}
+
+  default String finIndicatorSecondaryNew() {return g("finIndicatorSecondaryNew");}
+
+  default String finIndicatorSource() {return g("finIndicatorSource");}
+
+  default String finIndicators() {return g("finIndicators");}
+
+  default String finIndicatorsPrimary() {return g("finIndicatorsPrimary");}
+
+  default String finIndicatorsSecondary() {return g("finIndicatorsSecondary");}
+
   default String finLiabilitiesToEmployees() {return g("finLiabilitiesToEmployees");}
+
+  default String finOpeningBalance() {return g("finOpeningBalance");}
 
   default String finPettyCash() {return g("finPettyCash");}
 
@@ -2788,6 +2834,8 @@ public interface Dictionary {
   default String finTradeReceivables() {return g("finTradeReceivables");}
 
   default String finTransitoryAccount() {return g("finTransitoryAccount");}
+
+  default String finTurnover() {return g("finTurnover");}
 
   default String finVatPayable() {return g("finVatPayable");}
 
@@ -3338,6 +3386,10 @@ public interface Dictionary {
 
   default String mailSynchronizeFolders() {return g("mailSynchronizeFolders");}
 
+  default String mailSynchronizeInbox() {return g("mailSynchronizeInbox");}
+
+  default String mailSynchronizeNothing() {return g("mailSynchronizeNothing");}
+
   default String mailSystemFolders() {return g("mailSystemFolders");}
 
   default String mailTextWrote() {return g("mailTextWrote");}
@@ -3696,6 +3748,8 @@ public interface Dictionary {
 
   default String ordFreeRemainder() {return g("ordFreeRemainder");}
 
+  default String ordInvoiceQty() {return g("ordInvoiceQty");}
+
   default String ordMaxDiscount() {return g("ordMaxDiscount");}
 
   default String ordOverdueInvoices() {return g("ordOverdueInvoices");}
@@ -3707,6 +3761,8 @@ public interface Dictionary {
   default String ordQtyIsTooBig() {return g("ordQtyIsTooBig");}
 
   default String ordResNotIncrease() {return g("ordResNotIncrease");}
+
+  default String ordResQty() {return g("ordResQty");}
 
   default String ordResQtyIsTooBig() {return g("ordResQtyIsTooBig");}
 
@@ -3849,6 +3905,8 @@ public interface Dictionary {
   default String plan() {return g("plan");}
 
   default String pluralName() {return g("pluralName");}
+
+  default String plus() {return g("plus");}
 
   default String postIndex() {return g("postIndex");}
 
@@ -4686,6 +4744,8 @@ public interface Dictionary {
 
   default String svcComment() {return g("svcComment");}
 
+  default String svcComments() {return g("svcComments");}
+
   default String svcContractor() {return g("svcContractor");}
 
   default String svcDates() {return g("svcDates");}
@@ -4718,7 +4778,9 @@ public interface Dictionary {
 
   default String svcFaultInfo() {return g("svcFaultInfo");}
 
-  default String svcFinite() {return g("svcFinite");}
+  default String svcFinal() {return g("svcFinal");}
+
+  default String svcInform() {return g("svcInform");}
 
   default String svcInitial() {return g("svcInitial");}
 
@@ -4762,6 +4824,8 @@ public interface Dictionary {
 
   default String svcObjects() {return g("svcObjects");}
 
+  default String svcPublishTime() {return g("svcPublishTime");}
+
   default String svcRelatedCustomerInfo() {return g("svcRelatedCustomerInfo");}
 
   default String svcSerialNo() {return g("svcSerialNo");}
@@ -4773,6 +4837,8 @@ public interface Dictionary {
   default String svcServiceType() {return g("svcServiceType");}
 
   default String svcServiceTypes() {return g("svcServiceTypes");}
+
+  default String svcShowCustomer() {return g("svcShowCustomer");}
 
   default String svcSpecification() {return g("svcSpecification");}
 
@@ -5978,6 +6044,8 @@ public interface Dictionary {
 
   default String trdDate() {return g("trdDate");}
 
+  default String trdDaysForPayment() {return g("trdDaysForPayment");}
+
   default String trdDebt() {return g("trdDebt");}
 
   default String trdDebtReports() {return g("trdDebtReports");}
@@ -6202,6 +6270,10 @@ public interface Dictionary {
   default String trdWarehouseFrom() {return g("trdWarehouseFrom");}
 
   default String trdWarehouseTo() {return g("trdWarehouseTo");}
+
+  default String trigger() {return g("trigger");}
+
+  default String triggers() {return g("triggers");}
 
   default String trip() {return g("trip");}
 

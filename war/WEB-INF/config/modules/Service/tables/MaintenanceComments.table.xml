@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="MaintenanceComments"
+       idName="MaintenanceCommentsID"
+>
+  <Fields>
+    <Relation name="ServiceMaintenance" notNull="true"  relation="ServiceMaintenance"
+              cascade="DELETE" label="=svcMaintenance" />
+    <Relation name="Publisher" notNull="true" defExpr="CURRENT_USER" relation="Users" label="=user" />
+    <DateTime name="PublishTime" notNull="true" defExpr="CURRENT_TIME" label="=svcPublishTime" />
+    <Text name="Comment" label="=comment" />
+    <Boolean name="ShowCustomer" label="=svcShowCustomer" />
+    <DateTime name="Term" label="=svcTerm" />
+    <Boolean name="CustomerSent" label="=svcInform" />
+    <Text name="EventNote" label="=properties" />
+  </Fields>
+</Table>

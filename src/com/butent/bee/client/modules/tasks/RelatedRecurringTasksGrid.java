@@ -20,10 +20,13 @@ import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -32,6 +35,8 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -96,6 +101,27 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
           RowFactory.createRow(dataInfo, row, Modality.ENABLED, new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
+              if (BeeUtils.same(property, PROP_SERVICE_MAINTENANCE)
+                  && presenter.getMainView() != null) {
+                FormView parentForm = ViewHelper.getForm(presenter.getMainView());
+
+                if (parentForm != null && parentForm.getActiveRow() != null) {
+                  int objectColumnIndex = Data.getColumnIndex(parentForm.getViewName(),
+                      ServiceConstants.COL_SERVICE_OBJECT);
+                  Long objectId = parentForm.getActiveRow().getLong(objectColumnIndex);
+
+                  if (DataUtils.isId(objectId)) {
+                    List<BeeColumn> columns =
+                        Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
+                            Lists.newArrayList(ServiceConstants.COL_SERVICE_OBJECT,
+                                COL_RECURRING_TASK));
+                    List<String> value = Lists.newArrayList(BeeUtils.toString(objectId),
+                        BeeUtils.toString(result.getId()));
+
+                    Queries.insert(AdministrationConstants.VIEW_RELATIONS, columns, value);
+                  }
+                }
+              }
               presenter.handleAction(Action.REFRESH);
             }
           });

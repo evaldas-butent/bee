@@ -5,6 +5,7 @@
   caption="=svcMaintenance" newRowCaption="=svcNewMaintenance"
   editForm="ServiceMaintenance" newRowForm="ServiceMaintenance"
   >
+  <Relation renderColumns="ID" choiceColumns="ID TypeName StateName" />
   <Columns>
     <IdColumn name="ID"/>
     <SimpleColumn name="Type"/>
@@ -86,7 +87,7 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="Contact" />
+    <SimpleColumn name="Contact"/>
     <SimpleJoin joinType="LEFT" name="Contact">
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn alias="ContactFirstName" name="FirstName" />
@@ -94,9 +95,9 @@
       </SimpleJoin>
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn name="Phone" alias="ContactPhone"/>
-        <SimpleColumn name="Email" alias="ContactEmail"/>
+        <SimpleColumn name="Email" />
         <SimpleJoin name="Email" joinType="LEFT">
-          <SimpleColumn name="Email" alias="ContactEmailAddress"/>
+          <SimpleColumn name="Email" alias="ContactEmail"/>
         </SimpleJoin>
         <SimpleColumn name="Address" alias="ContactAddress"/>
       </SimpleJoin>

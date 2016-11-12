@@ -26,13 +26,11 @@ import com.butent.bee.client.grid.column.IntegerColumn;
 import com.butent.bee.client.grid.column.LongColumn;
 import com.butent.bee.client.grid.column.StringColumn;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.RenderableCell;
 import com.butent.bee.client.render.RenderableColumn;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
@@ -87,6 +85,10 @@ import java.util.Map;
 public final class GridFactory {
 
   public static final class GridOptions implements HasCaption {
+
+    public static GridOptions forCaption(String cap) {
+      return forCaptionAndFilter(cap, null);
+    }
 
     public static GridOptions forCaptionAndFilter(String cap, Filter flt) {
       return (BeeUtils.isEmpty(cap) && flt == null)
@@ -263,17 +265,14 @@ public final class GridFactory {
     Assert.notEmpty(gridName);
     Assert.notNull(presenterCallback);
 
-    getGridDescription(gridName, new Callback<GridDescription>() {
-      @Override
-      public void onSuccess(GridDescription result) {
-        Assert.notNull(result);
-        if (gridInterceptor != null && !gridInterceptor.initDescription(result)) {
-          return;
-        }
-
-        consumeGridDescription(GridSettings.apply(supplierKey, result), supplierKey,
-            gridInterceptor, presenterCallback, uiOptions, gridOptions);
+    getGridDescription(gridName, result -> {
+      Assert.notNull(result);
+      if (gridInterceptor != null && !gridInterceptor.initDescription(result)) {
+        return;
       }
+
+      consumeGridDescription(GridSettings.apply(supplierKey, result), supplierKey,
+          gridInterceptor, presenterCallback, uiOptions, gridOptions);
     });
   }
 
@@ -479,18 +478,9 @@ public final class GridFactory {
     Assert.notEmpty(key);
     Assert.notEmpty(gridName);
 
-    ViewSupplier supplier = new ViewSupplier() {
-      @Override
-      public void create(final ViewCallback callback) {
-        createGrid(gridName, key, getInterceptorInstance(interceptor), uiOptions, gridOptions,
-            new PresenterCallback() {
-              @Override
-              public void onCreate(Presenter presenter) {
-                callback.onSuccess(presenter.getMainView());
-              }
-            });
-      }
-    };
+    ViewSupplier supplier =
+        callback -> createGrid(gridName, key, getInterceptorInstance(interceptor), uiOptions,
+            gridOptions, presenter -> callback.onSuccess(presenter.getMainView()));
 
     ViewFactory.registerSupplier(key, supplier);
     return supplier;

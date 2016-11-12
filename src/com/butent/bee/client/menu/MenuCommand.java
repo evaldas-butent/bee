@@ -5,11 +5,13 @@ import com.google.gwt.core.client.Scheduler;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.ParametersGrid;
+import com.butent.bee.client.modules.cars.StageEditorForm;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.cars.CarsConstants;
 
 public class MenuCommand implements Scheduler.ScheduledCommand {
 
@@ -44,6 +46,10 @@ public class MenuCommand implements Scheduler.ScheduledCommand {
 
       case REPORT:
         Report.open(parameters);
+        break;
+
+      case STAGES:
+        FormFactory.openForm(CarsConstants.FORM_STAGES, new StageEditorForm(parameters));
         break;
 
       default:

@@ -75,10 +75,6 @@ public final class ColorStyleProvider implements StyleProvider {
     return create(viewName, COL_BACKGROUND, COL_FOREGROUND);
   }
 
-  public static ColorStyleProvider forBackground(String viewName, String bgName) {
-    return create(Data.getColumns(viewName), bgName, null);
-  }
-
   private final CellSource bgSource;
   private final CellSource fgSource;
 
