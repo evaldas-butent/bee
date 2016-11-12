@@ -3384,6 +3384,10 @@ public interface Dictionary {
 
   default String mailSynchronizeFolders() {return g("mailSynchronizeFolders");}
 
+  default String mailSynchronizeInbox() {return g("mailSynchronizeInbox");}
+
+  default String mailSynchronizeNothing() {return g("mailSynchronizeNothing");}
+
   default String mailSystemFolders() {return g("mailSystemFolders");}
 
   default String mailTextWrote() {return g("mailTextWrote");}
