@@ -1413,9 +1413,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                     SqlUtils.and(SqlUtils.notNull(blockUntil), SqlUtils.less(blockUntil, now)))))
         .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE),
             SqlUtils.notEqual(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE, SyncMode.SYNC_NOTHING)),
-            SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_LAST_CONNECT),
-                SqlUtils.less(SqlUtils.minus(now, SqlUtils.field(TBL_ACCOUNTS,
-                    COL_ACCOUNT_LAST_CONNECT)), TimeUtils.MILLIS_PER_DAY)))));
+            SqlUtils.less(SqlUtils.minus(now, BeeUtils.nvl(SqlUtils.field(TBL_ACCOUNTS,
+                COL_ACCOUNT_LAST_CONNECT), 0)), TimeUtils.MILLIS_PER_DAY))));
 
     for (SimpleRow row : rs) {
       MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
