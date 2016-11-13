@@ -242,7 +242,7 @@ public final class MailConstants {
   public static final String COL_ACCOUNT_DEFAULT = "Main";
   public static final String COL_ACCOUNT_PRIVATE = "Private";
   public static final String COL_ACCOUNT_SYNC_MODE = "SyncMode";
-  public static final String COL_ACCOUNT_CONNECT_FAILURES = "ConnectFailures";
+  public static final String COL_ACCOUNT_LAST_CONNECT = "LastConnect";
   public static final String COL_STORE_TYPE = "StoreType";
   public static final String COL_STORE_SERVER = "StoreServer";
   public static final String COL_STORE_SPORT = "StorePort";

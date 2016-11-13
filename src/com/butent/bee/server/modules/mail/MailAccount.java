@@ -156,7 +156,6 @@ public class MailAccount {
   private final Map<String, String> transportProperties;
 
   private final AccountInfo accountInfo;
-  private final int connectFailures;
   private Collection<Long> accountUsers = new HashSet<>();
 
   MailAccount(SimpleRow data) {
@@ -182,7 +181,6 @@ public class MailAccount {
     transportProperties = Codec.deserializeLinkedHashMap(data.getValue(COL_TRANSPORT_PROPERTIES));
 
     accountInfo = new AccountInfo(data);
-    connectFailures = BeeUtils.unbox(data.getInt(COL_ACCOUNT_CONNECT_FAILURES));
   }
 
   public Long getAccountId() {
@@ -193,29 +191,8 @@ public class MailAccount {
     return accountInfo.getAddress();
   }
 
-  public int getConnectFailures() {
-    return connectFailures;
-  }
-
   public Long getSignatureId() {
     return accountInfo.getSignatureId();
-  }
-
-  public String getStoreErrorMessage() {
-    String err = null;
-
-    if (BeeUtils.isEmpty(err)) {
-      if (storeProtocol == null) {
-        err = "Unknown store protocol";
-
-      } else if (BeeUtils.isEmpty(storeHost)) {
-        err = "Unknown store host";
-
-      } else if (BeeUtils.isEmpty(storeLogin)) {
-        err = "Unknown store login";
-      }
-    }
-    return err;
   }
 
   public String getStoreHost() {
@@ -301,10 +278,6 @@ public class MailAccount {
     return transportSSL;
   }
 
-  public boolean isValidStoreAccount() {
-    return BeeUtils.isEmpty(getStoreErrorMessage());
-  }
-
   public boolean isValidTransportAccount() {
     return BeeUtils.isEmpty(getTransportErrorMessage());
   }
@@ -333,9 +306,6 @@ public class MailAccount {
     MailStore mailStore = null;
 
     for (int i = 0; i < 600; i++) {
-      if (!isValidStoreAccount()) {
-        throw new MessagingException(getStoreErrorMessage());
-      }
       storesLock.lock();
       mailStore = stores.get(getAccountId());
 
@@ -397,7 +367,7 @@ public class MailAccount {
           storesLock.lock();
           stores.remove(getAccountId());
           storesLock.unlock();
-          throw new ConnectionFailureException(ex.toString());
+          throw new ConnectionFailureException(ex.getMessage());
         }
         mailStore.enter();
         break;
