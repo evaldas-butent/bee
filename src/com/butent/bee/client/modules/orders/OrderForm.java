@@ -247,18 +247,19 @@ public class OrderForm extends PrintFormInterceptor {
         new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
-            Map<Long, String> supTerm = new HashMap<>();
-
             if (result.getNumberOfRows() > 0) {
               int dateIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_SUPPLIER_TERM);
               for (BeeRow row : result) {
                 String term;
+                double qty = BeeUtils.unbox(row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS,
+                    TradeConstants.COL_TRADE_ITEM_QUANTITY)));
                 double reserved = BeeUtils.unbox(row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS,
                     COL_RESERVED_REMAINDER)));
-                double totRem = BeeUtils.unbox(row.getPropertyDouble(PRP_FREE_REMAINDER));
+                double free = BeeUtils.unbox(row.getPropertyDouble(PRP_FREE_REMAINDER));
+                double invoices = BeeUtils.unbox(row.getPropertyDouble(PRP_COMPLETED_INVOICES));
 
-                if (reserved == 0 && totRem == 0) {
-                  if (row.getDate(dateIdx) == null) {
+                if (row.getDate(dateIdx) == null) {
+                  if (reserved + free < qty - invoices) {
                     DateTime date = row.getDateTime(Data.getColumnIndex(VIEW_ORDER_ITEMS,
                         ProjectConstants.COL_DATES_START_DATE));
                     int weekDay = date.getDow();
@@ -269,18 +270,12 @@ public class OrderForm extends PrintFormInterceptor {
                       term = new JustDate(date.getDate().getDays() + 16 - weekDay).toString();
                     }
                   } else {
-                    term = row.getDate(dateIdx).toString();
+                    term = "t";
                   }
                 } else {
-                  term = "t";
+                  term = row.getDate(dateIdx).toString();
                 }
-
-                supTerm.put(row.getLong(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM)), term);
-              }
-
-              for (BeeRow r : result) {
-                r.setProperty(COL_SUPPLIER_TERM, supTerm.get(r.getLong(Data.getColumnIndex(
-                    VIEW_ORDER_ITEMS, COL_ITEM))));
+                row.setProperty(COL_SUPPLIER_TERM, term);
               }
             }
             dataConsumer.accept(new BeeRowSet[] {result});

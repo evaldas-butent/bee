@@ -9,8 +9,8 @@
 
   name="Order" viewName="Orders" width="800" height="600">
 
-  <f:properties jasperReports="PrintOrder:=order, PrintProformaOrder:=printInvoiceProForma,
-  PrintOffer:=offer, PrintOfferApprove:=ordOrderConfirmation" />
+  <f:properties jasperReports="PrintOrder_lt:=order, PrintProformaOrder_lt:=printInvoiceProForma,
+  PrintOffer_lt:=offer, PrintOfferApprove_lt:=ordOrderConfirmation" />
 
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
