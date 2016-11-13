@@ -4,11 +4,15 @@
 
         name="FinancialIndicatorsSecondary" viewName="FinancialIndicators"
         caption="=finIndicatorsSecondary" newRowCaption="=finIndicatorSecondaryNew"
+        editForm="FinancialIndicatorSecondary" newRowForm="FinancialIndicatorSecondary"
         filter="IndicatorKind = 1"
 >
   <g:columns>
-    <DataColumn name="IndicatorName" minWidth="100" visible="true"
+    <DataColumn name="IndicatorName" minWidth="100" flexGrow="1" visible="true"
                 backgroundSource="Background" foregroundSource="Foreground" />
+    <DataColumn name="IndicatorAbbreviation" />
+
+    <DataColumn name="IndicatorScript" flexGrow="1" required="true" visible="true" />
 
     <DataColumn name="IndicatorIsPercent" />
     <DataColumn name="IndicatorScale" minValue="0" maxValue="5" />

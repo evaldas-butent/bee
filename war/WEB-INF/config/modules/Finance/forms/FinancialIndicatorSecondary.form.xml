@@ -7,8 +7,8 @@
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
 
-        name="FinancialIndicatorPrimary" viewName="FinancialIndicators"
-        caption="=finIndicatorsPrimary"
+        name="FinancialIndicatorSecondary" viewName="FinancialIndicators"
+        caption="=finIndicatorsSecondary"
         width="75" widthUnit="px" height="50" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">
@@ -25,19 +25,10 @@
       </row>
 
       <row>
-        <Label for="IndicatorBalance" class="bee-required" />
-        <Radio source="IndicatorBalance" vertical="true" visible="true" />
-
-        &empty;
-        <CheckBox source="IndicatorClosingEntries" text="=finClosingEntriesShort" />
-      </row>
-
-      <row>
-        <Label for="IndicatorSource" class="bee-required" />
-        <Radio source="IndicatorSource" visible="true" />
-
         <Label for="IndicatorScale" />
         <InputInteger source="IndicatorScale" style="width: 2rem;" minValue="0" maxValue="5" />
+        &empty;
+        <CheckBox source="IndicatorIsPercent" />
       </row>
 
       <row>
@@ -51,13 +42,10 @@
 
     <TabbedPages class="flexible">
       <page>
-        <text>=finAccounts</text>
-        <ChildGrid name="IndicatorAccounts" relColumn="Indicator" />
-      </page>
-
-      <page>
-        <text>=filters</text>
-        <ChildGrid name="IndicatorFilters" relColumn="Indicator" />
+        <text>=finAnalysisScript</text>
+        <SimplePanel>
+          <InputArea source="Script" class="occupy-1" required="true" summarize="true" />
+        </SimplePanel>
       </page>
 
       <page for="Description">

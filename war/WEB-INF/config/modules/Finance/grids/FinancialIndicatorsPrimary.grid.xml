@@ -8,8 +8,9 @@
         filter="IndicatorKind = 0"
 >
   <g:columns>
-    <DataColumn name="IndicatorName" minWidth="100" visible="true"
+    <DataColumn name="IndicatorName" minWidth="100" flexGrow="1" visible="true"
                 backgroundSource="Background" foregroundSource="Foreground" />
+    <DataColumn name="IndicatorAbbreviation" />
 
     <DataColumn name="IndicatorSource" required="true" visible="true" />
 

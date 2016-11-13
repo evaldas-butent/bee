@@ -7,10 +7,13 @@
   <Fields>
     <Enum name="IndicatorKind" key="IndicatorKind" notNull="true" label="=kind" />
 
-    <String name="IndicatorName" precision="20" notNull="true" unique="true" translatable="true"
+    <String name="IndicatorName" precision="100" notNull="true" unique="true" translatable="true"
             label="=finIndicator" />
+    <String name="IndicatorAbbreviation" precision="10" unique="true"
+            label="=finIndicatorAbbreviation" />
 
     <Enum name="IndicatorSource" key="IndicatorSource" label="=finIndicatorSource" />
+    <Text name="IndicatorScript" label="=finAnalysisScript" />
 
     <Enum name="IndicatorBalance" key="IndicatorBalance" label="=finIndicatorBalance" />
     <Boolean name="IndicatorClosingEntries" label="=finClosingEntries" />

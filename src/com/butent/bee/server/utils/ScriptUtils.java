@@ -54,7 +54,7 @@ public final class ScriptUtils {
       return ResponseObject.response(result);
 
     } catch (ScriptException ex) {
-      return ResponseObject.emptyResponse();
+      return ResponseObject.error(ex, script);
     }
   }
 

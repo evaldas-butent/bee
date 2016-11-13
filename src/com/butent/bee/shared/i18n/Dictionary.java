@@ -2735,6 +2735,8 @@ public interface Dictionary {
 
   default String finAnalysis() {return g("finAnalysis");}
 
+  default String finAnalysisScript() {return g("finAnalysisScript");}
+
   default String finCashInBank() {return g("finCashInBank");}
 
   default String finClosingBalance() {return g("finClosingBalance");}
@@ -2774,6 +2776,8 @@ public interface Dictionary {
   default String finForeignExchangeLoss() {return g("finForeignExchangeLoss");}
 
   default String finIndicator() {return g("finIndicator");}
+
+  default String finIndicatorAbbreviation() {return g("finIndicatorAbbreviation");}
 
   default String finIndicatorAccounts() {return g("finIndicatorAccounts");}
 
@@ -4302,6 +4306,8 @@ public interface Dictionary {
   default String prmCheckDebt() {return g("prmCheckDebt");}
 
   default String prmClearReservationsTime() {return g("prmClearReservationsTime");}
+
+  default String prmCreatePrivateTaskFirst() {return g("prmCreatePrivateTaskFirst");}
 
   default String prmDefaultMaintenanceType() {return g("prmDefaultMaintenanceType");}
 

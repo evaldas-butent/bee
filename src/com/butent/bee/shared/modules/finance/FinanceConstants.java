@@ -73,7 +73,9 @@ public final class FinanceConstants {
 
   public static final String COL_FIN_INDICATOR_KIND = "IndicatorKind";
   public static final String COL_FIN_INDICATOR_NAME = "IndicatorName";
+  public static final String COL_FIN_INDICATOR_ABBREVIATION = "IndicatorAbbreviation";
   public static final String COL_FIN_INDICATOR_SOURCE = "IndicatorSource";
+  public static final String COL_FIN_INDICATOR_SCRIPT = "IndicatorScript";
   public static final String COL_FIN_INDICATOR_BALANCE = "IndicatorBalance";
   public static final String COL_FIN_INDICATOR_CLOSING_ENTRIES = "IndicatorClosingEntries";
   public static final String COL_FIN_INDICATOR_IS_PERCENT = "IndicatorIsPercent";
