@@ -201,34 +201,24 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           }
         }
       } catch (Throwable e) {
-        logger.error(e, account.getStoreProtocol(), account.getStoreHost(), account.getStoreLogin(),
-            localFolder.getName());
-        error = ArrayUtils.joinWords(ResponseObject.error(e, account.getStoreProtocol())
-            .getErrors());
-        connectError = e instanceof ConnectionFailureException;
+        if (e instanceof ConnectionFailureException) {
+          connectError = true;
+          error = BeeUtils.joinWords(account.getStoreProtocol(), account.getStoreHost(),
+              account.getStoreLogin(), localFolder.getName(), e.getMessage());
+          logger.warning(error);
+        } else {
+          logger.error(e, account.getStoreProtocol(), account.getStoreHost(),
+              account.getStoreLogin(), localFolder.getName());
+          error = ArrayUtils.joinWords(ResponseObject.error(e, account.getStoreProtocol())
+              .getErrors());
+        }
       } finally {
         account.disconnectFromStore(store);
       }
-      if (connectError || account.getConnectFailures() > 0) {
-        SqlUpdate update = new SqlUpdate(TBL_ACCOUNTS)
-            .setWhere(sys.idEquals(TBL_ACCOUNTS, account.getAccountId()));
-
-        if (connectError) {
-          if (account.getConnectFailures() < 10) {
-            update.addExpression(COL_ACCOUNT_CONNECT_FAILURES,
-                SqlUtils.plus(SqlUtils.nvl(SqlUtils.name(COL_ACCOUNT_CONNECT_FAILURES), 0), 1))
-                .setWhere(SqlUtils.and(update.getWhere(),
-                    SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE),
-                        SqlUtils.notEqual(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE,
-                            SyncMode.SYNC_NOTHING))));
-          } else {
-            update.addConstant(COL_ACCOUNT_SYNC_MODE, SyncMode.SYNC_NOTHING)
-                .addConstant(COL_ACCOUNT_CONNECT_FAILURES, null);
-          }
-        } else {
-          update.addConstant(COL_ACCOUNT_CONNECT_FAILURES, null);
-        }
-        Invocation.locateRemoteBean(ProxyBean.class).update(update);
+      if (!connectError && account.isInbox(localFolder)) {
+        Invocation.locateRemoteBean(ProxyBean.class).update(new SqlUpdate(TBL_ACCOUNTS)
+            .addConstant(COL_ACCOUNT_LAST_CONNECT, System.currentTimeMillis())
+            .setWhere(sys.idEquals(TBL_ACCOUNTS, account.getAccountId())));
       }
       if (!BeeUtils.isEmpty(error) || c > 0 || f > 0) {
         MailMessage mailMessage = new MailMessage(localFolder.getId());
@@ -1417,13 +1407,15 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         .addFields(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE)
         .addFrom(TBL_ACCOUNTS)
         .addFromInner(AdministrationConstants.TBL_USERS,
-            sys.joinTables(AdministrationConstants.TBL_USERS, TBL_ACCOUNTS, COL_USER))
-        .setWhere(SqlUtils.and(
-            SqlUtils.or(SqlUtils.and(SqlUtils.isNull(blockFrom), SqlUtils.isNull(blockUntil)),
-                SqlUtils.and(SqlUtils.notNull(blockFrom), SqlUtils.more(blockFrom, now)),
-                SqlUtils.and(SqlUtils.notNull(blockUntil), SqlUtils.less(blockUntil, now))),
-            SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE),
-                SqlUtils.notEqual(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE, SyncMode.SYNC_NOTHING)))));
+            SqlUtils.and(sys.joinTables(AdministrationConstants.TBL_USERS, TBL_ACCOUNTS, COL_USER),
+                SqlUtils.or(SqlUtils.and(SqlUtils.isNull(blockFrom), SqlUtils.isNull(blockUntil)),
+                    SqlUtils.and(SqlUtils.notNull(blockFrom), SqlUtils.more(blockFrom, now)),
+                    SqlUtils.and(SqlUtils.notNull(blockUntil), SqlUtils.less(blockUntil, now)))))
+        .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE),
+            SqlUtils.notEqual(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE, SyncMode.SYNC_NOTHING)),
+            SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_LAST_CONNECT),
+                SqlUtils.less(SqlUtils.minus(now, SqlUtils.field(TBL_ACCOUNTS,
+                    COL_ACCOUNT_LAST_CONNECT)), TimeUtils.MILLIS_PER_DAY)))));
 
     for (SimpleRow row : rs) {
       MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
