@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="BudgetHeaders" source="BudgetHeaders"
+      caption="=finBudgetHeaders" newRowCaption="=finBudgetHeaderNew"
+>
+  <Columns>
+    <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="BudgetName" />
+
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
+
+    <xi:include href="viewcolumns/Indicator.viewcolumns.xml" />
+    <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
+
+    <SimpleColumn name="Year" />
+
+    <SimpleColumn name="EntryDim01" />
+    <SimpleColumn name="EntryDim02" />
+    <SimpleColumn name="EntryDim03" />
+    <SimpleColumn name="EntryDim04" />
+    <SimpleColumn name="EntryDim05" />
+    <SimpleColumn name="EntryDim06" />
+    <SimpleColumn name="EntryDim07" />
+    <SimpleColumn name="EntryDim08" />
+    <SimpleColumn name="EntryDim09" />
+    <SimpleColumn name="EntryDim10" />
+
+    <SimpleColumn name="EntryEmployee" />
+
+    <SimpleColumn name="EntryBudgetType" />
+
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+    <OrderBy column="BudgetName" />
+  </Order>
+</View>

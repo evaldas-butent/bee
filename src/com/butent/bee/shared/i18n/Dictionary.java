@@ -2739,9 +2739,19 @@ public interface Dictionary {
 
   default String finBudget() {return g("finBudget");}
 
+  default String finBudgetEntries() {return g("finBudgetEntries");}
+
+  default String finBudgetEntry() {return g("finBudgetEntry");}
+
+  default String finBudgetEntryNew() {return g("finBudgetEntryNew");}
+
   default String finBudgetHeader() {return g("finBudgetHeader");}
 
+  default String finBudgetHeaderNew() {return g("finBudgetHeaderNew");}
+
   default String finBudgetHeaders() {return g("finBudgetHeaders");}
+
+  default String finBudgetName() {return g("finBudgetName");}
 
   default String finBudgetType() {return g("finBudgetType");}
 

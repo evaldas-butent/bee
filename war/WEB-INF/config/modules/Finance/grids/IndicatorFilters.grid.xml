@@ -6,7 +6,7 @@
         name="IndicatorFilters" viewName="IndicatorFilters"
         flexGrow="1"
 >
-  <xi:include href="columns/FinancialRecordsEmployee.columns.xml" />
+  <xi:include href="columns/Employee.columns.xml" />
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
 
   <g:columns>
