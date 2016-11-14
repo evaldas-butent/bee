@@ -235,6 +235,12 @@
               <Label style="&lbl;" for="CompanyRelationTypeState" />
               <DataSelector source="CompanyRelationTypeState" summarize="true" />
             </row>
+            <row>
+              <Label style="&lbl;" for="AverageMileage" />
+              <cell colSpan="3">
+                <InputArea source="AverageMileage"/>
+              </cell>
+            </row>
           </Table>
         </FlowPanel>
       </page>

@@ -221,6 +221,8 @@ public interface Dictionary {
 
   default String autocompletion() {return g("autocompletion");}
 
+  default String averageMileage() {return g("averageMileage");}
+
   default String bAssistant() {return g("bAssistant");}
 
   default String background() {return g("background");}

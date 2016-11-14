@@ -54,5 +54,7 @@
               label="=finTradeAccounts" />
 
     <Text name="Notes" label="=notes" />
+
+    <Text name="AverageMileage" label="=averageMileage" />
   </Fields>
 </Table>
