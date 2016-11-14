@@ -120,11 +120,17 @@ public final class ColorStyleProvider implements StyleProvider {
     String fgValue = getFg(row);
 
     SafeStyles styles;
+
     if (BeeUtils.isEmpty(bgValue)) {
       styles = BeeUtils.isEmpty(fgValue)
           ? null : StyleUtils.buildStyle(CssProperties.COLOR, fgValue);
+
     } else if (BeeUtils.isEmpty(fgValue)) {
       styles = StyleUtils.buildStyle(CssProperties.BACKGROUND_COLOR, bgValue);
+
+    } else if (BeeUtils.same(bgValue, fgValue)) {
+      styles = null;
+
     } else {
       styles = StyleUtils.buildStyle(CssProperties.BACKGROUND_COLOR, bgValue,
           CssProperties.COLOR, fgValue);
