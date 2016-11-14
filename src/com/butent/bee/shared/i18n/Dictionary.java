@@ -5844,6 +5844,8 @@ public interface Dictionary {
 
   default String trTransportation() {return g("trTransportation");}
 
+  default String trTransportationOrderDeleteCanManager() {return g("trTransportationOrderDeleteCanManager");}
+
   default String trTransportationOrders() {return g("trTransportationOrders");}
 
   default String trTransportationPrice() {return g("trTransportationPrice");}
