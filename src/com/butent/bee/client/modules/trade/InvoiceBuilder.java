@@ -141,7 +141,9 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
       if (filters == null) {
         filters = new HashMap<>();
       }
-      filters.put(NameUtils.getClassName(this.getClass()), Filter.isNull(getRelationColumn()));
+
+      filters.put(NameUtils.getClassName(this.getClass()),
+          Filter.and(Filter.isNull(getRelationColumn()),  getParentFilter()));
     }
     return filters;
   }
@@ -167,6 +169,10 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
 
   protected void createInvoice(BeeRowSet data, BiConsumer<BeeRowSet, BeeRow> consumer) {
     consumer.accept(data, RowFactory.createEmptyRow(Data.getDataInfo(getTargetView()), true));
+  }
+
+  protected Filter getParentFilter() {
+    return null;
   }
 
   protected abstract String getRelationColumn();

@@ -18,6 +18,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -142,6 +143,11 @@ public class CargoSalesGrid extends InvoiceBuilder {
       }
     }
     super.onEditStart(event);
+  }
+
+  @Override
+  protected Filter getParentFilter() {
+    return Filter.notNull(ALS_MAX_CARGO_TRIP);
   }
 
   @Override

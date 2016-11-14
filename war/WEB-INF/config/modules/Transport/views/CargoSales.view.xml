@@ -37,6 +37,8 @@
       </SimpleJoin>
 
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+        <IdColumn name="MaxCargoTrip" aggregate="MAX" />
+
         <SimpleJoin name="Trip" joinType="LEFT">
           <AggregateColumn name="ForwarderVehicle" aggregate="MAX" />
           <AggregateColumn name="ForwarderDriver" aggregate="MAX" />

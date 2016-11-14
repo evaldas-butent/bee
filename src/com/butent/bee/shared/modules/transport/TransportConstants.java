@@ -991,6 +991,8 @@ public final class TransportConstants {
   public static final String ALS_LOADING_COUNTRY_NAME = "LoadingCountryName";
   public static final String ALS_LOADING_COUNTRY_CODE = "LoadingCountryCode";
 
+  public static final String ALS_MAX_CARGO_TRIP = "MaxCargoTrip";
+
   public static final String ALS_UNLOADING_DATE = "UnloadingDate";
   public static final String ALS_UNLOADING_NUMBER = "UnloadingNumber";
   public static final String ALS_UNLOADING_CONTACT = "UnloadingContact";
