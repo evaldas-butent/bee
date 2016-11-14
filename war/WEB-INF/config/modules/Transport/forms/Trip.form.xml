@@ -41,7 +41,7 @@
           <FlowPanel style="display:none;">
             <InlineLabel text="=vehicleDriver" class="bee-required" />
             <UnboundSelector name="Driver" viewName="UserDrivers" required="true"
-                             renderColumns="LastName FirstName CompanyName"
+                             renderColumns="LastName FirstName CompanyName TabNumber"
                              newRowEnabled="false" disablable="false" />
           </FlowPanel>
         </cell>
