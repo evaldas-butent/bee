@@ -87,8 +87,11 @@
       <AggregateColumn name="Sale" aggregate="MAX" />
     </ExternalJoin>
 
+    <!-- HOPTRANSA { -->
     <SimpleColumn name="SentDate" />
     <SimpleColumn name="OtherDate" />
+    <SimpleColumn name="Attribute" />
+    <!-- } -->
 
     <SimpleColumn name="Creator" />
     <SimpleJoin name="Creator" joinType="LEFT">

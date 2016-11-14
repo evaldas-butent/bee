@@ -11,12 +11,16 @@
 
   <FlowPanel class="flexBox-vertical">
     <br />
+    <!-- HOPTRANSA { -->
     <HorizontalPanel>
       <Label for="SentDate" />
       <DateLabel source="SentDate" style="font-weight:bold;" />
       <Label for="OtherDate" />
       <DateTimeLabel source="OtherDate" style="font-weight:bold;" />
+      <Label for="Attribute" />
+      <TextLabel source="Attribute" style="font-weight:bold;" />
     </HorizontalPanel>
+    <!--}-->
     <br />
     <xi:include href="widgets/SaleInvoice.widget.xml" />
     <br />

@@ -39,8 +39,12 @@
 
     <Integer name="Kind" />
 
+    <!-- HOPTRANSA { -->
     <Date name="SentDate" label="Išsiųsta" />
     <DateTime name="OtherDate" label="Kita data" />
+    <String name="Attribute" precision="5" label="Požymis" />
+    <!-- } -->
+
     <Relation name="Creator" relation="Users" label="=trdGenerated" defExpr="CURRENT_USER" />
   </Fields>
 

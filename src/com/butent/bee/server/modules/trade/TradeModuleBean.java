@@ -1217,13 +1217,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     int c = 0;
     String sent = "SentDate";
     String other = "OtherDate";
+    String attribute = "Attribute";
     String idName = sys.getIdName(TBL_SALES);
 
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_SALES, idName, sent, other)
         .addFrom(TBL_SALES)
         .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_SALES, COL_TRADE_EXPORTED),
-            SqlUtils.or(SqlUtils.isNull(TBL_SALES, sent), SqlUtils.isNull(TBL_SALES, other)))));
+            SqlUtils.or(SqlUtils.isNull(TBL_SALES, sent), SqlUtils.isNull(TBL_SALES, other),
+                SqlUtils.isNull(TBL_SALES, attribute)))));
 
     if (!DataUtils.isEmpty(data)) {
       StringBuilder ids = new StringBuilder();
@@ -1241,6 +1243,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       try {
         SimpleRowSet rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
             .getSQLData("SELECT extern_id AS id, dekl_data AS " + sent + ", kita_data AS " + other
+                    + ", pozymis AS " + attribute
                     + " FROM apyvarta"
                     + " WHERE extern_id IN(" + ids.toString() + ")"
                     + " AND (dekl_data IS NOT NULL OR kita_data IS NOT NULL)",
@@ -1250,6 +1253,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           Long id = TradeModuleBean.decodeId(TBL_SALES, newRow.getLong("id"));
           JustDate sentDate = TimeUtils.parseDate(newRow.getValue(sent));
           DateTime otherDate = TimeUtils.parseDateTime(newRow.getValue(other));
+          String otherAttr = newRow.getValue(attribute);
           SimpleRow oldRow = data.getRowByKey(idName, BeeUtils.toString(id));
 
           SqlUpdate update = new SqlUpdate(TBL_SALES);
@@ -1259,6 +1263,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           }
           if (!Objects.equals(oldRow.getDateTime(other), otherDate)) {
             update.addConstant(other, otherDate);
+          }
+          if (!Objects.equals(oldRow.getValue(attribute), otherAttr)) {
+            update.addConstant(attribute, otherAttr);
           }
           if (!update.isEmpty()) {
             c += qs.updateData(update.setWhere(SqlUtils.equals(TBL_SALES, idName, id)));
