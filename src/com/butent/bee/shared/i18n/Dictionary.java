@@ -6295,6 +6295,8 @@ public interface Dictionary {
 
   default String tripDuration() {return g("tripDuration");}
 
+  default String tripManager() {return g("tripManager");}
+
   default String tripRouteDocs() {return g("tripRouteDocs");}
 
   default String trips() {return g("trips");}
