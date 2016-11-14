@@ -8,7 +8,7 @@
         xmlns:f="http://www.butent.com/form"
 
         name="FinancialIndicatorPrimary" viewName="FinancialIndicators"
-        caption="=finIndicatorsPrimary"
+        caption="=finIndicatorPrimary"
         width="75" widthUnit="px" height="50" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">

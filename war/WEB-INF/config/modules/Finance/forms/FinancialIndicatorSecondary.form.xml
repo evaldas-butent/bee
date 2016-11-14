@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
     <!ENTITY inpw "width: 20rem;">
+    <!ENTITY areaw "width: 100&#37;;">
     <!ENTITY colorw "width: 20rem;">
     <!ENTITY empty "<cell><text/></cell>">
     ]>
@@ -8,10 +9,10 @@
         xmlns:f="http://www.butent.com/form"
 
         name="FinancialIndicatorSecondary" viewName="FinancialIndicators"
-        caption="=finIndicatorsSecondary"
-        width="75" widthUnit="px" height="50" heightUnit="vh"
+        caption="=finIndicatorSecondary"
+        width="75" widthUnit="px" height="75" heightUnit="vh"
 >
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel>
     <Table kind="controls" style="margin: 1ex 1em;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
@@ -25,10 +26,19 @@
       </row>
 
       <row>
-        <Label for="IndicatorScale" />
-        <InputInteger source="IndicatorScale" style="width: 2rem;" minValue="0" maxValue="5" />
+        <Label for="IndicatorScript" class="bee-required" />
+        <cell colSpan="3">
+          <InputArea source="IndicatorScript" style="&areaw;" visibleLines="5" spellcheck="false"
+                     required="true" />
+        </cell>
+      </row>
+
+      <row>
         &empty;
         <CheckBox source="IndicatorIsPercent" />
+
+        <Label for="IndicatorScale" />
+        <InputInteger source="IndicatorScale" style="width: 2rem;" minValue="0" maxValue="5" />
       </row>
 
       <row>
@@ -38,22 +48,13 @@
         <Label for="Foreground" />
         <ColorEditor source="Foreground" style="&colorw;" />
       </row>
+
+      <row>
+        <Label for="Description" />
+        <cell colSpan="3">
+          <InputArea source="Description" style="&areaw;" visibleLines="5" />
+        </cell>
+      </row>
     </Table>
-
-    <TabbedPages class="flexible">
-      <page>
-        <text>=finAnalysisScript</text>
-        <SimplePanel>
-          <InputArea source="Script" class="occupy-1" required="true" summarize="true" />
-        </SimplePanel>
-      </page>
-
-      <page for="Description">
-        <text>=description</text>
-        <SimplePanel>
-          <InputArea source="Description" class="occupy-1" summarize="true" />
-        </SimplePanel>
-      </page>
-    </TabbedPages>
   </FlowPanel>
 </f:Form>  

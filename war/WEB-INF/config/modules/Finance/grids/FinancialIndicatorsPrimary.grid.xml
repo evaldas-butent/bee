@@ -21,12 +21,12 @@
 
     <DataColumn name="Description" flexGrow="1" />
 
-    <DataColumn name="Background" updateMode="row" minWidth="100"
+    <DataColumn name="Background" updateMode="row" minWidth="100" editInPlace="true"
                 backgroundSource="Background" foregroundSource="Foreground">
       <editor type="color" />
     </DataColumn>
-    <DataColumn name="Foreground" updateMode="row" minWidth="100" backgroundSource="Background"
-                foregroundSource="Foreground">
+    <DataColumn name="Foreground" updateMode="row" minWidth="100" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
       <editor type="color" />
     </DataColumn>
   </g:columns>
