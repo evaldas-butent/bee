@@ -251,6 +251,9 @@
       <xs:enumeration value="Autocomplete" />
       <xs:enumeration value="Banks" />
       <xs:enumeration value="Branches" />
+      <xs:enumeration value="BudgetEntries" />
+      <xs:enumeration value="BudgetHeaders" />
+      <xs:enumeration value="BudgetTypes" />
       <xs:enumeration value="CalAppointmentTypes" />
       <xs:enumeration value="CalAttendeeTypes" />
       <xs:enumeration value="CalendarAttendees" />

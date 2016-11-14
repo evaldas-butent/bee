@@ -2737,6 +2737,18 @@ public interface Dictionary {
 
   default String finAnalysisScript() {return g("finAnalysisScript");}
 
+  default String finBudget() {return g("finBudget");}
+
+  default String finBudgetHeader() {return g("finBudgetHeader");}
+
+  default String finBudgetHeaders() {return g("finBudgetHeaders");}
+
+  default String finBudgetType() {return g("finBudgetType");}
+
+  default String finBudgetTypeNew() {return g("finBudgetTypeNew");}
+
+  default String finBudgetTypes() {return g("finBudgetTypes");}
+
   default String finCashInBank() {return g("finCashInBank");}
 
   default String finClosingBalance() {return g("finClosingBalance");}
