@@ -133,6 +133,7 @@ public enum Report implements HasWidgetSupplier {
           new ReportEnumItem(COL_TRIP_STATUS, Data.getColumnLabel(TBL_TRIPS, COL_TRIP_STATUS),
               TripStatus.class),
           new ReportTextItem(ALS_TRIP_MANAGER, loc.tripManager()),
+          new ReportTextItem(COL_MAIN_DRIVER, loc.trdDriver()),
 
           new ReportTextItem(COL_ORDER_NO, loc.orderNumber()),
           new ReportDateTimeItem(TransportConstants.COL_ORDER + COL_ORDER_DATE, loc.orderDate()),
