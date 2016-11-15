@@ -15,6 +15,7 @@
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
+        <SimpleColumn name="Status" alias="OrderStatus" />
 
         <SimpleColumn name="Customer" />
         <SimpleJoin name="Customer" joinType="LEFT">

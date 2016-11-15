@@ -71,5 +71,7 @@
     <DataColumn name="InvoiceNo" caption="=trdInvoice" />
     <DataColumn name="Directions" editInPlace="true" />
     <DataColumn name="CmrCopy" caption="=trCmrCopy" editInPlace="true" />
+
+    <DataColumn name="OrderStatus"/>
   </g:columns>
 </g:Grid>
