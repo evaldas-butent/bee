@@ -2753,6 +2753,14 @@ public interface Dictionary {
 
   default String finBudgetName() {return g("finBudgetName");}
 
+  default String finBudgetShowDimension(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finBudgetShowDimension"), _m);
+  }
+
+  default String finBudgetShowEmployee() {return g("finBudgetShowEmployee");}
+
   default String finBudgetType() {return g("finBudgetType");}
 
   default String finBudgetTypeNew() {return g("finBudgetTypeNew");}

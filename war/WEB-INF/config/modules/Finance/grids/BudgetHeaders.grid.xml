@@ -3,8 +3,8 @@
         xmlns:ui="http://www.butent.com/ui"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="BudgetHeaders" viewName="BudgetHeaders"
-        caption="=finBudgetHeaders"
+        name="BudgetHeaders" viewName="BudgetHeaders" caption="=finBudgetHeaders"
+        editForm="SimpleBudget" newRowForm="SimpleBudget"
 >
   <g:columns>
     <DataColumn name="Ordinal" editInPlace="true" />
@@ -13,11 +13,11 @@
                 backgroundSource="Background" foregroundSource="Foreground" />
   </g:columns>
 
-  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
-  <xi:include href="columns/Employee.columns.xml" />
-
   <xi:include href="columns/Indicator.columns.xml" />
   <xi:include href="columns/BudgetType.columns.xml" />
+
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+  <xi:include href="columns/Employee.columns.xml" />
 
   <g:columns>
     <DataColumn name="Year" visible="false" />

@@ -30,9 +30,7 @@
     <Boolean name="EntryDim09" />
     <Boolean name="EntryDim10" />
 
-    <Boolean name="EntryEmployee" />
-
-    <Boolean name="EntryBudgetType" />
+    <Boolean name="EntryEmployee" label="=finBudgetShowEmployee" />
 
     <Text name="Description" label="=description" />
 

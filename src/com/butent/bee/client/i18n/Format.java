@@ -349,6 +349,10 @@ public final class Format {
     return d;
   }
 
+  public static String properMonth(int month) {
+    return BeeUtils.proper(renderMonthFullStandalone(month));
+  }
+
   public static String render(Boolean value) {
     return BeeUtils.isTrue(value) ? BeeConst.STRING_CHECK_MARK : BeeConst.STRING_EMPTY;
   }

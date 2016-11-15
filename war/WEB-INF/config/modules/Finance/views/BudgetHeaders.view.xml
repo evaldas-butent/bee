@@ -30,8 +30,6 @@
 
     <SimpleColumn name="EntryEmployee" />
 
-    <SimpleColumn name="EntryBudgetType" />
-
     <SimpleColumn name="Description" />
 
     <SimpleColumn name="Background" />
