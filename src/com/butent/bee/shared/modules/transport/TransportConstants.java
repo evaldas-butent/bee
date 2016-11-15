@@ -963,6 +963,8 @@ public final class TransportConstants {
   public static final String ALS_VEHICLE_NUMBER = "VehicleNumber";
   public static final String ALS_TRAILER_NUMBER = "TrailerNumber";
 
+  public static final String ALS_TRIP_MANAGER = "TripManager";
+
   public static final String ALS_TRIP_VERSION = "TripVersion";
   public static final String ALS_CARGO_TRIP_VERSION = "CargoTripVersion";
 

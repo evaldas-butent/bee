@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="BudgetHeaders" viewName="BudgetHeaders" caption="=finBudgetHeaders"
+        editForm="SimpleBudget" newRowForm="SimpleBudget"
+>
+  <g:columns>
+    <DataColumn name="Ordinal" editInPlace="true" />
+
+    <DataColumn name="BudgetName" minWidth="100" flexGrow="1" visible="true"
+                backgroundSource="Background" foregroundSource="Foreground" />
+  </g:columns>
+
+  <xi:include href="columns/Indicator.columns.xml" />
+  <xi:include href="columns/BudgetType.columns.xml" />
+
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+  <xi:include href="columns/Employee.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="Year" visible="false" />
+
+    <DataColumn name="Description" flexGrow="1" visible="false" />
+
+    <DataColumn name="Background" updateMode="row" minWidth="100" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row" minWidth="100" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+  </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.BudgetName</ui:expression>
+  </g:rowMessage>
+</g:Grid>

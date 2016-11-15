@@ -7,19 +7,7 @@
   <Columns>
     <SimpleColumn name="Indicator" />
 
-    <SimpleColumn name="Employee" />
-    <SimpleJoin joinType="LEFT" name="Employee">
-      <SimpleColumn name="CompanyPerson" alias="EmployeeCompanyPerson" />
-      <SimpleJoin joinType="LEFT" name="CompanyPerson">
-        <SimpleJoin joinType="LEFT" name="Person">
-          <SimpleColumn name="FirstName" alias="EmployeeFirstName" />
-          <SimpleColumn name="LastName" alias="EmployeeLastName" />
-        </SimpleJoin>
-      </SimpleJoin>
-
-      <SimpleColumn name="TabNumber" alias="EmployeeTabNumber" />
-    </SimpleJoin>
-
+    <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
     <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
 
     <SimpleColumn name="ExtraFilter" />

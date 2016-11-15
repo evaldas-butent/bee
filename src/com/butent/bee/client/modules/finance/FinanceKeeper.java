@@ -11,13 +11,18 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.modules.finance.analysis.BudgetEntriesGrid;
 import com.butent.bee.client.modules.finance.analysis.FinancialIndicatorsGrid;
+import com.butent.bee.client.modules.finance.analysis.SimpleBudgetForm;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.rights.Module;
 
@@ -90,10 +95,23 @@ public final class FinanceKeeper {
   }
 
   private static void registerAnalysis() {
+    for (int dimension = 1; dimension <= Dimensions.SPACETIME; dimension++) {
+      Localized.setColumnLabel(colBudgetShowEntryDimension(dimension),
+          Localized.dictionary().finBudgetShowDimension(Dimensions.singular(dimension)));
+    }
+
+    for (int month = 1; month <= 12; month++) {
+      Localized.setColumnLabel(colBudgetEntryValue(month), Format.properMonth(month));
+    }
+
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_INDICATORS_PRIMARY,
         new FinancialIndicatorsGrid(IndicatorKind.PRIMARY));
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_INDICATORS_SECONDARY,
         new FinancialIndicatorsGrid(IndicatorKind.SECONDARY));
+
+    GridFactory.registerGridInterceptor(GRID_BUDGET_ENTRIES, new BudgetEntriesGrid());
+
+    FormFactory.registerFormInterceptor(FORM_SIMPLE_BUDGET, new SimpleBudgetForm());
   }
 
   private static void registerDebitCreditColor(Collection<String> gridNames,

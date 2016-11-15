@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Columns xmlns="http://www.butent.com/view">
+  <SimpleColumn name="Employee" />
+  <SimpleJoin joinType="LEFT" name="Employee">
+    <SimpleColumn name="CompanyPerson" alias="EmployeeCompanyPerson" />
+    <SimpleJoin joinType="LEFT" name="CompanyPerson">
+      <SimpleJoin joinType="LEFT" name="Person">
+        <SimpleColumn name="FirstName" alias="EmployeeFirstName" />
+        <SimpleColumn name="LastName" alias="EmployeeLastName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="TabNumber" alias="EmployeeTabNumber" />
+  </SimpleJoin>
+</Columns>

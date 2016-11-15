@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Columns xmlns="http://www.butent.com/view">
+  <SimpleColumn name="BudgetType" />
+  <SimpleJoin joinType="LEFT" name="BudgetType">
+    <SimpleColumn name="Ordinal" alias="BudgetTypeOrdinal" />
+    <SimpleColumn name="BudgetTypeName" />
+
+    <SimpleColumn name="Background" alias="BudgetTypeBackground" />
+    <SimpleColumn name="Foreground" alias="BudgetTypeForeground" />
+  </SimpleJoin>
+</Columns>
