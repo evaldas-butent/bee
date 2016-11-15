@@ -38,5 +38,9 @@
     <DataColumn name="Note" />
 
     <RelColumn name="Creator" readOnly="true" />
+
+    <DataColumn name="Vehicle" />
+    <DataColumn name="Trailer" />
+    <DataColumn name="Driver" searchBy="FirstName LastName" />
   </g:columns>
 </g:Grid>

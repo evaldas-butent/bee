@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:xpr="http://www.butent.com/expression"
 
   name="CargoPurchases" source="CargoExpenses" caption="=transportTripCosts"
   >
@@ -22,6 +23,36 @@
         <SimpleColumn name="Date" alias="OrderDate" label="=orderDate" />
         <SimpleColumn name="OrderNo" />
       </SimpleJoin>
+
+      <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
+        <SimpleJoin name="Trip" joinType="LEFT">
+          <SimpleJoin name="Vehicle" joinType="LEFT">
+            <AggregateColumn name="Number" alias="Vehicle" aggregate="MAX" label="=trTruck" />
+          </SimpleJoin>
+          <SimpleJoin name="Trailer" joinType="LEFT">
+            <AggregateColumn name="Number" alias="Trailer" aggregate="MAX" label="=trailer" />
+          </SimpleJoin>
+
+          <SimpleJoin name="MainDriver" joinType="LEFT">
+            <SimpleJoin name="Driver" joinType="LEFT">
+              <SimpleJoin name="CompanyPerson" joinType="LEFT">
+                <SimpleJoin name="Person" joinType="LEFT">
+                  <HiddenColumn name="FirstName" />
+                  <HiddenColumn name="LastName" />
+
+                  <AggregateColumn name="Driver" aggregate="MAX" label="=vehicleDriver">
+                    <xpr:concat>
+                      <xpr:string>"FirstName"</xpr:string>
+                      <xpr:string>' '</xpr:string>
+                      <xpr:string>"LastName"</xpr:string>
+                    </xpr:concat>
+                  </AggregateColumn>
+                </SimpleJoin>
+              </SimpleJoin>
+            </SimpleJoin>
+          </SimpleJoin>
+        </SimpleJoin>
+      </ExternalJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Service" />
