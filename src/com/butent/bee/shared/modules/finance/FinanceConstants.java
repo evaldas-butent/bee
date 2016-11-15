@@ -27,6 +27,9 @@ public final class FinanceConstants {
   public static final String VIEW_FINANCE_DISTRIBUTION_OF_TRADE_DOCUMENTS =
       "FinanceDistributionOfTradeDocuments";
 
+  public static final String VIEW_BUDGET_HEADERS = "BudgetHeaders";
+  public static final String VIEW_BUDGET_ENTRIES = "BudgetEntries";
+
   public static final String COL_FIN_JOURNAL = "Journal";
   public static final String COL_FIN_DATE = "Date";
   public static final String COL_FIN_COMPANY = "Company";
@@ -73,11 +76,42 @@ public final class FinanceConstants {
 
   public static final String COL_FIN_INDICATOR_KIND = "IndicatorKind";
   public static final String COL_FIN_INDICATOR_NAME = "IndicatorName";
+  public static final String COL_FIN_INDICATOR_ABBREVIATION = "IndicatorAbbreviation";
   public static final String COL_FIN_INDICATOR_SOURCE = "IndicatorSource";
+  public static final String COL_FIN_INDICATOR_SCRIPT = "IndicatorScript";
   public static final String COL_FIN_INDICATOR_BALANCE = "IndicatorBalance";
   public static final String COL_FIN_INDICATOR_CLOSING_ENTRIES = "IndicatorClosingEntries";
   public static final String COL_FIN_INDICATOR_IS_PERCENT = "IndicatorIsPercent";
   public static final String COL_FIN_INDICATOR_SCALE = "IndicatorScale";
+
+  public static final String COL_BUDGET_NAME = "BudgetName";
+  public static final String COL_BUDGET_HEADER = "BudgetHeader";
+
+  public static final String COL_BUDGET_HEADER_ORDINAL = "Ordinal";
+  public static final String COL_BUDGET_HEADER_EMPLOYEE = "Employee";
+  public static final String COL_BUDGET_HEADER_INDICATOR = "Indicator";
+  public static final String COL_BUDGET_HEADER_TYPE = "BudgetType";
+  public static final String COL_BUDGET_HEADER_YEAR = "Year";
+  public static final String COL_BUDGET_HEADER_BACKGROUND = "Background";
+  public static final String COL_BUDGET_HEADER_FOREGROUND = "Foreground";
+
+  private static final String[] COL_BUDGET_SHOW_ENTRY_DIMENSIONS = new String[] {
+      "EntryDim01", "EntryDim02", "EntryDim03", "EntryDim04", "EntryDim05",
+      "EntryDim06", "EntryDim07", "EntryDim08", "EntryDim09", "EntryDim10"
+  };
+
+  public static final String COL_BUDGET_SHOW_ENTRY_EMPLOYEE = "EntryEmployee";
+
+  public static final String COL_BUDGET_ENTRY_ORDINAL = "Ordinal";
+  public static final String COL_BUDGET_ENTRY_EMPLOYEE = "Employee";
+  public static final String COL_BUDGET_ENTRY_INDICATOR = "Indicator";
+  public static final String COL_BUDGET_ENTRY_TYPE = "BudgetType";
+  public static final String COL_BUDGET_ENTRY_YEAR = "Year";
+
+  private static final String[] COL_BUDGET_ENTRY_VALUES = new String[] {
+      "Month01", "Month02", "Month03", "Month04", "Month05", "Month06",
+      "Month07", "Month08", "Month09", "Month10", "Month11", "Month12"
+  };
 
   public static final String ALS_JOURNAL_BACKGROUND = "JournalBackground";
   public static final String ALS_JOURNAL_FOREGROUND = "JournalForeground";
@@ -117,8 +151,21 @@ public final class FinanceConstants {
   public static final String GRID_FINANCIAL_INDICATORS_PRIMARY = "FinancialIndicatorsPrimary";
   public static final String GRID_FINANCIAL_INDICATORS_SECONDARY = "FinancialIndicatorsSecondary";
 
+  public static final String GRID_BUDGET_HEADERS = "BudgetHeaders";
+  public static final String GRID_BUDGET_ENTRIES = "BudgetEntries";
+
   public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
   public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";
+
+  public static final String FORM_SIMPLE_BUDGET = "SimpleBudget";
+
+  public static String colBudgetEntryValue(int month) {
+    return COL_BUDGET_ENTRY_VALUES[month - 1];
+  }
+
+  public static String colBudgetShowEntryDimension(int dimension) {
+    return COL_BUDGET_SHOW_ENTRY_DIMENSIONS[dimension - 1];
+  }
 
   public static void register() {
     EnumUtils.register(IndicatorKind.class);

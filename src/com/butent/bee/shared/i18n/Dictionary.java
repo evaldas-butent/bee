@@ -2739,6 +2739,38 @@ public interface Dictionary {
 
   default String finAnalysis() {return g("finAnalysis");}
 
+  default String finAnalysisScript() {return g("finAnalysisScript");}
+
+  default String finBudget() {return g("finBudget");}
+
+  default String finBudgetEntries() {return g("finBudgetEntries");}
+
+  default String finBudgetEntry() {return g("finBudgetEntry");}
+
+  default String finBudgetEntryNew() {return g("finBudgetEntryNew");}
+
+  default String finBudgetHeader() {return g("finBudgetHeader");}
+
+  default String finBudgetHeaderNew() {return g("finBudgetHeaderNew");}
+
+  default String finBudgetHeaders() {return g("finBudgetHeaders");}
+
+  default String finBudgetName() {return g("finBudgetName");}
+
+  default String finBudgetShowDimension(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finBudgetShowDimension"), _m);
+  }
+
+  default String finBudgetShowEmployee() {return g("finBudgetShowEmployee");}
+
+  default String finBudgetType() {return g("finBudgetType");}
+
+  default String finBudgetTypeNew() {return g("finBudgetTypeNew");}
+
+  default String finBudgetTypes() {return g("finBudgetTypes");}
+
   default String finCashInBank() {return g("finCashInBank");}
 
   default String finClosingBalance() {return g("finClosingBalance");}
@@ -2778,6 +2810,8 @@ public interface Dictionary {
   default String finForeignExchangeLoss() {return g("finForeignExchangeLoss");}
 
   default String finIndicator() {return g("finIndicator");}
+
+  default String finIndicatorAbbreviation() {return g("finIndicatorAbbreviation");}
 
   default String finIndicatorAccounts() {return g("finIndicatorAccounts");}
 
@@ -4308,6 +4342,8 @@ public interface Dictionary {
   default String prmCheckDebt() {return g("prmCheckDebt");}
 
   default String prmClearReservationsTime() {return g("prmClearReservationsTime");}
+
+  default String prmCreatePrivateTaskFirst() {return g("prmCreatePrivateTaskFirst");}
 
   default String prmDefaultMaintenanceType() {return g("prmDefaultMaintenanceType");}
 
@@ -6298,6 +6334,8 @@ public interface Dictionary {
   default String trip() {return g("trip");}
 
   default String tripDuration() {return g("tripDuration");}
+
+  default String tripManager() {return g("tripManager");}
 
   default String tripRouteDocs() {return g("tripRouteDocs");}
 

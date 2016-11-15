@@ -6,9 +6,12 @@
 >
   <Columns>
     <SimpleColumn name="IndicatorKind" />
+
     <SimpleColumn name="IndicatorName" />
+    <SimpleColumn name="IndicatorAbbreviation" />
 
     <SimpleColumn name="IndicatorSource" />
+    <SimpleColumn name="IndicatorScript" />
 
     <SimpleColumn name="IndicatorBalance" />
     <SimpleColumn name="IndicatorClosingEntries" />

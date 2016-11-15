@@ -119,6 +119,13 @@ public class MailFolder implements BeeSerializable {
     return parent;
   }
 
+  public String getPath(char separator) {
+    if (Objects.isNull(getParent())) {
+      return "";
+    }
+    return BeeUtils.join(BeeUtils.toString(separator), getParent().getPath(separator), getName());
+  }
+
   public Collection<MailFolder> getSubFolders() {
     return childs.values();
   }

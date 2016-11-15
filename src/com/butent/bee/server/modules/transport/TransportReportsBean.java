@@ -875,6 +875,16 @@ public class TransportReportsBean {
     clause.add(report.getCondition(SqlUtils.field(trucks, COL_VEHICLE_NUMBER), COL_VEHICLE));
     clause.add(report.getCondition(SqlUtils.field(trailers, COL_VEHICLE_NUMBER), COL_TRAILER));
 
+    clause.add(report.getCondition(
+        SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+        SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), ALS_TRIP_MANAGER));
+
+    String driverPersonTblAls = SqlUtils.uniqueName();
+    String driverCompPersonTblAls = SqlUtils.uniqueName();
+    clause.add(report.getCondition(SqlUtils.concat(
+        SqlUtils.field(driverPersonTblAls, COL_FIRST_NAME), "' '",
+        SqlUtils.nvl(SqlUtils.field(driverPersonTblAls, COL_LAST_NAME), "''")), COL_MAIN_DRIVER));
+
     HasConditions cargoClause = SqlUtils.and();
     cargoClause.add(report.getCondition(TBL_ORDERS, COL_ORDER_NO));
     cargoClause.add(report.getCondition(SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE),
@@ -908,6 +918,10 @@ public class TransportReportsBean {
             dateTimeToDate.apply(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE))), COL_TRIP_DATE_FROM)
         .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
             SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)), COL_TRIP_DATE_TO)
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), ALS_TRIP_MANAGER)
+        .addExpr(SqlUtils.concat(SqlUtils.field(driverPersonTblAls, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(driverPersonTblAls, COL_LAST_NAME), "''")), COL_MAIN_DRIVER)
         .addField(trucks, COL_VEHICLE_NUMBER, COL_VEHICLE)
         .addField(trailers, COL_VEHICLE_NUMBER, COL_TRAILER)
         .addEmptyDouble(plannedKilometers)
@@ -929,6 +943,16 @@ public class TransportReportsBean {
             sys.joinTables(TBL_VEHICLES, trucks, TBL_TRIPS, COL_VEHICLE))
         .addFromLeft(TBL_VEHICLES, trailers,
             sys.joinTables(TBL_VEHICLES, trailers, TBL_TRIPS, COL_TRAILER))
+        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_TRIPS, COL_TRIP_MANAGER))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .addFromLeft(TBL_TRIP_DRIVERS, sys.joinTables(TBL_TRIP_DRIVERS, TBL_TRIPS, COL_MAIN_DRIVER))
+        .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
+        .addFromLeft(TBL_COMPANY_PERSONS, driverCompPersonTblAls, sys.joinTables(
+            TBL_COMPANY_PERSONS, driverCompPersonTblAls, TBL_DRIVERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, driverPersonTblAls,
+            sys.joinTables(TBL_PERSONS, driverPersonTblAls, driverCompPersonTblAls, COL_PERSON))
         .setWhere(clause.add(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION)));
 
     String tmp = qs.sqlCreateTemp(query);
