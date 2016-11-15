@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="CargoPlaceUnbound" width="450" height="550"
 >
@@ -26,7 +28,9 @@
     <row>
       <Label for="CityUnbound" class="bee-required" />
       <DataSelector source="CityUnbound" viewName="Cities" valueSource="Name"
-                    choiceColumns="Name CountryName" required="true" options="CountryUnbound" />
+                    choiceColumns="Name NameEn NameRu CountryName" required="true" options="CountryUnbound" >
+        <ui:rowRenderer type="join" separator="/" />
+      </DataSelector>
     </row>
     <row>
       <Label for="PostIndex" />
@@ -37,7 +41,9 @@
     <row>
       <Label for="CountryUnbound" class="bee-required" />
       <DataSelector source="CountryUnbound" viewName="Countries" valueSource="Name"
-                    required="true" />
+                    required="true" choiceColumns="Name NameEn NameRu">
+        <ui:rowRenderer type="join" separator="/" />
+      </DataSelector>
     </row>
     <row>
       <Label for="Contact" />
