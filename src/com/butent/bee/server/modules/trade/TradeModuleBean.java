@@ -1221,7 +1221,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     String idName = sys.getIdName(TBL_SALES);
 
     SimpleRowSet data = qs.getData(new SqlSelect()
-        .addFields(TBL_SALES, idName, sent, other)
+        .addFields(TBL_SALES, idName, sent, other, attribute)
         .addFrom(TBL_SALES)
         .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_SALES, COL_TRADE_EXPORTED),
             SqlUtils.or(SqlUtils.isNull(TBL_SALES, sent), SqlUtils.isNull(TBL_SALES, other),
