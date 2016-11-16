@@ -88,6 +88,10 @@ public final class Dimensions {
     return ArrayUtils.contains(VIEWS, viewName);
   }
 
+  public static boolean isObserved(Integer ordinal) {
+    return isValid(ordinal) && ordinal <= observed;
+  }
+
   public static String getGridName(Integer ordinal) {
     return getViewName(ordinal);
   }

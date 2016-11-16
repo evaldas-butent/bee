@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
       name="BudgetHeaders" source="BudgetHeaders"
-      caption="=finBudgetHeaders" newRowCaption="=finBudgetHeaderNew"
+      caption="=finBudgetHeaders" newRowCaption="=finBudgetNew"
 >
   <Columns>
     <SimpleColumn name="Ordinal" />

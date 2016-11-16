@@ -8,7 +8,7 @@
   <Item name="FinancialIndicatorsSecondary" label="=finIndicatorsSecondary" service="grid"
         parameters="FinancialIndicatorsSecondary" />
 
-  <Item name="BudgetHeaders" label="=finBudgetHeaders" service="grid" parameters="BudgetHeaders"
+  <Item name="BudgetHeaders" label="=finBudgets" service="grid" parameters="BudgetHeaders"
         separator="true" />
   <Item name="BudgetTypes" label="=finBudgetTypes" service="grid" parameters="BudgetTypes" />
 </Entry>

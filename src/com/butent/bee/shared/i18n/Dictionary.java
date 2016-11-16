@@ -2747,11 +2747,11 @@ public interface Dictionary {
 
   default String finBudgetHeader() {return g("finBudgetHeader");}
 
-  default String finBudgetHeaderNew() {return g("finBudgetHeaderNew");}
-
   default String finBudgetHeaders() {return g("finBudgetHeaders");}
 
   default String finBudgetName() {return g("finBudgetName");}
+
+  default String finBudgetNew() {return g("finBudgetNew");}
 
   default String finBudgetShowDimension(Object p0) {
     Map<String, Object> _m = new HashMap<>();
@@ -2766,6 +2766,8 @@ public interface Dictionary {
   default String finBudgetTypeNew() {return g("finBudgetTypeNew");}
 
   default String finBudgetTypes() {return g("finBudgetTypes");}
+
+  default String finBudgets() {return g("finBudgets");}
 
   default String finCashInBank() {return g("finCashInBank");}
 

@@ -2,6 +2,7 @@
 <!DOCTYPE Form [
     <!ENTITY inpw "width: 20rem;">
     <!ENTITY colorw "width: 20rem;">
+    <!ENTITY entrydim "margin-left: 0.5rem;">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
@@ -41,7 +42,8 @@
                       choiceColumns="FirstName LastName" newRowEnabled="false" />
 
         <Label for="Year" />
-        <InputInteger source="Year" style="width: 5rem;" minValue="2000" maxValue="2099" />
+        <InputInteger source="Year" style="width: 5rem;" minValue="2000" maxValue="2099"
+                      format="0000" />
       </row>
 
       <row>
@@ -62,21 +64,21 @@
       <page>
         <text>=finBudgetEntries</text>
         <FlowPanel class="flexBox-vertical">
-          <FlowPanel>
-            <InlineLabel text="=columns" />
+          <FlowPanel style="margin-bottom: 10px;">
+            <InlineLabel text="=columns" style="margin-left: 2rem; margin-right: 2rem;" />
 
-            <CheckBox source="EntryDim01" />
-            <CheckBox source="EntryDim02" />
-            <CheckBox source="EntryDim03" />
-            <CheckBox source="EntryDim04" />
-            <CheckBox source="EntryDim05" />
-            <CheckBox source="EntryDim06" />
-            <CheckBox source="EntryDim07" />
-            <CheckBox source="EntryDim08" />
-            <CheckBox source="EntryDim09" />
-            <CheckBox source="EntryDim10" />
+            <CheckBox name="EntryDim01" source="EntryDim01" style="&entrydim;" />
+            <CheckBox name="EntryDim02" source="EntryDim02" style="&entrydim;" />
+            <CheckBox name="EntryDim03" source="EntryDim03" style="&entrydim;" />
+            <CheckBox name="EntryDim04" source="EntryDim04" style="&entrydim;" />
+            <CheckBox name="EntryDim05" source="EntryDim05" style="&entrydim;" />
+            <CheckBox name="EntryDim06" source="EntryDim06" style="&entrydim;" />
+            <CheckBox name="EntryDim07" source="EntryDim07" style="&entrydim;" />
+            <CheckBox name="EntryDim08" source="EntryDim08" style="&entrydim;" />
+            <CheckBox name="EntryDim09" source="EntryDim09" style="&entrydim;" />
+            <CheckBox name="EntryDim10" source="EntryDim10" style="&entrydim;" />
 
-            <CheckBox source="EntryEmployee" />
+            <CheckBox source="EntryEmployee" text="=employee" style="margin-left: 2rem;" />
           </FlowPanel>
 
           <ChildGrid name="BudgetEntries" relColumn="BudgetHeader" class="flexible" />

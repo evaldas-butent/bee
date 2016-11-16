@@ -15,20 +15,20 @@
   <xi:include href="columns/Employee.columns.xml" />
 
   <g:columns>
-    <DataColumn name="Year" />
+    <DataColumn name="Year" minValue="2000" maxValue="2099" format="0000" />
 
-    <DataColumn name="Month01" visible="true" />
-    <DataColumn name="Month02" visible="true" />
-    <DataColumn name="Month03" visible="true" />
-    <DataColumn name="Month04" visible="true" />
-    <DataColumn name="Month05" visible="true" />
-    <DataColumn name="Month06" visible="true" />
-    <DataColumn name="Month07" visible="true" />
-    <DataColumn name="Month08" visible="true" />
-    <DataColumn name="Month09" visible="true" />
-    <DataColumn name="Month10" visible="true" />
-    <DataColumn name="Month11" visible="true" />
-    <DataColumn name="Month12" visible="true" />
+    <DataColumn name="Month01" scale="0" visible="true" />
+    <DataColumn name="Month02" scale="0" visible="true" />
+    <DataColumn name="Month03" scale="0" visible="true" />
+    <DataColumn name="Month04" scale="0" visible="true" />
+    <DataColumn name="Month05" scale="0" visible="true" />
+    <DataColumn name="Month06" scale="0" visible="true" />
+    <DataColumn name="Month07" scale="0" visible="true" />
+    <DataColumn name="Month08" scale="0" visible="true" />
+    <DataColumn name="Month09" scale="0" visible="true" />
+    <DataColumn name="Month10" scale="0" visible="true" />
+    <DataColumn name="Month11" scale="0" visible="true" />
+    <DataColumn name="Month12" scale="0" visible="true" />
 
     <DataColumn name="Note" flexGrow="1" visible="false" />
   </g:columns>

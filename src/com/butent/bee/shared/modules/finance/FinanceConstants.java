@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.finance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorBalance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class FinanceConstants {
@@ -165,6 +166,11 @@ public final class FinanceConstants {
 
   public static String colBudgetShowEntryDimension(int dimension) {
     return COL_BUDGET_SHOW_ENTRY_DIMENSIONS[dimension - 1];
+  }
+
+  public static Integer getBudgetShowEntryDimension(String colName) {
+    int index = ArrayUtils.indexOf(COL_BUDGET_SHOW_ENTRY_DIMENSIONS, colName);
+    return (index >= 0) ? index + 1 : null;
   }
 
   public static void register() {

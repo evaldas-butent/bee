@@ -3,7 +3,7 @@
         xmlns:ui="http://www.butent.com/ui"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="BudgetHeaders" viewName="BudgetHeaders" caption="=finBudgetHeaders"
+        name="BudgetHeaders" viewName="BudgetHeaders" caption="=finBudgets"
         editForm="SimpleBudget" newRowForm="SimpleBudget"
 >
   <g:columns>
@@ -20,7 +20,7 @@
   <xi:include href="columns/Employee.columns.xml" />
 
   <g:columns>
-    <DataColumn name="Year" visible="false" />
+    <DataColumn name="Year" format="0000" visible="false" />
 
     <DataColumn name="Description" flexGrow="1" visible="false" />
 
