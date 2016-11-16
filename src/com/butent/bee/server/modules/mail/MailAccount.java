@@ -494,12 +494,19 @@ public class MailAccount {
 
   Folder getRemoteFolder(Store remoteStore, MailFolder localFolder) throws MessagingException {
     Assert.noNulls(remoteStore, localFolder);
-    String path = localFolder.getPath(remoteStore.getDefaultFolder().getSeparator());
-    logger.debug("Looking for remote", path, "folder");
-    Folder remote = remoteStore.getFolder(path);
+    Folder remote;
 
-    if (!remote.exists()) {
-      remote = getRemoteFolder2(remoteStore, localFolder);
+    if (localFolder.getParent() == null) {
+      logger.debug("Looking for remote", localFolder.getName(), "folder");
+      remote = remoteStore.getDefaultFolder();
+    } else {
+      String path = localFolder.getPath(remoteStore.getDefaultFolder().getSeparator());
+      logger.debug("Looking for remote", path, "folder");
+      remote = remoteStore.getFolder(path);
+
+      if (!remote.exists()) {
+        remote = getRemoteFolder2(remoteStore, localFolder);
+      }
     }
     return remote;
   }
