@@ -1247,7 +1247,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                     + " FROM apyvarta"
                     + " WHERE extern_id IN(" + ids.toString() + ")"
                     + " AND (dekl_data IS NOT NULL OR kita_data IS NOT NULL)",
-                "id", sent, other);
+                "id", sent, other, attribute);
 
         for (SimpleRow newRow : rs) {
           Long id = TradeModuleBean.decodeId(TBL_SALES, newRow.getLong("id"));
