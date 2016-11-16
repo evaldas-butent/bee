@@ -349,8 +349,28 @@ public final class Format {
     return d;
   }
 
-  public static String properMonth(int month) {
+  public static String properMonthFull(int month) {
     return BeeUtils.proper(renderMonthFullStandalone(month));
+  }
+
+  public static String properMonthShort(int month) {
+    return BeeUtils.proper(renderMonthShortStandalone(month));
+  }
+
+  public static String quarterFull(int quarter) {
+    if (TimeUtils.isQuarter(quarter)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersFull()[quarter - 1];
+    } else {
+      return null;
+    }
+  }
+
+  public static String quarterShort(int quarter) {
+    if (TimeUtils.isQuarter(quarter)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersShort()[quarter - 1];
+    } else {
+      return null;
+    }
   }
 
   public static String render(Boolean value) {
@@ -516,6 +536,15 @@ public final class Format {
     if (TimeUtils.isMonth(month)) {
       return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
           .monthsFullStandalone()[month - 1];
+    } else {
+      return null;
+    }
+  }
+
+  public static String renderMonthShortStandalone(int month) {
+    if (TimeUtils.isMonth(month)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
+          .monthsShortStandalone()[month - 1];
     } else {
       return null;
     }

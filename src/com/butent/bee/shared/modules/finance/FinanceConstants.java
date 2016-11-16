@@ -168,6 +168,11 @@ public final class FinanceConstants {
     return COL_BUDGET_SHOW_ENTRY_DIMENSIONS[dimension - 1];
   }
 
+  public static Integer getBudgetEntryMonth(String colName) {
+    int index = ArrayUtils.indexOf(COL_BUDGET_ENTRY_VALUES, colName);
+    return (index >= 0) ? index + 1 : null;
+  }
+
   public static Integer getBudgetShowEntryDimension(String colName) {
     int index = ArrayUtils.indexOf(COL_BUDGET_SHOW_ENTRY_DIMENSIONS, colName);
     return (index >= 0) ? index + 1 : null;

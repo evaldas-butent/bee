@@ -4,6 +4,7 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -12,6 +13,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class BudgetEntriesGrid extends AbstractGridInterceptor {
@@ -22,6 +24,30 @@ public class BudgetEntriesGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new BudgetEntriesGrid();
+  }
+
+  @Override
+  public ColumnDescription beforeCreateColumn(GridView gridView,
+      ColumnDescription columnDescription) {
+
+    if (BeeUtils.isEmpty(columnDescription.getCaption())) {
+      Integer month = getBudgetEntryMonth(columnDescription.getId());
+
+      if (TimeUtils.isMonth(month)) {
+        columnDescription.setLabel(Format.properMonthFull(month));
+        columnDescription.setCaption(Format.properMonthShort(month));
+
+      } else if (columnDescription.getId().startsWith("Quarter")) {
+        Integer quarter = BeeUtils.toIntOrNull(BeeUtils.right(columnDescription.getId(), 1));
+
+        if (TimeUtils.isQuarter(quarter)) {
+          columnDescription.setLabel(Format.quarterFull(quarter));
+          columnDescription.setCaption(Format.quarterShort(quarter));
+        }
+      }
+    }
+
+    return super.beforeCreateColumn(gridView, columnDescription);
   }
 
   @Override

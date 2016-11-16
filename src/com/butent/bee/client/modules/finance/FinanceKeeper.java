@@ -101,7 +101,7 @@ public final class FinanceKeeper {
     }
 
     for (int month = 1; month <= 12; month++) {
-      Localized.setColumnLabel(colBudgetEntryValue(month), Format.properMonth(month));
+      Localized.setColumnLabel(colBudgetEntryValue(month), Format.properMonthFull(month));
     }
 
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_INDICATORS_PRIMARY,

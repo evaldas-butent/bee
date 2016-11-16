@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="BudgetEntries" viewName="BudgetEntries"
@@ -20,15 +21,79 @@
     <DataColumn name="Month01" scale="0" visible="true" />
     <DataColumn name="Month02" scale="0" visible="true" />
     <DataColumn name="Month03" scale="0" visible="true" />
+
+    <CalcColumn name="Quarter1" type="decimal" format="#,###.#####">
+      <style>
+        <bodyStyle>
+          <ui:font>bolder</ui:font>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:expression>row.Month01 + row.Month02 + row.Month03</ui:expression>
+      </render>
+    </CalcColumn>
+
     <DataColumn name="Month04" scale="0" visible="true" />
     <DataColumn name="Month05" scale="0" visible="true" />
     <DataColumn name="Month06" scale="0" visible="true" />
+
+    <CalcColumn name="Quarter2" type="decimal" format="#,###.#####">
+      <style>
+        <bodyStyle>
+          <ui:font>bolder</ui:font>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:expression>row.Month04 + row.Month05 + row.Month06</ui:expression>
+      </render>
+    </CalcColumn>
+
     <DataColumn name="Month07" scale="0" visible="true" />
     <DataColumn name="Month08" scale="0" visible="true" />
     <DataColumn name="Month09" scale="0" visible="true" />
+
+    <CalcColumn name="Quarter3" type="decimal" format="#,###.#####">
+      <style>
+        <bodyStyle>
+          <ui:font>bolder</ui:font>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:expression>row.Month07 + row.Month08 + row.Month09</ui:expression>
+      </render>
+    </CalcColumn>
+
     <DataColumn name="Month10" scale="0" visible="true" />
     <DataColumn name="Month11" scale="0" visible="true" />
     <DataColumn name="Month12" scale="0" visible="true" />
+
+    <CalcColumn name="Quarter4" type="decimal" format="#,###.#####">
+      <style>
+        <bodyStyle>
+          <ui:font>bolder</ui:font>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:expression>row.Month10 + row.Month11 + row.Month12</ui:expression>
+      </render>
+    </CalcColumn>
+
+    <CalcColumn name="Total" type="decimal" label="=total" format="#,###.#####">
+      <style>
+        <bodyStyle>
+          <ui:font>bolder larger</ui:font>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:function>
+          var total = row.Month01 + row.Month02 + row.Month03;
+          total += row.Month04 + row.Month05 + row.Month06;
+          total += row.Month07 + row.Month08 + row.Month09;
+          total += row.Month10 + row.Month11 + row.Month12;
+          return total;
+        </ui:function>
+      </render>
+    </CalcColumn>
 
     <DataColumn name="Note" flexGrow="1" visible="false" />
   </g:columns>
