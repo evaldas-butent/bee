@@ -104,6 +104,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Manages the structure and behavior of a cell grid user interface component.
@@ -1388,6 +1389,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public String getColumnId(int col) {
     return getColumnInfo(col).getColumnId();
+  }
+
+  public List<String> getColumnIds() {
+    return getColumns().stream().map(ColumnInfo::getColumnId).collect(Collectors.toList());
   }
 
   public List<ColumnInfo> getColumns() {

@@ -3,6 +3,7 @@ package com.butent.bee.client.view.grid;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -24,6 +25,7 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
@@ -256,6 +258,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       BeeConst.CSS_CLASS_PREFIX + "Grid-ProgressContainer";
   private static final String STYLE_PROGRESS_BAR =
       BeeConst.CSS_CLASS_PREFIX + "Grid-ProgressBar";
+
+  private static final String KEY_COLUMN = "column";
 
   private static Widget createProgress() {
     Flow container = new Flow(STYLE_PROGRESS_CONTAINER);
@@ -2135,6 +2139,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       container.setWidget(r, 1, editor.asWidget());
       container.getCellFormatter().setStyleName(r, 1, RowFactory.STYLE_NEW_ROW_INPUT_CELL);
 
+      DomUtils.setDataProperty(container.getRow(r), KEY_COLUMN, columnName);
+
       if (editor.getWidgetType() != null) {
         WidgetDescription widgetDescription = new WidgetDescription(editor.getWidgetType(),
             editor.getId(), columnName);
@@ -2972,6 +2978,23 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String caption = getRowCaption(newRow);
 
     final FormView form = getForm(GridFormKind.NEW_ROW);
+
+    if (isNewRowFormGenerated()) {
+      List<String> columnIds = getGrid().getColumnIds();
+      List<Element> formElements =
+          Selectors.getElementsWithDataProperty(form.getElement(), KEY_COLUMN);
+
+      if (!BeeUtils.isEmpty(columnIds) && !BeeUtils.isEmpty(formElements)) {
+        formElements.forEach(fe -> {
+          if (BeeUtils.containsSame(columnIds, DomUtils.getDataProperty(fe, KEY_COLUMN))) {
+            StyleUtils.unhideDisplay(fe);
+          } else {
+            StyleUtils.hideDisplay(fe);
+          }
+        });
+      }
+    }
+
     if (form.getFormInterceptor() != null) {
       form.getFormInterceptor().onStartNewRow(form, oldRow, newRow);
     }
