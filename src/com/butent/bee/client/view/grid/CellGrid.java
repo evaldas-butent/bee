@@ -3069,7 +3069,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return predefinedColumns.get(visibleColumns.get(col));
   }
 
-  private ColumnInfo getColumnInfo(String columnId) {
+  public ColumnInfo getColumnInfo(String columnId) {
     Assert.notEmpty(columnId);
     List<ColumnInfo> columns = getColumns();
     for (ColumnInfo info : columns) {

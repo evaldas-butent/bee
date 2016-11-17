@@ -211,12 +211,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
       }
 
-      if (hasData() && !BeeUtils.isEmpty(result.getDynStyles()) && !BeeUtils.isEmpty(id)) {
-        ConditionalStyle conditionalStyle =
-            ConditionalStyle.create(result.getDynStyles(), source, getDataColumns());
-        if (conditionalStyle != null) {
-          addDynamicStyle(id, cellSource, conditionalStyle);
-        }
+      if (hasData() && result.getConditionalStyle() != null && !BeeUtils.isEmpty(id)) {
+        addDynamicStyle(id, cellSource, result.getConditionalStyle());
       }
 
       if (widget instanceof RowConsumer && hasData() && !BeeUtils.isEmpty(id)) {

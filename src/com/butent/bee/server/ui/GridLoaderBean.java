@@ -162,9 +162,6 @@ public class GridLoaderBean {
 
   private static final String ATTR_CARRY = "carry";
 
-  private static final String ATTR_BACKGROUND_SOURCE = "backgroundSource";
-  private static final String ATTR_FOREGROUND_SOURCE = "foregroundSource";
-
   private static GridComponentDescription getComponent(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
@@ -442,9 +439,9 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, Attributes.DRAGGABLE)) {
           dst.setDraggable(BeeUtils.toBooleanOrNull(value));
 
-        } else if (BeeUtils.same(key, ATTR_BACKGROUND_SOURCE)) {
+        } else if (BeeUtils.same(key, UiConstants.ATTR_BACKGROUND_SOURCE)) {
           dst.setBackgroundSource(value.trim());
-        } else if (BeeUtils.same(key, ATTR_FOREGROUND_SOURCE)) {
+        } else if (BeeUtils.same(key, UiConstants.ATTR_FOREGROUND_SOURCE)) {
           dst.setForegroundSource(value.trim());
 
         } else if (Flexibility.isAttributeRelevant(key)) {

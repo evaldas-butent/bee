@@ -2145,7 +2145,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         WidgetDescription widgetDescription = new WidgetDescription(editor.getWidgetType(),
             editor.getId(), columnName);
 
-        widgetDescription.updateFrom(editableColumn);
+        widgetDescription.updateFrom(editableColumn, getGrid().getColumnInfo(columnName));
         callback.onSuccess(widgetDescription, editor);
       }
       r++;

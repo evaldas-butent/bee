@@ -69,8 +69,11 @@ import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.richtext.RichTextEditor;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.style.HasVerticalAlign;
+import com.butent.bee.client.style.StyleProvider;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
@@ -2024,7 +2027,8 @@ public enum FormWidget {
     }
 
     if (!dynStyles.isEmpty()) {
-      widgetDescription.setDynStyles(dynStyles);
+      widgetDescription.setConditionalStyle(ConditionalStyle.create(dynStyles,
+          widgetDescription.getSource(), columns));
     }
 
     if (!attributes.isEmpty()) {
@@ -2048,6 +2052,18 @@ public enum FormWidget {
           ((ListBox) widget).setVisibleItemCount(cnt);
         } else {
           ((ListBox) widget).updateSize();
+        }
+      }
+
+      if (widgetDescription.getConditionalStyle() == null) {
+        String bgSource = attributes.get(UiConstants.ATTR_BACKGROUND_SOURCE);
+        String fgSource = attributes.get(UiConstants.ATTR_FOREGROUND_SOURCE);
+
+        if (BeeUtils.anyNotEmpty(bgSource, fgSource)) {
+          StyleProvider styleProvider = ColorStyleProvider.create(columns, bgSource, fgSource);
+          if (styleProvider != null) {
+            widgetDescription.setConditionalStyle(ConditionalStyle.create(styleProvider));
+          }
         }
       }
     }
