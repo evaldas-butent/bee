@@ -11,6 +11,7 @@
     <SimpleColumn name="Type"/>
     <SimpleJoin joinType="INNER" name="Type">
       <SimpleColumn name="Name" alias="TypeName" />
+      <SimpleColumn name="AddressRequired"/>
     </SimpleJoin>
 
     <SimpleColumn name="State"/>

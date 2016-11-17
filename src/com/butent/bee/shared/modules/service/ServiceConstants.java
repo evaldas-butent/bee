@@ -71,6 +71,7 @@ public final class ServiceConstants {
 
   public static final String VIEW_SERVICE_SETTINGS = "ServiceSettings";
 
+  public static final String COL_ADDRESS_REQUIRED = "AddressRequired";
   public static final String COL_COMMENT = "Comment";
   public static final String COL_CUSTOMER_SENT = "CustomerSent";
   public static final String COL_ENDING_DATE = "EndingDate";

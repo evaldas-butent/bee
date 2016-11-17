@@ -891,7 +891,8 @@ public class ServiceModuleBean implements BeeModule {
 
       if (!BeeUtils.same(maintenanceCompany, objectCompany)
               || !BeeUtils.same(maintenanceContact, objectContact)) {
-        SqlUpdate update;
+        SqlUpdate update = null;
+        Long responseResult = null;
 
         if (DataUtils.isId(maintenanceId)) {
           update = new SqlUpdate(TBL_SERVICE_OBJECTS)
@@ -901,7 +902,7 @@ public class ServiceModuleBean implements BeeModule {
                           maintenanceRow.getValue(COL_CONTACT))
                   .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS,
                           maintenanceRow.getLong(COL_SERVICE_OBJECT)));
-          return qs.updateDataWithResponse(update);
+          responseResult = maintenanceRow.getLong(COL_SERVICE_OBJECT);
 
         } else {
           maintenanceId = maintenanceRow.getLong(sys.getIdName(TBL_SERVICE_MAINTENANCE));
@@ -913,14 +914,18 @@ public class ServiceModuleBean implements BeeModule {
                     .addConstant(COL_CONTACT,
                             maintenanceRow.getValue(ALS_CONTACT_PERSON))
                     .setWhere(sys.idEquals(TBL_SERVICE_MAINTENANCE, maintenanceId));
-            ResponseObject response = qs.updateDataWithResponse(update);
-
-            if (response.hasErrors()) {
-              return response;
-            }
-
-            return ResponseObject.response(maintenanceId);
+            responseResult = maintenanceId;
           }
+        }
+
+        if (update != null) {
+          ResponseObject response = qs.updateDataWithResponse(update);
+
+          if (response.hasErrors()) {
+            return response;
+          }
+
+          return ResponseObject.response(responseResult);
         }
       }
     }
