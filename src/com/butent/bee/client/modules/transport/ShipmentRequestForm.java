@@ -180,7 +180,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
         if (!isRegistered()) {
           header.addCommandItem(registerCommand);
-        } else if (ShipmentRequestStatus.ANSWERED.is(status)) {
+        } else if (ShipmentRequestStatus.CONTRACT_SENT.is(status)) {
           header.addCommandItem(confirmCommand);
         }
         header.addCommandItem(lostCommand);
