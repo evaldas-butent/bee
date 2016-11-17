@@ -5,28 +5,21 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.InputEvent;
-import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.style.HasConditionalStyleTarget;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -49,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ColorEditor extends Flow implements Editor, HasTextBox, HasKeyDownHandlers,
-    PreviewHandler {
+    PreviewHandler, HasConditionalStyleTarget {
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ColorEditor-";
 
@@ -76,50 +69,31 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, HasKeyDownH
     this.picker = new InputColor();
     picker.addStyleName(STYLE_PICKER);
 
-    textBox.addBlurHandler(new BlurHandler() {
-      @Override
-      public void onBlur(BlurEvent event) {
-        doBlur(event);
+    textBox.addBlurHandler(this::doBlur);
+
+    textBox.addKeyPressHandler(event -> {
+      if (event.getCharCode() == BeeConst.CHAR_ASTERISK) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        openPicker();
       }
     });
 
-    textBox.addKeyPressHandler(new KeyPressHandler() {
-      @Override
-      public void onKeyPress(KeyPressEvent event) {
-        if (event.getCharCode() == BeeConst.CHAR_ASTERISK) {
-          event.preventDefault();
-          event.stopPropagation();
+    picker.addInputHandler(event -> {
+      closePicker();
 
-          openPicker();
-        }
+      textBox.setValue(picker.getValue());
+      fireEvent(new EditStopEvent(State.CHANGED));
+    });
+
+    picker.addMouseDownHandler(event -> {
+      if (EventUtils.isLeftButton(event.getNativeButton())) {
+        setPickerState(State.PENDING);
       }
     });
 
-    picker.addInputHandler(new InputHandler() {
-      @Override
-      public void onInput(InputEvent event) {
-        closePicker();
-
-        textBox.setValue(picker.getValue());
-        fireEvent(new EditStopEvent(State.CHANGED));
-      }
-    });
-
-    picker.addMouseDownHandler(new MouseDownHandler() {
-      @Override
-      public void onMouseDown(MouseDownEvent event) {
-        if (EventUtils.isLeftButton(event.getNativeButton())) {
-          setPickerState(State.PENDING);
-        }
-      }
-    });
-
-    picker.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Previewer.ensureRegistered(ColorEditor.this);
-      }
-    });
+    picker.addClickHandler(event -> Previewer.ensureRegistered(ColorEditor.this));
 
     add(textBox);
     add(picker);
@@ -130,12 +104,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, HasKeyDownH
     Assert.notNull(handler);
     blurHandlers.add(handler);
 
-    return new HandlerRegistration() {
-      @Override
-      public void removeHandler() {
-        blurHandlers.remove(handler);
-      }
-    };
+    return () -> blurHandlers.remove(handler);
   }
 
   @Override
@@ -166,6 +135,11 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, HasKeyDownH
   @Override
   public void clearValue() {
     setValue(null);
+  }
+
+  @Override
+  public String getConditionalStyleTargetId() {
+    return textBox.getId();
   }
 
   @Override

@@ -46,6 +46,7 @@ import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.DynamicStyler;
+import com.butent.bee.client.style.HasConditionalStyleTarget;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.EnablableWidget;
@@ -211,8 +212,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
       }
 
-      if (hasData() && result.getConditionalStyle() != null && !BeeUtils.isEmpty(id)) {
-        addDynamicStyle(id, cellSource, result.getConditionalStyle());
+      if (hasData() && result.getConditionalStyle() != null) {
+        String targetId = (widget instanceof HasConditionalStyleTarget)
+            ? ((HasConditionalStyleTarget) widget).getConditionalStyleTargetId() : id;
+
+        if (!BeeUtils.isEmpty(targetId)) {
+          addDynamicStyle(targetId, cellSource, result.getConditionalStyle());
+        }
       }
 
       if (widget instanceof RowConsumer && hasData() && !BeeUtils.isEmpty(id)) {
