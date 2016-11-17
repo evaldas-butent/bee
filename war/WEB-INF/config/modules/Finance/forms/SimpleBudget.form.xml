@@ -19,7 +19,8 @@
 
       <row>
         <Label for="BudgetName" />
-        <InputText source="BudgetName" style="&inpw;" />
+        <InputText source="BudgetName" style="&inpw;"
+                   backgroundSource="Background" foregroundSource="Foreground" />
 
         <Label for="Ordinal" />
         <InputInteger source="Ordinal" style="width: 5rem;" />
@@ -28,11 +29,15 @@
       <row>
         <Label for="Indicator" />
         <DataSelector source="Indicator" style="&inpw;" renderColumns="IndicatorName"
-                      choiceColumns="IndicatorName IndicatorAbbreviation" newRowEnabled="false" />
+                      choiceColumns="IndicatorName IndicatorAbbreviation" newRowEnabled="false"
+                      backgroundSource="IndicatorBackground"
+                      foregroundSource="IndicatorForeground" />
 
         <Label for="BudgetType" />
         <DataSelector source="BudgetType" style="&inpw;" renderColumns="BudgetTypeName"
-                      choiceColumns="BudgetTypeName" newRowEnabled="false" />
+                      choiceColumns="BudgetTypeName" newRowEnabled="false"
+                      backgroundSource="BudgetTypeBackground"
+                      foregroundSource="BudgetTypeForeground" />
       </row>
 
       <row>
@@ -48,10 +53,12 @@
 
       <row>
         <Label for="Background" />
-        <ColorEditor source="Background" style="&colorw;" />
+        <ColorEditor source="Background" style="&colorw;"
+                     backgroundSource="Background" foregroundSource="Foreground" />
 
         <Label for="Foreground" />
-        <ColorEditor source="Foreground" style="&colorw;" />
+        <ColorEditor source="Foreground" style="&colorw;"
+                     backgroundSource="Background" foregroundSource="Foreground" />
       </row>
     </Table>
 
