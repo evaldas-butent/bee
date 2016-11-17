@@ -146,10 +146,6 @@
         <text>=crmTasks</text>
         <ChildGrid name="RelatedTasks" relColumn="ServiceMaintenance" />
       </page>
-      <page module="Tasks">
-        <text>=crmRecurringTasks</text>
-        <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceMaintenance" />
-      </page>
       <page>
         <text>=svcDates</text>
         <ChildGrid name="ServiceDates" relColumn="ServiceMaintenance" />
