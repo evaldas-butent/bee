@@ -130,6 +130,7 @@ public final class ServiceConstants {
   public static final String COL_WARRANTY_MAINTENANCE = "WarrantyMaintenance";
   public static final String COL_WARRANTY = "Warranty";
   public static final String COL_WARRANTY_TYPE = "WarrantyType";
+  public static final String COL_WARRANTY_VALID_TO = "WarrantyValidTo";
 
   public static final String ALS_COMPANY_TYPE_NAME = "CompanyTypeName";
   public static final String ALS_CONTACT_ADDRESS = "ContactAddress";
@@ -159,6 +160,9 @@ public final class ServiceConstants {
   public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";
 
   public static final String ALS_WARRANTY_TYPE_NAME = "WarrantyTypeName";
+
+  public static final String FORM_MAINTENANCE_COMMENT = "MaintenanceComment";
+  public static final String FORM_MAINTENANCE_STATE_COMMENT = "MaintenanceStateComment";
 
   public static final String GRID_OBJECT_INVOICES = "ObjectInvoices";
   public static final String GRID_OBJECT_DEFECTS = "ObjectDefects";

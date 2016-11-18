@@ -22,5 +22,17 @@
     <SimpleColumn name="Term" />
     <SimpleColumn name="CustomerSent" />
     <SimpleColumn name="EventNote"/>
+
+    <SimpleColumn name="MaintenanceState"/>
+
+    <SimpleColumn name="Item"/>
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+    </SimpleJoin>
+    <SimpleColumn name="Price" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
   </Columns>
 </View>

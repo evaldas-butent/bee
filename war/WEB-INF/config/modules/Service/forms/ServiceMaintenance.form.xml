@@ -15,11 +15,11 @@
 
       <row>
         <Label for="Type" class="bee-required" />
-        <DataSelector name="Type" source="Type" required="true" choiceColumns="Name"
-                      renderColumns="TypeName" style="&inp;"/>
+        <DataSelector name="Type" source="Type" required="true" choiceColumns="Name" style="&inp;"
+                      newRowEnabled="false" renderColumns="TypeName"/>
         <Label for="State" text="=status" class="bee-required" />
         <DataSelector name="State" source="State" required="true" choiceColumns="Name" style="&inp;"
-                      caching="local"/>
+                      caching="local" newRowEnabled="false"/>
       </row>
       <row>
         <text/>

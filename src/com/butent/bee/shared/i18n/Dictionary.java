@@ -4878,6 +4878,8 @@ public interface Dictionary {
 
   default String svcSpecification() {return g("svcSpecification");}
 
+  default String svcStateComment() {return g("svcStateComment");}
+
   default String svcStateProcess() {return g("svcStateProcess");}
 
   default String svcTerm() {return g("svcTerm");}
