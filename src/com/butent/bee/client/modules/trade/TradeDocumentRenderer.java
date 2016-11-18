@@ -373,7 +373,8 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     Widget widget = widgets.get(prefix + SUFFIX_NAME);
     if (widget != null) {
-      setHtml(widget, tdd.getCompanyValue(id, COL_COMPANY_NAME));
+      setHtml(widget, BeeUtils.joinWords(tdd.getCompanyValue(id, COL_COMPANY_NAME),
+          tdd.getCompanyValue(id, ALS_COMPANY_TYPE_NAME)));
     }
 
     widget = widgets.get(prefix + SUFFIX_CODE);
