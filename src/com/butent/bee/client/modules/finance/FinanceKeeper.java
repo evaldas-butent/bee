@@ -112,6 +112,13 @@ public final class FinanceKeeper {
     GridFactory.registerGridInterceptor(GRID_BUDGET_ENTRIES, new BudgetEntriesGrid());
 
     FormFactory.registerFormInterceptor(FORM_SIMPLE_BUDGET, new SimpleBudgetForm());
+
+    RowEditor.registerFormNameProvider(VIEW_FINANCIAL_INDICATORS, (dataInfo, row) -> {
+      IndicatorKind kind = row.getEnum(dataInfo.getColumnIndex(COL_FIN_INDICATOR_KIND),
+          IndicatorKind.class);
+
+      return (kind == null) ? null : kind.getEditForm();
+    });
   }
 
   private static void registerDebitCreditColor(Collection<String> gridNames,

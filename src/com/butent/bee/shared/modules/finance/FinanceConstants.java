@@ -28,6 +28,8 @@ public final class FinanceConstants {
   public static final String VIEW_FINANCE_DISTRIBUTION_OF_TRADE_DOCUMENTS =
       "FinanceDistributionOfTradeDocuments";
 
+  public static final String VIEW_FINANCIAL_INDICATORS = "FinancialIndicators";
+
   public static final String VIEW_BUDGET_HEADERS = "BudgetHeaders";
   public static final String VIEW_BUDGET_ENTRIES = "BudgetEntries";
 
@@ -157,6 +159,9 @@ public final class FinanceConstants {
 
   public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
   public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";
+
+  public static final String FORM_FINANCIAL_INDICATOR_PRIMARY = "FinancialIndicatorPrimary";
+  public static final String FORM_FINANCIAL_INDICATOR_SECONDARY = "FinancialIndicatorSecondary";
 
   public static final String FORM_SIMPLE_BUDGET = "SimpleBudget";
 

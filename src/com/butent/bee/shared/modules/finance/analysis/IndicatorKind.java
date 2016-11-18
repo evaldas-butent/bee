@@ -1,6 +1,7 @@
 package com.butent.bee.shared.modules.finance.analysis;
 
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum IndicatorKind implements HasLocalizedCaption {
@@ -19,6 +20,11 @@ public enum IndicatorKind implements HasLocalizedCaption {
     public IndicatorSource getDefaultSource() {
       return IndicatorSource.AMOUNT;
     }
+
+    @Override
+    public String getEditForm() {
+      return FinanceConstants.FORM_FINANCIAL_INDICATOR_PRIMARY;
+    }
   },
 
   SECONDARY {
@@ -36,9 +42,16 @@ public enum IndicatorKind implements HasLocalizedCaption {
     public IndicatorSource getDefaultSource() {
       return null;
     }
+
+    @Override
+    public String getEditForm() {
+      return FinanceConstants.FORM_FINANCIAL_INDICATOR_SECONDARY;
+    }
   };
 
   public abstract IndicatorBalance getDefaultBalance();
 
   public abstract IndicatorSource getDefaultSource();
+
+  public abstract String getEditForm();
 }
