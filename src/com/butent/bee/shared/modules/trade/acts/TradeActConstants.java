@@ -1,6 +1,10 @@
 package com.butent.bee.shared.modules.trade.acts;
 
+import com.google.common.collect.Sets;
+
 import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.Set;
 
 public final class TradeActConstants {
 
@@ -101,6 +105,7 @@ public final class TradeActConstants {
 
   public static final String ALS_RETURNED_QTY = "ReturnedQty";
   public static final String ALS_REMAINING_QTY = "RemainingQty";
+  public static final String ALS_RETURNED_COUNT = "ReturnedCount";
 
   public static final String ALS_BASE_AMOUNT = "BaseAmount";
   public static final String ALS_DISCOUNT_AMOUNT = "DiscountAmount";
@@ -132,7 +137,9 @@ public final class TradeActConstants {
   public static final String PRP_TA_SERVICE_FROM = "service_from";
   public static final String PRP_TA_SERVICE_TO = "service_to";
   public static final String PRP_INVOICE_PERIODS = "invoice_periods";
-  public static final String PROP_CONTINUOUS_COUNT = "ContinuousCount";
+  public static final String PRP_CONTINUOUS_COUNT = "ContinuousCount";
+  public static final String PRP_SINGLE_RETURN_COUNT = "SingleReturnCount";
+  public static final String PRP_MULTI_RETURN_DATA = "MultiReturnData";
 
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";
@@ -142,6 +149,7 @@ public final class TradeActConstants {
   public static final String PRM_APPROVED_ACT_STATUS = "ApprovedActStatus";
   public static final String PRM_SYNC_ERP_DATA = "SyncHours";
   public static final String PRM_SYNC_ERP_STOCK = "SyncStockInMinutes";
+  public static final String PRP_INSERT_COLS = "InsertCols";
 
   public static final String PFX_START_STOCK = "StartStock_";
   public static final String PFX_MOVEMENT = "Movement_";
@@ -153,6 +161,11 @@ public final class TradeActConstants {
   public static final int DPW_MIN = 5;
   public static final int DPW_MAX = 7;
   public static final String WIDGET_TA_CONTRACT = "Contract";
+
+  public static  final Set<String> VAR_COPY_TA_COLUMN_NAMES =
+      Sets.newHashSet(COL_TA_NAME, COL_TA_SERIES, COL_TA_COMPANY, COL_TA_CONTACT, COL_TA_OBJECT,
+          COL_TA_CURRENCY, COL_TA_VEHICLE, COL_TA_INPUT_VEHICLE, COL_TA_DRIVER,
+          COL_TA_INPUT_DRIVER);
 
   public static void register() {
     EnumUtils.register(TradeActKind.class);

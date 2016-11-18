@@ -6,6 +6,7 @@
   editForm="TradeAct" newRowForm="TradeAct"
   >
   <Columns>
+    <IdColumn name="Id" />
     <SimpleColumn name="Name" />
     <SimpleJoin joinType="LEFT" name="Name">
       <SimpleColumn name="ActName" />
@@ -149,9 +150,8 @@
       <SimpleColumn name="Kind" alias="ParentKind" />
     </SimpleJoin>
 
-    <ExternalJoin name="Parent" joinType="LEFT" source="TradeActs" filter="ChildKind = 2">
-      <HiddenColumn name="Kind" alias="ChildKind" />
-      <AggregateColumn name="Parent" alias="ReturnedCount" aggregate="COUNT"
+    <ExternalJoin name="Parent" joinType="LEFT" source="TradeActItems">
+      <AggregateColumn name="TradeAct" alias="ReturnedCount" aggregate="COUNT_DISTINCT"
         label="=tradeActReturnedCountShort" />
     </ExternalJoin>
 

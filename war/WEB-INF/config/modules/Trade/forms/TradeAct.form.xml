@@ -17,7 +17,6 @@
   >
   <f:properties reports="PrintTradeActSalePhysical, PrintTradeActReturn, PrintTASaleNoStock,
      PrintTASaleRent, PrintTASaleAddition, PrintTASaleSuggestion, PrintTASaleProforma" />
- 
 
   <FlowPanel>
     <br />
@@ -32,8 +31,8 @@
       </row>
 
       <row>
-        <Label for="Name" visible="true" class="bee-required" />
-        <DataSelector source="Name" style="&inpw;" visible="true" required="true" />
+        <Label name="labelName" for="Name" visible="true" class="bee-required" />
+        <DataSelector source="Name" style="&inpw;" visible="true" />
 
         <Label for="Parent">
           &forparent;
@@ -64,7 +63,7 @@
         <Label for="Series" class="bee-required" />
         <DataSelector source="Series" newRowEnabled="false" style="width: &inpdt;" required="true" />
 
-        <Label for="Number" visible="true" />
+        <Label name="labelNumber" for="Number" visible="true" />
         <InputText source="Number" style="&inpw;" visible="true" />
       </row>
 

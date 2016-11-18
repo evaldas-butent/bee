@@ -19,6 +19,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Popup;
@@ -33,6 +34,7 @@ import com.butent.bee.client.modules.trade.acts.TradeActItemImporter.ImportEntry
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
@@ -51,6 +53,7 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -79,6 +82,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -201,78 +205,20 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     if (parentRow != null) {
       final TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
       final Long parent = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_PARENT);
-      final DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
 
       /* If trade act is Return */
-      if (kind == TradeActKind.RETURN && DataUtils.isId(parent)) {
-        ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_RETURN);
-        params.addQueryItem(COL_TRADE_ACT, parent);
-
-        BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (response.hasResponse(BeeRowSet.class)) {
-              BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
-
-              String pa = parentItems.getTableProperty(PRP_PARENT_ACT);
-              final BeeRow parentAct = BeeRow.restore(pa);
-
-              BeeRowSet parentActs = Data.createRowSet(VIEW_TRADE_ACTS);
-              parentActs.addRow(parentAct);
-
-              final Map<Long, Double> quantities = TradeActUtils.getItemQuantities(parentItems);
-
-              /* Shows dialog of items for return */
-              TradeActItemReturn.show(kind.getCaption(), parentActs, parentItems, true,
-                  actItems -> {
-                    final boolean allReturned = quantities.equals(TradeActUtils
-                        .getItemQuantities(actItems));
-                    addActItems(parentAct, actItems, () -> {
-                      if (!allReturned && !parentAct.hasPropertyValue(PROP_CONTINUOUS_COUNT)) {
-                        ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
-                        ps.addQueryItem(COL_TRADE_ACT, parent);
-                        ps.addQueryItem(COL_TA_DATE, date.getTime());
-
-                        BeeKeeper.getRpc().makeRequest(ps, new ResponseCallback() {
-                          @Override
-                          public void onResponse(ResponseObject rsp) {
-                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
-                                VIEW_TRADE_ACT_SERVICES);
-                          }
-                        });
-                      } else {
-
-                        Filter flt =
-                            Filter.and(Filter.equals("TradeAct", parentAct.getId()), Filter
-                                .notNull(COL_TIME_UNIT), Filter
-                                .isNull(TradeActConstants.COL_TA_SERVICE_TO));
-
-                        Queries.update(VIEW_TRADE_ACT_SERVICES, flt, COL_TA_SERVICE_TO,
-                            new DateValue(TimeUtils.today()), new IntCallback() {
-
-                              @Override
-                              public void onSuccess(Integer result) {
-                                DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
-                                    VIEW_TRADE_ACT_SERVICES);
-                              }
-                            });
-                      }
-                    });
-
-                    if ((parentAct != null)
-                        && allReturned) {
-                      maybeMarkAsReturned(parentAct.getId(), parentAct.getVersion());
-                    }
-                  });
-
-            } else {
-              getGridView().notifyWarning(Localized.dictionary().noData());
-            }
-          }
-        });
-
-      } else if (parentRow.hasPropertyValue(PROP_CONTINUOUS_COUNT)
-          && BeeUtils.isPositive(parentRow.getPropertyInteger(PROP_CONTINUOUS_COUNT))) {
+      if (kind == TradeActKind.RETURN) {
+        Pair<BeeRowSet, BeeRowSet> mrd = TradeActUtils.getMultiReturnData(parentRow);
+        if (!mrd.isNull()) {
+          doMultiReturn(parentRow, mrd.getA(), mrd.getB());
+        } else if (DataUtils.isId(parent)) {
+          doSingleReturn(parentRow, parent, kind);
+        } else {
+          getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted());
+          return false;
+        }
+      } else if (parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)
+          && BeeUtils.isPositive(parentRow.getPropertyInteger(PRP_CONTINUOUS_COUNT))) {
         getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted());
         return false;
       } else {
@@ -289,14 +235,14 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
     TradeActKind parentKind = TradeActKeeper.getKind(parentRow,
         Data.getColumnIndex(VIEW_TRADE_ACTS, ALS_TA_PARENT_KIND));
-    Integer contCnt = parentRow != null && parentRow.hasPropertyValue(PROP_CONTINUOUS_COUNT)
-        ? parentRow.getPropertyInteger(PROP_CONTINUOUS_COUNT) : null;
+    Integer contCnt = parentRow != null && parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)
+        ? parentRow.getPropertyInteger(PRP_CONTINUOUS_COUNT) : null;
 
     Map<String, Boolean> showColumn = new HashMap<>();
     Map<String, Boolean> columnVisible = new HashMap<>();
 
     showColumn.put(COL_TA_PARENT, kind != null && (TradeActKind.CONTINUOUS.equals(kind)
-        || TradeActKind.CONTINUOUS.equals(parentKind)));
+        || TradeActKind.CONTINUOUS.equals(parentKind) || TradeActKind.RETURN.equals(kind)));
     showColumn.put(COLUMN_RETURNED_QTY, kind != null && kind.enableReturn()
         && !TradeActKind.CONTINUOUS.equals(kind));
 
@@ -791,6 +737,113 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         });
       }
     }
+  }
+
+  private void doMultiReturn(IsRow parentRow, BeeRowSet parentActs, BeeRowSet parentItems) {
+
+    TradeActItemReturn.show(Localized.dictionary().taKindReturn(), parentActs, parentItems,
+        true, selectedItems -> {
+          if (!DataUtils.isEmpty(selectedItems)) {
+            ParameterList args = TradeActKeeper.createArgs(SVC_MULTI_RETURN_ACT_ITEMS);
+            args.addDataItem(VIEW_TRADE_ACT_ITEMS, selectedItems.serialize());
+            args.addDataItem(VAR_ID_LIST, DataUtils.buildIdList(parentActs));
+
+            getGridView().ensureRelId(result -> {
+              args.addDataItem(COL_TRADE_ACT, result);
+              args.addDataItem(PRP_INSERT_COLS, parentRow.getProperty(PRP_INSERT_COLS));
+
+              BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+                @Override
+                public void onResponse(ResponseObject ro) {
+                  FormView f = ViewHelper.getForm(getGridPresenter().getMainView());
+                  ro.notify(getGridView());
+
+                  if (f != null) {
+                    f.getViewPresenter().handleAction(Action.CLOSE);
+                  }
+
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_ITEMS);
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_SERVICES);
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
+
+                  if (ro.hasResponse(Long.class) && DataUtils.isId(ro.getResponseAsLong())) {
+                    RowEditor.open(VIEW_TRADE_ACTS, ro.getResponseAsLong(), Opener.MODAL);
+                  }
+                }
+              });
+            });
+          }
+        });
+  }
+
+  private void doSingleReturn(IsRow parentRow, Long parent, TradeActKind kind) {
+    ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_RETURN);
+    params.addQueryItem(COL_TRADE_ACT, parent);
+    final DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(BeeRowSet.class)) {
+          BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
+
+          String pa = parentItems.getTableProperty(PRP_PARENT_ACT);
+          final BeeRow parentAct = BeeRow.restore(pa);
+
+          BeeRowSet parentActs = Data.createRowSet(VIEW_TRADE_ACTS);
+          parentActs.addRow(parentAct);
+
+          final Map<Long, Double> quantities = TradeActUtils.getItemQuantities(parentItems);
+
+              /* Shows dialog of items for return */
+          TradeActItemReturn.show(kind.getCaption(), parentActs, parentItems, true,
+              actItems -> {
+                final boolean allReturned = quantities.equals(TradeActUtils
+                    .getItemQuantities(actItems));
+                addActItems(parentAct, actItems, () -> {
+                  if (!allReturned && !parentAct.hasPropertyValue(PRP_CONTINUOUS_COUNT)) {
+                    ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
+                    ps.addQueryItem(COL_TRADE_ACT, parent);
+                    ps.addQueryItem(COL_TA_DATE, date.getTime());
+
+                    BeeKeeper.getRpc().makeRequest(ps, new ResponseCallback() {
+                      @Override
+                      public void onResponse(ResponseObject rsp) {
+                        DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                            VIEW_TRADE_ACT_SERVICES);
+                      }
+                    });
+                  } else {
+
+                    Filter flt =
+                        Filter.and(Filter.equals("TradeAct", parentAct.getId()), Filter
+                            .notNull(COL_TIME_UNIT), Filter
+                            .isNull(TradeActConstants.COL_TA_SERVICE_TO));
+
+                    Queries.update(VIEW_TRADE_ACT_SERVICES, flt, COL_TA_SERVICE_TO,
+                        new DateValue(TimeUtils.today()), new IntCallback() {
+
+                          @Override
+                          public void onSuccess(Integer result) {
+                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                                VIEW_TRADE_ACT_SERVICES);
+                          }
+                        });
+                  }
+                });
+
+                if ((parentAct != null)
+                    && allReturned) {
+                  maybeMarkAsReturned(parentAct.getId(), parentAct.getVersion());
+                }
+              });
+
+        } else {
+          getGridView().notifyWarning(Localized.dictionary().noData());
+        }
+      }
+    });
+
   }
 
   private Double getDefaultDiscount() {

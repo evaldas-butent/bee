@@ -28,7 +28,9 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.ListFilterSupplier;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -44,10 +46,13 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
@@ -446,7 +451,22 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   }
 
-  private void createReturn(final IsRow parent) {
+  private void createReturn(IsRow parent) {
+    createReturn(parent, null, null);
+  }
+
+  private void createReturn(BeeRowSet parentActs, BeeRowSet parentItems) {
+    createReturn(null, parentActs, parentItems);
+  }
+
+  private void createReturn(final IsRow parent, BeeRowSet parentActs, BeeRowSet parentItems) {
+
+    if (!DataUtils.isEmpty(parentActs) && !DataUtils.isEmpty(parentItems)) {
+      createReturnActForm(parentActs, parentItems);
+      return;
+    } else if (parent == null) {
+      Assert.untouchable();
+    }
 
     ParameterList prm = TradeActKeeper.createArgs(SVC_GET_NEXT_RETURN_ACT_NUMBER);
 
@@ -462,52 +482,105 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
       @Override
       public void onResponse(ResponseObject response) {
-        DataInfo dataInfo = Data.getDataInfo(getViewName());
-        BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+        createReturnActForm(parent, response.getResponseAsString());
+      }
+    });
+  }
 
-        for (int i = 0; i < getDataColumns().size(); i++) {
-          String colId = getDataColumns().get(i).getId();
+  private void createReturnActForm(BeeRowSet parentActs,  BeeRowSet parentItems) {
+    createReturnActForm(null, null, parentActs, parentItems);
+  }
 
-          switch (colId) {
-            case COL_TA_KIND:
-              newRow.setValue(i, TradeActKind.RETURN.ordinal());
-              break;
+  private void createReturnActForm(IsRow parent, String number) {
+    createReturnActForm(parent, number, null, null);
+  }
 
-            case COL_TA_DATE:
-              newRow.setValue(i, TimeUtils.nowMinutes());
-              break;
+  private void createReturnActForm(IsRow parent, String number, BeeRowSet parentActs,
+                                   BeeRowSet parentItems) {
+    DataInfo dataInfo = Data.getDataInfo(getViewName());
+    BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
 
-            case COL_TA_PARENT:
-              newRow.setValue(i, parent.getId());
-              break;
+    for (int i = 0; i < getDataColumns().size(); i++) {
+      String colId = getDataColumns().get(i).getId();
 
-            case COL_TA_NUMBER:
-              newRow.setValue(i, parent.getString(i) + "-"
-                  + response.getResponseAsString());
-              break;
+      switch (colId) {
+        case COL_TA_KIND:
+          newRow.setValue(i, TradeActKind.RETURN.ordinal());
+          break;
 
-            case COL_TA_UNTIL:
-            case COL_TA_NOTES:
-              break;
+        case COL_TA_DATE:
+          newRow.setValue(i, TimeUtils.nowMinutes());
+          break;
 
-            default:
-              if (!parent.isNull(i) && !colId.startsWith(COL_TA_STATUS)
-                  && !colId.startsWith(COL_TA_OPERATION)) {
-                newRow.setValue(i, parent.getString(i));
-              }
+        case COL_TA_PARENT:
+          if (parent == null) {
+            break;
           }
+          newRow.setValue(i, parent.getId());
+          break;
+
+        case COL_TA_NUMBER:
+          if (parent == null || BeeUtils.isEmpty(number)) {
+            break;
+          }
+          newRow.setValue(i, parent.getString(i) + "-"
+              + number);
+          break;
+
+        case COL_TA_SERIES:
+          if (parentActs == null) {
+            break;
+          }
+          newRow.setValue(i, parentActs.getString(0, i));
+          break;
+
+        case TradeConstants.COL_SERIES_NAME:
+          if (parentActs == null) {
+            break;
+          }
+          newRow.setValue(i, parentActs.getString(0, i));
+          break;
+
+        case COL_TA_COMPANY:
+        case ClassifierConstants.ALS_COMPANY_NAME:
+        case ALS_CONTACT_PHYSICAL:
+        case ClassifierConstants.ALS_COMPANY_TYPE_NAME:
+        case COL_TA_OBJECT:
+        case AdministrationConstants.ALS_OBJECT_NAME:
+        case ClassifierConstants.COL_COMPANY_OBJECT_ADDRESS:
+          if (parentActs != null) {
+            newRow.setValue(i, parentActs.getString(0, i));
+          } else if (parent != null) {
+            newRow.setValue(i, parent.getString(i));
+          }
+          break;
+
+        case COL_TA_UNTIL:
+        case COL_TA_NOTES:
+          break;
+
+        default:
+          if (parent != null && !parent.isNull(i) && !colId.startsWith(COL_TA_STATUS)
+              && !colId.startsWith(COL_TA_OPERATION)) {
+            newRow.setValue(i, parent.getString(i));
+          }
+      }
+    }
+
+    if (!DataUtils.isEmpty(parentActs) && !DataUtils.isEmpty(parentItems)) {
+      newRow.setProperty(PRP_MULTI_RETURN_DATA, Codec.beeSerialize(Pair.of(parentActs,
+          parentItems)));
+    }
+
+    TradeActKeeper.setDefaultOperation(newRow, TradeActKind.RETURN);
+
+    RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        if (parent != null) {
+          getGridView().ensureRow(result, true);
+          maybeOpenAct(getGridView(), parent);
         }
-
-        TradeActKeeper.setDefaultOperation(newRow, TradeActKind.RETURN);
-
-        RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            getGridView().ensureRow(result, true);
-            maybeOpenAct(getGridView(), parent);
-          }
-        });
-
       }
     });
   }
@@ -542,30 +615,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
           for (IsRow parent : parents) {
             parentActs.addRow(DataUtils.cloneRow(parent));
           }
-
-          TradeActItemReturn.show(Localized.dictionary().taKindReturn(), parentActs, parentItems,
-              true, selectedItems -> {
-                if (!DataUtils.isEmpty(selectedItems)) {
-                  ParameterList args = TradeActKeeper.createArgs(SVC_MULTI_RETURN_ACT_ITEMS);
-                  args.addDataItem(VIEW_TRADE_ACT_ITEMS, selectedItems.serialize());
-
-                  BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
-                    @Override
-                    public void onResponse(ResponseObject ro) {
-                      ro.notify(getGridView());
-
-                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_ITEMS);
-                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_SERVICES);
-                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
-
-                      if (ro.hasResponse(Long.class)  && DataUtils.isId(ro.getResponseAsLong())) {
-                        RowEditor.open(VIEW_TRADE_ACTS, ro.getResponseAsLong(), Opener.MODAL);
-                      }
-                    }
-                  });
-                }
-              });
-
+          createReturn(parentActs, parentItems);
         } else {
           getGridView().notifyWarning(Localized.dictionary().noData());
         }
@@ -690,8 +740,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
     }
 
     TradeActKind k = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
-    Integer contCnt = row.hasPropertyValue(PROP_CONTINUOUS_COUNT)
-        ? row.getPropertyInteger(PROP_CONTINUOUS_COUNT) : null;
+    Integer contCnt = row.hasPropertyValue(PRP_CONTINUOUS_COUNT)
+        ? row.getPropertyInteger(PRP_CONTINUOUS_COUNT) : null;
 
     if (supplementCommand != null) {
       TradeActKeeper.setCommandEnabled(supplementCommand, k != null && k.enableSupplement());

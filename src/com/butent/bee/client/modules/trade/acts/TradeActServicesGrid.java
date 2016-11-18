@@ -98,8 +98,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     final IsRow parentRow = ViewHelper.getFormRow(presenter.getMainView());
 
     if (parentRow != null) {
-      if (parentRow.hasPropertyValue(PROP_CONTINUOUS_COUNT)
-          && BeeUtils.isPositive(parentRow.getPropertyInteger(PROP_CONTINUOUS_COUNT))) {
+      if (parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)
+          && BeeUtils.isPositive(parentRow.getPropertyInteger(PRP_CONTINUOUS_COUNT))) {
         getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted());
         return false;
       }
@@ -114,8 +114,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     super.beforeRender(gridView, event);
 
     IsRow parentRow = ViewHelper.getFormRow(gridView);
-    Integer contCnt = parentRow != null && parentRow.hasPropertyValue(PROP_CONTINUOUS_COUNT)
-        ? parentRow.getPropertyInteger(PROP_CONTINUOUS_COUNT) : null;
+    Integer contCnt = parentRow != null && parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)
+        ? parentRow.getPropertyInteger(PRP_CONTINUOUS_COUNT) : null;
 
 
     if (commandRecalculate != null) {

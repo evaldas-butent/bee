@@ -7,9 +7,11 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -352,6 +354,21 @@ public final class TradeActUtils {
 
   public static boolean validDpw(Integer dpw) {
     return dpw != null && dpw >= DPW_MIN && dpw <= DPW_MAX;
+  }
+
+  public static Pair<BeeRowSet, BeeRowSet> getMultiReturnData(IsRow row) {
+    if (!row.hasPropertyValue(PRP_MULTI_RETURN_DATA)) {
+      return Pair.empty();
+    }
+    Pair<String, String> raw = Pair.restore(row.getProperty(PRP_MULTI_RETURN_DATA));
+    BeeRowSet a = BeeRowSet.maybeRestore(raw.getA());
+    BeeRowSet b = BeeRowSet.maybeRestore(raw.getB());
+
+    if (DataUtils.isEmpty(a) && DataUtils.isEmpty(b)) {
+      return Pair.empty();
+    }
+
+    return Pair.of(a, b);
   }
 
   private TradeActUtils() {
