@@ -4,10 +4,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -25,9 +21,7 @@ import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -36,7 +30,6 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -93,29 +86,39 @@ final class TradeActItemReturn {
 
   private static final String STYLE_HEADER_CELL_SUFFIX = "label";
   private static final String STYLE_CELL_SUFFIX = "cell";
-  private static final String PROP_LAST_INPUT = "lastInput";
+
+  private static final String DATA_QTY = "dQty";
+  private static final String DATA_SELECTED_QTY = "sQty";
 
   private static NumberFormat priceFormat;
+  private static CustomDiv checksum;
 
   static void show(String caption, BeeRowSet parentActs, final BeeRowSet parentItems,
       boolean showActInfo, final Consumer<BeeRowSet> consumer) {
 
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
 
-    table.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element target = EventUtils.getEventTargetElement(event);
-        TableCellElement cell = DomUtils.getParentCell(target, true);
+    table.addClickHandler(event -> {
+      Element target = EventUtils.getEventTargetElement(event);
+      TableCellElement cell = DomUtils.getParentCell(target, true);
+      TableRowElement trow = DomUtils.getParentRow(target, true);
 
-        if (isQuantityCell(cell)) {
-          selectQuantity(cell);
+      if (cell == null || trow == null) {
+        return;
+      }
+
+      if (isOverallQuantityCell(cell)) {
+        InputElement num = DomUtils.getInputElement(trow);
+        if (num != null) {
+          num.setValue(cell.getInnerText());
+          selectQuantity(num);
         }
       }
     });
 
     int r = 0;
     int c = 0;
+    int returnQtyIndex;
 
     table.setText(r, c++, Localized.dictionary().captionId(),
         STYLE_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
@@ -127,11 +130,10 @@ final class TradeActItemReturn {
 
     table.setText(r, c++, Localized.dictionary().price(),
         STYLE_PRICE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-    table.setText(r, c++, Localized.dictionary().quantity(),
-        STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     table.setText(r, c++, Localized.dictionary().taOverallQuantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+    returnQtyIndex = c;
 
     table.setText(r, c++, Localized.dictionary().taQuantityReturn(),
         STYLE_INPUT_PREFIX + STYLE_HEADER_CELL_SUFFIX);
@@ -142,7 +144,7 @@ final class TradeActItemReturn {
 
       table.setText(r, c++, Data.getColumnLabel(VIEW_TRADE_ACTS, COL_TA_COMPANY),
           STYLE_COMPANY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
-      table.setText(r, c++, Data.getColumnLabel(VIEW_TRADE_ACTS, COL_TA_OBJECT),
+      table.setText(r, c, Data.getColumnLabel(VIEW_TRADE_ACTS, COL_TA_OBJECT),
           STYLE_OBJECT_PREFIX + STYLE_HEADER_CELL_SUFFIX);
     }
 
@@ -182,20 +184,12 @@ final class TradeActItemReturn {
       }
       c++;
 
-      table.setText(r, c++, p.getString(qtyIndex), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
-      table
-          .setText(r, c++, p.getProperty(PROP_OVERALL_TOTAL), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX,
-              STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL);
-      Widget w = renderInput(qtyColumn);
-      CustomDiv d = new CustomDiv(STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
-      d.addStyleName(STYLE_QTY_PREFIX + PROP_LAST_INPUT);
-      d.getElement().setInnerText("-");
+      table.setText(r, c++, p.getProperty(PROP_OVERALL_TOTAL), STYLE_QTY_PREFIX
+          + STYLE_CELL_SUFFIX, STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL);
+      Widget w = renderInput(qtyColumn, p.getProperty(PROP_OVERALL_TOTAL));
+      DomUtils.setDataProperty(w.getElement(), DATA_QTY, p.getString(qtyIndex));
 
-      Flow a = new Flow();
-      a.add(d);
-      a.add(w);
-
-      table.setWidget(r, c++, a, STYLE_INPUT_PREFIX + STYLE_CELL_SUFFIX);
+      table.setWidget(r, c++, w, STYLE_INPUT_PREFIX + STYLE_CELL_SUFFIX);
 
       if (showActInfo) {
         table.setText(r, c++,
@@ -204,55 +198,48 @@ final class TradeActItemReturn {
 
         table.setText(r, c++, act.getString(companyNameIndex),
             STYLE_COMPANY_PREFIX + STYLE_CELL_SUFFIX);
-        table.setText(r, c++, act.getString(objectNameIndex),
+        table.setText(r, c, act.getString(objectNameIndex),
             STYLE_OBJECT_PREFIX + STYLE_CELL_SUFFIX);
       }
 
       table.getRowFormatter().addStyleName(r, STYLE_ITEM_ROW);
+      table.getRowFormatter().setVisible(r, p.hasPropertyValue(PROP_OVERALL_TOTAL));
       DomUtils.setDataIndex(table.getRow(r), p.getId());
 
       r++;
     }
+
+    table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
+    checksum = new CustomDiv();
+    checksum.setText("0");
+    table.setWidget(r, returnQtyIndex, checksum);
 
     final DialogBox dialog = DialogBox.withoutCloseBox(caption, STYLE_DIALOG);
 
     Button all = new Button(Localized.dictionary().selectAll());
     all.addStyleName(STYLE_ALL);
 
-    all.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        selectAllQuantities(table);
-      }
-    });
+    all.addClickHandler(event -> selectAllQuantities(table));
 
     dialog.addCommand(all);
 
     Button clear = new Button(Localized.dictionary().clear());
     clear.addStyleName(STYLE_CLEAR);
 
-    clear.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        clearQuantities(table);
-      }
-    });
+    clear.addClickHandler(event -> clearQuantities(table));
 
     dialog.addCommand(clear);
 
     FaLabel save = new FaLabel(FontAwesome.SAVE);
     save.addStyleName(STYLE_SAVE);
 
-    save.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Map<Long, Double> quantities = getQuantities(table);
-        if (!quantities.isEmpty()) {
-          selectItems(parentItems, quantities, consumer);
-        }
-
-        dialog.close();
+    save.addClickHandler(event -> {
+      Map<Long, Double> quantities = getQuantities(table);
+      if (!quantities.isEmpty()) {
+        selectItems(parentItems, quantities, consumer);
       }
+
+      dialog.close();
     });
 
     dialog.addAction(Action.SAVE, save);
@@ -260,30 +247,27 @@ final class TradeActItemReturn {
     FaLabel close = new FaLabel(FontAwesome.CLOSE);
     close.addStyleName(STYLE_CLOSE);
 
-    close.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        final Map<Long, Double> quantities = getQuantities(table);
+    close.addClickHandler(event -> {
+      final Map<Long, Double> quantities = getQuantities(table);
 
-        if (quantities.isEmpty()) {
-          dialog.close();
+      if (quantities.isEmpty()) {
+        dialog.close();
 
-        } else {
-          Global.decide(TradeActKind.RETURN.getCaption(),
-              Collections.singletonList(Localized.dictionary().taSaveSelectedItems()),
-              new DecisionCallback() {
-                @Override
-                public void onConfirm() {
-                  selectItems(parentItems, quantities, consumer);
-                  dialog.close();
-                }
+      } else {
+        Global.decide(TradeActKind.RETURN.getCaption(),
+            Collections.singletonList(Localized.dictionary().taSaveSelectedItems()),
+            new DecisionCallback() {
+              @Override
+              public void onConfirm() {
+                selectItems(parentItems, quantities, consumer);
+                dialog.close();
+              }
 
-                @Override
-                public void onDeny() {
-                  dialog.close();
-                }
-              }, DialogConstants.DECISION_YES);
-        }
+              @Override
+              public void onDeny() {
+                dialog.close();
+              }
+            }, DialogConstants.DECISION_YES);
       }
     });
 
@@ -302,6 +286,7 @@ final class TradeActItemReturn {
     for (InputNumber input : inputs) {
       if (BeeUtils.isPositive(input.getNumber())) {
         input.clearValue();
+        DomUtils.setDataProperty(input.getElement(), DATA_SELECTED_QTY, 0);
         onQuantityChange(input.getElement(), null);
       }
     }
@@ -325,7 +310,8 @@ final class TradeActItemReturn {
     Collection<InputNumber> inputs = UiHelper.getChildren(parent, InputNumber.class);
 
     for (InputNumber input : inputs) {
-      Double qty = input.getNumber();
+      Double qty =
+          BeeUtils.toDoubleOrNull(DomUtils.getDataProperty(input.getElement(), DATA_SELECTED_QTY));
 
       if (BeeUtils.isPositive(qty)) {
         long id = DomUtils.getDataIndexLong(DomUtils.getParentRow(input.getElement(), false));
@@ -338,8 +324,8 @@ final class TradeActItemReturn {
     return result;
   }
 
-  private static boolean isQuantityCell(Element cell) {
-    return cell != null && cell.hasClassName(STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
+  private static boolean isOverallQuantityCell(Element cell) {
+    return cell != null && cell.hasClassName(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL);
   }
 
   private static void onQuantityChange(Element source, Double qty) {
@@ -352,56 +338,61 @@ final class TradeActItemReturn {
         row.removeClassName(STYLE_SELECTED_ROW);
       }
     }
+
+    if (checksum != null) {
+      HtmlTable table = UiHelper.getParentTable(checksum);
+      if (table == null) {
+        return;
+      }
+
+      Collection<InputNumber> inputs = UiHelper.getChildren(table, InputNumber.class);
+      int sum = 0;
+
+      for (InputNumber inp : inputs) {
+        if (inp != null) {
+          sum += BeeUtils.toInt(DomUtils.getDataProperty(inp.getElement(), DATA_SELECTED_QTY));
+        }
+      }
+
+      checksum.setText(BeeUtils.toString(sum));
+    }
   }
 
-  private static Widget renderInput(BeeColumn column) {
+  private static Widget renderInput(BeeColumn column, String maxValue) {
     InputNumber input = new InputNumber();
     input.addStyleName(STYLE_INPUT_WIDGET);
+    DomUtils.setDataProperty(input.getElement(), DATA_SELECTED_QTY, 0);
 
     input.setMinValue(BeeConst.STRING_ZERO);
 
     if (column != null) {
-      input.setMaxValue(DataUtils.getMaxValue(column));
+      input.setMaxValue(
+          BeeUtils.isPositiveInt(maxValue) ? maxValue : DataUtils.getMaxValue(column));
       input.setScale(column.getScale());
       input.setMaxLength(UiHelper.getMaxLength(column));
     }
 
-    input.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        if (event.getSource() instanceof InputNumber) {
-          InputNumber w = (InputNumber) event.getSource();
+    input.addChangeHandler(event -> {
+      if (event.getSource() instanceof InputNumber) {
+        InputNumber w = (InputNumber) event.getSource();
+        TableRowElement currentRow = DomUtils.getParentRow(w.getElement(), false);
+        Element overall = Selectors.getElement(currentRow,
+            Selectors.classSelector(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL));
 
-          if (!BeeUtils.isDouble(w.getValue())) {
-            onQuantityChange(w.getElement(), w.getNumber());
-            return;
-          }
+        double max = BeeUtils.toDouble(overall.getInnerText());
+        double number = BeeUtils.unbox(w.getNumber());
 
-          TableRowElement currentRow = DomUtils.getParentRow(w.getElement(), false);
-          Element source = Selectors.getElement(currentRow,
-              Selectors.classSelector(STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX));
-          Element overall = Selectors.getElement(currentRow,
-              Selectors.classSelector(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL));
-
-          double min = BeeUtils.toDouble(source.getInnerText());
-          double max = BeeUtils.toDouble(overall.getInnerText());
-          double number = BeeUtils.unbox(w.getNumber());
-
-          if (number != BeeUtils.min(number, max) && number == BeeUtils.max(number, 0D)) {
-            w.setValue(BeeUtils.min(number, max));
-          } else if (number == BeeUtils.min(number, max) && number != BeeUtils.max(number, 0D)) {
-            w.setValue(BeeUtils.max(number, 0D));
-          }
-
-          number = BeeUtils.unbox(w.getNumber());
-
-          if (number == BeeUtils.clamp(number, min, max)) {
-            selectQuantity(w.getElement());
-            return;
-          }
-
-          onQuantityChange(w.getElement(), w.getNumber());
+        if (number != BeeUtils.min(number, max) && number == BeeUtils.max(number, 0D)) {
+          w.setValue(BeeUtils.min(number, max));
+        } else if (number == BeeUtils.min(number, max) && number != BeeUtils.max(number, 0D)) {
+          w.setValue(BeeUtils.max(number, 0D));
         }
+
+        number = BeeUtils.unbox(w.getNumber());
+
+        selectQuantity(w.getElement());
+
+        onQuantityChange(w.getElement(), w.getNumber());
       }
     });
 
@@ -432,8 +423,12 @@ final class TradeActItemReturn {
         List<TableCellElement> cells = table.getRowCells(r);
 
         for (TableCellElement cell : cells) {
-          if (isQuantityCell(cell)) {
-            selectQuantity(cell);
+          if (isOverallQuantityCell(cell)) {
+            InputElement num = DomUtils.getInputElement(rowEl);
+            if (num != null) {
+              num.setValue(cell.getInnerText());
+              selectQuantity(num);
+            }
             break;
           }
         }
@@ -464,49 +459,49 @@ final class TradeActItemReturn {
   private static void selectQuantity(Element qtyCell) {
     String text = BeeConst.STRING_EMPTY;
 
-    if (!BeeUtils.isEmpty(qtyCell.getInnerText())) {
-      text = qtyCell.getInnerText();
-    } else if (DomUtils.isInputElement(qtyCell)) {
+    if (DomUtils.isInputElement(qtyCell)) {
       text = DomUtils.getInputElement(qtyCell).getValue();
+    } else if (!BeeUtils.isEmpty(
+        DomUtils.getDataProperty(qtyCell, DATA_QTY))) {
+      text = DomUtils.getDataProperty(qtyCell, DATA_QTY);
     }
+
     boolean isOverallCell =
         qtyCell.hasClassName(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL)
             || DomUtils.isInputElement(qtyCell);
-    Double qty = BeeUtils.toDoubleOrNull(text);
 
-    if (isOverallCell && BeeUtils.isPositive(qty)) {
+    Double qty = BeeUtils.toDouble(text);
+
+    if (isOverallCell && !BeeUtils.isNegative(qty)) {
 
       TableRowElement currentRow = DomUtils.getParentRow(qtyCell, false);
-      Element lastInput = Selectors.getElement(currentRow,
-          Selectors.classSelector(STYLE_QTY_PREFIX + PROP_LAST_INPUT));
-      lastInput.setInnerText(text);
-      StyleUtils.setDisplay(lastInput, Display.BLOCK);
+      boolean hasOverallValue = isOverallCell;
 
-      while (qty > 0 && currentRow != null) {
-        Element source = Selectors.getElement(currentRow,
-            Selectors.classSelector(STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX));
+      while (currentRow != null) {
         Element target =
             Selectors.getElement(currentRow, Selectors.classSelector(STYLE_INPUT_WIDGET));
-        Assert.notNull(source, "source can't bee null");
+
         Assert.notNull(target, "target can't bee null");
 
-        Double srcQty = BeeUtils.toDoubleOrNull(source.getInnerText());
-
+        Double srcQty = BeeUtils.toDouble(DomUtils.getDataProperty(target, DATA_QTY));
         Double qtyVal = BeeUtils.min(srcQty, qty);
 
         if (InputElement.is(target)) {
           InputElement input = InputElement.as(target);
-          if (!BeeUtils.isPositiveDouble(input.getValue()) || target.equals(qtyCell)) {
+
+          if (!hasOverallValue) {
             input.setValue(BeeUtils.toString(qtyVal));
-            onQuantityChange(input, qtyVal);
           }
+
+          DomUtils.setDataProperty(target, DATA_SELECTED_QTY, qtyVal);
+            onQuantityChange(input, qtyVal);
         }
 
         qty -= qtyVal;
-
         currentRow =
             TableRowElement.is(currentRow.getNextSiblingElement()) ? TableRowElement.as(currentRow
                 .getNextSiblingElement()) : null;
+
         if (currentRow == null) {
           break;
         }
@@ -518,12 +513,14 @@ final class TradeActItemReturn {
           break;
         }
 
-        if (!BeeUtils.isEmpty(child.getInnerText())) {
+        hasOverallValue = !BeeUtils.isEmpty(child.getInnerText());
+
+        if (hasOverallValue) {
           break;
         }
       }
 
-    } else if (BeeUtils.isPositive(qty)) {
+    } else if (!BeeUtils.isNegative(qty)) {
       Element target = Selectors.getElement(DomUtils.getParentRow(qtyCell, false),
           Selectors.classSelector(STYLE_INPUT_WIDGET));
 
@@ -531,6 +528,7 @@ final class TradeActItemReturn {
         InputElement input = InputElement.as(target);
         if (!BeeUtils.isPositiveDouble(input.getValue())) {
           input.setValue(text);
+          DomUtils.setDataProperty(target, DATA_SELECTED_QTY, text);
           onQuantityChange(input, qty);
         }
       }
