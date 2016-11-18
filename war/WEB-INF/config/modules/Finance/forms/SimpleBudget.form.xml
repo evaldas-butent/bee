@@ -2,7 +2,7 @@
 <!DOCTYPE Form [
     <!ENTITY inpw "width: 20rem;">
     <!ENTITY colorw "width: 20rem;">
-    <!ENTITY entrydim "margin-left: 0.5rem;">
+    <!ENTITY entrydim "margin-left: 10px;">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
@@ -13,65 +13,56 @@
         width="75" widthUnit="px" height="75" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">
-    <Table kind="controls" style="margin: 1ex 1em;">
-      <col index="0" kind="label" />
-      <col index="2" kind="label" />
+    <FlowPanel class="flexBox-horizontal-space-between" style="margin: 0 1rem 1rem 1rem;">
+      <SimplePanel>
+        <Table kind="controls">
+          <col index="0" kind="label" />
 
-      <row>
-        <Label for="BudgetName" />
-        <InputText source="BudgetName" style="&inpw;"
-                   backgroundSource="Background" foregroundSource="Foreground" />
+          <row>
+            <Label for="BudgetName" text="=name" />
+            <InputText source="BudgetName" style="&inpw;"
+                       backgroundSource="Background" foregroundSource="Foreground" />
+          </row>
 
-        <Label for="Ordinal" />
-        <InputInteger source="Ordinal" style="width: 5rem;" />
-      </row>
+          <row>
+            <Label for="Indicator" />
+            <DataSelector source="Indicator" style="&inpw;" renderColumns="IndicatorName"
+                          choiceColumns="IndicatorName IndicatorAbbreviation" newRowEnabled="false"
+                          backgroundSource="IndicatorBackground"
+                          foregroundSource="IndicatorForeground" />
+          </row>
 
-      <row>
-        <Label for="Indicator" />
-        <DataSelector source="Indicator" style="&inpw;" renderColumns="IndicatorName"
-                      choiceColumns="IndicatorName IndicatorAbbreviation" newRowEnabled="false"
-                      backgroundSource="IndicatorBackground"
-                      foregroundSource="IndicatorForeground" />
+          <row>
+            <Label for="BudgetType" />
+            <DataSelector source="BudgetType" style="&inpw;" renderColumns="BudgetTypeName"
+                          choiceColumns="BudgetTypeName" newRowEnabled="false"
+                          backgroundSource="BudgetTypeBackground"
+                          foregroundSource="BudgetTypeForeground" />
+          </row>
 
-        <Label for="BudgetType" />
-        <DataSelector source="BudgetType" style="&inpw;" renderColumns="BudgetTypeName"
-                      choiceColumns="BudgetTypeName" newRowEnabled="false"
-                      backgroundSource="BudgetTypeBackground"
-                      foregroundSource="BudgetTypeForeground" />
-      </row>
+          <row>
+            <Label for="Year" />
+            <InputInteger source="Year" style="width: 5rem;" minValue="2000" maxValue="2099"
+                          format="0000" />
+          </row>
 
-      <row>
-        <Label for="Employee" />
-        <DataSelector source="Employee" style="&inpw;"
-                      renderColumns="EmployeeFirstName EmployeeLastName"
-                      choiceColumns="FirstName LastName" newRowEnabled="false" />
+          <row>
+            <Label for="Employee" />
+            <DataSelector source="Employee" style="&inpw;"
+                          renderColumns="EmployeeFirstName EmployeeLastName"
+                          choiceColumns="FirstName LastName" newRowEnabled="false" />
+          </row>
+        </Table>
+      </SimplePanel>
 
-        <Label for="Year" />
-        <InputInteger source="Year" style="width: 5rem;" minValue="2000" maxValue="2099"
-                      format="0000" />
-      </row>
-
-      <row>
-        <Label for="Background" />
-        <ColorEditor source="Background" style="&colorw;"
-                     backgroundSource="Background" foregroundSource="Foreground" />
-
-        <Label for="Foreground" />
-        <ColorEditor source="Foreground" style="&colorw;"
-                     backgroundSource="Background" foregroundSource="Foreground" />
-      </row>
-    </Table>
+      <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
+    </FlowPanel>
 
     <TabbedPages class="flexible">
       <page>
-        <text>=dimensions</text>
-        <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
-      </page>
-
-      <page>
         <text>=finBudgetEntries</text>
         <FlowPanel class="flexBox-vertical">
-          <FlowPanel style="margin-bottom: 10px;">
+          <FlowPanel style="margin: 10px;">
             <InlineLabel text="=columns" style="margin-left: 2rem; margin-right: 2rem;" />
 
             <CheckBox name="EntryDim01" source="EntryDim01" style="&entrydim;" />
@@ -90,6 +81,32 @@
 
           <ChildGrid name="BudgetEntries" relColumn="BudgetHeader" class="flexible" />
         </FlowPanel>
+      </page>
+
+      <page>
+        <text>=additionalInfo</text>
+        <SimplePanel>
+          <Table kind="controls" style="margin-left: 1rem;">
+            <col index="0" kind="label" />
+
+            <row>
+              <Label for="Ordinal" />
+              <InputInteger source="Ordinal" style="width: 5rem;" summarize="true" />
+            </row>
+
+            <row>
+              <Label for="Background" />
+              <ColorEditor source="Background" style="&colorw;" summarize="true"
+                           backgroundSource="Background" foregroundSource="Foreground" />
+            </row>
+
+            <row>
+              <Label for="Foreground" />
+              <ColorEditor source="Foreground" style="&colorw;" summarize="true"
+                           backgroundSource="Background" foregroundSource="Foreground" />
+            </row>
+          </Table>
+        </SimplePanel>
       </page>
 
       <page for="Description">

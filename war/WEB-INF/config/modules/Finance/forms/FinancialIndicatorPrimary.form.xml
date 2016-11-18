@@ -18,7 +18,8 @@
 
       <row>
         <Label for="IndicatorName" />
-        <InputText source="IndicatorName" style="&inpw;" />
+        <InputText source="IndicatorName" style="&inpw;"
+                   backgroundSource="Background" foregroundSource="Foreground" />
 
         <Label for="IndicatorAbbreviation" />
         <InputText source="IndicatorAbbreviation" style="width: 10em; font-weight: bolder;" />
@@ -42,10 +43,12 @@
 
       <row>
         <Label for="Background" />
-        <ColorEditor source="Background" style="&colorw;" />
+        <ColorEditor source="Background" style="&colorw;"
+                     backgroundSource="Background" foregroundSource="Foreground" />
 
         <Label for="Foreground" />
-        <ColorEditor source="Foreground" style="&colorw;" />
+        <ColorEditor source="Foreground" style="&colorw;"
+                     backgroundSource="Background" foregroundSource="Foreground" />
       </row>
     </Table>
 
