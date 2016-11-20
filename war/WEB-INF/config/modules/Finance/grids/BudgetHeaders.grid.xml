@@ -6,9 +6,9 @@
         name="BudgetHeaders" viewName="BudgetHeaders" caption="=finBudgets"
         editForm="SimpleBudget" newRowForm="SimpleBudget"
 >
-  <g:columns>
-    <DataColumn name="Ordinal" editInPlace="true" />
+  <xi:include href="columns/Ordinal.columns.xml" />
 
+  <g:columns>
     <DataColumn name="BudgetName" minWidth="100" flexGrow="1" visible="true"
                 backgroundSource="Background" foregroundSource="Foreground" />
   </g:columns>

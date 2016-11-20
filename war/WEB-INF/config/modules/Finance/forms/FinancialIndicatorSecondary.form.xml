@@ -23,7 +23,7 @@
                    backgroundSource="Background" foregroundSource="Foreground" />
 
         <Label for="IndicatorAbbreviation" />
-        <InputText source="IndicatorAbbreviation" style="width: 10em; font-weight: bolder;" />
+        <InputText source="IndicatorAbbreviation" style="width: 15em; font-weight: bolder;" />
       </row>
 
       <row>

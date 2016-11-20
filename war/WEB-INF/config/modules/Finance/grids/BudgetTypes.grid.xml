@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="BudgetTypes" viewName="BudgetTypes"
         caption="=finBudgetTypes"
 >
   <g:columns>
-    <DataColumn name="Ordinal" />
+    <xi:include href="columns/Ordinal.columns.xml" />
 
     <DataColumn name="BudgetTypeName" minWidth="100" flexGrow="1" visible="true"
                 backgroundSource="Background" foregroundSource="Foreground" />

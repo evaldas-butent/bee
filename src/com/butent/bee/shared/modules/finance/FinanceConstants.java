@@ -4,6 +4,7 @@ import com.butent.bee.shared.modules.finance.analysis.IndicatorBalance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
 import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class FinanceConstants {
@@ -116,6 +117,8 @@ public final class FinanceConstants {
       "Month07", "Month08", "Month09", "Month10", "Month11", "Month12"
   };
 
+  public static final String COL_ACCOUNT_NORMAL_BALANCE = "NormalBalance";
+
   public static final String ALS_JOURNAL_BACKGROUND = "JournalBackground";
   public static final String ALS_JOURNAL_FOREGROUND = "JournalForeground";
 
@@ -181,6 +184,10 @@ public final class FinanceConstants {
   public static Integer getBudgetShowEntryDimension(String colName) {
     int index = ArrayUtils.indexOf(COL_BUDGET_SHOW_ENTRY_DIMENSIONS, colName);
     return (index >= 0) ? index + 1 : null;
+  }
+
+  public static boolean normalBalanceIsCredit(Boolean value) {
+    return BeeUtils.isTrue(value);
   }
 
   public static void register() {

@@ -2789,6 +2789,14 @@ public interface Dictionary {
 
   default String finCostOfMerchandise() {return g("finCostOfMerchandise");}
 
+  default String finCreditOnly() {return g("finCreditOnly");}
+
+  default String finCreditShort() {return g("finCreditShort");}
+
+  default String finDebitOnly() {return g("finDebitOnly");}
+
+  default String finDebitShort() {return g("finDebitShort");}
+
   default String finDefaultAccounts() {return g("finDefaultAccounts");}
 
   default String finDefaultJournal() {return g("finDefaultJournal");}
@@ -2811,9 +2819,41 @@ public interface Dictionary {
 
   default String finIndicatorAbbreviation() {return g("finIndicatorAbbreviation");}
 
+  default String finIndicatorAbbreviationClosingBalance(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationClosingBalance"), _m);
+  }
+
+  default String finIndicatorAbbreviationCredit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationCredit"), _m);
+  }
+
+  default String finIndicatorAbbreviationDebit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationDebit"), _m);
+  }
+
+  default String finIndicatorAbbreviationOpeningBalance(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationOpeningBalance"), _m);
+  }
+
+  default String finIndicatorAbbreviationTurnover(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationTurnover"), _m);
+  }
+
   default String finIndicatorAccounts() {return g("finIndicatorAccounts");}
 
   default String finIndicatorBalance() {return g("finIndicatorBalance");}
+
+  default String finIndicatorCreate() {return g("finIndicatorCreate");}
 
   default String finIndicatorFilterExtra() {return g("finIndicatorFilterExtra");}
 
@@ -2822,6 +2862,36 @@ public interface Dictionary {
   default String finIndicatorFilterNew() {return g("finIndicatorFilterNew");}
 
   default String finIndicatorFilters() {return g("finIndicatorFilters");}
+
+  default String finIndicatorNameClosingBalance(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameClosingBalance"), _m);
+  }
+
+  default String finIndicatorNameCredit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameCredit"), _m);
+  }
+
+  default String finIndicatorNameDebit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameDebit"), _m);
+  }
+
+  default String finIndicatorNameOpeningBalance(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameOpeningBalance"), _m);
+  }
+
+  default String finIndicatorNameTurnover(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameTurnover"), _m);
+  }
 
   default String finIndicatorPrimary() {return g("finIndicatorPrimary");}
 
@@ -2842,6 +2912,10 @@ public interface Dictionary {
   default String finIndicatorsSecondary() {return g("finIndicatorsSecondary");}
 
   default String finLiabilitiesToEmployees() {return g("finLiabilitiesToEmployees");}
+
+  default String finNormalAccountBalance() {return g("finNormalAccountBalance");}
+
+  default String finNormalAccountBalanceShort() {return g("finNormalAccountBalanceShort");}
 
   default String finOpeningBalance() {return g("finOpeningBalance");}
 

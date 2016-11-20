@@ -5,9 +5,7 @@
 
         name="BudgetEntries" viewName="BudgetEntries"
 >
-  <g:columns>
-    <DataColumn name="Ordinal" />
-  </g:columns>
+  <xi:include href="columns/Ordinal.columns.xml" />
 
   <xi:include href="columns/Indicator.columns.xml" />
   <xi:include href="columns/BudgetType.columns.xml" />

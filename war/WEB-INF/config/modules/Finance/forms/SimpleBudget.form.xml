@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-    <!ENTITY inpw "width: 20rem;">
     <!ENTITY colorw "width: 20rem;">
     <!ENTITY entrydim "margin-left: 10px;">
     ]>
@@ -17,30 +16,34 @@
       <SimplePanel>
         <Table kind="controls">
           <col index="0" kind="label" />
+          <col index="2" kind="label" />
 
           <row>
             <Label for="BudgetName" text="=name" />
-            <InputText source="BudgetName" style="&inpw;"
-                       backgroundSource="Background" foregroundSource="Foreground" />
+            <cell colSpan="3">
+              <InputText source="BudgetName" style="width: 100%;"
+                         backgroundSource="Background" foregroundSource="Foreground" />
+            </cell>
           </row>
 
           <row>
             <Label for="Indicator" />
-            <DataSelector source="Indicator" style="&inpw;" renderColumns="IndicatorName"
-                          choiceColumns="IndicatorName IndicatorAbbreviation" newRowEnabled="false"
-                          backgroundSource="IndicatorBackground"
-                          foregroundSource="IndicatorForeground" />
+            <cell colSpan="3">
+              <DataSelector source="Indicator" style="width: 100%;" renderColumns="IndicatorName"
+                            choiceColumns="IndicatorName IndicatorAbbreviation"
+                            newRowEnabled="false"
+                            backgroundSource="IndicatorBackground"
+                            foregroundSource="IndicatorForeground" />
+            </cell>
           </row>
 
           <row>
             <Label for="BudgetType" />
-            <DataSelector source="BudgetType" style="&inpw;" renderColumns="BudgetTypeName"
+            <DataSelector source="BudgetType" style="width: 10rem;" renderColumns="BudgetTypeName"
                           choiceColumns="BudgetTypeName" newRowEnabled="false"
                           backgroundSource="BudgetTypeBackground"
                           foregroundSource="BudgetTypeForeground" />
-          </row>
 
-          <row>
             <Label for="Year" />
             <InputInteger source="Year" style="width: 5rem;" minValue="2000" maxValue="2099"
                           format="0000" />
@@ -48,9 +51,11 @@
 
           <row>
             <Label for="Employee" />
-            <DataSelector source="Employee" style="&inpw;"
-                          renderColumns="EmployeeFirstName EmployeeLastName"
-                          choiceColumns="FirstName LastName" newRowEnabled="false" />
+            <cell colSpan="3">
+              <DataSelector source="Employee" style="width: 100%;"
+                            renderColumns="EmployeeFirstName EmployeeLastName"
+                            choiceColumns="FirstName LastName" newRowEnabled="false" />
+            </cell>
           </row>
         </Table>
       </SimplePanel>
@@ -63,7 +68,7 @@
         <text>=finBudgetEntries</text>
         <FlowPanel class="flexBox-vertical">
           <FlowPanel style="margin: 10px;">
-            <InlineLabel text="=columns" style="margin-left: 2rem; margin-right: 2rem;" />
+            <InlineLabel text="=columns" style="margin-left: 1rem; margin-right: 2rem;" />
 
             <CheckBox name="EntryDim01" source="EntryDim01" style="&entrydim;" />
             <CheckBox name="EntryDim02" source="EntryDim02" style="&entrydim;" />
@@ -86,7 +91,7 @@
       <page>
         <text>=additionalInfo</text>
         <SimplePanel>
-          <Table kind="controls" style="margin-left: 1rem;">
+          <Table kind="controls" style="margin: 1rem;">
             <col index="0" kind="label" />
 
             <row>
