@@ -6,9 +6,9 @@
         name="BudgetTypes" viewName="BudgetTypes"
         caption="=finBudgetTypes"
 >
-  <g:columns>
-    <xi:include href="columns/Ordinal.columns.xml" />
+  <xi:include href="columns/Ordinal.columns.xml" />
 
+  <g:columns>
     <DataColumn name="BudgetTypeName" minWidth="100" flexGrow="1" visible="true"
                 backgroundSource="Background" foregroundSource="Foreground" />
 

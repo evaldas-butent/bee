@@ -9,7 +9,7 @@
 
         name="FinancialIndicatorPrimary" viewName="FinancialIndicators"
         caption="=finIndicatorPrimary"
-        width="75" widthUnit="px" height="50" heightUnit="vh"
+        width="75" widthUnit="vw" height="50" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin: 1ex 1em;">

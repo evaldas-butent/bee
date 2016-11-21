@@ -10,7 +10,7 @@
 
         name="FinancialIndicatorSecondary" viewName="FinancialIndicators"
         caption="=finIndicatorSecondary"
-        width="75" widthUnit="px" height="75" heightUnit="vh"
+        width="75" widthUnit="vw" height="75" heightUnit="vh"
 >
   <FlowPanel>
     <Table kind="controls" style="margin: 1ex 1em;">

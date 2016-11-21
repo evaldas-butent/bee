@@ -30,6 +30,7 @@ public final class FinanceConstants {
       "FinanceDistributionOfTradeDocuments";
 
   public static final String VIEW_FINANCIAL_INDICATORS = "FinancialIndicators";
+  public static final String VIEW_INDICATOR_ACCOUNTS = "IndicatorAccounts";
 
   public static final String VIEW_BUDGET_HEADERS = "BudgetHeaders";
   public static final String VIEW_BUDGET_ENTRIES = "BudgetEntries";
@@ -87,6 +88,11 @@ public final class FinanceConstants {
   public static final String COL_FIN_INDICATOR_CLOSING_ENTRIES = "IndicatorClosingEntries";
   public static final String COL_FIN_INDICATOR_IS_PERCENT = "IndicatorIsPercent";
   public static final String COL_FIN_INDICATOR_SCALE = "IndicatorScale";
+
+  public static final String COL_FIN_INDICATOR = "Indicator";
+  public static final String COL_INDICATOR_ACCOUNT_DEBIT = "Debit";
+  public static final String COL_INDICATOR_ACCOUNT_CREDIT = "Credit";
+  public static final String COL_INDICATOR_ACCOUNT_PLUS = "Plus";
 
   public static final String COL_BUDGET_NAME = "BudgetName";
   public static final String COL_BUDGET_HEADER = "BudgetHeader";
