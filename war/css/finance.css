@@ -19,3 +19,10 @@
   background-color: yellow;
   border-color: darkgreen;
 }
+
+.bee-grid-ChartOfAccounts .bee-Header-commandPanel {
+  margin-right: 5rem;
+}
+.bee-grid-ChartOfAccounts.bee-GridContainer-no-active-row .bee-Header-commandPanel {
+  visibility: hidden;
+}

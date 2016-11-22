@@ -60,7 +60,9 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -447,13 +449,13 @@ public final class Global {
 
     if (huhs == null) {
       caption = null;
-      messages = Lists.newArrayList("Huh");
+      messages = Collections.singletonList("Huh");
     } else {
       caption = "Huh";
-      messages = Lists.newArrayList(huhs);
+      messages = Arrays.asList(huhs);
     }
 
-    messageBox(caption, Icon.QUESTION, messages, Lists.newArrayList("kthxbai"), 0, null);
+    messageBox(caption, null, messages, Collections.singletonList("kthxbai"), 0, null);
   }
 
   public static void setDebug(boolean debug) {
