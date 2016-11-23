@@ -2735,9 +2735,19 @@ public interface Dictionary {
 
   default String finAnalysis() {return g("finAnalysis");}
 
+  default String finAnalysisColumn() {return g("finAnalysisColumn");}
+
   default String finAnalysisColumnNew() {return g("finAnalysisColumnNew");}
 
   default String finAnalysisColumns() {return g("finAnalysisColumns");}
+
+  default String finAnalysisFilterExtra() {return g("finAnalysisFilterExtra");}
+
+  default String finAnalysisFilterInclude() {return g("finAnalysisFilterInclude");}
+
+  default String finAnalysisFilterNew() {return g("finAnalysisFilterNew");}
+
+  default String finAnalysisFilters() {return g("finAnalysisFilters");}
 
   default String finAnalysisHeader() {return g("finAnalysisHeader");}
 
@@ -2746,6 +2756,8 @@ public interface Dictionary {
   default String finAnalysisHeaders() {return g("finAnalysisHeaders");}
 
   default String finAnalysisName() {return g("finAnalysisName");}
+
+  default String finAnalysisRow() {return g("finAnalysisRow");}
 
   default String finAnalysisRowNew() {return g("finAnalysisRowNew");}
 
