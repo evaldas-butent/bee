@@ -235,7 +235,7 @@ public class ReportDateItem extends ReportItem {
           editor.addItem(Format.renderMonthFullStandalone(i), BeeUtils.toString(i));
         }
         break;
-      case QUATER:
+      case QUARTER:
         for (int i = 1; i <= 4; i++) {
           String display = null;
 
@@ -286,7 +286,7 @@ public class ReportDateItem extends ReportItem {
         value = TimeUtils.padTwo(val);
         display = Format.renderMonthFullStandalone(val);
         break;
-      case QUATER:
+      case QUARTER:
         switch (val) {
           case 1:
             display = "I";
@@ -329,7 +329,7 @@ public class ReportDateItem extends ReportItem {
         return date.getDow();
       case MONTH:
         return date.getMonth();
-      case QUATER:
+      case QUARTER:
         return (date.getMonth() - 1) / 3 + 1;
       case YEAR:
         return date.getYear();

@@ -4559,7 +4559,7 @@ public interface Dictionary {
 
   default String quantityTo() {return g("quantityTo");}
 
-  default String quater() {return g("quater");}
+  default String quarter() {return g("quarter");}
 
   default String questionLogout() {return g("questionLogout");}
 
