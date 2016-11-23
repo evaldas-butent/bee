@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="AnalysisRows"
+       idName="AnalysisRowID"
+>
+  <Fields>
+    <Relation name="AnalysisHeader" notNull="true" relation="AnalysisHeaders" cascade="DELETE"
+              label="=finAnalysisHeader" />
+
+    <Integer name="Ordinal" label="=ordinal" />
+
+    <String name="RowName" precision="100" translatable="true" label="=finAnalysisRowName" />
+    <String name="RowAbbreviation" precision="20" label="=finAnalysisRowAbbreviation" />
+
+    <Relation name="Indicator" relation="FinancialIndicators" label="=finIndicator" />
+    <Relation name="BudgetType" relation="BudgetTypes" label="=finBudgetType" />
+
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
+    <Relation name="Employee" relation="Employees" label="=employee" />
+
+    <Text name="RowScript" label="=finAnalysisScript" />
+
+    <String name="Note" precision="100" label="=note" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+  </Fields>
+</Table>

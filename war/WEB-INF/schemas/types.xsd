@@ -235,6 +235,7 @@
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
       <xs:enumeration value="AnalysisColumns" />
+      <xs:enumeration value="AnalysisFilters" />
       <xs:enumeration value="AnalysisHeaders" />
       <xs:enumeration value="AnalysisRows" />
       <xs:enumeration value="AppointmentAttendees" />

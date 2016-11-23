@@ -125,6 +125,15 @@ public final class FinanceConstants {
 
   public static final String COL_ACCOUNT_NORMAL_BALANCE = "NormalBalance";
 
+  private static final String[] COL_ANALYSIS_SHOW_COLUMN_DIMENSIONS = new String[] {
+      "ColumnDim01", "ColumnDim02", "ColumnDim03", "ColumnDim04", "ColumnDim05",
+      "ColumnDim06", "ColumnDim07", "ColumnDim08", "ColumnDim09", "ColumnDim10"
+  };
+  private static final String[] COL_ANALYSIS_SHOW_ROW_DIMENSIONS = new String[] {
+      "RowDim01", "RowDim02", "RowDim03", "RowDim04", "RowDim05",
+      "RowDim06", "RowDim07", "RowDim08", "RowDim09", "RowDim10"
+  };
+
   public static final String ALS_JOURNAL_BACKGROUND = "JournalBackground";
   public static final String ALS_JOURNAL_FOREGROUND = "JournalForeground";
 
@@ -194,6 +203,14 @@ public final class FinanceConstants {
 
   public static boolean normalBalanceIsCredit(Boolean value) {
     return BeeUtils.isTrue(value);
+  }
+
+  public static String colAnalysisShowColumnDimension(int dimension) {
+    return COL_ANALYSIS_SHOW_COLUMN_DIMENSIONS[dimension - 1];
+  }
+
+  public static String colAnalysisShowRowDimension(int dimension) {
+    return COL_ANALYSIS_SHOW_ROW_DIMENSIONS[dimension - 1];
   }
 
   public static void register() {

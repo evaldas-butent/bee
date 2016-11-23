@@ -2737,6 +2737,10 @@ public interface Dictionary {
 
   default String finAnalysisColumn() {return g("finAnalysisColumn");}
 
+  default String finAnalysisColumnAbbreviation() {return g("finAnalysisColumnAbbreviation");}
+
+  default String finAnalysisColumnName() {return g("finAnalysisColumnName");}
+
   default String finAnalysisColumnNew() {return g("finAnalysisColumnNew");}
 
   default String finAnalysisColumns() {return g("finAnalysisColumns");}
@@ -2759,11 +2763,31 @@ public interface Dictionary {
 
   default String finAnalysisRow() {return g("finAnalysisRow");}
 
+  default String finAnalysisRowAbbreviation() {return g("finAnalysisRowAbbreviation");}
+
+  default String finAnalysisRowName() {return g("finAnalysisRowName");}
+
   default String finAnalysisRowNew() {return g("finAnalysisRowNew");}
 
   default String finAnalysisRows() {return g("finAnalysisRows");}
 
   default String finAnalysisScript() {return g("finAnalysisScript");}
+
+  default String finAnalysisShowColumnDimension(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finAnalysisShowColumnDimension"), _m);
+  }
+
+  default String finAnalysisShowColumnEmployee() {return g("finAnalysisShowColumnEmployee");}
+
+  default String finAnalysisShowRowDimension(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finAnalysisShowRowDimension"), _m);
+  }
+
+  default String finAnalysisShowRowEmployee() {return g("finAnalysisShowRowEmployee");}
 
   default String finBudget() {return g("finBudget");}
 

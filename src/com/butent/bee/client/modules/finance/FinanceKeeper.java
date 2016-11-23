@@ -100,8 +100,15 @@ public final class FinanceKeeper {
 
   private static void registerAnalysis() {
     for (int dimension = 1; dimension <= Dimensions.SPACETIME; dimension++) {
+      String label = Dimensions.singular(dimension);
+
       Localized.setColumnLabel(colBudgetShowEntryDimension(dimension),
-          Localized.dictionary().finBudgetShowDimension(Dimensions.singular(dimension)));
+          Localized.dictionary().finBudgetShowDimension(label));
+
+      Localized.setColumnLabel(colAnalysisShowColumnDimension(dimension),
+          Localized.dictionary().finAnalysisShowColumnDimension(label));
+      Localized.setColumnLabel(colAnalysisShowRowDimension(dimension),
+          Localized.dictionary().finAnalysisShowRowDimension(label));
     }
 
     for (int month = 1; month <= 12; month++) {
