@@ -48,6 +48,22 @@
     <DataColumn name="Exported" />
 
     <DataColumn name="NewNumber" />
+
+    <CalcColumn name="Order" type="string" caption="=orderNumber" maxWidth="300">
+      <render>
+        <ui:function>
+          if (!row.MinOrder) {
+          return row.MaxOrder;
+
+          } else if(!row.MaxOrder || row.MinOrder == row.MaxOrder) {
+          return row.MinOrder;
+
+          } else {
+          return row.MinOrder + ", " + row.MaxOrder + (row.CntOrder > 2 ? ", ...": "");
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
   </g:columns>
 
   <g:rowStyle>

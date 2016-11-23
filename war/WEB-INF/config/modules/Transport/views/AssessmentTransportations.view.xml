@@ -59,10 +59,14 @@
       <SimpleJoin name="Cargo" joinType="LEFT">
         <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">
           <HiddenColumn name="Cargo" alias="Assessment" />
-          <IdColumn name="MinOrder" aggregate="MIN" />
-          <IdColumn name="MaxOrder" aggregate="MAX" />
-          <IdColumn name="CntOrder" aggregate="COUNT_DISTINCT" />
         </ExternalJoin>
+
+        <SimpleJoin name="Order" joinType="LEFT">
+          <HiddenColumn name="OrderNo" />
+          <AggregateColumn name="OrderNo" alias="MinOrder" aggregate="MIN" />
+          <AggregateColumn name="OrderNo" alias="MaxOrder" aggregate="MAX" />
+          <AggregateColumn name="OrderNo" alias="CntOrder" aggregate="COUNT_DISTINCT" />
+        </SimpleJoin>
       </SimpleJoin>
     </ExternalJoin>
   </Columns>

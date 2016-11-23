@@ -70,6 +70,15 @@
 
     <ExternalJoin name="Purchase" source="CargoExpenses" joinType="LEFT">
       <AggregateColumn name="Purchase" aggregate="MAX" />
+
+      <SimpleJoin name="Cargo" joinType="LEFT">
+        <SimpleJoin name="Order" joinType="LEFT">
+          <HiddenColumn name="OrderNo" />
+          <AggregateColumn name="OrderNo" alias="MinOrder" aggregate="MIN" />
+          <AggregateColumn name="OrderNo" alias="MaxOrder" aggregate="MAX" />
+          <AggregateColumn name="OrderNo" alias="CntOrder" aggregate="COUNT_DISTINCT" />
+        </SimpleJoin>
+      </SimpleJoin>
     </ExternalJoin>
     <ExternalJoin name="Purchase" source="CargoIncomes" joinType="LEFT">
       <AggregateColumn name="Purchase" alias="Sale" aggregate="MAX" />
