@@ -20,10 +20,15 @@
 
     <SimpleColumn name="RowScript" />
 
+    <SimpleColumn name="RowIsPercent" />
+    <SimpleColumn name="RowScale" />
+
     <SimpleColumn name="Note" />
 
     <SimpleColumn name="Background" />
     <SimpleColumn name="Foreground" />
+
+    <SimpleColumn name="RowStyle" />
   </Columns>
 
   <Order>

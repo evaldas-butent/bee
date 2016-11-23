@@ -22,9 +22,14 @@
 
     <Text name="RowScript" label="=finAnalysisScript" />
 
+    <Boolean name="RowIsPercent" label="=percent" />
+    <Integer name="RowScale" label="=finAnalysisScale" />
+
     <String name="Note" precision="100" label="=note" />
 
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />
+
+    <Text name="RowStyle" label="=style" />
   </Fields>
 </Table>

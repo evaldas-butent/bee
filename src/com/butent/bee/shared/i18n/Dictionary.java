@@ -2771,6 +2771,8 @@ public interface Dictionary {
 
   default String finAnalysisRows() {return g("finAnalysisRows");}
 
+  default String finAnalysisScale() {return g("finAnalysisScale");}
+
   default String finAnalysisScript() {return g("finAnalysisScript");}
 
   default String finAnalysisShowColumnDimension(Object p0) {

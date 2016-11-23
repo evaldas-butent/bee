@@ -27,9 +27,14 @@
 
     <Text name="ColumnScript" label="=finAnalysisScript" />
 
+    <Boolean name="ColumnIsPercent" label="=percent" />
+    <Integer name="ColumnScale" label="=finAnalysisScale" />
+
     <String name="Note" precision="100" label="=note" />
 
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />
+
+    <Text name="ColumnStyle" label="=style" />
   </Fields>
 </Table>
