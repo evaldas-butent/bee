@@ -2735,6 +2735,22 @@ public interface Dictionary {
 
   default String finAnalysis() {return g("finAnalysis");}
 
+  default String finAnalysisColumnNew() {return g("finAnalysisColumnNew");}
+
+  default String finAnalysisColumns() {return g("finAnalysisColumns");}
+
+  default String finAnalysisHeader() {return g("finAnalysisHeader");}
+
+  default String finAnalysisHeaderNew() {return g("finAnalysisHeaderNew");}
+
+  default String finAnalysisHeaders() {return g("finAnalysisHeaders");}
+
+  default String finAnalysisName() {return g("finAnalysisName");}
+
+  default String finAnalysisRowNew() {return g("finAnalysisRowNew");}
+
+  default String finAnalysisRows() {return g("finAnalysisRows");}
+
   default String finAnalysisScript() {return g("finAnalysisScript");}
 
   default String finBudget() {return g("finBudget");}
