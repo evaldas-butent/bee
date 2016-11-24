@@ -10,6 +10,7 @@
     <DataColumn name="CompanyName" caption="=company" label="=company" />
     <DataColumn name="PositionName" />
     <DataColumn name="Phone" />
+    <DataColumn name="Mobile" />
 
     <RelColumn name="Email" caption="=email" />
 

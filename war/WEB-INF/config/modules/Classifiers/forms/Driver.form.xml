@@ -53,8 +53,8 @@
           </SimplePanel>
         </row>
         <row>
-          <Label text="=email" class="bee-co-companyInfo-label" style="&lbl;" />
-          <TextLabel style="&w2;" textOnly="true" />
+          <Label text="=mobile" class="bee-co-companyInfo-label" style="&lbl;" />
+          <TextLabel source="Mobile" style="&w2;" />
 
           <Label for="EndDate" style="&lbl;" />
           <SimplePanel style="&w2;">
@@ -62,14 +62,18 @@
           </SimplePanel>
         </row>
         <row>
-          <Label for="PersonCode" style="&lbl;" />
-          <SimplePanel style="&w2;">
-            <TextLabel source="PersonCode" style="&inpdt;" />
-          </SimplePanel>
+          <Label text="=email" class="bee-co-companyInfo-label" style="&lbl;" />
+          <TextLabel style="&w2;" textOnly="true" />
 
           <Label for="DateOfBirth" style="&lbl;" />
           <SimplePanel style="&w2;">
             <DateLabel source="DateOfBirth" style="&inpdt;" />
+          </SimplePanel>
+        </row>
+        <row>
+          <Label for="PersonCode" style="&lbl;" />
+          <SimplePanel style="&w2;">
+            <TextLabel source="PersonCode" style="&inpdt;" />
           </SimplePanel>
         </row>
         <row>
