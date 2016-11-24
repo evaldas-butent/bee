@@ -6,7 +6,7 @@
 >
   <Fields>
     <Relation name="AnalysisHeader" relation="AnalysisHeaders" cascade="DELETE"
-              label="=finAnalysisHeader" />
+              label="=finAnalysisForm" />
     <Relation name="AnalysisColumn" relation="AnalysisColumns" cascade="DELETE"
               label="=finAnalysisColumn" />
     <Relation name="AnalysisRow" relation="AnalysisRows" cascade="DELETE"

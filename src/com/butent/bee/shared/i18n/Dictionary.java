@@ -2755,11 +2755,11 @@ public interface Dictionary {
 
   default String finAnalysisFilters() {return g("finAnalysisFilters");}
 
-  default String finAnalysisHeader() {return g("finAnalysisHeader");}
+  default String finAnalysisForm() {return g("finAnalysisForm");}
 
-  default String finAnalysisHeaderNew() {return g("finAnalysisHeaderNew");}
+  default String finAnalysisFormNew() {return g("finAnalysisFormNew");}
 
-  default String finAnalysisHeaders() {return g("finAnalysisHeaders");}
+  default String finAnalysisForms() {return g("finAnalysisForms");}
 
   default String finAnalysisName() {return g("finAnalysisName");}
 

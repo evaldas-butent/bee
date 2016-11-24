@@ -6,7 +6,7 @@
 >
   <Fields>
     <Relation name="AnalysisHeader" notNull="true" relation="AnalysisHeaders" cascade="DELETE"
-              label="=finAnalysisHeader" />
+              label="=finAnalysisForm" />
 
     <Integer name="Ordinal" label="=ordinal" />
 
