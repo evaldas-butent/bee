@@ -535,7 +535,7 @@ public final class MessageBoxes {
     showWidget(caption, container, null);
   }
 
-  public static void showWidget(String caption, Widget widget, Element target) {
+  public static Popup showWidget(String caption, Widget widget, Element target) {
     Assert.notNull(widget);
 
     Popup popup;
@@ -552,6 +552,8 @@ public final class MessageBoxes {
 
     popup.focusOnOpen(widget);
     popup.showRelativeTo(target);
+
+    return popup;
   }
 
   private static void rotateFocus(Event<?> event, IndexedPanel panel, boolean forward) {

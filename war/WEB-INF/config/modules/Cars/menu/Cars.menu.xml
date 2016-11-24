@@ -12,7 +12,8 @@
   <Item name="ConfTypes" label="=optionTypes" service="grid" parameters="ConfTypes" />
   <Item name="ConfGroups" label="=optionGroups" service="grid" parameters="ConfGroups" />
   <Item name="ConfOptions" label="=options" service="grid" parameters="ConfOptions" />
+  <Item name="ConfTemplates" label="=templates" service="grid" parameters="ConfTemplates" />
 
-  <Item name="Vehicles" label="=vehicles" service="grid" parameters="Vehicles" separator="true" />
+  <Item name="Cars" label="=cars" service="grid" parameters="Cars" separator="true" />
   <Item name="VehicleTypes" label="=trVehicleTypes" service="grid" parameters="VehicleTypes" />
 </Entry>

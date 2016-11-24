@@ -3654,6 +3654,8 @@ public interface Dictionary {
 
   default String newBranch() {return g("newBranch");}
 
+  default String newCar() {return g("newCar");}
+
   default String newCargo() {return g("newCargo");}
 
   default String newCity() {return g("newCity");}

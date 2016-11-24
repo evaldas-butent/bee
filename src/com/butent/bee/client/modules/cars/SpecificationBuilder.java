@@ -15,9 +15,9 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
@@ -31,7 +31,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -138,7 +137,7 @@ public class SpecificationBuilder implements InputCallback {
   public static final String STYLE_THUMBNAIL = STYLE_PREFIX + "-thumbnail";
   private static final String STYLE_SELECTABLE = STYLE_PREFIX + "-selectable";
   public static final String STYLE_BLOCKED = STYLE_PREFIX + "-blocked";
-  private static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
+  public static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
 
   private Specification template;
   private final Consumer<Specification> callback;
@@ -150,7 +149,7 @@ public class SpecificationBuilder implements InputCallback {
 
   public SpecificationBuilder(Specification template, Consumer<Specification> callback) {
     this.template = template;
-    this.callback = Assert.notNull(callback);
+    this.callback = callback;
 
     Queries.getRowSet(TBL_CONF_PRICELIST, null, new Queries.RowSetCallback() {
       @Override
@@ -167,9 +166,14 @@ public class SpecificationBuilder implements InputCallback {
         setBranch(tree);
       }
     });
-    DialogBox dialog = Global.inputWidget(Localized.dictionary().specification(), container, this);
-    dialog.addStyleName(STYLE_DIALOG);
+    Popup dialog;
 
+    if (Objects.isNull(callback)) {
+      dialog = Global.showModalWidget(Localized.dictionary().specification(), container);
+    } else {
+      dialog = Global.inputWidget(Localized.dictionary().specification(), container, this);
+    }
+    dialog.addStyleName(STYLE_DIALOG);
     StyleUtils.setWidth(dialog, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
     StyleUtils.setHeight(dialog, BeeKeeper.getScreen().getHeight() * 0.9, CssUnit.PX);
   }
@@ -243,6 +247,8 @@ public class SpecificationBuilder implements InputCallback {
           }
         }
       });
+    } else {
+      callback.accept(null);
     }
   }
 

@@ -18,5 +18,7 @@
     <RelColumn name="Customer" visible="true" renderColumns="CustomerName CustomerTypeName" />
     <RelColumn name="CustomerPerson" renderColumns="ContactFirstName ContactLastName" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+
+    <PropColumn name="Option" type="string" dynamic="true" />
   </g:columns>
 </g:Grid>

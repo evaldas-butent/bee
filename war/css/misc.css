@@ -645,8 +645,9 @@
 .bee-spec-thumbnail .bee-Label:last-child {
   font-weight: bold;
 }
-.bee-spec-description {
+.bee-spec-description:hover {
   background-color: lightgoldenrodyellow;
+  cursor: pointer;
 }
 .bee-spec-selectable {
   border-collapse: collapse;

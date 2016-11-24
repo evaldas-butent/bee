@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-      name="Vehicles" source="Vehicles" caption="=vehicles"
-      editForm="Vehicle" newRowForm="Vehicle" newRowCaption="=trNewVehicle"
-      rowCaption="Number"
-    >
+      name="Cars" source="Vehicles" caption="=cars"
+      editForm="Car" newRowForm="Car" newRowCaption="=newCar"
+>
   <Relation renderColumns="Number" choiceColumns="Number ParentModelName ModelName" />
   <Columns>
     <SimpleColumn name="Type" />
     <SimpleJoin name="Type" joinType="LEFT">
       <SimpleColumn name="Name" alias="TypeName" />
-      <SimpleColumn name="IsTruck" />
-      <SimpleColumn name="IsTrailer" />
     </SimpleJoin>
 
     <SimpleColumn name="Model" />
@@ -29,11 +26,12 @@
     <SimpleColumn name="ProductionDate" />
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />
-    <SimpleColumn name="Speedometer" />
+
     <SimpleColumn name="Fuel" />
     <SimpleJoin name="Fuel" joinType="LEFT">
       <SimpleColumn name="Name" alias="FuelType" />
     </SimpleJoin>
+
     <SimpleColumn name="TankCapacity" />
     <SimpleColumn name="Power" />
     <SimpleColumn name="Netto" />
@@ -42,7 +40,7 @@
     <SimpleJoin name="Owner" joinType="LEFT">
       <SimpleColumn name="Name" alias="OwnerName" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
-        <SimpleColumn name="Name" alias="CompanyTypeName" />
+        <SimpleColumn name="Name" alias="OwnerTypeName" />
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Notes" />
@@ -51,6 +49,8 @@
     <SimpleColumn name="Chassis" />
     <SimpleColumn name="Gearbox" />
     <SimpleColumn name="Conditioner" />
+
+    <SimpleColumn name="Object" />
   </Columns>
   <Order>
     <OrderBy column="TypeName" />

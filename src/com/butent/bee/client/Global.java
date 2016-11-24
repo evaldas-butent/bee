@@ -22,6 +22,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.grid.GridFactory;
@@ -549,20 +550,20 @@ public final class Global {
     MessageBoxes.showTable(caption, table, styles);
   }
 
-  public static void showModalWidget(String caption, Widget widget) {
-    showModalWidget(caption, widget, null);
+  public static Popup showModalWidget(String caption, Widget widget) {
+    return showModalWidget(caption, widget, null);
   }
 
-  public static void showModalWidget(String caption, Widget widget, Element target) {
-    MessageBoxes.showWidget(caption, widget, target);
+  public static Popup showModalWidget(String caption, Widget widget, Element target) {
+    return MessageBoxes.showWidget(caption, widget, target);
   }
 
-  public static void showModalWidget(Widget widget) {
-    showModalWidget(null, widget, null);
+  public static Popup showModalWidget(Widget widget) {
+    return showModalWidget(null, widget, null);
   }
 
-  public static void showModalWidget(Widget widget, Element target) {
-    showModalWidget(null, widget, target);
+  public static Popup showModalWidget(Widget widget, Element target) {
+    return showModalWidget(null, widget, target);
   }
 
   public static void showTable(String caption, IsTable<?, ?> table) {

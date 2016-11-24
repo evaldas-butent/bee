@@ -1,13 +1,20 @@
 package com.butent.bee.server.modules.cars;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Table;
+import com.google.common.eventbus.AllowConcurrentEvents;
+import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PHOTO;
 
+import com.butent.bee.server.data.DataEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.IsCondition;
@@ -21,6 +28,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -58,6 +67,8 @@ public class CarsModuleBean implements BeeModule {
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
+  @EJB
+  UserServiceBean usr;
 
   @Override
   public ResponseObject doService(String service, RequestInfo reqInfo) {
@@ -158,6 +169,12 @@ public class CarsModuleBean implements BeeModule {
         response = saveObject(Specification.restore(reqInfo.getParameter(COL_OBJECT)));
         break;
 
+      case SVC_SAVE_OBJECT_DESCRIPTION:
+        response = qs.updateDataWithResponse(new SqlUpdate(TBL_CONF_OBJECTS)
+            .addConstant(COL_DESCRIPTION, reqInfo.getParameter(COL_DESCRIPTION))
+            .setWhere(sys.idEquals(TBL_CONF_OBJECTS, reqInfo.getParameterLong(COL_OBJECT))));
+        break;
+
       case SVC_GET_OBJECT:
         response = getObject(reqInfo.getParameterLong(COL_OBJECT));
         break;
@@ -173,6 +190,62 @@ public class CarsModuleBean implements BeeModule {
   @Override
   public Module getModule() {
     return Module.CARS;
+  }
+
+  @Override
+  public void init() {
+    sys.registerDataEventHandler(new DataEventHandler() {
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setRowProperties(DataEvent.ViewQueryEvent event) {
+        if (event.isAfter(TBL_CAR_ORDERS, TBL_CONF_TEMPLATES) && event.hasData()) {
+          BeeRowSet rowSet = event.getRowset();
+          int idxObj = rowSet.getColumnIndex(COL_OBJECT);
+          int idxCarObj = idxObj;
+          Set<Long> objects = rowSet.getDistinctLongs(idxObj);
+
+          if (event.isTarget(TBL_CAR_ORDERS)) {
+            idxCarObj = rowSet.getColumnIndex(COL_CAR + COL_OBJECT);
+            objects.addAll(rowSet.getDistinctLongs(idxCarObj));
+          }
+          SimpleRowSet rs = qs.getData(new SqlSelect()
+              .addField(TBL_CONF_OBJECTS, sys.getIdName(TBL_CONF_OBJECTS), COL_OBJECT)
+              .addFields(TBL_CONF_OBJECTS, COL_BRANCH_NAME)
+              .addFields(TBL_CONF_OPTIONS, COL_OPTION_NAME)
+              .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME)
+              .addFrom(TBL_CONF_OBJECTS)
+              .addFromLeft(TBL_CONF_OBJECT_OPTIONS, SqlUtils.and(sys.joinTables(TBL_CONF_OBJECTS,
+                  TBL_CONF_OBJECT_OPTIONS, COL_OBJECT), SqlUtils.isNull(TBL_CONF_OBJECT_OPTIONS,
+                  COL_PRICE)))
+              .addFromLeft(TBL_CONF_OPTIONS,
+                  sys.joinTables(TBL_CONF_OPTIONS, TBL_CONF_OBJECT_OPTIONS, COL_OPTION))
+              .addFromLeft(TBL_CONF_GROUPS,
+                  sys.joinTables(TBL_CONF_GROUPS, TBL_CONF_OPTIONS, COL_GROUP))
+              .setWhere(sys.idInList(TBL_CONF_OBJECTS, objects))
+              .addOrder(TBL_CONF_OBJECT_OPTIONS, sys.getIdName(TBL_CONF_OBJECT_OPTIONS)));
+
+          Table<Long, String, String> table = HashBasedTable.create();
+
+          for (SimpleRowSet.SimpleRow row : rs) {
+            Long obj = row.getLong(COL_OBJECT);
+            table.put(obj, usr.getDictionary().category(), row.getValue(COL_BRANCH_NAME));
+
+            String opt = row.getValue(COL_OPTION_NAME);
+
+            if (!BeeUtils.isEmpty(opt)) {
+              table.put(obj, row.getValue(COL_GROUP_NAME), opt);
+            }
+          }
+          for (BeeRow beeRow : rowSet) {
+            Long obj = BeeUtils.nvl(beeRow.getLong(idxCarObj), beeRow.getLong(idxObj));
+
+            if (DataUtils.isId(obj)) {
+              table.row(obj).forEach((key, val) -> beeRow.setProperty(COL_OPTION + key, val));
+            }
+          }
+        }
+      }
+    });
   }
 
   public ResponseObject setBundle(Long branchId, Bundle bundle, Configuration.DataInfo info,

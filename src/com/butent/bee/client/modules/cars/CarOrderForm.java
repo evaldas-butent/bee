@@ -14,47 +14,50 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.ModalGrid;
+import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
+import com.butent.bee.client.modules.classifiers.VehiclesGrid;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.ReportUtils;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.StageFormInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
+import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -63,121 +66,24 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class CarOrderForm extends PrintFormInterceptor implements StageFormInterceptor,
-    Consumer<Specification> {
+public class CarOrderForm extends SpecificationForm implements StageFormInterceptor {
 
   private Flow stageContainer = new Flow();
   private List<Stage> orderStages;
-
-  private Flow objectContainer;
-  private Specification objectSpecification;
-
-  @Override
-  public void accept(Specification specification) {
-    Map<Long, Integer> opts = new HashMap<>();
-
-    for (Option option : specification.getOptions()) {
-      opts.put(option.getId(), specification.getOptionPrice(option));
-    }
-    Queries.getRowSet(TBL_CONF_OPTIONS, Collections.singletonList(COL_ITEM),
-        Filter.and(opts.isEmpty() ? Filter.isFalse() : Filter.idIn(opts.keySet()),
-            Filter.notNull(COL_ITEM)), new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet res) {
-            Holder<Integer> price = Holder.of(specification.getPrice());
-            List<BeeColumn> columns = Data.getColumns(TBL_CAR_ORDER_ITEMS,
-                Arrays.asList(COL_ORDER, COL_ITEM, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-                    COL_OBJECT));
-            BeeRowSet items = new BeeRowSet(TBL_CAR_ORDER_ITEMS, columns);
-
-            for (BeeRow item : res) {
-              BeeRow row = items.addEmptyRow();
-              row.setValue(DataUtils.getColumnIndex(COL_ORDER, columns), getActiveRowId());
-              row.setValue(DataUtils.getColumnIndex(COL_ITEM, columns), item.getLong(0));
-              row.setValue(DataUtils.getColumnIndex(COL_TRADE_ITEM_QUANTITY,
-                  columns), 1);
-              row.setValue(DataUtils.getColumnIndex(COL_TRADE_ITEM_PRICE, columns),
-                  opts.get(item.getId()));
-              row.setValue(DataUtils.getColumnIndex(COL_OBJECT, columns),
-                  specification.getId());
-              price.set(price.get() - opts.get(item.getId()));
-            }
-            Consumer<Integer> consumer = itemCount -> {
-              BeeRowSet rs = DataUtils.getUpdated(getViewName(), getFormView().getDataColumns(),
-                  getFormView().getOldRow(), getActiveRow(), getFormView().getChildrenForUpdate());
-
-              if (DataUtils.isEmpty(rs)) {
-                rs = new BeeRowSet(getViewName(), new ArrayList<>());
-                rs.addRow(getActiveRowId(), getActiveRow().getVersion(), new ArrayList<>());
-              } else {
-                for (String col : new String[] {
-                    COL_DESCRIPTION, COL_TRADE_AMOUNT}) {
-                  int idx = DataUtils.getColumnIndex(col, rs.getColumns());
-
-                  if (!BeeConst.isUndef(idx)) {
-                    rs.removeColumn(idx);
-                  }
-                }
-              }
-              Long oldObject = getLongValue(COL_OBJECT);
-              int c = rs.getNumberOfColumns();
-              rs.addColumns(Data.getColumns(getViewName(),
-                  Arrays.asList(COL_OBJECT, COL_TRADE_AMOUNT)));
-
-              rs.getRow(0).setValue(c, oldObject);
-              rs.getRow(0).preliminaryUpdate(c, BeeUtils.toString(specification.getId()));
-              rs.getRow(0).setValue(c + 1, getIntegerValue(COL_TRADE_AMOUNT));
-              rs.getRow(0).preliminaryUpdate(c + 1, BeeUtils.toString(price.get()));
-
-              Queries.updateRow(rs, new RowUpdateCallback(getViewName()) {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  if (DataUtils.isId(oldObject)) {
-                    Queries.deleteRow(TBL_CONF_OBJECTS, oldObject,
-                        new Queries.IntCallback() {
-                          @Override
-                          public void onSuccess(Integer cnt) {
-                            Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
-                          }
-                        });
-                  } else if (BeeUtils.isPositive(itemCount)) {
-                    Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
-                  }
-                  super.onSuccess(result);
-                }
-              });
-            };
-            if (!DataUtils.isEmpty(items)) {
-              Queries.insertRows(items, new RpcCallback<RowInfoList>() {
-                @Override
-                public void onSuccess(RowInfoList result) {
-                  consumer.accept(result.size());
-                }
-              });
-            } else {
-              consumer.accept(0);
-            }
-          }
-        });
-  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       FormFactory.WidgetDescriptionCallback callback) {
 
-    if (BeeUtils.same(name, NameUtils.getClassName(SpecificationBuilder.class))
-        && widget instanceof HasClickHandlers) {
-      ((HasClickHandlers) widget).addClickHandler(clickEvent -> createObject());
-
-    } else if (BeeUtils.same(name, COL_OBJECT) && widget instanceof Flow) {
-      objectContainer = (Flow) widget;
+    if (Objects.equals(name, COL_CAR) && widget instanceof HasClickHandlers) {
+      ((HasClickHandlers) widget).addClickHandler(clickEvent -> buildCar());
     }
     super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    StageFormInterceptor.super.beforeRefresh(form, row);
+    refreshStages();
   }
 
   @Override
@@ -199,30 +105,6 @@ public class CarOrderForm extends PrintFormInterceptor implements StageFormInter
   public void onLoad(FormView form) {
     getHeaderView().addCommandItem(stageContainer);
     super.onLoad(form);
-  }
-
-  @Override
-  public void onSetActiveRow(IsRow row) {
-    Long objectId = row.getLong(getDataIndex(COL_OBJECT));
-
-    if (DataUtils.isId(objectId)) {
-      ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_OBJECT);
-      args.addDataItem(COL_OBJECT, objectId);
-
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(getFormView());
-
-          if (!response.hasErrors()) {
-            refreshObject(Specification.restore(response.getResponseAsString()));
-          }
-        }
-      });
-    } else {
-      refreshObject(null);
-    }
-    super.onSetActiveRow(row);
   }
 
   @Override
@@ -297,6 +179,176 @@ public class CarOrderForm extends PrintFormInterceptor implements StageFormInter
   }
 
   @Override
+  protected void buildSpecification() {
+    Global.choice(null, null, Arrays.asList(Localized.dictionary().specification(),
+        Localized.dictionary().template(), Localized.dictionary().car()), value -> {
+      switch (value) {
+        case 0:
+          new SpecificationBuilder(hasCar(getActiveRow()) ? null : getSpecification(), this);
+          break;
+
+        case 1:
+          GridFactory.openGrid(TBL_CONF_TEMPLATES, new AbstractGridInterceptor() {
+            @Override
+            public GridInterceptor getInstance() {
+              return null;
+            }
+
+            @Override
+            public boolean initDescription(GridDescription gridDescription) {
+              gridDescription.setReadOnly(true);
+              return super.initDescription(gridDescription);
+            }
+
+            @Override
+            public void onEditStart(EditStartEvent event) {
+              event.consume();
+              getGridPresenter().handleAction(Action.CLOSE);
+
+              Long obj = event.getRowValue().getLong(getGridView().getDataIndex(COL_OBJECT));
+
+              if (DataUtils.isId(obj)) {
+                ParameterList args = CarsKeeper.createSvcArgs(SVC_GET_OBJECT);
+                args.addDataItem(COL_OBJECT, obj);
+
+                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+                  @Override
+                  public void onResponse(ResponseObject response) {
+                    response.notify(getFormView());
+
+                    if (!response.hasErrors()) {
+                      new SpecificationBuilder(Specification
+                          .restore(response.getResponseAsString()), CarOrderForm.this);
+                    }
+                  }
+                });
+              } else {
+                new SpecificationBuilder(null, CarOrderForm.this);
+              }
+            }
+          }, null, ModalGrid.opener(80, CssUnit.PCT, 70, CssUnit.PCT));
+          break;
+
+        case 2:
+          FormView form = getFormView();
+          Long oldObject = form.getLongValue(COL_OBJECT);
+
+          GridFactory.openGrid(VIEW_CARS, new VehiclesGrid() {
+            @Override
+            public boolean initDescription(GridDescription gridDescription) {
+              gridDescription.setReadOnly(true);
+              return super.initDescription(gridDescription);
+            }
+
+            @Override
+            public void onEditStart(EditStartEvent event) {
+              event.consume();
+              getGridPresenter().handleAction(Action.CLOSE);
+
+              Map<String, String> updates = new HashMap<>();
+              updates.put(COL_CAR, BeeUtils.toString(event.getRowValue().getId()));
+
+              if (DataUtils.isId(oldObject)) {
+                updates.put(COL_OBJECT, null);
+              }
+              commit(form, updates, updatedRow -> {
+                if (DataUtils.isId(oldObject)) {
+                  Queries.deleteRow(TBL_CONF_OBJECTS, oldObject, new Queries.IntCallback() {
+                    @Override
+                    public void onSuccess(Integer cnt) {
+                      Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
+                    }
+                  });
+                }
+              });
+            }
+          }, null, ModalGrid.opener(80, CssUnit.PCT, 70, CssUnit.PCT));
+          break;
+      }
+    });
+  }
+
+  @Override
+  protected void commit(Specification specification) {
+    Map<Long, Integer> opts = new HashMap<>();
+    Holder<Integer> price = Holder.of(0);
+
+    if (Objects.nonNull(specification)) {
+      for (Option option : specification.getOptions()) {
+        opts.put(option.getId(), specification.getOptionPrice(option));
+      }
+      price.set(specification.getPrice());
+    }
+    Consumer<Integer> consumer = itemCount -> {
+      Map<String, String> updates = new HashMap<>();
+      updates.put(COL_OBJECT,
+          Objects.nonNull(specification) ? BeeUtils.toString(specification.getId()) : null);
+      updates.put(COL_TRADE_AMOUNT, BeeUtils.toString(price.get()));
+      updates.put(COL_CAR, null);
+
+      Long oldObject = getLongValue(COL_OBJECT);
+
+      commit(getFormView(), updates, updatedRow -> {
+        if (DataUtils.isId(oldObject)) {
+          Queries.deleteRow(TBL_CONF_OBJECTS, oldObject,
+              new Queries.IntCallback() {
+                @Override
+                public void onSuccess(Integer cnt) {
+                  Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
+                }
+              });
+        } else if (BeeUtils.isPositive(itemCount)) {
+          Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
+        }
+      });
+    };
+    if (opts.isEmpty()) {
+      consumer.accept(0);
+    } else {
+      Queries.getRowSet(TBL_CONF_OPTIONS, Collections.singletonList(COL_ITEM),
+          Filter.and(Filter.idIn(opts.keySet()), Filter.notNull(COL_ITEM)),
+          new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet res) {
+              BeeRowSet items = new BeeRowSet(TBL_CAR_ORDER_ITEMS,
+                  Data.getColumns(TBL_CAR_ORDER_ITEMS, Arrays.asList(COL_ORDER, COL_ITEM,
+                      COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_OBJECT)));
+
+              for (BeeRow item : res) {
+                Integer prc = opts.get(item.getId());
+                price.set(price.get() - BeeUtils.unbox(prc));
+
+                BeeRow row = items.addEmptyRow();
+                row.setValue(items.getColumnIndex(COL_ORDER), getActiveRowId());
+                row.setValue(items.getColumnIndex(COL_ITEM), item.getLong(0));
+                row.setValue(items.getColumnIndex(COL_TRADE_ITEM_QUANTITY), 1);
+                row.setValue(items.getColumnIndex(COL_TRADE_ITEM_PRICE), prc);
+                row.setValue(items.getColumnIndex(COL_OBJECT), specification.getId());
+              }
+              if (!DataUtils.isEmpty(items)) {
+                Queries.insertRows(items, new RpcCallback<RowInfoList>() {
+                  @Override
+                  public void onSuccess(RowInfoList result) {
+                    consumer.accept(result.size());
+                  }
+                });
+              } else {
+                consumer.accept(0);
+              }
+            }
+          });
+    }
+  }
+
+  @Override
+  protected Long getObjectId(IsRow row) {
+    if (Objects.nonNull(row) && hasCar(row)) {
+      return row.getLong(getDataIndex(COL_CAR + COL_OBJECT));
+    }
+    return super.getObjectId(row);
+  }
+
+  @Override
   protected ReportUtils.ReportCallback getReportCallback() {
     return new ReportUtils.ReportCallback() {
       @Override
@@ -336,13 +388,15 @@ public class CarOrderForm extends PrintFormInterceptor implements StageFormInter
     super.getReportParameters(defaultParameters ->
         ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
           defaultParameters.putAll(companiesInfo);
+          Specification specification = getSpecification();
 
-          if (objectSpecification != null) {
+          if (specification != null) {
+            defaultParameters.put(COL_DESCRIPTION, specification.getDescription());
             defaultParameters.put(TBL_CONF_OBJECT_OPTIONS,
-                objectSpecification.renderSummary(false).toString());
+                specification.renderSummary(false).toString());
 
-            for (int i = 0; i < objectSpecification.getPhotos().size(); i++) {
-              Long photo = objectSpecification.getPhotos().get(i);
+            for (int i = 0; i < specification.getPhotos().size(); i++) {
+              Long photo = specification.getPhotos().get(i);
 
               if (DataUtils.isId(photo)) {
                 defaultParameters.put(COL_PHOTO + i, BeeUtils.toString(photo));
@@ -353,38 +407,35 @@ public class CarOrderForm extends PrintFormInterceptor implements StageFormInter
         }));
   }
 
-  private void createObject() {
-    if (!getFormView().isEnabled()) {
+  private void buildCar() {
+    if (!getFormView().isEnabled()){
       return;
     }
-    if (DataUtils.isId(getActiveRowId())) {
-      new SpecificationBuilder(objectSpecification, this);
-    } else {
-      FormView form = getFormView();
+    Long obj = getLongValue(COL_OBJECT);
 
-      if (form.getViewPresenter() instanceof ParentRowCreator) {
-        ((ParentRowCreator) form.getViewPresenter()).createParentRow(form, result ->
-            new SpecificationBuilder(null, CarOrderForm.this));
-      }
-    }
-  }
+    DataInfo info = Data.getDataInfo(VIEW_CARS);
+    BeeRow car = RowFactory.createEmptyRow(info, true);
+    car.setValue(info.getColumnIndex(COL_OBJECT), obj);
 
-  private void refreshObject(Specification specification) {
-    objectSpecification = specification;
+    RowFactory.createRow(info, car, Modality.ENABLED, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow newCar) {
 
-    if (objectContainer != null) {
-      objectContainer.clear();
+        Map<String, String> updates = new HashMap<>();
+        updates.put(COL_OBJECT, null);
+        updates.put(COL_CAR, BeeUtils.toString(newCar.getId()));
 
-      if (objectSpecification != null) {
-        objectContainer.add(objectSpecification.renderSummary(false));
-
-        objectSpecification.getPhotos().stream().filter(DataUtils::isId).forEach(photo -> {
-          Flow thumbnail = new Flow(SpecificationBuilder.STYLE_THUMBNAIL);
-          thumbnail.addStyleName(StyleUtils.NAME_FLEXIBLE);
-          thumbnail.add(new Image(FileUtils.getUrl(photo)));
-          objectContainer.insert(thumbnail, objectContainer.getWidgetCount() - 1);
+        commit(getFormView(), updates, updatedRow -> {
+          if (DataUtils.isId(obj)) {
+            Queries.update(TBL_CAR_ORDER_ITEMS, Filter.equals(COL_OBJECT, obj), COL_OBJECT,
+                (String) null, null);
+          }
         });
       }
-    }
+    });
+  }
+
+  private boolean hasCar(IsRow row) {
+    return DataUtils.isId(row.getLong(getDataIndex(COL_CAR)));
   }
 }

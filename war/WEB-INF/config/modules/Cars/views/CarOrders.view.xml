@@ -66,10 +66,20 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="Object" />
-    <SimpleJoin name="Object" joinType="LEFT">
-      <SimpleColumn name="Description" />
+    <SimpleColumn name="Car" />
+    <SimpleJoin name="Car" joinType="LEFT">
+      <SimpleJoin name="Model" joinType="LEFT">
+        <SimpleJoin name="Parent" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ParentModelName" />
+        </SimpleJoin>
+        <SimpleColumn name="Name" alias="ModelName" />
+      </SimpleJoin>
+      <SimpleColumn name="Number" alias="CarNumber" />
+      <SimpleColumn name="BodyNumber" />
+      <SimpleColumn name="Object" alias="CarObject" />
     </SimpleJoin>
+
+    <SimpleColumn name="Object" />
 
     <SimpleColumn name="Amount" />
     <SimpleColumn name="Currency" />
