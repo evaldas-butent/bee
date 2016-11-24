@@ -49,6 +49,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
@@ -110,6 +111,14 @@ class ShipmentRequestForm extends PrintFormInterceptor {
   private static final String NAME_VALUE_LABEL = "ValueLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
 
+  private static final String STYLE_PREFIX = "bee-tr-";
+  private static final String STYLE_INPUT_MODE_FULL = STYLE_PREFIX + "input-mode-full";
+  private static final String STYLE_INPUT_MODE_PARTIAL = STYLE_PREFIX + "input-mode-partial";
+  private static final String STYLE_INPUT_MODE_TOGGLE = STYLE_PREFIX + "input-mode-toggle";
+  private static final String STYLE_INPUT_MODE_ACTIVE = STYLE_PREFIX + "input-mode-active";
+
+  private Flow container;
+
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
     if (BeeUtils.same(editableWidget.getColumnId(), COL_QUERY_FREIGHT_INSURANCE)) {
@@ -141,12 +150,23 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
         Global.showModalWidget(container);
       });
+    } else if (BeeUtils.same(name, COL_CARGO_PARTIAL + "Toggle") && widget instanceof Flow) {
+      container = (Flow) widget;
+      container.addClickHandler(clickEvent -> {
+        if (getFormView().isEnabled()) {
+          getActiveRow().setValue(Data.getColumnIndex(VIEW_SHIPMENT_REQUESTS, COL_CARGO_PARTIAL),
+              !BeeUtils.unbox(getFormView().getBooleanValue(COL_CARGO_PARTIAL)));
+        }
+        renderInputMode();
+      });
     }
     super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    renderInputMode();
+
     HeaderView header = getHeaderView();
 
     if (header == null) {
@@ -850,7 +870,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       }
     });
     HtmlTable layout = new HtmlTable();
-    layout.setText(0, 0, loc.reason());
+    layout.setText(0, 0, loc.reason(), StyleUtils.NAME_REQUIRED);
     layout.setWidget(0, 1, reason);
     layout.getCellFormatter().setColSpan(1, 0, 2);
     layout.setText(1, 0, loc.comment());
@@ -860,7 +880,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
     Global.inputWidget(ShipmentRequestStatus.LOST.getCaption(loc), layout, new InputCallback() {
       @Override
       public String getErrorMessage() {
-        if (required && (BeeUtils.allEmpty(reason.getDisplayValue(), comment.getValue())
+        if (required && (BeeUtils.isEmpty(reason.getDisplayValue())
             || BeeUtils.allNotEmpty(reason.getDisplayValue(), comment.getValue())
             && Objects.equals(comment.getValue(), Strings.nullToEmpty(reason.getOptions())))) {
 
@@ -939,6 +959,33 @@ class ShipmentRequestForm extends PrintFormInterceptor {
     } else {
       doRegister(messages);
     }
+  }
+
+  private void renderInputMode() {
+    if (container == null) {
+      return;
+    }
+
+    Toggle inputMode = new Toggle(FontAwesome.TOGGLE_OFF, FontAwesome.TOGGLE_ON,
+        STYLE_INPUT_MODE_TOGGLE, BeeUtils.unbox(getFormView().getBooleanValue(COL_CARGO_PARTIAL)));
+
+    container.clear();
+
+    Label full = new Label(Localized.dictionary().full());
+    full.addStyleName(STYLE_INPUT_MODE_FULL);
+
+    Label partial = new Label(Localized.dictionary().partial());
+    partial.addStyleName(STYLE_INPUT_MODE_PARTIAL);
+
+    if (inputMode.isChecked()) {
+      partial.addStyleName(STYLE_INPUT_MODE_ACTIVE);
+    } else {
+      full.addStyleName(STYLE_INPUT_MODE_ACTIVE);
+    }
+
+    container.add(full);
+    container.add(inputMode);
+    container.add(partial);
   }
 
   private void renderOrderId() {

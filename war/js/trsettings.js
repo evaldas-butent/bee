@@ -5,5 +5,9 @@ var BeeSettings = {
       "default": "SimpleUserPanel",
       "showUserPhoto": false,
       "showUserPresence": false,
-      "showLogout": true}
+      "showLogout": true},
+  "theme": {
+      "GridActionCreateNew": true,
+      "ChildActionCreateNew": true
+  }
 };
