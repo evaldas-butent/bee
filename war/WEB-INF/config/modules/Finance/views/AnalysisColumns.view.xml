@@ -28,6 +28,19 @@
     <SimpleColumn name="ColumnIsPercent" />
     <SimpleColumn name="ColumnScale" />
 
+    <SimpleColumn name="ColumnSplit01" />
+    <SimpleColumn name="ColumnSplit02" />
+    <SimpleColumn name="ColumnSplit03" />
+    <SimpleColumn name="ColumnSplit04" />
+    <SimpleColumn name="ColumnSplit05" />
+    <SimpleColumn name="ColumnSplit06" />
+    <SimpleColumn name="ColumnSplit07" />
+    <SimpleColumn name="ColumnSplit08" />
+    <SimpleColumn name="ColumnSplit09" />
+    <SimpleColumn name="ColumnSplit10" />
+
+    <SimpleColumn name="ColumnTotal" />
+
     <SimpleColumn name="Note" />
 
     <SimpleColumn name="Background" />

@@ -2743,6 +2743,8 @@ public interface Dictionary {
 
   default String finAnalysisColumnNew() {return g("finAnalysisColumnNew");}
 
+  default String finAnalysisColumnSplitLevels() {return g("finAnalysisColumnSplitLevels");}
+
   default String finAnalysisColumns() {return g("finAnalysisColumns");}
 
   default String finAnalysisFilterExtra() {return g("finAnalysisFilterExtra");}
@@ -2769,6 +2771,8 @@ public interface Dictionary {
 
   default String finAnalysisRowNew() {return g("finAnalysisRowNew");}
 
+  default String finAnalysisRowSplitLevels() {return g("finAnalysisRowSplitLevels");}
+
   default String finAnalysisRows() {return g("finAnalysisRows");}
 
   default String finAnalysisScale() {return g("finAnalysisScale");}
@@ -2790,6 +2794,14 @@ public interface Dictionary {
   }
 
   default String finAnalysisShowRowEmployee() {return g("finAnalysisShowRowEmployee");}
+
+  default String finAnalysisShowTotal() {return g("finAnalysisShowTotal");}
+
+  default String finAnalysisSplit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finAnalysisSplit"), _m);
+  }
 
   default String finBudget() {return g("finBudget");}
 

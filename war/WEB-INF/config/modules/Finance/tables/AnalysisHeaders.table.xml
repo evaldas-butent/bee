@@ -35,6 +35,8 @@
 
     <Boolean name="ColumnEmployee" label="=finAnalysisShowColumnEmployee" />
 
+    <Integer name="ColumnSplitLevels" label="=finAnalysisColumnSplitLevels" defValue="1" />
+
     <Boolean name="RowDim01" />
     <Boolean name="RowDim02" />
     <Boolean name="RowDim03" />
@@ -47,6 +49,8 @@
     <Boolean name="RowDim10" />
 
     <Boolean name="RowEmployee" label="=finAnalysisShowRowEmployee" />
+
+    <Integer name="RowSplitLevels" label="=finAnalysisRowSplitLevels" />
 
     <Text name="Description" label="=description" />
 

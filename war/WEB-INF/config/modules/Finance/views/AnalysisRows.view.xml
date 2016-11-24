@@ -23,6 +23,19 @@
     <SimpleColumn name="RowIsPercent" />
     <SimpleColumn name="RowScale" />
 
+    <SimpleColumn name="RowSplit01" />
+    <SimpleColumn name="RowSplit02" />
+    <SimpleColumn name="RowSplit03" />
+    <SimpleColumn name="RowSplit04" />
+    <SimpleColumn name="RowSplit05" />
+    <SimpleColumn name="RowSplit06" />
+    <SimpleColumn name="RowSplit07" />
+    <SimpleColumn name="RowSplit08" />
+    <SimpleColumn name="RowSplit09" />
+    <SimpleColumn name="RowSplit10" />
+
+    <SimpleColumn name="RowTotal" />
+
     <SimpleColumn name="Note" />
 
     <SimpleColumn name="Background" />

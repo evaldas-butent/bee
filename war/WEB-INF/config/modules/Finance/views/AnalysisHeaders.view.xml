@@ -33,6 +33,8 @@
 
     <SimpleColumn name="ColumnEmployee" />
 
+    <SimpleColumn name="ColumnSplitLevels" />
+
     <SimpleColumn name="RowDim01" />
     <SimpleColumn name="RowDim02" />
     <SimpleColumn name="RowDim03" />
@@ -45,6 +47,8 @@
     <SimpleColumn name="RowDim10" />
 
     <SimpleColumn name="RowEmployee" />
+
+    <SimpleColumn name="RowSplitLevels" />
 
     <SimpleColumn name="Description" />
 

@@ -30,6 +30,19 @@
     <Boolean name="ColumnIsPercent" label="=percent" />
     <Integer name="ColumnScale" label="=finAnalysisScale" />
 
+    <String name="ColumnSplit01" precision="20" />
+    <String name="ColumnSplit02" precision="20" />
+    <String name="ColumnSplit03" precision="20" />
+    <String name="ColumnSplit04" precision="20" />
+    <String name="ColumnSplit05" precision="20" />
+    <String name="ColumnSplit06" precision="20" />
+    <String name="ColumnSplit07" precision="20" />
+    <String name="ColumnSplit08" precision="20" />
+    <String name="ColumnSplit09" precision="20" />
+    <String name="ColumnSplit10" precision="20" />
+
+    <Boolean name="ColumnTotal" label="=finAnalysisShowTotal" />
+
     <String name="Note" precision="100" label="=note" />
 
     <String name="Background" precision="100" label="=backgroundColor" />

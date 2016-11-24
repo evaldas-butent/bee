@@ -115,6 +115,15 @@ public final class FinanceKeeper {
       Localized.setColumnLabel(colBudgetEntryValue(month), Format.properMonthFull(month));
     }
 
+    for (int i = 0; i < COL_ANALYSIS_COLUMN_SPLIT.length; i++) {
+      Localized.setColumnLabel(COL_ANALYSIS_COLUMN_SPLIT[i],
+          Localized.dictionary().finAnalysisSplit(i + 1));
+    }
+    for (int i = 0; i < COL_ANALYSIS_ROW_SPLIT.length; i++) {
+      Localized.setColumnLabel(COL_ANALYSIS_ROW_SPLIT[i],
+          Localized.dictionary().finAnalysisSplit(i + 1));
+    }
+
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_INDICATORS_PRIMARY,
         new FinancialIndicatorsGrid(IndicatorKind.PRIMARY));
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_INDICATORS_SECONDARY,

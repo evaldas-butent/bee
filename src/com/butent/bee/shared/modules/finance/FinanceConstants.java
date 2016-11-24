@@ -134,6 +134,15 @@ public final class FinanceConstants {
       "RowDim06", "RowDim07", "RowDim08", "RowDim09", "RowDim10"
   };
 
+  public static final String[] COL_ANALYSIS_COLUMN_SPLIT = new String[] {
+      "ColumnSplit01", "ColumnSplit02", "ColumnSplit03", "ColumnSplit04", "ColumnSplit05",
+      "ColumnSplit06", "ColumnSplit07", "ColumnSplit08", "ColumnSplit09", "ColumnSplit10"
+  };
+  public static final String[] COL_ANALYSIS_ROW_SPLIT = new String[] {
+      "RowSplit01", "RowSplit02", "RowSplit03", "RowSplit04", "RowSplit05",
+      "RowSplit06", "RowSplit07", "RowSplit08", "RowSplit09", "RowSplit10"
+  };
+
   public static final String ALS_JOURNAL_BACKGROUND = "JournalBackground";
   public static final String ALS_JOURNAL_FOREGROUND = "JournalForeground";
 
