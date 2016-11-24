@@ -13,6 +13,8 @@
     <String name="RowName" precision="100" translatable="true" label="=finAnalysisRowName" />
     <String name="RowAbbreviation" precision="20" label="=finAnalysisRowAbbreviation" />
 
+    <String name="RowValues" precision="20" label="=finAnalysisValues" />
+
     <Relation name="Indicator" relation="FinancialIndicators" label="=finIndicator" />
     <Relation name="BudgetType" relation="BudgetTypes" label="=finBudgetType" />
 

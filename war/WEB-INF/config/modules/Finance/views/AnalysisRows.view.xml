@@ -12,6 +12,8 @@
     <SimpleColumn name="RowName" />
     <SimpleColumn name="RowAbbreviation" />
 
+    <SimpleColumn name="RowValues" />
+
     <xi:include href="viewcolumns/Indicator.viewcolumns.xml" />
     <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
 

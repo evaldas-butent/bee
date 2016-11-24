@@ -6,24 +6,24 @@ import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum AnalysisSplit implements HasLocalizedCaption {
-  YEAR(Type.PERIOD) {
+  MONTH(Type.PERIOD, 1) {
     @Override
     public String getCaption(Dictionary dictionary) {
-      return dictionary.year();
+      return dictionary.month();
     }
   },
 
-  QUARTER(Type.PERIOD) {
+  QUARTER(Type.PERIOD, 3) {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.quarter();
     }
   },
 
-  MONTH(Type.PERIOD) {
+  YEAR(Type.PERIOD, 12) {
     @Override
     public String getCaption(Dictionary dictionary) {
-      return dictionary.month();
+      return dictionary.year();
     }
   },
 
@@ -46,7 +46,17 @@ public enum AnalysisSplit implements HasLocalizedCaption {
   DIMENSION_10(Type.DIMENSION, 10);
 
   private enum Type {
-    PERIOD, FILTER, DIMENSION
+    PERIOD(true, false),
+    FILTER(true, true),
+    DIMENSION(true, true);
+
+    private final boolean columns;
+    private final boolean rows;
+
+    Type(boolean columns, boolean rows) {
+      this.columns = columns;
+      this.rows = rows;
+    }
   }
 
   private final Type type;
@@ -67,6 +77,30 @@ public enum AnalysisSplit implements HasLocalizedCaption {
       return Dimensions.singular(index);
     } else {
       return null;
+    }
+  }
+
+  public boolean visibleForColumns() {
+    if (type.columns) {
+      if (type == Type.DIMENSION) {
+        return Dimensions.isObserved(index);
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  public boolean visibleForRows() {
+    if (type.rows) {
+      if (type == Type.DIMENSION) {
+        return Dimensions.isObserved(index);
+      } else {
+        return true;
+      }
+    } else {
+      return false;
     }
   }
 }

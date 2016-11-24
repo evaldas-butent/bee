@@ -2803,6 +2803,16 @@ public interface Dictionary {
     return Localized.format(g("finAnalysisSplit"), _m);
   }
 
+  default String finAnalysisValueActual() {return g("finAnalysisValueActual");}
+
+  default String finAnalysisValueBudget() {return g("finAnalysisValueBudget");}
+
+  default String finAnalysisValueDifference() {return g("finAnalysisValueDifference");}
+
+  default String finAnalysisValuePercentage() {return g("finAnalysisValuePercentage");}
+
+  default String finAnalysisValues() {return g("finAnalysisValues");}
+
   default String finBudget() {return g("finBudget");}
 
   default String finBudgetEntries() {return g("finBudgetEntries");}
