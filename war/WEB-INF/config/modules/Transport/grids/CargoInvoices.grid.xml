@@ -42,6 +42,8 @@
     <DataColumn name="SentDate" />
     <DataColumn name="OtherDate" />
     <RelColumn name="Creator" readOnly="true" />
+
+    <DataColumn name="Attribute"/>
   </g:columns>
 
   <g:rowStyle>
