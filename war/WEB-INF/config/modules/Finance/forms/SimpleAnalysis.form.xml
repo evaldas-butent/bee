@@ -151,6 +151,11 @@
         </SimplePanel>
       </page>
 
+      <page>
+        <text>=filters</text>
+        <ChildGrid name="AnalysisFilters" relColumn="AnalysisHeader" />
+      </page>
+
       <page for="Description">
         <text>=description</text>
         <SimplePanel>
