@@ -302,6 +302,9 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
         int emptyKmIndex = grid.getDataIndex(COL_EMPTY_KILOMETERS);
         int loadedKmIndex = grid.getDataIndex(COL_LOADED_KILOMETERS);
 
+        int unplannedManagerKmIndex = grid.getDataIndex(COL_UNPLANNED_MANAGER_KM);
+        int unplannedDriverKmIndex = grid.getDataIndex(COL_UNPLANNED_DRIVER_KM);
+
         for (IsRow childRow : childRows) {
           Integer v = childRow.getInteger(emptyKmIndex);
           if (v != null) {
@@ -313,6 +316,24 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           }
 
           v = childRow.getInteger(loadedKmIndex);
+          if (v != null) {
+            if (loadedKm == null) {
+              loadedKm = v;
+            } else {
+              loadedKm += v;
+            }
+          }
+
+          v = childRow.getInteger(unplannedManagerKmIndex);
+          if (v != null) {
+            if (loadedKm == null) {
+              loadedKm = v;
+            } else {
+              loadedKm += v;
+            }
+          }
+
+          v = childRow.getInteger(unplannedDriverKmIndex);
           if (v != null) {
             if (loadedKm == null) {
               loadedKm = v;
