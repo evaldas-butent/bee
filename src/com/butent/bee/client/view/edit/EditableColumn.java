@@ -150,55 +150,59 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     return cellValidationBus.addCellValidationHandler(handler);
   }
 
-  public Editor createEditor(boolean embedded, EditorConsumer consumer) {
-    Editor result;
+  public Editor createEditor(boolean embedded, EditorBuilder editorBuilder) {
+    Editor result = (editorBuilder == null)
+        ? null : editorBuilder.maybeCreateEditor(getColumnId(), getEditorDescription(), embedded);
 
-    String format = null;
-    if (getEditorDescription() != null) {
-      result = EditorFactory.createEditor(getEditorDescription(), getDataColumn(),
-          getEnumKey(), getDataType(), getRelation(), embedded);
-      format = getEditorDescription().getFormat();
+    if (result == null) {
+      String format = null;
 
-    } else if (getRelation() != null) {
-      if (BeeUtils.containsKey(getRelation().getAttributes(), "viewColumn")) {
-        result = Autocomplete.create(getRelation(), embedded);
+      if (getEditorDescription() != null) {
+        result = EditorFactory.createEditor(getEditorDescription(), getDataColumn(),
+            getEnumKey(), getDataType(), getRelation(), embedded);
+        format = getEditorDescription().getFormat();
+
+      } else if (getRelation() != null) {
+        if (BeeUtils.containsKey(getRelation().getAttributes(), "viewColumn")) {
+          result = Autocomplete.create(getRelation(), embedded);
+        } else {
+          result = new DataSelector(getRelation(), embedded);
+        }
+
+      } else if (!BeeUtils.isEmpty(getEnumKey())) {
+        result = new ListBox();
+        ((ListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));
+        if (result instanceof AcceptsCaptions) {
+          ((AcceptsCaptions) result).setCaptions(getEnumKey());
+        }
+
+      } else if (embedded && ValueType.isBoolean(getDataType())) {
+        result = new InputBoolean(null);
+
       } else {
-        result = new DataSelector(getRelation(), embedded);
+        result = EditorFactory.createEditor(getDataColumn(), getDataColumn().isText());
       }
 
-    } else if (!BeeUtils.isEmpty(getEnumKey())) {
-      result = new ListBox();
-      ((ListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));
-      if (result instanceof AcceptsCaptions) {
-        ((AcceptsCaptions) result).setCaptions(getEnumKey());
+      if (BeeUtils.isEmpty(format)) {
+        if (getUiColumn() instanceof HasDateTimeFormat) {
+          LocaleUtils.copyDateTimeFormat(getUiColumn(), result);
+        }
+        if (getUiColumn() instanceof HasNumberFormat) {
+          LocaleUtils.copyNumberFormat(getUiColumn(), result);
+        }
+      } else {
+        Format.setFormat(result, getDataType(), format);
       }
-
-    } else if (embedded && ValueType.isBoolean(getDataType())) {
-      result = new InputBoolean(null);
-
-    } else {
-      result = EditorFactory.createEditor(getDataColumn(), getDataColumn().isText());
     }
 
     result.setNullable(isNullable());
-
-    if (BeeUtils.isEmpty(format)) {
-      if (getUiColumn() instanceof HasDateTimeFormat) {
-        LocaleUtils.copyDateTimeFormat(getUiColumn(), result);
-      }
-      if (getUiColumn() instanceof HasNumberFormat) {
-        LocaleUtils.copyNumberFormat(getUiColumn(), result);
-      }
-    } else {
-      Format.setFormat(result, getDataType(), format);
-    }
 
     if (result instanceof HasBounds) {
       UiHelper.setBounds((HasBounds) result, getMinValue(), getMaxValue());
     }
 
-    if (consumer != null) {
-      consumer.afterCreateEditor(getColumnId(), result, embedded);
+    if (editorBuilder != null) {
+      editorBuilder.afterCreateEditor(getColumnId(), result, embedded);
     }
 
     return result;
@@ -471,7 +475,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     endEdit(KeyCodes.KEY_TAB, false);
   }
 
-  public void openEditor(HasWidgets editorContainer, EditorConsumer editorConsumer,
+  public void openEditor(HasWidgets editorContainer, EditorBuilder editorBuilder,
       Element sourceElement, Element adjustElement, int zIndex, IsRow row, char charCode,
       EditEndEvent.Handler handler) {
 
@@ -481,7 +485,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     setRowValue(row);
     setState(State.OPEN);
 
-    ensureEditor(editorContainer, editorConsumer);
+    ensureEditor(editorContainer, editorBuilder);
     Element editorElement = getEditor().asWidget().getElement();
 
     if (sourceElement != null) {
@@ -685,11 +689,11 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     return false;
   }
 
-  private void ensureEditor(HasWidgets editorContainer, EditorConsumer editorConsumer) {
+  private void ensureEditor(HasWidgets editorContainer, EditorBuilder editorBuilder) {
     if (getEditor() != null) {
       return;
     }
-    setEditor(createEditor(false, editorConsumer));
+    setEditor(createEditor(false, editorBuilder));
 
     getEditor().asWidget().addStyleName(STYLE_EDITOR);
     bindEditor();

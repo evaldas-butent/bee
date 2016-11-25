@@ -45,6 +45,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
 
@@ -393,6 +394,12 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public boolean isRowEditable(IsRow row) {
     return row != null && row.isEditable();
+  }
+
+  @Override
+  public Editor maybeCreateEditor(String source, EditorDescription editorDescription,
+      boolean embedded) {
+    return null;
   }
 
   @Override
