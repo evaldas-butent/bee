@@ -27,4 +27,10 @@
   <DataColumn name="Contact" />
   <DataColumn name="Number" />
   <DataColumn name="Note" />
+
+  <DataColumn name="CargoWeight" />
+  <DataColumn name="LoadedKilometers" />
+  <DataColumn name="EmptyKilometers" />
+  <DataColumn name="UnplannedManagerKm" />
+  <DataColumn name="UnplannedDriverKm" />
 </g:columns>
