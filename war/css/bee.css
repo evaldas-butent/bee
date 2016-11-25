@@ -2318,6 +2318,10 @@
   font-size: inherit;
 }
 
+.bee-TextBox.bee-InputSpinner {
+  padding-right: initial;
+}
+
 .bee-Label-withColon:after {
   content: ': '
 }
