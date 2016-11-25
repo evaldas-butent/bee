@@ -4,6 +4,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="AnalysisHeaders" viewName="AnalysisHeaders" caption="=finAnalysisForms"
+        editForm="SimpleAnalysis" newRowForm="SimpleAnalysis"
 >
   <xi:include href="columns/Ordinal.columns.xml" />
 

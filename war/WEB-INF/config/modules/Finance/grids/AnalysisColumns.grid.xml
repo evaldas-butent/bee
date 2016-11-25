@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="AnalysisColumns" viewName="AnalysisColumns"
+>
+  <xi:include href="columns/Ordinal.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="ColumnName" minWidth="80" flexGrow="1" visible="true" />
+    <DataColumn name="ColumnAbbreviation" />
+
+    <DataColumn name="ColumnValues" />
+  </g:columns>
+
+  <xi:include href="columns/Indicator.columns.xml" />
+  <xi:include href="columns/BudgetType.columns.xml" />
+
+  <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
+  <xi:include href="columns/Employee.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="YearFrom" format="0000" />
+    <DataColumn name="MonthFrom" />
+    <DataColumn name="YearUntil" format="0000" />
+    <DataColumn name="MonthUntil" />
+
+    <DataColumn name="ColumnScript" flexGrow="1" />
+
+    <DataColumn name="ColumnIsPercent" />
+    <DataColumn name="ColumnScale" minValue="0" maxValue="5" />
+
+    <DataColumn name="ColumnSplit01" />
+    <DataColumn name="ColumnSplit02" />
+    <DataColumn name="ColumnSplit03" />
+    <DataColumn name="ColumnSplit04" />
+    <DataColumn name="ColumnSplit05" />
+    <DataColumn name="ColumnSplit06" />
+    <DataColumn name="ColumnSplit07" />
+    <DataColumn name="ColumnSplit08" />
+    <DataColumn name="ColumnSplit09" />
+    <DataColumn name="ColumnSplit10" />
+
+    <DataColumn name="ColumnTotal" />
+
+    <DataColumn name="Note" flexGrow="1" visible="false" />
+
+    <DataColumn name="Background" updateMode="row" minWidth="100" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row" minWidth="100" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+
+    <DataColumn name="ColumnStyle" flexGrow="1" visible="false" />
+  </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.ColumnName</ui:expression>
+  </g:rowMessage>
+</g:Grid>

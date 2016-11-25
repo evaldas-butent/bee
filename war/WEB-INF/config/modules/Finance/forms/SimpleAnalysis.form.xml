@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY styear "width: 4rem;">
+    <!ENTITY stmonth "margin-left: 1rem; width: 3rem;">
+    <!ENTITY stinp "width: 15rem;">
+    <!ENTITY stcdim "margin-left: 10px;">
+    <!ENTITY stlvl "margin-left: 0.5rem; width: 3rem;">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="SimpleAnalysis" viewName="AnalysisHeaders"
+        caption="=finAnalysisForm"
+        width="80" widthUnit="vw" height="80" heightUnit="vh"
+>
+  <FlowPanel class="flexBox-vertical">
+    <SimplePanel style="margin-left: 1rem; margin-bottom: 1rem;">
+      <Table kind="controls">
+        <col index="0" kind="label" />
+        <col index="2" kind="label" />
+
+        <row>
+          <Label for="AnalysisName" text="=name" />
+          <cell colSpan="3">
+            <InputText source="AnalysisName" style="width: 100%;"
+                       backgroundSource="Background" foregroundSource="Foreground" />
+          </cell>
+        </row>
+
+        <row>
+          <Label text="=startingYearMonth" />
+          <FlowPanel>
+            <InputInteger source="YearFrom" style="&styear;" minValue="2000" maxValue="2099"
+                          format="0000" />
+            <InputInteger source="MonthFrom" style="&stmonth;" minValue="1" maxValue="12" />
+          </FlowPanel>
+
+          <Label text="=endingYearMonth" style="margin-left: 4vw;" />
+          <FlowPanel>
+            <InputInteger source="YearUntil" style="&styear;" minValue="2000" maxValue="2099"
+                          format="0000" />
+            <InputInteger source="MonthUntil" style="&stmonth;" minValue="1" maxValue="12" />
+          </FlowPanel>
+        </row>
+      </Table>
+    </SimplePanel>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=columns</text>
+        <FlowPanel class="flexBox-vertical">
+          <FlowPanel style="margin: 10px;">
+            <CheckBox name="ColumnDim01" source="ColumnDim01" style="&stcdim;" />
+            <CheckBox name="ColumnDim02" source="ColumnDim02" style="&stcdim;" />
+            <CheckBox name="ColumnDim03" source="ColumnDim03" style="&stcdim;" />
+            <CheckBox name="ColumnDim04" source="ColumnDim04" style="&stcdim;" />
+            <CheckBox name="ColumnDim05" source="ColumnDim05" style="&stcdim;" />
+            <CheckBox name="ColumnDim06" source="ColumnDim06" style="&stcdim;" />
+            <CheckBox name="ColumnDim07" source="ColumnDim07" style="&stcdim;" />
+            <CheckBox name="ColumnDim08" source="ColumnDim08" style="&stcdim;" />
+            <CheckBox name="ColumnDim09" source="ColumnDim09" style="&stcdim;" />
+            <CheckBox name="ColumnDim10" source="ColumnDim10" style="&stcdim;" />
+
+            <CheckBox source="ColumnEmployee" text="=employee" style="margin-left: 2rem;" />
+
+            <InlineLabel text="=finAnalysisSplitLevels" style="margin-left: 2rem;" />
+            <InputSpinner source="ColumnSplitLevels" minValue="0" maxValue="10" style="&stlvl;" />
+          </FlowPanel>
+
+          <ChildGrid name="AnalysisColumns" relColumn="AnalysisHeader" class="flexible" />
+        </FlowPanel>
+      </page>
+
+      <page>
+        <text>=rows</text>
+        <FlowPanel class="flexBox-vertical">
+          <FlowPanel style="margin: 10px;">
+            <CheckBox name="RowDim01" source="RowDim01" style="&stcdim;" />
+            <CheckBox name="RowDim02" source="RowDim02" style="&stcdim;" />
+            <CheckBox name="RowDim03" source="RowDim03" style="&stcdim;" />
+            <CheckBox name="RowDim04" source="RowDim04" style="&stcdim;" />
+            <CheckBox name="RowDim05" source="RowDim05" style="&stcdim;" />
+            <CheckBox name="RowDim06" source="RowDim06" style="&stcdim;" />
+            <CheckBox name="RowDim07" source="RowDim07" style="&stcdim;" />
+            <CheckBox name="RowDim08" source="RowDim08" style="&stcdim;" />
+            <CheckBox name="RowDim09" source="RowDim09" style="&stcdim;" />
+            <CheckBox name="RowDim10" source="RowDim10" style="&stcdim;" />
+
+            <CheckBox source="RowEmployee" text="=employee" style="margin-left: 2rem;" />
+
+            <InlineLabel text="=finAnalysisSplitLevels" style="margin-left: 2rem;" />
+            <InputSpinner source="RowSplitLevels" minValue="0" maxValue="10" style="&stlvl;" />
+          </FlowPanel>
+
+          <ChildGrid name="AnalysisRows" relColumn="AnalysisHeader" class="flexible" />
+        </FlowPanel>
+      </page>
+
+      <page>
+        <text>=dimensions</text>
+        <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
+      </page>
+
+      <page>
+        <text>=additionalInfo</text>
+        <SimplePanel>
+          <Table kind="controls" style="margin-left: 1rem;">
+            <col index="0" kind="label" />
+            <col index="2" kind="label" />
+
+            <row>
+              <Label for="Ordinal" />
+              <InputInteger source="Ordinal" style="width: 4rem;" summarize="true" />
+            </row>
+
+            <row>
+              <Label for="Indicator" />
+              <DataSelector source="Indicator" style="&stinp;" renderColumns="IndicatorName"
+                            choiceColumns="IndicatorName IndicatorAbbreviation"
+                            newRowEnabled="false" summarize="true"
+                            backgroundSource="IndicatorBackground"
+                            foregroundSource="IndicatorForeground" />
+              <Label for="BudgetType" />
+              <DataSelector source="BudgetType" style="&stinp;" renderColumns="BudgetTypeName"
+                            choiceColumns="BudgetTypeName" newRowEnabled="false" summarize="true"
+                            backgroundSource="BudgetTypeBackground"
+                            foregroundSource="BudgetTypeForeground" />
+
+            </row>
+
+            <row>
+              <Label for="Employee" />
+              <cell colSpan="3">
+                <DataSelector source="Employee" style="width: 100%;"
+                              renderColumns="EmployeeFirstName EmployeeLastName EmployeeTabNumber"
+                              choiceColumns="FirstName LastName" newRowEnabled="false"
+                              summarize="true" />
+              </cell>
+            </row>
+
+            <row>
+              <Label for="Background" />
+              <ColorEditor source="Background" style="&stinp;" summarize="true"
+                           backgroundSource="Background" foregroundSource="Foreground" />
+
+              <Label for="Foreground" />
+              <ColorEditor source="Foreground" style="&stinp;" summarize="true"
+                           backgroundSource="Background" foregroundSource="Foreground" />
+            </row>
+          </Table>
+        </SimplePanel>
+      </page>
+
+      <page for="Description">
+        <text>=description</text>
+        <SimplePanel>
+          <InputArea source="Description" class="occupy-1" summarize="true" />
+        </SimplePanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>  

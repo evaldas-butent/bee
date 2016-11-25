@@ -2526,6 +2526,8 @@ public interface Dictionary {
 
   default String endingYear() {return g("endingYear");}
 
+  default String endingYearMonth() {return g("endingYearMonth");}
+
   default String enterColor() {return g("enterColor");}
 
   default String enterDate() {return g("enterDate");}
@@ -2802,6 +2804,8 @@ public interface Dictionary {
     _m.put("{0}", p0);
     return Localized.format(g("finAnalysisSplit"), _m);
   }
+
+  default String finAnalysisSplitLevels() {return g("finAnalysisSplitLevels");}
 
   default String finAnalysisValueActual() {return g("finAnalysisValueActual");}
 
@@ -4901,6 +4905,8 @@ public interface Dictionary {
   default String startingTime() {return g("startingTime");}
 
   default String startingYear() {return g("startingYear");}
+
+  default String startingYearMonth() {return g("startingYearMonth");}
 
   default String stateVisible() {return g("stateVisible");}
 
