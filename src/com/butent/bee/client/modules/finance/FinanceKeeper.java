@@ -12,8 +12,11 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.modules.finance.analysis.AnalysisColumnsGrid;
+import com.butent.bee.client.modules.finance.analysis.AnalysisRowsGrid;
 import com.butent.bee.client.modules.finance.analysis.BudgetEntriesGrid;
 import com.butent.bee.client.modules.finance.analysis.FinancialIndicatorsGrid;
+import com.butent.bee.client.modules.finance.analysis.SimpleAnalysisForm;
 import com.butent.bee.client.modules.finance.analysis.SimpleBudgetForm;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -131,7 +134,11 @@ public final class FinanceKeeper {
 
     GridFactory.registerGridInterceptor(GRID_BUDGET_ENTRIES, new BudgetEntriesGrid());
 
+    GridFactory.registerGridInterceptor(GRID_ANALYSIS_COLUMNS, new AnalysisColumnsGrid());
+    GridFactory.registerGridInterceptor(GRID_ANALYSIS_ROWS, new AnalysisRowsGrid());
+
     FormFactory.registerFormInterceptor(FORM_SIMPLE_BUDGET, new SimpleBudgetForm());
+    FormFactory.registerFormInterceptor(FORM_SIMPLE_ANALYSIS, new SimpleAnalysisForm());
 
     RowEditor.registerFormNameProvider(VIEW_FINANCIAL_INDICATORS, (dataInfo, row) -> {
       IndicatorKind kind = row.getEnum(dataInfo.getColumnIndex(COL_FIN_INDICATOR_KIND),

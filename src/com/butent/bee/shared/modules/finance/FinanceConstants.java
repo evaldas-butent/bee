@@ -35,6 +35,8 @@ public final class FinanceConstants {
   public static final String VIEW_BUDGET_HEADERS = "BudgetHeaders";
   public static final String VIEW_BUDGET_ENTRIES = "BudgetEntries";
 
+  public static final String VIEW_ANALYSIS_HEADERS = "AnalysisHeaders";
+
   public static final String COL_FIN_JOURNAL = "Journal";
   public static final String COL_FIN_DATE = "Date";
   public static final String COL_FIN_COMPANY = "Company";
@@ -125,19 +127,75 @@ public final class FinanceConstants {
 
   public static final String COL_ACCOUNT_NORMAL_BALANCE = "NormalBalance";
 
+  public static final String COL_ANALYSIS_NAME = "AnalysisName";
+  public static final String COL_ANALYSIS_HEADER = "AnalysisHeader";
+
+  public static final String COL_ANALYSIS_HEADER_ORDINAL = "Ordinal";
+  public static final String COL_ANALYSIS_HEADER_EMPLOYEE = "Employee";
+  public static final String COL_ANALYSIS_HEADER_INDICATOR = "Indicator";
+  public static final String COL_ANALYSIS_HEADER_BUDGET_TYPE = "BudgetType";
+  public static final String COL_ANALYSIS_HEADER_YEAR_FROM = "YearFrom";
+  public static final String COL_ANALYSIS_HEADER_MONTH_FROM = "MonthFrom";
+  public static final String COL_ANALYSIS_HEADER_YEAR_UNTIL = "YearUntil";
+  public static final String COL_ANALYSIS_HEADER_MONTH_UNTIL = "MonthUntil";
+  public static final String COL_ANALYSIS_HEADER_BACKGROUND = "Background";
+  public static final String COL_ANALYSIS_HEADER_FOREGROUND = "Foreground";
+
   private static final String[] COL_ANALYSIS_SHOW_COLUMN_DIMENSIONS = new String[] {
       "ColumnDim01", "ColumnDim02", "ColumnDim03", "ColumnDim04", "ColumnDim05",
       "ColumnDim06", "ColumnDim07", "ColumnDim08", "ColumnDim09", "ColumnDim10"
   };
+
+  public static final String COL_ANALYSIS_SHOW_COLUMN_EMPLOYEE = "ColumnEmployee";
+  public static final String COL_ANALYSIS_COLUMN_SPLIT_LEVELS = "ColumnSplitLevels";
+
   private static final String[] COL_ANALYSIS_SHOW_ROW_DIMENSIONS = new String[] {
       "RowDim01", "RowDim02", "RowDim03", "RowDim04", "RowDim05",
       "RowDim06", "RowDim07", "RowDim08", "RowDim09", "RowDim10"
   };
 
+  public static final String COL_ANALYSIS_SHOW_ROW_EMPLOYEE = "RowEmployee";
+  public static final String COL_ANALYSIS_ROW_SPLIT_LEVELS = "RowSplitLevels";
+
+  public static final String COL_ANALYSIS_COLUMN_ORDINAL = "Ordinal";
+  public static final String COL_ANALYSIS_COLUMN_NAME = "ColumnName";
+  public static final String COL_ANALYSIS_COLUMN_ABBREVIATION = "ColumnAbbreviation";
+  public static final String COL_ANALYSIS_COLUMN_VALUES = "ColumnValues";
+  public static final String COL_ANALYSIS_COLUMN_INDICATOR = "Indicator";
+  public static final String COL_ANALYSIS_COLUMN_BUDGET_TYPE = "BudgetType";
+  public static final String COL_ANALYSIS_COLUMN_EMPLOYEE = "Employee";
+  public static final String COL_ANALYSIS_COLUMN_YEAR_FROM = "YearFrom";
+  public static final String COL_ANALYSIS_COLUMN_MONTH_FROM = "MonthFrom";
+  public static final String COL_ANALYSIS_COLUMN_YEAR_UNTIL = "YearUntil";
+  public static final String COL_ANALYSIS_COLUMN_MONTH_UNTIL = "MonthUntil";
+  public static final String COL_ANALYSIS_COLUMN_SCRIPT = "ColumnScript";
+  public static final String COL_ANALYSIS_COLUMN_IS_PERCENT = "ColumnIsPercent";
+  public static final String COL_ANALYSIS_COLUMN_SCALE = "ColumnScale";
+  public static final String COL_ANALYSIS_COLUMN_TOTAL = "ColumnTotal";
+  public static final String COL_ANALYSIS_COLUMN_BACKGROUND = "Background";
+  public static final String COL_ANALYSIS_COLUMN_FOREGROUND = "Foreground";
+  public static final String COL_ANALYSIS_COLUMN_STYLE = "ColumnStyle";
+
   public static final String[] COL_ANALYSIS_COLUMN_SPLIT = new String[] {
       "ColumnSplit01", "ColumnSplit02", "ColumnSplit03", "ColumnSplit04", "ColumnSplit05",
       "ColumnSplit06", "ColumnSplit07", "ColumnSplit08", "ColumnSplit09", "ColumnSplit10"
   };
+
+  public static final String COL_ANALYSIS_ROW_ORDINAL = "Ordinal";
+  public static final String COL_ANALYSIS_ROW_NAME = "RowName";
+  public static final String COL_ANALYSIS_ROW_ABBREVIATION = "RowAbbreviation";
+  public static final String COL_ANALYSIS_ROW_VALUES = "RowValues";
+  public static final String COL_ANALYSIS_ROW_INDICATOR = "Indicator";
+  public static final String COL_ANALYSIS_ROW_BUDGET_TYPE = "BudgetType";
+  public static final String COL_ANALYSIS_ROW_EMPLOYEE = "Employee";
+  public static final String COL_ANALYSIS_ROW_SCRIPT = "RowScript";
+  public static final String COL_ANALYSIS_ROW_IS_PERCENT = "RowIsPercent";
+  public static final String COL_ANALYSIS_ROW_SCALE = "RowScale";
+  public static final String COL_ANALYSIS_ROW_TOTAL = "RowTotal";
+  public static final String COL_ANALYSIS_ROW_BACKGROUND = "Background";
+  public static final String COL_ANALYSIS_ROW_FOREGROUND = "Foreground";
+  public static final String COL_ANALYSIS_ROW_STYLE = "RowStyle";
+
   public static final String[] COL_ANALYSIS_ROW_SPLIT = new String[] {
       "RowSplit01", "RowSplit02", "RowSplit03", "RowSplit04", "RowSplit05",
       "RowSplit06", "RowSplit07", "RowSplit08", "RowSplit09", "RowSplit10"
@@ -184,6 +242,9 @@ public final class FinanceConstants {
   public static final String GRID_BUDGET_HEADERS = "BudgetHeaders";
   public static final String GRID_BUDGET_ENTRIES = "BudgetEntries";
 
+  public static final String GRID_ANALYSIS_COLUMNS = "AnalysisColumns";
+  public static final String GRID_ANALYSIS_ROWS = "AnalysisRows";
+
   public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
   public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";
 
@@ -191,6 +252,7 @@ public final class FinanceConstants {
   public static final String FORM_FINANCIAL_INDICATOR_SECONDARY = "FinancialIndicatorSecondary";
 
   public static final String FORM_SIMPLE_BUDGET = "SimpleBudget";
+  public static final String FORM_SIMPLE_ANALYSIS = "SimpleAnalysis";
 
   public static String colBudgetEntryValue(int month) {
     return COL_BUDGET_ENTRY_VALUES[month - 1];
@@ -198,6 +260,14 @@ public final class FinanceConstants {
 
   public static String colBudgetShowEntryDimension(int dimension) {
     return COL_BUDGET_SHOW_ENTRY_DIMENSIONS[dimension - 1];
+  }
+
+  public static String colAnalysisShowColumnDimension(int dimension) {
+    return COL_ANALYSIS_SHOW_COLUMN_DIMENSIONS[dimension - 1];
+  }
+
+  public static String colAnalysisShowRowDimension(int dimension) {
+    return COL_ANALYSIS_SHOW_ROW_DIMENSIONS[dimension - 1];
   }
 
   public static Integer getBudgetEntryMonth(String colName) {
@@ -210,16 +280,18 @@ public final class FinanceConstants {
     return (index >= 0) ? index + 1 : null;
   }
 
+  public static Integer getAnalysisShowColumnDimension(String colName) {
+    int index = ArrayUtils.indexOf(COL_ANALYSIS_SHOW_COLUMN_DIMENSIONS, colName);
+    return (index >= 0) ? index + 1 : null;
+  }
+
+  public static Integer getAnalysisShowRowDimension(String colName) {
+    int index = ArrayUtils.indexOf(COL_ANALYSIS_SHOW_ROW_DIMENSIONS, colName);
+    return (index >= 0) ? index + 1 : null;
+  }
+
   public static boolean normalBalanceIsCredit(Boolean value) {
     return BeeUtils.isTrue(value);
-  }
-
-  public static String colAnalysisShowColumnDimension(int dimension) {
-    return COL_ANALYSIS_SHOW_COLUMN_DIMENSIONS[dimension - 1];
-  }
-
-  public static String colAnalysisShowRowDimension(int dimension) {
-    return COL_ANALYSIS_SHOW_ROW_DIMENSIONS[dimension - 1];
   }
 
   public static void register() {

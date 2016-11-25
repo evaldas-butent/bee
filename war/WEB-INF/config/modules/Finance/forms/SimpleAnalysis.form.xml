@@ -10,8 +10,7 @@
         xmlns:f="http://www.butent.com/form"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="SimpleAnalysis" viewName="AnalysisHeaders"
-        caption="=finAnalysisForm"
+        name="SimpleAnalysis" viewName="AnalysisHeaders" caption="=finAnalysis"
         width="80" widthUnit="vw" height="80" heightUnit="vh"
 >
   <FlowPanel class="flexBox-vertical">
