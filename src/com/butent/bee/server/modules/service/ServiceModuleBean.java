@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.service;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
@@ -13,6 +14,7 @@ import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_PUBLISH_TIME;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -33,6 +35,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -53,6 +56,8 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
+
+import org.apache.commons.collections.map.HashedMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -175,6 +180,88 @@ public class ServiceModuleBean implements BeeModule {
                 r.setProperty(COL_SERVICE_CRITERION_NAME
                         + row.getValue(COL_SERVICE_CRITERION_NAME),
                     row.getValue(COL_SERVICE_CRITERION_VALUE));
+              }
+            }
+          }
+        } else if (event.isAfter(TBL_SERVICE_MAINTENANCE) && event.hasData()) {
+          BeeRowSet rowSet = event.getRowset();
+
+          SimpleRowSet maxStateRs = qs.getData(new SqlSelect()
+              .addFields(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE)
+              .addMax(TBL_MAINTENANCE_COMMENTS, sys.getIdName(TBL_MAINTENANCE_COMMENTS))
+              .addFrom(TBL_MAINTENANCE_COMMENTS)
+              .setWhere(SqlUtils.and(
+                  SqlUtils.inList(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE,
+                      rowSet.getRowIds()),
+                  SqlUtils.notNull(TBL_MAINTENANCE_COMMENTS, COL_MAINTENANCE_STATE)))
+              .addGroup(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE)
+          );
+
+          if (DataUtils.isEmpty(maxStateRs)) {
+            return;
+          }
+
+          IsCondition latestStateCondition = SqlUtils.inList(TBL_MAINTENANCE_COMMENTS,
+              sys.getIdName(TBL_MAINTENANCE_COMMENTS), (Object[]) maxStateRs
+                  .getColumn(maxStateRs.getColumnIndex(sys.getIdName(TBL_MAINTENANCE_COMMENTS))));
+
+          SimpleRowSet commentsRowSet = qs.getData(new SqlSelect()
+              .addFields(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE, COL_MAINTENANCE_STATE)
+              .addFields(TBL_SERVICE_MAINTENANCE, COL_TYPE)
+              .addFields(TBL_USER_ROLES, COL_ROLE)
+              .addExpr(SqlUtils.nvl(
+                  SqlUtils.field(TBL_MAINTENANCE_COMMENTS, COL_TERM),
+                  SqlUtils.field(TBL_MAINTENANCE_COMMENTS, COL_PUBLISH_TIME)), ALS_STATE_TIME)
+              .addFrom(TBL_MAINTENANCE_COMMENTS)
+              .addFromLeft(TBL_SERVICE_MAINTENANCE, sys.joinTables(TBL_SERVICE_MAINTENANCE,
+                  TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE))
+              .addFromLeft(TBL_USER_ROLES,
+                  SqlUtils.join(TBL_USER_ROLES, COL_USER, TBL_MAINTENANCE_COMMENTS, COL_PUBLISHER))
+              .setWhere(latestStateCondition));
+
+          Map<Pair<Long, String>, String> commentsMap = new HashedMap();
+          commentsRowSet.forEach(commentRow ->
+              commentsMap.put(Pair.of(commentRow.getLong(COL_SERVICE_MAINTENANCE),
+                  BeeUtils.join(BeeConst.STRING_SLASH, commentRow.getValue(COL_TYPE),
+                  commentRow.getValue(COL_MAINTENANCE_STATE), commentRow.getValue(COL_ROLE))),
+                  commentRow.getValue(ALS_STATE_TIME)));
+
+          SqlSelect processQueryAll = new SqlSelect()
+              .addFields(TBL_STATE_PROCESS, COL_DAYS_ACTIVE, COL_MAINTENANCE_TYPE,
+                  COL_MAINTENANCE_STATE, COL_ROLE)
+              .addFrom(TBL_STATE_PROCESS)
+              .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_STATE_PROCESS, COL_DAYS_ACTIVE),
+                  SqlUtils.isNull(TBL_STATE_PROCESS, COL_FINITE),
+                  SqlUtils.inList(TBL_STATE_PROCESS, COL_MAINTENANCE_TYPE,
+                      rowSet.getDistinctStrings(rowSet.getColumnIndex(COL_TYPE))),
+                  SqlUtils.inList(TBL_STATE_PROCESS, COL_MAINTENANCE_STATE,
+                      rowSet.getDistinctStrings(rowSet.getColumnIndex(COL_STATE)))));
+          SimpleRowSet processRowSet = qs.getData(processQueryAll);
+
+          Map<String, String> stateProcessMap = Maps.newHashMap();
+          processRowSet.forEach(processRow ->
+              stateProcessMap.put(BeeUtils.join(BeeConst.STRING_SLASH,
+                  processRow.getValue(COL_MAINTENANCE_TYPE),
+                  processRow.getValue(COL_MAINTENANCE_STATE),
+                  processRow.getValue(COL_ROLE)), processRow.getValue(COL_DAYS_ACTIVE)));
+
+          for (Pair<Long, String> keyPair: commentsMap.keySet()) {
+
+            if (stateProcessMap.containsKey(keyPair.getB())) {
+              Long rowIdValue = keyPair.getA();
+              String daysActiveValue = stateProcessMap.get(keyPair.getB());
+              DateTime stateDate = TimeUtils.toDateTimeOrNull(commentsMap.get(keyPair));
+
+              if (stateDate != null && !BeeUtils.isEmpty(daysActiveValue)
+                  && DataUtils.isId(rowIdValue)) {
+                BeeRow maintenanceRow = rowSet.getRowById(rowIdValue);
+                String oldProperty = maintenanceRow.getProperty(PROP_SERVICE_MAINTENANCE_LATE);
+                Integer lateValue = TimeUtils
+                    .dateDiff(stateDate, new DateTime()) - BeeUtils.toInt(daysActiveValue);
+
+                if (BeeUtils.isEmpty(oldProperty) || BeeUtils.toInt(oldProperty) < lateValue) {
+                  maintenanceRow.setProperty(PROP_SERVICE_MAINTENANCE_LATE, lateValue);
+                }
               }
             }
           }

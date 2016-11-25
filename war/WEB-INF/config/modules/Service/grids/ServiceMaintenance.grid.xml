@@ -20,4 +20,8 @@
     <DataColumn name="SerialNo" visible="true" />
     <DataColumn name="Description" visible="true"/>
   </g:columns>
+  <g:rowStyle>
+    <ui:class>bee-service-maintenance-late</ui:class>
+    <ui:expression>row.Late &gt; 0</ui:expression>
+  </g:rowStyle>
 </g:Grid>

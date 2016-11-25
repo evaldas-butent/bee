@@ -74,6 +74,7 @@ public final class ServiceConstants {
   public static final String COL_ADDRESS_REQUIRED = "AddressRequired";
   public static final String COL_COMMENT = "Comment";
   public static final String COL_CUSTOMER_SENT = "CustomerSent";
+  public static final String COL_DAYS_ACTIVE = "DaysActive";
   public static final String COL_ENDING_DATE = "EndingDate";
   public static final String COL_EVENT_NOTE = "EventNote";
   public static final String COL_INITIAL = "Initial";
@@ -145,6 +146,7 @@ public final class ServiceConstants {
   public static final String ALS_SERVICE_CONTRACTOR_NAME = "ContractorName";
 
   public static final String ALS_STATE_NAME = "StateName";
+  public static final String ALS_STATE_TIME = "StateTime";
 
   public static final String ALS_MAINTENANCE_ITEM_NAME = "ItemName";
   public static final String ALS_MAINTENANCE_STATE_NAME = "MaintenanceStateName";
@@ -170,6 +172,7 @@ public final class ServiceConstants {
 
   public static final String PROP_MAIN_ITEM = "MainItem";
   public static final String PROP_CRITERIA = "Criteria";
+  public static final String PROP_SERVICE_MAINTENANCE_LATE = "Late";
 
   public static void register() {
     EnumUtils.register(ServiceCompanyKind.class);

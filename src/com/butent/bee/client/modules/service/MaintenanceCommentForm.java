@@ -2,19 +2,26 @@ package com.butent.bee.client.modules.service;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_STATE;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 
 public class MaintenanceCommentForm extends AbstractFormInterceptor {
 
@@ -51,6 +58,26 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor {
           result.setProperty(COL_WARRANTY_VALID_TO, warrantyDateTimeValue);
         }
       }
+    }
+  }
+
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    super.onSaveChanges(listener, event);
+
+    Long serviceMaintenanceId = event.getNewRow()
+        .getLong(Data.getColumnIndex(getViewName(), COL_SERVICE_MAINTENANCE));
+
+    if (event.getColumns().contains(Data.getColumn(getViewName(), COL_TERM))
+        && DataUtils.isId(serviceMaintenanceId)) {
+      Queries.getRow(TBL_SERVICE_MAINTENANCE, serviceMaintenanceId, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          if (result != null) {
+            RowUpdateEvent.fire(BeeKeeper.getBus(), TBL_SERVICE_MAINTENANCE, result);
+          }
+        }
+      });
     }
   }
 
