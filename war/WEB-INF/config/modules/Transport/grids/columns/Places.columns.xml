@@ -45,4 +45,12 @@
 
   <PropColumn type="integer" name="EmptyKilometers" label="=trEmptyKilometers" visible="false" />
   <PropColumn type="integer" name="LoadedKilometers" label="=trLoadedKilometers" visible="false" />
+
+  <PropColumn type="integer" name="UnplannedManagerKm" label="=trUnplannedManagerKm" />
+  <PropColumn type="integer" name="UnplannedDriverKm" label="=trUnplannedDriverKm" />
+  <CalcColumn type="integer" name="PaidKm" label="=trPaidKm" >
+    <render>
+      <ui:expression>(Number(row.EmptyKilometers) + Number(row.LoadedKilometers) + Number(row.UnplannedManagerKm))</ui:expression>
+    </render>
+  </CalcColumn>
 </g:columns>

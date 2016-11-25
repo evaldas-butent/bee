@@ -24,7 +24,7 @@
     <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
     <Numeric name="CargoWeight" precision="10" scale="3" label="=trWeightInTons" />
 
-    <Integer name="UnplannedManagerKm" label="Neplanuoti km (vadb)" />
-    <Integer name="UnplannedDriverKm" label="Neplanuoti km (vair)" />
+    <Integer name="UnplannedManagerKm" label="=trUnplannedManagerKm" />
+    <Integer name="UnplannedDriverKm" label="=trUnplannedDriverKm" />
   </Fields>
 </Table>

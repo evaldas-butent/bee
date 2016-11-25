@@ -5550,6 +5550,8 @@ public interface Dictionary {
 
   default String trOwned() {return g("trOwned");}
 
+  default String trPaidKm() {return g("trPaidKm");}
+
   default String trPalettesQuantity() {return g("trPalettesQuantity");}
 
   default String trParameters() {return g("trParameters");}
@@ -5963,6 +5965,10 @@ public interface Dictionary {
   default String trUnloadingPhone() {return g("trUnloadingPhone");}
 
   default String trUnloadingPostIndex() {return g("trUnloadingPostIndex");}
+
+  default String trUnplannedDriverKm() {return g("trUnplannedDriverKm");}
+
+  default String trUnplannedManagerKm() {return g("trUnplannedManagerKm");}
 
   default String trVehicle() {return g("trVehicle");}
 

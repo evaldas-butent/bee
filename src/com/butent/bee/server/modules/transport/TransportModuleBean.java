@@ -2855,7 +2855,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFromInner(getHandlingQuery(clause), als,
             SqlUtils.joinUsing(TBL_CARGO_PLACES, als, sys.getIdName(TBL_CARGO_PLACES))));
 
-    String[] calc = new String[] {COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS};
+    String[] calc = new String[] {COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS,
+        COL_UNPLANNED_MANAGER_KM, COL_UNPLANNED_DRIVER_KM};
 
     for (SimpleRow row : rs) {
       String prfx;
