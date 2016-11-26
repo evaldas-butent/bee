@@ -104,18 +104,18 @@
               </cell>
             </row>
             <row>
-              <Label for="ModelName" />
+              <Label for="ModelName" style="font-weight:bold;" />
               <TextLabel>
                 <renderToken source="ParentModelName" />
                 <renderToken source="ModelName" />
               </TextLabel>
             </row>
             <row>
-              <Label for="BodyNumber" />
+              <Label for="BodyNumber" style="font-weight:bold;" />
               <TextLabel source="BodyNumber" />
             </row>
             <row>
-              <Label for="CarNumber" />
+              <Label for="CarNumber" style="font-weight:bold;" />
               <TextLabel source="CarNumber" />
             </row>
           </Table>

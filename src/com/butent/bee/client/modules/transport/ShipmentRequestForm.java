@@ -136,19 +136,15 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
     if (BeeUtils.same(name, NAME_INCOTERMS) && widget instanceof HasClickHandlers) {
       ((HasClickHandlers) widget).addClickHandler(event -> {
-        Flow container = new Flow();
-        StyleUtils.setWidth(container, 80, CssUnit.VW);
-
         String suffix = Localized.dictionary().languageTag();
 
         if (!BeeUtils.inListSame(suffix, "lt", "ru")) {
           suffix = "en";
         }
         Image image = new Image(Paths.buildPath(Paths.IMAGE_DIR, name + "_" + suffix + ".png"));
-        StyleUtils.setWidth(image, 100, CssUnit.PCT);
-        container.add(image);
+        StyleUtils.setWidth(image, 80, CssUnit.VW);
 
-        Global.showModalWidget(container);
+        Global.showModalWidget(image);
       });
     } else if (BeeUtils.same(name, COL_CARGO_PARTIAL + "Toggle") && widget instanceof Flow) {
       container = (Flow) widget;

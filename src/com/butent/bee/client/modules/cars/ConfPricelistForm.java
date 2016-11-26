@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.cars;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -8,6 +9,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 
@@ -31,6 +33,7 @@ import com.butent.bee.client.imports.ImportOptionForm;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -53,12 +56,15 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportType;
@@ -80,6 +86,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -237,12 +244,12 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         blocked.setChecked(configuration.isBundleBlocked(bundle));
         String price = configuration.getBundlePrice(bundle);
 
-        inputPriceAndDescription(bundle.toString(), price, true,
-            configuration.getBundleDescription(bundle), (newPrice, newDescription) -> {
+        inputInfo(bundle.toString(), price, true,
+            configuration.getBundleDescription(bundle), configuration.getBundleCriteria(bundle),
+            info -> {
               ParameterList args = CarsKeeper.createSvcArgs(SVC_SET_BUNDLE);
               args.addDataItem(COL_BRANCH, getBranchId());
               args.addDataItem(COL_BUNDLE, Codec.beeSerialize(bundle));
-              Configuration.DataInfo info = Configuration.DataInfo.of(newPrice, newDescription);
               args.addDataItem(Service.VAR_DATA, info.serialize());
               args.addDataItem(COL_BLOCKED, Codec.pack(blocked.isChecked()));
               BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
@@ -436,9 +443,10 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     return item.getId();
   }
 
-  private static void inputPriceAndDescription(String title, String price, boolean priceRequired,
-      String description, BiConsumer<String, String> consumer, Consumer<DialogBox> destroyer,
-      Element target, Widget... widgets) {
+  private static void inputInfo(String title, String price, boolean priceRequired,
+      String description, Map<String, String> criteria,
+      Consumer<Configuration.DataInfo> infoConsumer, Consumer<DialogBox> destroyer, Element target,
+      Widget... widgets) {
 
     HtmlTable table = new HtmlTable();
     table.setWidth("100%");
@@ -455,6 +463,30 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     inputDescription.setValue(description);
     table.setText(1, 0, Localized.dictionary().description());
     table.setWidget(1, 1, inputDescription);
+
+    Map<String, String> newCriteria = new LinkedHashMap<>();
+
+    Consumer<Map<String, String>> critConsumer = map -> {
+      newCriteria.clear();
+      Table crit = table().borderCollapse();
+
+      if (!BeeUtils.isEmpty(map)) {
+        map.forEach((key, val) -> crit.append(tr()
+            .append(td().textAlign(TextAlign.RIGHT).text(key)).append(td().text(val))));
+        newCriteria.putAll(map);
+      }
+      table.setHtml(2, 1, crit.toString());
+    };
+    Label critCap = new Label(Localized.dictionary().criteria());
+    StyleUtils.setColor(critCap, Colors.BLUE);
+    critCap.getElement().getStyle().setCursor(Style.Cursor.POINTER);
+    table.setWidget(2, 0, critCap);
+
+    critCap.addClickHandler(clickEvent ->
+        Global.inputMap(Localized.dictionary().criteria(), Localized.dictionary().criterionName(),
+            Localized.dictionary().criterionValue(), newCriteria, critConsumer));
+
+    critConsumer.accept(criteria);
 
     if (!ArrayUtils.isEmpty(widgets)) {
       Arrays.stream(widgets).forEach(w -> table.setWidget(table.getRowCount(), 1, w));
@@ -476,7 +508,9 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
 
       @Override
       public void onSuccess() {
-        consumer.accept(inputPrice.getValue(), inputDescription.getValue());
+        infoConsumer.accept(Configuration.DataInfo.of(BeeUtils.isNegativeInt(inputPrice.getValue())
+                ? Configuration.DEFAULT_PRICE : inputPrice.getValue(), inputDescription.getValue(),
+            null).setCriteria(newCriteria));
       }
     }, null, target, destroyer != null ? EnumSet.of(Action.DELETE) : null);
   }
@@ -994,12 +1028,12 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         BeeRow beeRow = inputOption.getRelatedRow();
 
         if (beeRow != null) {
-          setOptionPrice(new Option(beeRow.getId(),
+          setOptionInfo(new Option(beeRow.getId(),
                   Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
                   new Dimension(Data.getLong(TBL_CONF_OPTIONS, beeRow, COL_GROUP),
                       Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
                   .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)),
-              inputPrice.getValue(), null);
+              Configuration.DataInfo.of(inputPrice.getValue(), null, null));
           refresh();
 
         } else if (DataUtils.isId(inputGroup.getRelatedId())) {
@@ -1014,12 +1048,12 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
                         getFormView().notifyWarning(Localized.dictionary().noData());
                       } else {
                         for (BeeRow beeRow : result) {
-                          setOptionPrice(new Option(beeRow.getId(),
+                          setOptionInfo(new Option(beeRow.getId(),
                                   Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
                                   new Dimension(inputGroup.getRelatedId(),
                                       Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
                                   .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)),
-                              null, null);
+                              Configuration.DataInfo.of(null, null, null));
                         }
                         refresh();
                       }
@@ -1045,9 +1079,10 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         if (cell.hasClassName(STYLE_ROW)) {
           inputRestrictions(option, cell);
         } else {
-          inputPriceAndDescription(option.toString(), configuration.getOptionPrice(option), false,
-              configuration.getOptionDescription(option), (newPrice, newDescription) -> {
-                setOptionPrice(option, newPrice, newDescription);
+          inputInfo(option.toString(), configuration.getOptionPrice(option), false,
+              configuration.getOptionDescription(option), configuration.getOptionCriteria(option),
+              info -> {
+                setOptionInfo(option, info);
                 refresh();
               }, null, cell);
         }
@@ -1056,6 +1091,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       Bundle bundle = cols.get(col);
       String price = configuration.getRelationPrice(option, bundle);
       String description = configuration.getRelationDescription(option, bundle);
+      Map<String, String> criteria = configuration.getRelationCriteria(option, bundle);
 
       BiConsumer<String, Configuration.DataInfo> consumer = (svc, info) -> {
         ParameterList args = CarsKeeper.createSvcArgs(svc);
@@ -1076,20 +1112,20 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         refresh();
       };
       if (BeeUtils.isNonNegativeInt(price) || event.isAltKeyDown()) {
-        inputPriceAndDescription(BeeUtils.joinWords(option, bundle), price, false, description,
-            (newPrice, newDescription) -> consumer.accept(SVC_SET_RELATION,
-                Configuration.DataInfo.of(BeeUtils.isNegativeInt(newPrice)
-                    ? Configuration.DEFAULT_PRICE : newPrice, newDescription)),
+        inputInfo(BeeUtils.joinWords(option, bundle), price, false, description, criteria,
+            info -> consumer.accept(SVC_SET_RELATION, info),
             !configuration.hasRelation(option, bundle) ? null : dialog -> {
               dialog.close();
               consumer.accept(SVC_DELETE_RELATION, null);
             }, cell);
       } else if (!configuration.hasRelation(option, bundle)) {
         consumer.accept(SVC_SET_RELATION,
-            Configuration.DataInfo.of(Configuration.DEFAULT_PRICE, description));
+            Configuration.DataInfo.of(Configuration.DEFAULT_PRICE, description, null)
+                .setCriteria(criteria));
 
       } else if (configuration.isDefault(option, bundle)) {
-        consumer.accept(SVC_SET_RELATION, Configuration.DataInfo.of(null, description));
+        consumer.accept(SVC_SET_RELATION, Configuration.DataInfo.of(null, description, null)
+            .setCriteria(criteria));
       } else {
         consumer.accept(SVC_DELETE_RELATION, null);
       }
@@ -1116,12 +1152,14 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
   }
 
-  private void setOptionPrice(Option option, String price, String description) {
+  private void setOptionInfo(Option option, Configuration.DataInfo info) {
     ParameterList args = CarsKeeper.createSvcArgs(SVC_SET_OPTION);
     args.addDataItem(COL_BRANCH, getBranchId());
     args.addDataItem(COL_OPTION, option.getId());
-    Configuration.DataInfo info = Configuration.DataInfo.of(BeeUtils.isNonNegativeInt(price)
-        ? price : null, description);
+
+    if (!BeeUtils.isNonNegativeInt(info.getPrice())) {
+      info.setPrice(null);
+    }
     args.addDataItem(Service.VAR_DATA, info.serialize());
     BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
 

@@ -942,9 +942,8 @@ public class ImportBean {
         }
       }
       if (ok && !BeeUtils.isEmpty(bundleOptions)) {
-        configuration.setBundleInfo(new Bundle(bundleOptions),
-            Configuration.DataInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION)),
-            false);
+        configuration.setBundleInfo(new Bundle(bundleOptions), Configuration.DataInfo.of(price,
+            row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null), false);
       }
     }
     qs.sqlDropTemp(tmp);
@@ -982,8 +981,8 @@ public class ImportBean {
       if (Objects.isNull(option)) {
         errorProcessor.accept(loc.options() + ": " + loc.code(), code);
       } else if (ok) {
-        configuration.setOptionInfo(option,
-            Configuration.DataInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION)));
+        configuration.setOptionInfo(option, Configuration.DataInfo.of(price,
+            row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null));
       }
     }
     qs.sqlDropTemp(tmp);
@@ -1066,8 +1065,8 @@ public class ImportBean {
           ok = false;
         }
         if (ok) {
-          configuration.setRelationInfo(option, bundle,
-              Configuration.DataInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION)));
+          configuration.setRelationInfo(option, bundle, Configuration.DataInfo.of(price,
+              row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null));
         }
       }
     }
@@ -1167,7 +1166,8 @@ public class ImportBean {
         }
         cars.setBundle(branchId, bundle,
             Configuration.DataInfo.of(configuration.getBundlePrice(bundle),
-                configuration.getBundleDescription(bundle)), false);
+                configuration.getBundleDescription(bundle), null)
+                .setCriteria(configuration.getBundleCriteria(bundle)), false);
       }
       if (!BeeUtils.isEmpty(progress)) {
         Endpoint.updateProgress(progress, loc.options(), 0);
@@ -1182,7 +1182,8 @@ public class ImportBean {
         }
         cars.setOption(branchId, option.getId(),
             Configuration.DataInfo.of(configuration.getOptionPrice(option),
-                configuration.getOptionDescription(option)));
+                configuration.getOptionDescription(option), null)
+                .setCriteria(configuration.getOptionCriteria(option)));
       }
       if (!BeeUtils.isEmpty(progress)) {
         Endpoint.updateProgress(progress, loc.relations(), 0);
@@ -1200,7 +1201,8 @@ public class ImportBean {
           if (configuration.hasRelation(option, bundle)) {
             cars.setRelation(branchId, bundle.getKey(), option.getId(),
                 Configuration.DataInfo.of(configuration.getRelationPrice(option, bundle),
-                    configuration.getRelationDescription(option, bundle)));
+                    configuration.getRelationDescription(option, bundle), null)
+                    .setCriteria(configuration.getRelationCriteria(option, bundle)));
             cnt++;
           }
         }

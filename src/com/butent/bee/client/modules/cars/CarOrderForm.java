@@ -408,7 +408,7 @@ public class CarOrderForm extends SpecificationForm implements StageFormIntercep
   }
 
   private void buildCar() {
-    if (!getFormView().isEnabled()){
+    if (!getFormView().isEnabled()) {
       return;
     }
     Long obj = getLongValue(COL_OBJECT);

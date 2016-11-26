@@ -633,17 +633,21 @@ public class SpecificationBuilder implements InputCallback {
 
       if (!BeeUtils.isEmpty(description)) {
         defaults.add(description);
-      }
-      for (Option option : getAvailableOptions().values()) {
-        if (!option.getDimension().isRequired() && configuration.isDefault(option, bundle)) {
-          if (!Objects.equals(option.getDimension(), dimension)) {
-            dimension = option.getDimension();
-            defaults.add("<i>" + dimension + ":</i>");
+      } else {
+        for (Option option : getAvailableOptions().values()) {
+          if (!option.getDimension().isRequired() && configuration.isDefault(option, bundle)) {
+            if (!Objects.equals(option.getDimension(), dimension)) {
+              dimension = option.getDimension();
+              defaults.add("<i>" + dimension + ":</i>");
+            }
+            defaults.add(BeeUtils.notEmpty(BeeUtils
+                    .notEmpty(configuration.getRelationDescription(option, bundle),
+                        configuration.getOptionDescription(option), option.getDescription()),
+                option.getName()));
           }
-          defaults.add(BeeUtils.notEmpty(BeeUtils
-                  .notEmpty(configuration.getRelationDescription(option, bundle),
-                      configuration.getOptionDescription(option), option.getDescription()),
-              option.getName()));
+        }
+        if (!defaults.isEmpty()) {
+          defaults.add(0, "<b>" + Localized.dictionary().equipment() + "</b>");
         }
       }
     }

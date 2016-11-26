@@ -15,6 +15,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -128,8 +129,8 @@ public class Specification implements BeeSerializable {
   public int getPrice() {
     int price = BeeUtils.unbox(getBundlePrice());
 
-    for (Integer optionPrice : options.values()) {
-      price += BeeUtils.unbox(optionPrice);
+    for (Option option : getOptions()) {
+      price += BeeUtils.unbox(getOptionPrice(option));
     }
     return price;
   }
@@ -150,7 +151,7 @@ public class Specification implements BeeSerializable {
     int other = BeeConst.UNDEF;
 
     for (Option option : getOptions()) {
-      Integer prc = options.get(option);
+      Integer prc = getOptionPrice(option);
 
       if (option.getDimension().isRequired()) {
         row++;
@@ -158,7 +159,7 @@ public class Specification implements BeeSerializable {
             BeeUtils.join(": ", option.getDimension().getName(), option.getName()));
 
         if (priceMode) {
-          summary.setText(row, 1, BeeUtils.toString(prc));
+          summary.setText(row, 1, Objects.isNull(prc) ? null : BeeUtils.toString(prc));
         }
       } else {
         if (BeeConst.isUndef(other)) {

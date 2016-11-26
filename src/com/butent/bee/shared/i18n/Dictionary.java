@@ -2534,6 +2534,8 @@ public interface Dictionary {
 
   default String enterTime() {return g("enterTime");}
 
+  default String equipment() {return g("equipment");}
+
   default String error() {return g("error");}
 
   default String errorMessage() {return g("errorMessage");}
