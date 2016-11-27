@@ -2988,6 +2988,8 @@ public final class CliWorker {
         range = Range.closed(FontAwesome.YC.getCode(), FontAwesome.FONTICONS.getCode());
       } else if (args.startsWith("4.5")) {
         range = Range.closed(FontAwesome.REDDIT_ALIEN.getCode(), FontAwesome.PERCENT.getCode());
+      } else if (args.startsWith("4.7")) {
+        range = Range.closed(FontAwesome.GITLAB.getCode(), FontAwesome.MEETUP.getCode());
       }
 
       styles.addAll(StyleUtils.parseStyles(args));
