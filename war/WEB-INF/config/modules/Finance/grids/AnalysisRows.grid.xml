@@ -8,7 +8,8 @@
   <xi:include href="columns/Ordinal.columns.xml" />
 
   <g:columns>
-    <DataColumn name="RowName" minWidth="80" flexGrow="1" visible="true" />
+    <DataColumn name="RowName" minWidth="80" flexGrow="1" visible="true"
+                backgroundSource="Background" foregroundSource="Foreground" />
     <DataColumn name="RowAbbreviation" />
 
     <DataColumn name="RowValues" />
