@@ -57,8 +57,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 
-import org.apache.commons.collections.map.HashedMap;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -219,7 +217,7 @@ public class ServiceModuleBean implements BeeModule {
                   SqlUtils.join(TBL_USER_ROLES, COL_USER, TBL_MAINTENANCE_COMMENTS, COL_PUBLISHER))
               .setWhere(latestStateCondition));
 
-          Map<Pair<Long, String>, String> commentsMap = new HashedMap();
+          Map<Pair<Long, String>, String> commentsMap = new HashMap<>();
           commentsRowSet.forEach(commentRow ->
               commentsMap.put(Pair.of(commentRow.getLong(COL_SERVICE_MAINTENANCE),
                   BeeUtils.join(BeeConst.STRING_SLASH, commentRow.getValue(COL_TYPE),
