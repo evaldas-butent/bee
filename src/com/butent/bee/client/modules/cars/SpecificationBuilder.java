@@ -6,6 +6,7 @@ import com.google.common.collect.TreeMultimap;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PHOTO;
 
@@ -39,6 +40,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.cars.Bundle;
 import com.butent.bee.shared.modules.cars.Configuration;
@@ -138,6 +140,7 @@ public class SpecificationBuilder implements InputCallback {
   private static final String STYLE_SELECTABLE = STYLE_PREFIX + "-selectable";
   public static final String STYLE_BLOCKED = STYLE_PREFIX + "-blocked";
   public static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
+  public static final String STYLE_SUMMARY = STYLE_PREFIX + "-summary";
 
   private Specification template;
   private final Consumer<Specification> callback;
@@ -250,6 +253,16 @@ public class SpecificationBuilder implements InputCallback {
     } else {
       callback.accept(null);
     }
+  }
+
+  public static String renderCriteria(Map<String, String> criteria) {
+    Table crit = table().addClass(STYLE_SUMMARY);
+
+    if (!BeeUtils.isEmpty(criteria)) {
+      criteria.forEach((key, val) ->
+          crit.append(tr().append(td().text(key)).append(td().text(val))));
+    }
+    return crit.toString();
   }
 
   private static Widget buildThumbnail(String choiceCaption, List<Widget[]> choices,
@@ -600,11 +613,26 @@ public class SpecificationBuilder implements InputCallback {
         }
       }
     }
+    Flow descriptionBox = new Flow(STYLE_BOX);
+
     if (!BeeUtils.isEmpty(specification.getDescription())) {
       CustomDiv defaults = new CustomDiv(STYLE_DESCRIPTION);
       defaults.setHtml(specification.getDescription());
-      subContainer.add(defaults);
+      descriptionBox.add(defaults);
     }
+    Map<String, String> criteria = configuration.getBundleCriteria(specification.getBundle());
+
+    specification.getOptions().forEach(option -> {
+      criteria.putAll(configuration.getOptionCriteria(option));
+      criteria.putAll(configuration.getRelationCriteria(option, specification.getBundle()));
+    });
+    if (!criteria.isEmpty()) {
+      CustomDiv defaults = new CustomDiv();
+      defaults.setHtml("<b>" + Localized.dictionary().criteria() + "</b><br>"
+          + renderCriteria(criteria));
+      descriptionBox.add(defaults);
+    }
+    subContainer.add(descriptionBox);
     subContainer.add(optionBox);
 
     if (selectable.getRowCount() > 0) {

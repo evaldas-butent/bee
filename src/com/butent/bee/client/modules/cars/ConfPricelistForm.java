@@ -9,7 +9,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 
@@ -57,14 +56,12 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
-import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportType;
@@ -457,36 +454,33 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     table.setText(0, 0, Localized.dictionary().price());
     table.setWidget(0, 1, inputPrice);
 
-    InputArea inputDescription = new InputArea();
-    inputDescription.setVisibleLines(5);
-    inputDescription.setWidth("100%");
-    inputDescription.setValue(description);
-    table.setText(1, 0, Localized.dictionary().description());
-    table.setWidget(1, 1, inputDescription);
-
     Map<String, String> newCriteria = new LinkedHashMap<>();
 
     Consumer<Map<String, String>> critConsumer = map -> {
       newCriteria.clear();
-      Table crit = table().borderCollapse();
 
       if (!BeeUtils.isEmpty(map)) {
-        map.forEach((key, val) -> crit.append(tr()
-            .append(td().textAlign(TextAlign.RIGHT).text(key)).append(td().text(val))));
         newCriteria.putAll(map);
       }
-      table.setHtml(2, 1, crit.toString());
+      table.setHtml(1, 1, SpecificationBuilder.renderCriteria(map));
     };
     Label critCap = new Label(Localized.dictionary().criteria());
     StyleUtils.setColor(critCap, Colors.BLUE);
     critCap.getElement().getStyle().setCursor(Style.Cursor.POINTER);
-    table.setWidget(2, 0, critCap);
+    table.setWidget(1, 0, critCap);
 
     critCap.addClickHandler(clickEvent ->
         Global.inputMap(Localized.dictionary().criteria(), Localized.dictionary().criterionName(),
             Localized.dictionary().criterionValue(), newCriteria, critConsumer));
 
     critConsumer.accept(criteria);
+
+    InputArea inputDescription = new InputArea();
+    inputDescription.setVisibleLines(5);
+    inputDescription.setWidth("100%");
+    inputDescription.setValue(description);
+    table.setText(2, 0, Localized.dictionary().description());
+    table.setWidget(2, 1, inputDescription);
 
     if (!ArrayUtils.isEmpty(widgets)) {
       Arrays.stream(widgets).forEach(w -> table.setWidget(table.getRowCount(), 1, w));
@@ -508,9 +502,9 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
 
       @Override
       public void onSuccess() {
-        infoConsumer.accept(Configuration.DataInfo.of(BeeUtils.isNegativeInt(inputPrice.getValue())
-                ? Configuration.DEFAULT_PRICE : inputPrice.getValue(), inputDescription.getValue(),
-            null).setCriteria(newCriteria));
+        infoConsumer.accept(Configuration
+            .DataInfo.of(BeeUtils.isNonNegativeInt(inputPrice.getValue()) ? inputPrice.getValue()
+                : null, inputDescription.getValue(), null).setCriteria(newCriteria));
       }
     }, null, target, destroyer != null ? EnumSet.of(Action.DELETE) : null);
   }

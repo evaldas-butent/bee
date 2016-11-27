@@ -136,7 +136,7 @@ public class Specification implements BeeSerializable {
   }
 
   public Widget renderSummary(boolean priceMode) {
-    HtmlTable summary = new HtmlTable(SpecificationBuilder.STYLE_PREFIX + "-summary");
+    HtmlTable summary = new HtmlTable(SpecificationBuilder.STYLE_SUMMARY);
     int row = 0;
     summary.setText(row, 0, getBranchName());
 
