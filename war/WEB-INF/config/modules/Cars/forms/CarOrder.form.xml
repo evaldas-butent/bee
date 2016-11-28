@@ -78,9 +78,9 @@
               </DoubleLabel>
             </row>
             <row>
-              <cell colSpan="3" style="color:blue; text-align:center;">
+              <cell colSpan="3" style="text-align:center;">
                 <FlowPanel>
-                  <Label name="Car" text="=newCar" style="cursor:pointer;">
+                  <Label name="Car" text="=newCar" class="bee-InternalLink">
                     <dynStyle>
                       <ui:inline>display:none</ui:inline>
                       <ui:expression>row.Car</ui:expression>

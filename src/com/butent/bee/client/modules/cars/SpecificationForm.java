@@ -21,7 +21,9 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -31,6 +33,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.cars.Specification;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
@@ -189,19 +192,27 @@ public class SpecificationForm extends PrintFormInterceptor implements Consumer<
           thumbnail.add(new Image(FileUtils.getUrl(photo)));
           flow.insert(thumbnail, flow.getWidgetCount() - 1);
         });
-        Flow html = new Flow(SpecificationBuilder.STYLE_DESCRIPTION);
-        html.getElement().setInnerHTML(objectSpecification.getDescription());
+        Flow descriptionBox = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+        Flow descr = new Flow(SpecificationBuilder.STYLE_DESCRIPTION);
+        Label descrCap = new Label(Localized.dictionary().description());
+        descrCap.setStyleName(StyleUtils.NAME_LINK);
+        descr.add(descrCap);
+        CustomDiv descrHtml = new CustomDiv();
+        descrHtml.setHtml(objectSpecification.getDescription());
+        descr.add(descrHtml);
 
         if (getFormView().isEnabled()) {
-          html.addClickHandler(clickEvent -> {
+          descrCap.addClickHandler(clickEvent -> {
             RichTextEditor area = new RichTextEditor(true);
             area.setValue(objectSpecification.getDescription());
-            StyleUtils.setSize(area, 800, 600);
+            StyleUtils.setSize(area, BeeUtils.toInt(BeeKeeper.getScreen().getWidth() * 0.6),
+                BeeUtils.toInt(BeeKeeper.getScreen().getHeight() * 0.6));
 
             Global.inputWidget(Localized.dictionary().description(), area, () -> {
               String description = area.getValue();
-              ParameterList args = CarsKeeper.createSvcArgs(SVC_SAVE_OBJECT_DESCRIPTION);
+              ParameterList args = CarsKeeper.createSvcArgs(SVC_SAVE_OBJECT_INFO);
               args.addDataItem(COL_OBJECT, objectSpecification.getId());
+              args.addDataItem(COL_KEY, COL_DESCRIPTION);
               args.addNotEmptyData(COL_DESCRIPTION, description);
 
               BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -211,14 +222,48 @@ public class SpecificationForm extends PrintFormInterceptor implements Consumer<
 
                   if (!response.hasErrors()) {
                     objectSpecification.setDescription(description);
-                    html.getElement().setInnerHTML(description);
+                    descrHtml.setHtml(description);
                   }
                 }
               });
             });
           });
         }
-        objectContainer.add(html);
+        descriptionBox.add(descr);
+
+        Flow crit = new Flow();
+        Label critCap = new Label(Localized.dictionary().criteria());
+        critCap.setStyleName(StyleUtils.NAME_LINK);
+        crit.add(critCap);
+        CustomDiv critHtml = new CustomDiv();
+        critHtml.setHtml(SpecificationBuilder.renderCriteria(objectSpecification.getCriteria()));
+        crit.add(critHtml);
+
+        if (getFormView().isEnabled()) {
+          critCap.addClickHandler(clickEvent -> Global.inputMap(Localized.dictionary().criteria(),
+              Localized.dictionary().criterionName(), Localized.dictionary().criterionValue(),
+              objectSpecification.getCriteria(), map -> {
+                ParameterList args = CarsKeeper.createSvcArgs(SVC_SAVE_OBJECT_INFO);
+                args.addDataItem(COL_OBJECT, objectSpecification.getId());
+                args.addDataItem(COL_KEY, COL_CRITERIA);
+                args.addDataItem(COL_CRITERIA, Codec.beeSerialize(map));
+
+                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+                  @Override
+                  public void onResponse(ResponseObject response) {
+                    response.notify(getFormView());
+
+                    if (!response.hasErrors()) {
+                      objectSpecification.setCriteria(map);
+                      critHtml.setHtml(SpecificationBuilder.renderCriteria(map));
+                    }
+                  }
+                });
+              }));
+        }
+        descriptionBox.add(crit);
+
+        objectContainer.add(descriptionBox);
       }
     }
   }

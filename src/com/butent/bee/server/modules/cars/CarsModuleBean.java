@@ -169,9 +169,11 @@ public class CarsModuleBean implements BeeModule {
         response = saveObject(Specification.restore(reqInfo.getParameter(COL_OBJECT)));
         break;
 
-      case SVC_SAVE_OBJECT_DESCRIPTION:
+      case SVC_SAVE_OBJECT_INFO:
+        String key = reqInfo.getParameter(COL_KEY);
+
         response = qs.updateDataWithResponse(new SqlUpdate(TBL_CONF_OBJECTS)
-            .addConstant(COL_DESCRIPTION, reqInfo.getParameter(COL_DESCRIPTION))
+            .addConstant(key, reqInfo.getParameter(key))
             .setWhere(sys.idEquals(TBL_CONF_OBJECTS, reqInfo.getParameterLong(COL_OBJECT))));
         break;
 
@@ -567,7 +569,7 @@ public class CarsModuleBean implements BeeModule {
 
   private ResponseObject getObject(Long objectId) {
     SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addFields(TBL_CONF_OBJECTS, COL_BRANCH, COL_BRANCH_NAME)
+        .addFields(TBL_CONF_OBJECTS, COL_BRANCH, COL_BRANCH_NAME, COL_CRITERIA)
         .addField(TBL_CONF_OBJECTS, COL_DESCRIPTION, COL_BUNDLE + COL_DESCRIPTION)
         .addField(TBL_CONF_OBJECTS, COL_PRICE, COL_BUNDLE + COL_PRICE)
         .addFields(TBL_CONF_OBJECT_OPTIONS, COL_OPTION, COL_PRICE)
@@ -593,6 +595,7 @@ public class CarsModuleBean implements BeeModule {
         specification.setId(objectId);
         specification.setBranch(row.getLong(COL_BRANCH), row.getValue(COL_BRANCH_NAME));
         specification.setDescription(row.getValue(COL_BUNDLE + COL_DESCRIPTION));
+        specification.setCriteria(Codec.deserializeLinkedHashMap(row.getValue(COL_CRITERIA)));
         bundlePrice = row.getInt(COL_BUNDLE + COL_PRICE);
       }
       Integer price = row.getInt(COL_PRICE);
@@ -690,6 +693,7 @@ public class CarsModuleBean implements BeeModule {
         .addConstant(COL_BRANCH, specification.getBranchId())
         .addConstant(COL_BRANCH_NAME, specification.getBranchName())
         .addConstant(COL_DESCRIPTION, specification.getDescription())
+        .addConstant(COL_CRITERIA, Codec.beeSerialize(specification.getCriteria()))
         .addConstant(COL_PRICE, specification.getBundlePrice()));
 
     if (specification.getBundle() != null) {

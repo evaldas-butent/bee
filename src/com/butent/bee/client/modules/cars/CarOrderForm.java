@@ -40,6 +40,7 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -53,6 +54,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
@@ -391,6 +393,14 @@ public class CarOrderForm extends SpecificationForm implements StageFormIntercep
           Specification specification = getSpecification();
 
           if (specification != null) {
+            BeeRowSet critRs = new BeeRowSet(COL_CRITERIA,
+                Arrays.asList(new BeeColumn(DocumentConstants.COL_CRITERION_NAME),
+                    new BeeColumn(DocumentConstants.COL_CRITERION_VALUE)));
+
+            specification.getCriteria().forEach((key, val) -> {
+              critRs.addRow(0, new String[] {key, val});
+            });
+            defaultParameters.put(COL_CRITERIA, critRs.serialize());
             defaultParameters.put(COL_DESCRIPTION, specification.getDescription());
             defaultParameters.put(TBL_CONF_OBJECT_OPTIONS,
                 specification.renderSummary(false).toString());

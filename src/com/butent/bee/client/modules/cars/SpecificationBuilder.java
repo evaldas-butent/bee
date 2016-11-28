@@ -217,6 +217,7 @@ public class SpecificationBuilder implements InputCallback {
     if (specification.getBundle() != null) {
       List<String> selectedOptions = new ArrayList<>();
       Dimension dimension = null;
+      Configuration configuration = currentBranch.getConfiguration();
 
       for (Option option : specification.getOptions()) {
         if (!option.getDimension().isRequired()) {
@@ -224,7 +225,6 @@ public class SpecificationBuilder implements InputCallback {
             dimension = option.getDimension();
             selectedOptions.add("<i>" + dimension + ":</i>");
           }
-          Configuration configuration = currentBranch.getConfiguration();
           selectedOptions.add(BeeUtils.notEmpty(BeeUtils
                   .notEmpty(configuration.getRelationDescription(option, specification.getBundle()),
                       configuration.getOptionDescription(option), option.getDescription()),
@@ -235,6 +235,8 @@ public class SpecificationBuilder implements InputCallback {
               + Localized.dictionary().additionalEquipment() + "</b><br>",
           specification.getDescription(), BeeUtils.join("<br>", selectedOptions.stream()
               .map(s -> s.replace("\n", "<br>")).collect(Collectors.toList()))));
+
+      specification.setCriteria(collectCriteria(configuration));
 
       ParameterList args = CarsKeeper.createSvcArgs(SVC_SAVE_OBJECT);
       args.addDataItem(COL_OBJECT, Codec.beeSerialize(specification));
@@ -308,6 +310,16 @@ public class SpecificationBuilder implements InputCallback {
       }
     }
     return thumbnail;
+  }
+
+  private Map<String, String> collectCriteria(Configuration configuration) {
+    Map<String, String> criteria = configuration.getBundleCriteria(specification.getBundle());
+
+    specification.getOptions().forEach(option -> {
+      criteria.putAll(configuration.getOptionCriteria(option));
+      criteria.putAll(configuration.getRelationCriteria(option, specification.getBundle()));
+    });
+    return criteria;
   }
 
   private void collectRestrictions(Multimap<Dimension, Option> allOptions, Option option,
@@ -613,25 +625,16 @@ public class SpecificationBuilder implements InputCallback {
         }
       }
     }
-    Flow descriptionBox = new Flow(STYLE_BOX);
+    Flow descriptionBox = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
 
-    if (!BeeUtils.isEmpty(specification.getDescription())) {
-      CustomDiv defaults = new CustomDiv(STYLE_DESCRIPTION);
-      defaults.setHtml(specification.getDescription());
-      descriptionBox.add(defaults);
-    }
-    Map<String, String> criteria = configuration.getBundleCriteria(specification.getBundle());
+    CustomDiv descr = new CustomDiv(STYLE_DESCRIPTION);
+    descr.setHtml(specification.getDescription());
+    descriptionBox.add(descr);
 
-    specification.getOptions().forEach(option -> {
-      criteria.putAll(configuration.getOptionCriteria(option));
-      criteria.putAll(configuration.getRelationCriteria(option, specification.getBundle()));
-    });
-    if (!criteria.isEmpty()) {
-      CustomDiv defaults = new CustomDiv();
-      defaults.setHtml("<b>" + Localized.dictionary().criteria() + "</b><br>"
-          + renderCriteria(criteria));
-      descriptionBox.add(defaults);
-    }
+    CustomDiv crit = new CustomDiv();
+    crit.setHtml(renderCriteria(collectCriteria(configuration)));
+    descriptionBox.add(crit);
+
     subContainer.add(descriptionBox);
     subContainer.add(optionBox);
 

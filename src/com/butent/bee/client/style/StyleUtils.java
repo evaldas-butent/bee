@@ -180,6 +180,8 @@ public final class StyleUtils {
   public static final String NAME_ANIMATE_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "animate-active";
   public static final String NAME_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "active";
 
+  public static final String NAME_LINK = BeeConst.CSS_CLASS_PREFIX + "InternalLink";
+
   public static final String TRANSFORM_ROTATE = "rotate";
   public static final String TRANSFORM_SCALE = "scale";
   public static final String TRANSFORM_SKEW = "skew";

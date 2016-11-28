@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.cars;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -32,6 +31,7 @@ import com.butent.bee.client.imports.ImportOptionForm;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -45,7 +45,6 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
-import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.Label;
@@ -55,7 +54,6 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -465,22 +463,35 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       table.setHtml(1, 1, SpecificationBuilder.renderCriteria(map));
     };
     Label critCap = new Label(Localized.dictionary().criteria());
-    StyleUtils.setColor(critCap, Colors.BLUE);
-    critCap.getElement().getStyle().setCursor(Style.Cursor.POINTER);
+    critCap.setStyleName(StyleUtils.NAME_LINK);
     table.setWidget(1, 0, critCap);
 
     critCap.addClickHandler(clickEvent ->
         Global.inputMap(Localized.dictionary().criteria(), Localized.dictionary().criterionName(),
             Localized.dictionary().criterionValue(), newCriteria, critConsumer));
-
     critConsumer.accept(criteria);
 
-    InputArea inputDescription = new InputArea();
-    inputDescription.setVisibleLines(5);
-    inputDescription.setWidth("100%");
-    inputDescription.setValue(description);
-    table.setText(2, 0, Localized.dictionary().description());
-    table.setWidget(2, 1, inputDescription);
+    Holder<String> newDescription = Holder.absent();
+
+    Consumer<String> descrConsumer = descr -> {
+      newDescription.set(descr);
+      table.setHtml(2, 1, newDescription.get());
+    };
+    Label descrCap = new Label(Localized.dictionary().description());
+    descrCap.setStyleName(StyleUtils.NAME_LINK);
+    table.setWidget(2, 0, descrCap);
+
+    descrCap.addClickHandler(clickEvent -> {
+          RichTextEditor area = new RichTextEditor(true);
+          area.setValue(newDescription.get());
+          StyleUtils.setSize(area, BeeUtils.toInt(BeeKeeper.getScreen().getWidth() * 0.6),
+              BeeUtils.toInt(BeeKeeper.getScreen().getHeight() * 0.6));
+
+          Global.inputWidget(Localized.dictionary().description(), area,
+              () -> descrConsumer.accept(area.getValue()));
+        }
+    );
+    descrConsumer.accept(description);
 
     if (!ArrayUtils.isEmpty(widgets)) {
       Arrays.stream(widgets).forEach(w -> table.setWidget(table.getRowCount(), 1, w));
@@ -504,7 +515,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       public void onSuccess() {
         infoConsumer.accept(Configuration
             .DataInfo.of(BeeUtils.isNonNegativeInt(inputPrice.getValue()) ? inputPrice.getValue()
-                : null, inputDescription.getValue(), null).setCriteria(newCriteria));
+                : null, newDescription.get(), null).setCriteria(newCriteria));
       }
     }, null, target, destroyer != null ? EnumSet.of(Action.DELETE) : null);
   }

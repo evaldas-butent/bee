@@ -13,6 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,7 +23,7 @@ import java.util.TreeMap;
 public class Specification implements BeeSerializable {
 
   private enum Serial {
-    BRANCH_ID, BRANCH_NAME, BUNDLE, BUNDLE_PRICE, OPTIONS, DESCRIPTION, ID, PHOTOS
+    BRANCH_ID, BRANCH_NAME, BUNDLE, BUNDLE_PRICE, OPTIONS, DESCRIPTION, CRITERIA, ID, PHOTOS
   }
 
   private Long branchId;
@@ -31,6 +32,7 @@ public class Specification implements BeeSerializable {
   private Integer bundlePrice;
   private final Map<Option, Integer> options = new TreeMap<>();
   private String description;
+  private Map<String, String> criteria = new LinkedHashMap<>();
   private Long id;
   private final List<Long> photos = new ArrayList<>();
 
@@ -76,6 +78,10 @@ public class Specification implements BeeSerializable {
           description = value;
           break;
 
+        case CRITERIA:
+          setCriteria(Codec.deserializeLinkedHashMap(value));
+          break;
+
         case ID:
           id = BeeUtils.toLongOrNull(value);
           break;
@@ -104,6 +110,10 @@ public class Specification implements BeeSerializable {
 
   public Integer getBundlePrice() {
     return bundlePrice;
+  }
+
+  public Map<String, String> getCriteria() {
+    return criteria;
   }
 
   public String getDescription() {
@@ -227,6 +237,10 @@ public class Specification implements BeeSerializable {
           arr[i++] = description;
           break;
 
+        case CRITERIA:
+          arr[i++] = criteria;
+          break;
+
         case ID:
           arr[i++] = id;
           break;
@@ -247,6 +261,14 @@ public class Specification implements BeeSerializable {
   public void setBundle(Bundle b, Integer price) {
     this.bundle = b;
     this.bundlePrice = price;
+  }
+
+  public void setCriteria(Map<String, String> criteria) {
+    this.criteria.clear();
+
+    if (!BeeUtils.isEmpty(criteria)) {
+      this.criteria.putAll(criteria);
+    }
   }
 
   public void setDescription(String description) {

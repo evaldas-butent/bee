@@ -11,7 +11,7 @@ public final class CarsConstants {
   public static final String SVC_DELETE_RELATION = "DeleteRelation";
   public static final String SVC_SET_RESTRICTIONS = "SetRestrictions";
   public static final String SVC_SAVE_OBJECT = "SaveObject";
-  public static final String SVC_SAVE_OBJECT_DESCRIPTION = "SaveObjectDescription";
+  public static final String SVC_SAVE_OBJECT_INFO = "SaveObjectInfo";
   public static final String SVC_GET_OBJECT = "GetObject";
 
   public static final String TBL_CONF_GROUPS = "ConfGroups";
