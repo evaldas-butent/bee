@@ -2536,6 +2536,8 @@ public interface Dictionary {
 
   default String enteredBy() {return g("enteredBy");}
 
+  default String enterprise() {return g("enterprise");}
+
   default String error() {return g("error");}
 
   default String errorMessage() {return g("errorMessage");}
