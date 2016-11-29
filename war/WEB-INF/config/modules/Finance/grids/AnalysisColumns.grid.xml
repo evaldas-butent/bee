@@ -5,6 +5,7 @@
 
         name="AnalysisColumns" viewName="AnalysisColumns"
 >
+  <xi:include href="columns/Selected.columns.xml" />
   <xi:include href="columns/Ordinal.columns.xml" />
 
   <g:columns>
@@ -58,6 +59,11 @@
 
     <DataColumn name="ColumnStyle" flexGrow="1" visible="false" />
   </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>color: pink;</ui:inline>
+    <ui:expression>!row.Selected</ui:expression>
+  </g:rowStyle>
 
   <g:rowMessage>
     <ui:expression>row.ColumnName</ui:expression>

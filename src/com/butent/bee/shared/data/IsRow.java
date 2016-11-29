@@ -4,6 +4,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
@@ -71,6 +72,10 @@ public interface IsRow extends HasCustomProperties {
   boolean isNull(int index);
 
   boolean isRemovable();
+
+  default boolean isTrue(int index) {
+    return BeeUtils.isTrue(getBoolean(index));
+  }
 
   void preliminaryUpdate(int col, String value);
 

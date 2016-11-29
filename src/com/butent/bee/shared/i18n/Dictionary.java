@@ -2747,6 +2747,8 @@ public interface Dictionary {
 
   default String finAnalysisColumnNew() {return g("finAnalysisColumnNew");}
 
+  default String finAnalysisColumnSelected() {return g("finAnalysisColumnSelected");}
+
   default String finAnalysisColumnSplitLevels() {return g("finAnalysisColumnSplitLevels");}
 
   default String finAnalysisColumns() {return g("finAnalysisColumns");}
@@ -2774,6 +2776,8 @@ public interface Dictionary {
   default String finAnalysisRowName() {return g("finAnalysisRowName");}
 
   default String finAnalysisRowNew() {return g("finAnalysisRowNew");}
+
+  default String finAnalysisRowSelected() {return g("finAnalysisRowSelected");}
 
   default String finAnalysisRowSplitLevels() {return g("finAnalysisRowSplitLevels");}
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+           xmlns:ui="http://www.butent.com/ui">
+  <DataColumn name="Selected" caption="&#xf05d;" format="&#xf05d; &#xf1db;" flexGrow="0"
+              horizontalAlignment="left" editInPlace="true" visible="true">
+    <style>
+      <headerStyle>
+        <ui:class>bee-fin-Selected-grid-header</ui:class>
+      </headerStyle>
+      <bodyStyle>
+        <ui:class>bee-fin-Selected-grid-body</ui:class>
+      </bodyStyle>
+    </style>
+  </DataColumn>
+</g:columns>

@@ -8,6 +8,7 @@
     <Relation name="AnalysisHeader" notNull="true" relation="AnalysisHeaders" cascade="DELETE"
               label="=finAnalysisForm" />
 
+    <Boolean name="Selected" label="=finAnalysisRowSelected" defValue="true" />
     <Integer name="Ordinal" label="=ordinal" />
 
     <String name="RowName" precision="100" translatable="true" label="=finAnalysisRowName" />

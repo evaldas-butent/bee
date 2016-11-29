@@ -159,6 +159,7 @@ public final class FinanceConstants {
   public static final String COL_ANALYSIS_SHOW_ROW_EMPLOYEE = "RowEmployee";
   public static final String COL_ANALYSIS_ROW_SPLIT_LEVELS = "RowSplitLevels";
 
+  public static final String COL_ANALYSIS_COLUMN_SELECTED = "Selected";
   public static final String COL_ANALYSIS_COLUMN_ORDINAL = "Ordinal";
   public static final String COL_ANALYSIS_COLUMN_NAME = "ColumnName";
   public static final String COL_ANALYSIS_COLUMN_ABBREVIATION = "ColumnAbbreviation";
@@ -183,6 +184,7 @@ public final class FinanceConstants {
       "ColumnSplit06", "ColumnSplit07", "ColumnSplit08", "ColumnSplit09", "ColumnSplit10"
   };
 
+  public static final String COL_ANALYSIS_ROW_SELECTED = "Selected";
   public static final String COL_ANALYSIS_ROW_ORDINAL = "Ordinal";
   public static final String COL_ANALYSIS_ROW_NAME = "RowName";
   public static final String COL_ANALYSIS_ROW_ABBREVIATION = "RowAbbreviation";

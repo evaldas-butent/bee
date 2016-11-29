@@ -4,28 +4,18 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.RenderingEvent;
-import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.ListBox;
-import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplit;
-import com.butent.bee.shared.ui.ColumnDescription;
-import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
-
-public class AnalysisRowsGrid extends AbstractGridInterceptor {
+public class AnalysisRowsGrid extends AnalysisColumnsRowsGrid {
 
   public AnalysisRowsGrid() {
   }
@@ -33,6 +23,21 @@ public class AnalysisRowsGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new AnalysisRowsGrid();
+  }
+
+  @Override
+  protected String getSelectionColumnName() {
+    return COL_ANALYSIS_ROW_SELECTED;
+  }
+
+  @Override
+  protected boolean isSplitColumn(String columnName) {
+    return ArrayUtils.contains(COL_ANALYSIS_ROW_SPLIT, columnName);
+  }
+
+  @Override
+  protected boolean isSplitVisible(AnalysisSplit analysisSplit) {
+    return analysisSplit.visibleForRows();
   }
 
   @Override
@@ -76,36 +81,5 @@ public class AnalysisRowsGrid extends AbstractGridInterceptor {
     }
 
     super.beforeRender(gridView, event);
-  }
-
-  @Override
-  public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
-      ColumnDescription columnDescription, CellSource cellSource) {
-
-    if (ArrayUtils.contains(COL_ANALYSIS_ROW_SPLIT, columnName)) {
-      return new SplitRenderer(cellSource);
-    } else {
-      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
-    }
-  }
-
-  @Override
-  public Editor maybeCreateEditor(String source, EditorDescription editorDescription,
-      boolean embedded) {
-
-    if (ArrayUtils.contains(COL_ANALYSIS_ROW_SPLIT, source)) {
-      ListBox listBox = new ListBox();
-
-      for (AnalysisSplit split : AnalysisSplit.values()) {
-        if (split.visibleForRows()) {
-          listBox.addItem(split.getCaption(), split.name().toLowerCase());
-        }
-      }
-
-      return listBox;
-
-    } else {
-      return super.maybeCreateEditor(source, editorDescription, embedded);
-    }
   }
 }
