@@ -614,10 +614,11 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
       if (normalize) {
         reset();
       }
-      if (getRowValue() == null) {
-        maybeSummarize();
-      }
+
       if (keyCode == null) {
+        if (getRowValue() == null) {
+          maybeSummarize();
+        }
         return true;
       }
 
@@ -625,9 +626,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
       if (normalize) {
         getEditor().normalizeDisplay(newValue);
       }
-
       setDirty(true);
-      maybeSummarize();
 
     } else {
       if (normalize) {
@@ -646,6 +645,9 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
           oldValue, newValue, getRowModeForUpdate(), hasRelation(), keyCode, hasModifiers,
           getWidgetId()), this);
     }
+
+    maybeSummarize();
+
     return true;
   }
 

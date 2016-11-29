@@ -26,3 +26,17 @@
 .bee-grid-ChartOfAccounts.bee-GridContainer-no-active-row .bee-Header-commandPanel {
   visibility: hidden;
 }
+
+.bee-form-SimpleAnalysis .bee-TabbedPages-tabCaption {
+  align-self: center;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+}
+.bee-form-SimpleAnalysis .bee-Dimensions-summary div,
+.bee-fin-SimpleAnalysis-info-summary div {
+  font-size: x-small;
+  font-weight: normal;
+  width: fit-content;
+  width: -moz-fit-content;
+  width: -webkit-fit-content;
+}

@@ -69,6 +69,8 @@ public final class UiConstants {
   public static final String ATTR_BACKGROUND_SOURCE = "backgroundSource";
   public static final String ATTR_FOREGROUND_SOURCE = "foregroundSource";
 
+  public static final String ATTR_KEY = "key";
+
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";

@@ -1245,12 +1245,12 @@
 }
 @media (min-height: 600px) and (max-height: 1200px) {
   .bee-TabbedPages-tab {
-    height: 4.5vh;
+    min-height: 4.5vh;
   }
 }
 @media (min-height: 1200px) {
   .bee-TabbedPages-tab {
-    height: 54px;
+    min-height: 54px;
   }
 }
 

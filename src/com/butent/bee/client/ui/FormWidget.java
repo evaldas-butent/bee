@@ -2412,6 +2412,11 @@ public enum FormWidget {
 
         StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),
             child.getAttribute(UiConstants.ATTR_STYLE));
+
+        String key = child.getAttribute(UiConstants.ATTR_KEY);
+        if (!BeeUtils.isEmpty(key)) {
+          DomUtils.setDataKey(tab.getElement(), key);
+        }
       }
 
     } else if (this == RADIO && BeeUtils.same(childTag, TAG_OPTION)) {

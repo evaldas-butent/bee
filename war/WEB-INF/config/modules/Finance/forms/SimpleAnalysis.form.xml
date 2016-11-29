@@ -45,8 +45,8 @@
       </Table>
     </SimplePanel>
 
-    <TabbedPages class="flexible">
-      <page>
+    <TabbedPages name="pages" class="flexible">
+      <page key="columns">
         <text>=columns</text>
         <FlowPanel class="flexBox-vertical">
           <FlowPanel style="margin: 10px;">
@@ -71,7 +71,7 @@
         </FlowPanel>
       </page>
 
-      <page>
+      <page key="rows">
         <text>=rows</text>
         <FlowPanel class="flexBox-vertical">
           <FlowPanel style="margin: 10px;">
@@ -96,12 +96,12 @@
         </FlowPanel>
       </page>
 
-      <page>
+      <page key="dimensions">
         <text>=dimensions</text>
         <xi:include href="../../Administration/forms/widgets/ExtraDimensions.widget.xml" />
       </page>
 
-      <page>
+      <page key="info">
         <text>=additionalInfo</text>
         <SimplePanel>
           <Table kind="controls" style="margin-left: 1rem;">
@@ -125,7 +125,6 @@
                             choiceColumns="BudgetTypeName" newRowEnabled="false" summarize="true"
                             backgroundSource="BudgetTypeBackground"
                             foregroundSource="BudgetTypeForeground" />
-
             </row>
 
             <row>
@@ -151,7 +150,7 @@
         </SimplePanel>
       </page>
 
-      <page>
+      <page key="filters">
         <text>=filters</text>
         <ChildGrid name="AnalysisFilters" relColumn="AnalysisHeader" />
       </page>

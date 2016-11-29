@@ -96,6 +96,8 @@ public final class FinanceConstants {
   public static final String COL_INDICATOR_ACCOUNT_CREDIT = "Credit";
   public static final String COL_INDICATOR_ACCOUNT_PLUS = "Plus";
 
+  public static final String COL_BUDGET_TYPE_NAME = "BudgetTypeName";
+
   public static final String COL_BUDGET_NAME = "BudgetName";
   public static final String COL_BUDGET_HEADER = "BudgetHeader";
 
@@ -217,6 +219,15 @@ public final class FinanceConstants {
 
   public static final String ALS_CREDIT_REPLACEMENT_BACKGROUND = "CreditReplacementBackground";
   public static final String ALS_CREDIT_REPLACEMENT_FOREGROUND = "CreditReplacementForeground";
+
+  public static final String ALS_INDICATOR_BACKGROUND = "IndicatorBackground";
+  public static final String ALS_INDICATOR_FOREGROUND = "IndicatorForeground";
+
+  public static final String ALS_BUDGET_TYPE_BACKGROUND = "BudgetTypeBackground";
+  public static final String ALS_BUDGET_TYPE_FOREGROUND = "BudgetTypeForeground";
+
+  public static final String ALS_EMPLOYEE_FIRST_NAME = "EmployeeFirstName";
+  public static final String ALS_EMPLOYEE_LAST_NAME = "EmployeeLastName";
 
   public static final String GRID_FINANCIAL_RECORDS = "FinancialRecords";
   public static final String GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS =
