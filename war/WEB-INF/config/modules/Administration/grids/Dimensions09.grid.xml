@@ -9,17 +9,6 @@
     <DataColumn name="Ordinal" flexGrow="0" />
     <DataColumn name="Dim09Name" minWidth="100" visible="true"
                 backgroundSource="Dim09Background" foregroundSource="Dim09Foreground" />
-  </g:columns>
-
-  <g:columns>
-    <DataColumn name="Dim09Background" updateMode="row" minWidth="100" flexGrow="0"
-                backgroundSource="Dim09Background" foregroundSource="Dim09Foreground">
-      <editor type="color" />
-    </DataColumn>
-    <DataColumn name="Dim09Foreground" updateMode="row" minWidth="100" flexGrow="0"
-                backgroundSource="Dim09Background" foregroundSource="Dim09Foreground">
-      <editor type="color" />
-    </DataColumn>
 
     <RelColumn name="Dim01Rel" renderColumns="Dim01Name" choiceColumns="Dim01Name"
                backgroundSource="Dim01Background" foregroundSource="Dim01Foreground"
@@ -48,6 +37,15 @@
     <RelColumn name="Dim10Rel" renderColumns="Dim10Name" choiceColumns="Dim10Name"
                backgroundSource="Dim10Background" foregroundSource="Dim10Foreground"
                newRowEnabled="false" />
+
+    <DataColumn name="Dim09Background" updateMode="row" minWidth="100" flexGrow="0"
+                backgroundSource="Dim09Background" foregroundSource="Dim09Foreground">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Dim09Foreground" updateMode="row" minWidth="100" flexGrow="0"
+                backgroundSource="Dim09Background" foregroundSource="Dim09Foreground">
+      <editor type="color" />
+    </DataColumn>
 
     <DataColumn name="Notes" visible="false" />
   </g:columns>
