@@ -55,6 +55,30 @@
       <page>
         <text>=cargoHandlingPlaces</text>
         <FlowPanel class="flexBox-vertical">
+          <FlowPanel class="flexBox-horizontal" style="overflow: scroll;">
+            <Table kind="controls">
+              <col index="1" kind="label" />
+              <row>
+                <CheckBox source="MultipleSegments" style="padding-left: 10px;"/>
+                <Label for="Cmr" module="Documents" />
+                <DataSelector source="Cmr" caching="none" newRowEnabled="false" module="Documents" />
+              </row>
+              <row>
+                <CheckBox source="CmrCopy" style="padding-left: 10px;"/>
+              </row>
+            </Table>
+            <Table kind="controls">
+              <col index="0" kind="label" />
+              <row>
+                <Label for="Directions" />
+                <InputArea source="Directions" visibleLines="3" style="width:300px;" />
+              </row>
+              <row>
+                <Label for="CargoNotes" />
+                <InputArea source="CargoNotes" visibleLines="4" style="width:300px;" />
+              </row>
+            </Table>
+          </FlowPanel>
           <ChildGrid name="CargoLoading" relColumn="Cargo" class="flexible" />
           <ChildGrid name="CargoUnloading" relColumn="Cargo" class="flexible" />
         </FlowPanel>
@@ -64,13 +88,6 @@
         <FlowPanel style="overflow:auto;">
           <Table kind="controls">
             <col index="0" kind="label" />
-            <row>
-              <text />
-              <CheckBox source="MultipleSegments" />
-              <text />
-              <text />
-              <CheckBox source="CmrCopy" />
-            </row>
             <row>
               <Label for="ExchangeOfPalettes" />
               <InputInteger source="ExchangeOfPalettes" style="&decimal;" />
@@ -91,12 +108,6 @@
               <InputDecimal source="Width" style="&decimal;" />
             </row>
             <row>
-              <cell rowSpan="2">
-                <Label for="Directions" />
-              </cell>
-              <cell colSpan="2" rowSpan="2">
-                <InputArea source="Directions" visibleLines="3" style="width:100%;" />
-              </cell>
               <Label for="Height" />
               <InputDecimal source="Height" style="&decimal;" />
             </row>
@@ -113,19 +124,13 @@
             <col index="2" kind="label" />
             <col index="4" kind="label" />
             <row>
-              <Label for="Cmr" module="Documents" />
-              <DataSelector source="Cmr" caching="none" newRowEnabled="false" module="Documents" />
+              <text />
+              <text />
               <Label for="Weight" />
               <FlowPanel>
                 <InputDecimal source="Weight" style="&decimal;" />
                 <DataSelector source="WeightUnit" style="&unit;" />
               </FlowPanel>
-              <cell rowSpan="2">
-                <Label for="CargoNotes" />
-              </cell>
-              <cell rowSpan="2">
-                <InputArea source="CargoNotes" visibleLines="4" style="width:300px;" />
-              </cell>
             </row>
             <row>
               <Label for="Number" />
@@ -135,6 +140,8 @@
                 <InputDecimal source="Volume" style="&decimal;" />
                 <DataSelector source="VolumeUnit" style="&unit;" />
               </FlowPanel>
+              <text />
+              <CheckBox source="FreightInsurance" />
             </row>
             <row>
               <Label for="Quantity" />
@@ -148,12 +155,6 @@
                 <DataSelector source="ValueCurrency" editEnabled="false" style="&unit;" />
               </FlowPanel>
               <text />
-              <CheckBox source="FreightInsurance" />
-            </row>
-            <row>
-              <cell colSpan="5">
-                <text />
-              </cell>
               <CheckBox source="CustomsBrokerage" />
             </row>
           </Table>
