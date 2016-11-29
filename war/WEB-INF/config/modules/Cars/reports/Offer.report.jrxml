@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2016-11-28T15:27:52 -->
+<!-- 2016-11-28T18:39:42 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Offer" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="ebed3f98-42bf-4dea-bdfb-41ad487be1da">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.i18n.Localizations"/>
@@ -220,14 +220,14 @@
 							<textField isStretchWithOverflow="true">
 								<reportElement style="TableCell" positionType="Float" x="0" y="0" width="112" height="15" isRemoveLineWhenBlank="true" uuid="7cedc2da-d3a1-42c4-9536-e20407964ef3"/>
 								<textElement markup="none">
-									<font fontName="DejaVu Sans" size="10" isBold="true"/>
+									<font fontName="DejaVu Sans" size="10" isBold="false"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{Criterion}]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true">
 								<reportElement style="TableCell" positionType="Float" x="112" y="0" width="112" height="15" isRemoveLineWhenBlank="true" uuid="5ca0cf62-e8a8-46b0-9266-16c10ba0c0c1"/>
 								<textElement textAlignment="Right" markup="none">
-									<font fontName="DejaVu Sans" size="10" isBold="false"/>
+									<font fontName="DejaVu Sans" size="10" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{Value}]]></textFieldExpression>
 							</textField>

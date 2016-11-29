@@ -272,7 +272,7 @@ public class Specification implements BeeSerializable {
   }
 
   public void setDescription(String description) {
-    this.description = description;
+    this.description = BeeUtils.isEmpty(description) ? null : description.replace("\n", "<br>");
   }
 
   public void setId(Long id) {

@@ -93,6 +93,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.annotation.Resource;
@@ -885,6 +886,44 @@ public class ImportBean {
       }
       errors.get(err).merge(BeeUtils.nvl(cause, ""), 1, Integer::sum);
     };
+    BiFunction<String, ImportObject, Integer> critDescriptor = (prefix, importObject) -> {
+      String[] critNames = BeeUtils.split(importObject.getPropertyValue(prefix + COL_CRITERIA
+          + "Names"), BeeConst.CHAR_COMMA);
+      String[] critValues = BeeUtils.split(importObject.getPropertyValue(prefix + COL_CRITERIA
+          + "Values"), BeeConst.CHAR_COMMA);
+
+      int critCnt = ArrayUtils.length(critNames);
+
+      if (!Objects.equals(ArrayUtils.length(critValues), critCnt)) {
+        critCnt = 0;
+        errorProcessor.accept(loc.configuration() + ": " + loc.criteria(),
+            loc.length() + BeeUtils.notEmpty(ArrayUtils.toString(critNames), "[]") + "<>"
+                + loc.length() + BeeUtils.notEmpty(ArrayUtils.toString(critValues), "[]"));
+      }
+      for (int i = 0; i < critCnt; i++) {
+        ImportProperty property = new ImportProperty(prefix + COL_CRITERIA + "Name" + i, null,
+            true);
+        importObject.addProperty(property);
+        importObject.setPropertyValue(property.getName(), critNames[i]);
+        property = new ImportProperty(prefix + COL_CRITERIA + "Value" + i, null, true);
+        importObject.addProperty(property);
+        importObject.setPropertyValue(property.getName(), critValues[i]);
+      }
+      return critCnt;
+    };
+    BiFunction<Pair<String, Integer>, SimpleRow, Map<String, String>> critBuilder = (pair, r) -> {
+      Map<String, String> criteria = new LinkedHashMap<>();
+
+      for (int i = 0; i < pair.getB(); i++) {
+        String cap = r.getValue(pair.getA() + COL_CRITERIA + "Name" + i);
+        String val = r.getValue(pair.getA() + COL_CRITERIA + "Value" + i);
+
+        if (BeeUtils.allNotEmpty(cap, val)) {
+          criteria.put(cap, val);
+        }
+      }
+      return criteria;
+    };
     Configuration configuration = new Configuration();
 
     // Branch bundles
@@ -904,6 +943,8 @@ public class ImportBean {
       bb.addProperty(property);
       bb.setPropertyValue(property.getName(), opts[i]);
     }
+    int critCnt = critDescriptor.apply(prfx, bb);
+
     SqlCreate create = bb.createStructure(sys, null, null);
     String tmp = create.getTarget();
     qs.updateData(create);
@@ -943,7 +984,8 @@ public class ImportBean {
       }
       if (ok && !BeeUtils.isEmpty(bundleOptions)) {
         configuration.setBundleInfo(new Bundle(bundleOptions), Configuration.DataInfo.of(price,
-            row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null), false);
+            row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
+            .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)), false);
       }
     }
     qs.sqlDropTemp(tmp);
@@ -954,6 +996,8 @@ public class ImportBean {
     }
     prfx = CarsConstants.TBL_CONF_BRANCH_OPTIONS;
     ImportObject bo = getSubObject(io, prfx);
+
+    critCnt = critDescriptor.apply(prfx, bo);
 
     create = bo.createStructure(sys, null, null);
     tmp = create.getTarget();
@@ -982,7 +1026,8 @@ public class ImportBean {
         errorProcessor.accept(loc.options() + ": " + loc.code(), code);
       } else if (ok) {
         configuration.setOptionInfo(option, Configuration.DataInfo.of(price,
-            row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null));
+            row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
+            .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)));
       }
     }
     qs.sqlDropTemp(tmp);
@@ -1002,6 +1047,8 @@ public class ImportBean {
       rl.addProperty(property);
       rl.setPropertyValue(property.getName(), opts[i]);
     }
+    critCnt = critDescriptor.apply(prfx, rl);
+
     create = rl.createStructure(sys, null, null);
     tmp = create.getTarget();
     qs.updateData(create);
@@ -1066,7 +1113,8 @@ public class ImportBean {
         }
         if (ok) {
           configuration.setRelationInfo(option, bundle, Configuration.DataInfo.of(price,
-              row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null));
+              row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
+              .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)));
         }
       }
     }

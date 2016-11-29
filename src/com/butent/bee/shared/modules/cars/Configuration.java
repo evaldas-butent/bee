@@ -55,7 +55,7 @@ public class Configuration implements BeeSerializable {
     public static DataInfo of(String prc, String descr, String crit) {
       DataInfo info = new DataInfo();
       info.price = prc;
-      info.description = descr;
+      info.description = BeeUtils.isEmpty(descr) ? null : descr.replace("\n", "<br>");
       info.setCriteria(Codec.deserializeLinkedHashMap(crit));
       return info;
     }
@@ -74,11 +74,11 @@ public class Configuration implements BeeSerializable {
       return Codec.beeSerialize(new Object[] {price, description, criteria});
     }
 
-    public DataInfo setCriteria(Map<String, String> criteria) {
+    public DataInfo setCriteria(Map<String, String> newCriteria) {
       this.criteria.clear();
 
-      if (!BeeUtils.isEmpty(criteria)) {
-        this.criteria.putAll(criteria);
+      if (!BeeUtils.isEmpty(newCriteria)) {
+        this.criteria.putAll(newCriteria);
       }
       return this;
     }

@@ -233,8 +233,7 @@ public class SpecificationBuilder implements InputCallback {
       }
       specification.setDescription(BeeUtils.join("<br><br><b>"
               + Localized.dictionary().additionalEquipment() + "</b><br>",
-          specification.getDescription(), BeeUtils.join("<br>", selectedOptions.stream()
-              .map(s -> s.replace("\n", "<br>")).collect(Collectors.toList()))));
+          specification.getDescription(), BeeUtils.join("<br>", selectedOptions)));
 
       specification.setCriteria(collectCriteria(configuration));
 
@@ -682,8 +681,7 @@ public class SpecificationBuilder implements InputCallback {
         }
       }
     }
-    specification.setDescription(BeeUtils.join("<br>",
-        defaults.stream().map(s -> s.replace("\n", "<br>")).collect(Collectors.toList())));
+    specification.setDescription(BeeUtils.join("<br>", defaults));
   }
 
   private void setBranch(Branch branch) {

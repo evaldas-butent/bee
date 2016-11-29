@@ -452,34 +452,15 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     table.setText(0, 0, Localized.dictionary().price());
     table.setWidget(0, 1, inputPrice);
 
-    Map<String, String> newCriteria = new LinkedHashMap<>();
-
-    Consumer<Map<String, String>> critConsumer = map -> {
-      newCriteria.clear();
-
-      if (!BeeUtils.isEmpty(map)) {
-        newCriteria.putAll(map);
-      }
-      table.setHtml(1, 1, SpecificationBuilder.renderCriteria(map));
-    };
-    Label critCap = new Label(Localized.dictionary().criteria());
-    critCap.setStyleName(StyleUtils.NAME_LINK);
-    table.setWidget(1, 0, critCap);
-
-    critCap.addClickHandler(clickEvent ->
-        Global.inputMap(Localized.dictionary().criteria(), Localized.dictionary().criterionName(),
-            Localized.dictionary().criterionValue(), newCriteria, critConsumer));
-    critConsumer.accept(criteria);
-
     Holder<String> newDescription = Holder.absent();
 
     Consumer<String> descrConsumer = descr -> {
       newDescription.set(descr);
-      table.setHtml(2, 1, newDescription.get());
+      table.setHtml(1, 1, newDescription.get());
     };
     Label descrCap = new Label(Localized.dictionary().description());
     descrCap.setStyleName(StyleUtils.NAME_LINK);
-    table.setWidget(2, 0, descrCap);
+    table.setWidget(1, 0, descrCap);
 
     descrCap.addClickHandler(clickEvent -> {
           RichTextEditor area = new RichTextEditor(true);
@@ -492,6 +473,25 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         }
     );
     descrConsumer.accept(description);
+
+    Map<String, String> newCriteria = new LinkedHashMap<>();
+
+    Consumer<Map<String, String>> critConsumer = map -> {
+      newCriteria.clear();
+
+      if (!BeeUtils.isEmpty(map)) {
+        newCriteria.putAll(map);
+      }
+      table.setHtml(2, 1, SpecificationBuilder.renderCriteria(map));
+    };
+    Label critCap = new Label(Localized.dictionary().criteria());
+    critCap.setStyleName(StyleUtils.NAME_LINK);
+    table.setWidget(2, 0, critCap);
+
+    critCap.addClickHandler(clickEvent ->
+        Global.inputMap(Localized.dictionary().criteria(), Localized.dictionary().criterionName(),
+            Localized.dictionary().criterionValue(), newCriteria, critConsumer));
+    critConsumer.accept(criteria);
 
     if (!ArrayUtils.isEmpty(widgets)) {
       Arrays.stream(widgets).forEach(w -> table.setWidget(table.getRowCount(), 1, w));
