@@ -716,6 +716,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       column.setDraggable(true);
     }
 
+    if (cd.getInstantKarma() != null) {
+      column.setInstantKarma(cd.getInstantKarma());
+    }
+
     if (!BeeUtils.isEmpty(cd.getOptions())) {
       column.setOptions(cd.getOptions());
     }

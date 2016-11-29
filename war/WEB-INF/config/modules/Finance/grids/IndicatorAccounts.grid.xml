@@ -15,7 +15,8 @@
                backgroundSource="CreditBackground" foregroundSource="CreditForeground"
                flexGrow="1" visible="true" />
 
-    <DataColumn name="Plus" caption="&#xf196; / &#xf147;" format="&#xf055; &#xf056;" visible="true">
+    <DataColumn name="Plus" caption="&#xf196; / &#xf147;" format="&#xf055; &#xf056;"
+                instantKarma="true" visible="true">
       <style>
         <headerStyle>
           <ui:class>bee-fa-label</ui:class>

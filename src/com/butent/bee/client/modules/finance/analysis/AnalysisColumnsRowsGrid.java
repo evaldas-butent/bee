@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.finance.analysis;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.cell.HeaderCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.edit.EditableColumn;
@@ -37,7 +38,16 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
       EditableColumn editableColumn) {
 
     if (BeeUtils.same(getSelectionColumnName(), columnName) && header != null) {
-      header.getCell().addClickHandler(event -> onSelectAll());
+      header.getCell().addClickHandler(event -> {
+        if (event.getSource() instanceof HeaderCell) {
+          HeaderCell headerCell = (HeaderCell) event.getSource();
+
+          if (headerCell.isCaptionEvent(event.getNativeEvent())) {
+            headerCell.setEventCanceled(true);
+            onSelectAll();
+          }
+        }
+      });
     }
 
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);

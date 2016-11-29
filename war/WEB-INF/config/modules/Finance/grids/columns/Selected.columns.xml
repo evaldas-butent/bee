@@ -2,7 +2,7 @@
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
            xmlns:ui="http://www.butent.com/ui">
   <DataColumn name="Selected" caption="&#xf05d;" format="&#xf05d; &#xf1db;" flexGrow="0"
-              horizontalAlignment="left" editInPlace="true" visible="true">
+              horizontalAlignment="left" editInPlace="true" instantKarma="true" visible="true">
     <style>
       <headerStyle>
         <ui:class>bee-fin-Selected-grid-header</ui:class>

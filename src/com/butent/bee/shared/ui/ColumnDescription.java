@@ -80,7 +80,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
     AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC,
-    EXPORTABLE, EXPORT_WIDTH_FACTOR, EDIT_IN_PLACE, DRAGGABLE, BACKGROUND_SOURCE, FOREGROUND_SOURCE
+    EXPORTABLE, EXPORT_WIDTH_FACTOR, EDIT_IN_PLACE, DRAGGABLE,
+    BACKGROUND_SOURCE, FOREGROUND_SOURCE, INSTANT_KARMA
   }
 
   public static final String TBL_COLUMN_SETTINGS = "GridColumnSettings";
@@ -189,6 +190,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private String backgroundSource;
   private String foregroundSource;
+
+  private Boolean instantKarma;
 
   private boolean relationInitialized;
 
@@ -409,6 +412,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case FOREGROUND_SOURCE:
           setForegroundSource(value);
           break;
+        case INSTANT_KARMA:
+          setInstantKarma(BeeUtils.toBooleanOrNull(value));
+          break;
       }
     }
   }
@@ -578,7 +584,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Edit In Place", getEditInPlace(),
         "Draggable", getDraggable(),
         "Background Source", getBackgroundSource(),
-        "Foreground Source", getForegroundSource());
+        "Foreground Source", getForegroundSource(),
+        "Instant Karma", getInstantKarma());
 
     if (getFlexibility() != null) {
       info.addAll(getFlexibility().getInfo());
@@ -647,6 +654,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
+  }
+
+  public Boolean getInstantKarma() {
+    return instantKarma;
   }
 
   public String getLabel() {
@@ -1016,6 +1027,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case FOREGROUND_SOURCE:
           arr[i++] = getForegroundSource();
           break;
+        case INSTANT_KARMA:
+          arr[i++] = getInstantKarma();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -1135,6 +1149,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setId(String id) {
     this.id = id;
+  }
+
+  public void setInstantKarma(Boolean instantKarma) {
+    this.instantKarma = instantKarma;
   }
 
   public void setLabel(String label) {

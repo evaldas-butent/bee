@@ -535,6 +535,16 @@ public final class EventUtils {
     return Event.getTypeInt(ev.getType());
   }
 
+  public static boolean hasClassName(NativeEvent ev, String className) {
+    if (ev != null && !BeeUtils.isEmpty(className)) {
+      Element element = getEventTargetElement(ev);
+      if (element != null) {
+        return element.hasClassName(className);
+      }
+    }
+    return false;
+  }
+
   public static boolean hasModifierKey(HasNativeEvent ev) {
     return ev != null && hasModifierKey(ev.getNativeEvent());
   }
