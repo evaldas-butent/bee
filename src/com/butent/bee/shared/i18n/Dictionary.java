@@ -4370,6 +4370,8 @@ public interface Dictionary {
 
   default String taChangeIntoSale() {return g("taChangeIntoSale");}
 
+  default String taContinuousFrom() {return g("taContinuousFrom");}
+
   default String taDate() {return g("taDate");}
 
   default String taDaysPerWeek() {return g("taDaysPerWeek");}

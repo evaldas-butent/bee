@@ -571,9 +571,16 @@ public class TradeActBean implements HasTimerService {
     DateTime now = TimeUtils.nowMinutes();
 
     SqlSelect actNumbersQuery = new SqlSelect()
-        .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
+//        .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
+        .addExpr(SqlUtils.concat("'" + usr.getDictionary().taContinuousFrom() + "'", "' '",
+            SqlUtils.field(TBL_TRADE_ACTS, COL_TA_NUMBER)), COL_TA_NOTES)
         .addFrom(TBL_TRADE_ACTS)
-        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), parentIds));
+        .setWhere(SqlUtils.and(
+            SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), parentIds),
+            SqlUtils.notNull(TBL_TRADE_ACTS, COL_TA_NUMBER)
+            )
+        );
+
     actNumbersQuery
         .addGroup(SqlUtils.field(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS)));
 
