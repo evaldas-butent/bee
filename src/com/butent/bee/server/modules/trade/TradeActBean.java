@@ -39,6 +39,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -374,12 +375,12 @@ public class TradeActBean implements HasTimerService {
             TradeActKind kind = getActKind(actId);
 
             if (kind != null && kind.enableReturn()) {
-              Map<Long, Double> returnedItems = getReturnedItems(actId);
+              Map<Pair<Long, Long>, Double> returnedItems = getReturnedItems(actId);
 
               if (!returnedItems.isEmpty()) {
                 for (BeeRow row : rowSet) {
                   if (actId.equals(row.getLong(actIndex))) {
-                    Double qty = returnedItems.get(row.getLong(itemIndex));
+                    Double qty = returnedItems.get(Pair.of(actId, row.getLong(itemIndex)));
 
                     if (BeeUtils.isPositive(qty)) {
                       row.setProperty(PRP_RETURNED_QTY, BeeUtils.toString(qty, qtyScale));
@@ -1897,11 +1898,12 @@ public class TradeActBean implements HasTimerService {
       return null;
     }
 
-    Map<Long, Double> returnedItems = getReturnedItems(actId);
+    Map<Pair<Long, Long>, Double> returnedItems = getReturnedItems(actId);
     Map<Long, Double> overallTotal = Maps.newLinkedHashMap();
 
     BeeRowSet result = new BeeRowSet(parentItems.getViewName(), parentItems.getColumns());
 
+    int actIndex = parentItems.getColumnIndex(COL_TRADE_ACT);
     int itemIndex = parentItems.getColumnIndex(COL_TA_ITEM);
     int qtyIndex = parentItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
@@ -1910,7 +1912,8 @@ public class TradeActBean implements HasTimerService {
       Double returnedQty = BeeConst.DOUBLE_ZERO;
 
       if (!BeeUtils.isEmpty(returnedItems)) {
-        returnedQty = returnedItems.get(parentRow.getLong(itemIndex));
+        returnedQty = returnedItems.get(Pair.of(parentRow.getLong(actIndex),
+            parentRow.getLong(itemIndex)));
       }
 
       boolean found = BeeUtils.isPositive(returnedQty);
@@ -1930,15 +1933,15 @@ public class TradeActBean implements HasTimerService {
       }
 
       if (BeeUtils.isDouble(returnedQty)) {
-        returnedItems.put(parentRow.getLong(itemIndex), returnedQty - BeeUtils.unbox(parentRow
-            .getDouble(qtyIndex)));
+        returnedItems.put(Pair.of(parentRow.getLong(actIndex), parentRow.getLong(itemIndex)),
+            returnedQty - BeeUtils.unbox(parentRow.getDouble(qtyIndex)));
       }
     }
 
     for (BeeRow res : result) {
       if (overallTotal.containsKey(res.getLong(itemIndex))) {
-        res.setProperty(PROP_OVERALL_TOTAL, BeeUtils.toString(overallTotal.get(res
-            .getLong(itemIndex))));
+        res.setProperty(PROP_OVERALL_TOTAL,
+            BeeUtils.toString(overallTotal.get(res.getLong(itemIndex))));
         overallTotal.remove(res.getLong(itemIndex));
       }
     }
@@ -1950,12 +1953,12 @@ public class TradeActBean implements HasTimerService {
     }
   }
 
-  private Map<Long, Double> getReturnedItems(Long... actId) {
-    Map<Long, Double> result = new HashMap<>();
+  private Map<Pair<Long, Long>, Double> getReturnedItems(Long... actId) {
+    Map<Pair<Long, Long>, Double> result = new HashMap<>();
 
     SqlSelect query =
         new SqlSelect()
-            .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+            .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, COL_TA_ITEM)
             .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
             .addFrom(TBL_TRADE_ACTS)
             .addFromInner(TBL_TRADE_ACT_ITEMS,
@@ -1964,16 +1967,17 @@ public class TradeActBean implements HasTimerService {
                 SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, Lists
                     .newArrayList(actId)),
                     SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())))
-            .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
+            .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT, COL_TA_ITEM);
 
     SimpleRowSet data = qs.getData(query);
     if (!DataUtils.isEmpty(data)) {
       for (SimpleRow row : data) {
-        Long item = row.getLong(0);
-        Double qty = row.getDouble(1);
+        Long act = row.getLong(COL_TA_PARENT);
+        Long item = row.getLong(COL_TA_ITEM);
+        Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
 
-        if (DataUtils.isId(item) && BeeUtils.isPositive(qty)) {
-          result.put(item, qty);
+        if (DataUtils.isId(act) && DataUtils.isId(item) && BeeUtils.isPositive(qty)) {
+          result.put(Pair.of(act, item), qty);
         }
       }
     }
@@ -4277,7 +4281,7 @@ public class TradeActBean implements HasTimerService {
             Filter.isPositive(COL_TRADE_ITEM_PRICE)));
 
     if (!DataUtils.isEmpty(items)) {
-      Map<Long, Double> returnedItems = getReturnedItems(actId);
+      Map<Pair<Long, Long>, Double> returnedItems = getReturnedItems(actId);
 
       Totalizer itemTotalizer = new Totalizer(items.getColumns());
 
@@ -4288,7 +4292,8 @@ public class TradeActBean implements HasTimerService {
         }
 
         if (!returnedItems.isEmpty()) {
-          Double qty = returnedItems.get(DataUtils.getLong(items, item, COL_TA_ITEM));
+          Double qty = returnedItems.get(Pair.of(actId, DataUtils.getLong(items, item,
+              COL_TA_ITEM)));
 
           if (BeeUtils.isPositive(qty)) {
             item.setValue(items.getColumnIndex(COL_TRADE_ITEM_QUANTITY), qty);

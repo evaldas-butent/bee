@@ -27,6 +27,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewSupplier;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -468,6 +469,32 @@ public final class TradeActKeeper {
     return BeeKeeper.getScreen().getUserInterface() == UserInterface.TRADE_ACTS;
   }
 
+  static boolean isEnabledItemsGrid(TradeActKind kind, FormView form, IsRow row) {
+    if (row == null) {
+      return false;
+    }
+
+    boolean hasContinuousTa = row.hasPropertyValue(PRP_CONTINUOUS_COUNT)
+        && BeeUtils.isPositive(row.getPropertyInteger(PRP_CONTINUOUS_COUNT));
+    boolean isContinuousTa = kind == TradeActKind.CONTINUOUS;
+//    boolean isSingleReturn = kind == TradeActKind.RETURN
+//        && DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_PARENT)));
+//    boolean isNewMultiReturn = kind == TradeActKind.RETURN
+//        && !DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_PARENT)))
+//        && DataUtils.isNewRow(row);
+    boolean isMultiReturnEditor = kind == TradeActKind.RETURN
+        && !DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_PARENT)))
+        && !DataUtils.isNewRow(row);
+    boolean isSupplementAct =  kind == TradeActKind.SUPPLEMENT;
+
+    boolean isSingleReturn = !hasContinuousTa
+        && BeeUtils.unbox(row.getPropertyInteger(PRP_SINGLE_RETURN_COUNT))
+        == BeeUtils.unbox(row.getInteger(form.getDataIndex(ALS_RETURNED_COUNT)));
+
+    return  (!hasContinuousTa && !isContinuousTa && !isMultiReturnEditor
+        && isSingleReturn) || isSupplementAct;
+  }
+
   static boolean isUserSeries(Long series) {
     if (!DataUtils.isId(series)) {
       return false;
@@ -512,6 +539,9 @@ public final class TradeActKeeper {
     command.setEnabled(enabled);
     command.setStyleName(STYLE_COMMAND_DISABLED, !enabled);
   }
+
+
+
 
   static void setDefaultOperation(IsRow row, TradeActKind kind) {
     Pair<Long, String> operation = getDefaultOperation(kind);

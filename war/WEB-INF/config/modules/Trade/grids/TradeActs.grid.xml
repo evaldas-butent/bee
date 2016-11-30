@@ -5,6 +5,7 @@
   name="TradeActs" viewName="TradeActs" caption="=tradeActs"
   >
   <g:columns>
+    <SelectionColumn name="Select" />
     <IdColumn name="Id" />
     <RelColumn name="Operation" renderColumns="OperationName" />
     <RelColumn name="Company" visible="true" renderColumns="CompanyName TypeName" />

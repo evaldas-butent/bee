@@ -50,6 +50,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -312,6 +313,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
             IsRow activeRow = getGridView().getActiveRow();
             TradeActKind rowKind = TradeActKeeper.getKind(getViewName(), activeRow);
+            boolean mixedReturn = false;
 
             if (rowKind == null || !rowKind.enableReturn()) {
               getGridView().notifyWarning(Localized.dictionary().taIsDifferent());
@@ -343,18 +345,21 @@ public class TradeActGrid extends AbstractGridInterceptor {
                 }
 
                 if (taKind != null && taKind.enableReturn()) {
+                  mixedReturn |= taKind != rowKind;
                   rows.add(row);
                 }
               }
             }
 
-            if (rowKind == TradeActKind.CONTINUOUS) {
+            if (rowKind == TradeActKind.CONTINUOUS && !mixedReturn) {
               multiReturnContinuousAct(rows);
             } else if (rows.size() == 1) {
               checkItemsBeforeReturn(rows.get(0));
-            } else if (rows.size() > 1) {
+            } else if (rows.size() > 1 && !mixedReturn) {
               multiReturn(rows);
-              }
+            } else if (mixedReturn) {
+              multiMixedReturn(rows);
+            }
           });
 
       TradeActKeeper.addCommandStyle(returnCommand, "return");
@@ -509,6 +514,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
           break;
 
         case COL_TA_DATE:
+          if (parent == null) {
+            newRow.setValue(i, (DateTime) null);
+            break;
+          }
           newRow.setValue(i, TimeUtils.nowMinutes());
           break;
 
@@ -599,6 +608,30 @@ public class TradeActGrid extends AbstractGridInterceptor {
             multiReturn(rows);
           }
         });
+  }
+
+  private void multiMixedReturn(final Collection<IsRow> mixedActs) {
+    DataInfo taInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
+
+    Queries.getRowSet(VIEW_TRADE_ACTS, taInfo.getColumnNames(false),
+        Filter.or(
+            Filter.in(Data.getIdColumn(VIEW_TRADE_ACTS), VIEW_TRADE_ACT_ITEMS, COL_TA_PARENT,
+                Filter.any(COL_TRADE_ACT, DataUtils.getRowIds(mixedActs))),
+            Filter.in(Data.getIdColumn(VIEW_TRADE_ACTS), VIEW_TRADE_ACT_ITEMS, COL_TRADE_ACT,
+                Filter.and(
+                    Filter.any(COL_TRADE_ACT, DataUtils.getRowIds(mixedActs)),
+                    Filter.isNull(COL_TA_PARENT)
+                )
+            )
+        ), new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            List<IsRow> rows = new ArrayList<>();
+            rows.addAll(result.getRows());
+            multiReturn(rows);
+          }
+        });
+
   }
 
   private void multiReturn(final Collection<IsRow> parents) {

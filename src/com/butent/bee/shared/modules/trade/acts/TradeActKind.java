@@ -33,7 +33,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
     @Override
     public boolean enableMultiReturn(TradeActKind other) {
-      return super.enableMultiReturn(other) && other != CONTINUOUS;
+      return super.enableMultiReturn(other);
     }
   },
 
@@ -58,7 +58,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   },
 
   /* 2 */
-  RETURN(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS},
+  RETURN(new String[] {COL_TA_DRIVER, COL_TA_VEHICLE, COL_TA_OBJECT, COL_TA_STATUS, COL_TA_DATE},
       Option.AUTO_NUMBER, Option.HAS_PARENT_ACT) {
     @Override
     public String getCaption(Dictionary constants) {
@@ -122,7 +122,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
     @Override
     public boolean enableMultiReturn(TradeActKind other) {
-      return super.enableMultiReturn(other) && other == CONTINUOUS;
+      return super.enableMultiReturn(other);
     }
   };
 

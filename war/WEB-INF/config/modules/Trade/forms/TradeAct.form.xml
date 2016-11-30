@@ -52,7 +52,7 @@
       </row>
 
       <row>
-        <Label for="Date" visible="true" />
+        <Label for="Date" name="labelDate" visible="true" />
         <InputDateTime source="Date" style="&inpdt;" visible="true" />
 
         <Label for="Until" class="bee-ta-until-label" name="labelUntil" />

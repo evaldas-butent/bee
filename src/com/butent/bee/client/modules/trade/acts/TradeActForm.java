@@ -348,6 +348,64 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     super.onUnload(form);
   }
 
+  boolean validateBeforeSave(FormView form, IsRow row, boolean beforeSave) {
+    Long company = null;
+    boolean valid = true;
+    String regNo = null;
+    int idxCompany = form.getDataIndex(COL_TA_COMPANY);
+    int idxRegNo = form.getDataIndex(COL_TA_REGISTRATION_NO);
+    int idxKind = form.getDataIndex(COL_TA_KIND);
+    boolean isNew = DataUtils.isNewRow(row);
+    TradeActKind kind = TradeActKeeper.getKind(row, idxKind);
+
+    if (isNew && kind == TradeActKind.RETURN
+        && !TradeActUtils.getMultiReturnData(row).isNull() && beforeSave) {
+      valid = false;
+      form.notifySevere(Localized.dictionary().allValuesEmpty(Localized.dictionary()
+          .list(), Localized.dictionary().tradeActItems()));
+      return valid;
+    }
+
+    if (idxCompany > -1) {
+      company = row.getLong(idxCompany);
+    }
+
+    if (idxRegNo > -1 && idxKind > -1) {
+      regNo = row.getString(idxRegNo);
+    }
+
+    if (company != null
+        && TradeActKind.RETURN.ordinal() != BeeUtils.unbox(row.getInteger(idxKind))) {
+      boolean value = BeeUtils.unbox(row
+          .getBoolean(getDataIndex(ALS_CONTACT_PHYSICAL)));
+      Long contact = row.getLong(form.getDataIndex(COL_TA_CONTACT));
+
+      if (!value && contact == null) {
+        form.notifySevere(Localized.dictionary().contact() + " "
+            + Localized.dictionary().valueRequired());
+        valid = false;
+      } else {
+        valid = true;
+      }
+    }
+
+    if (TradeActKind.RETURN.ordinal() == BeeUtils.unbox(row.getInteger(idxKind))) {
+      if (!BeeUtils.isEmpty(regNo)) {
+        valid = true;
+      } else {
+        form.notifySevere(Localized.dictionary().taRegistrationNo() + " "
+            + Localized.dictionary().valueRequired());
+        valid = false;
+      }
+    }
+
+    if (valid) {
+      valid = createReqFields(form, !TradeActUtils.getMultiReturnData(row).isNull());
+    }
+
+    return valid;
+  }
+
   private Filter getRelatedDocumentsFilter() {
     return Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
         DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
@@ -451,6 +509,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         }
 
         wid.addStyleName("bee-required");
+
+        if (BeeUtils.same(field, COL_TA_DATE) && TradeActKind.RETURN.ordinal() == kind) {
+          wid.removeStyleName("bee-hasDefaults");
+        }
       }
     }
 
@@ -487,28 +549,7 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       return;
     }
 
-    if (row == null) {
-      tradeActItemsGrid.setEnabled(false);
-    }
-
-    boolean hasContinuousTa = row.hasPropertyValue(PRP_CONTINUOUS_COUNT)
-        && BeeUtils.isPositive(row.getPropertyInteger(PRP_CONTINUOUS_COUNT));
-    boolean isContinuousTa = kind == TradeActKind.CONTINUOUS;
-//    boolean isSingleReturn = kind == TradeActKind.RETURN
-//        && DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_PARENT)));
-//    boolean isNewMultiReturn = kind == TradeActKind.RETURN
-//        && !DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_PARENT)))
-//        && DataUtils.isNewRow(row);
-    boolean isMultiReturnEditor = kind == TradeActKind.RETURN
-        && !DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_PARENT)))
-        && !DataUtils.isNewRow(row);
-
-    boolean isSingleReturn = !hasContinuousTa
-        && BeeUtils.unbox(row.getPropertyInteger(PRP_SINGLE_RETURN_COUNT))
-        == BeeUtils.unbox(row.getInteger(form.getDataIndex(ALS_RETURNED_COUNT)));
-
-    tradeActItemsGrid.setEnabled(!hasContinuousTa && !isContinuousTa && !isMultiReturnEditor
-        && isSingleReturn);
+    tradeActItemsGrid.setEnabled(TradeActKeeper.isEnabledItemsGrid(kind, form, row));
   }
 
   private void setEnabledServicesGrid(IsRow row) {
@@ -572,61 +613,4 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
   }
 
-  private boolean validateBeforeSave(FormView form, IsRow row, boolean beforeSave) {
-    Long company = null;
-    boolean valid = true;
-    String regNo = null;
-    int idxCompany = form.getDataIndex(COL_TA_COMPANY);
-    int idxRegNo = form.getDataIndex(COL_TA_REGISTRATION_NO);
-    int idxKind = form.getDataIndex(COL_TA_KIND);
-    boolean isNew = DataUtils.isNewRow(row);
-    TradeActKind kind = TradeActKeeper.getKind(row, idxKind);
-
-    if (isNew && kind == TradeActKind.RETURN
-        && !TradeActUtils.getMultiReturnData(row).isNull() && beforeSave) {
-      valid = false;
-      form.notifySevere(Localized.dictionary().allValuesEmpty(Localized.dictionary()
-          .list(), Localized.dictionary().tradeActItems()));
-      return valid;
-    }
-
-    if (idxCompany > -1) {
-      company = row.getLong(idxCompany);
-    }
-
-    if (idxRegNo > -1 && idxKind > -1) {
-      regNo = row.getString(idxRegNo);
-    }
-
-    if (company != null
-        && TradeActKind.RETURN.ordinal() != BeeUtils.unbox(row.getInteger(idxKind))) {
-      boolean value = BeeUtils.unbox(row
-          .getBoolean(getDataIndex(ALS_CONTACT_PHYSICAL)));
-      Long contact = row.getLong(form.getDataIndex(COL_TA_CONTACT));
-
-      if (!value && contact == null) {
-        form.notifySevere(Localized.dictionary().contact() + " "
-            + Localized.dictionary().valueRequired());
-        valid = false;
-      } else {
-        valid = true;
-      }
-    }
-
-    if (TradeActKind.RETURN.ordinal() == BeeUtils.unbox(row.getInteger(idxKind))) {
-      if (!BeeUtils.isEmpty(regNo)) {
-        valid = true;
-      } else {
-        form.notifySevere(Localized.dictionary().taRegistrationNo() + " "
-            + Localized.dictionary().valueRequired());
-        valid = false;
-      }
-    }
-
-    if (valid) {
-      valid = createReqFields(form, !TradeActUtils.getMultiReturnData(row).isNull());
-    }
-
-    return valid;
-  }
 }
