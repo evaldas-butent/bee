@@ -236,8 +236,10 @@ public class TradeActBean implements HasTimerService {
         BeeParameter.createNumber(module, PRM_TA_NUMBER_LENGTH, false, 6),
         BeeParameter.createRelation(module, PRM_RETURNED_ACT_STATUS,
             TBL_TRADE_STATUSES, COL_STATUS_NAME),
-        BeeParameter
-            .createRelation(module, PRM_APPROVED_ACT_STATUS, TBL_TRADE_STATUSES, COL_STATUS_NAME),
+        BeeParameter.createRelation(module, PRM_APPROVED_ACT_STATUS, TBL_TRADE_STATUSES,
+            COL_STATUS_NAME),
+        BeeParameter.createRelation(module, PRM_COMBINED_ACT_STATUS, TBL_TRADE_STATUSES,
+            COL_STATUS_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_DATA),
         BeeParameter.createNumber(module, PRM_SYNC_ERP_STOCK));
   }
@@ -569,6 +571,7 @@ public class TradeActBean implements HasTimerService {
     String number = fifoAct.getString(parentActs.getColumnIndex(COL_TA_NUMBER));
     Long series = fifoAct.getLong(parentActs.getColumnIndex(COL_TA_SERIES));
     DateTime now = TimeUtils.nowMinutes();
+    Long combStatus = prm.getRelation(PRM_COMBINED_ACT_STATUS);
 
     SqlSelect actNumbersQuery = new SqlSelect()
 //        .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
@@ -637,6 +640,18 @@ public class TradeActBean implements HasTimerService {
 
     if (!DataUtils.isEmpty(services)) {
       response = createServices(continuousActId, services, now);
+    }
+
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    if (DataUtils.isId(combStatus)) {
+      SqlUpdate query = new SqlUpdate(TBL_TRADE_ACTS)
+          .addConstant(COL_TA_STATUS, combStatus)
+          .setWhere(sys.idInList(TBL_TRADE_ACTS, parentIds));
+
+      response = qs.updateDataWithResponse(query);
     }
 
     if (response.hasErrors()) {
