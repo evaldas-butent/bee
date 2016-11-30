@@ -39,13 +39,11 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
 
     if (BeeUtils.same(getSelectionColumnName(), columnName) && header != null) {
       header.getCell().addClickHandler(event -> {
-        if (event.getSource() instanceof HeaderCell) {
-          HeaderCell headerCell = (HeaderCell) event.getSource();
+        if (event.getSource() instanceof HeaderCell
+            && HeaderCell.isCaptionEvent(event.getNativeEvent())) {
 
-          if (headerCell.isCaptionEvent(event.getNativeEvent())) {
-            headerCell.setEventCanceled(true);
-            onSelectAll();
-          }
+          ((HeaderCell) event.getSource()).setEventCanceled(true);
+          onSelectAll();
         }
       });
     }

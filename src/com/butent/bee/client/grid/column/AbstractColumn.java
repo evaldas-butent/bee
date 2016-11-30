@@ -198,7 +198,7 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
     return styleRef;
   }
 
-  public boolean instantKarma(IsRow row) {
+  public boolean instantKarma() {
     return instantKarma;
   }
 
