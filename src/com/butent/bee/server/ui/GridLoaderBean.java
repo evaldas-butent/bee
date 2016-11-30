@@ -117,7 +117,9 @@ public class GridLoaderBean {
   private static final String ATTR_EDIT_MODE = "editMode";
   private static final String ATTR_EDIT_SAVE = "editSave";
   private static final String ATTR_EDIT_SHOW_ID = "editShowId";
+
   private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
+  private static final String ATTR_INSTANT_KARMA = "instantKarma";
 
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
@@ -161,9 +163,6 @@ public class GridLoaderBean {
   private static final String ATTR_EXPORT_WIDTH_FACTOR = "exportWidthFactor";
 
   private static final String ATTR_CARRY = "carry";
-
-  private static final String ATTR_BACKGROUND_SOURCE = "backgroundSource";
-  private static final String ATTR_FOREGROUND_SOURCE = "foregroundSource";
 
   private static GridComponentDescription getComponent(Element parent, String tagName) {
     Assert.notNull(parent);
@@ -442,10 +441,13 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, Attributes.DRAGGABLE)) {
           dst.setDraggable(BeeUtils.toBooleanOrNull(value));
 
-        } else if (BeeUtils.same(key, ATTR_BACKGROUND_SOURCE)) {
+        } else if (BeeUtils.same(key, UiConstants.ATTR_BACKGROUND_SOURCE)) {
           dst.setBackgroundSource(value.trim());
-        } else if (BeeUtils.same(key, ATTR_FOREGROUND_SOURCE)) {
+        } else if (BeeUtils.same(key, UiConstants.ATTR_FOREGROUND_SOURCE)) {
           dst.setForegroundSource(value.trim());
+
+        } else if (BeeUtils.same(key, ATTR_INSTANT_KARMA)) {
+          dst.setInstantKarma(BeeUtils.toBooleanOrNull(value));
 
         } else if (Flexibility.isAttributeRelevant(key)) {
           hasFlexibility = true;

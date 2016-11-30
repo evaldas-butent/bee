@@ -199,7 +199,7 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
   }
 
   public boolean instantKarma(IsRow row) {
-    return instantKarma && getValue(row) != null;
+    return instantKarma;
   }
 
   public boolean isDraggable() {

@@ -71,8 +71,10 @@ public final class ServiceConstants {
 
   public static final String VIEW_SERVICE_SETTINGS = "ServiceSettings";
 
+  public static final String COL_ADDRESS_REQUIRED = "AddressRequired";
   public static final String COL_COMMENT = "Comment";
   public static final String COL_CUSTOMER_SENT = "CustomerSent";
+  public static final String COL_DAYS_ACTIVE = "DaysActive";
   public static final String COL_ENDING_DATE = "EndingDate";
   public static final String COL_EVENT_NOTE = "EventNote";
   public static final String COL_INITIAL = "Initial";
@@ -129,6 +131,7 @@ public final class ServiceConstants {
   public static final String COL_WARRANTY_MAINTENANCE = "WarrantyMaintenance";
   public static final String COL_WARRANTY = "Warranty";
   public static final String COL_WARRANTY_TYPE = "WarrantyType";
+  public static final String COL_WARRANTY_VALID_TO = "WarrantyValidTo";
 
   public static final String ALS_COMPANY_TYPE_NAME = "CompanyTypeName";
   public static final String ALS_CONTACT_ADDRESS = "ContactAddress";
@@ -143,6 +146,7 @@ public final class ServiceConstants {
   public static final String ALS_SERVICE_CONTRACTOR_NAME = "ContractorName";
 
   public static final String ALS_STATE_NAME = "StateName";
+  public static final String ALS_STATE_TIME = "StateTime";
 
   public static final String ALS_MAINTENANCE_ITEM_NAME = "ItemName";
   public static final String ALS_MAINTENANCE_STATE_NAME = "MaintenanceStateName";
@@ -159,12 +163,16 @@ public final class ServiceConstants {
 
   public static final String ALS_WARRANTY_TYPE_NAME = "WarrantyTypeName";
 
+  public static final String FORM_MAINTENANCE_COMMENT = "MaintenanceComment";
+  public static final String FORM_MAINTENANCE_STATE_COMMENT = "MaintenanceStateComment";
+
   public static final String GRID_OBJECT_INVOICES = "ObjectInvoices";
   public static final String GRID_OBJECT_DEFECTS = "ObjectDefects";
   public static final String GRID_SERVICE_INVOICES = "ServiceInvoices";
 
   public static final String PROP_MAIN_ITEM = "MainItem";
   public static final String PROP_CRITERIA = "Criteria";
+  public static final String PROP_SERVICE_MAINTENANCE_LATE = "Late";
 
   public static void register() {
     EnumUtils.register(ServiceCompanyKind.class);

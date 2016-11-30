@@ -64,6 +64,7 @@ public final class DomUtils {
   public static final String ATTRIBUTE_ROLE = Attributes.DATA_PREFIX + "role";
   public static final String ATTRIBUTE_DATA_SIZE = Attributes.DATA_PREFIX + "size";
   public static final String ATTRIBUTE_DATA_TEXT = Attributes.DATA_PREFIX + "text";
+  public static final String ATTRIBUTE_DATA_KEY = Attributes.DATA_PREFIX + "key";
 
   public static final String VALUE_TRUE = "true";
 
@@ -569,6 +570,10 @@ public final class DomUtils {
   public static long getDataIndexLong(Element elem) {
     String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_INDEX);
     return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toLong(value);
+  }
+
+  public static String getDataKey(Element elem) {
+    return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_KEY);
   }
 
   public static String getDataProperty(Element elem, String key) {
@@ -1801,6 +1806,16 @@ public final class DomUtils {
   public static void setDataIndex(Element elem, long idx) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DATA_INDEX, Long.toString(idx));
+  }
+
+  public static void setDataKey(Element elem, String key) {
+    Assert.notNull(elem);
+
+    if (key == null) {
+      elem.removeAttribute(ATTRIBUTE_DATA_KEY);
+    } else {
+      elem.setAttribute(ATTRIBUTE_DATA_KEY, key);
+    }
   }
 
   public static void setDataProperties(Element elem, Map<String, String> properties) {

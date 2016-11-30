@@ -20,7 +20,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
-import com.butent.bee.client.view.edit.EditorConsumer;
+import com.butent.bee.client.view.edit.EditorBuilder;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.DynamicColumnEnumerator;
@@ -28,7 +28,6 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
@@ -48,7 +47,7 @@ import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent.Handler,
     ParentRowEvent.Handler, EditStartEvent.Handler, EditEndEvent.Handler,
-    ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorConsumer,
+    ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorBuilder,
     HasActiveRow, ModificationPreviewer {
 
   enum DeleteMode {
@@ -104,8 +103,6 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
    * Enables conditional styles for columns.
    */
   StyleProvider getColumnStyleProvider(String columnName);
-
-  List<BeeColumn> getDataColumns();
 
   DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode);

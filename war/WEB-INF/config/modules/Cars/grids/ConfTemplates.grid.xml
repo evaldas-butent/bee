@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+        name="ConfTemplates" viewName="ConfTemplates" caption="=templates"
+        flexGrow="1" autoFlex="true"
+>
+  <g:columns>
+    <DataColumn name="TemplateName" />
+    <PropColumn name="Option" type="string" dynamic="true" />
+  </g:columns>
+</g:Grid>

@@ -15,11 +15,18 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public final class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handler> {
 
+  @FunctionalInterface
   public interface Handler extends EventHandler {
     void onSummaryChange(SummaryChangeEvent event);
+  }
+
+  @FunctionalInterface
+  public interface Renderer extends Function<Map<String, Value>, String> {
   }
 
   private static final Type<Handler> TYPE = new Type<>();

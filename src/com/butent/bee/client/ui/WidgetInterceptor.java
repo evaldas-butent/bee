@@ -3,6 +3,7 @@ package com.butent.bee.client.ui;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
@@ -10,6 +11,7 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.ui.Relation;
 
+import java.util.List;
 import java.util.Set;
 
 public interface WidgetInterceptor extends HasCaption, HasWidgetSupplier {
@@ -24,6 +26,8 @@ public interface WidgetInterceptor extends HasCaption, HasWidgetSupplier {
   IdentifiableWidget createCustomWidget(String name, Element description);
 
   Boolean getBooleanValue(String source);
+
+  List<BeeColumn> getDataColumns();
 
   int getDataIndex(String source);
 

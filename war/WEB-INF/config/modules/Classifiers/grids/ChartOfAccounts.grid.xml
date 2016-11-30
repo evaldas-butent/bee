@@ -9,6 +9,9 @@
   <g:columns>
     <DataColumn name="AccountCode" minWidth="80" flexGrow="0" visible="true" />
     <DataColumn name="AccountName" verticalAlignment="top" visible="true" />
+
+    <DataColumn name="NormalBalance" module="Finance" caption="=finNormalAccountBalanceShort"
+                carry="true" flexGrow="0" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />

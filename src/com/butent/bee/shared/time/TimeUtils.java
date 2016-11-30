@@ -502,6 +502,10 @@ public final class TimeUtils {
     return compare(d1, d2) > 0;
   }
 
+  public static boolean isQuarter(Integer quarter) {
+    return quarter != null && quarter >= 1 && quarter <= 4;
+  }
+
   public static boolean isToday(HasDateValue dt) {
     return sameDate(dt, today());
   }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="ConfTemplates" source="ConfTemplates"
+      editForm="ConfTemplate" newRowForm="ConfTemplate"
+      caption="=templates" newRowCaption="=newTemplate">
+  <Columns>
+    <SimpleColumn name="TemplateName" />
+    <SimpleColumn name="Object" />
+  </Columns>
+</View>

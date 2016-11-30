@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form []>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="Car" viewName="Cars" caption="=car" width="1000" height="700"
+>
+  <FlowPanel class="flexBox-vertical">
+    <xi:include href="../../Classifiers/forms/widgets/VehicleDescription.widget.xml" />
+
+    <TabbedPages class="flexible" style="margin-top: 1ex;">
+      <page module="Transport">
+        <text>=additionalInfo</text>
+        <VerticalPanel horizontalAlignment="right" cellStyle="padding-top: 5px;">
+          <DataSelector source="Fuel" caption="=vehicleFuel" summarize="true" />
+          <InputInteger source="TankCapacity" caption="=vehicleTankCapacity" style="width: 7em;"
+                        summarize="true" />
+          <InputDate source="StartDate" caption="=trVehicleStartDate" style="width: 7em;"
+                     summarize="true" />
+          <InputDate source="EndDate" caption="=trVehicleEndDate" style="width: 7em;"
+                     summarize="true" />
+        </VerticalPanel>
+      </page>
+      <page module="Documents">
+        <text>=documents</text>
+        <ChildGrid name="RelatedDocuments" relColumn="Vehicle" />
+      </page>
+      <page>
+        <text>=relatedInformation</text>
+        <Relations relColumn="Vehicle" inline="true"
+                   defaultRelations="Companies Persons Requests Tasks"
+                   style="margin: 0px 15px 0px 15px; min-width:300px;" />
+      </page>
+      <page>
+        <text>=specification</text>
+        <xi:include href="widgets/Specification.widget.xml" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

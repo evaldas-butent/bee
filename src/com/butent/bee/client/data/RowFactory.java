@@ -87,6 +87,10 @@ public final class RowFactory {
 
   private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
 
+  public static BeeRow createEmptyRow(DataInfo dataInfo) {
+    return createEmptyRow(dataInfo, true);
+  }
+
   public static BeeRow createEmptyRow(DataInfo dataInfo, boolean defaults) {
     BeeRow row = DataUtils.createEmptyRow(dataInfo.getColumnCount());
     if (defaults) {

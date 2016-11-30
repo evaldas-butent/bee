@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="AnalysisFilters"
+       idName="AnalysisFilterID"
+>
+  <Fields>
+    <Relation name="AnalysisHeader" relation="AnalysisHeaders" cascade="DELETE"
+              label="=finAnalysisForm" />
+    <Relation name="AnalysisColumn" relation="AnalysisColumns" cascade="DELETE"
+              label="=finAnalysisColumn" />
+    <Relation name="AnalysisRow" relation="AnalysisRows" cascade="DELETE"
+              label="=finAnalysisRow" />
+
+    <Relation name="Employee" relation="Employees" label="=employee" />
+
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
+
+    <Text name="ExtraFilter" label="=finAnalysisFilterExtra" />
+
+    <Boolean name="Include" label="=finAnalysisFilterInclude" defValue="true" />
+  </Fields>
+</Table>

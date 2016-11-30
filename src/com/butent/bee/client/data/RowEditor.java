@@ -32,7 +32,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public final class RowEditor {
@@ -46,6 +48,7 @@ public final class RowEditor {
   private static final String HAS_DELEGATE = "*";
 
   private static final Set<String> hasEditorDelegates = new HashSet<>();
+  private static final Map<String, FormNameProvider> formNameProviders = new HashMap<>();
 
   public static String getFormName(String formName, DataInfo dataInfo) {
     if (!BeeUtils.isEmpty(formName)) {
@@ -59,7 +62,8 @@ public final class RowEditor {
       return dataInfo.getEditForm();
     }
 
-    if (hasEditorDelegates.contains(dataInfo.getViewName())) {
+    if (hasEditorDelegates.contains(dataInfo.getViewName())
+        || formNameProviders.containsKey(dataInfo.getViewName())) {
       return HAS_DELEGATE;
     } else {
       return null;
@@ -149,12 +153,21 @@ public final class RowEditor {
       return;
     }
 
-    if (BeeUtils.isEmpty(formName) || HAS_DELEGATE.equals(formName)) {
-      logger.warning(dataInfo.getViewName(), "edit form not specified");
-      return;
+    String fn = formName;
+
+    if (!isValidFormName(formName)) {
+      FormNameProvider provider = formNameProviders.get(dataInfo.getViewName());
+      if (provider != null) {
+        fn = provider.getFormName(dataInfo, row);
+      }
+
+      if (!isValidFormName(fn)) {
+        logger.warning(dataInfo.getViewName(), "edit form not specified");
+        return;
+      }
     }
 
-    createForm(formName, dataInfo, row, opener, rowCallback, formInterceptor);
+    createForm(fn, dataInfo, row, opener, rowCallback, formInterceptor);
   }
 
   public static boolean parse(String input, final Opener opener) {
@@ -182,7 +195,19 @@ public final class RowEditor {
   }
 
   public static void registerHasDelegate(String viewName) {
-    hasEditorDelegates.add(viewName);
+    if (!BeeUtils.isEmpty(viewName)) {
+      hasEditorDelegates.add(viewName);
+    }
+  }
+
+  public static void registerFormNameProvider(String viewName, FormNameProvider provider) {
+    if (!BeeUtils.isEmpty(viewName)) {
+      if (provider == null) {
+        formNameProviders.remove(viewName);
+      } else {
+        formNameProviders.put(viewName, provider);
+      }
+    }
   }
 
   private static void createForm(String formName, final DataInfo dataInfo, final IsRow row,
@@ -221,6 +246,10 @@ public final class RowEditor {
         openForm(formName, dataInfo, result, opener, rowCallback, formInterceptor);
       }
     });
+  }
+
+  private static boolean isValidFormName(String formName) {
+    return !BeeUtils.isEmpty(formName) && !HAS_DELEGATE.equals(formName);
   }
 
   private static void launch(FormDescription formDescription, final FormView formView,

@@ -16,7 +16,6 @@
 
     <SimpleColumn name="Model" />
     <SimpleJoin name="Model" joinType="LEFT">
-      <SimpleColumn name="Parent" alias="ParentModel" />
       <SimpleJoin name="Parent" joinType="LEFT">
         <SimpleColumn name="Name" alias="ParentModelName" />
       </SimpleJoin>

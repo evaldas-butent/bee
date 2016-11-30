@@ -99,14 +99,6 @@ final class DocumentBuilder extends AbstractFormInterceptor {
     return new DocumentBuilder();
   }
 
-  @Override
-  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    if (collector != null) {
-      collector.clear();
-    }
-    super.onStartNewRow(form, oldRow, newRow);
-  }
-
   private static void sendFiles(Long docId, Collection<FileInfo> files,
       Scheduler.ScheduledCommand onComplete) {
 

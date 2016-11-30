@@ -13,15 +13,17 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
 public class Specification implements BeeSerializable {
 
   private enum Serial {
-    BRANCH_ID, BRANCH_NAME, BUNDLE, BUNDLE_PRICE, OPTIONS, DESCRIPTION, ID, PHOTOS
+    BRANCH_ID, BRANCH_NAME, BUNDLE, BUNDLE_PRICE, OPTIONS, DESCRIPTION, CRITERIA, ID, PHOTOS
   }
 
   private Long branchId;
@@ -30,6 +32,7 @@ public class Specification implements BeeSerializable {
   private Integer bundlePrice;
   private final Map<Option, Integer> options = new TreeMap<>();
   private String description;
+  private Map<String, String> criteria = new LinkedHashMap<>();
   private Long id;
   private final List<Long> photos = new ArrayList<>();
 
@@ -75,6 +78,10 @@ public class Specification implements BeeSerializable {
           description = value;
           break;
 
+        case CRITERIA:
+          setCriteria(Codec.deserializeLinkedHashMap(value));
+          break;
+
         case ID:
           id = BeeUtils.toLongOrNull(value);
           break;
@@ -105,6 +112,10 @@ public class Specification implements BeeSerializable {
     return bundlePrice;
   }
 
+  public Map<String, String> getCriteria() {
+    return criteria;
+  }
+
   public String getDescription() {
     return description;
   }
@@ -128,14 +139,14 @@ public class Specification implements BeeSerializable {
   public int getPrice() {
     int price = BeeUtils.unbox(getBundlePrice());
 
-    for (Integer optionPrice : options.values()) {
-      price += BeeUtils.unbox(optionPrice);
+    for (Option option : getOptions()) {
+      price += BeeUtils.unbox(getOptionPrice(option));
     }
     return price;
   }
 
   public Widget renderSummary(boolean priceMode) {
-    HtmlTable summary = new HtmlTable(SpecificationBuilder.STYLE_PREFIX + "-summary");
+    HtmlTable summary = new HtmlTable(SpecificationBuilder.STYLE_SUMMARY);
     int row = 0;
     summary.setText(row, 0, getBranchName());
 
@@ -150,7 +161,7 @@ public class Specification implements BeeSerializable {
     int other = BeeConst.UNDEF;
 
     for (Option option : getOptions()) {
-      Integer prc = options.get(option);
+      Integer prc = getOptionPrice(option);
 
       if (option.getDimension().isRequired()) {
         row++;
@@ -158,7 +169,7 @@ public class Specification implements BeeSerializable {
             BeeUtils.join(": ", option.getDimension().getName(), option.getName()));
 
         if (priceMode) {
-          summary.setText(row, 1, BeeUtils.toString(prc));
+          summary.setText(row, 1, Objects.isNull(prc) ? null : BeeUtils.toString(prc));
         }
       } else {
         if (BeeConst.isUndef(other)) {
@@ -226,6 +237,10 @@ public class Specification implements BeeSerializable {
           arr[i++] = description;
           break;
 
+        case CRITERIA:
+          arr[i++] = criteria;
+          break;
+
         case ID:
           arr[i++] = id;
           break;
@@ -248,8 +263,16 @@ public class Specification implements BeeSerializable {
     this.bundlePrice = price;
   }
 
+  public void setCriteria(Map<String, String> criteria) {
+    this.criteria.clear();
+
+    if (!BeeUtils.isEmpty(criteria)) {
+      this.criteria.putAll(criteria);
+    }
+  }
+
   public void setDescription(String description) {
-    this.description = description;
+    this.description = BeeUtils.isEmpty(description) ? null : description.replace("\n", "<br>");
   }
 
   public void setId(Long id) {

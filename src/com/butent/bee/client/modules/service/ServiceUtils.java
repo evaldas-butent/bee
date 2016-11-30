@@ -4,10 +4,13 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.ALS_COMPANY_TYPE_NAME;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 
 public final class ServiceUtils {
 
@@ -70,6 +73,21 @@ public final class ServiceUtils {
     maintenanceRow.setValue(
         maintenanceDataInfo.getColumnIndex(ALS_SERVICE_CONTRACTOR_NAME),
         objectRow.getString(objectDataInfo.getColumnIndex(ALS_SERVICE_CONTRACTOR_NAME)));
+  }
+
+  public static Filter getStateFilter(Long stateId, Long maintenanceTypeId) {
+    return getStateFilter(stateId, maintenanceTypeId, null);
+  }
+
+  public static Filter getStateFilter(Long stateId, Long typeId, Filter stateFilter) {
+    Filter roleFilter = Filter.in(AdministrationConstants.COL_ROLE,
+        AdministrationConstants.VIEW_USER_ROLES, AdministrationConstants.COL_ROLE,
+        Filter.equals(AdministrationConstants.COL_USER, BeeKeeper.getUser().getUserId()));
+
+    return Filter.and(
+        DataUtils.isId(stateId) ? Filter.equals(COL_MAINTENANCE_STATE, stateId) : null,
+        DataUtils.isId(typeId) ? Filter.equals(COL_MAINTENANCE_TYPE, typeId) : null,
+        roleFilter, stateFilter);
   }
 
   private ServiceUtils() {

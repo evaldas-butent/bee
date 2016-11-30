@@ -17,12 +17,9 @@ import com.butent.bee.shared.data.IsRow;
 import java.util.List;
 import java.util.Objects;
 
-public interface StageFormInterceptor extends FormInterceptor {
+public interface StageFormInterceptor {
 
-  @Override
-  default void beforeRefresh(FormView form, IsRow row) {
-    refreshStages();
-  }
+  FormView getFormView();
 
   HasWidgets getStageContainer();
 
@@ -32,7 +29,7 @@ public interface StageFormInterceptor extends FormInterceptor {
     List<Stage> stages = getStages();
 
     if (Objects.isNull(stages)) {
-      StageUtils.initStages(getViewName(), newStages -> {
+      StageUtils.initStages(getFormView().getViewName(), newStages -> {
         setStages(newStages);
         getFormView().refresh();
       });
@@ -64,10 +61,10 @@ public interface StageFormInterceptor extends FormInterceptor {
     row.setValue(form.getDataIndex(COL_STAGE_NAME), stage.getName());
 
     if (DataUtils.isNewRow(row)) {
-      getFormView().refresh();
+      form.refresh();
     } else {
-      BeeRowSet rs = DataUtils.getUpdated(getViewName(), form.getDataColumns(), form.getOldRow(),
-          row, form.getChildrenForUpdate());
+      BeeRowSet rs = DataUtils.getUpdated(form.getViewName(), form.getDataColumns(),
+          form.getOldRow(), row, form.getChildrenForUpdate());
 
       if (!DataUtils.isEmpty(rs)) {
         Queries.updateRow(rs, new RowUpdateCallback(form.getViewName()));

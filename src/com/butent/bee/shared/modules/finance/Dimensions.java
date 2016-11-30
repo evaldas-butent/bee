@@ -38,6 +38,8 @@ public final class Dimensions {
 
   public static final String PRM_DIMENSIONS = "Dimensions";
 
+  public static final String STYLE_SUMMARY = BeeConst.CSS_CLASS_PREFIX + "Dimensions-summary";
+
   private static final BeeLogger logger = LogUtils.getLogger(Dimensions.class);
 
   private static final String[] VIEWS = new String[SPACETIME];
@@ -86,6 +88,10 @@ public final class Dimensions {
 
   public static boolean isDimensionView(String viewName) {
     return ArrayUtils.contains(VIEWS, viewName);
+  }
+
+  public static boolean isObserved(Integer ordinal) {
+    return isValid(ordinal) && ordinal <= observed;
   }
 
   public static String getGridName(Integer ordinal) {

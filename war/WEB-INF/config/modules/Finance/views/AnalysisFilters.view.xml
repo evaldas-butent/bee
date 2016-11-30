@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="AnalysisFilters" source="AnalysisFilters"
+      caption="=finAnalysisFilters" newRowCaption="=finAnalysisFilterNew"
+>
+  <Columns>
+    <SimpleColumn name="AnalysisHeader" />
+    <SimpleColumn name="AnalysisColumn" />
+    <SimpleColumn name="AnalysisRow" />
+
+    <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+
+    <SimpleColumn name="ExtraFilter" />
+
+    <SimpleColumn name="Include" />
+  </Columns>
+</View>

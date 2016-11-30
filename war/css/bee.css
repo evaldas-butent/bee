@@ -1,6 +1,6 @@
 ﻿@font-face {
   font-family: FontAwesome;
-  src: url(../fonts/fontawesome-webfont.woff?v=4.5.0);
+  src: url(../fonts/fontawesome-webfont.woff?v=4.7.0);
   font-weight: normal;
   font-style: normal;
 }
@@ -1245,12 +1245,12 @@
 }
 @media (min-height: 600px) and (max-height: 1200px) {
   .bee-TabbedPages-tab {
-    height: 4.5vh;
+    min-height: 4.5vh;
   }
 }
 @media (min-height: 1200px) {
   .bee-TabbedPages-tab {
-    height: 54px;
+    min-height: 54px;
   }
 }
 
@@ -2316,6 +2316,10 @@
 .bee-InputArea {
   font-family: inherit;
   font-size: inherit;
+}
+
+.bee-TextBox.bee-InputSpinner {
+  padding-right: initial;
 }
 
 .bee-Label-withColon:after {

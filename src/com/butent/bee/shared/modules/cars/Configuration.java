@@ -10,10 +10,10 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,6 +27,7 @@ public class Configuration implements BeeSerializable {
   public static final class DataInfo implements BeeSerializable {
     private String price;
     private String description;
+    private Map<String, String> criteria = new LinkedHashMap<>();
 
     private DataInfo() {
     }
@@ -36,6 +37,11 @@ public class Configuration implements BeeSerializable {
       String[] dataInfo = Codec.beeDeserializeCollection(s);
       this.price = dataInfo[0];
       this.description = dataInfo[1];
+      setCriteria(Codec.deserializeLinkedHashMap(ArrayUtils.getQuietly(dataInfo, 2)));
+    }
+
+    public Map<String, String> getCriteria() {
+      return criteria;
     }
 
     public String getDescription() {
@@ -46,10 +52,11 @@ public class Configuration implements BeeSerializable {
       return price;
     }
 
-    public static DataInfo of(String prc, String descr) {
+    public static DataInfo of(String prc, String descr, String crit) {
       DataInfo info = new DataInfo();
       info.price = prc;
-      info.description = descr;
+      info.description = BeeUtils.isEmpty(descr) ? null : descr.replace("\n", "<br>");
+      info.setCriteria(Codec.deserializeLinkedHashMap(crit));
       return info;
     }
 
@@ -64,7 +71,20 @@ public class Configuration implements BeeSerializable {
 
     @Override
     public String serialize() {
-      return Codec.beeSerialize(new Object[] {price, description});
+      return Codec.beeSerialize(new Object[] {price, description, criteria});
+    }
+
+    public DataInfo setCriteria(Map<String, String> newCriteria) {
+      this.criteria.clear();
+
+      if (!BeeUtils.isEmpty(newCriteria)) {
+        this.criteria.putAll(newCriteria);
+      }
+      return this;
+    }
+
+    public void setPrice(String price) {
+      this.price = price;
     }
   }
 
@@ -180,6 +200,11 @@ public class Configuration implements BeeSerializable {
     return allDimensions;
   }
 
+  public Map<String, String> getBundleCriteria(Bundle bundle) {
+    Pair<DataInfo, Boolean> pair = data.get(bundle);
+    return pair != null && pair.getA() != null ? pair.getA().getCriteria() : null;
+  }
+
   public String getBundleDescription(Bundle bundle) {
     Pair<DataInfo, Boolean> pair = data.get(bundle);
     return pair != null && pair.getA() != null ? pair.getA().getDescription() : null;
@@ -235,7 +260,7 @@ public class Configuration implements BeeSerializable {
     }
     List<Bundle> metrics = new ArrayList<>(bundles);
 
-    Collections.sort(metrics, (b1, b2) -> {
+    metrics.sort((b1, b2) -> {
       List<Option> l1 = new ArrayList<>();
       List<Option> l2 = new ArrayList<>();
       processOptions(b1, dimensions, (dimension, option) -> l1.add(option));
@@ -254,6 +279,11 @@ public class Configuration implements BeeSerializable {
     return metrics;
   }
 
+  public Map<String, String> getOptionCriteria(Option option) {
+    Pair<DataInfo, Map<String, DataInfo>> pair = relations.get(option);
+    return pair != null && pair.getA() != null ? pair.getA().getCriteria() : null;
+  }
+
   public String getOptionDescription(Option option) {
     Pair<DataInfo, Map<String, DataInfo>> pair = relations.get(option);
     return pair != null && pair.getA() != null ? pair.getA().getDescription() : null;
@@ -266,6 +296,12 @@ public class Configuration implements BeeSerializable {
 
   public Collection<Option> getOptions() {
     return relations.keySet();
+  }
+
+  public Map<String, String> getRelationCriteria(Option option, Bundle bundle) {
+    Pair<DataInfo, Map<String, DataInfo>> pair = relations.get(option);
+    return pair != null && pair.getB().get(bundle.getKey()) != null
+        ? pair.getB().get(bundle.getKey()).getCriteria() : null;
   }
 
   public String getRelationDescription(Option option, Bundle bundle) {

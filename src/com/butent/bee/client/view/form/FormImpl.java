@@ -46,6 +46,7 @@ import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.DynamicStyler;
+import com.butent.bee.client.style.HasConditionalStyleTarget;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.EnablableWidget;
@@ -211,11 +212,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
       }
 
-      if (hasData() && !BeeUtils.isEmpty(result.getDynStyles()) && !BeeUtils.isEmpty(id)) {
-        ConditionalStyle conditionalStyle =
-            ConditionalStyle.create(result.getDynStyles(), source, getDataColumns());
-        if (conditionalStyle != null) {
-          addDynamicStyle(id, cellSource, conditionalStyle);
+      if (hasData() && result.getConditionalStyle() != null) {
+        String targetId = (widget instanceof HasConditionalStyleTarget)
+            ? ((HasConditionalStyleTarget) widget).getConditionalStyleTargetId() : id;
+
+        if (!BeeUtils.isEmpty(targetId)) {
+          addDynamicStyle(targetId, cellSource, result.getConditionalStyle());
         }
       }
 
@@ -792,11 +794,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
-  }
-
-  @Override
-  public int getDataIndex(String source) {
-    return DataUtils.getColumnIndex(source, getDataColumns());
   }
 
   @Override

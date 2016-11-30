@@ -968,6 +968,9 @@ public class UiServiceBean {
       ResponseObject response = deb.commitRow(rowSet, i, RowInfo.class);
 
       if (response.hasErrors()) {
+        logger.severe("error inserting into", rowSet.getViewName());
+        logger.severe(rowSet.getRow(i));
+
         return response;
 
       } else if (response.hasResponse(RowInfo.class)) {

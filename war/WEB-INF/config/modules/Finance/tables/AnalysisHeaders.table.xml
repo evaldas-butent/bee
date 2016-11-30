@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="AnalysisHeaders"
+       idName="AnalysisHeaderID"
+>
+  <Fields>
+    <Integer name="Ordinal" label="=ordinal" />
+
+    <String name="AnalysisName" precision="100" notNull="true" unique="true" translatable="true"
+            label="=finAnalysisName" />
+
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
+    <Relation name="Employee" relation="Employees" label="=employee" />
+
+    <Relation name="Indicator" relation="FinancialIndicators" label="=finIndicator" />
+    <Relation name="BudgetType" relation="BudgetTypes" label="=finBudgetType" />
+
+    <Numeric name="YearFrom" precision="4" label="=startingYear" />
+    <Numeric name="MonthFrom" precision="2" label="=startingMonth" />
+    <Numeric name="YearUntil" precision="4" label="=endingYear" />
+    <Numeric name="MonthUntil" precision="2" label="=endingMonth" />
+
+    <Boolean name="ColumnDim01" />
+    <Boolean name="ColumnDim02" />
+    <Boolean name="ColumnDim03" />
+    <Boolean name="ColumnDim04" />
+    <Boolean name="ColumnDim05" />
+    <Boolean name="ColumnDim06" />
+    <Boolean name="ColumnDim07" />
+    <Boolean name="ColumnDim08" />
+    <Boolean name="ColumnDim09" />
+    <Boolean name="ColumnDim10" />
+
+    <Boolean name="ColumnEmployee" label="=finAnalysisShowColumnEmployee" />
+
+    <Integer name="ColumnSplitLevels" label="=finAnalysisColumnSplitLevels" defValue="1" />
+
+    <Boolean name="RowDim01" />
+    <Boolean name="RowDim02" />
+    <Boolean name="RowDim03" />
+    <Boolean name="RowDim04" />
+    <Boolean name="RowDim05" />
+    <Boolean name="RowDim06" />
+    <Boolean name="RowDim07" />
+    <Boolean name="RowDim08" />
+    <Boolean name="RowDim09" />
+    <Boolean name="RowDim10" />
+
+    <Boolean name="RowEmployee" label="=finAnalysisShowRowEmployee" />
+
+    <Integer name="RowSplitLevels" label="=finAnalysisRowSplitLevels" />
+
+    <Text name="Description" label="=description" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+  </Fields>
+</Table>

@@ -2876,7 +2876,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           .compareTo(row.getDateTime(COL_PLACE_DATE)) == cmpr) {
 
         Arrays.stream(rs.getColumnNames())
-            .filter(col -> !BeeUtils.inList(col, keyColumn, VAR_UNLOADING, COL_ROUTE_WEIGHT)
+            .filter(col -> !BeeUtils.inList(col, keyColumn, VAR_UNLOADING)
                 && !ArrayUtils.contains(calc, col))
             .forEach(col -> data.put(key, prfx + col, BeeUtils.nvl(row.getValue(col), "")));
       }

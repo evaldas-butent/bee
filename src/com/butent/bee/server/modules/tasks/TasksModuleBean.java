@@ -859,7 +859,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         wh = SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId);
       }
 
-      List timerIdentifiersIds = new ArrayList<String>();
+      List<String> timerIdentifiersIds = new ArrayList<String>();
       timerIdentifiersIds.add(timerIdentifier + userId);
       return Pair.of(wh, timerIdentifiersIds);
 
@@ -876,7 +876,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         Long reminderId = relationId;
         wh = SqlUtils.equals(VIEW_USER_REMINDERS,
             sys.getIdName(VIEW_USER_REMINDERS), reminderId);
-        List timerIdentifiersIds = new ArrayList<String>();
+        List<String> timerIdentifiersIds = new ArrayList<String>();
         timerIdentifiersIds.add(timerIdentifier + reminderId);
         return Pair.of(wh, timerIdentifiersIds);
 

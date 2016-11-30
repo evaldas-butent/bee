@@ -93,10 +93,14 @@ public enum ImportType implements HasLocalizedCaption {
       addSimpleProperty(prfx + VAR_IMPORT_SHEET, capPrfx + locale.sheetName());
       addSimpleProperty(prfx + VAR_IMPORT_START_ROW, capPrfx + locale.startRow());
       addSimpleProperty(prfx + VAR_IMPORT_END_ROW, capPrfx + locale.endRow());
-      addSimpleProperty(prfx + CarsConstants.TBL_CONF_OPTIONS, capPrfx + locale.criteria()
+      addSimpleProperty(prfx + CarsConstants.TBL_CONF_OPTIONS, capPrfx + locale.options()
           + " (" + locale.code() + ",...)");
       addDataProperty(prfx + CarsConstants.COL_PRICE, capPrfx + locale.price());
       addDataProperty(prfx + CarsConstants.COL_DESCRIPTION, capPrfx + locale.description());
+      addSimpleProperty(prfx + CarsConstants.COL_CRITERIA + "Names", capPrfx + locale.criteria()
+          + " (" + locale.name() + ",...)");
+      addSimpleProperty(prfx + CarsConstants.COL_CRITERIA + "Values", capPrfx + locale.criteria()
+          + " (" + locale.value() + ",...)");
 
       prfx = CarsConstants.TBL_CONF_BRANCH_OPTIONS;
       capPrfx = locale.options() + ": ";
@@ -106,13 +110,17 @@ public enum ImportType implements HasLocalizedCaption {
       addDataProperty(prfx + CarsConstants.COL_CODE, capPrfx + locale.code());
       addDataProperty(prfx + CarsConstants.COL_PRICE, capPrfx + locale.price());
       addDataProperty(prfx + CarsConstants.COL_DESCRIPTION, capPrfx + locale.description());
+      addSimpleProperty(prfx + CarsConstants.COL_CRITERIA + "Names", capPrfx + locale.criteria()
+          + " (" + locale.name() + ",...)");
+      addSimpleProperty(prfx + CarsConstants.COL_CRITERIA + "Values", capPrfx + locale.criteria()
+          + " (" + locale.value() + ",...)");
 
       prfx = CarsConstants.TBL_CONF_RELATIONS;
       capPrfx = locale.relations() + ": ";
       addSimpleProperty(prfx + VAR_IMPORT_SHEET, capPrfx + locale.sheetName());
       addSimpleProperty(prfx + VAR_IMPORT_START_ROW, capPrfx + locale.startRow());
       addSimpleProperty(prfx + VAR_IMPORT_END_ROW, capPrfx + locale.endRow());
-      addSimpleProperty(prfx + CarsConstants.TBL_CONF_OPTIONS, capPrfx + locale.criteria()
+      addSimpleProperty(prfx + CarsConstants.TBL_CONF_OPTIONS, capPrfx + locale.options()
           + " (" + locale.code() + ",...)");
       addDataProperty(prfx + CarsConstants.COL_CODE, capPrfx + locale.code());
       addDataProperty(prfx + CarsConstants.COL_PRICE, capPrfx + locale.price());
@@ -123,6 +131,10 @@ public enum ImportType implements HasLocalizedCaption {
           + " <span style=\"font-family:" + FontAwesome.class.getSimpleName() + ";\">"
           + FontAwesome.CIRCLE_THIN.getCode() + "</span>");
       addDataProperty(prfx + CarsConstants.COL_DESCRIPTION, capPrfx + locale.description());
+      addSimpleProperty(prfx + CarsConstants.COL_CRITERIA + "Names", capPrfx + locale.criteria()
+          + " (" + locale.name() + ",...)");
+      addSimpleProperty(prfx + CarsConstants.COL_CRITERIA + "Values", capPrfx + locale.criteria()
+          + " (" + locale.value() + ",...)");
 
       prfx = CarsConstants.TBL_CONF_RESTRICTIONS;
       capPrfx = locale.restrictions() + ": ";

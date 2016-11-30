@@ -712,6 +712,12 @@ public final class DataUtils {
     return row.getString(getColumnIndex(columnId, columns));
   }
 
+  public static String getStringQuietly(List<? extends IsColumn> columns, IsRow row,
+      String columnId) {
+
+    return getStringQuietly(row, getColumnIndex(columnId, columns));
+  }
+
   public static String getStringQuietly(IsRow row, int index) {
     if (row == null) {
       return null;

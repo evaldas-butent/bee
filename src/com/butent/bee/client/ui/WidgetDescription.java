@@ -2,12 +2,13 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Calculation;
-import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.RefreshType;
 import com.butent.bee.shared.ui.Relation;
@@ -19,7 +20,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +37,7 @@ public class WidgetDescription implements HasInfo {
 
   private String parentName;
 
-  private Collection<ConditionalStyleDeclaration> dynStyles;
+  private ConditionalStyle conditionalStyle;
 
   private String source;
   private String rowProperty;
@@ -100,8 +100,8 @@ public class WidgetDescription implements HasInfo {
     return carry;
   }
 
-  public Collection<ConditionalStyleDeclaration> getDynStyles() {
-    return dynStyles;
+  public ConditionalStyle getConditionalStyle() {
+    return conditionalStyle;
   }
 
   public Calculation getEditable() {
@@ -161,17 +161,8 @@ public class WidgetDescription implements HasInfo {
       PropertyUtils.appendWithIndex(info, "Render Tokens", "token", getRenderTokens());
     }
 
-    if (getDynStyles() != null && !getDynStyles().isEmpty()) {
-      int cnt = getDynStyles().size();
-      info.add(new Property("Dyn Styles", BeeUtils.bracket(cnt)));
-      int i = 0;
-      for (ConditionalStyleDeclaration conditionalStyle : getDynStyles()) {
-        i++;
-        if (conditionalStyle != null) {
-          PropertyUtils.appendChildrenToProperties(info, "Dyn Style " + BeeUtils.progress(i, cnt),
-              conditionalStyle.getInfo());
-        }
-      }
+    if (getConditionalStyle() != null) {
+      info.add(new Property("Conditional Style", "not null"));
     }
 
     PropertyUtils.addWhenEmpty(info, getClass());
@@ -310,12 +301,12 @@ public class WidgetDescription implements HasInfo {
     this.carry = carry;
   }
 
-  public void setDisablable(boolean disablable) {
-    this.disablable = disablable;
+  public void setConditionalStyle(ConditionalStyle conditionalStyle) {
+    this.conditionalStyle = conditionalStyle;
   }
 
-  public void setDynStyles(Collection<ConditionalStyleDeclaration> dynStyles) {
-    this.dynStyles = dynStyles;
+  public void setDisablable(boolean disablable) {
+    this.disablable = disablable;
   }
 
   public void setEditable(Calculation editable) {
@@ -386,7 +377,7 @@ public class WidgetDescription implements HasInfo {
     this.validation = validation;
   }
 
-  public void updateFrom(EditableColumn editableColumn) {
+  public void updateFrom(EditableColumn editableColumn, ColumnInfo columnInfo) {
     Assert.notNull(editableColumn);
 
     setCaption(editableColumn.getCaption());
@@ -400,5 +391,9 @@ public class WidgetDescription implements HasInfo {
     setRelation(editableColumn.getRelation());
 
     setUpdateMode(editableColumn.getUpdateMode());
+
+    if (columnInfo != null && columnInfo.getDynStyles() != null) {
+      setConditionalStyle(columnInfo.getDynStyles());
+    }
   }
 }

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="AnalysisRows" source="AnalysisRows"
+      caption="=finAnalysisRows" newRowCaption="=finAnalysisRowNew"
+>
+  <Columns>
+    <SimpleColumn name="AnalysisHeader" />
+
+    <SimpleColumn name="Selected" />
+    <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="RowName" />
+    <SimpleColumn name="RowAbbreviation" />
+
+    <SimpleColumn name="RowValues" />
+
+    <xi:include href="viewcolumns/Indicator.viewcolumns.xml" />
+    <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
+
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
+
+    <SimpleColumn name="RowScript" />
+
+    <SimpleColumn name="RowIsPercent" />
+    <SimpleColumn name="RowScale" />
+
+    <SimpleColumn name="RowSplit01" />
+    <SimpleColumn name="RowSplit02" />
+    <SimpleColumn name="RowSplit03" />
+    <SimpleColumn name="RowSplit04" />
+    <SimpleColumn name="RowSplit05" />
+    <SimpleColumn name="RowSplit06" />
+    <SimpleColumn name="RowSplit07" />
+    <SimpleColumn name="RowSplit08" />
+    <SimpleColumn name="RowSplit09" />
+    <SimpleColumn name="RowSplit10" />
+
+    <SimpleColumn name="RowTotal" />
+
+    <SimpleColumn name="Note" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+
+    <SimpleColumn name="RowStyle" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+  </Order>
+</View>

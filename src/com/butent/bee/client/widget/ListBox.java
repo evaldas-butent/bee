@@ -116,9 +116,9 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
     addItem(item, item);
   }
 
-  public void addItem(String item, String value) {
+  public void addItem(String text, String value) {
     OptionElement option = Document.get().createOptionElement();
-    option.setText(item);
+    option.setText(text);
     option.setValue(value);
 
     getSelectElement().add(option, null);

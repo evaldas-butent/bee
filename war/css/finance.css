@@ -19,3 +19,31 @@
   background-color: yellow;
   border-color: darkgreen;
 }
+
+.bee-grid-ChartOfAccounts .bee-Header-commandPanel {
+  margin-right: 5rem;
+}
+.bee-grid-ChartOfAccounts.bee-GridContainer-no-active-row .bee-Header-commandPanel {
+  visibility: hidden;
+}
+
+.bee-form-SimpleAnalysis .bee-TabbedPages-tabCaption {
+  align-self: center;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+}
+.bee-form-SimpleAnalysis .bee-Dimensions-summary div,
+.bee-fin-SimpleAnalysis-info-summary div {
+  font-size: x-small;
+  font-weight: normal;
+  width: fit-content;
+  width: -moz-fit-content;
+  width: -webkit-fit-content;
+}
+
+.bee-fin-Selected-grid-header .bee-HeaderCellCaption,
+.bee-fin-Selected-grid-body {
+  font-family: FontAwesome;
+  font-size: medium;
+  cursor: pointer;
+}
