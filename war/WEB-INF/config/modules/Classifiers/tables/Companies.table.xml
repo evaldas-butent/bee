@@ -42,6 +42,8 @@
     <Enum name="PriceName" key="ItemPrice" label="=priceName" />
 
     <Text name="Notes" label="=notes" />
+
+    <!-- Transrifus { -->
     <Boolean name="Physical" label="=physical" />
 
     <Relation name="BankruptcyRisk" relation="CompanyBankruptRisks" label="=clientBankruptcyRisk" />
@@ -49,8 +51,14 @@
     <Relation name="InvoiceTransferType" relation="InvoiceTransferTypes" label="=invoiceTransferType" />
     <Numeric name="PercentInterest" precision="6" scale="2" label="=percentInterest" />
     <Numeric name="ExternalAdvance" precision="10" scale="2" label="ERP avansas" audit="false" />
+
+    <!-- @DEPRECATED {-->
     <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
     <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
+    <!-- } @DEPRECATED -->
+
     <DateTime name="LastestPayment" label="=trdLatestSalePayment" />
+    <!-- } Transrifus -->
+
   </Fields>
 </Table>

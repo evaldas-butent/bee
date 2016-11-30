@@ -126,9 +126,9 @@
       </SimpleJoin>
      </SimpleJoin>
     </SimpleJoin>
-    <SimpleColumn name="DaysAsBuyer" />
-    <SimpleColumn name="DaysAsSupplier" />
+    <!-- Transrifus { -->
     <SimpleColumn name="PercentInterest" />
+    <!-- } Transrifus -->
 
     <SimpleColumn name="DiscountPercent" />
 

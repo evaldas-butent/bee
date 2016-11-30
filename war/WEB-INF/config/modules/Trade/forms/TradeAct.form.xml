@@ -117,6 +117,7 @@
           newRowEnabled="true" style="&inpw;" />
       </row>
 
+      <!-- @DEPRECATED By Transrifus {
       <row>
         <FlowPanel/>
         <DataSelector source="Vehicle"
@@ -126,6 +127,7 @@
         <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName"
           newRowEnabled="true" style="&inpw;" />
       </row>
+      }-->
 
       <row>
         <Label for="Currency" />
