@@ -1221,15 +1221,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
-  public int getDataIndex(String source) {
-    int index = DataUtils.getColumnIndex(source, getDataColumns());
-    if (BeeConst.isUndef(index)) {
-      logger.warning(getGridName(), source, "not found");
-    }
-    return index;
-  }
-
-  @Override
   public List<String> getDynamicColumnGroups() {
     return dynamicColumnGroups;
   }

@@ -227,6 +227,8 @@ public final class TransportHandler {
       GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
       GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
     }
+    GridFactory.registerGridInterceptor(TBL_CARGO_LOADING, new CargoHandlingGrid());
+    GridFactory.registerGridInterceptor(TBL_CARGO_UNLOADING, new CargoHandlingGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
     FormFactory.registerFormInterceptor(FORM_NEW_SIMPLE_ORDER, new NewSimpleTransportationOrder());

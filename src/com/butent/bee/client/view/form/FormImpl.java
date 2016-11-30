@@ -797,11 +797,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public int getDataIndex(String source) {
-    return DataUtils.getColumnIndex(source, getDataColumns());
-  }
-
-  @Override
   public DateTime getDateTimeValue(String source) {
     int index = getDataIndex(source);
     if (getActiveRow() != null && index >= 0) {
