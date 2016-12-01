@@ -2,9 +2,10 @@ package com.butent.bee.client.modules.transport;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.ParentRowCreator;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
@@ -32,7 +33,7 @@ public class CargoHandlingGrid extends AbstractGridInterceptor {
         String table = null;
 
         if (parentForm.getViewPresenter() instanceof HasGridView) {
-          DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), view);
+          Queries.getRow(view, parentForm.getActiveRowId(), RowCallback.refreshRow(view));
         }
         switch (view) {
           case VIEW_ORDER_CARGO:
