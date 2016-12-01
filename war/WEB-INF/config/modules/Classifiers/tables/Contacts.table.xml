@@ -11,6 +11,7 @@
     <Relation name="Email" relation="Emails" label="=email" />
     <String name="Website" precision="100" label="=website" />
     <String name="Address" precision="100" label="=address" />
+    <String name="Address2" precision="100" label="Adresas2" />
     <String name="PostIndex" precision="20" label="=postIndex" />
     <String name="SocialContacts" precision="100" label="=socialContacts" />
     <String name="Notes" precision="255" label="=notes" />

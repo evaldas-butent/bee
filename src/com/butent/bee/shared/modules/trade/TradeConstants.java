@@ -22,6 +22,7 @@ public final class TradeConstants {
   public static final String SVC_CREDIT_INFO = "CreditInfo";
   public static final String SVC_GET_DOCUMENT_DATA = "getTradeDocumentData";
   public static final String SVC_SEND_TO_ERP = "SendToERP";
+  public static final String SVC_SEND_COMPANY_TO_ERP = "SendCompanyToERP";
   public static final String SVC_REMIND_DEBTS_EMAIL = "RemindDebtsEmail";
 
   public static final String SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER =

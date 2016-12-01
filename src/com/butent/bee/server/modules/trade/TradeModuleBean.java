@@ -222,6 +222,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
       response = sendToERP(reqInfo.getParameter(VAR_VIEW_NAME),
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
+
+    } else if (BeeUtils.same(svc, SVC_SEND_COMPANY_TO_ERP)) {
+      response = sendCompanyToERP(reqInfo.getParameterLong(COL_COMPANY));
+
     } else if (BeeUtils.same(svc, SVC_REMIND_DEBTS_EMAIL)) {
       response = sendDebtsRemindEmail(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER)) {
@@ -1276,6 +1280,54 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
     }
     return c;
+  }
+
+  private ResponseObject sendCompanyToERP(Long companyId) {
+    ResponseObject response = ResponseObject.emptyResponse();
+    SimpleRow data = null;
+
+    if (DataUtils.isId(companyId)) {
+      data = qs.getRow(new SqlSelect()
+          .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
+              "ERPType", "ERPGroup")
+          .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+          .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, COL_COMPANY_TYPE)
+          .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
+          .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+          .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+          .addFrom(TBL_COMPANIES)
+          .addFromLeft(TBL_COMPANY_TYPES,
+              sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+          .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+          .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
+          .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+          .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
+    }
+    if (data != null) {
+      try {
+        String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+        String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+        String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+        String company = BeeUtils.joinItems(data.getValue(COL_COMPANY_NAME),
+            data.getValue(COL_COMPANY_TYPE));
+
+        company = ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+            .importClient(data.getValue(COL_COMPANY), company, data.getValue(COL_COMPANY_CODE),
+                data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
+                data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
+                data.getValue(COL_COUNTRY), data.getValue("ERPType"),
+                data.getValue("ERPGroup"));
+
+        response.setResponse(company);
+
+      } catch (BeeException e) {
+        response.addError(e);
+      }
+    } else {
+      response.addError("Wrong company id", companyId);
+    }
+    return response;
   }
 
   private ResponseObject sendToERP(String viewName, Set<Long> ids) {

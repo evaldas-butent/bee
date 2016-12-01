@@ -268,6 +268,7 @@ class CompanyForm extends CustomCompanyForm {
             Localized.dictionary().valueRequired());
       }
     }
+    super.onSaveChanges(listener, event);
   }
 
   private static void createQrButton(FormView form, IsRow row) {

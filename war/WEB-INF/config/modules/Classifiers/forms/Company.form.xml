@@ -39,7 +39,7 @@
       </row>
 
       <row for="Address">
-        <Label for="Address" style="&lbl;" />
+        <Label for="Address" style="&lbl;" class="bee-required" />
         <cell colSpan="4">
           <InputText source="Address" style="width: 525px;" />
         </cell>
@@ -50,7 +50,7 @@
       </row>
 
       <row for="City">
-        <Label text="=city" style="&lbl;" for="City" />
+        <Label text="=city" style="&lbl;" for="City" class="bee-required" />
         <DataSelector source="City" style="width: 140px;">
           <selectorColumn source="Name" />
           <selectorColumn source="CountryName" />
@@ -59,7 +59,7 @@
           </selectorColumn>
         </DataSelector>
 
-        <Label text="=country" style="&lbl;" for="Country" />
+        <Label text="=country" style="&lbl;" for="Country" class="bee-required" />
         <DataSelector source="Country" style="width: 140px;">
           <renderToken source="CountryName" />
           <renderToken source="CountryCode" prefix=" (" suffix=")" />
@@ -85,9 +85,9 @@
             <InputText source="SocialContacts" style="width: 280px;" />
           </row>
           <row>
-            <Label text="=code" style="&lbl;" for="Code" />
-            <InputText source="Code" style="width: 280px;" />
-            <Label text="=companyVATCode" style="&lbl;" for="VATCode" />
+            <Label text="=code" style="&lbl;" for="Code" class="bee-required" />
+            <InputText source="Code" style="width: 280px;"/>
+            <Label text="=companyVATCode" style="&lbl;" for="VATCode" class="bee-required" />
             <InputText source="VATCode" style="width: 280px;" upperCase="true" />
           </row>
         </Table>
@@ -222,6 +222,7 @@
             <row>
               <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" />
               <DataSelector source="CompanyGroup" summarize="true" />
+              <CheckBox source="Offshore" />
             </row>
             <row>
               <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />
@@ -234,6 +235,20 @@
               </cell>
               <Label style="&lbl;" for="CompanyRelationTypeState" />
               <DataSelector source="CompanyRelationTypeState" summarize="true" />
+            </row>
+            <row>
+              <Label text="Pavadinimas2" style="&lbl;" />
+              <cell colSpan="2">
+                <InputText source="Name2" style="width: 300px;" summarize="true" />
+              </cell>
+              <Label style="&lbl;" for="TypeName2" />
+              <InputText source="TypeName2" style="width: 80px;" summarize="true" />
+            </row>
+            <row>
+              <Label text="Adresas2" style="&lbl;" />
+              <cell colSpan="3">
+                <InputText source="Address2" style="width: 400px;" summarize="true" />
+              </cell>
             </row>
             <row>
               <Label style="&lbl;" for="AverageMileage" />
