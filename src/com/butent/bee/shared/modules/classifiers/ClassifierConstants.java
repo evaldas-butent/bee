@@ -106,6 +106,8 @@ public final class ClassifierConstants {
 
   public static final String VIEW_HOLIDAYS = "Holidays";
 
+  public static final String VIEW_SALE_SERIES = "SaleSeries";
+
   public static final String VIEW_CHART_OF_ACCOUNTS = "ChartOfAccounts";
   public static final String VIEW_JOURNALS = "Journals";
 
