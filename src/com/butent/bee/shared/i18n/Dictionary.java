@@ -243,6 +243,8 @@ public interface Dictionary {
 
   default String before() {return g("before");}
 
+  default String beneficiary() {return g("beneficiary");}
+
   default String birthdaysParties() {return g("birthdaysParties");}
 
   default String blockAfter() {return g("blockAfter");}
