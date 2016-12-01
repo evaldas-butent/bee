@@ -2815,11 +2815,19 @@ public interface Dictionary {
 
   default String finAnalysisValueActual() {return g("finAnalysisValueActual");}
 
+  default String finAnalysisValueActualShort() {return g("finAnalysisValueActualShort");}
+
   default String finAnalysisValueBudget() {return g("finAnalysisValueBudget");}
+
+  default String finAnalysisValueBudgetShort() {return g("finAnalysisValueBudgetShort");}
 
   default String finAnalysisValueDifference() {return g("finAnalysisValueDifference");}
 
+  default String finAnalysisValueDifferenceShort() {return g("finAnalysisValueDifferenceShort");}
+
   default String finAnalysisValuePercentage() {return g("finAnalysisValuePercentage");}
+
+  default String finAnalysisValuePercentageShort() {return g("finAnalysisValuePercentageShort");}
 
   default String finAnalysisValues() {return g("finAnalysisValues");}
 

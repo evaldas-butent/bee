@@ -28,6 +28,8 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
 
   protected abstract String getSelectionColumnName();
 
+  protected abstract String getValuesColumnName();
+
   protected abstract boolean isSplitColumn(String columnName);
 
   protected abstract boolean isSplitVisible(AnalysisSplit analysisSplit);
@@ -57,6 +59,10 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
 
     if (isSplitColumn(columnName)) {
       return new SplitRenderer(cellSource);
+
+    } else if (BeeUtils.same(columnName, getValuesColumnName())) {
+      return new AnalysisValuesEditor.Renderer(cellSource);
+
     } else {
       return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
@@ -76,6 +82,9 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
       }
 
       return listBox;
+
+    } else if (BeeUtils.same(source, getValuesColumnName())) {
+      return new AnalysisValuesEditor();
 
     } else {
       return super.maybeCreateEditor(source, editorDescription, embedded);
