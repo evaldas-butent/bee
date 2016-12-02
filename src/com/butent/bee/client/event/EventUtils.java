@@ -482,6 +482,11 @@ public final class EventUtils {
     }
   }
 
+  public static Element getRelatedEventTargetElement(NativeEvent ev) {
+    EventTarget target = (ev == null) ? null : ev.getRelatedEventTarget();
+    return (target == null) ? null : getTargetElement(target);
+  }
+
   public static Element getSourceElement(GwtEvent<?> ev) {
     Assert.notNull(ev);
     Object source = ev.getSource();

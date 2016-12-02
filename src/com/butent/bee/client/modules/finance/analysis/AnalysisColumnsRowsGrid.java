@@ -61,11 +61,22 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
       return new SplitRenderer(cellSource);
 
     } else if (BeeUtils.same(columnName, getValuesColumnName())) {
-      return new AnalysisValuesEditor.Renderer(cellSource);
+      return new AnalysisValueTypesEditor.Renderer(cellSource);
 
     } else {
       return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
+  }
+
+  @Override
+  public void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
+      boolean rowMode) {
+
+    if (column != null && BeeUtils.same(column.getId(), getValuesColumnName())) {
+      getGridView().getGrid().autoFitColumn(column.getId(), true);
+    }
+
+    super.afterUpdateCell(column, oldValue, newValue, result, rowMode);
   }
 
   @Override
@@ -84,7 +95,7 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
       return listBox;
 
     } else if (BeeUtils.same(source, getValuesColumnName())) {
-      return new AnalysisValuesEditor();
+      return new AnalysisValueTypesEditor(embedded);
 
     } else {
       return super.maybeCreateEditor(source, editorDescription, embedded);

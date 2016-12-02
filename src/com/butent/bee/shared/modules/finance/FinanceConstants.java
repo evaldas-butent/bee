@@ -307,6 +307,9 @@ public final class FinanceConstants {
     return BeeUtils.isTrue(value);
   }
 
+  public static final int ANALYSIS_MIN_SCALE = 0;
+  public static final int ANALYSIS_MAX_SCALE = 5;
+
   public static void register() {
     EnumUtils.register(IndicatorKind.class);
     EnumUtils.register(IndicatorSource.class);

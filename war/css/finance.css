@@ -47,3 +47,48 @@
   font-size: medium;
   cursor: pointer;
 }
+
+.bee-fin-AnalysisValueTypesEditor-container {
+  border: 1px solid #b4b4b4;
+  border-radius: 2px;
+  outline: none;
+}
+.bee-fin-AnalysisValueTypesEditor-table {
+  border-collapse: collapse;
+}
+
+.bee-fin-AnalysisValueTypesEditor-header-cell {
+  padding: 0;
+}
+.bee-fin-AnalysisValueTypesEditor-header {
+  background-color: #e3e3e3;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-fin-AnalysisValueTypesEditor-save,
+.bee-fin-AnalysisValueTypesEditor-cancel {
+  margin: 3px 8px 3px 0;
+  font-size: medium;
+  color: #414142;
+}
+
+.bee-fin-AnalysisValueTypesEditor-toggle-cell {
+  padding: 3px 5px;
+}
+.bee-fin-AnalysisValueTypesEditor-toggle {
+  white-space: nowrap;
+}
+.bee-fin-AnalysisValueTypesEditor-scale-cell {
+  padding-right: 3px;
+}
+.bee-fin-AnalysisValueTypesEditor-table .bee-fin-AnalysisValueTypesEditor-scale {
+  padding: 0;
+  width: 3rem;
+}
