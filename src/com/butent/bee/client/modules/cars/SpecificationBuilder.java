@@ -788,7 +788,18 @@ public class SpecificationBuilder implements InputCallback {
       }
     };
     try {
+      Set<Option> defaults = new HashSet<>();
+
+      for (Option opt : allOptions.values()) {
+        if (!opt.getDimension().isRequired()
+            && currentBranch.getConfiguration().isDefault(opt, specification.getBundle())) {
+          defaults.add(opt);
+          toggle.put(opt, true);
+        }
+      }
       collectRestrictions(allOptions, option, on, toggle);
+      toggle.keySet().removeAll(defaults);
+
       List<String> msgs = new ArrayList<>();
       Dimension dimension = option.getDimension();
 
