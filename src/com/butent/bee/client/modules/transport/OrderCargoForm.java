@@ -33,17 +33,16 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -52,6 +51,7 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -123,10 +123,18 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
                 ((DataSelector) editor).addSelectorHandler(OrderCargoForm.this);
 
-              } else if (BeeUtils.same(source, COL_INSURANCE_CERTIFICATE) && editor instanceof ListBox) {
+              } else if (BeeUtils.same(source, COL_INSURANCE_CERTIFICATE)
+                  && editor instanceof ListBox) {
                 insuranceCertificate = (ListBox) editor;
               }
               super.afterCreateEditor(source, editor, embedded);
+            }
+
+            @Override
+            public void afterInsertRow(IsRow result) {
+              if (BeeUtils.same(getViewName(), TBL_CARGO_INCOMES)) {
+                createPercentExpense(result);
+              }
             }
 
             @Override
@@ -163,6 +171,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
               if (grid == null) {
                 return;
               }
+              FormView form = getFormView();
 
               double servicePercent = BeeUtils.unbox(
                   gridRow.getDouble(grid.getDataIndex(COL_SERVICE_PERCENT)));
@@ -175,7 +184,6 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
               double cargoValue = BeeUtils.unbox(
                   formRow.getDouble(form.getDataIndex(COL_CARGO_VALUE)));
-
 
               double expenseSum = getExpenseSum(cargoValue, servicePercent);
 
@@ -318,7 +326,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
               Long currency = BeeUtils.nvl(valueCurrency, incomeCurrency);
 
               updExpenses.addRow(expense.getId(), expense.getVersion(),
-                  new String[]{BeeUtils.toString(amount), BeeUtils.toString(currency)});
+                  new String[] {BeeUtils.toString(amount), BeeUtils.toString(currency)});
             }
 
             Queries.updateRows(updExpenses);
@@ -335,6 +343,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   public void onDataSelector(SelectorEvent event) {
     if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES) && event.isOpened()) {
       event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getActiveRowId()));
+
     } else if (BeeUtils.containsSame(event.getRelatedViewName(), TBL_SERVICES)) {
       DataInfo servicesView = Data.getDataInfo(TBL_SERVICES);
       IsRow row = event.getRelatedRow();
@@ -342,25 +351,21 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       if (row == null) {
         return;
       }
-
       Double servicePercent = row.getDouble(servicesView.getColumnIndex(COL_SERVICE_PERCENT));
 
       if (!BeeUtils.isPositive(servicePercent)) {
         if (insuranceCertificate != null) {
           insuranceCertificate.setEnabled(false);
         }
-
         return;
       } else if (insuranceCertificate != null) {
         insuranceCertificate.setEnabled(true);
       }
-
       Double cargoValue = getFormView().getDoubleValue(COL_CARGO_VALUE);
 
       if (BeeUtils.isPositive(cargoValue)) {
         return;
       }
-
       getFormView().notifySevere(Localized.dictionary().cargoValue(),
           Localized.dictionary().valueRequired());
     }
@@ -415,7 +420,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       FormView parentForm = ViewHelper.getForm(gridView.asWidget());
 
       if (parentForm != null && BeeUtils.same(parentForm.getFormName(), FORM_ORDER)
-                                            && Data.isNull(form.getViewName(), newRow, COL_ORDER)) {
+          && Data.isNull(form.getViewName(), newRow, COL_ORDER)) {
         IsRow parentRow = parentForm.getActiveRow();
 
         if (parentRow != null) {
