@@ -6,11 +6,11 @@
         newRowColumns="Account"
 >
   <g:columns>
-    <RelColumn name="Account" visible="false" />
     <DataColumn name="BankName" />
     <DataColumn name="BankCode" />
     <DataColumn name="SWIFTCode" />
-    <DataColumn name="BankAccount" />
+    <RelColumn name="Account" visible="true" renderColumns="BankAccount"
+               choiceColumns="BankName BankCode SWIFTCode BankAccount CurrencyName" />
     <DataColumn name="CurrencyName" />
     <DataColumn name="IBANCode" />
     <DataColumn name="Notes" />
