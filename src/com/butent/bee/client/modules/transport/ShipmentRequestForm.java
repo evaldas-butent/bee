@@ -110,6 +110,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   private static final String NAME_VALUE_LABEL = "ValueLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
+  private static final String NAME_WEIGHT_LABEL = "WeightLabel";
 
   private static final String STYLE_PREFIX = "bee-tr-";
   private static final String STYLE_INPUT_MODE_FULL = STYLE_PREFIX + "input-mode-full";
@@ -236,10 +237,26 @@ class ShipmentRequestForm extends PrintFormInterceptor {
           return false;
         }
       }
+
+      if (isSelfService()) {
+        String value = row.getString(getDataIndex(COL_CARGO_WEIGHT));
+        if (BeeUtils.isEmpty(value)) {
+          getFormView().notifySevere(dic.fieldRequired(dic.weight()));
+          getFormView().focus(COL_CARGO_WEIGHT);
+          return false;
+        }
+
+        value = row.getString(getDataIndex(COL_CARGO_WEIGHT_UNIT));
+        if (BeeUtils.isEmpty(value)) {
+          getFormView().notifySevere(dic.fieldRequired(dic.weightUnit()));
+          getFormView().focus(COL_CARGO_WEIGHT_UNIT);
+          return false;
+        }
+      }
+
       if (!checkValidation()) {
-        getFormView().notifySevere(
-            dic.allValuesCannotBeEmpty() + " (" + BeeUtils.join(",", dic.height(), dic.width(),
-                dic.length(), dic.trRequestCargoLdm()) + ")");
+        getFormView().notifySevere(dic.allValuesCannotBeEmpty() + " (" + BeeUtils.join(",",
+            dic.height(), dic.width(), dic.length(), dic.trRequestCargoLdm()) + ")");
         return false;
       }
     }
@@ -257,6 +274,10 @@ class ShipmentRequestForm extends PrintFormInterceptor {
     }
     styleRequiredField(NAME_VALUE_LABEL,
         row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)) != null);
+
+    if (isSelfService()) {
+      styleRequiredField(NAME_WEIGHT_LABEL, true);
+    }
 
     super.beforeRefresh(form, row);
   }
