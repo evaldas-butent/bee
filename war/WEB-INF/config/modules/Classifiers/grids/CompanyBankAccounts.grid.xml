@@ -11,6 +11,7 @@
       horizontalAlignment="center">
       <render><ui:expression>row.DefaultBankAccount ? '\u2713' : ''</ui:expression></render>
     </DataColumn>
+    <DataColumn name="Beneficiary" autoFit="true"/>
     <RelColumn name="Bank" renderColumns="BankName BankCode" />
     <DataColumn name="BankAccount" />
     <RelColumn name="Currency" />

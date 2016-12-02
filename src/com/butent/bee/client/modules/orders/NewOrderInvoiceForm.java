@@ -100,9 +100,8 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
       } else {
         if (Data.isNull(VIEW_ORDER_CHILD_INVOICES, getActiveRow(), COL_TRADE_SALE_SERIES)
             && !isProforma()) {
-          getFormView().notifySevere(
-              Localized.dictionary().trdInvoicePrefix() + " "
-                  + Localized.dictionary().valueRequired());
+          getFormView().notifySevere(Localized.dictionary()
+              .fieldRequired(Localized.dictionary().trdInvoicePrefix()));
           return;
         }
 
@@ -260,9 +259,8 @@ public class NewOrderInvoiceForm extends AbstractFormInterceptor {
 
                           if (Data.isNull(VIEW_ORDER_CHILD_INVOICES, activeRow,
                               COL_TRADE_SALE_SERIES)) {
-                            getFormView().notifySevere(
-                                Localized.dictionary().trdInvoicePrefix() + " "
-                                    + Localized.dictionary().valueRequired());
+                            getFormView().notifySevere(Localized.dictionary()
+                                .fieldRequired(Localized.dictionary().trdInvoicePrefix()));
                             return;
                           }
 

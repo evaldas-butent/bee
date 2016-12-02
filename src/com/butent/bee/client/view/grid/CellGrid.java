@@ -1852,7 +1852,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
         } else {
           activateCell(row, col, true);
-          if (columnInfo.getColumn().instantKarma(rowValue)) {
+          if (columnInfo.getColumn().instantKarma()) {
             startEditing(rowValue, col, target, EditStartEvent.CLICK);
           }
         }

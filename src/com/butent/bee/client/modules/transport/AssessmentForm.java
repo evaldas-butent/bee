@@ -763,7 +763,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         return;
       }
     }
-    form.notifySevere(loc.department(), loc.valueRequired());
+    form.notifySevere(loc.fieldRequired(loc.department()));
     event.consume();
   }
 

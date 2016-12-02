@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2016-10-27T09:43:25 -->
+<!-- 2016-11-30T13:44:02 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" whenResourceMissingType="Error" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -36,13 +36,17 @@
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
+		<field name="Id" class="java.lang.Long"/>
 		<field name="BankName" class="java.lang.String"/>
 		<field name="BankCode" class="java.lang.String"/>
 		<field name="SWIFTCode" class="java.lang.String"/>
 		<field name="CurrencyName" class="java.lang.String"/>
 		<field name="BankAccount" class="java.lang.String"/>
 		<field name="DefaultBankAccount" class="java.lang.Long"/>
-		<sortField name="DefaultBankAccount" order="Descending"/>
+		<field name="Beneficiary" class="java.lang.Boolean">
+			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<sortField name="Id"/>
 	</subDataset>
 	<subDataset name="CompanyContacts" whenResourceMissingType="Error" uuid="74f496fd-b1c5-4919-8f26-1275905e21c6">
 		<parameter name="qs" class="com.butent.bee.server.data.QueryServiceBean"/>
@@ -214,7 +218,7 @@
 									<textElement markup="html">
 										<font size="8" isBold="false"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.joinWords($F{DefaultBankAccount} != null ? "<b>" + $R{bankBeneficiary} + "</b>" : "<b>" + $R{bankCorrespondent} + "</b>", $F{BankName})]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.joinWords($F{Beneficiary} != null ? "<b>" + $R{bankBeneficiary} + "</b>" : "<b>" + $R{bankCorrespondent} + "</b>", $F{BankName})]]></textFieldExpression>
 								</textField>
 								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 									<reportElement positionType="Float" x="0" y="20" width="275" height="10" isRemoveLineWhenBlank="true" uuid="799d52f7-1d26-42b5-a514-39e4ab1058c2"/>

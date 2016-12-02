@@ -97,8 +97,8 @@ public class OrderForm extends PrintFormInterceptor {
         () -> {
           String id = row.getString(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE));
           if (BeeUtils.isEmpty(id)) {
-            form.notifySevere(Localized.dictionary().warehouse() + " "
-                + Localized.dictionary().valueRequired());
+            form.notifySevere(Localized.dictionary()
+                .fieldRequired(Localized.dictionary().warehouse()));
             return;
           }
 
@@ -327,15 +327,15 @@ public class OrderForm extends PrintFormInterceptor {
 
       if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())) {
         if (!BeeUtils.isPositive(warehouse)) {
-          getFormView().notifySevere(Localized.dictionary().warehouse() + " "
-              + Localized.dictionary().valueRequired());
+          getFormView().notifySevere(Localized.dictionary()
+              .fieldRequired(Localized.dictionary().warehouse()));
           return false;
         }
       }
 
       if (!BeeUtils.isPositive(company)) {
-        getFormView().notifySevere(Localized.dictionary().client() + " "
-            + Localized.dictionary().valueRequired());
+        getFormView().notifySevere(Localized.dictionary()
+            .fieldRequired(Localized.dictionary().client()));
         return false;
       }
     }

@@ -245,6 +245,8 @@ public interface Dictionary {
 
   default String before() {return g("before");}
 
+  default String beneficiary() {return g("beneficiary");}
+
   default String birthdaysParties() {return g("birthdaysParties");}
 
   default String blockAfter() {return g("blockAfter");}
@@ -2684,6 +2686,12 @@ public interface Dictionary {
 
   default String fetchWorkSchedule() {return g("fetchWorkSchedule");}
 
+  default String fieldRequired(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("fieldRequired"), _m);
+  }
+
   default String fields() {return g("fields");}
 
   default String file() {return g("file");}
@@ -2821,11 +2829,19 @@ public interface Dictionary {
 
   default String finAnalysisValueActual() {return g("finAnalysisValueActual");}
 
+  default String finAnalysisValueActualShort() {return g("finAnalysisValueActualShort");}
+
   default String finAnalysisValueBudget() {return g("finAnalysisValueBudget");}
+
+  default String finAnalysisValueBudgetShort() {return g("finAnalysisValueBudgetShort");}
 
   default String finAnalysisValueDifference() {return g("finAnalysisValueDifference");}
 
+  default String finAnalysisValueDifferenceShort() {return g("finAnalysisValueDifferenceShort");}
+
   default String finAnalysisValuePercentage() {return g("finAnalysisValuePercentage");}
+
+  default String finAnalysisValuePercentageShort() {return g("finAnalysisValuePercentageShort");}
 
   default String finAnalysisValues() {return g("finAnalysisValues");}
 

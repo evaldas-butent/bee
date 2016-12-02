@@ -78,7 +78,7 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
     return CellType.HTML;
   }
 
-  public boolean isCaptionEvent(NativeEvent event) {
+  public static boolean isCaptionEvent(NativeEvent event) {
     return EventUtils.hasClassName(event, STYLE_CAPTION);
   }
 

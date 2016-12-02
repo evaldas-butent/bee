@@ -6,6 +6,7 @@
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="OrderCargo" viewName="OrderCargo" caption="=cargo" showRowId="true"
         width="900" height="870"
@@ -42,12 +43,20 @@
           <Label text="=trLoadedKilometersTotal" />
         </cell>
         <cell style="padding-right: 10px;">
-          <IntegerLabel name="TotalLoaded" style="font-weight: bold;" />
+          <IntegerLabel name="TotalLoaded" style="font-weight: bold;">
+            <render>
+              <ui:expression>row.LoadedKilometers</ui:expression>
+            </render>
+          </IntegerLabel>
         </cell>
         <cell style="padding-right: 10px; text-align: right;">
           <Label text="=trEmptyKilometersTotal" />
         </cell>
-        <IntegerLabel name="TotalEmpty" style="font-weight: bold;" />
+        <IntegerLabel name="TotalEmpty" style="font-weight: bold;">
+          <render>
+            <ui:expression>row.EmptyKilometers</ui:expression>
+          </render>
+        </IntegerLabel>
       </row>
     </Table>
 

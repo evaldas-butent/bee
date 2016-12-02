@@ -1,5 +1,7 @@
 package com.butent.bee.client.view.form;
 
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
@@ -1474,7 +1476,49 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     IsRow newRow = event.getRow();
 
     if (DataUtils.sameId(getActiveRow(), newRow)) {
-      setActiveRow(newRow);
+      if (getOldRow() == null
+          || getActiveRow().sameValues(getOldRow()) && getActiveRow().sameProperties(getOldRow())) {
+
+        setActiveRow(newRow);
+
+      } else {
+        IsRow changedRow = DataUtils.cloneRow(newRow);
+
+        for (int i = 0; i < changedRow.getNumberOfCells(); i++) {
+          String oldValue = getOldRow().getString(i);
+          String activeValue = getActiveRow().getString(i);
+
+          if (!BeeUtils.equalsTrimRight(oldValue, activeValue)) {
+            changedRow.setValue(i, activeValue);
+          }
+        }
+
+        Map<String, String> oldProperties = new HashMap<>();
+        if (!BeeUtils.isEmpty(getOldRow().getProperties())) {
+          oldProperties.putAll(getOldRow().getProperties());
+        }
+
+        Map<String, String> activeProperties = new HashMap<>();
+        if (!BeeUtils.isEmpty(getActiveRow().getProperties())) {
+          activeProperties.putAll(getActiveRow().getProperties());
+        }
+
+        if (!oldProperties.equals(activeProperties)) {
+          MapDifference<String, String> difference =
+              Maps.difference(oldProperties, activeProperties);
+
+          difference.entriesDiffering().forEach((key, valueDifference) ->
+              changedRow.setProperty(key, valueDifference.rightValue()));
+
+          difference.entriesOnlyOnLeft().forEach((key, value) ->
+              changedRow.removeProperty(key));
+          difference.entriesOnlyOnRight().forEach(changedRow::setProperty);
+        }
+
+        setActiveRow(changedRow);
+        setOldRow(DataUtils.cloneRow(newRow));
+      }
+
       refreshData(event.refreshChildren(), false);
     }
   }

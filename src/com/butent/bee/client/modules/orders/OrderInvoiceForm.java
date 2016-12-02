@@ -78,8 +78,8 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
           arg0 -> Global.confirm(Localized.dictionary().trConfirmProforma(), () -> {
 
             if (Data.isNull(VIEW_ORDER_CHILD_INVOICES, row, COL_TRADE_SALE_SERIES)) {
-              getFormView().notifySevere(Localized.dictionary().trdInvoicePrefix() + " "
-                  + Localized.dictionary().valueRequired());
+              getFormView().notifySevere(Localized.dictionary()
+                  .fieldRequired(Localized.dictionary().trdInvoicePrefix()));
               return;
             }
 

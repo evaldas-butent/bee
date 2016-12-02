@@ -31,6 +31,11 @@ public class AnalysisRowsGrid extends AnalysisColumnsRowsGrid {
   }
 
   @Override
+  protected String getValuesColumnName() {
+    return COL_ANALYSIS_ROW_VALUES;
+  }
+
+  @Override
   protected boolean isSplitColumn(String columnName) {
     return ArrayUtils.contains(COL_ANALYSIS_ROW_SPLIT, columnName);
   }

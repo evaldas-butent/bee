@@ -83,6 +83,8 @@ public interface IsRow extends HasCustomProperties {
 
   void reset();
 
+  boolean sameValues(IsRow other);
+
   void setCell(int index, IsCell cell);
 
   void setCells(List<IsCell> cells);

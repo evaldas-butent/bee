@@ -224,14 +224,14 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       if (BeeUtils.unbox(row.getBoolean(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)))) {
         String value = row.getString(getDataIndex(COL_CARGO_VALUE));
         if (BeeUtils.isEmpty(value)) {
-          getFormView().notifySevere(BeeUtils.join(" ", dic.valuation(), dic.valueRequired()));
+          getFormView().notifySevere(dic.fieldRequired(dic.valuation()));
           getFormView().focus(COL_CARGO_VALUE);
           return false;
         }
 
         Long currency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
         if (!DataUtils.isId(currency)) {
-          getFormView().notifySevere(BeeUtils.join(" ", dic.currency(), dic.valueRequired()));
+          getFormView().notifySevere(dic.fieldRequired(dic.currency()));
           getFormView().focus(COL_CARGO_VALUE_CURRENCY);
           return false;
         }

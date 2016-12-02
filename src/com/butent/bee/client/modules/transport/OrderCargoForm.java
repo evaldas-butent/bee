@@ -43,7 +43,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
-import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -51,8 +51,7 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -106,8 +105,16 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     } else if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_CARGO_INCOMES:
-          final FormView form = getFormView();
+          ((ChildGrid) widget).addReadyHandler(re -> {
+            GridView gridView = ViewHelper.getChildGrid(getFormView(), name);
 
+            if (gridView != null) {
+              gridView.getGrid().addMutationHandler(mu -> {
+                refresh(getLongValue(COL_CURRENCY));
+                Data.onTableChange(TBL_CARGO_TRIPS, EnumSet.of(DataChangeEvent.Effect.REFRESH));
+              });
+            }
+          });
           ((ChildGrid) widget).setGridInterceptor(new TransportVatGridInterceptor() {
             @Override
             public void afterCreateEditor(String source, Editor editor, boolean embedded) {
@@ -115,36 +122,11 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
                   && editor instanceof DataSelector) {
 
                 ((DataSelector) editor).addSelectorHandler(OrderCargoForm.this);
-              } else if (BeeUtils.same(source,
-                  COL_INSURANCE_CERTIFICATE) && editor instanceof ListBox) {
+
+              } else if (BeeUtils.same(source, COL_INSURANCE_CERTIFICATE) && editor instanceof ListBox) {
                 insuranceCertificate = (ListBox) editor;
               }
-
               super.afterCreateEditor(source, editor, embedded);
-            }
-
-            @Override
-            public void afterDeleteRow(long rowId) {
-              refresh(form.getLongValue(COL_CURRENCY));
-            }
-
-            @Override
-            public void afterInsertRow(IsRow result) {
-
-              if (BeeUtils.same(getViewName(), TBL_CARGO_INCOMES)) {
-                createPercentExpense(result);
-              }
-
-              refresh(form.getLongValue(COL_CURRENCY));
-            }
-
-            @Override
-            public void afterUpdateCell(IsColumn column, String oldValue, String newValue,
-                IsRow result, boolean rowMode) {
-              if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
-                  COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-                refresh(form.getLongValue(COL_CURRENCY));
-              }
             }
 
             @Override
@@ -233,7 +215,6 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
                     }
                   });
             }
-
           });
           break;
 
@@ -264,17 +245,6 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           });
           break;
 
-        case TBL_CARGO_LOADING:
-        case TBL_CARGO_UNLOADING:
-          ((ChildGrid) widget).addReadyHandler(re -> {
-            GridView gridView = ViewHelper.getChildGrid(getFormView(), name);
-
-            if (gridView != null) {
-              gridView.getGrid().addMutationHandler(mu -> refreshKilometers());
-            }
-          });
-          break;
-
         case VIEW_CARGO_TRIPS:
           ((ChildGrid) widget).setGridInterceptor(new CargoTripsGrid());
           break;
@@ -288,9 +258,6 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    refresh(row.getLong(form.getDataIndex(COL_CURRENCY)));
-    refreshKilometers();
-
     Widget cmrWidget = form.getWidgetBySource(COL_CARGO_CMR);
     if (cmrWidget instanceof DataSelector) {
       Filter filter;
@@ -477,17 +444,17 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   }
 
   private void refresh(Long currency) {
-    final FormView form = getFormView();
-    final Widget widget = form.getWidgetByName(COL_AMOUNT);
+    Widget widget = getWidgetByName(COL_AMOUNT);
 
     if (widget != null) {
       widget.getElement().setInnerText(null);
+      Long id = getActiveRowId();
 
-      if (!DataUtils.isId(getActiveRow().getId())) {
+      if (!DataUtils.isId(id)) {
         return;
       }
       ParameterList args = TransportHandler.createArgs(SVC_GET_CARGO_TOTAL);
-      args.addDataItem(COL_CARGO, getActiveRow().getId());
+      args.addDataItem(COL_CARGO, id);
 
       if (DataUtils.isId(currency)) {
         args.addDataItem(COL_CURRENCY, currency);
@@ -495,83 +462,13 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
-          response.notify(form);
+          response.notify(getFormView());
 
-          if (response.hasErrors()) {
-            return;
+          if (!response.hasErrors()) {
+            widget.getElement().setInnerText(response.getResponseAsString());
           }
-          widget.getElement().setInnerText(response.getResponseAsString());
         }
       });
-      ChildGrid grid = (ChildGrid) getWidgetByName(VIEW_CARGO_TRIPS);
-
-      if (Objects.nonNull(grid) && Objects.nonNull(grid.getPresenter())) {
-        grid.getPresenter().refresh(false, false);
-      }
-    }
-  }
-
-  private void refreshKilometers() {
-    Integer emptyKm = null;
-    Integer loadedKm = null;
-
-    for (String view : new String[] {TBL_CARGO_LOADING, TBL_CARGO_UNLOADING}) {
-      GridView grid = ViewHelper.getChildGrid(getFormView(), view);
-
-      if (grid != null && !grid.isEmpty()) {
-        List<? extends IsRow> childRows = grid.getRowData();
-        int emptyKmIndex = grid.getDataIndex(COL_EMPTY_KILOMETERS);
-        int loadedKmIndex = grid.getDataIndex(COL_LOADED_KILOMETERS);
-
-        int unplannedManagerKmIndex = grid.getDataIndex(COL_UNPLANNED_MANAGER_KM);
-        int unplannedDriverKmIndex = grid.getDataIndex(COL_UNPLANNED_DRIVER_KM);
-
-        for (IsRow childRow : childRows) {
-          Integer v = childRow.getInteger(emptyKmIndex);
-          if (v != null) {
-            if (emptyKm == null) {
-              emptyKm = v;
-            } else {
-              emptyKm += v;
-            }
-          }
-
-          v = childRow.getInteger(loadedKmIndex);
-          if (v != null) {
-            if (loadedKm == null) {
-              loadedKm = v;
-            } else {
-              loadedKm += v;
-            }
-          }
-
-          v = childRow.getInteger(unplannedManagerKmIndex);
-          if (v != null) {
-            if (loadedKm == null) {
-              loadedKm = v;
-            } else {
-              loadedKm += v;
-            }
-          }
-
-          v = childRow.getInteger(unplannedDriverKmIndex);
-          if (v != null) {
-            if (loadedKm == null) {
-              loadedKm = v;
-            } else {
-              loadedKm += v;
-            }
-          }
-        }
-      }
-    }
-    Widget widget = getFormView().getWidgetByName("TotalEmpty");
-    if (widget instanceof IntegerLabel) {
-      ((IntegerLabel) widget).setValue(emptyKm);
-    }
-    widget = getFormView().getWidgetByName("TotalLoaded");
-    if (widget instanceof IntegerLabel) {
-      ((IntegerLabel) widget).setValue(loadedKm);
     }
   }
 }

@@ -10,6 +10,7 @@
     <String name="BankAccount" unique="true" precision="30" label="=bankAccount" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
     <String name="IBANcode" precision="30" label="=ibanCode" />
+    <Boolean name="Beneficiary" label="=beneficiary" />
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

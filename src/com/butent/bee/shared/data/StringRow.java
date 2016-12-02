@@ -138,6 +138,11 @@ public class StringRow extends AbstractRow {
   }
 
   @Override
+  public boolean sameValues(IsRow other) {
+    return (other instanceof StringRow) && values.equals(((StringRow) other).getValues());
+  }
+
+  @Override
   public void setCell(int index, IsCell cell) {
     assertIndex(index);
     values.set(index, cell.getValue().getString());
@@ -240,10 +245,5 @@ public class StringRow extends AbstractRow {
 
   protected void assertIndex(int index) {
     Assert.isIndex(index, getNumberOfCells());
-  }
-
-  @Override
-  protected boolean sameValues(IsRow other) {
-    return (other instanceof StringRow) && values.equals(((StringRow) other).getValues());
   }
 }
