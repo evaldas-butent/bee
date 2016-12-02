@@ -2680,6 +2680,12 @@ public interface Dictionary {
 
   default String fetchWorkSchedule() {return g("fetchWorkSchedule");}
 
+  default String fieldRequired(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("fieldRequired"), _m);
+  }
+
   default String fields() {return g("fields");}
 
   default String file() {return g("file");}

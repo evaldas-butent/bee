@@ -199,8 +199,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             formView.addCellValidationHandler(COL_ADDRESS, validationEvent -> {
 
               if (BeeUtils.isEmpty(validationEvent.getNewValue())) {
-                formView.notifySevere(Localized.dictionary().address(),
-                    Localized.dictionary().valueRequired());
+                formView.notifySevere(Localized.dictionary()
+                    .fieldRequired(Localized.dictionary().address()));
                 return false;
               }
               return true;
@@ -487,7 +487,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     String phone = row.getString(Data.getColumnIndex(getViewName(), ALS_CONTACT_PHONE));
 
     if (BeeUtils.isEmpty(phone)) {
-      form.notifySevere(Localized.dictionary().phone(), Localized.dictionary().valueRequired());
+      form.notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().phone()));
       return false;
     }
 
@@ -498,7 +498,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       String address = row.getString(Data.getColumnIndex(getViewName(), ALS_CONTACT_ADDRESS));
 
       if (BeeUtils.isEmpty(address)) {
-        form.notifySevere(Localized.dictionary().address(), Localized.dictionary().valueRequired());
+        form.notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().address()));
         return false;
       }
     }
@@ -507,8 +507,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         ALS_CREATOR_DEPARTMENT_NAME));
 
     if (BeeUtils.isEmpty(department)) {
-      form.notifySevere(Localized.dictionary().companyDepartment(),
-              Localized.dictionary().valueRequired());
+      form.notifySevere(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().companyDepartment()));
       return false;
     }
 
@@ -517,8 +517,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             COL_WARRANTY_MAINTENANCE));
 
     if (DataUtils.isId(serviceMaintenanceId) && !DataUtils.isId(warrantyTypeId)) {
-      form.notifySevere(Localized.dictionary().svcWarrantyType(),
-              Localized.dictionary().valueRequired());
+      form.notifySevere(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().svcWarrantyType()));
       return false;
     }
 

@@ -108,8 +108,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     int status = parentRow.getInteger(statusIdx);
 
     if (BeeUtils.isEmpty(warehouse) && status == OrdersStatus.APPROVED.ordinal()) {
-      presenter.getGridView().notifySevere(Localized.dictionary().warehouse() + " "
-          + Localized.dictionary().valueRequired());
+      presenter.getGridView().notifySevere(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().warehouse()));
     } else {
       ensurePicker().show(parentRow, presenter.getMainView().getElement());
     }
