@@ -23,7 +23,7 @@
 
     <String name="Number" precision="50" label="=number" />
     <Relation name="Cmr" relation="Documents" />
-    <Boolean name="Partial" label="=partial" />
+    <Boolean name="Partial" label="=partial" defValue="1" />
     <Boolean name="Outsized" label="=outsized" />
     <Boolean name="Dangerous" label="=dangerous" />
 

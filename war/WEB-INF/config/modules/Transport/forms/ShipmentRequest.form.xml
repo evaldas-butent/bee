@@ -241,17 +241,18 @@
     </Details>
     &separator;
 
+    <HorizontalPanel>
+      <Label for="Manager" />
+      <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+                    newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
+    </HorizontalPanel>
+    &separator;
+
     <Details name="AdditionalInfo" open="true">
       <Summary text="=trRequestAdditionalInfo" style="&summary;" />
 
       <Table kind="controls" style="&table;" cellStyle="&cells;">
         &cols;
-
-        <row>
-          <Label for="Manager" />
-          <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-                        newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
-        </row>
 
         <row>
           <Label for="Vehicle" />
