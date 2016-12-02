@@ -64,7 +64,7 @@
         <DataSelector name="Manager" source="Manager" style="&input; width:200px;" caching="local"
           viewName="AssessmentExecutors" choiceColumns="LastName FirstName DepartmentName"
           editSource="CompanyPerson" renderColumns="ManagerFirstName ManagerLastName"
-                      newRowEnabled="false" required="true" />
+                      newRowEnabled="false" required="true" filter="Department" />
         <Label for="DepartmentName" style="&inline; margin:0 10px 0 10px; padding-top:1px;" />
         <TextLabel source="DepartmentName" style="&inline; padding-top:1px; font-weight:bold;" />
       </FlowPanel>
@@ -96,7 +96,7 @@
           targetRelColumn="Assessment" sourceRelColumn="User"
           choiceColumns="FirstName LastName DepartmentName" renderColumns="FirstName LastName"
           editEnabled="false" newRowEnabled="false" caching="local"
-          style="&inline; width:400px;" label="=crmTaskObservers" />
+          style="&inline; width:400px;" label="=crmTaskObservers" filter="Department" />
       </FlowPanel>
       <FlowPanel style="&section;">
         <Label text="=crmTaskObserverGroups" style="&labelLeft;" />

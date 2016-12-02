@@ -372,6 +372,7 @@ public final class TransportConstants {
   public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
   public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
+  public static final String PRM_SALES_RESPONSIBILITY = "SalesResponsibility";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
@@ -422,6 +423,7 @@ public final class TransportConstants {
   public static final String TBL_ASSESSMENTS_USAGE = "AssessmentsUsage";
   public static final String TBL_ASSESSMENT_FORWARDERS = "AssessmentForwarders";
   public static final String TBL_SALES_USAGE = "SalesUsage";
+  public static final String TBL_ASSESSMENT_OBSERVERS = "AssessmentObservers";
 
   public static final String TBL_DRIVERS = "Drivers";
   public static final String TBL_DRIVER_GROUPS = "DriverGroups";

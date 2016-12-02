@@ -57,6 +57,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -97,6 +98,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
+import com.lowagie.text.Row;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -418,7 +420,8 @@ public class TransportModuleBean implements BeeModule {
         BeeParameter.createRelation(module, PRM_CARGO_TYPE, true, TBL_CARGO_TYPES,
             COL_CARGO_TYPE_NAME),
         BeeParameter.createRelation(module, PRM_CARGO_SERVICE, TBL_SERVICES, COL_SERVICE_NAME),
-        BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
+        BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true),
+        BeeParameter.createRelation(module, PRM_SALES_RESPONSIBILITY, TBL_RESPONSIBILITIES,"Name"));
   }
 
   @Override
@@ -792,7 +795,7 @@ public class TransportModuleBean implements BeeModule {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void convertToMainCurrency(ViewQueryEvent event){
+      public void convertToMainCurrency(ViewQueryEvent event) {
         if (event.isAfter(VIEW_SELF_SERVICE_INVOICES)) {
           BeeRowSet rowSet = event.getRowset();
           Long mainCurrency = prm.getRelation(PRM_CURRENCY);
@@ -830,6 +833,59 @@ public class TransportModuleBean implements BeeModule {
             row.setProperty(PROP_AMOUNT_IN_EUR, amountMap.get(row.getId()));
             if (paidMap.containsKey(row.getId())) {
               row.setProperty(PROP_PAID_IN_EUR, paidMap.get(row.getId()));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void maybeInsertAssessmentObservers(ViewInsertEvent event) {
+        String tbl = sys.getViewSource(event.getTargetName());
+
+        if (BeeUtils.same(tbl, TBL_ASSESSMENTS) && event.isAfter()) {
+          Long responsibility = prm.getRelation(PRM_SALES_RESPONSIBILITY);
+          Long target = event.getRow().getId();
+          int customerIdx = DataUtils.getColumnIndex(COL_CUSTOMER, event.getColumns());
+          Long customer;
+
+          if (BeeConst.isUndef(customerIdx)) {
+            customer = qs.getLong(new SqlSelect()
+              .addFields(TBL_ORDERS, COL_CUSTOMER)
+              .addFrom(TBL_ASSESSMENTS)
+              .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS,
+                COL_CARGO))
+              .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+              .setWhere(sys.idEquals(TBL_ASSESSMENTS, target)));
+          } else {
+            customer = event.getRow().getLong(customerIdx);
+          }
+
+          if (DataUtils.isId(customer) && DataUtils.isId(responsibility)) {
+            SqlSelect selectUsers = new SqlSelect()
+                .addFields(TBL_COMPANY_USERS, COL_USER)
+                .addFrom(TBL_COMPANY_USERS)
+                .setWhere(SqlUtils.and(SqlUtils.equals(TBL_COMPANY_USERS,
+                    COL_COMPANY_USER_RESPONSIBILITY, responsibility, COL_COMPANY, customer)));
+
+            SqlSelect selectObservers = new SqlSelect()
+                .addFields(TBL_ASSESSMENT_OBSERVERS, COL_USER)
+                .addFrom(TBL_ASSESSMENT_OBSERVERS)
+                .setWhere(SqlUtils.equals(TBL_ASSESSMENT_OBSERVERS, COL_ASSESSMENT, target));
+
+            Set<Long> observers = qs.getLongSet(selectObservers);
+            Set<Long> users = qs.getLongSet(selectUsers);
+
+            users.removeAll(observers);
+
+            if (!BeeUtils.isEmpty(users)) {
+              for (Long user : users) {
+                SqlInsert insert = new SqlInsert(TBL_ASSESSMENT_OBSERVERS)
+                    .addFields(COL_ASSESSMENT, COL_USER);
+                insert.addValues(target, user);
+
+                qs.insertData(insert);
+              }
             }
           }
         }
