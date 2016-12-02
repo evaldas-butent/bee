@@ -13,6 +13,8 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -27,8 +29,11 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewSupplier;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
@@ -36,7 +41,9 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -48,6 +55,7 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.ui.UserInterface;
@@ -160,6 +168,40 @@ public final class TradeActKeeper {
     GridFactory.registerGridInterceptor(VIEW_TRADE_ACT_FILES,
         new FileGridInterceptor(COL_TRADE_ACT, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
+
+    if (isClientArea()) {
+      GridFactory.registerGridInterceptor(GRID_SALES, new AbstractGridInterceptor() {
+
+        @Override
+        public void onEditStart(EditStartEvent event) {
+          super.onEditStart(event);
+
+          final IsRow row = event.getRowValue();
+
+          if (!DataUtils.isId(row.getId())) {
+            return;
+          }
+
+          Queries.update(VIEW_SALES, row.getId(), "Visited", Value.getValue(new DateTime()),
+              new Queries.IntCallback() {
+                @Override
+                public void onSuccess(Integer result) {
+                  Queries.getRow(VIEW_SALES, row.getId(), new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow updRow) {
+                      RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_SALES,  updRow);
+                    }
+                  });
+                }
+              });
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return this;
+        }
+      });
+    }
 
     SelectorEvent.register(new TradeActSelectorHandler());
 

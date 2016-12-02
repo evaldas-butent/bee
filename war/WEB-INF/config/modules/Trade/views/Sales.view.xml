@@ -96,6 +96,10 @@
     <SimpleColumn name="Driver" />
 
     <SimpleColumn name="Kind" />
+
+    <!-- Transrifus TradeAct SelfService { -->
+    <SimpleColumn name="Visited" />
+    <!-- } Transrifus TradeAct SelfService -->
   </Columns>
 
   <Order>

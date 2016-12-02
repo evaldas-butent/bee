@@ -34,6 +34,10 @@
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
 
+    <!-- Transrifus TradeAct SelfService { -->
+    <DataColumn name="Visited" format="date_time_short"/>
+    <!-- } Transrifus TradeAct SelfService -->
+
     <DataColumn name="Proforma" visible="false" />
     <RelColumn name="WarehouseFrom" visible="false" />
 

@@ -37,6 +37,10 @@
     <DateTime name="Exported" label="=trdExported" />
 
     <Integer name="Kind" />
+
+    <!-- Transrifus TradeAct SelfService { -->
+    <DateTime name="Visited" label="Žiūrėta" />
+    <!-- } Transrifus TradeAct SelfService -->
   </Fields>
 
   <Indexes>
