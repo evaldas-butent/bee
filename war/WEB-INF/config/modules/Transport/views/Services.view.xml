@@ -9,6 +9,13 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="Transportation" />
     <SimpleColumn name="VatPercent" />
+
+    <SimpleColumn name="ServicePercent" />
+    <SimpleColumn name="ServiceInsurer" />
+    <SimpleJoin joinType="LEFT" name="ServiceInsurer">
+      <SimpleColumn name="Name" alias="InsurerName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Item"/>
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
@@ -19,4 +26,3 @@
     <OrderBy column="Name" />
   </Order>
 </View>
- 

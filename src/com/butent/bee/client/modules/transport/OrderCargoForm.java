@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
@@ -15,6 +17,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
@@ -22,27 +25,36 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.IntegerLabel;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
@@ -76,6 +88,8 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   }
 
   private static IsRow defaultCargoType;
+  private final Set<Long> expensesChangeQueue = new HashSet<>();
+  private ListBox insuranceCertificate;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -96,12 +110,31 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
           ((ChildGrid) widget).setGridInterceptor(new TransportVatGridInterceptor() {
             @Override
+            public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+              if ((BeeUtils.same(source, COL_CARGO_INCOME) || BeeUtils.same(source, COL_SERVICE))
+                  && editor instanceof DataSelector) {
+
+                ((DataSelector) editor).addSelectorHandler(OrderCargoForm.this);
+              } else if (BeeUtils.same(source,
+                  COL_INSURANCE_CERTIFICATE) && editor instanceof ListBox) {
+                insuranceCertificate = (ListBox) editor;
+              }
+
+              super.afterCreateEditor(source, editor, embedded);
+            }
+
+            @Override
             public void afterDeleteRow(long rowId) {
               refresh(form.getLongValue(COL_CURRENCY));
             }
 
             @Override
             public void afterInsertRow(IsRow result) {
+
+              if (BeeUtils.same(getViewName(), TBL_CARGO_INCOMES)) {
+                createPercentExpense(result);
+              }
+
               refresh(form.getLongValue(COL_CURRENCY));
             }
 
@@ -118,6 +151,89 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
             public GridInterceptor getInstance() {
               return null;
             }
+
+            @Override
+            public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+              super.onReadyForInsert(gridView, event);
+
+              IsRow row = gridView.getActiveRow();
+              Double servicePercent = row.getDouble(gridView.getDataIndex(COL_SERVICE_PERCENT));
+
+              if (!BeeUtils.isPositive(servicePercent)) {
+                return;
+              }
+
+              FormView pForm = ViewHelper.getForm(gridView.asWidget());
+              Double cargoValue = pForm.getDoubleValue(COL_CARGO_VALUE);
+
+              if (BeeUtils.isPositive(cargoValue)) {
+                return;
+              }
+
+              pForm.notifySevere(Localized.dictionary().cargoValue(),
+                  Localized.dictionary().valueRequired());
+
+              event.consume();
+            }
+
+            private void createPercentExpense(IsRow gridRow) {
+              GridView grid = getGridView();
+              if (grid == null) {
+                return;
+              }
+
+              double servicePercent = BeeUtils.unbox(
+                  gridRow.getDouble(grid.getDataIndex(COL_SERVICE_PERCENT)));
+
+              if (!BeeUtils.isPositive(servicePercent)) {
+                return;
+              }
+
+              IsRow formRow = form.getActiveRow();
+
+              double cargoValue = BeeUtils.unbox(
+                  formRow.getDouble(form.getDataIndex(COL_CARGO_VALUE)));
+
+
+              double expenseSum = getExpenseSum(cargoValue, servicePercent);
+
+              final DataInfo expensesView = Data.getDataInfo(TBL_CARGO_EXPENSES);
+              BeeRow expenseRow = RowFactory.createEmptyRow(expensesView, true);
+
+              Long currency =
+                  BeeUtils.nvl(formRow.getLong(form.getDataIndex(COL_CARGO_VALUE_CURRENCY)),
+                      gridRow.getLong(grid.getDataIndex(COL_CURRENCY)));
+
+              expenseRow.setValue(expensesView.getColumnIndex(COL_SERVICE),
+                  gridRow.getValue(grid.getDataIndex(COL_SERVICE)));
+              expenseRow.setValue(expensesView.getColumnIndex(COL_AMOUNT), expenseSum);
+              expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT_PLUS),
+                  gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT_PLUS)));
+              expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT),
+                  gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT)));
+              expenseRow.setValue(expensesView.getColumnIndex(COL_TRADE_VAT_PERC),
+                  gridRow.getValue(grid.getDataIndex(COL_TRADE_VAT_PERC)));
+              expenseRow.setValue(expensesView.getColumnIndex(COL_CARGO),
+                  gridRow.getValue(grid.getDataIndex(COL_CARGO)));
+              expenseRow.setValue(expensesView.getColumnIndex(COL_DATE),
+                  gridRow.getValue(grid.getDataIndex(COL_DATE)));
+              expenseRow.setValue(expensesView.getColumnIndex(COL_COSTS_SUPPLIER),
+                  gridRow.getValue(grid.getDataIndex(COL_SERVICE_INSURER)));
+              expenseRow.setValue(expensesView.getColumnIndex(COL_CARGO_INCOME),
+                  gridRow.getId());
+              expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY), currency);
+
+              Queries.insert(expensesView.getViewName(), expensesView.getColumns(), expenseRow,
+                  new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      RowInsertEvent.fire(BeeKeeper.getBus(), expensesView.getViewName(), result,
+                          form.getId());
+                      refresh(form.getLongValue(COL_CURRENCY));
+                    }
+                  });
+            }
+
           });
           break;
 
@@ -192,6 +308,58 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   }
 
   @Override
+  public void afterUpdateRow(IsRow row) {
+    super.afterUpdateRow(row);
+
+    if (!expensesChangeQueue.contains(row.getId())) {
+      return;
+    }
+
+    expensesChangeQueue.remove(row.getId());
+
+    if (!DataUtils.isId(row.getId())) {
+      return;
+    }
+
+    final double cargoValue = BeeUtils.unbox(row.getDouble(getDataIndex(COL_CARGO_VALUE)));
+    final Long valueCurrency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
+
+    Queries.getRowSet(TBL_CARGO_EXPENSES,
+        Lists.newArrayList(COL_AMOUNT, COL_CURRENCY, COL_SERVICE_PERCENT,
+            ALS_CARGO_INCOME_CURRENCY), Filter.and(Filter.equals(COL_CARGO, row.getId()),
+            Filter.isNull(COL_PURCHASE), Filter.notNull(COL_SERVICE_PERCENT)),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet expenses) {
+            if (expenses.isEmpty()) {
+              return;
+            }
+
+            BeeRowSet updExpenses =
+                new BeeRowSet(TBL_CARGO_EXPENSES, Data.getColumns(TBL_CARGO_EXPENSES,
+                    Lists.newArrayList(COL_AMOUNT, COL_CURRENCY)));
+
+            for (IsRow expense : expenses) {
+              double percent = BeeUtils.unbox(
+                  expense.getDouble(expenses.getColumnIndex(COL_SERVICE_PERCENT)));
+
+              double amount = getExpenseSum(cargoValue, percent);
+
+              Long incomeCurrency = expense.getLong(expenses.getColumnIndex(
+                  ALS_CARGO_INCOME_CURRENCY));
+
+              Long currency = BeeUtils.nvl(valueCurrency, incomeCurrency);
+
+              updExpenses.addRow(expense.getId(), expense.getVersion(),
+                  new String[]{BeeUtils.toString(amount), BeeUtils.toString(currency)});
+            }
+
+            Queries.updateRows(updExpenses);
+          }
+        });
+  }
+
+  @Override
   public FormInterceptor getInstance() {
     return new OrderCargoForm();
   }
@@ -200,7 +368,56 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   public void onDataSelector(SelectorEvent event) {
     if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES) && event.isOpened()) {
       event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getActiveRowId()));
+    } else if (BeeUtils.containsSame(event.getRelatedViewName(), TBL_SERVICES)) {
+      DataInfo servicesView = Data.getDataInfo(TBL_SERVICES);
+      IsRow row = event.getRelatedRow();
+
+      if (row == null) {
+        return;
+      }
+
+      Double servicePercent = row.getDouble(servicesView.getColumnIndex(COL_SERVICE_PERCENT));
+
+      if (!BeeUtils.isPositive(servicePercent)) {
+        if (insuranceCertificate != null) {
+          insuranceCertificate.setEnabled(false);
+        }
+
+        return;
+      } else if (insuranceCertificate != null) {
+        insuranceCertificate.setEnabled(true);
+      }
+
+      Double cargoValue = getFormView().getDoubleValue(COL_CARGO_VALUE);
+
+      if (BeeUtils.isPositive(cargoValue)) {
+        return;
+      }
+
+      getFormView().notifySevere(Localized.dictionary().cargoValue(),
+          Localized.dictionary().valueRequired());
     }
+  }
+
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    super.onSaveChanges(listener, event);
+    IsRow oldRow = event.getOldRow();
+    IsRow row = event.getNewRow();
+    FormView form = getFormView();
+
+    double oldCargoValue = BeeUtils.unbox(oldRow.getDouble(form.getDataIndex(COL_CARGO_VALUE)));
+    long oldCargoCurrency = BeeUtils.unbox(
+        oldRow.getLong(form.getDataIndex(COL_CARGO_VALUE_CURRENCY)));
+
+    double cargoValue = BeeUtils.unbox(row.getDouble(form.getDataIndex(COL_CARGO_VALUE)));
+    long cargoCurrency = BeeUtils.unbox(row.getLong(form.getDataIndex(COL_CARGO_VALUE_CURRENCY)));
+
+    if (oldCargoValue == cargoValue && oldCargoCurrency == cargoCurrency) {
+      return;
+    }
+
+    expensesChangeQueue.add(row.getId());
   }
 
   @Override
@@ -253,6 +470,10 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
         }
       }
     }
+  }
+
+  private static double getExpenseSum(double val, double percents) {
+    return BeeUtils.round(val * percents / 100.0, 2);
   }
 
   private void refresh(Long currency) {

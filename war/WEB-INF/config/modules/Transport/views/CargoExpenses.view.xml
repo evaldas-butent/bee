@@ -25,6 +25,7 @@
     <SimpleColumn name="Service" />
     <SimpleJoin joinType="LEFT" name="Service">
       <SimpleColumn name="Name" alias="ServiceName" />
+      <SimpleColumn name="ServicePercent" />
     </SimpleJoin>
     <SimpleColumn name="Amount" />
     <SimpleColumn name="Currency" />

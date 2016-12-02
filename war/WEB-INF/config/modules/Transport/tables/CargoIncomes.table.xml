@@ -23,5 +23,6 @@
     <Relation name="Purchase" relation="Purchases" cascade="SET_NULL" label="=trdPurchaseId" />
 
     <Relation name="Creator" relation="Users" label="=trdGenerated" defExpr="CURRENT_USER" />
+    <Numeric name="InsuranceCertificate" precision="1" label="Sertifikatas" />
   </Fields>
 </Table>

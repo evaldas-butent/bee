@@ -9,7 +9,7 @@
   <g:columns>
     <DataColumn name="Date" caption="=date" />
 
-    <RelColumn name="Service" caption="=trServiceName" />
+    <RelColumn name="Service" caption="=trServiceName" renderColumns="ServiceName" />
     <DataColumn name="Amount" format="0.00" />
     <RelColumn name="Currency" caption="=currencyShort" flexGrow="0" />
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
@@ -27,6 +27,31 @@
       </style>
       <renderer type="total" />
     </CalcColumn>
+
+    <DataColumn name="InsuranceCertificate" >
+      <renderer type="list" />
+      <editor type="list"  >
+        <ui:item>=yes</ui:item>
+        <ui:item>=no</ui:item>
+      </editor>
+      <validation>
+        <ui:function>
+          if (row.ServicePercent != null) {
+            if(cell.newValue != null) {
+             return null;
+            } else {
+              return $wnd.Bee_maybeTranslate("=valueRequired");
+            }
+          } else if (row.ServicePercent == null) {
+            if(cell.newValue == null) {
+               return null;
+            } else {
+             return $wnd.Bee_maybeTranslate("=rowIsReadOnly");
+            }
+          }
+        </ui:function>
+      </validation>
+    </DataColumn>
 
     <RelColumn name="Customer" />
     <DataColumn name="Number" />

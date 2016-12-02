@@ -605,10 +605,13 @@ public final class TransportConstants {
 
   public static final String COL_SERVICE = "Service";
   public static final String COL_SERVICE_NAME = "Name";
+  public static final String COL_SERVICE_PERCENT = "ServicePercent";
+  public static final String COL_SERVICE_INSURER = "ServiceInsurer";
   public static final String COL_TRANSPORTATION = "Transportation";
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";
   public static final String COL_NOTE = "Note";
+  public static final String COL_INSURANCE_CERTIFICATE = "InsuranceCertificate";
 
   public static final String COL_ROUTE_CARGO = "TripCargo";
   public static final String COL_ROUTE_DEPARTURE_DATE = "DepartureDate";
@@ -982,6 +985,7 @@ public final class TransportConstants {
   public static final String ALS_CUSTOMER_TYPE_NAME = "CustomerTypeName";
 
   public static final String ALS_CARGO_DESCRIPTION = "CargoDescription";
+  public static final String ALS_CARGO_INCOME_CURRENCY = "IncomeCurrency";
 
   public static final String ALS_LOADING_DATE = "LoadingDate";
   public static final String ALS_LOADING_NUMBER = "LoadingNumber";

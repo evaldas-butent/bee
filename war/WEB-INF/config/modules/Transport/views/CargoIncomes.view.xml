@@ -10,6 +10,8 @@
     <SimpleColumn name="Service" />
     <SimpleJoin joinType="LEFT" name="Service">
       <SimpleColumn name="Name" alias="ServiceName" />
+      <SimpleColumn name="ServicePercent" />
+      <SimpleColumn name="ServiceInsurer" />
     </SimpleJoin>
     <SimpleColumn name="Amount" />
     <SimpleColumn name="Currency" />
@@ -43,5 +45,7 @@
       <SimpleColumn name="InvoicePrefix" alias="PurchasePrefix" />
       <SimpleColumn name="InvoiceNo" alias="PurchaseNo" />
     </SimpleJoin>
+
+    <SimpleColumn name="InsuranceCertificate" />
   </Columns>
 </View>
