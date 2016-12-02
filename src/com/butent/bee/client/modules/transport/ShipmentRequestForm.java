@@ -49,6 +49,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
@@ -110,6 +111,14 @@ class ShipmentRequestForm extends PrintFormInterceptor {
   private static final String NAME_VALUE_LABEL = "ValueLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
 
+  private static final String STYLE_PREFIX = "bee-tr-";
+  private static final String STYLE_INPUT_MODE_FULL = STYLE_PREFIX + "input-mode-full";
+  private static final String STYLE_INPUT_MODE_PARTIAL = STYLE_PREFIX + "input-mode-partial";
+  private static final String STYLE_INPUT_MODE_TOGGLE = STYLE_PREFIX + "input-mode-toggle";
+  private static final String STYLE_INPUT_MODE_ACTIVE = STYLE_PREFIX + "input-mode-active";
+
+  private Flow container;
+
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
     if (BeeUtils.same(editableWidget.getColumnId(), COL_QUERY_FREIGHT_INSURANCE)) {
@@ -127,19 +136,24 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
     if (BeeUtils.same(name, NAME_INCOTERMS) && widget instanceof HasClickHandlers) {
       ((HasClickHandlers) widget).addClickHandler(event -> {
-        Flow container = new Flow();
-        StyleUtils.setWidth(container, 80, CssUnit.VW);
-
         String suffix = Localized.dictionary().languageTag();
 
         if (!BeeUtils.inListSame(suffix, "lt", "ru")) {
           suffix = "en";
         }
         Image image = new Image(Paths.buildPath(Paths.IMAGE_DIR, name + "_" + suffix + ".png"));
-        StyleUtils.setWidth(image, 100, CssUnit.PCT);
-        container.add(image);
+        StyleUtils.setWidth(image, 80, CssUnit.VW);
 
-        Global.showModalWidget(container);
+        Global.showModalWidget(image);
+      });
+    } else if (BeeUtils.same(name, COL_CARGO_PARTIAL + "Toggle") && widget instanceof Flow) {
+      container = (Flow) widget;
+      container.addClickHandler(clickEvent -> {
+        if (getFormView().isEnabled()) {
+          getActiveRow().setValue(Data.getColumnIndex(VIEW_SHIPMENT_REQUESTS, COL_CARGO_PARTIAL),
+              !BeeUtils.unbox(getFormView().getBooleanValue(COL_CARGO_PARTIAL)));
+        }
+        renderInputMode();
       });
     }
     super.afterCreateWidget(name, widget, callback);
@@ -147,6 +161,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    renderInputMode();
+
     HeaderView header = getHeaderView();
 
     if (header == null) {
@@ -208,14 +224,14 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       if (BeeUtils.unbox(row.getBoolean(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)))) {
         String value = row.getString(getDataIndex(COL_CARGO_VALUE));
         if (BeeUtils.isEmpty(value)) {
-          getFormView().notifySevere(BeeUtils.join(" ", dic.valuation(), dic.valueRequired()));
+          getFormView().notifySevere(dic.fieldRequired(dic.valuation()));
           getFormView().focus(COL_CARGO_VALUE);
           return false;
         }
 
         Long currency = row.getLong(getDataIndex(COL_CARGO_VALUE_CURRENCY));
         if (!DataUtils.isId(currency)) {
-          getFormView().notifySevere(BeeUtils.join(" ", dic.currency(), dic.valueRequired()));
+          getFormView().notifySevere(dic.fieldRequired(dic.currency()));
           getFormView().focus(COL_CARGO_VALUE_CURRENCY);
           return false;
         }
@@ -852,7 +868,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       }
     });
     HtmlTable layout = new HtmlTable();
-    layout.setText(0, 0, loc.reason());
+    layout.setText(0, 0, loc.reason(), StyleUtils.NAME_REQUIRED);
     layout.setWidget(0, 1, reason);
     layout.getCellFormatter().setColSpan(1, 0, 2);
     layout.setText(1, 0, loc.comment());
@@ -862,7 +878,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
     Global.inputWidget(ShipmentRequestStatus.LOST.getCaption(loc), layout, new InputCallback() {
       @Override
       public String getErrorMessage() {
-        if (required && (BeeUtils.allEmpty(reason.getDisplayValue(), comment.getValue())
+        if (required && (BeeUtils.isEmpty(reason.getDisplayValue())
             || BeeUtils.allNotEmpty(reason.getDisplayValue(), comment.getValue())
             && Objects.equals(comment.getValue(), Strings.nullToEmpty(reason.getOptions())))) {
 
@@ -941,6 +957,33 @@ class ShipmentRequestForm extends PrintFormInterceptor {
     } else {
       doRegister(messages);
     }
+  }
+
+  private void renderInputMode() {
+    if (container == null) {
+      return;
+    }
+
+    Toggle inputMode = new Toggle(FontAwesome.TOGGLE_OFF, FontAwesome.TOGGLE_ON,
+        STYLE_INPUT_MODE_TOGGLE, BeeUtils.unbox(getFormView().getBooleanValue(COL_CARGO_PARTIAL)));
+
+    container.clear();
+
+    Label full = new Label(Localized.dictionary().full());
+    full.addStyleName(STYLE_INPUT_MODE_FULL);
+
+    Label partial = new Label(Localized.dictionary().partial());
+    partial.addStyleName(STYLE_INPUT_MODE_PARTIAL);
+
+    if (inputMode.isChecked()) {
+      partial.addStyleName(STYLE_INPUT_MODE_ACTIVE);
+    } else {
+      full.addStyleName(STYLE_INPUT_MODE_ACTIVE);
+    }
+
+    container.add(full);
+    container.add(inputMode);
+    container.add(partial);
   }
 
   private void renderOrderId() {

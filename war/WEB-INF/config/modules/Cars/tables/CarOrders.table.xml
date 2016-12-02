@@ -27,6 +27,8 @@
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="=vatPercent" />
 
+    <Relation name="Car" relation="Vehicles" label="=car" />
+
     <Relation name="Object" relation="ConfObjects" unique="true" label="=specification"
               editable="true" />
 

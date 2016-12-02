@@ -442,14 +442,14 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       int idxActionResult = form.getDataIndex(CalendarConstants.COL_ACTION_RESULT);
 
       if (idxActionResult < 0) {
-        form.notifySevere(Localized.dictionary().calActionResult(),
-            Localized.dictionary().valueRequired());
+        form.notifySevere(Localized.dictionary()
+            .fieldRequired(Localized.dictionary().calActionResult()));
 
         form.focus(CalendarConstants.COL_ACTION_RESULT);
         return false;
       } else if (BeeUtils.isEmpty(row.getString(idxActionResult))) {
-        form.notifySevere(Localized.dictionary().calActionResult(),
-            Localized.dictionary().valueRequired());
+        form.notifySevere(Localized.dictionary()
+            .fieldRequired(Localized.dictionary().calActionResult()));
 
         form.focus(CalendarConstants.COL_ACTION_RESULT);
         return false;

@@ -392,7 +392,7 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
                 SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
                     AppointmentStatus.CANCELED.ordinal()))));
 
-        List timerIdentifiersIds = new ArrayList<String>();
+        List<String> timerIdentifiersIds = new ArrayList<String>();
         if (data != null) {
           for (SimpleRow row : data) {
             timerIdentifiersIds.add(
@@ -405,7 +405,7 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
       } else if (BeeUtils.same(idName, TBL_APPOINTMENT_REMINDERS)) {
         wh = SqlUtils.equals(TBL_APPOINTMENT_REMINDERS, reminderIdName, id);
 
-        List timerIdentifiersIds = new ArrayList<String>();
+        List<String> timerIdentifiersIds = new ArrayList<String>();
         timerIdentifiersIds.add(timerIdentifier + id);
         return Pair.of(wh, timerIdentifiersIds);
       }

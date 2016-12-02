@@ -4,7 +4,7 @@
     ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
-        name="MaintenanceComment" viewName="MaintenanceComments" width="610" height="300">
+        name="MaintenanceComment" viewName="MaintenanceComments" caption="=comment" width="610" height="300">
 
   <FlowPanel style="margin:5px; overflow:scroll;">
     <Table kind="controls" cellStyle="vertical-align: top">
@@ -20,6 +20,10 @@
       <row>
         <text/>
         <CheckBox source="CustomerSent" summarize="true" />
+      </row>
+      <row>
+        <Label name="TermLabel" for="Term" />
+        <InputDateTime source="Term" />
       </row>
     </Table>
   </FlowPanel>

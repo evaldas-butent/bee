@@ -12,8 +12,11 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.modules.finance.analysis.AnalysisColumnsGrid;
+import com.butent.bee.client.modules.finance.analysis.AnalysisRowsGrid;
 import com.butent.bee.client.modules.finance.analysis.BudgetEntriesGrid;
 import com.butent.bee.client.modules.finance.analysis.FinancialIndicatorsGrid;
+import com.butent.bee.client.modules.finance.analysis.SimpleAnalysisForm;
 import com.butent.bee.client.modules.finance.analysis.SimpleBudgetForm;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -22,6 +25,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.rights.Module;
@@ -88,6 +92,9 @@ public final class FinanceKeeper {
     GridFactory.registerGridInterceptor(GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
         new TradeDocumentFinancialRecordsGrid());
 
+    GridFactory.registerGridInterceptor(ClassifierConstants.GRID_CHART_OF_ACCOUNTS,
+        new ChartOfAccountsGrid());
+
     FormFactory.registerFormInterceptor(FORM_FINANCE_POSTING_PRECEDENCE,
         new FinancePostingPrecedenceForm());
 
@@ -96,12 +103,28 @@ public final class FinanceKeeper {
 
   private static void registerAnalysis() {
     for (int dimension = 1; dimension <= Dimensions.SPACETIME; dimension++) {
+      String label = Dimensions.singular(dimension);
+
       Localized.setColumnLabel(colBudgetShowEntryDimension(dimension),
-          Localized.dictionary().finBudgetShowDimension(Dimensions.singular(dimension)));
+          Localized.dictionary().finBudgetShowDimension(label));
+
+      Localized.setColumnLabel(colAnalysisShowColumnDimension(dimension),
+          Localized.dictionary().finAnalysisShowColumnDimension(label));
+      Localized.setColumnLabel(colAnalysisShowRowDimension(dimension),
+          Localized.dictionary().finAnalysisShowRowDimension(label));
     }
 
     for (int month = 1; month <= 12; month++) {
-      Localized.setColumnLabel(colBudgetEntryValue(month), Format.properMonth(month));
+      Localized.setColumnLabel(colBudgetEntryValue(month), Format.properMonthFull(month));
+    }
+
+    for (int i = 0; i < COL_ANALYSIS_COLUMN_SPLIT.length; i++) {
+      Localized.setColumnLabel(COL_ANALYSIS_COLUMN_SPLIT[i],
+          Localized.dictionary().finAnalysisSplit(i + 1));
+    }
+    for (int i = 0; i < COL_ANALYSIS_ROW_SPLIT.length; i++) {
+      Localized.setColumnLabel(COL_ANALYSIS_ROW_SPLIT[i],
+          Localized.dictionary().finAnalysisSplit(i + 1));
     }
 
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_INDICATORS_PRIMARY,
@@ -111,7 +134,18 @@ public final class FinanceKeeper {
 
     GridFactory.registerGridInterceptor(GRID_BUDGET_ENTRIES, new BudgetEntriesGrid());
 
+    GridFactory.registerGridInterceptor(GRID_ANALYSIS_COLUMNS, new AnalysisColumnsGrid());
+    GridFactory.registerGridInterceptor(GRID_ANALYSIS_ROWS, new AnalysisRowsGrid());
+
     FormFactory.registerFormInterceptor(FORM_SIMPLE_BUDGET, new SimpleBudgetForm());
+    FormFactory.registerFormInterceptor(FORM_SIMPLE_ANALYSIS, new SimpleAnalysisForm());
+
+    RowEditor.registerFormNameProvider(VIEW_FINANCIAL_INDICATORS, (dataInfo, row) -> {
+      IndicatorKind kind = row.getEnum(dataInfo.getColumnIndex(COL_FIN_INDICATOR_KIND),
+          IndicatorKind.class);
+
+      return (kind == null) ? null : kind.getEditForm();
+    });
   }
 
   private static void registerDebitCreditColor(Collection<String> gridNames,

@@ -150,5 +150,9 @@
   margin-top: 0px;
 }
 .bee-svc-Events-EventContent {
-   width: 400px;
+  width: 400px;
+}
+
+.bee-service-maintenance-late {
+  color: red;
 }

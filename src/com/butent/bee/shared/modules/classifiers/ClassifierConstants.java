@@ -292,6 +292,7 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
 
   public static final String COL_ACCOUNT_CODE = "AccountCode";
+  public static final String COL_ACCOUNT_NAME = "AccountName";
   public static final String COL_JOURNAL_CODE = "JournalCode";
 
   public static final String COL_LOSS_REASON_NAME = "ReasonName";

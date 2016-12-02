@@ -298,8 +298,8 @@ class CompanyForm extends CustomCompanyForm {
     if (!BeeUtils.isEmpty(event.getColumns())) {
       if (BeeUtils.isEmpty(row.getString(form.getDataIndex(COL_COMPANY_TYPE)))) {
         event.consume();
-        BeeKeeper.getScreen().notifySevere(Localized.dictionary().companyStatus(),
-            Localized.dictionary().valueRequired());
+        BeeKeeper.getScreen().notifySevere(Localized.dictionary()
+            .fieldRequired(Localized.dictionary().companyStatus()));
       }
     }
     super.onSaveChanges(listener, event);

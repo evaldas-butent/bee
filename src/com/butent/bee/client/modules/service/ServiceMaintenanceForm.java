@@ -6,14 +6,16 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasCheckedness;
 
 import com.butent.bee.client.grid.ChildGrid;
@@ -39,7 +41,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.event.ModificationEvent;
@@ -54,13 +55,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class ServiceMaintenanceForm extends PrintFormInterceptor implements SelectorEvent.Handler {
+public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
+    implements SelectorEvent.Handler {
 
   private static final BeeLogger logger = LogUtils.getLogger(ServiceMaintenanceForm.class);
 
+  private static final String FA_LABEL_SUFFIX = "Add";
+  private static final String WIDGET_ADDRESS_NAME = "AddressLabel";
   private static final String WIDGET_MAINTENANCE_COMMENTS = "MaintenanceComments";
   private static final String WIDGET_WARRANTY_TYPE_NAME = "WarrantyTypeName";
-  private static final int NEW_MAINTENANCE_DATA_LOAD_PROCESS_COUNT = 7;
+  private static final int NEW_MAINTENANCE_DATA_LOAD_PROCESS_COUNT = 8;
 
   private static final String STYLE_PROGRESS_CONTAINER =
       BeeConst.CSS_CLASS_PREFIX + "Grid-ProgressContainer";
@@ -104,6 +108,25 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
           super.onReadyForInsert(gridView, event);
         }
       });
+
+    } else if (widget instanceof FaLabel && BeeUtils.inList(name,
+        COL_SERVICE_OBJECT + FA_LABEL_SUFFIX, COL_CONTACT + FA_LABEL_SUFFIX)) {
+      ((FaLabel) widget).addClickHandler(event -> {
+        String viewName = BeeUtils.same(name, COL_SERVICE_OBJECT + FA_LABEL_SUFFIX)
+            ? TBL_SERVICE_OBJECTS : TBL_COMPANY_PERSONS;
+        Widget selectorWidget = null;
+
+        if (BeeUtils.same(viewName, TBL_COMPANY_PERSONS)) {
+          selectorWidget = getFormView().getWidgetBySource(COL_CONTACT);
+
+        } else if (BeeUtils.same(viewName, TBL_SERVICE_OBJECTS)) {
+          selectorWidget = getFormView().getWidgetBySource(COL_SERVICE_OBJECT);
+        }
+
+        if (selectorWidget instanceof DataSelector) {
+          RowFactory.createRelatedRow((DataSelector) selectorWidget, null);
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -127,6 +150,17 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
     if (DataUtils.isId(row.getLong(Data.getColumnIndex(getViewName(), COL_WARRANTY_MAINTENANCE)))) {
       updateWarrantyTypeWidget(true);
     }
+
+    if (BeeUtils.isTrue(row.getBoolean(Data.getColumnIndex(getViewName(), COL_ADDRESS_REQUIRED)))) {
+      updateContactAddressLabel(true);
+    }
+
+    if (!DataUtils.isNewRow(row)) {
+      Widget typeWidget = form.getWidgetBySource(COL_TYPE);
+      if (typeWidget instanceof DataSelector) {
+        ((DataSelector) typeWidget).setEnabled(false);
+      }
+    }
   }
 
   @Override
@@ -135,14 +169,6 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
 
     updateServiceObject(result.getId(),
             result.getLong(Data.getColumnIndex(getViewName(), COL_SERVICE_OBJECT)));
-  }
-
-  @Override
-  public boolean beforeAction(Action action, Presenter presenter) {
-    if (action.equals(Action.SAVE) && getFormView() != null && getActiveRow() != null) {
-      return isValidData(getFormView(), getActiveRow());
-    }
-    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -156,10 +182,40 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (event.isChanged()) {
+    if (event.isNewRow()
+        && BeeUtils.inList(event.getRelatedViewName(), VIEW_COMPANY_PERSONS, TBL_SERVICE_OBJECTS)) {
+
+      event.setDefValue(null);
+
+      if (BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANY_PERSONS)
+          && BeeUtils.isTrue(getActiveRow().getBoolean(Data.getColumnIndex(getViewName(),
+            COL_ADDRESS_REQUIRED)))) {
+        event.setOnOpenNewRow(formView -> {
+          Widget widget = formView.getWidgetBySource(COL_ADDRESS);
+
+          if (widget instanceof InputText) {
+            formView.getWidgetByName(COL_ADDRESS).addStyleName(StyleUtils.NAME_REQUIRED);
+
+            formView.addCellValidationHandler(COL_ADDRESS, validationEvent -> {
+
+              if (BeeUtils.isEmpty(validationEvent.getNewValue())) {
+                formView.notifySevere(Localized.dictionary()
+                    .fieldRequired(Localized.dictionary().address()));
+                return false;
+              }
+              return true;
+            });
+          }
+        });
+      }
+    } else if (event.isChanged()) {
       switch (event.getRelatedViewName()) {
         case VIEW_MAINTENANCE_TYPES:
           updateStateDataSelector(true);
+
+          Boolean addressRequired = event.getRelatedRow()
+              .getBoolean(Data.getColumnIndex(event.getRelatedViewName(), COL_ADDRESS_REQUIRED));
+          updateContactAddressLabel(BeeUtils.isTrue(addressRequired));
           break;
 
         case VIEW_COMPANIES :
@@ -195,12 +251,21 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
   }
 
   @Override
-  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
-    super.onSaveChanges(listener, event);
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+    event.setConsumed(!isValidData(getFormView(), getActiveRow()));
+  }
 
-    if (event.getColumns().contains(Data.getColumn(getViewName(),
-        AdministrationConstants.COL_STATE))) {
-      fillDataByStateProcessSettings(event.getNewRow(), event.getOldRow());
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    if (isValidData(getFormView(), getActiveRow())) {
+
+      if (event.getColumns().contains(Data.getColumn(getViewName(),
+          AdministrationConstants.COL_STATE))) {
+        fillDataByStateProcessSettings(event.getNewRow(), event.getOldRow());
+      }
+
+    } else {
+      event.consume();
     }
   }
 
@@ -236,24 +301,30 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
     };
 
     Global.getRelationParameter(PRM_DEFAULT_MAINTENANCE_TYPE, (prefixId, prefix) -> {
-      Filter roleFilter = Filter.in(AdministrationConstants.COL_ROLE,
-          AdministrationConstants.VIEW_USER_ROLES, AdministrationConstants.COL_ROLE,
-          Filter.equals(AdministrationConstants.COL_USER, BeeKeeper.getUser().getUserId()));
-      Filter stateFilter;
-
-      if (DataUtils.isId(prefixId)) {
+     if (DataUtils.isId(prefixId)) {
         consumer.accept(Pair.of(COL_TYPE, BeeUtils.toString(prefixId)));
         consumer.accept(Pair.of(ALS_MAINTENANCE_TYPE_NAME, prefix));
 
-        stateFilter = Filter.and(Filter.equals(COL_MAINTENANCE_TYPE, prefixId),
-            Filter.isPositive(COL_INITIAL), roleFilter);
+        Queries.getValue(TBL_MAINTENANCE_TYPES, prefixId, COL_ADDRESS_REQUIRED,
+            new RpcCallback<String>() {
+          @Override
+          public void onSuccess(String result) {
+            consumer.accept(Pair.of(COL_ADDRESS_REQUIRED, result));
+          }
+
+          @Override
+          public void onFailure(String... reason) {
+            consumeProcess(consumer, 1);
+          }
+        });
 
       } else {
         consumeProcess(consumer, 2);
-        stateFilter = Filter.and(Filter.isPositive(COL_INITIAL), roleFilter);
       }
 
-      Queries.getRowSet(TBL_STATE_PROCESS, null, stateFilter, new Queries.RowSetCallback() {
+      Queries.getRowSet(TBL_STATE_PROCESS, null,
+          ServiceUtils.getStateFilter(null, prefixId, Filter.isPositive(COL_INITIAL)),
+          new Queries.RowSetCallback() {
         @Override
         public void onSuccess(BeeRowSet result) {
           if (!DataUtils.isEmpty(result)) {
@@ -317,17 +388,26 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
 
   private void createStateChangeComment(IsRow row, IsRow stateProcessRow) {
     List<BeeColumn> columns = Data.getColumns(TBL_MAINTENANCE_COMMENTS,
-        Lists.newArrayList(COL_SERVICE_MAINTENANCE, COL_EVENT_NOTE));
+        Lists.newArrayList(COL_SERVICE_MAINTENANCE, COL_EVENT_NOTE, COL_MAINTENANCE_STATE));
     List<String> values = Lists.newArrayList(Long.toString(row.getId()),
-        row.getString(Data.getColumnIndex(getViewName(), ALS_STATE_NAME)));
+        row.getString(Data.getColumnIndex(getViewName(), ALS_STATE_NAME)),
+        row.getString(Data.getColumnIndex(getViewName(), AdministrationConstants.COL_STATE)));
 
     if (stateProcessRow != null) {
       String notifyValue = stateProcessRow.
           getString(Data.getColumnIndex(TBL_STATE_PROCESS, COL_NOTIFY_CUSTOMER));
 
       if (BeeUtils.toBoolean(notifyValue)) {
-        columns.add(Data.getColumn(TBL_MAINTENANCE_COMMENTS, COL_SHOW_CUSTOMER));
+        columns.add(Data.getColumn(TBL_MAINTENANCE_COMMENTS, COL_CUSTOMER_SENT));
         values.add(notifyValue);
+      }
+
+      String showCustomerValue = stateProcessRow.
+          getString(Data.getColumnIndex(TBL_STATE_PROCESS, COL_SHOW_CUSTOMER));
+
+      if (BeeUtils.toBoolean(showCustomerValue)) {
+        columns.add(Data.getColumn(TBL_MAINTENANCE_COMMENTS, COL_SHOW_CUSTOMER));
+        values.add(showCustomerValue);
       }
 
       String commentValue = stateProcessRow.getString(Data.getColumnIndex(TBL_STATE_PROCESS,
@@ -366,15 +446,12 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
   }
 
   private void fillDataByStateProcessSettings(IsRow row, IsRow oldRow) {
-    Long stateId = row.
-        getLong(Data.getColumnIndex(getViewName(), AdministrationConstants.COL_STATE));
-    Filter roleFilter = Filter.in(AdministrationConstants.COL_ROLE,
-        AdministrationConstants.VIEW_USER_ROLES, AdministrationConstants.COL_ROLE,
-        Filter.equals(AdministrationConstants.COL_USER, BeeKeeper.getUser().getUserId()));
+    Long stateId = row
+        .getLong(Data.getColumnIndex(getViewName(), AdministrationConstants.COL_STATE));
+    Long maintenanceTypeId = row.getLong(Data.getColumnIndex(getViewName(), COL_TYPE));
 
-    Filter filter = Filter.and(Filter.equals(COL_MAINTENANCE_STATE, stateId), roleFilter);
-
-    Queries.getRowSet(TBL_STATE_PROCESS, null, filter, new Queries.RowSetCallback() {
+    Queries.getRowSet(TBL_STATE_PROCESS, null,
+        ServiceUtils.getStateFilter(stateId, maintenanceTypeId), new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
         if (!DataUtils.isEmpty(result)) {
@@ -410,16 +487,28 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
     String phone = row.getString(Data.getColumnIndex(getViewName(), ALS_CONTACT_PHONE));
 
     if (BeeUtils.isEmpty(phone)) {
-      form.notifySevere(Localized.dictionary().phone(), Localized.dictionary().valueRequired());
+      form.notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().phone()));
       return false;
+    }
+
+    Boolean addressRequired = row.getBoolean(Data.getColumnIndex(getViewName(),
+        COL_ADDRESS_REQUIRED));
+
+    if (BeeUtils.isTrue(addressRequired)) {
+      String address = row.getString(Data.getColumnIndex(getViewName(), ALS_CONTACT_ADDRESS));
+
+      if (BeeUtils.isEmpty(address)) {
+        form.notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().address()));
+        return false;
+      }
     }
 
     String department = row.getString(Data.getColumnIndex(getViewName(),
         ALS_CREATOR_DEPARTMENT_NAME));
 
     if (BeeUtils.isEmpty(department)) {
-      form.notifySevere(Localized.dictionary().companyDepartment(),
-              Localized.dictionary().valueRequired());
+      form.notifySevere(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().companyDepartment()));
       return false;
     }
 
@@ -428,12 +517,20 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
             COL_WARRANTY_MAINTENANCE));
 
     if (DataUtils.isId(serviceMaintenanceId) && !DataUtils.isId(warrantyTypeId)) {
-      form.notifySevere(Localized.dictionary().svcWarrantyType(),
-              Localized.dictionary().valueRequired());
+      form.notifySevere(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().svcWarrantyType()));
       return false;
     }
 
     return true;
+  }
+
+  private void updateContactAddressLabel(boolean addressRequired) {
+    Widget addressLabel = getFormView().getWidgetByName(WIDGET_ADDRESS_NAME);
+
+    if (addressLabel != null) {
+      addressLabel.setStyleName(StyleUtils.NAME_REQUIRED, addressRequired);
+    }
   }
 
   private static void updateServiceObject(long maintenanceId, Long objectId) {
@@ -448,7 +545,7 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
       @Override
       public void onResponse(ResponseObject response) {
         if (!response.isEmpty() && !response.hasErrors()) {
-          Queries.getRow(VIEW_SERVICE_OBJECTS, objectId, new RowCallback() {
+          Queries.getRow(VIEW_SERVICE_OBJECTS, response.getResponseAsLong(), new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
               if (result != null) {
@@ -467,15 +564,12 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
     if (stateWidget instanceof DataSelector) {
       Filter stateFilter = DataUtils.isNewRow(getActiveRow())
           ? Filter.isPositive(COL_INITIAL) : Filter.isNull(COL_INITIAL);
-      Filter roleFilter = Filter.in(AdministrationConstants.COL_ROLE,
-          AdministrationConstants.VIEW_USER_ROLES, AdministrationConstants.COL_ROLE,
-          Filter.equals(AdministrationConstants.COL_USER, BeeKeeper.getUser().getUserId()));
-      Filter typFilter = Filter.equals(COL_MAINTENANCE_TYPE,
-          getActiveRow().getLong(Data.getColumnIndex(getViewName(), COL_TYPE)));
+      Long maintenanceTypeId = getActiveRow().getLong(Data.getColumnIndex(getViewName(), COL_TYPE));
 
       ((DataSelector) stateWidget).setAdditionalFilter(
           Filter.in(Data.getIdColumn(VIEW_MAINTENANCE_STATES), TBL_STATE_PROCESS,
-              COL_MAINTENANCE_STATE, Filter.and(stateFilter, roleFilter, typFilter)));
+              COL_MAINTENANCE_STATE,
+              ServiceUtils.getStateFilter(null, maintenanceTypeId, stateFilter)));
 
       if (clearValue) {
         ((DataSelector) stateWidget).clearValue();
@@ -488,13 +582,13 @@ public class ServiceMaintenanceForm extends PrintFormInterceptor implements Sele
   }
 
   private void updateWarrantyTypeWidget(boolean mandatory) {
-    Widget warrantyWidget = getWidgetByName(COL_WARRANTY);
+    Widget warrantyWidget = getFormView().getWidgetByName(COL_WARRANTY, false);
 
     if (warrantyWidget instanceof HasCheckedness) {
       ((HasCheckedness) warrantyWidget).setChecked(mandatory);
     }
 
-    Widget warrantyTypeName = getFormView().getWidgetByName(WIDGET_WARRANTY_TYPE_NAME);
+    Widget warrantyTypeName = getFormView().getWidgetByName(WIDGET_WARRANTY_TYPE_NAME, false);
 
     if (warrantyTypeName != null) {
       if (mandatory) {

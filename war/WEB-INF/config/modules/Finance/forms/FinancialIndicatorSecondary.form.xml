@@ -10,7 +10,7 @@
 
         name="FinancialIndicatorSecondary" viewName="FinancialIndicators"
         caption="=finIndicatorSecondary"
-        width="75" widthUnit="px" height="75" heightUnit="vh"
+        width="75" widthUnit="vw" height="75" heightUnit="vh"
 >
   <FlowPanel>
     <Table kind="controls" style="margin: 1ex 1em;">
@@ -19,10 +19,11 @@
 
       <row>
         <Label for="IndicatorName" />
-        <InputText source="IndicatorName" style="&inpw;" />
+        <InputText source="IndicatorName" style="&inpw;"
+                   backgroundSource="Background" foregroundSource="Foreground" />
 
         <Label for="IndicatorAbbreviation" />
-        <InputText source="IndicatorAbbreviation" style="width: 10em; font-weight: bolder;" />
+        <InputText source="IndicatorAbbreviation" style="width: 15em; font-weight: bolder;" />
       </row>
 
       <row>
@@ -43,10 +44,12 @@
 
       <row>
         <Label for="Background" />
-        <ColorEditor source="Background" style="&colorw;" />
+        <ColorEditor source="Background" style="&colorw;"
+                     backgroundSource="Background" foregroundSource="Foreground" />
 
         <Label for="Foreground" />
-        <ColorEditor source="Foreground" style="&colorw;" />
+        <ColorEditor source="Foreground" style="&colorw;"
+                     backgroundSource="Background" foregroundSource="Foreground" />
       </row>
 
       <row>

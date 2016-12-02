@@ -4,8 +4,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.LabelElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -188,12 +186,7 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
   }
 
   protected void ensureDomEventHandlers() {
-    addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        ValueChangeEvent.fire(CheckBox.this, getValue());
-      }
-    });
+    addClickHandler(event -> ValueChangeEvent.fire(CheckBox.this, getValue()));
   }
 
   protected String getDefaultStyleName() {

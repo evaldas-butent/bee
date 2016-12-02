@@ -4,7 +4,8 @@
     <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
-        xmlns:f="http://www.butent.com/form"
+        xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="CarOrder" viewName="CarOrders" width="800" height="600" caption="=order">
   <f:properties jasperReports="Offer" />
@@ -30,7 +31,7 @@
         <DataSelector source="CustomerPerson" newRowEnabled="false" style="&inpw;"
                       renderColumns="ContactFirstName ContactLastName"
                       choiceColumns="FirstName LastName CompanyName" options="Customer" />
-        <text/>
+        <text />
         <cell rowSpan="2" verticalAlignment="top">
           <TextLabel source="LossReason" style="color:red; white-space:pre-wrap;">
             <renderToken source="ReasonName" />
@@ -46,19 +47,12 @@
       </row>
     </Table>
     <br />
-    <TabbedPages class="flexible" name="TabbedPages">
+    <TabbedPages class="flexible">
       <page>
         <text>=car</text>
         <FlowPanel class="flexBox-horizontal">
-          <FieldSet class="flexible" style="margin:5px; border:1px solid #ccc; position:relative;">
-            <Legend name="SpecificationBuilder" class="bee-Button" text="=specification" />
-            <FlowPanel
-                style="position:absolute; top:35px; right:5px; bottom:5px; left:5px; overflow:auto;">
-              <FlowPanel name="Object" class="flexBox-horizontal" />
-              <Label text="=description" style="font-weight:bold;" />
-              <RichTextEditor source="Description" style="min-height:400px;" />
-            </FlowPanel>
-          </FieldSet>
+          <xi:include href="widgets/Specification.widget.xml" />
+
           <Table kind="controls">
             <col index="0" kind="label" />
             <row>
@@ -83,6 +77,47 @@
                 <renderer type="total" />
               </DoubleLabel>
             </row>
+            <row>
+              <cell colSpan="3" style="text-align:center;">
+                <FlowPanel>
+                  <Label name="Car" text="=newCar" class="bee-InternalLink">
+                    <dynStyle>
+                      <ui:inline>display:none</ui:inline>
+                      <ui:expression>row.Car</ui:expression>
+                    </dynStyle>
+                    <dynStyle>
+                      <ui:inline>display:inline</ui:inline>
+                      <ui:expression>!row.Car</ui:expression>
+                    </dynStyle>
+                  </Label>
+                  <Label text="=car">
+                    <dynStyle>
+                      <ui:inline>display:none</ui:inline>
+                      <ui:expression>!row.Car</ui:expression>
+                    </dynStyle>
+                    <dynStyle>
+                      <ui:inline>display:inline</ui:inline>
+                      <ui:expression>row.Car</ui:expression>
+                    </dynStyle>
+                  </Label>
+                </FlowPanel>
+              </cell>
+            </row>
+            <row>
+              <Label for="ModelName" style="font-weight:bold;" />
+              <TextLabel>
+                <renderToken source="ParentModelName" />
+                <renderToken source="ModelName" />
+              </TextLabel>
+            </row>
+            <row>
+              <Label for="BodyNumber" style="font-weight:bold;" />
+              <TextLabel source="BodyNumber" />
+            </row>
+            <row>
+              <Label for="CarNumber" style="font-weight:bold;" />
+              <TextLabel source="CarNumber" />
+            </row>
           </Table>
         </FlowPanel>
       </page>
@@ -92,12 +127,7 @@
       </page>
       <page>
         <text>=notes</text>
-        <FlowPanel class="flexBox-vertical">
-          <br />
-          <SimplePanel class="flexible" style="position: relative;">
-            <InputArea source="Notes" class="occupy-1" summarize="true" />
-          </SimplePanel>
-        </FlowPanel>
+        <InputArea source="Notes" class="occupy-1" summarize="true" />
       </page>
     </TabbedPages>
   </FlowPanel>

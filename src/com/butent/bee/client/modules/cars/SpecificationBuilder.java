@@ -6,6 +6,7 @@ import com.google.common.collect.TreeMultimap;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PHOTO;
 
@@ -15,9 +16,9 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
@@ -31,7 +32,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -40,6 +40,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.cars.Bundle;
 import com.butent.bee.shared.modules.cars.Configuration;
@@ -138,7 +139,8 @@ public class SpecificationBuilder implements InputCallback {
   public static final String STYLE_THUMBNAIL = STYLE_PREFIX + "-thumbnail";
   private static final String STYLE_SELECTABLE = STYLE_PREFIX + "-selectable";
   public static final String STYLE_BLOCKED = STYLE_PREFIX + "-blocked";
-  private static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
+  public static final String STYLE_DESCRIPTION = STYLE_PREFIX + "-description";
+  public static final String STYLE_SUMMARY = STYLE_PREFIX + "-summary";
 
   private Specification template;
   private final Consumer<Specification> callback;
@@ -150,7 +152,7 @@ public class SpecificationBuilder implements InputCallback {
 
   public SpecificationBuilder(Specification template, Consumer<Specification> callback) {
     this.template = template;
-    this.callback = Assert.notNull(callback);
+    this.callback = callback;
 
     Queries.getRowSet(TBL_CONF_PRICELIST, null, new Queries.RowSetCallback() {
       @Override
@@ -167,9 +169,14 @@ public class SpecificationBuilder implements InputCallback {
         setBranch(tree);
       }
     });
-    DialogBox dialog = Global.inputWidget(Localized.dictionary().specification(), container, this);
-    dialog.addStyleName(STYLE_DIALOG);
+    Popup dialog;
 
+    if (Objects.isNull(callback)) {
+      dialog = Global.showModalWidget(Localized.dictionary().specification(), container);
+    } else {
+      dialog = Global.inputWidget(Localized.dictionary().specification(), container, this);
+    }
+    dialog.addStyleName(STYLE_DIALOG);
     StyleUtils.setWidth(dialog, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
     StyleUtils.setHeight(dialog, BeeKeeper.getScreen().getHeight() * 0.9, CssUnit.PX);
   }
@@ -210,6 +217,7 @@ public class SpecificationBuilder implements InputCallback {
     if (specification.getBundle() != null) {
       List<String> selectedOptions = new ArrayList<>();
       Dimension dimension = null;
+      Configuration configuration = currentBranch.getConfiguration();
 
       for (Option option : specification.getOptions()) {
         if (!option.getDimension().isRequired()) {
@@ -217,7 +225,6 @@ public class SpecificationBuilder implements InputCallback {
             dimension = option.getDimension();
             selectedOptions.add("<i>" + dimension + ":</i>");
           }
-          Configuration configuration = currentBranch.getConfiguration();
           selectedOptions.add(BeeUtils.notEmpty(BeeUtils
                   .notEmpty(configuration.getRelationDescription(option, specification.getBundle()),
                       configuration.getOptionDescription(option), option.getDescription()),
@@ -226,8 +233,9 @@ public class SpecificationBuilder implements InputCallback {
       }
       specification.setDescription(BeeUtils.join("<br><br><b>"
               + Localized.dictionary().additionalEquipment() + "</b><br>",
-          specification.getDescription(), BeeUtils.join("<br>", selectedOptions.stream()
-              .map(s -> s.replace("\n", "<br>")).collect(Collectors.toList()))));
+          specification.getDescription(), BeeUtils.join("<br>", selectedOptions)));
+
+      specification.setCriteria(collectCriteria(configuration));
 
       ParameterList args = CarsKeeper.createSvcArgs(SVC_SAVE_OBJECT);
       args.addDataItem(COL_OBJECT, Codec.beeSerialize(specification));
@@ -243,7 +251,19 @@ public class SpecificationBuilder implements InputCallback {
           }
         }
       });
+    } else {
+      callback.accept(null);
     }
+  }
+
+  public static String renderCriteria(Map<String, String> criteria) {
+    Table crit = table().addClass(STYLE_SUMMARY);
+
+    if (!BeeUtils.isEmpty(criteria)) {
+      criteria.forEach((key, val) ->
+          crit.append(tr().append(td().text(key)).append(td().text(val))));
+    }
+    return crit.toString();
   }
 
   private static Widget buildThumbnail(String choiceCaption, List<Widget[]> choices,
@@ -289,6 +309,16 @@ public class SpecificationBuilder implements InputCallback {
       }
     }
     return thumbnail;
+  }
+
+  private Map<String, String> collectCriteria(Configuration configuration) {
+    Map<String, String> criteria = configuration.getBundleCriteria(specification.getBundle());
+
+    specification.getOptions().forEach(option -> {
+      criteria.putAll(configuration.getOptionCriteria(option));
+      criteria.putAll(configuration.getRelationCriteria(option, specification.getBundle()));
+    });
+    return criteria;
   }
 
   private void collectRestrictions(Multimap<Dimension, Option> allOptions, Option option,
@@ -594,11 +624,17 @@ public class SpecificationBuilder implements InputCallback {
         }
       }
     }
-    if (!BeeUtils.isEmpty(specification.getDescription())) {
-      CustomDiv defaults = new CustomDiv(STYLE_DESCRIPTION);
-      defaults.setHtml(specification.getDescription());
-      subContainer.add(defaults);
-    }
+    Flow descriptionBox = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
+
+    CustomDiv descr = new CustomDiv(STYLE_DESCRIPTION);
+    descr.setHtml(specification.getDescription());
+    descriptionBox.add(descr);
+
+    CustomDiv crit = new CustomDiv();
+    crit.setHtml(renderCriteria(collectCriteria(configuration)));
+    descriptionBox.add(crit);
+
+    subContainer.add(descriptionBox);
     subContainer.add(optionBox);
 
     if (selectable.getRowCount() > 0) {
@@ -627,22 +663,25 @@ public class SpecificationBuilder implements InputCallback {
 
       if (!BeeUtils.isEmpty(description)) {
         defaults.add(description);
-      }
-      for (Option option : getAvailableOptions().values()) {
-        if (!option.getDimension().isRequired() && configuration.isDefault(option, bundle)) {
-          if (!Objects.equals(option.getDimension(), dimension)) {
-            dimension = option.getDimension();
-            defaults.add("<i>" + dimension + ":</i>");
+      } else {
+        for (Option option : getAvailableOptions().values()) {
+          if (!option.getDimension().isRequired() && configuration.isDefault(option, bundle)) {
+            if (!Objects.equals(option.getDimension(), dimension)) {
+              dimension = option.getDimension();
+              defaults.add("<i>" + dimension + ":</i>");
+            }
+            defaults.add(BeeUtils.notEmpty(BeeUtils
+                    .notEmpty(configuration.getRelationDescription(option, bundle),
+                        configuration.getOptionDescription(option), option.getDescription()),
+                option.getName()));
           }
-          defaults.add(BeeUtils.notEmpty(BeeUtils
-                  .notEmpty(configuration.getRelationDescription(option, bundle),
-                      configuration.getOptionDescription(option), option.getDescription()),
-              option.getName()));
+        }
+        if (!defaults.isEmpty()) {
+          defaults.add(0, "<b>" + Localized.dictionary().equipment() + "</b>");
         }
       }
     }
-    specification.setDescription(BeeUtils.join("<br>",
-        defaults.stream().map(s -> s.replace("\n", "<br>")).collect(Collectors.toList())));
+    specification.setDescription(BeeUtils.join("<br>", defaults));
   }
 
   private void setBranch(Branch branch) {
@@ -749,7 +788,18 @@ public class SpecificationBuilder implements InputCallback {
       }
     };
     try {
+      Set<Option> defaults = new HashSet<>();
+
+      for (Option opt : allOptions.values()) {
+        if (!opt.getDimension().isRequired()
+            && currentBranch.getConfiguration().isDefault(opt, specification.getBundle())) {
+          defaults.add(opt);
+          toggle.put(opt, true);
+        }
+      }
       collectRestrictions(allOptions, option, on, toggle);
+      toggle.keySet().removeAll(defaults);
+
       List<String> msgs = new ArrayList<>();
       Dimension dimension = option.getDimension();
 

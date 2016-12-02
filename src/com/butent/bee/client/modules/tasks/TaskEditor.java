@@ -2320,8 +2320,8 @@ class TaskEditor extends ProductSupportInterceptor {
                     @Override
                     public String getErrorMessage() {
                       if (BeeUtils.isEmpty(prjSelector.getValue())) {
-                        return Localized.dictionary().project() + " "
-                            + Localized.dictionary().valueRequired().toLowerCase();
+                        return Localized.dictionary()
+                            .fieldRequired(Localized.dictionary().project());
                       }
                       return InputCallback.super.getErrorMessage();
                     }

@@ -71,6 +71,9 @@ public class GridContainerImpl extends Split implements GridContainerView,
   private static final String STYLE_HAS_DATA = STYLE_NAME + "-has-data";
   private static final String STYLE_NO_DATA = STYLE_NAME + "-no-data";
 
+  private static final String STYLE_HAS_ACTIVE_ROW = STYLE_NAME + "-has-active-row";
+  private static final String STYLE_NO_ACTIVE_ROW = STYLE_NAME + "-no-active-row";
+
   private static final String STYLE_SCROLLABLE = STYLE_NAME + "-scrollable";
 
   private static final Set<Action> HEADER_ACTIONS =
@@ -107,6 +110,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
     super(-1);
 
     addStyleName(STYLE_NAME);
+    addStyleName(STYLE_NO_ACTIVE_ROW);
 
     if (!BeeUtils.isEmpty(gridName)) {
       addStyleName(BeeConst.CSS_CLASS_PREFIX + "grid-" + gridName.trim());
@@ -425,6 +429,11 @@ public class GridContainerImpl extends Split implements GridContainerView,
       return;
     }
 
+    if ((rowValue == null) != (getLastRow() == null)) {
+      setStyleName(STYLE_HAS_ACTIVE_ROW, rowValue != null);
+      setStyleName(STYLE_NO_ACTIVE_ROW, rowValue == null);
+    }
+
     maybeRefreshRowMessage(rowValue);
 
     if (gridView.getGridInterceptor() != null) {
@@ -576,6 +585,11 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
       setStyleName(STYLE_HAS_DATA, !empty);
       setStyleName(STYLE_NO_DATA, empty);
+
+      boolean hasActiveRow = !empty && getGridView().getActiveRow() != null;
+
+      setStyleName(STYLE_HAS_ACTIVE_ROW, hasActiveRow);
+      setStyleName(STYLE_NO_ACTIVE_ROW, !hasActiveRow);
     }
   }
 

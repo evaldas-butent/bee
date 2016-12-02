@@ -228,6 +228,8 @@ public final class TransportHandler {
       GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
       GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
     }
+    GridFactory.registerGridInterceptor(TBL_CARGO_LOADING, new CargoHandlingGrid());
+    GridFactory.registerGridInterceptor(TBL_CARGO_UNLOADING, new CargoHandlingGrid());
 
     GridFactory.registerGridInterceptor(VIEW_ACCUMULATIONS, new AccumulationsGrid());
     GridFactory.registerPreloader(VIEW_ACCUMULATIONS, new Preloader() {

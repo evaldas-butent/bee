@@ -234,8 +234,7 @@
           <Label for="LDM" />
           <InputDecimal source="LDM" style="&decimal;" />
           <text />
-          <Toggle source="Partial" upFace="=full" downFace="=partial"
-                  style="font-weight:bold; text-align:left;" />
+          <FlowPanel name="PartialToggle" class="flexBox-horizontal" />
         </row>
       </Table>
     </Details>

@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.eventsboard.EventsBoard;
@@ -90,7 +91,9 @@ public class MaintenanceEventsHandler extends EventsBoard {
     FaLabel editLabel = new FaLabel(FontAwesome.EDIT, STYLE_LABEL);
     rowCellEdit.add(editLabel);
     editLabel.addClickHandler(
-        event -> RowEditor.open(getEventsDataViewName(), row, Opener.MODAL, null));
+        event -> RowEditor.openForm(FORM_MAINTENANCE_COMMENT,
+            Data.getDataInfo(getEventsDataViewName()),
+            row, Opener.MODAL, null, new MaintenanceCommentForm(maintenanceRow)));
 
     Flow rowCellDelete = createEventRowCell(widget, "Delete", null, false);
     FaLabel clearLabel = new FaLabel(FontAwesome.TRASH, STYLE_LABEL);

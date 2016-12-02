@@ -1053,12 +1053,12 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     List<String> messages = new ArrayList<>();
 
     if (start == null) {
-      Collections.addAll(messages, Localized.dictionary().dateFrom(),
-          Localized.dictionary().valueRequired());
+      Collections.addAll(messages, Localized.dictionary()
+          .fieldRequired(Localized.dictionary().dateFrom()));
 
     } else if (end == null) {
-      Collections.addAll(messages, Localized.dictionary().dateTo(),
-          Localized.dictionary().valueRequired());
+      Collections.addAll(messages, Localized.dictionary()
+          .fieldRequired(Localized.dictionary().dateTo()));
 
     } else if (TimeUtils.isMeq(start, end)) {
       Collections.addAll(messages, Localized.dictionary().invalidRange(),
@@ -1145,9 +1145,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     Long company = getCompany();
     if (!DataUtils.isId(company)) {
       if (notify) {
-        List<String> messages = Lists.newArrayList(Localized.dictionary().client(),
-            Localized.dictionary().valueRequired());
-        Global.showError(messages);
+        Global.showError(Localized.dictionary().fieldRequired(Localized.dictionary().client()));
       }
       return;
     }

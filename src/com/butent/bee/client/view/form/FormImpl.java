@@ -1,5 +1,7 @@
 package com.butent.bee.client.view.form;
 
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
@@ -46,6 +48,7 @@ import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.DynamicStyler;
+import com.butent.bee.client.style.HasConditionalStyleTarget;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.EnablableWidget;
@@ -211,11 +214,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
       }
 
-      if (hasData() && !BeeUtils.isEmpty(result.getDynStyles()) && !BeeUtils.isEmpty(id)) {
-        ConditionalStyle conditionalStyle =
-            ConditionalStyle.create(result.getDynStyles(), source, getDataColumns());
-        if (conditionalStyle != null) {
-          addDynamicStyle(id, cellSource, conditionalStyle);
+      if (hasData() && result.getConditionalStyle() != null) {
+        String targetId = (widget instanceof HasConditionalStyleTarget)
+            ? ((HasConditionalStyleTarget) widget).getConditionalStyleTargetId() : id;
+
+        if (!BeeUtils.isEmpty(targetId)) {
+          addDynamicStyle(targetId, cellSource, result.getConditionalStyle());
         }
       }
 
@@ -792,11 +796,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
-  }
-
-  @Override
-  public int getDataIndex(String source) {
-    return DataUtils.getColumnIndex(source, getDataColumns());
   }
 
   @Override
@@ -1477,7 +1476,49 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     IsRow newRow = event.getRow();
 
     if (DataUtils.sameId(getActiveRow(), newRow)) {
-      setActiveRow(newRow);
+      if (getOldRow() == null
+          || getActiveRow().sameValues(getOldRow()) && getActiveRow().sameProperties(getOldRow())) {
+
+        setActiveRow(newRow);
+
+      } else {
+        IsRow changedRow = DataUtils.cloneRow(newRow);
+
+        for (int i = 0; i < changedRow.getNumberOfCells(); i++) {
+          String oldValue = getOldRow().getString(i);
+          String activeValue = getActiveRow().getString(i);
+
+          if (!BeeUtils.equalsTrimRight(oldValue, activeValue)) {
+            changedRow.setValue(i, activeValue);
+          }
+        }
+
+        Map<String, String> oldProperties = new HashMap<>();
+        if (!BeeUtils.isEmpty(getOldRow().getProperties())) {
+          oldProperties.putAll(getOldRow().getProperties());
+        }
+
+        Map<String, String> activeProperties = new HashMap<>();
+        if (!BeeUtils.isEmpty(getActiveRow().getProperties())) {
+          activeProperties.putAll(getActiveRow().getProperties());
+        }
+
+        if (!oldProperties.equals(activeProperties)) {
+          MapDifference<String, String> difference =
+              Maps.difference(oldProperties, activeProperties);
+
+          difference.entriesDiffering().forEach((key, valueDifference) ->
+              changedRow.setProperty(key, valueDifference.rightValue()));
+
+          difference.entriesOnlyOnLeft().forEach((key, value) ->
+              changedRow.removeProperty(key));
+          difference.entriesOnlyOnRight().forEach(changedRow::setProperty);
+        }
+
+        setActiveRow(changedRow);
+        setOldRow(DataUtils.cloneRow(newRow));
+      }
+
       refreshData(event.refreshChildren(), false);
     }
   }

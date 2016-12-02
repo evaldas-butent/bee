@@ -14,5 +14,11 @@
     <DateTime name="Term" label="=svcTerm" />
     <Boolean name="CustomerSent" label="=svcInform" />
     <Text name="EventNote" label="=properties" />
+
+    <Relation name="MaintenanceState" relation="MaintenanceStates" label="=svcServiceState" />
+
+    <Relation name="Item" relation="Items" label="=item" />
+    <Numeric name="Price" precision="15" scale="2" label="=salePrice" />
+    <Relation name="Currency" relation="Currencies" label="=currency" />
   </Fields>
 </Table>

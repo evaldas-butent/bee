@@ -7,7 +7,6 @@
   >
   <Columns>
     <SimpleColumn name="ServiceObject" />
-    <SimpleColumn name="ServiceMaintenance"/>
 
     <SimpleColumn name="RecurringTask" />
     <SimpleJoin name="RecurringTask" joinType="INNER">

@@ -11,6 +11,7 @@
     <Boolean name="Initial" label="=svcInitial" />
     <Boolean name="Finite" label="=svcFinal" />
     <Boolean name="NotifyCustomer" label="=svcNotifyCustomer" />
+    <Boolean name="ShowCustomer" label="=svcShowCustomer" />
     <Text name="Message" label="=message" />
     <Boolean name="Comment" label="=svcComment" />
     <Relation name="Item" relation="Items" label="=service" />

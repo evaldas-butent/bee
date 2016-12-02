@@ -498,7 +498,7 @@ abstract class MultiStateForm extends RightsForm {
     return widget;
   }
 
-  private Widget createStateLabel(RightsState state) {
+  private static Widget createStateLabel(RightsState state) {
     Label widget = new Label(state.getCaption());
     widget.addStyleName(STYLE_STATE_LABEL);
 

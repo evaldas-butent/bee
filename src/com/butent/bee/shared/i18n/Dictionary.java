@@ -243,6 +243,8 @@ public interface Dictionary {
 
   default String before() {return g("before");}
 
+  default String beneficiary() {return g("beneficiary");}
+
   default String birthdaysParties() {return g("birthdaysParties");}
 
   default String blockAfter() {return g("blockAfter");}
@@ -2526,11 +2528,15 @@ public interface Dictionary {
 
   default String endingYear() {return g("endingYear");}
 
+  default String endingYearMonth() {return g("endingYearMonth");}
+
   default String enterColor() {return g("enterColor");}
 
   default String enterDate() {return g("enterDate");}
 
   default String enterTime() {return g("enterTime");}
+
+  default String equipment() {return g("equipment");}
 
   default String error() {return g("error");}
 
@@ -2674,6 +2680,12 @@ public interface Dictionary {
 
   default String fetchWorkSchedule() {return g("fetchWorkSchedule");}
 
+  default String fieldRequired(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("fieldRequired"), _m);
+  }
+
   default String fields() {return g("fields");}
 
   default String file() {return g("file");}
@@ -2735,7 +2747,97 @@ public interface Dictionary {
 
   default String finAnalysis() {return g("finAnalysis");}
 
+  default String finAnalysisColumn() {return g("finAnalysisColumn");}
+
+  default String finAnalysisColumnAbbreviation() {return g("finAnalysisColumnAbbreviation");}
+
+  default String finAnalysisColumnName() {return g("finAnalysisColumnName");}
+
+  default String finAnalysisColumnNew() {return g("finAnalysisColumnNew");}
+
+  default String finAnalysisColumnSelected() {return g("finAnalysisColumnSelected");}
+
+  default String finAnalysisColumnSplitLevels() {return g("finAnalysisColumnSplitLevels");}
+
+  default String finAnalysisColumns() {return g("finAnalysisColumns");}
+
+  default String finAnalysisFilterExtra() {return g("finAnalysisFilterExtra");}
+
+  default String finAnalysisFilterInclude() {return g("finAnalysisFilterInclude");}
+
+  default String finAnalysisFilterNew() {return g("finAnalysisFilterNew");}
+
+  default String finAnalysisFilters() {return g("finAnalysisFilters");}
+
+  default String finAnalysisForm() {return g("finAnalysisForm");}
+
+  default String finAnalysisFormNew() {return g("finAnalysisFormNew");}
+
+  default String finAnalysisForms() {return g("finAnalysisForms");}
+
+  default String finAnalysisName() {return g("finAnalysisName");}
+
+  default String finAnalysisRow() {return g("finAnalysisRow");}
+
+  default String finAnalysisRowAbbreviation() {return g("finAnalysisRowAbbreviation");}
+
+  default String finAnalysisRowName() {return g("finAnalysisRowName");}
+
+  default String finAnalysisRowNew() {return g("finAnalysisRowNew");}
+
+  default String finAnalysisRowSelected() {return g("finAnalysisRowSelected");}
+
+  default String finAnalysisRowSplitLevels() {return g("finAnalysisRowSplitLevels");}
+
+  default String finAnalysisRows() {return g("finAnalysisRows");}
+
+  default String finAnalysisScale() {return g("finAnalysisScale");}
+
   default String finAnalysisScript() {return g("finAnalysisScript");}
+
+  default String finAnalysisShowColumnDimension(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finAnalysisShowColumnDimension"), _m);
+  }
+
+  default String finAnalysisShowColumnEmployee() {return g("finAnalysisShowColumnEmployee");}
+
+  default String finAnalysisShowRowDimension(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finAnalysisShowRowDimension"), _m);
+  }
+
+  default String finAnalysisShowRowEmployee() {return g("finAnalysisShowRowEmployee");}
+
+  default String finAnalysisShowTotal() {return g("finAnalysisShowTotal");}
+
+  default String finAnalysisSplit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finAnalysisSplit"), _m);
+  }
+
+  default String finAnalysisSplitLevels() {return g("finAnalysisSplitLevels");}
+
+  default String finAnalysisValueActual() {return g("finAnalysisValueActual");}
+
+  default String finAnalysisValueActualShort() {return g("finAnalysisValueActualShort");}
+
+  default String finAnalysisValueBudget() {return g("finAnalysisValueBudget");}
+
+  default String finAnalysisValueBudgetShort() {return g("finAnalysisValueBudgetShort");}
+
+  default String finAnalysisValueDifference() {return g("finAnalysisValueDifference");}
+
+  default String finAnalysisValueDifferenceShort() {return g("finAnalysisValueDifferenceShort");}
+
+  default String finAnalysisValuePercentage() {return g("finAnalysisValuePercentage");}
+
+  default String finAnalysisValuePercentageShort() {return g("finAnalysisValuePercentageShort");}
+
+  default String finAnalysisValues() {return g("finAnalysisValues");}
 
   default String finBudget() {return g("finBudget");}
 
@@ -2747,11 +2849,11 @@ public interface Dictionary {
 
   default String finBudgetHeader() {return g("finBudgetHeader");}
 
-  default String finBudgetHeaderNew() {return g("finBudgetHeaderNew");}
-
   default String finBudgetHeaders() {return g("finBudgetHeaders");}
 
   default String finBudgetName() {return g("finBudgetName");}
+
+  default String finBudgetNew() {return g("finBudgetNew");}
 
   default String finBudgetShowDimension(Object p0) {
     Map<String, Object> _m = new HashMap<>();
@@ -2766,6 +2868,8 @@ public interface Dictionary {
   default String finBudgetTypeNew() {return g("finBudgetTypeNew");}
 
   default String finBudgetTypes() {return g("finBudgetTypes");}
+
+  default String finBudgets() {return g("finBudgets");}
 
   default String finCashInBank() {return g("finCashInBank");}
 
@@ -2786,6 +2890,14 @@ public interface Dictionary {
   default String finCostOfGoodsSold() {return g("finCostOfGoodsSold");}
 
   default String finCostOfMerchandise() {return g("finCostOfMerchandise");}
+
+  default String finCreditOnly() {return g("finCreditOnly");}
+
+  default String finCreditShort() {return g("finCreditShort");}
+
+  default String finDebitOnly() {return g("finDebitOnly");}
+
+  default String finDebitShort() {return g("finDebitShort");}
 
   default String finDefaultAccounts() {return g("finDefaultAccounts");}
 
@@ -2809,9 +2921,41 @@ public interface Dictionary {
 
   default String finIndicatorAbbreviation() {return g("finIndicatorAbbreviation");}
 
+  default String finIndicatorAbbreviationClosingBalance(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationClosingBalance"), _m);
+  }
+
+  default String finIndicatorAbbreviationCredit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationCredit"), _m);
+  }
+
+  default String finIndicatorAbbreviationDebit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationDebit"), _m);
+  }
+
+  default String finIndicatorAbbreviationOpeningBalance(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationOpeningBalance"), _m);
+  }
+
+  default String finIndicatorAbbreviationTurnover(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorAbbreviationTurnover"), _m);
+  }
+
   default String finIndicatorAccounts() {return g("finIndicatorAccounts");}
 
   default String finIndicatorBalance() {return g("finIndicatorBalance");}
+
+  default String finIndicatorCreate() {return g("finIndicatorCreate");}
 
   default String finIndicatorFilterExtra() {return g("finIndicatorFilterExtra");}
 
@@ -2820,6 +2964,36 @@ public interface Dictionary {
   default String finIndicatorFilterNew() {return g("finIndicatorFilterNew");}
 
   default String finIndicatorFilters() {return g("finIndicatorFilters");}
+
+  default String finIndicatorNameClosingBalance(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameClosingBalance"), _m);
+  }
+
+  default String finIndicatorNameCredit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameCredit"), _m);
+  }
+
+  default String finIndicatorNameDebit(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameDebit"), _m);
+  }
+
+  default String finIndicatorNameOpeningBalance(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameOpeningBalance"), _m);
+  }
+
+  default String finIndicatorNameTurnover(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finIndicatorNameTurnover"), _m);
+  }
 
   default String finIndicatorPrimary() {return g("finIndicatorPrimary");}
 
@@ -2840,6 +3014,10 @@ public interface Dictionary {
   default String finIndicatorsSecondary() {return g("finIndicatorsSecondary");}
 
   default String finLiabilitiesToEmployees() {return g("finLiabilitiesToEmployees");}
+
+  default String finNormalAccountBalance() {return g("finNormalAccountBalance");}
+
+  default String finNormalAccountBalanceShort() {return g("finNormalAccountBalanceShort");}
 
   default String finOpeningBalance() {return g("finOpeningBalance");}
 
@@ -3503,6 +3681,8 @@ public interface Dictionary {
   default String newBank() {return g("newBank");}
 
   default String newBranch() {return g("newBranch");}
+
+  default String newCar() {return g("newCar");}
 
   default String newCargo() {return g("newCargo");}
 
@@ -4431,7 +4611,7 @@ public interface Dictionary {
 
   default String quantityTo() {return g("quantityTo");}
 
-  default String quater() {return g("quater");}
+  default String quarter() {return g("quarter");}
 
   default String questionLogout() {return g("questionLogout");}
 
@@ -4750,6 +4930,8 @@ public interface Dictionary {
 
   default String startingYear() {return g("startingYear");}
 
+  default String startingYearMonth() {return g("startingYearMonth");}
+
   default String stateVisible() {return g("stateVisible");}
 
   default String status() {return g("status");}
@@ -4877,6 +5059,8 @@ public interface Dictionary {
   default String svcShowCustomer() {return g("svcShowCustomer");}
 
   default String svcSpecification() {return g("svcSpecification");}
+
+  default String svcStateComment() {return g("svcStateComment");}
 
   default String svcStateProcess() {return g("svcStateProcess");}
 

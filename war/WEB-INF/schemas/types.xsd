@@ -235,6 +235,10 @@
       <xs:enumeration value="Addressbook" />
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
+      <xs:enumeration value="AnalysisColumns" />
+      <xs:enumeration value="AnalysisFilters" />
+      <xs:enumeration value="AnalysisHeaders" />
+      <xs:enumeration value="AnalysisRows" />
       <xs:enumeration value="AppointmentAttendees" />
       <xs:enumeration value="AppointmentOwners" />
       <xs:enumeration value="AppointmentProps" />
@@ -277,6 +281,7 @@
       <xs:enumeration value="CargoUnloading" />
       <xs:enumeration value="CarOrderItems" />
       <xs:enumeration value="CarOrders" />
+      <xs:enumeration value="Cars" />
       <xs:enumeration value="CategoryTree" />
       <xs:enumeration value="ChartOfAccounts" />
       <xs:enumeration value="ChatFiles" />
@@ -306,6 +311,7 @@
       <xs:enumeration value="ConfOptions" />
       <xs:enumeration value="ConfPricelist" />
       <xs:enumeration value="Configuration" />
+      <xs:enumeration value="ConfTemplates" />
       <xs:enumeration value="ConfTypes" />
       <xs:enumeration value="Countries" />
       <xs:enumeration value="CountryDailyCosts" />

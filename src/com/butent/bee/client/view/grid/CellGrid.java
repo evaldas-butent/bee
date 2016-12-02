@@ -104,6 +104,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Manages the structure and behavior of a cell grid user interface component.
@@ -1153,6 +1154,16 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  public void autoFitColumn(String source, boolean fitHeader) {
+    List<Integer> colIndexes = getColumnIndexBySourceName(source);
+
+    if (!colIndexes.isEmpty()) {
+      for (int col : colIndexes) {
+        autoFitColumn(col, fitHeader);
+      }
+    }
+  }
+
   public boolean autoFitColumn(int col, boolean fitHeader) {
     ColumnInfo columnInfo = getColumnInfo(col);
     if (!columnInfo.isAutoFitEnabled()) {
@@ -1388,6 +1399,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public String getColumnId(int col) {
     return getColumnInfo(col).getColumnId();
+  }
+
+  public List<String> getColumnIds() {
+    return getColumns().stream().map(ColumnInfo::getColumnId).collect(Collectors.toList());
   }
 
   public List<ColumnInfo> getColumns() {
@@ -1847,7 +1862,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
         } else {
           activateCell(row, col, true);
-          if (columnInfo.getColumn().instantKarma(rowValue)) {
+          if (columnInfo.getColumn().instantKarma()) {
             startEditing(rowValue, col, target, EditStartEvent.CLICK);
           }
         }
@@ -2164,14 +2179,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   public boolean removeColumn(String columnId) {
-    int predefIndex = BeeConst.UNDEF;
-
-    for (int i = 0; i < predefinedColumns.size(); i++) {
-      if (predefinedColumns.get(i).is(columnId)) {
-        predefIndex = i;
-        break;
-      }
-    }
+    int predefIndex = getPredefinedIndex(columnId);
 
     if (BeeConst.isUndef(predefIndex)) {
       return false;
@@ -2235,6 +2243,38 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public void setCaption(String caption) {
     this.caption = caption;
+  }
+
+  public boolean setColumnVisible(String columnId, boolean visible) {
+    int index = getPredefinedIndex(columnId);
+
+    if (BeeConst.isUndef(index)) {
+      return false;
+
+    } else if (visible) {
+      if (visibleColumns.contains(index)) {
+        return false;
+      }
+
+      int pos = BeeConst.UNDEF;
+      for (int i = 0; i < visibleColumns.size(); i++) {
+        if (visibleColumns.get(i) > index) {
+          pos = i;
+          break;
+        }
+      }
+
+      if (BeeConst.isUndef(pos)) {
+        visibleColumns.add(index);
+      } else {
+        visibleColumns.add(pos, index);
+      }
+
+      return true;
+
+    } else {
+      return visibleColumns.remove(Integer.valueOf(index));
+    }
   }
 
   public void setDefaultFlexibility(Flexibility defaultFlexibility) {
@@ -3039,7 +3079,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return predefinedColumns.get(visibleColumns.get(col));
   }
 
-  private ColumnInfo getColumnInfo(String columnId) {
+  public ColumnInfo getColumnInfo(String columnId) {
     Assert.notEmpty(columnId);
     List<ColumnInfo> columns = getColumns();
     for (ColumnInfo info : columns) {
@@ -3214,6 +3254,15 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     } else {
       return 0;
     }
+  }
+
+  private int getPredefinedIndex(String columnId) {
+    for (int i = 0; i < predefinedColumns.size(); i++) {
+      if (predefinedColumns.get(i).is(columnId)) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
   }
 
   private List<Long> getRenderedRows() {
@@ -3870,7 +3919,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  private void render(boolean focus) {
+  public void render(boolean focus) {
     RenderingEvent beforeEvent = RenderingEvent.before();
     fireEvent(beforeEvent);
 

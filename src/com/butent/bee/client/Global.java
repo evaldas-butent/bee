@@ -22,6 +22,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.grid.GridFactory;
@@ -60,7 +61,9 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -447,13 +450,13 @@ public final class Global {
 
     if (huhs == null) {
       caption = null;
-      messages = Lists.newArrayList("Huh");
+      messages = Collections.singletonList("Huh");
     } else {
       caption = "Huh";
-      messages = Lists.newArrayList(huhs);
+      messages = Arrays.asList(huhs);
     }
 
-    messageBox(caption, Icon.QUESTION, messages, Lists.newArrayList("kthxbai"), 0, null);
+    messageBox(caption, null, messages, Collections.singletonList("kthxbai"), 0, null);
   }
 
   public static void setDebug(boolean debug) {
@@ -547,20 +550,20 @@ public final class Global {
     MessageBoxes.showTable(caption, table, styles);
   }
 
-  public static void showModalWidget(String caption, Widget widget) {
-    showModalWidget(caption, widget, null);
+  public static Popup showModalWidget(String caption, Widget widget) {
+    return showModalWidget(caption, widget, null);
   }
 
-  public static void showModalWidget(String caption, Widget widget, Element target) {
-    MessageBoxes.showWidget(caption, widget, target);
+  public static Popup showModalWidget(String caption, Widget widget, Element target) {
+    return MessageBoxes.showWidget(caption, widget, target);
   }
 
-  public static void showModalWidget(Widget widget) {
-    showModalWidget(null, widget, null);
+  public static Popup showModalWidget(Widget widget) {
+    return showModalWidget(null, widget, null);
   }
 
-  public static void showModalWidget(Widget widget, Element target) {
-    showModalWidget(null, widget, target);
+  public static Popup showModalWidget(Widget widget, Element target) {
+    return showModalWidget(null, widget, target);
   }
 
   public static void showTable(String caption, IsTable<?, ?> table) {

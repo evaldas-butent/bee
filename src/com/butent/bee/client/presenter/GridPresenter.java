@@ -670,16 +670,16 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       @Override
       public void onSuccess(BeeRow row) {
-        if (event.getCallback() != null) {
-          event.getCallback().onSuccess(row);
-        }
-
         if (rowMode) {
           RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
         } else {
           String value = row.getString(0);
           CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), rowId, row.getVersion(),
               source, value);
+        }
+
+        if (event.getCallback() != null) {
+          event.getCallback().onSuccess(row);
         }
       }
     };

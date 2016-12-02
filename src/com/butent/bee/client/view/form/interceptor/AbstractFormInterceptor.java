@@ -22,6 +22,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -122,6 +123,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public String getCaption() {
     return null;
+  }
+
+  @Override
+  public List<BeeColumn> getDataColumns() {
+    return (getFormView() == null) ? null : getFormView().getDataColumns();
   }
 
   @Override

@@ -2,6 +2,7 @@ package com.butent.bee.client.grid.cell;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -75,6 +76,10 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
   @Override
   public CellType getCellType() {
     return CellType.HTML;
+  }
+
+  public static boolean isCaptionEvent(NativeEvent event) {
+    return EventUtils.hasClassName(event, STYLE_CAPTION);
   }
 
   @Override

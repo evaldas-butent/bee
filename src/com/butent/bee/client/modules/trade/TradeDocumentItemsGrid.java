@@ -240,8 +240,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     if (operationType.consumesStock()) {
       Long warehouseFrom = Data.getLong(VIEW_TRADE_DOCUMENTS, parentRow, COL_TRADE_WAREHOUSE_FROM);
       if (!DataUtils.isId(warehouseFrom)) {
-        presenter.getGridView().notifyWarning(Localized.dictionary().trdWarehouseFrom(),
-            Localized.dictionary().valueRequired());
+        presenter.getGridView().notifyWarning(Localized.dictionary()
+            .fieldRequired(Localized.dictionary().trdWarehouseFrom()));
         return false;
       }
 

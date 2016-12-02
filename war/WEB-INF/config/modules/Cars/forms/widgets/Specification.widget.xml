@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FieldSet xmlns="http://www.butent.com/widget" class="flexible"
+          style="position:relative; margin:5px; border:1px solid #ccc;">
+
+  <Legend name="SpecificationBuilder" class="bee-Button" text="=specification" />
+
+  <FlowPanel
+      style="position:absolute; top:30px; bottom:10px; left:10px; right:10px; overflow:auto;">
+    <FlowPanel name="Object" />
+  </FlowPanel>
+</FieldSet>

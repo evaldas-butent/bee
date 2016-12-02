@@ -10,6 +10,7 @@
     <Relation name="Option" relation="ConfOptions" notNull="true" label="=option" />
     <Integer name="Price" label="=price" />
     <Text name="Description" label="=description" />
+    <Text name="Criteria" label="=criteria" />
   </Fields>
   <Constraints>
     <Unique fields="Branch Option" />
