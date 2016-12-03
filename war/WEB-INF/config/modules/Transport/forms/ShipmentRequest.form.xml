@@ -191,7 +191,7 @@
           <cell rowSpan="2">
             <InputArea source="Description" visibleLines="4" style="width:200px;" />
           </cell>
-          <Label for="Weight" />
+          <Label for="Weight" name="WeightLabel" />
           <FlowPanel>
             <InputDecimal source="Weight" style="&decimal;" />
             <DataSelector source="WeightUnit" style="&unit;" />

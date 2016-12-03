@@ -541,6 +541,7 @@ public final class TransportConstants {
   public static final String COL_SHIPPING_TERM = "ShippingTerm";
   public static final String COL_CARGO_QUANTITY = "Quantity";
   public static final String COL_CARGO_WEIGHT = "Weight";
+  public static final String COL_CARGO_WEIGHT_UNIT = "WeightUnit";
   public static final String COL_CARGO_VOLUME = "Volume";
   public static final String COL_CARGO_LDM = "LDM";
   public static final String COL_CARGO_LENGTH = "Length";

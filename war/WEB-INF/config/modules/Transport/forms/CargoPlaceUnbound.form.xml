@@ -11,7 +11,7 @@
     <col index="2" kind="label" />
     <row>
       <Label for="Date" class="bee-required" />
-      <InputDateTime source="Date" required="true" title="=trRequestDateTitle"/>
+      <InputDateTime source="Date" required="true" title="=trRequestDateTitle" minValue="d" />
     </row>
     <row>
       <Label for="Company" />
