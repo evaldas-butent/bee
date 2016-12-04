@@ -16,6 +16,7 @@ public class ReportTimeDurationItem extends ReportNumericItem  {
     super(expression, caption);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Object calculate(Object total, ReportValue value, ReportFunction function) {
     Long val = TimeUtils.parseTime(value.getValue());
