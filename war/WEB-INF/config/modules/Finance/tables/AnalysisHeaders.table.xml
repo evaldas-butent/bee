@@ -22,6 +22,8 @@
     <Numeric name="YearUntil" precision="4" label="=endingYear" />
     <Numeric name="MonthUntil" precision="2" label="=endingMonth" />
 
+    <Relation name="Currency" relation="Currencies" label="=currency" />
+
     <Boolean name="ColumnDim01" />
     <Boolean name="ColumnDim02" />
     <Boolean name="ColumnDim03" />

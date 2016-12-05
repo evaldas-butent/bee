@@ -2747,6 +2747,8 @@ public interface Dictionary {
 
   default String finAnalysis() {return g("finAnalysis");}
 
+  default String finAnalysisCalculate() {return g("finAnalysisCalculate");}
+
   default String finAnalysisColumn() {return g("finAnalysisColumn");}
 
   default String finAnalysisColumnAbbreviation() {return g("finAnalysisColumnAbbreviation");}
@@ -2838,6 +2840,8 @@ public interface Dictionary {
   default String finAnalysisValuePercentageShort() {return g("finAnalysisValuePercentageShort");}
 
   default String finAnalysisValues() {return g("finAnalysisValues");}
+
+  default String finAnalysisVerify() {return g("finAnalysisVerify");}
 
   default String finBudget() {return g("finBudget");}
 

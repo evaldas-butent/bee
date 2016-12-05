@@ -18,10 +18,11 @@
       <Table kind="controls">
         <col index="0" kind="label" />
         <col index="2" kind="label" />
+        <col index="4" kind="label" />
 
         <row>
           <Label for="AnalysisName" text="=name" />
-          <cell colSpan="3">
+          <cell colSpan="5">
             <InputText source="AnalysisName" style="width: 100%;"
                        backgroundSource="Background" foregroundSource="Foreground" />
           </cell>
@@ -35,12 +36,16 @@
             <InputInteger source="MonthFrom" style="&stmonth;" minValue="1" maxValue="12" />
           </FlowPanel>
 
-          <Label text="=endingYearMonth" style="margin-left: 4vw;" />
+          <Label text="=endingYearMonth" style="margin-left: 2vw;" />
           <FlowPanel>
             <InputInteger source="YearUntil" style="&styear;" minValue="2000" maxValue="2099"
                           format="0000" />
             <InputInteger source="MonthUntil" style="&stmonth;" minValue="1" maxValue="12" />
           </FlowPanel>
+
+          <Label for="Currency" style="margin-left: 2vw;" />
+          <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
+                        newRowEnabled="false" style="width: 4rem;" />
         </row>
       </Table>
     </SimplePanel>

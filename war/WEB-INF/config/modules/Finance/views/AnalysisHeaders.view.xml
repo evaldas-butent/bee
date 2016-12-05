@@ -20,6 +20,11 @@
     <SimpleColumn name="YearUntil" />
     <SimpleColumn name="MonthUntil" />
 
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
     <SimpleColumn name="ColumnDim01" />
     <SimpleColumn name="ColumnDim02" />
     <SimpleColumn name="ColumnDim03" />

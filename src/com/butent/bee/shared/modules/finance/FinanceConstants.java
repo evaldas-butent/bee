@@ -140,6 +140,7 @@ public final class FinanceConstants {
   public static final String COL_ANALYSIS_HEADER_MONTH_FROM = "MonthFrom";
   public static final String COL_ANALYSIS_HEADER_YEAR_UNTIL = "YearUntil";
   public static final String COL_ANALYSIS_HEADER_MONTH_UNTIL = "MonthUntil";
+  public static final String COL_ANALYSIS_HEADER_CURRENCY = "Currency";
   public static final String COL_ANALYSIS_HEADER_BACKGROUND = "Background";
   public static final String COL_ANALYSIS_HEADER_FOREGROUND = "Foreground";
 

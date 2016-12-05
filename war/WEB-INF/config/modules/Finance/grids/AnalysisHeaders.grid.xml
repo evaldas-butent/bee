@@ -25,6 +25,8 @@
     <DataColumn name="YearUntil" format="0000" />
     <DataColumn name="MonthUntil" />
 
+    <RelColumn name="Currency" newRowEnabled="false" visible="false" />
+
     <DataColumn name="Description" flexGrow="1" />
 
     <DataColumn name="Background" updateMode="row" minWidth="100" editInPlace="true"
