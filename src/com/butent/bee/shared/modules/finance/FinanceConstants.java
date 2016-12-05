@@ -151,6 +151,7 @@ public final class FinanceConstants {
 
   public static final String COL_ANALYSIS_SHOW_COLUMN_EMPLOYEE = "ColumnEmployee";
   public static final String COL_ANALYSIS_COLUMN_SPLIT_LEVELS = "ColumnSplitLevels";
+  public static final String COL_ANALYSIS_COLUMN_FILTERS = "ColumnFilters";
 
   private static final String[] COL_ANALYSIS_SHOW_ROW_DIMENSIONS = new String[] {
       "RowDim01", "RowDim02", "RowDim03", "RowDim04", "RowDim05",
@@ -159,6 +160,7 @@ public final class FinanceConstants {
 
   public static final String COL_ANALYSIS_SHOW_ROW_EMPLOYEE = "RowEmployee";
   public static final String COL_ANALYSIS_ROW_SPLIT_LEVELS = "RowSplitLevels";
+  public static final String COL_ANALYSIS_ROW_FILTERS = "RowFilters";
 
   public static final String COL_ANALYSIS_COLUMN_SELECTED = "Selected";
   public static final String COL_ANALYSIS_COLUMN_ORDINAL = "Ordinal";

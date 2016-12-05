@@ -8,6 +8,7 @@
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="SimpleAnalysis" viewName="AnalysisHeaders" caption="=finAnalysis"
@@ -70,9 +71,22 @@
 
             <InlineLabel text="=finAnalysisSplitLevels" style="margin-left: 2rem;" />
             <InputSpinner source="ColumnSplitLevels" minValue="0" maxValue="10" style="&stlvl;" />
+
+            <CheckBox source="ColumnFilters" text="=filters" style="margin-left: 2rem;" />
           </FlowPanel>
 
           <ChildGrid name="AnalysisColumns" relColumn="AnalysisHeader" class="flexible" />
+
+          <ChildGrid name="AnalysisColumnFilters" parent="AnalysisColumns"
+                     relColumn="AnalysisColumn">
+            <dynStyle>
+              <ui:inline>height: 120px;</ui:inline>
+              <ui:expression>row.ColumnFilters</ui:expression>
+            </dynStyle>
+            <dynStyle>
+              <ui:inline>display: none;</ui:inline>
+            </dynStyle>
+          </ChildGrid>
         </FlowPanel>
       </page>
 
@@ -95,9 +109,21 @@
 
             <InlineLabel text="=finAnalysisSplitLevels" style="margin-left: 2rem;" />
             <InputSpinner source="RowSplitLevels" minValue="0" maxValue="10" style="&stlvl;" />
+
+            <CheckBox source="RowFilters" text="=filters" style="margin-left: 2rem;" />
           </FlowPanel>
 
           <ChildGrid name="AnalysisRows" relColumn="AnalysisHeader" class="flexible" />
+
+          <ChildGrid name="AnalysisRowFilters" parent="AnalysisRows" relColumn="AnalysisRow">
+            <dynStyle>
+              <ui:inline>height: 120px;</ui:inline>
+              <ui:expression>row.RowFilters</ui:expression>
+            </dynStyle>
+            <dynStyle>
+              <ui:inline>display: none;</ui:inline>
+            </dynStyle>
+          </ChildGrid>
         </FlowPanel>
       </page>
 

@@ -4,7 +4,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="AnalysisRowFilters" viewName="AnalysisFilters"
-        flexGrow="1"
+        caption="=finAnalysisRowFilters" flexGrow="1"
 >
   <xi:include href="columns/Employee.columns.xml" />
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
