@@ -423,7 +423,7 @@ public final class FormFactory {
         providerType, cachingPolicy, interceptor);
 
     if (interceptor != null) {
-      interceptor.onShow(presenter);
+      interceptor.afterCreatePresenter(presenter);
     }
     if (presenterCallback != null) {
       presenterCallback.onCreate(presenter);

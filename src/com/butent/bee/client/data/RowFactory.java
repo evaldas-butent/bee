@@ -485,6 +485,10 @@ public final class RowFactory {
     }
 
     final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap, enabledActions);
+    if (interceptor != null) {
+      interceptor.afterCreatePresenter(presenter);
+    }
+
     final ModalForm dialog = new ModalForm(presenter, formView, false);
 
     final RowCallback closer = new RowCallback() {

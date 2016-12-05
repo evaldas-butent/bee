@@ -289,7 +289,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     Global.confirm(getCaption(), Icon.QUESTION,
         Collections.singletonList(Localized.dictionary().saveAndPrintQuestion()),
         Localized.dictionary().saveAndPrintAction(), Localized.dictionary().cancel(),
-        () -> saveAndPrint());
+        this::saveAndPrint);
   }
 
   private void print() {

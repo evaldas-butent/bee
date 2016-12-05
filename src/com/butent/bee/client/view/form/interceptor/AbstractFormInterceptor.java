@@ -48,6 +48,10 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public void afterCreatePresenter(Presenter presenter) {
+  }
+
+  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
   }
@@ -264,10 +268,6 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public void onSetActiveRow(IsRow row) {
-  }
-
-  @Override
-  public void onShow(Presenter presenter) {
   }
 
   @Override

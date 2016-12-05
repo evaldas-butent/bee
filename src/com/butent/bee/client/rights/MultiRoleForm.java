@@ -112,7 +112,7 @@ abstract class MultiRoleForm extends RightsForm {
   private Long userId;
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void afterCreatePresenter(Presenter presenter) {
     HeaderView header = presenter.getHeader();
 
     if (header != null && !header.hasCommands()) {
