@@ -359,3 +359,7 @@
   max-width: 90%;
 }
 
+.bee-ta-client-area .bee-UserSignature {
+  color: #e3e3e3;
+  cursor: pointer;
+}

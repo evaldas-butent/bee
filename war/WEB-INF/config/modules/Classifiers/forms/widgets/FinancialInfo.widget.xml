@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Table [
+  <!ENTITY lbl "margin-left: 1em; margin-right: 1em; text-align: right">
+]>
+<Table xmlns="http://www.butent.com/widget" kind="controls" style="margin: 0 0 25px 30px;">
+  <Label text="=financialInfo" style="padding-bottom: 10px; padding-top:10px" />
+  <row>
+    <Label text="=creditLimit" for="CreditLimit" style="&lbl;" />
+    <FlowPanel>
+      <InputInteger source="CreditLimit" style="text-align: right" summarize="true" />
+      <DataSelector source="LimitCurrency" editEnabled="false"
+                    placeholder="=currencyShort"
+                    style="width:5em; margin-left:5px; display:inline-block;" for="CreditLimit" />
+    </FlowPanel>
+    <cell rowSpan="5" verticalAlignment="top">
+      <FlowPanel name="CreditInfo" />
+    </cell>
+  </row>
+
+  <row for="CreditTolerance">
+    <Label text="=creditTolerance" style="&lbl;" />
+    <InputInteger source="CreditTolerance" style="width: 60px;" summarize="true" />
+  </row>
+
+  <row for="CreditDays">
+    <Label text="=creditDays" style="&lbl;" />
+    <InputDecimal source="CreditDays" style="width: 60px;" summarize="true" />
+  </row>
+
+  <row for="FinancialState">
+    <Label text="=financialState" style="&lbl;" />
+    <Table kind="controls">
+      <row>
+        <DataSelector source="FinancialState" renderColumns="FinancialStateName"
+                      choiceColumns="Name" summarize="true" />
+        <FaLabel name="FinancialStateAudit" char="history" style="font-size: larger;" />
+      </row>
+    </Table>
+  </row>
+
+  <row for="DaysAsBuyer">
+    <Label text="=daysAsBuyer" style="&lbl;" />
+    <InputDecimal source="DaysAsBuyer" style="width: 60px;" summarize="true" />
+  </row>
+
+  <row for="DaysAsSupplier">
+    <Label text="=daysAsSupplier" style="&lbl;" />
+    <InputDecimal source="DaysAsSupplier" style="width: 60px;" summarize="true" />
+  </row>
+
+  <row for="SupplierCreditDays">
+    <Label text="=supplierCreditDays" style="&lbl;" />
+    <InputDecimal source="SupplierCreditDays" style="width: 60px;" summarize="true" />
+  </row>
+</Table>

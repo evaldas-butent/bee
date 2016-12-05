@@ -7,10 +7,10 @@
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
         xmlns:ui="http://www.butent.com/ui"
+        xmlns:x="http://www.w3.org/2001/XInclude"
 
         name="NewCompany"
         viewName="Companies"
-        favorite="Name"
         caption="=client"
         width="700"
         height="700"
@@ -170,6 +170,8 @@
       </row>
 
     </Table>
+
+    <x:include href="widgets/FinancialInfo.widget.xml" />
 
     <ChildGrid name="CompanyBankAccounts" relColumn="Company" style="min-height: 150px;" />
 

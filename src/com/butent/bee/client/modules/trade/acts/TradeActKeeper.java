@@ -20,6 +20,7 @@ import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -57,6 +58,7 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -163,11 +165,32 @@ public final class TradeActKeeper {
     FormFactory.registerFormInterceptor(FORM_TRADE_ACT, new TradeActForm());
     FormFactory.registerFormInterceptor(FORM_INVOICE_BUILDER, new TradeActInvoiceBuilder());
 
-    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, new TradeActItemsGrid());
-    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, new TradeActServicesGrid());
-    GridFactory.registerGridInterceptor(VIEW_TRADE_ACT_FILES,
-        new FileGridInterceptor(COL_TRADE_ACT, AdministrationConstants.COL_FILE,
-            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
+    if (isClientArea()) {
+      FormFactory.registerFormInterceptor(FORM_NEW_COMPANY, null);
+    }
+
+    AbstractGridInterceptor interceptor = new AbstractGridInterceptor() {
+      @Override
+      public boolean beforeAction(Action action, GridPresenter presenter) {
+        if (Action.AUDIT == action) {
+          return false;
+        }
+        return super.beforeAction(action, presenter);
+      }
+
+      @Override
+      public GridInterceptor getInstance() {
+        return this;
+      }
+    };
+
+      GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, isClientArea() ? interceptor
+          : new TradeActItemsGrid());
+      GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, isClientArea() ? interceptor
+          : new TradeActServicesGrid());
+      GridFactory.registerGridInterceptor(VIEW_TRADE_ACT_FILES,
+          new FileGridInterceptor(COL_TRADE_ACT, AdministrationConstants.COL_FILE,
+              AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     if (isClientArea()) {
       GridFactory.registerGridInterceptor(GRID_SALES, new AbstractGridInterceptor() {
@@ -201,6 +224,8 @@ public final class TradeActKeeper {
           return this;
         }
       });
+      GridFactory.registerGridInterceptor(VIEW_SALE_ITEMS, interceptor);
+      GridFactory.registerGridInterceptor(VIEW_INVOICE_TRADE_ACTS, interceptor);
     }
 
     SelectorEvent.register(new TradeActSelectorHandler());

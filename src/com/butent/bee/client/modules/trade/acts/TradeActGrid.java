@@ -52,6 +52,7 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.StringList;
@@ -117,6 +118,14 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
     IsRow row = event.getNewRow();
     checkContract(row, event, gridView);
+  }
+
+  @Override
+  public boolean beforeAction(Action action, GridPresenter presenter) {
+    if (TradeActKeeper.isClientArea() && Action.AUDIT == action) {
+      return false;
+    }
+    return super.beforeAction(action, presenter);
   }
 
   @Override

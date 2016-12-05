@@ -42,10 +42,11 @@
 
       <row>
         <Label for="Supplier" />
-        <DataSelector source="Supplier" style="&inp;" />
+        <DataSelector source="Supplier" style="&inp;" editEnabled="false"/>
 
         <Label for="Customer" />
-        <DataSelector source="Customer" required="true" visible="true" style="&inp;" />
+        <DataSelector source="Customer" required="true" visible="true" style="&inp;"
+                      editForm="NewCompany"/>
       </row>
 
       <row>
@@ -54,7 +55,7 @@
           renderColumns="ManagerFirstName ManagerLastName" style="&inp;" />
 
         <Label for="Payer" />
-        <DataSelector source="Payer" style="&inp;"/>
+        <DataSelector source="Payer" style="&inp;" editEnabled="false"/>
       </row>
 
       <row>

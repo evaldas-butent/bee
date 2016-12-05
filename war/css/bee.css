@@ -3786,3 +3786,13 @@ textarea,
 .bee-ExportController-completed .bee-ExportController-cancel {
   display: none;
 }
+
+/* TRANSRIFUS { */
+
+.bee-form-User select > option[value="1"],
+.bee-form-User select > option[value="2"],
+.bee-form-User select > option[value="3"],
+.bee-form-User select > option[value="4"] {
+  display: none;
+}
+/* TRANSRIFUS}
