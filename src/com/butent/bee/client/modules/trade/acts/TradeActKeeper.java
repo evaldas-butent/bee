@@ -534,7 +534,7 @@ public final class TradeActKeeper {
         == BeeUtils.unbox(row.getInteger(form.getDataIndex(ALS_RETURNED_COUNT)));
 
     return  ((!hasContinuousTa && !isContinuousTa && !isMultiReturnEditor
-        && isSingleReturn) || isSupplementAct) && !TradeActKeeper.isClientArea() ;
+        && isSingleReturn) || isSupplementAct) && !TradeActKeeper.isClientArea();
   }
 
   static boolean isUserSeries(Long series) {

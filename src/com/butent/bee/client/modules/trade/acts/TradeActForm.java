@@ -17,7 +17,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
-import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
@@ -156,7 +155,8 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
               new TradeActInvoiceBuilder(row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS,
                   COL_TA_COMPANY)), row.getId())));
 
-      if (kind != TradeActKind.RETURN && !TradeActKeeper.isClientArea()) {
+      if (kind != TradeActKind.RETURN && !row.hasPropertyValue(PRP_CONTINUOUS_COUNT)
+          && !TradeActKeeper.isClientArea()) {
         header.addCommandItem(commandCompose);
       }
     }

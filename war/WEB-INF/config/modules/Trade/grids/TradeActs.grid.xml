@@ -40,4 +40,10 @@
 
     <DataColumn name="RegistrationNo" />
   </g:columns>
+  <g:rowEditable>
+    <ui:expression>(!row.ContinuousCount &amp;&amp; row.ReturnedCount == 0) ||
+      (row.ReturnedCount &gt; 0  &amp;&amp; row.SingleReturnCount &gt; 0
+      &amp;&amp; row.ReturnedCount == row.SingleReturnCount )
+    </ui:expression>
+  </g:rowEditable>
 </g:Grid>

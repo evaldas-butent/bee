@@ -354,13 +354,14 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     HeaderView formHeader = getFormHeader(gridView);
 
     if (formHeader != null && kind == TradeActKind.SALE && BeeKeeper.getUser().canCreateData(
-        VIEW_SALES) && !TradeActKeeper.isClientArea()) {
+        VIEW_SALES) && !TradeActKeeper.isClientArea()
+        && !parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)) {
       formHeader.addCommandItem(commandSale);
     } else if (kind != TradeActKind.RETURN) {
       gridView.getViewPresenter().getHeader();
     }
 
-    if (commandImportItems != null ) {
+    if (commandImportItems != null) {
       commandImportItems.setVisible(TradeActKeeper.isEnabledItemsGrid(kind,
           ViewHelper.getForm(gridView), parentRow));
     }
