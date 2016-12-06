@@ -1667,6 +1667,91 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void saveChanges(final RowCallback callback) {
+    if (DataUtils.hasId(getActiveRow()) && DataUtils.sameId(getActiveRow(), getOldRow())) {
+      if (!validate(this, true)) {
+        return;
+      }
+
+      GridView gridView = getBackingGrid();
+      if (gridView != null && !gridView.validateFormData(this, this, true)) {
+        return;
+      }
+
+      SaveChangesEvent event = SaveChangesEvent.create(getOldRow(), getActiveRow(),
+          getDataColumns(), getChildrenForUpdate(), callback);
+
+      if (event.isEmpty()) {
+        if (callback != null) {
+          callback.onSuccess(BeeRow.from(getActiveRow()));
+        }
+        return;
+      }
+
+      AutocompleteProvider.retainValues(this);
+
+      if (getFormInterceptor() != null) {
+        getFormInterceptor().onSaveChanges(this, event);
+        if (event.isConsumed()) {
+          return;
+        }
+      }
+
+      if (gridView != null && gridView.getGridInterceptor() != null) {
+        gridView.getGridInterceptor().onSaveChanges(gridView, event);
+        if (event.isConsumed()) {
+          return;
+        }
+      }
+
+      BeeRowSet updated = DataUtils.getUpdated(getViewName(), event.getOldRow().getId(),
+          event.getOldRow().getVersion(), event.getColumns(), event.getOldValues(),
+          event.getNewValues(), event.getChildren());
+
+      if (DataUtils.isEmpty(updated) && BeeUtils.isEmpty(event.getChildren())) {
+        if (callback != null) {
+          callback.onSuccess(BeeRow.from(getActiveRow()));
+        }
+        return;
+      }
+
+      RowCallback updateCallback = new RowCallback() {
+        @Override
+        public void onFailure(String... reason) {
+          if (callback == null) {
+            notifySevere(reason);
+          } else {
+            callback.onFailure(reason);
+          }
+        }
+
+        @Override
+        public void onSuccess(BeeRow result) {
+          RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+
+          if (getFormInterceptor() != null) {
+            getFormInterceptor().afterUpdateRow(result);
+          }
+
+          if (callback != null) {
+            callback.onSuccess(result);
+          }
+        }
+      };
+
+      if (DataUtils.isEmpty(updated)) {
+        Queries.updateChildren(getViewName(), event.getOldRow().getId(), event.getChildren(),
+            updateCallback);
+      } else {
+        Queries.updateRow(updated, updateCallback);
+      }
+
+    } else if (callback != null) {
+      callback.onFailure("cannot save changes");
+    }
+  }
+
+  @Override
   public void setAdding(boolean adding) {
     this.adding = adding;
   }
@@ -2002,6 +2087,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void fireUpdate(IsRow rowValue, final IsColumn column, String oldValue,
       final String newValue, boolean rowMode) {
+
     fireEvent(new ReadyForUpdateEvent(rowValue, column, oldValue, newValue, rowMode,
         new RowCallback() {
           @Override
