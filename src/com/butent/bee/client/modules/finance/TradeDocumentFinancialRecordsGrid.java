@@ -5,16 +5,18 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 
 class TradeDocumentFinancialRecordsGrid extends FinanceGrid {
 
@@ -40,24 +42,30 @@ class TradeDocumentFinancialRecordsGrid extends FinanceGrid {
   }
 
   private void post() {
-    Long docId = ViewHelper.getParentRowId(ViewHelper.asWidget(getGridView()),
-        TradeConstants.VIEW_TRADE_DOCUMENTS);
+    final FormView form = ViewHelper.getForm(getGridView());
 
-    if (DataUtils.isId(docId)) {
-      ParameterList params = FinanceKeeper.createArgs(SVC_POST_TRADE_DOCUMENT);
-      params.addQueryItem(Service.VAR_ID, docId);
-
-      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+    if (form != null && DataUtils.hasId(form.getActiveRow())) {
+      form.saveChanges(new RowCallback() {
         @Override
-        public void onResponse(ResponseObject response) {
-          GridView gridView = getGridView();
+        public void onSuccess(BeeRow result) {
+          if (DataUtils.hasId(result)) {
+            ParameterList params = FinanceKeeper.createArgs(SVC_POST_TRADE_DOCUMENT);
+            params.addQueryItem(Service.VAR_ID, result.getId());
 
-          if (gridView != null && response != null) {
-            response.notify(gridView);
+            BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                GridView gridView = getGridView();
 
-            if (response.hasResponse() && getGridPresenter() != null) {
-              getGridPresenter().refresh(false, true);
-            }
+                if (gridView != null && response != null) {
+                  response.notify(gridView);
+
+                  if (response.hasResponse() && getGridPresenter() != null) {
+                    getGridPresenter().refresh(false, true);
+                  }
+                }
+              }
+            });
           }
         }
       });

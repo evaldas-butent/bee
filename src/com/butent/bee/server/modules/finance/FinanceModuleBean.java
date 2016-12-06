@@ -4,6 +4,7 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -24,17 +25,36 @@ public class FinanceModuleBean implements BeeModule {
 
   @EJB
   FinancePostingBean posting;
+  @EJB
+  AnalysisBean analysis;
 
   @Override
   public ResponseObject doService(String service, RequestInfo reqInfo) {
     ResponseObject response;
-
     String svc = BeeUtils.trim(service);
+
     switch (svc) {
       case SVC_POST_TRADE_DOCUMENT:
-        Long docId = reqInfo.getParameterLong(Service.VAR_ID);
-        if (DataUtils.isId(docId)) {
-          response = posting.postTradeDocument(docId);
+      case SVC_VERIFY_ANALYSIS_FORM:
+      case SVC_CALCULATE_ANALYSIS_FORM:
+        Long id = reqInfo.getParameterLong(Service.VAR_ID);
+
+        if (DataUtils.isId(id)) {
+          switch (svc) {
+            case SVC_POST_TRADE_DOCUMENT:
+              response = posting.postTradeDocument(id);
+              break;
+            case SVC_VERIFY_ANALYSIS_FORM:
+              response = analysis.verifyForm(id);
+              break;
+            case SVC_CALCULATE_ANALYSIS_FORM:
+              response = analysis.calculateForm(id);
+              break;
+            default:
+              Assert.untouchable();
+              response = null;
+          }
+
         } else {
           response = ResponseObject.parameterNotFound(svc, Service.VAR_ID);
         }

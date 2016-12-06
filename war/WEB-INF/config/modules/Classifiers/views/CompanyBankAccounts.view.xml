@@ -5,7 +5,6 @@
   caption="=bankAccounts"
   >
   <Columns>
-    <IdColumn name="Id" />
     <SimpleColumn name="Company" />
 
     <SimpleColumn name="Bank" />
@@ -28,7 +27,7 @@
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
     <SimpleColumn name="IBANcode" />
-    <SimpleColumn name="Beneficiary" />
+    <SimpleColumn name="Correspondent" />
     <SimpleColumn name="Notes" />
   </Columns>
 </View>
