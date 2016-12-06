@@ -4,18 +4,31 @@ import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.modules.finance.FinanceKeeper;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.FinanceUtils;
 import com.butent.bee.shared.ui.UiConstants;
@@ -29,7 +42,10 @@ import java.util.Set;
 public class SimpleAnalysisForm extends AbstractFormInterceptor {
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "fin-SimpleAnalysis-";
+
   private static final String STYLE_INFO_SUMMARY = STYLE_PREFIX + "info-summary";
+  private static final String STYLE_VERIFY = STYLE_PREFIX + "verify";
+  private static final String STYLE_CALCULATE = STYLE_PREFIX + "calculate";
 
   public SimpleAnalysisForm() {
   }
@@ -71,6 +87,49 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
     }
 
     super.afterCreateWidget(name, widget, callback);
+  }
+
+  @Override
+  public void afterCreatePresenter(Presenter presenter) {
+    HeaderView header = (presenter == null) ? null : presenter.getHeader();
+    if (header != null && !header.hasCommands()) {
+      Button verify = new Button(Localized.dictionary().finAnalysisVerify());
+      verify.addStyleName(STYLE_VERIFY);
+
+      verify.addClickHandler(event -> request(SVC_VERIFY_ANALYSIS_FORM));
+      header.addCommandItem(verify);
+
+      Button calculate = new Button(Localized.dictionary().finAnalysisCalculate());
+      calculate.addStyleName(STYLE_CALCULATE);
+
+      calculate.addClickHandler(event -> request(SVC_CALCULATE_ANALYSIS_FORM));
+      header.addCommandItem(calculate);
+    }
+
+    super.afterCreatePresenter(presenter);
+  }
+
+  private void request(final String service) {
+    if (DataUtils.hasId(getActiveRow())) {
+      getFormView().saveChanges(new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          if (DataUtils.hasId(result)) {
+            ParameterList params = FinanceKeeper.createArgs(service);
+            params.addQueryItem(Service.VAR_ID, result.getId());
+
+            BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                if (response.hasResponse()) {
+                  LogUtils.getRootLogger().debug(response.getResponse());
+                }
+              }
+            });
+          }
+        }
+      });
+    }
   }
 
   private String summarizeInfo() {

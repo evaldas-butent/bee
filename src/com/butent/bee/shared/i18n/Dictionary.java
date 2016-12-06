@@ -245,8 +245,6 @@ public interface Dictionary {
 
   default String before() {return g("before");}
 
-  default String beneficiary() {return g("beneficiary");}
-
   default String birthdaysParties() {return g("birthdaysParties");}
 
   default String blockAfter() {return g("blockAfter");}
@@ -866,6 +864,8 @@ public interface Dictionary {
   default String contract() {return g("contract");}
 
   default String contractNo() {return g("contractNo");}
+
+  default String correspondent() {return g("correspondent");}
 
   default String cost() {return g("cost");}
 

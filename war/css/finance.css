@@ -27,6 +27,11 @@
   visibility: hidden;
 }
 
+.bee-form-SimpleAnalysis-container.bee-Form-no-row-id .bee-fin-SimpleAnalysis-verify,
+.bee-form-SimpleAnalysis-container.bee-Form-no-row-id .bee-fin-SimpleAnalysis-calculate {
+  display: none;
+}
+
 .bee-form-SimpleAnalysis .bee-TabbedPages-tabCaption {
   align-self: center;
   -webkit-align-self: center;
