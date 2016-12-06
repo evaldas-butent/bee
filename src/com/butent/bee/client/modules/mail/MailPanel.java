@@ -654,7 +654,7 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void afterCreatePresenter(Presenter presenter) {
     HeaderView header = presenter.getHeader();
     header.clearCommandPanel();
 

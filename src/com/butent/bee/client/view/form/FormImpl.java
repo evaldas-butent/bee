@@ -66,6 +66,7 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -338,8 +339,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private static final BeeLogger logger = LogUtils.getLogger(FormImpl.class);
 
-  private static final String STYLE_FORM_DISABLED = BeeConst.CSS_CLASS_PREFIX + "Form-"
-      + StyleUtils.SUFFIX_DISABLED;
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Form-";
+
+  private static final String STYLE_FORM_DISABLED = STYLE_PREFIX + StyleUtils.SUFFIX_DISABLED;
+  private static final String STYLE_HAS_ROW_ID = STYLE_PREFIX + "has-row-id";
+  private static final String STYLE_NO_ROW_ID = STYLE_PREFIX + "no-row-id";
 
   private final String formName;
 
@@ -2376,6 +2380,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
     setOldRow((activeRow == null) ? null : DataUtils.cloneRow(activeRow));
     this.activeRow = activeRow;
+
+    View view = (getViewPresenter() == null) ? null : getViewPresenter().getMainView();
+    if (view != null) {
+      boolean hasId = DataUtils.hasId(activeRow);
+      view.setStyleName(STYLE_HAS_ROW_ID, hasId);
+      view.setStyleName(STYLE_NO_ROW_ID, !hasId);
+    }
   }
 
   private void setDataColumns(List<BeeColumn> dataColumns) {

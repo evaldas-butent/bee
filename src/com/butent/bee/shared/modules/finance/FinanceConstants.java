@@ -140,6 +140,7 @@ public final class FinanceConstants {
   public static final String COL_ANALYSIS_HEADER_MONTH_FROM = "MonthFrom";
   public static final String COL_ANALYSIS_HEADER_YEAR_UNTIL = "YearUntil";
   public static final String COL_ANALYSIS_HEADER_MONTH_UNTIL = "MonthUntil";
+  public static final String COL_ANALYSIS_HEADER_CURRENCY = "Currency";
   public static final String COL_ANALYSIS_HEADER_BACKGROUND = "Background";
   public static final String COL_ANALYSIS_HEADER_FOREGROUND = "Foreground";
 
@@ -150,6 +151,7 @@ public final class FinanceConstants {
 
   public static final String COL_ANALYSIS_SHOW_COLUMN_EMPLOYEE = "ColumnEmployee";
   public static final String COL_ANALYSIS_COLUMN_SPLIT_LEVELS = "ColumnSplitLevels";
+  public static final String COL_ANALYSIS_COLUMN_FILTERS = "ColumnFilters";
 
   private static final String[] COL_ANALYSIS_SHOW_ROW_DIMENSIONS = new String[] {
       "RowDim01", "RowDim02", "RowDim03", "RowDim04", "RowDim05",
@@ -158,6 +160,7 @@ public final class FinanceConstants {
 
   public static final String COL_ANALYSIS_SHOW_ROW_EMPLOYEE = "RowEmployee";
   public static final String COL_ANALYSIS_ROW_SPLIT_LEVELS = "RowSplitLevels";
+  public static final String COL_ANALYSIS_ROW_FILTERS = "RowFilters";
 
   public static final String COL_ANALYSIS_COLUMN_SELECTED = "Selected";
   public static final String COL_ANALYSIS_COLUMN_ORDINAL = "Ordinal";
@@ -306,6 +309,9 @@ public final class FinanceConstants {
   public static boolean normalBalanceIsCredit(Boolean value) {
     return BeeUtils.isTrue(value);
   }
+
+  public static final int ANALYSIS_MIN_SCALE = 0;
+  public static final int ANALYSIS_MAX_SCALE = 5;
 
   public static void register() {
     EnumUtils.register(IndicatorKind.class);

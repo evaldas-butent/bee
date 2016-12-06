@@ -34,6 +34,8 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget);
 
+  void afterCreatePresenter(Presenter presenter);
+
   void afterInsertRow(IsRow result, boolean forced);
 
   void afterRefresh(FormView form, IsRow row);
@@ -79,8 +81,6 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
   void onSaveChanges(HasHandlers listener, SaveChangesEvent event);
 
   void onSetActiveRow(IsRow row);
-
-  void onShow(Presenter presenter);
 
   void onSourceChange(IsRow row, String source, String value);
 

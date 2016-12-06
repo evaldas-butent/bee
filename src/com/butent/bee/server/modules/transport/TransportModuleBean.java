@@ -1255,20 +1255,21 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
   @Schedule(persistent = false)
   private void checkRequestStatus() {
-    SqlSelect query = new SqlSelect()
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
         .addField(TBL_SHIPMENT_REQUESTS, sys.getIdName(TBL_SHIPMENT_REQUESTS), "id")
         .addField(TBL_SHIPMENT_REQUESTS, sys.getVersionName(TBL_SHIPMENT_REQUESTS), "version")
         .addFields(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS)
         .addFrom(TBL_SHIPMENT_REQUESTS)
-        .addFromInner(TBL_ORDER_CARGO,
+        .addFromLeft(TBL_ORDER_CARGO,
             sys.joinTables(TBL_ORDER_CARGO, TBL_SHIPMENT_REQUESTS, COL_CARGO))
-        .addFromInner(TBL_CARGO_LOADING,
+        .addFromLeft(TBL_CARGO_LOADING,
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_LOADING, COL_CARGO))
-        .addFromInner(TBL_CARGO_PLACES,
+        .addFromLeft(TBL_CARGO_PLACES,
             sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_LOADING, COL_LOADING_PLACE))
         .setWhere(SqlUtils.and(SqlUtils.not(SqlUtils.inList(TBL_SHIPMENT_REQUESTS, COL_QUERY_STATUS,
             ShipmentRequestStatus.CONFIRMED, ShipmentRequestStatus.LOST)),
-            SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, TimeUtils.startOfDay(1))));
+            SqlUtils.or(SqlUtils.isNull(TBL_CARGO_PLACES, COL_PLACE_DATE),
+                SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, TimeUtils.startOfDay(1)))));
 
     SimpleRowSet expired = qs.getData(query);
 

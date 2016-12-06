@@ -1154,6 +1154,16 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  public void autoFitColumn(String source, boolean fitHeader) {
+    List<Integer> colIndexes = getColumnIndexBySourceName(source);
+
+    if (!colIndexes.isEmpty()) {
+      for (int col : colIndexes) {
+        autoFitColumn(col, fitHeader);
+      }
+    }
+  }
+
   public boolean autoFitColumn(int col, boolean fitHeader) {
     ColumnInfo columnInfo = getColumnInfo(col);
     if (!columnInfo.isAutoFitEnabled()) {

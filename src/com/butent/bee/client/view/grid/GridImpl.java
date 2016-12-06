@@ -2032,6 +2032,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     final GridFormPresenter gfp = new GridFormPresenter(this, formView, formCaption, actions,
         kind == GridFormKind.EDIT, hasEditSave());
+
+    if (formView.getFormInterceptor() != null) {
+      formView.getFormInterceptor().afterCreatePresenter(gfp);
+    }
+
     Widget container = gfp.getMainView().asWidget();
 
     if (asPopup) {
