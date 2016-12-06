@@ -533,7 +533,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void afterCreatePresenter(Presenter presenter) {
     HeaderView header = presenter.getHeader();
 
     if (header != null && !header.hasCommands()) {
@@ -572,7 +572,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       header.addCommandItem(commandSave);
     }
 
-    super.onShow(presenter);
+    super.afterCreatePresenter(presenter);
   }
 
   private void doCompose(final Collection<Integer> holidays) {

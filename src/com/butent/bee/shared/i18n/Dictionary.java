@@ -2747,9 +2747,13 @@ public interface Dictionary {
 
   default String finAnalysis() {return g("finAnalysis");}
 
+  default String finAnalysisCalculate() {return g("finAnalysisCalculate");}
+
   default String finAnalysisColumn() {return g("finAnalysisColumn");}
 
   default String finAnalysisColumnAbbreviation() {return g("finAnalysisColumnAbbreviation");}
+
+  default String finAnalysisColumnFilters() {return g("finAnalysisColumnFilters");}
 
   default String finAnalysisColumnName() {return g("finAnalysisColumnName");}
 
@@ -2781,6 +2785,8 @@ public interface Dictionary {
 
   default String finAnalysisRowAbbreviation() {return g("finAnalysisRowAbbreviation");}
 
+  default String finAnalysisRowFilters() {return g("finAnalysisRowFilters");}
+
   default String finAnalysisRowName() {return g("finAnalysisRowName");}
 
   default String finAnalysisRowNew() {return g("finAnalysisRowNew");}
@@ -2803,6 +2809,8 @@ public interface Dictionary {
 
   default String finAnalysisShowColumnEmployee() {return g("finAnalysisShowColumnEmployee");}
 
+  default String finAnalysisShowColumnFilters() {return g("finAnalysisShowColumnFilters");}
+
   default String finAnalysisShowRowDimension(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
@@ -2810,6 +2818,8 @@ public interface Dictionary {
   }
 
   default String finAnalysisShowRowEmployee() {return g("finAnalysisShowRowEmployee");}
+
+  default String finAnalysisShowRowFilters() {return g("finAnalysisShowRowFilters");}
 
   default String finAnalysisShowTotal() {return g("finAnalysisShowTotal");}
 
@@ -2838,6 +2848,8 @@ public interface Dictionary {
   default String finAnalysisValuePercentageShort() {return g("finAnalysisValuePercentageShort");}
 
   default String finAnalysisValues() {return g("finAnalysisValues");}
+
+  default String finAnalysisVerify() {return g("finAnalysisVerify");}
 
   default String finBudget() {return g("finBudget");}
 

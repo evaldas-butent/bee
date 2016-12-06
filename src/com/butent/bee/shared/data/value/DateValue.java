@@ -40,6 +40,11 @@ public class DateValue extends Value {
   }
 
   @Override
+  public boolean equals(Object o) {
+    return o instanceof DateValue && compareTo((DateValue) o) == BeeConst.COMPARE_EQUAL;
+  }
+
+  @Override
   public Boolean getBoolean() {
     if (isNull()) {
       return null;

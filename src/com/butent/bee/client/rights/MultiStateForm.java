@@ -129,7 +129,7 @@ abstract class MultiStateForm extends RightsForm {
   private String roleName;
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void afterCreatePresenter(Presenter presenter) {
     HeaderView header = presenter.getHeader();
 
     if (header != null && !header.hasCommands()) {

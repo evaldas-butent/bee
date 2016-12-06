@@ -20,6 +20,11 @@
     <SimpleColumn name="YearUntil" />
     <SimpleColumn name="MonthUntil" />
 
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
     <SimpleColumn name="ColumnDim01" />
     <SimpleColumn name="ColumnDim02" />
     <SimpleColumn name="ColumnDim03" />
@@ -34,6 +39,7 @@
     <SimpleColumn name="ColumnEmployee" />
 
     <SimpleColumn name="ColumnSplitLevels" />
+    <SimpleColumn name="ColumnFilters" />
 
     <SimpleColumn name="RowDim01" />
     <SimpleColumn name="RowDim02" />
@@ -49,6 +55,7 @@
     <SimpleColumn name="RowEmployee" />
 
     <SimpleColumn name="RowSplitLevels" />
+    <SimpleColumn name="RowFilters" />
 
     <SimpleColumn name="Description" />
 

@@ -380,7 +380,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         });
   }
 
-  private void consumeProcess(Consumer consumer, int processCount) {
+  private static void consumeProcess(Consumer<Pair<String, String>> consumer, int processCount) {
     for (int i = 0; i < processCount; i++) {
       consumer.accept(null);
     }

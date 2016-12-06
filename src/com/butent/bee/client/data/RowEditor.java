@@ -281,6 +281,11 @@ public final class RowEditor {
 
     final RowPresenter presenter = new RowPresenter(formView, dataInfo, oldRow.getId(),
         DataUtils.getRowCaption(dataInfo, oldRow), enabledActions, disabledActions);
+
+    if (formView.getFormInterceptor() != null) {
+      formView.getFormInterceptor().afterCreatePresenter(presenter);
+    }
+
     final ModalForm dialog = opener.isModal() ? new ModalForm(presenter, formView, false) : null;
 
     final RowCallback closer = new RowCallback() {

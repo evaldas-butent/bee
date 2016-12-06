@@ -3,8 +3,8 @@
         xmlns:ui="http://www.butent.com/ui"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="AnalysisFilters" viewName="AnalysisFilters"
-        flexGrow="1"
+        name="AnalysisColumnFilters" viewName="AnalysisFilters"
+        caption="=finAnalysisColumnFilters" flexGrow="1"
 >
   <xi:include href="columns/Employee.columns.xml" />
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />

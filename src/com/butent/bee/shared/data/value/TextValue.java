@@ -38,6 +38,11 @@ public class TextValue extends Value {
   }
 
   @Override
+  public boolean equals(Object o) {
+    return o instanceof TextValue && compareTo((TextValue) o) == BeeConst.COMPARE_EQUAL;
+  }
+
+  @Override
   public Boolean getBoolean() {
     if (isNull()) {
       return null;
