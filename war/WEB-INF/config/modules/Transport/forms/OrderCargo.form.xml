@@ -45,7 +45,7 @@
         <cell style="padding-right: 10px;">
           <IntegerLabel name="TotalLoaded" style="font-weight: bold;">
             <render>
-              <ui:expression>Number(row.LoadedKilometers) + Number(UnplannedManagerKm) + Number(UnplannedDriverKm)</ui:expression>
+              <ui:expression>Number(row.LoadedKilometers) + Number(row.UnplannedManagerKm) + Number(row.UnplannedDriverKm)</ui:expression>
             </render>
           </IntegerLabel>
         </cell>

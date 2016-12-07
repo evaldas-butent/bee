@@ -34,5 +34,33 @@
         </bodyStyle>
       </style>
     </PropColumn>
+    <PropColumn name="EstimateKm" type="integer" label="=trEstimateKm" visible="true" >
+      <dynStyle>
+        <ui:inline>color:red;</ui:inline>
+        <ui:expression>row.EstimateKm == 0</ui:expression>
+      </dynStyle>
+    </PropColumn>
+
+    <CalcColumn name="Estimate" type="double" format="0.00" label="=trEstimate" visible="true" >
+      <dynStyle>
+        <ui:inline>color:red;</ui:inline>
+        <ui:function>
+          if (parseInt(row.EstimateKm) > 0 &amp;&amp; parseFloat(row.Income) > 0) {
+          return false;
+          } else {
+          return true;
+          }
+        </ui:function>
+      </dynStyle>
+      <render>
+        <ui:function>
+          if (parseInt(row.EstimateKm) > 0) {
+          return parseFloat(row.Income) / parseInt(row.EstimateKm);
+          } else {
+          return 0;
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
   </g:columns>
 </g:Grid>

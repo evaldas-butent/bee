@@ -557,6 +557,30 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                   .setWhere(sys.idInList(TBL_ORDER_CARGO, cargoIds)),
               prm.getRelation(PRM_CURRENCY), BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
 
+          Map<Long, Integer> cargoKmMap = new HashMap<>();
+
+          String[] tables = new String[]{TBL_CARGO_LOADING, TBL_CARGO_UNLOADING};
+          String[] cols = new String[]{COL_LOADING_PLACE, COL_UNLOADING_PLACE};
+
+          for (int i = 0; i < 2; i++) {
+            SqlSelect selectKm = new SqlSelect()
+                .addFields(tables[i], COL_CARGO)
+                .addSum(TBL_CARGO_PLACES, COL_EMPTY_KILOMETERS)
+                .addSum(TBL_CARGO_PLACES, COL_LOADED_KILOMETERS)
+                .addSum(TBL_CARGO_PLACES, COL_UNPLANNED_MANAGER_KM)
+                .addFrom(tables[i])
+                .addFromLeft(TBL_CARGO_PLACES, sys.joinTables(TBL_CARGO_PLACES, tables[i], cols[i]))
+                .setWhere(SqlUtils.inList(tables[i], COL_CARGO, cargoIds))
+                .addGroup(tables[i], COL_CARGO);
+
+            for (SimpleRow sr : qs.getData(selectKm))
+              cargoKmMap.put(sr.getLong(COL_CARGO),
+                  BeeUtils.unbox(cargoKmMap.get(sr.getLong(COL_CARGO)))
+                    + BeeUtils.unbox(sr.getInt(COL_EMPTY_KILOMETERS))
+                    + BeeUtils.unbox(sr.getInt(COL_LOADED_KILOMETERS))
+                    + BeeUtils.unbox(sr.getInt(COL_UNPLANNED_MANAGER_KM)));
+          }
+
           for (BeeRow row : rowSet.getRows()) {
             SimpleRow r = rs.getRowByKey(COL_CARGO, BeeUtils.toString(valueSupplier.apply(row)));
 
@@ -564,6 +588,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 + BeeUtils.unbox(r.getDouble("ServicesIncome"))));
             row.setProperty(COL_TRADE_VAT, BeeUtils.toString(BeeUtils.unbox(r.getDouble("CargoVat"))
                 + BeeUtils.unbox(r.getDouble("ServicesVat"))));
+            row.setProperty("EstimateKm", cargoKmMap.containsKey(row.getId())
+                ? cargoKmMap.get(row.getId()) : 0);
           }
         }
       }

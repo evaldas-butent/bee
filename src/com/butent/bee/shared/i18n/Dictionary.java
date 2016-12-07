@@ -5528,6 +5528,10 @@ public interface Dictionary {
 
   default String trEmptyKilometersTotal() {return g("trEmptyKilometersTotal");}
 
+  default String trEstimate() {return g("trEstimate");}
+
+  default String trEstimateKm() {return g("trEstimateKm");}
+
   default String trExpeditionTrips() {return g("trExpeditionTrips");}
 
   default String trExpeditionType() {return g("trExpeditionType");}
