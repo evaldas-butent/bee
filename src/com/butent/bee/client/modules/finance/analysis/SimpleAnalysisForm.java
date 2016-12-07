@@ -142,19 +142,6 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
 
     List<Div> elements = new ArrayList<>();
 
-    Long indicatorId = DataUtils.getLongQuietly(columns, row, COL_ANALYSIS_HEADER_INDICATOR);
-    String indicatorName = DataUtils.getStringQuietly(columns, row, COL_FIN_INDICATOR_NAME);
-
-    if (DataUtils.isId(indicatorId) && !BeeUtils.isEmpty(indicatorName)) {
-      Div div = new Div().text(indicatorName.trim());
-
-      FinanceUtils.setColors(div,
-          DataUtils.getStringQuietly(columns, row, ALS_INDICATOR_BACKGROUND),
-          DataUtils.getStringQuietly(columns, row, ALS_INDICATOR_FOREGROUND));
-
-      elements.add(div);
-    }
-
     Long budgetTypeId = DataUtils.getLongQuietly(columns, row, COL_ANALYSIS_HEADER_BUDGET_TYPE);
     String budgetTypeName = DataUtils.getStringQuietly(columns, row, COL_BUDGET_TYPE_NAME);
 
@@ -191,7 +178,6 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
       Set<String> gridNames = new HashSet<>();
 
       switch (source) {
-        case COL_ANALYSIS_HEADER_INDICATOR:
         case COL_ANALYSIS_HEADER_BUDGET_TYPE:
           gridNames.add(GRID_ANALYSIS_COLUMNS);
           gridNames.add(GRID_ANALYSIS_ROWS);

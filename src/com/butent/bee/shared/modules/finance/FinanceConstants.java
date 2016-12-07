@@ -155,7 +155,6 @@ public final class FinanceConstants {
   public static final String COL_ANALYSIS_NAME = "AnalysisName";
   public static final String COL_ANALYSIS_HEADER_ORDINAL = "Ordinal";
   public static final String COL_ANALYSIS_HEADER_EMPLOYEE = "Employee";
-  public static final String COL_ANALYSIS_HEADER_INDICATOR = "Indicator";
   public static final String COL_ANALYSIS_HEADER_BUDGET_TYPE = "BudgetType";
   public static final String COL_ANALYSIS_HEADER_YEAR_FROM = "YearFrom";
   public static final String COL_ANALYSIS_HEADER_MONTH_FROM = "MonthFrom";

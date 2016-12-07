@@ -16,7 +16,6 @@
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
   <xi:include href="columns/HiddenEmployee.columns.xml" />
 
-  <xi:include href="columns/HiddenIndicator.columns.xml" />
   <xi:include href="columns/HiddenBudgetType.columns.xml" />
 
   <g:columns>

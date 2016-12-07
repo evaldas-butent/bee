@@ -53,10 +53,6 @@ public class AnalysisRowsGrid extends AnalysisColumnsRowsGrid {
       boolean changed = false;
       CellGrid grid = getGridView().getGrid();
 
-      Long indicator = Data.getLong(VIEW_ANALYSIS_HEADERS, parentRow,
-          COL_ANALYSIS_HEADER_INDICATOR);
-      changed |= grid.setColumnVisible(COL_ANALYSIS_ROW_INDICATOR, !DataUtils.isId(indicator));
-
       Long type = Data.getLong(VIEW_ANALYSIS_HEADERS, parentRow, COL_ANALYSIS_HEADER_BUDGET_TYPE);
       changed |= grid.setColumnVisible(COL_ANALYSIS_ROW_BUDGET_TYPE, !DataUtils.isId(type));
 
