@@ -8,22 +8,18 @@
 >
   <Table kind="controls">
     <col index="0" kind="label" />
-    <col index="2" kind="label" />
+
     <row>
       <Label for="Date" class="bee-required" />
       <InputDateTime source="Date" required="true" title="=trRequestDateTitle" minValue="d" />
     </row>
     <row>
-      <Label for="Company" />
-      <cell colSpan="3">
-        <InputText source="Company" style="width:100%;" />
-      </cell>
+      <Label for="Company" class="bee-required" />
+      <InputText source="Company" style="width:300px;" required="true" />
     </row>
     <row>
-      <Label for="Address" />
-      <cell colSpan="3">
-        <InputText source="Address" style="width:100%;" />
-      </cell>
+      <Label for="Address" class="bee-required" />
+      <InputText source="Address" style="width:300px;" required="true" />
     </row>
     <row>
       <Label for="CityUnbound" class="bee-required" />
@@ -33,10 +29,8 @@
       </DataSelector>
     </row>
     <row>
-      <Label for="PostIndex" />
-      <InputText source="PostIndex" />
-      <Label for="LoadedKilometers" />
-      <InputInteger source="LoadedKilometers" style="width:70px;" />
+      <Label for="PostIndex" class="bee-required" />
+      <InputText source="PostIndex" required="true" />
     </row>
     <row>
       <Label for="CountryUnbound" class="bee-required" />
@@ -46,22 +40,16 @@
       </DataSelector>
     </row>
     <row>
-      <Label for="Contact" />
-      <cell colSpan="3">
-        <InputText source="Contact" style="width:100%;" />
-      </cell>
+      <Label for="Contact" class="bee-required" />
+      <InputText source="Contact" style="width:300px;" required="true" />
     </row>
     <row>
       <Label for="Number" />
       <InputText source="Number" />
     </row>
     <row>
-      <cell style="vertical-align:top;">
-        <Label for="Note" />
-      </cell>
-      <cell colSpan="3">
-        <InputArea source="Note" visibleLines="4" style="width:100%;" />
-      </cell>
+      <Label for="Note" style="vertical-align:top;" />
+      <InputArea source="Note" visibleLines="4" style="width:300px;" />
     </row>
   </Table>
 </f:Form>
