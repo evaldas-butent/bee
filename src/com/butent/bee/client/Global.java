@@ -603,6 +603,8 @@ public final class Global {
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));
     $wnd.Bee_translate = $entry(@Localized::translate(Ljava/lang/String;));
+    $wnd.Bee_CurrentUser = $entry(@com.butent.bee.client.BeeKeeper::getUserId());
+    $wnd.Bee_isAdmin = $entry(@com.butent.bee.client.BeeKeeper::isAdministrator());
   }-*/;
   // CHECKSTYLE:ON
 //@formatter:on

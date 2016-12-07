@@ -80,4 +80,8 @@
     <DataColumn name="MinLoadingDate"/>
     <DataColumn name="MaxUnloadingDate"/>
   </g:columns>
+
+  <g:rowEditable>
+    <ui:expression>row.Manager == $wnd.Bee_CurrentUser() || !(row.Manager) || $wnd.Bee_isAdmin()</ui:expression>
+  </g:rowEditable>
 </g:Grid>

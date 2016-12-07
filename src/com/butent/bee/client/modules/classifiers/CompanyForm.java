@@ -7,10 +7,13 @@ import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.PRM_SALES_RESPONSIBILITY;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
@@ -32,7 +35,9 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -58,12 +63,15 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 class CompanyForm extends CustomCompanyForm {
 
   private FaLabel switchAction;
+  private Long mainResponsibility;
 
   CompanyForm() {
   }
@@ -79,7 +87,33 @@ class CompanyForm extends CustomCompanyForm {
       grid.setGridInterceptor(new AbstractGridInterceptor() {
 
         @Override
+        public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+          if (BeeUtils.same(source, COL_COMPANY_USER_RESPONSIBILITY)
+              && editor instanceof DataSelector) {
+            ((DataSelector) editor).addSelectorHandler(event -> {
+              if (event.isOpened()) {
+                IsRow parentRow = ViewHelper.getFormRow(getGridView());
+
+                if (parentRow != null) {
+                  Long user = BeeKeeper.getUser().getUserId();
+                  Long creator = parentRow.getLong(Data.getColumnIndex(VIEW_COMPANIES, "Creator"));
+
+                  if (!BeeKeeper.getUser().isAdministrator() && !Objects.equals(user, creator)) {
+                    event.getSelector().setAdditionalFilter(Filter.idNotIn(
+                        Collections.singletonList(mainResponsibility)));
+                  }
+                }
+              }
+            });
+          }
+          super.afterCreateEditor(source, editor, embedded);
+        }
+
+        @Override
         public void afterCreatePresenter(GridPresenter presenter) {
+          Global.getParameter(PRM_SALES_RESPONSIBILITY,
+              s -> mainResponsibility = BeeUtils.toLong(s));
+
           HeaderView header = presenter.getHeader();
           header.clearCommandPanel();
 

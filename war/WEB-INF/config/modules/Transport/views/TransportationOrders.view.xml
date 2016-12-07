@@ -19,6 +19,11 @@
       <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="CustomerTypeName" />
       </SimpleJoin>
+
+      <ExternalJoin name="Company" joinType="LEFT" source="CompanyUsers" filter="CmpUser={u}">
+        <HiddenColumn name="User" alias="CmpUser" />
+        <HiddenColumn name="Responsibility" />
+      </ExternalJoin>
     </SimpleJoin>
 
     <SimpleColumn name="CustomerPerson" />

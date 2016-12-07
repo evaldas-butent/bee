@@ -101,4 +101,8 @@
     </TabbedPages>
 
   </FlowPanel>
+
+  <f:rowEditable>
+    <ui:expression>row.Manager == $wnd.Bee_CurrentUser() || !(row.Manager) || $wnd.Bee_isAdmin()</ui:expression>
+  </f:rowEditable>
 </f:Form>

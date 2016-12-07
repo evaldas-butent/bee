@@ -372,6 +372,7 @@ public final class TransportConstants {
   public static final String PRM_SYNC_ERP_EMPLOYEES = "ERPSyncEmployeesOnHours";
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
   public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
+  public static final String PRM_SALES_RESPONSIBILITY = "SalesResponsibility";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";

@@ -17,6 +17,8 @@
           <SimpleColumn name="Name" alias="CustomerTypeName" />
         </SimpleJoin>
       </SimpleJoin>
+
+      <SimpleColumn name="Manager" />
     </SimpleJoin>
 
     <xi:include href="viewcolumns/CargoInfo.viewcolumns.xml" />

@@ -64,6 +64,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_LOSS_REASONS = "LossReasons";
 
+  public static final String TBL_RESPONSIBILITIES = "Responsibilities";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";

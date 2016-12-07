@@ -5,7 +5,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -246,11 +246,18 @@ public final class TransportHandler {
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     if (!BeeKeeper.getUser().isAdministrator()) {
-      Filter mngFilter = Filter.or(BeeKeeper.getUser().getFilter(COL_ORDER_MANAGER),
-          Filter.isNull(COL_ORDER_MANAGER));
+      Global.getParameter(PRM_SALES_RESPONSIBILITY, s -> {
 
-      GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
-      GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
+        Filter mngFilter = Filter.or(BeeKeeper.getUser().getFilter(COL_ORDER_MANAGER),
+            Filter.isNull(COL_ORDER_MANAGER));
+
+        if (DataUtils.isId(s)) {
+          mngFilter = Filter.or(mngFilter, Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, s));
+        }
+
+        GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
+        GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
+      });
     }
     GridFactory.registerGridInterceptor(TBL_CARGO_LOADING, new CargoHandlingGrid());
     GridFactory.registerGridInterceptor(TBL_CARGO_UNLOADING, new CargoHandlingGrid());

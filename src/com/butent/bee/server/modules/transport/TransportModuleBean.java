@@ -468,7 +468,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_CARGO_SERVICE, TBL_SERVICES, COL_SERVICE_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_VEHICLES),
         BeeParameter.createText(module, PRM_SYNC_ERP_EMPLOYEES),
-        BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
+        BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true),
+        BeeParameter.createRelation(module, PRM_SALES_RESPONSIBILITY, TBL_RESPONSIBILITIES,"Name"));
   }
 
   @Override
@@ -2945,9 +2946,26 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     if (!BeeUtils.isEmpty(cityNames)) {
       settings.setTableProperty(PROP_CITIES, Codec.beeSerialize(cityNames));
     }
-    IsCondition cargoWhere = SqlUtils.and(SqlUtils.or(SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO),
+
+    Long responsibility = prm.getRelation(PRM_SALES_RESPONSIBILITY);
+
+    HasConditions cargoWhere = SqlUtils.and(SqlUtils.or(SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO),
         SqlUtils.notNull(TBL_ORDER_CARGO, COL_CARGO_MULTIPLE_SEGMENTS)),
         SqlUtils.inList(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST, OrderStatus.ACTIVE));
+
+    if (!usr.isAdministrator()) {
+      cargoWhere.add(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER,
+          usr.getCurrentUserId()), SqlUtils.isNull(TBL_ORDERS, COL_ORDER_MANAGER)));
+
+      if (DataUtils.isId(responsibility)) {
+        cargoWhere = SqlUtils.or(cargoWhere, SqlUtils.in(TBL_ORDERS, COL_CUSTOMER, new SqlSelect()
+            .addFields(TBL_COMPANY_USERS, COL_COMPANY)
+            .addFrom(TBL_COMPANY_USERS)
+            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_COMPANY_USERS,
+                COL_COMPANY_USER_RESPONSIBILITY, responsibility, COL_USER,
+                usr.getCurrentUserId())))));
+      }
+    }
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_DATE, COL_ORDER_NO, COL_CUSTOMER,

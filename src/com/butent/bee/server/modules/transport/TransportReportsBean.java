@@ -9,6 +9,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
@@ -50,6 +51,8 @@ public class TransportReportsBean {
   QueryServiceBean qs;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  UserServiceBean usb;
 
   /**
    * Return SqlSelect query, calculating cargo incomes from CargoServices table.
@@ -864,6 +867,8 @@ public class TransportReportsBean {
     String plannedDailyCosts = "Planned" + dailyCosts;
     String plannedRoadCosts = "Planned" + roadCosts;
 
+    Long responsibility = prm.getRelation(PRM_SALES_RESPONSIBILITY);
+
     HasConditions clause = SqlUtils.and();
     clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_TRIPS,
         sys.getIdName(TBL_TRIPS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_TRIP));
@@ -894,6 +899,20 @@ public class TransportReportsBean {
     cargoClause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_ORDER_CARGO,
         sys.getIdName(TBL_ORDER_CARGO)), SqlConstants.SqlDataType.STRING, 20, 0), COL_CARGO));
     cargoClause.add(report.getCondition(TBL_ORDER_CARGO, COL_CARGO_PARTIAL));
+
+    if (!usb.isAdministrator()) {
+      cargoClause.add(SqlUtils.or(SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER,
+          usb.getCurrentUserId()), SqlUtils.isNull(TBL_ORDERS, COL_ORDER_MANAGER)));
+
+      if (DataUtils.isId(responsibility)) {
+        cargoClause = SqlUtils.or(cargoClause, SqlUtils.in(TBL_ORDERS, COL_CUSTOMER, new SqlSelect()
+            .addFields(TBL_COMPANY_USERS, COL_COMPANY)
+            .addFrom(TBL_COMPANY_USERS)
+            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_COMPANY_USERS,
+                COL_COMPANY_USER_RESPONSIBILITY, responsibility, COL_USER,
+                usb.getCurrentUserId())))));
+      }
+    }
 
     if (!cargoClause.isEmpty()) {
       clause.add(SqlUtils.in(TBL_TRIPS, sys.getIdName(TBL_TRIPS),

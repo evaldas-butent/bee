@@ -46,4 +46,8 @@
     <ui:inline>="color:gold"</ui:inline>
     <ui:expression>row.SaleID &gt; 0</ui:expression>
   </g:rowStyle>
+
+  <g:rowEditable>
+    <ui:expression>row.Manager == $wnd.Bee_CurrentUser() || !(row.Manager) || $wnd.Bee_isAdmin()</ui:expression>
+  </g:rowEditable>
 </g:Grid>

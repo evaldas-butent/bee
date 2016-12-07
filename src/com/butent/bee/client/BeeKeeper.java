@@ -39,6 +39,14 @@ public final class BeeKeeper {
     return user;
   }
 
+  public static Long getUserId() {
+    return user.getUserId();
+  }
+
+  public static boolean isAdministrator() {
+    return user.isAdministrator();
+  }
+
   public static void onRightsChange() {
     if (getScreen().getUserInterface().hasMenu()) {
       getMenu().loadMenu();
