@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,50 +14,55 @@ import java.util.Map;
 
 class AnalysisFormData {
 
-  private static Map<String, Integer> getIndexes(BeeRowSet rowSet) {
-    Map<String, Integer> indexes = new HashMap<>();
-
-    if (rowSet != null) {
-      for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
-        indexes.put(rowSet.getColumn(i).getId(), i);
-      }
-    }
-
-    return indexes;
-  }
-
   private final BeeRow header;
   private final Map<String, Integer> headerIndexes;
 
-  private final List<BeeRow> columns = new ArrayList<>();
   private final Map<String, Integer> columnIndexes;
+  private final List<BeeRow> selectedColumns = new ArrayList<>();
+  private final List<BeeRow> deselectedColumns = new ArrayList<>();
 
-  private final List<BeeRow> rows = new ArrayList<>();
   private final Map<String, Integer> rowIndexes;
-
-  private final Map<String, Integer> filterIndexes;
+  private final List<BeeRow> selectedRows = new ArrayList<>();
+  private final List<BeeRow> deselectedRows = new ArrayList<>();
 
   private final List<BeeRow> headerFilters = new ArrayList<>();
   private final Map<Long, BeeRow> columnFilters = new HashMap<>();
   private final Map<Long, BeeRow> rowFilters = new HashMap<>();
+  private final Map<String, Integer> filterIndexes;
 
   AnalysisFormData(BeeRowSet headerData, BeeRowSet columnData, BeeRowSet rowData,
       BeeRowSet filterData) {
 
     this.header = DataUtils.isEmpty(headerData) ? null : headerData.getRow(0);
-    this.headerIndexes = getIndexes(headerData);
+    this.headerIndexes = AnalysisUtils.getIndexes(headerData);
 
+    this.columnIndexes = AnalysisUtils.getIndexes(columnData);
     if (!DataUtils.isEmpty(columnData)) {
-      this.columns.addAll(columnData.getRows());
-    }
-    this.columnIndexes = getIndexes(columnData);
+      int index = columnIndexes.get(COL_ANALYSIS_COLUMN_SELECTED);
 
+      for (BeeRow row : columnData) {
+        if (row.isTrue(index)) {
+          selectedColumns.add(row);
+        } else {
+          deselectedColumns.add(row);
+        }
+      }
+    }
+
+    this.rowIndexes = AnalysisUtils.getIndexes(rowData);
     if (!DataUtils.isEmpty(rowData)) {
-      this.rows.addAll(rowData.getRows());
-    }
-    this.rowIndexes = getIndexes(rowData);
+      int index = rowIndexes.get(COL_ANALYSIS_ROW_SELECTED);
 
-    this.filterIndexes = getIndexes(filterData);
+      for (BeeRow row : columnData) {
+        if (row.isTrue(index)) {
+          selectedRows.add(row);
+        } else {
+          deselectedRows.add(row);
+        }
+      }
+    }
+
+    this.filterIndexes = AnalysisUtils.getIndexes(filterData);
 
     if (!DataUtils.isEmpty(filterData)) {
       for (BeeRow row : filterData) {
@@ -86,6 +92,14 @@ class AnalysisFormData {
 
     if (header == null) {
       messages.add("header not available");
+    }
+    if (BeeUtils.isEmpty(selectedColumns)) {
+      messages.add(BeeUtils.isEmpty(deselectedColumns)
+          ? "columns not available" : "columns not selected");
+    }
+    if (BeeUtils.isEmpty(selectedRows)) {
+      messages.add(BeeUtils.isEmpty(deselectedRows)
+          ? "rows not available" : "rows not selected");
     }
 
     return messages;

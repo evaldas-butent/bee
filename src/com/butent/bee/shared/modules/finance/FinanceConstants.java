@@ -341,6 +341,9 @@ public final class FinanceConstants {
   public static final int ANALYSIS_MIN_SCALE = 0;
   public static final int ANALYSIS_MAX_SCALE = 5;
 
+  public static final int ANALYSIS_MIN_YEAR = 2000;
+  public static final int ANALYSIS_MAX_YEAR = 2099;
+
   public static void register() {
     EnumUtils.register(IndicatorKind.class);
     EnumUtils.register(IndicatorSource.class);
