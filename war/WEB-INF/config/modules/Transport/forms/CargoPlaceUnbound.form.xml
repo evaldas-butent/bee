@@ -14,15 +14,15 @@
       <InputDateTime source="Date" required="true" title="=trRequestDateTitle" minValue="d" />
     </row>
     <row>
-      <Label for="Company" />
+      <Label for="Company" class="bee-required" />
       <cell colSpan="3">
-        <InputText source="Company" style="width:100%;" />
+        <InputText source="Company" style="width:100%;" required="true" />
       </cell>
     </row>
     <row>
-      <Label for="Address" />
+      <Label for="Address" class="bee-required" />
       <cell colSpan="3">
-        <InputText source="Address" style="width:100%;" />
+        <InputText source="Address" style="width:100%;" required="true" />
       </cell>
     </row>
     <row>
@@ -33,8 +33,8 @@
       </DataSelector>
     </row>
     <row>
-      <Label for="PostIndex" />
-      <InputText source="PostIndex" />
+      <Label for="PostIndex" class="bee-required" />
+      <InputText source="PostIndex" required="true" />
       <Label for="LoadedKilometers" />
       <InputInteger source="LoadedKilometers" style="width:70px;" />
     </row>
@@ -46,9 +46,9 @@
       </DataSelector>
     </row>
     <row>
-      <Label for="Contact" />
+      <Label for="Contact" class="bee-required" />
       <cell colSpan="3">
-        <InputText source="Contact" style="width:100%;" />
+        <InputText source="Contact" style="width:100%;" required="true" />
       </cell>
     </row>
     <row>
