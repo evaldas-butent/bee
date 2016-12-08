@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.Set;
 
 public class MaintenanceEventsHandler extends EventsBoard {
@@ -52,40 +54,51 @@ public class MaintenanceEventsHandler extends EventsBoard {
       }
     }
 
-    int idxColShow = rs.getColumnIndex(COL_SHOW_CUSTOMER);
-    if (!BeeUtils.isNegative(idxColShow)) {
-      Flow rowCellShow = createEventRowCell(widget, COL_SHOW_CUSTOMER, null, false);
-      String showCustomer = row.getString(idxColShow);
-      CheckBox checkBox = new CheckBox();
-      checkBox.setChecked(BeeUtils.toBoolean(showCustomer));
-      checkBox.setText(LC.svcShowCustomer());
-      checkBox.addValueChangeHandler(event -> Queries.update(getEventsDataViewName(), row.getId(),
+    CheckBox customerShowCheckBox = generateCheckBox(widget, rs, row, COL_SHOW_CUSTOMER, true,
+        LC.svcShowCustomer());
+
+    if (customerShowCheckBox != null) {
+      customerShowCheckBox.addValueChangeHandler(event ->
+          Queries.update(getEventsDataViewName(), row.getId(),
           COL_SHOW_CUSTOMER, Value.getValue(event.getValue()), new Queries.IntCallback() {
             @Override
             public void onSuccess(Integer result) {
-              checkBox.setChecked(Boolean.valueOf(event.getValue()));
+              customerShowCheckBox.setChecked(event.getValue());
             }
           }));
-      rowCellShow.add(createCellWidgetItem(COL_SHOW_CUSTOMER, checkBox));
     }
 
+    boolean isSendEmail = BeeUtils.toBoolean(row.getString(rs.getColumnIndex(COL_SEND_EMAIL)));
+    boolean isSendSms = BeeUtils.toBoolean(row.getString(rs.getColumnIndex(COL_SEND_SMS)));
+    CheckBox customerSentCheckBox = generateCheckBox(widget, rs, row, COL_CUSTOMER_SENT,
+        !(isSendEmail && isSendSms), LC.svcInform());
 
-    int idxColSend = rs.getColumnIndex(COL_CUSTOMER_SENT);
-    if (!BeeUtils.isNegative(idxColSend)) {
-      Flow rowCellSend = createEventRowCell(widget, COL_CUSTOMER_SENT, null, false);
-      String customerSent = row.getString(idxColSend);
-      CheckBox checkBox = new CheckBox();
-      checkBox.setChecked(BeeUtils.toBoolean(customerSent));
-      checkBox.setText(LC.svcInform());
-      checkBox.addValueChangeHandler(event -> Queries.update(getEventsDataViewName(), row.getId(),
-          COL_CUSTOMER_SENT, Value.getValue(event.getValue()), new Queries.IntCallback() {
-            @Override
-            public void onSuccess(Integer result) {
-              checkBox.setChecked(Boolean.valueOf(event.getValue()));
-            }
-          }));
-      rowCellSend.add(createCellWidgetItem(COL_CUSTOMER_SENT, checkBox));
+    if (customerSentCheckBox != null) {
+      customerSentCheckBox.addValueChangeHandler(event -> {
+          String phone = maintenanceRow.getString(Data
+              .getColumnIndex(TBL_SERVICE_MAINTENANCE, ALS_CONTACT_PHONE));
+          String email = maintenanceRow.getString(Data
+              .getColumnIndex(TBL_SERVICE_MAINTENANCE, ALS_CONTACT_EMAIL));
+
+          if (!isSendSms && BeeUtils.isEmpty(phone)) {
+            Global.showError(Arrays.asList(LC.phone(), LC.valueRequired()));
+            customerSentCheckBox.setChecked(false);
+
+          } else if (!isSendEmail && BeeUtils.isEmpty(email)) {
+            Global.showError(Arrays.asList(LC.email(), LC.valueRequired()));
+            customerSentCheckBox.setChecked(false);
+
+          } else {
+            row.setValue(Data.getColumnIndex(getEventsDataViewName(), COL_CUSTOMER_SENT),
+                event.getValue());
+            ServiceUtils.informClient(row);
+          }
+        }
+      );
     }
+
+    generateCheckBox(widget, rs, row, COL_SEND_EMAIL, false, LC.svcSendEmail());
+    generateCheckBox(widget, rs, row, COL_SEND_SMS, false, LC.svcSendSms());
 
     Flow rowCellEdit = createEventRowCell(widget, "Edit", null, false);
     FaLabel editLabel = new FaLabel(FontAwesome.EDIT, STYLE_LABEL);
@@ -107,6 +120,20 @@ public class MaintenanceEventsHandler extends EventsBoard {
         }));
   }
 
+  private CheckBox generateCheckBox(Flow parentFlow, BeeRowSet rs, BeeRow row, String column,
+      boolean enabled, String text) {
+    Flow rowCell = createEventRowCell(parentFlow, column, null, false);
+    int idxCol = rs.getColumnIndex(column);
+    if (!BeeUtils.isNegative(idxCol)) {
+      CheckBox checkBox = new CheckBox();
+      checkBox.setChecked(BeeUtils.toBoolean(row.getString(idxCol)));
+      checkBox.setEnabled(enabled);
+      checkBox.setText(text);
+      rowCell.add(createCellWidgetItem(column, checkBox));
+      return checkBox;
+    }
+    return null;
+  }
 
   @Override
   protected IdentifiableWidget getAddEventActionWidget() {
@@ -127,8 +154,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
 
   @Override
   protected Order getEventsDataOrder() {
-    Order order = Order.ascending(getPublishTimeColumnName());
-    return order;
+    return Order.ascending(getPublishTimeColumnName());
   }
 
   @Override

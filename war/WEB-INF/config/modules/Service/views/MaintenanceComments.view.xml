@@ -34,5 +34,8 @@
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
+
+    <SimpleColumn name="SentEmail"/>
+    <SimpleColumn name="SentSms"/>
   </Columns>
 </View>

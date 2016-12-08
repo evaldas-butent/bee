@@ -5,12 +5,21 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.ALS_COMPANY_TYPE_NAME;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+
+import java.util.Map;
 
 public final class ServiceUtils {
 
@@ -91,5 +100,30 @@ public final class ServiceUtils {
   }
 
   private ServiceUtils() {
+  }
+
+  public static void informClient(BeeRow commentRow) {
+    int informColIndex = Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS, COL_CUSTOMER_SENT);
+
+    if (BeeUtils.isTrue(commentRow.getBoolean(informColIndex))) {
+      ParameterList params = ServiceKeeper.createArgs(SVC_INFORM_CUSTOMER);
+      params.addDataItem(COL_COMMENT, commentRow.getId());
+
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (!response.isEmpty() && !response.hasErrors()) {
+
+            for (Map.Entry<String, String> entry : Codec.deserializeHashMap(response
+                .getResponseAsString()).entrySet()) {
+              commentRow.setValue(Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS, entry.getKey()),
+                  entry.getValue());
+            }
+
+            RowUpdateEvent.fire(BeeKeeper.getBus(), TBL_MAINTENANCE_COMMENTS, commentRow);
+          }
+        }
+      });
+    }
   }
 }

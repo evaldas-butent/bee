@@ -121,7 +121,9 @@
 
 .bee-svc-Events-content-Term,
 .bee-svc-Events-content-ShowCustomer,
-.bee-svc-Events-content-CustomerSent {
+.bee-svc-Events-content-CustomerSent,
+.bee-svc-Events-content-SentEmail,
+.bee-svc-Events-content-SentSms{
   margin-top: 4px;
   margin-left: 10px;
 }

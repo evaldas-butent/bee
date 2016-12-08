@@ -4588,6 +4588,14 @@ public interface Dictionary {
 
   default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
 
+  default String prmSmsRequestServiceAddress() {return g("prmSmsRequestServiceAddress");}
+
+  default String prmSmsRequestServiceFrom() {return g("prmSmsRequestServiceFrom");}
+
+  default String prmSmsRequestServicePassword() {return g("prmSmsRequestServicePassword");}
+
+  default String prmSmsRequestServiceUserName() {return g("prmSmsRequestServiceUserName");}
+
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
 
   default String prmUrgentRate() {return g("prmUrgentRate");}
@@ -5023,7 +5031,11 @@ public interface Dictionary {
 
   default String svcMaintenance() {return g("svcMaintenance");}
 
+  default String svcMaintenanceEmailHeader() {return g("svcMaintenanceEmailHeader");}
+
   default String svcMaintenanceItemsServices() {return g("svcMaintenanceItemsServices");}
+
+  default String svcMaintenanceState() {return g("svcMaintenanceState");}
 
   default String svcMaster() {return g("svcMaster");}
 
@@ -5062,6 +5074,12 @@ public interface Dictionary {
   default String svcPublishTime() {return g("svcPublishTime");}
 
   default String svcRelatedCustomerInfo() {return g("svcRelatedCustomerInfo");}
+
+  default String svcRepair() {return g("svcRepair");}
+
+  default String svcSendEmail() {return g("svcSendEmail");}
+
+  default String svcSendSms() {return g("svcSendSms");}
 
   default String svcSerialNo() {return g("svcSerialNo");}
 

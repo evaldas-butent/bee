@@ -419,7 +419,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       }
     }
 
-    Queries.insert(TBL_MAINTENANCE_COMMENTS, columns, values);
+    Queries.insert(TBL_MAINTENANCE_COMMENTS, columns, values, null, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow commentRow) {
+        ServiceUtils.informClient(commentRow);
+      }
+    });
   }
 
   private void drawComments(IsRow row) {
