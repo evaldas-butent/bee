@@ -2849,6 +2849,8 @@ public interface Dictionary {
 
   default String finAnalysisValues() {return g("finAnalysisValues");}
 
+  default String finAnalysisVerified() {return g("finAnalysisVerified");}
+
   default String finAnalysisVerify() {return g("finAnalysisVerify");}
 
   default String finBudget() {return g("finBudget");}
