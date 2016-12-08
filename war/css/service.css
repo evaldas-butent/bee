@@ -151,10 +151,49 @@
 .bee-EventsBoard-content-EventNote {
   margin-top: 0px;
 }
+
 .bee-svc-Events-EventContent {
   width: 400px;
 }
 
 .bee-service-maintenance-late {
   color: red;
+}
+
+.bee-svc-toggle {
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: gray;
+}
+
+.bee-svc-toggle:hover {
+  color: black;
+}
+
+.bee-svc-object-title{
+  font-size:23px;
+  color: #484849;
+  font-weight: lighter;
+}
+
+.bee-svc-object-small-title{
+  font-size:14px;
+}
+
+.bee-svc-contact-panel {
+}
+
+.bee-svc-object-criteria-panel {
+  max-width: 90em;
+}
+
+.bee-svc-object-main-criteria-panel {
+  margin: 2ex 2ex 2ex 1em;
+  border: 1px solid #ccc;
+}
+
+.bee-svc-criteria-grid {
+  width: 50%;
+  margin-right: 2ex;
 }

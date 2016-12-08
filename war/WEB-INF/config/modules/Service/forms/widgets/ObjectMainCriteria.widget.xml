@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<FieldSet xmlns="http://www.butent.com/widget" style="margin: 2ex 1em; border: 1px solid #ccc;">
+<FieldSet xmlns="http://www.butent.com/widget" class="bee-svc-object-main-criteria-panel">
 
   <Legend name="MainCriteriaEditor" class="bee-Button" text="=mainCriteria" />
   <FlowPanel name="MainCriteriaContainer" class="flexBox-horizontal"

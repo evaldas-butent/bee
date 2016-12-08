@@ -5073,8 +5073,6 @@ public interface Dictionary {
 
   default String svcPublishTime() {return g("svcPublishTime");}
 
-  default String svcRelatedCustomerInfo() {return g("svcRelatedCustomerInfo");}
-
   default String svcRepair() {return g("svcRepair");}
 
   default String svcSendEmail() {return g("svcSendEmail");}

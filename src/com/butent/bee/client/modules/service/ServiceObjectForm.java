@@ -43,7 +43,6 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -82,7 +81,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class ServiceObjectForm extends AbstractFormInterceptor implements ClickHandler,
+public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickHandler,
     RowActionEvent.Handler, SelectorEvent.Handler, RowUpdateEvent.Handler {
 
   private final class AutocompleteFilter implements AutocompleteEvent.Handler {
@@ -172,6 +171,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
+    super.afterCreateWidget(name, widget, callback);
 
     if (BeeUtils.same(name, "MainCriteriaEditor")) {
       widget.asWidget().addDomHandler(this, ClickEvent.getType());
