@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -29,24 +30,22 @@ public class AnalysisBean {
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
+  @EJB
+  UserServiceBean usr;
 
   public ResponseObject calculateForm(long formId) {
-    String msg = BeeUtils.joinWords(SVC_CALCULATE_ANALYSIS_FORM, formId);
-    return ResponseObject.response(msg);
+    AnalysisFormData formData = getFormData(formId);
+    ResponseObject response = validateFormData(formId, formData);
+
+    if (response.hasErrors() || response.hasWarnings()) {
+      return response;
+    }
+    return response;
   }
 
   public ResponseObject verifyForm(long formId) {
     AnalysisFormData formData = getFormData(formId);
-    if (formData == null) {
-      return ResponseObject.error("form", formId, "not found");
-    }
-
-    List<String> messages = formData.validate();
-    if (BeeUtils.isEmpty(messages)) {
-      return ResponseObject.emptyResponse();
-    } else {
-      return ResponseObject.responseWithSize(messages);
-    }
+    return validateFormData(formId, formData);
   }
 
   private AnalysisFormData getFormData(long formId) {
@@ -74,6 +73,23 @@ public class AnalysisBean {
     BeeRowSet filterData = qs.getViewData(VIEW_ANALYSIS_FILTERS, filter);
 
     return new AnalysisFormData(headerData, columnData, rowData, filterData);
+  }
+
+  private ResponseObject validateFormData(long formId, AnalysisFormData formData) {
+    if (formData == null) {
+      return ResponseObject.error("form", formId, "not found");
+    }
+
+    ResponseObject response = ResponseObject.emptyResponse();
+
+    List<String> messages = formData.validate(usr.getDictionary());
+    if (!BeeUtils.isEmpty(messages)) {
+      for (String message : messages) {
+        response.addWarning(message);
+      }
+    }
+
+    return response;
   }
 
   private SqlSelect addDimensions(SqlSelect query, String tblName) {

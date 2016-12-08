@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.finance;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.time.TimeUtils;
@@ -10,6 +11,13 @@ import java.util.Map;
 import java.util.Objects;
 
 final class AnalysisUtils {
+
+  static String formatYearMonth(Integer year, Integer month) {
+    String y = (year == null) ? null : TimeUtils.yearToString(year);
+    String m = (month == null) ? null : TimeUtils.monthToString(month);
+
+    return BeeUtils.join(BeeConst.STRING_POINT, y, m);
+  }
 
   static Map<String, Integer> getIndexes(BeeRowSet rowSet) {
     Map<String, Integer> indexes = new HashMap<>();

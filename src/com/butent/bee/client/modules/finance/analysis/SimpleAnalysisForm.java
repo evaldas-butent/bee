@@ -5,6 +5,7 @@ import com.google.gwt.xml.client.Element;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowCallback;
@@ -21,6 +22,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -28,7 +30,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.FinanceUtils;
 import com.butent.bee.shared.ui.UiConstants;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SimpleAnalysisForm extends AbstractFormInterceptor {
 
@@ -121,8 +123,11 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
             BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
               @Override
               public void onResponse(ResponseObject response) {
-                if (response.hasResponse()) {
-                  LogUtils.getRootLogger().debug(response.getResponse());
+                if (response.hasMessages()) {
+                  List<String> messages = response.getMessages().stream()
+                      .map(ResponseMessage::getMessage).collect(Collectors.toList());
+
+                  Global.showInfo(service, messages);
                 }
               }
             });

@@ -3212,6 +3212,13 @@ public interface Dictionary {
 
   default String invalidNumberFormat() {return g("invalidNumberFormat");}
 
+  default String invalidPeriod(Object p0, Object p1) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    _m.put("{1}", p1);
+    return Localized.format(g("invalidPeriod"), _m);
+  }
+
   default String invalidRange() {return g("invalidRange");}
 
   default String invalidTime() {return g("invalidTime");}

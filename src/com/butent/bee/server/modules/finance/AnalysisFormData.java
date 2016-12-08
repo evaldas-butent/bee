@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ class AnalysisFormData {
     if (!DataUtils.isEmpty(rowData)) {
       int index = rowIndexes.get(COL_ANALYSIS_ROW_SELECTED);
 
-      for (BeeRow row : columnData) {
+      for (BeeRow row : rowData) {
         if (row.isTrue(index)) {
           selectedRows.add(row);
         } else {
@@ -87,11 +88,12 @@ class AnalysisFormData {
     }
   }
 
-  List<String> validate() {
+  List<String> validate(Dictionary dictionary) {
     List<String> messages = new ArrayList<>();
 
     if (header == null) {
       messages.add("header not available");
+      return messages;
     }
     if (BeeUtils.isEmpty(selectedColumns)) {
       messages.add(BeeUtils.isEmpty(deselectedColumns)
@@ -100,6 +102,16 @@ class AnalysisFormData {
     if (BeeUtils.isEmpty(selectedRows)) {
       messages.add(BeeUtils.isEmpty(deselectedRows)
           ? "rows not available" : "rows not selected");
+    }
+
+    Integer yearFrom = header.getInteger(headerIndexes.get(COL_ANALYSIS_HEADER_YEAR_FROM));
+    Integer monthFrom = header.getInteger(headerIndexes.get(COL_ANALYSIS_HEADER_MONTH_FROM));
+    Integer yearUntil = header.getInteger(headerIndexes.get(COL_ANALYSIS_HEADER_YEAR_UNTIL));
+    Integer monthUntil = header.getInteger(headerIndexes.get(COL_ANALYSIS_HEADER_MONTH_UNTIL));
+
+    if (!AnalysisUtils.isValidRange(yearFrom, monthFrom, yearUntil, monthUntil)) {
+      messages.add(dictionary.invalidPeriod(AnalysisUtils.formatYearMonth(yearFrom, monthFrom),
+          AnalysisUtils.formatYearMonth(yearUntil, monthUntil)));
     }
 
     return messages;
