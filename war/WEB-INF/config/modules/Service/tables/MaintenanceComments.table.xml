@@ -23,5 +23,7 @@
 
     <Boolean name="SentEmail" label="=svcSendEmail" />
     <Boolean name="SentSms" label="=svcSendSms" />
+
+    <Boolean name="StateComment" label="=svcStateComment" />
   </Fields>
 </Table>

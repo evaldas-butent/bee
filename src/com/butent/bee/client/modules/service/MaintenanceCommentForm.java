@@ -68,8 +68,7 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor {
 
     ServiceUtils.informClient((BeeRow) event.getNewRow());
 
-    Long serviceMaintenanceId = event.getNewRow()
-        .getLong(Data.getColumnIndex(getViewName(), COL_SERVICE_MAINTENANCE));
+    Long serviceMaintenanceId = event.getNewRow().getLong(getDataIndex(COL_SERVICE_MAINTENANCE));
 
     if (event.getColumns().contains(Data.getColumn(getViewName(), COL_TERM))
         && DataUtils.isId(serviceMaintenanceId)) {
@@ -102,17 +101,18 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor {
     super.onStartNewRow(form, oldRow, newRow);
 
     if (serviceMaintenance != null) {
-      newRow.setValue(Data.getColumnIndex(form.getViewName(), COL_SERVICE_MAINTENANCE),
+      newRow.setValue(getDataIndex(COL_SERVICE_MAINTENANCE),
           serviceMaintenance.getId());
 
-      newRow.setValue(Data.getColumnIndex(getViewName(), COL_EVENT_NOTE), serviceMaintenance
+      newRow.setValue(getDataIndex(COL_MAINTENANCE_STATE), serviceMaintenance
+          .getLong(Data.getColumnIndex(TBL_SERVICE_MAINTENANCE, COL_STATE)));
+
+      newRow.setValue(getDataIndex(COL_EVENT_NOTE), serviceMaintenance
           .getString(Data.getColumnIndex(TBL_SERVICE_MAINTENANCE, ALS_STATE_NAME)));
+      form.refreshBySource(COL_EVENT_NOTE);
 
       if (stateProcessRow != null) {
-        newRow.setValue(Data.getColumnIndex(getViewName(), COL_MAINTENANCE_STATE),
-            serviceMaintenance.getLong(Data.getColumnIndex(TBL_SERVICE_MAINTENANCE, COL_STATE)));
-
-        form.refreshBySource(COL_EVENT_NOTE);
+        newRow.setValue(getDataIndex(COL_STATE_COMMENT), Boolean.TRUE);
 
         setWidgetsVisibility(BeeUtils.isTrue(stateProcessRow
             .getBoolean(Data.getColumnIndex(TBL_STATE_PROCESS, COL_TERM))),
@@ -130,24 +130,22 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor {
             form.getWidgetBySource(COL_ITEM_CURRENCY));
 
         if (visibleItem) {
-          newRow.setValue(Data.getColumnIndex(getViewName(), COL_MAINTENANCE_ITEM),
-              BeeUtils.toString(itemId));
-          newRow.setValue(Data.getColumnIndex(getViewName(), ALS_MAINTENANCE_ITEM_NAME),
-              stateProcessRow.getString(Data.getColumnIndex(TBL_STATE_PROCESS,
-                  ALS_MAINTENANCE_ITEM_NAME)));
+          newRow.setValue(getDataIndex(COL_MAINTENANCE_ITEM), BeeUtils.toString(itemId));
+          newRow.setValue(getDataIndex(ALS_MAINTENANCE_ITEM_NAME), stateProcessRow
+              .getString(Data.getColumnIndex(TBL_STATE_PROCESS, ALS_MAINTENANCE_ITEM_NAME)));
           form.refreshBySource(COL_MAINTENANCE_ITEM);
         }
 
         String commentValue = stateProcessRow
             .getString(Data.getColumnIndex(TBL_STATE_PROCESS, COL_MESSAGE));
-        newRow.setValue(Data.getColumnIndex(getViewName(), COL_COMMENT), commentValue);
+        newRow.setValue(getDataIndex(COL_COMMENT), commentValue);
         form.refreshBySource(COL_COMMENT);
 
         Boolean notifyCustomer = stateProcessRow
             .getBoolean(Data.getColumnIndex(TBL_STATE_PROCESS, COL_NOTIFY_CUSTOMER));
 
         if (BeeUtils.isTrue(notifyCustomer)) {
-          newRow.setValue(Data.getColumnIndex(getViewName(), COL_CUSTOMER_SENT), notifyCustomer);
+          newRow.setValue(getDataIndex(COL_CUSTOMER_SENT), notifyCustomer);
           form.refreshBySource(COL_CUSTOMER_SENT);
         }
 
@@ -155,7 +153,7 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor {
             .getBoolean(Data.getColumnIndex(TBL_STATE_PROCESS, COL_SHOW_CUSTOMER));
 
         if (BeeUtils.isTrue(showCustomerValue)) {
-          newRow.setValue(Data.getColumnIndex(getViewName(), COL_SHOW_CUSTOMER), showCustomerValue);
+          newRow.setValue(getDataIndex(COL_SHOW_CUSTOMER), showCustomerValue);
           form.refreshBySource(COL_SHOW_CUSTOMER);
         }
 
@@ -189,8 +187,8 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor {
   }
 
   private void updateTermVisibility(FormView form, IsRow row) {
-    Long commentsStateId = row.getLong(Data.getColumnIndex(getViewName(), COL_MAINTENANCE_STATE));
-    setWidgetsVisibility(DataUtils.isId(commentsStateId),
+    Boolean isStateComment = row.getBoolean(getDataIndex(COL_STATE_COMMENT));
+    setWidgetsVisibility(BeeUtils.isTrue(isStateComment),
         form.getWidgetBySource(COL_TERM), form.getWidgetByName(WIDGET_TERM_LABEL_NAME));
   }
 }

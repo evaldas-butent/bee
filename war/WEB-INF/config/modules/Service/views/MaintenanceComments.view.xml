@@ -24,6 +24,10 @@
     <SimpleColumn name="EventNote"/>
 
     <SimpleColumn name="MaintenanceState"/>
+    <SimpleJoin joinType="LEFT" name="MaintenanceState">
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
 
     <SimpleColumn name="Item"/>
     <SimpleJoin joinType="LEFT" name="Item">
@@ -37,5 +41,7 @@
 
     <SimpleColumn name="SentEmail"/>
     <SimpleColumn name="SentSms"/>
+
+    <SimpleColumn name="StateComment"/>
   </Columns>
 </View>

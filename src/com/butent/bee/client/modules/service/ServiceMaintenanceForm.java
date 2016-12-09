@@ -147,11 +147,11 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
     updateStateDataSelector(false);
 
-    if (DataUtils.isId(row.getLong(Data.getColumnIndex(getViewName(), COL_WARRANTY_MAINTENANCE)))) {
+    if (DataUtils.isId(row.getLong(getDataIndex(COL_WARRANTY_MAINTENANCE)))) {
       updateWarrantyTypeWidget(true);
     }
 
-    if (BeeUtils.isTrue(row.getBoolean(Data.getColumnIndex(getViewName(), COL_ADDRESS_REQUIRED)))) {
+    if (BeeUtils.isTrue(row.getBoolean(getDataIndex(COL_ADDRESS_REQUIRED)))) {
       updateContactAddressLabel(true);
     }
 
@@ -168,7 +168,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     super.afterUpdateRow(result);
 
     updateServiceObject(result.getId(),
-            result.getLong(Data.getColumnIndex(getViewName(), COL_SERVICE_OBJECT)));
+            result.getLong(getDataIndex(COL_SERVICE_OBJECT)));
   }
 
   @Override
@@ -188,8 +188,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       event.setDefValue(null);
 
       if (BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANY_PERSONS)
-          && BeeUtils.isTrue(getActiveRow().getBoolean(Data.getColumnIndex(getViewName(),
-            COL_ADDRESS_REQUIRED)))) {
+          && BeeUtils.isTrue(getActiveRow().getBoolean(getDataIndex(COL_ADDRESS_REQUIRED)))) {
         event.setOnOpenNewRow(formView -> {
           Widget widget = formView.getWidgetBySource(COL_ADDRESS);
 
@@ -289,8 +288,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         }
 
         if (processCount == NEW_MAINTENANCE_DATA_LOAD_PROCESS_COUNT) {
-          values.forEach(value ->
-              newRow.setValue(Data.getColumnIndex(getViewName(), value.getA()), value.getB()));
+          values.forEach(value -> newRow.setValue(getDataIndex(value.getA()), value.getB()));
 
           form.removeStyleName(STYLE_PROGRESS_CONTAINER);
           form.removeStyleName(STYLE_PROGRESS_BAR);
@@ -388,10 +386,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   private void createStateChangeComment(IsRow row, IsRow stateProcessRow) {
     List<BeeColumn> columns = Data.getColumns(TBL_MAINTENANCE_COMMENTS,
-        Lists.newArrayList(COL_SERVICE_MAINTENANCE, COL_EVENT_NOTE, COL_MAINTENANCE_STATE));
+        Lists.newArrayList(COL_SERVICE_MAINTENANCE, COL_EVENT_NOTE, COL_MAINTENANCE_STATE,
+            COL_STATE_COMMENT));
     List<String> values = Lists.newArrayList(Long.toString(row.getId()),
-        row.getString(Data.getColumnIndex(getViewName(), ALS_STATE_NAME)),
-        row.getString(Data.getColumnIndex(getViewName(), AdministrationConstants.COL_STATE)));
+        row.getString(getDataIndex(ALS_STATE_NAME)),
+        row.getString(getDataIndex(AdministrationConstants.COL_STATE)),
+        BeeUtils.toString(Boolean.TRUE));
 
     if (stateProcessRow != null) {
       String notifyValue = stateProcessRow.
@@ -451,9 +451,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   }
 
   private void fillDataByStateProcessSettings(IsRow row, IsRow oldRow) {
-    Long stateId = row
-        .getLong(Data.getColumnIndex(getViewName(), AdministrationConstants.COL_STATE));
-    Long maintenanceTypeId = row.getLong(Data.getColumnIndex(getViewName(), COL_TYPE));
+    Long stateId = row.getLong(getDataIndex(AdministrationConstants.COL_STATE));
+    Long maintenanceTypeId = row.getLong(getDataIndex(COL_TYPE));
 
     Queries.getRowSet(TBL_STATE_PROCESS, null,
         ServiceUtils.getStateFilter(stateId, maintenanceTypeId), new Queries.RowSetCallback() {
@@ -464,7 +463,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           String oldValue;
 
           if (oldRow != null) {
-            oldValue = oldRow.getString(Data.getColumnIndex(getViewName(), COL_ENDING_DATE));
+            oldValue = oldRow.getString(getDataIndex(COL_ENDING_DATE));
           } else {
             oldValue = null;
           }
@@ -489,18 +488,17 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   }
 
   private boolean isValidData(FormView form, IsRow row) {
-    String phone = row.getString(Data.getColumnIndex(getViewName(), ALS_CONTACT_PHONE));
+    String phone = row.getString(getDataIndex(ALS_CONTACT_PHONE));
 
     if (BeeUtils.isEmpty(phone)) {
       form.notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().phone()));
       return false;
     }
 
-    Boolean addressRequired = row.getBoolean(Data.getColumnIndex(getViewName(),
-        COL_ADDRESS_REQUIRED));
+    Boolean addressRequired = row.getBoolean(getDataIndex(COL_ADDRESS_REQUIRED));
 
     if (BeeUtils.isTrue(addressRequired)) {
-      String address = row.getString(Data.getColumnIndex(getViewName(), ALS_CONTACT_ADDRESS));
+      String address = row.getString(getDataIndex(ALS_CONTACT_ADDRESS));
 
       if (BeeUtils.isEmpty(address)) {
         form.notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().address()));
@@ -508,8 +506,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       }
     }
 
-    String department = row.getString(Data.getColumnIndex(getViewName(),
-        ALS_CREATOR_DEPARTMENT_NAME));
+    String department = row.getString(getDataIndex(ALS_CREATOR_DEPARTMENT_NAME));
 
     if (BeeUtils.isEmpty(department)) {
       form.notifySevere(Localized.dictionary()
@@ -517,9 +514,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       return false;
     }
 
-    Long warrantyTypeId = row.getLong(Data.getColumnIndex(getViewName(), COL_WARRANTY_TYPE));
-    Long serviceMaintenanceId = row.getLong(Data.getColumnIndex(getViewName(),
-            COL_WARRANTY_MAINTENANCE));
+    Long warrantyTypeId = row.getLong(getDataIndex(COL_WARRANTY_TYPE));
+    Long serviceMaintenanceId = row.getLong(getDataIndex(COL_WARRANTY_MAINTENANCE));
 
     if (DataUtils.isId(serviceMaintenanceId) && !DataUtils.isId(warrantyTypeId)) {
       form.notifySevere(Localized.dictionary()
@@ -569,7 +565,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     if (stateWidget instanceof DataSelector) {
       Filter stateFilter = DataUtils.isNewRow(getActiveRow())
           ? Filter.isPositive(COL_INITIAL) : Filter.isNull(COL_INITIAL);
-      Long maintenanceTypeId = getActiveRow().getLong(Data.getColumnIndex(getViewName(), COL_TYPE));
+      Long maintenanceTypeId = getActiveRow().getLong(getDataIndex(COL_TYPE));
 
       ((DataSelector) stateWidget).setAdditionalFilter(
           Filter.in(Data.getIdColumn(VIEW_MAINTENANCE_STATES), TBL_STATE_PROCESS,
@@ -578,9 +574,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
       if (clearValue) {
         ((DataSelector) stateWidget).clearValue();
-        getFormView().getActiveRow().clearCell(Data.getColumnIndex(getViewName(),
-            AdministrationConstants.COL_STATE));
-        getFormView().getActiveRow().clearCell(Data.getColumnIndex(getViewName(), ALS_STATE_NAME));
+        getFormView().getActiveRow().clearCell(getDataIndex(AdministrationConstants.COL_STATE));
+        getFormView().getActiveRow().clearCell(getDataIndex(ALS_STATE_NAME));
         getFormView().refreshBySource(AdministrationConstants.COL_STATE);
       }
     }

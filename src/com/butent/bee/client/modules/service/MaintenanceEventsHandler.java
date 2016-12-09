@@ -1,7 +1,10 @@
 package com.butent.bee.client.modules.service;
 
 import com.google.common.collect.Sets;
+import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_BACKGROUND;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_FOREGROUND;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.Global;
@@ -11,6 +14,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.eventsboard.EventsBoard;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -38,23 +42,17 @@ public class MaintenanceEventsHandler extends EventsBoard {
   private static final Dictionary LC = Localized.dictionary();
   private static final String STYLE_PREFIX = ServiceKeeper.STYLE_PREFIX + "Events-";
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
+  private static final String STYLE_INFO_PANEL = STYLE_PREFIX + "info-panel";
   private static final Set<Action> enabledActions = Sets.newHashSet(Action.ADD, Action.REFRESH);
 
   private IsRow maintenanceRow;
 
   @Override
-  protected void afterCreateEventNoteCell(BeeRowSet rs, BeeRow row, Flow widget, Flow cell) {
-    Flow rowCellTerm = createEventRowCell(widget, COL_TERM, null, false);
-    int idxColTerm = rs.getColumnIndex(COL_TERM);
-    if (!BeeUtils.isNegative(idxColTerm)) {
-      DateTime publishTime = row.getDateTime(idxColTerm);
-      if (publishTime != null) {
-        rowCellTerm.add(createCellHtmlItem(COL_TERM, BeeUtils.joinWords(LC.svcTerm(),
-            Format.getDefaultDateFormat().format(publishTime))));
-      }
-    }
+  protected void afterCreateCellContent(BeeRowSet rs, BeeRow row, Flow widget) {
+    Flow infoPanel = new Flow(STYLE_INFO_PANEL);
+    infoPanel.addStyleName(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
 
-    CheckBox customerShowCheckBox = generateCheckBox(widget, rs, row, COL_SHOW_CUSTOMER, true,
+    CheckBox customerShowCheckBox = generateCheckBox(infoPanel, rs, row, COL_SHOW_CUSTOMER, true,
         LC.svcShowCustomer());
 
     if (customerShowCheckBox != null) {
@@ -70,7 +68,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
 
     boolean isSendEmail = BeeUtils.toBoolean(row.getString(rs.getColumnIndex(COL_SEND_EMAIL)));
     boolean isSendSms = BeeUtils.toBoolean(row.getString(rs.getColumnIndex(COL_SEND_SMS)));
-    CheckBox customerSentCheckBox = generateCheckBox(widget, rs, row, COL_CUSTOMER_SENT,
+    CheckBox customerSentCheckBox = generateCheckBox(infoPanel, rs, row, COL_CUSTOMER_SENT,
         !(isSendEmail && isSendSms), LC.svcInform());
 
     if (customerSentCheckBox != null) {
@@ -97,10 +95,20 @@ public class MaintenanceEventsHandler extends EventsBoard {
       );
     }
 
-    generateCheckBox(widget, rs, row, COL_SEND_EMAIL, false, LC.svcSendEmail());
-    generateCheckBox(widget, rs, row, COL_SEND_SMS, false, LC.svcSendSms());
+    generateCheckBox(infoPanel, rs, row, COL_SEND_EMAIL, false, LC.svcSendEmail());
+    generateCheckBox(infoPanel, rs, row, COL_SEND_SMS, false, LC.svcSendSms());
 
-    Flow rowCellEdit = createEventRowCell(widget, "Edit", null, false);
+    Flow rowCellTerm = createEventRowCell(infoPanel, COL_TERM, null, false);
+    int idxColTerm = rs.getColumnIndex(COL_TERM);
+    if (!BeeUtils.isNegative(idxColTerm)) {
+      DateTime publishTime = row.getDateTime(idxColTerm);
+      if (publishTime != null) {
+        rowCellTerm.add(createCellHtmlItem(COL_TERM, BeeUtils.joinWords(LC.svcTerm(),
+            Format.getDefaultDateFormat().format(publishTime))));
+      }
+    }
+
+    Flow rowCellEdit = createEventRowCell(infoPanel, "Edit", null, false);
     FaLabel editLabel = new FaLabel(FontAwesome.EDIT, STYLE_LABEL);
     rowCellEdit.add(editLabel);
     editLabel.addClickHandler(
@@ -108,7 +116,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
             Data.getDataInfo(getEventsDataViewName()),
             row, Opener.MODAL, null, new MaintenanceCommentForm(maintenanceRow)));
 
-    Flow rowCellDelete = createEventRowCell(widget, "Delete", null, false);
+    Flow rowCellDelete = createEventRowCell(infoPanel, "Delete", null, false);
     FaLabel clearLabel = new FaLabel(FontAwesome.TRASH, STYLE_LABEL);
     rowCellDelete.add(clearLabel);
     clearLabel.addClickHandler(event -> Queries.deleteRow(getEventsDataViewName(), row.getId(),
@@ -118,6 +126,8 @@ public class MaintenanceEventsHandler extends EventsBoard {
             refresh(true);
           }
         }));
+
+    widget.add(infoPanel);
   }
 
   private CheckBox generateCheckBox(Flow parentFlow, BeeRowSet rs, BeeRow row, String column,
@@ -215,6 +225,29 @@ public class MaintenanceEventsHandler extends EventsBoard {
   @Override
   public String getCaption() {
     return LC.svcComments();
+  }
+
+  @Override
+  protected void setAdditionalStyleToWidget(String name, BeeRowSet rs, BeeRow row, Widget widget) {
+    if (BeeUtils.equals(name, CELL_EVENT_TYPE)) {
+      int idxColBackground = rs.getColumnIndex(COL_BACKGROUND);
+
+      if (!BeeUtils.isNegative(idxColBackground)) {
+        String color = row.getString(idxColBackground);
+        if (!BeeUtils.isEmpty(color)) {
+          StyleUtils.setBackgroundColor(widget, color);
+        }
+      }
+
+      int idxColForeground = rs.getColumnIndex(COL_FOREGROUND);
+
+      if (!BeeUtils.isNegative(idxColForeground)) {
+        String color = row.getString(idxColForeground);
+        if (!BeeUtils.isEmpty(color)) {
+          StyleUtils.setColor(widget, color);
+        }
+      }
+    }
   }
 
   public void setMaintenanceRow(IsRow row) {

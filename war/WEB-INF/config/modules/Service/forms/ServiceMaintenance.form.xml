@@ -73,7 +73,7 @@
       </row>
       <row>
         <Label text="=svcSerialNo"/>
-        <TextLabel source="SerialNo" class="bee-output" style="&inp;"/>
+        <TextLabel source="SerialNo" class="bee-output" style="&inp;" data="ServiceObjects" for="SerialNo"/>
         <Label name="AddressLabel" text="=address" />
         <DataSelector name="Address" source="Contact"
                       choiceColumns="FirstName LastName Phone Email Address CompanyName"

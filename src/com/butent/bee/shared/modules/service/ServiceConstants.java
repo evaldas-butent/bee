@@ -105,6 +105,7 @@ public final class ServiceConstants {
   public static final String COL_SERVICE_OBJECT = "ServiceObject";
 
   public static final String COL_SERVICE_CATEGORY_NAME = "Name";
+  public static final String COL_STATE_COMMENT = "StateComment";
 
   public static final String COL_MANUFACTURER = "Manufacturer";
   public static final String COL_MAINTENANCE_DATE = "Date";

@@ -218,7 +218,7 @@ public class ServiceModuleBean implements BeeModule {
               .setWhere(SqlUtils.and(
                   SqlUtils.inList(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE,
                       rowSet.getRowIds()),
-                  SqlUtils.notNull(TBL_MAINTENANCE_COMMENTS, COL_MAINTENANCE_STATE)))
+                  SqlUtils.notNull(TBL_MAINTENANCE_COMMENTS, COL_STATE_COMMENT)))
               .addGroup(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE)
           );
 
