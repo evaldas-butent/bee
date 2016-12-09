@@ -38,8 +38,9 @@ final class AnalysisUtils {
       Integer yearUntil, Integer monthUntil) {
 
     if (isValidRange(yearFrom, monthFrom, yearUntil, monthUntil)) {
-      Integer y1 = (yearFrom == null) ? ANALYSIS_MIN_YEAR : yearFrom;
-      Integer y2 = (yearUntil == null && monthUntil == null) ? ANALYSIS_MAX_YEAR : yearUntil;
+      Integer y1 = (yearFrom == null) ? Integer.valueOf(ANALYSIS_MIN_YEAR) : yearFrom;
+      Integer y2 = (yearUntil == null && monthUntil == null)
+          ? Integer.valueOf(ANALYSIS_MAX_YEAR) : yearUntil;
 
       return MonthRange.closed(y1, monthFrom, y2, monthUntil);
 

@@ -1,5 +1,8 @@
 package com.butent.bee.server.modules.finance;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.shared.data.BeeRow;
@@ -11,9 +14,11 @@ import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 class AnalysisFormData {
 
@@ -21,12 +26,12 @@ class AnalysisFormData {
   private final Map<String, Integer> headerIndexes;
 
   private final Map<String, Integer> columnIndexes;
-  private final List<BeeRow> selectedColumns = new ArrayList<>();
-  private final List<BeeRow> deselectedColumns = new ArrayList<>();
+  private final List<BeeRow> columns = new ArrayList<>();
+  private final List<Integer> selectedColumns = new ArrayList<>();
 
   private final Map<String, Integer> rowIndexes;
-  private final List<BeeRow> selectedRows = new ArrayList<>();
-  private final List<BeeRow> deselectedRows = new ArrayList<>();
+  private final List<BeeRow> rows = new ArrayList<>();
+  private final List<Integer> selectedRows = new ArrayList<>();
 
   private final List<BeeRow> headerFilters = new ArrayList<>();
   private final Map<Long, BeeRow> columnFilters = new HashMap<>();
@@ -40,27 +45,27 @@ class AnalysisFormData {
     this.headerIndexes = AnalysisUtils.getIndexes(headerData);
 
     this.columnIndexes = AnalysisUtils.getIndexes(columnData);
-    if (!DataUtils.isEmpty(columnData)) {
-      int index = columnIndexes.get(COL_ANALYSIS_COLUMN_SELECTED);
 
-      for (BeeRow row : columnData) {
-        if (row.isTrue(index)) {
-          selectedColumns.add(row);
-        } else {
-          deselectedColumns.add(row);
+    if (!DataUtils.isEmpty(columnData)) {
+      this.columns.addAll(columnData.getRows());
+
+      int index = columnIndexes.get(COL_ANALYSIS_COLUMN_SELECTED);
+      for (int i = 0; i < columns.size(); i++) {
+        if (columns.get(i).isTrue(index)) {
+          selectedColumns.add(i);
         }
       }
     }
 
     this.rowIndexes = AnalysisUtils.getIndexes(rowData);
-    if (!DataUtils.isEmpty(rowData)) {
-      int index = rowIndexes.get(COL_ANALYSIS_ROW_SELECTED);
 
-      for (BeeRow row : rowData) {
-        if (row.isTrue(index)) {
-          selectedRows.add(row);
-        } else {
-          deselectedRows.add(row);
+    if (!DataUtils.isEmpty(rowData)) {
+      this.rows.addAll(rowData.getRows());
+
+      int index = rowIndexes.get(COL_ANALYSIS_ROW_SELECTED);
+      for (int i = 0; i < rows.size(); i++) {
+        if (rows.get(i).isTrue(index)) {
+          selectedRows.add(i);
         }
       }
     }
@@ -98,18 +103,16 @@ class AnalysisFormData {
       return messages;
     }
     if (BeeUtils.isEmpty(selectedColumns)) {
-      messages.add(BeeUtils.isEmpty(deselectedColumns)
-          ? "columns not available" : "columns not selected");
+      messages.add(BeeUtils.isEmpty(columns) ? "columns not available" : "columns not selected");
     }
     if (BeeUtils.isEmpty(selectedRows)) {
-      messages.add(BeeUtils.isEmpty(deselectedRows)
-          ? "rows not available" : "rows not selected");
+      messages.add(BeeUtils.isEmpty(rows) ? "rows not available" : "rows not selected");
     }
 
-    Integer yearFrom = header.getInteger(headerIndexes.get(COL_ANALYSIS_HEADER_YEAR_FROM));
-    Integer monthFrom = header.getInteger(headerIndexes.get(COL_ANALYSIS_HEADER_MONTH_FROM));
-    Integer yearUntil = header.getInteger(headerIndexes.get(COL_ANALYSIS_HEADER_YEAR_UNTIL));
-    Integer monthUntil = header.getInteger(headerIndexes.get(COL_ANALYSIS_HEADER_MONTH_UNTIL));
+    Integer yearFrom = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_FROM);
+    Integer monthFrom = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_FROM);
+    Integer yearUntil = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_UNTIL);
+    Integer monthUntil = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_UNTIL);
 
     MonthRange headerRange;
 
@@ -122,19 +125,14 @@ class AnalysisFormData {
     }
 
     if (!BeeUtils.isEmpty(selectedColumns)) {
-      for (BeeRow column : selectedColumns) {
-        String columnLabel = getColumnLabel(column);
+      for (int position : selectedColumns) {
+        BeeRow column = columns.get(position);
+        String columnLabel = getColumnLabel(dictionary, column);
 
-        String abbreviation = column.getString(columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION));
-        if (!BeeUtils.isEmpty(abbreviation) && !AnalysisUtils.isValidAbbreviation(abbreviation)) {
-          messages.add(BeeUtils.joinWords(columnLabel,
-              Localized.dictionary().finAnalysisInvalidAbbreviation(), abbreviation));
-        }
-
-        Integer y1 = column.getInteger(columnIndexes.get(COL_ANALYSIS_COLUMN_YEAR_FROM));
-        Integer m1 = column.getInteger(columnIndexes.get(COL_ANALYSIS_COLUMN_MONTH_FROM));
-        Integer y2 = column.getInteger(columnIndexes.get(COL_ANALYSIS_COLUMN_YEAR_UNTIL));
-        Integer m2 = column.getInteger(columnIndexes.get(COL_ANALYSIS_COLUMN_MONTH_UNTIL));
+        Integer y1 = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_FROM);
+        Integer m1 = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_FROM);
+        Integer y2 = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_UNTIL);
+        Integer m2 = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL);
 
         if (!AnalysisUtils.isValidRange(y1, m1, y2, m2)) {
           messages.add(BeeUtils.joinWords(columnLabel,
@@ -148,46 +146,122 @@ class AnalysisFormData {
               "column and header periods do not intersect"));
         }
       }
+
+      messages.addAll(validateAbbreviations(columns,
+          columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
+          column -> getColumnLabel(dictionary, column)));
     }
 
     if (!BeeUtils.isEmpty(selectedRows)) {
-      for (BeeRow row : selectedRows) {
-        String rowLabel = getRowLabel(row);
+      for (int position : selectedRows) {
+        BeeRow row = rows.get(position);
+        String rowLabel = getRowLabel(dictionary, row);
 
-        String abbreviation = row.getString(rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION));
-        if (!BeeUtils.isEmpty(abbreviation) && !AnalysisUtils.isValidAbbreviation(abbreviation)) {
-          messages.add(BeeUtils.joinWords(rowLabel,
-              Localized.dictionary().finAnalysisInvalidAbbreviation(), abbreviation));
-        }
       }
+
+      messages.addAll(validateAbbreviations(rows, rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
+          row -> getRowLabel(dictionary, row)));
     }
 
     return messages;
   }
 
-  private String getColumnLabel(BeeRow column) {
-    String label = BeeUtils.joinWords(
-        column.getString(columnIndexes.get(COL_ANALYSIS_COLUMN_ORDINAL)),
-        BeeUtils.notEmpty(column.getString(columnIndexes.get(COL_ANALYSIS_COLUMN_NAME)),
-            column.getString(columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION))));
+  private Integer getHeaderInteger(String key) {
+    return header.getInteger(headerIndexes.get(key));
+  }
+
+  private Long getHeaderLong(String key) {
+    return header.getLong(headerIndexes.get(key));
+  }
+
+  private String getHeaderString(String key) {
+    return header.getString(headerIndexes.get(key));
+  }
+
+  private boolean isHeaderTrue(String key) {
+    return header.isTrue(headerIndexes.get(key));
+  }
+
+  private String getColumnLabel(Dictionary dictionary, BeeRow column) {
+    String label = BeeUtils.joinWords(getColumnString(column, COL_ANALYSIS_COLUMN_ORDINAL),
+        BeeUtils.notEmpty(getColumnString(column, COL_ANALYSIS_COLUMN_NAME),
+            getColumnString(column, COL_ANALYSIS_COLUMN_ABBREVIATION)));
 
     if (BeeUtils.isEmpty(label)) {
-      return BeeUtils.joinWords(DataUtils.ID_TAG, column.getId());
+      return BeeUtils.joinWords(dictionary.column(), DataUtils.ID_TAG, column.getId());
     } else {
-      return label;
+      return BeeUtils.joinWords(dictionary.column(), label);
     }
   }
 
-  private String getRowLabel(BeeRow row) {
-    String label = BeeUtils.joinWords(
-        row.getString(rowIndexes.get(COL_ANALYSIS_ROW_ORDINAL)),
-        BeeUtils.notEmpty(row.getString(rowIndexes.get(COL_ANALYSIS_ROW_NAME)),
-            row.getString(rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION))));
+  private Integer getColumnInteger(BeeRow column, String key) {
+    return column.getInteger(columnIndexes.get(key));
+  }
+
+  private Long getColumnLong(BeeRow column, String key) {
+    return column.getLong(columnIndexes.get(key));
+  }
+
+  private String getColumnString(BeeRow column, String key) {
+    return column.getString(columnIndexes.get(key));
+  }
+
+  private String getRowLabel(Dictionary dictionary, BeeRow row) {
+    String label = BeeUtils.joinWords(getRowString(row, COL_ANALYSIS_ROW_ORDINAL),
+        BeeUtils.notEmpty(getRowString(row, COL_ANALYSIS_ROW_NAME),
+            getRowString(row, COL_ANALYSIS_ROW_ABBREVIATION)));
 
     if (BeeUtils.isEmpty(label)) {
-      return BeeUtils.joinWords(DataUtils.ID_TAG, row.getId());
+      return BeeUtils.joinWords(dictionary.row(), DataUtils.ID_TAG, row.getId());
     } else {
-      return label;
+      return BeeUtils.joinWords(dictionary.row(), label);
     }
+  }
+
+  private Integer getRowInteger(BeeRow row, String key) {
+    return row.getInteger(rowIndexes.get(key));
+  }
+
+  private Long getRowLong(BeeRow row, String key) {
+    return row.getLong(rowIndexes.get(key));
+  }
+
+  private String getRowString(BeeRow row, String key) {
+    return row.getString(rowIndexes.get(key));
+  }
+
+  private List<String> validateAbbreviations(Collection<BeeRow> input,
+      int abbreviationIndex, Function<BeeRow, String> labelFunction) {
+
+    List<String> messages = new ArrayList<>();
+    Multiset<String> abbreviations = HashMultiset.create();
+
+    if (!BeeUtils.isEmpty(input)) {
+      for (BeeRow row : input) {
+        String abbreviation = row.getString(abbreviationIndex);
+
+        if (!BeeUtils.isEmpty(abbreviation)) {
+          if (AnalysisUtils.isValidAbbreviation(abbreviation)) {
+            abbreviations.add(abbreviation);
+          } else {
+            messages.add(BeeUtils.joinWords(labelFunction.apply(row),
+                Localized.dictionary().finAnalysisInvalidAbbreviation(), abbreviation));
+          }
+        }
+      }
+
+      if (abbreviations.size() > abbreviations.entrySet().size()) {
+        for (BeeRow row : input) {
+          String abbreviation = row.getString(abbreviationIndex);
+
+          if (!BeeUtils.isEmpty(abbreviation) && abbreviations.count(abbreviation) > 1) {
+            messages.add(BeeUtils.joinWords(labelFunction.apply(row),
+                Localized.dictionary().valueNotUnique(abbreviation)));
+          }
+        }
+      }
+    }
+
+    return messages;
   }
 }

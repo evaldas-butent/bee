@@ -761,6 +761,8 @@ public interface Dictionary {
 
   default String colors() {return g("colors");}
 
+  default String column() {return g("column");}
+
   default String columnResults() {return g("columnResults");}
 
   default String columns() {return g("columns");}
@@ -4812,6 +4814,8 @@ public interface Dictionary {
   default String roles() {return g("roles");}
 
   default String route() {return g("route");}
+
+  default String row() {return g("row");}
 
   default String rowIsNotRemovable() {return g("rowIsNotRemovable");}
 
