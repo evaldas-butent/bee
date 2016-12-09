@@ -1100,6 +1100,14 @@ public final class BeeUtils {
     return cs.length() >= min;
   }
 
+  public static boolean hasDistinctElements(List<?> list) {
+    if (size(list) > 1) {
+      return list.stream().distinct().count() == list.size();
+    } else {
+      return true;
+    }
+  }
+
   public static int indexOfSame(List<String> list, String s) {
     if (isEmpty(list)) {
       return BeeConst.UNDEF;

@@ -4,8 +4,12 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public enum AnalysisSplit implements HasLocalizedCaption {
+
   MONTH(Type.PERIOD, 1) {
     @Override
     public String getCaption(Dictionary dictionary) {
@@ -57,6 +61,33 @@ public enum AnalysisSplit implements HasLocalizedCaption {
       this.columns = columns;
       this.rows = rows;
     }
+  }
+
+  public static boolean validateSplits(List<AnalysisSplit> splits) {
+    if (BeeUtils.isEmpty(splits)) {
+      return true;
+
+    } else if (splits.contains(null)) {
+      return false;
+
+    } else if (BeeUtils.size(splits) > 1) {
+      if (!BeeUtils.hasDistinctElements(splits)) {
+        return false;
+      }
+
+      int maxPeriod = 0;
+
+      for (AnalysisSplit split : splits) {
+        if (split.type == Type.PERIOD) {
+          if (maxPeriod >= split.index) {
+            return false;
+          }
+          maxPeriod = split.index;
+        }
+      }
+    }
+
+    return true;
   }
 
   private final Type type;

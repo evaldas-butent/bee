@@ -2783,6 +2783,8 @@ public interface Dictionary {
 
   default String finAnalysisInvalidAbbreviation() {return g("finAnalysisInvalidAbbreviation");}
 
+  default String finAnalysisInvalidSplit() {return g("finAnalysisInvalidSplit");}
+
   default String finAnalysisName() {return g("finAnalysisName");}
 
   default String finAnalysisRow() {return g("finAnalysisRow");}

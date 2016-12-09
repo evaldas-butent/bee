@@ -10,8 +10,10 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisSplit;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -125,6 +127,8 @@ class AnalysisFormData {
     }
 
     if (!BeeUtils.isEmpty(selectedColumns)) {
+      Integer splitLevels = getHeaderInteger(COL_ANALYSIS_COLUMN_SPLIT_LEVELS);
+
       for (int position : selectedColumns) {
         BeeRow column = columns.get(position);
         String columnLabel = getColumnLabel(dictionary, column);
@@ -145,6 +149,22 @@ class AnalysisFormData {
           messages.add(BeeUtils.joinWords(columnLabel,
               "column and header periods do not intersect"));
         }
+
+        List<AnalysisSplit> splits = getColumnSplits(column, splitLevels);
+        if (!splits.isEmpty()) {
+          if (AnalysisSplit.validateSplits(splits)) {
+            for (AnalysisSplit split : splits) {
+              if (!split.visibleForColumns()) {
+                messages.add(BeeUtils.joinWords(columnLabel,
+                    Localized.dictionary().finAnalysisInvalidSplit(), split));
+              }
+            }
+
+          } else {
+            messages.add(BeeUtils.joinWords(columnLabel,
+                Localized.dictionary().finAnalysisInvalidSplit(), splits));
+          }
+        }
       }
 
       messages.addAll(validateAbbreviations(columns,
@@ -153,10 +173,27 @@ class AnalysisFormData {
     }
 
     if (!BeeUtils.isEmpty(selectedRows)) {
+      Integer splitLevels = getHeaderInteger(COL_ANALYSIS_ROW_SPLIT_LEVELS);
+
       for (int position : selectedRows) {
         BeeRow row = rows.get(position);
         String rowLabel = getRowLabel(dictionary, row);
 
+        List<AnalysisSplit> splits = getRowSplits(row, splitLevels);
+        if (!splits.isEmpty()) {
+          if (AnalysisSplit.validateSplits(splits)) {
+            for (AnalysisSplit split : splits) {
+              if (!split.visibleForRows()) {
+                messages.add(BeeUtils.joinWords(rowLabel,
+                    Localized.dictionary().finAnalysisInvalidSplit(), split));
+              }
+            }
+
+          } else {
+            messages.add(BeeUtils.joinWords(rowLabel,
+                Localized.dictionary().finAnalysisInvalidSplit(), splits));
+          }
+        }
       }
 
       messages.addAll(validateAbbreviations(rows, rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
@@ -206,6 +243,25 @@ class AnalysisFormData {
     return column.getString(columnIndexes.get(key));
   }
 
+  private List<AnalysisSplit> getColumnSplits(BeeRow column, Integer levels) {
+    List<AnalysisSplit> splits = new ArrayList<>();
+
+    if (BeeUtils.isPositive(levels)) {
+      int max = Math.min(levels, COL_ANALYSIS_COLUMN_SPLIT.length);
+
+      for (int i = 0; i < max; i++) {
+        String value = getColumnString(column, COL_ANALYSIS_COLUMN_SPLIT[i]);
+        AnalysisSplit split = EnumUtils.getEnumByName(AnalysisSplit.class, value);
+
+        if (split != null) {
+          splits.add(split);
+        }
+      }
+    }
+
+    return splits;
+  }
+
   private String getRowLabel(Dictionary dictionary, BeeRow row) {
     String label = BeeUtils.joinWords(getRowString(row, COL_ANALYSIS_ROW_ORDINAL),
         BeeUtils.notEmpty(getRowString(row, COL_ANALYSIS_ROW_NAME),
@@ -230,7 +286,26 @@ class AnalysisFormData {
     return row.getString(rowIndexes.get(key));
   }
 
-  private List<String> validateAbbreviations(Collection<BeeRow> input,
+  private List<AnalysisSplit> getRowSplits(BeeRow row, Integer levels) {
+    List<AnalysisSplit> splits = new ArrayList<>();
+
+    if (BeeUtils.isPositive(levels)) {
+      int max = Math.min(levels, COL_ANALYSIS_ROW_SPLIT.length);
+
+      for (int i = 0; i < max; i++) {
+        String value = getRowString(row, COL_ANALYSIS_ROW_SPLIT[i]);
+        AnalysisSplit split = EnumUtils.getEnumByName(AnalysisSplit.class, value);
+
+        if (split != null) {
+          splits.add(split);
+        }
+      }
+    }
+
+    return splits;
+  }
+
+  private static List<String> validateAbbreviations(Collection<BeeRow> input,
       int abbreviationIndex, Function<BeeRow, String> labelFunction) {
 
     List<String> messages = new ArrayList<>();
