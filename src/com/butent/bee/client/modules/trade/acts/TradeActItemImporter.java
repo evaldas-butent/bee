@@ -154,6 +154,7 @@ final class TradeActItemImporter {
 
     Filter filter = Filter.anyString(COL_ITEM_ARTICLE, articles);
     params.addDataItem(Service.VAR_VIEW_WHERE, filter.serialize());
+    params.addDataItem(Service.VAR_TABLE, TBL_TRADE_ACT_ITEMS);
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
