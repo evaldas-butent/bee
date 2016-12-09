@@ -27,29 +27,31 @@ public final class ServiceUtils {
   private static DataInfo objectDataInfo = Data.getDataInfo(VIEW_SERVICE_OBJECTS);
 
   public static void fillContactValues(IsRow maintenanceRow, IsRow objectRow) {
-    Long contactPerson = objectRow.getLong(objectDataInfo.getColumnIndex(ALS_CONTACT_PERSON));
+    if (objectRow != null) {
+      Long contactPerson = objectRow.getLong(objectDataInfo.getColumnIndex(ALS_CONTACT_PERSON));
 
-    if (DataUtils.isId(contactPerson)) {
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(COL_CONTACT), contactPerson);
+      if (DataUtils.isId(contactPerson)) {
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(COL_CONTACT), contactPerson);
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_PHONE),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_PHONE)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_PHONE),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_PHONE)));
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_FIRST_NAME),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_FIRST_NAME)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_FIRST_NAME),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_FIRST_NAME)));
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME)));
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_EMAIL),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_EMAIL)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_EMAIL),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_EMAIL)));
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS)));
 
-    } else {
-      clearContactValue(maintenanceRow);
+        return;
+      }
     }
+    clearContactValue(maintenanceRow);
   }
 
   public static void clearContactValue(IsRow maintenanceRow) {
@@ -59,20 +61,28 @@ public final class ServiceUtils {
     maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME));
     maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_EMAIL));
     maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS));
+    maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(COL_COMPANY));
+    maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_NAME));
+    maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME));
   }
 
   public static void fillCompanyValues(IsRow maintenanceRow, IsRow dataRow, String dataViewName,
       String companyColumnName, String companyColumnAlias, String companyTypeColumnAlias) {
-    Long company = dataRow.getLong(Data.getColumnIndex(dataViewName, companyColumnName));
+    if (dataRow != null) {
+      Long company = dataRow.getLong(Data.getColumnIndex(dataViewName, companyColumnName));
 
-    if (DataUtils.isId(company)) {
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(COL_COMPANY), company);
+      if (DataUtils.isId(company)) {
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(COL_COMPANY), company);
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_NAME),
-          dataRow.getString(Data.getColumnIndex(dataViewName, companyColumnAlias)));
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME),
-          dataRow.getString(Data.getColumnIndex(dataViewName, companyTypeColumnAlias)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_NAME),
+            dataRow.getString(Data.getColumnIndex(dataViewName, companyColumnAlias)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME),
+            dataRow.getString(Data.getColumnIndex(dataViewName, companyTypeColumnAlias)));
+
+        return;
+      }
     }
+    clearContactValue(maintenanceRow);
   }
 
   public static void fillContractorAndManufacturerValues(IsRow maintenanceRow, IsRow objectRow) {

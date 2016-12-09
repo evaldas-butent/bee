@@ -12,7 +12,6 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.view.edit.EditEndEvent;
-import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -25,7 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-abstract class MaintenanceStateChangeInterceptor extends PrintFormInterceptor {
+abstract class MaintenanceStateChangeInterceptor extends MaintenanceExpanderForm {
 
   private static final String DEFAULT_QUANTITY = "1";
 

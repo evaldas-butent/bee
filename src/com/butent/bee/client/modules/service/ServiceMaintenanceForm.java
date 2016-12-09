@@ -80,7 +80,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       FormFactory.WidgetDescriptionCallback callback) {
 
     if (widget instanceof DataSelector && BeeUtils.inList(name, COL_TYPE, COL_SERVICE_OBJECT,
-        COL_WARRANTY_MAINTENANCE, COL_COMPANY, COL_PHONE, COL_CONTACT, COL_EMAIL, COL_ADDRESS)) {
+        COL_WARRANTY_MAINTENANCE, COL_CONTACT)) {
       ((DataSelector) widget).addSelectorHandler(this);
 
     } else if (widget instanceof Flow && BeeUtils.same(name, WIDGET_MAINTENANCE_COMMENTS)) {
@@ -217,11 +217,6 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           updateContactAddressLabel(BeeUtils.isTrue(addressRequired));
           break;
 
-        case VIEW_COMPANIES :
-          ServiceUtils.clearContactValue(getActiveRow());
-          getFormView().refreshBySource(COL_CONTACT);
-          break;
-
         case VIEW_COMPANY_PERSONS:
           ServiceUtils.fillCompanyValues(getActiveRow(), event.getRelatedRow(),
               event.getRelatedViewName(), COL_COMPANY, ALS_COMPANY_NAME, ALS_COMPANY_TYPE_NAME);
@@ -235,6 +230,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         case VIEW_SERVICE_OBJECTS:
           ServiceUtils.fillContactValues(getActiveRow(), event.getRelatedRow());
           getFormView().refreshBySource(COL_CONTACT);
+          getFormView().refreshBySource(ALS_CONTACT_PHONE);
+          getFormView().refreshBySource(ALS_CONTACT_EMAIL);
+          getFormView().refreshBySource(ALS_CONTACT_ADDRESS);
 
           ServiceUtils.fillContractorAndManufacturerValues(getActiveRow(), event.getRelatedRow());
           getFormView().refreshBySource(ALS_MANUFACTURER_NAME);

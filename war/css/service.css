@@ -213,3 +213,40 @@
 .bee-svc-Events-info-panel {
   margin-top: 1vh;
 }
+
+.bee-svc-add-button {
+  display:inline-block;
+  position: inherit;
+  margin-top: 4.5ex;
+}
+
+.bee-svc-maintenance-panel {
+  max-width: 40em;
+  min-width: 10em;
+  width: 31em;
+}
+
+.bee-svc-maintenance-info-label {
+  white-space: nowrap;
+  vertical-align:top;
+  padding-right: 6px;
+}
+
+.bee-svc-maintenance-info-field {
+  word-break: break-all;
+}
+
+.bee-svc-panel-title {
+  font-size: 16px;
+  margin-top: 1vh;
+}
+
+.bee-svc-maintenance-other-info {
+  width: 52em;
+  padding: 1em;
+  min-width: 10em;
+}
+
+.bee-svc-maintenance-creator-info {
+  color: #ababab;
+}
