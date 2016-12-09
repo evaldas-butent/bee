@@ -2779,6 +2779,8 @@ public interface Dictionary {
 
   default String finAnalysisForms() {return g("finAnalysisForms");}
 
+  default String finAnalysisInvalidAbbreviation() {return g("finAnalysisInvalidAbbreviation");}
+
   default String finAnalysisName() {return g("finAnalysisName");}
 
   default String finAnalysisRow() {return g("finAnalysisRow");}

@@ -1,10 +1,13 @@
 package com.butent.bee.server.modules.finance;
 
+import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
+
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.modules.finance.FinanceConstants;
+import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +32,24 @@ final class AnalysisUtils {
     }
 
     return indexes;
+  }
+
+  static MonthRange getRange(Integer yearFrom, Integer monthFrom,
+      Integer yearUntil, Integer monthUntil) {
+
+    if (isValidRange(yearFrom, monthFrom, yearUntil, monthUntil)) {
+      Integer y1 = (yearFrom == null) ? ANALYSIS_MIN_YEAR : yearFrom;
+      Integer y2 = (yearUntil == null && monthUntil == null) ? ANALYSIS_MAX_YEAR : yearUntil;
+
+      return MonthRange.closed(y1, monthFrom, y2, monthUntil);
+
+    } else {
+      return null;
+    }
+  }
+
+  static boolean isValidAbbreviation(String input) {
+    return NameUtils.isIdentifier(input);
   }
 
   static boolean isValidRange(Integer yearFrom, Integer monthFrom,
@@ -92,7 +113,7 @@ final class AnalysisUtils {
   }
 
   private static boolean isValidYear(int year) {
-    return year >= FinanceConstants.ANALYSIS_MIN_YEAR && year <= FinanceConstants.ANALYSIS_MAX_YEAR;
+    return year >= ANALYSIS_MIN_YEAR && year <= ANALYSIS_MAX_YEAR;
   }
 
   private AnalysisUtils() {
