@@ -78,7 +78,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private DataSelector contractSelector;
   private DataSelector companySelector;
   private ChildGrid tradeActItemsGrid;
-  private ChildGrid tradeActServicesGrid;
 
   TradeActForm() {
   }
@@ -116,10 +115,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       tradeActItemsGrid = (ChildGrid) widget;
     }
 
-    if (widget instanceof ChildGrid && BeeUtils.same(name, GRID_TRADE_ACT_SERVICES)) {
-      tradeActServicesGrid = (ChildGrid) widget;
-    }
-
     super.afterCreateWidget(name, widget, callback);
   }
 
@@ -155,14 +150,13 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
               new TradeActInvoiceBuilder(row.getLong(Data.getColumnIndex(VIEW_TRADE_ACTS,
                   COL_TA_COMPANY)), row.getId())));
 
-      if (kind != TradeActKind.RETURN && !row.hasPropertyValue(PRP_CONTINUOUS_COUNT)
-          && !TradeActKeeper.isClientArea()) {
+      if (kind != TradeActKind.RETURN && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, row,
+          COL_TA_CONTINUOUS)) && !TradeActKeeper.isClientArea()) {
         header.addCommandItem(commandCompose);
       }
     }
 
     setEnabledItemsGrid(kind, form, row);
-    setEnabledServicesGrid(row);
 
     createReqLabels(form, !TradeActUtils.getMultiReturnData(row).isNull());
     super.afterRefresh(form, row);
@@ -260,8 +254,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     if (form != null && DataUtils.hasId(row)) {
       TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
-      setEnabledItemsGrid(kind, form, row);
-      setEnabledServicesGrid(row);
 
       if (kind != null && kind.enableInvoices()) {
         ParameterList params = TradeActKeeper.createArgs(SVC_HAS_INVOICES_OR_SECONDARY_ACTS);
@@ -551,21 +543,6 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     }
 
     tradeActItemsGrid.setEnabled(TradeActKeeper.isEnabledItemsGrid(kind, form, row));
-  }
-
-  private void setEnabledServicesGrid(IsRow row) {
-    if (tradeActServicesGrid == null) {
-      return;
-    }
-
-    if (row == null) {
-      tradeActServicesGrid.setEnabled(false);
-    }
-
-    boolean hasContinuousTa = row.hasPropertyValue(PRP_CONTINUOUS_COUNT)
-        && BeeUtils.isPositive(row.getPropertyInteger(PRP_CONTINUOUS_COUNT));
-
-    tradeActServicesGrid.setEnabled(!hasContinuousTa);
   }
 
   private void setFormCaption(FormView form, IsRow row) {

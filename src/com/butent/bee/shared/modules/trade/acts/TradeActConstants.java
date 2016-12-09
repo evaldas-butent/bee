@@ -83,6 +83,8 @@ public final class TradeActConstants {
   public static final String COL_TA_PARENT = "Parent";
   public static final String COL_TA_REGISTRATION_NO = "RegistrationNo";
   public static final String COL_TA_RETURNED_QTY = "ReturnedQty";
+  public static final String COL_TA_RETURN = "ReturnAct";
+  public static final String COL_TA_CONTINUOUS = "ContinuousAct";
 
   public static final String COL_TA_TEMPLATE_NAME = "Template";
 
@@ -138,7 +140,6 @@ public final class TradeActConstants {
   public static final String PRP_TA_SERVICE_TO = "service_to";
   public static final String PRP_INVOICE_PERIODS = "invoice_periods";
   public static final String PRP_CONTINUOUS_COUNT = "ContinuousCount";
-  public static final String PRP_SINGLE_RETURN_COUNT = "SingleReturnCount";
   public static final String PRP_MULTI_RETURN_DATA = "MultiReturnData";
 
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";

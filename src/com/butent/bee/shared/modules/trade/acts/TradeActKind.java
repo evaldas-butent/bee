@@ -30,11 +30,6 @@ public enum TradeActKind implements HasLocalizedCaption {
       return Filter.or(Lists.newArrayList(super.getFilter(), SUPPLEMENT.getFilter(),
           RETURN.getFilter(), CONTINUOUS.getFilter()));
     }
-
-    @Override
-    public boolean enableMultiReturn(TradeActKind other) {
-      return super.enableMultiReturn(other);
-    }
   },
 
   /* 1 */
@@ -49,11 +44,6 @@ public enum TradeActKind implements HasLocalizedCaption {
     @Override
     public String getGridSupplierKey() {
       return null;
-    }
-
-    @Override
-    public boolean enableMultiReturn(TradeActKind other) {
-      return super.enableMultiReturn(other) && other != CONTINUOUS;
     }
   },
 

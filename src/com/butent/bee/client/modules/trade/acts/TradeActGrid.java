@@ -575,6 +575,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
         case COL_TA_UNTIL:
         case COL_TA_NOTES:
+        case COL_TA_RETURN:
+        case COL_TA_CONTINUOUS:
           break;
 
         default:
@@ -723,6 +725,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
               }
               break;
 
+            case COL_TA_CONTINUOUS:
+            case COL_TA_RETURN:
             case COL_TA_UNTIL:
             case COL_TA_NOTES:
               break;
@@ -782,15 +786,13 @@ public class TradeActGrid extends AbstractGridInterceptor {
     }
 
     TradeActKind k = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
-    Integer contCnt = row.hasPropertyValue(PRP_CONTINUOUS_COUNT)
-        ? row.getPropertyInteger(PRP_CONTINUOUS_COUNT) : null;
 
     if (supplementCommand != null) {
       TradeActKeeper.setCommandEnabled(supplementCommand, k != null && k.enableSupplement());
     }
     if (returnCommand != null) {
       TradeActKeeper.setCommandEnabled(returnCommand, k != null && k.enableReturn()
-          && !BeeUtils.isPositive(contCnt));
+          && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, row, COL_TA_CONTINUOUS)));
     }
 
     if (alterCommand != null) {

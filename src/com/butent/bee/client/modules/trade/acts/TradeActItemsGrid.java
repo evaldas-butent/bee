@@ -248,8 +248,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
           getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted());
           return false;
         }
-      } else if (parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)
-          && BeeUtils.isPositive(parentRow.getPropertyInteger(PRP_CONTINUOUS_COUNT))) {
+      } else if (DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CONTINUOUS))) {
         getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted());
         return false;
       } else {
@@ -266,8 +265,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
     TradeActKind parentKind = TradeActKeeper.getKind(parentRow,
         Data.getColumnIndex(VIEW_TRADE_ACTS, ALS_TA_PARENT_KIND));
-    Integer contCnt = parentRow != null && parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)
-        ? parentRow.getPropertyInteger(PRP_CONTINUOUS_COUNT) : null;
+    boolean hasCont = parentRow != null && DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS,
+        parentRow, COL_TA_CONTINUOUS));
 
     Map<String, Boolean> showColumn = new HashMap<>();
     Map<String, Boolean> columnVisible = new HashMap<>();
@@ -281,8 +280,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     columnVisible.put(COLUMN_RETURNED_QTY, gridView.getGrid().isColumnVisible(COLUMN_RETURNED_QTY));
 
     if (commandImportItems != null) {
-      commandImportItems.setVisible(!BeeUtils.isPositive(contCnt)
-          && kind != TradeActKind.CONTINUOUS);
+      commandImportItems.setVisible(!hasCont && kind != TradeActKind.CONTINUOUS);
     }
 
     if (!showColumn.equals(columnVisible)) {
@@ -354,8 +352,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     HeaderView formHeader = getFormHeader(gridView);
 
     if (formHeader != null && kind == TradeActKind.SALE && BeeKeeper.getUser().canCreateData(
-        VIEW_SALES) && !TradeActKeeper.isClientArea()
-        && !parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)) {
+        VIEW_SALES) && !TradeActKeeper.isClientArea() && !hasCont) {
       formHeader.addCommandItem(commandSale);
     } else if (kind != TradeActKind.RETURN) {
       gridView.getViewPresenter().getHeader();
@@ -839,7 +836,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                 final boolean allReturned = quantities.equals(TradeActUtils
                     .getItemQuantities(actItems));
                 addActItems(parentAct, actItems, () -> {
-                  if (!allReturned && !parentAct.hasPropertyValue(PRP_CONTINUOUS_COUNT)) {
+                  if (!allReturned && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, parentAct,
+                      COL_TA_CONTINUOUS))) {
                     ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
                     ps.addQueryItem(COL_TRADE_ACT, parent);
                     ps.addQueryItem(COL_TA_DATE, date.getTime());

@@ -186,4 +186,9 @@
       </page>
     </TabbedPages>
   </FlowPanel>
+  <f:rowEditable>
+    <ui:expression>
+      !row.ContinuousAct &amp;&amp; !row.ReturnAct
+    </ui:expression>
+  </f:rowEditable>
 </f:Form>

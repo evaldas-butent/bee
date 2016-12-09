@@ -32,6 +32,8 @@ import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -167,6 +169,17 @@ public final class TradeActKeeper {
 
     if (isClientArea()) {
       FormFactory.registerFormInterceptor(FORM_NEW_COMPANY, null);
+      FormFactory.registerFormInterceptor(FORM_COMPANY_PERSON, new AbstractFormInterceptor() {
+        @Override
+        public void onSetActiveRow(IsRow row) {
+          getFormView().getViewPresenter().handleAction(Action.CLOSE);
+        }
+
+        @Override
+        public FormInterceptor getInstance() {
+          return this;
+        }
+      });
     }
 
     AbstractGridInterceptor interceptor = new AbstractGridInterceptor() {
@@ -226,6 +239,18 @@ public final class TradeActKeeper {
       });
       GridFactory.registerGridInterceptor(VIEW_SALE_ITEMS, interceptor);
       GridFactory.registerGridInterceptor(VIEW_INVOICE_TRADE_ACTS, interceptor);
+      GridFactory.registerGridInterceptor(GRID_COMPANY_PERSONS, new AbstractGridInterceptor() {
+        @Override
+        public void onEditStart(EditStartEvent event) {
+          super.onEditStart(event);
+          event.consume();
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return this;
+        }
+      });
     }
 
     SelectorEvent.register(new TradeActSelectorHandler());
@@ -541,25 +566,10 @@ public final class TradeActKeeper {
       return false;
     }
 
-    boolean hasContinuousTa = row.hasPropertyValue(PRP_CONTINUOUS_COUNT)
-        && BeeUtils.isPositive(row.getPropertyInteger(PRP_CONTINUOUS_COUNT));
+    boolean hasContinuousTa = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_CONTINUOUS)));
     boolean isContinuousTa = kind == TradeActKind.CONTINUOUS;
-//    boolean isSingleReturn = kind == TradeActKind.RETURN
-//        && DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_PARENT)));
-//    boolean isNewMultiReturn = kind == TradeActKind.RETURN
-//        && !DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_PARENT)))
-//        && DataUtils.isNewRow(row);
-    boolean isMultiReturnEditor = kind == TradeActKind.RETURN
-        && !DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_PARENT)))
-        && !DataUtils.isNewRow(row);
-    boolean isSupplementAct =  kind == TradeActKind.SUPPLEMENT;
 
-    boolean isSingleReturn = !hasContinuousTa
-        && BeeUtils.unbox(row.getPropertyInteger(PRP_SINGLE_RETURN_COUNT))
-        == BeeUtils.unbox(row.getInteger(form.getDataIndex(ALS_RETURNED_COUNT)));
-
-    return  ((!hasContinuousTa && !isContinuousTa && !isMultiReturnEditor
-        && isSingleReturn) || isSupplementAct) && !TradeActKeeper.isClientArea();
+    return  !hasContinuousTa && !isContinuousTa && !TradeActKeeper.isClientArea();
   }
 
   static boolean isUserSeries(Long series) {

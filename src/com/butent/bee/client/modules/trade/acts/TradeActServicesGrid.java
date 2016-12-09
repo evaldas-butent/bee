@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
@@ -79,12 +77,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
       commandRecalculate = new Button(Localized.dictionary().taRecalculatePrices());
       commandRecalculate.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
 
-      commandRecalculate.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          maybeRecalculatePrices();
-        }
-      });
+      commandRecalculate.addClickHandler(event -> maybeRecalculatePrices());
 
       presenter.getHeader().addCommandItem(commandRecalculate);
     }
@@ -98,8 +91,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     final IsRow parentRow = ViewHelper.getFormRow(presenter.getMainView());
 
     if (parentRow != null) {
-      if (parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)
-          && BeeUtils.isPositive(parentRow.getPropertyInteger(PRP_CONTINUOUS_COUNT))) {
+      if (DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CONTINUOUS))) {
         getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted());
         return false;
       }
@@ -114,12 +106,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     super.beforeRender(gridView, event);
 
     IsRow parentRow = ViewHelper.getFormRow(gridView);
-    Integer contCnt = parentRow != null && parentRow.hasPropertyValue(PRP_CONTINUOUS_COUNT)
-        ? parentRow.getPropertyInteger(PRP_CONTINUOUS_COUNT) : null;
-
 
     if (commandRecalculate != null) {
-      commandRecalculate.setVisible(!BeeUtils.isPositive(contCnt));
+      commandRecalculate.setVisible(parentRow != null
+          && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CONTINUOUS)));
     }
   }
 

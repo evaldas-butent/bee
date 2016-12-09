@@ -150,6 +150,9 @@
       <SimpleColumn name="Kind" alias="ParentKind" />
     </SimpleJoin>
 
+    <SimpleColumn name="ContinuousAct" />
+    <SimpleColumn name="ReturnAct" />
+
     <ExternalJoin name="Parent" joinType="LEFT" source="TradeActItems">
       <AggregateColumn name="TradeAct" alias="ReturnedCount" aggregate="COUNT_DISTINCT"
         label="=tradeActReturnedCountShort" />
