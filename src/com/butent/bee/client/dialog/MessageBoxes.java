@@ -48,9 +48,12 @@ import java.util.List;
 public final class MessageBoxes {
 
   public static final String STYLE_MESSAGE_BOX = BeeConst.CSS_CLASS_PREFIX + "MessageBox";
+
   public static final String STYLE_MESSAGE_BOX_DECIDE = STYLE_MESSAGE_BOX + "-decide";
   public static final String STYLE_MESSAGE_BOX_CONFIRM = STYLE_MESSAGE_BOX + "-confirm";
   public static final String STYLE_MESSAGE_BOX_DELETE = STYLE_MESSAGE_BOX + "-delete";
+  public static final String STYLE_MESSAGE_BOX_INFO = STYLE_MESSAGE_BOX + "-info";
+  public static final String STYLE_MESSAGE_BOX_ERROR = STYLE_MESSAGE_BOX + "-error";
 
   private static final BeeLogger logger = LogUtils.getLogger(MessageBoxes.class);
 
