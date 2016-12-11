@@ -5,15 +5,20 @@ import com.google.common.collect.Multiset;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
+import com.butent.bee.server.utils.ScriptUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplit;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,8 +26,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 
 class AnalysisFormData {
+
+  private static BeeLogger logger = LogUtils.getLogger(AnalysisFormData.class);
 
   private final BeeRow header;
   private final Map<String, Integer> headerIndexes;
@@ -156,19 +167,26 @@ class AnalysisFormData {
             for (AnalysisSplit split : splits) {
               if (!split.visibleForColumns()) {
                 messages.add(BeeUtils.joinWords(columnLabel,
-                    Localized.dictionary().finAnalysisInvalidSplit(), split));
+                    Localized.dictionary().finAnalysisInvalidSplit(),
+                    split.getCaption(dictionary)));
               }
             }
 
           } else {
             messages.add(BeeUtils.joinWords(columnLabel,
-                Localized.dictionary().finAnalysisInvalidSplit(), splits));
+                Localized.dictionary().finAnalysisInvalidSplit(),
+                getSplitCaptions(dictionary, splits)));
           }
         }
       }
 
       messages.addAll(validateAbbreviations(columns,
           columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
+          column -> getColumnLabel(dictionary, column)));
+
+      messages.addAll(validateScripts(columns,
+          columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
+          columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT),
           column -> getColumnLabel(dictionary, column)));
     }
 
@@ -185,18 +203,26 @@ class AnalysisFormData {
             for (AnalysisSplit split : splits) {
               if (!split.visibleForRows()) {
                 messages.add(BeeUtils.joinWords(rowLabel,
-                    Localized.dictionary().finAnalysisInvalidSplit(), split));
+                    Localized.dictionary().finAnalysisInvalidSplit(),
+                    split.getCaption(dictionary)));
               }
             }
 
           } else {
             messages.add(BeeUtils.joinWords(rowLabel,
-                Localized.dictionary().finAnalysisInvalidSplit(), splits));
+                Localized.dictionary().finAnalysisInvalidSplit(),
+                getSplitCaptions(dictionary, splits)));
           }
         }
       }
 
-      messages.addAll(validateAbbreviations(rows, rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
+      messages.addAll(validateAbbreviations(rows,
+          rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
+          row -> getRowLabel(dictionary, row)));
+
+      messages.addAll(validateScripts(rows,
+          rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
+          rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),
           row -> getRowLabel(dictionary, row)));
     }
 
@@ -305,6 +331,10 @@ class AnalysisFormData {
     return splits;
   }
 
+  private static List<String> getSplitCaptions(Dictionary dictionary, List<AnalysisSplit> splits) {
+    return splits.stream().map(e -> e.getCaption(dictionary)).collect(Collectors.toList());
+  }
+
   private static List<String> validateAbbreviations(Collection<BeeRow> input,
       int abbreviationIndex, Function<BeeRow, String> labelFunction) {
 
@@ -332,6 +362,46 @@ class AnalysisFormData {
           if (!BeeUtils.isEmpty(abbreviation) && abbreviations.count(abbreviation) > 1) {
             messages.add(BeeUtils.joinWords(labelFunction.apply(row),
                 Localized.dictionary().valueNotUnique(abbreviation)));
+          }
+        }
+      }
+    }
+
+    return messages;
+  }
+
+  private static List<String> validateScripts(Collection<BeeRow> input,
+      int abbreviationIndex, int scriptIndex, Function<BeeRow, String> labelFunction) {
+
+    List<String> messages = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(input)
+        && input.stream().anyMatch(row -> !row.isEmpty(scriptIndex))) {
+
+      ScriptEngine engine = ScriptUtils.getEngine();
+      if (engine == null) {
+        messages.add("script engine not available");
+
+      } else {
+        input.stream()
+            .map(row -> row.getString(abbreviationIndex))
+            .filter(AnalysisUtils::isValidAbbreviation)
+            .forEach(abbreviation -> engine.put(abbreviation, BeeConst.DOUBLE_ZERO));
+
+        for (BeeRow row : input) {
+          String script = row.getString(scriptIndex);
+
+          if (!BeeUtils.isEmpty(script)) {
+            try {
+              Object value = engine.eval(script);
+              logger.warning((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
+
+            } catch (ScriptException ex) {
+              String label = labelFunction.apply(row);
+
+              logger.severe(label, script, ex.getMessage());
+              messages.add(BeeUtils.joinWords(label, ex.getMessage()));
+            }
           }
         }
       }

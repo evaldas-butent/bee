@@ -75,14 +75,14 @@ public enum AnalysisSplit implements HasLocalizedCaption {
         return false;
       }
 
-      int maxPeriod = 0;
+      int lastPeriod = BeeConst.UNDEF;
 
       for (AnalysisSplit split : splits) {
         if (split.type == Type.PERIOD) {
-          if (maxPeriod >= split.index) {
+          if (!BeeConst.isUndef(lastPeriod) && split.index >= lastPeriod) {
             return false;
           }
-          maxPeriod = split.index;
+          lastPeriod = split.index;
         }
       }
     }

@@ -49,8 +49,6 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
   private static final String STYLE_INFO_SUMMARY = STYLE_PREFIX + "info-summary";
   private static final String STYLE_VERIFY = STYLE_PREFIX + "verify";
   private static final String STYLE_CALCULATE = STYLE_PREFIX + "calculate";
-  private static final String STYLE_MESSAGE_BOX_INFO = STYLE_PREFIX + "popup-info";
-  private static final String STYLE_MESSAGE_BOX_ERROR = STYLE_PREFIX + "popup-error";
 
   public SimpleAnalysisForm() {
   }
@@ -130,13 +128,11 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
                   List<String> messages = response.getMessages().stream()
                       .map(ResponseMessage::getMessage).collect(Collectors.toList());
 
-                  Global.showError(getStringValue(COL_ANALYSIS_NAME), messages,
-                      STYLE_MESSAGE_BOX_ERROR);
+                  Global.showError(getStringValue(COL_ANALYSIS_NAME), messages);
 
                 } else if (SVC_VERIFY_ANALYSIS_FORM.equals(service)) {
                   Global.showInfo(getStringValue(COL_ANALYSIS_NAME),
-                      Collections.singletonList(Localized.dictionary().finAnalysisVerified()),
-                      STYLE_MESSAGE_BOX_INFO);
+                      Collections.singletonList(Localized.dictionary().finAnalysisVerified()));
                 }
               }
             });
