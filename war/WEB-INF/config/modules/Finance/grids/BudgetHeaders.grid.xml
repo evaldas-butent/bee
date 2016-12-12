@@ -20,6 +20,7 @@
   <xi:include href="columns/Employee.columns.xml" />
 
   <g:columns>
+    <RelColumn name="Currency" newRowEnabled="false" visible="false" />
     <DataColumn name="Year" format="0000" visible="false" />
 
     <DataColumn name="Description" flexGrow="1" visible="false" />
