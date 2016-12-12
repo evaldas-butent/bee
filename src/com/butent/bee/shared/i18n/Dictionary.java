@@ -2755,6 +2755,8 @@ public interface Dictionary {
 
   default String finAnalysisColumnAbbreviation() {return g("finAnalysisColumnAbbreviation");}
 
+  default String finAnalysisColumnAndFormPeriodsDoNotIntersect() {return g("finAnalysisColumnAndFormPeriodsDoNotIntersect");}
+
   default String finAnalysisColumnFilters() {return g("finAnalysisColumnFilters");}
 
   default String finAnalysisColumnName() {return g("finAnalysisColumnName");}
@@ -2787,6 +2789,8 @@ public interface Dictionary {
 
   default String finAnalysisName() {return g("finAnalysisName");}
 
+  default String finAnalysisPrimaryRowsNotAvailable() {return g("finAnalysisPrimaryRowsNotAvailable");}
+
   default String finAnalysisRow() {return g("finAnalysisRow");}
 
   default String finAnalysisRowAbbreviation() {return g("finAnalysisRowAbbreviation");}
@@ -2806,6 +2810,10 @@ public interface Dictionary {
   default String finAnalysisScale() {return g("finAnalysisScale");}
 
   default String finAnalysisScript() {return g("finAnalysisScript");}
+
+  default String finAnalysisSelectColumns() {return g("finAnalysisSelectColumns");}
+
+  default String finAnalysisSelectRows() {return g("finAnalysisSelectRows");}
 
   default String finAnalysisShowColumnDimension(Object p0) {
     Map<String, Object> _m = new HashMap<>();
@@ -2828,6 +2836,8 @@ public interface Dictionary {
   default String finAnalysisShowRowFilters() {return g("finAnalysisShowRowFilters");}
 
   default String finAnalysisShowTotal() {return g("finAnalysisShowTotal");}
+
+  default String finAnalysisSpecifyIndicatorOrScript() {return g("finAnalysisSpecifyIndicatorOrScript");}
 
   default String finAnalysisSplit(Object p0) {
     Map<String, Object> _m = new HashMap<>();

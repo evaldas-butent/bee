@@ -115,11 +115,20 @@ class AnalysisFormData {
       messages.add("header not available");
       return messages;
     }
+    if (BeeUtils.isEmpty(columns)) {
+      messages.add(dictionary.dataNotAvailable(dictionary.finAnalysisColumns()));
+      return messages;
+    }
+    if (BeeUtils.isEmpty(rows)) {
+      messages.add(dictionary.dataNotAvailable(dictionary.finAnalysisRows()));
+      return messages;
+    }
+
     if (BeeUtils.isEmpty(selectedColumns)) {
-      messages.add(BeeUtils.isEmpty(columns) ? "columns not available" : "columns not selected");
+      messages.add(dictionary.finAnalysisSelectColumns());
     }
     if (BeeUtils.isEmpty(selectedRows)) {
-      messages.add(BeeUtils.isEmpty(rows) ? "rows not available" : "rows not selected");
+      messages.add(dictionary.finAnalysisSelectRows());
     }
 
     Integer yearFrom = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_FROM);
@@ -137,90 +146,93 @@ class AnalysisFormData {
           AnalysisUtils.formatYearMonth(yearUntil, monthUntil)));
     }
 
-    if (!BeeUtils.isEmpty(selectedColumns)) {
-      Integer splitLevels = getHeaderInteger(COL_ANALYSIS_COLUMN_SPLIT_LEVELS);
+    Integer columnSplitLevels = getHeaderInteger(COL_ANALYSIS_COLUMN_SPLIT_LEVELS);
 
-      for (int position : selectedColumns) {
-        BeeRow column = columns.get(position);
-        String columnLabel = getColumnLabel(dictionary, column);
+    for (BeeRow column : columns) {
+      String columnLabel = getColumnLabel(dictionary, column);
 
-        Integer y1 = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_FROM);
-        Integer m1 = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_FROM);
-        Integer y2 = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_UNTIL);
-        Integer m2 = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL);
+      Integer y1 = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_FROM);
+      Integer m1 = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_FROM);
+      Integer y2 = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_UNTIL);
+      Integer m2 = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL);
 
-        if (!AnalysisUtils.isValidRange(y1, m1, y2, m2)) {
-          messages.add(BeeUtils.joinWords(columnLabel,
-              dictionary.invalidPeriod(AnalysisUtils.formatYearMonth(y1, m1),
-                  AnalysisUtils.formatYearMonth(y2, m2))));
+      if (!AnalysisUtils.isValidRange(y1, m1, y2, m2)) {
+        messages.add(BeeUtils.joinWords(columnLabel,
+            dictionary.invalidPeriod(AnalysisUtils.formatYearMonth(y1, m1),
+                AnalysisUtils.formatYearMonth(y2, m2))));
 
-        } else if (headerRange != null
-            && !headerRange.intersects(AnalysisUtils.getRange(y1, m1, y2, m2))) {
+      } else if (headerRange != null
+          && !headerRange.intersects(AnalysisUtils.getRange(y1, m1, y2, m2))) {
 
-          messages.add(BeeUtils.joinWords(columnLabel,
-              "column and header periods do not intersect"));
-        }
-
-        List<AnalysisSplit> splits = getColumnSplits(column, splitLevels);
-        if (!splits.isEmpty()) {
-          if (AnalysisSplit.validateSplits(splits)) {
-            for (AnalysisSplit split : splits) {
-              if (!split.visibleForColumns()) {
-                messages.add(BeeUtils.joinWords(columnLabel,
-                    dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
-              }
-            }
-
-          } else {
-            messages.add(BeeUtils.joinWords(columnLabel,
-                dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
-          }
-        }
+        messages.add(BeeUtils.joinWords(columnLabel,
+            dictionary.finAnalysisColumnAndFormPeriodsDoNotIntersect()));
       }
 
-      messages.addAll(validateAbbreviations(dictionary, columns,
-          columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
-          column -> getColumnLabel(dictionary, column)));
-
-      messages.addAll(validateScripts(columns,
-          columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
-          columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT),
-          column -> getColumnLabel(dictionary, column)));
-    }
-
-    if (!BeeUtils.isEmpty(selectedRows)) {
-      Integer splitLevels = getHeaderInteger(COL_ANALYSIS_ROW_SPLIT_LEVELS);
-
-      for (int position : selectedRows) {
-        BeeRow row = rows.get(position);
-        String rowLabel = getRowLabel(dictionary, row);
-
-        List<AnalysisSplit> splits = getRowSplits(row, splitLevels);
-        if (!splits.isEmpty()) {
-          if (AnalysisSplit.validateSplits(splits)) {
-            for (AnalysisSplit split : splits) {
-              if (!split.visibleForRows()) {
-                messages.add(BeeUtils.joinWords(rowLabel,
-                    dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
-              }
+      List<AnalysisSplit> splits = getColumnSplits(column, columnSplitLevels);
+      if (!splits.isEmpty()) {
+        if (AnalysisSplit.validateSplits(splits)) {
+          for (AnalysisSplit split : splits) {
+            if (!split.visibleForColumns()) {
+              messages.add(BeeUtils.joinWords(columnLabel,
+                  dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
             }
-
-          } else {
-            messages.add(BeeUtils.joinWords(rowLabel,
-                dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
           }
+
+        } else {
+          messages.add(BeeUtils.joinWords(columnLabel,
+              dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
         }
       }
-
-      messages.addAll(validateAbbreviations(dictionary, rows,
-          rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
-          row -> getRowLabel(dictionary, row)));
-
-      messages.addAll(validateScripts(rows,
-          rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
-          rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),
-          row -> getRowLabel(dictionary, row)));
     }
+
+    messages.addAll(validateAbbreviations(dictionary, columns,
+        columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
+        column -> getColumnLabel(dictionary, column)));
+
+    messages.addAll(validateScripts(columns,
+        columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
+        columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT),
+        column -> getColumnLabel(dictionary, column)));
+
+    Integer rowSplitLevels = getHeaderInteger(COL_ANALYSIS_ROW_SPLIT_LEVELS);
+
+    for (BeeRow row : rows) {
+      String rowLabel = getRowLabel(dictionary, row);
+
+      if (!rowHasIndicator(row) && !rowHasScript(row)) {
+        messages.add(BeeUtils.joinWords(rowLabel,
+            dictionary.finAnalysisSpecifyIndicatorOrScript()));
+      }
+
+      List<AnalysisSplit> splits = getRowSplits(row, rowSplitLevels);
+      if (!splits.isEmpty()) {
+        if (AnalysisSplit.validateSplits(splits)) {
+          for (AnalysisSplit split : splits) {
+            if (!split.visibleForRows()) {
+              messages.add(BeeUtils.joinWords(rowLabel,
+                  dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
+            }
+          }
+
+        } else {
+          messages.add(BeeUtils.joinWords(rowLabel,
+              dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
+        }
+      }
+    }
+
+    if (rows.stream().noneMatch(this::rowHasIndicator)) {
+      messages.add(dictionary.finAnalysisPrimaryRowsNotAvailable());
+    }
+
+    messages.addAll(validateAbbreviations(dictionary, rows,
+        rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
+        row -> getRowLabel(dictionary, row)));
+
+    messages.addAll(validateScripts(rows,
+        rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
+        rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),
+        row -> getRowLabel(dictionary, row)));
 
     if (!DataUtils.isId(getHeaderLong(COL_ANALYSIS_HEADER_BUDGET_TYPE))
         && !BeeUtils.isEmpty(columns) && !BeeUtils.isEmpty(rows)) {
@@ -290,6 +302,14 @@ class AnalysisFormData {
     return splits;
   }
 
+  private boolean columnHasIndicator(BeeRow column) {
+    return DataUtils.isId(getColumnLong(column, COL_ANALYSIS_COLUMN_INDICATOR));
+  }
+
+  private boolean columnHasScript(BeeRow column) {
+    return !BeeUtils.isEmpty(getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT));
+  }
+
   private String getRowLabel(Dictionary dictionary, BeeRow row) {
     String label = BeeUtils.joinWords(getRowString(row, COL_ANALYSIS_ROW_ORDINAL),
         BeeUtils.notEmpty(getRowString(row, COL_ANALYSIS_ROW_NAME),
@@ -331,6 +351,14 @@ class AnalysisFormData {
     }
 
     return splits;
+  }
+
+  private boolean rowHasIndicator(BeeRow row) {
+    return DataUtils.isId(getRowLong(row, COL_ANALYSIS_ROW_INDICATOR));
+  }
+
+  private boolean rowHasScript(BeeRow row) {
+    return !BeeUtils.isEmpty(getRowString(row, COL_ANALYSIS_ROW_SCRIPT));
   }
 
   private static List<String> getSplitCaptions(Dictionary dictionary, List<AnalysisSplit> splits) {
