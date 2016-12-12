@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.script.ScriptEngine;
@@ -108,7 +109,7 @@ class AnalysisFormData {
     }
   }
 
-  List<String> validate(Dictionary dictionary) {
+  List<String> validate(Dictionary dictionary, Predicate<String> filterValidator) {
     List<String> messages = new ArrayList<>();
 
     if (header == null) {
@@ -240,6 +241,10 @@ class AnalysisFormData {
       messages.addAll(validateBudgetType(dictionary));
     }
 
+    if (!BeeUtils.isEmpty(filterIndexes) && filterValidator != null) {
+      messages.addAll(validateFilters(dictionary, filterValidator));
+    }
+
     return messages;
   }
 
@@ -257,6 +262,15 @@ class AnalysisFormData {
 
   private boolean isHeaderTrue(String key) {
     return header.isTrue(headerIndexes.get(key));
+  }
+
+  private BeeRow getColumnById(Long id) {
+    for (BeeRow column : columns) {
+      if (DataUtils.idEquals(column, id)) {
+        return column;
+      }
+    }
+    return null;
   }
 
   private String getColumnLabel(Dictionary dictionary, BeeRow column) {
@@ -308,6 +322,15 @@ class AnalysisFormData {
 
   private boolean columnHasScript(BeeRow column) {
     return !BeeUtils.isEmpty(getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT));
+  }
+
+  private BeeRow getRowById(Long id) {
+    for (BeeRow row : rows) {
+      if (DataUtils.idEquals(row, id)) {
+        return row;
+      }
+    }
+    return null;
   }
 
   private String getRowLabel(Dictionary dictionary, BeeRow row) {
@@ -438,6 +461,52 @@ class AnalysisFormData {
           messages.add(BeeUtils.joinWords(getRowLabel(dictionary, row), need));
         }
       }
+    }
+
+    return messages;
+  }
+
+  private List<String> validateFilters(Dictionary dictionary, Predicate<String> validator) {
+    List<String> messages = new ArrayList<>();
+
+    int extraFilterIndex = filterIndexes.get(COL_ANALYSIS_FILTER_EXTRA);
+
+    if (!BeeUtils.isEmpty(headerFilters)) {
+      for (BeeRow filter : headerFilters) {
+        String extraFilter = filter.getString(extraFilterIndex);
+        if (!validator.test(extraFilter)) {
+          messages.add(BeeUtils.joinWords(dictionary.finAnalysisInvalidExtraFilter(),
+              extraFilter));
+        }
+      }
+    }
+
+    if (!BeeUtils.isEmpty(columnFilters) && isHeaderTrue(COL_ANALYSIS_COLUMN_FILTERS)) {
+      columnFilters.forEach((columnId, filter) -> {
+        String extraFilter = filter.getString(extraFilterIndex);
+
+        if (!validator.test(extraFilter)) {
+          BeeRow column = getColumnById(columnId);
+          if (column != null) {
+            messages.add(BeeUtils.joinWords(getColumnLabel(dictionary, column),
+                dictionary.finAnalysisInvalidExtraFilter(), extraFilter));
+          }
+        }
+      });
+    }
+
+    if (!BeeUtils.isEmpty(rowFilters) && isHeaderTrue(COL_ANALYSIS_ROW_FILTERS)) {
+      rowFilters.forEach((rowId, filter) -> {
+        String extraFilter = filter.getString(extraFilterIndex);
+
+        if (!validator.test(extraFilter)) {
+          BeeRow row = getRowById(rowId);
+          if (row != null) {
+            messages.add(BeeUtils.joinWords(getRowLabel(dictionary, row),
+                dictionary.finAnalysisInvalidExtraFilter(), extraFilter));
+          }
+        }
+      });
     }
 
     return messages;

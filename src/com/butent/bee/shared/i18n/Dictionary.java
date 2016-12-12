@@ -2785,6 +2785,8 @@ public interface Dictionary {
 
   default String finAnalysisInvalidAbbreviation() {return g("finAnalysisInvalidAbbreviation");}
 
+  default String finAnalysisInvalidExtraFilter() {return g("finAnalysisInvalidExtraFilter");}
+
   default String finAnalysisInvalidSplit() {return g("finAnalysisInvalidSplit");}
 
   default String finAnalysisName() {return g("finAnalysisName");}

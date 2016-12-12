@@ -2,7 +2,7 @@
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
            xmlns:ui="http://www.butent.com/ui"
 >
-  <DataColumn name="ExtraFilter" visible="false" />
+  <DataColumn name="ExtraFilter" />
 
   <DataColumn name="Include" caption="&#xf196; / &#xf147;" format="&#xf055; &#xf056;"
               flexGrow="0" instantKarma="true" visible="true">

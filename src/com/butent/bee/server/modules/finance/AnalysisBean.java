@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.finance;
 import static com.butent.bee.shared.modules.finance.Dimensions.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -17,6 +18,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -82,7 +84,13 @@ public class AnalysisBean {
 
     ResponseObject response = ResponseObject.emptyResponse();
 
-    List<String> messages = formData.validate(usr.getDictionary());
+    BeeView finView = sys.getView(VIEW_FINANCIAL_RECORDS);
+    Long userId = usr.getCurrentUserId();
+
+    Predicate<String> extraFilterValidator = input ->
+        BeeUtils.isEmpty(input) || finView.parseFilter(input, userId) != null;
+
+    List<String> messages = formData.validate(usr.getDictionary(), extraFilterValidator);
     if (!BeeUtils.isEmpty(messages)) {
       for (String message : messages) {
         response.addWarning(message);
