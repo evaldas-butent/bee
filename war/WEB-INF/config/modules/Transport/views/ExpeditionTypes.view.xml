@@ -7,6 +7,8 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn alias="NameEn" name="Name" locale="en"  />
+    <SimpleColumn alias="NameRu" name="Name" locale="ru" />
     <SimpleColumn name="SelfService" />
     <SimpleColumn name="Logistics" />
   </Columns>
