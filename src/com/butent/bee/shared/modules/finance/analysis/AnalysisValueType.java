@@ -8,7 +8,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public enum AnalysisValueType implements HasLocalizedCaption {
 
-  ACTUAL('a') {
+  ACTUAL('a', false) {
     @Override
     public String getAbbreviation() {
       return Localized.dictionary().finAnalysisValueActualShort();
@@ -20,7 +20,7 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     }
   },
 
-  BUDGET('b') {
+  BUDGET('b', true) {
     @Override
     public String getAbbreviation() {
       return Localized.dictionary().finAnalysisValueBudgetShort();
@@ -32,7 +32,7 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     }
   },
 
-  DIFFERENCE('d') {
+  DIFFERENCE('d', true) {
     @Override
     public String getAbbreviation() {
       return Localized.dictionary().finAnalysisValueDifferenceShort();
@@ -44,7 +44,7 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     }
   },
 
-  PERCENTAGE('p', 1) {
+  PERCENTAGE('p', true, 1) {
     @Override
     public String getAbbreviation() {
       return Localized.dictionary().finAnalysisValuePercentageShort();
@@ -74,14 +74,16 @@ public enum AnalysisValueType implements HasLocalizedCaption {
   }
 
   private final char code;
+  private final boolean needsBudget;
   private final int defaultScale;
 
-  AnalysisValueType(char code) {
-    this(code, BeeConst.UNDEF);
+  AnalysisValueType(char code, boolean needsBudget) {
+    this(code, needsBudget, BeeConst.UNDEF);
   }
 
-  AnalysisValueType(char code, int defaultScale) {
+  AnalysisValueType(char code, boolean needsBudget, int defaultScale) {
     this.code = code;
+    this.needsBudget = needsBudget;
     this.defaultScale = defaultScale;
   }
 
@@ -97,5 +99,9 @@ public enum AnalysisValueType implements HasLocalizedCaption {
 
   public boolean hasScale() {
     return !BeeConst.isUndef(defaultScale);
+  }
+
+  public boolean needsBudget() {
+    return needsBudget;
   }
 }

@@ -11,9 +11,9 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Dictionary;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplit;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -167,20 +167,18 @@ class AnalysisFormData {
             for (AnalysisSplit split : splits) {
               if (!split.visibleForColumns()) {
                 messages.add(BeeUtils.joinWords(columnLabel,
-                    Localized.dictionary().finAnalysisInvalidSplit(),
-                    split.getCaption(dictionary)));
+                    dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
               }
             }
 
           } else {
             messages.add(BeeUtils.joinWords(columnLabel,
-                Localized.dictionary().finAnalysisInvalidSplit(),
-                getSplitCaptions(dictionary, splits)));
+                dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
           }
         }
       }
 
-      messages.addAll(validateAbbreviations(columns,
+      messages.addAll(validateAbbreviations(dictionary, columns,
           columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
           column -> getColumnLabel(dictionary, column)));
 
@@ -203,20 +201,18 @@ class AnalysisFormData {
             for (AnalysisSplit split : splits) {
               if (!split.visibleForRows()) {
                 messages.add(BeeUtils.joinWords(rowLabel,
-                    Localized.dictionary().finAnalysisInvalidSplit(),
-                    split.getCaption(dictionary)));
+                    dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
               }
             }
 
           } else {
             messages.add(BeeUtils.joinWords(rowLabel,
-                Localized.dictionary().finAnalysisInvalidSplit(),
-                getSplitCaptions(dictionary, splits)));
+                dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
           }
         }
       }
 
-      messages.addAll(validateAbbreviations(rows,
+      messages.addAll(validateAbbreviations(dictionary, rows,
           rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
           row -> getRowLabel(dictionary, row)));
 
@@ -224,6 +220,12 @@ class AnalysisFormData {
           rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
           rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),
           row -> getRowLabel(dictionary, row)));
+    }
+
+    if (!DataUtils.isId(getHeaderLong(COL_ANALYSIS_HEADER_BUDGET_TYPE))
+        && !BeeUtils.isEmpty(columns) && !BeeUtils.isEmpty(rows)) {
+
+      messages.addAll(validateBudgetType(dictionary));
     }
 
     return messages;
@@ -335,8 +337,8 @@ class AnalysisFormData {
     return splits.stream().map(e -> e.getCaption(dictionary)).collect(Collectors.toList());
   }
 
-  private static List<String> validateAbbreviations(Collection<BeeRow> input,
-      int abbreviationIndex, Function<BeeRow, String> labelFunction) {
+  private static List<String> validateAbbreviations(Dictionary dictionary,
+      Collection<BeeRow> input, int abbreviationIndex, Function<BeeRow, String> labelFunction) {
 
     List<String> messages = new ArrayList<>();
     Multiset<String> abbreviations = HashMultiset.create();
@@ -350,7 +352,7 @@ class AnalysisFormData {
             abbreviations.add(abbreviation);
           } else {
             messages.add(BeeUtils.joinWords(labelFunction.apply(row),
-                Localized.dictionary().finAnalysisInvalidAbbreviation(), abbreviation));
+                dictionary.finAnalysisInvalidAbbreviation(), abbreviation));
           }
         }
       }
@@ -361,8 +363,51 @@ class AnalysisFormData {
 
           if (!BeeUtils.isEmpty(abbreviation) && abbreviations.count(abbreviation) > 1) {
             messages.add(BeeUtils.joinWords(labelFunction.apply(row),
-                Localized.dictionary().valueNotUnique(abbreviation)));
+                dictionary.valueNotUnique(abbreviation)));
           }
+        }
+      }
+    }
+
+    return messages;
+  }
+
+  private List<String> validateBudgetType(Dictionary dictionary) {
+    List<String> messages = new ArrayList<>();
+
+    int columnBudgetTypeIndex = columnIndexes.get(COL_ANALYSIS_COLUMN_BUDGET_TYPE);
+    int columnIndicatorIndex = columnIndexes.get(COL_ANALYSIS_COLUMN_INDICATOR);
+    int columnScriptIndex = columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT);
+    int columnValuesIndex = columnIndexes.get(COL_ANALYSIS_COLUMN_VALUES);
+
+    List<BeeRow> columnsNeedBudget = columns.stream()
+        .filter(column -> !DataUtils.isId(column.getLong(columnBudgetTypeIndex))
+            && (DataUtils.isId(column.getLong(columnIndicatorIndex))
+            || column.isEmpty(columnScriptIndex))
+            && AnalysisCellType.needsBudget(column.getString(columnValuesIndex)))
+        .collect(Collectors.toList());
+
+    if (!BeeUtils.isEmpty(columnsNeedBudget)) {
+      int rowBudgetTypeIndex = rowIndexes.get(COL_ANALYSIS_ROW_BUDGET_TYPE);
+      int rowIndicatorIndex = rowIndexes.get(COL_ANALYSIS_ROW_INDICATOR);
+      int rowScriptIndex = rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT);
+      int rowValuesIndex = rowIndexes.get(COL_ANALYSIS_ROW_VALUES);
+
+      List<BeeRow> rowsNeedBudget = rows.stream()
+          .filter(row -> !DataUtils.isId(row.getLong(rowBudgetTypeIndex))
+              && (DataUtils.isId(row.getLong(rowIndicatorIndex)) || row.isEmpty(rowScriptIndex))
+              && AnalysisCellType.needsBudget(row.getString(rowValuesIndex)))
+          .collect(Collectors.toList());
+
+      if (!BeeUtils.isEmpty(rowsNeedBudget)) {
+        String need = dictionary.fieldRequired(BeeUtils.quote(dictionary.finBudgetType()));
+
+        for (BeeRow column : columnsNeedBudget) {
+          messages.add(BeeUtils.joinWords(getColumnLabel(dictionary, column), need));
+        }
+
+        for (BeeRow row : rowsNeedBudget) {
+          messages.add(BeeUtils.joinWords(getRowLabel(dictionary, row), need));
         }
       }
     }
