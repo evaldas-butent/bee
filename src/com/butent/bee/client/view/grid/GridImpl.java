@@ -787,7 +787,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         || !BeeConst.isUndef(dataIndex) || !BeeUtils.isEmpty(column.getSearchBy()))) {
 
       filterSupplier = FilterSupplierFactory.getSupplier(getViewName(), dataColumns,
-          gridDescription.getIdName(), gridDescription.getVersionName(), dataIndex, label,
+          gridDescription.getIdName(), gridDescription.getVersionName(), columnId, label,
           column.getSearchBy(), cd.getValueType(), filterSupplierType, renderColumns,
           column.getSortBy(), enumKey, cd.getRelation(), cd.getFilterOptions());
     }
