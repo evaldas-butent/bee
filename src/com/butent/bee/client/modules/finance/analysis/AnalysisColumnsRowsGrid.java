@@ -13,7 +13,7 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.modules.finance.analysis.AnalysisSplit;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -32,7 +32,7 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
 
   protected abstract boolean isSplitColumn(String columnName);
 
-  protected abstract boolean isSplitVisible(AnalysisSplit analysisSplit);
+  protected abstract boolean isSplitVisible(AnalysisSplitType analysisSplitType);
 
   @Override
   public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
@@ -86,7 +86,7 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
     if (isSplitColumn(source)) {
       ListBox listBox = new ListBox();
 
-      for (AnalysisSplit split : AnalysisSplit.values()) {
+      for (AnalysisSplitType split : AnalysisSplitType.values()) {
         if (isSplitVisible(split)) {
           listBox.addItem(split.getCaption(), split.name().toLowerCase());
         }

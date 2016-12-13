@@ -1,20 +1,24 @@
 package com.butent.bee.server.modules.finance;
 
-import static com.butent.bee.shared.modules.finance.Dimensions.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -34,12 +38,14 @@ public class AnalysisBean {
   SystemBean sys;
   @EJB
   UserServiceBean usr;
+  @EJB
+  ParamHolderBean prm;
 
   public ResponseObject calculateForm(long formId) {
     AnalysisFormData formData = getFormData(formId);
     ResponseObject response = validateFormData(formId, formData);
 
-    if (response.hasErrors() || response.hasWarnings()) {
+    if (response.hasMessages()) {
       return response;
     }
     return response;
@@ -90,6 +96,8 @@ public class AnalysisBean {
     Predicate<String> extraFilterValidator = input ->
         BeeUtils.isEmpty(input) || finView.parseFilter(input, userId) != null;
 
+    ensureDimensions();
+
     List<String> messages = formData.validate(usr.getDictionary(), extraFilterValidator);
     if (!BeeUtils.isEmpty(messages)) {
       for (String message : messages) {
@@ -100,16 +108,108 @@ public class AnalysisBean {
     return response;
   }
 
-  private SqlSelect addDimensions(SqlSelect query, String tblName) {
-    if (getObserved() > 0) {
-      query.addFromLeft(TBL_EXTRA_DIMENSIONS,
-          sys.joinTables(TBL_EXTRA_DIMENSIONS, tblName, COL_EXTRA_DIMENSIONS));
+  private Filter getIndicatorFilter(long indicator, BeeView sourceView, Long userId) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_INDICATOR_FILTERS, COL_INDICATOR_FILTER_EMPLOYEE,
+            COL_INDICATOR_FILTER_EXTRA, COL_INDICATOR_FILTER_INCLUDE)
+        .addFrom(TBL_INDICATOR_FILTERS)
+        .setWhere(SqlUtils.equals(TBL_INDICATOR_FILTERS, COL_FIN_INDICATOR, indicator));
 
-      for (int ordinal = 1; ordinal <= getObserved(); ordinal++) {
-        query.addFields(TBL_EXTRA_DIMENSIONS, getRelationColumn(ordinal));
+    addDimensions(query, TBL_INDICATOR_FILTERS);
+
+    SimpleRowSet filterData = qs.getData(query);
+    if (DataUtils.isEmpty(filterData)) {
+      return null;
+    }
+
+    CompoundFilter include = Filter.or();
+    CompoundFilter exclude = Filter.or();
+
+    for (SimpleRow filterRow : filterData) {
+      Filter filter = getFilter(filterRow,
+          COL_INDICATOR_FILTER_EMPLOYEE, COL_INDICATOR_FILTER_EXTRA, sourceView, userId);
+
+      if (filter != null) {
+        if (filterRow.isTrue(COL_INDICATOR_FILTER_INCLUDE)) {
+          include.add(filter);
+        } else {
+          exclude.add(filter);
+        }
       }
     }
 
-    return query;
+    if (include.isEmpty() && exclude.isEmpty()) {
+      return null;
+
+    } else if (exclude.isEmpty()) {
+      return include;
+
+    } else if (include.isEmpty()) {
+      return Filter.isNot(exclude);
+
+    } else {
+      return Filter.and(include, Filter.isNot(exclude));
+    }
+  }
+
+  private static Filter getFilter(SimpleRow row, String employeeColumn, String extraFilterColumn,
+      BeeView sourceView, Long userId) {
+
+    CompoundFilter filter = Filter.and();
+
+    if (row.hasColumn(employeeColumn)) {
+      Long employee = row.getLong(employeeColumn);
+      if (DataUtils.isId(employee)) {
+        filter.add(Filter.equals(COL_FIN_EMPLOYEE, employee));
+      }
+    }
+
+    if (Dimensions.getObserved() > 0) {
+      for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+        String column = Dimensions.getRelationColumn(ordinal);
+
+        if (row.hasColumn(column)) {
+          Long value = row.getLong(column);
+
+          if (DataUtils.isId(value)) {
+            filter.add(Filter.equals(column, value));
+          }
+        }
+      }
+    }
+
+    if (row.hasColumn(extraFilterColumn) && sourceView != null) {
+      String extraFilter = row.getValue(extraFilterColumn);
+
+      if (!BeeUtils.isEmpty(extraFilter)) {
+        Filter extra = sourceView.parseFilter(extraFilter, userId);
+        if (extra != null) {
+          filter.add(extra);
+        }
+      }
+    }
+
+    return filter.isEmpty() ? null : filter;
+  }
+
+  private void addDimensions(SqlSelect query, String tblName) {
+    if (Dimensions.getObserved() > 0) {
+      query.addFromLeft(Dimensions.TBL_EXTRA_DIMENSIONS,
+          sys.joinTables(Dimensions.TBL_EXTRA_DIMENSIONS, tblName,
+              Dimensions.COL_EXTRA_DIMENSIONS));
+
+      for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+        query.addFields(Dimensions.TBL_EXTRA_DIMENSIONS, Dimensions.getRelationColumn(ordinal));
+      }
+    }
+  }
+
+  private void ensureDimensions() {
+    Integer count = prm.getInteger(Dimensions.PRM_DIMENSIONS);
+
+    if (BeeUtils.isPositive(count)) {
+      Dimensions.setObserved(count);
+      Dimensions.loadNames(qs.getViewData(Dimensions.VIEW_NAMES), usr.getLanguage());
+    }
   }
 }

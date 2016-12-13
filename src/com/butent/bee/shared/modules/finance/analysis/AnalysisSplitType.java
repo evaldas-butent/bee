@@ -8,48 +8,48 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public enum AnalysisSplit implements HasLocalizedCaption {
+public enum AnalysisSplitType implements HasLocalizedCaption {
 
-  MONTH(Type.PERIOD, 1) {
+  MONTH(Kind.PERIOD, 1) {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.month();
     }
   },
 
-  QUARTER(Type.PERIOD, 3) {
+  QUARTER(Kind.PERIOD, 3) {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.quarter();
     }
   },
 
-  YEAR(Type.PERIOD, 12) {
+  YEAR(Kind.PERIOD, 12) {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.year();
     }
   },
 
-  EMPLOYEE(Type.FILTER) {
+  EMPLOYEE(Kind.FILTER) {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.employee();
     }
   },
 
-  DIMENSION_01(Type.DIMENSION, 1),
-  DIMENSION_02(Type.DIMENSION, 2),
-  DIMENSION_03(Type.DIMENSION, 3),
-  DIMENSION_04(Type.DIMENSION, 4),
-  DIMENSION_05(Type.DIMENSION, 5),
-  DIMENSION_06(Type.DIMENSION, 6),
-  DIMENSION_07(Type.DIMENSION, 7),
-  DIMENSION_08(Type.DIMENSION, 8),
-  DIMENSION_09(Type.DIMENSION, 9),
-  DIMENSION_10(Type.DIMENSION, 10);
+  DIMENSION_01(Kind.DIMENSION, 1),
+  DIMENSION_02(Kind.DIMENSION, 2),
+  DIMENSION_03(Kind.DIMENSION, 3),
+  DIMENSION_04(Kind.DIMENSION, 4),
+  DIMENSION_05(Kind.DIMENSION, 5),
+  DIMENSION_06(Kind.DIMENSION, 6),
+  DIMENSION_07(Kind.DIMENSION, 7),
+  DIMENSION_08(Kind.DIMENSION, 8),
+  DIMENSION_09(Kind.DIMENSION, 9),
+  DIMENSION_10(Kind.DIMENSION, 10);
 
-  private enum Type {
+  private enum Kind {
     PERIOD(true, false),
     FILTER(true, true),
     DIMENSION(true, true);
@@ -57,13 +57,13 @@ public enum AnalysisSplit implements HasLocalizedCaption {
     private final boolean columns;
     private final boolean rows;
 
-    Type(boolean columns, boolean rows) {
+    Kind(boolean columns, boolean rows) {
       this.columns = columns;
       this.rows = rows;
     }
   }
 
-  public static boolean validateSplits(List<AnalysisSplit> splits) {
+  public static boolean validateSplits(List<AnalysisSplitType> splits) {
     if (BeeUtils.isEmpty(splits)) {
       return true;
 
@@ -77,8 +77,8 @@ public enum AnalysisSplit implements HasLocalizedCaption {
 
       int lastPeriod = BeeConst.UNDEF;
 
-      for (AnalysisSplit split : splits) {
-        if (split.type == Type.PERIOD) {
+      for (AnalysisSplitType split : splits) {
+        if (split.kind == Kind.PERIOD) {
           if (!BeeConst.isUndef(lastPeriod) && split.index >= lastPeriod) {
             return false;
           }
@@ -90,21 +90,21 @@ public enum AnalysisSplit implements HasLocalizedCaption {
     return true;
   }
 
-  private final Type type;
+  private final Kind kind;
   private final int index;
 
-  AnalysisSplit(Type type) {
-    this(type, BeeConst.UNDEF);
+  AnalysisSplitType(Kind kind) {
+    this(kind, BeeConst.UNDEF);
   }
 
-  AnalysisSplit(Type type, int index) {
-    this.type = type;
+  AnalysisSplitType(Kind kind, int index) {
+    this.kind = kind;
     this.index = index;
   }
 
   @Override
   public String getCaption(Dictionary dictionary) {
-    if (type == Type.DIMENSION) {
+    if (kind == Kind.DIMENSION) {
       return Dimensions.singular(index);
     } else {
       return null;
@@ -112,8 +112,8 @@ public enum AnalysisSplit implements HasLocalizedCaption {
   }
 
   public boolean visibleForColumns() {
-    if (type.columns) {
-      if (type == Type.DIMENSION) {
+    if (kind.columns) {
+      if (kind == Kind.DIMENSION) {
         return Dimensions.isObserved(index);
       } else {
         return true;
@@ -124,8 +124,8 @@ public enum AnalysisSplit implements HasLocalizedCaption {
   }
 
   public boolean visibleForRows() {
-    if (type.rows) {
-      if (type == Type.DIMENSION) {
+    if (kind.rows) {
+      if (kind == Kind.DIMENSION) {
         return Dimensions.isObserved(index);
       } else {
         return true;

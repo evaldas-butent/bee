@@ -16,7 +16,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
-import com.butent.bee.shared.modules.finance.analysis.AnalysisSplit;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -170,10 +170,10 @@ class AnalysisFormData {
             dictionary.finAnalysisColumnAndFormPeriodsDoNotIntersect()));
       }
 
-      List<AnalysisSplit> splits = getColumnSplits(column, columnSplitLevels);
+      List<AnalysisSplitType> splits = getColumnSplits(column, columnSplitLevels);
       if (!splits.isEmpty()) {
-        if (AnalysisSplit.validateSplits(splits)) {
-          for (AnalysisSplit split : splits) {
+        if (AnalysisSplitType.validateSplits(splits)) {
+          for (AnalysisSplitType split : splits) {
             if (!split.visibleForColumns()) {
               messages.add(BeeUtils.joinWords(columnLabel,
                   dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
@@ -206,10 +206,10 @@ class AnalysisFormData {
             dictionary.finAnalysisSpecifyIndicatorOrScript()));
       }
 
-      List<AnalysisSplit> splits = getRowSplits(row, rowSplitLevels);
+      List<AnalysisSplitType> splits = getRowSplits(row, rowSplitLevels);
       if (!splits.isEmpty()) {
-        if (AnalysisSplit.validateSplits(splits)) {
-          for (AnalysisSplit split : splits) {
+        if (AnalysisSplitType.validateSplits(splits)) {
+          for (AnalysisSplitType split : splits) {
             if (!split.visibleForRows()) {
               messages.add(BeeUtils.joinWords(rowLabel,
                   dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
@@ -296,15 +296,15 @@ class AnalysisFormData {
     return column.getString(columnIndexes.get(key));
   }
 
-  private List<AnalysisSplit> getColumnSplits(BeeRow column, Integer levels) {
-    List<AnalysisSplit> splits = new ArrayList<>();
+  private List<AnalysisSplitType> getColumnSplits(BeeRow column, Integer levels) {
+    List<AnalysisSplitType> splits = new ArrayList<>();
 
     if (BeeUtils.isPositive(levels)) {
       int max = Math.min(levels, COL_ANALYSIS_COLUMN_SPLIT.length);
 
       for (int i = 0; i < max; i++) {
         String value = getColumnString(column, COL_ANALYSIS_COLUMN_SPLIT[i]);
-        AnalysisSplit split = EnumUtils.getEnumByName(AnalysisSplit.class, value);
+        AnalysisSplitType split = EnumUtils.getEnumByName(AnalysisSplitType.class, value);
 
         if (split != null) {
           splits.add(split);
@@ -356,15 +356,15 @@ class AnalysisFormData {
     return row.getString(rowIndexes.get(key));
   }
 
-  private List<AnalysisSplit> getRowSplits(BeeRow row, Integer levels) {
-    List<AnalysisSplit> splits = new ArrayList<>();
+  private List<AnalysisSplitType> getRowSplits(BeeRow row, Integer levels) {
+    List<AnalysisSplitType> splits = new ArrayList<>();
 
     if (BeeUtils.isPositive(levels)) {
       int max = Math.min(levels, COL_ANALYSIS_ROW_SPLIT.length);
 
       for (int i = 0; i < max; i++) {
         String value = getRowString(row, COL_ANALYSIS_ROW_SPLIT[i]);
-        AnalysisSplit split = EnumUtils.getEnumByName(AnalysisSplit.class, value);
+        AnalysisSplitType split = EnumUtils.getEnumByName(AnalysisSplitType.class, value);
 
         if (split != null) {
           splits.add(split);
@@ -383,7 +383,9 @@ class AnalysisFormData {
     return !BeeUtils.isEmpty(getRowString(row, COL_ANALYSIS_ROW_SCRIPT));
   }
 
-  private static List<String> getSplitCaptions(Dictionary dictionary, List<AnalysisSplit> splits) {
+  private static List<String> getSplitCaptions(Dictionary dictionary,
+      List<AnalysisSplitType> splits) {
+
     return splits.stream().map(e -> e.getCaption(dictionary)).collect(Collectors.toList());
   }
 
