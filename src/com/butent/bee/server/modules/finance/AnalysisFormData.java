@@ -1,6 +1,8 @@
 package com.butent.bee.server.modules.finance;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
@@ -22,7 +24,6 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -48,8 +49,8 @@ class AnalysisFormData {
   private final List<Integer> selectedRows = new ArrayList<>();
 
   private final List<BeeRow> headerFilters = new ArrayList<>();
-  private final Map<Long, BeeRow> columnFilters = new HashMap<>();
-  private final Map<Long, BeeRow> rowFilters = new HashMap<>();
+  private final Multimap<Long, BeeRow> columnFilters = ArrayListMultimap.create();
+  private final Multimap<Long, BeeRow> rowFilters = ArrayListMultimap.create();
   private final Map<String, Integer> filterIndexes;
 
   AnalysisFormData(BeeRowSet headerData, BeeRowSet columnData, BeeRowSet rowData,
@@ -235,9 +236,7 @@ class AnalysisFormData {
         rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),
         row -> getRowLabel(dictionary, row)));
 
-    if (!DataUtils.isId(getHeaderLong(COL_ANALYSIS_HEADER_BUDGET_TYPE))
-        && !BeeUtils.isEmpty(columns) && !BeeUtils.isEmpty(rows)) {
-
+    if (!DataUtils.isId(getHeaderLong(COL_ANALYSIS_HEADER_BUDGET_TYPE))) {
       messages.addAll(validateBudgetType(dictionary));
     }
 
@@ -427,39 +426,22 @@ class AnalysisFormData {
     List<String> messages = new ArrayList<>();
 
     int columnBudgetTypeIndex = columnIndexes.get(COL_ANALYSIS_COLUMN_BUDGET_TYPE);
-    int columnIndicatorIndex = columnIndexes.get(COL_ANALYSIS_COLUMN_INDICATOR);
-    int columnScriptIndex = columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT);
     int columnValuesIndex = columnIndexes.get(COL_ANALYSIS_COLUMN_VALUES);
 
-    List<BeeRow> columnsNeedBudget = columns.stream()
-        .filter(column -> !DataUtils.isId(column.getLong(columnBudgetTypeIndex))
-            && (DataUtils.isId(column.getLong(columnIndicatorIndex))
-            || column.isEmpty(columnScriptIndex))
-            && AnalysisCellType.needsBudget(column.getString(columnValuesIndex)))
-        .collect(Collectors.toList());
+    boolean columnsNeedBudget = columns.stream()
+        .anyMatch(column -> !DataUtils.isId(column.getLong(columnBudgetTypeIndex))
+            && AnalysisCellType.needsBudget(column.getString(columnValuesIndex)));
 
-    if (!BeeUtils.isEmpty(columnsNeedBudget)) {
-      int rowBudgetTypeIndex = rowIndexes.get(COL_ANALYSIS_ROW_BUDGET_TYPE);
-      int rowIndicatorIndex = rowIndexes.get(COL_ANALYSIS_ROW_INDICATOR);
-      int rowScriptIndex = rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT);
-      int rowValuesIndex = rowIndexes.get(COL_ANALYSIS_ROW_VALUES);
+    int rowBudgetTypeIndex = rowIndexes.get(COL_ANALYSIS_ROW_BUDGET_TYPE);
+    int rowValuesIndex = rowIndexes.get(COL_ANALYSIS_ROW_VALUES);
 
-      List<BeeRow> rowsNeedBudget = rows.stream()
-          .filter(row -> !DataUtils.isId(row.getLong(rowBudgetTypeIndex))
-              && (DataUtils.isId(row.getLong(rowIndicatorIndex)) || row.isEmpty(rowScriptIndex))
-              && AnalysisCellType.needsBudget(row.getString(rowValuesIndex)))
-          .collect(Collectors.toList());
+    for (BeeRow row : rows) {
+      if (!DataUtils.isId(row.getLong(rowBudgetTypeIndex))
+          && (AnalysisCellType.needsBudget(row.getString(rowValuesIndex))
+          || columnsNeedBudget && rowHasIndicator(row))) {
 
-      if (!BeeUtils.isEmpty(rowsNeedBudget)) {
-        String need = dictionary.fieldRequired(BeeUtils.quote(dictionary.finBudgetType()));
-
-        for (BeeRow column : columnsNeedBudget) {
-          messages.add(BeeUtils.joinWords(getColumnLabel(dictionary, column), need));
-        }
-
-        for (BeeRow row : rowsNeedBudget) {
-          messages.add(BeeUtils.joinWords(getRowLabel(dictionary, row), need));
-        }
+        messages.add(BeeUtils.joinWords(getRowLabel(dictionary, row),
+            dictionary.finAnalysisSpecifyBudgetType()));
       }
     }
 
@@ -481,32 +463,36 @@ class AnalysisFormData {
       }
     }
 
-    if (!BeeUtils.isEmpty(columnFilters) && isHeaderTrue(COL_ANALYSIS_COLUMN_FILTERS)) {
-      columnFilters.forEach((columnId, filter) -> {
-        String extraFilter = filter.getString(extraFilterIndex);
+    if (!columnFilters.isEmpty() && isHeaderTrue(COL_ANALYSIS_COLUMN_FILTERS)) {
+      for (Long columnId : columnFilters.keySet()) {
+        for (BeeRow filter : columnFilters.get(columnId)) {
+          String extraFilter = filter.getString(extraFilterIndex);
 
-        if (!validator.test(extraFilter)) {
-          BeeRow column = getColumnById(columnId);
-          if (column != null) {
-            messages.add(BeeUtils.joinWords(getColumnLabel(dictionary, column),
-                dictionary.finAnalysisInvalidExtraFilter(), extraFilter));
+          if (!validator.test(extraFilter)) {
+            BeeRow column = getColumnById(columnId);
+            if (column != null) {
+              messages.add(BeeUtils.joinWords(getColumnLabel(dictionary, column),
+                  dictionary.finAnalysisInvalidExtraFilter(), extraFilter));
+            }
           }
         }
-      });
+      }
     }
 
-    if (!BeeUtils.isEmpty(rowFilters) && isHeaderTrue(COL_ANALYSIS_ROW_FILTERS)) {
-      rowFilters.forEach((rowId, filter) -> {
-        String extraFilter = filter.getString(extraFilterIndex);
+    if (!rowFilters.isEmpty() && isHeaderTrue(COL_ANALYSIS_ROW_FILTERS)) {
+      for (Long rowId : rowFilters.keySet()) {
+        for (BeeRow filter : rowFilters.get(rowId)) {
+          String extraFilter = filter.getString(extraFilterIndex);
 
-        if (!validator.test(extraFilter)) {
-          BeeRow row = getRowById(rowId);
-          if (row != null) {
-            messages.add(BeeUtils.joinWords(getRowLabel(dictionary, row),
-                dictionary.finAnalysisInvalidExtraFilter(), extraFilter));
+          if (!validator.test(extraFilter)) {
+            BeeRow row = getRowById(rowId);
+            if (row != null) {
+              messages.add(BeeUtils.joinWords(getRowLabel(dictionary, row),
+                  dictionary.finAnalysisInvalidExtraFilter(), extraFilter));
+            }
           }
         }
-      });
+      }
     }
 
     return messages;

@@ -2839,6 +2839,8 @@ public interface Dictionary {
 
   default String finAnalysisShowTotal() {return g("finAnalysisShowTotal");}
 
+  default String finAnalysisSpecifyBudgetType() {return g("finAnalysisSpecifyBudgetType");}
+
   default String finAnalysisSpecifyIndicatorOrScript() {return g("finAnalysisSpecifyIndicatorOrScript");}
 
   default String finAnalysisSplit(Object p0) {
