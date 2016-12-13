@@ -10,15 +10,20 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.Editor;
@@ -28,13 +33,19 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -44,6 +55,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
+
+  private FaLabel copyAction;
 
   static void preload(final ScheduledCommand command) {
     Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
@@ -177,6 +190,10 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     }
     header.addCommandItem(new Profit(COL_CARGO, BeeUtils.toString(row.getId())));
 
+    if (!DataUtils.isNewRow(row)) {
+      header.addCommandItem(getCopyAction());
+    }
+
     return true;
   }
 
@@ -188,6 +205,67 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
       RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, newRow,
           Data.getDataInfo(VIEW_CARGO_TYPES), defaultCargoType, true);
     }
+  }
+
+  private IdentifiableWidget getCopyAction() {
+    if (copyAction == null) {
+      copyAction = new FaLabel(FontAwesome.COPY);
+      copyAction.setTitle(Localized.dictionary().actionCopy());
+
+      copyAction.addClickHandler(clickEvent -> {
+        DataInfo info = Data.getDataInfo(getViewName());
+        BeeRow cargo = DataUtils.cloneRow(getActiveRow());
+        cargo.setId(DataUtils.NEW_ROW_ID);
+        cargo.setProperties(null);
+
+        RowFactory.createRow(FORM_CARGO, null, info, cargo, Modality.ENABLED, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow newCargo) {
+            GridView gridLoading = ViewHelper.getChildGrid(getFormView(), TBL_CARGO_LOADING);
+            GridView gridUnLoading = ViewHelper.getChildGrid(getFormView(), TBL_CARGO_UNLOADING);
+            GridView[] gridList = new GridView[] {gridLoading, gridUnLoading};
+
+            if (!gridLoading.isEmpty() || !gridUnLoading.isEmpty()) {
+              Runnable onCloneChildren = new Runnable() {
+                int copiedGrids;
+
+                @Override
+                public void run() {
+                  copiedGrids++;
+
+                  if (Objects.equals(gridList.length, copiedGrids)) {
+                    RowEditor.open(getViewName(), newCargo.getId(), Opener.MODAL);
+                  }
+                }
+              };
+              for (GridView gridView : gridList) {
+                BeeRowSet newPlaces = Data.createRowSet(gridView.getViewName());
+                int cargoIdx = newPlaces.getColumnIndex(COL_CARGO);
+
+                for (IsRow row : gridView.getRowData()) {
+                  BeeRow cloned = DataUtils.cloneRow(row);
+                  cloned.setValue(cargoIdx, newCargo.getId());
+                  newPlaces.addRow(cloned);
+                }
+                if (!newPlaces.isEmpty()) {
+                  newPlaces = DataUtils.createRowSetForInsert(newPlaces);
+                  newPlaces.removeColumn(newPlaces.getColumnIndex(COL_PLACE_DATE));
+                  Queries.insertRows(newPlaces, new RpcCallback<RowInfoList>() {
+                    @Override
+                    public void onSuccess(RowInfoList result) {
+                      onCloneChildren.run();
+                    }
+                  });
+                } else {
+                  onCloneChildren.run();
+                }
+              }
+            }
+          }
+        });
+      });
+    }
+    return copyAction;
   }
 
   private void refresh(Long currency) {
