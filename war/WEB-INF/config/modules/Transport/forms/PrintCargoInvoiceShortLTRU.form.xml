@@ -103,6 +103,8 @@
               <TextLabel source="CustomerName" style="&bold; font-size:9.5pt">
                 <renderToken source="CustomerName" />
                 <renderToken source="CustomerType" prefix=" " />
+                <renderToken source="CustomerName2" prefix=" | " />
+                <renderToken source="CustomerType2" prefix=" " />
               </TextLabel>
               <br />
               <TextLabel source="CustomerCode">
@@ -119,6 +121,9 @@
                 <renderToken source="CustomerPostIndex" prefix=", " />
                 <renderToken source="CustomerCityName" prefix=", " />
                 <renderToken source="CustomerCountryName" prefix=", " />
+                <renderToken source="CustomerAddress2" prefix=" | " addPrefixWhenEmpty="true" />
+                <renderToken source="CustomerCityNameRU" prefix=", " />
+                <renderToken source="CustomerCountryNameRU" prefix=", " />
                 <renderToken source="CustomerPostIndex" prefix=", " />
               </TextLabel>
               <TextLabel source="CustomerPhone">
@@ -206,9 +211,15 @@
       <properties rateCurrency="EUR" />
       <row style="vertical-align: top">
         <cell rowSpan="2" style="vertical-align: top">
-          <Label html="Paslauga &lt;br /&gt;Услугa">
-            <properties name="Name" />
-          </Label>
+          <FlowPanel>
+            <InlineLabel text="Paslauga">
+              <properties name="Name" />
+            </InlineLabel>
+            <InlineLabel text=" | " />
+            <InlineLabel text="Услугa">
+              <properties name="Name3" />
+            </InlineLabel>
+          </FlowPanel>
         </cell>
         <cell rowSpan="2" style="vertical-align: top">
           <Label style="white-space: nowrap;" html="Užsakymo Nr. &lt;br /&gt;№ Заказа">

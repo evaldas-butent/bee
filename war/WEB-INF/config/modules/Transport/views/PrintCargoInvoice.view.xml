@@ -78,6 +78,8 @@
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
+      <SimpleColumn name="Name2" alias="CustomerName2" />
+      <SimpleColumn name="TypeName2" alias="CustomerType2" />
       <SimpleJoin name="CompanyType" joinType="LEFT">
         <SimpleColumn name="Name" alias="CustomerType" />
       </SimpleJoin>
@@ -85,11 +87,16 @@
       <SimpleColumn name="VatCode" alias="CustomerVatCode" />
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn name="Address" alias="CustomerAddress" />
+        <SimpleColumn name="Address2" alias="CustomerAddress2" />
         <SimpleJoin name="City" joinType="LEFT">
           <SimpleColumn name="Name" alias="CustomerCityName" />
+          <SimpleColumn name="Name" alias="CustomerCityNameEN" locale="en" />
+          <SimpleColumn name="Name" alias="CustomerCityNameRU" locale="ru" />
         </SimpleJoin>
         <SimpleJoin name="Country" joinType="LEFT">
           <SimpleColumn name="Name" alias="CustomerCountryName" />
+          <SimpleColumn name="Name" alias="CustomerCountryNameEN" locale="en" />
+          <SimpleColumn name="Name" alias="CustomerCountryNameRU" locale="ru" />
         </SimpleJoin>
         <SimpleColumn name="PostIndex" alias="CustomerPostIndex" />
         <SimpleColumn name="Phone" alias="CustomerPhone" />
