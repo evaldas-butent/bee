@@ -6,6 +6,8 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

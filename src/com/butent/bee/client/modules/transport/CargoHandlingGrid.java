@@ -4,14 +4,11 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.ParentRowCreator;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -20,22 +17,24 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 
-public class CargoHandlingGrid extends AbstractGridInterceptor {
+public class CargoHandlingGrid extends ParentRowRefreshGrid {
 
   @Override
-  public void afterCreate(GridView gridView) {
-    gridView.getGrid().addMutationHandler(event -> {
-      FormView parentForm = ViewHelper.getForm(gridView);
+  public GridInterceptor getInstance() {
+    return new CargoHandlingGrid();
+  }
 
-      if (Objects.nonNull(parentForm) && DataUtils.isId(parentForm.getActiveRowId())) {
-        String view = parentForm.getViewName();
+  @Override
+  public boolean previewModify(Set<Long> rowIds) {
+    if (super.previewModify(rowIds)) {
+      FormView parentForm = ViewHelper.getForm(getGridView());
+
+      if (Objects.nonNull(parentForm)) {
         String table = null;
 
-        if (parentForm.getViewPresenter() instanceof HasGridView) {
-          Queries.getRow(view, parentForm.getActiveRowId(), RowCallback.refreshRow(view));
-        }
-        switch (view) {
+        switch (parentForm.getViewName()) {
           case VIEW_ORDER_CARGO:
             table = TBL_CARGO_TRIPS;
             break;
@@ -47,13 +46,9 @@ public class CargoHandlingGrid extends AbstractGridInterceptor {
           Data.onTableChange(table, EnumSet.of(DataChangeEvent.Effect.REFRESH));
         }
       }
-    });
-    super.afterCreate(gridView);
-  }
-
-  @Override
-  public GridInterceptor getInstance() {
-    return new CargoHandlingGrid();
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -66,8 +61,8 @@ public class CargoHandlingGrid extends AbstractGridInterceptor {
 
         if (parentForm.getViewPresenter() instanceof ParentRowCreator) {
           ((ParentRowCreator) parentForm.getViewPresenter()).createParentRow(parentForm,
-              result -> {
-                fillValuesByParameters(newRow, result);
+              newParentRow -> {
+                fillValuesByParameters(newRow, newParentRow);
                 FormView gridForm = gridView.getActiveForm();
 
                 if (Objects.nonNull(gridForm)) {
@@ -83,7 +78,7 @@ public class CargoHandlingGrid extends AbstractGridInterceptor {
   }
 
   private void fillValuesByParameters(IsRow newRow, IsRow parentRow) {
-    if (parentRow != null) {
+    if (parentRow != null && parentRow.getProperties() != null) {
       String prefix = BeeUtils.removePrefix(getViewName(), COL_CARGO);
 
       parentRow.getProperties().forEach((name, value) -> {

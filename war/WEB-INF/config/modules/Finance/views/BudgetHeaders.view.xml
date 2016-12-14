@@ -15,6 +15,11 @@
     <xi:include href="viewcolumns/Indicator.viewcolumns.xml" />
     <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
 
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Year" />
 
     <SimpleColumn name="EntryDim01" />

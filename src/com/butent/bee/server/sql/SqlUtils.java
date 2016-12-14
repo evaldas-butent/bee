@@ -412,8 +412,11 @@ public final class SqlUtils {
     return fullText(field(source, field), value);
   }
 
+  public static IsCondition in(IsExpression xpr, SqlSelect query) {
+    return new ComparisonCondition(Operator.IN, xpr, Assert.notNull(query));
+  }
+
   public static IsCondition in(String src, String fld, SqlSelect query) {
-    Assert.notNull(query);
     return new ComparisonCondition(Operator.IN, field(src, fld), query);
   }
 

@@ -27,6 +27,10 @@ public final class ServiceConstants {
   public static final String PRM_DEFAULT_WARRANTY_TYPE = "DefaultWarrantyType";
   public static final String PRM_MAINTENANCE_SERVICE_GROUP = "MaintenanceServiceGroup";
   public static final String PRM_URGENT_RATE = "UrgentRate";
+  public static final String PRM_SMS_REQUEST_SERVICE_ADDRESS = "SmsRequestServiceAddress";
+  public static final String PRM_SMS_REQUEST_SERVICE_USER_NAME = "SmsRequestServiceUserName";
+  public static final String PRM_SMS_REQUEST_SERVICE_PASSWORD = "SmsRequestServicePassword";
+  public static final String PRM_SMS_REQUEST_SERVICE_FROM = "SmsRequestServiceFrom";
 
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_CREATE_DEFECT_ITEMS = "CreateDefectItems";
@@ -34,6 +38,7 @@ public final class ServiceConstants {
   public static final String SVC_COPY_DOCUMENT_CRITERIA = "CopyDocumentCriteria";
   public static final String SVC_UPDATE_SERVICE_MAINTENANCE_OBJECT
           = "update_service_maintenance_object";
+  public static final String SVC_INFORM_CUSTOMER = "inform_customer";
 
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";
@@ -84,6 +89,8 @@ public final class ServiceConstants {
   public static final String COL_MESSAGE = "Message";
   public static final String COL_NOTIFY_CUSTOMER = "NotifyCustomer";
   public static final String COL_SHOW_CUSTOMER = "ShowCustomer";
+  public static final String COL_SEND_EMAIL = "SentEmail";
+  public static final String COL_SEND_SMS = "SentSms";
   public static final String COL_SERVICE_CATEGORY = "Category";
   public static final String COL_SERVICE_ADDRESS = "Address";
   public static final String COL_SERVICE_CUSTOMER = "Customer";
@@ -98,7 +105,9 @@ public final class ServiceConstants {
   public static final String COL_SERVICE_OBJECT = "ServiceObject";
 
   public static final String COL_SERVICE_CATEGORY_NAME = "Name";
+  public static final String COL_STATE_COMMENT = "StateComment";
 
+  public static final String COL_MANUFACTURER = "Manufacturer";
   public static final String COL_MAINTENANCE_DATE = "Date";
   public static final String COL_MAINTENANCE_ITEM = "Item";
   public static final String COL_MAINTENANCE_INVOICE = "Invoice";

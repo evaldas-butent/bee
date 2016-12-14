@@ -3,7 +3,7 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
         xmlns:ui="http://www.butent.com/ui"
 
-        name="CargoPlace" width="450" height="550"
+        name="CargoPlace" width="450" height="560"
 >
   <Table kind="controls">
     <col index="0" kind="label" />

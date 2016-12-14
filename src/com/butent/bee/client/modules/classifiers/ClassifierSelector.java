@@ -68,7 +68,7 @@ public class ClassifierSelector implements SelectorEvent.Handler {
   }
 
   private static void handleCities(SelectorEvent event) {
-    if (!event.isChanged()) {
+    if (!event.isChangePending()) {
       return;
     }
 

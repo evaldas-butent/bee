@@ -5,7 +5,7 @@
       source="OrderCargo"
       editForm="OrderCargo"
       caption="=cargos"
-    >
+>
   <Relation renderColumns="Description" />
   <Columns>
     <SimpleColumn name="Order" />
@@ -39,10 +39,6 @@
     </ExternalJoin>
 
     <SimpleColumn name="Directions" />
-    <SimpleColumn name="Currency" />
-    <SimpleJoin joinType="LEFT" name="Currency">
-      <SimpleColumn name="Name" alias="CurrencyName" />
-    </SimpleJoin>
 
     <SimpleColumn name="CargoType" />
     <SimpleJoin joinType="LEFT" name="CargoType">

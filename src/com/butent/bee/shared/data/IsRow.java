@@ -65,6 +65,10 @@ public interface IsRow extends HasCustomProperties {
 
   boolean isEditable();
 
+  default boolean isEmpty(int index) {
+    return BeeUtils.isEmpty(getString(index));
+  }
+
   default boolean isIndex(int index) {
     return index >= 0 && index < getNumberOfCells();
   }

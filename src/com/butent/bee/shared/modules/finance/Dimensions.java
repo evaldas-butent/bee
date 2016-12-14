@@ -30,9 +30,13 @@ public final class Dimensions {
   public static final String TBL_NAMES = "DimensionNames";
   public static final String VIEW_NAMES = "DimensionNames";
 
+  public static final String TBL_EXTRA_DIMENSIONS = "ExtraDimensions";
+
   public static final String COL_ORDINAL = "Ordinal";
   public static final String COL_PLURAL_NAME = "PluralName";
   public static final String COL_SINGULAR_NAME = "SingularName";
+
+  public static final String COL_EXTRA_DIMENSIONS = "ExtraDimensions";
 
   public static final String GRID_NAMES = "DimensionNames";
 
@@ -130,9 +134,13 @@ public final class Dimensions {
     BeeRowSet rowSet = BeeRowSet.restore(serialized);
 
     setObserved(BeeUtils.toIntOrNull(rowSet.getTableProperty(PRM_DIMENSIONS)));
+    loadNames(rowSet, Localized.dictionary().languageTag());
 
-    if (!rowSet.isEmpty()) {
-      String language = Localized.dictionary().languageTag();
+    logger.info("dimensions", observed);
+  }
+
+  public static synchronized void loadNames(BeeRowSet rowSet, String language) {
+    if (!DataUtils.isEmpty(rowSet)) {
       int ordinalIndex = rowSet.getColumnIndex(COL_ORDINAL);
 
       for (BeeRow row : rowSet) {
@@ -142,8 +150,6 @@ public final class Dimensions {
         setSingular(ordinal, DataUtils.getTranslation(rowSet, row, COL_SINGULAR_NAME, language));
       }
     }
-
-    logger.info("dimensions", observed);
   }
 
   public static int getObserved() {

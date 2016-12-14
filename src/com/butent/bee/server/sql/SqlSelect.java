@@ -396,13 +396,14 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
     return getReference();
   }
 
-  public void addGroup(IsExpression... group) {
+  public SqlSelect addGroup(IsExpression... group) {
     if (BeeUtils.isEmpty(groupList)) {
       groupList = new ArrayList<>();
     }
     for (IsExpression grp : group) {
       groupList.add(grp);
     }
+    return getReference();
   }
 
   /**

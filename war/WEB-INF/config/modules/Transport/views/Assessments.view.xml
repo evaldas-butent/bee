@@ -114,11 +114,6 @@
       <SimpleColumn name="Number" label="=refNumber" />
       <SimpleColumn name="Directions" alias="Shipper" label="=shipper" />
 
-      <SimpleColumn name="Currency" />
-      <SimpleJoin joinType="LEFT" name="Currency">
-        <SimpleColumn name="Name" alias="CurrencyName" />
-      </SimpleJoin>
-
       <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
         <HiddenColumn name="Sale" alias="Incomes" />
         <AggregateColumn name="Sale" alias="IncomesCommited" aggregate="MIN">

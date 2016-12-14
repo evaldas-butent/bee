@@ -12,7 +12,6 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.view.edit.EditEndEvent;
-import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -25,7 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-abstract class MaintenanceStateChangeInterceptor extends PrintFormInterceptor {
+abstract class MaintenanceStateChangeInterceptor extends MaintenanceExpanderForm {
 
   private static final String DEFAULT_QUANTITY = "1";
 
@@ -38,8 +37,7 @@ abstract class MaintenanceStateChangeInterceptor extends PrintFormInterceptor {
         && !BeeUtils.same(event.getNewValue(), event.getOldValue())) {
 
       Long stateId = BeeUtils.toLong(event.getNewValue());
-      Long maintenanceTypeId = event.getRowValue()
-          .getLong(Data.getColumnIndex(getViewName(), COL_TYPE));
+      Long maintenanceTypeId = event.getRowValue().getLong(getDataIndex(COL_TYPE));
 
       Queries.getRowSet(TBL_STATE_PROCESS, null,
           ServiceUtils.getStateFilter(stateId, maintenanceTypeId), new Queries.RowSetCallback() {
@@ -69,14 +67,14 @@ abstract class MaintenanceStateChangeInterceptor extends PrintFormInterceptor {
                   if (!BeeUtils.isEmpty(warrantyValidToValue)) {
                     columns.add(COL_WARRANTY_VALID_TO);
 
-                    int warrantyIndex = Data.getColumnIndex(getViewName(), COL_WARRANTY_VALID_TO);
+                    int warrantyIndex = getDataIndex(COL_WARRANTY_VALID_TO);
                     oldValues.add(oldRow.getString(warrantyIndex));
                     newValues.add(warrantyValidToValue);
                   }
 
                   Boolean isFinalState = stateProcessRow.getBoolean(Data
                       .getColumnIndex(TBL_STATE_PROCESS, COL_FINITE));
-                  int endingDateIndex = Data.getColumnIndex(getViewName(), COL_ENDING_DATE);
+                  int endingDateIndex = getDataIndex(COL_ENDING_DATE);
                   columns.add(COL_ENDING_DATE);
                   oldValues.add(oldRow.getString(endingDateIndex));
 
@@ -97,9 +95,8 @@ abstract class MaintenanceStateChangeInterceptor extends PrintFormInterceptor {
                       });
 
                 } else {
-                  int stateIdIndex = Data.getColumnIndex(getViewName(),
-                      AdministrationConstants.COL_STATE);
-                  int stateNameIndex = Data.getColumnIndex(getViewName(), ALS_STATE_NAME);
+                  int stateIdIndex = getDataIndex(AdministrationConstants.COL_STATE);
+                  int stateNameIndex = getDataIndex(ALS_STATE_NAME);
 
                   getActiveRow().setValue(stateIdIndex,
                       getFormView().getOldRow().getString(stateIdIndex));

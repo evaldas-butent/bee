@@ -11,18 +11,22 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.data.RowInsertCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -32,6 +36,8 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
@@ -45,9 +51,10 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
@@ -57,6 +64,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
+
+  private FaLabel copyAction;
 
   static void preload(final ScheduledCommand command) {
     Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
@@ -94,28 +103,18 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (BeeUtils.same(name, COL_CURRENCY) && widget instanceof DataSelector) {
-      final DataSelector selector = (DataSelector) widget;
-
-      selector.addEditStopHandler(event -> {
-        if (event.isChanged()) {
-          refresh(BeeUtils.toLongOrNull(selector.getNormalizedValue()));
-        }
-      });
-    } else if (widget instanceof ChildGrid) {
+    if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_CARGO_INCOMES:
-          ((ChildGrid) widget).addReadyHandler(re -> {
-            GridView gridView = ViewHelper.getChildGrid(getFormView(), name);
-
-            if (gridView != null) {
-              gridView.getGrid().addMutationHandler(mu -> {
-                refresh(getLongValue(COL_CURRENCY));
+          ((ChildGrid) widget).setGridInterceptor(new ParentRowRefreshGrid() {
+            @Override
+            public boolean previewModify(Set<Long> rowIds) {
+              if (super.previewModify(rowIds)) {
                 Data.onTableChange(TBL_CARGO_TRIPS, EnumSet.of(DataChangeEvent.Effect.REFRESH));
-              });
+                return true;
+              }
+              return false;
             }
-          });
-          ((ChildGrid) widget).setGridInterceptor(new TransportVatGridInterceptor() {
             @Override
             public void afterCreateEditor(String source, Editor editor, boolean embedded) {
               if ((BeeUtils.same(source, COL_CARGO_INCOME) || BeeUtils.same(source, COL_SERVICE))
@@ -214,43 +213,13 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
               expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY), currency);
 
               Queries.insert(expensesView.getViewName(), expensesView.getColumns(), expenseRow,
-                  new RowCallback() {
-                    @Override
-                    public void onSuccess(BeeRow result) {
-                      RowInsertEvent.fire(BeeKeeper.getBus(), expensesView.getViewName(), result,
-                          form.getId());
-                      refresh(form.getLongValue(COL_CURRENCY));
-                    }
-                  });
+                  new RowInsertCallback(expensesView.getViewName(), form.getId()));
             }
           });
           break;
 
         case TBL_CARGO_EXPENSES:
-          ((ChildGrid) widget).setGridInterceptor(new TransportVatGridInterceptor() {
-            @Override
-            public void afterCreateEditor(String source, Editor editor, boolean embedded) {
-              if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {
-                ((DataSelector) editor).addSelectorHandler(OrderCargoForm.this);
-              }
-              super.afterCreateEditor(source, editor, embedded);
-            }
-
-            @Override
-            public ColumnDescription beforeCreateColumn(GridView gridView,
-                ColumnDescription descr) {
-              if (!TransportHandler.bindExpensesToIncomes()
-                  && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
-                return null;
-              }
-              return super.beforeCreateColumn(gridView, descr);
-            }
-
-            @Override
-            public GridInterceptor getInstance() {
-              return null;
-            }
-          });
+          ((ChildGrid) widget).setGridInterceptor(new CargoExpensesGrid());
           break;
 
         case VIEW_CARGO_TRIPS:
@@ -267,6 +236,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     Widget cmrWidget = form.getWidgetBySource(COL_CARGO_CMR);
+
     if (cmrWidget instanceof DataSelector) {
       Filter filter;
 
@@ -341,10 +311,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES) && event.isOpened()) {
-      event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getActiveRowId()));
-
-    } else if (BeeUtils.containsSame(event.getRelatedViewName(), TBL_SERVICES)) {
+    if (BeeUtils.containsSame(event.getRelatedViewName(), TBL_SERVICES)) {
       DataInfo servicesView = Data.getDataInfo(TBL_SERVICES);
       IsRow row = event.getRelatedRow();
 
@@ -403,6 +370,10 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     }
     header.addCommandItem(new Profit(COL_CARGO, BeeUtils.toString(row.getId())));
 
+    if (!DataUtils.isNewRow(row)) {
+      header.addCommandItem(getCopyAction());
+    }
+
     return true;
   }
 
@@ -448,32 +419,59 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     return BeeUtils.round(val * percents / 100.0, 2);
   }
 
-  private void refresh(Long currency) {
-    Widget widget = getWidgetByName(COL_AMOUNT);
+  private IdentifiableWidget getCopyAction() {
+    if (copyAction == null) {
+      copyAction = new FaLabel(FontAwesome.COPY);
+      copyAction.setTitle(Localized.dictionary().actionCopy());
 
-    if (widget != null) {
-      widget.getElement().setInnerText(null);
-      Long id = getActiveRowId();
+      copyAction.addClickHandler(clickEvent -> {
+        DataInfo info = Data.getDataInfo(getViewName());
+        BeeRow cargo = DataUtils.cloneRow(getActiveRow());
+        cargo.setId(DataUtils.NEW_ROW_ID);
+        cargo.setProperties(null);
 
-      if (!DataUtils.isId(id)) {
-        return;
-      }
-      ParameterList args = TransportHandler.createArgs(SVC_GET_CARGO_TOTAL);
-      args.addDataItem(COL_CARGO, id);
+        RowFactory.createRow(FORM_CARGO, null, info, cargo, Modality.ENABLED, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow newCargo) {
+            String[] gridList = new String[] {TBL_CARGO_LOADING, TBL_CARGO_UNLOADING};
 
-      if (DataUtils.isId(currency)) {
-        args.addDataItem(COL_CURRENCY, currency);
-      }
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(getFormView());
+            Runnable onCloneChildren = new Runnable() {
+              int copiedGrids;
 
-          if (!response.hasErrors()) {
-            widget.getElement().setInnerText(response.getResponseAsString());
+              @Override
+              public void run() {
+                if (Objects.equals(gridList.length, ++copiedGrids)) {
+                  RowEditor.open(getViewName(), newCargo.getId(), Opener.MODAL);
+                }
+              }
+            };
+            for (String grid : gridList) {
+              GridView gridView = ViewHelper.getChildGrid(getFormView(), grid);
+              BeeRowSet newPlaces = Data.createRowSet(gridView.getViewName());
+              int cargoIdx = newPlaces.getColumnIndex(COL_CARGO);
+
+              for (IsRow row : gridView.getRowData()) {
+                BeeRow cloned = DataUtils.cloneRow(row);
+                cloned.setValue(cargoIdx, newCargo.getId());
+                newPlaces.addRow(cloned);
+              }
+              if (!newPlaces.isEmpty()) {
+                newPlaces = DataUtils.createRowSetForInsert(newPlaces);
+                newPlaces.removeColumn(newPlaces.getColumnIndex(COL_PLACE_DATE));
+                Queries.insertRows(newPlaces, new RpcCallback<RowInfoList>() {
+                  @Override
+                  public void onSuccess(RowInfoList result) {
+                    onCloneChildren.run();
+                  }
+                });
+              } else {
+                onCloneChildren.run();
+              }
+            }
           }
-        }
+        });
       });
     }
+    return copyAction;
   }
 }

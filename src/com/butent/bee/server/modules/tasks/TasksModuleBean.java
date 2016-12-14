@@ -3226,10 +3226,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       return;
     }
     long timeRemaining = timer.getTimeRemaining();
-    logger.info("task reminder timeout, time remainining", timeRemaining);
+    logger.debug("task reminder timeout, time remainining", timeRemaining);
 
     int count = sendTaskReminders(timeRemaining);
-    logger.info("sent", count, "task reminders");
+    logger.debug("sent", count, "task reminders");
   }
 
   private Document taskToHtml(long taskId, DateTime startTime, DateTime finishTime,

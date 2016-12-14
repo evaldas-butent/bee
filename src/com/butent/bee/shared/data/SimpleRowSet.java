@@ -131,6 +131,10 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       return getRowSet().hasColumn(colName);
     }
 
+    public boolean isTrue(String colName) {
+      return BeeUtils.isTrue(getBoolean(colName));
+    }
+
     public void setValue(int colIndex, String value) {
       getRowSet().setValue(rowIndex, colIndex, value);
     }

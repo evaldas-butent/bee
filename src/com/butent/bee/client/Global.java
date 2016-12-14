@@ -494,7 +494,7 @@ public final class Global {
   }
 
   public static void showError(List<String> messages) {
-    showError(Localized.dictionary().error(), messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM,
+    showError(Localized.dictionary().error(), messages, MessageBoxes.STYLE_MESSAGE_BOX_ERROR,
         null);
   }
 
@@ -508,7 +508,7 @@ public final class Global {
   }
 
   public static void showError(String caption, List<String> messages) {
-    showError(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null);
+    showError(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_ERROR, null);
   }
 
   public static void showError(String caption, List<String> messages, String dialogStyle) {
@@ -521,7 +521,7 @@ public final class Global {
   }
 
   public static void showInfo(List<String> messages) {
-    showInfo(null, messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null);
+    showInfo(null, messages, MessageBoxes.STYLE_MESSAGE_BOX_INFO, null);
   }
 
   public static void showInfo(String message) {
@@ -534,7 +534,7 @@ public final class Global {
   }
 
   public static void showInfo(String caption, List<String> messages) {
-    showInfo(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_CONFIRM, null);
+    showInfo(caption, messages, MessageBoxes.STYLE_MESSAGE_BOX_INFO, null);
   }
 
   public static void showInfo(String caption, List<String> messages, String dialogStyle) {

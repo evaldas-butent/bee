@@ -17,6 +17,8 @@
     <Relation name="Indicator" relation="FinancialIndicators" label="=finIndicator" />
     <Relation name="BudgetType" relation="BudgetTypes" label="=finBudgetType" />
 
+    <Relation name="Currency" relation="Currencies" label="=currency" />
+
     <Numeric name="Year" precision="4" label="=year" />
 
     <Boolean name="EntryDim01" />

@@ -18,16 +18,15 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
@@ -61,29 +60,25 @@ import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
-import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -107,6 +102,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -288,107 +284,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
   }
 
-  private class ForwardersGrid extends AbstractGridInterceptor {
-    private static final String SERVICE_CARGO = "ServiceCargo";
-    private static final String SUPPLIER = "Supplier";
-    private static final String FORWARDER = "Forwarder";
-
-    @Override
-    public void afterInsertRow(IsRow result) {
-      refresh();
-    }
-
-    @Override
-    public void afterDeleteRow(long rowId) {
-      refresh();
-    }
-
-    @Override
-    public void afterUpdateRow(IsRow result) {
-      refresh();
-    }
-
-    @Override
-    public GridInterceptor getInstance() {
-      return new ForwardersGrid();
-    }
-
-    @Override
-    public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
-      super.onReadyForInsert(gridView, event);
-
-      List<BeeColumn> columns = event.getColumns();
-      List<String> values = event.getValues();
-
-      String cargo = form.getStringValue(COL_CARGO);
-
-      columns.add(DataUtils.getColumn(COL_CARGO, gridView.getDataColumns()));
-      values.add(cargo);
-      columns.add(DataUtils.getColumn(SERVICE_CARGO, gridView.getDataColumns()));
-      values.add(cargo);
-
-      if (DataUtils.getColumn(SUPPLIER, columns) == null) {
-        columns.add(DataUtils.getColumn(SUPPLIER, gridView.getDataColumns()));
-        values.add(values.get(DataUtils.getColumnIndex(FORWARDER, columns)));
-      }
-    }
-
-    private void refresh() {
-      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_EXPENSES);
-      refreshTotals();
-    }
-  }
-
-  private class ServicesGrid extends AbstractGridInterceptor {
-    @Override
-    public void afterCreateEditor(String source, Editor editor, boolean embedded) {
-      if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {
-        ((DataSelector) editor).addSelectorHandler(AssessmentForm.this);
-      }
-      super.afterCreateEditor(source, editor, embedded);
-    }
-
-    @Override
-    public void afterDeleteRow(long rowId) {
-      if (BeeUtils.same(getViewName(), TBL_CARGO_EXPENSES)) {
-        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_ASSESSMENT_FORWARDERS);
-      }
-      refreshTotals();
-    }
-
-    @Override
-    public void afterInsertRow(IsRow result) {
-      refreshTotals();
-    }
-
-    @Override
-    public void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
-        boolean rowMode) {
-      if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
-          COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-        refreshTotals();
-      }
-      if (BeeUtils.same(getViewName(), TBL_CARGO_EXPENSES)) {
-        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_ASSESSMENT_FORWARDERS);
-      }
-    }
-
-    @Override
-    public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription descr) {
-      if (!TransportHandler.bindExpensesToIncomes()
-          && Objects.equals(gridView.getViewName(), TBL_CARGO_EXPENSES)
-          && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
-        return null;
-      }
-      return super.beforeCreateColumn(gridView, descr);
-    }
-
-    @Override
-    public GridInterceptor getInstance() {
-      return new ServicesGrid();
-    }
-  }
-
   private final class StatusUpdater implements ClickHandler {
 
     private final AssessmentStatus status;
@@ -553,7 +448,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private ChildGrid childAssessments;
   private HasWidgets statusLabel;
   private InputBoolean expensesRegistered;
-  private ChildGrid childExpenses;
   private DataSelector manager;
   private final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
   private final Multimap<Long, Long> departmentHeads = HashMultimap.create();
@@ -565,34 +459,37 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       WidgetDescriptionCallback callback) {
 
     if (widget instanceof ChildGrid) {
-      ChildGrid grid = (ChildGrid) widget;
-      AbstractGridInterceptor interceptor = null;
+      switch (name) {
+        case TBL_CARGO_INCOMES:
+          ((ChildGrid) widget).setGridInterceptor(new ParentRowRefreshGrid());
+          break;
 
-      if (BeeUtils.same(name, VIEW_CHILD_ASSESSMENTS)) {
-        childAssessments = grid;
-        interceptor = new ChildAssessmentsGrid();
+        case TBL_CARGO_EXPENSES:
+          ((ChildGrid) widget).setGridInterceptor(new CargoExpensesGrid() {
+            @Override
+            public boolean previewModify(Set<Long> rowIds) {
+              if (super.previewModify(rowIds)) {
+                Data.onTableChange(TBL_ASSESSMENT_FORWARDERS,
+                    EnumSet.of(DataChangeEvent.Effect.REFRESH));
+                return true;
+              }
+              return false;
+            }
+          });
+          break;
 
-      } else if (BeeUtils.same(name, TBL_ASSESSMENT_FORWARDERS)) {
-        interceptor = new ForwardersGrid();
+        case VIEW_CHILD_ASSESSMENTS:
+          childAssessments = (ChildGrid) widget;
+          childAssessments.setGridInterceptor(new ChildAssessmentsGrid());
+          break;
 
-      } else if (BeeUtils.inListSame(name, TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES)) {
-        interceptor = new ServicesGrid();
-
-        if (BeeUtils.same(name, TBL_CARGO_EXPENSES)) {
-          childExpenses = grid;
-        }
+        case TBL_ASSESSMENT_FORWARDERS:
+          ((ChildGrid) widget).setGridInterceptor(new AssessmentForwardersGrid());
+          break;
       }
-      if (interceptor != null) {
-        grid.setGridInterceptor(interceptor);
-      }
-    } else if (widget instanceof DataSelector) {
-      if (BeeUtils.same(name, COL_CURRENCY)) {
-        ((DataSelector) widget).addSelectorHandler(this);
-
-      } else if (BeeUtils.same(name, COL_ORDER_MANAGER)) {
-        manager = (DataSelector) widget;
-        manager.addSelectorHandler(this);
-      }
+    } else if (BeeUtils.same(name, COL_ORDER_MANAGER) && widget instanceof DataSelector) {
+      manager = (DataSelector) widget;
+      manager.addSelectorHandler(this);
 
     } else if (BeeUtils.same(name, COL_STATUS) && widget instanceof HasWidgets) {
       statusLabel = (HasWidgets) widget;
@@ -700,7 +597,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       manager.setEnabled(false);
     }
     onValueChange(null);
-    refreshTotals();
   }
 
   @Override
@@ -710,21 +606,13 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (BeeUtils.same(event.getRelatedViewName(), TBL_CURRENCIES)) {
-      if (event.isChanged() && !isNewRow()) {
-        refreshTotals();
-      }
-    } else if (Objects.equals(event.getSelector(), manager)) {
+    if (Objects.equals(event.getSelector(), manager)) {
       if (event.isOpened()) {
         manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
 
       } else if (event.isChanged()) {
         updateDepartment(form, form.getActiveRow(),
             Data.getLong(event.getRelatedViewName(), event.getRelatedRow(), COL_DEPARTMENT));
-      }
-    } else if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES)) {
-      if (event.isOpened()) {
-        event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getLongValue(COL_CARGO)));
       }
     }
   }
@@ -776,8 +664,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
   @Override
   public void onValueChange(ValueChangeEvent<String> event) {
-    if (childExpenses != null && expensesRegistered != null) {
-      childExpenses.setEnabled(isExecutor() && !expensesRegistered.isChecked()
+    Widget childExpenses = getWidgetByName(TBL_CARGO_EXPENSES);
+
+    if (childExpenses != null && childExpenses instanceof ChildGrid && expensesRegistered != null) {
+      ((ChildGrid) childExpenses).setEnabled(isExecutor() && !expensesRegistered.isChecked()
           && !AssessmentStatus.LOST.is(form.getIntegerValue(COL_ASSESSMENT_STATUS))
           && !OrderStatus.CANCELED.is(form.getIntegerValue(ALS_ORDER_STATUS)));
     }
@@ -859,9 +749,14 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         c++;
       }
     }
-    String total = form.getWidgetByName(VAR_INCOME + VAR_TOTAL).getElement().getInnerText();
+    IsRow row = form.getActiveRow();
+
+    Double total = BeeUtils.sum(Arrays.asList(row.getPropertyDouble(TBL_CARGO_INCOMES + VAR_TOTAL),
+        row.getPropertyDouble(VIEW_CHILD_ASSESSMENTS + TBL_CARGO_INCOMES + VAR_TOTAL)));
+
     table.setText(c, 0, Localized.dictionary().customerPrice());
-    table.setText(c, 1, BeeUtils.joinWords(total, form.getStringValue("CurrencyName")));
+    table.setText(c, 1, BeeUtils.joinWords(BeeUtils.round(total, 2),
+        ClientDefaults.getCurrencyName()));
 
     SelfServiceUtils.getCargoPlaces(Filter.equals(COL_CARGO, form.getLongValue(COL_CARGO)),
         (loading, unloading) -> {
@@ -990,12 +885,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     return DataUtils.isNewRow(form.getActiveRow());
   }
 
-  private void refreshTotals() {
-    updateTotals(form, form.getActiveRow(), form.getWidgetByName(VAR_INCOME + VAR_TOTAL),
-        form.getWidgetByName(VAR_EXPENSE + VAR_TOTAL), form.getWidgetByName("Profit"),
-        form.getWidgetByName(VAR_INCOME), form.getWidgetByName(VAR_EXPENSE));
-  }
-
   private void sendMail(String content, FileInfo... attachments) {
     long id = form.getActiveRowId();
 
@@ -1032,75 +921,5 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       row.setValue(formView.getDataIndex(COL_DEPARTMENT_NAME), departments.get(dept));
       formView.refreshBySource(COL_DEPARTMENT_NAME);
     }
-  }
-
-  private static void updateTotals(final FormView formView, IsRow row,
-      final Widget incomeTotalWidget, final Widget expenseTotalWidget, final Widget profitWidget,
-      final Widget incomeWidget, final Widget expenseWidget) {
-
-    boolean ok = false;
-
-    for (Widget widget : new Widget[] {
-        incomeTotalWidget, expenseTotalWidget, profitWidget, incomeWidget, expenseWidget}) {
-      if (widget != null) {
-        ok = true;
-        widget.getElement().setInnerText(null);
-      }
-    }
-    if (!ok || row == null || !DataUtils.isId(row.getId())) {
-      return;
-    }
-    ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
-    args.addDataItem(COL_ASSESSMENT, row.getId());
-
-    Long curr = DataUtils.getLong(formView.getDataColumns(), row, COL_CURRENCY);
-
-    if (DataUtils.isId(curr)) {
-      args.addDataItem(COL_CURRENCY, curr);
-    }
-    if (!DataUtils.isId(row.getLong(formView.getDataIndex(COL_ASSESSMENT)))) {
-      args.addDataItem("isPrimary", 1);
-    }
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(formView);
-
-        if (response.hasErrors()) {
-          return;
-        }
-        SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
-
-        double income = BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES, COL_AMOUNT)), 2);
-        double expense = BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES, COL_AMOUNT)), 2);
-        double incomeTotal = BeeUtils.round(BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES + VAR_TOTAL, COL_AMOUNT)), 2)
-            + income, 2);
-        double expenseTotal = BeeUtils.round(BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES + VAR_TOTAL,
-                COL_AMOUNT)), 2) + expense, 2);
-
-        if (incomeTotalWidget != null) {
-          incomeTotalWidget.getElement().setInnerText(BeeUtils.toString(incomeTotal));
-        }
-        if (expenseTotalWidget != null) {
-          expenseTotalWidget.getElement().setInnerText(BeeUtils.toString(expenseTotal));
-        }
-        if (profitWidget != null) {
-          profitWidget.getElement()
-              .setInnerText(BeeUtils.toString(BeeUtils.round(incomeTotal - expenseTotal, 2)));
-        }
-        if (incomeWidget != null) {
-          incomeWidget.getElement()
-              .setInnerText(income != 0 ? BeeUtils.parenthesize(income) : null);
-        }
-        if (expenseWidget != null) {
-          expenseWidget.getElement()
-              .setInnerText(expense != 0 ? BeeUtils.parenthesize(expense) : null);
-        }
-      }
-    });
   }
 }

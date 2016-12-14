@@ -20,6 +20,19 @@ public final class FinanceConstants {
   public static final String TBL_FINANCE_CONTENTS = "FinanceContents";
   public static final String TBL_FINANCE_DISTRIBUTION = "FinanceDistribution";
 
+  public static final String TBL_FINANCIAL_INDICATORS = "FinancialIndicators";
+  public static final String TBL_INDICATOR_ACCOUNTS = "IndicatorAccounts";
+  public static final String TBL_INDICATOR_FILTERS = "IndicatorFilters";
+
+  public static final String TBL_BUDGET_TYPES = "BudgetTypes";
+  public static final String TBL_BUDGET_HEADERS = "BudgetHeaders";
+  public static final String TBL_BUDGET_ENTRIES = "BudgetEntries";
+
+  public static final String TBL_ANALYSIS_HEADERS = "AnalysisHeaders";
+  public static final String TBL_ANALYSIS_COLUMNS = "AnalysisColumns";
+  public static final String TBL_ANALYSIS_ROWS = "AnalysisRows";
+  public static final String TBL_ANALYSIS_FILTERS = "AnalysisFilters";
+
   public static final String VIEW_FINANCIAL_RECORDS = "FinancialRecords";
 
   public static final String VIEW_FINANCE_CONFIGURATION = "FinanceConfiguration";
@@ -39,6 +52,9 @@ public final class FinanceConstants {
   public static final String VIEW_BUDGET_ENTRIES = "BudgetEntries";
 
   public static final String VIEW_ANALYSIS_HEADERS = "AnalysisHeaders";
+  public static final String VIEW_ANALYSIS_COLUMNS = "AnalysisColumns";
+  public static final String VIEW_ANALYSIS_ROWS = "AnalysisRows";
+  public static final String VIEW_ANALYSIS_FILTERS = "AnalysisFilters";
 
   public static final String COL_FIN_JOURNAL = "Journal";
   public static final String COL_FIN_DATE = "Date";
@@ -99,6 +115,10 @@ public final class FinanceConstants {
   public static final String COL_INDICATOR_ACCOUNT_CREDIT = "Credit";
   public static final String COL_INDICATOR_ACCOUNT_PLUS = "Plus";
 
+  public static final String COL_INDICATOR_FILTER_EMPLOYEE = "Employee";
+  public static final String COL_INDICATOR_FILTER_EXTRA = "ExtraFilter";
+  public static final String COL_INDICATOR_FILTER_INCLUDE = "Include";
+
   public static final String COL_BUDGET_TYPE_NAME = "BudgetTypeName";
 
   public static final String COL_BUDGET_NAME = "BudgetName";
@@ -133,11 +153,8 @@ public final class FinanceConstants {
   public static final String COL_ACCOUNT_NORMAL_BALANCE = "NormalBalance";
 
   public static final String COL_ANALYSIS_NAME = "AnalysisName";
-  public static final String COL_ANALYSIS_HEADER = "AnalysisHeader";
-
   public static final String COL_ANALYSIS_HEADER_ORDINAL = "Ordinal";
   public static final String COL_ANALYSIS_HEADER_EMPLOYEE = "Employee";
-  public static final String COL_ANALYSIS_HEADER_INDICATOR = "Indicator";
   public static final String COL_ANALYSIS_HEADER_BUDGET_TYPE = "BudgetType";
   public static final String COL_ANALYSIS_HEADER_YEAR_FROM = "YearFrom";
   public static final String COL_ANALYSIS_HEADER_MONTH_FROM = "MonthFrom";
@@ -210,6 +227,14 @@ public final class FinanceConstants {
       "RowSplit01", "RowSplit02", "RowSplit03", "RowSplit04", "RowSplit05",
       "RowSplit06", "RowSplit07", "RowSplit08", "RowSplit09", "RowSplit10"
   };
+
+  public static final String COL_ANALYSIS_HEADER = "AnalysisHeader";
+  public static final String COL_ANALYSIS_COLUMN = "AnalysisColumn";
+  public static final String COL_ANALYSIS_ROW = "AnalysisRow";
+
+  public static final String COL_ANALYSIS_FILTER_EMPLOYEE = "Employee";
+  public static final String COL_ANALYSIS_FILTER_EXTRA = "ExtraFilter";
+  public static final String COL_ANALYSIS_FILTER_INCLUDE = "Include";
 
   public static final String ALS_JOURNAL_BACKGROUND = "JournalBackground";
   public static final String ALS_JOURNAL_FOREGROUND = "JournalForeground";
@@ -315,6 +340,9 @@ public final class FinanceConstants {
 
   public static final int ANALYSIS_MIN_SCALE = 0;
   public static final int ANALYSIS_MAX_SCALE = 5;
+
+  public static final int ANALYSIS_MIN_YEAR = 2000;
+  public static final int ANALYSIS_MAX_YEAR = 2099;
 
   public static void register() {
     EnumUtils.register(IndicatorKind.class);
