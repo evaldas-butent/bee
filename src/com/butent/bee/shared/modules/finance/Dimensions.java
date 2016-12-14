@@ -81,6 +81,10 @@ public final class Dimensions {
     }
   }
 
+  public static String getTableName(Integer ordinal) {
+    return getViewName(ordinal);
+  }
+
   public static String getViewName(Integer ordinal) {
     return isValid(ordinal) ? VIEWS[ordinal - 1] : null;
   }

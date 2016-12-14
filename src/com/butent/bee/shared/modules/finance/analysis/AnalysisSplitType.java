@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.finance.analysis;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -35,6 +36,11 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.employee();
+    }
+
+    @Override
+    public String getFinColumnn() {
+      return FinanceConstants.COL_FIN_EMPLOYEE;
     }
   },
 
@@ -109,6 +115,29 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     } else {
       return null;
     }
+  }
+
+  public String getFinColumnn() {
+    switch (kind) {
+      case PERIOD:
+        return FinanceConstants.COL_FIN_DATE;
+      case DIMENSION:
+        return Dimensions.getRelationColumn(index);
+      default:
+        return null;
+    }
+  }
+
+  public int getIndex() {
+    return index;
+  }
+
+  public boolean isDimension() {
+    return kind == Kind.DIMENSION;
+  }
+
+  public boolean isPeriod() {
+    return kind == Kind.PERIOD;
   }
 
   public boolean visibleForColumns() {
