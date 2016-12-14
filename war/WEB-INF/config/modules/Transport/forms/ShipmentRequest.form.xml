@@ -248,13 +248,7 @@
       <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
                     newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
     </HorizontalPanel>
-
     &separator;
-    <FlowPanel style="padding-bottom: 3px; padding-left: 1em;">
-      <CheckBox name="agreeTermsCheckBox" text="=trAgreeWithConditions"/>
-      <FaLabel name="AgreeTerms" char="question_circle" disablable="false"
-               style="display: inline-block; margin-left: 5px;"/>
-    </FlowPanel>
 
     <Details name="AdditionalInfo" open="true">
       <Summary text="=trRequestAdditionalInfo" style="&summary;" />

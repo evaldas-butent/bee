@@ -76,9 +76,6 @@
     <DataColumn name="CargoTypeName" caption="=trCargoType" />
 
     <DataColumn name="CargoGroupName" caption="=group" />
-
-    <DataColumn name="MinLoadingDate"/>
-    <DataColumn name="MaxUnloadingDate"/>
   </g:columns>
 
   <g:rowEditable>

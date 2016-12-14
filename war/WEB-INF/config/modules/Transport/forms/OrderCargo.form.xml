@@ -6,6 +6,7 @@
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="OrderCargo" viewName="OrderCargo" caption="=cargo" showRowId="true"
         width="900" height="870"
