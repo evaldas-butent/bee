@@ -58,7 +58,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -99,7 +98,6 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
-import com.lowagie.text.Row;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -308,6 +306,10 @@ public class TransportModuleBean implements BeeModule {
           .addOrder(TBL_CARGO_PLACES, COL_PLACE_ORDINAL, COL_PLACE_DATE)
           .addOrder(als, VAR_UNLOADING)));
 
+    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_AMOUNTS)) {
+      response = getAssessmentAmounts(reqInfo.getParameter(VAR_VIEW_NAME),
+          Filter.restore(reqInfo.getParameter(EcConstants.VAR_FILTER)));
+
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_QUANTITY_REPORT)) {
       response = getAssessmentQuantityReport(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TURNOVER_REPORT)) {
@@ -410,7 +412,8 @@ public class TransportModuleBean implements BeeModule {
             COL_CARGO_TYPE_NAME),
         BeeParameter.createRelation(module, PRM_CARGO_SERVICE, TBL_SERVICES, COL_SERVICE_NAME),
         BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true),
-        BeeParameter.createRelation(module, PRM_SALES_RESPONSIBILITY, TBL_RESPONSIBILITIES,"Name"));
+        BeeParameter
+            .createRelation(module, PRM_SALES_RESPONSIBILITY, TBL_RESPONSIBILITIES, "Name"));
   }
 
   @Override
@@ -835,7 +838,7 @@ public class TransportModuleBean implements BeeModule {
 
           IsExpression amountExch = ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_SALES,
               COL_AMOUNT), SqlUtils.field(TBL_SALES, COL_TRADE_CURRENCY), SqlUtils.field(TBL_SALES,
-                      COL_DATE), SqlUtils.constant(mainCurrency));
+              COL_DATE), SqlUtils.constant(mainCurrency));
           query.addExpr(amountExch, COL_AMOUNT);
 
           IsExpression paidExch = ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_SALES,
@@ -873,12 +876,12 @@ public class TransportModuleBean implements BeeModule {
 
           if (BeeConst.isUndef(customerIdx)) {
             customer = qs.getLong(new SqlSelect()
-              .addFields(TBL_ORDERS, COL_CUSTOMER)
-              .addFrom(TBL_ASSESSMENTS)
-              .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS,
-                COL_CARGO))
-              .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-              .setWhere(sys.idEquals(TBL_ASSESSMENTS, target)));
+                .addFields(TBL_ORDERS, COL_CUSTOMER)
+                .addFrom(TBL_ASSESSMENTS)
+                .addFromLeft(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS,
+                    COL_CARGO))
+                .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+                .setWhere(sys.idEquals(TBL_ASSESSMENTS, target)));
           } else {
             customer = event.getRow().getLong(customerIdx);
           }
@@ -2065,6 +2068,42 @@ public class TransportModuleBean implements BeeModule {
       qs.insertData(insert);
     }
     return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject getAssessmentAmounts(String viewName, Filter filter) {
+    Map<String, Double> result = new HashMap<>();
+    BeeView view = sys.getView(viewName);
+    Assert.state(BeeUtils.same(view.getSourceName(), TBL_ASSESSMENTS));
+
+    SqlSelect select = view.getQuery(usr.getCurrentUserId(), filter)
+        .resetFields().resetOrder()
+        .addFields(view.getSourceAlias(), view.getSourceIdName());
+
+    for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
+      SqlSelect query = new SqlSelect()
+          .addFrom(TBL_ASSESSMENTS)
+          .addFromInner(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
+          .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+          .addFromInner(tbl, SqlUtils.joinUsing(TBL_ASSESSMENTS, tbl, COL_CARGO))
+          .setWhere(SqlUtils.in(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), select));
+
+      IsExpression xpr = ExchangeUtils.exchangeField(query,
+          TradeModuleBean.getWithoutVatExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
+          SqlUtils.field(tbl, COL_CURRENCY), SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE),
+              SqlUtils.field(TBL_ORDERS, COL_DATE)));
+
+      result.put(tbl, qs.getDouble(query.addSum(xpr, VAR_TOTAL)));
+    }
+    Dictionary loc = usr.getDictionary();
+
+    return ResponseObject.info(BeeUtils.joinWords(loc.incomes(),
+        BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_INCOMES)), 2)),
+        BeeUtils.joinWords(loc.expenses(),
+            BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_EXPENSES)), 2)),
+        BeeUtils.joinWords(loc.profit(),
+            BeeUtils.round(BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_INCOMES)), 2)
+                - BeeUtils.round(BeeUtils.unbox(result.get(TBL_CARGO_EXPENSES)), 2), 2)));
   }
 
   private ResponseObject getAssessmentQuantityReport(RequestInfo reqInfo) {
