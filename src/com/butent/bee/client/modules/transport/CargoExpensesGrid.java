@@ -7,7 +7,6 @@ import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -15,7 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Objects;
 
-public class CargoExpensesGrid extends ParentRowRefreshGrid {
+public class CargoExpensesGrid extends TransportVatGridInterceptor {
 
   private Long parentId;
 

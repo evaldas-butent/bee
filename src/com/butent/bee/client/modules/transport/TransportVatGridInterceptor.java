@@ -9,13 +9,13 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridFormKind;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public abstract class TransportVatGridInterceptor extends AbstractGridInterceptor {
+public abstract class TransportVatGridInterceptor extends ParentRowRefreshGrid {
 
   @Override
   public void onLoad(GridView gridView) {

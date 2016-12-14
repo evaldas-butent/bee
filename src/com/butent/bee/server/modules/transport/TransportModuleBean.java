@@ -462,7 +462,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, PRM_SYNC_ERP_VEHICLES),
         BeeParameter.createText(module, PRM_SYNC_ERP_EMPLOYEES),
         BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true),
-        BeeParameter.createRelation(module, PRM_SALES_RESPONSIBILITY, TBL_RESPONSIBILITIES,"Name"));
+        BeeParameter
+            .createRelation(module, PRM_SALES_RESPONSIBILITY, TBL_RESPONSIBILITIES, "Name"));
   }
 
   @Override
@@ -946,7 +947,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void convertToMainCurrency(ViewQueryEvent event){
+      public void convertToMainCurrency(ViewQueryEvent event) {
         if (event.isAfter(VIEW_SELF_SERVICE_INVOICES)) {
           BeeRowSet rowSet = event.getRowset();
           Long mainCurrency = prm.getRelation(PRM_CURRENCY);
@@ -964,7 +965,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
           IsExpression amountExch = ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_SALES,
               COL_AMOUNT), SqlUtils.field(TBL_SALES, COL_TRADE_CURRENCY), SqlUtils.field(TBL_SALES,
-                      COL_DATE), SqlUtils.constant(mainCurrency));
+              COL_DATE), SqlUtils.constant(mainCurrency));
           query.addExpr(amountExch, COL_AMOUNT);
 
           IsExpression paidExch = ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_SALES,
@@ -2914,7 +2915,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFromInner(getHandlingQuery(clause, Objects.equals(keyColumn, COL_CARGO_TRIP)), als,
             SqlUtils.joinUsing(TBL_CARGO_PLACES, als, sys.getIdName(TBL_CARGO_PLACES))));
 
-    String[] calc = new String[] {COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS,
+    String[] calc = new String[] {
+        COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS,
         COL_UNPLANNED_MANAGER_KM, COL_UNPLANNED_DRIVER_KM};
 
     for (SimpleRow row : rs) {

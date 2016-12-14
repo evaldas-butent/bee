@@ -9,14 +9,12 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
@@ -36,19 +34,16 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
-import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
@@ -106,7 +101,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_CARGO_INCOMES:
-          ((ChildGrid) widget).setGridInterceptor(new ParentRowRefreshGrid() {
+          ((ChildGrid) widget).setGridInterceptor(new TransportVatGridInterceptor() {
             @Override
             public boolean previewModify(Set<Long> rowIds) {
               if (super.previewModify(rowIds)) {
@@ -115,6 +110,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
               }
               return false;
             }
+
             @Override
             public void afterCreateEditor(String source, Editor editor, boolean embedded) {
               if ((BeeUtils.same(source, COL_CARGO_INCOME) || BeeUtils.same(source, COL_SERVICE))

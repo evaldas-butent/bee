@@ -34,18 +34,22 @@
         </bodyStyle>
       </style>
     </PropColumn>
-    <PropColumn name="EstimateKm" type="integer" label="=trEstimateKm" visible="true" >
+    <CalcColumn name="EstimateKm" type="integer" label="=trEstimateKm" visible="true" >
       <dynStyle>
         <ui:inline>color:red;</ui:inline>
-        <ui:expression>row.EstimateKm == 0</ui:expression>
+        <ui:expression>(Number(row.LoadedKilometers) + Number(row.UnplannedManagerKm) + Number(row.EmptyKilometers))==0</ui:expression>
       </dynStyle>
-    </PropColumn>
+      <render>
+        <ui:expression>Number(row.LoadedKilometers) + Number(row.UnplannedManagerKm) + Number(row.EmptyKilometers)</ui:expression>
+      </render>
+    </CalcColumn>
 
     <CalcColumn name="Estimate" type="double" format="0.00" label="=trEstimate" visible="true" >
       <dynStyle>
         <ui:inline>color:red;</ui:inline>
         <ui:function>
-          if (parseInt(row.EstimateKm) > 0 &amp;&amp; parseFloat(row.Income) > 0) {
+          var estimate = Number(row.LoadedKilometers) + Number(row.UnplannedManagerKm) + Number(row.EmptyKilometers);
+          if (estimate > 0 &amp;&amp; parseFloat(row.Income) > 0) {
           return false;
           } else {
           return true;
@@ -54,8 +58,9 @@
       </dynStyle>
       <render>
         <ui:function>
-          if (parseInt(row.EstimateKm) > 0) {
-          return parseFloat(row.Income) / parseInt(row.EstimateKm);
+          var estimate = Number(row.EmptyKilometers) + Number(row.LoadedKilometers) + Number(row.UnplannedManagerKm);
+          if (estimate > 0) {
+          return parseFloat(row.Income) / estimate;
           } else {
           return 0;
           }
