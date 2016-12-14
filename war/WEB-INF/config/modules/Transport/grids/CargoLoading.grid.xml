@@ -6,4 +6,8 @@
         flexGrow="1" flexShrink="1" autoFlex="true"
 >
   <xi:include href="columns/Place.columns.xml" />
+  <g:columns>
+    <RelColumn name="City"/>
+    <RelColumn name="Country"/>
+  </g:columns>
 </g:Grid>

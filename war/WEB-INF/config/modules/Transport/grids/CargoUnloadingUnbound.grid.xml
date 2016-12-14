@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:ui="http://www.butent.com/ui"
 
         name="CargoUnloadingUnbound" viewName="CargoUnloading"
         newRowForm="CargoPlaceUnbound" editForm="CargoPlaceUnbound"
@@ -8,4 +9,16 @@
         flexGrow="1" flexShrink="1" autoFlex="true"
 >
   <xi:include href="columns/Place.columns.xml" />
+  <g:columns>
+    <DataColumn name="CityName">
+      <render>
+        <ui:expression>row.CityName ? row.CityName : row.CityUnbound</ui:expression>
+      </render>
+    </DataColumn>
+    <DataColumn name="CountryName">
+      <render>
+        <ui:expression>row.CountryName ? row.CountryName : row.CountryUnbound</ui:expression>
+      </render>
+    </DataColumn>
+  </g:columns>
 </g:Grid>
