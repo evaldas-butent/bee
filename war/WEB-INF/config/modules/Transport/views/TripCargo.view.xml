@@ -45,7 +45,7 @@
         <SimpleColumn name="Number" alias="CmrNumber" />
       </SimpleJoin>
 
-      <SimpleColumn name="Notes" />
+      <SimpleColumn name="Notes" editable="true"/>
     </SimpleJoin>
 
     <SimpleColumn name="Trailer" />
