@@ -65,26 +65,26 @@
         <text>=cargoHandlingPlaces</text>
         <FlowPanel class="flexBox-vertical">
           <FlowPanel class="flexBox-horizontal" style="overflow: scroll;">
-            <Table kind="controls">
+            <Table kind="controls" cellStyle="vertical-align: top;">
+              <col index="0" cellStyle="padding-left: 10px;" />
               <col index="1" kind="label" />
+              <col index="3" kind="label" />
+              <col index="5" kind="label" />
               <row>
-                <CheckBox source="MultipleSegments" style="padding-left: 10px;"/>
+                <FlowPanel class="flexBox-vertical">
+                  <CheckBox source="MultipleSegments"/>
+                  <CheckBox source="CmrCopy" style="padding-top: 2vh;"/>
+                </FlowPanel>
                 <Label for="Cmr" module="Documents" />
-                <DataSelector source="Cmr" caching="none" newRowEnabled="false" module="Documents" />
-              </row>
-              <row>
-                <CheckBox source="CmrCopy" style="padding-left: 10px;"/>
-              </row>
-            </Table>
-            <Table kind="controls">
-              <col index="0" kind="label" />
-              <row>
+                <DataSelector source="Cmr" caching="none" newRowEnabled="false" module="Documents"/>
                 <Label for="Directions" />
-                <InputArea source="Directions" visibleLines="3" style="width:300px;" />
-              </row>
-              <row>
+                <cell rowSpan="2">
+                  <InputArea source="Directions" visibleLines="3" style="width:200px;" />
+                </cell>
                 <Label for="CargoNotes" />
-                <InputArea source="CargoNotes" visibleLines="4" style="width:300px;" />
+                <cell rowSpan="2">
+                  <InputArea source="CargoNotes" visibleLines="3" style="width:200px;" />
+                </cell>
               </row>
             </Table>
           </FlowPanel>
