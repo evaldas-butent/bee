@@ -1707,14 +1707,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return false;
     }
 
-    if (event.hasSourceId(getId())) {
-      return false;
-    }
-    if (getGrid().containsRow(event.getRowId())) {
+    if (getGridInterceptor() != null && !getGridInterceptor().previewRowInsert(event)) {
       return false;
     }
 
-    if (getGridInterceptor() != null && !getGridInterceptor().previewRowInsert(event)) {
+    if (event.hasSourceId(getId())) {
+      return false;
+    }
+
+    if (getGrid().containsRow(event.getRowId())) {
       return false;
     }
 

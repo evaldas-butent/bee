@@ -5,7 +5,7 @@
         name="OrderCargo" viewName="OrderCargo" caption="=cargos"
         newRowForm="OrderCargo" newRowCaption="=newCargo"
         editForm="OrderCargo" flexGrow="1"
-    >
+>
   <g:columns>
     <IdColumn name="ID" width="50" />
     <DataColumn name="Description" maxWidth="300" caption="=cargo" />

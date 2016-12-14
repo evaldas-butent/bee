@@ -58,6 +58,27 @@
       </render>
     </CalcColumn>
 
+    <CalcColumn name="Income" type="decimal" caption="=income" format="0.00">
+      <render>
+        <ui:expression>Number(row.CargoIncomesTotal ? row.CargoIncomesTotal : 0)
+          + Number(row.ChildAssessmentsCargoIncomesTotal ? Number(row.ChildAssessmentsCargoIncomesTotal) : 0)</ui:expression>
+      </render>
+    </CalcColumn>
+    <CalcColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00">
+      <render>
+        <ui:expression>Number(row.CargoExpensesTotal ? row.CargoExpensesTotal : 0)
+          + Number(row.ChildAssessmentsCargoExpensesTotal ? row.ChildAssessmentsCargoExpensesTotal : 0)</ui:expression>
+      </render>
+    </CalcColumn>
+    <CalcColumn name="Profit" type="decimal" caption="=profit" format="0.00">
+      <render>
+        <ui:expression>Number(row.CargoIncomesTotal ? row.CargoIncomesTotal : 0)
+          + Number(row.ChildAssessmentsCargoIncomesTotal ? row.ChildAssessmentsCargoIncomesTotal : 0)
+          - Number(row.CargoExpensesTotal ? row.CargoExpensesTotal : 0)
+          - Number(row.ChildAssessmentsCargoExpensesTotal ? row.ChildAssessmentsCargoExpensesTotal : 0)</ui:expression>
+      </render>
+    </CalcColumn>
+
     <DataColumn name="Log" visible="false" />
   </g:columns>
 
