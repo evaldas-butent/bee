@@ -6,5 +6,7 @@
   >
   <Fields>
     <String name="Name" precision="200" notNull="true" label="=status" />
+    <String name="Background" precision="100" label="=backgroundColor"/>
+    <String name="Foreground" precision="100" label="=foregroundColor" />
   </Fields>
 </Table>

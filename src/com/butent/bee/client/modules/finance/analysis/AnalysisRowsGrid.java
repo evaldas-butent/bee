@@ -11,7 +11,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.finance.Dimensions;
-import com.butent.bee.shared.modules.finance.analysis.AnalysisSplit;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -41,8 +41,8 @@ public class AnalysisRowsGrid extends AnalysisColumnsRowsGrid {
   }
 
   @Override
-  protected boolean isSplitVisible(AnalysisSplit analysisSplit) {
-    return analysisSplit.visibleForRows();
+  protected boolean isSplitVisible(AnalysisSplitType analysisSplitType) {
+    return analysisSplitType.visibleForRows();
   }
 
   @Override
@@ -52,10 +52,6 @@ public class AnalysisRowsGrid extends AnalysisColumnsRowsGrid {
     if (parentRow != null) {
       boolean changed = false;
       CellGrid grid = getGridView().getGrid();
-
-      Long indicator = Data.getLong(VIEW_ANALYSIS_HEADERS, parentRow,
-          COL_ANALYSIS_HEADER_INDICATOR);
-      changed |= grid.setColumnVisible(COL_ANALYSIS_ROW_INDICATOR, !DataUtils.isId(indicator));
 
       Long type = Data.getLong(VIEW_ANALYSIS_HEADERS, parentRow, COL_ANALYSIS_HEADER_BUDGET_TYPE);
       changed |= grid.setColumnVisible(COL_ANALYSIS_ROW_BUDGET_TYPE, !DataUtils.isId(type));

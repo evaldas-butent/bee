@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-12-06T12:36:16 -->
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2016-12-14T13:04:00 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderContract" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" whenResourceMissingType="Error" uuid="b0daefcc-9db0-4ed1-b9d6-49143492176f">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -117,6 +117,8 @@
 	<parameter name="PayerName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="PayerTypeName" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="PayerCreditDays" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="ChildAssessmentsCargoIncomesTotal" class="java.lang.String"/>
+	<parameter name="ChildAssessmentsCargoIncomesVat" class="java.lang.String"/>
 	<field name="Description" class="java.lang.String"/>
 	<field name="Weight" class="java.lang.Number"/>
 	<field name="WeightUnitName" class="java.lang.String"/>
@@ -149,6 +151,14 @@
 	</variable>
 	<variable name="Vat" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[BeeUtils.toDecimalOrNull(BeeUtils.round($F{Vat}, 2))]]></variableExpression>
+	</variable>
+	<variable name="AdditionalAmount" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{AdditionalAmount}]]></variableExpression>
+		<initialValueExpression><![CDATA[BeeUtils.nvl(BeeUtils.toDecimalOrNull(BeeUtils.round($P{ChildAssessmentsCargoIncomesTotal}, 2)), BigDecimal.ZERO)]]></initialValueExpression>
+	</variable>
+	<variable name="AdditionalVat" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{AdditionalVat}]]></variableExpression>
+		<initialValueExpression><![CDATA[BeeUtils.nvl(BeeUtils.toDecimalOrNull(BeeUtils.round($P{ChildAssessmentsCargoIncomesVat}, 2)), BigDecimal.ZERO)]]></initialValueExpression>
 	</variable>
 	<variable name="d" class="com.butent.bee.shared.i18n.Dictionary">
 		<variableExpression><![CDATA[$V{d}]]></variableExpression>
@@ -461,7 +471,7 @@
 					<textElement markup="html">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>" + $R{contractAmount} + "</b>", $V{Amount}.add($V{ExcludeVAT} ? $V{Vat} : BigDecimal.ZERO), $V{Currency}, "(<b>" + $V{d}.vat() + "</b>", $V{Vat} + ",", "<b>" + $V{d}.withoutVat() + "</b>", $V{Amount}.subtract($V{ExcludeVAT} ? BigDecimal.ZERO : $V{Vat}) + ")")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("<b>" + $R{contractAmount} + "</b>", $V{Amount}.add($V{AdditionalAmount}).add($V{ExcludeVAT} ? $V{Vat}.add($V{AdditionalVat}) : BigDecimal.ZERO), $V{Currency}, "(<b>" + $V{d}.vat() + "</b>", $V{Vat}.add($V{AdditionalVat}) + ",", "<b>" + $V{d}.withoutVat() + "</b>", $V{Amount}.add($V{AdditionalAmount}).subtract($V{ExcludeVAT} ? BigDecimal.ZERO : $V{Vat}.add($V{AdditionalVat})) + ")")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>

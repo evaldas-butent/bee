@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
@@ -143,6 +144,13 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
       if (!BeeUtils.isEmpty(value)) {
         params.put(column.getId(), value);
       }
+    }
+    if (Objects.nonNull(getActiveRow()) && !BeeUtils.isEmpty(getActiveRow().getProperties())) {
+      getActiveRow().getProperties().forEach((key, value) -> {
+        if (!BeeUtils.isEmpty(value)) {
+          params.put(key, value);
+        }
+      });
     }
     parametersConsumer.accept(params);
   }

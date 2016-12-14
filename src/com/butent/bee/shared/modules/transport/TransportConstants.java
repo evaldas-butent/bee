@@ -340,9 +340,7 @@ public final class TransportConstants {
   public static final String SVC_GET_TRAILER_TB_DATA = "GetTrailerTbData";
   public static final String SVC_GET_COLORS = "GetColors";
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
-  public static final String SVC_GET_CARGO_TOTAL = "GetCargoTotal";
   public static final String SVC_GET_CARGO_PLACES = "GetCargoPlaces";
-  public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
   public static final String SVC_GET_ASSESSMENT_AMOUNTS = "GetAssessmentAmounts";
   public static final String SVC_GET_ASSESSMENT_QUANTITY_REPORT = "GetAssessmentQuantityReport";
   public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";

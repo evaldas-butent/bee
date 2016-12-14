@@ -1100,6 +1100,14 @@ public final class BeeUtils {
     return cs.length() >= min;
   }
 
+  public static boolean hasDistinctElements(List<?> list) {
+    if (size(list) > 1) {
+      return list.stream().distinct().count() == list.size();
+    } else {
+      return true;
+    }
+  }
+
   public static int indexOfSame(List<String> list, String s) {
     if (isEmpty(list)) {
       return BeeConst.UNDEF;
@@ -1612,7 +1620,7 @@ public final class BeeUtils {
   }
 
   public static boolean isNegative(Integer x) {
-    return (x == null) ? false : x < 0;
+    return x != null && x < 0;
   }
 
   public static boolean isNegativeInt(String s) {
@@ -1628,11 +1636,11 @@ public final class BeeUtils {
   }
 
   public static boolean isNonNegative(Integer x) {
-    return (x == null) ? false : x >= 0;
+    return x != null && x >= 0;
   }
 
   public static boolean isNonNegative(Long x) {
-    return (x == null) ? false : x >= 0L;
+    return x != null && x >= 0L;
   }
 
   public static boolean isNonNegativeDouble(String s) {
@@ -1644,7 +1652,7 @@ public final class BeeUtils {
   }
 
   public static boolean isPositive(BigDecimal x) {
-    return (x == null) ? false : x.compareTo(BigDecimal.ZERO) > 0;
+    return x != null && x.compareTo(BigDecimal.ZERO) > 0;
   }
 
   public static boolean isPositive(Double d) {
@@ -1656,11 +1664,11 @@ public final class BeeUtils {
   }
 
   public static boolean isPositive(Integer x) {
-    return (x == null) ? false : x > 0;
+    return x != null && x > 0;
   }
 
   public static boolean isPositive(Long x) {
-    return (x == null) ? false : x > 0L;
+    return x != null && x > 0L;
   }
 
   public static boolean isPositiveDouble(String s) {
@@ -1753,8 +1761,9 @@ public final class BeeUtils {
   public static boolean isTrue(Boolean b) {
     if (b == null) {
       return false;
+    } else {
+      return b;
     }
-    return b.booleanValue();
   }
 
   public static boolean isWhitespace(char ch) {
@@ -2224,6 +2233,22 @@ public final class BeeUtils {
       z.append(proper(x, null));
     }
     return z.toString();
+  }
+
+  public static String quote(String v) {
+    if (v == null) {
+      return BeeConst.STRING_QUOT + BeeConst.STRING_QUOT;
+
+    } else if (v.contains(BeeConst.STRING_QUOT)) {
+      if (v.contains(BeeConst.STRING_APOS)) {
+        return bracket(v.trim());
+      } else {
+        return BeeConst.STRING_APOS + v.trim() + BeeConst.STRING_APOS;
+      }
+
+    } else {
+      return BeeConst.STRING_QUOT + v.trim() + BeeConst.STRING_QUOT;
+    }
   }
 
   public static char randomChar(char min, char max) {

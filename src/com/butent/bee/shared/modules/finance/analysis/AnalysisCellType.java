@@ -82,6 +82,21 @@ public class AnalysisCellType {
     return (sb.length() > 0) ? sb.toString() : null;
   }
 
+  public static boolean needsBudget(List<AnalysisCellType> list) {
+    if (!BeeUtils.isEmpty(list)) {
+      for (AnalysisCellType item : list) {
+        if (item != null && item.getAnalysisValueType().needsBudget()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  public static boolean needsBudget(String input) {
+    return needsBudget(decode(input));
+  }
+
   private final AnalysisValueType analysisValueType;
   private int scale;
 

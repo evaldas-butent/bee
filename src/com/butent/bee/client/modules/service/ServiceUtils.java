@@ -5,12 +5,21 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.ALS_COMPANY_TYPE_NAME;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+
+import java.util.Map;
 
 public final class ServiceUtils {
 
@@ -18,29 +27,31 @@ public final class ServiceUtils {
   private static DataInfo objectDataInfo = Data.getDataInfo(VIEW_SERVICE_OBJECTS);
 
   public static void fillContactValues(IsRow maintenanceRow, IsRow objectRow) {
-    Long contactPerson = objectRow.getLong(objectDataInfo.getColumnIndex(ALS_CONTACT_PERSON));
+    if (objectRow != null) {
+      Long contactPerson = objectRow.getLong(objectDataInfo.getColumnIndex(ALS_CONTACT_PERSON));
 
-    if (DataUtils.isId(contactPerson)) {
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(COL_CONTACT), contactPerson);
+      if (DataUtils.isId(contactPerson)) {
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(COL_CONTACT), contactPerson);
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_PHONE),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_PHONE)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_PHONE),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_PHONE)));
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_FIRST_NAME),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_FIRST_NAME)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_FIRST_NAME),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_FIRST_NAME)));
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME)));
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_EMAIL),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_EMAIL)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_EMAIL),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_EMAIL)));
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS),
-          objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS),
+            objectRow.getString(objectDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS)));
 
-    } else {
-      clearContactValue(maintenanceRow);
+        return;
+      }
     }
+    clearContactValue(maintenanceRow);
   }
 
   public static void clearContactValue(IsRow maintenanceRow) {
@@ -50,20 +61,28 @@ public final class ServiceUtils {
     maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_LAST_NAME));
     maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_EMAIL));
     maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_CONTACT_ADDRESS));
+    maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(COL_COMPANY));
+    maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_NAME));
+    maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME));
   }
 
   public static void fillCompanyValues(IsRow maintenanceRow, IsRow dataRow, String dataViewName,
       String companyColumnName, String companyColumnAlias, String companyTypeColumnAlias) {
-    Long company = dataRow.getLong(Data.getColumnIndex(dataViewName, companyColumnName));
+    if (dataRow != null) {
+      Long company = dataRow.getLong(Data.getColumnIndex(dataViewName, companyColumnName));
 
-    if (DataUtils.isId(company)) {
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(COL_COMPANY), company);
+      if (DataUtils.isId(company)) {
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(COL_COMPANY), company);
 
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_NAME),
-          dataRow.getString(Data.getColumnIndex(dataViewName, companyColumnAlias)));
-      maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME),
-          dataRow.getString(Data.getColumnIndex(dataViewName, companyTypeColumnAlias)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_NAME),
+            dataRow.getString(Data.getColumnIndex(dataViewName, companyColumnAlias)));
+        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME),
+            dataRow.getString(Data.getColumnIndex(dataViewName, companyTypeColumnAlias)));
+
+        return;
+      }
     }
+    clearContactValue(maintenanceRow);
   }
 
   public static void fillContractorAndManufacturerValues(IsRow maintenanceRow, IsRow objectRow) {
@@ -91,5 +110,30 @@ public final class ServiceUtils {
   }
 
   private ServiceUtils() {
+  }
+
+  public static void informClient(BeeRow commentRow) {
+    int informColIndex = Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS, COL_CUSTOMER_SENT);
+
+    if (BeeUtils.isTrue(commentRow.getBoolean(informColIndex))) {
+      ParameterList params = ServiceKeeper.createArgs(SVC_INFORM_CUSTOMER);
+      params.addDataItem(COL_COMMENT, commentRow.getId());
+
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (!response.isEmpty() && !response.hasErrors()) {
+
+            for (Map.Entry<String, String> entry : Codec.deserializeHashMap(response
+                .getResponseAsString()).entrySet()) {
+              commentRow.setValue(Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS, entry.getKey()),
+                  entry.getValue());
+            }
+
+            RowUpdateEvent.fire(BeeKeeper.getBus(), TBL_MAINTENANCE_COMMENTS, commentRow);
+          }
+        }
+      });
+    }
   }
 }

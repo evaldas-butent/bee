@@ -145,27 +145,16 @@
             </row>
 
             <row>
-              <Label for="Indicator" />
-              <DataSelector source="Indicator" style="&stinp;" renderColumns="IndicatorName"
-                            choiceColumns="IndicatorName IndicatorAbbreviation"
-                            newRowEnabled="false" summarize="true"
-                            backgroundSource="IndicatorBackground"
-                            foregroundSource="IndicatorForeground" />
               <Label for="BudgetType" />
               <DataSelector source="BudgetType" style="&stinp;" renderColumns="BudgetTypeName"
                             choiceColumns="BudgetTypeName" newRowEnabled="false" summarize="true"
                             backgroundSource="BudgetTypeBackground"
                             foregroundSource="BudgetTypeForeground" />
-            </row>
-
-            <row>
               <Label for="Employee" />
-              <cell colSpan="3">
-                <DataSelector source="Employee" style="width: 100%;"
-                              renderColumns="EmployeeFirstName EmployeeLastName EmployeeTabNumber"
-                              choiceColumns="FirstName LastName" newRowEnabled="false"
-                              summarize="true" />
-              </cell>
+              <DataSelector source="Employee" style="&stinp;"
+                            renderColumns="EmployeeFirstName EmployeeLastName EmployeeTabNumber"
+                            choiceColumns="FirstName LastName" newRowEnabled="false"
+                            summarize="true" />
             </row>
 
             <row>

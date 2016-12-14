@@ -20,5 +20,10 @@
     <Relation name="Item" relation="Items" label="=item" />
     <Numeric name="Price" precision="15" scale="2" label="=salePrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
+
+    <Boolean name="SentEmail" label="=svcSendEmail" />
+    <Boolean name="SentSms" label="=svcSendSms" />
+
+    <Boolean name="StateComment" label="=svcStateComment" />
   </Fields>
 </Table>

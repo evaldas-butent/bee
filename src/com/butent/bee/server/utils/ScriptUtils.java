@@ -58,7 +58,7 @@ public final class ScriptUtils {
     }
   }
 
-  private static ScriptEngine getEngine() {
+  public static ScriptEngine getEngine() {
     ScriptEngineManager manager = new ScriptEngineManager();
     return manager.getEngineByName(JS_ENGINE_NAME);
   }

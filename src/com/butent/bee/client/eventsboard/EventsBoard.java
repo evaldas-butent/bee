@@ -308,6 +308,9 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     getData(content, cleanCache);
   }
 
+  protected void setAdditionalStyleToWidget(String name, BeeRowSet rs, BeeRow row, Widget widget) {
+  }
+
   public void setEventFilesFilterData(EventFilesFilter filter) {
     this.fileFilter = filter;
   }
@@ -337,6 +340,10 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
   protected abstract String getPublishTimeColumnName();
 
   protected abstract String getRelatedColumnName();
+
+  @SuppressWarnings("unused")
+  protected void afterCreateCellContent(BeeRowSet rs, BeeRow row, Flow cell) {
+  }
 
   @SuppressWarnings("unused")
   protected void afterCreateEventRow(BeeRowSet rs, BeeRow row, Flow eventRow) {
@@ -415,6 +422,12 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     }
 
     return widget;
+  }
+
+  protected Widget createCellHtmlItem(String name, String html, BeeRowSet rs, BeeRow row) {
+    Widget cellWidget = createCellHtmlItem(name, html);
+    setAdditionalStyleToWidget(name, rs, row, cellWidget);
+    return cellWidget;
   }
 
   protected int getMaxChildRowLevel() {
@@ -505,6 +518,8 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     cell.add(createPublisherInfoCell(rs, row, contentRow));
 
     cell.add(createEventNoteCell(rs, row, contentRow));
+
+    afterCreateCellContent(rs, row, cell);
   }
 
   private void createEventFilesCell(BeeRowSet rs, BeeRow row, Flow widget) {
@@ -553,7 +568,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     }
 
     if (!BeeUtils.isEmpty(row.getString(idxNote))) {
-      cell.add(createCellHtmlItem(CELL_EVENT_NOTE, row.getString(idxNote)));
+      cell.add(createCellHtmlItem(CELL_EVENT_NOTE, row.getString(idxNote), rs, row));
     }
 
     if (files != null) {
@@ -650,7 +665,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
         fullName = BeeUtils.joinWords(fullName, row.getString(idxLast));
       }
 
-      cell.add(createCellHtmlItem(CELL_EVENT_PUBLISHER, fullName));
+      cell.add(createCellHtmlItem(CELL_EVENT_PUBLISHER, fullName, rs, row));
     }
 
     if (!BeeUtils.isEmpty(getPublishTimeColumnName())) {
@@ -660,7 +675,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
         DateTime publishTime = row.getDateTime(idxCol);
         if (publishTime != null) {
           cell.add(createCellHtmlItem(CELL_EVENT_PUBLISH, Format.getDefaultDateTimeFormat().format(
-              publishTime)));
+              publishTime), rs, row));
         }
 
       } else {
@@ -681,7 +696,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
           text = EnumUtils.getCaption(column.getEnumKey(), row.getInteger(idxEvent));
         }
 
-        cell.add(createCellHtmlItem(CELL_EVENT_TYPE, text));
+        cell.add(createCellHtmlItem(CELL_EVENT_TYPE, text, rs, row));
 
       } else {
         logger.warning("column", getEventTypeColumnName(), "not found in view",

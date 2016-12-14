@@ -187,6 +187,7 @@
       <xs:enumeration value="enum" />
       <xs:enumeration value="id" />
       <xs:enumeration value="version" />
+      <xs:enumeration value="custom" />
     </xs:restriction>
   </xs:simpleType>
 

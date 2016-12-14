@@ -5,6 +5,7 @@ import com.google.gwt.xml.client.Element;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowCallback;
@@ -21,6 +22,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -28,16 +30,17 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.FinanceUtils;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SimpleAnalysisForm extends AbstractFormInterceptor {
 
@@ -121,8 +124,15 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
             BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
               @Override
               public void onResponse(ResponseObject response) {
-                if (response.hasResponse()) {
-                  LogUtils.getRootLogger().debug(response.getResponse());
+                if (response.hasMessages()) {
+                  List<String> messages = response.getMessages().stream()
+                      .map(ResponseMessage::getMessage).collect(Collectors.toList());
+
+                  Global.showError(getStringValue(COL_ANALYSIS_NAME), messages);
+
+                } else if (SVC_VERIFY_ANALYSIS_FORM.equals(service)) {
+                  Global.showInfo(getStringValue(COL_ANALYSIS_NAME),
+                      Collections.singletonList(Localized.dictionary().finAnalysisVerified()));
                 }
               }
             });
@@ -141,19 +151,6 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
     }
 
     List<Div> elements = new ArrayList<>();
-
-    Long indicatorId = DataUtils.getLongQuietly(columns, row, COL_ANALYSIS_HEADER_INDICATOR);
-    String indicatorName = DataUtils.getStringQuietly(columns, row, COL_FIN_INDICATOR_NAME);
-
-    if (DataUtils.isId(indicatorId) && !BeeUtils.isEmpty(indicatorName)) {
-      Div div = new Div().text(indicatorName.trim());
-
-      FinanceUtils.setColors(div,
-          DataUtils.getStringQuietly(columns, row, ALS_INDICATOR_BACKGROUND),
-          DataUtils.getStringQuietly(columns, row, ALS_INDICATOR_FOREGROUND));
-
-      elements.add(div);
-    }
 
     Long budgetTypeId = DataUtils.getLongQuietly(columns, row, COL_ANALYSIS_HEADER_BUDGET_TYPE);
     String budgetTypeName = DataUtils.getStringQuietly(columns, row, COL_BUDGET_TYPE_NAME);
@@ -191,7 +188,6 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
       Set<String> gridNames = new HashSet<>();
 
       switch (source) {
-        case COL_ANALYSIS_HEADER_INDICATOR:
         case COL_ANALYSIS_HEADER_BUDGET_TYPE:
           gridNames.add(GRID_ANALYSIS_COLUMNS);
           gridNames.add(GRID_ANALYSIS_ROWS);
