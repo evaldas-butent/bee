@@ -4,8 +4,12 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -20,6 +24,42 @@ final class AnalysisUtils {
     String m = (month == null) ? null : TimeUtils.monthToString(month);
 
     return BeeUtils.join(BeeConst.STRING_POINT, y, m);
+  }
+
+  static Filter getFilter(String column, MonthRange range) {
+    if (range == null) {
+      return null;
+    }
+
+    YearMonth minYm = range.getMinMonth();
+    YearMonth maxYm = range.getMaxMonth();
+
+    DateTimeValue minDt;
+    if (minYm != null && (minYm.getYear() > ANALYSIS_MIN_YEAR || minYm.getMonth() > 1)) {
+      minDt = new DateTimeValue(minYm.getDate().getDateTime());
+    } else {
+      minDt = null;
+    }
+
+    DateTimeValue maxDt;
+    if (maxYm != null && (maxYm.getYear() < ANALYSIS_MAX_YEAR || maxYm.getMonth() < 12)) {
+      maxDt = new DateTimeValue(maxYm.nextMonth().getDate().getDateTime());
+    } else {
+      maxDt = null;
+    }
+
+    if (minDt != null && maxDt != null) {
+      return Filter.and(Filter.isMoreEqual(column, minDt), Filter.isLess(column, maxDt));
+
+    } else if (minDt != null) {
+      return Filter.isMoreEqual(column, minDt);
+
+    } else if (maxDt != null) {
+      return Filter.isLess(column, maxDt);
+
+    } else {
+      return null;
+    }
   }
 
   static Map<String, Integer> getIndexes(BeeRowSet rowSet) {
@@ -115,6 +155,29 @@ final class AnalysisUtils {
 
   private static boolean isValidYear(int year) {
     return year >= ANALYSIS_MIN_YEAR && year <= ANALYSIS_MAX_YEAR;
+  }
+
+  static Filter joinFilters(CompoundFilter include, CompoundFilter exclude) {
+    if (include.isEmpty() && exclude.isEmpty()) {
+      return null;
+
+    } else if (exclude.isEmpty()) {
+      return include;
+
+    } else if (include.isEmpty()) {
+      return Filter.isNot(exclude);
+
+    } else {
+      return Filter.and(include, Filter.isNot(exclude));
+    }
+  }
+
+  static Filter normalize(CompoundFilter filter) {
+    if (filter == null || filter.isEmpty()) {
+      return null;
+    } else {
+      return filter;
+    }
   }
 
   private AnalysisUtils() {

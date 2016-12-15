@@ -26,6 +26,7 @@ import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
+import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.time.YearQuarter;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.ejb.EJB;
@@ -55,18 +57,33 @@ public class AnalysisBean {
   ParamHolderBean prm;
 
   public ResponseObject calculateForm(long formId) {
-    AnalysisFormData formData = getFormData(formId);
-    ResponseObject response = validateFormData(formId, formData);
+    BeeView finView = sys.getView(VIEW_FINANCIAL_RECORDS);
+    Long userId = usr.getCurrentUserId();
 
+    ensureDimensions();
+
+    AnalysisFormData formData = getFormData(formId);
+    ResponseObject response = validateFormData(formId, formData, finView, userId);
     if (response.hasMessages()) {
       return response;
     }
+
+    Function<String, Filter> filterParser = input -> finView.parseFilter(input, userId);
+
+    MonthRange headerRange = formData.getHeaderRange();
+    Filter headerFilter = formData.getHeaderFilter(filterParser);
+
     return response;
   }
 
   public ResponseObject verifyForm(long formId) {
+    BeeView finView = sys.getView(VIEW_FINANCIAL_RECORDS);
+    Long userId = usr.getCurrentUserId();
+
+    ensureDimensions();
+
     AnalysisFormData formData = getFormData(formId);
-    return validateFormData(formId, formData);
+    return validateFormData(formId, formData, finView, userId);
   }
 
   private void addDimensions(SqlSelect query, String tblName) {
@@ -117,20 +134,17 @@ public class AnalysisBean {
     return new AnalysisFormData(headerData, columnData, rowData, filterData);
   }
 
-  private ResponseObject validateFormData(long formId, AnalysisFormData formData) {
+  private ResponseObject validateFormData(long formId, AnalysisFormData formData,
+      BeeView finView, Long userId) {
+
     if (formData == null) {
       return ResponseObject.error("form", formId, "not found");
     }
 
     ResponseObject response = ResponseObject.emptyResponse();
 
-    BeeView finView = sys.getView(VIEW_FINANCIAL_RECORDS);
-    Long userId = usr.getCurrentUserId();
-
     Predicate<String> extraFilterValidator = input ->
         BeeUtils.isEmpty(input) || finView.parseFilter(input, userId) != null;
-
-    ensureDimensions();
 
     List<String> messages = formData.validate(usr.getDictionary(), extraFilterValidator);
     if (!BeeUtils.isEmpty(messages)) {
@@ -172,18 +186,7 @@ public class AnalysisBean {
       }
     }
 
-    if (include.isEmpty() && exclude.isEmpty()) {
-      return null;
-
-    } else if (exclude.isEmpty()) {
-      return include;
-
-    } else if (include.isEmpty()) {
-      return Filter.isNot(exclude);
-
-    } else {
-      return Filter.and(include, Filter.isNot(exclude));
-    }
+    return AnalysisUtils.joinFilters(include, exclude);
   }
 
   private static Filter getFilter(SimpleRow row, String employeeColumn, String extraFilterColumn,
@@ -223,7 +226,7 @@ public class AnalysisBean {
       }
     }
 
-    return filter.isEmpty() ? null : filter;
+    return AnalysisUtils.normalize(filter);
   }
 
   private List<AnalysisSplitValue> getSplitValues(long indicator, Filter parentFilter,
