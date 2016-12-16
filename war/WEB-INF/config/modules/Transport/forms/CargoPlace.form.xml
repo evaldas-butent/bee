@@ -15,13 +15,27 @@
     <row>
       <Label for="Company" />
       <cell colSpan="3">
-        <InputText source="Company" style="width:100%;" autocompleteKey="cargo-place-company" />
+        <FlowPanel>
+          <DataSelector name="CompanyLoading" source="Company" viewName="DistinctCargoPlaceCompanyLoading"
+                        valueSource="Company" strict="false" caching="local"
+                        style="width:100%;" />
+          <DataSelector name="CompanyUnloading" source="Company" viewName="DistinctCargoPlaceCompanyUnloading"
+                        valueSource="Company" strict="false" caching="local"
+                        style="width:100%;" />
+        </FlowPanel>
       </cell>
     </row>
     <row>
       <Label for="Address" />
       <cell colSpan="3">
-        <InputText source="Address" style="width:100%;" autocompleteKey="cargo-place-address" />
+        <FlowPanel>
+          <DataSelector name="AddressLoading" source="Address" viewName="DistinctCargoPlaceAddressLoading"
+                        valueSource="Address" strict="false" caching="local"
+                        style="width:100%;" />
+          <DataSelector name="AddressUnloading" source="Address" viewName="DistinctCargoPlaceAddressUnloading"
+                        valueSource="Address" strict="false" caching="local"
+                        style="width:100%;" />
+        </FlowPanel>
       </cell>
     </row>
     <row>
