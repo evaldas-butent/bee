@@ -70,6 +70,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.websocket.messages.MailMessage;
+import com.sun.mail.imap.IMAPFolder;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -2021,6 +2022,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
     if (MailAccount.holdsFolders(remoteFolder)) {
       for (Folder subFolder : remoteFolder.list()) {
+        if (subFolder instanceof IMAPFolder &&
+            ArrayUtils.contains(((IMAPFolder) subFolder).getAttributes(), "\\NoInferiors")) {
+          continue;
+        }
         visitedFolders.add(subFolder.getName());
         boolean exists = false;
 
