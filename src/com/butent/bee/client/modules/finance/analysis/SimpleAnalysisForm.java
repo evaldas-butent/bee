@@ -30,8 +30,11 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.FinanceUtils;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisResults;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -133,12 +136,24 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
                 } else if (SVC_VERIFY_ANALYSIS_FORM.equals(service)) {
                   Global.showInfo(getStringValue(COL_ANALYSIS_NAME),
                       Collections.singletonList(Localized.dictionary().finAnalysisVerified()));
+
+                } else if (response.hasResponse(AnalysisResults.class)) {
+                  showResults(AnalysisResults.restore(response.getResponseAsString()));
+
+                } else {
+                  Global.showError(Localized.dictionary().noData());
                 }
               }
             });
           }
         }
       });
+    }
+  }
+
+  private void showResults(AnalysisResults results) {
+    for (AnalysisValue av : results.getValues()) {
+      LogUtils.getRootLogger().debug(av.getColumnId(), av.getRowId(), av.getValue());
     }
   }
 

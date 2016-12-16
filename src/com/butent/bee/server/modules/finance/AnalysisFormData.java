@@ -20,6 +20,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -135,6 +136,10 @@ class AnalysisFormData {
     return AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
   }
 
+  List<BeeRow> getColumns() {
+    return columns;
+  }
+
   Filter getColumnFilter(BeeRow column, Function<String, Filter> filterParser) {
     CompoundFilter filter = Filter.and();
 
@@ -155,6 +160,10 @@ class AnalysisFormData {
     Integer monthUntil = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL);
 
     return AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
+  }
+
+  List<BeeRow> getRows() {
+    return rows;
   }
 
   Filter getRowFilter(BeeRow row, Function<String, Filter> filterParser) {
@@ -243,6 +252,10 @@ class AnalysisFormData {
       }
     }
 
+    if (columns.stream().noneMatch(this::columnIsPrimary)) {
+      messages.add(dictionary.finAnalysisPrimaryColumnsNotAvailable());
+    }
+
     messages.addAll(validateAbbreviations(dictionary, columns,
         columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
         column -> getColumnLabel(dictionary, column)));
@@ -279,7 +292,7 @@ class AnalysisFormData {
       }
     }
 
-    if (rows.stream().noneMatch(this::rowHasIndicator)) {
+    if (rows.stream().noneMatch(this::rowIsPrimary)) {
       messages.add(dictionary.finAnalysisPrimaryRowsNotAvailable());
     }
 
@@ -344,7 +357,7 @@ class AnalysisFormData {
     return column.getInteger(columnIndexes.get(key));
   }
 
-  private Long getColumnLong(BeeRow column, String key) {
+  Long getColumnLong(BeeRow column, String key) {
     return column.getLong(columnIndexes.get(key));
   }
 
@@ -379,6 +392,10 @@ class AnalysisFormData {
     return !BeeUtils.isEmpty(getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT));
   }
 
+  boolean columnIsPrimary(BeeRow column) {
+    return columnHasIndicator(column) || !columnHasScript(column);
+  }
+
   private BeeRow getRowById(Long id) {
     for (BeeRow row : rows) {
       if (DataUtils.idEquals(row, id)) {
@@ -404,7 +421,7 @@ class AnalysisFormData {
     return row.getInteger(rowIndexes.get(key));
   }
 
-  private Long getRowLong(BeeRow row, String key) {
+  Long getRowLong(BeeRow row, String key) {
     return row.getLong(rowIndexes.get(key));
   }
 
@@ -437,6 +454,10 @@ class AnalysisFormData {
 
   private boolean rowHasScript(BeeRow row) {
     return !BeeUtils.isEmpty(getRowString(row, COL_ANALYSIS_ROW_SCRIPT));
+  }
+
+  boolean rowIsPrimary(BeeRow row) {
+    return rowHasIndicator(row);
   }
 
   private static List<String> getSplitCaptions(Dictionary dictionary,

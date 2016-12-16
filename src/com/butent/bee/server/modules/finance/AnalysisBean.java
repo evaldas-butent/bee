@@ -22,8 +22,12 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisResults;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
+import com.butent.bee.shared.modules.finance.analysis.IndicatorBalance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.time.MonthRange;
@@ -68,11 +72,41 @@ public class AnalysisBean {
       return response;
     }
 
+    AnalysisResults results = new AnalysisResults();
+
     Function<String, Filter> filterParser = input -> finView.parseFilter(input, userId);
 
     MonthRange headerRange = formData.getHeaderRange();
     Filter headerFilter = formData.getHeaderFilter(filterParser);
 
+    for (BeeRow column : formData.getColumns()) {
+      if (formData.columnIsPrimary(column)) {
+        MonthRange columnRange = AnalysisUtils.intersection(headerRange,
+            formData.getColumnRange(column));
+        Filter columnFilter = formData.getColumnFilter(column, filterParser);
+
+        Long columnIndicator = formData.getColumnLong(column, COL_ANALYSIS_COLUMN_INDICATOR);
+
+        for (BeeRow row : formData.getRows()) {
+          if (formData.rowIsPrimary(row)) {
+            Long indicator = DataUtils.isId(columnIndicator)
+                ? columnIndicator : formData.getRowLong(row, COL_ANALYSIS_ROW_INDICATOR);
+
+            if (DataUtils.isId(indicator)) {
+              Filter filter = Filter.and(headerFilter, columnFilter,
+                  formData.getRowFilter(row, filterParser));
+
+              double value = getActualValue(indicator, columnRange, filter, finView, userId);
+              results.add(AnalysisValue.of(column.getId(), row.getId(), value));
+            }
+          }
+        }
+      }
+    }
+
+    if (!results.isEmpty()) {
+      response.setResponse(results);
+    }
     return response;
   }
 
@@ -246,27 +280,15 @@ public class AnalysisBean {
 
     SimpleRowSet indicatorAccounts = getIndicatorAccounts(indicator);
     if (DataUtils.isEmpty(indicatorAccounts)) {
-      if (indicatorFilter == null) {
-        return result;
-      }
+      return result;
 
     } else {
       CompoundFilter accountFilter = Filter.or();
 
       for (SimpleRow row : indicatorAccounts) {
-        String debitCode = BeeUtils.trimRight(row.getValue(ALS_DEBIT_CODE));
-        String creditCode = BeeUtils.trimRight(row.getValue(ALS_CREDIT_CODE));
-
-        if (!debitCode.isEmpty() && !creditCode.isEmpty()) {
-          accountFilter.add(Filter.and(Filter.startsWith(ALS_DEBIT_CODE, debitCode),
-              Filter.startsWith(ALS_CREDIT_CODE, creditCode)));
-
-        } else if (!debitCode.isEmpty()) {
-          accountFilter.add(Filter.startsWith(ALS_DEBIT_CODE, debitCode));
-
-        } else if (!creditCode.isEmpty()) {
-          accountFilter.add(Filter.startsWith(ALS_CREDIT_CODE, creditCode));
-        }
+        accountFilter.add(AnalysisUtils.getAccountCodeFilter(
+            ALS_DEBIT_CODE, row.getValue(ALS_DEBIT_CODE),
+            ALS_CREDIT_CODE, row.getValue(ALS_CREDIT_CODE)));
       }
 
       if (!accountFilter.isEmpty()) {
@@ -414,15 +436,17 @@ public class AnalysisBean {
     String debitAlias = SqlUtils.uniqueName();
     String creditAlias = SqlUtils.uniqueName();
 
+    String accountIdName = sys.getIdName(TBL_CHART_OF_ACCOUNTS);
+
     SqlSelect query = new SqlSelect().setDistinctMode(true)
         .addFields(TBL_INDICATOR_ACCOUNTS,
             COL_INDICATOR_ACCOUNT_DEBIT, COL_INDICATOR_ACCOUNT_CREDIT, COL_INDICATOR_ACCOUNT_PLUS)
         .addField(debitAlias, COL_ACCOUNT_CODE, ALS_DEBIT_CODE)
         .addField(creditAlias, COL_ACCOUNT_CODE, ALS_CREDIT_CODE)
         .addFrom(TBL_INDICATOR_ACCOUNTS)
-        .addFromLeft(TBL_CHART_OF_ACCOUNTS, debitAlias, sys.joinTables(TBL_CHART_OF_ACCOUNTS,
+        .addFromLeft(TBL_CHART_OF_ACCOUNTS, debitAlias, SqlUtils.join(debitAlias, accountIdName,
             TBL_INDICATOR_ACCOUNTS, COL_INDICATOR_ACCOUNT_DEBIT))
-        .addFromLeft(TBL_CHART_OF_ACCOUNTS, creditAlias, sys.joinTables(TBL_CHART_OF_ACCOUNTS,
+        .addFromLeft(TBL_CHART_OF_ACCOUNTS, creditAlias, SqlUtils.join(creditAlias, accountIdName,
             TBL_INDICATOR_ACCOUNTS, COL_INDICATOR_ACCOUNT_CREDIT))
         .setWhere(SqlUtils.and(
             SqlUtils.equals(TBL_INDICATOR_ACCOUNTS, COL_FIN_INDICATOR, indicator),
@@ -430,6 +454,16 @@ public class AnalysisBean {
                 COL_INDICATOR_ACCOUNT_DEBIT, COL_INDICATOR_ACCOUNT_CREDIT)));
 
     return qs.getData(query);
+  }
+
+  private IndicatorBalance getIndicatorBalance(long indicator) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_BALANCE)
+        .addFrom(TBL_FINANCIAL_INDICATORS)
+        .setWhere(sys.idEquals(TBL_FINANCIAL_INDICATORS, indicator));
+
+    IndicatorBalance indicatorBalance = qs.getEnum(query, IndicatorBalance.class);
+    return (indicatorBalance == null) ? IndicatorBalance.DEFAULT : null;
   }
 
   private String getIndicatorSourceColumn(long indicator) {
@@ -444,5 +478,65 @@ public class AnalysisBean {
     }
 
     return indicatorSource.getSourceColumn();
+  }
+
+  private double getActualValue(long indicator, MonthRange range, Filter parentFilter,
+      BeeView finView, Long userId) {
+
+    double value = BeeConst.DOUBLE_ZERO;
+
+    SimpleRowSet accounts = getIndicatorAccounts(indicator);
+    if (DataUtils.isEmpty(accounts)) {
+      return value;
+    }
+
+    CompoundFilter plusFilter = CompoundFilter.or();
+    CompoundFilter minusFilter = CompoundFilter.or();
+
+    for (SimpleRow row : accounts) {
+      Filter accountFilter = AnalysisUtils.getAccountCodeFilter(
+          ALS_DEBIT_CODE, row.getValue(ALS_DEBIT_CODE),
+          ALS_CREDIT_CODE, row.getValue(ALS_CREDIT_CODE));
+
+      if (row.isTrue(COL_INDICATOR_ACCOUNT_PLUS)) {
+        plusFilter.add(accountFilter);
+      } else {
+        minusFilter.add(accountFilter);
+      }
+    }
+
+    Filter indicatorFilter = getIndicatorFilter(indicator, finView, userId);
+
+    IndicatorBalance indicatorBalance = getIndicatorBalance(indicator);
+    Filter rangeFilter = (indicatorBalance == null || range == null)
+        ? null : indicatorBalance.getFilter(COL_FIN_DATE, range);
+
+    String sourceColumn = getIndicatorSourceColumn(indicator);
+    Filter sourceFilter = Filter.nonZero(sourceColumn);
+
+    Filter filter = Filter.and(parentFilter, indicatorFilter, rangeFilter, sourceFilter);
+
+    if (!plusFilter.isEmpty()) {
+      Double plus = getSum(finView, userId, Filter.and(filter, plusFilter), sourceColumn);
+      if (BeeUtils.nonZero(plus)) {
+        value += plus;
+      }
+    }
+
+    if (!minusFilter.isEmpty()) {
+      Double minus = getSum(finView, userId, Filter.and(filter, minusFilter), sourceColumn);
+      if (BeeUtils.nonZero(minus)) {
+        value -= minus;
+      }
+    }
+
+    return value;
+  }
+
+  private Double getSum(BeeView view, Long userId, Filter filter, String column) {
+    SqlSelect query = view.getQuery(userId, filter, null, Collections.singleton(column));
+    String alias = SqlUtils.uniqueName();
+
+    return qs.getDouble(new SqlSelect().addSum(alias, column).addFrom(query, alias));
   }
 }

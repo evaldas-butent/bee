@@ -1,4 +1,4 @@
-package com.butent.bee.server.modules.finance;
+package com.butent.bee.shared.modules.finance.analysis;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
@@ -17,16 +17,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-final class AnalysisUtils {
+public final class AnalysisUtils {
 
-  static String formatYearMonth(Integer year, Integer month) {
+  public static String formatYearMonth(Integer year, Integer month) {
     String y = (year == null) ? null : TimeUtils.yearToString(year);
     String m = (month == null) ? null : TimeUtils.monthToString(month);
 
     return BeeUtils.join(BeeConst.STRING_POINT, y, m);
   }
 
-  static Filter getFilter(String column, MonthRange range) {
+  public static Filter getAccountCodeFilter(String debitColumn, String debitCode,
+      String creditColumn, String creditCode) {
+
+    if (!BeeUtils.isEmpty(debitCode) && !BeeUtils.isEmpty(creditCode)) {
+      return Filter.and(Filter.startsWith(debitColumn, BeeUtils.trimRight(debitCode)),
+          Filter.startsWith(creditColumn, BeeUtils.trimRight(creditCode)));
+
+    } else if (!BeeUtils.isEmpty(debitCode)) {
+      return Filter.startsWith(debitColumn, BeeUtils.trimRight(debitCode));
+
+    } else if (!BeeUtils.isEmpty(creditCode)) {
+      return Filter.startsWith(creditColumn, BeeUtils.trimRight(creditCode));
+
+    } else {
+      return null;
+    }
+  }
+
+  public static Filter getFilter(String column, MonthRange range) {
     if (range == null) {
       return null;
     }
@@ -35,14 +53,14 @@ final class AnalysisUtils {
     YearMonth maxYm = range.getMaxMonth();
 
     DateTimeValue minDt;
-    if (minYm != null && (minYm.getYear() > ANALYSIS_MIN_YEAR || minYm.getMonth() > 1)) {
+    if (minYm != null && BeeUtils.isMore(minYm, ANALYSIS_MIN_YEAR_MONTH)) {
       minDt = new DateTimeValue(minYm.getDate().getDateTime());
     } else {
       minDt = null;
     }
 
     DateTimeValue maxDt;
-    if (maxYm != null && (maxYm.getYear() < ANALYSIS_MAX_YEAR || maxYm.getMonth() < 12)) {
+    if (maxYm != null && BeeUtils.isLess(maxYm, ANALYSIS_MAX_YEAR_MONTH)) {
       maxDt = new DateTimeValue(maxYm.nextMonth().getDate().getDateTime());
     } else {
       maxDt = null;
@@ -62,7 +80,7 @@ final class AnalysisUtils {
     }
   }
 
-  static Map<String, Integer> getIndexes(BeeRowSet rowSet) {
+  public static Map<String, Integer> getIndexes(BeeRowSet rowSet) {
     Map<String, Integer> indexes = new HashMap<>();
 
     if (rowSet != null) {
@@ -74,7 +92,7 @@ final class AnalysisUtils {
     return indexes;
   }
 
-  static MonthRange getRange(Integer yearFrom, Integer monthFrom,
+  public static MonthRange getRange(Integer yearFrom, Integer monthFrom,
       Integer yearUntil, Integer monthUntil) {
 
     if (isValidRange(yearFrom, monthFrom, yearUntil, monthUntil)) {
@@ -89,11 +107,21 @@ final class AnalysisUtils {
     }
   }
 
-  static boolean isValidAbbreviation(String input) {
+  public static MonthRange intersection(MonthRange first, MonthRange second) {
+    if (first == null) {
+      return second;
+    } else if (second == null) {
+      return first;
+    } else {
+      return first.intersection(second);
+    }
+  }
+
+  public static boolean isValidAbbreviation(String input) {
     return NameUtils.isIdentifier(input);
   }
 
-  static boolean isValidRange(Integer yearFrom, Integer monthFrom,
+  public static boolean isValidRange(Integer yearFrom, Integer monthFrom,
       Integer yearUntil, Integer monthUntil) {
 
     if (yearFrom == null) {
@@ -157,7 +185,7 @@ final class AnalysisUtils {
     return year >= ANALYSIS_MIN_YEAR && year <= ANALYSIS_MAX_YEAR;
   }
 
-  static Filter joinFilters(CompoundFilter include, CompoundFilter exclude) {
+  public static Filter joinFilters(CompoundFilter include, CompoundFilter exclude) {
     if (include.isEmpty() && exclude.isEmpty()) {
       return null;
 
@@ -172,7 +200,7 @@ final class AnalysisUtils {
     }
   }
 
-  static Filter normalize(CompoundFilter filter) {
+  public static Filter normalize(CompoundFilter filter) {
     if (filter == null || filter.isEmpty()) {
       return null;
     } else {

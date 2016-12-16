@@ -2791,6 +2791,8 @@ public interface Dictionary {
 
   default String finAnalysisName() {return g("finAnalysisName");}
 
+  default String finAnalysisPrimaryColumnsNotAvailable() {return g("finAnalysisPrimaryColumnsNotAvailable");}
+
   default String finAnalysisPrimaryRowsNotAvailable() {return g("finAnalysisPrimaryRowsNotAvailable");}
 
   default String finAnalysisRow() {return g("finAnalysisRow");}

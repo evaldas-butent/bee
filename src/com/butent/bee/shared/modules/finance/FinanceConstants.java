@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.finance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorBalance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -343,6 +344,9 @@ public final class FinanceConstants {
 
   public static final int ANALYSIS_MIN_YEAR = 2000;
   public static final int ANALYSIS_MAX_YEAR = 2099;
+
+  public static final YearMonth ANALYSIS_MIN_YEAR_MONTH = new YearMonth(ANALYSIS_MIN_YEAR, 1);
+  public static final YearMonth ANALYSIS_MAX_YEAR_MONTH = new YearMonth(ANALYSIS_MAX_YEAR, 12);
 
   public static void register() {
     EnumUtils.register(IndicatorKind.class);
