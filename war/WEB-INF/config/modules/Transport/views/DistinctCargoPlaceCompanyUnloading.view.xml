@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      name="DistinctCargoPlaceCompanyUnloading" source="CargoUnloading"
+      filter="Company and Manager = {u}"
+>
+  <Columns>
+    <SimpleJoin name="UnloadingPlace" joinType="INNER">
+      <SimpleColumn name="Company" />
+    </SimpleJoin>
+
+    <SimpleJoin joinType="INNER" name="Cargo">
+      <SimpleJoin joinType="INNER" name="Order">
+        <HiddenColumn name="Manager"/>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <GroupBy columns="Company" />
+  <Order>
+    <OrderBy column="Company" />
+  </Order>
+</View>
