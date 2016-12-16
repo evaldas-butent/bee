@@ -312,11 +312,11 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           response = ResponseObject.error("Folder does not exist: ID =", folderId);
         } else {
           String name = reqInfo.getParameter(COL_FOLDER_NAME);
-          boolean ok = account.createRemoteFolder(parent, name, false);
+          boolean ok = account.createRemoteFolder(parent, name);
 
           if (!ok && Objects.equals(parent, account.getRootFolder())) {
             parent = account.getInboxFolder();
-            ok = account.createRemoteFolder(parent, name, false);
+            ok = account.createRemoteFolder(parent, name);
           }
           if (ok) {
             mail.createFolder(account, parent, name);
@@ -1846,7 +1846,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       throws MessagingException {
 
     Transport transport = null;
-    MimeMessage message = null;
+    MimeMessage message;
 
     try {
       message = buildMessage(account, to, cc, bcc, subject, content, attachments, inReplyTo);
@@ -2022,8 +2022,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
     if (MailAccount.holdsFolders(remoteFolder)) {
       for (Folder subFolder : remoteFolder.list()) {
-        if (subFolder instanceof IMAPFolder &&
-            ArrayUtils.contains(((IMAPFolder) subFolder).getAttributes(), "\\NoInferiors")) {
+        if (subFolder instanceof IMAPFolder
+            && ArrayUtils.contains(((IMAPFolder) subFolder).getAttributes(), "\\NoInferiors")) {
           continue;
         }
         visitedFolders.add(subFolder.getName());

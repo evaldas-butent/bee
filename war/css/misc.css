@@ -616,14 +616,14 @@
   flex-direction: row;
   flex-wrap: wrap;
   align-items: flex-start;
+  max-width: 620px;
+  max-height: 200px;
 }
 .bee-spec-summary tr td:nth-child(2) {
   font-weight: bold;
   text-align: right;
 }
 .bee-Popup .bee-spec-box {
-  max-width: 620px;
-  max-height: 500px;
   padding: 0 5px;
 }
 .bee-spec-thumbnail {
