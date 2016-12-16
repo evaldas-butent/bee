@@ -8,7 +8,7 @@
     <Relation name="Option" notNull="true" relation="ImportOptions" cascade="DELETE"
               label="=trImportOption" />
     <String name="Property" precision="50" notNull="true" label="=trImportProperty" />
-    <String name="Value" precision="50" label="=trImportValue" />
+    <Text name="Value" label="=trImportValue" />
     <Numeric name="Ordinal" precision="2" scale="0" label="=ordinal" />
     <Relation name="RelationOption" unique="true" relation="ImportOptions" cascade="DELETE"
               editable="true" />

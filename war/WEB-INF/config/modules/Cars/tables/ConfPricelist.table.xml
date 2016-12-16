@@ -9,6 +9,7 @@
     <String name="BranchName" precision="50" notNull="true" label="=name" />
     <Text name="Description" label="=description" />
     <Relation name="PhotoFile" relation="Files" editable="true" label="=photo" />
+    <String name="PhotoCode" precision="10" label="=code+ (+=photo+)" />
     <Boolean name="Blocked" label="=actionBlock" />
     <Numeric name="Ordinal" precision="3" label="=ordinal" />
     <Relation name="Type" relation="ConfTypes" label="=optionType" />

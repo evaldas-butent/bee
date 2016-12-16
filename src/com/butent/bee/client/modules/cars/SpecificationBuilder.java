@@ -17,6 +17,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.grid.HtmlTable;
@@ -196,7 +197,9 @@ public class SpecificationBuilder implements InputCallback {
           }
         }
         if (!ok) {
-          return BeeUtils.join(": ", dimension.getName(), Localized.dictionary().valueRequired());
+          Global.showError(BeeUtils.join(": ", dimension.getName(),
+              Localized.dictionary().valueRequired()));
+          return InputBoxes.SILENT_ERROR;
         }
       }
     }

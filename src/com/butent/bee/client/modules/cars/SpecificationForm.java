@@ -186,10 +186,10 @@ public class SpecificationForm extends PrintFormInterceptor implements Consumer<
         objectContainer.add(flow);
         flow.add(objectSpecification.renderSummary(false));
 
-        objectSpecification.getPhotos().stream().filter(DataUtils::isId).forEach(photo -> {
+        objectSpecification.getPhotos().values().forEach(val -> {
           Flow thumbnail = new Flow(SpecificationBuilder.STYLE_THUMBNAIL);
           thumbnail.addStyleName(StyleUtils.NAME_FLEXIBLE);
-          thumbnail.add(new Image(FileUtils.getUrl(photo)));
+          thumbnail.add(new Image(FileUtils.getUrl(val)));
           flow.insert(thumbnail, flow.getWidgetCount() - 1);
         });
         Flow descriptionBox = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);

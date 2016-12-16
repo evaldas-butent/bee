@@ -58,6 +58,7 @@ public final class CarsConstants {
   public static final String COL_PRICE = "Price";
   public static final String COL_DENIED = "Denied";
   public static final String COL_OBJECT = "Object";
+  public static final String COL_PHOTO_CODE = "PhotoCode";
 
   public static final String COL_ORDER = "Order";
   public static final String COL_CAR = "Car";
