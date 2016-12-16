@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -118,7 +119,7 @@ class AnalysisFormData {
     CompoundFilter filter = Filter.and();
 
     filter.add(getEmployeeFilter(header, headerIndexes.get(COL_ANALYSIS_HEADER_EMPLOYEE)));
-    addDimensionFilters(filter, header, headerIndexes);
+    addDimensionFilters(filter, header, headerIndexes, null);
 
     if (!BeeUtils.isEmpty(headerFilters)) {
       filter.add(getFilter(headerFilters, filterParser));
@@ -143,10 +144,14 @@ class AnalysisFormData {
   Filter getColumnFilter(BeeRow column, Function<String, Filter> filterParser) {
     CompoundFilter filter = Filter.and();
 
-    filter.add(getEmployeeFilter(column, columnIndexes.get(COL_ANALYSIS_COLUMN_EMPLOYEE)));
-    addDimensionFilters(filter, column, columnIndexes);
+    if (isHeaderTrue(COL_ANALYSIS_SHOW_COLUMN_EMPLOYEE)) {
+      filter.add(getEmployeeFilter(column, columnIndexes.get(COL_ANALYSIS_COLUMN_EMPLOYEE)));
+    }
 
-    if (columnFilters.containsKey(column.getId())) {
+    addDimensionFilters(filter, column, columnIndexes,
+        ordinal -> isHeaderTrue(colAnalysisShowColumnDimension(ordinal)));
+
+    if (columnFilters.containsKey(column.getId()) && isHeaderTrue(COL_ANALYSIS_COLUMN_FILTERS)) {
       filter.add(getFilter(columnFilters.get(column.getId()), filterParser));
     }
 
@@ -169,10 +174,14 @@ class AnalysisFormData {
   Filter getRowFilter(BeeRow row, Function<String, Filter> filterParser) {
     CompoundFilter filter = Filter.and();
 
-    filter.add(getEmployeeFilter(row, rowIndexes.get(COL_ANALYSIS_ROW_EMPLOYEE)));
-    addDimensionFilters(filter, row, rowIndexes);
+    if (isHeaderTrue(COL_ANALYSIS_SHOW_ROW_EMPLOYEE)) {
+      filter.add(getEmployeeFilter(row, rowIndexes.get(COL_ANALYSIS_ROW_EMPLOYEE)));
+    }
 
-    if (rowFilters.containsKey(row.getId())) {
+    addDimensionFilters(filter, row, rowIndexes,
+        ordinal -> isHeaderTrue(colAnalysisShowRowDimension(ordinal)));
+
+    if (rowFilters.containsKey(row.getId()) && isHeaderTrue(COL_ANALYSIS_ROW_FILTERS)) {
       filter.add(getFilter(rowFilters.get(row.getId()), filterParser));
     }
 
@@ -601,7 +610,7 @@ class AnalysisFormData {
           if (!BeeUtils.isEmpty(script)) {
             try {
               Object value = engine.eval(script);
-              logger.warning((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
+              logger.debug((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
 
             } catch (ScriptException ex) {
               String label = labelFunction.apply(row);
@@ -618,15 +627,17 @@ class AnalysisFormData {
   }
 
   private static void addDimensionFilters(CompoundFilter builder, BeeRow row,
-      Map<String, Integer> indexes) {
+      Map<String, Integer> indexes, IntPredicate predicate) {
 
     if (Dimensions.getObserved() > 0) {
       for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
-        String column = Dimensions.getRelationColumn(ordinal);
-        Long value = row.getLong(indexes.get(column));
+        if (predicate == null || predicate.test(ordinal)) {
+          String column = Dimensions.getRelationColumn(ordinal);
+          Long value = row.getLong(indexes.get(column));
 
-        if (DataUtils.isId(value)) {
-          builder.add(Filter.equals(column, value));
+          if (DataUtils.isId(value)) {
+            builder.add(Filter.equals(column, value));
+          }
         }
       }
     }
@@ -667,7 +678,7 @@ class AnalysisFormData {
     CompoundFilter filter = Filter.and();
 
     filter.add(getEmployeeFilter(row, filterIndexes.get(COL_ANALYSIS_FILTER_EMPLOYEE)));
-    addDimensionFilters(filter, row, filterIndexes);
+    addDimensionFilters(filter, row, filterIndexes, null);
 
     if (filterParser != null) {
       String extraFilter = row.getString(filterIndexes.get(COL_ANALYSIS_FILTER_EXTRA));

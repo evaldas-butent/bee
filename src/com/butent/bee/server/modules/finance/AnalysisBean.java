@@ -463,7 +463,7 @@ public class AnalysisBean {
         .setWhere(sys.idEquals(TBL_FINANCIAL_INDICATORS, indicator));
 
     IndicatorBalance indicatorBalance = qs.getEnum(query, IndicatorBalance.class);
-    return (indicatorBalance == null) ? IndicatorBalance.DEFAULT : null;
+    return (indicatorBalance == null) ? IndicatorBalance.DEFAULT : indicatorBalance;
   }
 
   private String getIndicatorSourceColumn(long indicator) {
