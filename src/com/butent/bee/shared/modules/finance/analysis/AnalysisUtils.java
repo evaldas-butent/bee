@@ -26,24 +26,6 @@ public final class AnalysisUtils {
     return BeeUtils.join(BeeConst.STRING_POINT, y, m);
   }
 
-  public static Filter getAccountCodeFilter(String debitColumn, String debitCode,
-      String creditColumn, String creditCode) {
-
-    if (!BeeUtils.isEmpty(debitCode) && !BeeUtils.isEmpty(creditCode)) {
-      return Filter.and(Filter.startsWith(debitColumn, BeeUtils.trimRight(debitCode)),
-          Filter.startsWith(creditColumn, BeeUtils.trimRight(creditCode)));
-
-    } else if (!BeeUtils.isEmpty(debitCode)) {
-      return Filter.startsWith(debitColumn, BeeUtils.trimRight(debitCode));
-
-    } else if (!BeeUtils.isEmpty(creditCode)) {
-      return Filter.startsWith(creditColumn, BeeUtils.trimRight(creditCode));
-
-    } else {
-      return null;
-    }
-  }
-
   public static Filter getFilter(String column, MonthRange range) {
     if (range == null) {
       return null;

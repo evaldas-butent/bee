@@ -16,6 +16,8 @@
     <SimpleColumn name="RowValues" />
 
     <xi:include href="viewcolumns/Indicator.viewcolumns.xml" />
+    <SimpleColumn name="TurnoverOrBalance" />
+
     <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
 
     <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />

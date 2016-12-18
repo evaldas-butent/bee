@@ -2991,8 +2991,6 @@ public interface Dictionary {
 
   default String finIndicatorAccounts() {return g("finIndicatorAccounts");}
 
-  default String finIndicatorBalance() {return g("finIndicatorBalance");}
-
   default String finIndicatorCreate() {return g("finIndicatorCreate");}
 
   default String finIndicatorFilterExtra() {return g("finIndicatorFilterExtra");}
@@ -3053,9 +3051,9 @@ public interface Dictionary {
 
   default String finLiabilitiesToEmployees() {return g("finLiabilitiesToEmployees");}
 
-  default String finNormalAccountBalance() {return g("finNormalAccountBalance");}
+  default String finNormalBalance() {return g("finNormalBalance");}
 
-  default String finNormalAccountBalanceShort() {return g("finNormalAccountBalanceShort");}
+  default String finNormalBalanceShort() {return g("finNormalBalanceShort");}
 
   default String finOpeningBalance() {return g("finOpeningBalance");}
 
@@ -3086,6 +3084,8 @@ public interface Dictionary {
   default String finTransitoryAccount() {return g("finTransitoryAccount");}
 
   default String finTurnover() {return g("finTurnover");}
+
+  default String finTurnoverOrBalance() {return g("finTurnoverOrBalance");}
 
   default String finVatPayable() {return g("finVatPayable");}
 

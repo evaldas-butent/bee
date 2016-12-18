@@ -12,8 +12,8 @@ public enum IndicatorKind implements HasLocalizedCaption {
     }
 
     @Override
-    public IndicatorBalance getDefaultBalance() {
-      return IndicatorBalance.TURNOVER;
+    public TurnoverOrBalance getDefaultTurnoverOrBalance() {
+      return TurnoverOrBalance.TURNOVER;
     }
 
     @Override
@@ -34,7 +34,7 @@ public enum IndicatorKind implements HasLocalizedCaption {
     }
 
     @Override
-    public IndicatorBalance getDefaultBalance() {
+    public TurnoverOrBalance getDefaultTurnoverOrBalance() {
       return null;
     }
 
@@ -49,7 +49,7 @@ public enum IndicatorKind implements HasLocalizedCaption {
     }
   };
 
-  public abstract IndicatorBalance getDefaultBalance();
+  public abstract TurnoverOrBalance getDefaultTurnoverOrBalance();
 
   public abstract IndicatorSource getDefaultSource();
 

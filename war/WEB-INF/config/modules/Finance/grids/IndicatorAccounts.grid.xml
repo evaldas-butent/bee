@@ -1,40 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-        xmlns:ui="http://www.butent.com/ui"
 
         name="IndicatorAccounts" viewName="IndicatorAccounts"
 >
   <g:columns>
-    <RelColumn name="Debit" renderColumns="DebitCode DebitName"
-               choiceColumns="AccountCode AccountName" newRowEnabled="false"
-               backgroundSource="DebitBackground" foregroundSource="DebitForeground"
-               flexGrow="1" visible="true" />
+    <RelColumn name="Account" renderColumns="AccountCode" choiceColumns="AccountCode AccountName"
+               newRowEnabled="false" backgroundSource="Background" foregroundSource="Foreground"
+               minWidth="100" visible="true" />
 
-    <RelColumn name="Credit" renderColumns="CreditCode CreditName"
-               choiceColumns="AccountCode AccountName" newRowEnabled="false"
-               backgroundSource="CreditBackground" foregroundSource="CreditForeground"
-               flexGrow="1" visible="true" />
-
-    <DataColumn name="Plus" caption="&#xf196; / &#xf147;" format="&#xf055; &#xf056;"
-                instantKarma="true" visible="true">
-      <style>
-        <headerStyle>
-          <ui:class>bee-fa-label</ui:class>
-          <ui:font>medium</ui:font>
-        </headerStyle>
-        <bodyStyle>
-          <ui:class>bee-fa-label</ui:class>
-          <ui:font>large</ui:font>
-        </bodyStyle>
-      </style>
-    </DataColumn>
+    <DataColumn name="AccountName" backgroundSource="Background" foregroundSource="Foreground"
+                flexGrow="1" visible="true" />
   </g:columns>
-
-  <g:rowStyle>
-    <ui:inline>color: green;</ui:inline>
-    <ui:expression>row.Plus</ui:expression>
-  </g:rowStyle>
-  <g:rowStyle>
-    <ui:inline>color: red;</ui:inline>
-  </g:rowStyle>
 </g:Grid>

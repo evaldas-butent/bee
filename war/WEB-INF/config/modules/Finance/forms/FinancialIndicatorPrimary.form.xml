@@ -26,8 +26,8 @@
       </row>
 
       <row>
-        <Label for="IndicatorBalance" class="bee-required" />
-        <Radio source="IndicatorBalance" vertical="true" visible="true" />
+        <Label for="IndicatorTurnoverOrBalance" class="bee-required" />
+        <Radio source="IndicatorTurnoverOrBalance" vertical="true" visible="true" />
 
         &empty;
         <CheckBox source="IndicatorClosingEntries" text="=finClosingEntriesShort" />

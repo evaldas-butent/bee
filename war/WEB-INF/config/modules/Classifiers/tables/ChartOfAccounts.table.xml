@@ -8,7 +8,7 @@
     <String name="AccountCode" precision="20" notNull="true" unique="true" label="=code" />
     <String name="AccountName" precision="140" notNull="true" translatable="true" label="=name" />
 
-    <Boolean name="NormalBalance" label="=finNormalAccountBalance" />
+    <Enum name="NormalBalance" key="NormalBalance" label="=finNormalBalance" />
 
     <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />

@@ -27,7 +27,7 @@ import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
-import com.butent.bee.shared.modules.finance.analysis.IndicatorBalance;
+import com.butent.bee.shared.modules.finance.analysis.TurnoverOrBalance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.time.MonthRange;
@@ -37,6 +37,7 @@ import com.butent.bee.shared.time.YearQuarter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -282,22 +283,20 @@ public class AnalysisBean {
       filter.add(indicatorFilter);
     }
 
-    SimpleRowSet indicatorAccounts = getIndicatorAccounts(indicator);
-    if (DataUtils.isEmpty(indicatorAccounts)) {
+    Collection<String> indicatorAccountCodes = getIndicatorAccountCodes(indicator);
+    if (BeeUtils.isEmpty(indicatorAccountCodes)) {
       return result;
+    }
 
-    } else {
-      CompoundFilter accountFilter = Filter.or();
+    CompoundFilter accountFilter = Filter.or();
 
-      for (SimpleRow row : indicatorAccounts) {
-        accountFilter.add(AnalysisUtils.getAccountCodeFilter(
-            ALS_DEBIT_CODE, row.getValue(ALS_DEBIT_CODE),
-            ALS_CREDIT_CODE, row.getValue(ALS_CREDIT_CODE)));
-      }
+    for (String code : indicatorAccountCodes) {
+      accountFilter.add(Filter.startsWith(ALS_DEBIT_CODE, code));
+      accountFilter.add(Filter.startsWith(ALS_CREDIT_CODE, code));
+    }
 
-      if (!accountFilter.isEmpty()) {
-        filter.add(accountFilter);
-      }
+    if (!accountFilter.isEmpty()) {
+      filter.add(accountFilter);
     }
 
     String indicatorSourceColumn = getIndicatorSourceColumn(indicator);
@@ -436,38 +435,25 @@ public class AnalysisBean {
     return result;
   }
 
-  private SimpleRowSet getIndicatorAccounts(long indicator) {
-    String debitAlias = SqlUtils.uniqueName();
-    String creditAlias = SqlUtils.uniqueName();
-
-    String accountIdName = sys.getIdName(TBL_CHART_OF_ACCOUNTS);
-
-    SqlSelect query = new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_INDICATOR_ACCOUNTS,
-            COL_INDICATOR_ACCOUNT_DEBIT, COL_INDICATOR_ACCOUNT_CREDIT, COL_INDICATOR_ACCOUNT_PLUS)
-        .addField(debitAlias, COL_ACCOUNT_CODE, ALS_DEBIT_CODE)
-        .addField(creditAlias, COL_ACCOUNT_CODE, ALS_CREDIT_CODE)
+  private Collection<String> getIndicatorAccountCodes(long indicator) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_CHART_OF_ACCOUNTS, COL_ACCOUNT_CODE)
         .addFrom(TBL_INDICATOR_ACCOUNTS)
-        .addFromLeft(TBL_CHART_OF_ACCOUNTS, debitAlias, SqlUtils.join(debitAlias, accountIdName,
-            TBL_INDICATOR_ACCOUNTS, COL_INDICATOR_ACCOUNT_DEBIT))
-        .addFromLeft(TBL_CHART_OF_ACCOUNTS, creditAlias, SqlUtils.join(creditAlias, accountIdName,
-            TBL_INDICATOR_ACCOUNTS, COL_INDICATOR_ACCOUNT_CREDIT))
-        .setWhere(SqlUtils.and(
-            SqlUtils.equals(TBL_INDICATOR_ACCOUNTS, COL_FIN_INDICATOR, indicator),
-            SqlUtils.isDifferent(TBL_INDICATOR_ACCOUNTS,
-                COL_INDICATOR_ACCOUNT_DEBIT, COL_INDICATOR_ACCOUNT_CREDIT)));
+        .addFromInner(TBL_CHART_OF_ACCOUNTS, sys.joinTables(TBL_CHART_OF_ACCOUNTS,
+            TBL_INDICATOR_ACCOUNTS, COL_INDICATOR_ACCOUNT))
+        .setWhere(SqlUtils.equals(TBL_INDICATOR_ACCOUNTS, COL_FIN_INDICATOR, indicator));
 
-    return qs.getData(query);
+    return qs.getValueSet(query);
   }
 
-  private IndicatorBalance getIndicatorBalance(long indicator) {
+  private TurnoverOrBalance getIndicatorTurnoverOrBalance(long indicator) {
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_BALANCE)
+        .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_TURNOVER_OR_BALANCE)
         .addFrom(TBL_FINANCIAL_INDICATORS)
         .setWhere(sys.idEquals(TBL_FINANCIAL_INDICATORS, indicator));
 
-    IndicatorBalance indicatorBalance = qs.getEnum(query, IndicatorBalance.class);
-    return (indicatorBalance == null) ? IndicatorBalance.DEFAULT : indicatorBalance;
+    TurnoverOrBalance turnoverOrBalance = qs.getEnum(query, TurnoverOrBalance.class);
+    return (turnoverOrBalance == null) ? TurnoverOrBalance.DEFAULT : turnoverOrBalance;
   }
 
   private String getIndicatorSourceColumn(long indicator) {
@@ -489,31 +475,27 @@ public class AnalysisBean {
 
     double value = BeeConst.DOUBLE_ZERO;
 
-    SimpleRowSet accounts = getIndicatorAccounts(indicator);
-    if (DataUtils.isEmpty(accounts)) {
+    Collection<String> accountCodes = getIndicatorAccountCodes(indicator);
+    if (BeeUtils.isEmpty(accountCodes)) {
       return value;
     }
 
     CompoundFilter plusFilter = CompoundFilter.or();
     CompoundFilter minusFilter = CompoundFilter.or();
 
-    for (SimpleRow row : accounts) {
-      Filter accountFilter = AnalysisUtils.getAccountCodeFilter(
-          ALS_DEBIT_CODE, row.getValue(ALS_DEBIT_CODE),
-          ALS_CREDIT_CODE, row.getValue(ALS_CREDIT_CODE));
+    for (String code : accountCodes) {
+      Filter debitFilter = Filter.startsWith(ALS_DEBIT_CODE, code);
+      Filter creditFilter = Filter.startsWith(ALS_CREDIT_CODE, code);
 
-      if (row.isTrue(COL_INDICATOR_ACCOUNT_PLUS)) {
-        plusFilter.add(accountFilter);
-      } else {
-        minusFilter.add(accountFilter);
-      }
+      plusFilter.add(debitFilter);
+      minusFilter.add(creditFilter);
     }
 
     Filter indicatorFilter = getIndicatorFilter(indicator, finView, userId);
 
-    IndicatorBalance indicatorBalance = getIndicatorBalance(indicator);
-    Filter rangeFilter = (indicatorBalance == null || range == null)
-        ? null : indicatorBalance.getFilter(COL_FIN_DATE, range);
+    TurnoverOrBalance turnoverOrBalance = getIndicatorTurnoverOrBalance(indicator);
+    Filter rangeFilter = (turnoverOrBalance == null || range == null)
+        ? null : turnoverOrBalance.getFilter(COL_FIN_DATE, range);
 
     String sourceColumn = getIndicatorSourceColumn(indicator);
     Filter sourceFilter = Filter.nonZero(sourceColumn);

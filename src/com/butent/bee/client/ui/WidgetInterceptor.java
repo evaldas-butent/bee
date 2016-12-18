@@ -10,6 +10,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -38,6 +39,10 @@ public interface WidgetInterceptor extends HasCaption, HasWidgetSupplier {
   Set<Action> getDisabledActions(Set<Action> defaultActions);
 
   Set<Action> getEnabledActions(Set<Action> defaultActions);
+
+  default <E extends Enum<?>> E getEnumValue(String source, Class<E> clazz) {
+    return EnumUtils.getEnumByIndex(clazz, getIntegerValue(source));
+  }
 
   Integer getIntegerValue(String source);
 

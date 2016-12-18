@@ -43,52 +43,34 @@ class AnalysisFormData {
 
   private static BeeLogger logger = LogUtils.getLogger(AnalysisFormData.class);
 
-  private final BeeRow header;
   private final Map<String, Integer> headerIndexes;
+  private final BeeRow header;
 
   private final Map<String, Integer> columnIndexes;
   private final List<BeeRow> columns = new ArrayList<>();
-  private final List<Integer> selectedColumns = new ArrayList<>();
 
   private final Map<String, Integer> rowIndexes;
   private final List<BeeRow> rows = new ArrayList<>();
-  private final List<Integer> selectedRows = new ArrayList<>();
 
+  private final Map<String, Integer> filterIndexes;
   private final List<BeeRow> headerFilters = new ArrayList<>();
   private final Multimap<Long, BeeRow> columnFilters = ArrayListMultimap.create();
   private final Multimap<Long, BeeRow> rowFilters = ArrayListMultimap.create();
-  private final Map<String, Integer> filterIndexes;
 
   AnalysisFormData(BeeRowSet headerData, BeeRowSet columnData, BeeRowSet rowData,
       BeeRowSet filterData) {
 
-    this.header = DataUtils.isEmpty(headerData) ? null : headerData.getRow(0);
     this.headerIndexes = AnalysisUtils.getIndexes(headerData);
+    this.header = DataUtils.isEmpty(headerData) ? null : headerData.getRow(0);
 
     this.columnIndexes = AnalysisUtils.getIndexes(columnData);
-
     if (!DataUtils.isEmpty(columnData)) {
       this.columns.addAll(columnData.getRows());
-
-      int index = columnIndexes.get(COL_ANALYSIS_COLUMN_SELECTED);
-      for (int i = 0; i < columns.size(); i++) {
-        if (columns.get(i).isTrue(index)) {
-          selectedColumns.add(i);
-        }
-      }
     }
 
     this.rowIndexes = AnalysisUtils.getIndexes(rowData);
-
     if (!DataUtils.isEmpty(rowData)) {
       this.rows.addAll(rowData.getRows());
-
-      int index = rowIndexes.get(COL_ANALYSIS_ROW_SELECTED);
-      for (int i = 0; i < rows.size(); i++) {
-        if (rows.get(i).isTrue(index)) {
-          selectedRows.add(i);
-        }
-      }
     }
 
     this.filterIndexes = AnalysisUtils.getIndexes(filterData);
@@ -226,10 +208,10 @@ class AnalysisFormData {
       return messages;
     }
 
-    if (BeeUtils.isEmpty(selectedColumns)) {
+    if (columns.stream().noneMatch(column -> isColumnTrue(column, COL_ANALYSIS_COLUMN_SELECTED))) {
       messages.add(dictionary.finAnalysisSelectColumns());
     }
-    if (BeeUtils.isEmpty(selectedRows)) {
+    if (rows.stream().noneMatch(row -> isRowTrue(row, COL_ANALYSIS_ROW_SELECTED))) {
       messages.add(dictionary.finAnalysisSelectRows());
     }
 
@@ -360,6 +342,10 @@ class AnalysisFormData {
     return column.getString(columnIndexes.get(key));
   }
 
+  private boolean isColumnTrue(BeeRow column, String key) {
+    return column.isTrue(columnIndexes.get(key));
+  }
+
   private List<AnalysisSplitType> getColumnSplits(BeeRow column, Integer levels) {
     List<AnalysisSplitType> splits = new ArrayList<>();
 
@@ -422,6 +408,10 @@ class AnalysisFormData {
 
   private String getRowString(BeeRow row, String key) {
     return row.getString(rowIndexes.get(key));
+  }
+
+  private boolean isRowTrue(BeeRow row, String key) {
+    return row.isTrue(rowIndexes.get(key));
   }
 
   private List<AnalysisSplitType> getRowSplits(BeeRow row, Integer levels) {

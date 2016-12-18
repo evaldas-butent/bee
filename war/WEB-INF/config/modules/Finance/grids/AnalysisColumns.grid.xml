@@ -17,6 +17,10 @@
   </g:columns>
 
   <xi:include href="columns/Indicator.columns.xml" />
+  <g:columns>
+    <DataColumn name="TurnoverOrBalance" />
+  </g:columns>
+
   <xi:include href="columns/BudgetType.columns.xml" />
 
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />

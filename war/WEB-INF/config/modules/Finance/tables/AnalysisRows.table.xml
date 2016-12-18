@@ -17,6 +17,8 @@
     <String name="RowValues" precision="20" label="=finAnalysisValues" />
 
     <Relation name="Indicator" relation="FinancialIndicators" label="=finIndicator" />
+    <Enum name="TurnoverOrBalance" key="TurnoverOrBalance" label="=finTurnoverOrBalance" />
+
     <Relation name="BudgetType" relation="BudgetTypes" label="=finBudgetType" />
 
     <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"

@@ -1,6 +1,6 @@
 package com.butent.bee.shared.modules.finance;
 
-import com.butent.bee.shared.modules.finance.analysis.IndicatorBalance;
+import com.butent.bee.shared.modules.finance.analysis.TurnoverOrBalance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
 import com.butent.bee.shared.time.YearMonth;
@@ -106,15 +106,14 @@ public final class FinanceConstants {
   public static final String COL_FIN_INDICATOR_ABBREVIATION = "IndicatorAbbreviation";
   public static final String COL_FIN_INDICATOR_SOURCE = "IndicatorSource";
   public static final String COL_FIN_INDICATOR_SCRIPT = "IndicatorScript";
-  public static final String COL_FIN_INDICATOR_BALANCE = "IndicatorBalance";
+  public static final String COL_FIN_INDICATOR_TURNOVER_OR_BALANCE = "IndicatorTurnoverOrBalance";
+  public static final String COL_FIN_INDICATOR_NORMAL_BALANCE = "IndicatorNormalBalance";
   public static final String COL_FIN_INDICATOR_CLOSING_ENTRIES = "IndicatorClosingEntries";
   public static final String COL_FIN_INDICATOR_IS_PERCENT = "IndicatorIsPercent";
   public static final String COL_FIN_INDICATOR_SCALE = "IndicatorScale";
 
   public static final String COL_FIN_INDICATOR = "Indicator";
-  public static final String COL_INDICATOR_ACCOUNT_DEBIT = "Debit";
-  public static final String COL_INDICATOR_ACCOUNT_CREDIT = "Credit";
-  public static final String COL_INDICATOR_ACCOUNT_PLUS = "Plus";
+  public static final String COL_INDICATOR_ACCOUNT = "Account";
 
   public static final String COL_INDICATOR_FILTER_EMPLOYEE = "Employee";
   public static final String COL_INDICATOR_FILTER_EXTRA = "ExtraFilter";
@@ -189,6 +188,7 @@ public final class FinanceConstants {
   public static final String COL_ANALYSIS_COLUMN_ABBREVIATION = "ColumnAbbreviation";
   public static final String COL_ANALYSIS_COLUMN_VALUES = "ColumnValues";
   public static final String COL_ANALYSIS_COLUMN_INDICATOR = "Indicator";
+  public static final String COL_ANALYSIS_COLUMN_TURNOVER_OR_BALANCE = "TurnoverOrBalance";
   public static final String COL_ANALYSIS_COLUMN_BUDGET_TYPE = "BudgetType";
   public static final String COL_ANALYSIS_COLUMN_EMPLOYEE = "Employee";
   public static final String COL_ANALYSIS_COLUMN_YEAR_FROM = "YearFrom";
@@ -214,6 +214,7 @@ public final class FinanceConstants {
   public static final String COL_ANALYSIS_ROW_ABBREVIATION = "RowAbbreviation";
   public static final String COL_ANALYSIS_ROW_VALUES = "RowValues";
   public static final String COL_ANALYSIS_ROW_INDICATOR = "Indicator";
+  public static final String COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE = "TurnoverOrBalance";
   public static final String COL_ANALYSIS_ROW_BUDGET_TYPE = "BudgetType";
   public static final String COL_ANALYSIS_ROW_EMPLOYEE = "Employee";
   public static final String COL_ANALYSIS_ROW_YEAR_FROM = "YearFrom";
@@ -288,6 +289,8 @@ public final class FinanceConstants {
   public static final String GRID_FINANCIAL_INDICATORS_PRIMARY = "FinancialIndicatorsPrimary";
   public static final String GRID_FINANCIAL_INDICATORS_SECONDARY = "FinancialIndicatorsSecondary";
 
+  public static final String GRID_INDICATOR_ACCOUNTS = "IndicatorAccounts";
+
   public static final String GRID_BUDGET_HEADERS = "BudgetHeaders";
   public static final String GRID_BUDGET_ENTRIES = "BudgetEntries";
 
@@ -353,9 +356,11 @@ public final class FinanceConstants {
   public static final YearMonth ANALYSIS_MAX_YEAR_MONTH = new YearMonth(ANALYSIS_MAX_YEAR, 12);
 
   public static void register() {
+    EnumUtils.register(NormalBalance.class);
+
     EnumUtils.register(IndicatorKind.class);
     EnumUtils.register(IndicatorSource.class);
-    EnumUtils.register(IndicatorBalance.class);
+    EnumUtils.register(TurnoverOrBalance.class);
   }
 
   private FinanceConstants() {
