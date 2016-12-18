@@ -21,6 +21,11 @@
     <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
     <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
 
+    <SimpleColumn name="YearFrom" />
+    <SimpleColumn name="MonthFrom" />
+    <SimpleColumn name="YearUntil" />
+    <SimpleColumn name="MonthUntil" />
+
     <SimpleColumn name="RowScript" />
 
     <SimpleColumn name="RowIsPercent" />

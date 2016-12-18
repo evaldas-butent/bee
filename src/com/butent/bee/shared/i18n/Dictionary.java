@@ -2799,6 +2799,8 @@ public interface Dictionary {
 
   default String finAnalysisRowAbbreviation() {return g("finAnalysisRowAbbreviation");}
 
+  default String finAnalysisRowAndFormPeriodsDoNotIntersect() {return g("finAnalysisRowAndFormPeriodsDoNotIntersect");}
+
   default String finAnalysisRowFilters() {return g("finAnalysisRowFilters");}
 
   default String finAnalysisRowName() {return g("finAnalysisRowName");}

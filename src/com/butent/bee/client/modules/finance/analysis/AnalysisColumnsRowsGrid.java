@@ -32,8 +32,6 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
 
   protected abstract boolean isSplitColumn(String columnName);
 
-  protected abstract boolean isSplitVisible(AnalysisSplitType analysisSplitType);
-
   @Override
   public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
@@ -87,7 +85,7 @@ abstract class AnalysisColumnsRowsGrid extends AbstractGridInterceptor {
       ListBox listBox = new ListBox();
 
       for (AnalysisSplitType split : AnalysisSplitType.values()) {
-        if (isSplitVisible(split)) {
+        if (split.isVisible()) {
           listBox.addItem(split.getCaption(), split.name().toLowerCase());
         }
       }

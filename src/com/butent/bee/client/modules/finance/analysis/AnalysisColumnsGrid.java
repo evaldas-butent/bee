@@ -11,7 +11,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.finance.Dimensions;
-import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -38,11 +37,6 @@ public class AnalysisColumnsGrid extends AnalysisColumnsRowsGrid {
   @Override
   protected boolean isSplitColumn(String columnName) {
     return ArrayUtils.contains(COL_ANALYSIS_COLUMN_SPLIT, columnName);
-  }
-
-  @Override
-  protected boolean isSplitVisible(AnalysisSplitType analysisSplitType) {
-    return analysisSplitType.visibleForColumns();
   }
 
   @Override

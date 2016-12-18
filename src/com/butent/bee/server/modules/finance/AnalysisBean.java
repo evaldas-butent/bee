@@ -83,6 +83,7 @@ public class AnalysisBean {
       if (formData.columnIsPrimary(column)) {
         MonthRange columnRange = AnalysisUtils.intersection(headerRange,
             formData.getColumnRange(column));
+
         Filter columnFilter = formData.getColumnFilter(column, filterParser);
 
         Long columnIndicator = formData.getColumnLong(column, COL_ANALYSIS_COLUMN_INDICATOR);
@@ -93,10 +94,13 @@ public class AnalysisBean {
                 ? columnIndicator : formData.getRowLong(row, COL_ANALYSIS_ROW_INDICATOR);
 
             if (DataUtils.isId(indicator)) {
+              MonthRange range = AnalysisUtils.intersection(columnRange,
+                  formData.getRowRange(row));
+
               Filter filter = Filter.and(headerFilter, columnFilter,
                   formData.getRowFilter(row, filterParser));
 
-              double value = getActualValue(indicator, columnRange, filter, finView, userId);
+              double value = getActualValue(indicator, range, filter, finView, userId);
               results.add(AnalysisValue.of(column.getId(), row.getId(), value));
             }
           }
@@ -301,7 +305,7 @@ public class AnalysisBean {
       filter.add(Filter.nonZero(indicatorSourceColumn));
     }
 
-    String finColumn = type.getFinColumnn();
+    String finColumn = type.getFinColumn();
     if (!sourceView.hasColumn(finColumn)) {
       return result;
     }

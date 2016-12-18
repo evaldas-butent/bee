@@ -216,6 +216,10 @@ public final class FinanceConstants {
   public static final String COL_ANALYSIS_ROW_INDICATOR = "Indicator";
   public static final String COL_ANALYSIS_ROW_BUDGET_TYPE = "BudgetType";
   public static final String COL_ANALYSIS_ROW_EMPLOYEE = "Employee";
+  public static final String COL_ANALYSIS_ROW_YEAR_FROM = "YearFrom";
+  public static final String COL_ANALYSIS_ROW_MONTH_FROM = "MonthFrom";
+  public static final String COL_ANALYSIS_ROW_YEAR_UNTIL = "YearUntil";
+  public static final String COL_ANALYSIS_ROW_MONTH_UNTIL = "MonthUntil";
   public static final String COL_ANALYSIS_ROW_SCRIPT = "RowScript";
   public static final String COL_ANALYSIS_ROW_IS_PERCENT = "RowIsPercent";
   public static final String COL_ANALYSIS_ROW_SCALE = "RowScale";

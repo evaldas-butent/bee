@@ -23,6 +23,11 @@
               label="=dimensions" />
     <Relation name="Employee" relation="Employees" label="=employee" />
 
+    <Numeric name="YearFrom" precision="4" label="=startingYear" />
+    <Numeric name="MonthFrom" precision="2" label="=startingMonth" />
+    <Numeric name="YearUntil" precision="4" label="=endingYear" />
+    <Numeric name="MonthUntil" precision="2" label="=endingMonth" />
+
     <Text name="RowScript" label="=finAnalysisScript" />
 
     <Boolean name="RowIsPercent" label="=percent" />

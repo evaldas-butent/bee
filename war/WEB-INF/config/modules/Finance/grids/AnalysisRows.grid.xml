@@ -23,6 +23,11 @@
   <xi:include href="columns/Employee.columns.xml" />
 
   <g:columns>
+    <DataColumn name="YearFrom" format="0000" minValue="2000" maxValue="2099" />
+    <DataColumn name="MonthFrom" minValue="1" maxValue="12" />
+    <DataColumn name="YearUntil" format="0000" minValue="2000" maxValue="2099" />
+    <DataColumn name="MonthUntil" minValue="1" maxValue="12" />
+
     <DataColumn name="RowScript" flexGrow="1" />
 
     <DataColumn name="RowIsPercent" />

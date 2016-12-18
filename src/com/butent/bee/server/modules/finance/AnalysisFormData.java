@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
@@ -129,12 +130,16 @@ class AnalysisFormData {
   }
 
   MonthRange getHeaderRange() {
+    return getHeaderRange(null);
+  }
+
+  private MonthRange getHeaderRange(BiConsumer<String, String> errorConsumer) {
     Integer yearFrom = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_FROM);
     Integer monthFrom = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_FROM);
     Integer yearUntil = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_UNTIL);
     Integer monthUntil = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_UNTIL);
 
-    return AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
+    return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
   }
 
   List<BeeRow> getColumns() {
@@ -159,12 +164,16 @@ class AnalysisFormData {
   }
 
   MonthRange getColumnRange(BeeRow column) {
+    return getColumnRange(column, null);
+  }
+
+  private MonthRange getColumnRange(BeeRow column, BiConsumer<String, String> errorConsumer) {
     Integer yearFrom = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_FROM);
     Integer monthFrom = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_FROM);
     Integer yearUntil = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_UNTIL);
     Integer monthUntil = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL);
 
-    return AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
+    return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
   }
 
   List<BeeRow> getRows() {
@@ -186,6 +195,19 @@ class AnalysisFormData {
     }
 
     return AnalysisUtils.normalize(filter);
+  }
+
+  MonthRange getRowRange(BeeRow row) {
+    return getRowRange(row, null);
+  }
+
+  private MonthRange getRowRange(BeeRow row, BiConsumer<String, String> errorConsumer) {
+    Integer yearFrom = getRowInteger(row, COL_ANALYSIS_ROW_YEAR_FROM);
+    Integer monthFrom = getRowInteger(row, COL_ANALYSIS_ROW_MONTH_FROM);
+    Integer yearUntil = getRowInteger(row, COL_ANALYSIS_ROW_YEAR_UNTIL);
+    Integer monthUntil = getRowInteger(row, COL_ANALYSIS_ROW_MONTH_UNTIL);
+
+    return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
   }
 
   List<String> validate(Dictionary dictionary, Predicate<String> filterValidator) {
@@ -211,54 +233,24 @@ class AnalysisFormData {
       messages.add(dictionary.finAnalysisSelectRows());
     }
 
-    MonthRange headerRange = getHeaderRange();
-    if (headerRange == null) {
-      messages.add(dictionary.invalidPeriod(
-          AnalysisUtils.formatYearMonth(
-              getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_FROM),
-              getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_FROM)),
-          AnalysisUtils.formatYearMonth(
-              getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_UNTIL),
-              getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_UNTIL))));
-    }
+    MonthRange headerRange = getHeaderRange((from, until) ->
+        messages.add(dictionary.invalidPeriod(from, until)));
 
     Integer columnSplitLevels = getHeaderInteger(COL_ANALYSIS_COLUMN_SPLIT_LEVELS);
 
     for (BeeRow column : columns) {
       String columnLabel = getColumnLabel(dictionary, column);
 
-      MonthRange columnRange = getColumnRange(column);
+      MonthRange columnRange = getColumnRange(column, (from, until) ->
+          messages.add(BeeUtils.joinWords(columnLabel, dictionary.invalidPeriod(from, until))));
 
-      if (columnRange == null) {
-        messages.add(BeeUtils.joinWords(columnLabel,
-            dictionary.invalidPeriod(
-                AnalysisUtils.formatYearMonth(
-                    getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_FROM),
-                    getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_FROM)),
-                AnalysisUtils.formatYearMonth(
-                    getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_UNTIL),
-                    getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL)))));
-
-      } else if (headerRange != null && !headerRange.intersects(columnRange)) {
+      if (columnRange != null && headerRange != null && !headerRange.intersects(columnRange)) {
         messages.add(BeeUtils.joinWords(columnLabel,
             dictionary.finAnalysisColumnAndFormPeriodsDoNotIntersect()));
       }
 
-      List<AnalysisSplitType> splits = getColumnSplits(column, columnSplitLevels);
-      if (!splits.isEmpty()) {
-        if (AnalysisSplitType.validateSplits(splits)) {
-          for (AnalysisSplitType split : splits) {
-            if (!split.visibleForColumns()) {
-              messages.add(BeeUtils.joinWords(columnLabel,
-                  dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
-            }
-          }
-
-        } else {
-          messages.add(BeeUtils.joinWords(columnLabel,
-              dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
-        }
-      }
+      messages.addAll(validateSplits(dictionary, columnLabel,
+          getColumnSplits(column, columnSplitLevels)));
     }
 
     if (columns.stream().noneMatch(this::columnIsPrimary)) {
@@ -284,21 +276,15 @@ class AnalysisFormData {
             dictionary.finAnalysisSpecifyIndicatorOrScript()));
       }
 
-      List<AnalysisSplitType> splits = getRowSplits(row, rowSplitLevels);
-      if (!splits.isEmpty()) {
-        if (AnalysisSplitType.validateSplits(splits)) {
-          for (AnalysisSplitType split : splits) {
-            if (!split.visibleForRows()) {
-              messages.add(BeeUtils.joinWords(rowLabel,
-                  dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
-            }
-          }
+      MonthRange rowRange = getRowRange(row, (from, until) ->
+          messages.add(BeeUtils.joinWords(rowLabel, dictionary.invalidPeriod(from, until))));
 
-        } else {
-          messages.add(BeeUtils.joinWords(rowLabel,
-              dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
-        }
+      if (rowRange != null && headerRange != null && !headerRange.intersects(rowRange)) {
+        messages.add(BeeUtils.joinWords(rowLabel,
+            dictionary.finAnalysisRowAndFormPeriodsDoNotIntersect()));
       }
+
+      messages.addAll(validateSplits(dictionary, rowLabel, getRowSplits(row, rowSplitLevels)));
     }
 
     if (rows.stream().noneMatch(this::rowIsPrimary)) {
@@ -626,6 +612,29 @@ class AnalysisFormData {
     return messages;
   }
 
+  private static List<String> validateSplits(Dictionary dictionary, String label,
+      List<AnalysisSplitType> splits) {
+
+    List<String> messages = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(splits)) {
+      if (AnalysisSplitType.validateSplits(splits)) {
+        for (AnalysisSplitType split : splits) {
+          if (!split.isVisible()) {
+            messages.add(BeeUtils.joinWords(label,
+                dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
+          }
+        }
+
+      } else {
+        messages.add(BeeUtils.joinWords(label,
+            dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
+      }
+    }
+
+    return messages;
+  }
+
   private static void addDimensionFilters(CompoundFilter builder, BeeRow row,
       Map<String, Integer> indexes, IntPredicate predicate) {
 
@@ -689,5 +698,18 @@ class AnalysisFormData {
     }
 
     return AnalysisUtils.normalize(filter);
+  }
+
+  private static MonthRange getRange(Integer yearFrom, Integer monthFrom,
+      Integer yearUntil, Integer monthUntil, BiConsumer<String, String> errorConsumer) {
+
+    MonthRange range = AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
+
+    if (range == null && errorConsumer != null) {
+      errorConsumer.accept(AnalysisUtils.formatYearMonth(yearFrom, monthFrom),
+          AnalysisUtils.formatYearMonth(yearUntil, monthUntil));
+    }
+
+    return range;
   }
 }

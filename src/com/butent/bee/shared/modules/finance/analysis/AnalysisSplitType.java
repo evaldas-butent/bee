@@ -39,7 +39,7 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     }
 
     @Override
-    public String getFinColumnn() {
+    public String getFinColumn() {
       return FinanceConstants.COL_FIN_EMPLOYEE;
     }
   },
@@ -56,17 +56,7 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
   DIMENSION_10(Kind.DIMENSION, 10);
 
   private enum Kind {
-    PERIOD(true, false),
-    FILTER(true, true),
-    DIMENSION(true, true);
-
-    private final boolean columns;
-    private final boolean rows;
-
-    Kind(boolean columns, boolean rows) {
-      this.columns = columns;
-      this.rows = rows;
-    }
+    PERIOD, FILTER, DIMENSION
   }
 
   public static boolean validateSplits(List<AnalysisSplitType> splits) {
@@ -117,7 +107,7 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     }
   }
 
-  public String getFinColumnn() {
+  public String getFinColumn() {
     switch (kind) {
       case PERIOD:
         return FinanceConstants.COL_FIN_DATE;
@@ -140,27 +130,11 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     return kind == Kind.PERIOD;
   }
 
-  public boolean visibleForColumns() {
-    if (kind.columns) {
-      if (kind == Kind.DIMENSION) {
-        return Dimensions.isObserved(index);
-      } else {
-        return true;
-      }
+  public boolean isVisible() {
+    if (kind == Kind.DIMENSION) {
+      return Dimensions.isObserved(index);
     } else {
-      return false;
-    }
-  }
-
-  public boolean visibleForRows() {
-    if (kind.rows) {
-      if (kind == Kind.DIMENSION) {
-        return Dimensions.isObserved(index);
-      } else {
-        return true;
-      }
-    } else {
-      return false;
+      return true;
     }
   }
 }
