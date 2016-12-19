@@ -485,7 +485,8 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void fillCargoIncomes(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_ORDER_CARGO, VIEW_ALL_CARGO) && event.hasData()) {
+        if (event.isAfter(VIEW_ORDER_CARGO, VIEW_ALL_CARGO, VIEW_SHIPMENT_REQUESTS)
+            && event.hasData()) {
           BeeRowSet rowSet = event.getRowset();
           Collection<Long> cargoIds;
           Function<BeeRow, Long> valueSupplier;
@@ -496,6 +497,7 @@ public class TransportModuleBean implements BeeModule {
               valueSupplier = BeeRow::getId;
               break;
             case VIEW_ALL_CARGO:
+            case VIEW_SHIPMENT_REQUESTS:
               int idx = rowSet.getColumnIndex(COL_CARGO);
               cargoIds = rowSet.getDistinctLongs(idx);
               valueSupplier = row -> row.getLong(idx);
