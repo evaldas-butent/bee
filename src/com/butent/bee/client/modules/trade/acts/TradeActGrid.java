@@ -38,7 +38,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
@@ -297,15 +296,25 @@ public class TradeActGrid extends AbstractGridInterceptor {
       public void onResponse(ResponseObject response) {
         if (Queries.checkRowResponse(SVC_COPY_ACT, getViewName(), response)) {
           BeeRow row = BeeRow.restore(response.getResponseAsString());
-          GridView gridView = getGridView();
+          BeeRow newRow = DataUtils.cloneRow(row);
+          TradeActKeeper.setDefaultOperation(newRow, TradeActKeeper.getKind(VIEW_TRADE_ACTS, row));
 
-          if (gridView != null && gridView.asWidget().isAttached()) {
-            gridView.ensureRow(row, true);
-            maybeOpenAct(gridView, row);
-          }
+          DataInfo tradeActsView = Data.getDataInfo(VIEW_TRADE_ACTS);
 
-          RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), row,
-              (gridView == null) ? null : gridView.getId());
+          Queries.update(VIEW_TRADE_ACTS, tradeActsView.getColumns(), row, newRow, null,
+              new RowCallback() {
+                @Override
+                public void onSuccess(BeeRow updatedRow) {
+                  RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TRADE_ACTS, updatedRow);
+
+                  GridView gridView = getGridView();
+
+                  if (gridView != null && gridView.asWidget().isAttached()) {
+                    gridView.ensureRow(updatedRow, true);
+                    maybeOpenAct(gridView, updatedRow);
+                  }
+                }
+              });
         }
       }
     });

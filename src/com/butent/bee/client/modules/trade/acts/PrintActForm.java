@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import com.google.gwt.core.client.Scheduler;
@@ -55,17 +56,21 @@ public class PrintActForm extends AbstractFormInterceptor {
   private static final String FORM_PRINT_TA_RETURN = "PrintTradeActReturn";
   private static final String FORM_PRINT_TA_SALE_RENT = "PrintTASaleRent";
   private static final String FORM_PRINT_TA_SALE_ADDITION = "PrintTASaleAddition";
+  private static final String FORM_PRINT_TA_SALE_PROFORMA = "PrintTASaleProforma";
+  private static final String FORM_PRINT_TA_SUGGESTION = "PrintTASaleSuggestion";
 
   private static final String[] COLUMN_LIST = new String[] {
       COL_ITEM_ARTICLE, COL_ITEM_NAME, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
       COL_TRADE_ITEM_QUANTITY, COL_UNIT, COL_TRADE_TIME_UNIT, COL_TA_RETURNED_QTY,
       "RemainingQty", COL_TRADE_WEIGHT, COL_ITEM_AREA, COL_TA_SERVICE_TARIFF,
-      COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, "Amount", COL_TRADE_VAT, "AmountTotal",
+      COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, "Amount", "AmountVat", COL_TRADE_VAT, "AmountTotal",
       "MinTermAmount"
   };
 
   final Map<String, String> tableHeaders = new HashMap<>();
   final Map<Long, Double> remainQty = new HashMap<>();
+  final Table<String, String, Boolean> visibleServiceCols = HashBasedTable.create();
+  final Table<String, String, Boolean> visibleItemsCols = HashBasedTable.create();
   Map<String, Widget> companies = new HashMap<>();
   List<Widget> totals = new ArrayList<>();
   List<Widget> totalsOf = new ArrayList<>();
@@ -175,10 +180,96 @@ public class PrintActForm extends AbstractFormInterceptor {
     tableHeaders.put("Price", "Kaina");
     tableHeaders.put("Discount", "Nuol.");
     tableHeaders.put("Amount", "Suma be PVM");
+    tableHeaders.put("AmountVat", "Suma su PVM");
     tableHeaders.put("Vat", "PVM");
     tableHeaders.put("AmountTotal", "Suma");
     tableHeaders.put("MinTermAmount", "Suma už min. term.");
     tableHeaders.put("Name", "Nuomojama įranga");
+
+    for (String column : COLUMN_LIST) {
+      switch (column) {
+        case "RemainingQty":
+          visibleItemsCols.put(FORM_PRINT_TA_SALE, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_SALE, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+          break;
+        case "MinTermAmount":
+          visibleServiceCols.put(FORM_PRINT_TA_SALE, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+          break;
+        case "AmountTotal":
+          visibleItemsCols.put(FORM_PRINT_TA_SALE, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
+//          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
+          break;
+        case "AmountVat":
+//          visibleItemsCols.put(FORM_PRINT_TA_SALE, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+//          visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
+//          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
+          break;
+        case COL_TRADE_VAT:
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+          break;
+        case COL_ITEM_AREA:
+          break;
+        case COL_ITEM_ARTICLE:
+        case COL_ITEM_NAME:
+        case COL_TA_SERVICE_FROM:
+        case COL_TA_SERVICE_TO:
+        case COL_TRADE_ITEM_QUANTITY:
+        case COL_UNIT:
+        case COL_TRADE_TIME_UNIT:
+        case COL_TA_RETURNED_QTY:
+        case COL_TRADE_WEIGHT:
+        case COL_TA_SERVICE_TARIFF:
+        case COL_TRADE_ITEM_PRICE:
+        case COL_TRADE_DISCOUNT:
+        case "Amount":
+          visibleItemsCols.put(FORM_PRINT_TA_SALE, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_SALE, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+          break;
+      }
+    }
   }
 
   private static void addDataToTable(Table<String, String, String> data, String id, String cell,
@@ -195,6 +286,7 @@ public class PrintActForm extends AbstractFormInterceptor {
       case COL_TRADE_ITEM_QUANTITY:
       case "AmountTotal":
       case "Amount":
+      case "AmountVat":
         data.put(id, cell, BeeUtils.round(BeeUtils.toString(BeeUtils.toDouble(data.get(id, cell))
             + BeeUtils.toDouble(value)), 2));
         break;
@@ -209,30 +301,14 @@ public class PrintActForm extends AbstractFormInterceptor {
 
     final String formName = getFormView().getFormName();
 
-    if (BeeUtils.same(col, "RemainingQty") && !BeeUtils.inList(formName, FORM_PRINT_TA_SALE,
-        FORM_PRINT_TA_RETURN)) {
-      return false;
+    switch (widgetName) {
+      case ITEMS_WIDGET_NAME:
+        return BeeUtils.isTrue(visibleItemsCols.get(formName, col));
+      case SERVICES_WIDGET_NAME:
+        return BeeUtils.isTrue(visibleServiceCols.get(formName, col));
+        default:
+          return false;
     }
-
-    if (BeeUtils.same(col, "MinTermAmount") && !BeeUtils.same(widgetName, SERVICES_WIDGET_NAME)) {
-      return false;
-    }
-
-    if (BeeUtils.same(col, "AmountTotal") && (BeeUtils.same(widgetName, ITEMS_WIDGET_NAME)
-        && BeeUtils.inList(formName,
-        FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
-        FORM_PRINT_TA_SALE_ADDITION))) {
-      return false;
-    }
-
-    if (BeeUtils.same(col, "Vat") && (BeeUtils.same(widgetName, SERVICES_WIDGET_NAME) || (BeeUtils
-        .same(widgetName, ITEMS_WIDGET_NAME) && BeeUtils.inList(formName,
-        FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
-        FORM_PRINT_TA_SALE_ADDITION)))) {
-      return false;
-    }
-
-    return !(BeeUtils.same(col, "Amount") && BeeUtils.same(widgetName, SERVICES_WIDGET_NAME));
   }
 
   private String getTableHeader(FormView form, String widgetName, String column) {
@@ -242,7 +318,7 @@ public class PrintActForm extends AbstractFormInterceptor {
           return "Teikiamos paslaugos/prekės";
         }
         break;
-      case "Amount":
+      case "AmountVat":
         if (ITEMS_WIDGET_NAME.equals(widgetName) && BeeUtils.inList(form.getFormName(),
             FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
             FORM_PRINT_TA_SALE_ADDITION)) {
@@ -392,6 +468,9 @@ public class PrintActForm extends AbstractFormInterceptor {
           addDataToTable(data, id, COL_TRADE_ITEM_PRICE, BeeUtils.removeTrailingZeros(BeeUtils
               .toString(BeeUtils.round((sum + dscSum) / (qty != 0 ? qty : 1d), 5))));
           addDataToTable(data, id, "Amount", BeeUtils.toString(BeeUtils.round(sum, 2)));
+          addDataToTable(data, id, "AmountVat", BeeUtils.toString(
+              BeeUtils.round(sum + BeeUtils.max(0D, vat), 2)
+          ));
 
           if (BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
             if (BeeUtils.isEmpty(data.get(id, COL_TIME_UNIT))) {
@@ -417,6 +496,7 @@ public class PrintActForm extends AbstractFormInterceptor {
         calc.add(COL_TRADE_WEIGHT);
         calc.add(COL_ITEM_AREA);
         calc.add("Amount");
+        calc.add("AmountVat");
         calc.add(COL_TRADE_VAT);
         calc.add("AmountTotal");
         calc.add("MinTermAmount");
@@ -451,7 +531,10 @@ public class PrintActForm extends AbstractFormInterceptor {
           if (sum.compareTo(BigDecimal.ZERO) != 0) {
             value = BeeUtils.removeTrailingZeros(sum.toPlainString());
           }
-          if ("AmountTotal".equals(col)) {
+          if ("AmountTotal".equals(col) && BeeUtils.same(typeTable, ITEMS_WIDGET_NAME)) {
+            totConsumer.accept(sum.doubleValue());
+          } else if ("MinTermAmount".equals(col)
+              && BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
             totConsumer.accept(sum.doubleValue());
           }
 

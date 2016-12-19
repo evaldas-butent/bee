@@ -7,13 +7,13 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   name="&form;" caption="Perdavimo aktas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
-  <FlowPanel style="padding: 10px; background-color: white; font-size:11px;" contentEditable="true"
+  <FlowPanel style="padding: 10px; background-color: white; font-size:13px;" contentEditable="true"
     class="bee-PrintableForm bee-form-TradeActPrint">
     <FlowPanel>
       <Image url="images/logo.png" style="position: relative; width:33%;" />
       <FlowPanel style="margin-top:-35px; padding-top: 20px;">
         <br />
-        <TextLabel style="text-align:center; &bold; font-size: 11px;">
+        <TextLabel style="text-align:center; &bold; ">
           <render>
             <ui:expression>'Įrenginių perdavimo aktas Nr. ' + row.SeriesName + '-' + (row.Number ?
               row.Number :
@@ -25,7 +25,7 @@
     </FlowPanel>
 
     <FlowPanel style="margin-top:12px;">
-      <Table style="width:100%; border:1px solid black; font-size: 11px;" kind="output">
+      <Table style="width:100%; border:1px solid black;" kind="output">
         <row>
           <cell style="vertical-align:top;">
             <Label html="Nuomotojas" style="font-weight: bold; margin-left:10px;" />
@@ -71,9 +71,9 @@
       </Table>
     </FlowPanel>
     <TextLabel source="ActName" style="text-align:center; &bold; padding-top: 10px; padding-bottom: 10px;" />
-    <FlowPanel name="TradeActItems" class="TradeActItems" style="&section; font-size: 11px;" />
+    <FlowPanel name="TradeActItems" class="TradeActItems" style="&section; " />
     <br />
-    <FlowPanel name="TradeActServices" class="TradeActServices" style="&section; font-size: 11px;" />
+    <FlowPanel name="TradeActServices" class="TradeActServices" style="&section; " />
 
     <FlowPanel style="&section;">
       <TextLabel source="Notes" style="display:block; white-space:pre-wrap; border:1px solid silver;
@@ -111,7 +111,7 @@
         </FlowPanel>
       </row>
       <row>
-        <Label text="Priėmė ir suskaičiavo:" />
+       <br />
         <FlowPanel class="flexBox-horizontal">
           <TextLabel source="InputDriver">
             <dynStyle>
@@ -130,6 +130,13 @@
             <renderToken source="DriverLastName" />
           </TextLabel>
         </FlowPanel>
+      </row>
+      <row>
+        <br />
+      </row>
+      <row>
+        <Label text="Priėmė ir suskaičiavo:" />
+        <br />
       </row>
     </Table>
   </FlowPanel>

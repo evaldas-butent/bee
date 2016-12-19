@@ -147,6 +147,7 @@ public final class TradeActConstants {
 
   public static final String PRM_TA_NUMBER_LENGTH = "ActNumberLength";
   public static final String PRM_COMBINED_ACT_STATUS = "CombinedActStatus";
+  public static final String PRM_CONTINUOUS_ACT_STATUS = "ContinuousActStatus";
   public static final String PRM_RETURNED_ACT_STATUS = "ReturnedActStatus";
   public static final String PRM_APPROVED_ACT_STATUS = "ApprovedActStatus";
   public static final String PRM_SYNC_ERP_DATA = "SyncHours";

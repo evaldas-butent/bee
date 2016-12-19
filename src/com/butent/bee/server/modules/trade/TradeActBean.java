@@ -241,6 +241,8 @@ public class TradeActBean implements HasTimerService {
             COL_STATUS_NAME),
         BeeParameter.createRelation(module, PRM_COMBINED_ACT_STATUS, TBL_TRADE_STATUSES,
             COL_STATUS_NAME),
+        BeeParameter.createRelation(module, PRM_CONTINUOUS_ACT_STATUS, TBL_TRADE_STATUSES,
+            COL_STATUS_NAME),
         BeeParameter.createText(module, PRM_SYNC_ERP_DATA),
         BeeParameter.createNumber(module, PRM_SYNC_ERP_STOCK));
   }
@@ -525,6 +527,8 @@ public class TradeActBean implements HasTimerService {
     row.clearCell(rowSet.getColumnIndex(COL_TA_NUMBER));
     row.clearCell(rowSet.getColumnIndex(COL_TA_CONTINUOUS));
     row.clearCell(rowSet.getColumnIndex(COL_TA_RETURN));
+    row.clearCell(rowSet.getColumnIndex(COL_STATUS_NAME));
+    row.clearCell(rowSet.getColumnIndex(COL_TRADE_STATUS));
 
     BeeRowSet insert = DataUtils.createRowSetForInsert(rowSet.getViewName(), rowSet.getColumns(),
         row);
@@ -557,6 +561,7 @@ public class TradeActBean implements HasTimerService {
     Long series = fifoAct.getLong(parentActs.getColumnIndex(COL_TA_SERIES));
     DateTime now = TimeUtils.nowMinutes();
     Long combStatus = prm.getRelation(PRM_COMBINED_ACT_STATUS);
+    Long continuousStatus = prm.getRelation(PRM_CONTINUOUS_ACT_STATUS);
 
     SqlSelect actNumbersQuery = new SqlSelect()
 //        .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
@@ -591,6 +596,10 @@ public class TradeActBean implements HasTimerService {
       }
 
       actInsert.addConstant(colName, parentActs.getString(0, colName));
+    }
+
+    if (DataUtils.isId(continuousStatus)) {
+      actInsert.addConstant(COL_TA_STATUS, continuousStatus);
     }
 
     ResponseObject response = qs.insertDataWithResponse(actInsert);
@@ -645,7 +654,9 @@ public class TradeActBean implements HasTimerService {
     if (DataUtils.isId(combStatus)) {
       SqlUpdate query = new SqlUpdate(TBL_TRADE_ACTS)
           .addConstant(COL_TA_STATUS, combStatus)
-          .setWhere(sys.idInList(TBL_TRADE_ACTS, parentIds));
+          .setWhere(SqlUtils.and(
+              sys.idInList(TBL_TRADE_ACTS, lockActData),
+              SqlUtils.notEqual(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())));
 
       response = qs.updateDataWithResponse(query);
     }
@@ -836,10 +847,30 @@ public class TradeActBean implements HasTimerService {
 
   private ResponseObject createLockRelations(Set<Long> lockActData, Long relId, String relCol) {
     if (!lockActData.isEmpty()) {
+      TradeActKind k;
+      switch (relCol) {
+        case COL_TA_CONTINUOUS:
+          k = TradeActKind.CONTINUOUS;
+          break;
+        default: k = TradeActKind.RETURN;
+      }
+
+      String number = qs.getValue(new SqlSelect()
+          .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
+          .addFrom(TBL_TRADE_ACTS)
+          .setWhere(sys.idEquals(TBL_TRADE_ACTS, relId)));
      return qs.updateDataWithResponse(new SqlUpdate(TBL_TRADE_ACTS)
-          .addConstant(relCol, relId)
-          .setWhere(SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, lockActData),
-              SqlUtils.isNull(TBL_TRADE_ACTS, relCol))));
+         .addConstant(relCol, relId)
+         .addConstant(COL_TA_NOTES,
+             SqlUtils.concat(
+                 SqlUtils.nvl(SqlUtils.field(TBL_TRADE_ACTS, COL_TA_NOTES), "''"),
+                 "'\n'",
+                 BeeUtils.joinWords("'", usr.getDictionary().createdOn(),
+                     k.getCaption(usr.getDictionary()), number, "'")
+             )
+         )
+         .setWhere(SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, lockActData),
+             SqlUtils.isNull(TBL_TRADE_ACTS, relCol))));
 
     }
 

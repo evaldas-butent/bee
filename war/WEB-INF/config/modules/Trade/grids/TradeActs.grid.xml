@@ -33,8 +33,8 @@
 
     <RelColumn name="Currency" renderColumns="CurrencyName" />
 
-    <RelColumn name="Vehicle" renderColumns="VehicleParentModel VehicleModel VehicleNumber" />
-    <RelColumn name="Driver" renderColumns="DriverFirstName DriverLastName" />
+    <RelColumn name="InputVehicle" />
+    <RelColumn name="InputDriver"  />
 
     <DataColumn name="Notes" />
 

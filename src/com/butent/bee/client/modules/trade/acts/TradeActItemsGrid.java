@@ -208,7 +208,25 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       commandImportItems = new Button(Localized.dictionary().actionImport());
       commandImportItems.addStyleName(STYLE_COMMAND_IMPORT);
 
-      commandImportItems.addClickHandler(event -> ensureCollector().clickInput());
+      commandImportItems.addClickHandler(event -> {
+        FormView form = ViewHelper.getForm(gridView);
+        IsRow row = getParentRow(gridView);
+
+        if (DataUtils.isNewRow(row) && form.validate(form, true)) {
+          FormInterceptor interceptor = form.getFormInterceptor();
+          boolean valid = true;
+
+          if (interceptor instanceof TradeActForm) {
+            valid = ((TradeActForm) interceptor).validateBeforeSave(form, row, false);
+          }
+
+          if (valid) {
+            ensureCollector().clickInput();
+          }
+        } else if (!DataUtils.isNewRow(row)) {
+          ensureCollector().clickInput();
+        }
+      });
 
       presenter.getHeader().addCommandItem(commandImportItems);
     }

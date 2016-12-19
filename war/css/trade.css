@@ -197,3 +197,13 @@
 .bee-form-TradeActPrint td {
   padding-top:0 !important;
 }
+
+.bee-trade-print-item-price {
+    max-width: 5ex;
+    width: 5ex;
+}
+
+.bee-trade-print-item-ordinal {
+    max-width: 3ex;
+    width: 3ex;
+}
