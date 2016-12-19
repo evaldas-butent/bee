@@ -2845,7 +2845,7 @@ public interface Dictionary {
 
   default String finAnalysisSpecifyBudgetType() {return g("finAnalysisSpecifyBudgetType");}
 
-  default String finAnalysisSpecifyIndicatorOrScript() {return g("finAnalysisSpecifyIndicatorOrScript");}
+  default String finAnalysisSpecifyIndicators() {return g("finAnalysisSpecifyIndicators");}
 
   default String finAnalysisSplit(Object p0) {
     Map<String, Object> _m = new HashMap<>();

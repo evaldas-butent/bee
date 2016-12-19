@@ -4,6 +4,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.modules.finance.FinanceConstants;
+import com.butent.bee.shared.modules.finance.NormalBalance;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -14,11 +15,6 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.finTurnover();
-    }
-
-    @Override
-    public Filter getFilter(String column, MonthRange range) {
-      return AnalysisUtils.getFilter(column, range);
     }
 
     @Override
@@ -39,8 +35,17 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
     }
 
     @Override
-    public Filter getFilter(String column, MonthRange range) {
-      return AnalysisUtils.getFilter(column, range);
+    public Filter getPlusFilter(String debitColumn, String creditColumn, String accountCode,
+        NormalBalance normalBalance) {
+
+      return Filter.startsWith(debitColumn, accountCode);
+    }
+
+    @Override
+    public Filter getMinusFilter(String debitColumn, String creditColumn, String accountCode,
+        NormalBalance normalBalance) {
+
+      return null;
     }
 
     @Override
@@ -61,8 +66,17 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
     }
 
     @Override
-    public Filter getFilter(String column, MonthRange range) {
-      return AnalysisUtils.getFilter(column, range);
+    public Filter getPlusFilter(String debitColumn, String creditColumn, String accountCode,
+        NormalBalance normalBalance) {
+
+      return Filter.startsWith(creditColumn, accountCode);
+    }
+
+    @Override
+    public Filter getMinusFilter(String debitColumn, String creditColumn, String accountCode,
+        NormalBalance normalBalance) {
+
+      return null;
     }
 
     @Override
@@ -83,7 +97,7 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
     }
 
     @Override
-    public Filter getFilter(String column, MonthRange range) {
+    public Filter getRangeFilter(String column, MonthRange range) {
       if (range == null) {
         return null;
       }
@@ -114,7 +128,7 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
     }
 
     @Override
-    public Filter getFilter(String column, MonthRange range) {
+    public Filter getRangeFilter(String column, MonthRange range) {
       if (range == null) {
         return null;
       }
@@ -140,7 +154,33 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
 
   public static final TurnoverOrBalance DEFAULT = TURNOVER;
 
-  public abstract Filter getFilter(String column, MonthRange range);
+  public Filter getPlusFilter(String debitColumn, String creditColumn,
+      String accountCode, NormalBalance normalBalance) {
+
+    if (normalBalance == NormalBalance.DEBIT) {
+      return Filter.startsWith(debitColumn, accountCode);
+    } else if (normalBalance == NormalBalance.CREDIT) {
+      return Filter.startsWith(creditColumn, accountCode);
+    } else {
+      return null;
+    }
+  }
+
+  public Filter getMinusFilter(String debitColumn, String creditColumn,
+      String accountCode, NormalBalance normalBalance) {
+
+    if (normalBalance == NormalBalance.DEBIT) {
+      return Filter.startsWith(creditColumn, accountCode);
+    } else if (normalBalance == NormalBalance.CREDIT) {
+      return Filter.startsWith(debitColumn, accountCode);
+    } else {
+      return null;
+    }
+  }
+
+  public Filter getRangeFilter(String column, MonthRange range) {
+    return AnalysisUtils.getFilter(column, range);
+  }
 
   public abstract String getIndicatorName(Dictionary dictionary, String accountName);
 

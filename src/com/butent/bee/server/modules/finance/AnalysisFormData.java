@@ -215,6 +215,13 @@ class AnalysisFormData {
       messages.add(dictionary.finAnalysisSelectRows());
     }
 
+    boolean columnsHasIndicator = columns.stream().anyMatch(this::columnHasIndicator);
+    boolean rowsHasIndicator = rows.stream().anyMatch(this::rowHasIndicator);
+
+    if (!columnsHasIndicator && !rowsHasIndicator) {
+      messages.add(dictionary.finAnalysisSpecifyIndicators());
+    }
+
     MonthRange headerRange = getHeaderRange((from, until) ->
         messages.add(dictionary.invalidPeriod(from, until)));
 
@@ -252,11 +259,6 @@ class AnalysisFormData {
 
     for (BeeRow row : rows) {
       String rowLabel = getRowLabel(dictionary, row);
-
-      if (!rowHasIndicator(row) && !rowHasScript(row)) {
-        messages.add(BeeUtils.joinWords(rowLabel,
-            dictionary.finAnalysisSpecifyIndicatorOrScript()));
-      }
 
       MonthRange rowRange = getRowRange(row, (from, until) ->
           messages.add(BeeUtils.joinWords(rowLabel, dictionary.invalidPeriod(from, until))));
@@ -334,6 +336,10 @@ class AnalysisFormData {
     return column.getInteger(columnIndexes.get(key));
   }
 
+  <E extends Enum<?>> E getColumnEnum(BeeRow column, String key, Class<E> clazz) {
+    return EnumUtils.getEnumByIndex(clazz, getColumnInteger(column, key));
+  }
+
   Long getColumnLong(BeeRow column, String key) {
     return column.getLong(columnIndexes.get(key));
   }
@@ -402,6 +408,10 @@ class AnalysisFormData {
     return row.getInteger(rowIndexes.get(key));
   }
 
+  <E extends Enum<?>> E getRowEnum(BeeRow row, String key, Class<E> clazz) {
+    return EnumUtils.getEnumByIndex(clazz, getRowInteger(row, key));
+  }
+
   Long getRowLong(BeeRow row, String key) {
     return row.getLong(rowIndexes.get(key));
   }
@@ -442,7 +452,7 @@ class AnalysisFormData {
   }
 
   boolean rowIsPrimary(BeeRow row) {
-    return rowHasIndicator(row);
+    return rowHasIndicator(row) || !rowHasScript(row);
   }
 
   private static List<String> getSplitCaptions(Dictionary dictionary,

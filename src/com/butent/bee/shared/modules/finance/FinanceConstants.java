@@ -127,6 +127,7 @@ public final class FinanceConstants {
   public static final String COL_BUDGET_HEADER_ORDINAL = "Ordinal";
   public static final String COL_BUDGET_HEADER_EMPLOYEE = "Employee";
   public static final String COL_BUDGET_HEADER_INDICATOR = "Indicator";
+  public static final String COL_BUDGET_HEADER_TURNOVER_OR_BALANCE = "TurnoverOrBalance";
   public static final String COL_BUDGET_HEADER_TYPE = "BudgetType";
   public static final String COL_BUDGET_HEADER_YEAR = "Year";
   public static final String COL_BUDGET_HEADER_BACKGROUND = "Background";
@@ -142,6 +143,7 @@ public final class FinanceConstants {
   public static final String COL_BUDGET_ENTRY_ORDINAL = "Ordinal";
   public static final String COL_BUDGET_ENTRY_EMPLOYEE = "Employee";
   public static final String COL_BUDGET_ENTRY_INDICATOR = "Indicator";
+  public static final String COL_BUDGET_ENTRY_TURNOVER_OR_BALANCE = "TurnoverOrBalance";
   public static final String COL_BUDGET_ENTRY_TYPE = "BudgetType";
   public static final String COL_BUDGET_ENTRY_YEAR = "Year";
 

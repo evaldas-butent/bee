@@ -22,6 +22,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.NormalBalance;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisResults;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
@@ -35,11 +36,13 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.time.YearQuarter;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -88,20 +91,35 @@ public class AnalysisBean {
         Filter columnFilter = formData.getColumnFilter(column, filterParser);
 
         Long columnIndicator = formData.getColumnLong(column, COL_ANALYSIS_COLUMN_INDICATOR);
+        TurnoverOrBalance columnTurnoverOrBalance = formData.getColumnEnum(column,
+            COL_ANALYSIS_COLUMN_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
 
         for (BeeRow row : formData.getRows()) {
           if (formData.rowIsPrimary(row)) {
-            Long indicator = DataUtils.isId(columnIndicator)
-                ? columnIndicator : formData.getRowLong(row, COL_ANALYSIS_ROW_INDICATOR);
+            Long indicator;
+            if (DataUtils.isId(columnIndicator)) {
+              indicator = columnIndicator;
+            } else {
+              indicator = formData.getRowLong(row, COL_ANALYSIS_ROW_INDICATOR);
+            }
 
             if (DataUtils.isId(indicator)) {
+              TurnoverOrBalance turnoverOrBalance;
+              if (columnTurnoverOrBalance == null) {
+                turnoverOrBalance = formData.getRowEnum(row,
+                    COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
+              } else {
+                turnoverOrBalance = columnTurnoverOrBalance;
+              }
+
               MonthRange range = AnalysisUtils.intersection(columnRange,
                   formData.getRowRange(row));
 
               Filter filter = Filter.and(headerFilter, columnFilter,
                   formData.getRowFilter(row, filterParser));
 
-              double value = getActualValue(indicator, range, filter, finView, userId);
+              double value = getActualValue(indicator, turnoverOrBalance, range, filter,
+                  finView, userId);
               results.add(AnalysisValue.of(column.getId(), row.getId(), value));
             }
           }
@@ -456,6 +474,33 @@ public class AnalysisBean {
     return (turnoverOrBalance == null) ? TurnoverOrBalance.DEFAULT : turnoverOrBalance;
   }
 
+  private NormalBalance getIndicatorNormalBalance(long indicator) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_NORMAL_BALANCE)
+        .addFrom(TBL_FINANCIAL_INDICATORS)
+        .setWhere(sys.idEquals(TBL_FINANCIAL_INDICATORS, indicator));
+
+    NormalBalance normalBalance = qs.getEnum(query, NormalBalance.class);
+
+    if (normalBalance == null) {
+      SqlSelect accountQuery = new SqlSelect().setDistinctMode(true)
+          .addFields(TBL_CHART_OF_ACCOUNTS, COL_ACCOUNT_NORMAL_BALANCE)
+          .addFrom(TBL_INDICATOR_ACCOUNTS)
+          .addFromInner(TBL_CHART_OF_ACCOUNTS, sys.joinTables(TBL_CHART_OF_ACCOUNTS,
+              TBL_INDICATOR_ACCOUNTS, COL_INDICATOR_ACCOUNT))
+          .setWhere(SqlUtils.and(
+              SqlUtils.equals(TBL_INDICATOR_ACCOUNTS, COL_FIN_INDICATOR, indicator),
+              SqlUtils.notNull(TBL_CHART_OF_ACCOUNTS, COL_ACCOUNT_NORMAL_BALANCE)));
+
+      Optional<Integer> optional = qs.getIntSet(accountQuery).stream().findFirst();
+      if (optional.isPresent()) {
+        normalBalance = EnumUtils.getEnumByIndex(NormalBalance.class, optional.get());
+      }
+    }
+
+    return (normalBalance == null) ? NormalBalance.DEFAULT : normalBalance;
+  }
+
   private String getIndicatorSourceColumn(long indicator) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_SOURCE)
@@ -470,8 +515,8 @@ public class AnalysisBean {
     return indicatorSource.getSourceColumn();
   }
 
-  private double getActualValue(long indicator, MonthRange range, Filter parentFilter,
-      BeeView finView, Long userId) {
+  private double getActualValue(long indicator, TurnoverOrBalance parentTurnoverOrBalance,
+      MonthRange range, Filter parentFilter, BeeView finView, Long userId) {
 
     double value = BeeConst.DOUBLE_ZERO;
 
@@ -480,22 +525,30 @@ public class AnalysisBean {
       return value;
     }
 
+    TurnoverOrBalance turnoverOrBalance;
+    if (parentTurnoverOrBalance == null) {
+      turnoverOrBalance = getIndicatorTurnoverOrBalance(indicator);
+    } else {
+      turnoverOrBalance = parentTurnoverOrBalance;
+    }
+
+    NormalBalance normalBalance = getIndicatorNormalBalance(indicator);
+
     CompoundFilter plusFilter = CompoundFilter.or();
     CompoundFilter minusFilter = CompoundFilter.or();
 
     for (String code : accountCodes) {
-      Filter debitFilter = Filter.startsWith(ALS_DEBIT_CODE, code);
-      Filter creditFilter = Filter.startsWith(ALS_CREDIT_CODE, code);
+      plusFilter.add(turnoverOrBalance.getPlusFilter(ALS_DEBIT_CODE, ALS_CREDIT_CODE, code,
+          normalBalance));
 
-      plusFilter.add(debitFilter);
-      minusFilter.add(creditFilter);
+      minusFilter.add(turnoverOrBalance.getMinusFilter(ALS_DEBIT_CODE, ALS_CREDIT_CODE, code,
+          normalBalance));
     }
 
     Filter indicatorFilter = getIndicatorFilter(indicator, finView, userId);
 
-    TurnoverOrBalance turnoverOrBalance = getIndicatorTurnoverOrBalance(indicator);
-    Filter rangeFilter = (turnoverOrBalance == null || range == null)
-        ? null : turnoverOrBalance.getFilter(COL_FIN_DATE, range);
+    Filter rangeFilter = (range == null)
+        ? null : turnoverOrBalance.getRangeFilter(COL_FIN_DATE, range);
 
     String sourceColumn = getIndicatorSourceColumn(indicator);
     Filter sourceFilter = Filter.nonZero(sourceColumn);
