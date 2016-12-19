@@ -13,6 +13,8 @@
     <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
 
     <xi:include href="viewcolumns/Indicator.viewcolumns.xml" />
+    <SimpleColumn name="TurnoverOrBalance" />
+
     <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
 
     <SimpleColumn name="Year" />

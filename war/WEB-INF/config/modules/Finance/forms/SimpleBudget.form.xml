@@ -102,6 +102,11 @@
             </row>
 
             <row>
+              <Label for="TurnoverOrBalance" />
+              <ListBox source="TurnoverOrBalance" />
+            </row>
+
+            <row>
               <Label for="Background" />
               <ColorEditor source="Background" style="&colorw;" summarize="true"
                            backgroundSource="Background" foregroundSource="Foreground" />

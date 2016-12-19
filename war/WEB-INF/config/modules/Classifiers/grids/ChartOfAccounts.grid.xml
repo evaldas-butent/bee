@@ -11,7 +11,12 @@
     <DataColumn name="AccountName" verticalAlignment="top" visible="true" />
 
     <DataColumn name="NormalBalance" module="Finance" caption="=finNormalBalanceShort"
-                carry="true" flexGrow="0" />
+                carry="true" flexGrow="0">
+      <renderer type="list">
+        <ui:item>=finDebitShort</ui:item>
+        <ui:item>=finCreditShort</ui:item>
+      </renderer>
+    </DataColumn>
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />

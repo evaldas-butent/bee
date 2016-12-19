@@ -43,6 +43,14 @@
       </row>
 
       <row>
+        <Label for="IndicatorTurnoverOrBalance" />
+        <ListBox source="IndicatorTurnoverOrBalance" />
+
+        <Label for="IndicatorNormalBalance" />
+        <ListBox source="IndicatorNormalBalance" />
+      </row>
+
+      <row>
         <Label for="Background" />
         <ColorEditor source="Background" style="&colorw;"
                      backgroundSource="Background" foregroundSource="Foreground" />

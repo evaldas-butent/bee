@@ -2,6 +2,7 @@
 <!DOCTYPE Form [
     <!ENTITY inpw "width: 20rem;">
     <!ENTITY colorw "width: 20rem;">
+    <!ENTITY radio "border: 1px solid #e3e3e3; padding: 3px 5px;">
     <!ENTITY empty "<cell><text/></cell>">
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
@@ -27,7 +28,14 @@
 
       <row>
         <Label for="IndicatorTurnoverOrBalance" class="bee-required" />
-        <Radio source="IndicatorTurnoverOrBalance" vertical="true" visible="true" />
+        <cell colSpan="3">
+          <Radio source="IndicatorTurnoverOrBalance" style="&radio;" visible="true" />
+        </cell>
+      </row>
+
+      <row>
+        <Label for="IndicatorNormalBalance" />
+        <Radio source="IndicatorNormalBalance" style="&radio;" />
 
         &empty;
         <CheckBox source="IndicatorClosingEntries" text="=finClosingEntriesShort" />
@@ -35,7 +43,7 @@
 
       <row>
         <Label for="IndicatorSource" class="bee-required" />
-        <Radio source="IndicatorSource" visible="true" />
+        <Radio source="IndicatorSource" style="&radio;" visible="true" />
 
         <Label for="IndicatorScale" />
         <InputInteger source="IndicatorScale" style="width: 2rem;" minValue="0" maxValue="5" />

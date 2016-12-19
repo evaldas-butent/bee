@@ -13,11 +13,10 @@
     <SimpleColumn name="ColumnName" />
     <SimpleColumn name="ColumnAbbreviation" />
 
-    <SimpleColumn name="ColumnValues" />
-
     <xi:include href="viewcolumns/Indicator.viewcolumns.xml" />
     <SimpleColumn name="TurnoverOrBalance" />
 
+    <SimpleColumn name="ColumnValues" />
     <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
 
     <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />

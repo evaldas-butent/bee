@@ -12,13 +12,13 @@
     <DataColumn name="RowName" minWidth="80" flexGrow="1" visible="true"
                 backgroundSource="Background" foregroundSource="Foreground" />
     <DataColumn name="RowAbbreviation" />
-
-    <DataColumn name="RowValues" />
   </g:columns>
 
   <xi:include href="columns/Indicator.columns.xml" />
+
   <g:columns>
     <DataColumn name="TurnoverOrBalance" />
+    <DataColumn name="RowValues" />
   </g:columns>
 
   <xi:include href="columns/BudgetType.columns.xml" />
