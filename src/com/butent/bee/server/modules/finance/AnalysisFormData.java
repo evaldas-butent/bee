@@ -98,6 +98,14 @@ class AnalysisFormData {
     }
   }
 
+  Map<String, Integer> getHeaderIndexes() {
+    return headerIndexes;
+  }
+
+  BeeRow getHeader() {
+    return header;
+  }
+
   Filter getHeaderFilter(Function<String, Filter> filterParser) {
     CompoundFilter filter = Filter.and();
 
@@ -122,6 +130,10 @@ class AnalysisFormData {
     Integer monthUntil = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_UNTIL);
 
     return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
+  }
+
+  Map<String, Integer> getColumnIndexes() {
+    return columnIndexes;
   }
 
   List<BeeRow> getColumns() {
@@ -156,6 +168,10 @@ class AnalysisFormData {
     Integer monthUntil = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL);
 
     return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
+  }
+
+  Map<String, Integer> getRowIndexes() {
+    return rowIndexes;
   }
 
   List<BeeRow> getRows() {
@@ -352,6 +368,10 @@ class AnalysisFormData {
     return column.isTrue(columnIndexes.get(key));
   }
 
+  List<AnalysisSplitType> getColumnSplits(BeeRow column) {
+    return getColumnSplits(column, getHeaderInteger(COL_ANALYSIS_COLUMN_SPLIT_LEVELS));
+  }
+
   private List<AnalysisSplitType> getColumnSplits(BeeRow column, Integer levels) {
     List<AnalysisSplitType> splits = new ArrayList<>();
 
@@ -422,6 +442,10 @@ class AnalysisFormData {
 
   private boolean isRowTrue(BeeRow row, String key) {
     return row.isTrue(rowIndexes.get(key));
+  }
+
+  List<AnalysisSplitType> getRowSplits(BeeRow row) {
+    return getRowSplits(row, getHeaderInteger(COL_ANALYSIS_ROW_SPLIT_LEVELS));
   }
 
   private List<AnalysisSplitType> getRowSplits(BeeRow row, Integer levels) {
@@ -712,4 +736,5 @@ class AnalysisFormData {
 
     return range;
   }
+
 }

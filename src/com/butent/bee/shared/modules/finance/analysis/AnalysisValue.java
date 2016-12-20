@@ -24,11 +24,20 @@ public final class AnalysisValue implements BeeSerializable {
   }
 
   private enum Serial {
-    COLUMN_ID, ROW_ID, VALUE
+    COLUMN_ID, ROW_ID,
+    COLUMN_SPLIT_TYPE_INDEX, COLUMN_SPLIT_VALUE_INDEX,
+    ROW_SPLIT_TYPE_INDEX, ROW_SPLIT_VALUE_INDEX,
+    VALUE
   }
 
   private long columnId;
   private long rowId;
+
+  private Integer columnSplitTypeIndex;
+  private Integer columnSplitValueIndex;
+
+  private Integer rowSplitTypeIndex;
+  private Integer rowSplitValueIndex;
 
   private String value;
 
@@ -43,6 +52,22 @@ public final class AnalysisValue implements BeeSerializable {
     return rowId;
   }
 
+  public Integer getColumnSplitTypeIndex() {
+    return columnSplitTypeIndex;
+  }
+
+  public Integer getColumnSplitValueIndex() {
+    return columnSplitValueIndex;
+  }
+
+  public Integer getRowSplitTypeIndex() {
+    return rowSplitTypeIndex;
+  }
+
+  public Integer getRowSplitValueIndex() {
+    return rowSplitValueIndex;
+  }
+
   public String getValue() {
     return value;
   }
@@ -53,6 +78,22 @@ public final class AnalysisValue implements BeeSerializable {
 
   private void setRowId(long rowId) {
     this.rowId = rowId;
+  }
+
+  public void setColumnSplitTypeIndex(Integer columnSplitTypeIndex) {
+    this.columnSplitTypeIndex = columnSplitTypeIndex;
+  }
+
+  public void setColumnSplitValueIndex(Integer columnSplitValueIndex) {
+    this.columnSplitValueIndex = columnSplitValueIndex;
+  }
+
+  public void setRowSplitTypeIndex(Integer rowSplitTypeIndex) {
+    this.rowSplitTypeIndex = rowSplitTypeIndex;
+  }
+
+  public void setRowSplitValueIndex(Integer rowSplitValueIndex) {
+    this.rowSplitValueIndex = rowSplitValueIndex;
   }
 
   private void setValue(String value) {
@@ -75,6 +116,21 @@ public final class AnalysisValue implements BeeSerializable {
           case ROW_ID:
             setRowId(BeeUtils.toLong(v));
             break;
+
+          case COLUMN_SPLIT_TYPE_INDEX:
+            setColumnSplitTypeIndex(BeeUtils.toIntOrNull(v));
+            break;
+          case COLUMN_SPLIT_VALUE_INDEX:
+            setColumnSplitValueIndex(BeeUtils.toIntOrNull(v));
+            break;
+
+          case ROW_SPLIT_TYPE_INDEX:
+            setRowSplitTypeIndex(BeeUtils.toIntOrNull(v));
+            break;
+          case ROW_SPLIT_VALUE_INDEX:
+            setRowSplitValueIndex(BeeUtils.toIntOrNull(v));
+            break;
+
           case VALUE:
             setValue(v);
             break;
@@ -96,6 +152,21 @@ public final class AnalysisValue implements BeeSerializable {
         case ROW_ID:
           arr[i++] = getRowId();
           break;
+
+        case COLUMN_SPLIT_TYPE_INDEX:
+          arr[i++] = getColumnSplitTypeIndex();
+          break;
+        case COLUMN_SPLIT_VALUE_INDEX:
+          arr[i++] = getColumnSplitValueIndex();
+          break;
+
+        case ROW_SPLIT_TYPE_INDEX:
+          arr[i++] = getRowSplitTypeIndex();
+          break;
+        case ROW_SPLIT_VALUE_INDEX:
+          arr[i++] = getRowSplitValueIndex();
+          break;
+
         case VALUE:
           arr[i++] = getValue();
           break;

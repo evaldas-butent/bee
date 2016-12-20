@@ -102,6 +102,18 @@ public final class AnalysisSplitValue implements BeeSerializable {
     this.id = id;
   }
 
+  public Integer getYear() {
+    return BeeUtils.toIntOrNull(value);
+  }
+
+  public YearMonth getYearMonth() {
+    return YearMonth.parse(value);
+  }
+
+  public YearQuarter getYearQuarter() {
+    return YearQuarter.parse(value);
+  }
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);

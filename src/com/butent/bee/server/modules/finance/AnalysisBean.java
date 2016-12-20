@@ -11,6 +11,7 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -41,7 +42,9 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -76,7 +79,15 @@ public class AnalysisBean {
       return response;
     }
 
-    AnalysisResults results = new AnalysisResults();
+    AnalysisResults results = new AnalysisResults(
+        formData.getHeaderIndexes(), formData.getHeader(),
+        formData.getColumnIndexes(), formData.getColumns(),
+        formData.getRowIndexes(), formData.getRows());
+
+    formData.getColumns().forEach(column ->
+        results.addColumnSplitTypes(column.getId(), formData.getColumnSplits(column)));
+    formData.getRows().forEach(row ->
+        results.addRowSplitTypes(row.getId(), formData.getRowSplits(row)));
 
     Function<String, Filter> filterParser = input -> finView.parseFilter(input, userId);
 
@@ -94,33 +105,69 @@ public class AnalysisBean {
         TurnoverOrBalance columnTurnoverOrBalance = formData.getColumnEnum(column,
             COL_ANALYSIS_COLUMN_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
 
+        List<AnalysisSplitType> columnSplitTypes = results.getColumnSplitTypes(column.getId());
+
         for (BeeRow row : formData.getRows()) {
           if (formData.rowIsPrimary(row)) {
-            Long indicator;
-            if (DataUtils.isId(columnIndicator)) {
-              indicator = columnIndicator;
-            } else {
-              indicator = formData.getRowLong(row, COL_ANALYSIS_ROW_INDICATOR);
-            }
+            Long rowIndicator = formData.getRowLong(row, COL_ANALYSIS_ROW_INDICATOR);
+            Long indicator = DataUtils.isId(columnIndicator) ? columnIndicator : rowIndicator;
 
             if (DataUtils.isId(indicator)) {
-              TurnoverOrBalance turnoverOrBalance;
-              if (columnTurnoverOrBalance == null) {
-                turnoverOrBalance = formData.getRowEnum(row,
-                    COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
-              } else {
-                turnoverOrBalance = columnTurnoverOrBalance;
+              TurnoverOrBalance turnoverOrBalance =
+                  getTurnoverOrBalance(columnTurnoverOrBalance, formData, row, indicator);
+
+              NormalBalance normalBalance = getIndicatorNormalBalance(indicator);
+
+              Pair<Filter, Filter> accountFilters =
+                  getIndicatorAccountFilters(indicator, turnoverOrBalance, normalBalance);
+
+              if (accountFilters != null && !accountFilters.isNull()) {
+                MonthRange rowRange = formData.getRowRange(row);
+                MonthRange range = AnalysisUtils.intersection(columnRange, rowRange);
+
+                Filter rowFilter = formData.getRowFilter(row, filterParser);
+                Filter parentFilter = Filter.and(headerFilter, columnFilter, rowFilter);
+
+                String sourceColumn = getIndicatorSourceColumn(indicator);
+
+                Filter valueFilter = getActualValueFilter(indicator, turnoverOrBalance, range,
+                    parentFilter, sourceColumn, finView, userId);
+
+                Filter plusFilter = accountFilters.getA();
+                Filter minusFilter = accountFilters.getB();
+
+                List<AnalysisSplitType> rowSplitTypes = results.getRowSplitTypes(row.getId());
+
+                Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues =
+                    new EnumMap<>(AnalysisSplitType.class);
+                Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues =
+                    new EnumMap<>(AnalysisSplitType.class);
+
+                columnSplitTypes.forEach(type -> {
+                  List<AnalysisSplitValue> splitValues =
+                      getSplitValues(type, valueFilter, plusFilter, minusFilter, finView, userId);
+
+                  if (!splitValues.isEmpty()) {
+                    columnSplitValues.put(type, splitValues);
+                    results.addColumnSplitValues(column.getId(), type, splitValues);
+                  }
+                });
+
+                rowSplitTypes.forEach(type -> {
+                  List<AnalysisSplitValue> splitValues =
+                      getSplitValues(type, valueFilter, plusFilter, minusFilter, finView, userId);
+
+                  if (!splitValues.isEmpty()) {
+                    rowSplitValues.put(type, splitValues);
+                    results.addRowSplitValues(row.getId(), type, splitValues);
+                  }
+                });
+
+                results.addValues(computeActualValues(column.getId(), row.getId(),
+                    valueFilter, plusFilter, minusFilter, turnoverOrBalance,
+                    columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
+                    sourceColumn, finView, userId));
               }
-
-              MonthRange range = AnalysisUtils.intersection(columnRange,
-                  formData.getRowRange(row));
-
-              Filter filter = Filter.and(headerFilter, columnFilter,
-                  formData.getRowFilter(row, filterParser));
-
-              double value = getActualValue(indicator, turnoverOrBalance, range, filter,
-                  finView, userId);
-              results.add(AnalysisValue.of(column.getId(), row.getId(), value));
             }
           }
         }
@@ -286,48 +333,20 @@ public class AnalysisBean {
     return AnalysisUtils.normalize(filter);
   }
 
-  private List<AnalysisSplitValue> getSplitValues(long indicator, Filter parentFilter,
-      AnalysisSplitType type, BeeView sourceView, Long userId) {
+  private List<AnalysisSplitValue> getSplitValues(AnalysisSplitType type,
+      Filter parentFilter, Filter plusFilter, Filter minusFilter,
+      BeeView finView, Long userId) {
 
     List<AnalysisSplitValue> result = new ArrayList<>();
 
-    CompoundFilter filter = Filter.and();
-    if (parentFilter != null) {
-      filter.add(parentFilter);
-    }
-
-    Filter indicatorFilter = getIndicatorFilter(indicator, sourceView, userId);
-    if (indicatorFilter != null) {
-      filter.add(indicatorFilter);
-    }
-
-    Collection<String> indicatorAccountCodes = getIndicatorAccountCodes(indicator);
-    if (BeeUtils.isEmpty(indicatorAccountCodes)) {
-      return result;
-    }
-
-    CompoundFilter accountFilter = Filter.or();
-
-    for (String code : indicatorAccountCodes) {
-      accountFilter.add(Filter.startsWith(ALS_DEBIT_CODE, code));
-      accountFilter.add(Filter.startsWith(ALS_CREDIT_CODE, code));
-    }
-
-    if (!accountFilter.isEmpty()) {
-      filter.add(accountFilter);
-    }
-
-    String indicatorSourceColumn = getIndicatorSourceColumn(indicator);
-    if (!BeeUtils.isEmpty(indicatorSourceColumn)) {
-      filter.add(Filter.nonZero(indicatorSourceColumn));
-    }
-
     String finColumn = type.getFinColumn();
-    if (!sourceView.hasColumn(finColumn)) {
+    if (!finView.hasColumn(finColumn)) {
       return result;
     }
 
-    SqlSelect sourceQuery = sourceView.getQuery(userId, filter, null,
+    Filter filter = Filter.and(parentFilter, Filter.or(plusFilter, minusFilter));
+
+    SqlSelect sourceQuery = finView.getQuery(userId, filter, null,
         Collections.singletonList(finColumn));
     String sourceQueryAlias = SqlUtils.uniqueName();
 
@@ -515,54 +534,125 @@ public class AnalysisBean {
     return indicatorSource.getSourceColumn();
   }
 
-  private double getActualValue(long indicator, TurnoverOrBalance parentTurnoverOrBalance,
-      MonthRange range, Filter parentFilter, BeeView finView, Long userId) {
+  private Collection<AnalysisValue> computeActualValues(long columnId, long rowId,
+      Filter filter, Filter plusFilter, Filter minusFilter, TurnoverOrBalance turnoverOrBalance,
+      List<AnalysisSplitType> columnSplitTypes,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues,
+      List<AnalysisSplitType> rowSplitTypes,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues,
+      String sourceColumn, BeeView finView, Long userId) {
+
+    List<AnalysisValue> values = new ArrayList<>();
+
+    boolean hasColumnSplits = !columnSplitTypes.isEmpty() && !columnSplitValues.isEmpty();
+    boolean hasRowSplits = !rowSplitTypes.isEmpty() && !rowSplitValues.isEmpty();
+
+    if (hasColumnSplits && hasRowSplits) {
+      for (int cstIndex = 0; cstIndex < columnSplitTypes.size(); cstIndex++) {
+        AnalysisSplitType cst = columnSplitTypes.get(cstIndex);
+
+        if (columnSplitValues.containsKey(cst)) {
+          List<AnalysisSplitValue> csValues = columnSplitValues.get(cst);
+
+          for (int csvIndex = 0; csvIndex < csValues.size(); csvIndex++) {
+            AnalysisSplitValue csv = csValues.get(csvIndex);
+            Filter csvFilter = cst.getFinFilter(csv, turnoverOrBalance);
+
+            for (int rstIndex = 0; rstIndex < rowSplitTypes.size(); rstIndex++) {
+              AnalysisSplitType rst = rowSplitTypes.get(rstIndex);
+
+              if (rowSplitValues.containsKey(rst)) {
+                List<AnalysisSplitValue> rsValues = rowSplitValues.get(rst);
+
+                for (int rsvIndex = 0; rsvIndex < rsValues.size(); rsvIndex++) {
+                  AnalysisSplitValue rsv = rsValues.get(rsvIndex);
+                  Filter rsvFilter = rst.getFinFilter(rsv, turnoverOrBalance);
+
+                  double value = getActualValue(Filter.and(filter, csvFilter, rsvFilter),
+                      plusFilter, minusFilter, sourceColumn, finView, userId);
+                  AnalysisValue av = AnalysisValue.of(columnId, rowId, value);
+
+                  av.setColumnSplitTypeIndex(cstIndex);
+                  av.setColumnSplitValueIndex(csvIndex);
+
+                  av.setRowSplitTypeIndex(rstIndex);
+                  av.setRowSplitValueIndex(rsvIndex);
+
+                  values.add(av);
+                }
+              }
+            }
+          }
+        }
+      }
+
+    } else if (hasColumnSplits) {
+      for (int cstIndex = 0; cstIndex < columnSplitTypes.size(); cstIndex++) {
+        AnalysisSplitType cst = columnSplitTypes.get(cstIndex);
+
+        if (columnSplitValues.containsKey(cst)) {
+          List<AnalysisSplitValue> csValues = columnSplitValues.get(cst);
+
+          for (int csvIndex = 0; csvIndex < csValues.size(); csvIndex++) {
+            AnalysisSplitValue csv = csValues.get(csvIndex);
+            Filter csvFilter = cst.getFinFilter(csv, turnoverOrBalance);
+
+            double value = getActualValue(Filter.and(filter, csvFilter),
+                plusFilter, minusFilter, sourceColumn, finView, userId);
+            AnalysisValue av = AnalysisValue.of(columnId, rowId, value);
+
+            av.setColumnSplitTypeIndex(cstIndex);
+            av.setColumnSplitValueIndex(csvIndex);
+
+            values.add(av);
+          }
+        }
+      }
+
+    } else if (hasRowSplits) {
+      for (int rstIndex = 0; rstIndex < rowSplitTypes.size(); rstIndex++) {
+        AnalysisSplitType rst = rowSplitTypes.get(rstIndex);
+
+        if (rowSplitValues.containsKey(rst)) {
+          List<AnalysisSplitValue> rsValues = rowSplitValues.get(rst);
+
+          for (int rsvIndex = 0; rsvIndex < rsValues.size(); rsvIndex++) {
+            AnalysisSplitValue rsv = rsValues.get(rsvIndex);
+            Filter rsvFilter = rst.getFinFilter(rsv, turnoverOrBalance);
+
+            double value = getActualValue(Filter.and(filter, rsvFilter),
+                plusFilter, minusFilter, sourceColumn, finView, userId);
+            AnalysisValue av = AnalysisValue.of(columnId, rowId, value);
+
+            av.setRowSplitTypeIndex(rstIndex);
+            av.setRowSplitValueIndex(rsvIndex);
+
+            values.add(av);
+          }
+        }
+      }
+
+    } else {
+      double value = getActualValue(filter, plusFilter, minusFilter, sourceColumn, finView, userId);
+      values.add(AnalysisValue.of(columnId, rowId, value));
+    }
+
+    return values;
+  }
+
+  private double getActualValue(Filter filter, Filter plusFilter, Filter minusFilter,
+      String sourceColumn, BeeView finView, Long userId) {
 
     double value = BeeConst.DOUBLE_ZERO;
 
-    Collection<String> accountCodes = getIndicatorAccountCodes(indicator);
-    if (BeeUtils.isEmpty(accountCodes)) {
-      return value;
-    }
-
-    TurnoverOrBalance turnoverOrBalance;
-    if (parentTurnoverOrBalance == null) {
-      turnoverOrBalance = getIndicatorTurnoverOrBalance(indicator);
-    } else {
-      turnoverOrBalance = parentTurnoverOrBalance;
-    }
-
-    NormalBalance normalBalance = getIndicatorNormalBalance(indicator);
-
-    CompoundFilter plusFilter = CompoundFilter.or();
-    CompoundFilter minusFilter = CompoundFilter.or();
-
-    for (String code : accountCodes) {
-      plusFilter.add(turnoverOrBalance.getPlusFilter(ALS_DEBIT_CODE, ALS_CREDIT_CODE, code,
-          normalBalance));
-
-      minusFilter.add(turnoverOrBalance.getMinusFilter(ALS_DEBIT_CODE, ALS_CREDIT_CODE, code,
-          normalBalance));
-    }
-
-    Filter indicatorFilter = getIndicatorFilter(indicator, finView, userId);
-
-    Filter rangeFilter = (range == null)
-        ? null : turnoverOrBalance.getRangeFilter(COL_FIN_DATE, range);
-
-    String sourceColumn = getIndicatorSourceColumn(indicator);
-    Filter sourceFilter = Filter.nonZero(sourceColumn);
-
-    Filter filter = Filter.and(parentFilter, indicatorFilter, rangeFilter, sourceFilter);
-
-    if (!plusFilter.isEmpty()) {
+    if (plusFilter != null) {
       Double plus = getSum(finView, userId, Filter.and(filter, plusFilter), sourceColumn);
       if (BeeUtils.nonZero(plus)) {
         value += plus;
       }
     }
 
-    if (!minusFilter.isEmpty()) {
+    if (minusFilter != null) {
       Double minus = getSum(finView, userId, Filter.and(filter, minusFilter), sourceColumn);
       if (BeeUtils.nonZero(minus)) {
         value -= minus;
@@ -572,10 +662,62 @@ public class AnalysisBean {
     return value;
   }
 
+  private Pair<Filter, Filter> getIndicatorAccountFilters(long indicator,
+      TurnoverOrBalance turnoverOrBalance, NormalBalance normalBalance) {
+
+    CompoundFilter plusFilter = CompoundFilter.or();
+    CompoundFilter minusFilter = CompoundFilter.or();
+
+    Collection<String> accountCodes = getIndicatorAccountCodes(indicator);
+
+    if (!BeeUtils.isEmpty(accountCodes)) {
+      for (String code : accountCodes) {
+        plusFilter.add(turnoverOrBalance.getPlusFilter(ALS_DEBIT_CODE, ALS_CREDIT_CODE, code,
+            normalBalance));
+
+        minusFilter.add(turnoverOrBalance.getMinusFilter(ALS_DEBIT_CODE, ALS_CREDIT_CODE, code,
+            normalBalance));
+      }
+    }
+
+    return Pair.of(AnalysisUtils.normalize(plusFilter), AnalysisUtils.normalize(minusFilter));
+  }
+
+  private Filter getActualValueFilter(long indicator, TurnoverOrBalance turnoverOrBalance,
+      MonthRange range, Filter parentFilter, String sourceColumn, BeeView finView, Long userId) {
+
+    Filter indicatorFilter = getIndicatorFilter(indicator, finView, userId);
+
+    Filter rangeFilter = (range == null)
+        ? null : turnoverOrBalance.getRangeFilter(COL_FIN_DATE, range);
+
+    Filter sourceFilter = Filter.nonZero(sourceColumn);
+
+    return Filter.and(parentFilter, indicatorFilter, rangeFilter, sourceFilter);
+  }
+
   private Double getSum(BeeView view, Long userId, Filter filter, String column) {
     SqlSelect query = view.getQuery(userId, filter, null, Collections.singleton(column));
     String alias = SqlUtils.uniqueName();
 
     return qs.getDouble(new SqlSelect().addSum(alias, column).addFrom(query, alias));
+  }
+
+  private TurnoverOrBalance getTurnoverOrBalance(TurnoverOrBalance columnTurnoverOrBalance,
+      AnalysisFormData formData, BeeRow row, long indicator) {
+
+    if (columnTurnoverOrBalance == null) {
+      TurnoverOrBalance rowTurnoverOrBalance = formData.getRowEnum(row,
+          COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
+
+      if (rowTurnoverOrBalance == null) {
+        return getIndicatorTurnoverOrBalance(indicator);
+      } else {
+        return rowTurnoverOrBalance;
+      }
+
+    } else {
+      return columnTurnoverOrBalance;
+    }
   }
 }
