@@ -102,8 +102,8 @@ public class MailAccount {
 
   private static void fillTree(MailFolder parent, Multimap<Long, SimpleRow> folders) {
     for (SimpleRow row : folders.get(parent.getId())) {
-      MailFolder folder = new MailFolder(parent, row.getLong(COL_FOLDER),
-          row.getValue(COL_FOLDER_NAME), row.getLong(COL_FOLDER_UID));
+      MailFolder folder = new MailFolder(row.getLong(COL_FOLDER), row.getValue(COL_FOLDER_NAME),
+          row.getLong(COL_FOLDER_UID));
 
       folder.setModSeq(row.getLong(COL_FOLDER_MODSEQ));
       folder.setUnread(BeeUtils.unbox(row.getInt(COL_MESSAGE)));
@@ -185,6 +185,10 @@ public class MailAccount {
 
   public String getAddress() {
     return accountInfo.getAddress();
+  }
+
+  public String getFolderCaption(Long folderId) {
+    return accountInfo.getFolderCaption(folderId);
   }
 
   public Long getSignatureId() {
@@ -408,8 +412,7 @@ public class MailAccount {
     return transport;
   }
 
-  boolean createRemoteFolder(MailFolder parent, String name)
-      throws MessagingException {
+  boolean createRemoteFolder(MailFolder parent, String name) throws MessagingException {
     boolean ok = true;
 
     if (!isStoredRemotedly(parent)) {

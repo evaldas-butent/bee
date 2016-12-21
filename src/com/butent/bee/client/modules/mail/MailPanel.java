@@ -53,7 +53,6 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -495,7 +494,7 @@ public class MailPanel extends AbstractFormInterceptor {
         if (DataUtils.isId(getCurrentFolder())) {
           if (!searchInCurrentFolder()) {
             folderContainer.setWidget(new InputBoolean(Localized.dictionary()
-                .mailOnlyInFolder(getFolderCaption(getCurrentFolder()))));
+                .mailOnlyInFolder(getCurrentAccount().getFolderCaption(getCurrentFolder()))));
           }
         } else {
           folderContainer.clear();
@@ -695,13 +694,6 @@ public class MailPanel extends AbstractFormInterceptor {
       });
       header.addCommandItem(accountSettings);
     }
-    FaLabel refreshWidget = new FaLabel(FontAwesome.REFRESH);
-
-    refreshWidget.setTitle(Localized.dictionary().actionRefresh());
-    refreshWidget.addClickHandler(clickEvent ->
-        checkFolderRecursively(getCurrentAccount().getRootFolder(), clickEvent.isShiftKeyDown()));
-    header.addCommandItem(refreshWidget);
-
     FaLabel unseenWidget = new FaLabel(FontAwesome.EYE_SLASH);
 
     unseenWidget.setTitle(Localized.dictionary().mailMarkAsUnread());
@@ -759,16 +751,11 @@ public class MailPanel extends AbstractFormInterceptor {
     if (syncAll) {
       params.addDataItem(Service.VAR_CHECK, BeeUtils.toString(syncAll));
     }
-    Endpoint.initProgress(getFolderCaption(folderId), progress -> {
-      if (!BeeUtils.isEmpty(progress)) {
-        params.addDataItem(Service.VAR_PROGRESS, progress);
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(getFormView());
       }
-      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(getFormView());
-        }
-      });
     });
   }
 
@@ -878,15 +865,6 @@ public class MailPanel extends AbstractFormInterceptor {
     });
   }
 
-  private void checkFolderRecursively(MailFolder folder, boolean syncAll) {
-    if (DataUtils.isId(folder.getId())) {
-      checkFolder(folder.getId(), syncAll);
-    }
-    for (MailFolder subFolder : folder.getSubFolders()) {
-      checkFolderRecursively(subFolder, syncAll);
-    }
-  }
-
   private void flagMessage(Long placeId, MessageFlag flag, boolean on) {
     ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
     params.addDataItem(COL_PLACE, placeId);
@@ -899,24 +877,6 @@ public class MailPanel extends AbstractFormInterceptor {
         response.notify(getFormView());
       }
     });
-  }
-
-  private String getFolderCaption(Long folderId) {
-    String cap;
-    AccountInfo account = getCurrentAccount();
-
-    if (account.isDraftsFolder(folderId)) {
-      cap = Localized.dictionary().mailFolderDrafts();
-    } else if (account.isInboxFolder(folderId)) {
-      cap = Localized.dictionary().mailFolderInbox();
-    } else if (account.isSentFolder(folderId)) {
-      cap = Localized.dictionary().mailFolderSent();
-    } else if (account.isTrashFolder(folderId)) {
-      cap = Localized.dictionary().mailFolderTrash();
-    } else {
-      cap = account.findFolder(folderId).getName();
-    }
-    return cap;
   }
 
   private static String getStorageKey() {

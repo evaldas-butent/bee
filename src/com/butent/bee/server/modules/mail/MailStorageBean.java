@@ -141,14 +141,7 @@ public class MailStorageBean {
   }
 
   public MailFolder createFolder(MailAccount account, MailFolder parent, String name) {
-    Assert.notNull(parent);
-
-    for (MailFolder subFolder : parent.getSubFolders()) {
-      if (BeeUtils.same(subFolder.getName(), name)) {
-        return subFolder;
-      }
-    }
-    MailFolder folder = createFolder(account.getAccountId(), parent, name);
+    MailFolder folder = createFolder(account.getAccountId(), Assert.notNull(parent), name);
 
     if (!account.isStoredRemotedly(parent)) {
       disconnectFolder(folder);
@@ -184,14 +177,14 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRED)
+  @TransactionAttribute(TransactionAttributeType.SUPPORTS)
   public MailAccount getAccount(Long accountId) {
     Assert.state(DataUtils.isId(accountId));
-    return getAccount(sys.idEquals(TBL_ACCOUNTS, accountId), false);
+    return getAccount(accountId, false);
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRED)
-  public MailAccount getAccount(IsCondition condition, boolean checkUnread) {
+  @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+  public MailAccount getAccount(Long accountId, boolean checkUnread) {
     MailAccount account = new MailAccount(qs.getRow(new SqlSelect()
         .addAllFields(TBL_ACCOUNTS)
         .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
@@ -199,7 +192,7 @@ public class MailStorageBean {
         .addFrom(TBL_ACCOUNTS)
         .addFromInner(TBL_EMAILS,
             sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
-        .setWhere(condition)));
+        .setWhere(sys.idEquals(TBL_ACCOUNTS, accountId))));
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID,
@@ -478,7 +471,8 @@ public class MailStorageBean {
                 .addConstant(COL_FLAGS, flags)
                 .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId(),
                     COL_MESSAGE_UID, imapFolder.getUID(msg)),
-                    SqlUtils.notEqual(TBL_PLACES, COL_FLAGS, flags))));
+                    SqlUtils.or(SqlUtils.notEqual(TBL_PLACES, COL_FLAGS, flags),
+                        Objects.isNull(flags) ? null : SqlUtils.isNull(TBL_PLACES, COL_FLAGS)))));
           }
         }
       }
@@ -650,37 +644,14 @@ public class MailStorageBean {
   }
 
   private MailFolder createFolder(Long accountId, MailFolder parent, String name) {
-    Assert.state(DataUtils.isId(accountId));
-    Assert.notEmpty(name);
-    Long parentId = Objects.isNull(parent) ? null : parent.getId();
+    long id = qs.insertData(new SqlInsert(TBL_FOLDERS)
+        .addConstant(COL_ACCOUNT, accountId)
+        .addConstant(COL_FOLDER_PARENT, parent.getId())
+        .addConstant(COL_FOLDER_NAME, Assert.notEmpty(name)));
 
-    SimpleRow row = qs.getRow(new SqlSelect()
-        .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), COL_FOLDER)
-        .addFields(TBL_FOLDERS, COL_FOLDER_UID, COL_FOLDER_MODSEQ)
-        .addFrom(TBL_FOLDERS)
-        .setWhere(SqlUtils.equals(TBL_FOLDERS, COL_ACCOUNT, accountId,
-            COL_FOLDER_PARENT, parentId, COL_FOLDER_NAME, name)));
+    MailFolder folder = new MailFolder(id, name, null);
+    parent.addSubFolder(folder);
 
-    long id;
-    Long uidValidity = null;
-    Long modSeq = null;
-
-    if (Objects.isNull(row)) {
-      id = qs.insertData(new SqlInsert(TBL_FOLDERS)
-          .addConstant(COL_ACCOUNT, accountId)
-          .addConstant(COL_FOLDER_PARENT, parentId)
-          .addConstant(COL_FOLDER_NAME, name));
-    } else {
-      id = row.getLong(COL_FOLDER);
-      uidValidity = row.getLong(COL_FOLDER_UID);
-      modSeq = row.getLong(COL_FOLDER_MODSEQ);
-    }
-    MailFolder folder = new MailFolder(parent, id, name, uidValidity);
-    folder.setModSeq(modSeq);
-
-    if (parent != null) {
-      parent.addSubFolder(folder);
-    }
     return folder;
   }
 
