@@ -111,7 +111,10 @@ public enum MenuService {
   FINANCE_POSTING_PRECEDENCE(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION),
 
   @XmlEnumValue("extra_dimensions")
-  EXTRA_DIMENSIONS(RightsState.VIEW);
+  EXTRA_DIMENSIONS(RightsState.VIEW),
+
+  @XmlEnumValue("service_maintenance_list")
+  SERVICE_MAINTENANCE_LIST(RightsState.VIEW, ServiceConstants.TBL_SERVICE_MAINTENANCE);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;
