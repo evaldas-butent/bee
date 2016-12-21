@@ -23,6 +23,7 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
@@ -68,6 +69,7 @@ import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.DateTime;
@@ -78,6 +80,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -97,6 +100,7 @@ public class MailMessage extends AbstractFormInterceptor {
         final String viewName = event.getRelatedViewName();
 
         switch (viewName) {
+          case DiscussionsConstants.TBL_DISCUSSIONS:
           case TBL_REQUESTS:
           case TBL_TASKS:
           case TransportConstants.TBL_ASSESSMENTS:
@@ -115,7 +119,21 @@ public class MailMessage extends AbstractFormInterceptor {
                   if (!BeeUtils.same(viewName, TransportConstants.TBL_ASSESSMENTS)) {
                     FileCollector.pushFiles(attachments);
                   }
-                  RowFactory.createRelatedRow(formName, row, selector, null);
+
+                  if (Objects.equals(DiscussionsConstants.TBL_DISCUSSIONS, viewName)) {
+                    Global.choice(null, null, Arrays.asList(Localized.dictionary().announcement(),
+                        Localized.dictionary().discussion()), value -> {
+                          String discussionForm;
+                          if (value == 0) {
+                            discussionForm = DiscussionsConstants.FORM_NEW_ANNOUNCEMENT;
+                          } else {
+                            discussionForm = DiscussionsConstants.FORM_NEW_DISCUSSION;
+                          }
+                          RowFactory.createRelatedRow(discussionForm, row, selector, null);
+                        });
+                  } else {
+                    RowFactory.createRelatedRow(formName, row, selector, null);
+                  }
                 }
               }
             };
@@ -207,6 +225,11 @@ public class MailMessage extends AbstractFormInterceptor {
                     case DocumentConstants.TBL_DOCUMENTS:
                       Data.setValue(viewName, row, DocumentConstants.COL_DOCUMENT_NAME,
                           getSubject());
+                      break;
+
+                    case DiscussionsConstants.TBL_DISCUSSIONS:
+                      Data.setValue(viewName, row, COL_SUBJECT, getSubject());
+                      Data.setValue(viewName, row, COL_SUMMARY, response.getResponseAsString());
                       break;
                   }
                 }

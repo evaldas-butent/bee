@@ -348,15 +348,15 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
         if (response.hasErrors()) {
           event.getCallback().onFailure(response.getErrors());
-        } else if (response.hasResponse(Long.class)) {
-          Long discussionId = response.getResponseAsLong();
+        } else if (response.hasResponse(BeeRow.class)) {
+          BeeRow createdDiscussion = BeeRow.restore(response.getResponseAsString());
 
-          if (!DataUtils.isId(discussionId)) {
+          if (createdDiscussion == null) {
             event.getCallback().onFailure(Localized.dictionary().discussNotCreated());
             return;
           }
 
-          createFiles(discussionId, null);
+          createFiles(createdDiscussion.getId(), null);
           final Collection<RowChildren> relData = new ArrayList<>();
 
           if (relations != null) {
@@ -364,14 +364,20 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           }
 
           if (!BeeUtils.isEmpty(relData)) {
-            Queries.updateChildren(VIEW_DISCUSSIONS, discussionId, relData, null);
+            Queries.updateChildren(VIEW_DISCUSSIONS, createdDiscussion.getId(), relData,
+                new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                event.getCallback().onSuccess(result);
+              }
+            });
+          } else {
+            event.getCallback().onSuccess(createdDiscussion);
           }
-
-          event.getCallback().onSuccess(null);
 
           String message;
 
-          if (BeeUtils.isEmpty(activeRow.getString(form.getDataIndex(ALS_TOPIC_NAME)))) {
+          if (BeeUtils.isEmpty(createdDiscussion.getString(form.getDataIndex(ALS_TOPIC_NAME)))) {
             message = Localized.dictionary().discussCreatedNewDiscussion();
           } else {
             message = Localized.dictionary().discussCreatedNewAnnouncement();
@@ -384,7 +390,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           ParameterList mailArgs =
               DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE_MAIL);
           mailArgs.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));
-          mailArgs.addDataItem(VAR_DISCUSSION_ID, discussionId);
+          mailArgs.addDataItem(VAR_DISCUSSION_ID, createdDiscussion.getId());
           BeeKeeper.getRpc().makePostRequest(mailArgs, new ResponseCallback() {
             @Override
             public void onResponse(ResponseObject emptyResp) {
@@ -458,7 +464,12 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     if (summaryEditor != null) {
       summaryEditor.clearValue();
-      summaryEditor.setValue(BeeConst.STRING_EMPTY);
+      String summary = newRow.getString(getDataIndex(COL_SUMMARY));
+      if (!BeeUtils.isEmpty(summary)) {
+        summaryEditor.setValue(summary);
+      } else {
+        summaryEditor.setValue(BeeConst.STRING_EMPTY);
+      }
     }
 
     if (descriptionEditor != null) {
@@ -538,7 +549,21 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
             @Override
             public void onSuccess(Integer result) {
-              consumer.accept(FileStoreMode.RENAME);
+              if (BeeUtils.isPositive(result)) {
+                consumer.accept(FileStoreMode.RENAME);
+              } else {
+                List<String> values = Lists.newArrayList(BeeUtils.toString(discussionId),
+                    file.getId().toString(), file.getCaption());
+
+                Queries.insert(VIEW_DISCUSSIONS_FILES, columns, values, null, new RowCallback() {
+
+                  @Override
+                  public void onSuccess(BeeRow discussFile) {
+                    consumer.accept(FileStoreMode.NEW);
+                    RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS_FILES, discussFile);
+                  }
+                });
+              }
             }
           });
     }

@@ -557,17 +557,18 @@ public class DiscussionsModuleBean implements BeeModule {
           break;
         }
 
-        discussionId = ((BeeRow) response.getResponse()).getId();
+        BeeRow createdDiscussion = (BeeRow) response.getResponse();
 
         if (!response.hasErrors()) {
           response =
-              createDiscussionUser(discussionId, currentUser, now, !BeeUtils.isEmpty(members));
+              createDiscussionUser(createdDiscussion.getId(), currentUser, now,
+                  !BeeUtils.isEmpty(members));
         }
 
         if (!response.hasErrors()) {
           for (long memberId : members) {
             if (memberId != currentUser) {
-              response = createDiscussionUser(discussionId, memberId, null, true);
+              response = createDiscussionUser(createdDiscussion.getId(), memberId, null, true);
               if (response.hasErrors()) {
                 break;
               }
@@ -579,12 +580,10 @@ public class DiscussionsModuleBean implements BeeModule {
           break;
         }
 
-        if (!response.hasErrors()) {
-          if (!DataUtils.isId(discussionId)) {
+        if (response.hasErrors()) {
             response = ResponseObject.error(usr.getDictionary().discussNotCreated());
-          } else {
-            response = ResponseObject.response(discussionId);
-          }
+        } else {
+          response = ResponseObject.response(createdDiscussion);
         }
         break;
 

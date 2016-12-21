@@ -884,9 +884,7 @@ class TaskBuilder extends ProductSupportInterceptor {
 
       createFiles(tasks.getRowIds());
 
-      if (!taskIdsCallback) {
-        callback.onSuccess(null);
-      } else {
+      if (taskIdsCallback) {
         BeeRow row = new BeeRow(0, new String[] {DataUtils.buildIdList(tasks)});
         callback.onSuccess(row);
       }
@@ -894,8 +892,10 @@ class TaskBuilder extends ProductSupportInterceptor {
       String message = Localized.dictionary().crmCreatedNewTasks(tasks.getNumberOfRows());
       BeeKeeper.getScreen().notifyInfo(message);
 
-      if (!taskIdsCallback) {
+      if (!taskIdsCallback && tasks.getNumberOfRows() == 1) {
         callback.onSuccess(tasks.getRow(0));
+      } else {
+        callback.onSuccess(null);
       }
 
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
