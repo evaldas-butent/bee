@@ -86,7 +86,8 @@ class AnalysisViewer extends Flow implements HasCaption {
     table.setText(r, c++, "rsti");
     table.setText(r, c++, "rsvi");
 
-    table.setText(r, c, "value");
+    table.setText(r, c++, "actual");
+    table.setText(r, c, "budget");
 
     r++;
 
@@ -104,7 +105,8 @@ class AnalysisViewer extends Flow implements HasCaption {
       table.setText(r, c++, BeeUtils.toStringOrNull(av.getRowSplitTypeIndex()));
       table.setText(r, c++, BeeUtils.toStringOrNull(av.getRowSplitValueIndex()));
 
-      table.setText(r, c, av.getValue());
+      table.setText(r, c++, av.getActualValue());
+      table.setText(r, c, av.getBudgetValue());
 
       r++;
     }

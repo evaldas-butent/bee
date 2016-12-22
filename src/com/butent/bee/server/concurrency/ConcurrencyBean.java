@@ -53,7 +53,7 @@ public class ConcurrencyBean {
     TimerService getTimerService();
   }
 
-  public static abstract class AsynchronousRunnable
+  public abstract static class AsynchronousRunnable
       implements Runnable, ManagedTask, ManagedTaskListener {
 
     private long submitted;

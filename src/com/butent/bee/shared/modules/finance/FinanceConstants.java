@@ -129,6 +129,7 @@ public final class FinanceConstants {
   public static final String COL_BUDGET_HEADER_INDICATOR = "Indicator";
   public static final String COL_BUDGET_HEADER_TURNOVER_OR_BALANCE = "TurnoverOrBalance";
   public static final String COL_BUDGET_HEADER_TYPE = "BudgetType";
+  public static final String COL_BUDGET_HEADER_CURRENCY = "Currency";
   public static final String COL_BUDGET_HEADER_YEAR = "Year";
   public static final String COL_BUDGET_HEADER_BACKGROUND = "Background";
   public static final String COL_BUDGET_HEADER_FOREGROUND = "Foreground";
@@ -147,7 +148,7 @@ public final class FinanceConstants {
   public static final String COL_BUDGET_ENTRY_TYPE = "BudgetType";
   public static final String COL_BUDGET_ENTRY_YEAR = "Year";
 
-  private static final String[] COL_BUDGET_ENTRY_VALUES = new String[] {
+  public static final String[] COL_BUDGET_ENTRY_VALUES = new String[] {
       "Month01", "Month02", "Month03", "Month04", "Month05", "Month06",
       "Month07", "Month08", "Month09", "Month10", "Month11", "Month12"
   };
@@ -307,6 +308,14 @@ public final class FinanceConstants {
 
   public static final String FORM_SIMPLE_BUDGET = "SimpleBudget";
   public static final String FORM_SIMPLE_ANALYSIS = "SimpleAnalysis";
+
+  public static String budgetHeaderAlias(String name) {
+    return "Bh" + name;
+  }
+
+  public static String budgetEntryAlias(String name) {
+    return "Be" + name;
+  }
 
   public static String colBudgetEntryValue(int month) {
     return COL_BUDGET_ENTRY_VALUES[month - 1];

@@ -106,14 +106,15 @@ class AnalysisFormData {
     return header;
   }
 
-  Filter getHeaderFilter(Function<String, Filter> filterParser) {
+  Filter getHeaderFilter(String employeeColumnName, Function<String, Filter> filterParser) {
     CompoundFilter filter = Filter.and();
 
-    filter.add(getEmployeeFilter(header, headerIndexes.get(COL_ANALYSIS_HEADER_EMPLOYEE)));
+    filter.add(getEmployeeFilter(header, headerIndexes.get(COL_ANALYSIS_HEADER_EMPLOYEE),
+        employeeColumnName));
     addDimensionFilters(filter, header, headerIndexes, null);
 
     if (!BeeUtils.isEmpty(headerFilters)) {
-      filter.add(getFilter(headerFilters, filterParser));
+      filter.add(getFilter(headerFilters, employeeColumnName, filterParser));
     }
 
     return AnalysisUtils.normalize(filter);
@@ -140,18 +141,21 @@ class AnalysisFormData {
     return columns;
   }
 
-  Filter getColumnFilter(BeeRow column, Function<String, Filter> filterParser) {
+  Filter getColumnFilter(BeeRow column, String employeeColumnName,
+      Function<String, Filter> filterParser) {
+
     CompoundFilter filter = Filter.and();
 
     if (isHeaderTrue(COL_ANALYSIS_SHOW_COLUMN_EMPLOYEE)) {
-      filter.add(getEmployeeFilter(column, columnIndexes.get(COL_ANALYSIS_COLUMN_EMPLOYEE)));
+      filter.add(getEmployeeFilter(column, columnIndexes.get(COL_ANALYSIS_COLUMN_EMPLOYEE),
+          employeeColumnName));
     }
 
     addDimensionFilters(filter, column, columnIndexes,
         ordinal -> isHeaderTrue(colAnalysisShowColumnDimension(ordinal)));
 
     if (columnFilters.containsKey(column.getId()) && isHeaderTrue(COL_ANALYSIS_COLUMN_FILTERS)) {
-      filter.add(getFilter(columnFilters.get(column.getId()), filterParser));
+      filter.add(getFilter(columnFilters.get(column.getId()), employeeColumnName, filterParser));
     }
 
     return AnalysisUtils.normalize(filter);
@@ -178,18 +182,21 @@ class AnalysisFormData {
     return rows;
   }
 
-  Filter getRowFilter(BeeRow row, Function<String, Filter> filterParser) {
+  Filter getRowFilter(BeeRow row, String employeeColumnName,
+      Function<String, Filter> filterParser) {
+
     CompoundFilter filter = Filter.and();
 
     if (isHeaderTrue(COL_ANALYSIS_SHOW_ROW_EMPLOYEE)) {
-      filter.add(getEmployeeFilter(row, rowIndexes.get(COL_ANALYSIS_ROW_EMPLOYEE)));
+      filter.add(getEmployeeFilter(row, rowIndexes.get(COL_ANALYSIS_ROW_EMPLOYEE),
+          employeeColumnName));
     }
 
     addDimensionFilters(filter, row, rowIndexes,
         ordinal -> isHeaderTrue(colAnalysisShowRowDimension(ordinal)));
 
     if (rowFilters.containsKey(row.getId()) && isHeaderTrue(COL_ANALYSIS_ROW_FILTERS)) {
-      filter.add(getFilter(rowFilters.get(row.getId()), filterParser));
+      filter.add(getFilter(rowFilters.get(row.getId()), employeeColumnName, filterParser));
     }
 
     return AnalysisUtils.normalize(filter);
@@ -315,7 +322,7 @@ class AnalysisFormData {
     return header.getInteger(headerIndexes.get(key));
   }
 
-  private Long getHeaderLong(String key) {
+  Long getHeaderLong(String key) {
     return header.getLong(headerIndexes.get(key));
   }
 
@@ -360,7 +367,7 @@ class AnalysisFormData {
     return column.getLong(columnIndexes.get(key));
   }
 
-  private String getColumnString(BeeRow column, String key) {
+  String getColumnString(BeeRow column, String key) {
     return column.getString(columnIndexes.get(key));
   }
 
@@ -436,7 +443,7 @@ class AnalysisFormData {
     return row.getLong(rowIndexes.get(key));
   }
 
-  private String getRowString(BeeRow row, String key) {
+  String getRowString(BeeRow row, String key) {
     return row.getString(rowIndexes.get(key));
   }
 
@@ -676,23 +683,25 @@ class AnalysisFormData {
     }
   }
 
-  private static Filter getEmployeeFilter(BeeRow row, int index) {
+  private static Filter getEmployeeFilter(BeeRow row, int index, String colName) {
     Long employee = row.getLong(index);
 
     if (DataUtils.isId(employee)) {
-      return Filter.equals(COL_FIN_EMPLOYEE, employee);
+      return Filter.equals(colName, employee);
     } else {
       return null;
     }
   }
 
-  private Filter getFilter(Collection<BeeRow> data, Function<String, Filter> filterParser) {
+  private Filter getFilter(Collection<BeeRow> data, String employeeColumnName,
+      Function<String, Filter> filterParser) {
+
     CompoundFilter include = Filter.or();
     CompoundFilter exclude = Filter.or();
 
     if (!BeeUtils.isEmpty(data)) {
       for (BeeRow row : data) {
-        Filter filter = getFilter(row, filterParser);
+        Filter filter = getFilter(row, employeeColumnName, filterParser);
 
         if (filter != null) {
           if (row.isTrue(filterIndexes.get(COL_ANALYSIS_FILTER_INCLUDE))) {
@@ -707,10 +716,13 @@ class AnalysisFormData {
     return AnalysisUtils.joinFilters(include, exclude);
   }
 
-  private Filter getFilter(BeeRow row, Function<String, Filter> filterParser) {
+  private Filter getFilter(BeeRow row, String employeeColumnName,
+      Function<String, Filter> filterParser) {
+
     CompoundFilter filter = Filter.and();
 
-    filter.add(getEmployeeFilter(row, filterIndexes.get(COL_ANALYSIS_FILTER_EMPLOYEE)));
+    filter.add(getEmployeeFilter(row, filterIndexes.get(COL_ANALYSIS_FILTER_EMPLOYEE),
+        employeeColumnName));
     addDimensionFilters(filter, row, filterIndexes, null);
 
     if (filterParser != null) {
@@ -736,5 +748,4 @@ class AnalysisFormData {
 
     return range;
   }
-
 }

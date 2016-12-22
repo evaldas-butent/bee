@@ -82,6 +82,17 @@ public class AnalysisCellType {
     return (sb.length() > 0) ? sb.toString() : null;
   }
 
+  public static boolean needsActual(List<AnalysisCellType> list) {
+    if (!BeeUtils.isEmpty(list)) {
+      for (AnalysisCellType item : list) {
+        if (item != null && item.getAnalysisValueType().needsActual()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   public static boolean needsBudget(List<AnalysisCellType> list) {
     if (!BeeUtils.isEmpty(list)) {
       for (AnalysisCellType item : list) {
@@ -95,6 +106,17 @@ public class AnalysisCellType {
 
   public static boolean needsBudget(String input) {
     return needsBudget(decode(input));
+  }
+
+  public static List<AnalysisCellType> normalize(List<AnalysisCellType> list) {
+    if (BeeUtils.isEmpty(list)) {
+      List<AnalysisCellType> result = new ArrayList<>();
+      result.add(new AnalysisCellType(AnalysisValueType.DEFAULT));
+      return result;
+
+    } else {
+      return list;
+    }
   }
 
   private final AnalysisValueType analysisValueType;
