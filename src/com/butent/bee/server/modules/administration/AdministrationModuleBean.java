@@ -78,7 +78,6 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -213,7 +212,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void ejbTimeout(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
       refreshCurrencyRates();
     }
   }
@@ -377,7 +376,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
             final Collator collator = Collator.getInstance(usr.getLocale());
             collator.setStrength(Collator.IDENTICAL);
 
-            Collections.sort(rowSet.getRows(), (row1, row2) -> {
+            rowSet.getRows().sort((row1, row2) -> {
               String name1 = row1.getProperty(PROP_DEPARTMENT_FULL_NAME);
               if (BeeUtils.isEmpty(name1)) {
                 name1 = row1.getString(nameIndex);

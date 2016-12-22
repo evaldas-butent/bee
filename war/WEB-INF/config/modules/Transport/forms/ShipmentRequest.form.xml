@@ -27,6 +27,11 @@
         <Label for="Locale" />
         <TextLabel source="Locale" style="font-weight:bold;" />
         <FlowPanel name="OrderID" style="cursor:pointer; font-weight:bold; color:blue;" />
+        <Label />
+        <Label text="=customerPrice" />
+        <MoneyLabel property="Income" style="font-weight: bold;" />
+        <Label text="=vat" style="margin-left: 5px;" />
+        <MoneyLabel property="Vat" style="font-weight: bold;" />
       </row>
     </Table>
     <Table kind="custom" name="Status">

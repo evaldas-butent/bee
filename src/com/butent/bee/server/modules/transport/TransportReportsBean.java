@@ -882,7 +882,7 @@ public class TransportReportsBean {
 
     clause.add(report.getCondition(
         SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
-        SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), ALS_TRIP_MANAGER));
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), ALS_TRIP_MANAGER));
 
     String driverPersonTblAls = SqlUtils.uniqueName();
     String driverCompPersonTblAls = SqlUtils.uniqueName();
@@ -1334,7 +1334,8 @@ public class TransportReportsBean {
                 .addFields(tmpDates, COL_TRIP)
                 .addSum(tmpDates, alsDays)
                 .addFrom(tmpDates)
-                .addGroup(tmpDates, COL_TRIP), als, SqlUtils.joinUsing(tmpDates, als, COL_TRIP)));
+                .addGroup(tmpDates, COL_TRIP), als, SqlUtils.joinUsing(tmpDates, als, COL_TRIP))
+            .setWhere(SqlUtils.notEqual(als, alsDays, 0)));
 
         qs.updateData(new SqlUpdate(tt)
             .addConstant(constantCosts, SqlUtils.multiply(SqlUtils.field(tt, constantCosts),

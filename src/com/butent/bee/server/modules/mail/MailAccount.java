@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -88,7 +87,7 @@ public class MailAccount {
   private static final Map<Long, MailStore> stores = new HashMap<>();
   private static final ReentrantLock storesLock = new ReentrantLock();
 
-  private static boolean checkNewFolderName(Folder newFolder, String name, boolean acceptExisting)
+  private static boolean checkNewFolderName(Folder newFolder, String name)
       throws MessagingException {
     if (name.indexOf(newFolder.getSeparator()) >= 0) {
       throw new MessagingException("Invalid folder name: " + name);
@@ -96,9 +95,6 @@ public class MailAccount {
     logger.debug("Checking, if folder exists:", name);
 
     if (newFolder.exists()) {
-      if (acceptExisting) {
-        return false;
-      }
       throw new MessagingException("Folder with new name already exists: " + name);
     }
     return true;
@@ -106,8 +102,8 @@ public class MailAccount {
 
   private static void fillTree(MailFolder parent, Multimap<Long, SimpleRow> folders) {
     for (SimpleRow row : folders.get(parent.getId())) {
-      MailFolder folder = new MailFolder(parent, row.getLong(COL_FOLDER),
-          row.getValue(COL_FOLDER_NAME), row.getLong(COL_FOLDER_UID));
+      MailFolder folder = new MailFolder(row.getLong(COL_FOLDER), row.getValue(COL_FOLDER_NAME),
+          row.getLong(COL_FOLDER_UID));
 
       folder.setModSeq(row.getLong(COL_FOLDER_MODSEQ));
       folder.setUnread(BeeUtils.unbox(row.getInt(COL_MESSAGE)));
@@ -189,6 +185,10 @@ public class MailAccount {
 
   public String getAddress() {
     return accountInfo.getAddress();
+  }
+
+  public String getFolderCaption(Long folderId) {
+    return accountInfo.getFolderCaption(folderId);
   }
 
   public Long getSignatureId() {
@@ -322,7 +322,7 @@ public class MailAccount {
           try {
             Thread.sleep(TimeUtils.MILLIS_PER_SECOND);
           } catch (InterruptedException e) {
-            throw new MessagingException(e.toString());
+            throw new MessagingException(BeeUtils.joinWords(e.toString(), i));
           }
         } else {
           logger.debug("Entering connected store...", i);
@@ -412,8 +412,7 @@ public class MailAccount {
     return transport;
   }
 
-  boolean createRemoteFolder(MailFolder parent, String name, boolean acceptExisting)
-      throws MessagingException {
+  boolean createRemoteFolder(MailFolder parent, String name) throws MessagingException {
     boolean ok = true;
 
     if (!isStoredRemotedly(parent)) {
@@ -427,12 +426,9 @@ public class MailAccount {
       folder = getRemoteFolder(store.getStore(), parent);
       Folder newFolder = folder.getFolder(name);
 
-      if (checkNewFolderName(newFolder, name, acceptExisting)) {
+      if (checkNewFolderName(newFolder, name)) {
         logger.debug("Creating folder:", name);
         ok = newFolder.create(Folder.HOLDS_MESSAGES);
-      }
-      if (ok) {
-        newFolder.setSubscribed(true);
       }
     } finally {
       disconnectFromStore(store);
@@ -525,7 +521,7 @@ public class MailAccount {
 
     if (!remote.exists()) {
       if (isInbox(localFolder) || !isSystemFolder(localFolder)
-          || !createRemoteFolder(localFolder.getParent(), name, false)) {
+          || !createRemoteFolder(localFolder.getParent(), name)) {
 
         throw new MessagingException(BeeUtils.joinWords("Remote folder", name, "in",
             localFolder.getParent().getName(), "does not exist"));
@@ -600,13 +596,8 @@ public class MailAccount {
         remoteSource.copyMessages(messages.toArray(new Message[0]), remoteTarget);
       }
       if (move) {
-        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
-          Message message = iterator.next();
+        messages.removeIf(Message::isExpunged);
 
-          if (message.isExpunged()) {
-            iterator.remove();
-          }
-        }
         if (!BeeUtils.isEmpty(messages)) {
           logger.debug("Deleting selected messages from folder:", remoteSource.getName());
           remoteSource.setFlags(messages.toArray(new Message[0]), new Flags(Flag.DELETED), true);
@@ -644,7 +635,7 @@ public class MailAccount {
       folder = getRemoteFolder(store.getStore(), source);
       Folder newFolder = folder.getParent().getFolder(name);
 
-      checkNewFolderName(newFolder, name, false);
+      checkNewFolderName(newFolder, name);
 
       logger.debug("Renamng folder:", folder.getName(), "->", name);
       ok = folder.renameTo(newFolder);

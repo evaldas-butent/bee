@@ -38,7 +38,7 @@ public class ParentRowRefreshGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean previewRowInsert(RowInsertEvent event) {
-    if (parentExists) {
+    if (parentExists()) {
       getGridView().ensureRelId(relId -> {
         if (Objects.equals(relId, Data.getLong(event.getViewName(), event.getRow(),
             getGridView().getRelColumn()))) {
@@ -78,5 +78,9 @@ public class ParentRowRefreshGrid extends AbstractGridInterceptor {
   public void onParentRow(ParentRowEvent event) {
     parentExists = DataUtils.isId(event.getRowId());
     super.onParentRow(event);
+  }
+
+  public boolean parentExists() {
+    return parentExists;
   }
 }

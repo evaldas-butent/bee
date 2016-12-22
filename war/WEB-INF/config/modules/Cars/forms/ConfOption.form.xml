@@ -30,9 +30,18 @@
     </row>
     <row>
       <Label for="PhotoFile" />
-      <cell colSpan="3">
+      <cell rowSpan="2" colSpan="3">
         <Image name="PhotoFile" />
       </cell>
+    </row>
+    <row>
+      <FlowPanel>
+        <Label for="PhotoCode" />
+        <ListBox source="PhotoCode">
+          <item>LOGO</item>
+          <item>MAIN</item>
+        </ListBox>
+      </FlowPanel>
     </row>
   </Table>
 </f:Form>

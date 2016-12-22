@@ -12,9 +12,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -34,7 +32,7 @@ public class Specification implements BeeSerializable {
   private String description;
   private Map<String, String> criteria = new LinkedHashMap<>();
   private Long id;
-  private final List<Long> photos = new ArrayList<>();
+  private final Map<String, Long> photos = new TreeMap<>();
 
   public void addOption(Option option, Integer optionPrice) {
     options.put(option, optionPrice);
@@ -88,9 +86,8 @@ public class Specification implements BeeSerializable {
 
         case PHOTOS:
           photos.clear();
-          for (String photo : Codec.beeDeserializeCollection(value)) {
-            photos.add(BeeUtils.toLongOrNull(photo));
-          }
+          Codec.deserializeHashMap(value).forEach((key, val) ->
+              photos.put(key, BeeUtils.toLongOrNull(val)));
           break;
       }
     }
@@ -132,7 +129,7 @@ public class Specification implements BeeSerializable {
     return options.keySet();
   }
 
-  public List<Long> getPhotos() {
+  public Map<String, Long> getPhotos() {
     return photos;
   }
 

@@ -1,11 +1,15 @@
-package com.butent.bee.server.modules.finance;
+package com.butent.bee.shared.modules.finance.analysis;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -13,16 +17,52 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-final class AnalysisUtils {
+public final class AnalysisUtils {
 
-  static String formatYearMonth(Integer year, Integer month) {
+  public static String formatYearMonth(Integer year, Integer month) {
     String y = (year == null) ? null : TimeUtils.yearToString(year);
     String m = (month == null) ? null : TimeUtils.monthToString(month);
 
     return BeeUtils.join(BeeConst.STRING_POINT, y, m);
   }
 
-  static Map<String, Integer> getIndexes(BeeRowSet rowSet) {
+  public static Filter getFilter(String column, MonthRange range) {
+    if (range == null) {
+      return null;
+    }
+
+    YearMonth minYm = range.getMinMonth();
+    YearMonth maxYm = range.getMaxMonth();
+
+    DateTimeValue minDt;
+    if (minYm != null && BeeUtils.isMore(minYm, ANALYSIS_MIN_YEAR_MONTH)) {
+      minDt = new DateTimeValue(minYm.getDate().getDateTime());
+    } else {
+      minDt = null;
+    }
+
+    DateTimeValue maxDt;
+    if (maxYm != null && BeeUtils.isLess(maxYm, ANALYSIS_MAX_YEAR_MONTH)) {
+      maxDt = new DateTimeValue(maxYm.nextMonth().getDate().getDateTime());
+    } else {
+      maxDt = null;
+    }
+
+    if (minDt != null && maxDt != null) {
+      return Filter.and(Filter.isMoreEqual(column, minDt), Filter.isLess(column, maxDt));
+
+    } else if (minDt != null) {
+      return Filter.isMoreEqual(column, minDt);
+
+    } else if (maxDt != null) {
+      return Filter.isLess(column, maxDt);
+
+    } else {
+      return null;
+    }
+  }
+
+  public static Map<String, Integer> getIndexes(BeeRowSet rowSet) {
     Map<String, Integer> indexes = new HashMap<>();
 
     if (rowSet != null) {
@@ -34,7 +74,7 @@ final class AnalysisUtils {
     return indexes;
   }
 
-  static MonthRange getRange(Integer yearFrom, Integer monthFrom,
+  public static MonthRange getRange(Integer yearFrom, Integer monthFrom,
       Integer yearUntil, Integer monthUntil) {
 
     if (isValidRange(yearFrom, monthFrom, yearUntil, monthUntil)) {
@@ -49,11 +89,21 @@ final class AnalysisUtils {
     }
   }
 
-  static boolean isValidAbbreviation(String input) {
+  public static MonthRange intersection(MonthRange first, MonthRange second) {
+    if (first == null) {
+      return second;
+    } else if (second == null) {
+      return first;
+    } else {
+      return first.intersection(second);
+    }
+  }
+
+  public static boolean isValidAbbreviation(String input) {
     return NameUtils.isIdentifier(input);
   }
 
-  static boolean isValidRange(Integer yearFrom, Integer monthFrom,
+  public static boolean isValidRange(Integer yearFrom, Integer monthFrom,
       Integer yearUntil, Integer monthUntil) {
 
     if (yearFrom == null) {
@@ -115,6 +165,29 @@ final class AnalysisUtils {
 
   private static boolean isValidYear(int year) {
     return year >= ANALYSIS_MIN_YEAR && year <= ANALYSIS_MAX_YEAR;
+  }
+
+  public static Filter joinFilters(CompoundFilter include, CompoundFilter exclude) {
+    if (include.isEmpty() && exclude.isEmpty()) {
+      return null;
+
+    } else if (exclude.isEmpty()) {
+      return include;
+
+    } else if (include.isEmpty()) {
+      return Filter.isNot(exclude);
+
+    } else {
+      return Filter.and(include, Filter.isNot(exclude));
+    }
+  }
+
+  public static Filter normalize(CompoundFilter filter) {
+    if (filter == null || filter.isEmpty()) {
+      return null;
+    } else {
+      return filter;
+    }
   }
 
   private AnalysisUtils() {

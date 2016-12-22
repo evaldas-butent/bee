@@ -14,14 +14,20 @@
     <String name="RowName" precision="100" translatable="true" label="=finAnalysisRowName" />
     <String name="RowAbbreviation" precision="20" label="=finAnalysisRowAbbreviation" />
 
-    <String name="RowValues" precision="20" label="=finAnalysisValues" />
-
     <Relation name="Indicator" relation="FinancialIndicators" label="=finIndicator" />
+    <Enum name="TurnoverOrBalance" key="TurnoverOrBalance" label="=finTurnoverOrBalance" />
+
+    <String name="RowValues" precision="20" label="=finAnalysisValues" />
     <Relation name="BudgetType" relation="BudgetTypes" label="=finBudgetType" />
 
     <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
               label="=dimensions" />
     <Relation name="Employee" relation="Employees" label="=employee" />
+
+    <Numeric name="YearFrom" precision="4" label="=startingYear" />
+    <Numeric name="MonthFrom" precision="2" label="=startingMonth" />
+    <Numeric name="YearUntil" precision="4" label="=endingYear" />
+    <Numeric name="MonthUntil" precision="2" label="=endingMonth" />
 
     <Text name="RowScript" label="=finAnalysisScript" />
 

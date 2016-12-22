@@ -67,6 +67,22 @@ public final class MonthRange implements HasRange<YearMonth>, BeeSerializable {
     }
   }
 
+  public static MonthRange quarter(YearQuarter yq) {
+    if (yq == null) {
+      return null;
+    } else {
+      return closed(yq.getYear(), yq.getFirstMonth(), yq.getYear(), yq.getLastMonth());
+    }
+  }
+
+  public static MonthRange year(Integer year) {
+    if (year == null) {
+      return null;
+    } else {
+      return closed(year, 1, year, 12);
+    }
+  }
+
   public static boolean isValidClosedRange(YearMonth min, YearMonth max) {
     return min != null && max != null && BeeUtils.isLeq(min, max);
   }

@@ -3243,6 +3243,10 @@ public final class BeeUtils {
     return isDouble(x) ? toString(x) : null;
   }
 
+  public static String toStringOrNull(Integer x) {
+    return (x == null) ? null : toString(x);
+  }
+
   public static String trim(String s) {
     return (s == null) ? BeeConst.STRING_EMPTY : s.trim();
   }

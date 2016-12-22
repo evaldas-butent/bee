@@ -286,6 +286,10 @@
 .bee-RadioButton-vertical {
   display: block;
 }
+.bee-RadioButton > input[type="radio"] {
+  margin-top: 0;
+  vertical-align: middle;
+}
 
 .bee-Split {
   position: relative;

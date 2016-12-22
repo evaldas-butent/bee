@@ -15,6 +15,8 @@
     <Relation name="Employee" relation="Employees" label="=employee" />
 
     <Relation name="Indicator" relation="FinancialIndicators" label="=finIndicator" />
+    <Enum name="TurnoverOrBalance" key="TurnoverOrBalance" label="=finTurnoverOrBalance" />
+
     <Relation name="BudgetType" relation="BudgetTypes" label="=finBudgetType" />
 
     <Numeric name="Year" precision="4" label="=year" />

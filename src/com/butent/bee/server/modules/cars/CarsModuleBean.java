@@ -574,7 +574,7 @@ public class CarsModuleBean implements BeeModule {
         .addField(TBL_CONF_OBJECTS, COL_PRICE, COL_BUNDLE + COL_PRICE)
         .addFields(TBL_CONF_OBJECT_OPTIONS, COL_OPTION, COL_PRICE)
         .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_DESCRIPTION,
-            COL_PHOTO)
+            COL_PHOTO_CODE, COL_PHOTO)
         .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
         .addFrom(TBL_CONF_OBJECTS)
         .addFromInner(TBL_CONF_OBJECT_OPTIONS,
@@ -606,10 +606,16 @@ public class CarsModuleBean implements BeeModule {
           .setDescription(row.getValue(COL_DESCRIPTION))
           .setPhoto(row.getLong(COL_PHOTO));
 
-      if (Objects.isNull(price)) {
+      boolean isBundleOption = Objects.isNull(price);
+
+      if (isBundleOption) {
         bundleOptions.add(option);
       } else {
         specification.addOption(option, price);
+      }
+      if (BeeUtils.allNotNull(row.getValue(COL_PHOTO_CODE), row.getLong(COL_PHOTO))
+          && (isBundleOption || option.getDimension().isRequired())) {
+        specification.getPhotos().put(row.getValue(COL_PHOTO_CODE), row.getLong(COL_PHOTO));
       }
     }
     if (Objects.nonNull(specification)) {
@@ -620,14 +626,16 @@ public class CarsModuleBean implements BeeModule {
         String idName = sys.getIdName(TBL_CONF_PRICELIST);
 
         rs = qs.getData(new SqlSelect()
-            .addFields(TBL_CONF_PRICELIST, idName, COL_BRANCH, COL_PHOTO)
+            .addFields(TBL_CONF_PRICELIST, idName, COL_BRANCH, COL_PHOTO_CODE, COL_PHOTO)
             .addFrom(TBL_CONF_PRICELIST));
 
         SimpleRowSet.SimpleRow row = rs.getRowByKey(idName,
             BeeUtils.toString(specification.getBranchId()));
 
         while (Objects.nonNull(row)) {
-          specification.getPhotos().add(0, row.getLong(COL_PHOTO));
+          if (BeeUtils.allNotNull(row.getValue(COL_PHOTO_CODE), row.getLong(COL_PHOTO))) {
+            specification.getPhotos().put(row.getValue(COL_PHOTO_CODE), row.getLong(COL_PHOTO));
+          }
           String id = row.getValue(COL_BRANCH);
           row = DataUtils.isId(id) ? rs.getRowByKey(idName, id) : null;
         }

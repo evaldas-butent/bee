@@ -13,7 +13,9 @@
     <SimpleColumn name="IndicatorSource" />
     <SimpleColumn name="IndicatorScript" />
 
-    <SimpleColumn name="IndicatorBalance" />
+    <SimpleColumn name="IndicatorTurnoverOrBalance" />
+    <SimpleColumn name="IndicatorNormalBalance" />
+
     <SimpleColumn name="IndicatorClosingEntries" />
 
     <SimpleColumn name="IndicatorIsPercent" />
