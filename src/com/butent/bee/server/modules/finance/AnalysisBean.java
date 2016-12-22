@@ -68,17 +68,22 @@ public class AnalysisBean {
   ParamHolderBean prm;
 
   public ResponseObject calculateForm(long formId) {
+    long initStart = System.currentTimeMillis();
+
     BeeView finView = sys.getView(VIEW_FINANCIAL_RECORDS);
     Long userId = usr.getCurrentUserId();
 
     ensureDimensions();
 
     AnalysisFormData formData = getFormData(formId);
+
+    long validateStart = System.currentTimeMillis();
     ResponseObject response = validateFormData(formId, formData, finView, userId);
     if (response.hasMessages()) {
       return response;
     }
 
+    long computeStart = System.currentTimeMillis();
     AnalysisResults results = new AnalysisResults(
         formData.getHeaderIndexes(), formData.getHeader(),
         formData.getColumnIndexes(), formData.getColumns(),
@@ -175,8 +180,14 @@ public class AnalysisBean {
     }
 
     if (!results.isEmpty()) {
+      results.setInitStart(initStart);
+      results.setValidateStart(validateStart);
+      results.setComputeStart(computeStart);
+      results.setComputeEnd(System.currentTimeMillis());
+
       response.setResponse(results);
     }
+
     return response;
   }
 
@@ -548,52 +559,19 @@ public class AnalysisBean {
     boolean hasRowSplits = !rowSplitTypes.isEmpty() && !rowSplitValues.isEmpty();
 
     if (hasColumnSplits && hasRowSplits) {
-      for (int cstIndex = 0; cstIndex < columnSplitTypes.size(); cstIndex++) {
-        AnalysisSplitType cst = columnSplitTypes.get(cstIndex);
-
-        if (columnSplitValues.containsKey(cst)) {
-          List<AnalysisSplitValue> csValues = columnSplitValues.get(cst);
-
-          for (int csvIndex = 0; csvIndex < csValues.size(); csvIndex++) {
-            AnalysisSplitValue csv = csValues.get(csvIndex);
-            Filter csvFilter = cst.getFinFilter(csv, turnoverOrBalance);
-
-            for (int rstIndex = 0; rstIndex < rowSplitTypes.size(); rstIndex++) {
-              AnalysisSplitType rst = rowSplitTypes.get(rstIndex);
-
-              if (rowSplitValues.containsKey(rst)) {
-                List<AnalysisSplitValue> rsValues = rowSplitValues.get(rst);
-
-                for (int rsvIndex = 0; rsvIndex < rsValues.size(); rsvIndex++) {
-                  AnalysisSplitValue rsv = rsValues.get(rsvIndex);
-                  Filter rsvFilter = rst.getFinFilter(rsv, turnoverOrBalance);
-
-                  double value = getActualValue(Filter.and(filter, csvFilter, rsvFilter),
-                      plusFilter, minusFilter, sourceColumn, finView, userId);
-                  AnalysisValue av = AnalysisValue.of(columnId, rowId, value);
-
-                  av.setColumnSplitTypeIndex(cstIndex);
-                  av.setColumnSplitValueIndex(csvIndex);
-
-                  av.setRowSplitTypeIndex(rstIndex);
-                  av.setRowSplitValueIndex(rsvIndex);
-
-                  values.add(av);
-                }
-              }
-            }
-          }
-        }
-      }
+      values.addAll(computeSplitMatrix(columnId, rowId, null,
+          filter, plusFilter, minusFilter, turnoverOrBalance,
+          columnSplitTypes, 0, columnSplitValues, 0,
+          rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
 
     } else if (hasColumnSplits) {
-      values.addAll(computeSplitValues(columnId, rowId, true, null,
+      values.addAll(computeSplitVector(columnId, rowId, true, null,
           filter, plusFilter, minusFilter, turnoverOrBalance,
           columnSplitTypes, 0, columnSplitValues, 0,
           sourceColumn, finView, userId));
 
     } else if (hasRowSplits) {
-      values.addAll(computeSplitValues(columnId, rowId, false, null,
+      values.addAll(computeSplitVector(columnId, rowId, false, null,
           filter, plusFilter, minusFilter, turnoverOrBalance,
           rowSplitTypes, 0, rowSplitValues, 0,
           sourceColumn, finView, userId));
@@ -606,7 +584,7 @@ public class AnalysisBean {
     return values;
   }
 
-  private Collection<AnalysisValue> computeSplitValues(long columnId, long rowId,
+  private Collection<AnalysisValue> computeSplitVector(long columnId, long rowId,
       boolean isColumn, Integer parentValueIndex,
       Filter parentFilter, Filter plusFilter, Filter minusFilter,
       TurnoverOrBalance turnoverOrBalance,
@@ -642,14 +620,14 @@ public class AnalysisBean {
       values.add(av);
 
       if (typeIndex < splitTypes.size() - 1) {
-        values.addAll(computeSplitValues(columnId, rowId, isColumn, valueIndex,
+        values.addAll(computeSplitVector(columnId, rowId, isColumn, valueIndex,
             filter, plusFilter, minusFilter, turnoverOrBalance,
             splitTypes, typeIndex + 1, splitValues, 0,
             sourceColumn, finView, userId));
       }
 
       if (valueIndex < typeValues.size() - 1) {
-        values.addAll(computeSplitValues(columnId, rowId, isColumn, parentValueIndex,
+        values.addAll(computeSplitVector(columnId, rowId, isColumn, parentValueIndex,
             parentFilter, plusFilter, minusFilter, turnoverOrBalance,
             splitTypes, typeIndex, splitValues, valueIndex + 1,
             sourceColumn, finView, userId));
@@ -659,6 +637,59 @@ public class AnalysisBean {
     return values;
   }
 
+  private Collection<AnalysisValue> computeSplitMatrix(long columnId, long rowId,
+      Integer columnParentValueIndex,
+      Filter parentFilter, Filter plusFilter, Filter minusFilter,
+      TurnoverOrBalance turnoverOrBalance,
+      List<AnalysisSplitType> columnSplitTypes, int columnTypeIndex,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues, int columnValueIndex,
+      List<AnalysisSplitType> rowSplitTypes,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues,
+      String sourceColumn, BeeView finView, Long userId) {
+
+    List<AnalysisValue> values = new ArrayList<>();
+
+    AnalysisSplitType columnSplitType = columnSplitTypes.get(columnTypeIndex);
+
+    if (columnSplitValues.containsKey(columnSplitType)) {
+      List<AnalysisSplitValue> columnTypeValues = columnSplitValues.get(columnSplitType);
+      AnalysisSplitValue columnSplitValue = columnTypeValues.get(columnValueIndex);
+
+      Filter filter = Filter.and(parentFilter,
+          columnSplitType.getFinFilter(columnSplitValue, turnoverOrBalance));
+
+      Collection<AnalysisValue> rowValues = computeSplitVector(columnId, rowId, false, null,
+          filter, plusFilter, minusFilter, turnoverOrBalance,
+          rowSplitTypes, 0, rowSplitValues, 0,
+          sourceColumn, finView, userId);
+
+      if (!rowValues.isEmpty()) {
+        for (AnalysisValue av : rowValues) {
+          av.setColumnParentValueIndex(columnParentValueIndex);
+          av.setColumnSplitTypeIndex(columnTypeIndex);
+          av.setColumnSplitValueIndex(columnValueIndex);
+
+          values.add(av);
+        }
+      }
+
+      if (columnTypeIndex < columnSplitTypes.size() - 1) {
+        values.addAll(computeSplitMatrix(columnId, rowId, columnValueIndex,
+            filter, plusFilter, minusFilter, turnoverOrBalance,
+            columnSplitTypes, columnTypeIndex + 1, columnSplitValues, 0,
+            rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
+      }
+
+      if (columnValueIndex < columnTypeValues.size() - 1) {
+        values.addAll(computeSplitMatrix(columnId, rowId, columnParentValueIndex,
+            parentFilter, plusFilter, minusFilter, turnoverOrBalance,
+            columnSplitTypes, columnTypeIndex, columnSplitValues, columnValueIndex + 1,
+            rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
+      }
+    }
+
+    return values;
+  }
 
   private double getActualValue(Filter filter, Filter plusFilter, Filter minusFilter,
       String sourceColumn, BeeView finView, Long userId) {

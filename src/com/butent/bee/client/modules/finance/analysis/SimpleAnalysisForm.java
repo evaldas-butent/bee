@@ -9,7 +9,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.finance.FinanceKeeper;
 import com.butent.bee.client.presenter.Presenter;
@@ -34,7 +33,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.FinanceUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisResults;
-import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -151,31 +149,9 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
     }
   }
 
-  private void showResults(AnalysisResults results) {
-    HtmlTable table = new HtmlTable();
-
-    List<Long> rowIds = results.getValues().stream()
-        .map(AnalysisValue::getRowId)
-        .distinct()
-        .collect(Collectors.toList());
-
-    List<Long> columnIds = results.getValues().stream()
-        .map(AnalysisValue::getColumnId)
-        .distinct()
-        .collect(Collectors.toList());
-
-    for (AnalysisValue av : results.getValues()) {
-      int r = rowIds.indexOf(av.getRowId());
-      int c = columnIds.indexOf(av.getColumnId());
-
-      if (r >= 0 && c >= 0) {
-        table.setText(r, c, av.getValue());
-      }
-    }
-
-    if (!table.isEmpty()) {
-      Global.showModalWidget(getStringValue(COL_ANALYSIS_NAME), table);
-    }
+  private static void showResults(AnalysisResults results) {
+    AnalysisViewer viewer = new AnalysisViewer(results);
+    BeeKeeper.getScreen().showInNewPlace(viewer);
   }
 
   private String summarizeInfo() {

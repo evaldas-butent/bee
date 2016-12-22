@@ -25,12 +25,17 @@ public final class AnalysisResults implements BeeSerializable {
 
   private enum Serial {
     HEADER_INDEXES, HEADER, COLUMN_INDEXES, COLUMNS, ROW_INDEXES, ROWS,
-    COLUMN_SPLIT_TYPES, ROW_SPLIT_TYPES, COLUMN_SPLIT_VALUES, ROW_SPLIT_VALUES,
-    VALUES
+    COLUMN_SPLIT_TYPES, ROW_SPLIT_TYPES, COLUMN_SPLIT_VALUES, ROW_SPLIT_VALUES, VALUES,
+    INIT_START, VALIDATE_START, COMPUTE_START, COMPUTE_END
   }
 
   private static final List<AnalysisSplitType> EMPTY_SPLIT_TYPES = Collections.emptyList();
   private static final List<AnalysisSplitValue> EMPTY_SPLIT_VALUES = Collections.emptyList();
+
+  private long initStart;
+  private long validateStart;
+  private long computeStart;
+  private long computeEnd;
 
   private final Map<String, Integer> headerIndexes = new HashMap<>();
   private BeeRow header;
@@ -254,6 +259,19 @@ public final class AnalysisResults implements BeeSerializable {
               }
             }
             break;
+
+          case INIT_START:
+            setInitStart(BeeUtils.toLong(v));
+            break;
+          case VALIDATE_START:
+            setValidateStart(BeeUtils.toLong(v));
+            break;
+          case COMPUTE_START:
+            setComputeStart(BeeUtils.toLong(v));
+            break;
+          case COMPUTE_END:
+            setComputeEnd(BeeUtils.toLong(v));
+            break;
         }
       }
     }
@@ -380,9 +398,90 @@ public final class AnalysisResults implements BeeSerializable {
         case VALUES:
           arr[i++] = values;
           break;
+
+        case INIT_START:
+          arr[i++] = initStart;
+          break;
+        case VALIDATE_START:
+          arr[i++] = validateStart;
+          break;
+        case COMPUTE_START:
+          arr[i++] = computeStart;
+          break;
+        case COMPUTE_END:
+          arr[i++] = computeEnd;
+          break;
       }
     }
 
     return Codec.beeSerialize(arr);
+  }
+
+  public long getInitStart() {
+    return initStart;
+  }
+
+  public void setInitStart(long initStart) {
+    this.initStart = initStart;
+  }
+
+  public long getValidateStart() {
+    return validateStart;
+  }
+
+  public void setValidateStart(long validateStart) {
+    this.validateStart = validateStart;
+  }
+
+  public long getComputeStart() {
+    return computeStart;
+  }
+
+  public void setComputeStart(long computeStart) {
+    this.computeStart = computeStart;
+  }
+
+  public long getComputeEnd() {
+    return computeEnd;
+  }
+
+  public void setComputeEnd(long computeEnd) {
+    this.computeEnd = computeEnd;
+  }
+
+  public String getHeaderString(String key) {
+    return header.getString(headerIndexes.get(key));
+  }
+
+  public String getColumnString(BeeRow column, String key) {
+    return column.getString(columnIndexes.get(key));
+  }
+
+  public String getRowString(BeeRow row, String key) {
+    return row.getString(rowIndexes.get(key));
+  }
+
+  public List<BeeRow> getColumns() {
+    return columns;
+  }
+
+  public List<BeeRow> getRows() {
+    return rows;
+  }
+
+  public Map<Long, List<AnalysisSplitType>> getColumnSplitTypes() {
+    return columnSplitTypes;
+  }
+
+  public Map<Long, List<AnalysisSplitType>> getRowSplitTypes() {
+    return rowSplitTypes;
+  }
+
+  public Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> getColumnSplitValues() {
+    return columnSplitValues;
+  }
+
+  public Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> getRowSplitValues() {
+    return rowSplitValues;
   }
 }

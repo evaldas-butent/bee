@@ -1,6 +1,7 @@
 package com.butent.bee.shared.modules.finance.analysis;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.time.YearQuarter;
@@ -114,6 +115,10 @@ public final class AnalysisSplitValue implements BeeSerializable {
     return YearQuarter.parse(value);
   }
 
+  public boolean isEmpty() {
+    return BeeUtils.isEmpty(getValue());
+  }
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -166,5 +171,14 @@ public final class AnalysisSplitValue implements BeeSerializable {
     }
 
     return Codec.beeSerialize(arr);
+  }
+
+  @Override
+  public String toString() {
+    if (isEmpty()) {
+      return BeeConst.EMPTY;
+    } else {
+      return BeeUtils.joinWords(getValue(), getId(), getBackground(), getForeground());
+    }
   }
 }
