@@ -72,12 +72,15 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.websocket.messages.MailMessage;
 import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.IMAPStore;
+import com.sun.mail.imap.ResyncData;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -91,6 +94,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -125,6 +129,7 @@ import javax.mail.internet.MimeMultipart;
 public class MailModuleBean implements BeeModule, HasTimerService {
 
   private static final BeeLogger logger = LogUtils.getLogger(MailModuleBean.class);
+  private static final int CHUNK = 1000;
 
   @EJB
   MailStorageBean mail;
@@ -1301,8 +1306,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         int count;
 
         if (hasUid) {
-          Pair<Integer, Integer> pair = mail.syncFolder(account, localFolder, remoteFolder,
-              progressId, syncAll);
+          Pair<Integer, Integer> pair = syncFolder(account, localFolder, remoteFolder, progressId,
+              syncAll);
 
           c += Math.abs(pair.getB());
 
@@ -1330,7 +1335,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         int end = remoteFolder.getMessageCount();
 
         do {
-          start = Math.max(end - MailStorageBean.CHUNK + 1, first);
+          start = Math.max(end - CHUNK + 1, first);
           Message[] newMessages = remoteFolder.getMessages(start, end);
           end = start - 1;
 
@@ -1894,7 +1899,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           SimpleRowSet emailSet = qs.getData(contacts);
 
           if (emailSet.getNumberOfRows() > 0) {
-
             SqlSelect query = new SqlSelect()
                 .addFields(VIEW_NEWSLETTER_FILES, AdministrationConstants.COL_FILE,
                     CalendarConstants.COL_CAPTION)
@@ -1921,24 +1925,18 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                   sr.getValue(COL_SUBJECT),
                   sr.getValue(COL_CONTENT), attachments, true);
             }
-
             for (Long email : emailSet.getLongColumn("EmailId")) {
-              SqlUpdate update =
-                  new SqlUpdate(VIEW_NEWSLETTER_CONTACTS)
-                      .addConstant(COL_DATE, TimeUtils.nowMillis())
-                      .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_NEWSLETTER_CONTACTS, COL_EMAIL,
-                          email), SqlUtils.equals(VIEW_NEWSLETTER_CONTACTS, COL_NEWSLETTER, sr
-                          .getValue(sys.getIdName(VIEW_NEWSLETTERS)))));
-
-              qs.updateData(update);
+              qs.updateData(new SqlUpdate(VIEW_NEWSLETTER_CONTACTS)
+                  .addConstant(COL_DATE, TimeUtils.nowMillis())
+                  .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_NEWSLETTER_CONTACTS, COL_EMAIL,
+                      email), SqlUtils.equals(VIEW_NEWSLETTER_CONTACTS, COL_NEWSLETTER,
+                      sr.getValue(sys.getIdName(VIEW_NEWSLETTERS))))));
             }
           } else {
-            SqlUpdate update =
-                new SqlUpdate(VIEW_NEWSLETTERS)
-                    .addConstant("Active", null)
-                    .setWhere(SqlUtils.equals(VIEW_NEWSLETTERS, sys.getIdName(VIEW_NEWSLETTERS), sr
-                        .getValue(sys.getIdName(VIEW_NEWSLETTERS))));
-            qs.updateData(update);
+            qs.updateData(new SqlUpdate(VIEW_NEWSLETTERS)
+                .addConstant("Active", null)
+                .setWhere(SqlUtils.equals(VIEW_NEWSLETTERS, sys.getIdName(VIEW_NEWSLETTERS),
+                    sr.getValue(sys.getIdName(VIEW_NEWSLETTERS)))));
           }
         }
       }
@@ -1979,7 +1977,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       checkMail(account, folder);
       return response.addError(e);
     }
-    mail.setFlags(placeId, value);
+    mail.setFlags(value, sys.idEquals(TBL_PLACES, placeId));
 
     MailMessage mailMessage = new MailMessage(folder.getId());
     mailMessage.setFlag(flag);
@@ -2012,6 +2010,137 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return storeMail(account, message, folder);
   }
 
+  private Pair<Integer, Integer> syncFolder(MailAccount account, MailFolder localFolder,
+      Folder remoteFolder, String progressId, boolean syncAll) throws MessagingException {
+
+    Assert.noNulls(localFolder, remoteFolder);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_PLACES, COL_FLAGS, COL_MESSAGE_UID)
+        .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_PLACE)
+        .addFrom(TBL_PLACES)
+        .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))
+        .addOrderDesc(TBL_PLACES, COL_MESSAGE_UID)
+        .setLimit(CHUNK);
+
+    SimpleRowSet data = qs.getData(query);
+    int size = data.getNumberOfRows();
+    long modseq = BeeUtils.unbox(localFolder.getModSeq());
+
+    int start = 0;
+    int lastNo = 0;
+    int cnt = 0;
+
+    if (remoteFolder instanceof IMAPFolder
+        && ((IMAPStore) remoteFolder.getStore()).hasCapability("CONDSTORE")) {
+
+      IMAPFolder imapFolder = (IMAPFolder) remoteFolder;
+      imapFolder.open(Folder.READ_ONLY, ResyncData.CONDSTORE);
+
+      if (!syncAll && size > 1 && modseq > 0) {
+        long uidLast = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
+        Message[] msgs = imapFolder.getMessagesByUID(new long[] {
+            BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID)), uidLast});
+
+        if (BeeUtils.allNotNull(msgs[0], msgs[1])
+            && msgs[1].getMessageNumber() - msgs[0].getMessageNumber() + 1 == size) {
+          lastNo = msgs[1].getMessageNumber();
+
+          for (Message msg : imapFolder.getMessagesByUIDChangedSince(1, uidLast, modseq)) {
+            Integer flags = MailEnvelope.getFlagMask(msg);
+
+            cnt += mail.setFlags(flags, SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
+                localFolder.getId(), COL_MESSAGE_UID, imapFolder.getUID(msg)),
+                SqlUtils.or(Objects.isNull(flags) ? null : SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
+                    SqlUtils.notEqual(TBL_PLACES, COL_FLAGS, flags))));
+          }
+        }
+      }
+      modseq = imapFolder.getHighestModSeq();
+    } else {
+      remoteFolder.open(Folder.READ_ONLY);
+    }
+    long uidLast = 0;
+
+    if (lastNo == 0) {
+      while (size > 0) {
+        uidLast = BeeUtils.unbox(data.getLong(size - 1, COL_MESSAGE_UID));
+
+        Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(uidLast,
+            BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID)));
+
+        if (!ArrayUtils.isEmpty(msgs)) {
+          start = msgs[0].getMessageNumber();
+          lastNo = msgs[msgs.length - 1].getMessageNumber();
+
+          FetchProfile fp = new FetchProfile();
+          fp.add(FetchProfile.Item.FLAGS);
+          remoteFolder.fetch(msgs, fp);
+        }
+        int c = syncMessages(data, msgs, account, localFolder, remoteFolder, progressId);
+        cnt += Math.abs(c);
+
+        if (lastNo > 0) {
+          if (c < 0) {
+            start = 0;
+            cnt = cnt * (-1);
+          }
+          break;
+        }
+        data = qs.getData(query.setOffset(query.getOffset() + query.getLimit()));
+        size = data.getNumberOfRows();
+      }
+    }
+    if (syncAll && start > 0) {
+      HasConditions clause = SqlUtils.and();
+
+      query.resetOrder().setOffset(0).setLimit(0)
+          .setWhere(SqlUtils.and(query.getWhere(), clause));
+
+      int end = start - 1;
+
+      while (end > 0) {
+        start = Math.max(end - CHUNK + 1, 1);
+        Message[] msgs = remoteFolder.getMessages(start, end);
+        end = start - 1;
+
+        FetchProfile fp = new FetchProfile();
+        fp.add(FetchProfile.Item.FLAGS);
+        fp.add(UIDFolder.FetchProfileItem.UID);
+        remoteFolder.fetch(msgs, fp);
+
+        long uidTo = ((UIDFolder) remoteFolder).getUID(msgs[msgs.length - 1]);
+
+        if (uidLast > uidTo + 1) {
+          cnt += mail.detachMessages(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
+              localFolder.getId()), SqlUtils.more(TBL_PLACES, COL_MESSAGE_UID, uidTo),
+              SqlUtils.less(TBL_PLACES, COL_MESSAGE_UID, uidLast)));
+        }
+        uidLast = ((UIDFolder) remoteFolder).getUID(msgs[0]);
+        clause.clear();
+        clause.add(SqlUtils.moreEqual(TBL_PLACES, COL_MESSAGE_UID, uidLast),
+            SqlUtils.lessEqual(TBL_PLACES, COL_MESSAGE_UID, uidTo));
+
+        int c = syncMessages(qs.getData(query), msgs, account, localFolder, remoteFolder,
+            progressId);
+        cnt += Math.abs(c);
+
+        if (c < 0) {
+          cnt = cnt * (-1);
+          break;
+        }
+      }
+      if (uidLast > 1) {
+        cnt += mail.detachMessages(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
+            localFolder.getId()), SqlUtils.less(TBL_PLACES, COL_MESSAGE_UID, uidLast)));
+      }
+    }
+    if (!Objects.equals(modseq, BeeUtils.unbox(localFolder.getModSeq()))) {
+      mail.updateFolder(localFolder, localFolder.getUidValidity(), modseq);
+    }
+    return Pair.of(lastNo, cnt);
+  }
+
   private int syncFolders(MailAccount account, Store mailStore) throws MessagingException {
     Folder remoteRoot = account.getRemoteFolder(mailStore, account.getRootFolder());
     MailFolder localRoot = account.getRootFolder();
@@ -2026,11 +2155,61 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       }
       remotes.put(remote.getParent().getName(), remote.getName());
     }
-    return sync(account, remotes, remoteRoot.getName(), localRoot);
+    return syncSubFolders(account, remotes, remoteRoot.getName(), localRoot);
   }
 
-  private int sync(MailAccount account, Multimap<String, String> remotes, String remoteParentName,
-      MailFolder localParent) {
+  private int syncMessages(SimpleRowSet data, Message[] messages, MailAccount account,
+      MailFolder localFolder, Folder remoteFolder, String progressId) throws MessagingException {
+    int cnt = 0;
+    Set<Long> syncedMsgs = new HashSet<>();
+    double l = messages.length;
+
+    for (int i = messages.length - 1; i >= 0; i--) {
+      if (!BeeUtils.isEmpty(progressId)) {
+        if (!Endpoint.updateProgress(progressId, l / messages.length)) {
+          return cnt * (-1);
+        }
+        l--;
+      }
+      Message message = messages[i];
+      long uid = ((UIDFolder) remoteFolder).getUID(message);
+      SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
+
+      if (row != null) {
+        Integer flags = MailEnvelope.getFlagMask(message);
+        Long placeId = row.getLong(COL_PLACE);
+
+        if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
+          cnt += mail.setFlags(flags, sys.idEquals(TBL_PLACES, placeId));
+        }
+        syncedMsgs.add(placeId);
+      } else {
+        try {
+          FetchProfile fp = new FetchProfile();
+          fp.add(FetchProfile.Item.ENVELOPE);
+          fp.add(MailConstants.COL_IN_REPLY_TO);
+          remoteFolder.fetch(new Message[] {message}, fp);
+
+          mail.storeMail(account, message, localFolder.getId(), uid);
+          cnt++;
+        } catch (MessagingException e) {
+          logger.error(e);
+        }
+      }
+    }
+    List<Long> deletedMsgs = Arrays.stream(data.getLongColumn(COL_PLACE))
+        .filter(id -> !syncedMsgs.contains(id))
+        .collect(Collectors.toList());
+
+    if (!deletedMsgs.isEmpty()) {
+      cnt += mail.detachMessages(sys.idInList(TBL_PLACES, deletedMsgs));
+    }
+    return cnt;
+  }
+
+  private int syncSubFolders(MailAccount account, Multimap<String, String> remotes,
+      String remoteParentName, MailFolder localParent) {
+
     Holder<Integer> c = Holder.of(0);
     Collection<String> remoteNames = remotes.get(remoteParentName);
     Collection<MailFolder> localFolders = localParent.getSubFolders();
@@ -2043,7 +2222,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         localFolder = mail.createFolder(account, localParent, remoteName);
         c.set(c.get() + 1);
       }
-      c.set(c.get() + sync(account, remotes, remoteName, localFolder));
+      c.set(c.get() + syncSubFolders(account, remotes, remoteName, localFolder));
     });
     localFolders.removeIf(localFolder -> {
       if (!remoteNames.contains(localFolder.getName()) && localFolder.isConnected()
