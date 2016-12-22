@@ -3576,6 +3576,8 @@ public interface Dictionary {
 
   default String ordAskNotChangeWarehouse() {return g("ordAskNotChangeWarehouse");}
 
+  default String ordAskSearchValue() {return g("ordAskSearchValue");}
+
   default String ordCancel() {return g("ordCancel");}
 
   default String ordCanceled() {return g("ordCanceled");}

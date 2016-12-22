@@ -13,6 +13,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -30,6 +31,8 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.Previewer;
+import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
@@ -58,6 +61,7 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -290,6 +294,14 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     final ListBox searchBy = new ListBox();
     searchBy.addStyleName(STYLE_SEARCH_BY);
+    searchBy.addChangeHandler(changeEvent -> {
+      if (changeEvent.getSource() instanceof ListBox) {
+        String key = getStorageKey();
+        if (!BeeUtils.isEmpty(key)) {
+          BeeKeeper.getStorage().set(key, searchBy.getSelectedIndex());
+        }
+      }
+    });
 
     searchBy.addItem(BeeConst.STRING_EMPTY, BeeConst.STRING_ASTERISK);
     String label;
@@ -302,6 +314,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       }
 
       searchBy.addItem(label, column);
+      String key = getStorageKey();
+      if (BeeKeeper.getStorage().hasItem(key)) {
+        searchBy.setSelectedIndex(BeeKeeper.getStorage().getInteger(key));
+      }
     }
     searchBy.addItem(Localized.dictionary().captionId(), COL_ITEM);
 
@@ -341,6 +357,11 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   }
 
   private void doSearch(String by, String query) {
+    if (BeeUtils.isEmpty(query)) {
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().ordAskSearchValue());
+      return;
+    }
+
     Filter filter = null;
     boolean ok;
 
@@ -377,13 +398,14 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
             List<BeeRow> rows = new ArrayList<>();
 
-            for (BeeRow row : items) {
-              if (quantities.containsKey(row.getId())) {
+            for (BeeRow row : result) {
+              if (!quantities.containsKey(row.getId())) {
                 rows.add(row);
               }
             }
-            for (BeeRow row : result) {
-              if (!quantities.containsKey(row.getId())) {
+
+            for (BeeRow row : items) {
+              if (quantities.containsKey(row.getId())) {
                 rows.add(row);
               }
             }
@@ -448,6 +470,11 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       }
     }
     return result;
+  }
+
+  private static String getStorageKey() {
+    return BeeUtils.join(BeeConst.STRING_MINUS, "SearchPicker",
+        BeeKeeper.getUser().getUserId(), UiConstants.ATTR_VALUE);
   }
 
   private boolean isFrom(Long warehouse) {
@@ -598,6 +625,14 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     dialog.setWidget(this);
     dialog.showOnTop(target);
+
+    dialog.setHideOnSave(true);
+    dialog.setOnSave(event -> {
+      Map<Long, Double> quantities = getQuantities();
+      if (!quantities.isEmpty()) {
+        selectItems(quantities);
+      }
+    });
   }
 
   private void renderItems(Map<Long, Double> quantities, Map<Long, String> warehouses) {
