@@ -153,16 +153,16 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void ejbTimeout(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_CLEAR_RESERVATIONS_TIME)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_CLEAR_RESERVATIONS_TIME)) {
       clearReservations();
     }
-    if (cb.isParameterTimer(timer, PRM_IMPORT_ERP_ITEMS_TIME)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_IMPORT_ERP_ITEMS_TIME)) {
       getERPItems();
     }
-    if (cb.isParameterTimer(timer, PRM_IMPORT_ERP_STOCKS_TIME)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_IMPORT_ERP_STOCKS_TIME)) {
       getERPStocks(null);
     }
-    if (cb.isParameterTimer(timer, PRM_EXPORT_ERP_RESERVATIONS_TIME)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_EXPORT_ERP_RESERVATIONS_TIME)) {
       exportReservations();
     }
   }
@@ -1189,10 +1189,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     SqlSelect itemsQry = new SqlSelect()
-            .addField(VIEW_ORDER_ITEMS, sys.getIdName(VIEW_ORDER_ITEMS), COL_ORDER_ITEM)
-            .addFields(VIEW_ORDER_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
-            .addFrom(VIEW_ORDER_ITEMS)
-            .setWhere(SqlUtils.equals(VIEW_ORDER_ITEMS, COL_ORDER, orderId));
+        .addField(VIEW_ORDER_ITEMS, sys.getIdName(VIEW_ORDER_ITEMS), COL_ORDER_ITEM)
+        .addFields(VIEW_ORDER_ITEMS, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(VIEW_ORDER_ITEMS)
+        .setWhere(SqlUtils.equals(VIEW_ORDER_ITEMS, COL_ORDER, orderId));
 
     SimpleRowSet srs = qs.getData(itemsQry);
     Map<Long, Double> rem =

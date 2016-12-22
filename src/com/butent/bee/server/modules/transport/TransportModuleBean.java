@@ -736,8 +736,13 @@ public class TransportModuleBean implements BeeModule {
               text = BeeUtils.notEmpty(data.getString(0, localizedContent),
                   data.getString(0, COL_TEXT_CONTENT));
             }
-            cb.asynchronousCall(() -> mail.sendMail(accountId, email, null,
-                text.replace("{CONTRACT_ID}", BeeUtils.toString(event.getRow().getId()))));
+            cb.asynchronousCall(new ConcurrencyBean.AsynchronousRunnable() {
+              @Override
+              public void run() {
+                mail.sendMail(accountId, email, null, text.replace("{CONTRACT_ID}",
+                    BeeUtils.toString(event.getRow().getId())));
+              }
+            });
           }
         }
       }
@@ -1643,8 +1648,13 @@ public class TransportModuleBean implements BeeModule {
           data.getString(0, COL_TEXT_CONTENT));
     }
     if (!BeeUtils.isEmpty(text)) {
-      cb.asynchronousCall(() -> mail.sendMail(accountId, email, null,
-          text.replace("{LOGIN}", login).replace("{PASSWORD}", password)));
+      cb.asynchronousCall(new ConcurrencyBean.AsynchronousRunnable() {
+        @Override
+        public void run() {
+          mail.sendMail(accountId, email, null, text.replace("{LOGIN}", login)
+              .replace("{PASSWORD}", password));
+        }
+      });
     }
     return resp;
   }

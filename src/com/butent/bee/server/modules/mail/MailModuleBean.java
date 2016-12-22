@@ -499,10 +499,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void ejbTimeout(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_MAIL_CHECK_INTERVAL)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_MAIL_CHECK_INTERVAL)) {
       checkMail();
     }
-    if (cb.isParameterTimer(timer, PRM_SEND_NEWSLETTERS_INTERVAL)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_SEND_NEWSLETTERS_INTERVAL)) {
       sendNewsletter();
     }
   }
