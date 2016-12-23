@@ -8,6 +8,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
@@ -24,6 +25,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.NormalBalance;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisResults;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
@@ -97,18 +99,24 @@ public class AnalysisBean {
     Function<String, Filter> filterParser = input -> finView.parseFilter(input, userId);
 
     MonthRange headerRange = formData.getHeaderRange();
-    Filter headerFilter = formData.getHeaderFilter(filterParser);
+    Filter headerFilter = formData.getHeaderFilter(COL_FIN_EMPLOYEE, filterParser);
+
+    Long headerBudgetType = formData.getHeaderLong(COL_ANALYSIS_HEADER_BUDGET_TYPE);
 
     for (BeeRow column : formData.getColumns()) {
       if (formData.columnIsPrimary(column)) {
         MonthRange columnRange = AnalysisUtils.intersection(headerRange,
             formData.getColumnRange(column));
 
-        Filter columnFilter = formData.getColumnFilter(column, filterParser);
+        Filter columnFilter = formData.getColumnFilter(column, COL_FIN_EMPLOYEE, filterParser);
 
         Long columnIndicator = formData.getColumnLong(column, COL_ANALYSIS_COLUMN_INDICATOR);
         TurnoverOrBalance columnTurnoverOrBalance = formData.getColumnEnum(column,
             COL_ANALYSIS_COLUMN_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
+
+        List<AnalysisCellType> columnCellTypes = AnalysisCellType.normalize(
+            AnalysisCellType.decode(formData.getColumnString(column, COL_ANALYSIS_COLUMN_VALUES)));
+        Long columnBudgetType = formData.getColumnLong(column, COL_ANALYSIS_COLUMN_BUDGET_TYPE);
 
         List<AnalysisSplitType> columnSplitTypes = results.getColumnSplitTypes(column.getId());
 
@@ -118,8 +126,18 @@ public class AnalysisBean {
             Long indicator = DataUtils.isId(columnIndicator) ? columnIndicator : rowIndicator;
 
             if (DataUtils.isId(indicator)) {
-              TurnoverOrBalance turnoverOrBalance =
-                  getTurnoverOrBalance(columnTurnoverOrBalance, formData, row, indicator);
+              List<AnalysisCellType> rowCellTypes = AnalysisCellType.normalize(
+                  AnalysisCellType.decode(formData.getRowString(row, COL_ANALYSIS_ROW_VALUES)));
+
+              Long rowBudgetType = formData.getRowLong(row, COL_ANALYSIS_ROW_BUDGET_TYPE);
+              Long budgetType = BeeUtils.nvl(columnBudgetType, rowBudgetType, headerBudgetType);
+
+              TurnoverOrBalance rowTurnoverOrBalance = formData.getRowEnum(row,
+                  COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
+              TurnoverOrBalance indicatorTurnoverOrBalance =
+                  getIndicatorTurnoverOrBalance(indicator);
+              TurnoverOrBalance turnoverOrBalance = BeeUtils.nvl(columnTurnoverOrBalance,
+                  rowTurnoverOrBalance, indicatorTurnoverOrBalance);
 
               NormalBalance normalBalance = getIndicatorNormalBalance(indicator);
 
@@ -130,7 +148,7 @@ public class AnalysisBean {
                 MonthRange rowRange = formData.getRowRange(row);
                 MonthRange range = AnalysisUtils.intersection(columnRange, rowRange);
 
-                Filter rowFilter = formData.getRowFilter(row, filterParser);
+                Filter rowFilter = formData.getRowFilter(row, COL_FIN_EMPLOYEE, filterParser);
                 Filter parentFilter = Filter.and(headerFilter, columnFilter, rowFilter);
 
                 String sourceColumn = getIndicatorSourceColumn(indicator);
@@ -271,7 +289,7 @@ public class AnalysisBean {
     return response;
   }
 
-  private Filter getIndicatorFilter(long indicator, BeeView sourceView, Long userId) {
+  private Filter getIndicatorFilter(long indicator, BeeView finView, Long userId) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_INDICATOR_FILTERS, COL_INDICATOR_FILTER_EMPLOYEE,
             COL_INDICATOR_FILTER_EXTRA, COL_INDICATOR_FILTER_INCLUDE)
@@ -290,7 +308,7 @@ public class AnalysisBean {
 
     for (SimpleRow filterRow : filterData) {
       Filter filter = getFilter(filterRow,
-          COL_INDICATOR_FILTER_EMPLOYEE, COL_INDICATOR_FILTER_EXTRA, sourceView, userId);
+          COL_INDICATOR_FILTER_EMPLOYEE, COL_INDICATOR_FILTER_EXTRA, finView, userId);
 
       if (filter != null) {
         if (filterRow.isTrue(COL_INDICATOR_FILTER_INCLUDE)) {
@@ -305,7 +323,7 @@ public class AnalysisBean {
   }
 
   private static Filter getFilter(SimpleRow row, String employeeColumn, String extraFilterColumn,
-      BeeView sourceView, Long userId) {
+      BeeView finView, Long userId) {
 
     CompoundFilter filter = Filter.and();
 
@@ -330,11 +348,11 @@ public class AnalysisBean {
       }
     }
 
-    if (row.hasColumn(extraFilterColumn) && sourceView != null) {
+    if (row.hasColumn(extraFilterColumn) && finView != null) {
       String extraFilter = row.getValue(extraFilterColumn);
 
       if (!BeeUtils.isEmpty(extraFilter)) {
-        Filter extra = sourceView.parseFilter(extraFilter, userId);
+        Filter extra = finView.parseFilter(extraFilter, userId);
         if (extra != null) {
           filter.add(extra);
         }
@@ -578,7 +596,7 @@ public class AnalysisBean {
 
     } else {
       double value = getActualValue(filter, plusFilter, minusFilter, sourceColumn, finView, userId);
-      values.add(AnalysisValue.of(columnId, rowId, value));
+      values.add(AnalysisValue.actual(columnId, rowId, value));
     }
 
     return values;
@@ -604,7 +622,7 @@ public class AnalysisBean {
           splitType.getFinFilter(splitValue, turnoverOrBalance));
 
       double value = getActualValue(filter, plusFilter, minusFilter, sourceColumn, finView, userId);
-      AnalysisValue av = AnalysisValue.of(columnId, rowId, value);
+      AnalysisValue av = AnalysisValue.actual(columnId, rowId, value);
 
       if (isColumn) {
         av.setColumnParentValueIndex(parentValueIndex);
@@ -754,21 +772,85 @@ public class AnalysisBean {
     return qs.getDouble(new SqlSelect().addSum(alias, column).addFrom(query, alias));
   }
 
-  private TurnoverOrBalance getTurnoverOrBalance(TurnoverOrBalance columnTurnoverOrBalance,
-      AnalysisFormData formData, BeeRow row, long indicator) {
+  private String getBudgetCursor(long indicator, TurnoverOrBalance indicatorTurnoverOrBalance,
+      long budgetType, TurnoverOrBalance parentTurnoverOrBalance) {
 
-    if (columnTurnoverOrBalance == null) {
-      TurnoverOrBalance rowTurnoverOrBalance = formData.getRowEnum(row,
-          COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_EMPLOYEE,
+            budgetHeaderAlias(COL_BUDGET_HEADER_EMPLOYEE))
+        .addField(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_EMPLOYEE,
+            budgetEntryAlias(COL_BUDGET_ENTRY_EMPLOYEE))
+        .addFields(TBL_BUDGET_HEADERS, COL_BUDGET_SHOW_ENTRY_EMPLOYEE)
+        .addExpr(
+            SqlUtils.nvl(
+                SqlUtils.field(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_YEAR),
+                SqlUtils.field(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_YEAR)),
+            COL_BUDGET_ENTRY_YEAR)
+        .addFields(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_VALUES)
+        .addFields(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_CURRENCY,
+            COL_BUDGET_HEADER_BACKGROUND, COL_BUDGET_HEADER_FOREGROUND)
+        .addFrom(TBL_BUDGET_ENTRIES)
+        .addFromInner(TBL_BUDGET_HEADERS,
+            sys.joinTables(TBL_BUDGET_HEADERS, TBL_BUDGET_ENTRIES, COL_BUDGET_HEADER));
 
-      if (rowTurnoverOrBalance == null) {
-        return getIndicatorTurnoverOrBalance(indicator);
-      } else {
-        return rowTurnoverOrBalance;
+    if (Dimensions.getObserved() > 0) {
+      String headerExtraAlias = budgetHeaderAlias(Dimensions.TBL_EXTRA_DIMENSIONS);
+      String entryExtraAlias = budgetEntryAlias(Dimensions.TBL_EXTRA_DIMENSIONS);
+
+      String extraIdName = sys.getIdName(Dimensions.TBL_EXTRA_DIMENSIONS);
+
+      query.addFromLeft(Dimensions.TBL_EXTRA_DIMENSIONS, headerExtraAlias,
+          SqlUtils.join(headerExtraAlias, extraIdName,
+              TBL_BUDGET_HEADERS, Dimensions.COL_EXTRA_DIMENSIONS));
+      query.addFromLeft(Dimensions.TBL_EXTRA_DIMENSIONS, entryExtraAlias,
+          SqlUtils.join(entryExtraAlias, extraIdName,
+              TBL_BUDGET_ENTRIES, Dimensions.COL_EXTRA_DIMENSIONS));
+
+      for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+        String relationColumn = Dimensions.getRelationColumn(ordinal);
+
+        query.addField(headerExtraAlias, relationColumn, budgetHeaderAlias(relationColumn));
+        query.addField(entryExtraAlias, relationColumn, budgetEntryAlias(relationColumn));
+
+        query.addFields(TBL_BUDGET_HEADERS, colBudgetShowEntryDimension(ordinal));
       }
-
-    } else {
-      return columnTurnoverOrBalance;
     }
+
+    HasConditions conditions = SqlUtils.and(
+        SqlUtils.or(
+            SqlUtils.equals(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_INDICATOR, indicator),
+            SqlUtils.and(
+                SqlUtils.isNull(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_INDICATOR),
+                SqlUtils.equals(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_INDICATOR, indicator))),
+        SqlUtils.or(
+            SqlUtils.equals(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_TYPE, budgetType),
+            SqlUtils.and(
+                SqlUtils.isNull(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_TYPE),
+                SqlUtils.equals(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_TYPE, budgetType))),
+        SqlUtils.or(
+            SqlUtils.positive(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_YEAR),
+            SqlUtils.positive(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_YEAR))
+    );
+
+    HasConditions turnoverOrBalanceConditions =
+        SqlUtils.or(
+            SqlUtils.equals(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_TURNOVER_OR_BALANCE,
+                parentTurnoverOrBalance),
+            SqlUtils.and(
+                SqlUtils.equals(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_TURNOVER_OR_BALANCE,
+                    parentTurnoverOrBalance),
+                SqlUtils.isNull(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_TURNOVER_OR_BALANCE)));
+
+    if (parentTurnoverOrBalance == indicatorTurnoverOrBalance) {
+      turnoverOrBalanceConditions.add(
+          SqlUtils.and(
+              SqlUtils.isNull(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_TURNOVER_OR_BALANCE),
+              SqlUtils.isNull(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_TURNOVER_OR_BALANCE)));
+    }
+
+    conditions.add(turnoverOrBalanceConditions);
+    query.setWhere(conditions);
+
+    return qs.sqlCreateTemp(query);
   }
 }

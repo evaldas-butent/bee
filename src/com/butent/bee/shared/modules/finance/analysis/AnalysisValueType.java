@@ -8,7 +8,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public enum AnalysisValueType implements HasLocalizedCaption {
 
-  ACTUAL('a', false) {
+  ACTUAL('a', true, false) {
     @Override
     public String getAbbreviation() {
       return Localized.dictionary().finAnalysisValueActualShort();
@@ -20,7 +20,7 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     }
   },
 
-  BUDGET('b', true) {
+  BUDGET('b', false, true) {
     @Override
     public String getAbbreviation() {
       return Localized.dictionary().finAnalysisValueBudgetShort();
@@ -32,7 +32,7 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     }
   },
 
-  DIFFERENCE('d', true) {
+  DIFFERENCE('d', true, true) {
     @Override
     public String getAbbreviation() {
       return Localized.dictionary().finAnalysisValueDifferenceShort();
@@ -44,7 +44,7 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     }
   },
 
-  PERCENTAGE('p', true, 1) {
+  PERCENTAGE('p', true, true, 1) {
     @Override
     public String getAbbreviation() {
       return Localized.dictionary().finAnalysisValuePercentageShort();
@@ -73,16 +73,22 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     }
   }
 
+  public static final AnalysisValueType DEFAULT = ACTUAL;
+
   private final char code;
+
+  private final boolean needsActual;
   private final boolean needsBudget;
+
   private final int defaultScale;
 
-  AnalysisValueType(char code, boolean needsBudget) {
-    this(code, needsBudget, BeeConst.UNDEF);
+  AnalysisValueType(char code, boolean needsActual, boolean needsBudget) {
+    this(code, needsActual, needsBudget, BeeConst.UNDEF);
   }
 
-  AnalysisValueType(char code, boolean needsBudget, int defaultScale) {
+  AnalysisValueType(char code, boolean needsActual, boolean needsBudget, int defaultScale) {
     this.code = code;
+    this.needsActual = needsActual;
     this.needsBudget = needsBudget;
     this.defaultScale = defaultScale;
   }
@@ -99,6 +105,10 @@ public enum AnalysisValueType implements HasLocalizedCaption {
 
   public boolean hasScale() {
     return !BeeConst.isUndef(defaultScale);
+  }
+
+  public boolean needsActual() {
+    return needsActual;
   }
 
   public boolean needsBudget() {

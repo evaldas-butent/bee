@@ -7,12 +7,27 @@ import com.butent.bee.shared.utils.Codec;
 
 public final class AnalysisValue implements BeeSerializable {
 
-  public static AnalysisValue of(long columnId, long rowId, double value) {
-    AnalysisValue av = new AnalysisValue();
+  public static AnalysisValue actual(long columnId, long rowId, double value) {
+    AnalysisValue av = new AnalysisValue(columnId, rowId);
+    av.setActualValue(BeeUtils.toString(value));
+    return av;
+  }
 
-    av.setColumnId(columnId);
-    av.setRowId(rowId);
-    av.setValue(BeeUtils.toString(value));
+  public static AnalysisValue budget(long columnId, long rowId, double value) {
+    AnalysisValue av = new AnalysisValue(columnId, rowId);
+    av.setBudgetValue(BeeUtils.toString(value));
+    return av;
+  }
+
+  public static AnalysisValue of(long columnId, long rowId, Double actual, Double budget) {
+    AnalysisValue av = new AnalysisValue(columnId, rowId);
+
+    if (BeeUtils.isDouble(actual)) {
+      av.setActualValue(BeeUtils.toString(actual));
+    }
+    if (BeeUtils.isDouble(budget)) {
+      av.setBudgetValue(BeeUtils.toString(budget));
+    }
 
     return av;
   }
@@ -27,7 +42,7 @@ public final class AnalysisValue implements BeeSerializable {
     COLUMN_ID, ROW_ID,
     COLUMN_PARENT_VALUE_INDEX, COLUMN_SPLIT_TYPE_INDEX, COLUMN_SPLIT_VALUE_INDEX,
     ROW_PARENT_VALUE_INDEX, ROW_SPLIT_TYPE_INDEX, ROW_SPLIT_VALUE_INDEX,
-    VALUE
+    ACTUAL_VALUE, BUDGET_VALUE
   }
 
   private long columnId;
@@ -41,9 +56,15 @@ public final class AnalysisValue implements BeeSerializable {
   private Integer rowSplitTypeIndex;
   private Integer rowSplitValueIndex;
 
-  private String value;
+  private String actualValue;
+  private String budgetValue;
 
   private AnalysisValue() {
+  }
+
+  private AnalysisValue(long columnId, long rowId) {
+    this.columnId = columnId;
+    this.rowId = rowId;
   }
 
   public long getColumnId() {
@@ -78,8 +99,12 @@ public final class AnalysisValue implements BeeSerializable {
     return rowSplitValueIndex;
   }
 
-  public String getValue() {
-    return value;
+  public String getActualValue() {
+    return actualValue;
+  }
+
+  public String getBudgetValue() {
+    return budgetValue;
   }
 
   private void setColumnId(long columnId) {
@@ -106,16 +131,20 @@ public final class AnalysisValue implements BeeSerializable {
     this.rowParentValueIndex = rowParentValueIndex;
   }
 
+  private void setActualValue(String actualValue) {
+    this.actualValue = actualValue;
+  }
+
+  private void setBudgetValue(String budgetValue) {
+    this.budgetValue = budgetValue;
+  }
+
   public void setRowSplitTypeIndex(Integer rowSplitTypeIndex) {
     this.rowSplitTypeIndex = rowSplitTypeIndex;
   }
 
   public void setRowSplitValueIndex(Integer rowSplitValueIndex) {
     this.rowSplitValueIndex = rowSplitValueIndex;
-  }
-
-  private void setValue(String value) {
-    this.value = value;
   }
 
   @Override
@@ -155,8 +184,11 @@ public final class AnalysisValue implements BeeSerializable {
             setRowSplitValueIndex(BeeUtils.toIntOrNull(v));
             break;
 
-          case VALUE:
-            setValue(v);
+          case ACTUAL_VALUE:
+            setActualValue(v);
+            break;
+          case BUDGET_VALUE:
+            setBudgetValue(v);
             break;
         }
       }
@@ -197,8 +229,11 @@ public final class AnalysisValue implements BeeSerializable {
           arr[i++] = getRowSplitValueIndex();
           break;
 
-        case VALUE:
-          arr[i++] = getValue();
+        case ACTUAL_VALUE:
+          arr[i++] = getActualValue();
+          break;
+        case BUDGET_VALUE:
+          arr[i++] = getBudgetValue();
           break;
       }
     }

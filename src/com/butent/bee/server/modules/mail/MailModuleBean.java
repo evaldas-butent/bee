@@ -2153,9 +2153,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           && !remote.exists()) {
         continue;
       }
-      remotes.put(remote.getParent().getName(), remote.getName());
+      remotes.put(remote.getParent().getFullName(), remote.getName());
     }
-    return syncSubFolders(account, remotes, remoteRoot.getName(), localRoot);
+    return syncSubFolders(account, remotes, remoteRoot.getName(),
+        String.valueOf(remoteRoot.getSeparator()), localRoot);
   }
 
   private int syncMessages(SimpleRowSet data, Message[] messages, MailAccount account,
@@ -2208,7 +2209,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private int syncSubFolders(MailAccount account, Multimap<String, String> remotes,
-      String remoteParentName, MailFolder localParent) {
+      String remoteParentName, String pathSeparator, MailFolder localParent) {
 
     Holder<Integer> c = Holder.of(0);
     Collection<String> remoteNames = remotes.get(remoteParentName);
@@ -2222,7 +2223,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         localFolder = mail.createFolder(account, localParent, remoteName);
         c.set(c.get() + 1);
       }
-      c.set(c.get() + syncSubFolders(account, remotes, remoteName, localFolder));
+      c.set(c.get() + syncSubFolders(account, remotes,
+          BeeUtils.join(pathSeparator, remoteParentName, remoteName), pathSeparator, localFolder));
     });
     localFolders.removeIf(localFolder -> {
       if (!remoteNames.contains(localFolder.getName()) && localFolder.isConnected()
