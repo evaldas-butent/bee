@@ -28,6 +28,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -120,6 +121,12 @@ class AnalysisFormData {
     return AnalysisUtils.normalize(filter);
   }
 
+  AnalysisFilter getHeaderAnalysisFilter() {
+    AnalysisFilter af = new AnalysisFilter(header, headerIndexes, COL_ANALYSIS_HEADER_EMPLOYEE);
+    af.setSubFilters(headerFilters, filterIndexes);
+    return af;
+  }
+
   MonthRange getHeaderRange() {
     return getHeaderRange(null);
   }
@@ -161,6 +168,31 @@ class AnalysisFormData {
     return AnalysisUtils.normalize(filter);
   }
 
+  AnalysisFilter getColumnAnalysisFilter(BeeRow column) {
+    Map<String, Integer> indexes = new HashMap<>();
+    indexes.putAll(columnIndexes);
+
+    if (!isHeaderTrue(COL_ANALYSIS_SHOW_COLUMN_EMPLOYEE)) {
+      indexes.remove(COL_ANALYSIS_COLUMN_EMPLOYEE);
+    }
+
+    if (Dimensions.getObserved() > 0) {
+      for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+        if (!isHeaderTrue(colAnalysisShowColumnDimension(ordinal))) {
+          indexes.remove(Dimensions.getRelationColumn(ordinal));
+        }
+      }
+    }
+
+    AnalysisFilter af = new AnalysisFilter(column, indexes, COL_ANALYSIS_COLUMN_EMPLOYEE);
+
+    if (columnFilters.containsKey(column.getId()) && isHeaderTrue(COL_ANALYSIS_COLUMN_FILTERS)) {
+      af.setSubFilters(columnFilters.get(column.getId()), filterIndexes);
+    }
+
+    return af;
+  }
+
   MonthRange getColumnRange(BeeRow column) {
     return getColumnRange(column, null);
   }
@@ -200,6 +232,31 @@ class AnalysisFormData {
     }
 
     return AnalysisUtils.normalize(filter);
+  }
+
+  AnalysisFilter getRowAnalysisFilter(BeeRow row) {
+    Map<String, Integer> indexes = new HashMap<>();
+    indexes.putAll(rowIndexes);
+
+    if (!isHeaderTrue(COL_ANALYSIS_SHOW_ROW_EMPLOYEE)) {
+      indexes.remove(COL_ANALYSIS_ROW_EMPLOYEE);
+    }
+
+    if (Dimensions.getObserved() > 0) {
+      for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+        if (!isHeaderTrue(colAnalysisShowRowDimension(ordinal))) {
+          indexes.remove(Dimensions.getRelationColumn(ordinal));
+        }
+      }
+    }
+
+    AnalysisFilter af = new AnalysisFilter(row, indexes, COL_ANALYSIS_ROW_EMPLOYEE);
+
+    if (rowFilters.containsKey(row.getId()) && isHeaderTrue(COL_ANALYSIS_ROW_FILTERS)) {
+      af.setSubFilters(rowFilters.get(row.getId()), filterIndexes);
+    }
+
+    return af;
   }
 
   MonthRange getRowRange(BeeRow row) {

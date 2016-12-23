@@ -132,8 +132,12 @@ public class AnalysisBean {
               Long rowBudgetType = formData.getRowLong(row, COL_ANALYSIS_ROW_BUDGET_TYPE);
               Long budgetType = BeeUtils.nvl(columnBudgetType, rowBudgetType, headerBudgetType);
 
-              TurnoverOrBalance turnoverOrBalance =
-                  getTurnoverOrBalance(columnTurnoverOrBalance, formData, row, indicator);
+              TurnoverOrBalance rowTurnoverOrBalance = formData.getRowEnum(row,
+                  COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
+              TurnoverOrBalance indicatorTurnoverOrBalance =
+                  getIndicatorTurnoverOrBalance(indicator);
+              TurnoverOrBalance turnoverOrBalance = BeeUtils.nvl(columnTurnoverOrBalance,
+                  rowTurnoverOrBalance, indicatorTurnoverOrBalance);
 
               NormalBalance normalBalance = getIndicatorNormalBalance(indicator);
 
@@ -768,26 +772,8 @@ public class AnalysisBean {
     return qs.getDouble(new SqlSelect().addSum(alias, column).addFrom(query, alias));
   }
 
-  private TurnoverOrBalance getTurnoverOrBalance(TurnoverOrBalance columnTurnoverOrBalance,
-      AnalysisFormData formData, BeeRow row, long indicator) {
-
-    if (columnTurnoverOrBalance == null) {
-      TurnoverOrBalance rowTurnoverOrBalance = formData.getRowEnum(row,
-          COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
-
-      if (rowTurnoverOrBalance == null) {
-        return getIndicatorTurnoverOrBalance(indicator);
-      } else {
-        return rowTurnoverOrBalance;
-      }
-
-    } else {
-      return columnTurnoverOrBalance;
-    }
-  }
-
-  private String getBudgetCursor(long indicator, long budgetType,
-      TurnoverOrBalance indicatorTurnoverOrBalance, TurnoverOrBalance turnoverOrBalance) {
+  private String getBudgetCursor(long indicator, TurnoverOrBalance indicatorTurnoverOrBalance,
+      long budgetType, TurnoverOrBalance parentTurnoverOrBalance) {
 
     SqlSelect query = new SqlSelect()
         .addField(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_EMPLOYEE,
@@ -846,6 +832,23 @@ public class AnalysisBean {
             SqlUtils.positive(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_YEAR))
     );
 
+    HasConditions turnoverOrBalanceConditions =
+        SqlUtils.or(
+            SqlUtils.equals(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_TURNOVER_OR_BALANCE,
+                parentTurnoverOrBalance),
+            SqlUtils.and(
+                SqlUtils.equals(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_TURNOVER_OR_BALANCE,
+                    parentTurnoverOrBalance),
+                SqlUtils.isNull(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_TURNOVER_OR_BALANCE)));
+
+    if (parentTurnoverOrBalance == indicatorTurnoverOrBalance) {
+      turnoverOrBalanceConditions.add(
+          SqlUtils.and(
+              SqlUtils.isNull(TBL_BUDGET_HEADERS, COL_BUDGET_HEADER_TURNOVER_OR_BALANCE),
+              SqlUtils.isNull(TBL_BUDGET_ENTRIES, COL_BUDGET_ENTRY_TURNOVER_OR_BALANCE)));
+    }
+
+    conditions.add(turnoverOrBalanceConditions);
     query.setWhere(conditions);
 
     return qs.sqlCreateTemp(query);
