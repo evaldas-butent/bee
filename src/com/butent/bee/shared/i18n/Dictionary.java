@@ -4582,6 +4582,8 @@ public interface Dictionary {
 
   default String prmExportERPReservationsTime() {return g("prmExportERPReservationsTime");}
 
+  default String prmExternalMaintenanceUrl() {return g("prmExternalMaintenanceUrl");}
+
   default String prmForbiddenFilesExtentions() {return g("prmForbiddenFilesExtentions");}
 
   default String prmImportERPItemsTime() {return g("prmImportERPItemsTime");}
@@ -5059,7 +5061,13 @@ public interface Dictionary {
 
   default String svcMaintenance() {return g("svcMaintenance");}
 
-  default String svcMaintenanceEmailHeader() {return g("svcMaintenanceEmailHeader");}
+  default String svcMaintenanceEmailContent(Object p0, Object p1, Object p2) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    _m.put("{1}", p1);
+    _m.put("{2}", p2);
+    return Localized.format(g("svcMaintenanceEmailContent"), _m);
+  }
 
   default String svcMaintenanceItemsServices() {return g("svcMaintenanceItemsServices");}
 
