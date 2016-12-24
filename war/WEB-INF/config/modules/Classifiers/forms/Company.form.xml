@@ -192,8 +192,8 @@
                 style="width:5em; margin-left:5px; display:inline-block;" for="Turnover" />
             </row>
             <row>
-              <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" />
-              <DataSelector source="CompanyGroup" summarize="true" />
+              <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" class="bee-required" />
+              <DataSelector source="CompanyGroup" summarize="true" required="true" />
             </row>
             <row>
               <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />

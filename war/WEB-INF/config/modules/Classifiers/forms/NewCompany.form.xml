@@ -42,6 +42,11 @@
         </FlowPanel>
       </row>
 
+      <row for="CompanyGroup">
+        <Label for="CompanyGroup" class="bee-required" />
+        <DataSelector source="CompanyGroup" required="true" />
+      </row>
+
       <row for="Code">
         <Label for="Code" />
         <InputText source="Code" visible="true"/>
@@ -156,11 +161,6 @@
       <row for="Turnover">
         <Label for="Turnover" text="=trdTurnover" />
         <DataSelector source="Turnover"/>
-      </row>
-
-      <row for="CompanyGroup">
-        <Label for="CompanyGroup" />
-        <DataSelector source="CompanyGroup" />
       </row>
 
     </Table>

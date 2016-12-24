@@ -5,7 +5,6 @@
   xmlns="http://www.butent.com/column"
   xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
   name="OrderItems" viewName="OrderItems"
   flexGrow="1" renderMode="full"
   newRowCaption="=newItem" disabledActions="filter">

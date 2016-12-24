@@ -4,6 +4,12 @@
       name="SaleItems" source="SaleItems" caption="=trdSaleItems"
     >
   <Columns>
+    <ExternalJoin name="SaleItem" joinType="LEFT" source="OrderChildInvoices">
+      <SimpleJoin name="OrderItem" joinType="LEFT">
+        <SimpleColumn name="Order" />
+      </SimpleJoin>
+    </ExternalJoin>
+
     <SimpleColumn name="Sale" />
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
