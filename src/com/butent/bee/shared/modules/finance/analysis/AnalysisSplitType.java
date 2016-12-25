@@ -111,6 +111,11 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     }
 
     @Override
+    public String getBudgetColumn() {
+      return FinanceConstants.COL_BUDGET_ENTRY_EMPLOYEE;
+    }
+
+    @Override
     public String getFinColumn() {
       return FinanceConstants.COL_FIN_EMPLOYEE;
     }
@@ -174,6 +179,14 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
   public String getCaption(Dictionary dictionary) {
     if (kind == Kind.DIMENSION) {
       return Dimensions.singular(index);
+    } else {
+      return null;
+    }
+  }
+
+  public String getBudgetColumn() {
+    if (kind == Kind.DIMENSION) {
+      return Dimensions.getRelationColumn(index);
     } else {
       return null;
     }
