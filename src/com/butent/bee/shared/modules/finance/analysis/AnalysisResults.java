@@ -85,6 +85,25 @@ public final class AnalysisResults implements BeeSerializable {
     }
   }
 
+  public void mergeValue(AnalysisValue value) {
+    if (value != null) {
+      for (AnalysisValue av : values) {
+        if (av.matches(value)) {
+          av.add(value);
+          return;
+        }
+      }
+
+      addValue(value);
+    }
+  }
+
+  public void mergeValues(Collection<AnalysisValue> collection) {
+    if (collection != null) {
+      collection.forEach(this::mergeValue);
+    }
+  }
+
   public void addColumnSplitTypes(long columnId, List<AnalysisSplitType> splitTypes) {
     if (!BeeUtils.isEmpty(splitTypes)) {
       columnSplitTypes.put(columnId, splitTypes);

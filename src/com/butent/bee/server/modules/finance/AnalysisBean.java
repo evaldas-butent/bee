@@ -209,7 +209,7 @@ public class AnalysisBean {
                       getBudgetCondition(budgetCursor, COL_BUDGET_ENTRY_EMPLOYEE,
                           headerAnalysisFilter, columnAnalysisFilter, rowAnalysisFilter);
 
-                  results.addValues(computeBudgetValues(column.getId(), row.getId(),
+                  results.mergeValues(computeBudgetValues(column.getId(), row.getId(),
                       budgetCursor, budgetCondition, range, turnoverOrBalance,
                       columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues));
                 }
@@ -962,9 +962,10 @@ public class AnalysisBean {
       AnalysisSplitValue splitValue = typeValues.get(valueIndex);
 
       IsCondition splitCondition = getBudgetSplitCondition(source, splitType, splitValue);
+      MonthRange splitRange = getBudgetSplitRange(range, splitType, splitValue);
 
       Double value = getBudgetValue(source, SqlUtils.and(condition, splitCondition),
-          range, turnoverOrBalance);
+          splitRange, turnoverOrBalance);
 
       if (BeeUtils.isDouble(value)) {
         AnalysisValue av = AnalysisValue.budget(columnId, rowId, value);
@@ -1018,9 +1019,10 @@ public class AnalysisBean {
 
       IsCondition splitCondition =
           getBudgetSplitCondition(source, columnSplitType, columnSplitValue);
+      MonthRange splitRange = getBudgetSplitRange(range, columnSplitType, columnSplitValue);
 
       Collection<AnalysisValue> rowValues = computeBudgetSplitVector(columnId, rowId, false, null,
-          source, SqlUtils.and(condition, splitCondition), range, turnoverOrBalance,
+          source, SqlUtils.and(condition, splitCondition), splitRange, turnoverOrBalance,
           rowSplitTypes, 0, rowSplitValues, 0);
 
       if (!rowValues.isEmpty()) {
@@ -1065,10 +1067,31 @@ public class AnalysisBean {
     }
   }
 
+  private static MonthRange getBudgetSplitRange(MonthRange parentRange,
+      AnalysisSplitType splitType, AnalysisSplitValue splitValue) {
+
+    if (parentRange == null || splitType == null || splitValue == null) {
+      return parentRange;
+
+    } else {
+      MonthRange splitRange = splitType.getMonthRange(splitValue);
+
+      if (splitRange == null) {
+        return parentRange;
+      } else {
+        return splitRange.intersection(parentRange);
+      }
+    }
+  }
+
   private Double getBudgetValue(String source, IsCondition condition, MonthRange range,
       TurnoverOrBalance turnoverOrBalance) {
 
     Double result = null;
+    if (range == null) {
+      return result;
+    }
+
     String yearColumn = COL_BUDGET_ENTRY_YEAR;
 
     YearMonth lower = range.getMinMonth();
