@@ -1,21 +1,38 @@
 package com.butent.bee.client.modules.finance.analysis;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.AbstractRow;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisLabel;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisResults;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisValueType;
+import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 class AnalysisViewer extends Flow implements HasCaption {
@@ -23,20 +40,229 @@ class AnalysisViewer extends Flow implements HasCaption {
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "fin-AnalysisViewer-";
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
+  private static final String STYLE_HEADER = STYLE_PREFIX + "header";
+
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
+  private static final String STYLE_COLUMN = STYLE_PREFIX + "column";
+  private static final String STYLE_ROW = STYLE_PREFIX + "row";
+
+  private static final String STYLE_LABEL = STYLE_PREFIX + "label";
+  private static final String STYLE_LABEL_PREFIX = STYLE_LABEL + "-";
+
+  private static final String STYLE_SPLIT = STYLE_PREFIX + "split";
+  private static final String STYLE_SPLIT_PREFIX = STYLE_SPLIT + "-";
+  private static final String STYLE_SPLIT_EMPTY = STYLE_SPLIT_PREFIX + "empty";
+
+  private static final String STYLE_TYPE = STYLE_PREFIX + "type";
+  private static final String STYLE_TYPE_PREFIX = STYLE_TYPE + "-";
+
+  private static final String PERIOD_SEPARATOR = " - ";
 
   private final AnalysisResults results;
+
+  private final List<Long> columnIds = new ArrayList<>();
+  private final Map<Long, List<AnalysisLabel>> columnLabels = new HashMap<>();
+
+  private final Map<Long, List<AnalysisSplitType>> columnSplitTypes = new HashMap<>();
+  private final Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> columnSplitValues =
+      new HashMap<>();
+
+  private final Map<Long, List<AnalysisCellType>> columnCellTypes = new HashMap<>();
+
+  private final Map<Long, Integer> columnSpan = new HashMap<>();
+  private final Map<Long, Map<AnalysisSplitType, Integer>> columnSplitSpan = new HashMap<>();
+
+  private final List<Long> rowIds = new ArrayList<>();
+  private final Map<Long, List<AnalysisLabel>> rowLabels = new HashMap<>();
+
+  private final Map<Long, List<AnalysisSplitType>> rowSplitTypes = new HashMap<>();
+  private final Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> rowSplitValues =
+      new HashMap<>();
+
+  private final Map<Long, List<AnalysisCellType>> rowCellTypes = new HashMap<>();
+
+  private final Map<Long, Integer> rowSpan = new HashMap<>();
+  private final Map<Long, Map<AnalysisSplitType, Integer>> rowSplitSpan = new HashMap<>();
+
+  private final Table<Long, Long, List<AnalysisValue>> values = HashBasedTable.create();
 
   AnalysisViewer(AnalysisResults results) {
     super(STYLE_CONTAINER);
 
     this.results = results;
+
+    layout();
     render();
   }
 
   @Override
   public String getCaption() {
     return results.getHeaderString(COL_ANALYSIS_NAME);
+  }
+
+  private void layout() {
+    for (BeeRow column : results.getColumns()) {
+      if (results.isColumnVisible(column)) {
+        long id = column.getId();
+        columnIds.add(id);
+
+        String period = formatRange(results.getColumnRange(column));
+        columnLabels.put(id, results.getColumnLabels(column, period));
+
+        List<AnalysisSplitType> st = results.getColumnSplitTypes(id);
+        if (!BeeUtils.isEmpty(st)) {
+          columnSplitTypes.put(id, st);
+        }
+
+        Map<AnalysisSplitType, List<AnalysisSplitValue>> sv = results.getColumnSplitValues(id);
+        if (!BeeUtils.isEmpty(sv)) {
+          columnSplitValues.put(id, sv);
+        }
+
+        List<AnalysisCellType> cellTypes = results.getColumnCellTypes(column);
+        this.columnCellTypes.put(id, cellTypes);
+
+        columnSpan.put(id, getSpan(st, sv, cellTypes));
+
+        Map<AnalysisSplitType, Integer> splitSpan = getSplitSpan(st, sv, cellTypes);
+        if (!BeeUtils.isEmpty(splitSpan)) {
+          columnSplitSpan.put(id, splitSpan);
+        }
+      }
+    }
+
+    for (BeeRow row : results.getRows()) {
+      if (results.isRowVisible(row)) {
+        long id = row.getId();
+        rowIds.add(id);
+
+        String period = formatRange(results.getRowRange(row));
+        rowLabels.put(id, results.getRowLabels(row, period));
+
+        List<AnalysisSplitType> st = results.getRowSplitTypes(id);
+        if (!BeeUtils.isEmpty(st)) {
+          rowSplitTypes.put(id, st);
+        }
+
+        Map<AnalysisSplitType, List<AnalysisSplitValue>> sv = results.getRowSplitValues(id);
+        if (!BeeUtils.isEmpty(sv)) {
+          rowSplitValues.put(id, sv);
+        }
+
+        List<AnalysisCellType> cellTypes = results.getRowCellTypes(row);
+        this.rowCellTypes.put(id, cellTypes);
+
+        rowSpan.put(id, getSpan(st, sv, cellTypes));
+
+        Map<AnalysisSplitType, Integer> splitSpan = getSplitSpan(st, sv, cellTypes);
+        if (!BeeUtils.isEmpty(splitSpan)) {
+          rowSplitSpan.put(id, splitSpan);
+        }
+      }
+    }
+
+    for (AnalysisValue value : results.getValues()) {
+      long rowId = value.getRowId();
+      long columnId = value.getColumnId();
+
+      if (rowIds.contains(rowId) && columnIds.contains(columnId)) {
+        if (values.contains(rowId, columnId)) {
+          values.get(rowId, columnId).add(value);
+
+        } else {
+          List<AnalysisValue> list = new ArrayList<>();
+          list.add(value);
+          values.put(rowId, columnId, list);
+        }
+      }
+    }
+  }
+
+  private static int getSpan(List<AnalysisSplitType> splitTypes,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues,
+      List<AnalysisCellType> cellTypes) {
+
+    int span = 1;
+
+    if (!BeeUtils.isEmpty(splitTypes) && !BeeUtils.isEmpty(splitValues)) {
+      for (AnalysisSplitType type : splitTypes) {
+        int size = BeeUtils.size(splitValues.get(type));
+
+        if (size > 1) {
+          span *= size;
+        }
+      }
+    }
+
+    if (!BeeUtils.isEmpty(cellTypes)) {
+      span *= cellTypes.size();
+    }
+
+    return span;
+  }
+
+  private static Map<AnalysisSplitType, Integer> getSplitSpan(List<AnalysisSplitType> splitTypes,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues,
+      List<AnalysisCellType> cellTypes) {
+
+    Map<AnalysisSplitType, Integer> result = new HashMap<>();
+
+    int span = 1;
+    if (!BeeUtils.isEmpty(cellTypes)) {
+      span *= cellTypes.size();
+    }
+
+    if (!BeeUtils.isEmpty(splitTypes) && !BeeUtils.isEmpty(splitValues)) {
+      for (int i = splitTypes.size() - 1; i >= 0; i--) {
+        AnalysisSplitType type = splitTypes.get(i);
+        result.put(type, span);
+
+        int size = BeeUtils.size(splitValues.get(type));
+        if (size > 1) {
+          span *= size;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  public static String formatRange(MonthRange range) {
+    if (range == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    YearMonth minYm = range.getMinMonth();
+    YearMonth maxYm = range.getMaxMonth();
+
+    if (minYm.equals(maxYm)) {
+      return Format.renderYearMonth(minYm);
+
+    } else if (minYm.getYear() == maxYm.getYear()) {
+      if (minYm.getMonth() == 1 && maxYm.getMonth() == 12) {
+        return BeeUtils.toString(minYm.getYear());
+
+      } else if (minYm.getMonth() % 3 == 1 && maxYm.getMonth() == minYm.getMonth() + 2) {
+        return BeeUtils.joinWords(minYm.getYear(),
+            Format.quarterFull(minYm.getQuarter()).toLowerCase());
+
+      } else {
+        return BeeUtils.join(PERIOD_SEPARATOR,
+            Format.renderYearMonth(minYm), Format.renderMonthFullStandalone(maxYm).toLowerCase());
+      }
+
+    } else {
+      String lower = BeeUtils.isMore(minYm, ANALYSIS_MIN_YEAR_MONTH)
+          ? Format.renderYearMonth(minYm) : BeeConst.STRING_EMPTY;
+      String upper = BeeUtils.isLess(maxYm, ANALYSIS_MAX_YEAR_MONTH)
+          ? Format.renderYearMonth(maxYm) : BeeConst.STRING_EMPTY;
+
+      if (BeeUtils.allEmpty(lower, upper)) {
+        return BeeConst.STRING_EMPTY;
+      } else {
+        return lower + PERIOD_SEPARATOR + upper;
+      }
+    }
   }
 
   private void render() {
@@ -70,48 +296,279 @@ class AnalysisViewer extends Flow implements HasCaption {
       add(render("rsv", results.getRowSplitValues()));
     }
 
+    Flow header = new Flow(STYLE_HEADER);
+    results.getHeaderLabels(formatRange(results.getHeaderRange())).forEach(analysisLabel ->
+        header.add(render(analysisLabel)));
+    add(header);
+
+    add(renderTable());
+  }
+
+  private Widget renderTable() {
+    int maxColumnLabels = columnLabels.values().stream()
+        .mapToInt(List::size)
+        .max()
+        .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
+
+    int maxColumnSplitTypes = columnSplitTypes.values().stream()
+        .mapToInt(List::size)
+        .max()
+        .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
+
+    int maxColumnCellTypes = columnCellTypes.values().stream()
+        .mapToInt(List::size)
+        .max()
+        .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
+
+    boolean columnsNeedBudget = columnCellTypes.values().stream()
+        .anyMatch(AnalysisCellType::needsBudget);
+
+    int maxRowLabels = rowLabels.values().stream()
+        .mapToInt(List::size)
+        .max()
+        .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
+
+    int maxRowSplitTypes = rowSplitTypes.values().stream()
+        .mapToInt(List::size)
+        .max()
+        .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
+
+    int maxRowCellTypes = rowCellTypes.values().stream()
+        .mapToInt(List::size)
+        .max()
+        .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
+
+    boolean rowsNeedBudget = rowCellTypes.values().stream()
+        .anyMatch(AnalysisCellType::needsBudget);
+
+    int rStartValues = maxColumnLabels + maxColumnSplitTypes
+        + (columnsNeedBudget ? maxColumnCellTypes : 0);
+    int cStartValues = maxRowLabels + maxRowSplitTypes
+        + (rowsNeedBudget ? maxRowCellTypes : 0);
+
     HtmlTable table = new HtmlTable(STYLE_TABLE);
 
-    int r = 0;
-    int c = 0;
+    int r;
+    int c;
 
-    table.setText(r, c++, "cid");
-    table.setText(r, c++, "rid");
+    if (maxColumnLabels > 0) {
+      r = 0;
+      c = cStartValues;
 
-    table.setText(r, c++, "cpvi");
-    table.setText(r, c++, "csti");
-    table.setText(r, c++, "csvi");
+      for (long columnId : columnIds) {
+        List<AnalysisLabel> labels = columnLabels.get(columnId);
 
-    table.setText(r, c++, "rpvi");
-    table.setText(r, c++, "rsti");
-    table.setText(r, c++, "rsvi");
+        if (!BeeUtils.isEmpty(labels)) {
+          for (int i = 0; i < labels.size(); i++) {
+            table.setWidgetAndStyle(r + i, c, render(labels.get(i)), STYLE_COLUMN);
+          }
+        }
 
-    table.setText(r, c++, "actual");
-    table.setText(r, c, "budget");
-
-    r++;
-
-    for (AnalysisValue av : results.getValues()) {
-      c = 0;
-
-      table.setText(r, c++, String.valueOf(av.getColumnId()));
-      table.setText(r, c++, String.valueOf(av.getRowId()));
-
-      table.setText(r, c++, BeeUtils.toStringOrNull(av.getColumnParentValueIndex()));
-      table.setText(r, c++, BeeUtils.toStringOrNull(av.getColumnSplitTypeIndex()));
-      table.setText(r, c++, BeeUtils.toStringOrNull(av.getColumnSplitValueIndex()));
-
-      table.setText(r, c++, BeeUtils.toStringOrNull(av.getRowParentValueIndex()));
-      table.setText(r, c++, BeeUtils.toStringOrNull(av.getRowSplitTypeIndex()));
-      table.setText(r, c++, BeeUtils.toStringOrNull(av.getRowSplitValueIndex()));
-
-      table.setText(r, c++, av.getActualValue());
-      table.setText(r, c, av.getBudgetValue());
-
-      r++;
+        c += columnSpan.get(columnId);
+      }
     }
 
-    add(table);
+    if (maxColumnSplitTypes > 0) {
+      r = maxColumnLabels;
+      c = cStartValues;
+
+      for (long columnId : columnIds) {
+        List<AnalysisSplitType> splitTypes = columnSplitTypes.get(columnId);
+
+        if (!BeeUtils.isEmpty(splitTypes)) {
+          Map<AnalysisSplitType, Integer> splitSpan = columnSplitSpan.get(columnId);
+
+          for (int i = 0; i < splitTypes.size(); i++) {
+            AnalysisSplitType type = splitTypes.get(i);
+
+            List<AnalysisSplitValue> splitValues = columnSplitValues.get(columnId).get(type);
+            int span = splitSpan.get(type);
+
+            for (int j = 0; j < splitValues.size(); j++) {
+              table.setWidgetAndStyle(r + i, c + j * span,
+                  render(type, splitValues.get(j)), STYLE_COLUMN);
+            }
+          }
+        }
+
+        c += columnSpan.get(columnId);
+      }
+    }
+
+    if (columnsNeedBudget) {
+      r = maxColumnLabels + maxColumnSplitTypes;
+      c = cStartValues;
+
+      for (long columnId : columnIds) {
+        List<AnalysisCellType> cellTypes = columnCellTypes.get(columnId);
+        int span = columnSpan.get(columnId);
+
+        if (AnalysisCellType.needsBudget(cellTypes)) {
+          int size = cellTypes.size();
+
+          for (int i = 0; i < span; i += size) {
+            for (int j = 0; j < size; j++) {
+              table.setWidgetAndStyle(r, c + i * size + j, render(cellTypes.get(j)),
+                  STYLE_COLUMN);
+            }
+          }
+        }
+
+        c += span;
+      }
+    }
+
+    r = rStartValues;
+
+    for (long rowId : rowIds) {
+      if (maxRowLabels > 0) {
+        List<AnalysisLabel> labels = rowLabels.get(rowId);
+
+        if (!BeeUtils.isEmpty(labels)) {
+          c = 0;
+
+          for (int i = 0; i < labels.size(); i++) {
+            table.setWidgetAndStyle(r, c + i, render(labels.get(i)), STYLE_ROW);
+          }
+        }
+      }
+
+      if (maxRowSplitTypes > 0) {
+        List<AnalysisSplitType> splitTypes = rowSplitTypes.get(rowId);
+
+        if (!BeeUtils.isEmpty(splitTypes)) {
+          c = maxRowLabels;
+
+          Map<AnalysisSplitType, Integer> splitSpan = rowSplitSpan.get(rowId);
+
+          for (int i = 0; i < splitTypes.size(); i++) {
+            AnalysisSplitType type = splitTypes.get(i);
+
+            List<AnalysisSplitValue> splitValues = rowSplitValues.get(rowId).get(type);
+            int span = splitSpan.get(type);
+
+            for (int j = 0; j < splitValues.size(); j++) {
+              table.setWidgetAndStyle(r + j * span, c + i,
+                  render(type, splitValues.get(j)), STYLE_ROW);
+            }
+          }
+        }
+      }
+
+      if (rowsNeedBudget) {
+        List<AnalysisCellType> cellTypes = rowCellTypes.get(rowId);
+
+        if (AnalysisCellType.needsBudget(cellTypes)) {
+          c = maxRowLabels + maxRowSplitTypes;
+
+          int size = cellTypes.size();
+          int span = rowSpan.get(rowId);
+
+          for (int i = 0; i < span; i += size) {
+            for (int j = 0; j < size; j++) {
+              table.setWidgetAndStyle(r + i * size + j, c, render(cellTypes.get(j)),
+                  STYLE_ROW);
+            }
+          }
+        }
+      }
+
+      c = cStartValues;
+      for (long columnId : columnIds) {
+        if (values.contains(rowId, columnId)) {
+          renderValues(values.get(rowId, columnId), table, r, c);
+        }
+
+        c += columnSpan.get(columnId);
+      }
+
+      r += rowSpan.get(rowId);
+    }
+
+    return table;
+  }
+
+  private void renderValues(Collection<AnalysisValue> analysisValues,
+      HtmlTable table, int r, int c) {
+
+    for (AnalysisValue value : analysisValues) {
+      int rowOffset = getRowOffset(value);
+      int columnOffset = getColumnOffset(value);
+
+      List<AnalysisCellType> rowTypes = rowCellTypes.get(value.getRowId());
+      List<AnalysisCellType> columnTypes = columnCellTypes.get(value.getColumnId());
+
+      table.setText(r + rowOffset, c + columnOffset,
+          BeeUtils.joinWords(value.getActualValue(), value.getBudgetValue()));
+    }
+  }
+
+  private int getColumnOffset(AnalysisValue value) {
+    int offset = 0;
+
+    Integer splitTypeIndex = value.getColumnSplitTypeIndex();
+    Integer splitValueIndex = value.getColumnSplitValueIndex();
+
+    if (splitTypeIndex == null || splitValueIndex == null) {
+      return offset;
+    }
+
+    long id = value.getColumnId();
+
+    List<AnalysisSplitType> splitTypes = columnSplitTypes.get(id);
+    if (!BeeUtils.isIndex(splitTypes, splitTypeIndex)) {
+      return offset;
+    }
+
+    AnalysisSplitType splitType = splitTypes.get(splitTypeIndex);
+    List<AnalysisSplitValue> splitValues = columnSplitValues.get(id).get(splitType);
+
+    if (!BeeUtils.isIndex(splitValues, splitValueIndex)) {
+      return offset;
+    }
+
+    Integer splitSpan = columnSplitSpan.get(id).get(splitType);
+    if (BeeUtils.isPositive(splitSpan)) {
+      offset += splitValueIndex * splitSpan;
+    } else {
+      offset += splitValueIndex;
+    }
+
+    return offset;
+  }
+
+  private int getRowOffset(AnalysisValue value) {
+    int offset = 0;
+
+    Integer splitTypeIndex = value.getRowSplitTypeIndex();
+    Integer splitValueIndex = value.getRowSplitValueIndex();
+
+    if (splitTypeIndex == null || splitValueIndex == null) {
+      return offset;
+    }
+
+    long id = value.getRowId();
+
+    List<AnalysisSplitType> splitTypes = rowSplitTypes.get(id);
+    if (!BeeUtils.isIndex(splitTypes, splitTypeIndex)) {
+      return offset;
+    }
+
+    AnalysisSplitType splitType = splitTypes.get(splitTypeIndex);
+    List<AnalysisSplitValue> splitValues = rowSplitValues.get(id).get(splitType);
+
+    if (!BeeUtils.isIndex(splitValues, splitValueIndex)) {
+      return offset;
+    }
+
+    Integer splitSpan = rowSplitSpan.get(id).get(splitType);
+    if (BeeUtils.isPositive(splitSpan)) {
+      offset += splitValueIndex * splitSpan;
+    } else {
+      offset += splitValueIndex;
+    }
+
+    return offset;
   }
 
   private static Widget renderMillis(long millis) {
@@ -124,5 +581,75 @@ class AnalysisViewer extends Flow implements HasCaption {
 
   private static Widget render(String label, Object obj) {
     return new Label(BeeUtils.joinWords(label, obj));
+  }
+
+  private static Widget render(AnalysisLabel label, String... styleNames) {
+    Label widget = new Label(label.getText());
+
+    if (styleNames != null) {
+      for (String styleName : styleNames) {
+        widget.addStyleName(styleName);
+      }
+    }
+
+    widget.addStyleName(STYLE_LABEL);
+    widget.addStyleName(STYLE_LABEL_PREFIX + label.getSource().toLowerCase());
+
+    setColors(widget.getElement(), label.getBackground(), label.getForeground());
+
+    return widget;
+  }
+
+  private static Widget render(AnalysisSplitType splitType, AnalysisSplitValue splitValue,
+      String... styleNames) {
+
+    String text = splitValue.isEmpty()
+        ? BeeUtils.bracket(splitType.getCaption()) : splitValue.getValue();
+
+    Label widget = new Label(text);
+
+    if (styleNames != null) {
+      for (String styleName : styleNames) {
+        widget.addStyleName(styleName);
+      }
+    }
+
+    widget.addStyleName(STYLE_SPLIT);
+    widget.addStyleName(STYLE_SPLIT_PREFIX + splitType.name().toLowerCase());
+    if (splitValue.isEmpty()) {
+      widget.addStyleName(STYLE_SPLIT_EMPTY);
+    }
+
+    setColors(widget.getElement(), splitValue.getBackground(), splitValue.getForeground());
+
+    return widget;
+  }
+
+  private static Widget render(AnalysisCellType cellType, String... styleNames) {
+    AnalysisValueType valueType = cellType.getAnalysisValueType();
+    Label widget = new Label(valueType.getCaption());
+
+    if (styleNames != null) {
+      for (String styleName : styleNames) {
+        widget.addStyleName(styleName);
+      }
+    }
+
+    widget.addStyleName(STYLE_TYPE);
+    widget.addStyleName(STYLE_TYPE_PREFIX + valueType.name().toLowerCase());
+
+    return widget;
+  }
+
+  private static void setColors(Element target, String bg, String fg) {
+    if (!BeeUtils.same(bg, fg)) {
+      if (!BeeUtils.isEmpty(bg)) {
+        target.getStyle().setBackgroundColor(bg);
+      }
+
+      if (!BeeUtils.isEmpty(fg)) {
+        target.getStyle().setColor(fg);
+      }
+    }
   }
 }

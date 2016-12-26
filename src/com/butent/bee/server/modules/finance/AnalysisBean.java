@@ -119,7 +119,7 @@ public class AnalysisBean {
             COL_ANALYSIS_COLUMN_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
 
         List<AnalysisCellType> columnCellTypes = AnalysisCellType.normalize(
-            AnalysisCellType.decode(formData.getColumnString(column, COL_ANALYSIS_COLUMN_VALUES)));
+            formData.getColumnString(column, COL_ANALYSIS_COLUMN_VALUES));
         Long columnBudgetType = formData.getColumnLong(column, COL_ANALYSIS_COLUMN_BUDGET_TYPE);
 
         List<AnalysisSplitType> columnSplitTypes = results.getColumnSplitTypes(column.getId());
@@ -131,7 +131,7 @@ public class AnalysisBean {
 
             if (DataUtils.isId(indicator)) {
               List<AnalysisCellType> rowCellTypes = AnalysisCellType.normalize(
-                  AnalysisCellType.decode(formData.getRowString(row, COL_ANALYSIS_ROW_VALUES)));
+                  formData.getRowString(row, COL_ANALYSIS_ROW_VALUES));
 
               Long rowBudgetType = formData.getRowLong(row, COL_ANALYSIS_ROW_BUDGET_TYPE);
               Long budgetType = BeeUtils.nvl(columnBudgetType, rowBudgetType, headerBudgetType);

@@ -108,15 +108,12 @@ public class AnalysisCellType {
     return needsBudget(decode(input));
   }
 
-  public static List<AnalysisCellType> normalize(List<AnalysisCellType> list) {
-    if (BeeUtils.isEmpty(list)) {
-      List<AnalysisCellType> result = new ArrayList<>();
-      result.add(new AnalysisCellType(AnalysisValueType.DEFAULT));
-      return result;
-
-    } else {
-      return list;
+  public static List<AnalysisCellType> normalize(String input) {
+    List<AnalysisCellType> list = decode(input);
+    if (list.isEmpty()) {
+      list.add(new AnalysisCellType(AnalysisValueType.DEFAULT));
     }
+    return list;
   }
 
   private final AnalysisValueType analysisValueType;

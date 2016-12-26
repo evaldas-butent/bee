@@ -97,3 +97,21 @@
   padding: 0;
   width: 3rem;
 }
+
+.bee-fin-AnalysisViewer-header {
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+  font-size: larger;
+  font-weight: bolder;
+  text-align: center;
+}
+
+.bee-fin-AnalysisViewer-table {
+  border-collapse: collapse;
+}
+.bee-fin-AnalysisViewer-table td {
+  border: 1px solid #ccc;
+}
+.bee-fin-AnalysisViewer-table tr:hover {
+  background-color: #f2f2f2;
+}
