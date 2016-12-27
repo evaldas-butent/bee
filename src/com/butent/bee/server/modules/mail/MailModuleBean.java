@@ -52,6 +52,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
@@ -184,6 +185,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       int f = 0;
       String error = null;
       boolean connectError = false;
+      String progressId = silent ? null : Endpoint.createProgress(usr.getCurrentUserId(),
+          account.getFolderCaption(localFolder.getId()));
 
       try {
         store = account.connectToStore();
@@ -202,21 +205,28 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           holder.get().accept(localFolder);
         } else {
           c += checkFolder(account, account.getRemoteFolder(store.getStore(), localFolder),
-              localFolder, syncAll, silent);
+              localFolder, syncAll, progressId);
         }
       } catch (Throwable e) {
+        error = BeeUtils.joinWords(account.getStoreProtocol(), account.getStoreHost(),
+            account.getStoreLogin(), localFolder.getName());
+
         if (e instanceof ConnectionFailureException) {
+          logger.warning(error, e.getMessage());
           connectError = true;
-          error = BeeUtils.joinWords(account.getStoreProtocol(), account.getStoreHost(),
-              account.getStoreLogin(), localFolder.getName(), e.getMessage());
-          logger.warning(error);
         } else {
-          logger.error(e, account.getStoreProtocol(), account.getStoreHost(),
-              account.getStoreLogin(), localFolder.getName());
+          if (e instanceof BeeRuntimeException) {
+            logger.severe(error);
+          } else {
+            logger.error(e, error);
+          }
           error = ArrayUtils.joinWords(ResponseObject.error(e, account.getStoreProtocol())
               .getErrors());
         }
       } finally {
+        if (!BeeUtils.isEmpty(progressId)) {
+          Endpoint.closeProgress(progressId);
+        }
         account.disconnectFromStore(store);
       }
       if (!connectError && account.isInbox(localFolder)) {
@@ -1272,7 +1282,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private int checkFolder(MailAccount account, Folder remoteFolder, MailFolder localFolder,
-      boolean syncAll, boolean silent) throws MessagingException {
+      boolean syncAll, String progressId) throws MessagingException {
 
     Assert.noNulls(remoteFolder, localFolder);
 
@@ -1299,8 +1309,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       }
       mail.validateFolder(localFolder, hasUid ? ((UIDFolder) remoteFolder).getUIDValidity() : null);
 
-      String progressId = silent ? null : Endpoint.createProgress(usr.getCurrentUserId(),
-          account.getFolderCaption(localFolder.getId()));
       try {
         int first = 1;
         int count;
@@ -1391,9 +1399,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           } catch (MessagingException e) {
             logger.warning(e);
           }
-        }
-        if (!BeeUtils.isEmpty(progressId)) {
-          Endpoint.closeProgress(progressId);
         }
       }
     }
@@ -2142,9 +2147,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private int syncFolders(MailAccount account, Store mailStore) throws MessagingException {
-    Folder remoteRoot = account.getRemoteFolder(mailStore, account.getRootFolder());
     MailFolder localRoot = account.getRootFolder();
-
+    Folder remoteRoot = account.getRemoteFolder(mailStore, localRoot);
     Multimap<String, String> remotes = HashMultimap.create();
 
     for (Folder remote : remoteRoot.list("*")) {
