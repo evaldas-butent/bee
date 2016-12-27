@@ -6780,9 +6780,13 @@ public interface Dictionary {
 
   default String vehicleManualTransmission() {return g("vehicleManualTransmission");}
 
+  default String vehicleManufacturerNr() {return g("vehicleManufacturerNr");}
+
   default String vehicleMinivan() {return g("vehicleMinivan");}
 
   default String vehicleModel() {return g("vehicleModel");}
+
+  default String vehicleModelNr() {return g("vehicleModelNr");}
 
   default String vehicleModels() {return g("vehicleModels");}
 
@@ -6805,6 +6809,8 @@ public interface Dictionary {
   default String vehicleProductionDateShort() {return g("vehicleProductionDateShort");}
 
   default String vehicleRepairs() {return g("vehicleRepairs");}
+
+  default String vehicleResponsiblePerson() {return g("vehicleResponsiblePerson");}
 
   default String vehicleSUV() {return g("vehicleSUV");}
 

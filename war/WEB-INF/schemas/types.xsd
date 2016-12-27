@@ -265,6 +265,11 @@
       <xs:enumeration value="CalendarExecutors" />
       <xs:enumeration value="Calendars" />
       <xs:enumeration value="CalExecutorGroups" />
+      <xs:enumeration value="CarEmissionStandards" />
+      <xs:enumeration value="CarGearboxes" />
+      <xs:enumeration value="CarPlaceCodes" />
+      <xs:enumeration value="CarStatus" />
+      <xs:enumeration value="CarWarranties" />
       <xs:enumeration value="CargoCreditSales" />
       <xs:enumeration value="CargoExpenses" />
       <xs:enumeration value="CargoFiles" />
