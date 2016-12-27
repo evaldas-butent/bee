@@ -136,7 +136,19 @@ public class AnalysisCellType {
     return scale;
   }
 
+  public boolean isDefault() {
+    return analysisValueType == AnalysisValueType.DEFAULT;
+  }
+
   public void setScale(int scale) {
     this.scale = scale;
+  }
+
+  public String render(AnalysisValue analysisValue) {
+    if (analysisValue == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return analysisValueType.render(analysisValue, scale);
+    }
   }
 }

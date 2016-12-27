@@ -18,6 +18,15 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.finAnalysisValueActual();
     }
+
+    @Override
+    public String render(AnalysisValue analysisValue, int scale) {
+      if (!BeeUtils.isEmpty(analysisValue.getActualValue()) && validScale(scale)) {
+        return BeeUtils.toString(analysisValue.getActualNumber(), scale);
+      } else {
+        return analysisValue.getActualValue();
+      }
+    }
   },
 
   BUDGET('b', false, true) {
@@ -29,6 +38,15 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.finAnalysisValueBudget();
+    }
+
+    @Override
+    public String render(AnalysisValue analysisValue, int scale) {
+      if (!BeeUtils.isEmpty(analysisValue.getBudgetValue()) && validScale(scale)) {
+        return BeeUtils.toString(analysisValue.getBudgetNumber(), scale);
+      } else {
+        return analysisValue.getBudgetValue();
+      }
     }
   },
 
@@ -42,6 +60,17 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.finAnalysisValueDifference();
     }
+
+    @Override
+    public String render(AnalysisValue analysisValue, int scale) {
+      double v = analysisValue.getActualNumber() - analysisValue.getBudgetNumber();
+
+      if (validScale(scale)) {
+        return BeeUtils.toString(v, scale);
+      } else {
+        return BeeUtils.toString(v);
+      }
+    }
   },
 
   PERCENTAGE('p', true, true, 1) {
@@ -53,6 +82,23 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.finAnalysisValuePercentage();
+    }
+
+    @Override
+    public String render(AnalysisValue analysisValue, int scale) {
+      double budget = analysisValue.getBudgetNumber();
+      if (BeeUtils.isZero(budget)) {
+        return BeeConst.STRING_EMPTY;
+
+      } else {
+        double v = analysisValue.getActualNumber() * BeeConst.DOUBLE_ONE_HUNDRED / budget;
+
+        if (validScale(scale)) {
+          return BeeUtils.toString(v, scale);
+        } else {
+          return BeeUtils.toString(v, getDefaultScale());
+        }
+      }
     }
   };
 
@@ -71,6 +117,10 @@ public enum AnalysisValueType implements HasLocalizedCaption {
     } else {
       return null;
     }
+  }
+
+  private static boolean validScale(int scale) {
+    return scale >= 0;
   }
 
   public static final AnalysisValueType DEFAULT = ACTUAL;
@@ -114,4 +164,6 @@ public enum AnalysisValueType implements HasLocalizedCaption {
   public boolean needsBudget() {
     return needsBudget;
   }
+
+  public abstract String render(AnalysisValue analysisValue, int scale);
 }

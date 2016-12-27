@@ -4,6 +4,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="AnalysisColumns" viewName="AnalysisColumns"
+        autoFlex="true"
 >
   <xi:include href="columns/Selected.columns.xml" />
   <xi:include href="columns/Ordinal.columns.xml" />

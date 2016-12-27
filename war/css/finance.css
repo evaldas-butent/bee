@@ -111,7 +111,13 @@
 }
 .bee-fin-AnalysisViewer-table td {
   border: 1px solid #ccc;
+  padding: 2px 5px;
+  text-align: center;
 }
 .bee-fin-AnalysisViewer-table tr:hover {
   background-color: #f2f2f2;
+}
+
+.bee-fin-AnalysisViewer-table .bee-fin-AnalysisViewer-value {
+  text-align: right;
 }

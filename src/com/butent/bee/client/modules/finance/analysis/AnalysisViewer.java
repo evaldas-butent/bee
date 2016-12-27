@@ -7,13 +7,13 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.AbstractRow;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisLabel;
@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 class AnalysisViewer extends Flow implements HasCaption {
 
@@ -42,7 +41,9 @@ class AnalysisViewer extends Flow implements HasCaption {
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_HEADER = STYLE_PREFIX + "header";
 
+  private static final String STYLE_WRAPPER = STYLE_PREFIX + "wrapper";
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
+
   private static final String STYLE_COLUMN = STYLE_PREFIX + "column";
   private static final String STYLE_ROW = STYLE_PREFIX + "row";
 
@@ -55,6 +56,13 @@ class AnalysisViewer extends Flow implements HasCaption {
 
   private static final String STYLE_TYPE = STYLE_PREFIX + "type";
   private static final String STYLE_TYPE_PREFIX = STYLE_TYPE + "-";
+
+  private static final String STYLE_VALUE = STYLE_PREFIX + "value";
+  private static final String STYLE_VALUE_PREFIX = STYLE_VALUE + "-";
+
+  private static final String STYLE_PERFORMANCE = STYLE_PREFIX + "performance";
+  private static final String STYLE_TIME = STYLE_PREFIX + "time";
+  private static final String STYLE_DURATION = STYLE_PREFIX + "duration";
 
   private static final String PERIOD_SEPARATOR = " - ";
 
@@ -243,8 +251,7 @@ class AnalysisViewer extends Flow implements HasCaption {
         return BeeUtils.toString(minYm.getYear());
 
       } else if (minYm.getMonth() % 3 == 1 && maxYm.getMonth() == minYm.getMonth() + 2) {
-        return BeeUtils.joinWords(minYm.getYear(),
-            Format.quarterFull(minYm.getQuarter()).toLowerCase());
+        return BeeUtils.joinWords(minYm.getYear(), Format.quarterFull(minYm.getQuarter()));
 
       } else {
         return BeeUtils.join(PERIOD_SEPARATOR,
@@ -266,42 +273,42 @@ class AnalysisViewer extends Flow implements HasCaption {
   }
 
   private void render() {
-    Horizontal performance = new Horizontal();
+    Horizontal performance = new Horizontal(STYLE_PERFORMANCE);
 
-    performance.add(renderMillis(results.getInitStart()));
-    performance.add(renderDuration(results.getValidateStart() - results.getInitStart()));
+    if (Global.isDebug()) {
+      performance.add(renderMillis(results.getInitStart()));
+      performance.add(renderDuration(results.getValidateStart() - results.getInitStart()));
 
-    performance.add(renderMillis(results.getValidateStart()));
-    performance.add(renderDuration(results.getComputeStart() - results.getValidateStart()));
+      performance.add(renderMillis(results.getValidateStart()));
+      performance.add(renderDuration(results.getComputeStart() - results.getValidateStart()));
 
-    performance.add(renderMillis(results.getComputeStart()));
-    performance.add(renderDuration(results.getComputeEnd() - results.getComputeStart()));
+      performance.add(renderMillis(results.getComputeStart()));
+      performance.add(renderDuration(results.getComputeEnd() - results.getComputeStart()));
 
-    performance.add(renderMillis(results.getComputeEnd()));
-    performance.add(renderDuration(results.getComputeEnd() - results.getInitStart()));
+      performance.add(renderMillis(results.getComputeEnd()));
+      performance.add(renderDuration(results.getComputeEnd() - results.getInitStart()));
+
+    } else {
+      Label timeLabel = new Label(TimeUtils.renderDateTime(results.getComputeEnd()));
+      timeLabel.addStyleName(STYLE_TIME);
+      performance.add(timeLabel);
+
+      long duration = results.getComputeEnd() - results.getInitStart();
+      Label durationLabel = new Label(BeeUtils.bracket(TimeUtils.renderMillis(duration)));
+      durationLabel.addStyleName(STYLE_DURATION);
+      performance.add(durationLabel);
+    }
 
     add(performance);
-
-    add(render("columns", results.getColumns().stream()
-        .map(AbstractRow::getId).collect(Collectors.toList())));
-    add(render("rows", results.getRows().stream()
-        .map(AbstractRow::getId).collect(Collectors.toList())));
-
-    if (!results.getColumnSplitTypes().isEmpty()) {
-      add(render("cst", results.getColumnSplitTypes()));
-      add(render("csv", results.getColumnSplitValues()));
-    }
-    if (!results.getRowSplitTypes().isEmpty()) {
-      add(render("rst", results.getRowSplitTypes()));
-      add(render("rsv", results.getRowSplitValues()));
-    }
 
     Flow header = new Flow(STYLE_HEADER);
     results.getHeaderLabels(formatRange(results.getHeaderRange())).forEach(analysisLabel ->
         header.add(render(analysisLabel)));
     add(header);
 
-    add(renderTable());
+    Flow wrapper = new Flow(STYLE_WRAPPER);
+    wrapper.add(renderTable());
+    add(wrapper);
   }
 
   private Widget renderTable() {
@@ -498,8 +505,32 @@ class AnalysisViewer extends Flow implements HasCaption {
       List<AnalysisCellType> rowTypes = rowCellTypes.get(value.getRowId());
       List<AnalysisCellType> columnTypes = columnCellTypes.get(value.getColumnId());
 
-      table.setText(r + rowOffset, c + columnOffset,
-          BeeUtils.joinWords(value.getActualValue(), value.getBudgetValue()));
+      AnalysisCellType cellType;
+
+      for (int i = 0; i < rowTypes.size(); i++) {
+        AnalysisCellType rowType = rowTypes.get(i);
+
+        for (int j = 0; j < columnTypes.size(); j++) {
+          AnalysisCellType columnType = columnTypes.get(j);
+
+          if (i > 0) {
+            cellType = rowType;
+          } else if (j > 0) {
+            cellType = columnType;
+          } else if (columnType.isDefault()) {
+            cellType = rowType;
+          } else {
+            cellType = columnType;
+          }
+
+          String text = cellType.render(value);
+          if (!BeeUtils.isEmpty(text)) {
+            String typeSuffix = cellType.getAnalysisValueType().name().toLowerCase();
+            table.setText(r + rowOffset + i, c + columnOffset + j, text,
+                STYLE_VALUE, STYLE_VALUE_PREFIX + typeSuffix);
+          }
+        }
+      }
     }
   }
 
@@ -577,10 +608,6 @@ class AnalysisViewer extends Flow implements HasCaption {
 
   private static Widget renderDuration(long millis) {
     return new Label(TimeUtils.renderMillis(millis));
-  }
-
-  private static Widget render(String label, Object obj) {
-    return new Label(BeeUtils.joinWords(label, obj));
   }
 
   private static Widget render(AnalysisLabel label, String... styleNames) {

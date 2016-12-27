@@ -2913,6 +2913,8 @@ public interface Dictionary {
 
   default String finClosingBalance() {return g("finClosingBalance");}
 
+  default String finClosingBalanceShort() {return g("finClosingBalanceShort");}
+
   default String finClosingEntries() {return g("finClosingEntries");}
 
   default String finClosingEntriesShort() {return g("finClosingEntriesShort");}
@@ -3056,6 +3058,8 @@ public interface Dictionary {
   default String finNormalBalanceShort() {return g("finNormalBalanceShort");}
 
   default String finOpeningBalance() {return g("finOpeningBalance");}
+
+  default String finOpeningBalanceShort() {return g("finOpeningBalanceShort");}
 
   default String finPettyCash() {return g("finPettyCash");}
 

@@ -191,10 +191,15 @@ public class AnalysisBean {
                 }
               });
 
-              results.addValues(computeActualValues(column.getId(), row.getId(),
-                  valueFilter, plusFilter, minusFilter, turnoverOrBalance,
-                  columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
-                  sourceColumn, finView, userId));
+              if (!accountFilters.isNull()
+                  && (AnalysisCellType.needsActual(columnCellTypes)
+                  || AnalysisCellType.needsActual(rowCellTypes))) {
+
+                results.addValues(computeActualValues(column.getId(), row.getId(),
+                    valueFilter, plusFilter, minusFilter, turnoverOrBalance,
+                    columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
+                    sourceColumn, finView, userId));
+              }
 
               String budgetCursor = null;
               if (DataUtils.isId(budgetType)
