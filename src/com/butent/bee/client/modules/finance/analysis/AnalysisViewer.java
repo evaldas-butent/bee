@@ -15,6 +15,8 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisLabel;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisResults;
@@ -35,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 class AnalysisViewer extends Flow implements HasCaption {
+
+  private static BeeLogger logger = LogUtils.getLogger(AnalysisViewer.class);
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "fin-AnalysisViewer-";
 
@@ -139,6 +143,8 @@ class AnalysisViewer extends Flow implements HasCaption {
       }
     }
 
+    logger.debug("columns", columnIds);
+
     for (BeeRow row : results.getRows()) {
       if (results.isRowVisible(row)) {
         long id = row.getId();
@@ -169,6 +175,8 @@ class AnalysisViewer extends Flow implements HasCaption {
       }
     }
 
+    logger.debug("rows", rowIds);
+
     for (AnalysisValue value : results.getValues()) {
       long rowId = value.getRowId();
       long columnId = value.getColumnId();
@@ -184,6 +192,9 @@ class AnalysisViewer extends Flow implements HasCaption {
         }
       }
     }
+
+    logger.debug("values", values.size(),
+        values.values().stream().mapToInt(List::size).sum());
   }
 
   private static int getSpan(List<AnalysisSplitType> splitTypes,
@@ -322,11 +333,6 @@ class AnalysisViewer extends Flow implements HasCaption {
         .max()
         .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
 
-    int maxColumnCellTypes = columnCellTypes.values().stream()
-        .mapToInt(List::size)
-        .max()
-        .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
-
     boolean columnsNeedBudget = columnCellTypes.values().stream()
         .anyMatch(AnalysisCellType::needsBudget);
 
@@ -340,18 +346,11 @@ class AnalysisViewer extends Flow implements HasCaption {
         .max()
         .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
 
-    int maxRowCellTypes = rowCellTypes.values().stream()
-        .mapToInt(List::size)
-        .max()
-        .orElseGet(BeeConst.INT_ZERO_SUPPLIER);
-
     boolean rowsNeedBudget = rowCellTypes.values().stream()
         .anyMatch(AnalysisCellType::needsBudget);
 
-    int rStartValues = maxColumnLabels + maxColumnSplitTypes
-        + (columnsNeedBudget ? maxColumnCellTypes : 0);
-    int cStartValues = maxRowLabels + maxRowSplitTypes
-        + (rowsNeedBudget ? maxRowCellTypes : 0);
+    int rStartValues = maxColumnLabels + maxColumnSplitTypes + (columnsNeedBudget ? 1 : 0);
+    int cStartValues = maxRowLabels + maxRowSplitTypes + (rowsNeedBudget ? 1 : 0);
 
     HtmlTable table = new HtmlTable(STYLE_TABLE);
 
@@ -366,13 +365,21 @@ class AnalysisViewer extends Flow implements HasCaption {
         List<AnalysisLabel> labels = columnLabels.get(columnId);
 
         if (!BeeUtils.isEmpty(labels)) {
+          Integer span = columnSpan.get(columnId);
+
           for (int i = 0; i < labels.size(); i++) {
             table.setWidgetAndStyle(r + i, c, render(labels.get(i)), STYLE_COLUMN);
+
+            if (BeeUtils.isMore(span, 1)) {
+              table.getCellFormatter().setColSpan(r + i, c, span);
+            }
           }
         }
 
-        c += columnSpan.get(columnId);
+        c++;
       }
+
+      logger.debug("column labels", maxColumnLabels);
     }
 
     if (maxColumnSplitTypes > 0) {
@@ -383,23 +390,31 @@ class AnalysisViewer extends Flow implements HasCaption {
         List<AnalysisSplitType> splitTypes = columnSplitTypes.get(columnId);
 
         if (!BeeUtils.isEmpty(splitTypes)) {
+          Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValuesByType =
+              columnSplitValues.get(columnId);
           Map<AnalysisSplitType, Integer> splitSpan = columnSplitSpan.get(columnId);
 
-          for (int i = 0; i < splitTypes.size(); i++) {
-            AnalysisSplitType type = splitTypes.get(i);
+          if (!BeeUtils.isEmpty(splitValuesByType) && !BeeUtils.isEmpty(splitSpan)) {
+            for (int i = 0; i < splitTypes.size(); i++) {
+              AnalysisSplitType type = splitTypes.get(i);
 
-            List<AnalysisSplitValue> splitValues = columnSplitValues.get(columnId).get(type);
-            int span = splitSpan.get(type);
+              List<AnalysisSplitValue> splitValues = splitValuesByType.get(type);
+              Integer span = splitSpan.get(type);
 
-            for (int j = 0; j < splitValues.size(); j++) {
-              table.setWidgetAndStyle(r + i, c + j * span,
-                  render(type, splitValues.get(j)), STYLE_COLUMN);
+              if (!BeeUtils.isEmpty(splitValues) && BeeUtils.isPositive(span)) {
+                for (int j = 0; j < splitValues.size(); j++) {
+                  table.setWidgetAndStyle(r + i, c + j * span,
+                      render(type, splitValues.get(j)), STYLE_COLUMN);
+                }
+              }
             }
           }
         }
 
         c += columnSpan.get(columnId);
       }
+
+      logger.debug("column splits", maxColumnSplitTypes);
     }
 
     if (columnsNeedBudget) {
@@ -423,11 +438,15 @@ class AnalysisViewer extends Flow implements HasCaption {
 
         c += span;
       }
+
+      logger.debug("column cell types");
     }
 
     r = rStartValues;
 
     for (long rowId : rowIds) {
+      logger.debug("row", rowId);
+
       if (maxRowLabels > 0) {
         List<AnalysisLabel> labels = rowLabels.get(rowId);
 
@@ -437,6 +456,8 @@ class AnalysisViewer extends Flow implements HasCaption {
           for (int i = 0; i < labels.size(); i++) {
             table.setWidgetAndStyle(r, c + i, render(labels.get(i)), STYLE_ROW);
           }
+
+          logger.debug("labels", labels.size());
         }
       }
 
@@ -446,19 +467,27 @@ class AnalysisViewer extends Flow implements HasCaption {
         if (!BeeUtils.isEmpty(splitTypes)) {
           c = maxRowLabels;
 
+          Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValuesByType =
+              rowSplitValues.get(rowId);
           Map<AnalysisSplitType, Integer> splitSpan = rowSplitSpan.get(rowId);
 
-          for (int i = 0; i < splitTypes.size(); i++) {
-            AnalysisSplitType type = splitTypes.get(i);
+          if (!BeeUtils.isEmpty(splitValuesByType) && !BeeUtils.isEmpty(splitSpan)) {
+            for (int i = 0; i < splitTypes.size(); i++) {
+              AnalysisSplitType type = splitTypes.get(i);
 
-            List<AnalysisSplitValue> splitValues = rowSplitValues.get(rowId).get(type);
-            int span = splitSpan.get(type);
+              List<AnalysisSplitValue> splitValues = splitValuesByType.get(type);
+              Integer span = splitSpan.get(type);
 
-            for (int j = 0; j < splitValues.size(); j++) {
-              table.setWidgetAndStyle(r + j * span, c + i,
-                  render(type, splitValues.get(j)), STYLE_ROW);
+              if (!BeeUtils.isEmpty(splitValues) && BeeUtils.isPositive(span)) {
+                for (int j = 0; j < splitValues.size(); j++) {
+                  table.setWidgetAndStyle(r + j * span, c + i,
+                      render(type, splitValues.get(j)), STYLE_ROW);
+                }
+              }
             }
           }
+
+          logger.debug("splits", splitTypes.size());
         }
       }
 
@@ -477,13 +506,18 @@ class AnalysisViewer extends Flow implements HasCaption {
                   STYLE_ROW);
             }
           }
+
+          logger.debug("cell types", size);
         }
       }
 
       c = cStartValues;
       for (long columnId : columnIds) {
         if (values.contains(rowId, columnId)) {
-          renderValues(values.get(rowId, columnId), table, r, c);
+          List<AnalysisValue> analysisValues = values.get(rowId, columnId);
+
+          renderValues(analysisValues, table, r, c);
+          logger.debug("column", columnId, "values", analysisValues.size());
         }
 
         c += columnSpan.get(columnId);
