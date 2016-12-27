@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.trade.acts;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.xml.client.Element;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
@@ -173,6 +174,16 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       return validateBeforeSave(form, row, true);
     }
     return super.beforeAction(action, presenter);
+  }
+
+  @Override
+  public boolean beforeCreateWidget(String name, Element description) {
+    if (BeeUtils.same(COL_TA_COMPANY, name)) {
+      description.setAttribute("editForm", TradeActKeeper.isClientArea()
+          ? ClassifierConstants.FORM_NEW_COMPANY : ClassifierConstants.FORM_COMPANY);
+    }
+
+    return super.beforeCreateWidget(name, description);
   }
 
   @Override

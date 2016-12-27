@@ -205,7 +205,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         Lists.newArrayList(COL_TRADE_ACT, COL_TA_ITEM,
             COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_VAT,
             COL_TRADE_VAT_PERC, COL_TA_SERVICE_TO, COL_TA_SERVICE_FROM, COL_TA_SERVICE_FROM,
-            COL_TA_SERVICE_TARIFF, COL_TRADE_DISCOUNT);
+            COL_TA_SERVICE_TARIFF, COL_TRADE_DISCOUNT, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN);
     BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
 
     int actIndex = rowSet.getColumnIndex(COL_TRADE_ACT);
@@ -218,6 +218,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     int dateTo = rowSet.getColumnIndex(COL_TA_SERVICE_TO);
     int tariff = rowSet.getColumnIndex(COL_TA_SERVICE_TARIFF);
     int discount = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
+    int serviceDays = rowSet.getColumnIndex(COL_TA_SERVICE_DAYS);
+    int serviceMinTerm = rowSet.getColumnIndex(COL_TA_SERVICE_MIN);
 
     for (BeeRow item : items) {
       Double qty = BeeUtils.toDoubleOrNull(item.getProperty(PRP_QUANTITY));
@@ -236,6 +238,10 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
         row.setValue(dateTo, picker.getDatesTo().get(item.getId()));
         row.setValue(tariff, picker.getTariffs().get(item.getId()));
         row.setValue(discount, picker.getDiscounts().get(item.getId()));
+        row.setValue(serviceDays, item.getString(Data.getColumnIndex(VIEW_ITEMS,
+            COL_TA_SERVICE_DAYS)));
+        row.setValue(serviceMinTerm, item.getString(Data.getColumnIndex(VIEW_ITEMS,
+            COL_TA_SERVICE_MIN)));
 
         ItemPrice itemPrice = defPrice;
 

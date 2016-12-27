@@ -19,6 +19,8 @@
       <SimpleJoin joinType="LEFT" name="Series">
         <SimpleColumn name="SeriesName" alias="ParentSeriesName" />
       </SimpleJoin>
+      <SimpleColumn name="ContinuousAct" />
+      <SimpleColumn name="ReturnAct" />
     </SimpleJoin>
 
     <SimpleColumn name="Item" />

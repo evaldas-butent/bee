@@ -83,9 +83,9 @@
 
       <row>
         <Label for="Company" visible="true" class="bee-required" />
-        <DataSelector source="Company" name="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName"
-          renderColumns="CompanyName TypeName" required="true"
-                      editForm="NewCompany"/>
+        <DataSelector source="Company" name="Company" style="&inpw;" visible="true"
+                      choiceColumns="Name TypeName"
+                      renderColumns="CompanyName TypeName" required="true" />
 
         <Label for="Object" name="labelObject" />
         <DataSelector source="Object" name="Object" renderColumns="ObjectName"
@@ -188,7 +188,8 @@
   </FlowPanel>
   <f:rowEditable>
     <ui:expression>
-      !row.ContinuousAct &amp;&amp; !row.ReturnAct
+      (!row.ContinuousAct &amp;&amp; !row.ReturnAct &amp;&amp; !row.ReturnedCount)
+        || (row.Kind == 7 &amp;&amp; !row.ContinuousAct)
     </ui:expression>
   </f:rowEditable>
 </f:Form>

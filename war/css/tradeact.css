@@ -220,6 +220,8 @@
 .bee-ta-picker-qty-input.bee-ta-picker-qty-input {
   width: 60px;
   font-weight: bold;
+  line-height: 25px;
+  box-sizing: border-box;
 }
 
 .bee-ta-import-items-toggle-cell,

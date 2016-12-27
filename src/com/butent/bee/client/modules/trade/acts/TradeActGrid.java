@@ -606,9 +606,15 @@ public class TradeActGrid extends AbstractGridInterceptor {
     RowFactory.createRow(dataInfo, newRow, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
+        getGridView().ensureRow(result, true);
         if (parent != null) {
-          getGridView().ensureRow(result, true);
-          maybeOpenAct(getGridView(), parent);
+          Queries.getRow(VIEW_TRADE_ACTS, parent.getId(), new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow updatedParent) {
+//              maybeOpenAct(getGridView(), updatedParent);
+              RowEditor.open(VIEW_TRADE_ACTS, updatedParent, Opener.modeless());
+            }
+          });
         }
       }
     });

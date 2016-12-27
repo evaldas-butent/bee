@@ -376,6 +376,66 @@ public class TradeActBean implements HasTimerService {
           }
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void maybeSetRemainingQty(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_TRADE_ACT_ITEMS) && event.hasData()
+            && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
+
+          BeeRowSet rowSet = event.getRowset();
+          List<Long> parentActIds = DataUtils.getDistinct(rowSet, COL_TA_PARENT);
+          List<Long> actIds = DataUtils.getDistinct(rowSet, COL_TRADE_ACT);
+
+          if (BeeUtils.isEmpty(parentActIds)) {
+            return;
+          }
+
+          int actIndex = rowSet.getColumnIndex(COL_TRADE_ACT);
+          int parentActIndex = rowSet.getColumnIndex(COL_TA_PARENT);
+          int itemIndex = rowSet.getColumnIndex(COL_TA_ITEM);
+
+          int qtyScale = rowSet.getColumn(COL_TRADE_ITEM_QUANTITY).getScale();
+          Map<Pair<Long, Long>, Double> remainData = null;
+
+          for (Long actId : actIds) {
+            TradeActKind kind = getActKind(actId);
+
+            if (kind != null && kind == TradeActKind.RETURN) {
+              if (remainData == null) {
+                remainData = new HashMap<>();
+                BeeRowSet remainItems = getRemainingItems(parentActIds.toArray(new Long[parentActIds
+                    .size()]));
+
+                for (int i = 0; i < remainItems.getNumberOfRows(); i++) {
+                  Long item = remainItems.getLong(i, COL_ITEM);
+                  Long act = remainItems.getLong(i, COL_TRADE_ACT);
+                  Double qty = remainItems.getDouble(i, COL_TRADE_ITEM_QUANTITY);
+
+                  remainData.put(Pair.of(item, act), qty);
+                }
+              }
+
+              if (!remainData.isEmpty()) {
+                for (BeeRow row : rowSet) {
+                  if (actId.equals(row.getLong(actIndex))) {
+                    Long parentAct = row.getLong(parentActIndex);
+                    Long item = row.getLong(itemIndex);
+
+                    Double qty = remainData.get(Pair.of(item, parentAct));
+
+                    logger.warning("DEB", item, parentAct, qty);
+                    if (BeeUtils.isDouble(qty)) {
+                      row.setProperty(PRP_REMAINING_QTY, BeeUtils.toString(qty, qtyScale));
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
     });
   }
 
@@ -1892,7 +1952,7 @@ public class TradeActBean implements HasTimerService {
       filter.add(Filter.restore(where));
     }
 
-    BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter);
+    BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter, Order.ascending(COL_ITEM_ORDINAL));
     if (DataUtils.isEmpty(items)) {
       logger.debug(reqInfo.getService(), "no items found", filter);
       return ResponseObject.emptyResponse();
@@ -1977,7 +2037,8 @@ public class TradeActBean implements HasTimerService {
         Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
 
     BeeRowSet parentItems =
-        qs.getViewData(VIEW_TRADE_ACT_ITEMS, filter, Order.ascending(COL_TA_ITEM, COL_TA_DATE));
+        qs.getViewData(VIEW_TRADE_ACT_ITEMS, filter, Order.ascending(ALS_ITEM_ORDINAL, COL_TA_ITEM,
+            COL_TA_DATE));
     if (DataUtils.isEmpty(parentItems)) {
       return null;
     }

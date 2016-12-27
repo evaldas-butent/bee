@@ -535,6 +535,10 @@ public final class TradeActKeeper {
     return result;
   }
 
+  public static boolean isClientArea() {
+    return BeeKeeper.getScreen().getUserInterface() == UserInterface.TRADE_ACTS;
+  }
+
   static Long getWarehouseFrom(String viewName, IsRow row) {
     int index = Data.getColumnIndex(viewName, COL_TA_OPERATION);
     if (row == null || BeeConst.isUndef(index)) {
@@ -557,10 +561,6 @@ public final class TradeActKeeper {
     }
   }
 
-  static boolean isClientArea() {
-    return BeeKeeper.getScreen().getUserInterface() == UserInterface.TRADE_ACTS;
-  }
-
   static boolean isEnabledItemsGrid(TradeActKind kind, FormView form, IsRow row) {
     if (row == null) {
       return false;
@@ -568,8 +568,11 @@ public final class TradeActKeeper {
 
     boolean hasContinuousTa = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_CONTINUOUS)));
     boolean isContinuousTa = kind == TradeActKind.CONTINUOUS;
+    boolean hasMultiReturn = DataUtils.isId(row.getLong(form.getDataIndex(COL_TA_RETURN)));
+    boolean hasReturn = BeeUtils.isPositive(row.getLong(form.getDataIndex(ALS_RETURNED_COUNT)));
 
-    return  !hasContinuousTa && !isContinuousTa && !TradeActKeeper.isClientArea();
+    return  !hasContinuousTa && !isContinuousTa && !TradeActKeeper.isClientArea()
+        && !hasMultiReturn && !hasReturn;
   }
 
   static boolean isUserSeries(Long series) {

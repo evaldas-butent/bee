@@ -71,7 +71,8 @@
       <row>
         <TextLabel source="Manager">
           <renderToken source="ManagerFirstName" prefix="Pagarbiai: &lt;br /&gt; &lt;b&gt;" suffix="&lt;/b&gt;" />
-          <renderToken source="ManagerLastName" prefix="&lt;b&gt;" suffix=" &lt;/b&gt; &lt;br /&gt;"/>
+          <renderToken source="ManagerLastName" prefix=" &lt;b&gt;"
+                       suffix=" &lt;/b&gt; &lt;br /&gt;"/>
           <renderToken source="ManagerPositionName" suffix=" &lt;br /&gt;" />
           <renderToken source="ManagerPhone" suffix="&lt;/b&gt; &lt;br /&gt;" prefix="&lt;b&gt; tel.: " />
           <renderToken source="ManagerMobile" suffix="&lt;/b&gt; &lt;br /&gt;" prefix="&lt;b&gt; mob.: " />

@@ -768,15 +768,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       query.addField(tradeItems, sys.getIdName(tradeItems), tradeItems)
           .addFields(tradeItems, COL_TRADE_DISCOUNT, COL_ITEM)
           .addFields(TBL_TRADE_ACTS, COL_TRADE_NUMBER, COL_TRADE_CONTACT);
+      query.addOrder(TBL_ITEMS, COL_TRADE_ITEM_ORDINAL, sys.getIdName(TBL_ITEMS));
 
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_ITEMS)) {
         query.addFields(TBL_TRADE_ACT_ITEMS, sys.getIdName(tradeItems))
             .addFields(TBL_ITEMS, COL_TRADE_WEIGHT, COL_ITEM_AREA);
+        query.addOrder(TBL_ITEMS, COL_TRADE_ITEM_ORDINAL, sys.getIdName(TBL_ITEMS));
       }
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_SERVICES)) {
         query.addFields(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
             COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_MIN, COL_TA_SERVICE_DAYS)
             .addFields(TBL_ITEMS, COL_TRADE_TIME_UNIT);
+        query.addOrder(TBL_ITEMS, COL_TRADE_ITEM_ORDINAL, sys.getIdName(TBL_ITEMS));
       }
     } else {
       query.addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));

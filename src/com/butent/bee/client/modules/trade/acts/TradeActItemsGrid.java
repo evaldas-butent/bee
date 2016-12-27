@@ -40,7 +40,9 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -235,6 +237,46 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   }
 
   @Override
+  public void onEditEnd(EditEndEvent event, Object source) {
+    super.onEditEnd(event, source);
+
+    final IsRow parentRow = ViewHelper.getFormRow(getGridPresenter().getMainView());
+
+    if (parentRow != null) {
+      final TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
+
+      /* If trade act is Return */
+      if (kind == TradeActKind.RETURN) {
+        IsColumn column = event.getColumn();
+
+        if (column.getId() != COL_TRADE_ITEM_QUANTITY) {
+          return;
+        }
+
+        IsRow row = event.getRowValue();
+        double remain = BeeUtils.unbox(row.getPropertyDouble(PRP_REMAINING_QTY));
+        double newValue = BeeUtils.toDouble(event.getNewValue());
+        double oldValue = BeeUtils.toDouble(event.getOldValue());
+
+        if (!BeeUtils.isPositive(newValue)) {
+          event.consume();
+          getGridView().notifySevere(Localized.getLabel(column), " > 0");
+          return;
+        }
+
+        if ((oldValue + remain) < newValue) {
+          event.consume();
+          getGridView().notifySevere(Localized.getLabel(column), " <= ",
+              BeeUtils.toString(oldValue + remain));
+          return;
+        }
+
+        row.setProperty(PRP_REMAINING_QTY, remain - (newValue - oldValue));
+      }
+    }
+  }
+
+  @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     final IsRow parentRow = ViewHelper.getFormRow(presenter.getMainView());
 
@@ -385,6 +427,11 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   @Override
   public GridInterceptor getInstance() {
     return new TradeActItemsGrid();
+  }
+
+  @Override
+  public void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
+    super.onReadyForUpdate(gridView, event);
   }
 
   @Override

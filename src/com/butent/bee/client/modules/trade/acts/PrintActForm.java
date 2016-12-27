@@ -2,14 +2,12 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.google.common.collect.TreeBasedTable;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -42,6 +40,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -229,6 +228,7 @@ public class PrintActForm extends AbstractFormInterceptor {
           visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
           break;
         case COL_TRADE_VAT:
+          visibleItemsCols.put(FORM_PRINT_TA_SALE, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
@@ -238,6 +238,22 @@ public class PrintActForm extends AbstractFormInterceptor {
           visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
           break;
         case COL_ITEM_AREA:
+          break;
+        case "Amount":
+          visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_SALE, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
           break;
         case COL_ITEM_ARTICLE:
         case COL_ITEM_NAME:
@@ -251,7 +267,6 @@ public class PrintActForm extends AbstractFormInterceptor {
         case COL_TA_SERVICE_TARIFF:
         case COL_TRADE_ITEM_PRICE:
         case COL_TRADE_DISCOUNT:
-        case "Amount":
           visibleItemsCols.put(FORM_PRINT_TA_SALE, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
@@ -272,14 +287,15 @@ public class PrintActForm extends AbstractFormInterceptor {
     }
   }
 
-  private static void addDataToTable(Table<String, String, String> data, String id, String cell,
+  private static void addDataToTable(Map<String, Map<String, String>> data, String id, String cell,
                                      String value) {
     switch (cell) {
       case "RemainingQty":
-        BigDecimal val = BigDecimal.valueOf(BeeUtils.toDouble(data.get(id, cell))
+        BigDecimal val = BigDecimal.valueOf(BeeUtils.toDouble(getDataValue(data, id, cell))
             + BeeUtils.toDouble(value));
 
-        data.put(id, cell, val.toPlainString());
+
+        addDataEntry(data, id, cell, val.toPlainString());
         break;
 
       case COL_TA_RETURNED_QTY:
@@ -287,14 +303,51 @@ public class PrintActForm extends AbstractFormInterceptor {
       case "AmountTotal":
       case "Amount":
       case "AmountVat":
-        data.put(id, cell, BeeUtils.round(BeeUtils.toString(BeeUtils.toDouble(data.get(id, cell))
-            + BeeUtils.toDouble(value)), 2));
+        addDataEntry(data, id, cell, BeeUtils.round(
+            BeeUtils.toString(
+                BeeUtils.toDouble(getDataValue(data, id, cell)) + BeeUtils.toDouble(value)), 2));
         break;
 
 
       default:
-        data.put(id, cell, value);
+        addDataEntry(data, id, cell, value);
     }
+  }
+
+  private static void addDataEntry(Map<String, Map<String, String>> data, String row, String
+      col, String value) {
+    Map<String, String> rowData = data.get(row);
+
+    if (rowData == null) {
+      rowData = new LinkedHashMap<>();
+      data.put(row, rowData);
+    }
+
+    rowData.put(col, value);
+  }
+
+  private static String getDataValue(Map<String, Map<String, String>> data, String row,
+                                     String col) {
+    String result = null;
+    Map<String, String> rowData = data.get(row);
+
+    if (rowData == null) {
+      return result;
+    }
+
+    result = rowData.get(col);
+    return result;
+  }
+
+  private static boolean isDataContainsColumn(Map<String, Map<String, String>> data,
+                                              String column) {
+    boolean result = false;
+
+    for (String row : data.keySet()) {
+      result |= data.get(row) != null && data.get(row).containsKey(column);
+    }
+
+    return result;
   }
 
   private boolean isVisibleColumn(String widgetName, String col) {
@@ -372,7 +425,7 @@ public class PrintActForm extends AbstractFormInterceptor {
           totConsumer.accept(0.0);
           return;
         }
-        Table<String, String, String> data = TreeBasedTable.create();
+        Map<String, Map<String, String>> data = new LinkedHashMap<>();
 
         for (SimpleRowSet.SimpleRow row : rs) {
           String id = getDataTableId(typeTable, row);
@@ -427,20 +480,20 @@ public class PrintActForm extends AbstractFormInterceptor {
               addDataToTable(data, id, col, value);
             }
           }
-          double qty = BeeUtils.nvl(remainQty.get(itemId), BeeUtils.toDouble(data.get(id,
+          double qty = BeeUtils.nvl(remainQty.get(itemId), BeeUtils.toDouble(getDataValue(data, id,
               COL_TRADE_ITEM_QUANTITY))
-              - BeeUtils.toDouble(data.get(id, COL_TA_RETURNED_QTY)));
-          double prc = BeeUtils.toDouble(data.get(id, COL_TRADE_ITEM_PRICE));
+              - BeeUtils.toDouble(getDataValue(data, id, COL_TA_RETURNED_QTY)));
+          double prc = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_ITEM_PRICE));
           double sum = qty * prc;
 
-          double disc = BeeUtils.toDouble(data.get(id, COL_TRADE_DISCOUNT));
-          double vat = BeeUtils.toDouble(data.get(id, COL_TRADE_VAT));
-          boolean vatInPercents = BeeUtils.toBoolean(data.get(id, COL_TRADE_VAT_PERC));
+          double disc = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_DISCOUNT));
+          double vat = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_VAT));
+          boolean vatInPercents = BeeUtils.toBoolean(getDataValue(data, id, COL_TRADE_VAT_PERC));
 
           double dscSum = sum / 100 * disc;
           sum -= dscSum;
 
-          if (BeeUtils.toBoolean(data.get(id, COL_TRADE_VAT_PLUS))) {
+          if (BeeUtils.toBoolean(getDataValue(data, id, COL_TRADE_VAT_PLUS))) {
             if (vatInPercents) {
               vat = sum / 100 * vat;
             }
@@ -453,9 +506,10 @@ public class PrintActForm extends AbstractFormInterceptor {
           sum = BeeUtils.round(sum, 2);
 
           for (String col : new String[] {COL_ITEM_WEIGHT, COL_ITEM_AREA}) {
-            if (data.contains(id, col)) {
+            if (data.get(id) != null && data.get(id).containsKey(col)) {
               addDataToTable(data, id, col,
-                  BeeUtils.toString(BeeUtils.round(BeeUtils.toDouble(data.get(id, col)) * qty, 5)));
+                  BeeUtils.toString(BeeUtils.round(BeeUtils.toDouble(
+                      getDataValue(data, id, col)) * qty, 5)));
             }
           }
           if (disc > 0) {
@@ -473,11 +527,12 @@ public class PrintActForm extends AbstractFormInterceptor {
           ));
 
           if (BeeUtils.same(typeTable, SERVICES_WIDGET_NAME)) {
-            if (BeeUtils.isEmpty(data.get(id, COL_TIME_UNIT))) {
+            if (BeeUtils.isEmpty(getDataValue(data, id, COL_TIME_UNIT))) {
               addDataToTable(data, id, "MinTermAmount",
                   BeeUtils.toString(BeeUtils.round(sum + vat, 2)));
-            } else if (BeeUtils.isDouble(BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN)))) {
-              double mint = BeeUtils.toDouble(data.get(id, COL_TA_SERVICE_MIN));
+            } else if (BeeUtils.isDouble(BeeUtils.toDouble(
+                getDataValue(data, id, COL_TA_SERVICE_MIN)))) {
+              double mint = BeeUtils.toDouble(getDataValue(data, id, COL_TA_SERVICE_MIN));
               addDataToTable(data, id, "MinTermAmount",
                   BeeUtils.toString(BeeUtils.round(mint * (sum + vat), 2)));
             }
@@ -503,7 +558,7 @@ public class PrintActForm extends AbstractFormInterceptor {
 
         for (String col : COLUMN_LIST) {
 
-          if (!data.containsColumn(col)) {
+          if (!isDataContainsColumn(data, col)) {
             continue;
           }
 
@@ -514,8 +569,8 @@ public class PrintActForm extends AbstractFormInterceptor {
           int r = 1;
           BigDecimal sum = BigDecimal.ZERO;
 
-          for (String id : data.rowKeySet()) {
-            String value = data.get(id, col);
+          for (String id : data.keySet()) {
+            String value = getDataValue(data, id, col);
 
             if (calc.contains(col)) {
               sum = sum.add(BeeUtils.nvl(BeeUtils.toDecimalOrNull(value), BigDecimal.ZERO));

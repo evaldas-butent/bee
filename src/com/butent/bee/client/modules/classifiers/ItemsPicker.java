@@ -40,6 +40,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.FaLabel;
@@ -395,6 +396,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       ItemPrice defPrice = selectedPrices.containsKey(item.getId())
           ? selectedPrices.get(item.getId()) : itemPrice;
 
+      boolean enableQty = false;
       for (ItemPrice ip : ItemPrice.values()) {
         String html = renderPrice(item, priceIndexes.get(ip), currencyIndexes.get(ip));
 
@@ -404,6 +406,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           table.setHtml(r, c, html,
               (ip == defPrice) ? STYLE_SELECTED_PRICE_CELL : STYLE_PRICE_CELL);
           DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
+
+          if (ip == ItemPrice.SALE) {
+            enableQty = true;
+          }
         }
         c++;
       }
@@ -447,7 +453,12 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       }
 
       Double qty = quantities.get(item.getId());
-      table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
+      InputNumber wQty = (InputNumber) renderQty(qtyColumn, qty);
+      wQty.setStyleName(StyleUtils.NAME_DISABLED, !enableQty);
+      wQty.setStyleName(StyleUtils.NAME_TEXT_BOX, enableQty);
+      wQty.setEnabled(enableQty);
+
+      table.setWidget(r, c, wQty, STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
 
       DomUtils.setDataIndex(table.getRow(r), item.getId());
 
