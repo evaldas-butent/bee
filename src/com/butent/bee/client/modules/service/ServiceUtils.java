@@ -66,6 +66,14 @@ public final class ServiceUtils {
     maintenanceRow.clearCell(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME));
   }
 
+  public static void fillCompanyColumns(IsRow maintenanceRow, IsRow dataRow, String dataViewName,
+      String companyColumnAlias, String companyTypeColumnAlias) {
+    maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_NAME),
+        dataRow.getString(Data.getColumnIndex(dataViewName, companyColumnAlias)));
+    maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME),
+        dataRow.getString(Data.getColumnIndex(dataViewName, companyTypeColumnAlias)));
+  }
+
   public static void fillCompanyValues(IsRow maintenanceRow, IsRow dataRow, String dataViewName,
       String companyColumnName, String companyColumnAlias, String companyTypeColumnAlias) {
     if (dataRow != null) {
@@ -73,12 +81,8 @@ public final class ServiceUtils {
 
       if (DataUtils.isId(company)) {
         maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(COL_COMPANY), company);
-
-        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_NAME),
-            dataRow.getString(Data.getColumnIndex(dataViewName, companyColumnAlias)));
-        maintenanceRow.setValue(maintenanceDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME),
-            dataRow.getString(Data.getColumnIndex(dataViewName, companyTypeColumnAlias)));
-
+        fillCompanyColumns(maintenanceRow, dataRow, dataViewName, companyColumnAlias,
+            companyTypeColumnAlias);
         return;
       }
     }

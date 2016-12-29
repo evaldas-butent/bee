@@ -573,6 +573,14 @@ public final class Format {
     }
   }
 
+  public static String renderYearMonth(HasYearMonth ym) {
+    if (ym == null) {
+      return null;
+    } else {
+      return BeeUtils.joinWords(ym.getYear(), renderMonthFullStandalone(ym).toLowerCase());
+    }
+  }
+
   public static void setFormat(Object target, ValueType type, String pattern) {
     Assert.notNull(target);
     Assert.notEmpty(pattern);

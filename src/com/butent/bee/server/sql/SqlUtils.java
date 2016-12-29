@@ -823,6 +823,10 @@ public final class SqlUtils {
     return BeeUtils.randomString(5);
   }
 
+  public static String uniqueName(String prefix) {
+    return BeeUtils.trim(prefix) + uniqueName();
+  }
+
   static <T> Collection<T> addCollection(Collection<T> destination, Collection<T> source) {
     Collection<T> dest = destination;
 

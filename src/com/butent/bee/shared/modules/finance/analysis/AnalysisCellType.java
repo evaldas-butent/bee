@@ -108,15 +108,12 @@ public class AnalysisCellType {
     return needsBudget(decode(input));
   }
 
-  public static List<AnalysisCellType> normalize(List<AnalysisCellType> list) {
-    if (BeeUtils.isEmpty(list)) {
-      List<AnalysisCellType> result = new ArrayList<>();
-      result.add(new AnalysisCellType(AnalysisValueType.DEFAULT));
-      return result;
-
-    } else {
-      return list;
+  public static List<AnalysisCellType> normalize(String input) {
+    List<AnalysisCellType> list = decode(input);
+    if (list.isEmpty()) {
+      list.add(new AnalysisCellType(AnalysisValueType.DEFAULT));
     }
+    return list;
   }
 
   private final AnalysisValueType analysisValueType;
@@ -139,7 +136,19 @@ public class AnalysisCellType {
     return scale;
   }
 
+  public boolean isDefault() {
+    return analysisValueType == AnalysisValueType.DEFAULT;
+  }
+
   public void setScale(int scale) {
     this.scale = scale;
+  }
+
+  public String render(AnalysisValue analysisValue) {
+    if (analysisValue == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return analysisValueType.render(analysisValue, scale);
+    }
   }
 }

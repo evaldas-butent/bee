@@ -31,7 +31,7 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
   DEBIT_ONLY {
     @Override
     public String getCaption(Dictionary dictionary) {
-      return dictionary.finDebitOnly();
+      return dictionary.debit();
     }
 
     @Override
@@ -62,7 +62,7 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
   CREDIT_ONLY {
     @Override
     public String getCaption(Dictionary dictionary) {
-      return dictionary.finCreditOnly();
+      return dictionary.credit();
     }
 
     @Override
@@ -93,7 +93,7 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
   OPENING_BALANCE {
     @Override
     public String getCaption(Dictionary dictionary) {
-      return dictionary.finOpeningBalance();
+      return dictionary.finOpeningBalanceShort();
     }
 
     @Override
@@ -124,7 +124,7 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
   CLOSING_BALANCE {
     @Override
     public String getCaption(Dictionary dictionary) {
-      return dictionary.finClosingBalance();
+      return dictionary.finClosingBalanceShort();
     }
 
     @Override

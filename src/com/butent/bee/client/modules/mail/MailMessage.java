@@ -447,9 +447,7 @@ public class MailMessage extends AbstractFormInterceptor {
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {
-      if (DataUtils.isId(rawId)) {
-        Printer.print(widgets.get(CONTAINER).getElement().getString(), null);
-      }
+      Printer.print(widgets.get(CONTAINER).getElement().getString(), null);
       return false;
     }
     return super.beforeAction(action, presenter);

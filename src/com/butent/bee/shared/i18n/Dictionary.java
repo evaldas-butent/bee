@@ -2919,6 +2919,8 @@ public interface Dictionary {
 
   default String finClosingBalance() {return g("finClosingBalance");}
 
+  default String finClosingBalanceShort() {return g("finClosingBalanceShort");}
+
   default String finClosingEntries() {return g("finClosingEntries");}
 
   default String finClosingEntriesShort() {return g("finClosingEntriesShort");}
@@ -3062,6 +3064,8 @@ public interface Dictionary {
   default String finNormalBalanceShort() {return g("finNormalBalanceShort");}
 
   default String finOpeningBalance() {return g("finOpeningBalance");}
+
+  default String finOpeningBalanceShort() {return g("finOpeningBalanceShort");}
 
   default String finPettyCash() {return g("finPettyCash");}
 
@@ -4590,6 +4594,8 @@ public interface Dictionary {
 
   default String prmExportERPReservationsTime() {return g("prmExportERPReservationsTime");}
 
+  default String prmExternalMaintenanceUrl() {return g("prmExternalMaintenanceUrl");}
+
   default String prmForbiddenFilesExtentions() {return g("prmForbiddenFilesExtentions");}
 
   default String prmImportERPItemsTime() {return g("prmImportERPItemsTime");}
@@ -5067,7 +5073,13 @@ public interface Dictionary {
 
   default String svcMaintenance() {return g("svcMaintenance");}
 
-  default String svcMaintenanceEmailHeader() {return g("svcMaintenanceEmailHeader");}
+  default String svcMaintenanceEmailContent(Object p0, Object p1, Object p2) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    _m.put("{1}", p1);
+    _m.put("{2}", p2);
+    return Localized.format(g("svcMaintenanceEmailContent"), _m);
+  }
 
   default String svcMaintenanceItemsServices() {return g("svcMaintenanceItemsServices");}
 
@@ -6802,9 +6814,13 @@ public interface Dictionary {
 
   default String vehicleManualTransmission() {return g("vehicleManualTransmission");}
 
+  default String vehicleManufacturerNr() {return g("vehicleManufacturerNr");}
+
   default String vehicleMinivan() {return g("vehicleMinivan");}
 
   default String vehicleModel() {return g("vehicleModel");}
+
+  default String vehicleModelNr() {return g("vehicleModelNr");}
 
   default String vehicleModels() {return g("vehicleModels");}
 
@@ -6827,6 +6843,8 @@ public interface Dictionary {
   default String vehicleProductionDateShort() {return g("vehicleProductionDateShort");}
 
   default String vehicleRepairs() {return g("vehicleRepairs");}
+
+  default String vehicleResponsiblePerson() {return g("vehicleResponsiblePerson");}
 
   default String vehicleSUV() {return g("vehicleSUV");}
 

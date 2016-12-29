@@ -1,6 +1,8 @@
 package com.butent.bee.server.modules.finance;
 
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
@@ -26,8 +28,52 @@ class AnalysisFilter {
     main.putAll(parse(row, indexes, employeeColumnName));
   }
 
-  IsCondition getBudgetCondition(String source) {
-    return null;
+  IsCondition getBudgetCondition(String source, String employeeColumn) {
+    HasConditions conditions = SqlUtils.and();
+
+    Collection<String> dimensionColumns = Dimensions.getObservedRelationColumns();
+
+    if (!main.isEmpty()) {
+      conditions.add(getCondition(main, source, employeeColumn, dimensionColumns));
+    }
+
+    if (!include.isEmpty()) {
+      HasConditions ic = SqlUtils.or();
+      include.forEach(map -> ic.add(getCondition(map, source, employeeColumn, dimensionColumns)));
+      conditions.add(ic);
+    }
+
+    if (!exclude.isEmpty()) {
+      HasConditions ec = SqlUtils.or();
+      exclude.forEach(map -> ec.add(getCondition(map, source, employeeColumn, dimensionColumns)));
+      conditions.add(SqlUtils.not(ec));
+    }
+
+    return normalize(conditions);
+  }
+
+  private static IsCondition getCondition(Map<String, Long> map, String source,
+      String employeeColumnName, Collection<String> dimensionColumnNames) {
+
+    HasConditions conditions = SqlUtils.and();
+
+    map.forEach((k, v) -> {
+      if (k.equals(employeeColumnName)) {
+        conditions.add(SqlUtils.equals(source, employeeColumnName, v));
+      } else if (dimensionColumnNames.contains(k)) {
+        conditions.add(SqlUtils.equals(source, k, v));
+      }
+    });
+
+    return normalize(conditions);
+  }
+
+  private static HasConditions normalize(HasConditions conditions) {
+    if (conditions == null || conditions.isEmpty()) {
+      return null;
+    } else {
+      return conditions;
+    }
   }
 
   boolean isEmpty() {

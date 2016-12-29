@@ -89,7 +89,7 @@ public class ConcurrencyBean {
     @Override
     public void taskStarting(Future<?> future, ManagedExecutorService executor, Object task) {
       started = System.currentTimeMillis();
-      logger.info("Started:", this, TimeUtils.elapsedSeconds(submitted));
+      logger.info("Started:", this, "Delay:", TimeUtils.elapsedSeconds(submitted));
     }
 
     @Override

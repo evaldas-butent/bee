@@ -5,17 +5,19 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Objects;
+
 public final class AnalysisValue implements BeeSerializable {
 
   public static AnalysisValue actual(long columnId, long rowId, double value) {
     AnalysisValue av = new AnalysisValue(columnId, rowId);
-    av.setActualValue(BeeUtils.toString(value));
+    av.setActualValue(value);
     return av;
   }
 
   public static AnalysisValue budget(long columnId, long rowId, double value) {
     AnalysisValue av = new AnalysisValue(columnId, rowId);
-    av.setBudgetValue(BeeUtils.toString(value));
+    av.setBudgetValue(value);
     return av;
   }
 
@@ -23,10 +25,10 @@ public final class AnalysisValue implements BeeSerializable {
     AnalysisValue av = new AnalysisValue(columnId, rowId);
 
     if (BeeUtils.isDouble(actual)) {
-      av.setActualValue(BeeUtils.toString(actual));
+      av.setActualValue(actual);
     }
     if (BeeUtils.isDouble(budget)) {
-      av.setBudgetValue(BeeUtils.toString(budget));
+      av.setBudgetValue(budget);
     }
 
     return av;
@@ -36,6 +38,10 @@ public final class AnalysisValue implements BeeSerializable {
     AnalysisValue av = new AnalysisValue();
     av.deserialize(s);
     return av;
+  }
+
+  private static String format(double value) {
+    return BeeUtils.toString(value);
   }
 
   private enum Serial {
@@ -65,6 +71,22 @@ public final class AnalysisValue implements BeeSerializable {
   private AnalysisValue(long columnId, long rowId) {
     this.columnId = columnId;
     this.rowId = rowId;
+  }
+
+  public void add(AnalysisValue other) {
+    if (other != null) {
+      if (BeeUtils.isEmpty(actualValue)) {
+        setActualValue(other.actualValue);
+      } else if (BeeUtils.isDouble(other.actualValue)) {
+        setActualValue(getActualNumber() + other.getActualNumber());
+      }
+
+      if (BeeUtils.isEmpty(budgetValue)) {
+        setBudgetValue(other.budgetValue);
+      } else if (BeeUtils.isDouble(other.budgetValue)) {
+        setBudgetValue(getBudgetNumber() + other.getBudgetNumber());
+      }
+    }
   }
 
   public long getColumnId() {
@@ -103,8 +125,16 @@ public final class AnalysisValue implements BeeSerializable {
     return actualValue;
   }
 
+  public double getActualNumber() {
+    return BeeUtils.toDouble(getActualValue());
+  }
+
   public String getBudgetValue() {
     return budgetValue;
+  }
+
+  public double getBudgetNumber() {
+    return BeeUtils.toDouble(getBudgetValue());
   }
 
   private void setColumnId(long columnId) {
@@ -135,8 +165,16 @@ public final class AnalysisValue implements BeeSerializable {
     this.actualValue = actualValue;
   }
 
+  private void setActualValue(double value) {
+    setActualValue(format(value));
+  }
+
   private void setBudgetValue(String budgetValue) {
     this.budgetValue = budgetValue;
+  }
+
+  private void setBudgetValue(double value) {
+    setBudgetValue(format(value));
   }
 
   public void setRowSplitTypeIndex(Integer rowSplitTypeIndex) {
@@ -239,5 +277,17 @@ public final class AnalysisValue implements BeeSerializable {
     }
 
     return Codec.beeSerialize(arr);
+  }
+
+  public boolean matches(AnalysisValue other) {
+    return other != null
+        && columnId == other.columnId
+        && rowId == other.rowId
+        && Objects.equals(columnParentValueIndex, other.columnParentValueIndex)
+        && Objects.equals(columnSplitTypeIndex, other.columnSplitTypeIndex)
+        && Objects.equals(columnSplitValueIndex, other.columnSplitValueIndex)
+        && Objects.equals(rowParentValueIndex, other.rowParentValueIndex)
+        && Objects.equals(rowSplitTypeIndex, other.rowSplitTypeIndex)
+        && Objects.equals(rowSplitValueIndex, other.rowSplitValueIndex);
   }
 }

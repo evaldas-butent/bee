@@ -31,6 +31,7 @@ public final class ServiceConstants {
   public static final String PRM_SMS_REQUEST_SERVICE_USER_NAME = "SmsRequestServiceUserName";
   public static final String PRM_SMS_REQUEST_SERVICE_PASSWORD = "SmsRequestServicePassword";
   public static final String PRM_SMS_REQUEST_SERVICE_FROM = "SmsRequestServiceFrom";
+  public static final String PRM_EXTERNAL_MAINTENANCE_URL = "ExternalMaintenanceUrl";
 
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_CREATE_DEFECT_ITEMS = "CreateDefectItems";

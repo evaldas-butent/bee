@@ -69,7 +69,9 @@ public class AccountInfo {
     Dictionary loc = Localized.dictionary();
     String cap = null;
 
-    if (isDraftsFolder(folderId)) {
+    if (Objects.isNull(folderId)) {
+      cap = getRootFolder().getName();
+    } else if (isDraftsFolder(folderId)) {
       cap = loc.mailFolderDrafts();
     } else if (isInboxFolder(folderId)) {
       cap = loc.mailFolderInbox();

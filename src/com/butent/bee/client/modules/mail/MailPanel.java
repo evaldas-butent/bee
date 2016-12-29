@@ -306,20 +306,13 @@ public class MailPanel extends AbstractFormInterceptor {
     @Override
     public void onActiveRowChange(ActiveRowChangeEvent event) {
       IsRow row = event.getRowValue();
+      unseenWidget.setVisible(Objects.nonNull(row));
 
-      if (row != null) {
+      if (Objects.nonNull(row)) {
         if (!message.samePlace(row.getId())) {
           message.requery(COL_PLACE, row.getId());
           messageWidget.setVisible(true);
           emptySelectionWidget.setVisible(false);
-
-          int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
-          int value = BeeUtils.unbox(row.getInteger(flagIdx));
-
-          if (!MessageFlag.SEEN.isSet(value)) {
-            row.setValue(flagIdx, MessageFlag.SEEN.set(value));
-            getGridView().refreshCell(row.getId(), COL_MESSAGE);
-          }
         }
       } else if (getGridView().isEmpty()
           || !Objects.equals(message.getFolder(), getCurrentFolder())) {
@@ -551,6 +544,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private Widget messageWidget;
   private Widget emptySelectionWidget;
+  private FaLabel unseenWidget = new FaLabel(FontAwesome.EYE_SLASH);
   private FaLabel purgeWidget = new FaLabel(FontAwesome.RECYCLE);
 
   MailPanel(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
@@ -694,21 +688,10 @@ public class MailPanel extends AbstractFormInterceptor {
       });
       header.addCommandItem(accountSettings);
     }
-    FaLabel unseenWidget = new FaLabel(FontAwesome.EYE_SLASH);
-
     unseenWidget.setTitle(Localized.dictionary().mailMarkAsUnread());
-    unseenWidget.addClickHandler(ev -> {
-      GridPresenter grid = messages.getGridPresenter();
-      IsRow row = grid.getActiveRow();
-
-      if (row != null) {
-        flagMessage(row.getId(), MessageFlag.SEEN, false);
-
-        int flagIdx = Data.getColumnIndex(grid.getViewName(), COL_FLAGS);
-        row.setValue(flagIdx, MessageFlag.SEEN.clear(BeeUtils.unbox(row.getInteger(flagIdx))));
-        grid.getGridView().refreshCell(row.getId(), COL_MESSAGE);
-      }
-    });
+    unseenWidget.setVisible(false);
+    unseenWidget.addClickHandler(ev ->
+        flagMessage(messages.getGridPresenter().getActiveRowId(), MessageFlag.SEEN, false));
     header.addCommandItem(unseenWidget);
 
     purgeWidget.setTitle(Localized.dictionary().mailEmptyTrashFolder());

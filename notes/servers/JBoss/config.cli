@@ -49,8 +49,8 @@ data-source add \
     ])
 
 /subsystem=ee/managed-executor-service=default:write-attribute(name=hung-task-threshold,value=3600000)
-/subsystem=ee/managed-executor-service=default:write-attribute(name=core-threads,value=50)
-/subsystem=ee/managed-executor-service=default:write-attribute(name=max-threads,value=50)
+/subsystem=ee/managed-executor-service=default:write-attribute(name=core-threads,value=40)
+/subsystem=ee/managed-executor-service=default:write-attribute(name=max-threads,value=40)
 /subsystem=ee/managed-executor-service=default:write-attribute(name=queue-length,value=2147483647)
 
 /subsystem=transactions:write-attribute(name=default-timeout,value=1800)

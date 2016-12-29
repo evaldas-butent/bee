@@ -1,9 +1,14 @@
 package com.butent.bee.shared.modules.finance.analysis;
 
+import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.NonNullList;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -85,6 +90,25 @@ public final class AnalysisResults implements BeeSerializable {
     }
   }
 
+  public void mergeValue(AnalysisValue value) {
+    if (value != null) {
+      for (AnalysisValue av : values) {
+        if (av.matches(value)) {
+          av.add(value);
+          return;
+        }
+      }
+
+      addValue(value);
+    }
+  }
+
+  public void mergeValues(Collection<AnalysisValue> collection) {
+    if (collection != null) {
+      collection.forEach(this::mergeValue);
+    }
+  }
+
   public void addColumnSplitTypes(long columnId, List<AnalysisSplitType> splitTypes) {
     if (!BeeUtils.isEmpty(splitTypes)) {
       columnSplitTypes.put(columnId, splitTypes);
@@ -123,22 +147,16 @@ public final class AnalysisResults implements BeeSerializable {
     return columnSplitTypes.getOrDefault(columnId, EMPTY_SPLIT_TYPES);
   }
 
-  public List<AnalysisSplitValue> getColumnSplitValues(long columnId, AnalysisSplitType type) {
-    Map<AnalysisSplitType, List<AnalysisSplitValue>> map = columnSplitValues.get(columnId);
-    List<AnalysisSplitValue> list = (map == null) ? null : map.get(type);
-
-    return (list == null) ? EMPTY_SPLIT_VALUES : list;
+  public Map<AnalysisSplitType, List<AnalysisSplitValue>> getColumnSplitValues(long columnId) {
+    return columnSplitValues.get(columnId);
   }
 
   public List<AnalysisSplitType> getRowSplitTypes(long rowId) {
     return rowSplitTypes.getOrDefault(rowId, EMPTY_SPLIT_TYPES);
   }
 
-  public List<AnalysisSplitValue> getRowSplitValues(long rowId, AnalysisSplitType type) {
-    Map<AnalysisSplitType, List<AnalysisSplitValue>> map = rowSplitValues.get(rowId);
-    List<AnalysisSplitValue> list = (map == null) ? null : map.get(type);
-
-    return (list == null) ? EMPTY_SPLIT_VALUES : list;
+  public Map<AnalysisSplitType, List<AnalysisSplitValue>> getRowSplitValues(long rowId) {
+    return rowSplitValues.get(rowId);
   }
 
   public List<AnalysisValue> getValues() {
@@ -449,16 +467,150 @@ public final class AnalysisResults implements BeeSerializable {
     this.computeEnd = computeEnd;
   }
 
+  private Integer getHeaderInteger(String key) {
+    return header.getInteger(headerIndexes.get(key));
+  }
+
+  public List<AnalysisLabel> getHeaderLabels(String period) {
+    List<AnalysisLabel> labels = new NonNullList<>();
+
+    labels.add(new AnalysisLabel(COL_ANALYSIS_NAME, getHeaderString(COL_ANALYSIS_NAME),
+        getHeaderString(COL_ANALYSIS_HEADER_BACKGROUND),
+        getHeaderString(COL_ANALYSIS_HEADER_FOREGROUND)));
+
+    for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+      labels.add(AnalysisLabel.dimension(header, headerIndexes, ordinal));
+    }
+
+    labels.add(AnalysisLabel.employee(header, headerIndexes, COL_ANALYSIS_HEADER_EMPLOYEE));
+    labels.add(AnalysisLabel.budgetType(header, headerIndexes, COL_ANALYSIS_HEADER_BUDGET_TYPE));
+    labels.add(AnalysisLabel.period(period));
+    labels.add(AnalysisLabel.currency(header, headerIndexes, COL_ANALYSIS_HEADER_CURRENCY));
+
+    return labels;
+  }
+
+  public MonthRange getHeaderRange() {
+    Integer yearFrom = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_FROM);
+    Integer monthFrom = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_FROM);
+    Integer yearUntil = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_UNTIL);
+    Integer monthUntil = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_UNTIL);
+
+    return AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
+  }
+
   public String getHeaderString(String key) {
     return header.getString(headerIndexes.get(key));
+  }
+
+  private boolean isHeaderTrue(String key) {
+    return header.isTrue(headerIndexes.get(key));
+  }
+
+  private Integer getColumnInteger(BeeRow column, String key) {
+    return column.getInteger(columnIndexes.get(key));
+  }
+
+  public List<AnalysisLabel> getColumnLabels(BeeRow column, String period) {
+    List<AnalysisLabel> labels = new NonNullList<>();
+
+    labels.add(AnalysisLabel.value(column, columnIndexes, COL_ANALYSIS_COLUMN_NAME,
+        COL_ANALYSIS_COLUMN_BACKGROUND, COL_ANALYSIS_COLUMN_FOREGROUND));
+    labels.add(AnalysisLabel.value(column, columnIndexes, COL_ANALYSIS_COLUMN_ABBREVIATION));
+
+    labels.add(AnalysisLabel.indicator(column, columnIndexes, COL_ANALYSIS_COLUMN_INDICATOR));
+    labels.add(AnalysisLabel.turnoverOrBalance(column, columnIndexes,
+        COL_ANALYSIS_COLUMN_TURNOVER_OR_BALANCE));
+
+    labels.add(AnalysisLabel.budgetType(column, columnIndexes, COL_ANALYSIS_COLUMN_BUDGET_TYPE));
+
+    for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+      if (isHeaderTrue(colAnalysisShowColumnDimension(ordinal))) {
+        labels.add(AnalysisLabel.dimension(column, columnIndexes, ordinal));
+      }
+    }
+
+    if (isHeaderTrue(COL_ANALYSIS_SHOW_COLUMN_EMPLOYEE)) {
+      labels.add(AnalysisLabel.employee(column, columnIndexes, COL_ANALYSIS_COLUMN_EMPLOYEE));
+    }
+
+    labels.add(AnalysisLabel.period(period));
+
+    return labels;
+  }
+
+  public MonthRange getColumnRange(BeeRow column) {
+    Integer yearFrom = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_FROM);
+    Integer monthFrom = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_FROM);
+    Integer yearUntil = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_UNTIL);
+    Integer monthUntil = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL);
+
+    return AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
   }
 
   public String getColumnString(BeeRow column, String key) {
     return column.getString(columnIndexes.get(key));
   }
 
+  public List<AnalysisCellType> getColumnCellTypes(BeeRow column) {
+    return AnalysisCellType.normalize(getColumnString(column, COL_ANALYSIS_COLUMN_VALUES));
+  }
+
+  public boolean isColumnVisible(BeeRow column) {
+    return column.isTrue(columnIndexes.get(COL_ANALYSIS_COLUMN_SELECTED));
+  }
+
+  private Integer getRowInteger(BeeRow row, String key) {
+    return row.getInteger(rowIndexes.get(key));
+  }
+
+  public List<AnalysisLabel> getRowLabels(BeeRow row, String period) {
+    List<AnalysisLabel> labels = new NonNullList<>();
+
+    labels.add(AnalysisLabel.value(row, rowIndexes, COL_ANALYSIS_ROW_NAME,
+        COL_ANALYSIS_ROW_BACKGROUND, COL_ANALYSIS_ROW_FOREGROUND));
+    labels.add(AnalysisLabel.value(row, rowIndexes, COL_ANALYSIS_ROW_ABBREVIATION));
+
+    labels.add(AnalysisLabel.indicator(row, rowIndexes, COL_ANALYSIS_ROW_INDICATOR));
+    labels.add(AnalysisLabel.turnoverOrBalance(row, rowIndexes,
+        COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE));
+
+    labels.add(AnalysisLabel.budgetType(row, rowIndexes, COL_ANALYSIS_ROW_BUDGET_TYPE));
+
+    for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+      if (isHeaderTrue(colAnalysisShowRowDimension(ordinal))) {
+        labels.add(AnalysisLabel.dimension(row, rowIndexes, ordinal));
+      }
+    }
+
+    if (isHeaderTrue(COL_ANALYSIS_SHOW_ROW_EMPLOYEE)) {
+      labels.add(AnalysisLabel.employee(row, rowIndexes, COL_ANALYSIS_ROW_EMPLOYEE));
+    }
+
+    labels.add(AnalysisLabel.period(period));
+
+    return labels;
+  }
+
+  public MonthRange getRowRange(BeeRow row) {
+    Integer yearFrom = getRowInteger(row, COL_ANALYSIS_ROW_YEAR_FROM);
+    Integer monthFrom = getRowInteger(row, COL_ANALYSIS_ROW_MONTH_FROM);
+    Integer yearUntil = getRowInteger(row, COL_ANALYSIS_ROW_YEAR_UNTIL);
+    Integer monthUntil = getRowInteger(row, COL_ANALYSIS_ROW_MONTH_UNTIL);
+
+    return AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
+  }
+
   public String getRowString(BeeRow row, String key) {
     return row.getString(rowIndexes.get(key));
+  }
+
+  public List<AnalysisCellType> getRowCellTypes(BeeRow row) {
+    return AnalysisCellType.normalize(getRowString(row, COL_ANALYSIS_ROW_VALUES));
+  }
+
+  public boolean isRowVisible(BeeRow row) {
+    return row.isTrue(rowIndexes.get(COL_ANALYSIS_ROW_SELECTED));
   }
 
   public List<BeeRow> getColumns() {
