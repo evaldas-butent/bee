@@ -236,16 +236,16 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
   }
 
-  public int setFlags(Integer flags, IsCondition clause) {
-    return qs.updateData(new SqlUpdate(TBL_PLACES)
-        .addConstant(COL_FLAGS, Objects.equals(flags, 0) ? null : flags)
-        .setWhere(clause));
-  }
-
   public void setAutoReply(Long addressbookId) {
     qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
         .addConstant(COL_ADDRESSBOOK_AUTOREPLY, TimeUtils.nowMillis())
         .setWhere(sys.idEquals(TBL_ADDRESSBOOK, addressbookId)));
+  }
+
+  public int setFlags(Integer flags, IsCondition clause) {
+    return qs.updateData(new SqlUpdate(TBL_PLACES)
+        .addConstant(COL_FLAGS, Objects.equals(flags, 0) ? null : flags)
+        .setWhere(clause));
   }
 
   public Pair<Long, Long> storeMail(MailAccount account, Message message, Long folderId,
