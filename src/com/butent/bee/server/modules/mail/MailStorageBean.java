@@ -280,12 +280,6 @@ public class MailStorageBean {
             .addNotEmpty(COL_SUBJECT, sys.clampValue(TBL_MESSAGES, COL_SUBJECT, subj))
             .addNotEmpty(COL_IN_REPLY_TO, envelope.getInReplyTo())));
       }
-      if (!BeeConst.isUndef(BeeUtils.unbox(messageUID)) && (Objects.nonNull(messageUID)
-          || !qs.sqlExists(TBL_PLACES, SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId,
-          COL_MESSAGE_UID, messageUID, COL_MESSAGE, messageId.getA())))) {
-
-        messageId.setB(storePlace(messageId.getA(), folderId, envelope.getFlagMask(), messageUID));
-      }
     });
     p.set("check");
 
@@ -321,7 +315,7 @@ public class MailStorageBean {
         }
         qs.updateData(update);
         p.set("update");
-      } catch (IOException e) {
+      } catch (IOException | MessagingException e) {
         logger.error(e, "Error retrieving message", envelope.getUniqueId());
 
         qs.updateData(new SqlDelete(TBL_MESSAGES)
@@ -395,6 +389,12 @@ public class MailStorageBean {
         p.set("relations");
       }
       tmp.delete();
+    }
+    if (!BeeConst.isUndef(BeeUtils.unbox(messageUID)) && (Objects.nonNull(messageUID)
+        || !qs.sqlExists(TBL_PLACES, SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId,
+        COL_MESSAGE_UID, messageUID, COL_MESSAGE, messageId.getA())))) {
+
+      messageId.setB(storePlace(messageId.getA(), folderId, envelope.getFlagMask(), messageUID));
     }
     p.log("Message=" + messageId.getA());
     return messageId;
