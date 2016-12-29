@@ -7,7 +7,7 @@
 >
   <Fields>
     <Relation name="Folder" relation="Folders" notNull="true" cascade="DELETE" />
-    <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" editable="true" />
+    <Relation name="Message" relation="Messages" notNull="true" editable="true" />
     <Integer name="Flags" />
     <Long name="MessageUID" />
   </Fields>

@@ -43,8 +43,9 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.CalendarComponent;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +73,6 @@ import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
-import javax.mail.util.SharedByteArrayInputStream;
 import javax.ws.rs.core.MediaType;
 
 @Stateless
@@ -280,17 +280,16 @@ public class MailStorageBean {
             .addNotEmpty(COL_SUBJECT, sys.clampValue(TBL_MESSAGES, COL_SUBJECT, subj))
             .addNotEmpty(COL_IN_REPLY_TO, envelope.getInReplyTo())));
       }
+      if (!BeeConst.isUndef(BeeUtils.unbox(messageUID)) && (Objects.nonNull(messageUID)
+          || !qs.sqlExists(TBL_PLACES, SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId,
+          COL_MESSAGE_UID, messageUID, COL_MESSAGE, messageId.getA())))) {
+
+        messageId.setB(storePlace(messageId.getA(), folderId, envelope.getFlagMask(), messageUID));
+      }
     });
     p.set("check");
-    boolean hasPlace = false;
 
-    if (finished.get()) {
-      if (!BeeConst.isUndef(BeeUtils.unbox(messageUID))) {
-        hasPlace = qs.sqlExists(TBL_PLACES, SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId,
-            COL_MESSAGE_UID, messageUID, COL_MESSAGE, messageId.getA()));
-        p.set("check2");
-      }
-    } else {
+    if (!finished.get()) {
       Holder<Long> senderId = Holder.absent();
       InternetAddress sender = envelope.getSender();
 
@@ -302,30 +301,32 @@ public class MailStorageBean {
         }
         p.set("sender");
       }
-      Long fileId;
-      InputStream is;
+      File tmp;
 
       try {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        message.writeTo(bos);
-        bos.close();
-        p.set("download" + BeeUtils.parenthesize(bos.size()));
+        tmp = File.createTempFile("bee_", null);
+        tmp.deleteOnExit();
+        FileOutputStream fos = new FileOutputStream(tmp);
+        message.writeTo(fos);
+        fos.close();
+        p.set("download" + BeeUtils.parenthesize(tmp.length()));
 
-        is = new SharedByteArrayInputStream(bos.toByteArray());
-        fileId = fs.commitFile(fs.storeFile(is, "mail@" + envelope.getUniqueId(),
-            MediaType.TEXT_PLAIN));
-        p.set("file");
-
-        qs.updateData(new SqlUpdate(TBL_MESSAGES)
+        SqlUpdate update = new SqlUpdate(TBL_MESSAGES)
             .addConstant(COL_SENDER, senderId.get())
-            .addConstant(COL_RAW_CONTENT, fileId)
-            .setWhere(sys.idEquals(TBL_MESSAGES, messageId.getA())));
-        p.set("update");
+            .setWhere(sys.idEquals(TBL_MESSAGES, messageId.getA()));
 
-      } catch (IOException | MessagingException e) {
+        if (!account.isStoredRemotedly(account.findFolder(folderId))) {
+          update.addConstant(COL_RAW_CONTENT, fs.storeFile(new FileInputStream(tmp),
+              "mail@" + envelope.getUniqueId(), MediaType.TEXT_PLAIN));
+        }
+        qs.updateData(update);
+        p.set("update");
+      } catch (IOException e) {
         logger.error(e, "Error retrieving message", envelope.getUniqueId());
+
         qs.updateData(new SqlDelete(TBL_MESSAGES)
             .setWhere(sys.idEquals(TBL_MESSAGES, messageId.getA())));
+
         messageId.setA(null);
         return messageId;
       }
@@ -346,8 +347,8 @@ public class MailStorageBean {
         }
       }
       p.set("recipients" + BeeUtils.parenthesize(envelope.getRecipients().size()));
-      try {
-        is.reset();
+
+      try (InputStream is = new FileInputStream(tmp)) {
         Message msg = new MimeMessage(null, is);
         p.set("load");
         Multimap<String, String> parsed = parsePart(messageId.getA(), msg);
@@ -393,10 +394,7 @@ public class MailStorageBean {
         setRelations(messageId.getA(), allAddresses);
         p.set("relations");
       }
-    }
-    if (!hasPlace && !BeeConst.isUndef(BeeUtils.unbox(messageUID))) {
-      messageId.setB(storePlace(messageId.getA(), folderId, envelope.getFlagMask(), messageUID));
-      p.set("place");
+      tmp.delete();
     }
     p.log("Message=" + messageId.getA());
     return messageId;

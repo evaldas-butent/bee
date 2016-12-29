@@ -314,7 +314,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         } else {
           response = ResponseObject.response(copyMessages(account,
               DataUtils.parseIdList(reqInfo.getParameter(COL_PLACE)), target,
-              BeeUtils.toBoolean(reqInfo.getParameter("move"))));
+              reqInfo.getParameterBoolean("move")));
         }
       } else if (BeeUtils.same(svc, SVC_REMOVE_MESSAGES)) {
         response = ResponseObject.response(removeMessages(
@@ -410,7 +410,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         }
       } else if (BeeUtils.same(svc, SVC_SEND_MAIL)) {
         response = new ResponseObject();
-        boolean save = BeeUtils.toBoolean(reqInfo.getParameter("Save"));
+        boolean save = reqInfo.getParameterBoolean("Save");
         Long relatedId = reqInfo.getParameterLong(AdministrationConstants.COL_RELATION);
         Long accountId = reqInfo.getParameterLong(COL_ACCOUNT);
         String[] to = Codec.beeDeserializeCollection(reqInfo.getParameter(AddressType.TO.name()));
@@ -1378,7 +1378,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         if (!BeeUtils.isPositive(count)) {
           return c;
         }
-        boolean isInbox = account.isInbox(localFolder);
         double l = 0;
         boolean stop = false;
         int start;
@@ -1411,17 +1410,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                 hasUid ? ((UIDFolder) remoteFolder).getUID(message) : null).getB();
 
             if (DataUtils.isId(placeId)) {
-              if (isInbox) {
+              if (account.isInbox(localFolder)) {
                 if (rules == null) {
-                  rules = qs.getData(new SqlSelect()
-                      .addFields(TBL_RULES, COL_RULE_CONDITION, COL_RULE_CONDITION_OPTIONS,
-                          COL_RULE_ACTION, COL_RULE_ACTION_OPTIONS)
-                      .addExpr(SqlUtils.sqlCase(SqlUtils.field(TBL_RULES, COL_RULE_ACTION),
-                          RuleAction.MOVE, 1, RuleAction.DELETE, 2, 0), COL_ITEM_ORDINAL)
-                      .addFrom(TBL_RULES)
-                      .setWhere(SqlUtils.and(SqlUtils.equals(TBL_RULES, COL_ACCOUNT,
-                          account.getAccountId()), SqlUtils.notNull(TBL_RULES, COL_RULE_ACTIVE)))
-                      .addOrder(null, COL_ITEM_ORDINAL));
+                  rules = getRules(account.getAccountId());
                 }
                 if (!rules.isEmpty()) {
                   applyRules(message, placeId, account, localFolder, rules);
@@ -1429,7 +1420,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               }
               c++;
             } else if (!syncAll) {
-              stop = true;
+              stop = true; // POP3 resync
               break;
             }
           }
@@ -1746,6 +1737,18 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     }
 
     return ResponseObject.emptyResponse();
+  }
+
+  private SimpleRowSet getRules(Long accountId) {
+    return qs.getData(new SqlSelect()
+        .addFields(TBL_RULES, COL_RULE_CONDITION, COL_RULE_CONDITION_OPTIONS,
+            COL_RULE_ACTION, COL_RULE_ACTION_OPTIONS)
+        .addExpr(SqlUtils.sqlCase(SqlUtils.field(TBL_RULES, COL_RULE_ACTION),
+            RuleAction.MOVE, 1, RuleAction.DELETE, 2, 0), COL_ITEM_ORDINAL)
+        .addFrom(TBL_RULES)
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_RULES, COL_ACCOUNT, accountId),
+            SqlUtils.notNull(TBL_RULES, COL_RULE_ACTIVE)))
+        .addOrder(null, COL_ITEM_ORDINAL));
   }
 
   private int processMessages(MailAccount account, MailFolder source, MailFolder target,
@@ -2155,6 +2158,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   private int syncMessages(SimpleRowSet data, Message[] messages, MailAccount account,
       MailFolder localFolder, Folder remoteFolder, String progressId) throws MessagingException {
     int cnt = 0;
+    SimpleRowSet rules = null;
     Set<Long> syncedMsgs = new HashSet<>();
     double l = messages.length;
 
@@ -2184,8 +2188,19 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           fp.add(MailConstants.COL_IN_REPLY_TO);
           remoteFolder.fetch(new Message[] {message}, fp);
 
-          mail.storeMail(account, message, localFolder.getId(), uid);
-          cnt++;
+          Long placeId = mail.storeMail(account, message, localFolder.getId(), uid).getB();
+
+          if (DataUtils.isId(placeId)) {
+            if (account.isInbox(localFolder)) {
+              if (rules == null) {
+                rules = getRules(account.getAccountId());
+              }
+              if (!rules.isEmpty()) {
+                applyRules(message, placeId, account, localFolder, rules);
+              }
+            }
+            cnt++;
+          }
         } catch (MessagingException e) {
           logger.error(e);
         }
