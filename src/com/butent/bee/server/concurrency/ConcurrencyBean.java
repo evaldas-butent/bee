@@ -116,7 +116,7 @@ public class ConcurrencyBean {
   private Multimap<String, Class<? extends HasTimerService>> calendarRegistry;
   private Multimap<String, Class<? extends HasTimerService>> intervalRegistry;
 
-  private final ReentrantLock lock = new ReentrantLock();
+  private final Map<String, ReentrantLock> locks = new ConcurrentHashMap<>();
 
   @EJB
   ParamHolderBean prm;
@@ -230,8 +230,10 @@ public class ConcurrencyBean {
   }
 
   @Lock(LockType.READ)
-  public void synchronizedCall(Runnable runnable) {
+  public void synchronizedCall(String lockKey, Runnable runnable) {
     Assert.notNull(runnable);
+    locks.putIfAbsent(lockKey, new ReentrantLock());
+    ReentrantLock lock = locks.get(lockKey);
     lock.lock();
 
     try {

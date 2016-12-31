@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -258,7 +259,7 @@ public class MailStorageBean {
     Holder<Boolean> finished = Holder.of(false);
     p.set("envelope");
 
-    cb.synchronizedCall(() -> {
+    cb.synchronizedCall(TBL_MESSAGES, () -> {
       messageId.setA(qs.getLong(new SqlSelect()
           .addFields(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES))
           .addFrom(TBL_MESSAGES)
@@ -305,15 +306,14 @@ public class MailStorageBean {
         fos.close();
         p.set("download" + BeeUtils.parenthesize(tmp.length()));
 
-        SqlUpdate update = new SqlUpdate(TBL_MESSAGES)
-            .addConstant(COL_SENDER, senderId.get())
-            .setWhere(sys.idEquals(TBL_MESSAGES, messageId.getA()));
+        Map<String, Object> updMap = new HashMap<>();
+        updMap.put(COL_SENDER, senderId.get());
 
         if (!account.isStoredRemotedly(account.findFolder(folderId))) {
-          update.addConstant(COL_RAW_CONTENT, fs.storeFile(new FileInputStream(tmp),
+          updMap.put(COL_RAW_CONTENT, fs.storeFile(new FileInputStream(tmp),
               "mail@" + envelope.getUniqueId(), MediaType.TEXT_PLAIN));
         }
-        qs.updateData(update);
+        updateMessage(messageId.getA(), updMap);
         p.set("update");
       } catch (IOException | MessagingException e) {
         logger.error(e, "Error retrieving message", envelope.getUniqueId());
@@ -410,6 +410,14 @@ public class MailStorageBean {
 
     folder.setUidValidity(uidValidity);
     folder.setModSeq(modSeq);
+  }
+
+  public void updateMessage(Long messageId, Map<String, Object> values) {
+    SqlUpdate update = new SqlUpdate(TBL_MESSAGES)
+        .setWhere(sys.idEquals(TBL_MESSAGES, messageId));
+
+    values.forEach(update::addConstant);
+    qs.updateData(update);
   }
 
   public void validateFolder(MailFolder folder, Long uidValidity) {
@@ -690,7 +698,7 @@ public class MailStorageBean {
     String email = Assert.notEmpty(BeeUtils.normalize(adr.getAddress()));
     Holder<Long> emailId = Holder.absent();
 
-    cb.synchronizedCall(() -> {
+    cb.synchronizedCall(TBL_EMAILS, () -> {
       emailId.set(qs.getLong(new SqlSelect()
           .addFields(TBL_EMAILS, sys.getIdName(TBL_EMAILS))
           .addFrom(TBL_EMAILS)
