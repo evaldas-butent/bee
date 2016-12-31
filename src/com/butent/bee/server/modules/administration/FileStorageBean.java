@@ -117,7 +117,7 @@ public class FileStorageBean {
     Holder<Long> id = Holder.absent();
     Holder<Boolean> exists = Holder.of(false);
 
-    cb.synchronizedCall(() -> {
+    cb.synchronizedCall(TBL_FILES, () -> {
       QueryServiceBean queryBean = Invocation.locateRemoteBean(QueryServiceBean.class);
 
       id.set(queryBean.getLong(new SqlSelect()

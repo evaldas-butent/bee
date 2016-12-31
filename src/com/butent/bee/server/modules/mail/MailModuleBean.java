@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.mail;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.eventbus.AllowConcurrentEvents;
@@ -76,7 +77,8 @@ import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPStore;
 import com.sun.mail.imap.ResyncData;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -125,6 +127,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.ws.rs.core.MediaType;
 
 @Stateless
 @LocalBean
@@ -490,6 +493,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       } else if (BeeUtils.same(svc, SVC_STRIP_HTML)) {
         response = ResponseObject
             .response(HtmlUtils.stripHtml(reqInfo.getParameter(COL_HTML_CONTENT)));
+
+      } else if (BeeUtils.same(svc, SVC_GET_RAW_CONTENT)) {
+        response = getRawContent(reqInfo.getParameterLong(COL_MESSAGE));
 
       } else if (BeeUtils.same(svc, SVC_GET_UNREAD_COUNT)) {
         response = ResponseObject.response(countUnread());
@@ -1388,16 +1394,14 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           Message[] newMessages = remoteFolder.getMessages(start, end);
           end = start - 1;
 
-          FetchProfile fp = new FetchProfile();
-          fp.add(FetchProfile.Item.ENVELOPE);
-          fp.add(FetchProfile.Item.FLAGS);
-          fp.add(MailConstants.COL_IN_REPLY_TO);
-
           if (hasUid) {
+            FetchProfile fp = new FetchProfile();
+            fp.add(FetchProfile.Item.ENVELOPE);
+            fp.add(FetchProfile.Item.FLAGS);
+            fp.add(MailConstants.COL_IN_REPLY_TO);
             fp.add(UIDFolder.FetchProfileItem.UID);
+            remoteFolder.fetch(newMessages, fp);
           }
-          remoteFolder.fetch(newMessages, fp);
-
           for (int i = newMessages.length - 1; i >= 0; i--) {
             if (!BeeUtils.isEmpty(progressId)) {
               if (!Endpoint.updateProgress(progressId, l / count)) {
@@ -1513,8 +1517,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     String drafts = SystemFolder.Drafts.name();
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_MESSAGES, COL_DATE, COL_SUBJECT, COL_RAW_CONTENT, COL_UNIQUE_ID,
-            COL_IN_REPLY_TO)
+        .addField(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES), COL_MESSAGE)
+        .addFields(TBL_MESSAGES, COL_DATE, COL_SUBJECT, COL_UNIQUE_ID, COL_IN_REPLY_TO)
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addFields(TBL_ADDRESSBOOK, COL_EMAIL_LABEL)
         .addFrom(TBL_MESSAGES)
@@ -1524,7 +1528,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                 SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())));
 
     if (DataUtils.isId(placeId)) {
-      query.addFields(TBL_PLACES, COL_FLAGS, COL_MESSAGE, COL_FOLDER)
+      query.addFields(TBL_PLACES, COL_FLAGS, COL_FOLDER)
           .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_PLACE)
           .addExpr(SqlUtils.expression(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
               SqlUtils.field(TBL_ACCOUNTS, sent + COL_FOLDER))), sent)
@@ -1537,8 +1541,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
           .setWhere(sys.idEquals(TBL_PLACES, placeId));
     } else {
-      query.addConstant(messageId, COL_MESSAGE)
-          .addEmptyLong(COL_PLACE)
+      query.addEmptyLong(COL_PLACE)
           .addEmptyLong(COL_FOLDER)
           .addEmptyBoolean(sent)
           .addEmptyBoolean(drafts)
@@ -1739,6 +1742,63 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
+  private ResponseObject getRawContent(Long messageId) {
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(TBL_MESSAGES, COL_RAW_CONTENT)
+        .addFields(TBL_FOLDERS, COL_ACCOUNT)
+        .addFields(TBL_PLACES, COL_FOLDER, COL_MESSAGE_UID)
+        .addFrom(TBL_MESSAGES)
+        .addFromLeft(TBL_PLACES, SqlUtils.and(sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE),
+            SqlUtils.notNull(TBL_PLACES, COL_MESSAGE_UID)))
+        .addFromLeft(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
+        .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
+
+    Long rawId = Arrays.stream(rs.getLongColumn(COL_RAW_CONTENT))
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(null);
+
+    if (!DataUtils.isId(rawId)) {
+      for (SimpleRow row : rs) {
+        if (Objects.isNull(row.getLong(COL_MESSAGE_UID))) {
+          continue;
+        }
+        MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
+        MailAccount.MailStore store = null;
+
+        try {
+          store = account.connectToStore();
+          MailFolder localFolder = account.findFolder(row.getLong(COL_FOLDER));
+          Folder remoteFolder = account.getRemoteFolder(store.getStore(), localFolder);
+
+          remoteFolder.open(Folder.READ_ONLY);
+          Message msg = ((UIDFolder) remoteFolder).getMessageByUID(row.getLong(COL_MESSAGE_UID));
+
+          ByteArrayOutputStream os = new ByteArrayOutputStream();
+          msg.writeTo(os);
+          os.close();
+          remoteFolder.close(false);
+
+          rawId = fs.storeFile(new ByteArrayInputStream(os.toByteArray()),
+              "mail@" + SqlUtils.uniqueName(), MediaType.TEXT_PLAIN);
+          break;
+        } catch (Throwable e) {
+          logger.error(e);
+        } finally {
+          account.disconnectFromStore(store);
+        }
+      }
+    }
+    if (DataUtils.isId(rawId)) {
+      try {
+        return ResponseObject.response(fs.getFile(rawId));
+      } catch (IOException e) {
+        ResponseObject.error(e);
+      }
+    }
+    return ResponseObject.error(usr.getDictionary().noData());
+  }
+
   private SimpleRowSet getRules(Long accountId) {
     return qs.getData(new SqlSelect()
         .addFields(TBL_RULES, COL_RULE_CONDITION, COL_RULE_CONDITION_OPTIONS,
@@ -1795,12 +1855,11 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               .addFields(TBL_PLACES, COL_FLAGS)
               .addFrom(TBL_MESSAGES)
               .addFromInner(TBL_PLACES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
-              .setWhere(wh));
+              .setWhere(SqlUtils.and(wh, SqlUtils.notNull(TBL_MESSAGES, COL_RAW_CONTENT))));
 
           for (SimpleRow content : contents) {
-            try (
-                InputStream is = new BufferedInputStream(
-                    new FileInputStream(fs.getFile(content.getLong(COL_RAW_CONTENT)).getFile()))) {
+            try (InputStream is = new FileInputStream(fs.getFile(content.getLong(COL_RAW_CONTENT))
+                .getFile())) {
               MimeMessage message = new MimeMessage(null, is);
               Flags on = new Flags();
               Flags off = new Flags();
@@ -1823,6 +1882,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               throw new MessagingException(e.getMessage());
             }
           }
+          if (contents.getNumberOfRows() < data.getNumberOfRows()) {
+            throw new MessagingException(
+                "Some messages can't be transfered from disconnected folder");
+          }
         }
       } else {
         Map<Long, Integer> messages = new HashMap<>();
@@ -1835,6 +1898,20 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         MailMessage mailMessage = new MailMessage(target.getId());
         mailMessage.setMessagesUpdated(true);
         Endpoint.sendToUsers(account.getUsers(), mailMessage, null);
+
+        for (Long msgId : qs.getLongColumn(new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_PLACES, COL_MESSAGE)
+            .addFrom(TBL_PLACES)
+            .addFromInner(TBL_MESSAGES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
+            .setWhere(SqlUtils.and(wh, SqlUtils.isNull(TBL_MESSAGES, COL_RAW_CONTENT))))) {
+
+          ResponseObject resp = getRawContent(msgId);
+
+          if (resp.hasResponse(FileInfo.class)) {
+            mail.updateMessage(msgId, ImmutableMap.of(COL_RAW_CONTENT,
+                ((FileInfo) resp.getResponse()).getId()));
+          }
+        }
       }
     }
     if (move) {
