@@ -121,10 +121,6 @@ public class MailStorageBean {
     }
   }
 
-  public void connectFolder(MailFolder folder) {
-    validateFolder(folder, null);
-  }
-
   public MailFolder createFolder(MailAccount account, MailFolder parent, String name) {
     MailFolder folder = createFolder(account.getAccountId(), Assert.notNull(parent), name);
 
@@ -217,12 +213,14 @@ public class MailStorageBean {
         SystemFolder.Inbox.getFolderName());
 
     if (!inbox.isConnected()) {
-      connectFolder(inbox);
+      updateFolder(inbox, null, null);
     }
     for (SystemFolder sysFolder : SystemFolder.values()) {
-      MailFolder folder = inbox;
+      MailFolder folder;
 
-      if (sysFolder != SystemFolder.Inbox) {
+      if (Objects.equals(sysFolder, SystemFolder.Inbox)) {
+        folder = inbox;
+      } else {
         folder = createFolder(account, inbox, sysFolder.getFolderName());
       }
       qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
@@ -280,6 +278,12 @@ public class MailStorageBean {
             .addConstant(COL_DATE, envelope.getDate())
             .addNotEmpty(COL_SUBJECT, sys.clampValue(TBL_MESSAGES, COL_SUBJECT, subj))
             .addNotEmpty(COL_IN_REPLY_TO, envelope.getInReplyTo())));
+      }
+      if (!BeeConst.isUndef(BeeUtils.unbox(messageUID))
+          && !qs.sqlExists(TBL_PLACES, SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId,
+          COL_MESSAGE_UID, messageUID, COL_MESSAGE, messageId.getA()))) {
+
+        messageId.setB(storePlace(messageId.getA(), folderId, envelope.getFlagMask(), messageUID));
       }
     });
     p.set("check");
@@ -390,12 +394,6 @@ public class MailStorageBean {
       }
       tmp.delete();
     }
-    if (!BeeConst.isUndef(BeeUtils.unbox(messageUID)) && (Objects.nonNull(messageUID)
-        || !qs.sqlExists(TBL_PLACES, SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId,
-        COL_MESSAGE_UID, messageUID, COL_MESSAGE, messageId.getA())))) {
-
-      messageId.setB(storePlace(messageId.getA(), folderId, envelope.getFlagMask(), messageUID));
-    }
     p.log("Message=" + messageId.getA());
     return messageId;
   }
@@ -422,9 +420,12 @@ public class MailStorageBean {
 
   public void validateFolder(MailFolder folder, Long uidValidity) {
     Assert.notNull(folder);
+    Long currentUidValidity = qs.getLongById(TBL_FOLDERS, folder.getId(), COL_FOLDER_UID);
 
-    if (!Objects.equals(uidValidity, folder.getUidValidity())) {
-      detachMessages(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId()));
+    if (!Objects.equals(uidValidity, currentUidValidity)) {
+      if (qs.sqlExists(TBL_PLACES, COL_FOLDER, folder.getId())) {
+        detachMessages(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId()));
+      }
       updateFolder(folder, uidValidity, null);
     }
   }
