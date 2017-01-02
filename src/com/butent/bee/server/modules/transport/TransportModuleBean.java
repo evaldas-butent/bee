@@ -2559,6 +2559,7 @@ public class TransportModuleBean implements BeeModule {
 
   private Table<Long, String, String> getExtremes(IsCondition clause, String keyColumn) {
     Table<Long, String, String> data = HashBasedTable.create();
+    Table<Long, String, SimpleRowSet> handle = HashBasedTable.create();
 
     String als = "tmpSubQuery";
 
@@ -2573,7 +2574,8 @@ public class TransportModuleBean implements BeeModule {
         .addFromLeft(TBL_COUNTRIES,
             sys.joinTables(TBL_COUNTRIES, TBL_CARGO_PLACES, COL_PLACE_COUNTRY))
         .addFromInner(getHandlingQuery(clause, Objects.equals(keyColumn, COL_CARGO_TRIP)), als,
-            SqlUtils.joinUsing(TBL_CARGO_PLACES, als, sys.getIdName(TBL_CARGO_PLACES))));
+            SqlUtils.joinUsing(TBL_CARGO_PLACES, als, sys.getIdName(TBL_CARGO_PLACES)))
+        .addOrder(TBL_CARGO_PLACES, COL_PLACE_DATE));
 
     String[] calc = new String[] {COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS};
 
@@ -2606,7 +2608,16 @@ public class TransportModuleBean implements BeeModule {
                 && !ArrayUtils.contains(calc, col))
             .forEach(col -> data.put(key, prfx + col, BeeUtils.nvl(row.getValue(col), "")));
       }
+      if (!handle.contains(key, prfx)) {
+        handle.put(key, prfx, new SimpleRowSet(row.getColumnNames()));
+      }
+
+      handle.get(key, prfx).addRow(row.getValues());
     }
+    handle.rowKeySet().forEach(key ->
+        handle.row(key).forEach((prfx, h) ->
+            data.put(key, prfx, h.serialize())));
+
     return data;
   }
 
