@@ -996,6 +996,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           }
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void validateHandlingKm(DataEvent.ViewModifyEvent event) {
+        CustomTransportModuleBean customTrp = com.butent.bee.server.Invocation
+            .locateRemoteBean(CustomTransportModuleBean.class);
+        customTrp.validateHandlingKm(event);
+      }
     });
 
     BeeView.registerConditionProvider(PROP_CARGO_HANDLING, (view, args) -> {
@@ -3071,7 +3079,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(settings);
   }
 
-  private SqlSelect getHandlingQuery(IsCondition clause, boolean includeRevising) {
+  public SqlSelect getHandlingQuery(IsCondition clause, boolean includeRevising) {
     SqlSelect query = new SqlSelect()
         .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
         .addField(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), COL_CARGO_TRIP)
