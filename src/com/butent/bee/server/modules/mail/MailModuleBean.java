@@ -199,13 +199,11 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           f += syncFolders(account, store.getStore());
 
           Holder<Consumer<MailFolder>> holder = Holder.absent();
-
-          Consumer<MailFolder> checker = mailFolder -> {
+          holder.set(mailFolder -> {
             mailFolder.getSubFolders().forEach(folder ->
                 checkMail(true, account, folder, syncAll, silent));
             mailFolder.getSubFolders().forEach(folder -> holder.get().accept(folder));
-          };
-          holder.set(checker);
+          });
           holder.get().accept(localFolder);
         } else {
           c += checkFolder(account, account.getRemoteFolder(store.getStore(), localFolder),

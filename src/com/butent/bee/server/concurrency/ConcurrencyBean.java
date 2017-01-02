@@ -13,6 +13,8 @@ import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -77,41 +79,53 @@ public class ConcurrencyBean {
     @Override
     public void taskDone(Future<?> future, ManagedExecutorService executor, Object task,
         Throwable throwable) {
+      Pair<String, Long> pair = runningTasks.get(getId());
 
+      if (Objects.nonNull(pair) && Objects.equals(pair.getA(), hash())) {
+        runningTasks.remove(getId());
+      }
       if (Objects.isNull(throwable)) {
         logger.info("Ended:", this, TimeUtils.elapsedSeconds(started));
       } else {
         logger.error(throwable, "Failed:", this);
       }
-      runningTasks.remove(getId());
     }
 
     @Override
     public void taskStarting(Future<?> future, ManagedExecutorService executor, Object task) {
       started = System.currentTimeMillis();
+      Pair<String, Long> pair = runningTasks.get(getId());
+
+      if (Objects.nonNull(pair) && Objects.equals(pair.getA(), hash())) {
+        pair.setB(started);
+      }
       logger.info("Started:", this, "Delay:", TimeUtils.elapsedSeconds(submitted));
     }
 
     @Override
     public void taskSubmitted(Future<?> future, ManagedExecutorService executor, Object task) {
       submitted = System.currentTimeMillis();
-      runningTasks.put(getId(), submitted);
+      runningTasks.put(getId(), Pair.of(hash(), BeeConst.LONG_UNDEF));
       logger.info("Submitted:", this);
     }
 
     public String getId() {
-      return Integer.toHexString(System.identityHashCode(this));
+      return hash();
     }
 
     @Override
     public String toString() {
-      return BeeUtils.joinWords(getId(), Integer.toHexString(System.identityHashCode(this)));
+      return BeeUtils.joinWords(getId(), hash());
+    }
+
+    private String hash() {
+      return Integer.toHexString(System.identityHashCode(this));
     }
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(ConcurrencyBean.class);
 
-  private static final Map<String, Long> runningTasks = new ConcurrentHashMap<>();
+  private static final Map<String, Pair<String, Long>> runningTasks = new ConcurrentHashMap<>();
 
   private Multimap<String, Class<? extends HasTimerService>> calendarRegistry;
   private Multimap<String, Class<? extends HasTimerService>> intervalRegistry;
@@ -129,9 +143,16 @@ public class ConcurrencyBean {
 
   @Lock(LockType.READ)
   public void asynchronousCall(AsynchronousRunnable runnable) {
-    if ((System.currentTimeMillis() - BeeUtils.unbox(runningTasks.get(runnable.getId())))
-        > TimeUtils.MILLIS_PER_HOUR) {
-      executor.submit(runnable);
+    Pair<String, Long> pair = runningTasks.get(runnable.getId());
+    long started = BeeUtils.unbox(Objects.isNull(pair) ? null : pair.getB());
+
+    if (!BeeConst.isUndef(started)) {
+      if ((System.currentTimeMillis() - started) > TimeUtils.MILLIS_PER_HOUR) {
+        if (BeeUtils.isPositive(started)) {
+          logger.info("Replaced:", runnable);
+        }
+        executor.submit(runnable);
+      }
     }
   }
 
