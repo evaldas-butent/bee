@@ -406,7 +406,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         if (folder == null) {
           response = ResponseObject.error("Folder does not exist: ID =", folderId);
         } else {
-          checkMail(true, account, folder, reqInfo.getParameterBoolean(Service.VAR_CHECK), false);
+          ctx.getBusinessObject(this.getClass()).checkMail(false, account, folder,
+              reqInfo.getParameterBoolean(Service.VAR_CHECK), false);
           response = ResponseObject.emptyResponse();
         }
       } else if (BeeUtils.same(svc, SVC_SEND_MAIL)) {

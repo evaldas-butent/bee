@@ -420,13 +420,18 @@ public class MailStorageBean {
 
   public void validateFolder(MailFolder folder, Long uidValidity) {
     Assert.notNull(folder);
-    Long currentUidValidity = qs.getLongById(TBL_FOLDERS, folder.getId(), COL_FOLDER_UID);
 
-    if (!Objects.equals(uidValidity, currentUidValidity)) {
-      if (qs.sqlExists(TBL_PLACES, COL_FOLDER, folder.getId())) {
-        detachMessages(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId()));
+    if (!Objects.equals(folder.getUidValidity(), uidValidity)) {
+      SimpleRow row = qs.getRow(TBL_FOLDERS, folder.getId());
+      folder.setUidValidity(row.getLong(COL_FOLDER_UID));
+      folder.setModSeq(row.getLong(COL_FOLDER_MODSEQ));
+
+      if (!Objects.equals(folder.getUidValidity(), uidValidity)) {
+        if (qs.sqlExists(TBL_PLACES, COL_FOLDER, folder.getId())) {
+          detachMessages(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId()));
+        }
+        updateFolder(folder, uidValidity, null);
       }
-      updateFolder(folder, uidValidity, null);
     }
   }
 
