@@ -40,6 +40,9 @@
       <SimpleColumn name="Cost" alias="ItemCost" />
       <SimpleColumn name="CostCurrency" alias="ItemCostCurrency" />
 
+      <SimpleColumn name="RentalPrice" alias="ItemRentalPrice" />
+      <SimpleColumn name="RentalPriceCurrency" alias="ItemRentalPriceCurrency" />
+
       <SimpleColumn name="Price1" alias="ItemPrice1" />
       <SimpleColumn name="Currency1" alias="ItemCurrency1" />
       <SimpleColumn name="Price2" alias="ItemPrice2" />

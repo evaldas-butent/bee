@@ -167,6 +167,8 @@ public final class ClassifierConstants {
 
   public static final String COL_ITEM_VAT = "Vat";
   public static final String COL_ITEM_VAT_PERC = "VatPercent";
+  public static final String COL_ITEM_RENTAL_PRICE = "RentalPrice";
+  public static final String COL_ITEM_RENTAL_PRICE_CURRENCY = "RentalPriceCurrency";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";

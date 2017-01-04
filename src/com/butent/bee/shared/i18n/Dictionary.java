@@ -4368,6 +4368,8 @@ public interface Dictionary {
 
   default String taAlterKind() {return g("taAlterKind");}
 
+  default String taApplyRentalPrice() {return g("taApplyRentalPrice");}
+
   default String taChangeIntoSale() {return g("taChangeIntoSale");}
 
   default String taContinuousFrom() {return g("taContinuousFrom");}

@@ -28,6 +28,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
+import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
@@ -184,6 +185,10 @@ public class TradeActBean implements HasTimerService {
 
       case SVC_GET_SERVICES_FOR_INVOICE:
         response = getServicesForInvoice(reqInfo);
+        break;
+
+      case SVC_GET_ACT_ITEMS_RENTAL_AMOUNT:
+        response = totalActItemsRentalPrice(reqInfo);
         break;
 
       case SVC_CREATE_ACT_INVOICE:
@@ -4415,6 +4420,40 @@ public class TradeActBean implements HasTimerService {
         }
       }
     }
+  }
+
+  private ResponseObject totalActItemsRentalPrice(RequestInfo req) {
+    Long actId = req.getParameterLong(COL_TRADE_ACT);
+
+    return ResponseObject.response(totalActItemsRentalPrice(actId));
+  }
+
+  private double totalActItemsRentalPrice(Long actId) {
+    double result = BeeConst.DOUBLE_ZERO;
+
+    if (!DataUtils.isId(actId)) {
+      return result;
+    }
+
+    SqlSelect query = new SqlSelect();
+    query.addFrom(TBL_TRADE_ACT_ITEMS)
+        .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_ITEM))
+        .addFromInner(TBL_TRADE_ACTS, sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS,
+            COL_TRADE_ACT))
+        .setWhere(SqlUtils.and(SqlUtils.positive(TBL_ITEMS, COL_ITEM_RENTAL_PRICE),
+            SqlUtils.positive(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY),
+            SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId)));
+
+    query.addSum(ExchangeUtils.exchangeField(query,
+        SqlUtils.multiply(SqlUtils.field(TBL_ITEMS, COL_ITEM_RENTAL_PRICE),
+            SqlUtils.field(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)),
+        SqlUtils.field(TBL_ITEMS, COL_ITEM_RENTAL_PRICE_CURRENCY),
+        SqlUtils.field(TBL_TRADE_ACTS, COL_TA_DATE)
+    ), ALS_TOTAL_AMOUNT);
+
+    result = BeeUtils.unbox(qs.getDouble(query));
+
+    return  result;
   }
 
   private double totalActItems(Long actId) {

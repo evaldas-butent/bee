@@ -7,6 +7,9 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.RenderingEvent;
@@ -19,6 +22,7 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -65,6 +69,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
   private TradeActServicePicker picker;
   private Button commandRecalculate;
+  private Button commandApplyRental;
 
   TradeActServicesGrid() {
   }
@@ -74,12 +79,16 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     GridView gridView = presenter.getGridView();
 
     if (gridView != null && !gridView.isReadOnly()) {
-      commandRecalculate = new Button(Localized.dictionary().taRecalculatePrices());
+      commandRecalculate = new Button(Localized.dictionary().taTariff());
       commandRecalculate.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
-
       commandRecalculate.addClickHandler(event -> maybeRecalculatePrices());
 
+      commandApplyRental = new Button(Localized.dictionary().taApplyRentalPrice());
+      commandApplyRental.addStyleName(STYLE_COMMAND_RECALCULATE_PRICES);
+      commandApplyRental.addClickHandler(event -> applyRentalPrice());
+
       presenter.getHeader().addCommandItem(commandRecalculate);
+      presenter.getHeader().addCommandItem(commandApplyRental);
     }
   }
 
@@ -109,6 +118,11 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
 
     if (commandRecalculate != null) {
       commandRecalculate.setVisible(parentRow != null
+          && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CONTINUOUS)));
+    }
+
+    if (commandApplyRental != null) {
+      commandApplyRental.setVisible(parentRow != null
           && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CONTINUOUS)));
     }
   }
@@ -272,6 +286,45 @@ public class TradeActServicesGrid extends AbstractGridInterceptor implements
     if (!rowSet.isEmpty()) {
       Queries.insertRows(rowSet);
     }
+  }
+
+  private void applyRentalPrice() {
+    GridView gridView = getGridView();
+    if (gridView == null || gridView.isEmpty()) {
+      return;
+    }
+
+    gridView.ensureRelId(relId -> {
+      ParameterList prm = TradeActKeeper.createArgs(SVC_GET_ACT_ITEMS_RENTAL_AMOUNT);
+      prm.addDataItem(COL_TRADE_ACT, relId);
+
+      BeeKeeper.getRpc().makePostRequest(prm, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (!response.hasResponse(Double.class)) {
+            return;
+          }
+
+          String viewName = gridView.getViewName();
+          double rentalAmount = BeeUtils.toDouble(response.getResponseAsString());
+
+
+          for (IsRow row : gridView.getRowData()) {
+            if (Data.getInteger(viewName, row, COL_TIME_UNIT) == null) {
+              continue;
+            }
+
+            Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(),
+                COL_TA_SERVICE_TARIFF,
+                Data.getString(viewName, row, COL_TA_SERVICE_TARIFF), null);
+
+            Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(),
+                COL_ITEM_PRICE,
+                Data.getString(viewName, row, COL_ITEM_PRICE), BeeUtils.toString(rentalAmount));
+          }
+        }
+      });
+    });
   }
 
   private Double calculatePrice(Double defPrice, JustDate dateTo, Double itemTotal, Double tariff) {

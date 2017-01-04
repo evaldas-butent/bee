@@ -55,6 +55,13 @@
       <footer expression="&qty; * row.Price" />
     </DataColumn>
 
+    <DataColumn name="ItemRentalPrice" visible="true" scale="2" >
+      <render>
+        <ui:expression>row.Quantity * row.ItemRentalPrice</ui:expression>
+      </render>
+      <footer aggregate="sum" scale="2" />
+    </DataColumn>
+
     <CalcColumn name="ItemPrices" type="string" cellType="html" label="=taItemPrices" width="100"
       exportable="false" verticalAlignment="middle" />
 
