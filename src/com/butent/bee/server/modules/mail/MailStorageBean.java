@@ -320,12 +320,9 @@ public class MailStorageBean {
         updateMessage(messageId.getA(), updMap);
         p.set("update");
       } catch (IOException | MessagingException e) {
-        logger.error(e, "Error retrieving message", envelope.getUniqueId());
-
-        qs.updateData(new SqlDelete(TBL_MESSAGES)
-            .setWhere(sys.idEquals(TBL_MESSAGES, messageId.getA())));
-
+        detachMessages(SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.getA()));
         messageId.setA(null);
+        logger.error(e, "Error retrieving message", envelope.getUniqueId());
         return messageId;
       }
       Set<Long> allAddresses = new HashSet<>();
