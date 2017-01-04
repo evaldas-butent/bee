@@ -160,7 +160,12 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem("PlannedDailyCosts", BeeUtils.joinWords(loc.trDailyCosts(), plan))
               .setPrecision(2),
           new ReportNumericItem("PlannedRoadCosts", BeeUtils.joinWords(loc.trRoadCosts(), plan))
-              .setPrecision(2));
+              .setPrecision(2),
+
+          new ReportDateTimeItem(ALS_MIN_LOADING_DATE, loc.trMinLoadingDate()),
+          new ReportDateTimeItem(ALS_MAX_UNLOADING_DATE, loc.trMaxUnloadingDate()),
+          new ReportTextItem(ALS_LOADING_DATE, loc.trLoadingDate()),
+          new ReportTextItem(ALS_UNLOADING_DATE, loc.trUnloadingDate()));
     }
 
     @Override
