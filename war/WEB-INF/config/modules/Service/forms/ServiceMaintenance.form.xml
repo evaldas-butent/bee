@@ -162,7 +162,8 @@
             <FlowPanel class="&mrcl;" style="&mrst;" for="Equipment">
               <FlowPanel style="&mfld; width: 30em;">
                 <Label for="Equipment" style="&flbl;"/>
-                <InputArea source="Equipment" visibleLines="4" style="&finp;"/>
+                <MultiSelector source="Equipment" viewName="Equipment" filter="IsValid" choiceColumns="Name" renderColumns="Name"
+                               class="bee-svc-maintenance-equipment-area" />
               </FlowPanel>
             </FlowPanel>
 
@@ -199,7 +200,7 @@
             <FlowPanel class="&mrcl;" style="&mrst;" for="Description">
               <FlowPanel style="&mfld;width: 30em;">
                 <Label for="Description" style="&flbl;"/>
-                <InputArea source="Description" visibleLines="4" style="&finp;"/>
+                <InputArea source="Description" class="bee-svc-maintenance-input-area"/>
               </FlowPanel>
             </FlowPanel>
 
