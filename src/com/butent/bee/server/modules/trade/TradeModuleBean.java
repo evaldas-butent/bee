@@ -392,6 +392,17 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return params;
   }
 
+  public static IsExpression getDiscount(String tblName) {
+    return getDiscount(tblName, getAmountExpression(tblName));
+  }
+
+  public static IsExpression getDiscount(String tblName, IsExpression amount) {
+    IsExpression discount = SqlUtils.field(tblName, COL_TRADE_DISCOUNT);
+
+    return SqlUtils.sqlIf(SqlUtils.isNull(tblName, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT),
+        discount, SqlUtils.multiply(SqlUtils.divide(amount, 100), discount));
+  }
+
   @Override
   public Module getModule() {
     return Module.TRADE;
@@ -407,6 +418,16 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return timerService;
   }
 
+  public static IsExpression getTotal(String tblName) {
+    return getTotal(tblName, getAmountExpression(tblName));
+  }
+
+  public static IsExpression getTotal(String tblName, IsExpression amount) {
+    return SqlUtils.plus(SqlUtils.minus(amount, SqlUtils.nvl(getDiscount(tblName), 0)),
+        SqlUtils.sqlIf(SqlUtils.equals(SqlUtils.name(COL_TRADE_DOCUMENT_VAT_MODE),
+            TradeVatMode.PLUS), SqlUtils.nvl(getVat(tblName, amount), 0), 0));
+  }
+
   public static IsExpression getTotalExpression(String tblName) {
     return getTotalExpression(tblName, getAmountExpression(tblName));
   }
@@ -415,6 +436,22 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return SqlUtils.plus(amount,
         SqlUtils.sqlIf(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS), 0,
             getVatExpression(tblName, amount)));
+  }
+
+  public static IsExpression getVat(String tblName) {
+    return getVat(tblName, getAmountExpression(tblName));
+  }
+
+  public static IsExpression getVat(String tblName, IsExpression amount) {
+    IsExpression total = SqlUtils.minus(amount, SqlUtils.nvl(getDiscount(tblName), 0));
+    IsExpression vat = SqlUtils.field(tblName, COL_TRADE_VAT);
+
+    return SqlUtils.sqlCase(null,
+        SqlUtils.isNull(SqlUtils.name(COL_TRADE_DOCUMENT_VAT_MODE)), null,
+        SqlUtils.isNull(tblName, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT), vat,
+        SqlUtils.equals(SqlUtils.name(COL_TRADE_DOCUMENT_VAT_MODE), TradeVatMode.PLUS),
+        SqlUtils.multiply(SqlUtils.divide(total, 100), vat),
+        SqlUtils.multiply(SqlUtils.divide(total, SqlUtils.plus(100, vat)), vat));
   }
 
   public static IsExpression getVatExpression(String tblName) {
