@@ -48,12 +48,6 @@
   color: black;
 }
 
-.bee-ta-picker-search-remainder{
-  display: flex;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-}
-
 .bee-ta-picker-search-spinner{
   display: inline-block;
   margin-left: 10px;

@@ -216,6 +216,8 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
 
   @Override
   public void afterRefresh(final FormView form, final IsRow row) {
+    form.setEnabled(true);
+
     Button prepare = new Button(loc.ordPrepare(), event -> {
       updateStatus(form, OrdersStatus.PREPARED);
       form.setEnabled(true);

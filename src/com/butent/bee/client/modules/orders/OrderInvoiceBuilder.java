@@ -45,6 +45,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -57,10 +58,12 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class OrderInvoiceBuilder extends AbstractGridInterceptor implements ClickHandler {
@@ -247,6 +250,25 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     });
   }
 
+  private static void finishOrder(Long order) {
+    Queries.update(VIEW_ORDERS, Filter.compareId(order),
+        Arrays.asList(COL_ORDERS_STATUS, COL_END_DATE),
+        Arrays.asList(BeeUtils.toString(OrdersStatus.FINISH.ordinal()),
+            TimeUtils.nowMinutes().toString()), new Queries.IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            if (BeeUtils.isPositive(result)) {
+              Queries.getRow(VIEW_ORDERS, order, new RowCallback() {
+                @Override
+                public void onSuccess(BeeRow result) {
+                  RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_ORDERS, result);
+                }
+              });
+            }
+          }
+        });
+  }
+
   private void getInvoiceItems(final BeeRowSet data, BeeRow newRow) {
     final DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CHILD_INVOICES);
     int item = DataUtils.getColumnIndex(ClassifierConstants.COL_ITEM, data.getColumns());
@@ -303,10 +325,37 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
                     if (popup != null) {
                       popup.close();
                     }
-                    Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
-                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
-                    RowEditor.openForm(dataInfo.getEditForm(), dataInfo, Filter.compareId(row
-                        .getId()), Opener.MODAL);
+
+                    Long orderId = data.getRow(0).getLong(Data.getColumnIndex(VIEW_ORDER_SALES,
+                        COL_ORDER));
+
+                    Queries.getRowSet(VIEW_ORDER_ITEMS, null, Filter.equals(COL_ORDER, orderId),
+                        new Queries.RowSetCallback() {
+                          @Override
+                          public void onSuccess(BeeRowSet result) {
+
+                            boolean finish = true;
+
+                            for (BeeRow row : result) {
+                              Double qty = row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS,
+                                  COL_TRADE_ITEM_QUANTITY));
+                              Double invoices = row.getPropertyDouble(PRP_COMPLETED_INVOICES);
+                              if (!Objects.equals(qty, invoices)) {
+                                finish = false;
+                                break;
+                              }
+                            }
+
+                            if (finish) {
+                              finishOrder(orderId);
+                            }
+
+                            Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
+                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
+                            RowEditor.openForm(dataInfo.getEditForm(), dataInfo, Filter.compareId(row
+                                .getId()), Opener.MODAL);
+                          }
+                        });
                   }
                 }
               });

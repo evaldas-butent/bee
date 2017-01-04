@@ -13,7 +13,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -31,8 +30,6 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.Previewer;
-import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
@@ -43,7 +40,6 @@ import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -61,7 +57,6 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -83,12 +78,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private static final String STYLE_SEARCH_PREFIX = STYLE_PREFIX + "search-";
   private static final String STYLE_SEARCH_PANEL = STYLE_SEARCH_PREFIX + "panel";
-  private static final String STYLE_SEARCH_BY = STYLE_SEARCH_PREFIX + "by";
   private static final String STYLE_SEARCH_BOX = STYLE_SEARCH_PREFIX + "box";
   private static final String STYLE_SEARCH_COMMAND = STYLE_SEARCH_PREFIX + "command";
   private static final String STYLE_SEARCH_SPINNER = STYLE_SEARCH_PREFIX + "spinner";
   public static final String STYLE_SEARCH_SPINNER_LOADING = STYLE_SEARCH_SPINNER + "-loading";
-  private static final String STYLE_SEARCH_REMAINDER = STYLE_SEARCH_PREFIX + "remainder";
 
   private static final String STYLE_ITEM_PANEL = STYLE_PREFIX + "item-panel";
   private static final String STYLE_ITEM_TABLE = STYLE_PREFIX + "item-table";
@@ -289,39 +282,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     Flow panel = new Flow(STYLE_SEARCH_PANEL);
 
     cb = new CheckBox(Localized.dictionary().withoutRemainder());
-    cb.addStyleName(STYLE_SEARCH_REMAINDER);
     panel.add(cb);
-
-    final ListBox searchBy = new ListBox();
-    searchBy.addStyleName(STYLE_SEARCH_BY);
-    searchBy.addChangeHandler(changeEvent -> {
-      if (changeEvent.getSource() instanceof ListBox) {
-        String key = getStorageKey();
-        if (!BeeUtils.isEmpty(key)) {
-          BeeKeeper.getStorage().set(key, searchBy.getSelectedIndex());
-        }
-      }
-    });
-
-    searchBy.addItem(BeeConst.STRING_EMPTY, BeeConst.STRING_ASTERISK);
-    String label;
-
-    for (String column : SEARCH_COLUMNS) {
-      if (COL_CATEGORY.equals(column)) {
-        label = Localized.dictionary().category();
-      } else {
-        label = Data.getColumnLabel(VIEW_ITEMS, column);
-      }
-
-      searchBy.addItem(label, column);
-      String key = getStorageKey();
-      if (BeeKeeper.getStorage().hasItem(key)) {
-        searchBy.setSelectedIndex(BeeKeeper.getStorage().getInteger(key));
-      }
-    }
-    searchBy.addItem(Localized.dictionary().captionId(), COL_ITEM);
-
-    panel.add(searchBy);
 
     final InputText searchBox = new InputText();
     DomUtils.setSearch(searchBox);
@@ -332,7 +293,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
         String query = BeeUtils.trim(searchBox.getValue());
         if (!BeeUtils.isEmpty(query)) {
-          doSearch(searchBy.getValue(), query);
+          doSearch(query);
         }
       }
     });
@@ -342,7 +303,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     FaLabel searchCommand = new FaLabel(FontAwesome.SEARCH, STYLE_SEARCH_COMMAND);
 
     searchCommand.addClickHandler(
-        event -> doSearch(searchBy.getValue(), BeeUtils.trim(searchBox.getValue())));
+        event -> doSearch(BeeUtils.trim(searchBox.getValue())));
 
     spinner = new FaLabel(FontAwesome.SPINNER, STYLE_SEARCH_SPINNER);
 
@@ -356,7 +317,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     return spinner;
   }
 
-  private void doSearch(String by, String query) {
+  private void doSearch(String query) {
     if (BeeUtils.isEmpty(query)) {
       BeeKeeper.getScreen().notifyWarning(Localized.dictionary().ordAskSearchValue());
       return;
@@ -368,13 +329,8 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     if (BeeUtils.isEmpty(query) || Operator.CHAR_ANY.equals(query)) {
       ok = true;
 
-    } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
-      BeeKeeper.getScreen().notifyWarning(
-          BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
-      ok = false;
-
     } else {
-      filter = buildFilter(by, query);
+      filter = buildFilter("", query);
       ok = true;
     }
 
@@ -470,11 +426,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       }
     }
     return result;
-  }
-
-  private static String getStorageKey() {
-    return BeeUtils.join(BeeConst.STRING_MINUS, "SearchPicker",
-        BeeKeeper.getUser().getUserId(), UiConstants.ATTR_VALUE);
   }
 
   private boolean isFrom(Long warehouse) {
