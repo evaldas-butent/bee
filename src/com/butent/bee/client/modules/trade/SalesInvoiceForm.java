@@ -3,10 +3,10 @@ package com.butent.bee.client.modules.trade;
 import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.shared.Consumer;
@@ -48,7 +48,13 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
 
   @Override
   public FormInterceptor getPrintFormInterceptor() {
-    return new TradeDocumentRenderer(VIEW_SALE_ITEMS, COL_SALE);
+    return new TradeDocumentRenderer(VIEW_SALE_ITEMS, COL_SALE) {
+      @Override
+      public void onLoad(FormView form) {
+        TradeActKeeper.ensureSendMailPrintableForm(form);
+        super.afterCreate(form);
+      }
+    };
   }
 
   @Override
@@ -76,27 +82,26 @@ public class SalesInvoiceForm extends PrintFormInterceptor {
     if (!companies.containsKey(COL_TRADE_SUPPLIER)) {
       companies.put(COL_TRADE_SUPPLIER, BeeKeeper.getUser().getCompany());
     }
-    super.getReportParameters((defaultParameters) -> {
-      Queries.getRowSet(ClassifierConstants.VIEW_COMPANIES, null, Filter.idIn(companies.values()),
-          new Queries.RowSetCallback() {
-            @Override
-            public void onSuccess(BeeRowSet result) {
-              for (BeeRow row : result) {
-                for (Map.Entry<String, Long> entry : companies.entrySet()) {
-                  if (Objects.equals(row.getId(), entry.getValue())) {
-                    for (BeeColumn column : result.getColumns()) {
-                      String value = DataUtils.getString(result, row, column.getId());
+    super.getReportParameters((defaultParameters) ->
+        Queries.getRowSet(ClassifierConstants.VIEW_COMPANIES, null, Filter.idIn(companies.values()),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            for (BeeRow row : result) {
+              for (Map.Entry<String, Long> entry : companies.entrySet()) {
+                if (Objects.equals(row.getId(), entry.getValue())) {
+                  for (BeeColumn column : result.getColumns()) {
+                    String value = DataUtils.getString(result, row, column.getId());
 
-                      if (!BeeUtils.isEmpty(value)) {
-                        defaultParameters.put(entry.getKey() + column.getId(), value);
-                      }
+                    if (!BeeUtils.isEmpty(value)) {
+                      defaultParameters.put(entry.getKey() + column.getId(), value);
                     }
                   }
                 }
               }
-              parametersConsumer.accept(defaultParameters);
             }
-          });
-    });
+            parametersConsumer.accept(defaultParameters);
+          }
+        }));
   }
 }

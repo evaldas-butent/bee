@@ -100,6 +100,14 @@
     <!-- Transrifus TradeAct SelfService { -->
     <SimpleColumn name="Visited" />
     <!-- } Transrifus TradeAct SelfService -->
+
+    <!-- Transrifus Send invoices to mail { -->
+    <SimpleColumn name="IsSentToEmail" label="=tradeSentToEmail" />
+    <SimpleColumn name="InvoiceTransferType" />
+    <SimpleJoin joinType="LEFT" name="InvoiceTransferType">
+      <SimpleColumn alias="InvoiceTransferTypeName" name="Name" />
+    </SimpleJoin>
+    <!-- } -->
   </Columns>
 
   <Order>

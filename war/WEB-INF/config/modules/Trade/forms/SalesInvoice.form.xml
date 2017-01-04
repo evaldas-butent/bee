@@ -4,6 +4,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="SalesInvoice" viewName="Sales"
   caption="=trdInvoice" showRowId="true"
@@ -47,6 +48,8 @@
         <Label for="Customer" />
         <DataSelector source="Customer" name="Customer" required="true" visible="true"
                       style="&inp;"/>
+
+        <CheckBox for="IsSentToEmail" source="IsSentToEmail" readOnly="true"/>
       </row>
 
       <row>
@@ -56,6 +59,9 @@
 
         <Label for="Payer" />
         <DataSelector source="Payer" name="Payer" style="&inp;"/>
+
+        <Label for="InvoiceTransferType" />
+        <DataSelector source="InvoiceTransferType" style="&inp;"/>
       </row>
 
       <row>
@@ -85,6 +91,10 @@
         <SimplePanel>
           <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
+      </page>
+      <page>
+        <text>=files</text>
+        <ChildGrid relColumn="Sale" name="SaleFiles" />
       </page>
     </TabbedPages>
   </FlowPanel>

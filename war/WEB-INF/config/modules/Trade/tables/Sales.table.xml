@@ -41,6 +41,11 @@
     <!-- Transrifus TradeAct SelfService { -->
     <DateTime name="Visited" label="Žiūrėta" />
     <!-- } Transrifus TradeAct SelfService -->
+
+    <!-- Transrifus Send invoices to mail { -->
+    <Boolean name="IsSentToEmail" label="=tradeSentToEmail" />
+    <Relation name="InvoiceTransferType" relation="InvoiceTransferTypes" label="=invoiceTransferType" />
+    <!-- } -->
   </Fields>
 
   <Indexes>

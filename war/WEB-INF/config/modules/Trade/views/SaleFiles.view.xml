@@ -14,6 +14,8 @@
     </SimpleJoin>
 
     <SimpleColumn name="Caption" />
+    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Message" />
   </Columns>
   <Order>
     <OrderBy column="File" />

@@ -7,6 +7,8 @@
   <Fields>
     <Relation name="Sale" notNull="true" relation="Sales" cascade="DELETE" label="=trdSales" />
     <Relation name="File" relation="Files" notNull="true" editable="true" label="=file" />
+    <Relation name="Message" relation="Messages" cascade="SET_NULL" />
     <String name="Caption" precision="100" label="=caption" />
+    <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

@@ -7,7 +7,8 @@
   xmlns:ui="http://www.butent.com/ui"
     >
 
-  <FlowPanel class="bee-PrintableForm bee-trade-print-document" contentEditable="true">
+  <FlowPanel class="bee-PrintableForm bee-trade-print-document" contentEditable="true"
+             style="padding: 10px; background-color: white; font-size: 10pt">
     <br/>
     <FlowPanel>
         <Image url="images/logo.png" style="position: relative; width:33%;"/>
@@ -139,24 +140,30 @@
       <TextLabel source="Notes" class="bee-trade-print-notes" />
 
       <br/>
-      <FlowPanel class="bee-trade-print-dispenser-receiver flexBox-horizontal" >
-        <Label text="=printDocumentDispenser" class="bee-trade-print-dispenser" />
-        <FlowPanel class="flexible">
-          <TextLabel source="Manager">
-            <renderToken source="ManagerPositionName" />
-            <renderToken source="ManagerLastName" />
-            <renderToken source="ManagerFirstName" />
-          </TextLabel>
-          <hr />
-          <Label text="=printSignature" class="bee-trade-print-signature-label" />
-        </FlowPanel>
+      <Table kind="output" class="bee-trade-print-dispenser-receiver" >
+        <row>
+          <Label text="=printDocumentDispenser" class="bee-trade-print-dispenser" />
+          <FlowPanel class="flexible" style="min-width:5cm">
+            <TextLabel source="Manager">
+              <renderToken source="ManagerPositionName" />
+              <renderToken source="ManagerLastName" />
+              <renderToken source="ManagerFirstName" />
+            </TextLabel>
+            <hr />
+          </FlowPanel>
 
-        <Label text="=printDocumentReceiver" class="bee-trade-print-receiver" />
-        <FlowPanel class="bee-trade-print-signature flexible">
-          <hr/>
+          <Label text="=printDocumentReceiver" class="bee-trade-print-receiver" />
+          <FlowPanel class="bee-trade-print-signature flexible"  style="min-width:5cm">
+            <hr/>
+          </FlowPanel>
+        </row>
+        <row>
+          <br />
           <Label text="=printSignature" class="bee-trade-print-signature-label" />
-        </FlowPanel>
-      </FlowPanel>
+          <br />
+          <Label text="=printSignature" class="bee-trade-print-signature-label" />
+        </row>
+      </Table>
     </FlowPanel>
   </FlowPanel>
 </f:Form>

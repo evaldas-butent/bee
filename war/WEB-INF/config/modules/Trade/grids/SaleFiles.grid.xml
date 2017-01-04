@@ -15,5 +15,6 @@
 
     <DataColumn name="FileName" readOnly="true" visible="false" />
     <DataColumn name="FileType" readOnly="true" visible="false" />
+    <DataColumn name="Notes" />
   </g:columns>
 </g:Grid>

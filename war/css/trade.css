@@ -62,13 +62,13 @@
 }
 
 .bee-trade-print-document-title {
-  font-family: Tahoma;
+  /*font-family: Tahoma; Transrifus NOT SUPPORTED PDF*/
   font-size: 16pt;
   font-style: italic;
   text-align: center;
 }
 .bee-trade-print-document-number {
-  font-family: Tahoma;
+ /* font-family: Tahoma; Transrifus NOT SUPORTED PDF*/
   font-size: 12pt;
   font-weight: bold;
   text-align: center;
@@ -204,6 +204,6 @@
 }
 
 .bee-trade-print-item-ordinal {
-    max-width: 3ex;
-    width: 3ex;
+    max-width: 2em;
+    width: 2em;
 }

@@ -7,19 +7,24 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.ColorStyleProvider;
@@ -27,6 +32,7 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewSupplier;
@@ -37,6 +43,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
@@ -44,10 +51,12 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -55,6 +64,7 @@ import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.*;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.SubModule;
@@ -67,7 +77,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -98,6 +110,63 @@ public final class TradeActKeeper {
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
+  }
+
+  public static void ensureSendMailPrintableForm(FormView form) {
+    HeaderView header = form.getViewPresenter().getHeader();
+
+    if (header != null) {
+      FaLabel mail = new FaLabel(FontAwesome.ENVELOPE_O);
+
+      mail.addClickHandler((clickEvent) -> {
+        Long id = form.getActiveRowId();
+
+        ReportUtils.getPdf(form.getPrintElement().getString(), (fileInfo) -> {
+          String invoice = BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
+              form.getStringValue(COL_TRADE_INVOICE_NO));
+
+          if (!BeeUtils.isEmpty(invoice)) {
+            fileInfo.setCaption(invoice + ".pdf");
+          }
+          Queries.getValue(VIEW_COMPANIES, BeeUtils.unbox(form.getLongValue(COL_CUSTOMER)),
+              COL_EMAIL, new RpcCallback<String>() {
+                @Override
+                public void onSuccess(String email) {
+                  NewMailMessage.create(email, invoice, Localized.dictionary().trdInvoice(),
+                      Collections.singleton(fileInfo), (messageId, saveMode) -> {
+                        DataInfo info = Data.getDataInfo(VIEW_SALE_FILES);
+
+                        Queries.insert(info.getViewName(),
+                            Arrays.asList(
+                                info.getColumn(COL_SALE),
+                                info.getColumn(AdministrationConstants.COL_FILE),
+                                info.getColumn(COL_NOTES),
+                                info.getColumn(MailConstants.COL_MESSAGE)),
+                            Arrays.asList(
+                                BeeUtils.toString(id),
+                                BeeUtils.toString(fileInfo.getId()),
+                                TimeUtils.nowMinutes().toCompactString(),
+                                BeeUtils.toString(messageId)),
+                            null,
+                            new RowInsertCallback(info.getViewName()) {
+                              @Override
+                              public void onSuccess(BeeRow result) {
+                                Data.onTableChange(info.getTableName(),
+                                    DataChangeEvent.RESET_REFRESH);
+                                form.updateCell("IsSentToEmail", BeeConst.STRING_TRUE);
+                                form.refreshBySource("IsSentToEmail");
+                                form.getViewPresenter().handleAction(Action.SAVE);
+                                super.onSuccess(result);
+                              }
+                            });
+
+                      });
+                }
+              });
+        });
+      });
+      header.addCommandItem(mail);
+    }
   }
 
   public static void register() {

@@ -38,6 +38,11 @@
     <DataColumn name="Visited" format="date_time_short"/>
     <!-- } Transrifus TradeAct SelfService -->
 
+    <!-- Transrifus Send invoices to mail { -->
+    <DataColumn name="IsSentToEmail" readOnly="true"/>
+    <RelColumn name="InvoiceTransferType" visible="false"/>
+    <!-- } -->
+
     <DataColumn name="Proforma" visible="false" />
     <RelColumn name="WarehouseFrom" visible="false" />
 
@@ -45,6 +50,8 @@
     <DataColumn name="Driver" visible="false" />
 
     <DataColumn name="Notes" visible="false" />
+
+
   </g:columns>
 
   <g:rowStyle>
