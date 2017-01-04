@@ -249,7 +249,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       if (kind == TradeActKind.RETURN) {
         IsColumn column = event.getColumn();
 
-        if (column.getId() != COL_TRADE_ITEM_QUANTITY) {
+        if (column == null || column.getId() != COL_TRADE_ITEM_QUANTITY) {
           return;
         }
 

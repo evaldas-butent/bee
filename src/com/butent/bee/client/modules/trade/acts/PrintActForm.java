@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Widget;
@@ -11,6 +12,7 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.trade.TradeKeeper;
@@ -21,11 +23,13 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
@@ -150,6 +154,36 @@ public class PrintActForm extends AbstractFormInterceptor {
         }
       });
 
+    } else if (!DataUtils.isId(row.getLong(getDataIndex(COL_TA_PARENT)))
+        && TradeActKind.RETURN.equals(kind)) {
+      Queries.getRowSet(VIEW_TRADE_ACT_ITEMS, Lists.newArrayList(COL_TA_PARENT),
+          Filter.and(Filter.equals(COL_TRADE_ACT, row.getId()), Filter.notNull(COL_TA_PARENT)),
+          new Queries.RowSetCallback() {
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          Set<Long> acts = result.getDistinctLongs(result.getColumnIndex(COL_TA_PARENT));
+
+          if (BeeUtils.isEmpty(acts)) {
+            form.notifyWarning(Localized.dictionary().taParent(),
+                Localized.dictionary().tradeAct(), Localized.dictionary().noData());
+            return;
+          }
+          ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_MULTI_RETURN);
+          params.addQueryItem(Service.VAR_LIST, DataUtils.buildIdList(acts));
+          BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              if (response != null && response.hasResponse(BeeRowSet.class)) {
+                BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
+                remainQty.putAll(TradeActUtils.getItemQuantities(parentItems));
+              }
+
+              renderItems(ITEMS_WIDGET_NAME);
+              renderItems(SERVICES_WIDGET_NAME);
+            }
+          });
+        }
+      });
     } else {
       remainQty.clear();
       renderItems(ITEMS_WIDGET_NAME);
@@ -209,41 +243,27 @@ public class PrintActForm extends AbstractFormInterceptor {
           visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
 
-          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
-          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
-//          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
           break;
         case "AmountVat":
-//          visibleItemsCols.put(FORM_PRINT_TA_SALE, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
-//          visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
-//          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
 
-          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
-          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
-          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
           break;
         case COL_TRADE_VAT:
-          visibleItemsCols.put(FORM_PRINT_TA_SALE, column, true);
+
           visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
 
           visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
-          visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
-          visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
           break;
         case COL_ITEM_AREA:
           break;
         case "Amount":
-          visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
-          visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT, column, true);
-          visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
 
@@ -480,9 +500,11 @@ public class PrintActForm extends AbstractFormInterceptor {
               addDataToTable(data, id, col, value);
             }
           }
-          double qty = BeeUtils.nvl(remainQty.get(itemId), BeeUtils.toDouble(getDataValue(data, id,
-              COL_TRADE_ITEM_QUANTITY))
-              - BeeUtils.toDouble(getDataValue(data, id, COL_TA_RETURNED_QTY)));
+          double qty = BeeUtils.same(FORM_PRINT_TA_RETURN, getFormView().getFormName())
+              ? BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_ITEM_QUANTITY))
+              : BeeUtils.nvl(remainQty.get(itemId), BeeUtils.toDouble(getDataValue(data, id,
+              COL_TRADE_ITEM_QUANTITY)) - BeeUtils.toDouble(getDataValue(data, id,
+              COL_TA_RETURNED_QTY)));
           double prc = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_ITEM_PRICE));
           double sum = qty * prc;
 

@@ -57,6 +57,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
@@ -407,7 +408,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
               (ip == defPrice) ? STYLE_SELECTED_PRICE_CELL : STYLE_PRICE_CELL);
           DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
 
-          if (ip == ItemPrice.SALE) {
+          if (ip == defPrice) {
             enableQty = true;
           }
         }
@@ -668,6 +669,10 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     Collection<InputNumber> inputs = UiHelper.getChildren(itemPanel, InputNumber.class);
 
     for (InputNumber input : inputs) {
+      if (!input.isEnabled()) {
+        continue;
+      }
+
       Double qty = input.getNumber();
 
       if (BeeUtils.isPositive(qty)) {
@@ -730,15 +735,27 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
             Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_COLUMN, ip.ordinal()));
 
         for (Element row : rows) {
+          Element qtyInput = Selectors.getElementByClassName(row, STYLE_QTY_INPUT);
           if (!selectedPrices.containsKey(DomUtils.getDataIndexLong(row))) {
             if (itemPrice != null) {
               deselectPrice(row);
+              if (DomUtils.isInputElement(qtyInput)) {
+                qtyInput.addClassName(StyleUtils.NAME_DISABLED);
+                qtyInput.removeClassName(StyleUtils.NAME_TEXT_BOX);
+                qtyInput.setAttribute(Attributes.DISABLED, "");
+              }
             }
 
             Element el = Selectors.getElement(row, priceSelector);
             if (el != null) {
               el.removeClassName(STYLE_PRICE_CELL);
               el.addClassName(STYLE_SELECTED_PRICE_CELL);
+
+              if (DomUtils.isInputElement(qtyInput)) {
+                qtyInput.removeClassName(StyleUtils.NAME_DISABLED);
+                qtyInput.addClassName(StyleUtils.NAME_TEXT_BOX);
+                qtyInput.removeAttribute(Attributes.DISABLED);
+              }
             }
           }
         }
