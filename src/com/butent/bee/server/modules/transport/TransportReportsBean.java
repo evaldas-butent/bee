@@ -7,6 +7,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -957,6 +958,10 @@ public class TransportReportsBean {
         .addEmptyDouble(constantCosts)
         .addEmptyDouble(otherCosts)
         .addEmptyDouble(tripIncome)
+        .addEmptyDateTime(ALS_MIN_LOADING_DATE)
+        .addEmptyDateTime(ALS_MAX_UNLOADING_DATE)
+        .addEmptyText(ALS_LOADING_DATE)
+        .addEmptyText(ALS_UNLOADING_DATE)
         .addFrom(TBL_TRIPS)
         .addFromLeft(TBL_VEHICLES, trucks,
             sys.joinTables(TBL_VEHICLES, trucks, TBL_TRIPS, COL_VEHICLE))
@@ -1375,6 +1380,11 @@ public class TransportReportsBean {
 
       qs.sqlDropTemp(tmpTripCargo);
     }
+
+    CustomTransportReportsBean customTransportReportsBean = Invocation
+        .locateRemoteBean(CustomTransportReportsBean.class);
+    customTransportReportsBean.calculateLoadingDates(report, cargoRequired, tmp);
+
     // Incomes
     if (report.requiresField(tripIncome)) {
       String als = SqlUtils.uniqueName();
