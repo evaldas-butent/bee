@@ -396,6 +396,7 @@
       <xs:enumeration value="Emails" />
       <xs:enumeration value="EmployeeObjects" />
       <xs:enumeration value="Employees" />
+      <xs:enumeration value="Equipment" />
       <xs:enumeration value="ERPTripCosts" />
       <xs:enumeration value="EventDurations" />
       <xs:enumeration value="EventHistory" />

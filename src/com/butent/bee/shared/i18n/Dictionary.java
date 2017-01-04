@@ -5071,6 +5071,8 @@ public interface Dictionary {
 
   default String svcInvoices() {return g("svcInvoices");}
 
+  default String svcIsValid() {return g("svcIsValid");}
+
   default String svcMaintenance() {return g("svcMaintenance");}
 
   default String svcMaintenanceEmailContent(Object p0, Object p1, Object p2) {
@@ -5080,6 +5082,8 @@ public interface Dictionary {
     _m.put("{2}", p2);
     return Localized.format(g("svcMaintenanceEmailContent"), _m);
   }
+
+  default String svcMaintenanceEquipment() {return g("svcMaintenanceEquipment");}
 
   default String svcMaintenanceItemsServices() {return g("svcMaintenanceItemsServices");}
 

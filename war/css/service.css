@@ -250,3 +250,13 @@
 .bee-svc-maintenance-creator-info {
   color: #ababab;
 }
+
+.bee-svc-maintenance-input-area {
+  width:100%;
+  height: 75px;
+}
+
+.bee-svc-maintenance-equipment-area {
+  width:100%;
+  min-height: 75px;
+}
