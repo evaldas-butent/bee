@@ -223,9 +223,7 @@ public class MailStorageBean {
       } else {
         folder = createFolder(account, inbox, sysFolder.getFolderName());
       }
-      qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
-          .addConstant(sysFolder.name() + COL_FOLDER, folder.getId())
-          .setWhere(sys.idEquals(TBL_ACCOUNTS, accountId)));
+      updateAccount(accountId, sysFolder.name() + COL_FOLDER, folder.getId());
     }
   }
 
@@ -393,6 +391,12 @@ public class MailStorageBean {
     }
     p.log("Message=" + messageId.getA());
     return messageId;
+  }
+
+  public void updateAccount(Long accountId, String field, Object value) {
+    qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
+        .addConstant(field, value)
+        .setWhere(sys.idEquals(TBL_ACCOUNTS, accountId)));
   }
 
   public void updateFolder(MailFolder folder, Long uidValidity, Long modSeq) {
