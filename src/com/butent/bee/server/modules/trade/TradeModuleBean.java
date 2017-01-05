@@ -767,7 +767,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     if (BeeUtils.same(trade, TBL_TRADE_ACTS)) {
       query.addField(tradeItems, sys.getIdName(tradeItems), tradeItems)
           .addFields(tradeItems, COL_TRADE_DISCOUNT, COL_ITEM)
-          .addFields(TBL_TRADE_ACTS, COL_TRADE_NUMBER, COL_TRADE_CONTACT);
+          .addFields(TBL_TRADE_ACTS, COL_TRADE_NUMBER, COL_TRADE_CONTACT)
+          .addFields(TBL_ITEMS, COL_ITEM_RENTAL_PRICE);
       query.addOrder(TBL_ITEMS, COL_TRADE_ITEM_ORDINAL, sys.getIdName(TBL_ITEMS));
 
       if (BeeUtils.same(tradeItems, TBL_TRADE_ACT_ITEMS)) {

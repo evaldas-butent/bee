@@ -16,7 +16,10 @@
   width="1050" height="700"
   >
   <f:properties reports="PrintTradeActSalePhysical, PrintTradeActReturn, PrintTASaleNoStock,
-     PrintTASaleRent, PrintTASaleAddition, PrintTASaleSuggestion, PrintTASaleProforma" />
+     PrintTASaleRent, PrintTASaleAddition, PrintTASaleSuggestion, PrintTASaleProforma,
+
+     PrintTradeActSalePhysicalPRent, PrintTradeActReturnPRent, PrintTASaleNoStockPRent,
+     PrintTASaleRentPRent, PrintTASaleAdditionPRent, PrintTASaleSuggestionPRent, PrintTASaleProformaPRent" />
 
   <FlowPanel>
     <br />

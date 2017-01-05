@@ -2,26 +2,24 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY bold "font-weight:bold;">
-  <!ENTITY form "PrintTradeActReturn">
+  <!ENTITY form "PrintTradeActSalePhysicalPRent">
   <!ENTITY hdr ".bee-form-PrintTradeActSalePhysical .bee-trade-itemsInfo-header .bee-trade-itemsInfo-">
 ]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
-  name="&form;" caption="Grąžinimo aktas" disabledActions="save" width="70" widthUnit="%"
-        height="90"
-        heightUnit="%">
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+  name="&form;" caption="Perdavimo aktas +Nuomos Kaina" disabledActions="save" width="70" widthUnit="%"
+        height="90" heightUnit="%">
   <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
     class="bee-PrintableForm bee-form-TradeActPrint">
     <FlowPanel>
       <Image url="images/logo.png" style="position: relative; width:33%;" />
       <FlowPanel style="margin-top:-35px; padding-top: 20px;">
         <br />
-        <TextLabel style="text-align:center; &bold;">
+        <TextLabel style="text-align:center; &bold; ">
           <render>
-            <ui:expression>'Įrenginių grąžinimo aktas Nr. ' + row.SeriesName + '-' +
-              (row.RegistrationNo ?
-              row.RegistrationNo :
-              "")
-            </ui:expression>
+            <ui:expression>'Įrenginių perdavimo aktas Nr. ' + row.SeriesName + '-' + (row.Number ?
+              row.Number :
+              rowId)</ui:expression>
           </render>
         </TextLabel>
         <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
@@ -75,9 +73,9 @@
       </Table>
     </FlowPanel>
     <TextLabel source="ActName" style="text-align:center; &bold; padding-top: 10px; padding-bottom: 10px;" />
-    <FlowPanel name="TradeActItems" class="TradeActItems" style="&section;" />
+    <FlowPanel name="TradeActItems" class="TradeActItems" style="&section; " />
     <br />
-    <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />
+    <FlowPanel name="TradeActServices" class="TradeActServices" style="&section; " />
 
     <FlowPanel style="&section;">
       <TextLabel source="Notes" style="display:block; white-space:pre-wrap; border:1px solid silver;
@@ -87,13 +85,6 @@
           <ui:expression>!row.Notes</ui:expression>
         </dynStyle>
         <renderToken source="Notes" prefix="Pastabos: " />
-      </TextLabel>
-      <TextLabel style="">
-        <render>
-          <ui:expression>'Įrenginių perdavimo aktas Nr. ' + row.SeriesName + '-' + (row.Number ?
-            row.Number :
-            rowId)</ui:expression>
-        </render>
       </TextLabel>
     </FlowPanel>
 
@@ -122,7 +113,7 @@
         </FlowPanel>
       </row>
       <row>
-        <Label text="Priėmė ir suskaičiavo:" />
+       <br />
         <FlowPanel class="flexBox-horizontal">
           <TextLabel source="InputDriver">
             <dynStyle>
@@ -141,6 +132,13 @@
             <renderToken source="DriverLastName" />
           </TextLabel>
         </FlowPanel>
+      </row>
+      <row>
+        <br />
+      </row>
+      <row>
+        <Label text="Priėmė ir suskaičiavo:" />
+        <br />
       </row>
     </Table>
   </FlowPanel>

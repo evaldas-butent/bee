@@ -61,11 +61,12 @@ public class PrintActForm extends AbstractFormInterceptor {
   private static final String FORM_PRINT_TA_SALE_ADDITION = "PrintTASaleAddition";
   private static final String FORM_PRINT_TA_SALE_PROFORMA = "PrintTASaleProforma";
   private static final String FORM_PRINT_TA_SUGGESTION = "PrintTASaleSuggestion";
+  private static final String VAR_PRINT_RENTAL = "PRent";
 
   private static final String[] COLUMN_LIST = new String[] {
       COL_ITEM_ARTICLE, COL_ITEM_NAME, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
       COL_TRADE_ITEM_QUANTITY, COL_UNIT, COL_TRADE_TIME_UNIT, COL_TA_RETURNED_QTY,
-      "RemainingQty", COL_TRADE_WEIGHT, COL_ITEM_AREA, COL_TA_SERVICE_TARIFF,
+      "RemainingQty", COL_TRADE_WEIGHT, COL_ITEM_AREA, COL_TA_SERVICE_TARIFF, COL_ITEM_RENTAL_PRICE,
       COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT, "Amount", "AmountVat", COL_TRADE_VAT, "AmountTotal",
       "MinTermAmount"
   };
@@ -100,7 +101,8 @@ public class PrintActForm extends AbstractFormInterceptor {
     TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
     if (!DataUtils.isId(row.getLong(getDataIndex(COL_TA_PARENT)))
         && !TradeActKind.RETURN.equals(kind)
-        && BeeUtils.same(getFormView().getFormName(), FORM_PRINT_TA_RETURN)) {
+        && BeeUtils.same(BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL),
+        FORM_PRINT_TA_RETURN)) {
       form.getViewPresenter().handleAction(Action.CLOSE);
       BeeKeeper.getScreen().notifySevere(Localized.dictionary().taSelectKindReturn());
       return false;
@@ -210,6 +212,7 @@ public class PrintActForm extends AbstractFormInterceptor {
     tableHeaders.put("Weight", "Svoris");
     tableHeaders.put("Area", "Plotas");
     tableHeaders.put("Tariff", "Tarifas");
+    tableHeaders.put(COL_ITEM_RENTAL_PRICE, "Nuomos kaina");
     tableHeaders.put("Price", "Kaina");
     tableHeaders.put("Discount", "Nuol.");
     tableHeaders.put("Amount", "Suma be PVM");
@@ -227,6 +230,12 @@ public class PrintActForm extends AbstractFormInterceptor {
 
           visibleServiceCols.put(FORM_PRINT_TA_SALE, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+
+          visibleItemsCols.put(FORM_PRINT_TA_SALE + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_SALE + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
           break;
         case "MinTermAmount":
           visibleServiceCols.put(FORM_PRINT_TA_SALE, column, true);
@@ -236,6 +245,14 @@ public class PrintActForm extends AbstractFormInterceptor {
           visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_SALE + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA + VAR_PRINT_RENTAL, column, true);
           break;
         case "AmountTotal":
           visibleItemsCols.put(FORM_PRINT_TA_SALE, column, true);
@@ -244,6 +261,13 @@ public class PrintActForm extends AbstractFormInterceptor {
           visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
 
           visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+
+          visibleItemsCols.put(FORM_PRINT_TA_SALE + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA + VAR_PRINT_RENTAL, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
           break;
         case "AmountVat":
           visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK, column, true);
@@ -251,14 +275,25 @@ public class PrintActForm extends AbstractFormInterceptor {
           visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
 
           visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+
+          visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK  + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT  + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION  + VAR_PRINT_RENTAL, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
           break;
         case COL_TRADE_VAT:
-
           visibleItemsCols.put(FORM_PRINT_TA_RETURN, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
           visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
 
           visibleServiceCols.put(FORM_PRINT_TA_RETURN, column, true);
+
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA + VAR_PRINT_RENTAL, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
           break;
         case COL_ITEM_AREA:
           break;
@@ -274,6 +309,27 @@ public class PrintActForm extends AbstractFormInterceptor {
           visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN  + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION  + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA  + VAR_PRINT_RENTAL, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_SALE  + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK  + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN  + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION  + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION  + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA + VAR_PRINT_RENTAL, column, true);
+          break;
+        case COL_ITEM_RENTAL_PRICE:
+          visibleItemsCols.put(FORM_PRINT_TA_SALE + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA + VAR_PRINT_RENTAL, column, true);
           break;
         case COL_ITEM_ARTICLE:
         case COL_ITEM_NAME:
@@ -302,6 +358,22 @@ public class PrintActForm extends AbstractFormInterceptor {
           visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION, column, true);
           visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA, column, true);
+
+          visibleItemsCols.put(FORM_PRINT_TA_SALE + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_NO_STOCK + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_RENT + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_ADDITION + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SUGGESTION + VAR_PRINT_RENTAL, column, true);
+          visibleItemsCols.put(FORM_PRINT_TA_SALE_PROFORMA + VAR_PRINT_RENTAL, column, true);
+
+          visibleServiceCols.put(FORM_PRINT_TA_SALE + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_NO_STOCK + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_RETURN + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_RENT + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_ADDITION + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SUGGESTION + VAR_PRINT_RENTAL, column, true);
+          visibleServiceCols.put(FORM_PRINT_TA_SALE_PROFORMA + VAR_PRINT_RENTAL, column, true);
           break;
       }
     }
@@ -317,7 +389,10 @@ public class PrintActForm extends AbstractFormInterceptor {
 
         addDataEntry(data, id, cell, val.toPlainString());
         break;
-
+      case COL_ITEM_RENTAL_PRICE:
+        addDataEntry(data, id, cell, BeeUtils.round(
+            BeeUtils.toString(BeeUtils.toDouble(value)), 2));
+        break;
       case COL_TA_RETURNED_QTY:
       case COL_TRADE_ITEM_QUANTITY:
       case "AmountTotal":
@@ -336,12 +411,7 @@ public class PrintActForm extends AbstractFormInterceptor {
 
   private static void addDataEntry(Map<String, Map<String, String>> data, String row, String
       col, String value) {
-    Map<String, String> rowData = data.get(row);
-
-    if (rowData == null) {
-      rowData = new LinkedHashMap<>();
-      data.put(row, rowData);
-    }
+    Map<String, String> rowData = data.computeIfAbsent(row, k -> new LinkedHashMap<>());
 
     rowData.put(col, value);
   }
@@ -392,7 +462,8 @@ public class PrintActForm extends AbstractFormInterceptor {
         }
         break;
       case "AmountVat":
-        if (ITEMS_WIDGET_NAME.equals(widgetName) && BeeUtils.inList(form.getFormName(),
+        if (ITEMS_WIDGET_NAME.equals(widgetName) && BeeUtils.inList(
+            BeeUtils.removeSuffix(form.getFormName(), VAR_PRINT_RENTAL),
             FORM_PRINT_TA_SALE, FORM_PRINT_TA_NO_STOCK, FORM_PRINT_TA_SALE_RENT,
             FORM_PRINT_TA_SALE_ADDITION)) {
           return "Suma";
@@ -406,7 +477,9 @@ public class PrintActForm extends AbstractFormInterceptor {
         }
         break;
       case "Quantity":
-        if (BeeUtils.same(form.getFormName(), FORM_PRINT_TA_RETURN)) {
+        if (BeeUtils.same(
+            BeeUtils.removeSuffix(form.getFormName(), VAR_PRINT_RENTAL),
+            FORM_PRINT_TA_RETURN)) {
           return "Grąžinta";
         }
         break;
@@ -452,7 +525,8 @@ public class PrintActForm extends AbstractFormInterceptor {
 
           Long itemId = row.getLong(COL_ITEM);
 
-          if (BeeUtils.same(FORM_PRINT_TA_RETURN, getFormView().getFormName())
+          if (BeeUtils.same(FORM_PRINT_TA_RETURN,
+              BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL))
               && remainQty.get(itemId) == null) {
             remainQty.put(itemId, 0D);
           }
@@ -500,7 +574,8 @@ public class PrintActForm extends AbstractFormInterceptor {
               addDataToTable(data, id, col, value);
             }
           }
-          double qty = BeeUtils.same(FORM_PRINT_TA_RETURN, getFormView().getFormName())
+          double qty = BeeUtils.same(FORM_PRINT_TA_RETURN, BeeUtils.removeSuffix(getFormView()
+              .getFormName(), VAR_PRINT_RENTAL))
               ? BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_ITEM_QUANTITY))
               : BeeUtils.nvl(remainQty.get(itemId), BeeUtils.toDouble(getDataValue(data, id,
               COL_TRADE_ITEM_QUANTITY)) - BeeUtils.toDouble(getDataValue(data, id,
@@ -572,6 +647,7 @@ public class PrintActForm extends AbstractFormInterceptor {
         calc.add("RemainingQty");
         calc.add(COL_TRADE_WEIGHT);
         calc.add(COL_ITEM_AREA);
+//        calc.add(COL_ITEM_RENTAL_PRICE);
         calc.add("Amount");
         calc.add("AmountVat");
         calc.add(COL_TRADE_VAT);
@@ -633,7 +709,7 @@ public class PrintActForm extends AbstractFormInterceptor {
   }
 
   private String getDataTableId(String typeTable, SimpleRowSet.SimpleRow row) {
-    switch (getFormView().getFormName()) {
+    switch (BeeUtils.removeSuffix(getFormView().getFormName(), VAR_PRINT_RENTAL)) {
       case FORM_PRINT_TA_NO_STOCK:
       case FORM_PRINT_TA_RETURN:
         return BeeUtils.same(SERVICES_WIDGET_NAME, typeTable) ? row.getValue(typeTable)
