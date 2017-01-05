@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.gwt.xml.client.Element;
-
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.composite.DataSelector;
