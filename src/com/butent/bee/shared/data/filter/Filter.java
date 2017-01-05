@@ -423,6 +423,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return or(isNull(column), isMoreEqual(column, IntegerValue.ZERO));
   }
 
+  public static Filter nonZero(String column) {
+    return isNotEqual(column, IntegerValue.ZERO);
+  }
+
   public static Filter notEquals(String column, Enum<?> value) {
     if (value == null) {
       return notNull(column);
@@ -503,6 +507,11 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return flt;
   }
 
+  public static Filter startsWith(String column, String value) {
+    Assert.notEmpty(value);
+    return new ColumnValueFilter(column, Operator.STARTS, new TextValue(value));
+  }
+
   private static Filter getFilter(String clazz) {
     Filter flt = null;
 
@@ -575,7 +584,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return false;
   }
 
-  protected int getColumnIndex(String colName, List<? extends IsColumn> columns) {
+  protected static int getColumnIndex(String colName, List<? extends IsColumn> columns) {
     return DataUtils.getColumnIndex(colName, columns);
   }
 

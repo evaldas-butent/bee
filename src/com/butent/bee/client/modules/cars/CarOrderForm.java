@@ -52,6 +52,7 @@ import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -397,21 +398,22 @@ public class CarOrderForm extends SpecificationForm implements StageFormIntercep
                 Arrays.asList(new BeeColumn(DocumentConstants.COL_CRITERION_NAME),
                     new BeeColumn(DocumentConstants.COL_CRITERION_VALUE)));
 
-            specification.getCriteria().forEach((key, val) -> {
-              critRs.addRow(0, new String[] {key, val});
-            });
+            specification.getBundle().getOptions().forEach(opt ->
+                critRs.addRow(0, 0, Arrays.asList(opt.getDimension().getName(), opt.getName())));
+
+            specification.getOptions().stream().filter(opt -> opt.getDimension().isRequired())
+                .forEach(opt -> critRs.addRow(0, 0,
+                    Arrays.asList(opt.getDimension().getName(), opt.getName())));
+
+            specification.getCriteria().forEach((key, val) ->
+                critRs.addRow(0, 0, Arrays.asList(key, val)));
+
+            specification.getPhotos().forEach((key, val) ->
+                defaultParameters.put(COL_PHOTO + key, BeeUtils.toString(val)));
+
+            defaultParameters.put(CarsConstants.COL_BRANCH_NAME, specification.getBranchName());
             defaultParameters.put(COL_CRITERIA, critRs.serialize());
             defaultParameters.put(COL_DESCRIPTION, specification.getDescription());
-            defaultParameters.put(TBL_CONF_OBJECT_OPTIONS,
-                specification.renderSummary(false).toString());
-
-            for (int i = 0; i < specification.getPhotos().size(); i++) {
-              Long photo = specification.getPhotos().get(i);
-
-              if (DataUtils.isId(photo)) {
-                defaultParameters.put(COL_PHOTO + i, BeeUtils.toString(photo));
-              }
-            }
           }
           parametersConsumer.accept(defaultParameters);
         }));

@@ -14,7 +14,9 @@
 
     <DataColumn name="IndicatorSource" required="true" visible="true" />
 
-    <DataColumn name="IndicatorBalance" required="true" visible="true" />
+    <DataColumn name="IndicatorTurnoverOrBalance" />
+    <DataColumn name="IndicatorNormalBalance" />
+
     <DataColumn name="IndicatorClosingEntries" caption="=finClosingEntriesShort" />
 
     <DataColumn name="IndicatorScale" minValue="0" maxValue="5" />

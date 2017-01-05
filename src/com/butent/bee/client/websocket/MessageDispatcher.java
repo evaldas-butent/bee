@@ -291,7 +291,7 @@ class MessageDispatcher {
         ChatMessage chatMessage = (ChatMessage) message;
 
         if (chatMessage.isValid()
-                                || Global.getChatManager().isAssistant(chatMessage.getChatId())) {
+            || Global.getChatManager().isAssistant(chatMessage.getChatId())) {
           Global.getChatManager().addMessage(chatMessage);
         } else {
           WsUtils.onEmptyMessage(message);
@@ -467,9 +467,16 @@ class MessageDispatcher {
           WsUtils.onEmptyMessage(message);
 
         } else if (!Endpoint.handleProgress(pm)) {
-          if (pm.isActivated()) {
-            boolean started = Endpoint.startPropgress(progressId);
-            if (started) {
+          if (pm.isOpen()) {
+            progressId = Endpoint.createProgress(pm.getLabel(), progressId);
+
+            if (!BeeUtils.isEmpty(progressId)) {
+              logger.debug("progress", progressId, "created");
+            } else {
+              logger.warning("cannot create progress", progressId);
+            }
+          } else if (pm.isActivated()) {
+            if (Endpoint.startProgress(progressId)) {
               logger.debug("progress", progressId, "started");
             } else {
               logger.warning("cannot start progress", progressId);

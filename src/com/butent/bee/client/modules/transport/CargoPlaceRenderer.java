@@ -1,67 +1,49 @@
 package com.butent.bee.client.modules.transport;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
-
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.FlagRenderer;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.CellSource;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.html.builder.elements.Br;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 public class CargoPlaceRenderer extends AbstractCellRenderer {
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "places-";
 
-  final Map<String, Pair<Integer, String>> data = new LinkedHashMap<>();
+  final Map<String, String> data = new LinkedHashMap<>();
   private final FlagRenderer flagRenderer;
-  private final int postIndex;
 
-  public CargoPlaceRenderer(List<? extends IsColumn> columns, String options) {
-    super(null);
-    String prefix = BeeUtils.nvl(options, BeeConst.STRING_EMPTY);
+  public CargoPlaceRenderer(CellSource source) {
+    super(source);
 
-    data.put(COL_PLACE_DATE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_DATE, columns),
-        Localized.dictionary().date()));
-    data.put(COL_PLACE_NOTE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_NOTE, columns),
-        Localized.dictionary().note()));
-    data.put(COL_PLACE_COMPANY,
-        Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_COMPANY, columns),
-            Localized.dictionary().company()));
-    data.put(COL_PLACE_CONTACT,
-        Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_CONTACT, columns),
-            Localized.dictionary().contact()));
-    data.put(COL_PLACE_ADDRESS,
-        Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_ADDRESS, columns),
-            Localized.dictionary().address()));
-    data.put(COL_PLACE_CITY, Pair.of(DataUtils.getColumnIndex(prefix + "CityName", columns),
-        Localized.dictionary().city()));
-    data.put(COL_PLACE_COUNTRY,
-        Pair.of(DataUtils.getColumnIndex(prefix + "CountryName", columns),
-            Localized.dictionary().country()));
-    data.put(COL_PLACE_NUMBER,
-        Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_NUMBER, columns),
-            Localized.dictionary().ref()));
+    Dictionary dic = Localized.dictionary();
 
-    int codeIndex = DataUtils.getColumnIndex(prefix + "CountryCode", columns);
+    data.put(COL_PLACE_DATE, dic.date());
+    data.put(COL_PLACE_NOTE, dic.note());
+    data.put(COL_PLACE_COMPANY, dic.company());
+    data.put(COL_PLACE_CONTACT, dic.contact());
+    data.put(COL_PLACE_ADDRESS, dic.address());
+    data.put(COL_PLACE_CITY, dic.city());
+    data.put(COL_PLACE_COUNTRY, dic.country());
+    data.put(COL_PLACE_NUMBER, dic.ref());
 
-    if (!BeeConst.isUndef(codeIndex)) {
-      flagRenderer = new FlagRenderer(CellSource.forColumn(columns.get(codeIndex), codeIndex));
-    } else {
-      flagRenderer = null;
-    }
-    postIndex = DataUtils.getColumnIndex(prefix + COL_PLACE_POST_INDEX, columns);
+    flagRenderer = new FlagRenderer(CellSource.forProperty(COL_PLACE_COUNTRY, null,
+        ValueType.TEXT));
   }
 
   @Override
@@ -70,38 +52,66 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
     table.addStyleName(STYLE_PREFIX + "table");
     int r = -1;
 
-    for (String item : data.keySet()) {
-      Pair<Integer, String> itemInfo = data.get(item);
+    String handlingData = getString(row);
 
-      if (!BeeConst.isUndef(itemInfo.getA())) {
-        String txt = row.getString(itemInfo.getA());
+    if (BeeUtils.isEmpty(handlingData)) {
+      return BeeConst.STRING_EMPTY;
+    }
 
-        if (!BeeUtils.isEmpty(txt)) {
-          r++;
-          table.setHtml(r, 0, itemInfo.getB(), STYLE_PREFIX + "caption");
+    for (SimpleRowSet.SimpleRow handle : SimpleRowSet.restore(handlingData)) {
+      for (String column : data.keySet()) {
 
-          if (BeeUtils.same(item, COL_PLACE_DATE)) {
+        if (!handle.hasColumn(column)) {
+          continue;
+        }
+
+        String txt = handle.getValue(column);
+
+        if (BeeUtils.isEmpty(txt)) {
+          continue;
+        }
+
+        r++;
+        table.setHtml(r, 0, data.get(column), STYLE_PREFIX + "caption");
+
+        switch (column) {
+          case COL_PLACE_DATE:
             DateTimeLabel dt = new DateTimeLabel(false);
             dt.setValue(new DateTime(BeeUtils.toLong(txt)));
             table.setWidget(r, 1, dt);
+            break;
+          case COL_PLACE_COUNTRY:
+            String country = handle.hasColumn(ALS_COUNTRY_NAME)
+                ? BeeUtils.nvl(handle.getValue(ALS_COUNTRY_NAME), "") : "";
+            String code = handle.hasColumn(COL_COUNTRY + COL_COUNTRY_CODE)
+                ? BeeUtils.nvl(handle.getValue(COL_COUNTRY + COL_COUNTRY_CODE), "") : "";
 
-          } else if (BeeUtils.same(item, COL_PLACE_COUNTRY)) {
-            if (flagRenderer != null) {
-              txt = BeeUtils.joinWords(flagRenderer.render(row), txt);
+            String flag = "";
+
+            if (!BeeUtils.isEmpty(code) && flagRenderer != null) {
+              BeeRow fr = new BeeRow(0, 0);
+              fr.setProperty(COL_PLACE_COUNTRY, code);
+
+              flag = flagRenderer.render(fr);
             }
-            table.setHtml(r, 1, txt);
 
-          } else if (BeeUtils.same(item, COL_PLACE_CITY)) {
-            if (!BeeConst.isUndef(postIndex)) {
-              txt = BeeUtils.joinItems(txt, row.getString(postIndex));
-            }
-            table.setHtml(r, 1, txt);
+            table.setHtml(r, 1, BeeUtils.joinWords(flag, country, code));
+            break;
+          case COL_PLACE_CITY:
+            txt = handle.hasColumn(ALS_CITY_NAME)
+                ? BeeUtils.nvl(handle.getValue(ALS_CITY_NAME), "") : "";
+            String postIndex = handle.hasColumn(COL_PLACE_POST_INDEX)
+                ? BeeUtils.nvl(handle.getValue(COL_PLACE_POST_INDEX), "") : "";
 
-          } else {
+            table.setHtml(r, 1, BeeUtils.joinWords(txt, postIndex));
+            break;
+          default:
             table.setHtml(r, 1, txt);
-          }
+            break;
         }
       }
+      r++;
+      table.setHtml(r, 0, new Br().build());
     }
     return table.getRowCount() > 0 ? table.toString() : BeeConst.STRING_EMPTY;
   }

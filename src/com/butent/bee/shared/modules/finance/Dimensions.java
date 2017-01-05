@@ -17,6 +17,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -81,6 +82,10 @@ public final class Dimensions {
     }
   }
 
+  public static String getTableName(Integer ordinal) {
+    return getViewName(ordinal);
+  }
+
   public static String getViewName(Integer ordinal) {
     return isValid(ordinal) ? VIEWS[ordinal - 1] : null;
   }
@@ -118,7 +123,15 @@ public final class Dimensions {
     return isValid(ordinal) ? getColumnPrefix(ordinal) + "Background" : null;
   }
 
-  public static Set<String> getHiddenRelationColumns() {
+  public static Collection<String> getObservedRelationColumns() {
+    Set<String> result = new HashSet<>();
+    for (int ordinal = 1; ordinal < getObserved(); ordinal++) {
+      result.add(getRelationColumn(ordinal));
+    }
+    return result;
+  }
+
+  public static Collection<String> getHiddenRelationColumns() {
     Set<String> result = new HashSet<>();
     for (int ordinal = observed + 1; ordinal <= SPACETIME; ordinal++) {
       result.add(getRelationColumn(ordinal));

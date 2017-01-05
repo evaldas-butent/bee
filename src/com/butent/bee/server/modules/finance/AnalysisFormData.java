@@ -12,11 +12,15 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -24,9 +28,12 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -37,52 +44,34 @@ class AnalysisFormData {
 
   private static BeeLogger logger = LogUtils.getLogger(AnalysisFormData.class);
 
-  private final BeeRow header;
   private final Map<String, Integer> headerIndexes;
+  private final BeeRow header;
 
   private final Map<String, Integer> columnIndexes;
   private final List<BeeRow> columns = new ArrayList<>();
-  private final List<Integer> selectedColumns = new ArrayList<>();
 
   private final Map<String, Integer> rowIndexes;
   private final List<BeeRow> rows = new ArrayList<>();
-  private final List<Integer> selectedRows = new ArrayList<>();
 
+  private final Map<String, Integer> filterIndexes;
   private final List<BeeRow> headerFilters = new ArrayList<>();
   private final Multimap<Long, BeeRow> columnFilters = ArrayListMultimap.create();
   private final Multimap<Long, BeeRow> rowFilters = ArrayListMultimap.create();
-  private final Map<String, Integer> filterIndexes;
 
   AnalysisFormData(BeeRowSet headerData, BeeRowSet columnData, BeeRowSet rowData,
       BeeRowSet filterData) {
 
-    this.header = DataUtils.isEmpty(headerData) ? null : headerData.getRow(0);
     this.headerIndexes = AnalysisUtils.getIndexes(headerData);
+    this.header = DataUtils.isEmpty(headerData) ? null : headerData.getRow(0);
 
     this.columnIndexes = AnalysisUtils.getIndexes(columnData);
-
     if (!DataUtils.isEmpty(columnData)) {
       this.columns.addAll(columnData.getRows());
-
-      int index = columnIndexes.get(COL_ANALYSIS_COLUMN_SELECTED);
-      for (int i = 0; i < columns.size(); i++) {
-        if (columns.get(i).isTrue(index)) {
-          selectedColumns.add(i);
-        }
-      }
     }
 
     this.rowIndexes = AnalysisUtils.getIndexes(rowData);
-
     if (!DataUtils.isEmpty(rowData)) {
       this.rows.addAll(rowData.getRows());
-
-      int index = rowIndexes.get(COL_ANALYSIS_ROW_SELECTED);
-      for (int i = 0; i < rows.size(); i++) {
-        if (rows.get(i).isTrue(index)) {
-          selectedRows.add(i);
-        }
-      }
     }
 
     this.filterIndexes = AnalysisUtils.getIndexes(filterData);
@@ -110,6 +99,179 @@ class AnalysisFormData {
     }
   }
 
+  Map<String, Integer> getHeaderIndexes() {
+    return headerIndexes;
+  }
+
+  BeeRow getHeader() {
+    return header;
+  }
+
+  Filter getHeaderFilter(String employeeColumnName, Function<String, Filter> filterParser) {
+    CompoundFilter filter = Filter.and();
+
+    filter.add(getEmployeeFilter(header, headerIndexes.get(COL_ANALYSIS_HEADER_EMPLOYEE),
+        employeeColumnName));
+    addDimensionFilters(filter, header, headerIndexes, null);
+
+    if (!BeeUtils.isEmpty(headerFilters)) {
+      filter.add(getFilter(headerFilters, employeeColumnName, filterParser));
+    }
+
+    return AnalysisUtils.normalize(filter);
+  }
+
+  AnalysisFilter getHeaderAnalysisFilter() {
+    AnalysisFilter af = new AnalysisFilter(header, headerIndexes, COL_ANALYSIS_HEADER_EMPLOYEE);
+    af.setSubFilters(headerFilters, filterIndexes);
+    return af;
+  }
+
+  MonthRange getHeaderRange() {
+    return getHeaderRange(null);
+  }
+
+  private MonthRange getHeaderRange(BiConsumer<String, String> errorConsumer) {
+    Integer yearFrom = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_FROM);
+    Integer monthFrom = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_FROM);
+    Integer yearUntil = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_UNTIL);
+    Integer monthUntil = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_UNTIL);
+
+    return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
+  }
+
+  Map<String, Integer> getColumnIndexes() {
+    return columnIndexes;
+  }
+
+  List<BeeRow> getColumns() {
+    return columns;
+  }
+
+  Filter getColumnFilter(BeeRow column, String employeeColumnName,
+      Function<String, Filter> filterParser) {
+
+    CompoundFilter filter = Filter.and();
+
+    if (isHeaderTrue(COL_ANALYSIS_SHOW_COLUMN_EMPLOYEE)) {
+      filter.add(getEmployeeFilter(column, columnIndexes.get(COL_ANALYSIS_COLUMN_EMPLOYEE),
+          employeeColumnName));
+    }
+
+    addDimensionFilters(filter, column, columnIndexes,
+        ordinal -> isHeaderTrue(colAnalysisShowColumnDimension(ordinal)));
+
+    if (columnFilters.containsKey(column.getId()) && isHeaderTrue(COL_ANALYSIS_COLUMN_FILTERS)) {
+      filter.add(getFilter(columnFilters.get(column.getId()), employeeColumnName, filterParser));
+    }
+
+    return AnalysisUtils.normalize(filter);
+  }
+
+  AnalysisFilter getColumnAnalysisFilter(BeeRow column) {
+    Map<String, Integer> indexes = new HashMap<>();
+    indexes.putAll(columnIndexes);
+
+    if (!isHeaderTrue(COL_ANALYSIS_SHOW_COLUMN_EMPLOYEE)) {
+      indexes.remove(COL_ANALYSIS_COLUMN_EMPLOYEE);
+    }
+
+    if (Dimensions.getObserved() > 0) {
+      for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+        if (!isHeaderTrue(colAnalysisShowColumnDimension(ordinal))) {
+          indexes.remove(Dimensions.getRelationColumn(ordinal));
+        }
+      }
+    }
+
+    AnalysisFilter af = new AnalysisFilter(column, indexes, COL_ANALYSIS_COLUMN_EMPLOYEE);
+
+    if (columnFilters.containsKey(column.getId()) && isHeaderTrue(COL_ANALYSIS_COLUMN_FILTERS)) {
+      af.setSubFilters(columnFilters.get(column.getId()), filterIndexes);
+    }
+
+    return af;
+  }
+
+  MonthRange getColumnRange(BeeRow column) {
+    return getColumnRange(column, null);
+  }
+
+  private MonthRange getColumnRange(BeeRow column, BiConsumer<String, String> errorConsumer) {
+    Integer yearFrom = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_FROM);
+    Integer monthFrom = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_FROM);
+    Integer yearUntil = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_UNTIL);
+    Integer monthUntil = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL);
+
+    return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
+  }
+
+  Map<String, Integer> getRowIndexes() {
+    return rowIndexes;
+  }
+
+  List<BeeRow> getRows() {
+    return rows;
+  }
+
+  Filter getRowFilter(BeeRow row, String employeeColumnName,
+      Function<String, Filter> filterParser) {
+
+    CompoundFilter filter = Filter.and();
+
+    if (isHeaderTrue(COL_ANALYSIS_SHOW_ROW_EMPLOYEE)) {
+      filter.add(getEmployeeFilter(row, rowIndexes.get(COL_ANALYSIS_ROW_EMPLOYEE),
+          employeeColumnName));
+    }
+
+    addDimensionFilters(filter, row, rowIndexes,
+        ordinal -> isHeaderTrue(colAnalysisShowRowDimension(ordinal)));
+
+    if (rowFilters.containsKey(row.getId()) && isHeaderTrue(COL_ANALYSIS_ROW_FILTERS)) {
+      filter.add(getFilter(rowFilters.get(row.getId()), employeeColumnName, filterParser));
+    }
+
+    return AnalysisUtils.normalize(filter);
+  }
+
+  AnalysisFilter getRowAnalysisFilter(BeeRow row) {
+    Map<String, Integer> indexes = new HashMap<>();
+    indexes.putAll(rowIndexes);
+
+    if (!isHeaderTrue(COL_ANALYSIS_SHOW_ROW_EMPLOYEE)) {
+      indexes.remove(COL_ANALYSIS_ROW_EMPLOYEE);
+    }
+
+    if (Dimensions.getObserved() > 0) {
+      for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+        if (!isHeaderTrue(colAnalysisShowRowDimension(ordinal))) {
+          indexes.remove(Dimensions.getRelationColumn(ordinal));
+        }
+      }
+    }
+
+    AnalysisFilter af = new AnalysisFilter(row, indexes, COL_ANALYSIS_ROW_EMPLOYEE);
+
+    if (rowFilters.containsKey(row.getId()) && isHeaderTrue(COL_ANALYSIS_ROW_FILTERS)) {
+      af.setSubFilters(rowFilters.get(row.getId()), filterIndexes);
+    }
+
+    return af;
+  }
+
+  MonthRange getRowRange(BeeRow row) {
+    return getRowRange(row, null);
+  }
+
+  private MonthRange getRowRange(BeeRow row, BiConsumer<String, String> errorConsumer) {
+    Integer yearFrom = getRowInteger(row, COL_ANALYSIS_ROW_YEAR_FROM);
+    Integer monthFrom = getRowInteger(row, COL_ANALYSIS_ROW_MONTH_FROM);
+    Integer yearUntil = getRowInteger(row, COL_ANALYSIS_ROW_YEAR_UNTIL);
+    Integer monthUntil = getRowInteger(row, COL_ANALYSIS_ROW_MONTH_UNTIL);
+
+    return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
+  }
+
   List<String> validate(Dictionary dictionary, Predicate<String> filterValidator) {
     List<String> messages = new ArrayList<>();
 
@@ -126,65 +288,42 @@ class AnalysisFormData {
       return messages;
     }
 
-    if (BeeUtils.isEmpty(selectedColumns)) {
+    if (columns.stream().noneMatch(column -> isColumnTrue(column, COL_ANALYSIS_COLUMN_SELECTED))) {
       messages.add(dictionary.finAnalysisSelectColumns());
     }
-    if (BeeUtils.isEmpty(selectedRows)) {
+    if (rows.stream().noneMatch(row -> isRowTrue(row, COL_ANALYSIS_ROW_SELECTED))) {
       messages.add(dictionary.finAnalysisSelectRows());
     }
 
-    Integer yearFrom = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_FROM);
-    Integer monthFrom = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_FROM);
-    Integer yearUntil = getHeaderInteger(COL_ANALYSIS_HEADER_YEAR_UNTIL);
-    Integer monthUntil = getHeaderInteger(COL_ANALYSIS_HEADER_MONTH_UNTIL);
+    boolean columnsHasIndicator = columns.stream().anyMatch(this::columnHasIndicator);
+    boolean rowsHasIndicator = rows.stream().anyMatch(this::rowHasIndicator);
 
-    MonthRange headerRange;
-
-    if (AnalysisUtils.isValidRange(yearFrom, monthFrom, yearUntil, monthUntil)) {
-      headerRange = AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
-    } else {
-      headerRange = null;
-      messages.add(dictionary.invalidPeriod(AnalysisUtils.formatYearMonth(yearFrom, monthFrom),
-          AnalysisUtils.formatYearMonth(yearUntil, monthUntil)));
+    if (!columnsHasIndicator && !rowsHasIndicator) {
+      messages.add(dictionary.finAnalysisSpecifyIndicators());
     }
+
+    MonthRange headerRange = getHeaderRange((from, until) ->
+        messages.add(dictionary.invalidPeriod(from, until)));
 
     Integer columnSplitLevels = getHeaderInteger(COL_ANALYSIS_COLUMN_SPLIT_LEVELS);
 
     for (BeeRow column : columns) {
       String columnLabel = getColumnLabel(dictionary, column);
 
-      Integer y1 = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_FROM);
-      Integer m1 = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_FROM);
-      Integer y2 = getColumnInteger(column, COL_ANALYSIS_COLUMN_YEAR_UNTIL);
-      Integer m2 = getColumnInteger(column, COL_ANALYSIS_COLUMN_MONTH_UNTIL);
+      MonthRange columnRange = getColumnRange(column, (from, until) ->
+          messages.add(BeeUtils.joinWords(columnLabel, dictionary.invalidPeriod(from, until))));
 
-      if (!AnalysisUtils.isValidRange(y1, m1, y2, m2)) {
-        messages.add(BeeUtils.joinWords(columnLabel,
-            dictionary.invalidPeriod(AnalysisUtils.formatYearMonth(y1, m1),
-                AnalysisUtils.formatYearMonth(y2, m2))));
-
-      } else if (headerRange != null
-          && !headerRange.intersects(AnalysisUtils.getRange(y1, m1, y2, m2))) {
-
+      if (columnRange != null && headerRange != null && !headerRange.intersects(columnRange)) {
         messages.add(BeeUtils.joinWords(columnLabel,
             dictionary.finAnalysisColumnAndFormPeriodsDoNotIntersect()));
       }
 
-      List<AnalysisSplitType> splits = getColumnSplits(column, columnSplitLevels);
-      if (!splits.isEmpty()) {
-        if (AnalysisSplitType.validateSplits(splits)) {
-          for (AnalysisSplitType split : splits) {
-            if (!split.visibleForColumns()) {
-              messages.add(BeeUtils.joinWords(columnLabel,
-                  dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
-            }
-          }
+      messages.addAll(validateSplits(dictionary, columnLabel,
+          getColumnSplits(column, columnSplitLevels)));
+    }
 
-        } else {
-          messages.add(BeeUtils.joinWords(columnLabel,
-              dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
-        }
-      }
+    if (columns.stream().noneMatch(this::columnIsPrimary)) {
+      messages.add(dictionary.finAnalysisPrimaryColumnsNotAvailable());
     }
 
     messages.addAll(validateAbbreviations(dictionary, columns,
@@ -201,29 +340,18 @@ class AnalysisFormData {
     for (BeeRow row : rows) {
       String rowLabel = getRowLabel(dictionary, row);
 
-      if (!rowHasIndicator(row) && !rowHasScript(row)) {
+      MonthRange rowRange = getRowRange(row, (from, until) ->
+          messages.add(BeeUtils.joinWords(rowLabel, dictionary.invalidPeriod(from, until))));
+
+      if (rowRange != null && headerRange != null && !headerRange.intersects(rowRange)) {
         messages.add(BeeUtils.joinWords(rowLabel,
-            dictionary.finAnalysisSpecifyIndicatorOrScript()));
+            dictionary.finAnalysisRowAndFormPeriodsDoNotIntersect()));
       }
 
-      List<AnalysisSplitType> splits = getRowSplits(row, rowSplitLevels);
-      if (!splits.isEmpty()) {
-        if (AnalysisSplitType.validateSplits(splits)) {
-          for (AnalysisSplitType split : splits) {
-            if (!split.visibleForRows()) {
-              messages.add(BeeUtils.joinWords(rowLabel,
-                  dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
-            }
-          }
-
-        } else {
-          messages.add(BeeUtils.joinWords(rowLabel,
-              dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
-        }
-      }
+      messages.addAll(validateSplits(dictionary, rowLabel, getRowSplits(row, rowSplitLevels)));
     }
 
-    if (rows.stream().noneMatch(this::rowHasIndicator)) {
+    if (rows.stream().noneMatch(this::rowIsPrimary)) {
       messages.add(dictionary.finAnalysisPrimaryRowsNotAvailable());
     }
 
@@ -251,7 +379,7 @@ class AnalysisFormData {
     return header.getInteger(headerIndexes.get(key));
   }
 
-  private Long getHeaderLong(String key) {
+  Long getHeaderLong(String key) {
     return header.getLong(headerIndexes.get(key));
   }
 
@@ -288,12 +416,24 @@ class AnalysisFormData {
     return column.getInteger(columnIndexes.get(key));
   }
 
-  private Long getColumnLong(BeeRow column, String key) {
+  <E extends Enum<?>> E getColumnEnum(BeeRow column, String key, Class<E> clazz) {
+    return EnumUtils.getEnumByIndex(clazz, getColumnInteger(column, key));
+  }
+
+  Long getColumnLong(BeeRow column, String key) {
     return column.getLong(columnIndexes.get(key));
   }
 
-  private String getColumnString(BeeRow column, String key) {
+  String getColumnString(BeeRow column, String key) {
     return column.getString(columnIndexes.get(key));
+  }
+
+  private boolean isColumnTrue(BeeRow column, String key) {
+    return column.isTrue(columnIndexes.get(key));
+  }
+
+  List<AnalysisSplitType> getColumnSplits(BeeRow column) {
+    return getColumnSplits(column, getHeaderInteger(COL_ANALYSIS_COLUMN_SPLIT_LEVELS));
   }
 
   private List<AnalysisSplitType> getColumnSplits(BeeRow column, Integer levels) {
@@ -323,6 +463,10 @@ class AnalysisFormData {
     return !BeeUtils.isEmpty(getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT));
   }
 
+  boolean columnIsPrimary(BeeRow column) {
+    return columnHasIndicator(column) || !columnHasScript(column);
+  }
+
   private BeeRow getRowById(Long id) {
     for (BeeRow row : rows) {
       if (DataUtils.idEquals(row, id)) {
@@ -348,12 +492,24 @@ class AnalysisFormData {
     return row.getInteger(rowIndexes.get(key));
   }
 
-  private Long getRowLong(BeeRow row, String key) {
+  <E extends Enum<?>> E getRowEnum(BeeRow row, String key, Class<E> clazz) {
+    return EnumUtils.getEnumByIndex(clazz, getRowInteger(row, key));
+  }
+
+  Long getRowLong(BeeRow row, String key) {
     return row.getLong(rowIndexes.get(key));
   }
 
-  private String getRowString(BeeRow row, String key) {
+  String getRowString(BeeRow row, String key) {
     return row.getString(rowIndexes.get(key));
+  }
+
+  private boolean isRowTrue(BeeRow row, String key) {
+    return row.isTrue(rowIndexes.get(key));
+  }
+
+  List<AnalysisSplitType> getRowSplits(BeeRow row) {
+    return getRowSplits(row, getHeaderInteger(COL_ANALYSIS_ROW_SPLIT_LEVELS));
   }
 
   private List<AnalysisSplitType> getRowSplits(BeeRow row, Integer levels) {
@@ -381,6 +537,10 @@ class AnalysisFormData {
 
   private boolean rowHasScript(BeeRow row) {
     return !BeeUtils.isEmpty(getRowString(row, COL_ANALYSIS_ROW_SCRIPT));
+  }
+
+  boolean rowIsPrimary(BeeRow row) {
+    return rowHasIndicator(row) || !rowHasScript(row);
   }
 
   private static List<String> getSplitCaptions(Dictionary dictionary,
@@ -524,7 +684,7 @@ class AnalysisFormData {
           if (!BeeUtils.isEmpty(script)) {
             try {
               Object value = engine.eval(script);
-              logger.warning((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
+              logger.debug((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
 
             } catch (ScriptException ex) {
               String label = labelFunction.apply(row);
@@ -538,5 +698,111 @@ class AnalysisFormData {
     }
 
     return messages;
+  }
+
+  private static List<String> validateSplits(Dictionary dictionary, String label,
+      List<AnalysisSplitType> splits) {
+
+    List<String> messages = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(splits)) {
+      if (AnalysisSplitType.validateSplits(splits)) {
+        for (AnalysisSplitType split : splits) {
+          if (!split.isVisible()) {
+            messages.add(BeeUtils.joinWords(label,
+                dictionary.finAnalysisInvalidSplit(), split.getCaption(dictionary)));
+          }
+        }
+
+      } else {
+        messages.add(BeeUtils.joinWords(label,
+            dictionary.finAnalysisInvalidSplit(), getSplitCaptions(dictionary, splits)));
+      }
+    }
+
+    return messages;
+  }
+
+  private static void addDimensionFilters(CompoundFilter builder, BeeRow row,
+      Map<String, Integer> indexes, IntPredicate predicate) {
+
+    if (Dimensions.getObserved() > 0) {
+      for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
+        if (predicate == null || predicate.test(ordinal)) {
+          String column = Dimensions.getRelationColumn(ordinal);
+          Long value = row.getLong(indexes.get(column));
+
+          if (DataUtils.isId(value)) {
+            builder.add(Filter.equals(column, value));
+          }
+        }
+      }
+    }
+  }
+
+  private static Filter getEmployeeFilter(BeeRow row, int index, String colName) {
+    Long employee = row.getLong(index);
+
+    if (DataUtils.isId(employee)) {
+      return Filter.equals(colName, employee);
+    } else {
+      return null;
+    }
+  }
+
+  private Filter getFilter(Collection<BeeRow> data, String employeeColumnName,
+      Function<String, Filter> filterParser) {
+
+    CompoundFilter include = Filter.or();
+    CompoundFilter exclude = Filter.or();
+
+    if (!BeeUtils.isEmpty(data)) {
+      for (BeeRow row : data) {
+        Filter filter = getFilter(row, employeeColumnName, filterParser);
+
+        if (filter != null) {
+          if (row.isTrue(filterIndexes.get(COL_ANALYSIS_FILTER_INCLUDE))) {
+            include.add(filter);
+          } else {
+            exclude.add(filter);
+          }
+        }
+      }
+    }
+
+    return AnalysisUtils.joinFilters(include, exclude);
+  }
+
+  private Filter getFilter(BeeRow row, String employeeColumnName,
+      Function<String, Filter> filterParser) {
+
+    CompoundFilter filter = Filter.and();
+
+    filter.add(getEmployeeFilter(row, filterIndexes.get(COL_ANALYSIS_FILTER_EMPLOYEE),
+        employeeColumnName));
+    addDimensionFilters(filter, row, filterIndexes, null);
+
+    if (filterParser != null) {
+      String extraFilter = row.getString(filterIndexes.get(COL_ANALYSIS_FILTER_EXTRA));
+
+      if (!BeeUtils.isEmpty(extraFilter)) {
+        filter.add(filterParser.apply(extraFilter));
+      }
+    }
+
+    return AnalysisUtils.normalize(filter);
+  }
+
+  private static MonthRange getRange(Integer yearFrom, Integer monthFrom,
+      Integer yearUntil, Integer monthUntil, BiConsumer<String, String> errorConsumer) {
+
+    MonthRange range = AnalysisUtils.getRange(yearFrom, monthFrom, yearUntil, monthUntil);
+
+    if (range == null && errorConsumer != null) {
+      errorConsumer.accept(AnalysisUtils.formatYearMonth(yearFrom, monthFrom),
+          AnalysisUtils.formatYearMonth(yearUntil, monthUntil));
+    }
+
+    return range;
   }
 }

@@ -367,7 +367,6 @@ public final class TransportConstants {
   public static final String PRM_ACCUMULATION2_OPERATION = "Accumulation2Operation";
   public static final String PRM_CARGO_TYPE = "CargoType";
   public static final String PRM_CARGO_SERVICE = "CargoService";
-  public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
   public static final String PRM_SELF_SERVICE_ROLE = "SelfServiceRole";
   public static final String PRM_SALES_RESPONSIBILITY = "SalesResponsibility";

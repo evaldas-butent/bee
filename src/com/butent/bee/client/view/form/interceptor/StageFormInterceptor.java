@@ -4,13 +4,11 @@ import com.google.gwt.user.client.ui.HasWidgets;
 
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 
-import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.modules.cars.Stage;
 import com.butent.bee.client.modules.cars.StageUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 
@@ -50,25 +48,39 @@ public interface StageFormInterceptor {
 
   default void triggerStage(String trigger) {
     StageUtils.filterStages(getStages(), getFormView().getOldRow()).stream()
-        .filter(stage -> stage.hasTrigger(trigger)).findFirst().ifPresent(this::updateStage);
+        .filter(stage -> stage.hasTrigger(trigger)).findFirst()
+        .ifPresent(this::updateStage);
   }
 
   default void updateStage(Stage stage) {
     FormView form = getFormView();
+
+    int stageIdx = form.getDataIndex(COL_STAGE);
+    int nameIdx = form.getDataIndex(COL_STAGE_NAME);
+
+    IsRow oldRow = form.getOldRow();
     IsRow row = form.getActiveRow();
 
-    row.setValue(form.getDataIndex(COL_STAGE), stage.getId());
-    row.setValue(form.getDataIndex(COL_STAGE_NAME), stage.getName());
+    row.setValue(stageIdx, stage.getId());
+    row.setValue(nameIdx, stage.getName());
 
     if (DataUtils.isNewRow(row)) {
       form.refresh();
     } else {
-      BeeRowSet rs = DataUtils.getUpdated(form.getViewName(), form.getDataColumns(),
-          form.getOldRow(), row, form.getChildrenForUpdate());
+      form.saveChanges(new RowUpdateCallback(form.getViewName()) {
+        @Override
+        public void onCancel() {
+          row.setValue(stageIdx, oldRow.getLong(stageIdx));
+          row.setValue(nameIdx, oldRow.getString(nameIdx));
+          super.onCancel();
+        }
 
-      if (!DataUtils.isEmpty(rs)) {
-        Queries.updateRow(rs, new RowUpdateCallback(form.getViewName()));
-      }
+        @Override
+        public void onFailure(String... reason) {
+          onCancel();
+          super.onFailure(reason);
+        }
+      });
     }
   }
 }

@@ -1506,6 +1506,7 @@ public final class CliWorker {
           case PARAMETERS:
           case REPORT:
           case SERVICE_CALENDAR:
+          case SERVICE_MAINTENANCE_LIST:
           case SHIPPING_SCHEDULE:
           case TASK_LIST:
           case TASK_REPORTS:

@@ -2791,11 +2791,15 @@ public interface Dictionary {
 
   default String finAnalysisName() {return g("finAnalysisName");}
 
+  default String finAnalysisPrimaryColumnsNotAvailable() {return g("finAnalysisPrimaryColumnsNotAvailable");}
+
   default String finAnalysisPrimaryRowsNotAvailable() {return g("finAnalysisPrimaryRowsNotAvailable");}
 
   default String finAnalysisRow() {return g("finAnalysisRow");}
 
   default String finAnalysisRowAbbreviation() {return g("finAnalysisRowAbbreviation");}
+
+  default String finAnalysisRowAndFormPeriodsDoNotIntersect() {return g("finAnalysisRowAndFormPeriodsDoNotIntersect");}
 
   default String finAnalysisRowFilters() {return g("finAnalysisRowFilters");}
 
@@ -2841,7 +2845,7 @@ public interface Dictionary {
 
   default String finAnalysisSpecifyBudgetType() {return g("finAnalysisSpecifyBudgetType");}
 
-  default String finAnalysisSpecifyIndicatorOrScript() {return g("finAnalysisSpecifyIndicatorOrScript");}
+  default String finAnalysisSpecifyIndicators() {return g("finAnalysisSpecifyIndicators");}
 
   default String finAnalysisSplit(Object p0) {
     Map<String, Object> _m = new HashMap<>();
@@ -2908,6 +2912,8 @@ public interface Dictionary {
   default String finCashInBank() {return g("finCashInBank");}
 
   default String finClosingBalance() {return g("finClosingBalance");}
+
+  default String finClosingBalanceShort() {return g("finClosingBalanceShort");}
 
   default String finClosingEntries() {return g("finClosingEntries");}
 
@@ -2987,8 +2993,6 @@ public interface Dictionary {
 
   default String finIndicatorAccounts() {return g("finIndicatorAccounts");}
 
-  default String finIndicatorBalance() {return g("finIndicatorBalance");}
-
   default String finIndicatorCreate() {return g("finIndicatorCreate");}
 
   default String finIndicatorFilterExtra() {return g("finIndicatorFilterExtra");}
@@ -3049,11 +3053,13 @@ public interface Dictionary {
 
   default String finLiabilitiesToEmployees() {return g("finLiabilitiesToEmployees");}
 
-  default String finNormalAccountBalance() {return g("finNormalAccountBalance");}
+  default String finNormalBalance() {return g("finNormalBalance");}
 
-  default String finNormalAccountBalanceShort() {return g("finNormalAccountBalanceShort");}
+  default String finNormalBalanceShort() {return g("finNormalBalanceShort");}
 
   default String finOpeningBalance() {return g("finOpeningBalance");}
+
+  default String finOpeningBalanceShort() {return g("finOpeningBalanceShort");}
 
   default String finPettyCash() {return g("finPettyCash");}
 
@@ -3082,6 +3088,8 @@ public interface Dictionary {
   default String finTransitoryAccount() {return g("finTransitoryAccount");}
 
   default String finTurnover() {return g("finTurnover");}
+
+  default String finTurnoverOrBalance() {return g("finTurnoverOrBalance");}
 
   default String finVatPayable() {return g("finVatPayable");}
 
@@ -4580,6 +4588,8 @@ public interface Dictionary {
 
   default String prmExportERPReservationsTime() {return g("prmExportERPReservationsTime");}
 
+  default String prmExternalMaintenanceUrl() {return g("prmExternalMaintenanceUrl");}
+
   default String prmForbiddenFilesExtentions() {return g("prmForbiddenFilesExtentions");}
 
   default String prmImportERPItemsTime() {return g("prmImportERPItemsTime");}
@@ -5055,9 +5065,19 @@ public interface Dictionary {
 
   default String svcInvoices() {return g("svcInvoices");}
 
+  default String svcIsValid() {return g("svcIsValid");}
+
   default String svcMaintenance() {return g("svcMaintenance");}
 
-  default String svcMaintenanceEmailHeader() {return g("svcMaintenanceEmailHeader");}
+  default String svcMaintenanceEmailContent(Object p0, Object p1, Object p2) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    _m.put("{1}", p1);
+    _m.put("{2}", p2);
+    return Localized.format(g("svcMaintenanceEmailContent"), _m);
+  }
+
+  default String svcMaintenanceEquipment() {return g("svcMaintenanceEquipment");}
 
   default String svcMaintenanceItemsServices() {return g("svcMaintenanceItemsServices");}
 
@@ -5070,6 +5090,8 @@ public interface Dictionary {
   default String svcModel() {return g("svcModel");}
 
   default String svcModule() {return g("svcModule");}
+
+  default String svcMyMaintenance() {return g("svcMyMaintenance");}
 
   default String svcNewDate() {return g("svcNewDate");}
 
@@ -6764,9 +6786,13 @@ public interface Dictionary {
 
   default String vehicleManualTransmission() {return g("vehicleManualTransmission");}
 
+  default String vehicleManufacturerNr() {return g("vehicleManufacturerNr");}
+
   default String vehicleMinivan() {return g("vehicleMinivan");}
 
   default String vehicleModel() {return g("vehicleModel");}
+
+  default String vehicleModelNr() {return g("vehicleModelNr");}
 
   default String vehicleModels() {return g("vehicleModels");}
 
@@ -6789,6 +6815,8 @@ public interface Dictionary {
   default String vehicleProductionDateShort() {return g("vehicleProductionDateShort");}
 
   default String vehicleRepairs() {return g("vehicleRepairs");}
+
+  default String vehicleResponsiblePerson() {return g("vehicleResponsiblePerson");}
 
   default String vehicleSUV() {return g("vehicleSUV");}
 

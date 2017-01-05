@@ -4,6 +4,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="AnalysisRows" viewName="AnalysisRows"
+        autoFlex="true"
 >
   <xi:include href="columns/Selected.columns.xml" />
   <xi:include href="columns/Ordinal.columns.xml" />
@@ -12,17 +13,26 @@
     <DataColumn name="RowName" minWidth="80" flexGrow="1" visible="true"
                 backgroundSource="Background" foregroundSource="Foreground" />
     <DataColumn name="RowAbbreviation" />
-
-    <DataColumn name="RowValues" />
   </g:columns>
 
   <xi:include href="columns/Indicator.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="TurnoverOrBalance" />
+    <DataColumn name="RowValues" />
+  </g:columns>
+
   <xi:include href="columns/BudgetType.columns.xml" />
 
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
   <xi:include href="columns/Employee.columns.xml" />
 
   <g:columns>
+    <DataColumn name="YearFrom" format="0000" minValue="2000" maxValue="2099" />
+    <DataColumn name="MonthFrom" minValue="1" maxValue="12" />
+    <DataColumn name="YearUntil" format="0000" minValue="2000" maxValue="2099" />
+    <DataColumn name="MonthUntil" minValue="1" maxValue="12" />
+
     <DataColumn name="RowScript" flexGrow="1" />
 
     <DataColumn name="RowIsPercent" />

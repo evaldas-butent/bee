@@ -1,8 +1,12 @@
 package com.butent.bee.shared.modules.finance.analysis;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
+import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -15,12 +19,30 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.month();
     }
+
+    @Override
+    public MonthRange getMonthRange(AnalysisSplitValue splitValue) {
+      if (splitValue == null) {
+        return super.getMonthRange(splitValue);
+      } else {
+        return MonthRange.month(splitValue.getYearMonth());
+      }
+    }
   },
 
   QUARTER(Kind.PERIOD, 3) {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.quarter();
+    }
+
+    @Override
+    public MonthRange getMonthRange(AnalysisSplitValue splitValue) {
+      if (splitValue == null) {
+        return super.getMonthRange(splitValue);
+      } else {
+        return MonthRange.quarter(splitValue.getYearQuarter());
+      }
     }
   },
 
@@ -29,12 +51,31 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     public String getCaption(Dictionary dictionary) {
       return dictionary.year();
     }
+
+    @Override
+    public MonthRange getMonthRange(AnalysisSplitValue splitValue) {
+      if (splitValue == null) {
+        return super.getMonthRange(splitValue);
+      } else {
+        return MonthRange.year(splitValue.getYear());
+      }
+    }
   },
 
   EMPLOYEE(Kind.FILTER) {
     @Override
     public String getCaption(Dictionary dictionary) {
       return dictionary.employee();
+    }
+
+    @Override
+    public String getBudgetColumn() {
+      return FinanceConstants.COL_BUDGET_ENTRY_EMPLOYEE;
+    }
+
+    @Override
+    public String getFinColumn() {
+      return FinanceConstants.COL_FIN_EMPLOYEE;
     }
   },
 
@@ -50,17 +91,7 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
   DIMENSION_10(Kind.DIMENSION, 10);
 
   private enum Kind {
-    PERIOD(true, false),
-    FILTER(true, true),
-    DIMENSION(true, true);
-
-    private final boolean columns;
-    private final boolean rows;
-
-    Kind(boolean columns, boolean rows) {
-      this.columns = columns;
-      this.rows = rows;
-    }
+    PERIOD, FILTER, DIMENSION
   }
 
   public static boolean validateSplits(List<AnalysisSplitType> splits) {
@@ -111,27 +142,69 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     }
   }
 
-  public boolean visibleForColumns() {
-    if (kind.columns) {
-      if (kind == Kind.DIMENSION) {
-        return Dimensions.isObserved(index);
-      } else {
-        return true;
-      }
+  public String getBudgetColumn() {
+    if (kind == Kind.DIMENSION) {
+      return Dimensions.getRelationColumn(index);
     } else {
-      return false;
+      return null;
     }
   }
 
-  public boolean visibleForRows() {
-    if (kind.rows) {
-      if (kind == Kind.DIMENSION) {
-        return Dimensions.isObserved(index);
+  public String getFinColumn() {
+    switch (kind) {
+      case PERIOD:
+        return FinanceConstants.COL_FIN_DATE;
+      case DIMENSION:
+        return Dimensions.getRelationColumn(index);
+      default:
+        return null;
+    }
+  }
+
+  public Filter getFinFilter(AnalysisSplitValue splitValue, TurnoverOrBalance turnoverOrBalance) {
+    if (splitValue == null) {
+      return null;
+
+    } else if (kind == Kind.PERIOD) {
+      MonthRange range = getMonthRange(splitValue);
+
+      if (range == null) {
+        return null;
+      } else if (turnoverOrBalance == null) {
+        return AnalysisUtils.getFilter(getFinColumn(), range);
       } else {
-        return true;
+        return turnoverOrBalance.getRangeFilter(getFinColumn(), range);
       }
+
+    } else if (DataUtils.isId(splitValue.getId())) {
+      return Filter.equals(getFinColumn(), splitValue.getId());
+
     } else {
-      return false;
+      return Filter.isNull(getFinColumn());
+    }
+  }
+
+  public MonthRange getMonthRange(AnalysisSplitValue splitValue) {
+    return null;
+  }
+
+  public int getIndex() {
+    return index;
+  }
+
+  public boolean isDimension() {
+    return kind == Kind.DIMENSION;
+  }
+
+  public boolean isPeriod() {
+    return kind == Kind.PERIOD;
+  }
+
+  public boolean isVisible() {
+    if (kind == Kind.DIMENSION) {
+      return Dimensions.isObserved(index);
+    } else {
+      return true;
     }
   }
 }

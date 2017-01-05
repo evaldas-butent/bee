@@ -42,6 +42,8 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -50,7 +52,11 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.Element;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -159,7 +165,8 @@ public class ServiceModuleBean implements BeeModule {
         BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_ADDRESS),
         BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_USER_NAME),
         BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_PASSWORD),
-        BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_FROM)
+        BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_FROM),
+        BeeParameter.createText(module, PRM_EXTERNAL_MAINTENANCE_URL)
     );
 
     return params;
@@ -1036,26 +1043,62 @@ public class ServiceModuleBean implements BeeModule {
       return ResponseObject.error("No recipient email specified");
     }
 
-    String emailHeader = BeeUtils.joinWords(dic.svcMaintenanceEmailHeader(),
-        commentInfoRow.getValue(COL_FIRST_NAME), "<br /><br />",
-        commentInfoRow.getValue(COL_COMMENT), "<br /><br />");
+    String maintenanceId = commentInfoRow.getValue(COL_SERVICE_MAINTENANCE);
+    String deviceDescription = BeeUtils.joinWords(commentInfoRow.getValue(ALS_MANUFACTURER_NAME),
+        commentInfoRow.getValue(COL_MODEL));
+
+    String emailHeader = BeeUtils.joinWords(dic.svcRepair(), maintenanceId, deviceDescription);
 
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8());
-    doc.getBody().append(div().text(emailHeader));
 
+    Div panel = div();
+    doc.getBody().append(panel);
+    Tbody fields = tbody().append(
+        tr().append(
+            td().text(dic.svcRepair()), td().text(maintenanceId)));
+
+    if (!BeeUtils.isEmpty(deviceDescription)) {
+      fields.append(tr().append(
+          td().text(dic.svcDevice()), td().text(deviceDescription)));
+    }
+
+    fields.append(tr().append(
+            td().text(dic.date()),
+            td().text(TimeUtils.renderCompact(commentInfoRow.getDateTime(COL_PUBLISH_TIME)))),
+        tr().append(
+            td().text(dic.svcMaintenanceState()),
+            td().text(commentInfoRow.getValue(COL_EVENT_NOTE))));
     DateTime termValue = commentInfoRow.getDateTime(COL_TERM);
 
-    doc.getBody().append(div().text(BeeUtils.join("<br />",
-        BeeUtils.join(": ", dic.svcDevice(), BeeUtils.joinWords(
-            commentInfoRow.getValue(ALS_MANUFACTURER_NAME), commentInfoRow.getValue(COL_MODEL))),
-        BeeUtils.join(": ", dic.svcRepair(),
-            commentInfoRow.getValue(COL_SERVICE_MAINTENANCE)),
-        BeeUtils.join(": ", dic.date(),
-            TimeUtils.renderCompact(commentInfoRow.getDateTime(COL_PUBLISH_TIME))),
-        BeeUtils.join(": ", dic.svcMaintenanceState(), commentInfoRow.getValue(COL_EVENT_NOTE)),
-        termValue != null
-            ? BeeUtils.join(": ", dic.svcTerm(), TimeUtils.renderCompact(termValue)) : "")));
+    if (termValue != null) {
+      fields.append(tr().append(
+          td().text(dic.svcTerm()), td().text(TimeUtils.renderCompact(termValue))));
+    }
+
+    List<Element> cells = fields.queryTag(Tags.TD);
+    for (Element cell : cells) {
+      if (cell.index() == 0) {
+        cell.setPaddingRight(1, CssUnit.EM);
+        cell.setFontWeight(FontWeight.BOLDER);
+      }
+    }
+
+    panel.append(table().append(fields));
+
+    String externalLink = prm.getText(PRM_EXTERNAL_MAINTENANCE_URL);
+    String externalServiceUrl = BeeConst.STRING_EMPTY;
+
+    if (!BeeUtils.isEmpty(externalLink)) {
+      externalServiceUrl = BeeUtils.join(BeeConst.STRING_EMPTY, externalLink, maintenanceId);
+    }
+
+    doc.getBody().append(div().text("<br />"));
+
+    doc.getBody().append(div().text(dic.svcMaintenanceEmailContent(
+        BeeUtils.notEmpty(commentInfoRow.getValue(COL_FIRST_NAME), ""),
+        BeeUtils.notEmpty(commentInfoRow.getValue(COL_COMMENT), ""),
+        externalServiceUrl)));
 
     String signature = qs.getValue(new SqlSelect()
         .addFields(MailConstants.TBL_SIGNATURES, MailConstants.COL_SIGNATURE_CONTENT)
@@ -1064,24 +1107,32 @@ public class ServiceModuleBean implements BeeModule {
             MailConstants.TBL_ACCOUNTS, MailConstants.COL_SIGNATURE))
         .setWhere(sys.idEquals(MailConstants.TBL_ACCOUNTS, accountId)));
 
-    doc.getBody().append(div().text("<br />" + signature));
+    doc.getBody().append(div().text("<br />"));
+    doc.getBody().append(div().text(signature));
 
-    String emailSubject = BeeUtils.joinWords(dic.svcRepair(),
-        commentInfoRow.getValue(COL_SERVICE_MAINTENANCE));
+    String subject = BeeUtils.joinWords(dic.svcRepair(), maintenanceId);
 
-    return mail.sendMail(accountId, recipientEmail, emailSubject, doc.buildLines());
+    return mail.sendStyledMail(accountId, recipientEmail, subject, doc.buildLines(), emailHeader);
   }
 
   private ResponseObject informCustomerWithSms(Dictionary dic, SimpleRow commentInfoRow) {
     String phone = commentInfoRow.getValue(COL_PHONE);
     phone = phone.replaceAll("\\D+", "");
 
+    Long maintenanceId = commentInfoRow.getLong(COL_SERVICE_MAINTENANCE);
+    String externalLink = prm.getText(PRM_EXTERNAL_MAINTENANCE_URL);
+    String externalServiceUrl = BeeConst.STRING_EMPTY;
+
+    if (!BeeUtils.isEmpty(externalLink)) {
+      externalServiceUrl = BeeUtils.join(BeeConst.STRING_EMPTY, externalLink, maintenanceId);
+    }
+
     DateTime termValue = commentInfoRow.getDateTime(COL_TERM);
     String message = BeeUtils.joinWords(dic.svcRepair(),
-        commentInfoRow.getValue(COL_SERVICE_MAINTENANCE) + ":",
-        commentInfoRow.getValue(COL_COMMENT),
-        termValue != null ? BeeUtils
-            .joinWords(dic.svcTerm() + ":", TimeUtils.renderCompact(termValue)) : "");
+        maintenanceId + BeeConst.STRING_COLON,
+        BeeUtils.notEmpty(commentInfoRow.getValue(COL_COMMENT), ""),
+        termValue != null ? BeeUtils.joinWords(dic.svcTerm() + BeeConst.STRING_COLON,
+            TimeUtils.renderCompact(termValue)) : "", externalServiceUrl);
 
     if (BeeUtils.isEmpty(message) || BeeUtils.isEmpty(phone)) {
       return ResponseObject.error("message or phone is empty");

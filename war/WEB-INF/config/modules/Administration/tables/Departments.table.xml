@@ -14,5 +14,7 @@
     <Relation name="Role" relation="Roles" label="=role" />
 
     <Boolean name="Heads" label="Vadovai" />
+
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
   </Fields>
 </Table>

@@ -61,6 +61,7 @@
       <xs:enumeration value="finance_posting_precedence" />
       <xs:enumeration value="extra_dimensions" />
       <xs:enumeration value="stages" />
+      <xs:enumeration value="service_maintenance_list" />
     </xs:restriction>
   </xs:simpleType>
 

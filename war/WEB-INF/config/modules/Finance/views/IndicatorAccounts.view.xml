@@ -7,22 +7,12 @@
   <Columns>
     <SimpleColumn name="Indicator" />
 
-    <SimpleColumn name="Debit" />
-    <SimpleJoin joinType="LEFT" name="Debit">
-      <SimpleColumn name="AccountCode" alias="DebitCode" />
-      <SimpleColumn name="AccountName" alias="DebitName" />
-      <SimpleColumn name="Background" alias="DebitBackground" />
-      <SimpleColumn name="Foreground" alias="DebitForeground" />
+    <SimpleColumn name="Account" />
+    <SimpleJoin joinType="LEFT" name="Account">
+      <SimpleColumn name="AccountCode" />
+      <SimpleColumn name="AccountName" />
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
     </SimpleJoin>
-
-    <SimpleColumn name="Credit" />
-    <SimpleJoin joinType="LEFT" name="Credit">
-      <SimpleColumn name="AccountCode" alias="CreditCode" />
-      <SimpleColumn name="AccountName" alias="CreditName" />
-      <SimpleColumn name="Background" alias="CreditBackground" />
-      <SimpleColumn name="Foreground" alias="CreditForeground" />
-    </SimpleJoin>
-
-    <SimpleColumn name="Plus" />
   </Columns>
 </View>

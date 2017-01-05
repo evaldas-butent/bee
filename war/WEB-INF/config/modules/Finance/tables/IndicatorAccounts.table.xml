@@ -7,10 +7,10 @@
   <Fields>
     <Relation name="Indicator" notNull="true" relation="FinancialIndicators" cascade="DELETE"
               label="=finIndicator" />
-
-    <Relation name="Debit" relation="ChartOfAccounts" label="=debit" />
-    <Relation name="Credit" relation="ChartOfAccounts" label="=credit" />
-
-    <Boolean name="Plus" label="=plus" />
+    <Relation name="Account" notNull="true" relation="ChartOfAccounts" label="=account" />
   </Fields>
+
+  <Constraints>
+    <Unique fields="Indicator Account" />
+  </Constraints>
 </Table>

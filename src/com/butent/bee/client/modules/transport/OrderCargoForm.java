@@ -50,7 +50,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
 
   private FaLabel copyAction;
 
-  static void preload(final ScheduledCommand command) {
+  static void preload(Runnable command) {
     Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
       @Override
       public void accept(String input) {
@@ -60,19 +60,19 @@ class OrderCargoForm extends AbstractFormInterceptor {
             public void onFailure(String... reason) {
               super.onFailure(reason);
               defaultCargoType = null;
-              command.execute();
+              command.run();
             }
 
             @Override
             public void onSuccess(BeeRow result) {
               defaultCargoType = result;
-              command.execute();
+              command.run();
             }
           });
 
         } else {
           defaultCargoType = null;
-          command.execute();
+          command.run();
         }
       }
     });

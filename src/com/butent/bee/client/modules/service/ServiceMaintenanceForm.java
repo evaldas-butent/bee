@@ -3,12 +3,14 @@ package com.butent.bee.client.modules.service;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputText;
@@ -50,13 +52,15 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
 public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
-    implements SelectorEvent.Handler {
+    implements SelectorEvent.Handler, RowUpdateEvent.Handler {
 
   private static final BeeLogger logger = LogUtils.getLogger(ServiceMaintenanceForm.class);
 
@@ -74,6 +78,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   private final MaintenanceEventsHandler eventsHandler = new MaintenanceEventsHandler();
   private Flow maintenanceComments;
+  private final Collection<HandlerRegistration> registry = new ArrayList<>();
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -181,6 +186,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   }
 
   @Override
+  public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
+    super.onClose(messages, oldRow, newRow);
+    EventUtils.clearRegistry(registry);
+  }
+
+  @Override
   public void onDataSelector(SelectorEvent event) {
     if (event.isNewRow()
         && BeeUtils.inList(event.getRelatedViewName(), VIEW_COMPANY_PERSONS, TBL_SERVICE_OBJECTS)) {
@@ -248,8 +259,96 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   }
 
   @Override
+  public void onLoad(FormView form) {
+    super.onLoad(form);
+    registry.add(BeeKeeper.getBus().registerRowUpdateHandler(this, false));
+  }
+
+  @Override
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
     event.setConsumed(!isValidData(getFormView(), getActiveRow()));
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (getFormView() == null) {
+      return;
+    }
+
+    if (getActiveRow() == null) {
+      return;
+    }
+
+    FormView form = getFormView();
+    IsRow row = getActiveRow();
+
+    if (BeeUtils.in(event.getViewName(), VIEW_SERVICE_OBJECTS, VIEW_COMPANY_PERSONS,
+        VIEW_COMPANIES)) {
+      String updatedViewName = event.getViewName();
+      Long relId = event.getRowId();
+      String updatedIdColumn = null;
+      Long updatedId = null;
+      Long oldId = null;
+
+      switch (updatedViewName) {
+        case VIEW_SERVICE_OBJECTS:
+          updatedIdColumn = COL_SERVICE_OBJECT;
+          break;
+        case VIEW_COMPANY_PERSONS:
+          updatedIdColumn = COL_CONTACT;
+          break;
+        case VIEW_COMPANIES:
+          updatedIdColumn = COL_COMPANY;
+          break;
+      }
+
+      if (Data.containsColumn(form.getViewName(), updatedIdColumn)) {
+        updatedId = row.getLong(form.getDataIndex(updatedIdColumn));
+
+        if (form.getOldRow() != null) {
+          oldId = form.getOldRow().getLong(form.getDataIndex(updatedIdColumn));
+        }
+      }
+
+      if (DataUtils.isId(relId) && DataUtils.isId(updatedId) && updatedId.equals(relId)) {
+        IsRow eventRow = event.getRow();
+
+        if (event.hasView(VIEW_COMPANY_PERSONS)) {
+          Long companyId = row.getLong(form.getDataIndex(COL_COMPANY));
+          Long updatedCompanyId = event.getRow()
+              .getLong(Data.getColumnIndex(VIEW_COMPANY_PERSONS, COL_COMPANY));
+
+          if (!companyId.equals(updatedCompanyId)) {
+
+            if (DataUtils.isNewRow(row)) {
+              updateNewServiceMaintenanceData(row, form, updatedViewName, eventRow);
+              form.refresh();
+
+            } else {
+              Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(), COL_COMPANY,
+                  BeeUtils.toString(companyId), BeeUtils.toString(updatedCompanyId),
+                  ModificationEvent.Kind.UPDATE_ROW);
+            }
+            return;
+          }
+        }
+
+        if (DataUtils.isNewRow(row) || !updatedId.equals(oldId)) {
+          updateNewServiceMaintenanceData(row, form, updatedViewName, eventRow);
+          form.refresh();
+
+        } else {
+          Queries.getRow(getViewName(), row.getId(), new RowCallback() {
+
+            @Override
+            public void onSuccess(BeeRow rowResult) {
+              form.refresh();
+              RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), rowResult);
+            }
+          });
+        }
+      }
+    }
   }
 
   @Override
@@ -374,6 +473,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             consumeProcess(consumer, 1);
           }
         });
+  }
+
+  @Override
+  public void onUnload(FormView form) {
+    super.onUnload(form);
+    EventUtils.clearRegistry(registry);
   }
 
   private static void consumeProcess(Consumer<Pair<String, String>> consumer, int processCount) {
@@ -529,6 +634,43 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
     if (addressLabel != null) {
       addressLabel.setStyleName(StyleUtils.NAME_REQUIRED, addressRequired);
+    }
+  }
+
+  private static void updateNewServiceMaintenanceData(IsRow row, FormView form, String viewName,
+      IsRow eventRow) {
+    switch (viewName) {
+      case VIEW_SERVICE_OBJECTS:
+        row.setValue(form.getDataIndex(COL_SERVICE_OBJECT), eventRow.getId());
+        row.setValue(form.getDataIndex(ALS_SERVICE_CATEGORY_NAME),
+            eventRow.getValue(Data.getColumnIndex(viewName, ALS_SERVICE_CATEGORY_NAME)));
+        row.setValue(form.getDataIndex(ALS_MANUFACTURER_NAME),
+            eventRow.getValue(Data.getColumnIndex(viewName, ALS_MANUFACTURER_NAME)));
+        row.setValue(form.getDataIndex(COL_MODEL),
+            eventRow.getValue(Data.getColumnIndex(viewName, COL_MODEL)));
+        row.setValue(form.getDataIndex(COL_SERIAL_NO),
+            eventRow.getValue(Data.getColumnIndex(viewName, COL_SERIAL_NO)));
+        row.setValue(form.getDataIndex(ALS_SERVICE_CONTRACTOR_NAME),
+            eventRow.getValue(Data.getColumnIndex(viewName, ALS_SERVICE_CONTRACTOR_NAME)));
+        ServiceUtils.fillContactValues(row, eventRow);
+        break;
+
+      case VIEW_COMPANY_PERSONS:
+        row.setValue(form.getDataIndex(COL_CONTACT), eventRow.getId());
+        row.setValue(form.getDataIndex(ALS_CONTACT_PHONE),
+            eventRow.getValue(Data.getColumnIndex(viewName, COL_PHONE)));
+        row.setValue(form.getDataIndex(ALS_CONTACT_EMAIL),
+            eventRow.getValue(Data.getColumnIndex(viewName, COL_EMAIL)));
+        row.setValue(form.getDataIndex(ALS_CONTACT_ADDRESS),
+            eventRow.getValue(Data.getColumnIndex(viewName, COL_ADDRESS)));
+        ServiceUtils.fillCompanyValues(row, eventRow, viewName, COL_COMPANY,
+            ALS_COMPANY_NAME, ALS_COMPANY_TYPE_NAME);
+        break;
+
+      case VIEW_COMPANIES:
+        ServiceUtils.fillCompanyColumns(row, eventRow, viewName,
+            COL_COMPANY_NAME, ALS_COMPANY_TYPE_NAME);
+        break;
     }
   }
 

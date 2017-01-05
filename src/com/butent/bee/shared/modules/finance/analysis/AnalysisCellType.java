@@ -82,6 +82,17 @@ public class AnalysisCellType {
     return (sb.length() > 0) ? sb.toString() : null;
   }
 
+  public static boolean needsActual(List<AnalysisCellType> list) {
+    if (!BeeUtils.isEmpty(list)) {
+      for (AnalysisCellType item : list) {
+        if (item != null && item.getAnalysisValueType().needsActual()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   public static boolean needsBudget(List<AnalysisCellType> list) {
     if (!BeeUtils.isEmpty(list)) {
       for (AnalysisCellType item : list) {
@@ -95,6 +106,14 @@ public class AnalysisCellType {
 
   public static boolean needsBudget(String input) {
     return needsBudget(decode(input));
+  }
+
+  public static List<AnalysisCellType> normalize(String input) {
+    List<AnalysisCellType> list = decode(input);
+    if (list.isEmpty()) {
+      list.add(new AnalysisCellType(AnalysisValueType.DEFAULT));
+    }
+    return list;
   }
 
   private final AnalysisValueType analysisValueType;
@@ -117,7 +136,19 @@ public class AnalysisCellType {
     return scale;
   }
 
+  public boolean isDefault() {
+    return analysisValueType == AnalysisValueType.DEFAULT;
+  }
+
   public void setScale(int scale) {
     this.scale = scale;
+  }
+
+  public String render(AnalysisValue analysisValue) {
+    if (analysisValue == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return analysisValueType.render(analysisValue, scale);
+    }
   }
 }

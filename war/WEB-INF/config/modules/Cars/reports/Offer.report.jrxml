@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2016-11-28T18:39:42 -->
+<!-- 2016-12-15T17:45:35 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Offer" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="ebed3f98-42bf-4dea-bdfb-41ad487be1da">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.i18n.Localizations"/>
@@ -63,9 +63,9 @@
 		<field name="Value" class="java.lang.String"/>
 	</subDataset>
 	<parameter name="CarOrderItemsDataSet" class="com.butent.bee.server.RsDataSource" isForPrompting="false"/>
-	<parameter name="ConfObjectOptions" class="java.lang.String" isForPrompting="false"/>
-	<parameter name="PhotoFile0" class="java.lang.String"/>
-	<parameter name="PhotoFile1" class="java.lang.String"/>
+	<parameter name="BranchName" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="PhotoFileLOGO" class="java.lang.String"/>
+	<parameter name="PhotoFileMAIN" class="java.lang.String"/>
 	<parameter name="Description" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="Criteria" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="CustomerName" class="java.lang.String" isForPrompting="false"/>
@@ -110,7 +110,7 @@
 		<groupHeader>
 			<band height="160">
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="0" y="110" width="330" height="15" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="99f03762-e1fd-4de0-bf53-98b6c5292f13">
+					<reportElement positionType="Float" x="0" y="110" width="555" height="15" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="99f03762-e1fd-4de0-bf53-98b6c5292f13">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Description})]]></printWhenExpression>
 					</reportElement>
@@ -118,19 +118,49 @@
 					<textFieldExpression><![CDATA[$P{Description}]]></textFieldExpression>
 				</textField>
 				<frame>
-					<reportElement positionType="Float" x="0" y="80" width="554" height="25" isRemoveLineWhenBlank="true" uuid="5448a427-adde-4c6f-8921-3742be75754d">
-						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+					<reportElement positionType="Float" x="0" y="75" width="555" height="28" isRemoveLineWhenBlank="true" uuid="5448a427-adde-4c6f-8921-3742be75754d">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
-					<image hAlign="Center" vAlign="Middle" onErrorType="Blank">
-						<reportElement positionType="Float" stretchType="ContainerHeight" x="0" y="0" width="277" height="25" isRemoveLineWhenBlank="true" uuid="57051d7c-728c-4c69-9513-fb14b5705e00"/>
-						<imageExpression><![CDATA["file/" + $P{PhotoFile1}]]></imageExpression>
-					</image>
 					<textField isStretchWithOverflow="true">
-						<reportElement positionType="Float" x="277" y="0" width="277" height="25" uuid="aa546cff-1acb-4b8c-ae2c-6ace21d8618d"/>
-						<textElement markup="html"/>
-						<textFieldExpression><![CDATA[$P{ConfObjectOptions}]]></textFieldExpression>
+						<reportElement positionType="Float" x="0" y="0" width="275" height="13" uuid="aa546cff-1acb-4b8c-ae2c-6ace21d8618d"/>
+						<textElement markup="none">
+							<font isBold="true"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$P{BranchName}]]></textFieldExpression>
 					</textField>
+					<componentElement>
+						<reportElement positionType="Float" x="0" y="13" width="275" height="15" isRemoveLineWhenBlank="true" uuid="a541291e-14f9-4fd0-bb9d-a5b3e5c739ee">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+							<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
+							<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Criteria})]]></printWhenExpression>
+						</reportElement>
+						<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+							<datasetRun subDataset="Criteria" uuid="c21b5095-ed2b-40ef-8068-2c205bf1a070">
+								<dataSourceExpression><![CDATA[new RsDataSource(BeeRowSet.restore($P{Criteria}))]]></dataSourceExpression>
+							</datasetRun>
+							<jr:listContents height="15" width="275">
+								<textField isStretchWithOverflow="true">
+									<reportElement style="TableCell" positionType="Float" x="0" y="0" width="138" height="15" isRemoveLineWhenBlank="true" uuid="7cedc2da-d3a1-42c4-9536-e20407964ef3"/>
+									<textElement markup="none">
+										<font fontName="DejaVu Sans" size="10" isBold="false"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Criterion}]]></textFieldExpression>
+								</textField>
+								<textField isStretchWithOverflow="true">
+									<reportElement style="TableCell" positionType="Float" x="138" y="0" width="137" height="15" isRemoveLineWhenBlank="true" uuid="5ca0cf62-e8a8-46b0-9266-16c10ba0c0c1"/>
+									<textElement textAlignment="Right" markup="none">
+										<font fontName="DejaVu Sans" size="10" isBold="true"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Value}]]></textFieldExpression>
+								</textField>
+							</jr:listContents>
+						</jr:list>
+					</componentElement>
+					<image hAlign="Center" vAlign="Middle" onErrorType="Blank">
+						<reportElement positionType="Float" stretchType="ContainerHeight" x="281" y="0" width="274" height="28" isRemoveLineWhenBlank="true" uuid="57051d7c-728c-4c69-9513-fb14b5705e00"/>
+						<imageExpression><![CDATA["file/" + $P{PhotoFileMAIN}]]></imageExpression>
+					</image>
 				</frame>
 				<frame>
 					<reportElement positionType="Float" x="0" y="5" width="275" height="65" isRemoveLineWhenBlank="true" uuid="cded0fde-83df-4f21-ba1f-bdd4a684c859">
@@ -189,7 +219,7 @@
 					</reportElement>
 					<image hAlign="Right" vAlign="Middle" onErrorType="Blank">
 						<reportElement positionType="Float" x="0" y="0" width="274" height="39" isRemoveLineWhenBlank="true" uuid="cd735b22-1c17-449d-9c7a-0e3327b76f1e"/>
-						<imageExpression><![CDATA["file/" + $P{PhotoFile0}]]></imageExpression>
+						<imageExpression><![CDATA["file/" + $P{PhotoFileLOGO}]]></imageExpression>
 					</image>
 					<textField isStretchWithOverflow="true">
 						<reportElement positionType="Float" x="0" y="40" width="274" height="14" uuid="dad1a93a-4011-4ab0-a6f5-29f93ee0273a"/>
@@ -206,36 +236,8 @@
 						<textFieldExpression><![CDATA[new DateTime(BeeUtils.toLong($P{Date})).getDate()]]></textFieldExpression>
 					</textField>
 				</frame>
-				<componentElement>
-					<reportElement positionType="Float" x="330" y="110" width="224" height="15" isRemoveLineWhenBlank="true" uuid="a541291e-14f9-4fd0-bb9d-a5b3e5c739ee">
-						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
-						<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
-						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Criteria})]]></printWhenExpression>
-					</reportElement>
-					<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-						<datasetRun subDataset="Criteria" uuid="c21b5095-ed2b-40ef-8068-2c205bf1a070">
-							<dataSourceExpression><![CDATA[new RsDataSource(BeeRowSet.restore($P{Criteria}))]]></dataSourceExpression>
-						</datasetRun>
-						<jr:listContents height="15" width="224">
-							<textField isStretchWithOverflow="true">
-								<reportElement style="TableCell" positionType="Float" x="0" y="0" width="112" height="15" isRemoveLineWhenBlank="true" uuid="7cedc2da-d3a1-42c4-9536-e20407964ef3"/>
-								<textElement markup="none">
-									<font fontName="DejaVu Sans" size="10" isBold="false"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{Criterion}]]></textFieldExpression>
-							</textField>
-							<textField isStretchWithOverflow="true">
-								<reportElement style="TableCell" positionType="Float" x="112" y="0" width="112" height="15" isRemoveLineWhenBlank="true" uuid="5ca0cf62-e8a8-46b0-9266-16c10ba0c0c1"/>
-								<textElement textAlignment="Right" markup="none">
-									<font fontName="DejaVu Sans" size="10" isBold="true"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{Value}]]></textFieldExpression>
-							</textField>
-						</jr:listContents>
-					</jr:list>
-				</componentElement>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="0" y="130" width="554" height="15" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="b2357809-6cca-45df-9294-5fa0a96dc68b">
+					<reportElement positionType="Float" x="0" y="130" width="555" height="15" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="b2357809-6cca-45df-9294-5fa0a96dc68b">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<printWhenExpression><![CDATA[!BeeUtils.isEmpty($P{Discount})]]></printWhenExpression>
 					</reportElement>
@@ -243,7 +245,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.joinWords($V{d}.amountWithoutDiscount(), BeeUtils.toString($V{totalizer}.getTotal() + $V{totalizer}.getDiscount(), 2), $P{CurrencyName})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="0" y="145" width="554" height="15" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="5b1c3df3-34df-4cb6-9d3a-5350ee8a749b">
+					<reportElement positionType="Float" x="0" y="145" width="555" height="15" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="5b1c3df3-34df-4cb6-9d3a-5350ee8a749b">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<textElement markup="html">

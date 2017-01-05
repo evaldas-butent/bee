@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.finance;
 
 import com.google.common.collect.ImmutableList;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -21,6 +22,7 @@ import com.butent.bee.client.modules.finance.analysis.SimpleBudgetForm;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
@@ -30,6 +32,7 @@ import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.rights.Module;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -131,6 +134,12 @@ public final class FinanceKeeper {
         new FinancialIndicatorsGrid(IndicatorKind.PRIMARY));
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_INDICATORS_SECONDARY,
         new FinancialIndicatorsGrid(IndicatorKind.SECONDARY));
+
+    GridFactory.registerGridInterceptor(GRID_INDICATOR_ACCOUNTS,
+        new UniqueChildInterceptor(Localized.dictionary().finIndicatorAccounts(),
+            COL_FIN_INDICATOR, COL_INDICATOR_ACCOUNT, VIEW_CHART_OF_ACCOUNTS,
+            Collections.singletonList(COL_ACCOUNT_CODE),
+            Arrays.asList(COL_ACCOUNT_CODE, COL_ACCOUNT_NAME)));
 
     GridFactory.registerGridInterceptor(GRID_BUDGET_ENTRIES, new BudgetEntriesGrid());
 

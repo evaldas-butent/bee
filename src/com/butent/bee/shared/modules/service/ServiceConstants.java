@@ -31,6 +31,7 @@ public final class ServiceConstants {
   public static final String PRM_SMS_REQUEST_SERVICE_USER_NAME = "SmsRequestServiceUserName";
   public static final String PRM_SMS_REQUEST_SERVICE_PASSWORD = "SmsRequestServicePassword";
   public static final String PRM_SMS_REQUEST_SERVICE_FROM = "SmsRequestServiceFrom";
+  public static final String PRM_EXTERNAL_MAINTENANCE_URL = "ExternalMaintenanceUrl";
 
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_CREATE_DEFECT_ITEMS = "CreateDefectItems";
@@ -88,6 +89,7 @@ public final class ServiceConstants {
   public static final String COL_MAINTENANCE_STATE = "MaintenanceState";
   public static final String COL_MESSAGE = "Message";
   public static final String COL_NOTIFY_CUSTOMER = "NotifyCustomer";
+  public static final String COL_REPAIRER = "Repairer";
   public static final String COL_SHOW_CUSTOMER = "ShowCustomer";
   public static final String COL_SEND_EMAIL = "SentEmail";
   public static final String COL_SEND_SMS = "SentSms";
@@ -178,6 +180,7 @@ public final class ServiceConstants {
   public static final String GRID_OBJECT_INVOICES = "ObjectInvoices";
   public static final String GRID_OBJECT_DEFECTS = "ObjectDefects";
   public static final String GRID_SERVICE_INVOICES = "ServiceInvoices";
+  public static final String GRID_SERVICE_MAINTENANCE = "ServiceMaintenance";
 
   public static final String PROP_MAIN_ITEM = "MainItem";
   public static final String PROP_CRITERIA = "Criteria";

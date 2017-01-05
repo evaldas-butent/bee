@@ -168,17 +168,26 @@ public final class Endpoint {
     return false;
   }
 
+  public static String createProgress(String caption, String id) {
+    InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
+    Thermometer th = new Thermometer(caption, BeeConst.DOUBLE_ONE, close);
+
+    if (!BeeUtils.isEmpty(id)) {
+      th.setId(id);
+    }
+    String progressId = BeeKeeper.getScreen().addProgress(th);
+
+    if (!BeeUtils.isEmpty(progressId)) {
+      close.addClickHandler(ev -> cancelProgress(progressId));
+    }
+    return progressId;
+  }
+
   public static void initProgress(String caption, final Consumer<String> consumer) {
-    final String progressId;
+    String progressId;
 
     if (Endpoint.isOpen()) {
-      InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
-      Thermometer th = new Thermometer(caption, BeeConst.DOUBLE_ONE, close);
-      progressId = BeeKeeper.getScreen().addProgress(th);
-
-      if (progressId != null) {
-        close.addClickHandler(ev -> cancelProgress(progressId));
-      }
+      progressId = createProgress(caption, null);
     } else {
       progressId = null;
     }
@@ -295,7 +304,7 @@ public final class Endpoint {
     }
   }
 
-  static boolean startPropgress(String progressId) {
+  static boolean startProgress(String progressId) {
     if (!progressQueue.isEmpty()) {
       Consumer<String> starter = progressQueue.remove(progressId);
       if (starter != null) {
