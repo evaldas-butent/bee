@@ -144,6 +144,12 @@ class AnalysisViewer extends Flow implements HasCaption {
     }
 
     logger.debug("columns", columnIds);
+    logger.debug("c labels", columnLabels);
+    logger.debug("c split types", columnSplitTypes);
+    logger.debug("c split values", columnSplitValues);
+    logger.debug("c cell types", columnCellTypes);
+    logger.debug("c span", columnSpan);
+    logger.debug("c split span", columnSplitSpan);
 
     for (BeeRow row : results.getRows()) {
       if (results.isRowVisible(row)) {
@@ -176,6 +182,12 @@ class AnalysisViewer extends Flow implements HasCaption {
     }
 
     logger.debug("rows", rowIds);
+    logger.debug("r labels", rowLabels);
+    logger.debug("r split types", rowSplitTypes);
+    logger.debug("r split values", rowSplitValues);
+    logger.debug("r cell types", rowCellTypes);
+    logger.debug("r span", rowSpan);
+    logger.debug("r split span", rowSplitSpan);
 
     for (AnalysisValue value : results.getValues()) {
       long rowId = value.getRowId();
@@ -195,6 +207,7 @@ class AnalysisViewer extends Flow implements HasCaption {
 
     logger.debug("values", values.size(),
         values.values().stream().mapToInt(List::size).sum());
+    logger.debug(values);
   }
 
   private static int getSpan(List<AnalysisSplitType> splitTypes,
@@ -568,35 +581,53 @@ class AnalysisViewer extends Flow implements HasCaption {
     }
   }
 
+  private int getColumnSplitSpan(long columnId, AnalysisSplitType splitType) {
+    int defaultSpan = 1;
+
+    Map<AnalysisSplitType, Integer> spanByType = columnSplitSpan.get(columnId);
+    if (BeeUtils.isEmpty(spanByType)) {
+      return defaultSpan;
+    } else {
+      return spanByType.getOrDefault(splitType, defaultSpan);
+    }
+  }
+
+  private int getRowSplitSpan(long rowId, AnalysisSplitType splitType) {
+    int defaultSpan = 1;
+
+    Map<AnalysisSplitType, Integer> spanByType = rowSplitSpan.get(rowId);
+    if (BeeUtils.isEmpty(spanByType)) {
+      return defaultSpan;
+    } else {
+      return spanByType.getOrDefault(splitType, defaultSpan);
+    }
+  }
+
   private int getColumnOffset(AnalysisValue value) {
     int offset = 0;
 
-    Integer splitTypeIndex = value.getColumnSplitTypeIndex();
-    Integer splitValueIndex = value.getColumnSplitValueIndex();
-
-    if (splitTypeIndex == null || splitValueIndex == null) {
+    Map<AnalysisSplitType, AnalysisSplitValue> split = value.getColumnSplit();
+    if (BeeUtils.isEmpty(split)) {
       return offset;
     }
 
     long id = value.getColumnId();
 
     List<AnalysisSplitType> splitTypes = columnSplitTypes.get(id);
-    if (!BeeUtils.isIndex(splitTypes, splitTypeIndex)) {
+    if (BeeUtils.isEmpty(splitTypes)) {
       return offset;
     }
 
-    AnalysisSplitType splitType = splitTypes.get(splitTypeIndex);
-    List<AnalysisSplitValue> splitValues = columnSplitValues.get(id).get(splitType);
-
-    if (!BeeUtils.isIndex(splitValues, splitValueIndex)) {
+    Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues = columnSplitValues.get(id);
+    if (BeeUtils.isEmpty(splitValues)) {
       return offset;
     }
 
-    Integer splitSpan = columnSplitSpan.get(id).get(splitType);
-    if (BeeUtils.isPositive(splitSpan)) {
-      offset += splitValueIndex * splitSpan;
-    } else {
-      offset += splitValueIndex;
+    for (AnalysisSplitType splitType : splitTypes) {
+      int index = BeeUtils.indexOf(splitValues.get(splitType), split.get(splitType));
+      if (index > 0) {
+        offset += index * getColumnSplitSpan(id, splitType);
+      }
     }
 
     return offset;
@@ -605,32 +636,28 @@ class AnalysisViewer extends Flow implements HasCaption {
   private int getRowOffset(AnalysisValue value) {
     int offset = 0;
 
-    Integer splitTypeIndex = value.getRowSplitTypeIndex();
-    Integer splitValueIndex = value.getRowSplitValueIndex();
-
-    if (splitTypeIndex == null || splitValueIndex == null) {
+    Map<AnalysisSplitType, AnalysisSplitValue> split = value.getRowSplit();
+    if (BeeUtils.isEmpty(split)) {
       return offset;
     }
 
     long id = value.getRowId();
 
     List<AnalysisSplitType> splitTypes = rowSplitTypes.get(id);
-    if (!BeeUtils.isIndex(splitTypes, splitTypeIndex)) {
+    if (BeeUtils.isEmpty(splitTypes)) {
       return offset;
     }
 
-    AnalysisSplitType splitType = splitTypes.get(splitTypeIndex);
-    List<AnalysisSplitValue> splitValues = rowSplitValues.get(id).get(splitType);
-
-    if (!BeeUtils.isIndex(splitValues, splitValueIndex)) {
+    Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues = rowSplitValues.get(id);
+    if (BeeUtils.isEmpty(splitValues)) {
       return offset;
     }
 
-    Integer splitSpan = rowSplitSpan.get(id).get(splitType);
-    if (BeeUtils.isPositive(splitSpan)) {
-      offset += splitValueIndex * splitSpan;
-    } else {
-      offset += splitValueIndex;
+    for (AnalysisSplitType splitType : splitTypes) {
+      int index = BeeUtils.indexOf(splitValues.get(splitType), split.get(splitType));
+      if (index > 0) {
+        offset += index * getRowSplitSpan(id, splitType);
+      }
     }
 
     return offset;

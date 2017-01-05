@@ -595,6 +595,26 @@ public class AnalysisBean {
     return indicatorSource.getSourceColumn();
   }
 
+  private static Map<AnalysisSplitType, AnalysisSplitValue> getRootSplit() {
+    return new EnumMap<>(AnalysisSplitType.class);
+  }
+
+  private static Map<AnalysisSplitType, AnalysisSplitValue> buildSplit(
+      Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
+      AnalysisSplitType splitType, AnalysisSplitValue splitValue) {
+
+    Map<AnalysisSplitType, AnalysisSplitValue> split = new EnumMap<>(AnalysisSplitType.class);
+
+    if (!BeeUtils.isEmpty(parentSplit)) {
+      split.putAll(parentSplit);
+    }
+    if (splitType != null && splitValue != null) {
+      split.put(splitType, splitValue);
+    }
+
+    return split;
+  }
+
   private Collection<AnalysisValue> computeActualValues(long columnId, long rowId,
       Filter filter, Filter plusFilter, Filter minusFilter, TurnoverOrBalance turnoverOrBalance,
       List<AnalysisSplitType> columnSplitTypes,
@@ -609,19 +629,19 @@ public class AnalysisBean {
     boolean hasRowSplits = !rowSplitTypes.isEmpty() && !rowSplitValues.isEmpty();
 
     if (hasColumnSplits && hasRowSplits) {
-      values.addAll(computeActualSplitMatrix(columnId, rowId, null,
+      values.addAll(computeActualSplitMatrix(columnId, rowId, getRootSplit(),
           filter, plusFilter, minusFilter, turnoverOrBalance,
           columnSplitTypes, 0, columnSplitValues, 0,
           rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
 
     } else if (hasColumnSplits) {
-      values.addAll(computeActualSplitVector(columnId, rowId, true, null,
+      values.addAll(computeActualSplitVector(columnId, rowId, true, getRootSplit(),
           filter, plusFilter, minusFilter, turnoverOrBalance,
           columnSplitTypes, 0, columnSplitValues, 0,
           sourceColumn, finView, userId));
 
     } else if (hasRowSplits) {
-      values.addAll(computeActualSplitVector(columnId, rowId, false, null,
+      values.addAll(computeActualSplitVector(columnId, rowId, false, getRootSplit(),
           filter, plusFilter, minusFilter, turnoverOrBalance,
           rowSplitTypes, 0, rowSplitValues, 0,
           sourceColumn, finView, userId));
@@ -635,7 +655,7 @@ public class AnalysisBean {
   }
 
   private Collection<AnalysisValue> computeActualSplitVector(long columnId, long rowId,
-      boolean isColumn, Integer parentValueIndex,
+      boolean isColumn, Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
       Filter parentFilter, Filter plusFilter, Filter minusFilter,
       TurnoverOrBalance turnoverOrBalance,
       List<AnalysisSplitType> splitTypes, int typeIndex,
@@ -657,27 +677,25 @@ public class AnalysisBean {
       AnalysisValue av = AnalysisValue.actual(columnId, rowId, value);
 
       if (isColumn) {
-        av.setColumnParentValueIndex(parentValueIndex);
-        av.setColumnSplitTypeIndex(typeIndex);
-        av.setColumnSplitValueIndex(valueIndex);
-
+        av.putColumnSplit(parentSplit, splitType, splitValue);
       } else {
-        av.setRowParentValueIndex(parentValueIndex);
-        av.setRowSplitTypeIndex(typeIndex);
-        av.setRowSplitValueIndex(valueIndex);
+        av.putRowSplit(parentSplit, splitType, splitValue);
       }
 
       values.add(av);
 
       if (typeIndex < splitTypes.size() - 1) {
-        values.addAll(computeActualSplitVector(columnId, rowId, isColumn, valueIndex,
+        Map<AnalysisSplitType, AnalysisSplitValue> split =
+            buildSplit(parentSplit, splitType, splitValue);
+
+        values.addAll(computeActualSplitVector(columnId, rowId, isColumn, split,
             filter, plusFilter, minusFilter, turnoverOrBalance,
             splitTypes, typeIndex + 1, splitValues, 0,
             sourceColumn, finView, userId));
       }
 
       if (valueIndex < typeValues.size() - 1) {
-        values.addAll(computeActualSplitVector(columnId, rowId, isColumn, parentValueIndex,
+        values.addAll(computeActualSplitVector(columnId, rowId, isColumn, parentSplit,
             parentFilter, plusFilter, minusFilter, turnoverOrBalance,
             splitTypes, typeIndex, splitValues, valueIndex + 1,
             sourceColumn, finView, userId));
@@ -688,7 +706,7 @@ public class AnalysisBean {
   }
 
   private Collection<AnalysisValue> computeActualSplitMatrix(long columnId, long rowId,
-      Integer columnParentValueIndex,
+      Map<AnalysisSplitType, AnalysisSplitValue> columnParentSplit,
       Filter parentFilter, Filter plusFilter, Filter minusFilter,
       TurnoverOrBalance turnoverOrBalance,
       List<AnalysisSplitType> columnSplitTypes, int columnTypeIndex,
@@ -708,30 +726,31 @@ public class AnalysisBean {
       Filter filter = Filter.and(parentFilter,
           columnSplitType.getFinFilter(columnSplitValue, turnoverOrBalance));
 
-      Collection<AnalysisValue> rowValues = computeActualSplitVector(columnId, rowId, false, null,
+      Collection<AnalysisValue> rowValues = computeActualSplitVector(columnId, rowId,
+          false, getRootSplit(),
           filter, plusFilter, minusFilter, turnoverOrBalance,
           rowSplitTypes, 0, rowSplitValues, 0,
           sourceColumn, finView, userId);
 
       if (!rowValues.isEmpty()) {
         for (AnalysisValue av : rowValues) {
-          av.setColumnParentValueIndex(columnParentValueIndex);
-          av.setColumnSplitTypeIndex(columnTypeIndex);
-          av.setColumnSplitValueIndex(columnValueIndex);
-
+          av.putColumnSplit(columnParentSplit, columnSplitType, columnSplitValue);
           values.add(av);
         }
       }
 
       if (columnTypeIndex < columnSplitTypes.size() - 1) {
-        values.addAll(computeActualSplitMatrix(columnId, rowId, columnValueIndex,
+        Map<AnalysisSplitType, AnalysisSplitValue> columnSplit =
+            buildSplit(columnParentSplit, columnSplitType, columnSplitValue);
+
+        values.addAll(computeActualSplitMatrix(columnId, rowId, columnSplit,
             filter, plusFilter, minusFilter, turnoverOrBalance,
             columnSplitTypes, columnTypeIndex + 1, columnSplitValues, 0,
             rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
       }
 
       if (columnValueIndex < columnTypeValues.size() - 1) {
-        values.addAll(computeActualSplitMatrix(columnId, rowId, columnParentValueIndex,
+        values.addAll(computeActualSplitMatrix(columnId, rowId, columnParentSplit,
             parentFilter, plusFilter, minusFilter, turnoverOrBalance,
             columnSplitTypes, columnTypeIndex, columnSplitValues, columnValueIndex + 1,
             rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
@@ -952,7 +971,7 @@ public class AnalysisBean {
   }
 
   private Collection<AnalysisValue> computeBudgetSplitVector(long columnId, long rowId,
-      boolean isColumn, Integer parentValueIndex,
+      boolean isColumn, Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
       String source, IsCondition condition, MonthRange range,
       TurnoverOrBalance turnoverOrBalance,
       List<AnalysisSplitType> splitTypes, int typeIndex,
@@ -976,27 +995,25 @@ public class AnalysisBean {
         AnalysisValue av = AnalysisValue.budget(columnId, rowId, value);
 
         if (isColumn) {
-          av.setColumnParentValueIndex(parentValueIndex);
-          av.setColumnSplitTypeIndex(typeIndex);
-          av.setColumnSplitValueIndex(valueIndex);
-
+          av.putColumnSplit(parentSplit, splitType, splitValue);
         } else {
-          av.setRowParentValueIndex(parentValueIndex);
-          av.setRowSplitTypeIndex(typeIndex);
-          av.setRowSplitValueIndex(valueIndex);
+          av.putRowSplit(parentSplit, splitType, splitValue);
         }
 
         values.add(av);
       }
 
       if (typeIndex < splitTypes.size() - 1) {
-        values.addAll(computeBudgetSplitVector(columnId, rowId, isColumn, valueIndex,
+        Map<AnalysisSplitType, AnalysisSplitValue> split =
+            buildSplit(parentSplit, splitType, splitValue);
+
+        values.addAll(computeBudgetSplitVector(columnId, rowId, isColumn, split,
             source, condition, range, turnoverOrBalance,
             splitTypes, typeIndex + 1, splitValues, 0));
       }
 
       if (valueIndex < typeValues.size() - 1) {
-        values.addAll(computeBudgetSplitVector(columnId, rowId, isColumn, parentValueIndex,
+        values.addAll(computeBudgetSplitVector(columnId, rowId, isColumn, parentSplit,
             source, condition, range, turnoverOrBalance,
             splitTypes, typeIndex, splitValues, valueIndex + 1));
       }
@@ -1006,7 +1023,7 @@ public class AnalysisBean {
   }
 
   private Collection<AnalysisValue> computeBudgetSplitMatrix(long columnId, long rowId,
-      Integer columnParentValueIndex,
+      Map<AnalysisSplitType, AnalysisSplitValue> columnParentSplit,
       String source, IsCondition condition, MonthRange range,
       TurnoverOrBalance turnoverOrBalance,
       List<AnalysisSplitType> columnSplitTypes, int columnTypeIndex,
@@ -1026,29 +1043,30 @@ public class AnalysisBean {
           getBudgetSplitCondition(source, columnSplitType, columnSplitValue);
       MonthRange splitRange = getBudgetSplitRange(range, columnSplitType, columnSplitValue);
 
-      Collection<AnalysisValue> rowValues = computeBudgetSplitVector(columnId, rowId, false, null,
+      Collection<AnalysisValue> rowValues = computeBudgetSplitVector(columnId, rowId,
+          false, getRootSplit(),
           source, SqlUtils.and(condition, splitCondition), splitRange, turnoverOrBalance,
           rowSplitTypes, 0, rowSplitValues, 0);
 
       if (!rowValues.isEmpty()) {
         for (AnalysisValue av : rowValues) {
-          av.setColumnParentValueIndex(columnParentValueIndex);
-          av.setColumnSplitTypeIndex(columnTypeIndex);
-          av.setColumnSplitValueIndex(columnValueIndex);
-
+          av.putColumnSplit(columnParentSplit, columnSplitType, columnSplitValue);
           values.add(av);
         }
       }
 
       if (columnTypeIndex < columnSplitTypes.size() - 1) {
-        values.addAll(computeBudgetSplitMatrix(columnId, rowId, columnValueIndex,
+        Map<AnalysisSplitType, AnalysisSplitValue> columnSplit =
+            buildSplit(columnParentSplit, columnSplitType, columnSplitValue);
+
+        values.addAll(computeBudgetSplitMatrix(columnId, rowId, columnSplit,
             source, condition, range, turnoverOrBalance,
             columnSplitTypes, columnTypeIndex + 1, columnSplitValues, 0,
             rowSplitTypes, rowSplitValues));
       }
 
       if (columnValueIndex < columnTypeValues.size() - 1) {
-        values.addAll(computeBudgetSplitMatrix(columnId, rowId, columnParentValueIndex,
+        values.addAll(computeBudgetSplitMatrix(columnId, rowId, columnParentSplit,
             source, condition, range, turnoverOrBalance,
             columnSplitTypes, columnTypeIndex, columnSplitValues, columnValueIndex + 1,
             rowSplitTypes, rowSplitValues));

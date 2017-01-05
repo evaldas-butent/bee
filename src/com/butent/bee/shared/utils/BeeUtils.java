@@ -1108,6 +1108,10 @@ public final class BeeUtils {
     }
   }
 
+  public static <T> int indexOf(List<? extends T> list, T item) {
+    return (list == null) ? BeeConst.UNDEF : list.indexOf(item);
+  }
+
   public static int indexOfSame(List<String> list, String s) {
     if (isEmpty(list)) {
       return BeeConst.UNDEF;

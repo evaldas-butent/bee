@@ -151,4 +151,10 @@ public class AnalysisCellType {
       return analysisValueType.render(analysisValue, scale);
     }
   }
+
+  @Override
+  public String toString() {
+    String s = BeeConst.isUndef(scale) ? null : BeeUtils.toString(scale);
+    return BeeUtils.joinWords(analysisValueType, s);
+  }
 }
