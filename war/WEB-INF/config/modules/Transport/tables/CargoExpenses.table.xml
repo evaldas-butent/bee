@@ -20,6 +20,6 @@
     <String name="Note" precision="100" label="=note" />
 
     <Relation name="Purchase" relation="Purchases" cascade="SET_NULL" label="=trdPurchaseId" />
-    <Relation name="Income" relation="CargoIncomes" label="=income" />
+    <Relation name="Income" relation="CargoIncomes" label="=income" notNull="true" />
   </Fields>
 </Table>

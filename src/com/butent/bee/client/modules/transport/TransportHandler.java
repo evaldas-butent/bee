@@ -48,6 +48,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
