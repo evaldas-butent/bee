@@ -429,7 +429,6 @@ public class TradeActBean implements HasTimerService {
 
                     Double qty = remainData.get(Pair.of(item, parentAct));
 
-                    logger.warning("DEB", item, parentAct, qty);
                     if (BeeUtils.isDouble(qty)) {
                       row.setProperty(PRP_REMAINING_QTY, BeeUtils.toString(qty, qtyScale));
                     }
@@ -626,6 +625,7 @@ public class TradeActBean implements HasTimerService {
     Long series = fifoAct.getLong(parentActs.getColumnIndex(COL_TA_SERIES));
     DateTime now = TimeUtils.nowMinutes();
     Long combStatus = prm.getRelation(PRM_COMBINED_ACT_STATUS);
+    Long returnedActStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
     Long continuousStatus = prm.getRelation(PRM_CONTINUOUS_ACT_STATUS);
 
     SqlSelect actNumbersQuery = new SqlSelect()
@@ -717,11 +717,18 @@ public class TradeActBean implements HasTimerService {
     }
 
     if (DataUtils.isId(combStatus)) {
+      IsCondition cond = SqlUtils.and(
+          sys.idInList(TBL_TRADE_ACTS, lockActData),
+          SqlUtils.notEqual(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal()));
+
+      if (DataUtils.isId(returnedActStatus)) {
+        cond = SqlUtils.and(cond, SqlUtils.notEqual(TBL_TRADE_ACTS, COL_TA_STATUS,
+            returnedActStatus));
+      }
+
       SqlUpdate query = new SqlUpdate(TBL_TRADE_ACTS)
           .addConstant(COL_TA_STATUS, combStatus)
-          .setWhere(SqlUtils.and(
-              sys.idInList(TBL_TRADE_ACTS, lockActData),
-              SqlUtils.notEqual(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())));
+          .setWhere(cond);
 
       response = qs.updateDataWithResponse(query);
     }
