@@ -35,7 +35,6 @@ public final class AnalysisResults implements BeeSerializable {
   }
 
   private static final List<AnalysisSplitType> EMPTY_SPLIT_TYPES = Collections.emptyList();
-  private static final List<AnalysisSplitValue> EMPTY_SPLIT_VALUES = Collections.emptyList();
 
   private long initStart;
   private long validateStart;
@@ -119,10 +118,15 @@ public final class AnalysisResults implements BeeSerializable {
       List<AnalysisSplitValue> splitValues) {
 
     if (!BeeUtils.isEmpty(splitValues)) {
-      Map<AnalysisSplitType, List<AnalysisSplitValue>> map = new HashMap<>();
-      map.put(splitType, splitValues);
+      if (columnSplitValues.containsKey(columnId)) {
+        columnSplitValues.get(columnId).put(splitType, splitValues);
 
-      columnSplitValues.put(columnId, map);
+      } else {
+        Map<AnalysisSplitType, List<AnalysisSplitValue>> map = new HashMap<>();
+        map.put(splitType, splitValues);
+
+        columnSplitValues.put(columnId, map);
+      }
     }
   }
 
@@ -136,10 +140,15 @@ public final class AnalysisResults implements BeeSerializable {
       List<AnalysisSplitValue> splitValues) {
 
     if (!BeeUtils.isEmpty(splitValues)) {
-      Map<AnalysisSplitType, List<AnalysisSplitValue>> map = new HashMap<>();
-      map.put(splitType, splitValues);
+      if (rowSplitValues.containsKey(rowId)) {
+        rowSplitValues.get(rowId).put(splitType, splitValues);
 
-      rowSplitValues.put(rowId, map);
+      } else {
+        Map<AnalysisSplitType, List<AnalysisSplitValue>> map = new HashMap<>();
+        map.put(splitType, splitValues);
+
+        rowSplitValues.put(rowId, map);
+      }
     }
   }
 
@@ -238,7 +247,7 @@ public final class AnalysisResults implements BeeSerializable {
               columnSplitTypes.clear();
             }
 
-            columnSplitTypes.putAll(dST(v));
+            columnSplitTypes.putAll(deserializeSplitTypes(v));
             break;
 
           case ROW_SPLIT_TYPES:
@@ -246,7 +255,7 @@ public final class AnalysisResults implements BeeSerializable {
               rowSplitTypes.clear();
             }
 
-            rowSplitTypes.putAll(dST(v));
+            rowSplitTypes.putAll(deserializeSplitTypes(v));
             break;
 
           case COLUMN_SPLIT_VALUES:
@@ -254,7 +263,7 @@ public final class AnalysisResults implements BeeSerializable {
               columnSplitValues.clear();
             }
 
-            columnSplitValues.putAll(dSV(v));
+            columnSplitValues.putAll(deserializeSplitValues(v));
             break;
 
           case ROW_SPLIT_VALUES:
@@ -262,7 +271,7 @@ public final class AnalysisResults implements BeeSerializable {
               rowSplitValues.clear();
             }
 
-            rowSplitValues.putAll(dSV(v));
+            rowSplitValues.putAll(deserializeSplitValues(v));
             break;
 
           case VALUES:
@@ -308,7 +317,7 @@ public final class AnalysisResults implements BeeSerializable {
     return indexes;
   }
 
-  private static Map<Long, List<AnalysisSplitType>> dST(String s) {
+  private static Map<Long, List<AnalysisSplitType>> deserializeSplitTypes(String s) {
     Map<Long, List<AnalysisSplitType>> result = new HashMap<>();
 
     Codec.deserializeHashMap(s).forEach((k, v) -> {
@@ -333,7 +342,9 @@ public final class AnalysisResults implements BeeSerializable {
     return result;
   }
 
-  private static Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> dSV(String s) {
+  private static Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> deserializeSplitValues(
+      String s) {
+
     Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> result = new HashMap<>();
 
     Codec.deserializeHashMap(s).forEach((k, v) -> {
@@ -619,21 +630,5 @@ public final class AnalysisResults implements BeeSerializable {
 
   public List<BeeRow> getRows() {
     return rows;
-  }
-
-  public Map<Long, List<AnalysisSplitType>> getColumnSplitTypes() {
-    return columnSplitTypes;
-  }
-
-  public Map<Long, List<AnalysisSplitType>> getRowSplitTypes() {
-    return rowSplitTypes;
-  }
-
-  public Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> getColumnSplitValues() {
-    return columnSplitValues;
-  }
-
-  public Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> getRowSplitValues() {
-    return rowSplitValues;
   }
 }
