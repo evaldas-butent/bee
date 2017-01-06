@@ -615,12 +615,12 @@ public class TradeActBean implements HasTimerService {
 
     List<Long> parentIds = parentActs.getRowIds();
     BeeRowSet remainItems = getRemainingItems(parentIds.toArray(new Long[parentIds.size()]));
+    BeeRow fifoAct = parentActs.getRowById(fifoId);
 
     if (DataUtils.isEmpty(remainItems)) {
-      return ResponseObject.emptyResponse();
+      return ResponseObject.response(fifoAct == null ? fifoId : fifoAct.getId());
     }
 
-    BeeRow fifoAct = parentActs.getRowById(fifoId);
     String number = fifoAct.getString(parentActs.getColumnIndex(COL_TA_NUMBER));
     Long series = fifoAct.getLong(parentActs.getColumnIndex(COL_TA_SERIES));
     DateTime now = TimeUtils.nowMinutes();
