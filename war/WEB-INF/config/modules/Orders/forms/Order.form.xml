@@ -8,8 +8,8 @@
         xmlns:f="http://www.butent.com/form"
 
   name="Order" viewName="Orders" width="800" height="600">
-  <f:properties jasperReports="PrintOffer:=offer, PrintOffer_ee:=offer+_EE, PrintOrder:=order,
-    PrintOrder_ee:=order+_EE" />
+  <f:properties jasperReports="PrintOffer:=offer, PrintOffer_et:=offer+_EE, PrintOrder:=order,
+    PrintOrder_et:=order+_EE" />
   <FlowPanel>
     <Table kind="controls">
       <row data="OrdersTemplates" class="bee-ta-template-selection">

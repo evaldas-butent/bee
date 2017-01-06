@@ -9,6 +9,7 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="Name2" />
     <SimpleColumn name="Name3" />
+    <SimpleColumn name="Name" alias="NameET" locale="et" label="Pealkiri" />
 
     <SimpleColumn name="Article" />
     <SimpleColumn name="Article2" />
@@ -30,6 +31,9 @@
     <SimpleColumn name="Height" />
     <SimpleColumn name="Width" />
     <SimpleColumn name="Length" />
+    <SimpleColumn name="Volume" />
+    <SimpleColumn name="Brutto" />
+    <SimpleColumn name="Netto" />
 
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />

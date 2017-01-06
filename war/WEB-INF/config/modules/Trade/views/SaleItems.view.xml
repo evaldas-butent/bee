@@ -14,14 +14,21 @@
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
-      <SimpleColumn name="Link" />
-      
+
       <SimpleJoin joinType="INNER" name="Unit">
         <SimpleColumn name="Name" alias="UnitName" />
       </SimpleJoin>
 
+      <SimpleJoin name="Type" joinType="LEFT">
+        <SimpleColumn name="Name" alias="TypeName" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Link" />
       <SimpleColumn name="Barcode" />
       <SimpleColumn name="Weight" />
+      <SimpleColumn name="Brutto" />
+      <SimpleColumn name="Netto" />
+      <SimpleColumn name="KPNCode" />
     </SimpleJoin>
     <SimpleColumn name="Article" />
     <SimpleColumn name="Quantity" />

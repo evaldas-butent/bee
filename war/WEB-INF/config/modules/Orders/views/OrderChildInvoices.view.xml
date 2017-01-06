@@ -112,6 +112,10 @@
     <SimpleColumn name="Unloading" />
     <SimpleColumn name="Issued" />
     <SimpleColumn name="DriverInfo" />
+    <SimpleColumn name="PalletsWeight" />
+    <SimpleColumn name="PalletsNumber" />
+    <SimpleColumn name="Polyethylene" />
+    <SimpleColumn name="CardboardBoxes" />
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

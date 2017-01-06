@@ -30,6 +30,7 @@
 
     <DataColumn name="Name" visible="true" />
     <DataColumn name="Name2" visible="false" />
+    <DataColumn name="NameET" editInPlace="true" />
     <DataColumn name="Article" />
     <DataColumn name="Article2" visible="false" />
     <DataColumn name="Article3" visible="false" />

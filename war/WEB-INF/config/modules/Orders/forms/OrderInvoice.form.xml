@@ -10,9 +10,9 @@
   name="OrderInvoice" viewName="OrderChildInvoices" caption="=trdInvoice"
   width="840" height="600" readOnly="true" showRowId="true">
 
-  <f:properties jasperReports="PrintInvoice:=trdInvoice, PrintInvoice_ee:=trdInvoice+_EE,
-  PrintProforma:=trdProformaInvoice, PrintProforma_ee:=trdProformaInvoice+_EE,
-  PrintTransportationAct:=printInvoiceBoL, PrintTransportationAct_ee:=printInvoiceBoL+_EE" />
+  <f:properties jasperReports="PrintInvoice:=trdInvoice, PrintInvoice_et:=trdInvoice+_EE,
+  PrintProforma:=trdProformaInvoice, PrintProforma_et:=trdProformaInvoice+_EE,
+  PrintTransportationAct:=printInvoiceBoL, PrintTransportationAct_et:=printInvoiceBoL+_EE" />
   <FlowPanel class="flexBox-vertical">
     <br />
     <Table kind="controls">
@@ -106,6 +106,32 @@
 
               <Label for="DriverInfo" />
               <InputText source="DriverInfo" style="&inp;" disablable="false" />
+            </row>
+          </Table>
+        </SimplePanel>
+      </page>
+
+      <page>
+        <text>=otherInfo</text>
+        <SimplePanel>
+          <Table kind="controls">
+            <col index="0" kind="label" />
+            <col index="2" kind="label" />
+
+            <row>
+              <Label for="PalletsNumber" />
+              <InputDecimal source="PalletsNumber" style="&inp;" disablable="false" />
+
+              <Label for="PalletsWeight" />
+              <InputDecimal source="PalletsWeight" style="&inp;" disablable="false" />
+            </row>
+
+            <row>
+              <Label for="CardboardBoxes" />
+              <InputDecimal source="CardboardBoxes" style="&inp;" disablable="false" />
+
+              <Label for="Polyethylene" />
+              <InputDecimal source="Polyethylene" style="&inp;" disablable="false" />
             </row>
           </Table>
         </SimplePanel>

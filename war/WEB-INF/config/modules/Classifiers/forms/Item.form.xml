@@ -241,6 +241,29 @@
             <InputDecimal source="Area" style="width: 80px;" summarize="true">
               &foritem;
             </InputDecimal>
+
+            <Label for="Volume">
+              &foritem;
+            </Label>
+            <InputDecimal source="Volume" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+
+          <row>
+            <Label for="Brutto">
+              &foritem;
+            </Label>
+            <InputDecimal source="Brutto" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+
+            <Label for="Netto">
+              &foritem;
+            </Label>
+            <InputDecimal source="Netto" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
           </row>
 
           <row module="Trade.Acts">

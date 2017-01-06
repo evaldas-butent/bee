@@ -28,9 +28,11 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -39,6 +41,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class OrderInvoiceForm extends PrintFormInterceptor {
@@ -101,7 +104,7 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
   @Override
   protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
     Queries.getRowSet(VIEW_SALE_ITEMS, null, Filter.equals(COL_SALE, getActiveRowId()),
-        new Queries.RowSetCallback() {
+        Order.ascending(ClassifierConstants.COL_ITEM_KPN_CODE), new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
             dataConsumer.accept(new BeeRowSet[] {result});
@@ -147,6 +150,14 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
                 }
               });
         }));
+  }
+
+  @Override
+  protected void print(String report) {
+    if (Objects.equals("PrintInvoice_ru", report)) {
+      report = "PrintInvoiceRU_ru";
+    }
+    super.print(report);
   }
 
   private String getFileName() {

@@ -43,6 +43,11 @@
     <String name="Unloading" precision="100" label="=unloading" />
     <String name="Issued" precision="100" label="=ordIssued" />
     <String name="DriverInfo" precision="100" label="=ordDriverInfo" />
+    <Numeric name="PalletsWeight" precision="10" scale="3" label="=palletsWeight" />
+    <Numeric name="PalletsNumber" precision="10" scale="3" label="=palletsNumber" />
+    <Numeric name="Polyethylene" precision="10" scale="3" label="=polyethyleneWeight" />
+    <Numeric name="CardboardBoxes" precision="10" scale="3" label="=cardboardBoxesWeight" />
+    
   </Fields>
 
   <Constraints>

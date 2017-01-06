@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-10-11T16:53:55 -->
+<!-- 2017-01-04T15:32:22 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -14,9 +14,11 @@
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<import value="java.util.Objects"/>
 	<import value="com.butent.bee.shared.i18n.Localized"/>
+	<import value="com.butent.bee.server.Invocation"/>
 	<import value="com.butent.bee.server.i18n.Localizations"/>
 	<import value="com.butent.bee.shared.data.BeeRowSet"/>
 	<import value="com.butent.bee.shared.utils.BeeUtils"/>
+	<import value="com.butent.bee.server.data.QueryServiceBean"/>
 	<import value="com.butent.bee.server.RsDataSource"/>
 	<import value="com.butent.bee.shared.time.JustDate"/>
 	<style name="Font" isDefault="true" isBlankWhenNull="true" fontName="DejaVu Sans"/>
@@ -49,6 +51,7 @@
 		<parameter name="SaleItemsDataSet" class="com.butent.bee.server.RsDataSource"/>
 		<parameter name="d" class="com.butent.bee.shared.i18n.Dictionary"/>
 		<parameter name="currency" class="java.lang.String"/>
+		<parameter name="QSB" class="com.butent.bee.server.data.QueryServiceBean"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -138,6 +141,9 @@
 	<parameter name="SupplierFax" class="java.lang.String"/>
 	<parameter name="Amount" class="java.lang.String"/>
 	<parameter name="OrderNo" class="java.lang.String"/>
+	<parameter name="QS" class="com.butent.bee.server.data.QueryServiceBean">
+		<defaultValueExpression><![CDATA[Invocation.locateRemoteBean(QueryServiceBean.class)]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -433,7 +439,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="SaleItems" uuid="e7ca3a9a-5ed3-46b3-8117-4f0254e78937">
+					<datasetRun subDataset="SaleItems" uuid="adc76254-9a8f-40f8-8f6b-0675880300f8">
 						<datasetParameter name="d">
 							<datasetParameterExpression><![CDATA[$V{d}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -445,6 +451,9 @@
 						</datasetParameter>
 						<datasetParameter name="REPORT_RESOURCE_BUNDLE">
 							<datasetParameterExpression><![CDATA[$P{REPORT_RESOURCE_BUNDLE}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="QSB">
+							<datasetParameterExpression><![CDATA[$P{QS}]]></datasetParameterExpression>
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[$P{SaleItemsDataSet}]]></dataSourceExpression>
 						<returnValue fromVariable="totalAmount" toVariable="totalAmount"/>
@@ -496,7 +505,7 @@
 								<textElement verticalAlignment="Middle">
 									<font size="6"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$F{ItemName}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[BeeUtils.nvl($P{QSB}.getLocalizedValue("Items", "Name", $F{ItemName}, $P{REPORT_LOCALE}), $F{ItemName})]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

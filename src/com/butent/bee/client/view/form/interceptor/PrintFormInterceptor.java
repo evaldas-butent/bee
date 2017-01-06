@@ -182,12 +182,16 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     Consumer<String> consumer = report -> {
       if (BeeUtils.isEmpty(Localized.extractLanguage(report))) {
         List<String> locales = new ArrayList<>();
+        List<SupportedLocale> supLocales = new ArrayList<>();
 
         for (SupportedLocale locale : SupportedLocale.values()) {
-          locales.add(BeeUtils.notEmpty(locale.getCaption(), locale.getLanguage()));
+          if (!BeeUtils.inList(locale.name(), "FI", "DE")) {
+            locales.add(BeeUtils.notEmpty(locale.getCaption(), locale.getLanguage()));
+            supLocales.add(locale);
+          }
         }
         Global.choice(Localized.dictionary().chooseLanguage(), null, locales, idx ->
-            print(Localized.setLanguage(report, SupportedLocale.values()[idx].getLanguage())));
+            print(Localized.setLanguage(report, supLocales.get(idx).getLanguage())));
       } else {
         print(report);
       }

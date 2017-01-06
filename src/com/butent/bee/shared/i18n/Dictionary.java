@@ -255,6 +255,8 @@ public interface Dictionary {
 
   default String branches() {return g("branches");}
 
+  default String brutto() {return g("brutto");}
+
   default String calAction() {return g("calAction");}
 
   default String calActionRegisterResult() {return g("calActionRegisterResult");}
@@ -3313,6 +3315,8 @@ public interface Dictionary {
   default String myEnvironment() {return g("myEnvironment");}
 
   default String name() {return g("name");}
+
+  default String netto() {return g("netto");}
 
   default String newAccount() {return g("newAccount");}
 
