@@ -42,6 +42,23 @@ public enum SupportedLocale implements HasCaption {
     }
   },
 
+  ET {
+    @Override
+    public String getCaption() {
+      return "Eesti";
+    }
+
+    @Override
+    public String getIconName() {
+      return "estonian";
+    }
+
+    @Override
+    public String getLanguage() {
+      return "et";
+    }
+  },
+
   RU {
     @Override
     public String getCaption() {
