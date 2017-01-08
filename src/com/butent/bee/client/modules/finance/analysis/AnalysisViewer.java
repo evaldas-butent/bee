@@ -150,6 +150,7 @@ class AnalysisViewer extends Flow implements HasCaption {
     logger.debug("c cell types", columnCellTypes);
     logger.debug("c span", columnSpan);
     logger.debug("c split span", columnSplitSpan);
+    logger.addSeparator();
 
     for (BeeRow row : results.getRows()) {
       if (results.isRowVisible(row)) {
@@ -188,6 +189,7 @@ class AnalysisViewer extends Flow implements HasCaption {
     logger.debug("r cell types", rowCellTypes);
     logger.debug("r span", rowSpan);
     logger.debug("r split span", rowSplitSpan);
+    logger.addSeparator();
 
     for (AnalysisValue value : results.getValues()) {
       long rowId = value.getRowId();
@@ -207,7 +209,8 @@ class AnalysisViewer extends Flow implements HasCaption {
 
     logger.debug("values", values.size(),
         values.values().stream().mapToInt(List::size).sum());
-    logger.debug(values);
+    values.values().forEach(list -> list.forEach(value -> logger.debug(value)));
+    logger.addSeparator();
   }
 
   private static int getSpan(List<AnalysisSplitType> splitTypes,
