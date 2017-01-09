@@ -8,6 +8,8 @@ import com.butent.bee.shared.time.YearQuarter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Objects;
+
 public final class AnalysisSplitValue implements BeeSerializable {
 
   public static AnalysisSplitValue absent() {
@@ -145,6 +147,26 @@ public final class AnalysisSplitValue implements BeeSerializable {
         }
       }
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof AnalysisSplitValue)) {
+      return false;
+    }
+
+    AnalysisSplitValue that = (AnalysisSplitValue) o;
+    return Objects.equals(value, that.value) && Objects.equals(id, that.id);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = value != null ? value.hashCode() : 0;
+    result = 31 * result + (id != null ? id.hashCode() : 0);
+    return result;
   }
 
   @Override

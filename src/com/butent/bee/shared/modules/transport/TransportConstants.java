@@ -997,6 +997,7 @@ public final class TransportConstants {
   public static final String ALS_UNLOADING_COUNTRY_CODE = "UnloadingCountryCode";
 
   public static final String ALS_PAYER_NAME = "PayerName";
+  public static final String ALS_PAYER_TYPE_NAME = "PayerTypeName";
 
   public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";

@@ -5388,6 +5388,8 @@ public interface Dictionary {
 
   default String trAgreeWithConditions() {return g("trAgreeWithConditions");}
 
+  default String trAgreeWithTermsAndConditions() {return g("trAgreeWithTermsAndConditions");}
+
   default String trApproveContract() {return g("trApproveContract");}
 
   default String trArrivalCity() {return g("trArrivalCity");}
