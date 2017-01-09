@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -23,6 +24,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowInsertCallback;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.ChildGrid;
@@ -37,6 +39,8 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -55,6 +59,8 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -273,10 +279,48 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         if (BeeUtils.isEmpty(terms)) {
           listener.fireEvent(event);
         } else {
-          Global.confirm(Localized.dictionary().trRequestCommonTerms(), null,
-              Arrays.asList(terms, BeeConst.STRING_EMPTY),
-              Localized.dictionary().trAgreeWithConditions(), Localized.dictionary().no(),
-              () -> listener.fireEvent(event));
+          FlowPanel container = new FlowPanel();
+          StyleUtils.setHeight(container, 160);
+          StyleUtils.setWidth(container, 300);
+
+          HtmlTable table = new HtmlTable();
+
+          FlowPanel fp = new FlowPanel();
+          StyleUtils.setHeight(fp, 100);
+          StyleUtils.setWidth(fp, 300);
+
+          Label commonTerms = new Label(Localized.dictionary().trAgreeWithTermsAndConditions());
+          table.setWidget(0, 0, commonTerms, StyleUtils.className(FontWeight.BOLD));
+          table.getCellFormatter().setColSpan(1, 0, 2);
+          table.setWidget(1, 0, fp);
+
+          FaLabel question = new FaLabel(FontAwesome.QUESTION_CIRCLE);
+          question.addClickHandler(clickEvent -> {
+            fp.clear();
+            fp.add(new Label(terms));
+            StyleUtils.setHeight(fp, 400);
+            StyleUtils.setHeight(container, 460);
+            StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.VERTICAL, Overflow.AUTO);
+            StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.HORIZONTAL, Overflow.AUTO);
+          });
+          table.setWidget(0, 1, question);
+
+          container.add(table);
+
+          Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), container);
+
+          Button no = new Button(Localized.dictionary().no().toUpperCase());
+          Button yes = new Button(Localized.dictionary().trAgreeWithConditions().toUpperCase());
+          StyleUtils.setColor(yes, "white");
+          StyleUtils.setBackgroundColor(yes, "#6bae45");
+
+          table.setWidget(2, 0, yes);
+          table.setWidget(2, 1, no);
+          no.addClickHandler(clickEvent -> UiHelper.closeDialog(container));
+          yes.addClickHandler(clickEvent -> {
+            listener.fireEvent(event);
+            UiHelper.closeDialog(container);
+          });
         }
       });
       event.consume();
