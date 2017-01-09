@@ -5388,6 +5388,8 @@ public interface Dictionary {
 
   default String trAgreeWithConditions() {return g("trAgreeWithConditions");}
 
+  default String trApproveContract() {return g("trApproveContract");}
+
   default String trArrivalCity() {return g("trArrivalCity");}
 
   default String trArrivalCountry() {return g("trArrivalCountry");}
@@ -5882,6 +5884,8 @@ public interface Dictionary {
   default String trRegistrationVatPayer() {return g("trRegistrationVatPayer");}
 
   default String trRegistrations() {return g("trRegistrations");}
+
+  default String trRejectContract() {return g("trRejectContract");}
 
   default String trRepairsHistory() {return g("trRepairsHistory");}
 
