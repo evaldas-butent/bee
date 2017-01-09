@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -118,22 +119,39 @@ public final class TradeActKeeper {
     if (header != null) {
       FaLabel mail = new FaLabel(FontAwesome.ENVELOPE_O);
 
-      mail.addClickHandler((clickEvent) -> {
+      mail.addClickHandler((ClickEvent clickEvent) -> {
         Long id = form.getActiveRowId();
 
         ReportUtils.getPdf(form.getPrintElement().getString(), (fileInfo) -> {
-          String invoice = BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
-              form.getStringValue(COL_TRADE_INVOICE_NO));
+          String invoice = BeeUtils.same(form.getViewName(), VIEW_SALES)
+              ? BeeUtils.join("", form.getStringValue(COL_TRADE_INVOICE_PREFIX),
+              form.getStringValue(COL_TRADE_INVOICE_NO))
+              : BeeUtils.join("_", form.getCaption(), form.getActiveRowId());
 
           if (!BeeUtils.isEmpty(invoice)) {
             fileInfo.setCaption(invoice + ".pdf");
           }
-          Queries.getValue(VIEW_COMPANIES, BeeUtils.unbox(form.getLongValue(COL_CUSTOMER)),
+
+          Long companyId = form.getLongValue(COL_COMPANY);
+
+          if (BeeUtils.same(form.getViewName(), VIEW_SALES)) {
+            companyId = form.getLongValue(COL_CUSTOMER);
+          }
+
+          String content = BeeUtils.same(form.getViewName(), VIEW_SALES)
+              ? Localized.dictionary().trdInvoice()
+              : Localized.dictionary().tradeAct();
+
+          Queries.getValue(VIEW_COMPANIES, BeeUtils.unbox(companyId),
               COL_EMAIL, new RpcCallback<String>() {
                 @Override
                 public void onSuccess(String email) {
-                  NewMailMessage.create(email, invoice, Localized.dictionary().trdInvoice(),
+                  NewMailMessage.create(email, invoice, content,
                       Collections.singleton(fileInfo), (messageId, saveMode) -> {
+                        if (!BeeUtils.same(form.getViewName(), VIEW_SALES)) {
+                          return;
+                        }
+
                         DataInfo info = Data.getDataInfo(VIEW_SALE_FILES);
 
                         Queries.insert(info.getViewName(),
@@ -159,7 +177,6 @@ public final class TradeActKeeper {
                                 super.onSuccess(result);
                               }
                             });
-
                       });
                 }
               });

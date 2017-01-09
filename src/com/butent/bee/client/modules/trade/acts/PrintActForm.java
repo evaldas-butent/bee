@@ -97,6 +97,12 @@ public class PrintActForm extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onLoad(FormView form) {
+    TradeActKeeper.ensureSendMailPrintableForm(form);
+    super.onLoad(form);
+  }
+
+  @Override
   public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
     TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
     if (!DataUtils.isId(row.getLong(getDataIndex(COL_TA_PARENT)))
