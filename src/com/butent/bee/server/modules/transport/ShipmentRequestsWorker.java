@@ -81,6 +81,7 @@ public class ShipmentRequestsWorker {
   @Trusted
   public String confirm(@PathParam("id") Long requestId, @QueryParam("choice") String choice) {
     FertileElement el = null;
+    FertileElement customEl = null;
 
     SimpleRowSet.SimpleRow row = qs.getRow(new SqlSelect()
         .addField(TBL_SHIPMENT_REQUESTS, sys.getVersionName(TBL_SHIPMENT_REQUESTS), "version")
@@ -109,6 +110,7 @@ public class ShipmentRequestsWorker {
                 VIEW_SHIPMENT_REQUESTS);
 
             el = div().text(status.getCaption());
+            customEl = CustomShipmentRequestsWorker.renderStatusDiv(status.getCaption());
             break;
           default:
             break;
@@ -116,6 +118,7 @@ public class ShipmentRequestsWorker {
       }
       if (Objects.isNull(el)) {
         el = div().text(Localized.dictionary().crmTaskConfirm());
+        customEl = CustomShipmentRequestsWorker.renderButtonsDiv();
 
         for (ShipmentRequestStatus s : Arrays.asList(ShipmentRequestStatus.APPROVED,
             ShipmentRequestStatus.REJECTED)) {
@@ -131,12 +134,15 @@ public class ShipmentRequestsWorker {
       el = div().text(BeeUtils.join(":", Localized.dictionary().status(),
           EnumUtils.getLocalizedCaption(ShipmentRequestStatus.class, currentStatus,
               Localized.dictionary())));
+      customEl = CustomShipmentRequestsWorker.renderStatusDiv(BeeUtils.join(":",
+          Localized.dictionary().status(),EnumUtils.getLocalizedCaption(ShipmentRequestStatus.class,
+              currentStatus, Localized.dictionary())));
     }
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8());
     doc.getBody().append(el);
 
-    return doc.buildLines();
+    return CustomShipmentRequestsWorker.buildDocument(customEl);
   }
 
   @POST
