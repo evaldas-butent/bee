@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-01-06T09:09:33 -->
+<!-- 2017-01-09T10:36:46 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -678,7 +678,7 @@
 					<jr:column width="51" uuid="52a25dab-ae47-4fce-af0d-249759a7f47c">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column9"/>
 						<jr:tableFooter height="15" rowSpan="1">
-							<textField pattern="">
+							<textField pattern="0.00">
 								<reportElement style="TableCell" x="0" y="0" width="51" height="15" uuid="d7179711-f7b5-44d3-bc2a-06e8051912e9"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font fontName="DejaVu Sans" size="6" isBold="true"/>
@@ -719,7 +719,7 @@
 					<jr:column width="49" uuid="ecf02970-2f91-46cd-90da-a003203006ff">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column10"/>
 						<jr:tableFooter height="15" rowSpan="1">
-							<textField pattern="">
+							<textField pattern="0.00">
 								<reportElement style="TableCell" x="0" y="0" width="49" height="15" uuid="e87e74ca-2035-4961-835a-9931b67821f7"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font fontName="DejaVu Sans" size="6" isBold="true"/>
@@ -819,7 +819,7 @@
 			</frame>
 			<frame>
 				<reportElement positionType="Float" x="30" y="130" width="200" height="30" uuid="77be8a6f-f276-4948-abaa-7f1b2184e453"/>
-				<textField isStretchWithOverflow="true" evaluationTime="Band">
+				<textField isStretchWithOverflow="true" evaluationTime="Band" pattern="">
 					<reportElement positionType="Float" x="0" y="0" width="200" height="10" isRemoveLineWhenBlank="true" uuid="a436d6de-fda2-45df-a5b7-ff809a65d1be">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
