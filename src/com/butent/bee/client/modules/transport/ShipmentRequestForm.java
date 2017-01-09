@@ -374,7 +374,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   @Override
   protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
-    SelfServiceUtils.getCargos(Filter.compareId(getLongValue(COL_CARGO)),
+    TransportUtils.getCargos(Filter.compareId(getLongValue(COL_CARGO)),
         cargoInfo -> dataConsumer.accept(new BeeRowSet[] {cargoInfo}));
   }
 
