@@ -17,7 +17,6 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
-import com.butent.bee.client.modules.trade.InvoiceForm;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -44,12 +43,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class CargoInvoiceForm extends InvoiceForm implements ClickHandler {
+public class CargoInvoiceForm extends CustomCargoInvoiceForm implements ClickHandler {
 
   private Button confirmAction;
 
   public CargoInvoiceForm() {
-    super(null);
+    super();
   }
 
   @Override

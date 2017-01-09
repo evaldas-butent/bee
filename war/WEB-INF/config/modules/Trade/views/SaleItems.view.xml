@@ -8,6 +8,8 @@
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
+      <SimpleColumn name="Name2" alias="ItemName2" />
+      <SimpleColumn name="Name3" alias="ItemName3" />
 
       <SimpleJoin joinType="INNER" name="Unit">
         <SimpleColumn name="Name" alias="UnitName" />
