@@ -365,7 +365,6 @@ public final class TransportConstants {
   public static final String PRM_INVOICE_PREFIX = "DefaultInvoicePrefix";
   public static final String PRM_CARGO_TYPE = "CargoType";
   public static final String PRM_CARGO_SERVICE = "CargoService";
-  public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
   public static final String PRM_SYNC_ERP_VEHICLES = "ERPSyncVehiclesOnHours";
   public static final String PRM_SYNC_ERP_EMPLOYEES = "ERPSyncEmployeesOnHours";
   public static final String PRM_EXCLUDE_VAT = "ExcludeVAT";
@@ -1012,6 +1011,7 @@ public final class TransportConstants {
   public static final String ALS_UNLOADING_COUNTRY_CODE = "UnloadingCountryCode";
 
   public static final String ALS_PAYER_NAME = "PayerName";
+  public static final String ALS_PAYER_TYPE_NAME = "PayerTypeName";
 
   public static final String ALS_REQUEST_CUSTOMER_FIRST_NAME = "CustomerFirstName";
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";

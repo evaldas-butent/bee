@@ -562,6 +562,10 @@ public class MailAccount {
     return accountInfo.isInboxFolder(folder.getId());
   }
 
+  boolean isRoot(MailFolder folder) {
+    return folder == getRootFolder();
+  }
+
   boolean isSystemFolder(MailFolder folder) {
     return accountInfo.isSystemFolder(folder.getId());
   }

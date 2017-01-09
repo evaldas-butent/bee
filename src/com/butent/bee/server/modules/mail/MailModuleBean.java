@@ -11,7 +11,6 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.server.Invocation;
-import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.AsynchronousRunnable;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
@@ -195,7 +194,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       try {
         store = account.connectToStore();
 
-        if (localFolder == account.getRootFolder()) {
+        if (account.isRoot(localFolder)) {
           f += syncFolders(account, store.getStore());
 
           Holder<Consumer<MailFolder>> holder = Holder.absent();
@@ -214,6 +213,13 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             account.getStoreLogin(), localFolder.getName());
 
         if (e instanceof ConnectionFailureException) {
+          if (silent && (account.isRoot(localFolder) || account.isInbox(localFolder))
+              && (System.currentTimeMillis() - BeeUtils.unbox(qs.getLongById(TBL_ACCOUNTS,
+              account.getAccountId(), COL_ACCOUNT_LAST_CONNECT))) > TimeUtils.MILLIS_PER_DAY) {
+
+            mail.updateAccount(account.getAccountId(), COL_ACCOUNT_SYNC_MODE,
+                SyncMode.SYNC_NOTHING);
+          }
           logger.warning(error, e.getMessage());
           connectError = true;
         } else {
@@ -232,9 +238,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         account.disconnectFromStore(store);
       }
       if (!connectError && account.isInbox(localFolder)) {
-        Invocation.locateRemoteBean(ProxyBean.class).update(new SqlUpdate(TBL_ACCOUNTS)
-            .addConstant(COL_ACCOUNT_LAST_CONNECT, System.currentTimeMillis())
-            .setWhere(sys.idEquals(TBL_ACCOUNTS, account.getAccountId())));
+        mail.updateAccount(account.getAccountId(), COL_ACCOUNT_LAST_CONNECT,
+            System.currentTimeMillis());
       }
       if (!BeeUtils.isEmpty(error) || c > 0 || f > 0) {
         MailMessage mailMessage = new MailMessage(localFolder.getId());
@@ -343,7 +348,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           String name = reqInfo.getParameter(COL_FOLDER_NAME);
           boolean ok = account.createRemoteFolder(parent, name);
 
-          if (!ok && Objects.equals(parent, account.getRootFolder())) {
+          if (!ok && account.isRoot(parent)) {
             parent = account.getInboxFolder();
             ok = account.createRemoteFolder(parent, name);
           }
@@ -1457,10 +1462,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                 SqlUtils.or(SqlUtils.and(SqlUtils.isNull(blockFrom), SqlUtils.isNull(blockUntil)),
                     SqlUtils.and(SqlUtils.notNull(blockFrom), SqlUtils.more(blockFrom, now)),
                     SqlUtils.and(SqlUtils.notNull(blockUntil), SqlUtils.less(blockUntil, now)))))
-        .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE),
-            SqlUtils.notEqual(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE, SyncMode.SYNC_NOTHING)),
-            SqlUtils.less(SqlUtils.minus(now, BeeUtils.nvl(SqlUtils.field(TBL_ACCOUNTS,
-                COL_ACCOUNT_LAST_CONNECT), 0)), TimeUtils.MILLIS_PER_DAY))));
+        .setWhere(SqlUtils.or(SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE),
+            SqlUtils.notEqual(TBL_ACCOUNTS, COL_ACCOUNT_SYNC_MODE, SyncMode.SYNC_NOTHING))));
 
     for (SimpleRow row : rs) {
       MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));

@@ -154,6 +154,10 @@ public enum TurnoverOrBalance implements HasLocalizedCaption {
 
   public static final TurnoverOrBalance DEFAULT = TURNOVER;
 
+  public static boolean isBalance(TurnoverOrBalance turnoverOrBalance) {
+    return turnoverOrBalance == OPENING_BALANCE || turnoverOrBalance == CLOSING_BALANCE;
+  }
+
   public Filter getPlusFilter(String debitColumn, String creditColumn,
       String accountCode, NormalBalance normalBalance) {
 

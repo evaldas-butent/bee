@@ -145,4 +145,9 @@ public class AnalysisLabel {
   public boolean isPeriod() {
     return SOURCE_PERIOD.equals(source);
   }
+
+  @Override
+  public String toString() {
+    return BeeUtils.joinWords(source, text, background, foreground);
+  }
 }

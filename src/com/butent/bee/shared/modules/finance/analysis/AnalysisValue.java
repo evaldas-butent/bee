@@ -1,11 +1,14 @@
 package com.butent.bee.shared.modules.finance.analysis;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
-import java.util.Objects;
+import java.util.EnumMap;
+import java.util.Map;
 
 public final class AnalysisValue implements BeeSerializable {
 
@@ -45,22 +48,16 @@ public final class AnalysisValue implements BeeSerializable {
   }
 
   private enum Serial {
-    COLUMN_ID, ROW_ID,
-    COLUMN_PARENT_VALUE_INDEX, COLUMN_SPLIT_TYPE_INDEX, COLUMN_SPLIT_VALUE_INDEX,
-    ROW_PARENT_VALUE_INDEX, ROW_SPLIT_TYPE_INDEX, ROW_SPLIT_VALUE_INDEX,
-    ACTUAL_VALUE, BUDGET_VALUE
+    COLUMN_ID, ROW_ID, COLUMN_SPLIT, ROW_SPLIT, ACTUAL_VALUE, BUDGET_VALUE
   }
 
   private long columnId;
   private long rowId;
 
-  private Integer columnParentValueIndex;
-  private Integer columnSplitTypeIndex;
-  private Integer columnSplitValueIndex;
-
-  private Integer rowParentValueIndex;
-  private Integer rowSplitTypeIndex;
-  private Integer rowSplitValueIndex;
+  private final Map<AnalysisSplitType, AnalysisSplitValue> columnSplit =
+      new EnumMap<>(AnalysisSplitType.class);
+  private final Map<AnalysisSplitType, AnalysisSplitValue> rowSplit =
+      new EnumMap<>(AnalysisSplitType.class);
 
   private String actualValue;
   private String budgetValue;
@@ -97,28 +94,12 @@ public final class AnalysisValue implements BeeSerializable {
     return rowId;
   }
 
-  public Integer getColumnParentValueIndex() {
-    return columnParentValueIndex;
+  public Map<AnalysisSplitType, AnalysisSplitValue> getColumnSplit() {
+    return columnSplit;
   }
 
-  public Integer getColumnSplitTypeIndex() {
-    return columnSplitTypeIndex;
-  }
-
-  public Integer getColumnSplitValueIndex() {
-    return columnSplitValueIndex;
-  }
-
-  public Integer getRowParentValueIndex() {
-    return rowParentValueIndex;
-  }
-
-  public Integer getRowSplitTypeIndex() {
-    return rowSplitTypeIndex;
-  }
-
-  public Integer getRowSplitValueIndex() {
-    return rowSplitValueIndex;
+  public Map<AnalysisSplitType, AnalysisSplitValue> getRowSplit() {
+    return rowSplit;
   }
 
   public String getActualValue() {
@@ -137,28 +118,36 @@ public final class AnalysisValue implements BeeSerializable {
     return BeeUtils.toDouble(getBudgetValue());
   }
 
+  public void putColumnSplit(Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
+      AnalysisSplitType splitType, AnalysisSplitValue splitValue) {
+
+    if (!BeeUtils.isEmpty(parentSplit)) {
+      columnSplit.putAll(parentSplit);
+    }
+
+    if (splitType != null && splitValue != null) {
+      columnSplit.put(splitType, splitValue);
+    }
+  }
+
+  public void putRowSplit(Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
+      AnalysisSplitType splitType, AnalysisSplitValue splitValue) {
+
+    if (!BeeUtils.isEmpty(parentSplit)) {
+      rowSplit.putAll(parentSplit);
+    }
+
+    if (splitType != null && splitValue != null) {
+      rowSplit.put(splitType, splitValue);
+    }
+  }
+
   private void setColumnId(long columnId) {
     this.columnId = columnId;
   }
 
   private void setRowId(long rowId) {
     this.rowId = rowId;
-  }
-
-  public void setColumnParentValueIndex(Integer columnParentValueIndex) {
-    this.columnParentValueIndex = columnParentValueIndex;
-  }
-
-  public void setColumnSplitTypeIndex(Integer columnSplitTypeIndex) {
-    this.columnSplitTypeIndex = columnSplitTypeIndex;
-  }
-
-  public void setColumnSplitValueIndex(Integer columnSplitValueIndex) {
-    this.columnSplitValueIndex = columnSplitValueIndex;
-  }
-
-  public void setRowParentValueIndex(Integer rowParentValueIndex) {
-    this.rowParentValueIndex = rowParentValueIndex;
   }
 
   private void setActualValue(String actualValue) {
@@ -175,14 +164,6 @@ public final class AnalysisValue implements BeeSerializable {
 
   private void setBudgetValue(double value) {
     setBudgetValue(format(value));
-  }
-
-  public void setRowSplitTypeIndex(Integer rowSplitTypeIndex) {
-    this.rowSplitTypeIndex = rowSplitTypeIndex;
-  }
-
-  public void setRowSplitValueIndex(Integer rowSplitValueIndex) {
-    this.rowSplitValueIndex = rowSplitValueIndex;
   }
 
   @Override
@@ -202,24 +183,17 @@ public final class AnalysisValue implements BeeSerializable {
             setRowId(BeeUtils.toLong(v));
             break;
 
-          case COLUMN_PARENT_VALUE_INDEX:
-            setColumnParentValueIndex(BeeUtils.toIntOrNull(v));
+          case COLUMN_SPLIT:
+            if (!columnSplit.isEmpty()) {
+              columnSplit.clear();
+            }
+            columnSplit.putAll(deserializeSplit(v));
             break;
-          case COLUMN_SPLIT_TYPE_INDEX:
-            setColumnSplitTypeIndex(BeeUtils.toIntOrNull(v));
-            break;
-          case COLUMN_SPLIT_VALUE_INDEX:
-            setColumnSplitValueIndex(BeeUtils.toIntOrNull(v));
-            break;
-
-          case ROW_PARENT_VALUE_INDEX:
-            setRowParentValueIndex(BeeUtils.toIntOrNull(v));
-            break;
-          case ROW_SPLIT_TYPE_INDEX:
-            setRowSplitTypeIndex(BeeUtils.toIntOrNull(v));
-            break;
-          case ROW_SPLIT_VALUE_INDEX:
-            setRowSplitValueIndex(BeeUtils.toIntOrNull(v));
+          case ROW_SPLIT:
+            if (!rowSplit.isEmpty()) {
+              rowSplit.clear();
+            }
+            rowSplit.putAll(deserializeSplit(v));
             break;
 
           case ACTUAL_VALUE:
@@ -231,6 +205,19 @@ public final class AnalysisValue implements BeeSerializable {
         }
       }
     }
+  }
+
+  private static Map<AnalysisSplitType, AnalysisSplitValue> deserializeSplit(String s) {
+    Map<AnalysisSplitType, AnalysisSplitValue> split = new EnumMap<>(AnalysisSplitType.class);
+
+    Codec.deserializeHashMap(s).forEach((st, sv) -> {
+      AnalysisSplitType type = EnumUtils.getEnumByName(AnalysisSplitType.class, st);
+      if (type != null) {
+        split.put(type, AnalysisSplitValue.restore(sv));
+      }
+    });
+
+    return split;
   }
 
   @Override
@@ -247,24 +234,11 @@ public final class AnalysisValue implements BeeSerializable {
           arr[i++] = getRowId();
           break;
 
-        case COLUMN_PARENT_VALUE_INDEX:
-          arr[i++] = getColumnParentValueIndex();
+        case COLUMN_SPLIT:
+          arr[i++] = getColumnSplit();
           break;
-        case COLUMN_SPLIT_TYPE_INDEX:
-          arr[i++] = getColumnSplitTypeIndex();
-          break;
-        case COLUMN_SPLIT_VALUE_INDEX:
-          arr[i++] = getColumnSplitValueIndex();
-          break;
-
-        case ROW_PARENT_VALUE_INDEX:
-          arr[i++] = getRowParentValueIndex();
-          break;
-        case ROW_SPLIT_TYPE_INDEX:
-          arr[i++] = getRowSplitTypeIndex();
-          break;
-        case ROW_SPLIT_VALUE_INDEX:
-          arr[i++] = getRowSplitValueIndex();
+        case ROW_SPLIT:
+          arr[i++] = getRowSplit();
           break;
 
         case ACTUAL_VALUE:
@@ -283,11 +257,16 @@ public final class AnalysisValue implements BeeSerializable {
     return other != null
         && columnId == other.columnId
         && rowId == other.rowId
-        && Objects.equals(columnParentValueIndex, other.columnParentValueIndex)
-        && Objects.equals(columnSplitTypeIndex, other.columnSplitTypeIndex)
-        && Objects.equals(columnSplitValueIndex, other.columnSplitValueIndex)
-        && Objects.equals(rowParentValueIndex, other.rowParentValueIndex)
-        && Objects.equals(rowSplitTypeIndex, other.rowSplitTypeIndex)
-        && Objects.equals(rowSplitValueIndex, other.rowSplitValueIndex);
+        && columnSplit.equals(other.columnSplit)
+        && rowSplit.equals(other.rowSplit);
+  }
+
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions(
+        "cs", columnSplit.isEmpty() ? BeeConst.STRING_EMPTY : columnSplit.toString(),
+        "rs", rowSplit.isEmpty() ? BeeConst.STRING_EMPTY : rowSplit.toString(),
+        "a", actualValue,
+        "b", budgetValue);
   }
 }

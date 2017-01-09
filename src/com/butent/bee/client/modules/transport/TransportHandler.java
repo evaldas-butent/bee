@@ -177,13 +177,7 @@ public final class TransportHandler {
     }
   }
 
-  private static boolean bindExpensesToIncomes;
-
   private TransportHandler() {
-  }
-
-  public static boolean bindExpensesToIncomes() {
-    return bindExpensesToIncomes;
   }
 
   public static ParameterList createArgs(String method) {
@@ -271,15 +265,7 @@ public final class TransportHandler {
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
-    final Preloader assessmentConsumer = command ->
-        Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, prm -> {
-          bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
-          command.run();
-        });
-    FormFactory.registerPreloader(FORM_CARGO,
-        command -> OrderCargoForm.preload(() -> assessmentConsumer.accept(command)));
-    FormFactory.registerPreloader(FORM_ASSESSMENT, assessmentConsumer);
-    FormFactory.registerPreloader(FORM_ASSESSMENT_FORWARDER, assessmentConsumer);
+    FormFactory.registerPreloader(FORM_CARGO, OrderCargoForm::preload);
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_FORWARDER, new AssessmentForwarderForm());

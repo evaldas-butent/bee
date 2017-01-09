@@ -163,7 +163,8 @@ public class Totalizer {
   public Double getVat(IsRow row, Double base) {
     Double vat = null;
 
-    if (base != null && isTrue(COL_TRADE_DOCUMENT_VAT_MODE, row)) {
+    if (base != null && (!dependsOnSource(COL_TRADE_DOCUMENT_VAT_MODE)
+        || isTrue(COL_TRADE_DOCUMENT_VAT_MODE, row))) {
       vat = getNumber(COL_TRADE_VAT, row);
 
       if (vat != null && isTrue(COL_TRADE_VAT_PERC, row)) {

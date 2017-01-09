@@ -1,8 +1,6 @@
 package com.butent.bee.shared.modules.finance.analysis;
 
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.FinanceConstants;
@@ -158,29 +156,6 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
         return Dimensions.getRelationColumn(index);
       default:
         return null;
-    }
-  }
-
-  public Filter getFinFilter(AnalysisSplitValue splitValue, TurnoverOrBalance turnoverOrBalance) {
-    if (splitValue == null) {
-      return null;
-
-    } else if (kind == Kind.PERIOD) {
-      MonthRange range = getMonthRange(splitValue);
-
-      if (range == null) {
-        return null;
-      } else if (turnoverOrBalance == null) {
-        return AnalysisUtils.getFilter(getFinColumn(), range);
-      } else {
-        return turnoverOrBalance.getRangeFilter(getFinColumn(), range);
-      }
-
-    } else if (DataUtils.isId(splitValue.getId())) {
-      return Filter.equals(getFinColumn(), splitValue.getId());
-
-    } else {
-      return Filter.isNull(getFinColumn());
     }
   }
 
