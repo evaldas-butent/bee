@@ -160,8 +160,8 @@ public class AnalysisBean {
 
               String sourceColumn = getIndicatorSourceColumn(indicator);
 
-              Filter valueFilter = getActualValueFilter(indicator, turnoverOrBalance, range,
-                  parentFilter, sourceColumn, finView, userId);
+              Filter valueFilter = getActualValueFilter(indicator, parentFilter, sourceColumn,
+                  finView, userId);
 
               Filter plusFilter = accountFilters.getA();
               Filter minusFilter = accountFilters.getB();
@@ -226,7 +226,7 @@ public class AnalysisBean {
                   || AnalysisCellType.needsActual(rowCellTypes))) {
 
                 results.addValues(computeActualValues(column.getId(), row.getId(),
-                    valueFilter, plusFilter, minusFilter, turnoverOrBalance,
+                    valueFilter, plusFilter, minusFilter, range, turnoverOrBalance,
                     columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
                     sourceColumn, finView, userId));
               }
@@ -424,7 +424,9 @@ public class AnalysisBean {
     CompoundFilter filter = Filter.and();
     filter.add(parentFilter, Filter.or(plusFilter, minusFilter));
 
-    if (type.isPeriod() && TurnoverOrBalance.isBalance(turnoverOrBalance)) {
+    if (!type.isPeriod() && TurnoverOrBalance.isBalance(turnoverOrBalance)) {
+      filter.add(TurnoverOrBalance.CLOSING_BALANCE.getRangeFilter(COL_FIN_DATE, range));
+    } else {
       filter.add(AnalysisUtils.getFilter(COL_FIN_DATE, range));
     }
 
@@ -649,6 +651,23 @@ public class AnalysisBean {
     return result;
   }
 
+  private static MonthRange getSplitRange(MonthRange parentRange,
+      AnalysisSplitType splitType, AnalysisSplitValue splitValue) {
+
+    if (parentRange == null || splitType == null || splitValue == null) {
+      return parentRange;
+
+    } else {
+      MonthRange splitRange = splitType.getMonthRange(splitValue);
+
+      if (splitRange == null) {
+        return parentRange;
+      } else {
+        return splitRange.intersection(parentRange);
+      }
+    }
+  }
+
   private Collection<String> getIndicatorAccountCodes(long indicator) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_CHART_OF_ACCOUNTS, COL_ACCOUNT_CODE)
@@ -732,7 +751,8 @@ public class AnalysisBean {
   }
 
   private Collection<AnalysisValue> computeActualValues(long columnId, long rowId,
-      Filter filter, Filter plusFilter, Filter minusFilter, TurnoverOrBalance turnoverOrBalance,
+      Filter filter, Filter plusFilter, Filter minusFilter,
+      MonthRange range, TurnoverOrBalance turnoverOrBalance,
       List<AnalysisSplitType> columnSplitTypes,
       Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues,
       List<AnalysisSplitType> rowSplitTypes,
@@ -746,24 +766,26 @@ public class AnalysisBean {
 
     if (hasColumnSplits && hasRowSplits) {
       values.addAll(computeActualSplitMatrix(columnId, rowId, getRootSplit(),
-          filter, plusFilter, minusFilter, turnoverOrBalance,
+          filter, plusFilter, minusFilter, range, turnoverOrBalance,
           columnSplitTypes, 0, columnSplitValues, 0,
           rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
 
     } else if (hasColumnSplits) {
       values.addAll(computeActualSplitVector(columnId, rowId, true, getRootSplit(),
-          filter, plusFilter, minusFilter, turnoverOrBalance,
+          filter, plusFilter, minusFilter, range, turnoverOrBalance,
           columnSplitTypes, 0, columnSplitValues, 0,
           sourceColumn, finView, userId));
 
     } else if (hasRowSplits) {
       values.addAll(computeActualSplitVector(columnId, rowId, false, getRootSplit(),
-          filter, plusFilter, minusFilter, turnoverOrBalance,
+          filter, plusFilter, minusFilter, range, turnoverOrBalance,
           rowSplitTypes, 0, rowSplitValues, 0,
           sourceColumn, finView, userId));
 
     } else {
-      Double value = getActualValue(filter, plusFilter, minusFilter, sourceColumn, finView, userId);
+      Double value = getActualValue(filter, plusFilter, minusFilter, range, turnoverOrBalance,
+          sourceColumn, finView, userId);
+
       if (BeeUtils.nonZero(value)) {
         values.add(AnalysisValue.actual(columnId, rowId, value));
       }
@@ -775,7 +797,7 @@ public class AnalysisBean {
   private Collection<AnalysisValue> computeActualSplitVector(long columnId, long rowId,
       boolean isColumn, Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
       Filter parentFilter, Filter plusFilter, Filter minusFilter,
-      TurnoverOrBalance turnoverOrBalance,
+      MonthRange range, TurnoverOrBalance turnoverOrBalance,
       List<AnalysisSplitType> splitTypes, int typeIndex,
       Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues, int valueIndex,
       String sourceColumn, BeeView finView, Long userId) {
@@ -788,21 +810,21 @@ public class AnalysisBean {
       List<AnalysisSplitValue> typeValues = splitValues.get(splitType);
       AnalysisSplitValue splitValue = typeValues.get(valueIndex);
 
-      Filter filter = Filter.and(parentFilter,
-          splitType.getFinFilter(splitValue, turnoverOrBalance));
+      Filter splitFilter = Filter.and(parentFilter, getActualSplitFilter(splitType, splitValue));
+      MonthRange splitRange = getSplitRange(range, splitType, splitValue);
 
       if (typeIndex < splitTypes.size() - 1) {
         Map<AnalysisSplitType, AnalysisSplitValue> split =
             buildSplit(parentSplit, splitType, splitValue);
 
         values.addAll(computeActualSplitVector(columnId, rowId, isColumn, split,
-            filter, plusFilter, minusFilter, turnoverOrBalance,
+            splitFilter, plusFilter, minusFilter, splitRange, turnoverOrBalance,
             splitTypes, typeIndex + 1, splitValues, 0,
             sourceColumn, finView, userId));
 
       } else {
-        Double value = getActualValue(filter, plusFilter, minusFilter, sourceColumn,
-            finView, userId);
+        Double value = getActualValue(splitFilter, plusFilter, minusFilter,
+            splitRange, turnoverOrBalance, sourceColumn, finView, userId);
 
         if (BeeUtils.nonZero(value)) {
           AnalysisValue av = AnalysisValue.actual(columnId, rowId, value);
@@ -819,7 +841,7 @@ public class AnalysisBean {
 
       if (valueIndex < typeValues.size() - 1) {
         values.addAll(computeActualSplitVector(columnId, rowId, isColumn, parentSplit,
-            parentFilter, plusFilter, minusFilter, turnoverOrBalance,
+            parentFilter, plusFilter, minusFilter, range, turnoverOrBalance,
             splitTypes, typeIndex, splitValues, valueIndex + 1,
             sourceColumn, finView, userId));
       }
@@ -831,7 +853,7 @@ public class AnalysisBean {
   private Collection<AnalysisValue> computeActualSplitMatrix(long columnId, long rowId,
       Map<AnalysisSplitType, AnalysisSplitValue> columnParentSplit,
       Filter parentFilter, Filter plusFilter, Filter minusFilter,
-      TurnoverOrBalance turnoverOrBalance,
+      MonthRange range, TurnoverOrBalance turnoverOrBalance,
       List<AnalysisSplitType> columnSplitTypes, int columnTypeIndex,
       Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues, int columnValueIndex,
       List<AnalysisSplitType> rowSplitTypes,
@@ -846,22 +868,23 @@ public class AnalysisBean {
       List<AnalysisSplitValue> columnTypeValues = columnSplitValues.get(columnSplitType);
       AnalysisSplitValue columnSplitValue = columnTypeValues.get(columnValueIndex);
 
-      Filter filter = Filter.and(parentFilter,
-          columnSplitType.getFinFilter(columnSplitValue, turnoverOrBalance));
+      Filter splitFilter = Filter.and(parentFilter,
+          getActualSplitFilter(columnSplitType, columnSplitValue));
+      MonthRange splitRange = getSplitRange(range, columnSplitType, columnSplitValue);
 
       if (columnTypeIndex < columnSplitTypes.size() - 1) {
         Map<AnalysisSplitType, AnalysisSplitValue> columnSplit =
             buildSplit(columnParentSplit, columnSplitType, columnSplitValue);
 
         values.addAll(computeActualSplitMatrix(columnId, rowId, columnSplit,
-            filter, plusFilter, minusFilter, turnoverOrBalance,
+            splitFilter, plusFilter, minusFilter, splitRange, turnoverOrBalance,
             columnSplitTypes, columnTypeIndex + 1, columnSplitValues, 0,
             rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
 
       } else {
         Collection<AnalysisValue> rowValues = computeActualSplitVector(columnId, rowId,
             false, getRootSplit(),
-            filter, plusFilter, minusFilter, turnoverOrBalance,
+            splitFilter, plusFilter, minusFilter, splitRange, turnoverOrBalance,
             rowSplitTypes, 0, rowSplitValues, 0,
             sourceColumn, finView, userId);
 
@@ -875,7 +898,7 @@ public class AnalysisBean {
 
       if (columnValueIndex < columnTypeValues.size() - 1) {
         values.addAll(computeActualSplitMatrix(columnId, rowId, columnParentSplit,
-            parentFilter, plusFilter, minusFilter, turnoverOrBalance,
+            parentFilter, plusFilter, minusFilter, range, turnoverOrBalance,
             columnSplitTypes, columnTypeIndex, columnSplitValues, columnValueIndex + 1,
             rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
       }
@@ -885,12 +908,16 @@ public class AnalysisBean {
   }
 
   private Double getActualValue(Filter filter, Filter plusFilter, Filter minusFilter,
+      MonthRange range, TurnoverOrBalance turnoverOrBalance,
       String sourceColumn, BeeView finView, Long userId) {
 
     Double value = null;
 
+    Filter rangeFilter = getActualRangeFilter(range, turnoverOrBalance);
+
     if (plusFilter != null) {
-      Double plus = getSum(finView, userId, Filter.and(filter, plusFilter), sourceColumn);
+      Double plus = getSum(finView, userId, Filter.and(filter, rangeFilter, plusFilter),
+          sourceColumn);
 
       if (BeeUtils.nonZero(plus)) {
         if (BeeUtils.isDouble(value)) {
@@ -902,7 +929,9 @@ public class AnalysisBean {
     }
 
     if (minusFilter != null) {
-      Double minus = getSum(finView, userId, Filter.and(filter, minusFilter), sourceColumn);
+      Double minus = getSum(finView, userId, Filter.and(filter, rangeFilter, minusFilter),
+          sourceColumn);
+
       if (BeeUtils.nonZero(minus)) {
         if (BeeUtils.isDouble(value)) {
           value -= minus;
@@ -936,17 +965,40 @@ public class AnalysisBean {
     return Pair.of(AnalysisUtils.normalize(plusFilter), AnalysisUtils.normalize(minusFilter));
   }
 
-  private Filter getActualValueFilter(long indicator, TurnoverOrBalance turnoverOrBalance,
-      MonthRange range, Filter parentFilter, String sourceColumn, BeeView finView, Long userId) {
+  private Filter getActualValueFilter(long indicator, Filter parentFilter,
+      String sourceColumn, BeeView finView, Long userId) {
 
     Filter indicatorFilter = getIndicatorFilter(indicator, finView, userId);
 
-    Filter rangeFilter = (range == null)
-        ? null : turnoverOrBalance.getRangeFilter(COL_FIN_DATE, range);
-
     Filter sourceFilter = Filter.nonZero(sourceColumn);
 
-    return Filter.and(parentFilter, indicatorFilter, rangeFilter, sourceFilter);
+    return Filter.and(parentFilter, indicatorFilter, sourceFilter);
+  }
+
+  private static Filter getActualRangeFilter(MonthRange range,
+      TurnoverOrBalance turnoverOrBalance) {
+
+    if (range == null || turnoverOrBalance == null) {
+      return Filter.isFalse();
+    } else {
+      return turnoverOrBalance.getRangeFilter(COL_FIN_DATE, range);
+    }
+  }
+
+  private static Filter getActualSplitFilter(AnalysisSplitType splitType,
+      AnalysisSplitValue splitValue) {
+
+    if (splitType == null || splitValue == null || splitType.isPeriod()
+        || BeeUtils.isEmpty(splitType.getFinColumn())) {
+
+      return null;
+
+    } else if (DataUtils.isId(splitValue.getId())) {
+      return Filter.equals(splitType.getFinColumn(), splitValue.getId());
+
+    } else {
+      return Filter.isNull(splitType.getFinColumn());
+    }
   }
 
   private Double getSum(BeeView view, Long userId, Filter filter, String column) {
@@ -1143,7 +1195,7 @@ public class AnalysisBean {
 
       IsCondition splitCondition = SqlUtils.and(condition,
           getBudgetSplitCondition(source, splitType, splitValue));
-      MonthRange splitRange = getBudgetSplitRange(range, splitType, splitValue);
+      MonthRange splitRange = getSplitRange(range, splitType, splitValue);
 
       if (typeIndex < splitTypes.size() - 1) {
         Map<AnalysisSplitType, AnalysisSplitValue> split =
@@ -1198,7 +1250,7 @@ public class AnalysisBean {
 
       IsCondition splitCondition = SqlUtils.and(condition,
           getBudgetSplitCondition(source, columnSplitType, columnSplitValue));
-      MonthRange splitRange = getBudgetSplitRange(range, columnSplitType, columnSplitValue);
+      MonthRange splitRange = getSplitRange(range, columnSplitType, columnSplitValue);
 
       if (columnTypeIndex < columnSplitTypes.size() - 1) {
         Map<AnalysisSplitType, AnalysisSplitValue> columnSplit =
@@ -1245,23 +1297,6 @@ public class AnalysisBean {
 
     } else {
       return SqlUtils.isNull(source, splitType.getBudgetColumn());
-    }
-  }
-
-  private static MonthRange getBudgetSplitRange(MonthRange parentRange,
-      AnalysisSplitType splitType, AnalysisSplitValue splitValue) {
-
-    if (parentRange == null || splitType == null || splitValue == null) {
-      return parentRange;
-
-    } else {
-      MonthRange splitRange = splitType.getMonthRange(splitValue);
-
-      if (splitRange == null) {
-        return parentRange;
-      } else {
-        return splitRange.intersection(parentRange);
-      }
     }
   }
 
