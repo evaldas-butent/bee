@@ -14,8 +14,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
@@ -62,8 +60,8 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       FormFactory.WidgetDescriptionCallback callback) {
-    if(widget instanceof ChildGrid && BeeUtils.equals(name, VIEW_ORDER_CARGO)){
-      ((ChildGrid)widget).setGridInterceptor(new AbstractGridInterceptor() {
+    if (widget instanceof ChildGrid && BeeUtils.equals(name, VIEW_ORDER_CARGO)) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
         @Override
         public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
           presenter.getGridView().ensureRelId(result -> {
@@ -267,7 +265,7 @@ class TransportationOrderForm extends PrintFormInterceptor implements ClickHandl
       copyAction.addClickHandler(clickEvent -> TransportUtils.copyOrderWithCargos(getActiveRowId(),
           Filter.equals(COL_ORDER, getActiveRowId()), (newOrderId, newCargos) -> {
             RowEditor.open(getViewName(), newOrderId, Opener.MODAL);
-        })
+          })
       );
     }
     return copyAction;
