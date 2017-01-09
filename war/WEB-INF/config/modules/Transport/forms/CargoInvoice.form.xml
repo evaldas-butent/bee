@@ -6,8 +6,9 @@
         name="CargoInvoice" caption="=trdInvoice" showRowId="true"
         width="800" height="600"
     >
-  <f:properties
-          reports="PrintCargoInvoiceLTEN, PrintCargoInvoiceLTRU, PrintCargoInvoiceShortLTEN, PrintCargoInvoiceShortLTRU" />
+  <f:properties jasperReports="long*CargoInvoice_en:=trdInvoice+ +LT/EN,
+      long*CargoInvoice_ru:=trdInvoice+ +LT/RU, short*CargoInvoice_en:=trBriefInvoice+ +LT/EN,
+      short*CargoInvoice_ru:=trBriefInvoice+ +LT/RU" />
 
   <FlowPanel class="flexBox-vertical">
     <br />

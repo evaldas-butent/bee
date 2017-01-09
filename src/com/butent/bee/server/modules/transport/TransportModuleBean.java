@@ -1776,11 +1776,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         Long cargo = row.getLong(COL_CARGO);
 
-        String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES), BeeUtils.join("-",
-            BeeUtils.joinWords(places.get(cargo, ALS_LOADING_COUNTRY_CODE),
-                BeeUtils.parenthesize(places.get(cargo, ALS_LOADING_POST_INDEX))),
-            BeeUtils.joinWords(places.get(cargo, ALS_UNLOADING_COUNTRY_CODE),
-                BeeUtils.parenthesize(places.get(cargo, ALS_UNLOADING_POST_INDEX)))));
+        String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
+            BeeUtils.join("-", places.get(cargo, ALS_LOADING_COUNTRY_CODE),
+                places.get(cargo,ALS_LOADING_POST_INDEX)),
+            BeeUtils.join("-", places.get(cargo, ALS_UNLOADING_COUNTRY_CODE),
+                places.get(cargo, ALS_UNLOADING_POST_INDEX)));
 
         if (!BeeUtils.isEmpty(value)) {
           valueMap.put(COL_ORDER_NOTES, value);
@@ -1789,7 +1789,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           DateTime time = TimeUtils.toDateTimeOrNull(places.get(cargo, fld));
 
           if (time != null && time.hasTimePart()) {
-            valueMap.put(fld, time.getDateTime().toString());
+            valueMap.put(fld, time.getDateTime().toCompactString());
           } else if (time != null) {
             valueMap.put(fld, time.getDate().toString());
           }
