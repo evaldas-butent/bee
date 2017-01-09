@@ -169,6 +169,11 @@
         <ChildGrid name="TradeActFiles" relColumn="TradeAct" />
       </page>
 
+      <page class="bee-ta-cta-tab">
+        <text>=tradeActsContinuous</text>
+        <ChildGrid name="TradeActs" gridName="TradeActs" relColumn="ContinuousAct"
+                   filter="Kind = 7"/>
+      </page>
       <page>
         <text>=notes</text>
         <FlowPanel class="flexBox-vertical">

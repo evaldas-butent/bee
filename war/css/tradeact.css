@@ -15,6 +15,13 @@
 .bee-ta-form-no-services .bee-grid-TradeActServices {
   display: none;
 }
+
+.bee-ta-form-no-cta .bee-ta-cta-tab,
+.bee-ta-form-no-cta .bee-grid-TradeActs {
+  display: none;
+}
+
+
 .bee-GridFormContainer-newRow .bee-ta-invoices-tab,
 .bee-NewRowContainer .bee-ta-invoices-tab,
 .bee-ta-form-no-invoices .bee-ta-invoices-tab {

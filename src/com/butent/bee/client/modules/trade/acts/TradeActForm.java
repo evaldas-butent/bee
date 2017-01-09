@@ -7,7 +7,6 @@ import com.google.gwt.xml.client.Element;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -70,6 +69,9 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
   private static final String STYLE_HAS_INVOICES = STYLE_PREFIX + "has-invoices";
   private static final String STYLE_NO_INVOICES = STYLE_PREFIX + "no-invoices";
+
+  private static final String STYLE_HAS_CT_ACTS = STYLE_PREFIX + "has-cta";
+  private static final String STYLE_NO_CT_ACTS = STYLE_PREFIX + "no-cta";
 
   private final Collection<HandlerRegistration> dataHandlerRegistry = new ArrayList<>();
 
@@ -598,6 +600,15 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       form.setStyleName(STYLE_HAS_INVOICES, hasInvoices);
       form.setStyleName(STYLE_NO_INVOICES, !hasInvoices);
 
+      boolean isCta = kind == TradeActKind.CONTINUOUS;
+      form.setStyleName(STYLE_HAS_CT_ACTS, isCta);
+      form.setStyleName(STYLE_NO_CT_ACTS, !isCta);
+
+      if (form.getWidgetByName(GRID_TRADE_ACTS) instanceof ChildGrid) {
+        ChildGrid g = (ChildGrid) form.getWidgetByName(GRID_TRADE_ACTS);
+        g.setEnabled(false);
+
+      }
       lastKind = kind;
     }
   }
