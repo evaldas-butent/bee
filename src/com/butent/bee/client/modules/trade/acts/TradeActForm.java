@@ -162,6 +162,11 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     setEnabledItemsGrid(kind, form, row);
 
     createReqLabels(form, !TradeActUtils.getMultiReturnData(row).isNull());
+
+    if (!TradeActKeeper.isClientArea() && !header.isActionEnabled(Action.SAVE)) {
+      header.showAction(Action.SAVE, true);
+    }
+
     super.afterRefresh(form, row);
   }
 
@@ -183,6 +188,10 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     if (BeeUtils.same(COL_TA_COMPANY, name)) {
       description.setAttribute("editForm", TradeActKeeper.isClientArea()
           ? ClassifierConstants.FORM_NEW_COMPANY : ClassifierConstants.FORM_COMPANY);
+    }
+
+    if (TradeActKeeper.isClientArea() && description.hasAttribute("disablable")) {
+     description.setAttribute("disablable", "true");
     }
 
     return super.beforeCreateWidget(name, description);

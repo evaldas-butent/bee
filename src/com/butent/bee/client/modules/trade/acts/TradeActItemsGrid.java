@@ -867,7 +867,9 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                   DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
 
                   if (ro.hasResponse(Long.class) && DataUtils.isId(ro.getResponseAsLong())) {
-                    RowEditor.open(VIEW_TRADE_ACTS, ro.getResponseAsLong(), Opener.MODAL);
+                    DataInfo info = Data.getDataInfo(VIEW_TRADE_ACTS);
+                    RowEditor.openForm(info.getEditForm(), info, ro.getResponseAsLong(),
+                        Opener.MODAL);
                   }
                 }
               });

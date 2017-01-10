@@ -604,6 +604,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
         case COL_TA_NOTES:
         case COL_TA_RETURN:
         case COL_TA_CONTINUOUS:
+        case ALS_RETURNED_COUNT:
           break;
 
         default:
@@ -629,8 +630,9 @@ public class TradeActGrid extends AbstractGridInterceptor {
           Queries.getRow(VIEW_TRADE_ACTS, parent.getId(), new RowCallback() {
             @Override
             public void onSuccess(BeeRow updatedParent) {
-//              maybeOpenAct(getGridView(), updatedParent);
-              RowEditor.open(VIEW_TRADE_ACTS, updatedParent, Opener.modeless());
+              DataInfo info = Data.getDataInfo(VIEW_TRADE_ACTS);
+              RowEditor.openForm(info.getEditForm(), info, updatedParent.getId(),
+                  Opener.modeless());
             }
           });
         }
@@ -762,6 +764,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
             case COL_TA_RETURN:
             case COL_TA_UNTIL:
             case COL_TA_NOTES:
+            case ALS_RETURNED_COUNT:
               break;
 
             default:

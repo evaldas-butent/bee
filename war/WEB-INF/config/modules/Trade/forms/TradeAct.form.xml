@@ -12,7 +12,7 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="TradeAct" viewName="TradeActs"
-  caption="=tradeAct" showRowId="true"
+  caption="=tradeAct" showRowId="true" enabledActions="save close"
   width="1050" height="700"
   >
   <f:properties reports="PrintTradeActSalePhysical, PrintTradeActReturn, PrintTASaleNoStock,
@@ -30,12 +30,12 @@
       <row class="bee-ta-template-selection" data="TradeActTemplates">
         <Label text="=template" />
         <UnboundSelector viewName="TradeActTemplates" choiceColumns="Template"
-          newRowEnabled="false" style="&inpw;" />
+          newRowEnabled="false" style="&inpw;" disablable="false" />
       </row>
 
       <row>
         <Label name="labelName" for="Name" visible="true" class="bee-required" />
-        <DataSelector source="Name" style="&inpw;" visible="true" />
+        <DataSelector source="Name" style="&inpw;" visible="true" disablable="false"/>
 
         <Label for="Parent">
           &forparent;
@@ -50,24 +50,26 @@
        <DataSelector name="Contract" source="Contract" style="&inpw;"
          renderColumns="ContractName ContractNumber"
          choiceColumns="Name Number DocumentDate Expires StatusName"
-         viewName="Documents"
+         viewName="Documents" disablable="false"
          caching="none" module="Documents" newRowEnabled="false" />
       </row>
 
       <row>
         <Label for="Date" name="labelDate" visible="true" />
-        <InputDateTime source="Date" style="&inpdt;" visible="true" />
+        <InputDateTime source="Date" style="&inpdt;" visible="true" disablable="false" />
 
         <Label for="Until" class="bee-ta-until-label" name="labelUntil" />
-        <InputDateTime source="Until" name="Until" class="bee-ta-until-input" style="&inpdt;" />
+        <InputDateTime source="Until" name="Until" class="bee-ta-until-input" style="&inpdt;"
+                       disablable="false" />
       </row>
 
       <row>
         <Label for="Series" class="bee-required" />
-        <DataSelector source="Series" newRowEnabled="false" style="width: &inpdt;" required="true" />
+        <DataSelector source="Series" newRowEnabled="false" style="width: &inpdt;" required="true"
+                      disablable="true" />
 
         <Label name="labelNumber" for="Number" visible="true" />
-        <InputText source="Number" style="&inpw;" visible="true" />
+        <InputText source="Number" style="&inpw;" visible="true" disablable="true" />
       </row>
 
       <row>
@@ -75,23 +77,23 @@
           &forOperation;
         </Label>
         <DataSelector source="Operation" renderColumns="OperationName" newRowEnabled="false"
-          style="&inpw;" required="true">
+          style="&inpw;" required="true" disablable="true">
           &forOperation;
         </DataSelector>
 
         <Label for="Status" name="labelStatus" />
         <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
-          style="&inpw;" />
+          style="&inpw;" disablable="false"/>
       </row>
 
       <row>
         <Label for="Company" visible="true" class="bee-required" />
         <DataSelector source="Company" name="Company" style="&inpw;" visible="true"
-                      choiceColumns="Name TypeName"
+                      choiceColumns="Name TypeName" disablable="false"
                       renderColumns="CompanyName TypeName" required="true" />
 
         <Label for="Object" name="labelObject" />
-        <DataSelector source="Object" name="Object" renderColumns="ObjectName"
+        <DataSelector source="Object" name="Object" renderColumns="ObjectName" disablable="false"
           choiceColumns="CompanyName TypeName ObjectName ObjectAddress" newRowEnabled="true" newRowForm="CompanyObject"
           style="&inpw;" />
       </row>
@@ -104,21 +106,21 @@
           </dynStyle>
         </Label>
         <DataSelector source="Contact" newRowEnabled="true" style="&inpw;"
-          renderColumns="ContactFirstName ContactLastName"
+          renderColumns="ContactFirstName ContactLastName" disablable="false"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
 
         <Label for="Manager" />
-        <DataSelector source="Manager" editSource="ManagerPerson"
+        <DataSelector source="Manager" editSource="ManagerPerson" disablable="false"
           renderColumns="ManagerFirstName ManagerLastName" newRowEnabled="false" style="&inpw;" />
       </row>
 
       <row>
         <Label for="Vehicle" name="labelVehicle" />
         <DataSelector source="InputVehicle" renderColumns="VehicleName InputVehicleNotes"
-          newRowEnabled="true" style="&inpw;" />
+          newRowEnabled="true" style="&inpw;" disablable="false"/>
         <Label for="Driver" name="labelDriver" />
         <DataSelector source="InputDriver" renderColumns="DriverFirstName1 DriverLastName1 InputDriverNotes"
-          newRowEnabled="true" style="&inpw;" />
+          newRowEnabled="true" style="&inpw;" disablable="false"/>
       </row>
 
       <!-- @DEPRECATED By Transrifus {
@@ -136,12 +138,12 @@
       <row>
         <Label for="Currency" />
         <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
-          newRowEnabled="false" style="width: 60px;" />
+          newRowEnabled="false" style="width: 60px;" disablable="false" />
 
         <Label for="RegistrationNo" class="bee-required">
           &forRegistrationNo;
         </Label>
-        <InputText source="RegistrationNo" style="&inpw;" visible="true" >
+        <InputText source="RegistrationNo" style="&inpw;" visible="true" disablable="false" >
           &forRegistrationNo;
         </InputText>
       </row>
@@ -151,22 +153,22 @@
     <TabbedPages style="height: 1200px;">
       <page>
         <text>=goods</text>
-        <ChildGrid name="TradeActItems" relColumn="TradeAct" />
+        <ChildGrid name="TradeActItems" relColumn="TradeAct" disablable="true" />
       </page>
 
       <page class="bee-ta-services-tab">
         <text>=services</text>
-        <ChildGrid name="TradeActServices" relColumn="TradeAct" />
+        <ChildGrid name="TradeActServices" relColumn="TradeAct" disablable="false"/>
       </page>
 
       <page class="bee-ta-invoices-tab">
         <text>=trdInvoices</text>
-        <ChildGrid name="TradeActInvoices" relColumn="TradeAct" />
+        <ChildGrid name="TradeActInvoices" relColumn="TradeAct" disablable="false"/>
       </page>
 
       <page>
         <text>=files</text>
-        <ChildGrid name="TradeActFiles" relColumn="TradeAct" />
+        <ChildGrid name="TradeActFiles" relColumn="TradeAct" disablable="false" />
       </page>
 
       <page class="bee-ta-cta-tab">
@@ -183,12 +185,12 @@
               <Label text="=trdNoteTemplate" />
             </cell>
             <UnboundSelector viewName="TradeNotes" choiceColumns="Name"
-              newRowEnabled="false" style="&inpw;" />
+              newRowEnabled="false" style="&inpw;" disablable="false" />
           </HorizontalPanel>
 
           <br />
           <SimplePanel class="flexible" style="position: relative;">
-            <InputArea source="Notes" class="occupy-1" summarize="true" />
+            <InputArea source="Notes" class="occupy-1" summarize="true" disablable="false"/>
           </SimplePanel>
         </FlowPanel>
       </page>
