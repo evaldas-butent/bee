@@ -42,6 +42,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -152,6 +153,23 @@ public class TradeActGrid extends AbstractGridInterceptor {
     } else {
       return super.beforeAddRow(presenter, copy);
     }
+  }
+
+  @Override
+  public DeleteMode beforeDeleteRow(GridPresenter presenter, IsRow row) {
+    revertStatuses(row.getId());
+    return DeleteMode.CANCEL;
+  }
+
+  @Override
+  public DeleteMode beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
+                                     Collection<RowInfo> selectedRows) {
+    List<Long> ids = new ArrayList<>(selectedRows.size());
+
+    selectedRows.forEach(info -> ids.add(info.getId()));
+
+    revertStatuses(ids.toArray(new Long[ids.size()]));
+    return DeleteMode.CANCEL;
   }
 
   @Override
@@ -869,5 +887,32 @@ public class TradeActGrid extends AbstractGridInterceptor {
             + Localized.dictionary().saveChanges(), () -> gridView.fireEvent(event));
       }
     }
+  }
+
+  private void revertStatuses(Long ... acts) {
+    ParameterList prm = TradeActKeeper.createArgs(SVC_REVERT_ACTS_STATUS_BEFORE_DELETE);
+    prm.addDataItem(TradeConstants.VAR_ID_LIST, DataUtils.buildIdList(acts));
+
+    BeeKeeper.getRpc().makePostRequest(prm, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          getGridView().notifySevere(response.getErrors());
+          return;
+        }
+
+        if (getGridView() != null && getGridView().getGrid() != null) {
+          getGridView().getGrid().clearSelection();
+        }
+
+        Queries.delete(VIEW_TRADE_ACTS, Filter.idIn(Lists.newArrayList(acts)),
+            new Queries.IntCallback() {
+              @Override
+              public void onSuccess(Integer result) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
+              }
+            });
+      }
+    });
   }
 }

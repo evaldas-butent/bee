@@ -226,6 +226,9 @@ public class TradeActBean implements HasTimerService {
       case TradeActConstants.SVC_CREATE_INVOICE_ITEMS:
         response = createInvoiceItems(reqInfo);
         break;
+      case SVC_REVERT_ACTS_STATUS_BEFORE_DELETE:
+        response = restoreActStates(reqInfo);
+        break;
 
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -384,7 +387,7 @@ public class TradeActBean implements HasTimerService {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void maybeSetRemainingQty(ViewQueryEvent event) {
+      private void maybeSetRemainingQty(ViewQueryEvent event) {
         if (event.isAfter(VIEW_TRADE_ACT_ITEMS) && event.hasData()
             && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
 
@@ -924,25 +927,47 @@ public class TradeActBean implements HasTimerService {
         case COL_TA_CONTINUOUS:
           k = TradeActKind.CONTINUOUS;
           break;
-        default: k = TradeActKind.RETURN;
+        default:
+          k = TradeActKind.RETURN;
       }
 
       String number = qs.getValue(new SqlSelect()
           .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
           .addFrom(TBL_TRADE_ACTS)
           .setWhere(sys.idEquals(TBL_TRADE_ACTS, relId)));
-     return qs.updateDataWithResponse(new SqlUpdate(TBL_TRADE_ACTS)
-         .addConstant(relCol, relId)
-         .addConstant(COL_TA_NOTES,
-             SqlUtils.concat(
-                 SqlUtils.nvl(SqlUtils.field(TBL_TRADE_ACTS, COL_TA_NOTES), "''"),
-                 "'\n'",
-                 BeeUtils.joinWords("'", usr.getDictionary().createdOn(),
-                     k.getCaption(usr.getDictionary()), number, "'")
-             )
-         )
-         .setWhere(SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, lockActData),
-             SqlUtils.isNull(TBL_TRADE_ACTS, relCol))));
+
+      ResponseObject ro = qs.updateDataWithResponse(new SqlUpdate(TBL_TRADE_ACTS)
+          .addConstant(relCol, relId)
+          .addConstant(COL_TA_NOTES,
+              SqlUtils.concat(
+                  SqlUtils.nvl(SqlUtils.field(TBL_TRADE_ACTS, COL_TA_NOTES), "''"),
+                  "'\n'",
+                  BeeUtils.joinWords("'", usr.getDictionary().createdOn(),
+                      k.getCaption(usr.getDictionary()), number, "'")
+              )
+          )
+          .setWhere(SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, lockActData),
+              SqlUtils.isNull(TBL_TRADE_ACTS, relCol))));
+
+      if (ro.hasErrors() || k != TradeActKind.CONTINUOUS) {
+        return ro;
+      }
+
+      Long combActStatus = prm.getRelation(PRM_COMBINED_ACT_STATUS);
+
+      if (!DataUtils.isId(combActStatus)) {
+        return ro;
+      }
+
+      ro = qs.updateDataWithResponse(new SqlUpdate(TBL_TRADE_ACTS)
+          .addConstant(COL_TA_STATUS, combActStatus)
+          .setWhere(
+              SqlUtils.and(
+                  SqlUtils.equals(TBL_TRADE_ACTS, relCol, relId),
+                  SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, k.ordinal())))
+      );
+
+      return ro;
 
     }
 
@@ -3715,6 +3740,113 @@ public class TradeActBean implements HasTimerService {
     }
 
     return ResponseObject.response(parentItems.getNumberOfRows());
+  }
+
+  private ResponseObject restoreActStates(RequestInfo req) {
+
+    Set<Long> delIds = DataUtils.parseIdSet(req.getParameter(VAR_ID_LIST));
+
+    if (BeeUtils.isEmpty(delIds)) {
+      return ResponseObject.error(req.getSubService(), "Parameter", VAR_ID_LIST, "isEmpty");
+    }
+
+    Long retActStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
+    Long combActStatus = prm.getRelation(PRM_COMBINED_ACT_STATUS);
+    Set<Long> predefinedStatuses = new HashSet<>();
+
+    predefinedStatuses.add(retActStatus);
+    predefinedStatuses.add(combActStatus);
+    predefinedStatuses.remove(null);
+
+    if (BeeUtils.isEmpty(predefinedStatuses)) {
+      logger.warning("Restoring act states not predefined act statuses in parameters",
+          PRM_RETURNED_ACT_STATUS, PRM_COMBINED_ACT_STATUS);
+      return ResponseObject.emptyResponse();
+    }
+
+    Set<Long> acts = qs.getDistinctLongs(TBL_TRADE_ACTS, COL_TA_PARENT,
+        SqlUtils.and(
+            SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), delIds),
+            SqlUtils.equals(TBL_TRADE_ACTS, COL_TRADE_KIND, TradeActKind.RETURN.ordinal())));
+
+    acts.remove(null);
+
+    IsCondition idFilter = BeeUtils.isEmpty(acts)
+        ? SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_RETURN, delIds)
+        : sys.idInList(TBL_TRADE_ACTS, acts);
+
+          /* Restoring primary act statuses */
+    SqlUpdate query = new SqlUpdate(TBL_TRADE_ACTS)
+        .addConstant(COL_TA_STATUS,
+            new SqlSelect()
+                .addFields(TBL_TRADE_OPERATIONS, COL_TRADE_OPERATION_STATUS)
+                .addFrom(TBL_TRADE_OPERATIONS)
+                .setWhere(
+                    SqlUtils.equals(TBL_TRADE_OPERATIONS, sys.getIdName(TBL_TRADE_OPERATIONS),
+                        SqlUtils.field(TBL_TRADE_ACTS, COL_TA_OPERATION)
+                    )
+                )
+        )
+        .setWhere(
+            SqlUtils.and(idFilter,
+                SqlUtils.not(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_KIND,
+                    Lists.newArrayList(TradeActKind.CONTINUOUS.ordinal(),
+                        TradeActKind.RETURN.ordinal()))),
+                SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_STATUS, predefinedStatuses)
+            )
+        );
+
+    ResponseObject resp = qs.updateDataWithResponse(query);
+
+    if (resp.hasErrors()) {
+      return resp;
+    }
+
+          /* if updated any row of primary acts then states of act is restored */
+    if (resp.getResponseAsInt() > 0) {
+      return resp;
+    }
+
+          /* if multi-return act derived from continuous */
+    acts = qs.getDistinctLongs(TBL_TRADE_ACT_ITEMS, COL_TA_PARENT,
+        SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, delIds));
+
+    acts.remove(null);
+
+    if (BeeUtils.isEmpty(acts) || !DataUtils.isId(retActStatus)) {
+      return resp;
+    }
+
+    query = new SqlUpdate(TBL_TRADE_ACTS)
+        .addConstant(COL_TA_STATUS, combActStatus)
+        .setWhere(
+            SqlUtils.and(sys.idInList(TBL_TRADE_ACTS, acts),
+                SqlUtils.not(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_KIND,
+                    Lists.newArrayList(TradeActKind.CONTINUOUS.ordinal(),
+                        TradeActKind.RETURN.ordinal()))),
+                SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_STATUS, retActStatus)));
+
+    resp = qs.updateDataWithResponse(query);
+
+    /* Reverting Continuous act states */
+    Long contActStatus = prm.getRelation(PRM_CONTINUOUS_ACT_STATUS);
+
+    if (!DataUtils.isId(contActStatus) || resp.hasErrors()) {
+      return resp;
+    }
+
+    query = new SqlUpdate(TBL_TRADE_ACTS)
+        .addConstant(COL_TA_STATUS, contActStatus)
+        /* Transrifus. Force lock CTA due instead full return edition */
+        .addConstant(COL_TA_CONTINUOUS, SqlUtils.field(TBL_TRADE_ACTS, COL_TA_RETURN))
+        .setWhere(
+            SqlUtils.and(
+                SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_CONTINUOUS, delIds),
+                SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.CONTINUOUS.ordinal())
+            ));
+
+    resp = qs.updateDataWithResponse(query);
+    return resp;
   }
 
   private ResponseObject saveActAsTemplate(RequestInfo reqInfo) {

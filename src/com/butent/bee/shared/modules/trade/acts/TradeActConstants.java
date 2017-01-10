@@ -35,6 +35,7 @@ public final class TradeActConstants {
 
   public static final String SVC_HAS_INVOICES_OR_SECONDARY_ACTS = "HasInvoicesOrSecondaryActs";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
+  public static final String SVC_REVERT_ACTS_STATUS_BEFORE_DELETE = "RevertActsStatusBeforeDelete";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
