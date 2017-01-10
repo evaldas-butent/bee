@@ -680,6 +680,23 @@
   background-color: #ffb300;
 }
 
+.bee-stage {
+  display: inline-block;
+  padding: 5px;
+  text-align: center;
+  background-color: white;
+  color: #1eb2d8;
+  font-weight: bolder;
+  border: 1px solid #1eb2d8;
+  cursor: pointer;
+}
+
+.bee-stage-active {
+  background-color: #1eb2d8;
+  color: white;
+  cursor: default;
+}
+
 .bee-reminder-dialog-panel{
   padding: 10px 0px;
 }

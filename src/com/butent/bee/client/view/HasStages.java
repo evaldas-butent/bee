@@ -1,21 +1,23 @@
-package com.butent.bee.client.view.form.interceptor;
+package com.butent.bee.client.view;
 
 import com.google.gwt.user.client.ui.HasWidgets;
 
-import static com.butent.bee.shared.modules.cars.CarsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.modules.cars.Stage;
-import com.butent.bee.client.modules.cars.StageUtils;
+import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.administration.Stage;
+import com.butent.bee.client.modules.administration.StageUtils;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 import java.util.Objects;
 
-public interface StageFormInterceptor {
+public interface HasStages {
 
   FormView getFormView();
 
@@ -41,7 +43,23 @@ public interface StageFormInterceptor {
     container.clear();
 
     StageUtils.filterStages(stages, getFormView().getOldRow())
-        .forEach(stage -> container.add(new Button(stage.getName(), () -> updateStage(stage))));
+        .forEach(stage -> {
+          Flow button = new Flow("bee-stage");
+          button.getElement().setInnerText(stage.getName());
+
+          if (stage.active(getFormView().getActiveRow())) {
+            button.addStyleName("bee-stage-active");
+          } else {
+            button.addClickHandler(ev -> {
+              if (BeeUtils.isEmpty(stage.getConfirm())) {
+                updateStage(stage);
+              } else {
+                Global.confirm(stage.getConfirm(), () -> updateStage(stage));
+              }
+            });
+          }
+          container.add(button);
+        });
   }
 
   void setStages(List<Stage> stages);
@@ -57,8 +75,6 @@ public interface StageFormInterceptor {
 
     int stageIdx = form.getDataIndex(COL_STAGE);
     int nameIdx = form.getDataIndex(COL_STAGE_NAME);
-
-    IsRow oldRow = form.getOldRow();
     IsRow row = form.getActiveRow();
 
     row.setValue(stageIdx, stage.getId());
@@ -67,6 +83,8 @@ public interface StageFormInterceptor {
     if (DataUtils.isNewRow(row)) {
       form.refresh();
     } else {
+      IsRow oldRow = form.getOldRow();
+
       form.saveChanges(new RowUpdateCallback(form.getViewName()) {
         @Override
         public void onCancel() {

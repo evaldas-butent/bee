@@ -605,6 +605,8 @@ public interface Dictionary {
 
   default String car() {return g("car");}
 
+  default String carService() {return g("carService");}
+
   default String cargo() {return g("cargo");}
 
   default String cargoChangeOfPallets() {return g("cargoChangeOfPallets");}
@@ -3859,6 +3861,10 @@ public interface Dictionary {
 
   default String newService() {return g("newService");}
 
+  default String newServiceJob() {return g("newServiceJob");}
+
+  default String newServiceOrder() {return g("newServiceOrder");}
+
   default String newSupplier() {return g("newSupplier");}
 
   default String newTab() {return g("newTab");}
@@ -4937,6 +4943,14 @@ public interface Dictionary {
 
   default String service() {return g("service");}
 
+  default String serviceJob() {return g("serviceJob");}
+
+  default String serviceJobs() {return g("serviceJobs");}
+
+  default String serviceOrder() {return g("serviceOrder");}
+
+  default String serviceOrders() {return g("serviceOrders");}
+
   default String services() {return g("services");}
 
   default String setAsPrimary() {return g("setAsPrimary");}
@@ -4978,6 +4992,14 @@ public interface Dictionary {
   default String specifyCondition() {return g("specifyCondition");}
 
   default String specifyResult() {return g("specifyResult");}
+
+  default String stageAction() {return g("stageAction");}
+
+  default String stageCondition() {return g("stageCondition");}
+
+  default String stageConfirmation() {return g("stageConfirmation");}
+
+  default String stageTrigger() {return g("stageTrigger");}
 
   default String startRow() {return g("startRow");}
 
@@ -6768,7 +6790,17 @@ public interface Dictionary {
 
   default String vehicleCoupe() {return g("vehicleCoupe");}
 
+  default String vehicleCylinderNumber() {return g("vehicleCylinderNumber");}
+
+  default String vehicleDoorsNumber() {return g("vehicleDoorsNumber");}
+
   default String vehicleDriver() {return g("vehicleDriver");}
+
+  default String vehicleEmissionStandard() {return g("vehicleEmissionStandard");}
+
+  default String vehicleEmissionStandards() {return g("vehicleEmissionStandards");}
+
+  default String vehicleEngineCode() {return g("vehicleEngineCode");}
 
   default String vehicleEngineNumber() {return g("vehicleEngineNumber");}
 
@@ -6778,11 +6810,17 @@ public interface Dictionary {
 
   default String vehicleGearbox() {return g("vehicleGearbox");}
 
+  default String vehicleGearboxes() {return g("vehicleGearboxes");}
+
+  default String vehicleGearsNumber() {return g("vehicleGearsNumber");}
+
   default String vehicleGroups() {return g("vehicleGroups");}
 
   default String vehicleGroupsShort() {return g("vehicleGroupsShort");}
 
   default String vehicleHatchback() {return g("vehicleHatchback");}
+
+  default String vehicleHorsepower() {return g("vehicleHorsepower");}
 
   default String vehicleManualTransmission() {return g("vehicleManualTransmission");}
 
@@ -6802,11 +6840,23 @@ public interface Dictionary {
 
   default String vehicleNetto() {return g("vehicleNetto");}
 
+  default String vehicleNewEmissionStandard() {return g("vehicleNewEmissionStandard");}
+
+  default String vehicleNewGearbox() {return g("vehicleNewGearbox");}
+
+  default String vehicleNewPlaceCode() {return g("vehicleNewPlaceCode");}
+
+  default String vehicleNewWarranty() {return g("vehicleNewWarranty");}
+
   default String vehicleNotes() {return g("vehicleNotes");}
 
   default String vehicleNumber() {return g("vehicleNumber");}
 
   default String vehicleOwnerName() {return g("vehicleOwnerName");}
+
+  default String vehiclePlaceCode() {return g("vehiclePlaceCode");}
+
+  default String vehiclePlaceCodes() {return g("vehiclePlaceCodes");}
 
   default String vehiclePower() {return g("vehiclePower");}
 
@@ -6824,11 +6874,17 @@ public interface Dictionary {
 
   default String vehicleService() {return g("vehicleService");}
 
+  default String vehicleServiceSettings() {return g("vehicleServiceSettings");}
+
   default String vehicleSpeedometer() {return g("vehicleSpeedometer");}
 
   default String vehicleTankCapacity() {return g("vehicleTankCapacity");}
 
   default String vehicleType() {return g("vehicleType");}
+
+  default String vehicleWarranties() {return g("vehicleWarranties");}
+
+  default String vehicleWarranty() {return g("vehicleWarranty");}
 
   default String vehicles() {return g("vehicles");}
 

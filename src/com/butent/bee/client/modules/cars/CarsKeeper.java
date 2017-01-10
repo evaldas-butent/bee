@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.administration.StageUtils;
 import com.butent.bee.client.modules.classifiers.VehiclesGrid;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.i18n.Dictionary;
@@ -23,6 +24,8 @@ public final class CarsKeeper {
     FormFactory.registerFormInterceptor(FORM_CAR_ORDER, new CarOrderForm());
     FormFactory.registerFormInterceptor(FORM_CAR, new SpecificationForm());
     FormFactory.registerFormInterceptor(FORM_TEMPLATE, new SpecificationForm());
+
+    FormFactory.registerFormInterceptor(FORM_CAR_SERVICE_ORDER, new CarServiceOrderForm());
 
     GridFactory.registerGridInterceptor(VIEW_CARS, new VehiclesGrid());
 

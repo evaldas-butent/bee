@@ -9,5 +9,6 @@
     <SimpleColumn name="Field" />
     <SimpleColumn name="Operator" />
     <SimpleColumn name="Value" />
+    <SimpleColumn name="StageFrom" />
   </Columns>
 </View>
