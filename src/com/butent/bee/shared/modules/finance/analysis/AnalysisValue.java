@@ -263,7 +263,7 @@ public final class AnalysisValue implements BeeSerializable {
 
   @Override
   public String toString() {
-    return BeeUtils.joinOptions(
+    return BeeUtils.joinOptions("c", columnId, "r", rowId,
         "cs", columnSplit.isEmpty() ? BeeConst.STRING_EMPTY : columnSplit.toString(),
         "rs", rowSplit.isEmpty() ? BeeConst.STRING_EMPTY : rowSplit.toString(),
         "a", actualValue,
