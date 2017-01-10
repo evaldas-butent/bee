@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.finance.analysis;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
@@ -133,8 +134,10 @@ class AnalysisViewer extends Flow implements HasCaption {
 
   private static final String STYLE_VALUE = STYLE_PREFIX + "value";
   private static final String STYLE_VALUE_PREFIX = STYLE_VALUE + "-";
+  private static final String STYLE_VALUE_EMPTY = STYLE_VALUE_PREFIX + "empty";
 
   private static final String STYLE_PERFORMANCE = STYLE_PREFIX + "performance";
+  private static final String STYLE_STATS = STYLE_PREFIX + "stats";
   private static final String STYLE_TIME = STYLE_PREFIX + "time";
   private static final String STYLE_DURATION = STYLE_PREFIX + "duration";
 
@@ -437,17 +440,21 @@ class AnalysisViewer extends Flow implements HasCaption {
       performance.add(renderDuration(results.getComputeEnd() - results.getInitStart()));
 
     } else {
-      Label timeLabel = new Label(TimeUtils.renderDateTime(results.getComputeEnd()));
-      timeLabel.addStyleName(STYLE_TIME);
-      performance.add(timeLabel);
-
-      long duration = results.getComputeEnd() - results.getInitStart();
-      Label durationLabel = new Label(BeeUtils.bracket(TimeUtils.renderMillis(duration)));
-      durationLabel.addStyleName(STYLE_DURATION);
-      performance.add(durationLabel);
+      performance.add(renderMillis(results.getComputeEnd()));
+      performance.add(renderDuration(results.getComputeEnd() - results.getInitStart()));
     }
 
     add(performance);
+
+    if (results.getQueryCount() > 0) {
+      Horizontal stats = new Horizontal(STYLE_STATS);
+
+      stats.add(new Label(BeeUtils.toString(results.getQueryCount())));
+      stats.add(renderDuration(results.getQueryDuration() / results.getQueryCount()));
+      stats.add(renderDuration(results.getQueryDuration()));
+
+      add(stats);
+    }
 
     Flow header = new Flow(STYLE_HEADER);
     results.getHeaderLabels(formatRange(results.getHeaderRange())).forEach(analysisLabel ->
@@ -678,6 +685,26 @@ class AnalysisViewer extends Flow implements HasCaption {
       r += rowSpan.get(rowId);
     }
 
+    int maxCellCount = 0;
+    for (int i = rStartValues; i < table.getRowCount(); i++) {
+      maxCellCount = Math.max(maxCellCount, table.getCellCount(i));
+    }
+
+    if (maxCellCount > cStartValues) {
+      for (int i = rStartValues; i < table.getRowCount(); i++) {
+        if (table.getCellCount(i) < maxCellCount) {
+          table.setText(i, maxCellCount - 1, null);
+        }
+
+        for (int j = cStartValues; j < maxCellCount; j++) {
+          TableCellElement cellElement = table.getCellFormatter().getElement(i, j);
+          if (BeeUtils.allEmpty(cellElement.getClassName(), cellElement.getInnerText())) {
+            cellElement.addClassName(STYLE_VALUE_EMPTY);
+          }
+        }
+      }
+    }
+
     return table;
   }
 
@@ -779,11 +806,15 @@ class AnalysisViewer extends Flow implements HasCaption {
   }
 
   private static Widget renderMillis(long millis) {
-    return new Label(TimeUtils.renderDateTime(millis, true));
+    Label label = new Label(TimeUtils.renderDateTime(millis, true));
+    label.addStyleName(STYLE_TIME);
+    return label;
   }
 
   private static Widget renderDuration(long millis) {
-    return new Label(TimeUtils.renderMillis(millis));
+    Label label = new Label(BeeUtils.bracket(TimeUtils.renderMillis(millis)));
+    label.addStyleName(STYLE_DURATION);
+    return label;
   }
 
   private static Widget render(AnalysisLabel label, String... styleNames) {

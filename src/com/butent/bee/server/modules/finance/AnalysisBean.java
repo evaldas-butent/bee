@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -93,6 +94,8 @@ public class AnalysisBean {
         formData.getHeaderIndexes(), formData.getHeader(),
         formData.getColumnIndexes(), formData.getColumns(),
         formData.getRowIndexes(), formData.getRows());
+
+    LongSummaryStatistics actualValueStats = new LongSummaryStatistics();
 
     formData.getColumns().forEach(column ->
         results.addColumnSplitTypes(column.getId(), formData.getColumnSplits(column)));
@@ -228,7 +231,7 @@ public class AnalysisBean {
                 results.addValues(computeActualValues(column.getId(), row.getId(),
                     valueFilter, plusFilter, minusFilter, range, turnoverOrBalance,
                     columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
-                    sourceColumn, finView, userId));
+                    sourceColumn, finView, userId, actualValueStats));
               }
 
               if (budgetCursor != null) {
@@ -249,6 +252,11 @@ public class AnalysisBean {
       results.setValidateStart(validateStart);
       results.setComputeStart(computeStart);
       results.setComputeEnd(System.currentTimeMillis());
+
+      if (actualValueStats.getCount() > 0) {
+        results.setQueryCount(actualValueStats.getCount());
+        results.setQueryDuration(actualValueStats.getSum());
+      }
 
       response.setResponse(results);
     }
@@ -757,7 +765,7 @@ public class AnalysisBean {
       Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues,
       List<AnalysisSplitType> rowSplitTypes,
       Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues,
-      String sourceColumn, BeeView finView, Long userId) {
+      String sourceColumn, BeeView finView, Long userId, LongSummaryStatistics stats) {
 
     List<AnalysisValue> values = new ArrayList<>();
 
@@ -768,23 +776,23 @@ public class AnalysisBean {
       values.addAll(computeActualSplitMatrix(columnId, rowId, getRootSplit(),
           filter, plusFilter, minusFilter, range, turnoverOrBalance,
           columnSplitTypes, 0, columnSplitValues, 0,
-          rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
+          rowSplitTypes, rowSplitValues, sourceColumn, finView, userId, stats));
 
     } else if (hasColumnSplits) {
       values.addAll(computeActualSplitVector(columnId, rowId, true, getRootSplit(),
           filter, plusFilter, minusFilter, range, turnoverOrBalance,
           columnSplitTypes, 0, columnSplitValues, 0,
-          sourceColumn, finView, userId));
+          sourceColumn, finView, userId, stats));
 
     } else if (hasRowSplits) {
       values.addAll(computeActualSplitVector(columnId, rowId, false, getRootSplit(),
           filter, plusFilter, minusFilter, range, turnoverOrBalance,
           rowSplitTypes, 0, rowSplitValues, 0,
-          sourceColumn, finView, userId));
+          sourceColumn, finView, userId, stats));
 
     } else {
       Double value = getActualValue(filter, plusFilter, minusFilter, range, turnoverOrBalance,
-          sourceColumn, finView, userId);
+          sourceColumn, finView, userId, stats);
 
       if (BeeUtils.nonZero(value)) {
         values.add(AnalysisValue.actual(columnId, rowId, value));
@@ -800,9 +808,12 @@ public class AnalysisBean {
       MonthRange range, TurnoverOrBalance turnoverOrBalance,
       List<AnalysisSplitType> splitTypes, int typeIndex,
       Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues, int valueIndex,
-      String sourceColumn, BeeView finView, Long userId) {
+      String sourceColumn, BeeView finView, Long userId, LongSummaryStatistics stats) {
 
     List<AnalysisValue> values = new ArrayList<>();
+    if (range == null) {
+      return values;
+    }
 
     AnalysisSplitType splitType = splitTypes.get(typeIndex);
 
@@ -820,11 +831,11 @@ public class AnalysisBean {
         values.addAll(computeActualSplitVector(columnId, rowId, isColumn, split,
             splitFilter, plusFilter, minusFilter, splitRange, turnoverOrBalance,
             splitTypes, typeIndex + 1, splitValues, 0,
-            sourceColumn, finView, userId));
+            sourceColumn, finView, userId, stats));
 
       } else {
         Double value = getActualValue(splitFilter, plusFilter, minusFilter,
-            splitRange, turnoverOrBalance, sourceColumn, finView, userId);
+            splitRange, turnoverOrBalance, sourceColumn, finView, userId, stats);
 
         if (BeeUtils.nonZero(value)) {
           AnalysisValue av = AnalysisValue.actual(columnId, rowId, value);
@@ -843,7 +854,7 @@ public class AnalysisBean {
         values.addAll(computeActualSplitVector(columnId, rowId, isColumn, parentSplit,
             parentFilter, plusFilter, minusFilter, range, turnoverOrBalance,
             splitTypes, typeIndex, splitValues, valueIndex + 1,
-            sourceColumn, finView, userId));
+            sourceColumn, finView, userId, stats));
       }
     }
 
@@ -858,9 +869,12 @@ public class AnalysisBean {
       Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues, int columnValueIndex,
       List<AnalysisSplitType> rowSplitTypes,
       Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues,
-      String sourceColumn, BeeView finView, Long userId) {
+      String sourceColumn, BeeView finView, Long userId, LongSummaryStatistics stats) {
 
     List<AnalysisValue> values = new ArrayList<>();
+    if (range == null) {
+      return values;
+    }
 
     AnalysisSplitType columnSplitType = columnSplitTypes.get(columnTypeIndex);
 
@@ -879,14 +893,14 @@ public class AnalysisBean {
         values.addAll(computeActualSplitMatrix(columnId, rowId, columnSplit,
             splitFilter, plusFilter, minusFilter, splitRange, turnoverOrBalance,
             columnSplitTypes, columnTypeIndex + 1, columnSplitValues, 0,
-            rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
+            rowSplitTypes, rowSplitValues, sourceColumn, finView, userId, stats));
 
       } else {
         Collection<AnalysisValue> rowValues = computeActualSplitVector(columnId, rowId,
             false, getRootSplit(),
             splitFilter, plusFilter, minusFilter, splitRange, turnoverOrBalance,
             rowSplitTypes, 0, rowSplitValues, 0,
-            sourceColumn, finView, userId);
+            sourceColumn, finView, userId, stats);
 
         if (!rowValues.isEmpty()) {
           for (AnalysisValue av : rowValues) {
@@ -900,7 +914,7 @@ public class AnalysisBean {
         values.addAll(computeActualSplitMatrix(columnId, rowId, columnParentSplit,
             parentFilter, plusFilter, minusFilter, range, turnoverOrBalance,
             columnSplitTypes, columnTypeIndex, columnSplitValues, columnValueIndex + 1,
-            rowSplitTypes, rowSplitValues, sourceColumn, finView, userId));
+            rowSplitTypes, rowSplitValues, sourceColumn, finView, userId, stats));
       }
     }
 
@@ -909,15 +923,18 @@ public class AnalysisBean {
 
   private Double getActualValue(Filter filter, Filter plusFilter, Filter minusFilter,
       MonthRange range, TurnoverOrBalance turnoverOrBalance,
-      String sourceColumn, BeeView finView, Long userId) {
+      String sourceColumn, BeeView finView, Long userId, LongSummaryStatistics stats) {
 
     Double value = null;
 
+    if (range == null || turnoverOrBalance == null) {
+      return value;
+    }
     Filter rangeFilter = getActualRangeFilter(range, turnoverOrBalance);
 
     if (plusFilter != null) {
       Double plus = getSum(finView, userId, Filter.and(filter, rangeFilter, plusFilter),
-          sourceColumn);
+          sourceColumn, stats);
 
       if (BeeUtils.nonZero(plus)) {
         if (BeeUtils.isDouble(value)) {
@@ -930,7 +947,7 @@ public class AnalysisBean {
 
     if (minusFilter != null) {
       Double minus = getSum(finView, userId, Filter.and(filter, rangeFilter, minusFilter),
-          sourceColumn);
+          sourceColumn, stats);
 
       if (BeeUtils.nonZero(minus)) {
         if (BeeUtils.isDouble(value)) {
@@ -1001,11 +1018,19 @@ public class AnalysisBean {
     }
   }
 
-  private Double getSum(BeeView view, Long userId, Filter filter, String column) {
+  private Double getSum(BeeView view, Long userId, Filter filter, String column,
+      LongSummaryStatistics stats) {
+
     SqlSelect query = view.getQuery(userId, filter, null, Collections.singleton(column));
     String alias = SqlUtils.uniqueName();
 
-    return qs.getDouble(new SqlSelect().addSum(alias, column).addFrom(query, alias));
+    long millis = System.currentTimeMillis();
+    Double value = qs.getDouble(new SqlSelect().addSum(alias, column).addFrom(query, alias));
+    if (stats != null) {
+      stats.accept(System.currentTimeMillis() - millis);
+    }
+
+    return value;
   }
 
   private String getBudgetCursor(long indicator, TurnoverOrBalance indicatorTurnoverOrBalance,

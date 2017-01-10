@@ -31,7 +31,7 @@ public final class AnalysisResults implements BeeSerializable {
   private enum Serial {
     HEADER_INDEXES, HEADER, COLUMN_INDEXES, COLUMNS, ROW_INDEXES, ROWS,
     COLUMN_SPLIT_TYPES, ROW_SPLIT_TYPES, COLUMN_SPLIT_VALUES, ROW_SPLIT_VALUES, VALUES,
-    INIT_START, VALIDATE_START, COMPUTE_START, COMPUTE_END
+    INIT_START, VALIDATE_START, COMPUTE_START, COMPUTE_END, QUERY_COUNT, QUERY_DURATION
   }
 
   private static final List<AnalysisSplitType> EMPTY_SPLIT_TYPES = Collections.emptyList();
@@ -40,6 +40,9 @@ public final class AnalysisResults implements BeeSerializable {
   private long validateStart;
   private long computeStart;
   private long computeEnd;
+
+  private long queryCount;
+  private long queryDuration;
 
   private final Map<String, Integer> headerIndexes = new HashMap<>();
   private BeeRow header;
@@ -299,6 +302,13 @@ public final class AnalysisResults implements BeeSerializable {
           case COMPUTE_END:
             setComputeEnd(BeeUtils.toLong(v));
             break;
+
+          case QUERY_COUNT:
+            setQueryCount(BeeUtils.toLong(v));
+            break;
+          case QUERY_DURATION:
+            setQueryDuration(BeeUtils.toLong(v));
+            break;
         }
       }
     }
@@ -440,6 +450,13 @@ public final class AnalysisResults implements BeeSerializable {
         case COMPUTE_END:
           arr[i++] = computeEnd;
           break;
+
+        case QUERY_COUNT:
+          arr[i++] = queryCount;
+          break;
+        case QUERY_DURATION:
+          arr[i++] = queryDuration;
+          break;
       }
     }
 
@@ -476,6 +493,22 @@ public final class AnalysisResults implements BeeSerializable {
 
   public void setComputeEnd(long computeEnd) {
     this.computeEnd = computeEnd;
+  }
+
+  public long getQueryCount() {
+    return queryCount;
+  }
+
+  public void setQueryCount(long queryCount) {
+    this.queryCount = queryCount;
+  }
+
+  public long getQueryDuration() {
+    return queryDuration;
+  }
+
+  public void setQueryDuration(long queryDuration) {
+    this.queryDuration = queryDuration;
   }
 
   private Integer getHeaderInteger(String key) {
