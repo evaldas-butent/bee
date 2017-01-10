@@ -14,7 +14,7 @@
   name="ServiceMaintenance" viewName="ServiceMaintenance" caption="=svcMaintenance" showRowId="true"
   width="80" widthUnit="vw" height="80" heightUnit="vh"
 >
-  <SplitPanel splitterSize="4" name="Split">
+  <SplitPanel splitterSize="4" name="Split" class="bee-svc-split-panel">
     <south size="300">
       <FlowPanel class="flexBox-vertical">
         <Toggle name="SouthExpander" upFace="chevron_up" downFace="chevron_down"

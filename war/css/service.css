@@ -260,3 +260,8 @@
   width:100%;
   min-height: 75px;
 }
+
+.bee-svc-split-panel {
+  min-height: 640px;
+  min-width: 300px;
+}
