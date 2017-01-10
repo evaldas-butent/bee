@@ -110,6 +110,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
 
     Flow rowCellEdit = createEventRowCell(infoPanel, "Edit", null, false);
     FaLabel editLabel = new FaLabel(FontAwesome.EDIT, STYLE_LABEL);
+    editLabel.setTitle(LC.rightStateEdit());
     rowCellEdit.add(editLabel);
     editLabel.addClickHandler(
         event -> RowEditor.openForm(FORM_MAINTENANCE_COMMENT,
@@ -118,6 +119,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
 
     Flow rowCellDelete = createEventRowCell(infoPanel, "Delete", null, false);
     FaLabel clearLabel = new FaLabel(FontAwesome.TRASH, STYLE_LABEL);
+    clearLabel.setTitle(LC.rightStateDelete());
     rowCellDelete.add(clearLabel);
     clearLabel.addClickHandler(event -> Queries.deleteRow(getEventsDataViewName(), row.getId(),
         new Queries.IntCallback() {
