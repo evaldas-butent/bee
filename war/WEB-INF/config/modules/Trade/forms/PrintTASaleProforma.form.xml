@@ -11,7 +11,7 @@
     class="bee-form-TradeActPrint bee-PrintableForm">
     <FlowPanel>
        <Image url="images/logo.png" style="position: relative; width:33%;" />
-      <FlowPanel style="margin-top:-35px; padding-top: 20px;">
+      <FlowPanel style="margin-top:-70px; padding-top: 20px;">
         <br />
         <TextLabel style="text-align:center; &bold;">
           <render>
@@ -32,39 +32,31 @@
             <Label html="Pirkėjas" style="font-weight: bold;" />
           </cell>
         </row>
-        <row>
-          <cell style="vertical-align:top;">
+        <row style="vertical-align: top">
+          <FlowPanel class="flexBox-vertical">
             <FlowPanel name="Supplier" style="margin-left:10px;" />
-          </cell>
-          <cell style="vertical-align:top;">
+            <TextLabel source="Manager" style="margin-left:10px;">
+              <renderToken source="ManagerFirstName" prefix="Atsakingas asmuo: " />
+              <renderToken source="ManagerLastName" />
+              <renderToken source="ManagerMobile" prefix=" Mob.: " />
+            </TextLabel>
+          </FlowPanel>
+          <FlowPanel class="flexBox-vertical">
             <FlowPanel name="Company" />
-          </cell>
-        </row>
-        <row>
-          <TextLabel />
-          <TextLabel source="Contract" style="border-left: 1px solid black;">
-            <renderToken source="ContractName" />
-            <renderToken source="ContractNumber" />
-          </TextLabel>
-        </row>
-        <row>
-          <TextLabel />
-          <TextLabel source="Object">
-            <renderToken source="ObjectName" prefix="Objektas: " />
-            <renderToken source="ObjectAddress" />
-          </TextLabel>
-        </row>
-        <row>
-          <TextLabel source="Manager" style="margin-left:10px;">
-            <renderToken source="ManagerFirstName" prefix="Atsakingas asmuo: " />
-            <renderToken source="ManagerLastName" />
-            <renderToken source="ManagerMobile" prefix=" Mob.: " />
-          </TextLabel>
-          <TextLabel source="Contact">
-            <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
-            <renderToken source="ContactLastName" />
-            <renderToken source="ContactMobile" prefix=" Mob.: " />
-          </TextLabel>
+            <TextLabel source="Contract" style="border-left: 1px solid black;">
+              <renderToken source="ContractName" />
+              <renderToken source="ContractNumber" />
+            </TextLabel>
+            <TextLabel source="Object">
+              <renderToken source="ObjectName" prefix="Objektas: " />
+              <renderToken source="ObjectAddress" />
+            </TextLabel>
+            <TextLabel source="Contact">
+              <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
+              <renderToken source="ContactLastName" />
+              <renderToken source="ContactMobile" prefix=" Mob.: " />
+            </TextLabel>
+          </FlowPanel>
         </row>
       </Table>
     </FlowPanel>
@@ -97,7 +89,7 @@
         <cell style="text-align: right;">
           <Label html="Išrašė:" /> 
         </cell>
-        <cell style="border-bottom: 1px solid black; width:240px;">
+        <cell style="border-bottom: 1px solid black; width:230px;">
           <TextLabel source="Manager" style="margin-left:1ex;">
             <renderToken source="ManagerFirstName" />
             <renderToken source="ManagerLastName" />
@@ -109,7 +101,7 @@
         <cell style="text-align: right;" >
           <Label text="Priėmė:" />
         </cell>
-         <cell style="border-bottom: 1px solid black; width:240px;">
+         <cell style="border-bottom: 1px solid black; width:230px;">
           <br />
         </cell>
       </row>
