@@ -2220,7 +2220,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   private int syncFolders(MailAccount account, Store mailStore) throws MessagingException {
     MailFolder localRoot = account.getRootFolder();
     Folder remoteRoot = account.getRemoteFolder(mailStore, localRoot);
-    Multimap<String, String> remotes = HashMultimap.create();
+    Multimap<String, Folder> remotes = HashMultimap.create();
 
     for (Folder remote : remoteRoot.list("*")) {
       if (remote instanceof IMAPFolder
@@ -2228,10 +2228,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           && !remote.exists()) {
         continue;
       }
-      remotes.put(remote.getParent().getFullName(), remote.getName());
+      remotes.put(remote.getParent().getFullName(), remote);
     }
-    return syncSubFolders(account, remotes, remoteRoot.getName(),
-        String.valueOf(remoteRoot.getSeparator()), localRoot);
+    return syncSubFolders(account, remotes, remoteRoot.getName(), localRoot);
   }
 
   private int syncMessages(SimpleRowSet data, Message[] messages, MailAccount account,
@@ -2295,27 +2294,40 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return cnt;
   }
 
-  private int syncSubFolders(MailAccount account, Multimap<String, String> remotes,
-      String remoteParentName, String pathSeparator, MailFolder localParent) {
+  private int syncSubFolders(MailAccount account, Multimap<String, Folder> remotes,
+      String remoteParentName, MailFolder localParent) throws MessagingException {
 
     Holder<Integer> c = Holder.of(0);
-    Collection<String> remoteNames = remotes.get(remoteParentName);
+    Collection<Folder> remoteFolders = remotes.get(remoteParentName);
     Collection<MailFolder> localFolders = localParent.getSubFolders();
 
-    remoteNames.forEach(remoteName -> {
+    for (Folder remoteFolder : remoteFolders) {
       MailFolder localFolder = localFolders.stream()
-          .filter(local -> Objects.equals(local.getName(), remoteName)).findFirst().orElse(null);
+          .filter(local -> Objects.equals(local.getName(), remoteFolder.getName()))
+          .findFirst().orElse(null);
 
       if (Objects.isNull(localFolder)) {
-        localFolder = mail.createFolder(account, localParent, remoteName);
+        localFolder = mail.createFolder(account, localParent, remoteFolder.getName());
+
+        if (remoteFolder instanceof IMAPFolder) {
+          String[] attributes = ((IMAPFolder) remoteFolder).getAttributes();
+
+          for (SystemFolder sysFolder : EnumSet.complementOf(EnumSet.of(SystemFolder.Inbox))) {
+            if (ArrayUtils.contains(attributes, "\\" + sysFolder.getFolderName())) {
+              mail.updateAccount(account.getAccountId(), sysFolder.name() + COL_FOLDER,
+                  localFolder.getId());
+              account.setSystemFolder(sysFolder, localFolder.getId());
+            }
+          }
+        }
         c.set(c.get() + 1);
       }
-      c.set(c.get() + syncSubFolders(account, remotes,
-          BeeUtils.join(pathSeparator, remoteParentName, remoteName), pathSeparator, localFolder));
-    });
+      c.set(c.get() + syncSubFolders(account, remotes, remoteFolder.getFullName(), localFolder));
+    }
     localFolders.removeIf(localFolder -> {
-      if (!remoteNames.contains(localFolder.getName()) && localFolder.isConnected()
-          && !account.isSystemFolder(localFolder)) {
+      if (remoteFolders.stream()
+          .noneMatch(remoteFolder -> Objects.equals(remoteFolder.getName(), localFolder.getName()))
+          && localFolder.isConnected() && !account.isSystemFolder(localFolder)) {
 
         mail.dropFolder(localFolder);
         c.set(c.get() + 1);

@@ -697,6 +697,10 @@ public class MailAccount {
     fillTree(getRootFolder(), folders);
   }
 
+  void setSystemFolder(SystemFolder sysFolder, Long folderId) {
+    accountInfo.setSystemFolder(sysFolder, folderId);
+  }
+
   void setUsers(Long... users) {
     accountUsers.clear();
     accountUsers.add(getUserId());
