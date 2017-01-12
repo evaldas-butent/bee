@@ -1374,17 +1374,12 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           Pair<Integer, Integer> pair = syncFolder(account, localFolder, remoteFolder, progressId,
               syncAll);
 
-          c += Math.abs(pair.getB());
+          c += pair.getB();
+          count = remoteFolder.getMessageCount();
 
-          if (BeeUtils.isNegative(pair.getB())) {
-            count = 0;
-          } else {
-            count = remoteFolder.getMessageCount();
-
-            if (BeeUtils.isPositive(pair.getA())) {
-              first = pair.getA() + 1;
-              count = count - first + 1;
-            }
+          if (BeeUtils.isPositive(pair.getA())) {
+            first = pair.getA() + 1;
+            count = count - first + 1;
           }
         } else {
           remoteFolder.open(Folder.READ_ONLY);
@@ -1414,7 +1409,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           for (int i = newMessages.length - 1; i >= 0; i--) {
             if (!BeeUtils.isEmpty(progressId)) {
               if (!Endpoint.updateProgress(progressId, l / count)) {
-                return c;
+                throw new ProgressInterruptedException(c);
               }
               l++;
             }
@@ -1438,6 +1433,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             }
           }
         } while (!stop && start > first);
+      } catch (ProgressInterruptedException e) {
+        c += e.getProcessed();
       } finally {
         if (remoteFolder.isOpen()) {
           try {
@@ -2092,7 +2089,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private Pair<Integer, Integer> syncFolder(MailAccount account, MailFolder localFolder,
-      Folder remoteFolder, String progressId, boolean syncAll) throws MessagingException {
+      Folder remoteFolder, String progressId, boolean syncAll)
+      throws MessagingException, ProgressInterruptedException {
 
     Assert.noNulls(localFolder, remoteFolder);
 
@@ -2158,14 +2156,12 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           fp.add(FetchProfile.Item.FLAGS);
           remoteFolder.fetch(msgs, fp);
         }
-        int c = syncMessages(data, msgs, account, localFolder, remoteFolder, progressId);
-        cnt += Math.abs(c);
-
+        try {
+          cnt += syncMessages(data, msgs, account, localFolder, remoteFolder, progressId);
+        } catch (ProgressInterruptedException e) {
+          throw new ProgressInterruptedException(cnt + e.getProcessed());
+        }
         if (lastNo > 0) {
-          if (c < 0) {
-            start = 0;
-            cnt = cnt * (-1);
-          }
           break;
         }
         data = qs.getData(query.setOffset(query.getOffset() + query.getLimit()));
@@ -2202,13 +2198,11 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         clause.add(SqlUtils.moreEqual(TBL_PLACES, COL_MESSAGE_UID, uidLast),
             SqlUtils.lessEqual(TBL_PLACES, COL_MESSAGE_UID, uidTo));
 
-        int c = syncMessages(qs.getData(query), msgs, account, localFolder, remoteFolder,
-            progressId);
-        cnt += Math.abs(c);
-
-        if (c < 0) {
-          cnt = cnt * (-1);
-          break;
+        try {
+          cnt += syncMessages(qs.getData(query), msgs, account, localFolder, remoteFolder,
+              progressId);
+        } catch (ProgressInterruptedException e) {
+          throw new ProgressInterruptedException(cnt + e.getProcessed());
         }
       }
       if (uidLast > 1) {
@@ -2240,7 +2234,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   }
 
   private int syncMessages(SimpleRowSet data, Message[] messages, MailAccount account,
-      MailFolder localFolder, Folder remoteFolder, String progressId) throws MessagingException {
+      MailFolder localFolder, Folder remoteFolder, String progressId)
+      throws MessagingException, ProgressInterruptedException {
     int cnt = 0;
     SimpleRowSet rules = null;
     Set<Long> syncedMsgs = new HashSet<>();
@@ -2249,7 +2244,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     for (int i = messages.length - 1; i >= 0; i--) {
       if (!BeeUtils.isEmpty(progressId)) {
         if (!Endpoint.updateProgress(progressId, l / messages.length)) {
-          return cnt * (-1);
+          throw new ProgressInterruptedException(cnt);
         }
         l--;
       }
