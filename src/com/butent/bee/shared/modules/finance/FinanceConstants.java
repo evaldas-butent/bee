@@ -33,6 +33,7 @@ public final class FinanceConstants {
   public static final String TBL_ANALYSIS_COLUMNS = "AnalysisColumns";
   public static final String TBL_ANALYSIS_ROWS = "AnalysisRows";
   public static final String TBL_ANALYSIS_FILTERS = "AnalysisFilters";
+  public static final String TBL_ANALYSIS_RESULTS = "AnalysisResults";
 
   public static final String VIEW_FINANCIAL_RECORDS = "FinancialRecords";
 
@@ -56,6 +57,7 @@ public final class FinanceConstants {
   public static final String VIEW_ANALYSIS_COLUMNS = "AnalysisColumns";
   public static final String VIEW_ANALYSIS_ROWS = "AnalysisRows";
   public static final String VIEW_ANALYSIS_FILTERS = "AnalysisFilters";
+  public static final String VIEW_ANALYSIS_RESULTS = "AnalysisResults";
 
   public static final String COL_FIN_JOURNAL = "Journal";
   public static final String COL_FIN_DATE = "Date";
@@ -240,6 +242,11 @@ public final class FinanceConstants {
   public static final String COL_ANALYSIS_FILTER_EXTRA = "ExtraFilter";
   public static final String COL_ANALYSIS_FILTER_INCLUDE = "Include";
 
+  public static final String COL_ANALYSIS_RESULT_DATE = "Date";
+  public static final String COL_ANALYSIS_RESULT_CAPTION = "Caption";
+  public static final String COL_ANALYSIS_RESULT_SIZE = "Size";
+  public static final String COL_ANALYSIS_RESULTS = "Results";
+
   public static final String ALS_JOURNAL_BACKGROUND = "JournalBackground";
   public static final String ALS_JOURNAL_FOREGROUND = "JournalForeground";
 
@@ -294,6 +301,7 @@ public final class FinanceConstants {
 
   public static final String GRID_ANALYSIS_COLUMNS = "AnalysisColumns";
   public static final String GRID_ANALYSIS_ROWS = "AnalysisRows";
+  public static final String GRID_ANALYSIS_RESULTS = "AnalysisResults";
 
   public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
   public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";

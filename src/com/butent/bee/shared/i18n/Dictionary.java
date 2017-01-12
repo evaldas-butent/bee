@@ -2803,6 +2803,8 @@ public interface Dictionary {
 
   default String finAnalysisPrimaryRowsNotAvailable() {return g("finAnalysisPrimaryRowsNotAvailable");}
 
+  default String finAnalysisResults() {return g("finAnalysisResults");}
+
   default String finAnalysisRow() {return g("finAnalysisRow");}
 
   default String finAnalysisRowAbbreviation() {return g("finAnalysisRowAbbreviation");}
@@ -4816,6 +4818,8 @@ public interface Dictionary {
 
   default String result() {return g("result");}
 
+  default String results() {return g("results");}
+
   default String rightStateCreate() {return g("rightStateCreate");}
 
   default String rightStateDelete() {return g("rightStateDelete");}
@@ -4982,6 +4986,8 @@ public interface Dictionary {
   default String signOut() {return g("signOut");}
 
   default String singularName() {return g("singularName");}
+
+  default String size() {return g("size");}
 
   default String socialContacts() {return g("socialContacts");}
 
