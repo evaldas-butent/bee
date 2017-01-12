@@ -11,6 +11,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HandlesActions;
 
 import java.util.Collection;
 import java.util.Set;
@@ -46,6 +47,8 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
   void removeCaptionStyle(String style);
 
   boolean removeCommandByStyleName(String styleName);
+
+  void setActionHandler(HandlesActions actionHandler);
 
   void setCaption(String caption);
 

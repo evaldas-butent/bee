@@ -98,7 +98,7 @@
   width: 3rem;
 }
 
-.bee-fin-AnalysisViewer-header {
+.bee-fin-AnalysisViewer-caption {
   margin-top: 1vh;
   margin-bottom: 1vh;
   font-size: larger;
@@ -113,7 +113,7 @@
   -webkit-justify-content: space-around;
   -ms-flex-pack: justify;
 }
-.bee-fin-AnalysisViewer-header .bee-fin-AnalysisViewer-label {
+.bee-fin-AnalysisViewer-caption .bee-fin-AnalysisViewer-label {
   padding: 3px 10px;
 }
 

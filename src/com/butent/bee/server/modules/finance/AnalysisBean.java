@@ -7,9 +7,11 @@ import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
@@ -272,6 +274,37 @@ public class AnalysisBean {
 
     AnalysisFormData formData = getFormData(formId);
     return validateFormData(formId, formData, finView, userId);
+  }
+
+  public ResponseObject saveResults(RequestInfo reqInfo) {
+    Long analysisHeader = reqInfo.getParameterLong(COL_ANALYSIS_HEADER);
+    if (!DataUtils.isId(analysisHeader)) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), COL_ANALYSIS_HEADER);
+    }
+
+    Long time = reqInfo.getParameterLong(COL_ANALYSIS_RESULT_DATE);
+    if (time == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), COL_ANALYSIS_RESULT_DATE);
+    }
+
+    String caption = reqInfo.getParameter(COL_ANALYSIS_RESULT_CAPTION);
+
+    String results = reqInfo.getParameter(COL_ANALYSIS_RESULTS);
+    if (results == null || results.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getSubService(), COL_ANALYSIS_RESULTS);
+    }
+
+    SqlInsert insert = new SqlInsert(TBL_ANALYSIS_RESULTS)
+        .addConstant(COL_ANALYSIS_HEADER, analysisHeader)
+        .addConstant(COL_ANALYSIS_RESULT_DATE, time)
+        .addConstant(COL_ANALYSIS_RESULT_SIZE, results.length())
+        .addConstant(COL_ANALYSIS_RESULTS, results);
+
+    if (!BeeUtils.isEmpty(caption)) {
+      insert.addConstant(COL_ANALYSIS_RESULT_CAPTION, caption);
+    }
+
+    return qs.insertDataWithResponse(insert);
   }
 
   private void addDimensions(SqlSelect query, String tblName) {

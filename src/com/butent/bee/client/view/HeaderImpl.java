@@ -30,6 +30,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Captions;
+import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -77,6 +78,7 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   private Presenter viewPresenter;
+  private HandlesActions actionHandler;
 
   private final Label captionWidget = new Label();
 
@@ -384,6 +386,11 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public void setActionHandler(HandlesActions actionHandler) {
+    this.actionHandler = actionHandler;
+  }
+
+  @Override
   public void setCaption(String caption) {
     captionWidget.setHtml(BeeUtils.trim(Localized.maybeTranslate(caption)));
   }
@@ -533,6 +540,10 @@ public class HeaderImpl extends Flow implements HeaderView {
     return actionControls;
   }
 
+  private HandlesActions getActionHandler() {
+    return actionHandler;
+  }
+
   private Horizontal getCommandPanel() {
     return commandPanel;
   }
@@ -554,6 +565,9 @@ public class HeaderImpl extends Flow implements HeaderView {
     control.addClickHandler(event -> {
       if (getViewPresenter() != null) {
         getViewPresenter().handleAction(action);
+
+      } else if (getActionHandler() != null) {
+        getActionHandler().handleAction(action);
       }
     });
 

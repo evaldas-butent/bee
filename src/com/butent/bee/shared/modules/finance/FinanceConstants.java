@@ -14,6 +14,7 @@ public final class FinanceConstants {
 
   public static final String SVC_VERIFY_ANALYSIS_FORM = "verifyAnalysisForm";
   public static final String SVC_CALCULATE_ANALYSIS_FORM = "calculateAnalysisForm";
+  public static final String SVC_SAVE_ANALYSIS_RESULTS = "saveAnalysisResults";
 
   public static final String TBL_FINANCIAL_RECORDS = "FinancialRecords";
 

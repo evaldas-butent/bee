@@ -60,6 +60,10 @@ public class FinanceModuleBean implements BeeModule {
         }
         break;
 
+      case SVC_SAVE_ANALYSIS_RESULTS:
+        response = analysis.saveResults(reqInfo);
+        break;
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);

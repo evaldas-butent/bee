@@ -511,16 +511,22 @@ public final class AnalysisResults implements BeeSerializable {
     this.queryDuration = queryDuration;
   }
 
+  public long getHeaderId() {
+    return header.getId();
+  }
+
   private Integer getHeaderInteger(String key) {
     return header.getInteger(headerIndexes.get(key));
   }
 
-  public List<AnalysisLabel> getHeaderLabels(String period) {
+  public List<AnalysisLabel> getHeaderLabels(String period, boolean includeName) {
     List<AnalysisLabel> labels = new NonNullList<>();
 
-    labels.add(new AnalysisLabel(COL_ANALYSIS_NAME, getHeaderString(COL_ANALYSIS_NAME),
-        getHeaderString(COL_ANALYSIS_HEADER_BACKGROUND),
-        getHeaderString(COL_ANALYSIS_HEADER_FOREGROUND)));
+    if (includeName) {
+      labels.add(new AnalysisLabel(COL_ANALYSIS_NAME, getHeaderString(COL_ANALYSIS_NAME),
+          getHeaderString(COL_ANALYSIS_HEADER_BACKGROUND),
+          getHeaderString(COL_ANALYSIS_HEADER_FOREGROUND)));
+    }
 
     for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
       labels.add(AnalysisLabel.dimension(header, headerIndexes, ordinal));
