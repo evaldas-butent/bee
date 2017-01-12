@@ -329,8 +329,13 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       } else if (BeeUtils.same(svc, SVC_GET_FOLDERS)) {
         MailAccount account = mail.getAccount(reqInfo.getParameterLong(COL_ACCOUNT), true);
+        Map<String, Object> map = new HashMap<>();
+        map.put(COL_FOLDER, account.getRootFolder());
 
-        response = ResponseObject.response(account.getRootFolder());
+        for (SystemFolder sysFolder : EnumSet.complementOf(EnumSet.of(SystemFolder.Inbox))) {
+          map.put(sysFolder.name(), account.getSystemFolder(sysFolder));
+        }
+        response = ResponseObject.response(map);
 
       } else if (BeeUtils.same(svc, SVC_CREATE_FOLDER)) {
         MailAccount account = mail.getAccount(reqInfo.getParameterLong(COL_ACCOUNT));
@@ -2230,7 +2235,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       }
       remotes.put(remote.getParent().getFullName(), remote);
     }
-    return syncSubFolders(account, remotes, remoteRoot.getName(), localRoot);
+    return syncNewFolders(account, remotes, remoteRoot.getName(), localRoot)
+        + syncOldFolders(account, remotes, remoteRoot.getName(), localRoot);
   }
 
   private int syncMessages(SimpleRowSet data, Message[] messages, MailAccount account,
@@ -2294,15 +2300,13 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return cnt;
   }
 
-  private int syncSubFolders(MailAccount account, Multimap<String, Folder> remotes,
+  private int syncNewFolders(MailAccount account, Multimap<String, Folder> remotes,
       String remoteParentName, MailFolder localParent) throws MessagingException {
 
     Holder<Integer> c = Holder.of(0);
-    Collection<Folder> remoteFolders = remotes.get(remoteParentName);
-    Collection<MailFolder> localFolders = localParent.getSubFolders();
 
-    for (Folder remoteFolder : remoteFolders) {
-      MailFolder localFolder = localFolders.stream()
+    for (Folder remoteFolder : remotes.get(remoteParentName)) {
+      MailFolder localFolder = localParent.getSubFolders().stream()
           .filter(local -> Objects.equals(local.getName(), remoteFolder.getName()))
           .findFirst().orElse(null);
 
@@ -2322,16 +2326,29 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         }
         c.set(c.get() + 1);
       }
-      c.set(c.get() + syncSubFolders(account, remotes, remoteFolder.getFullName(), localFolder));
+      c.set(c.get() + syncNewFolders(account, remotes, remoteFolder.getFullName(), localFolder));
     }
-    localFolders.removeIf(localFolder -> {
-      if (remoteFolders.stream()
-          .noneMatch(remoteFolder -> Objects.equals(remoteFolder.getName(), localFolder.getName()))
-          && localFolder.isConnected() && !account.isSystemFolder(localFolder)) {
+    return c.get();
+  }
 
-        mail.dropFolder(localFolder);
-        c.set(c.get() + 1);
-        return true;
+  private int syncOldFolders(MailAccount account, Multimap<String, Folder> remotes,
+      String remoteParentName, MailFolder localParent) {
+
+    Holder<Integer> c = Holder.of(0);
+
+    localParent.getSubFolders().removeIf(localFolder -> {
+      Folder remoteFolder = remotes.get(remoteParentName).stream()
+          .filter(remote -> Objects.equals(remote.getName(), localFolder.getName()))
+          .findFirst().orElse(null);
+
+      if (Objects.isNull(remoteFolder)) {
+        if (localFolder.isConnected() && !account.isSystemFolder(localFolder)) {
+          mail.dropFolder(localFolder);
+          c.set(c.get() + 1);
+          return true;
+        }
+      } else {
+        c.set(c.get() + syncOldFolders(account, remotes, remoteFolder.getFullName(), localFolder));
       }
       return false;
     });
