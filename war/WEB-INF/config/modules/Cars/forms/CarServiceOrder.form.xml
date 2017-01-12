@@ -121,6 +121,10 @@
         <ChildGrid name="CarServiceItems" relColumn="ServiceOrder" />
       </page>
       <page>
+        <text>=calAppointments</text>
+        <ChildGrid name="CarServiceEvents" relColumn="ServiceOrder" />
+      </page>
+      <page>
         <text>=notes</text>
         <InputArea source="Notes" class="occupy-1" summarize="true" />
       </page>
