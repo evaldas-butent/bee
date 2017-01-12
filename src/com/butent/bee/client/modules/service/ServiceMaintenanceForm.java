@@ -8,11 +8,13 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcCallback;
+import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.*;
@@ -67,8 +69,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   private static final String FA_LABEL_SUFFIX = "Add";
   private static final String WIDGET_ADDRESS_NAME = "AddressLabel";
   private static final String WIDGET_MAINTENANCE_COMMENTS = "MaintenanceComments";
+  private static final String WIDGET_WARRANTY_PANEL = "WarrantyPanel";
   private static final String WIDGET_WARRANTY_TYPE_NAME = "WarrantyTypeName";
   private static final int NEW_MAINTENANCE_DATA_LOAD_PROCESS_COUNT = 8;
+  private static final String WIDGET_OTHER_INFO = "OtherInfo";
 
   private static final String STYLE_PROGRESS_CONTAINER =
       BeeConst.CSS_CLASS_PREFIX + "Grid-ProgressContainer";
@@ -78,6 +82,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   private final MaintenanceEventsHandler eventsHandler = new MaintenanceEventsHandler();
   private Flow maintenanceComments;
+  private Disclosure otherInfo;
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
 
   @Override
@@ -132,6 +137,19 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           RowFactory.createRelatedRow((DataSelector) selectorWidget, null);
         }
       });
+
+    } else if (widget instanceof Disclosure && BeeUtils.same(name, WIDGET_OTHER_INFO)) {
+      otherInfo = (Disclosure) widget;
+
+    } else if (widget instanceof InputBoolean && BeeUtils.same(name, COL_WARRANTY)) {
+      final InputBoolean warranty = (InputBoolean) widget;
+      warranty.addValueChangeHandler(event -> {
+        Widget warrantyPanel = getFormView().getWidgetByName(WIDGET_WARRANTY_PANEL);
+
+        if (warrantyPanel != null) {
+          warrantyPanel.setVisible(BeeUtils.toBoolean(event.getValue()));
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -152,9 +170,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
     updateStateDataSelector(false);
 
-    if (DataUtils.isId(row.getLong(getDataIndex(COL_WARRANTY_MAINTENANCE)))) {
-      updateWarrantyTypeWidget(true);
-    }
+    updateWarrantyTypeWidget(DataUtils.isId(row.getLong(getDataIndex(COL_WARRANTY_MAINTENANCE))));
 
     if (BeeUtils.isTrue(row.getBoolean(getDataIndex(COL_ADDRESS_REQUIRED)))) {
       updateContactAddressLabel(true);
@@ -189,6 +205,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
     super.onClose(messages, oldRow, newRow);
     EventUtils.clearRegistry(registry);
+
+    if (otherInfo != null) {
+      otherInfo.setOpen(true);
+    }
   }
 
   @Override
@@ -368,6 +388,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     super.onStartNewRow(form, oldRow, newRow);
+
+    if (otherInfo != null) {
+      otherInfo.setOpen(true);
+    }
 
     form.addStyleName(STYLE_PROGRESS_CONTAINER);
     form.addStyleName(STYLE_PROGRESS_BAR);
@@ -726,6 +750,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
     if (warrantyWidget instanceof HasCheckedness) {
       ((HasCheckedness) warrantyWidget).setChecked(mandatory);
+    }
+
+    Widget warrantyPanel = getFormView().getWidgetByName(WIDGET_WARRANTY_PANEL);
+
+    if (warrantyPanel != null) {
+      warrantyPanel.setVisible(mandatory);
     }
 
     Widget warrantyTypeName = getFormView().getWidgetByName(WIDGET_WARRANTY_TYPE_NAME, false);

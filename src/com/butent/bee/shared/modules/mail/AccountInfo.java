@@ -34,7 +34,7 @@ public class AccountInfo {
     this.signatureId = row.getLong(COL_SIGNATURE);
 
     for (SystemFolder sysFolder : SystemFolder.values()) {
-      sysFolders.put(sysFolder, row.getLong(sysFolder.name() + COL_FOLDER));
+      setSystemFolder(sysFolder, row.getLong(sysFolder.name() + COL_FOLDER));
     }
   }
 
@@ -135,5 +135,9 @@ public class AccountInfo {
 
   public void setRootFolder(MailFolder folder) {
     this.rootFolder = folder;
+  }
+
+  public void setSystemFolder(SystemFolder sysFolder, Long folderId) {
+    sysFolders.put(sysFolder, folderId);
   }
 }

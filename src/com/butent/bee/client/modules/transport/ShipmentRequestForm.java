@@ -24,7 +24,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowInsertCallback;
-import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.ChildGrid;
@@ -40,7 +39,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -301,9 +299,9 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         if (BeeUtils.isEmpty(terms)) {
           listener.fireEvent(event);
         } else {
-          FlowPanel container = new FlowPanel();
-          StyleUtils.setHeight(container, 160);
-          StyleUtils.setWidth(container, 300);
+          FlowPanel panel = new FlowPanel();
+          StyleUtils.setHeight(panel, 160);
+          StyleUtils.setWidth(panel, 300);
 
           HtmlTable table = new HtmlTable();
 
@@ -321,15 +319,15 @@ class ShipmentRequestForm extends PrintFormInterceptor {
             fp.clear();
             fp.add(new Label(terms));
             StyleUtils.setHeight(fp, 400);
-            StyleUtils.setHeight(container, 460);
+            StyleUtils.setHeight(panel, 460);
             StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.VERTICAL, Overflow.AUTO);
             StyleUtils.setOverflow(fp, StyleUtils.ScrollBars.HORIZONTAL, Overflow.AUTO);
           });
           table.setWidget(0, 1, question);
 
-          container.add(table);
+          panel.add(table);
 
-          Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), container);
+          Global.showModalWidget(Localized.dictionary().trRequestCommonTerms(), panel);
 
           Button no = new Button(Localized.dictionary().no().toUpperCase());
           Button yes = new Button(Localized.dictionary().trAgreeWithConditions().toUpperCase());
@@ -338,10 +336,10 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
           table.setWidget(2, 0, yes);
           table.setWidget(2, 1, no);
-          no.addClickHandler(clickEvent -> UiHelper.closeDialog(container));
+          no.addClickHandler(clickEvent -> UiHelper.closeDialog(panel));
           yes.addClickHandler(clickEvent -> {
             listener.fireEvent(event);
-            UiHelper.closeDialog(container);
+            UiHelper.closeDialog(panel);
           });
         }
       });

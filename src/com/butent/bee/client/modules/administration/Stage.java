@@ -1,4 +1,6 @@
-package com.butent.bee.client.modules.cars;
+package com.butent.bee.client.modules.administration;
+
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_STAGE;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
@@ -54,14 +56,21 @@ public class Stage {
   private final String dataView;
   private final Long id;
   private final String name;
+  private final String confirm;
+
   private final List<StageCondition> conditions = new ArrayList<>();
   private final Set<String> actions = new HashSet<>();
   private final Set<String> triggers = new HashSet<>();
 
-  Stage(String dataView, Long id, String name) {
+  Stage(String dataView, Long id, String name, String confirm) {
     this.dataView = Assert.notEmpty(dataView);
     this.id = Assert.notNull(id);
     this.name = Assert.notEmpty(name);
+    this.confirm = confirm;
+  }
+
+  public boolean active(IsRow row) {
+    return Objects.equals(id, Data.getLong(dataView, row, COL_STAGE));
   }
 
   public void addAction(String action) {
@@ -77,7 +86,12 @@ public class Stage {
   }
 
   public boolean applies(IsRow row) {
-    return conditions.isEmpty() || conditions.stream().anyMatch(cond -> cond.applies(row));
+    return active(row) || conditions.isEmpty()
+        || conditions.stream().anyMatch(cond -> cond.applies(row));
+  }
+
+  public String getConfirm() {
+    return confirm;
   }
 
   public Long getId() {

@@ -131,21 +131,26 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
   @Override
   public void bind() {
-    getGridView().getGrid().addActiveRowChangeHandler(this);
-    getGridView().getGrid().addRenderingHandler(this);
-
-    if (getRowMessage() != null && hasHeader()) {
-      getGridView().getGrid().addMutationHandler(this);
-    }
-
-    if (hasFooter()) {
-      getGridView().getGrid().addSelectionCountChangeHandler(getFooter());
-    }
+    bindDisplay(getGridView().getGrid());
 
     getGridView().addAddStartHandler(this);
     getGridView().addAddEndHandler(this);
 
     getGridView().addEditFormHandler(this);
+  }
+
+  @Override
+  public void bindDisplay(CellGrid display) {
+    display.addActiveRowChangeHandler(this);
+    display.addRenderingHandler(this);
+
+    if (getRowMessage() != null && hasHeader()) {
+      display.addMutationHandler(this);
+    }
+
+    if (hasFooter()) {
+      display.addSelectionCountChangeHandler(getFooter());
+    }
   }
 
   @Override

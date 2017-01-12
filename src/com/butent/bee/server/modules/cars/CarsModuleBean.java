@@ -9,6 +9,7 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PHOTO;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -17,6 +18,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlDelete;
@@ -45,6 +47,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +55,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -243,6 +247,34 @@ public class CarsModuleBean implements BeeModule {
 
             if (DataUtils.isId(obj)) {
               table.row(obj).forEach((key, val) -> beeRow.setProperty(COL_OPTION + key, val));
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void calcAmounts(DataEvent.ViewQueryEvent event) {
+        if (event.isAfter(TBL_SERVICE_ORDERS) && event.hasData()) {
+          BeeRowSet rowSet = event.getRowset();
+          Collection<Long> ids = rowSet.getRowIds();
+
+          for (String tbl : new String[] {TBL_SERVICE_ORDER_ITEMS, TBL_SERVICE_ORDER_JOBS}) {
+            SimpleRowSet data = qs.getData(new SqlSelect()
+                .addFields(tbl, COL_SERVICE_ORDER)
+                .addSum(TradeModuleBean.getTotal(tbl), VAR_TOTAL)
+                .addSum(TradeModuleBean.getDiscount(tbl), COL_TRADE_DISCOUNT)
+                .addSum(TradeModuleBean.getVat(tbl), COL_TRADE_VAT)
+                .addFrom(tbl)
+                .addFromInner(TBL_SERVICE_ORDERS,
+                    sys.joinTables(TBL_SERVICE_ORDERS, tbl, COL_SERVICE_ORDER))
+                .setWhere(SqlUtils.inList(tbl, COL_SERVICE_ORDER, ids))
+                .addGroup(tbl, COL_SERVICE_ORDER));
+
+            for (BeeRow row : rowSet) {
+              Stream.of(VAR_TOTAL, COL_TRADE_DISCOUNT, COL_TRADE_VAT).forEach(col ->
+                  row.setProperty(tbl + col, data.getValueByKey(COL_SERVICE_ORDER,
+                      BeeUtils.toString(row.getId()), col)));
             }
           }
         }

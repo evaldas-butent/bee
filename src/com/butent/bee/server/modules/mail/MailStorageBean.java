@@ -246,13 +246,20 @@ public class MailStorageBean {
   }
 
   public Pair<Long, Long> storeMail(MailAccount account, Message message, Long folderId,
-      Long messageUID) throws MessagingException {
+      Long messageUID) {
 
-    Profile p = new Profile(logger);
-
-    MailEnvelope envelope = new MailEnvelope(message);
-    Pair<Long, Long> messageId = Pair.empty();
     Holder<Boolean> finished = Holder.of(false);
+    Pair<Long, Long> messageId = Pair.empty();
+    Profile p = new Profile(logger);
+    MailEnvelope envelope;
+
+    try {
+      envelope = new MailEnvelope(message);
+    } catch (MessagingException e) {
+      logger.error(e, account.getStoreProtocol(), account.getStoreHost(), account.getStoreLogin(),
+          account.findFolder(folderId).getName());
+      return messageId;
+    }
     p.set("envelope");
 
     cb.synchronizedCall(TBL_MESSAGES, () -> {
@@ -319,9 +326,9 @@ public class MailStorageBean {
         p.set("update");
       } catch (IOException | MessagingException e) {
         detachMessages(SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.getA()));
-        messageId.setA(null);
-        logger.error(e, "Error retrieving message", envelope.getUniqueId());
-        return messageId;
+        logger.error(e, account.getStoreProtocol(), account.getStoreHost(), account.getStoreLogin(),
+            account.findFolder(folderId).getName());
+        return Pair.empty();
       }
       Set<Long> allAddresses = new HashSet<>();
 

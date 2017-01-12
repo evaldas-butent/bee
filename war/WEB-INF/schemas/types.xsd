@@ -238,6 +238,7 @@
       <xs:enumeration value="AnalysisColumns" />
       <xs:enumeration value="AnalysisFilters" />
       <xs:enumeration value="AnalysisHeaders" />
+      <xs:enumeration value="AnalysisResults" />
       <xs:enumeration value="AnalysisRows" />
       <xs:enumeration value="AppointmentAttendees" />
       <xs:enumeration value="AppointmentOwners" />
@@ -267,6 +268,8 @@
       <xs:enumeration value="CalExecutorGroups" />
       <xs:enumeration value="CarEmissionStandards" />
       <xs:enumeration value="CarGearboxes" />
+      <xs:enumeration value="CarJobModels" />
+      <xs:enumeration value="CarJobs" />
       <xs:enumeration value="CarPlaceCodes" />
       <xs:enumeration value="CarStatus" />
       <xs:enumeration value="CarWarranties" />
@@ -286,6 +289,10 @@
       <xs:enumeration value="CarOrderItems" />
       <xs:enumeration value="CarOrders" />
       <xs:enumeration value="Cars" />
+      <xs:enumeration value="CarServiceEvents" />
+      <xs:enumeration value="CarServiceItems" />
+      <xs:enumeration value="CarServiceJobs" />
+      <xs:enumeration value="CarServiceOrders" />
       <xs:enumeration value="CategoryTree" />
       <xs:enumeration value="ChartOfAccounts" />
       <xs:enumeration value="ChatFiles" />

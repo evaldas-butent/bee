@@ -96,6 +96,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -822,11 +823,14 @@ public class MailPanel extends AbstractFormInterceptor {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        Assert.state(response.hasResponse(MailFolder.class));
         response.notify(getFormView());
 
-        account.setRootFolder(MailFolder.restore(response.getResponseAsString()));
+        Map<String, String> map = Codec.deserializeHashMap(response.getResponseAsString());
+        account.setRootFolder(MailFolder.restore(map.get(COL_FOLDER)));
 
+        for (SystemFolder sysFolder : EnumSet.complementOf(EnumSet.of(SystemFolder.Inbox))) {
+          account.setSystemFolder(sysFolder, BeeUtils.toLong(map.get(sysFolder.name())));
+        }
         if (account == getCurrentAccount()) {
           MailKeeper.rebuildController();
 

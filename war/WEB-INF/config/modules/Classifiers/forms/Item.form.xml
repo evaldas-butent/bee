@@ -13,7 +13,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="Item" viewName="Items" caption="=item"
-        width="820" height="720"
+        width="820" height="750"
 >
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin-top: 1ex; margin-bottom: 1em;">
@@ -206,17 +206,70 @@
           </row>
 
           <row>
-            <Label for="Weight">
+            <Label for="KPNCode" >
               &foritem;
             </Label>
-            <InputDecimal source="Weight" style="width: 80px;" summarize="true">
+            <InputText source="KPNCode" summarize="true" >
               &foritem;
-            </InputDecimal>
+            </InputText>
 
             <Label for="Area">
               &foritem;
             </Label>
             <InputDecimal source="Area" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+
+            <Label for="Volume">
+              &foritem;
+            </Label>
+            <InputDecimal source="Volume" style="width: 105px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+
+          <row>
+            <Label for="Weight">
+              &foritem;
+            </Label>
+            <InputDecimal source="Weight" style="width: 105px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+
+            <Label for="Brutto">
+              &foritem;
+            </Label>
+            <InputDecimal source="Brutto" style="width: 105px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+
+            <Label for="Netto">
+              &foritem;
+            </Label>
+            <InputDecimal source="Netto" style="width: 105px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+
+          <row>
+            <Label for="CountryOfOrigin" >
+              &foritem;
+            </Label>
+            <InputText source="CountryOfOrigin" summarize="true" >
+              &foritem;
+            </InputText>
+
+            <Label for="AdditionalUnit" >
+              &foritem;
+            </Label>
+            <InputText source="AdditionalUnit" style="width: 105px;" summarize="true" >
+              &foritem;
+            </InputText>
+
+            <Label for="Factor" >
+              &foritem;
+            </Label>
+            <InputDecimal source="Factor" style="width: 105px;" >
               &foritem;
             </InputDecimal>
           </row>
