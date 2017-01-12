@@ -11,7 +11,6 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
-import com.butent.bee.client.data.Data;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
@@ -765,7 +764,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             } else {
               String value = row.getValue(nameCol);
 
-              if(!BeeUtils.isEmpty(value)) {
+              if (!BeeUtils.isEmpty(value)) {
                 nameMap.put(localesMap.get(nameCol), value);
               }
             }
