@@ -6,8 +6,9 @@
 >
   <Fields>
     <Relation name="Stage" relation="Stages" notNull="true" label="=status" />
-    <String name="Field" precision="30" notNull="true" />
-    <Numeric name="Operator" precision="2" notNull="true" />
+    <String name="Field" precision="30" />
+    <Numeric name="Operator" precision="2" />
     <Text name="Value" />
+    <Relation name="StageFrom" relation="Stages" cascade="DELETE" label="=status+(+=from+)" />
   </Fields>
 </Table>

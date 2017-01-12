@@ -427,7 +427,7 @@ public class MailAccount {
       Folder newFolder = folder.getFolder(name);
 
       if (checkNewFolderName(newFolder, name)) {
-        logger.debug("Creating folder:", name);
+        logger.debug("Creating folder:", newFolder.getFullName());
         ok = newFolder.create(Folder.HOLDS_MESSAGES);
       }
     } finally {
@@ -531,19 +531,23 @@ public class MailAccount {
   }
 
   MailFolder getDraftsFolder() {
-    return findFolder(accountInfo.getSystemFolder(SystemFolder.Drafts));
+    return findFolder(getSystemFolder(SystemFolder.Drafts));
   }
 
   MailFolder getInboxFolder() {
-    return findFolder(accountInfo.getSystemFolder(SystemFolder.Inbox));
+    return findFolder(getSystemFolder(SystemFolder.Inbox));
   }
 
   MailFolder getSentFolder() {
-    return findFolder(accountInfo.getSystemFolder(SystemFolder.Sent));
+    return findFolder(getSystemFolder(SystemFolder.Sent));
+  }
+
+  public Long getSystemFolder(SystemFolder sysFolder) {
+    return accountInfo.getSystemFolder(sysFolder);
   }
 
   MailFolder getTrashFolder() {
-    return findFolder(accountInfo.getSystemFolder(SystemFolder.Trash));
+    return findFolder(getSystemFolder(SystemFolder.Trash));
   }
 
   MailFolder getRootFolder() {
@@ -695,6 +699,10 @@ public class MailAccount {
   void setFolders(Multimap<Long, SimpleRow> folders) {
     getRootFolder().getSubFolders().clear();
     fillTree(getRootFolder(), folders);
+  }
+
+  void setSystemFolder(SystemFolder sysFolder, Long folderId) {
+    accountInfo.setSystemFolder(sysFolder, folderId);
   }
 
   void setUsers(Long... users) {

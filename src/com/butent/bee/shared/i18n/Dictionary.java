@@ -136,6 +136,8 @@ public interface Dictionary {
 
   default String additionalInfo() {return g("additionalInfo");}
 
+  default String additionalItemUnit() {return g("additionalItemUnit");}
+
   default String additionalServices() {return g("additionalServices");}
 
   default String address() {return g("address");}
@@ -254,6 +256,8 @@ public interface Dictionary {
   default String branch() {return g("branch");}
 
   default String branches() {return g("branches");}
+
+  default String brutto() {return g("brutto");}
 
   default String calAction() {return g("calAction");}
 
@@ -605,6 +609,8 @@ public interface Dictionary {
 
   default String car() {return g("car");}
 
+  default String carService() {return g("carService");}
+
   default String cargo() {return g("cargo");}
 
   default String cargoChangeOfPallets() {return g("cargoChangeOfPallets");}
@@ -890,6 +896,8 @@ public interface Dictionary {
   default String countryEUMemberShort() {return g("countryEUMemberShort");}
 
   default String countryFlag() {return g("countryFlag");}
+
+  default String countryOfOrigin() {return g("countryOfOrigin");}
 
   default String create() {return g("create");}
 
@@ -2795,6 +2803,8 @@ public interface Dictionary {
 
   default String finAnalysisPrimaryRowsNotAvailable() {return g("finAnalysisPrimaryRowsNotAvailable");}
 
+  default String finAnalysisResults() {return g("finAnalysisResults");}
+
   default String finAnalysisRow() {return g("finAnalysisRow");}
 
   default String finAnalysisRowAbbreviation() {return g("finAnalysisRowAbbreviation");}
@@ -3319,6 +3329,8 @@ public interface Dictionary {
 
   default String kind() {return g("kind");}
 
+  default String kpnCode() {return g("kpnCode");}
+
   default String language() {return g("language");}
 
   default String languageTag() {return g("languageTag");}
@@ -3721,6 +3733,8 @@ public interface Dictionary {
 
   default String name() {return g("name");}
 
+  default String netto() {return g("netto");}
+
   default String newAccount() {return g("newAccount");}
 
   default String newActivityType() {return g("newActivityType");}
@@ -3860,6 +3874,10 @@ public interface Dictionary {
   default String newSalaryFund() {return g("newSalaryFund");}
 
   default String newService() {return g("newService");}
+
+  default String newServiceJob() {return g("newServiceJob");}
+
+  default String newServiceOrder() {return g("newServiceOrder");}
 
   default String newSupplier() {return g("newSupplier");}
 
@@ -4802,6 +4820,8 @@ public interface Dictionary {
 
   default String result() {return g("result");}
 
+  default String results() {return g("results");}
+
   default String rightStateCreate() {return g("rightStateCreate");}
 
   default String rightStateDelete() {return g("rightStateDelete");}
@@ -4939,6 +4959,14 @@ public interface Dictionary {
 
   default String service() {return g("service");}
 
+  default String serviceJob() {return g("serviceJob");}
+
+  default String serviceJobs() {return g("serviceJobs");}
+
+  default String serviceOrder() {return g("serviceOrder");}
+
+  default String serviceOrders() {return g("serviceOrders");}
+
   default String services() {return g("services");}
 
   default String setAsPrimary() {return g("setAsPrimary");}
@@ -4961,6 +4989,8 @@ public interface Dictionary {
 
   default String singularName() {return g("singularName");}
 
+  default String size() {return g("size");}
+
   default String socialContacts() {return g("socialContacts");}
 
   default String softwareBuild() {return g("softwareBuild");}
@@ -4980,6 +5010,14 @@ public interface Dictionary {
   default String specifyCondition() {return g("specifyCondition");}
 
   default String specifyResult() {return g("specifyResult");}
+
+  default String stageAction() {return g("stageAction");}
+
+  default String stageCondition() {return g("stageCondition");}
+
+  default String stageConfirmation() {return g("stageConfirmation");}
+
+  default String stageTrigger() {return g("stageTrigger");}
 
   default String startRow() {return g("startRow");}
 
@@ -6774,7 +6812,17 @@ public interface Dictionary {
 
   default String vehicleCoupe() {return g("vehicleCoupe");}
 
+  default String vehicleCylinderNumber() {return g("vehicleCylinderNumber");}
+
+  default String vehicleDoorsNumber() {return g("vehicleDoorsNumber");}
+
   default String vehicleDriver() {return g("vehicleDriver");}
+
+  default String vehicleEmissionStandard() {return g("vehicleEmissionStandard");}
+
+  default String vehicleEmissionStandards() {return g("vehicleEmissionStandards");}
+
+  default String vehicleEngineCode() {return g("vehicleEngineCode");}
 
   default String vehicleEngineNumber() {return g("vehicleEngineNumber");}
 
@@ -6784,11 +6832,17 @@ public interface Dictionary {
 
   default String vehicleGearbox() {return g("vehicleGearbox");}
 
+  default String vehicleGearboxes() {return g("vehicleGearboxes");}
+
+  default String vehicleGearsNumber() {return g("vehicleGearsNumber");}
+
   default String vehicleGroups() {return g("vehicleGroups");}
 
   default String vehicleGroupsShort() {return g("vehicleGroupsShort");}
 
   default String vehicleHatchback() {return g("vehicleHatchback");}
+
+  default String vehicleHorsepower() {return g("vehicleHorsepower");}
 
   default String vehicleManualTransmission() {return g("vehicleManualTransmission");}
 
@@ -6808,11 +6862,23 @@ public interface Dictionary {
 
   default String vehicleNetto() {return g("vehicleNetto");}
 
+  default String vehicleNewEmissionStandard() {return g("vehicleNewEmissionStandard");}
+
+  default String vehicleNewGearbox() {return g("vehicleNewGearbox");}
+
+  default String vehicleNewPlaceCode() {return g("vehicleNewPlaceCode");}
+
+  default String vehicleNewWarranty() {return g("vehicleNewWarranty");}
+
   default String vehicleNotes() {return g("vehicleNotes");}
 
   default String vehicleNumber() {return g("vehicleNumber");}
 
   default String vehicleOwnerName() {return g("vehicleOwnerName");}
+
+  default String vehiclePlaceCode() {return g("vehiclePlaceCode");}
+
+  default String vehiclePlaceCodes() {return g("vehiclePlaceCodes");}
 
   default String vehiclePower() {return g("vehiclePower");}
 
@@ -6830,11 +6896,17 @@ public interface Dictionary {
 
   default String vehicleService() {return g("vehicleService");}
 
+  default String vehicleServiceSettings() {return g("vehicleServiceSettings");}
+
   default String vehicleSpeedometer() {return g("vehicleSpeedometer");}
 
   default String vehicleTankCapacity() {return g("vehicleTankCapacity");}
 
   default String vehicleType() {return g("vehicleType");}
+
+  default String vehicleWarranties() {return g("vehicleWarranties");}
+
+  default String vehicleWarranty() {return g("vehicleWarranty");}
 
   default String vehicles() {return g("vehicles");}
 

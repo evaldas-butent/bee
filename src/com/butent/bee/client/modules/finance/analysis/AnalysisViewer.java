@@ -1,8 +1,11 @@
 package com.butent.bee.client.modules.finance.analysis;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Table;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
@@ -38,6 +41,72 @@ import java.util.Map;
 
 class AnalysisViewer extends Flow implements HasCaption {
 
+  private static final class SplitTree implements Comparable<SplitTree> {
+
+    private final int valueIndex;
+
+    private final List<SplitTree> children = new ArrayList<>();
+
+    private SplitTree(int valueIndex) {
+      this.valueIndex = valueIndex;
+    }
+
+    private SplitTree addChild(int index) {
+      for (SplitTree child : children) {
+        if (child.valueIndex == index) {
+          return child;
+        }
+      }
+
+      SplitTree child = new SplitTree(index);
+      children.add(child);
+
+      return child;
+    }
+
+    @Override
+    public int compareTo(SplitTree o) {
+      return Integer.compare(valueIndex, o.valueIndex);
+    }
+
+    private int size() {
+      if (children.isEmpty()) {
+        return 1;
+      } else {
+        return children.stream().mapToInt(SplitTree::size).sum();
+      }
+    }
+
+    private void sort() {
+      if (!children.isEmpty()) {
+        if (children.size() > 1) {
+          children.sort(null);
+        }
+
+        children.forEach(SplitTree::sort);
+      }
+    }
+
+    @Override
+    public String toString() {
+      if (children.isEmpty()) {
+        return Integer.toString(valueIndex);
+      } else {
+        return BeeUtils.joinWords(valueIndex, children);
+      }
+    }
+
+    private void collect(int depth, ListMultimap<Integer, SplitTree> collector) {
+      collector.put(depth, this);
+
+      if (!children.isEmpty()) {
+        for (SplitTree child : children) {
+          child.collect(depth + 1, collector);
+        }
+      }
+    }
+  }
+
   private static BeeLogger logger = LogUtils.getLogger(AnalysisViewer.class);
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "fin-AnalysisViewer-";
@@ -49,22 +118,28 @@ class AnalysisViewer extends Flow implements HasCaption {
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
 
   private static final String STYLE_COLUMN = STYLE_PREFIX + "column";
+  private static final String STYLE_COLUMN_UNDEF = STYLE_COLUMN + "-undef";
   private static final String STYLE_ROW = STYLE_PREFIX + "row";
 
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
   private static final String STYLE_LABEL_PREFIX = STYLE_LABEL + "-";
+  private static final String STYLE_LABEL_UNDEF = STYLE_LABEL_PREFIX + "undef";
 
   private static final String STYLE_SPLIT = STYLE_PREFIX + "split";
   private static final String STYLE_SPLIT_PREFIX = STYLE_SPLIT + "-";
   private static final String STYLE_SPLIT_EMPTY = STYLE_SPLIT_PREFIX + "empty";
+  private static final String STYLE_SPLIT_UNDEF = STYLE_SPLIT_PREFIX + "undef";
 
   private static final String STYLE_TYPE = STYLE_PREFIX + "type";
   private static final String STYLE_TYPE_PREFIX = STYLE_TYPE + "-";
+  private static final String STYLE_TYPE_UNDEF = STYLE_TYPE_PREFIX + "undef";
 
   private static final String STYLE_VALUE = STYLE_PREFIX + "value";
   private static final String STYLE_VALUE_PREFIX = STYLE_VALUE + "-";
+  private static final String STYLE_VALUE_EMPTY = STYLE_VALUE_PREFIX + "empty";
 
   private static final String STYLE_PERFORMANCE = STYLE_PREFIX + "performance";
+  private static final String STYLE_STATS = STYLE_PREFIX + "stats";
   private static final String STYLE_TIME = STYLE_PREFIX + "time";
   private static final String STYLE_DURATION = STYLE_PREFIX + "duration";
 
@@ -78,11 +153,11 @@ class AnalysisViewer extends Flow implements HasCaption {
   private final Map<Long, List<AnalysisSplitType>> columnSplitTypes = new HashMap<>();
   private final Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> columnSplitValues =
       new HashMap<>();
+  private final Map<Long, List<SplitTree>> columnSplitTree = new HashMap<>();
 
   private final Map<Long, List<AnalysisCellType>> columnCellTypes = new HashMap<>();
 
   private final Map<Long, Integer> columnSpan = new HashMap<>();
-  private final Map<Long, Map<AnalysisSplitType, Integer>> columnSplitSpan = new HashMap<>();
 
   private final List<Long> rowIds = new ArrayList<>();
   private final Map<Long, List<AnalysisLabel>> rowLabels = new HashMap<>();
@@ -90,11 +165,11 @@ class AnalysisViewer extends Flow implements HasCaption {
   private final Map<Long, List<AnalysisSplitType>> rowSplitTypes = new HashMap<>();
   private final Map<Long, Map<AnalysisSplitType, List<AnalysisSplitValue>>> rowSplitValues =
       new HashMap<>();
+  private final Map<Long, List<SplitTree>> rowSplitTree = new HashMap<>();
 
   private final Map<Long, List<AnalysisCellType>> rowCellTypes = new HashMap<>();
 
   private final Map<Long, Integer> rowSpan = new HashMap<>();
-  private final Map<Long, Map<AnalysisSplitType, Integer>> rowSplitSpan = new HashMap<>();
 
   private final Table<Long, Long, List<AnalysisValue>> values = HashBasedTable.create();
 
@@ -132,14 +207,7 @@ class AnalysisViewer extends Flow implements HasCaption {
         }
 
         List<AnalysisCellType> cellTypes = results.getColumnCellTypes(column);
-        this.columnCellTypes.put(id, cellTypes);
-
-        columnSpan.put(id, getSpan(st, sv, cellTypes));
-
-        Map<AnalysisSplitType, Integer> splitSpan = getSplitSpan(st, sv, cellTypes);
-        if (!BeeUtils.isEmpty(splitSpan)) {
-          columnSplitSpan.put(id, splitSpan);
-        }
+        columnCellTypes.put(id, cellTypes);
       }
     }
 
@@ -148,8 +216,6 @@ class AnalysisViewer extends Flow implements HasCaption {
     logger.debug("c split types", columnSplitTypes);
     logger.debug("c split values", columnSplitValues);
     logger.debug("c cell types", columnCellTypes);
-    logger.debug("c span", columnSpan);
-    logger.debug("c split span", columnSplitSpan);
     logger.addSeparator();
 
     for (BeeRow row : results.getRows()) {
@@ -172,13 +238,6 @@ class AnalysisViewer extends Flow implements HasCaption {
 
         List<AnalysisCellType> cellTypes = results.getRowCellTypes(row);
         this.rowCellTypes.put(id, cellTypes);
-
-        rowSpan.put(id, getSpan(st, sv, cellTypes));
-
-        Map<AnalysisSplitType, Integer> splitSpan = getSplitSpan(st, sv, cellTypes);
-        if (!BeeUtils.isEmpty(splitSpan)) {
-          rowSplitSpan.put(id, splitSpan);
-        }
       }
     }
 
@@ -187,8 +246,6 @@ class AnalysisViewer extends Flow implements HasCaption {
     logger.debug("r split types", rowSplitTypes);
     logger.debug("r split values", rowSplitValues);
     logger.debug("r cell types", rowCellTypes);
-    logger.debug("r span", rowSpan);
-    logger.debug("r split span", rowSplitSpan);
     logger.addSeparator();
 
     for (AnalysisValue value : results.getValues()) {
@@ -204,8 +261,40 @@ class AnalysisViewer extends Flow implements HasCaption {
           list.add(value);
           values.put(rowId, columnId, list);
         }
+
+        if (rowSplitTypes.containsKey(rowId) && !value.getRowSplit().isEmpty()) {
+          buildSplitTree(rowId, false, value.getRowSplit());
+        }
+        if (columnSplitTypes.containsKey(columnId) && !value.getColumnSplit().isEmpty()) {
+          buildSplitTree(columnId, true, value.getColumnSplit());
+        }
       }
     }
+
+    if (!columnSplitTree.isEmpty()) {
+      columnSplitTree.forEach((id, list) -> {
+        sort(list);
+        logger.debug("cst", id, list);
+      });
+    }
+
+    if (!rowSplitTree.isEmpty()) {
+      rowSplitTree.forEach((id, list) -> {
+        sort(list);
+        logger.debug("rst", id, list);
+      });
+    }
+
+    for (long id : columnIds) {
+      columnSpan.put(id, getSpan(columnSplitTree.get(id), columnCellTypes.get(id)));
+    }
+    logger.debug("c span", columnSpan);
+
+    for (long id : rowIds) {
+      rowSpan.put(id, getSpan(rowSplitTree.get(id), rowCellTypes.get(id)));
+    }
+    logger.debug("r span", rowSpan);
+    logger.addSeparator();
 
     logger.debug("values", values.size(),
         values.values().stream().mapToInt(List::size).sum());
@@ -213,19 +302,82 @@ class AnalysisViewer extends Flow implements HasCaption {
     logger.addSeparator();
   }
 
-  private static int getSpan(List<AnalysisSplitType> splitTypes,
-      Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues,
-      List<AnalysisCellType> cellTypes) {
+  private static void sort(List<SplitTree> list) {
+    if (list.size() > 1) {
+      list.sort(null);
+    }
 
-    int span = 1;
+    list.forEach(SplitTree::sort);
+  }
 
-    if (!BeeUtils.isEmpty(splitTypes) && !BeeUtils.isEmpty(splitValues)) {
-      for (AnalysisSplitType type : splitTypes) {
-        int size = BeeUtils.size(splitValues.get(type));
+  private void buildSplitTree(long id, boolean isColumn,
+      Map<AnalysisSplitType, AnalysisSplitValue> split) {
 
-        if (size > 1) {
-          span *= size;
+    List<AnalysisSplitType> splitTypes =
+        isColumn ? columnSplitTypes.get(id) : rowSplitTypes.get(id);
+
+    Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValuesByType =
+        isColumn ? columnSplitValues.get(id) : rowSplitValues.get(id);
+
+    SplitTree splitTree = null;
+
+    if (!BeeUtils.isEmpty(splitTypes) && !BeeUtils.isEmpty(splitValuesByType)) {
+      for (int typeIndex = 0; typeIndex < splitTypes.size(); typeIndex++) {
+        AnalysisSplitType splitType = splitTypes.get(typeIndex);
+        AnalysisSplitValue splitValue = split.get(splitType);
+
+        int valueIndex = BeeUtils.indexOf(splitValuesByType.get(splitType), splitValue);
+
+        if (!BeeConst.isUndef(valueIndex)) {
+          if (typeIndex == 0) {
+            splitTree = null;
+            List<SplitTree> trees = isColumn ? columnSplitTree.get(id) : rowSplitTree.get(id);
+
+            if (!BeeUtils.isEmpty(trees)) {
+              for (SplitTree tree : trees) {
+                if (tree.valueIndex == valueIndex) {
+                  splitTree = tree;
+                  break;
+                }
+              }
+            }
+
+            if (splitTree == null) {
+              splitTree = new SplitTree(valueIndex);
+
+              if (BeeUtils.isEmpty(trees)) {
+                List<SplitTree> list = new ArrayList<>();
+                list.add(splitTree);
+
+                if (isColumn) {
+                  columnSplitTree.put(id, list);
+                } else {
+                  rowSplitTree.put(id, list);
+                }
+
+              } else {
+                trees.add(splitTree);
+              }
+            }
+
+          } else {
+            splitTree = splitTree.addChild(valueIndex);
+          }
         }
+      }
+    }
+  }
+
+  private static int getSpan(Collection<SplitTree> splitTrees, List<AnalysisCellType> cellTypes) {
+    int span;
+
+    if (BeeUtils.isEmpty(splitTrees)) {
+      span = 1;
+
+    } else {
+      span = splitTrees.stream().mapToInt(SplitTree::size).sum();
+      if (span <= 0) {
+        span = 1;
       }
     }
 
@@ -234,32 +386,6 @@ class AnalysisViewer extends Flow implements HasCaption {
     }
 
     return span;
-  }
-
-  private static Map<AnalysisSplitType, Integer> getSplitSpan(List<AnalysisSplitType> splitTypes,
-      Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues,
-      List<AnalysisCellType> cellTypes) {
-
-    Map<AnalysisSplitType, Integer> result = new HashMap<>();
-
-    int span = 1;
-    if (!BeeUtils.isEmpty(cellTypes)) {
-      span *= cellTypes.size();
-    }
-
-    if (!BeeUtils.isEmpty(splitTypes) && !BeeUtils.isEmpty(splitValues)) {
-      for (int i = splitTypes.size() - 1; i >= 0; i--) {
-        AnalysisSplitType type = splitTypes.get(i);
-        result.put(type, span);
-
-        int size = BeeUtils.size(splitValues.get(type));
-        if (size > 1) {
-          span *= size;
-        }
-      }
-    }
-
-    return result;
   }
 
   public static String formatRange(MonthRange range) {
@@ -316,17 +442,21 @@ class AnalysisViewer extends Flow implements HasCaption {
       performance.add(renderDuration(results.getComputeEnd() - results.getInitStart()));
 
     } else {
-      Label timeLabel = new Label(TimeUtils.renderDateTime(results.getComputeEnd()));
-      timeLabel.addStyleName(STYLE_TIME);
-      performance.add(timeLabel);
-
-      long duration = results.getComputeEnd() - results.getInitStart();
-      Label durationLabel = new Label(BeeUtils.bracket(TimeUtils.renderMillis(duration)));
-      durationLabel.addStyleName(STYLE_DURATION);
-      performance.add(durationLabel);
+      performance.add(renderMillis(results.getComputeEnd()));
+      performance.add(renderDuration(results.getComputeEnd() - results.getInitStart()));
     }
 
     add(performance);
+
+    if (results.getQueryCount() > 0) {
+      Horizontal stats = new Horizontal(STYLE_STATS);
+
+      stats.add(new Label(BeeUtils.toString(results.getQueryCount())));
+      stats.add(renderDuration(results.getQueryDuration() / results.getQueryCount()));
+      stats.add(renderDuration(results.getQueryDuration()));
+
+      add(stats);
+    }
 
     Flow header = new Flow(STYLE_HEADER);
     results.getHeaderLabels(formatRange(results.getHeaderRange())).forEach(analysisLabel ->
@@ -379,16 +509,19 @@ class AnalysisViewer extends Flow implements HasCaption {
 
       for (long columnId : columnIds) {
         List<AnalysisLabel> labels = columnLabels.get(columnId);
+        Integer span = columnSpan.get(columnId);
 
-        if (!BeeUtils.isEmpty(labels)) {
-          Integer span = columnSpan.get(columnId);
+        for (int i = 0; i < maxColumnLabels; i++) {
+          int y = r + i;
 
-          for (int i = 0; i < labels.size(); i++) {
-            table.setWidgetAndStyle(r + i, c, render(labels.get(i)), STYLE_COLUMN);
+          if (BeeUtils.isIndex(labels, i)) {
+            table.setWidgetAndStyle(y, c, render(labels.get(i)), STYLE_COLUMN);
+          } else {
+            table.setText(y, c, null, STYLE_COLUMN_UNDEF, STYLE_LABEL_UNDEF);
+          }
 
-            if (BeeUtils.isMore(span, 1)) {
-              table.getCellFormatter().setColSpan(r + i, c, span);
-            }
+          if (BeeUtils.isMore(span, 1)) {
+            table.getCellFormatter().setColSpan(y, c, span);
           }
         }
 
@@ -399,35 +532,86 @@ class AnalysisViewer extends Flow implements HasCaption {
     }
 
     if (maxColumnSplitTypes > 0) {
-      r = maxColumnLabels;
       c = cStartValues;
+      Map<Integer, Integer> lastCells = new HashMap<>();
 
       for (long columnId : columnIds) {
         List<AnalysisSplitType> splitTypes = columnSplitTypes.get(columnId);
+        int maxTypeIndex = -1;
 
         if (!BeeUtils.isEmpty(splitTypes)) {
           Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValuesByType =
               columnSplitValues.get(columnId);
-          Map<AnalysisSplitType, Integer> splitSpan = columnSplitSpan.get(columnId);
+          List<SplitTree> splitTrees = columnSplitTree.get(columnId);
 
-          if (!BeeUtils.isEmpty(splitValuesByType) && !BeeUtils.isEmpty(splitSpan)) {
-            for (int i = 0; i < splitTypes.size(); i++) {
-              AnalysisSplitType type = splitTypes.get(i);
+          if (!BeeUtils.isEmpty(splitValuesByType) && !BeeUtils.isEmpty(splitTrees)) {
+            List<AnalysisCellType> cellTypes = columnCellTypes.get(columnId);
+            int cellSize = Math.max(BeeUtils.size(cellTypes), 1);
 
-              List<AnalysisSplitValue> splitValues = splitValuesByType.get(type);
-              Integer span = splitSpan.get(type);
+            for (SplitTree splitTree : splitTrees) {
+              ListMultimap<Integer, SplitTree> treeCollector = ArrayListMultimap.create();
+              splitTree.collect(0, treeCollector);
 
-              if (!BeeUtils.isEmpty(splitValues) && BeeUtils.isPositive(span)) {
-                for (int j = 0; j < splitValues.size(); j++) {
-                  table.setWidgetAndStyle(r + i, c + j * span,
-                      render(type, splitValues.get(j)), STYLE_COLUMN);
+              for (int typeIndex : treeCollector.keySet()) {
+                AnalysisSplitType splitType = BeeUtils.getQuietly(splitTypes, typeIndex);
+                List<AnalysisSplitValue> splitValues =
+                    BeeUtils.getQuietly(splitValuesByType, splitType);
+
+                List<SplitTree> trees = treeCollector.get(typeIndex);
+
+                for (int j = 0; j < trees.size(); j++) {
+                  SplitTree tree = trees.get(j);
+                  logger.debug("c flat", typeIndex, j, tree.valueIndex, tree.size());
+
+                  AnalysisSplitValue splitValue = BeeUtils.getQuietly(splitValues, tree.valueIndex);
+                  if (splitValue != null) {
+                    int y = maxColumnLabels + typeIndex;
+
+                    int x;
+                    if (lastCells.containsKey(y)) {
+                      x = lastCells.get(y) + 1;
+                    } else {
+                      x = c;
+                    }
+                    lastCells.put(y, x);
+
+                    table.setWidgetAndStyle(y, x, render(splitType, splitValue), STYLE_COLUMN);
+
+                    int span = tree.size() * cellSize;
+                    if (span > 1) {
+                      table.getCellFormatter().setColSpan(y, x, span);
+                    }
+
+                    maxTypeIndex = Math.max(maxTypeIndex, typeIndex);
+                  }
                 }
               }
             }
           }
         }
 
-        c += columnSpan.get(columnId);
+        int cSpan = columnSpan.get(columnId);
+
+        if (maxTypeIndex < maxColumnSplitTypes - 1) {
+          for (int i = maxTypeIndex + 1; i < maxColumnSplitTypes; i++) {
+            int y = maxColumnLabels + i;
+
+            int x;
+            if (lastCells.containsKey(y)) {
+              x = lastCells.get(y) + 1;
+            } else {
+              x = c;
+            }
+            lastCells.put(y, x);
+
+            table.setText(y, x, null, STYLE_COLUMN_UNDEF, STYLE_SPLIT_UNDEF);
+            if (cSpan > 1) {
+              table.getCellFormatter().setColSpan(y, x, cSpan);
+            }
+          }
+        }
+
+        c += cSpan;
       }
 
       logger.debug("column splits", maxColumnSplitTypes);
@@ -446,9 +630,13 @@ class AnalysisViewer extends Flow implements HasCaption {
 
           for (int i = 0; i < span; i += size) {
             for (int j = 0; j < size; j++) {
-              table.setWidgetAndStyle(r, c + i * size + j, render(cellTypes.get(j)),
-                  STYLE_COLUMN);
+              table.setWidgetAndStyle(r, c + i + j, render(cellTypes.get(j)), STYLE_COLUMN);
             }
+          }
+
+        } else {
+          for (int i = 0; i < span; i++) {
+            table.setText(r, c + i, null, STYLE_COLUMN_UNDEF, STYLE_TYPE_UNDEF);
           }
         }
 
@@ -459,6 +647,8 @@ class AnalysisViewer extends Flow implements HasCaption {
     }
 
     r = rStartValues;
+
+    Map<Integer, Integer> lastSplitCells = new HashMap<>();
 
     for (long rowId : rowIds) {
       logger.debug("row", rowId);
@@ -481,23 +671,48 @@ class AnalysisViewer extends Flow implements HasCaption {
         List<AnalysisSplitType> splitTypes = rowSplitTypes.get(rowId);
 
         if (!BeeUtils.isEmpty(splitTypes)) {
-          c = maxRowLabels;
-
           Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValuesByType =
               rowSplitValues.get(rowId);
-          Map<AnalysisSplitType, Integer> splitSpan = rowSplitSpan.get(rowId);
+          List<SplitTree> splitTrees = rowSplitTree.get(rowId);
 
-          if (!BeeUtils.isEmpty(splitValuesByType) && !BeeUtils.isEmpty(splitSpan)) {
-            for (int i = 0; i < splitTypes.size(); i++) {
-              AnalysisSplitType type = splitTypes.get(i);
+          if (!BeeUtils.isEmpty(splitValuesByType) && !BeeUtils.isEmpty(splitTrees)) {
+            List<AnalysisCellType> cellTypes = rowCellTypes.get(rowId);
+            int cellSize = Math.max(BeeUtils.size(cellTypes), 1);
 
-              List<AnalysisSplitValue> splitValues = splitValuesByType.get(type);
-              Integer span = splitSpan.get(type);
+            for (SplitTree splitTree : splitTrees) {
+              ListMultimap<Integer, SplitTree> treeCollector = ArrayListMultimap.create();
+              splitTree.collect(0, treeCollector);
 
-              if (!BeeUtils.isEmpty(splitValues) && BeeUtils.isPositive(span)) {
-                for (int j = 0; j < splitValues.size(); j++) {
-                  table.setWidgetAndStyle(r + j * span, c + i,
-                      render(type, splitValues.get(j)), STYLE_ROW);
+              for (int typeIndex : treeCollector.keySet()) {
+                AnalysisSplitType splitType = BeeUtils.getQuietly(splitTypes, typeIndex);
+                List<AnalysisSplitValue> splitValues =
+                    BeeUtils.getQuietly(splitValuesByType, splitType);
+
+                List<SplitTree> trees = treeCollector.get(typeIndex);
+
+                for (int i = 0; i < trees.size(); i++) {
+                  SplitTree tree = trees.get(i);
+                  logger.debug("r flat", typeIndex, i, tree.valueIndex, tree.size());
+
+                  AnalysisSplitValue splitValue = BeeUtils.getQuietly(splitValues, tree.valueIndex);
+                  if (splitValue != null) {
+                    int x = maxRowLabels + typeIndex;
+                    int y;
+
+                    if (lastSplitCells.containsKey(x)) {
+                      y = Math.max(lastSplitCells.get(x) + 1, r);
+                    } else {
+                      y = r;
+                    }
+                    lastSplitCells.put(x, y);
+
+                    table.setWidgetAndStyle(y, x, render(splitType, splitValue), STYLE_ROW);
+
+                    int span = tree.size() * cellSize;
+                    if (span > 1) {
+                      lastSplitCells.put(x, y + span - 1);
+                    }
+                  }
                 }
               }
             }
@@ -518,8 +733,7 @@ class AnalysisViewer extends Flow implements HasCaption {
 
           for (int i = 0; i < span; i += size) {
             for (int j = 0; j < size; j++) {
-              table.setWidgetAndStyle(r + i * size + j, c, render(cellTypes.get(j)),
-                  STYLE_ROW);
+              table.setWidgetAndStyle(r + i + j, c, render(cellTypes.get(j)), STYLE_ROW);
             }
           }
 
@@ -542,6 +756,26 @@ class AnalysisViewer extends Flow implements HasCaption {
       r += rowSpan.get(rowId);
     }
 
+    int maxCellCount = 0;
+    for (int i = rStartValues; i < table.getRowCount(); i++) {
+      maxCellCount = Math.max(maxCellCount, table.getCellCount(i));
+    }
+
+    if (maxCellCount > cStartValues) {
+      for (int i = rStartValues; i < table.getRowCount(); i++) {
+        if (table.getCellCount(i) < maxCellCount) {
+          table.setText(i, maxCellCount - 1, null);
+        }
+
+        for (int j = cStartValues; j < maxCellCount; j++) {
+          TableCellElement cellElement = table.getCellFormatter().getElement(i, j);
+          if (BeeUtils.allEmpty(cellElement.getClassName(), cellElement.getInnerText())) {
+            cellElement.addClassName(STYLE_VALUE_EMPTY);
+          }
+        }
+      }
+    }
+
     return table;
   }
 
@@ -549,18 +783,21 @@ class AnalysisViewer extends Flow implements HasCaption {
       HtmlTable table, int r, int c) {
 
     for (AnalysisValue value : analysisValues) {
-      int rowOffset = getRowOffset(value);
-      int columnOffset = getColumnOffset(value);
+      int rowOffset = getOffset(value, false);
+      int columnOffset = getOffset(value, true);
 
       List<AnalysisCellType> rowTypes = rowCellTypes.get(value.getRowId());
       List<AnalysisCellType> columnTypes = columnCellTypes.get(value.getColumnId());
 
+      int rowSize = BeeUtils.size(rowTypes);
+      int columnSize = BeeUtils.size(columnTypes);
+
       AnalysisCellType cellType;
 
-      for (int i = 0; i < rowTypes.size(); i++) {
+      for (int i = 0; i < rowSize; i++) {
         AnalysisCellType rowType = rowTypes.get(i);
 
-        for (int j = 0; j < columnTypes.size(); j++) {
+        for (int j = 0; j < columnSize; j++) {
           AnalysisCellType columnType = columnTypes.get(j);
 
           if (i > 0) {
@@ -576,7 +813,7 @@ class AnalysisViewer extends Flow implements HasCaption {
           String text = cellType.render(value);
           if (!BeeUtils.isEmpty(text)) {
             String typeSuffix = cellType.getAnalysisValueType().name().toLowerCase();
-            table.setText(r + rowOffset + i, c + columnOffset + j, text,
+            table.setText(r + rowOffset * rowSize + i, c + columnOffset * columnSize + j, text,
                 STYLE_VALUE, STYLE_VALUE_PREFIX + typeSuffix);
           }
         }
@@ -584,82 +821,55 @@ class AnalysisViewer extends Flow implements HasCaption {
     }
   }
 
-  private int getColumnSplitSpan(long columnId, AnalysisSplitType splitType) {
-    int defaultSpan = 1;
-
-    Map<AnalysisSplitType, Integer> spanByType = columnSplitSpan.get(columnId);
-    if (BeeUtils.isEmpty(spanByType)) {
-      return defaultSpan;
-    } else {
-      return spanByType.getOrDefault(splitType, defaultSpan);
-    }
-  }
-
-  private int getRowSplitSpan(long rowId, AnalysisSplitType splitType) {
-    int defaultSpan = 1;
-
-    Map<AnalysisSplitType, Integer> spanByType = rowSplitSpan.get(rowId);
-    if (BeeUtils.isEmpty(spanByType)) {
-      return defaultSpan;
-    } else {
-      return spanByType.getOrDefault(splitType, defaultSpan);
-    }
-  }
-
-  private int getColumnOffset(AnalysisValue value) {
+  private int getOffset(AnalysisValue value, boolean isColumn) {
     int offset = 0;
 
-    Map<AnalysisSplitType, AnalysisSplitValue> split = value.getColumnSplit();
+    Map<AnalysisSplitType, AnalysisSplitValue> split =
+        isColumn ? value.getColumnSplit() : value.getRowSplit();
     if (BeeUtils.isEmpty(split)) {
       return offset;
     }
 
-    long id = value.getColumnId();
+    long id = isColumn ? value.getColumnId() : value.getRowId();
 
-    List<AnalysisSplitType> splitTypes = columnSplitTypes.get(id);
+    List<AnalysisSplitType> splitTypes =
+        isColumn ? columnSplitTypes.get(id) : rowSplitTypes.get(id);
     if (BeeUtils.isEmpty(splitTypes)) {
       return offset;
     }
 
-    Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues = columnSplitValues.get(id);
+    Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues =
+        isColumn ? columnSplitValues.get(id) : rowSplitValues.get(id);
     if (BeeUtils.isEmpty(splitValues)) {
       return offset;
     }
 
-    for (AnalysisSplitType splitType : splitTypes) {
-      int index = BeeUtils.indexOf(splitValues.get(splitType), split.get(splitType));
-      if (index > 0) {
-        offset += index * getColumnSplitSpan(id, splitType);
-      }
-    }
-
-    return offset;
-  }
-
-  private int getRowOffset(AnalysisValue value) {
-    int offset = 0;
-
-    Map<AnalysisSplitType, AnalysisSplitValue> split = value.getRowSplit();
-    if (BeeUtils.isEmpty(split)) {
-      return offset;
-    }
-
-    long id = value.getRowId();
-
-    List<AnalysisSplitType> splitTypes = rowSplitTypes.get(id);
-    if (BeeUtils.isEmpty(splitTypes)) {
-      return offset;
-    }
-
-    Map<AnalysisSplitType, List<AnalysisSplitValue>> splitValues = rowSplitValues.get(id);
-    if (BeeUtils.isEmpty(splitValues)) {
+    List<SplitTree> splitTrees = isColumn ? columnSplitTree.get(id) : rowSplitTree.get(id);
+    if (BeeUtils.isEmpty(splitTrees)) {
       return offset;
     }
 
     for (AnalysisSplitType splitType : splitTypes) {
-      int index = BeeUtils.indexOf(splitValues.get(splitType), split.get(splitType));
-      if (index > 0) {
-        offset += index * getRowSplitSpan(id, splitType);
+      int valueIndex = BeeUtils.indexOf(splitValues.get(splitType), split.get(splitType));
+
+      if (!BeeConst.isUndef(valueIndex)) {
+        List<SplitTree> children = null;
+
+        for (SplitTree splitTree : splitTrees) {
+          if (splitTree.valueIndex == valueIndex) {
+            children = splitTree.children;
+            break;
+
+          } else {
+            offset += splitTree.size();
+          }
+        }
+
+        if (BeeUtils.isEmpty(children)) {
+          break;
+        } else {
+          splitTrees = children;
+        }
       }
     }
 
@@ -667,11 +877,15 @@ class AnalysisViewer extends Flow implements HasCaption {
   }
 
   private static Widget renderMillis(long millis) {
-    return new Label(TimeUtils.renderDateTime(millis, true));
+    Label label = new Label(TimeUtils.renderDateTime(millis, true));
+    label.addStyleName(STYLE_TIME);
+    return label;
   }
 
   private static Widget renderDuration(long millis) {
-    return new Label(TimeUtils.renderMillis(millis));
+    Label label = new Label(BeeUtils.bracket(TimeUtils.renderMillis(millis)));
+    label.addStyleName(STYLE_DURATION);
+    return label;
   }
 
   private static Widget render(AnalysisLabel label, String... styleNames) {

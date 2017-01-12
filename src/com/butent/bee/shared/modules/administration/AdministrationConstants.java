@@ -218,6 +218,11 @@ public final class AdministrationConstants {
   public static final String TBL_IMPORT_MAPPINGS = "ImportMappings";
   public static final String TBL_IMPORT_CONDITIONS = "ImportConditions";
 
+  public static final String TBL_STAGES = "Stages";
+  public static final String TBL_STAGE_CONDITIONS = "StageConditions";
+  public static final String TBL_STAGE_ACTIONS = "StageActions";
+  public static final String TBL_STAGE_TRIGGERS = "StageTriggers";
+
   public static final String TBL_CUSTOM_CONFIG = "CustomConfig";
 
   public static final String TBL_EVENT_HISTORY = "EventHistory";
@@ -393,6 +398,18 @@ public final class AdministrationConstants {
   public static final String COL_IMPORT_RELATION_OPTION = "RelationOption";
   public static final String COL_IMPORT_MAPPING = "Mapping";
 
+  public static final String COL_STAGE = "Stage";
+  public static final String COL_STAGE_VIEW = "ViewName";
+  public static final String COL_STAGE_NAME = "StageName";
+  public static final String COL_STAGE_CONFIRM = "StageConfirm";
+
+  public static final String COL_STAGE_FIELD = "Field";
+  public static final String COL_STAGE_OPERATOR = "Operator";
+  public static final String COL_STAGE_VALUE = "Value";
+  public static final String COL_STAGE_FROM = "StageFrom";
+  public static final String COL_STAGE_ACTION = "Action";
+  public static final String COL_STAGE_TRIGGER = "Trigger";
+
   public static final String COL_CONFIG_MODULE = "ObjectModule";
   public static final String COL_CONFIG_TYPE = "ObjectType";
   public static final String COL_CONFIG_OBJECT = "ObjectName";
@@ -444,6 +461,8 @@ public final class AdministrationConstants {
 
   public static final String FORM_IMPORT_MAPPINGS = "ImportOptionMappings";
   public static final String FORM_IMPORT_OPTION = "ImportOption";
+
+  public static final String FORM_STAGES = "StageEditor";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 

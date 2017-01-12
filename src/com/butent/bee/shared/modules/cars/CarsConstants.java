@@ -31,10 +31,9 @@ public final class CarsConstants {
   public static final String TBL_CAR_ORDERS = "CarOrders";
   public static final String TBL_CAR_ORDER_ITEMS = "CarOrderItems";
 
-  public static final String TBL_STAGES = "Stages";
-  public static final String TBL_STAGE_CONDITIONS = "StageConditions";
-  public static final String TBL_STAGE_ACTIONS = "StageActions";
-  public static final String TBL_STAGE_TRIGGERS = "StageTriggers";
+  public static final String TBL_SERVICE_ORDERS = "CarServiceOrders";
+  public static final String TBL_SERVICE_ORDER_ITEMS = "CarServiceItems";
+  public static final String TBL_SERVICE_ORDER_JOBS = "CarServiceJobs";
 
   public static final String VIEW_CARS = "Cars";
 
@@ -62,22 +61,15 @@ public final class CarsConstants {
 
   public static final String COL_ORDER = "Order";
   public static final String COL_CAR = "Car";
-
-  public static final String COL_STAGE = "Stage";
-  public static final String COL_STAGE_VIEW = "ViewName";
-  public static final String COL_STAGE_NAME = "StageName";
-
-  public static final String COL_STAGE_FIELD = "Field";
-  public static final String COL_STAGE_OPERATOR = "Operator";
-  public static final String COL_STAGE_VALUE = "Value";
-  public static final String COL_STAGE_ACTION = "Action";
-  public static final String COL_STAGE_TRIGGER = "Trigger";
+  public static final String COL_SERVICE_ORDER = "ServiceOrder";
+  public static final String COL_JOB = "Job";
+  public static final String COL_DURATION = "Duration";
 
   public static final String FORM_CONF_OPTION = "ConfOption";
   public static final String FORM_CAR_ORDER = "CarOrder";
   public static final String FORM_CAR = "Car";
   public static final String FORM_TEMPLATE = "ConfTemplate";
-  public static final String FORM_STAGES = "StageEditor";
+  public static final String FORM_CAR_SERVICE_ORDER = "CarServiceOrder";
 
   public static final String VAR_PRICE_DEFAULT = "PriceDefault";
   public static final String VAR_PRICE_OPTIONAL = "PriceOptional";

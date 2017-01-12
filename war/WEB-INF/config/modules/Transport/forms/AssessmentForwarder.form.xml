@@ -53,7 +53,7 @@
                     choiceColumns="Name TypeName" style="&input; width:200px;" />
       <Label name="IncomeLabel" for="Income" style="&labelRight; margin-left:30px;" />
       <DataSelector name="Income" source="Income" style="&inline; width:70px;"
-                    newRowEnabled="false" editEnabled="false"
+                    newRowEnabled="false" editEnabled="false" caching="none"
                     choiceColumns="ServiceName Amount CurrencyName" />
     </FlowPanel>
 

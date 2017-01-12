@@ -1,10 +1,10 @@
-package com.butent.bee.client.modules.cars;
+package com.butent.bee.client.modules.administration;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 
-import static com.butent.bee.shared.modules.cars.CarsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.shared.data.BeeRow;
@@ -13,7 +13,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +66,8 @@ public final class StageUtils {
 
             for (BeeRow row : stageInfo) {
               stages.add(new Stage(viewName, row.getId(),
-                  row.getString(stageInfo.getColumnIndex(COL_STAGE_NAME))));
+                  row.getString(stageInfo.getColumnIndex(COL_STAGE_NAME)),
+                  row.getString(stageInfo.getColumnIndex(COL_STAGE_CONFIRM))));
             }
             if (stages.isEmpty()) {
               stagesConsumer.accept(stages);
@@ -87,10 +87,10 @@ public final class StageUtils {
 
                       switch (rs.getViewName()) {
                         case TBL_STAGE_CONDITIONS:
-                          stage.addCondition(row.getString(rs.getColumnIndex(COL_STAGE_FIELD)),
-                              EnumUtils.getEnumByIndex(Operator.class,
-                                  row.getInteger(rs.getColumnIndex(COL_STAGE_OPERATOR))),
-                              row.getString(rs.getColumnIndex(COL_STAGE_VALUE)));
+                          int idx = rs.getColumnIndex(COL_STAGE_FROM);
+                          stage.addCondition(COL_STAGE,
+                              row.isEmpty(idx) ? Operator.IS_NULL : Operator.EQ,
+                              row.getString(idx));
                           break;
 
                         case TBL_STAGE_ACTIONS:

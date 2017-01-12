@@ -43,7 +43,8 @@
         </ui:expression>
       </render>
     </RelColumn>
-    <RelColumn name="Income" newRowEnabled="false" choiceColumns="ID Date ServiceName Amount CurrencyName" />
+    <RelColumn name="Income" newRowEnabled="false" caching="none"
+               choiceColumns="ID Date ServiceName Amount CurrencyName" />
   </g:columns>
 
   <g:rowEditable>
