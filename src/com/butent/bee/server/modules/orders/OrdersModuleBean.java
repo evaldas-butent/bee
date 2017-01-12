@@ -11,9 +11,11 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -96,6 +98,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   ConcurrencyBean cb;
   @EJB
   TradeModuleBean trd;
+  @EJB
+  DataEditorBean deb;
 
   @Resource
   TimerService timerService;
@@ -633,9 +637,19 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
     SimpleRowSet rs;
+    SimpleRowSet rsRU;
 
     try {
       rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getGoods("e");
+
+    } catch (BeeException e) {
+      logger.error(e);
+      sys.eventEnd(sys.eventStart(PRM_IMPORT_ERP_ITEMS_TIME), "ERROR", e.getMessage());
+      return;
+    }
+
+    try {
+      rsRU = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getGoodsR("e");
 
     } catch (BeeException e) {
       logger.error(e);
@@ -688,6 +702,12 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       boolean updatePrc = BeeUtils.unbox(prm.getBoolean(PRM_UPDATE_ITEMS_PRICES));
 
+      Map<String, String> localesMap = new HashMap<>();
+      localesMap.put("PAVAD_1", "Name_en");
+      localesMap.put("PAVAD_2", "Name_ru");
+      localesMap.put("PAVAD_3", "Name_lv");
+      localesMap.put("PAVAD_4", "Name_et");
+
       for (SimpleRow row : rs) {
 
         String type = row.getValue("TIPAS");
@@ -734,6 +754,23 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             }
           }
 
+          Map<String, String> nameMap = new HashMap<>();
+          for (String nameCol : localesMap.keySet()) {
+            if (Objects.equals(nameCol, "PAVAD_2")) {
+              SimpleRow r = rsRU.getRowByKey("PREKE", exCode);
+
+              if (r != null) {
+                nameMap.put("Name_ru", r.getValue(nameCol));
+              }
+            } else {
+              String value = row.getValue(nameCol);
+
+              if(!BeeUtils.isEmpty(value)) {
+                nameMap.put(localesMap.get(nameCol), value);
+              }
+            }
+          }
+
           ResponseObject response = qs.insertDataWithResponse(new SqlInsert(TBL_ITEMS)
               .addConstant(COL_ITEM_NAME, row.getValue("PAVAD"))
               .addConstant(COL_ITEM_EXTERNAL_CODE, exCode)
@@ -751,6 +788,14 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
               .addConstant(COL_ITEM_PRICE_8, row.getDouble("KAINA_8"))
               .addConstant(COL_ITEM_PRICE_9, row.getDouble("KAINA_9"))
               .addConstant(COL_ITEM_PRICE_10, row.getDouble("KAINA_10"))
+              .addConstant(COL_ITEM_BRUTTO, row.getDouble("BRUTO"))
+              .addConstant(COL_ITEM_NETTO, row.getDouble("PREK_NETO"))
+              .addConstant(COL_ITEM_COUNTRY_OF_ORIGIN, row.getValue("KILM_SALIS"))
+              .addConstant(COL_ITEM_ADDITIONAL_UNIT, row.getValue("ALT_MV"))
+              .addConstant(COL_ITEM_FACTOR, row.getDouble("ALT_KOEF"))
+              .addConstant(COL_ITEM_VOLUME, row.getDouble("TURIS"))
+              .addConstant(COL_ITEM_KPN_CODE, row.getDouble("PREK_KPN"))
+              .addConstant(COL_ITEM_WEIGHT, row.getDouble("PREK_SVOR"))
               .addConstant(COL_ITEM_GROUP, typesGroups.get(group))
               .addConstant(COL_ITEM_TYPE, typesGroups.get(type))
               .addConstant(COL_ITEM_CURRENCY, currencies.get(currenciesMap.get("PARD_VAL")))
@@ -771,6 +816,29 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           if (!response.hasErrors()) {
             externalCodes.add(exCode);
             articles.add(article);
+
+            BeeView view = sys.getView(VIEW_ITEMS);
+            Collection<String> itemCols = view.getColumnNames();
+            List<BeeColumn> locCols = new ArrayList<>();
+
+            for (String locale : nameMap.keySet()) {
+              if (itemCols.contains(locale)) {
+                locCols.add(view.getBeeColumn(locale));
+              }
+            }
+
+            if (locCols.size() > 0) {
+              BeeRowSet rowSet = new BeeRowSet(VIEW_ITEMS, locCols);
+              BeeRow r = rowSet.addEmptyRow();
+              r.setId(response.getResponseAsLong());
+
+              for (BeeColumn col : locCols) {
+                r.setValue(DataUtils.getColumnIndex(col.getId(), locCols),
+                    nameMap.get(col.getId()));
+              }
+
+              deb.commitRow(rowSet);
+            }
           }
         } else if (updatePrc) {
           SqlUpdate update = new SqlUpdate(TBL_ITEMS)

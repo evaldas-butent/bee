@@ -136,6 +136,8 @@ public interface Dictionary {
 
   default String additionalInfo() {return g("additionalInfo");}
 
+  default String additionalItemUnit() {return g("additionalItemUnit");}
+
   default String additionalServices() {return g("additionalServices");}
 
   default String address() {return g("address");}
@@ -254,6 +256,8 @@ public interface Dictionary {
   default String branch() {return g("branch");}
 
   default String branches() {return g("branches");}
+
+  default String brutto() {return g("brutto");}
 
   default String calAction() {return g("calAction");}
 
@@ -892,6 +896,8 @@ public interface Dictionary {
   default String countryEUMemberShort() {return g("countryEUMemberShort");}
 
   default String countryFlag() {return g("countryFlag");}
+
+  default String countryOfOrigin() {return g("countryOfOrigin");}
 
   default String create() {return g("create");}
 
@@ -3319,6 +3325,8 @@ public interface Dictionary {
 
   default String kind() {return g("kind");}
 
+  default String kpnCode() {return g("kpnCode");}
+
   default String language() {return g("language");}
 
   default String languageTag() {return g("languageTag");}
@@ -3720,6 +3728,8 @@ public interface Dictionary {
   default String myEnvironment() {return g("myEnvironment");}
 
   default String name() {return g("name");}
+
+  default String netto() {return g("netto");}
 
   default String newAccount() {return g("newAccount");}
 
