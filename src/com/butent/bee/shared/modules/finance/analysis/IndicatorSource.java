@@ -15,6 +15,11 @@ public enum IndicatorSource implements HasLocalizedCaption {
     public String getSourceColumn() {
       return FinanceConstants.COL_FIN_AMOUNT;
     }
+
+    @Override
+    public String getCurrencyColumn() {
+      return FinanceConstants.COL_FIN_CURRENCY;
+    }
   },
 
   QUANTITY {
@@ -27,9 +32,20 @@ public enum IndicatorSource implements HasLocalizedCaption {
     public String getSourceColumn() {
       return FinanceConstants.COL_FIN_QUANTITY;
     }
+
+    @Override
+    public String getCurrencyColumn() {
+      return null;
+    }
   };
 
   public static final IndicatorSource DEFAULT = AMOUNT;
 
   public abstract String getSourceColumn();
+
+  public abstract String getCurrencyColumn();
+
+  public boolean hasCurrency() {
+    return getCurrencyColumn() != null;
+  }
 }
