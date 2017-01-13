@@ -214,6 +214,8 @@ class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printab
     layout();
 
     Flow body = new Flow(STYLE_BODY);
+    StyleUtils.setTop(body, header.getHeight());
+
     render(body);
     add(body);
   }
@@ -255,7 +257,7 @@ class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printab
         && !StyleUtils.hasClassName(source, STYLE_STATS);
   }
 
-  private HeaderView getHeader() {
+  public HeaderView getHeader() {
     for (Widget widget : getChildren()) {
       if (widget instanceof HeaderView) {
         return (HeaderView) widget;

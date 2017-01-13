@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.LongSummaryStatistics;
@@ -305,6 +306,24 @@ public class AnalysisBean {
     }
 
     return qs.insertDataWithResponse(insert);
+  }
+
+  public ResponseObject getResults(long resultId) {
+    SimpleRow row = qs.getRow(TBL_ANALYSIS_RESULTS, resultId);
+    if (row == null) {
+      return ResponseObject.error(TBL_ANALYSIS_RESULTS, resultId, "not found");
+    }
+
+    Map<String, String> map = new HashMap<>();
+
+    String caption = row.getValue(COL_ANALYSIS_RESULT_CAPTION);
+    if (!BeeUtils.isEmpty(caption)) {
+      map.put(COL_ANALYSIS_RESULT_CAPTION, caption);
+    }
+
+    map.put(COL_ANALYSIS_RESULTS, row.getValue(COL_ANALYSIS_RESULTS));
+
+    return ResponseObject.response(map);
   }
 
   private void addDimensions(SqlSelect query, String tblName) {
