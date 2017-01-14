@@ -1071,7 +1071,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         td.setPadding("0 5px 0 5px");
 
         if (ValueType.isNumeric(type) || ValueType.TEXT == type
-            && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
+            && CharMatcher.digit().matchesAnyOf(value) && BeeUtils.isDouble(value)) {
           if (!BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
             td.setTextAlign(TextAlign.RIGHT);
           }

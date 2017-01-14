@@ -121,7 +121,7 @@ public final class Global {
     if (!value.equals(styleSheets.get(key))) {
       styleSheets.put(key, value);
 
-      String css = CharMatcher.BREAKING_WHITESPACE.collapseFrom(value, BeeConst.CHAR_SPACE);
+      String css = CharMatcher.breakingWhitespace().collapseFrom(value, BeeConst.CHAR_SPACE);
       StyleInjector.inject(css);
       Printer.onInjectStyleSheet(css);
     }
@@ -434,7 +434,7 @@ public final class Global {
           table.setHtml(r, i, value);
 
           if (ValueType.isNumeric(type) || ValueType.TEXT == type
-              && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
+              && CharMatcher.digit().matchesAnyOf(value) && BeeUtils.isDouble(value)) {
             table.getCellFormatter().setHorizontalAlignment(r, i, TextAlign.RIGHT);
           }
         }
