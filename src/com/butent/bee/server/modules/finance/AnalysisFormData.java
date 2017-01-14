@@ -412,7 +412,7 @@ class AnalysisFormData {
     }
   }
 
-  private Integer getColumnInteger(BeeRow column, String key) {
+  Integer getColumnInteger(BeeRow column, String key) {
     return column.getInteger(columnIndexes.get(key));
   }
 
@@ -488,7 +488,7 @@ class AnalysisFormData {
     }
   }
 
-  private Integer getRowInteger(BeeRow row, String key) {
+  Integer getRowInteger(BeeRow row, String key) {
     return row.getInteger(rowIndexes.get(key));
   }
 

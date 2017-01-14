@@ -111,6 +111,27 @@ public final class AnalysisResults implements BeeSerializable {
     }
   }
 
+  public boolean containsValues(long columnId, long rowId) {
+    for (AnalysisValue av : values) {
+      if (av.getColumnId() == columnId && av.getRowId() == rowId) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public List<AnalysisValue> filterValues(long columnId, long rowId) {
+    List<AnalysisValue> result = new ArrayList<>();
+
+    for (AnalysisValue av : values) {
+      if (av.getColumnId() == columnId && av.getRowId() == rowId) {
+        result.add(av);
+      }
+    }
+
+    return result;
+  }
+
   public void addColumnSplitTypes(long columnId, List<AnalysisSplitType> splitTypes) {
     if (!BeeUtils.isEmpty(splitTypes)) {
       columnSplitTypes.put(columnId, splitTypes);

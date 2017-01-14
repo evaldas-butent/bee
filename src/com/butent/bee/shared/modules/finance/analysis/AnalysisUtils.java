@@ -163,6 +163,10 @@ public final class AnalysisUtils {
     }
   }
 
+  public static boolean isValidScale(Integer scale) {
+    return scale != null && BeeUtils.betweenInclusive(scale, 0, 5);
+  }
+
   private static boolean isValidYear(int year) {
     return year >= ANALYSIS_MIN_YEAR && year <= ANALYSIS_MAX_YEAR;
   }

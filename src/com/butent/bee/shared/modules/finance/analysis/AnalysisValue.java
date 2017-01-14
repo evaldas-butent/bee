@@ -261,6 +261,16 @@ public final class AnalysisValue implements BeeSerializable {
         && rowSplit.equals(other.rowSplit);
   }
 
+  public void round(int scale) {
+    if (BeeUtils.isDouble(actualValue)) {
+      setActualValue(BeeUtils.round(actualValue, scale));
+    }
+
+    if (BeeUtils.isDouble(budgetValue)) {
+      setBudgetValue(BeeUtils.round(budgetValue, scale));
+    }
+  }
+
   @Override
   public String toString() {
     return BeeUtils.joinOptions("c", columnId, "r", rowId,

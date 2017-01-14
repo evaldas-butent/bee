@@ -144,6 +144,8 @@ public class AnalysisBean {
 
         List<AnalysisSplitType> columnSplitTypes = results.getColumnSplitTypes(column.getId());
 
+        Integer columnScale = formData.getColumnInteger(column, COL_ANALYSIS_COLUMN_SCALE);
+
         for (BeeRow row : formData.getRows()) {
           if (formData.rowIsPrimary(row)) {
             Long rowIndicator = formData.getRowLong(row, COL_ANALYSIS_ROW_INDICATOR);
@@ -258,6 +260,23 @@ public class AnalysisBean {
                     sourceCurrency));
 
                 qs.sqlDropTemp(budgetCursor);
+              }
+
+              if (results.containsValues(column.getId(), row.getId())) {
+                Integer scale = formData.getRowInteger(row, COL_ANALYSIS_ROW_SCALE);
+                if (!AnalysisUtils.isValidScale(scale)) {
+                  scale = columnScale;
+                }
+
+                if (!AnalysisUtils.isValidScale(scale)) {
+                  scale = getIndicatorScale(indicator);
+                }
+
+                if (AnalysisUtils.isValidScale(scale)) {
+                  for (AnalysisValue av : results.filterValues(column.getId(), row.getId())) {
+                    av.round(scale);
+                  }
+                }
               }
             }
           }
@@ -803,6 +822,15 @@ public class AnalysisBean {
     }
 
     return indicatorSource;
+  }
+
+  private Integer getIndicatorScale(long indicator) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_SCALE)
+        .addFrom(TBL_FINANCIAL_INDICATORS)
+        .setWhere(sys.idEquals(TBL_FINANCIAL_INDICATORS, indicator));
+
+    return qs.getInt(query);
   }
 
   private static Map<AnalysisSplitType, AnalysisSplitValue> getRootSplit() {
