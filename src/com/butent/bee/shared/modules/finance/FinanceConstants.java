@@ -314,6 +314,8 @@ public final class FinanceConstants {
   public static final String FORM_SIMPLE_BUDGET = "SimpleBudget";
   public static final String FORM_SIMPLE_ANALYSIS = "SimpleAnalysis";
 
+  public static final String VAR_IS_BUDGET = "_budget";
+
   public static String colBudgetEntryValue(int month) {
     return COL_BUDGET_ENTRY_VALUES[month - 1];
   }

@@ -100,7 +100,7 @@ public final class AnalysisUtils {
   }
 
   public static boolean isValidAbbreviation(String input) {
-    return NameUtils.isIdentifier(input);
+    return NameUtils.isIdentifier(input) && Character.isLetter(input.charAt(0));
   }
 
   public static boolean isValidRange(Integer yearFrom, Integer monthFrom,

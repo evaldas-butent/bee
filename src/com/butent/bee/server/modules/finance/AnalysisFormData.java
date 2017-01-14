@@ -673,6 +673,8 @@ class AnalysisFormData {
         messages.add("script engine not available");
 
       } else {
+        engine.put(VAR_IS_BUDGET, false);
+
         input.stream()
             .map(row -> row.getString(abbreviationIndex))
             .filter(AnalysisUtils::isValidAbbreviation)

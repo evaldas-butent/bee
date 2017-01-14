@@ -17,6 +17,7 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.ScriptUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -66,6 +67,7 @@ import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.script.ScriptEngine;
 
 @Stateless
 public class AnalysisBean {
@@ -145,6 +147,10 @@ public class AnalysisBean {
         List<AnalysisSplitType> columnSplitTypes = results.getColumnSplitTypes(column.getId());
 
         Integer columnScale = formData.getColumnInteger(column, COL_ANALYSIS_COLUMN_SCALE);
+
+        String columnAbbreviation =
+            formData.getColumnString(column, COL_ANALYSIS_COLUMN_ABBREVIATION);
+        String columnScript = formData.getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT);
 
         for (BeeRow row : formData.getRows()) {
           if (formData.rowIsPrimary(row)) {
@@ -243,17 +249,20 @@ public class AnalysisBean {
                 }
               }
 
-              if (!accountFilters.isNull()
+              boolean needsActual = !accountFilters.isNull()
                   && (AnalysisCellType.needsActual(columnCellTypes)
-                  || AnalysisCellType.needsActual(rowCellTypes))) {
+                  || AnalysisCellType.needsActual(rowCellTypes));
 
+              if (needsActual) {
                 results.addValues(computeActualValues(column.getId(), row.getId(),
                     valueFilter, plusFilter, minusFilter, range, turnoverOrBalance,
                     columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
                     indicatorSource, finView, userId, sourceCurrency, actualValueStats));
               }
 
-              if (budgetCursor != null) {
+              boolean needsBudget = budgetCursor != null;
+
+              if (needsBudget) {
                 results.mergeValues(computeBudgetValues(column.getId(), row.getId(),
                     budgetCursor, budgetCondition, range, turnoverOrBalance,
                     columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
@@ -263,6 +272,59 @@ public class AnalysisBean {
               }
 
               if (results.containsValues(column.getId(), row.getId())) {
+                String abbreviation = formData.getRowString(row, COL_ANALYSIS_ROW_ABBREVIATION);
+                String script = formData.getRowString(row, COL_ANALYSIS_ROW_SCRIPT);
+
+                if (BeeUtils.anyEmpty(abbreviation, script)) {
+                  abbreviation = columnAbbreviation;
+                  script = columnScript;
+                }
+
+                if (AnalysisUtils.isValidAbbreviation(abbreviation)
+                    && !BeeUtils.isEmpty(script) && script.contains(abbreviation)) {
+
+                  ScriptEngine actualEngine;
+                  ScriptEngine budgetEngine;
+
+                  if (needsActual) {
+                    actualEngine = ScriptUtils.createEngine(VAR_IS_BUDGET, false);
+                  } else {
+                    actualEngine = null;
+                  }
+
+                  if (needsBudget) {
+                    budgetEngine = ScriptUtils.createEngine(VAR_IS_BUDGET, true);
+                  } else {
+                    budgetEngine = null;
+                  }
+
+                  if (actualEngine != null || budgetEngine != null) {
+                    for (AnalysisValue av : results.filterValues(column.getId(), row.getId())) {
+                      if (actualEngine != null && av.hasActualValue()) {
+                        actualEngine.put(abbreviation, av.getActualNumber());
+                        Double value = ScriptUtils.evalToDouble(actualEngine, script, response);
+
+                        if (BeeUtils.isDouble(value)) {
+                          av.setActualValue(value);
+                        }
+                      }
+
+                      if (budgetEngine != null && av.hasBudgetValue()) {
+                        budgetEngine.put(abbreviation, av.getBudgetNumber());
+                        Double value = ScriptUtils.evalToDouble(budgetEngine, script, response);
+
+                        if (BeeUtils.isDouble(value)) {
+                          av.setBudgetValue(value);
+                        }
+                      }
+
+                      if (response.hasErrors()) {
+                        break;
+                      }
+                    }
+                  }
+                }
+
                 Integer scale = formData.getRowInteger(row, COL_ANALYSIS_ROW_SCALE);
                 if (!AnalysisUtils.isValidScale(scale)) {
                   scale = columnScale;
@@ -280,11 +342,19 @@ public class AnalysisBean {
               }
             }
           }
+
+          if (response.hasErrors()) {
+            break;
+          }
         }
+      }
+
+      if (response.hasErrors()) {
+        break;
       }
     }
 
-    if (!results.isEmpty()) {
+    if (!response.hasErrors() && !results.isEmpty()) {
       results.setInitStart(initStart);
       results.setValidateStart(validateStart);
       results.setComputeStart(computeStart);

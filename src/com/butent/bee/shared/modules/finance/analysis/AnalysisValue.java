@@ -110,12 +110,20 @@ public final class AnalysisValue implements BeeSerializable {
     return BeeUtils.toDouble(getActualValue());
   }
 
+  public boolean hasActualValue() {
+    return !BeeUtils.isEmpty(getActualValue());
+  }
+
   public String getBudgetValue() {
     return budgetValue;
   }
 
   public double getBudgetNumber() {
     return BeeUtils.toDouble(getBudgetValue());
+  }
+
+  public boolean hasBudgetValue() {
+    return !BeeUtils.isEmpty(getBudgetValue());
   }
 
   public void putColumnSplit(Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
@@ -154,7 +162,7 @@ public final class AnalysisValue implements BeeSerializable {
     this.actualValue = actualValue;
   }
 
-  private void setActualValue(double value) {
+  public void setActualValue(double value) {
     setActualValue(format(value));
   }
 
@@ -162,7 +170,7 @@ public final class AnalysisValue implements BeeSerializable {
     this.budgetValue = budgetValue;
   }
 
-  private void setBudgetValue(double value) {
+  public void setBudgetValue(double value) {
     setBudgetValue(format(value));
   }
 
