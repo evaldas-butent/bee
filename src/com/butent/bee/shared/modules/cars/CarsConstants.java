@@ -70,6 +70,7 @@ public final class CarsConstants {
   public static final String FORM_CAR = "Car";
   public static final String FORM_TEMPLATE = "ConfTemplate";
   public static final String FORM_CAR_SERVICE_ORDER = "CarServiceOrder";
+  public static final String FORM_CAR_SERVICE_EVENT = "CarServiceEvent";
 
   public static final String VAR_PRICE_DEFAULT = "PriceDefault";
   public static final String VAR_PRICE_OPTIONAL = "PriceOptional";

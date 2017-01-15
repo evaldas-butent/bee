@@ -26,6 +26,7 @@ public final class CarsKeeper {
     FormFactory.registerFormInterceptor(FORM_TEMPLATE, new SpecificationForm());
 
     FormFactory.registerFormInterceptor(FORM_CAR_SERVICE_ORDER, new CarServiceOrderForm());
+    FormFactory.registerFormInterceptor(FORM_CAR_SERVICE_EVENT, new CarServiceEventForm());
 
     GridFactory.registerGridInterceptor(VIEW_CARS, new VehiclesGrid());
 
