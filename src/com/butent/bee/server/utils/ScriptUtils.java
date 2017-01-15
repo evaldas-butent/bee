@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
@@ -61,7 +62,7 @@ public final class ScriptUtils {
     }
   }
 
-  public static Double evalToDouble(ScriptEngine engine,  String script,
+  public static Double evalToDouble(ScriptEngine engine, Bindings bindings, String script,
       ResponseObject errorCollector) {
 
     if (engine == null || BeeUtils.isEmpty(script)) {
@@ -69,7 +70,12 @@ public final class ScriptUtils {
 
     } else {
       try {
-        Object result = engine.eval(script);
+        Object result;
+        if (bindings == null) {
+          result = engine.eval(script);
+        } else {
+          result = engine.eval(script, bindings);
+        }
 
         if (result instanceof Number) {
           return ((Number) result).doubleValue();
@@ -81,7 +87,7 @@ public final class ScriptUtils {
 
       } catch (ScriptException ex) {
         if (errorCollector != null) {
-          errorCollector.addError(ex, script);
+          errorCollector.addError(ex, script, bindings);
         }
         return null;
       }

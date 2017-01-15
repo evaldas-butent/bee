@@ -67,6 +67,7 @@ import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.script.Bindings;
 import javax.script.ScriptEngine;
 
 @Stateless
@@ -99,6 +100,18 @@ public class AnalysisBean {
     ResponseObject response = validateFormData(formId, formData, finView, userId);
     if (response.hasMessages()) {
       return response;
+    }
+
+    ScriptEngine engine;
+    if (formData.hasScripting()) {
+      engine = ScriptUtils.getEngine();
+      if (engine == null) {
+        response.addError("script engine not available");
+        return response;
+      }
+
+    } else {
+      engine = null;
     }
 
     long computeStart = System.currentTimeMillis();
@@ -148,8 +161,6 @@ public class AnalysisBean {
 
         Integer columnScale = formData.getColumnInteger(column, COL_ANALYSIS_COLUMN_SCALE);
 
-        String columnAbbreviation =
-            formData.getColumnString(column, COL_ANALYSIS_COLUMN_ABBREVIATION);
         String columnScript = formData.getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT);
 
         for (BeeRow row : formData.getRows()) {
@@ -272,46 +283,57 @@ public class AnalysisBean {
               }
 
               if (results.containsValues(column.getId(), row.getId())) {
-                String abbreviation = formData.getRowString(row, COL_ANALYSIS_ROW_ABBREVIATION);
-                String script = formData.getRowString(row, COL_ANALYSIS_ROW_SCRIPT);
+                String script;
 
-                if (BeeUtils.anyEmpty(abbreviation, script)) {
-                  abbreviation = columnAbbreviation;
+                if (engine == null) {
+                  script = null;
+
+                } else if (AnalysisScripting.isScriptPrimary(columnScript)) {
                   script = columnScript;
+
+                } else {
+                  script = formData.getRowString(row, COL_ANALYSIS_ROW_SCRIPT);
+                  if (!AnalysisScripting.isScriptPrimary(script)) {
+                    script = null;
+                  }
                 }
 
-                if (AnalysisUtils.isValidAbbreviation(abbreviation)
-                    && !BeeUtils.isEmpty(script) && script.contains(abbreviation)) {
-
-                  ScriptEngine actualEngine;
-                  ScriptEngine budgetEngine;
+                if (script != null) {
+                  Bindings actualBindings;
+                  Bindings budgetBindings;
 
                   if (needsActual) {
-                    actualEngine = ScriptUtils.createEngine(VAR_IS_BUDGET, false);
+                    actualBindings = engine.createBindings();
+                    actualBindings.put(AnalysisScripting.VAR_IS_BUDGET, false);
                   } else {
-                    actualEngine = null;
+                    actualBindings = null;
                   }
 
                   if (needsBudget) {
-                    budgetEngine = ScriptUtils.createEngine(VAR_IS_BUDGET, true);
+                    budgetBindings = engine.createBindings();
+                    budgetBindings.put(AnalysisScripting.VAR_IS_BUDGET, true);
                   } else {
-                    budgetEngine = null;
+                    budgetBindings = null;
                   }
 
-                  if (actualEngine != null || budgetEngine != null) {
+                  if (actualBindings != null || budgetBindings != null) {
                     for (AnalysisValue av : results.filterValues(column.getId(), row.getId())) {
-                      if (actualEngine != null && av.hasActualValue()) {
-                        actualEngine.put(abbreviation, av.getActualNumber());
-                        Double value = ScriptUtils.evalToDouble(actualEngine, script, response);
+                      if (actualBindings != null && av.hasActualValue()) {
+                        actualBindings.put(AnalysisScripting.VAR_CURRENT_VALUE,
+                            av.getActualNumber());
+                        Double value = ScriptUtils.evalToDouble(engine, actualBindings,
+                            script, response);
 
                         if (BeeUtils.isDouble(value)) {
                           av.setActualValue(value);
                         }
                       }
 
-                      if (budgetEngine != null && av.hasBudgetValue()) {
-                        budgetEngine.put(abbreviation, av.getBudgetNumber());
-                        Double value = ScriptUtils.evalToDouble(budgetEngine, script, response);
+                      if (budgetBindings != null && av.hasBudgetValue()) {
+                        budgetBindings.put(AnalysisScripting.VAR_CURRENT_VALUE,
+                            av.getBudgetNumber());
+                        Double value = ScriptUtils.evalToDouble(engine, budgetBindings,
+                            script, response);
 
                         if (BeeUtils.isDouble(value)) {
                           av.setBudgetValue(value);
@@ -325,18 +347,19 @@ public class AnalysisBean {
                   }
                 }
 
-                Integer scale = formData.getRowInteger(row, COL_ANALYSIS_ROW_SCALE);
-                if (!AnalysisUtils.isValidScale(scale)) {
-                  scale = columnScale;
-                }
+                if (!response.hasErrors()) {
+                  Integer scale = columnScale;
+                  if (!AnalysisUtils.isValidScale(scale)) {
+                    scale = formData.getRowInteger(row, COL_ANALYSIS_ROW_SCALE);
+                  }
+                  if (!AnalysisUtils.isValidScale(scale)) {
+                    scale = getIndicatorScale(indicator);
+                  }
 
-                if (!AnalysisUtils.isValidScale(scale)) {
-                  scale = getIndicatorScale(indicator);
-                }
-
-                if (AnalysisUtils.isValidScale(scale)) {
-                  for (AnalysisValue av : results.filterValues(column.getId(), row.getId())) {
-                    av.round(scale);
+                  if (AnalysisUtils.isValidScale(scale)) {
+                    for (AnalysisValue av : results.filterValues(column.getId(), row.getId())) {
+                      av.round(scale);
+                    }
                   }
                 }
               }

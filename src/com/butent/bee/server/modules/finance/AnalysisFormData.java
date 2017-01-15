@@ -31,12 +31,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
@@ -272,6 +274,11 @@ class AnalysisFormData {
     return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
   }
 
+  boolean hasScripting() {
+    return columns.stream().anyMatch(this::columnHasScript)
+        || rows.stream().anyMatch(this::rowHasScript);
+  }
+
   List<String> validate(Dictionary dictionary, Predicate<String> filterValidator) {
     List<String> messages = new ArrayList<>();
 
@@ -331,6 +338,7 @@ class AnalysisFormData {
         column -> getColumnLabel(dictionary, column)));
 
     messages.addAll(validateScripts(columns,
+        columnIndexes.get(COL_ANALYSIS_COLUMN_INDICATOR),
         columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
         columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT),
         column -> getColumnLabel(dictionary, column)));
@@ -360,6 +368,7 @@ class AnalysisFormData {
         row -> getRowLabel(dictionary, row)));
 
     messages.addAll(validateScripts(rows,
+        rowIndexes.get(COL_ANALYSIS_ROW_INDICATOR),
         rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
         rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),
         row -> getRowLabel(dictionary, row)));
@@ -464,7 +473,12 @@ class AnalysisFormData {
   }
 
   boolean columnIsPrimary(BeeRow column) {
-    return columnHasIndicator(column) || !columnHasScript(column);
+    if (columnHasIndicator(column)) {
+      return true;
+    }
+
+    String script = getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT);
+    return BeeUtils.isEmpty(script) || AnalysisScripting.isScriptPrimary(script);
   }
 
   private BeeRow getRowById(Long id) {
@@ -540,7 +554,12 @@ class AnalysisFormData {
   }
 
   boolean rowIsPrimary(BeeRow row) {
-    return rowHasIndicator(row) || !rowHasScript(row);
+    if (rowHasIndicator(row)) {
+      return true;
+    }
+
+    String script = getRowString(row, COL_ANALYSIS_ROW_SCRIPT);
+    return BeeUtils.isEmpty(script) || AnalysisScripting.isScriptPrimary(script);
   }
 
   private static List<String> getSplitCaptions(Dictionary dictionary,
@@ -661,37 +680,65 @@ class AnalysisFormData {
   }
 
   private static List<String> validateScripts(Collection<BeeRow> input,
-      int abbreviationIndex, int scriptIndex, Function<BeeRow, String> labelFunction) {
+      int indicatorIndex, int abbreviationIndex, int scriptIndex,
+      Function<BeeRow, String> labelFunction) {
 
     List<String> messages = new ArrayList<>();
 
     if (!BeeUtils.isEmpty(input)
         && input.stream().anyMatch(row -> !row.isEmpty(scriptIndex))) {
 
+
       ScriptEngine engine = ScriptUtils.getEngine();
       if (engine == null) {
         messages.add("script engine not available");
 
       } else {
-        engine.put(VAR_IS_BUDGET, false);
+        Map<Long, String> variables = new HashMap<>();
 
-        input.stream()
-            .map(row -> row.getString(abbreviationIndex))
-            .filter(AnalysisUtils::isValidAbbreviation)
-            .forEach(abbreviation -> engine.put(abbreviation, BeeConst.DOUBLE_ZERO));
+        for (BeeRow row : input) {
+          String abbreviation = row.getString(abbreviationIndex);
+
+          if (AnalysisUtils.isValidAbbreviation(abbreviation)) {
+            variables.put(row.getId(), abbreviation);
+          }
+        }
+
+        Bindings primaryBindings = engine.createBindings();
+        primaryBindings.put(AnalysisScripting.VAR_IS_BUDGET, false);
+        primaryBindings.put(AnalysisScripting.VAR_CURRENT_VALUE, BeeConst.DOUBLE_ZERO);
+
+        Bindings bindings;
 
         for (BeeRow row : input) {
           String script = row.getString(scriptIndex);
 
           if (!BeeUtils.isEmpty(script)) {
+            boolean primary = DataUtils.isId(row.getLong(indicatorIndex))
+                || AnalysisScripting.isScriptPrimary(script);
+
+            if (primary) {
+              bindings = primaryBindings;
+
+            } else {
+              bindings = engine.createBindings();
+              bindings.put(AnalysisScripting.VAR_IS_BUDGET, false);
+
+              for (Map.Entry<Long, String> entry : variables.entrySet()) {
+                if (!Objects.equals(entry.getKey(), row.getId())) {
+                  bindings.put(entry.getValue(), BeeConst.DOUBLE_ZERO);
+                }
+              }
+            }
+
             try {
-              Object value = engine.eval(script);
+              Object value = engine.eval(script, bindings);
               logger.debug((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
 
             } catch (ScriptException ex) {
               String label = labelFunction.apply(row);
 
-              logger.severe(label, script, ex.getMessage());
+              logger.severe(label, script, bindings, ex.getMessage());
               messages.add(BeeUtils.joinWords(label, ex.getMessage()));
             }
           }
