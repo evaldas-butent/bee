@@ -377,6 +377,17 @@ public class AnalysisBean {
       }
     }
 
+    if (!response.hasErrors() && engine != null) {
+      List<BeeRow> secondaryRows = formData.getSecondaryRows(response::addError);
+
+      if (!secondaryRows.isEmpty() && !response.hasErrors()) {
+        for (BeeRow row : secondaryRows) {
+          Map<Long, String> rowVariables = formData.getRowVariables(row);
+          logger.warning(row, rowVariables);
+        }
+      }
+    }
+
     if (!response.hasErrors() && !results.isEmpty()) {
       results.setInitStart(initStart);
       results.setValidateStart(validateStart);
