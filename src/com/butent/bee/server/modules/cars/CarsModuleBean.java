@@ -7,7 +7,10 @@ import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
+import static com.butent.bee.shared.modules.cars.CarsConstants.COL_DESCRIPTION;
+import static com.butent.bee.shared.modules.cars.CarsConstants.COL_ORDINAL;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PHOTO;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -26,6 +29,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
@@ -34,6 +38,9 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.cars.Bundle;
@@ -277,6 +284,27 @@ public class CarsModuleBean implements BeeModule {
                       BeeUtils.toString(row.getId()), col)));
             }
           }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void notifyAppointmentRemoval(DataEvent.ViewDeleteEvent event) {
+        if (event.isTarget(TBL_SERVICE_EVENTS)) {
+          if (event.isBefore()) {
+            RowInfoList rowInfos = new RowInfoList();
+
+            qs.getLongSet(new SqlSelect()
+                .addFields(TBL_SERVICE_EVENTS, COL_APPOINTMENT)
+                .addFrom(TBL_SERVICE_EVENTS)
+                .setWhere(sys.idInList(TBL_SERVICE_EVENTS, event.getIds())))
+                .forEach(id -> rowInfos.add(new RowInfo(id, DataUtils.NEW_ROW_VERSION)));
+
+            event.setUserObject(rowInfos);
+            return;
+          }
+          MultiDeleteEvent.fire(Endpoint.getModificationShooter(), VIEW_APPOINTMENTS,
+              (RowInfoList) event.getUserObject());
         }
       }
     });
