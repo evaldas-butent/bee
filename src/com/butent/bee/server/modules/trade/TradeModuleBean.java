@@ -85,6 +85,7 @@ import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeCostBasis;
@@ -1281,9 +1282,22 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         itemsRelation = COL_SALE;
 
         query.addField(TBL_SALES_SERIES, COL_SERIES_NAME, COL_TRADE_INVOICE_PREFIX)
-            .addFields(trade, COL_SALE_PAYER)
+            .addFields(trade, COL_SALE_PAYER, COL_TRADE_BOL_NUMBER, COL_TRADE_BOL_LOADING,
+                COL_TRADE_BOL_UNLOADING, COL_TRADE_BOL_VEHICLE_NUMBER, COL_TRADE_BOL_DRIVER,
+                COL_TRADE_BOL_CARRIER, COL_TRADE_BOL_ISSUE_DATE, COL_TRADE_BOL_DEPARTURE_DATE,
+                COL_TRADE_BOL_UNLOADING_DATE)
+            .addField(OrdersConstants.TBL_ORDER_SERIES, COL_SERIES_NAME, ALS_TRADE_BOL_SERIES)
+            .addField(ALS_TRADE_BOL_DRIVER_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER,
+                ALS_TRADE_BOL_DRIVER_TAB_NO)
             .addFromLeft(TBL_SALES_SERIES,
-                sys.joinTables(TBL_SALES_SERIES, trade, COL_TRADE_SALE_SERIES));
+                sys.joinTables(TBL_SALES_SERIES, trade, COL_TRADE_SALE_SERIES))
+            .addFromLeft(OrdersConstants.TBL_ORDER_SERIES,
+                sys.joinTables(OrdersConstants.TBL_ORDER_SERIES, trade, COL_TRADE_BOL_SERIES))
+            .addFromLeft(PayrollConstants.TBL_EMPLOYEES, ALS_TRADE_BOL_DRIVER_EMPLOYEES,
+               SqlUtils.join(ALS_TRADE_BOL_DRIVER_EMPLOYEES,
+                   sys.getIdName(PayrollConstants.TBL_EMPLOYEES), trade,
+                   COL_TRADE_BOL_DRIVER_TAB_NO));
+
         break;
 
       case TBL_PURCHASES:
@@ -1373,6 +1387,45 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
       doc.setCurrency(invoice.getValue(COL_CURRENCY));
       doc.setManager(invoice.getValue(PayrollConstants.COL_TAB_NUMBER));
+
+      if (Objects.equals(trade, TBL_SALES)) {
+        doc.setBolNumber(invoice.getValue(COL_TRADE_BOL_NUMBER));
+        doc.setBolSeries(invoice.getValue(ALS_TRADE_BOL_SERIES));
+        doc.setBolLoadingPlace(invoice.getValue(COL_TRADE_BOL_LOADING));
+        doc.setBolUnloadingPlace(invoice.getValue(COL_TRADE_BOL_UNLOADING));
+        doc.setBolVehicleNumber(invoice.getValue(COL_TRADE_BOL_VEHICLE_NUMBER));
+        doc.setBolDriver(invoice.getValue(COL_TRADE_BOL_DRIVER));
+        doc.setBolDriverTabNo(invoice.getValue(ALS_TRADE_BOL_DRIVER_TAB_NO));
+        doc.setBolCarrier(invoice.getValue(COL_TRADE_BOL_CARRIER));
+
+        DateTime dt;
+        if (!BeeUtils.isEmpty(invoice.getValue(COL_TRADE_BOL_ISSUE_DATE))) {
+          dt = new DateTime(BeeUtils.toLong(invoice.getValue(COL_TRADE_BOL_ISSUE_DATE)));
+          if (dt.hasTimePart()) {
+            doc.setBolIssueDate(dt.toCompactString());
+          } else {
+            doc.setBolIssueDate(dt.getDate().toString());
+          }
+        }
+
+        if (!BeeUtils.isEmpty(invoice.getValue(COL_TRADE_BOL_DEPARTURE_DATE))) {
+          dt = new DateTime(BeeUtils.toLong(invoice.getValue(COL_TRADE_BOL_DEPARTURE_DATE)));
+          if (dt.hasTimePart()) {
+            doc.setBolDepartureDate(dt.toCompactString());
+          } else {
+            doc.setBolDepartureDate(dt.getDate().toString());
+          }
+        }
+
+        if (!BeeUtils.isEmpty(invoice.getValue(COL_TRADE_BOL_UNLOADING_DATE))) {
+          dt = new DateTime(BeeUtils.toLong(invoice.getValue(COL_TRADE_BOL_UNLOADING_DATE)));
+          if (dt.hasTimePart()) {
+            doc.setBolUnloadingDate(dt.toCompactString());
+          } else {
+            doc.setBolUnloadingDate(dt.getDate().toString());
+          }
+        }
+      }
 
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)

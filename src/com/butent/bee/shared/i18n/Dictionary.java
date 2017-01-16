@@ -4011,6 +4011,16 @@ public interface Dictionary {
 
   default String ordAskNotChangeWarehouse() {return g("ordAskNotChangeWarehouse");}
 
+  default String ordBoLDepartureDate() {return g("ordBoLDepartureDate");}
+
+  default String ordBoLDriverTabNo() {return g("ordBoLDriverTabNo");}
+
+  default String ordBoLNumber() {return g("ordBoLNumber");}
+
+  default String ordBoLSeries() {return g("ordBoLSeries");}
+
+  default String ordBoLIssueDate() {return g("ordBoLIssueDate");}
+
   default String ordCancel() {return g("ordCancel");}
 
   default String ordCanceled() {return g("ordCanceled");}
@@ -4052,6 +4062,8 @@ public interface Dictionary {
   default String ordSent() {return g("ordSent");}
 
   default String ordSupplierTerm() {return g("ordSupplierTerm");}
+
+  default String ordTransportationActInfo() {return g("ordTransportationActInfo");}
 
   default String ordUncompleted() {return g("ordUncompleted");}
 
