@@ -2577,6 +2577,7 @@ public class TransportModuleBean implements BeeModule {
         .addOrder(TBL_CARGO_PLACES, COL_PLACE_DATE));
 
     String[] calc = new String[] {COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS};
+    Multimap<Long, Long> defaults = HashMultimap.create();
 
     for (SimpleRow row : rs) {
       String prfx;
@@ -2592,8 +2593,7 @@ public class TransportModuleBean implements BeeModule {
       Long key = row.getLong(keyColumn);
 
       if (!BeeUtils.unbox(row.getBoolean(VAR_PARAMETER_DEFAULT))
-          || !data.contains(key, prfx + COL_PLACE_DATE)) {
-
+          || defaults.put(key, row.getLong(sys.getIdName(TBL_CARGO_PLACES)))) {
         Arrays.stream(calc).forEach(col -> data.put(key, col,
             BeeUtils.toString(BeeUtils.toDouble(data.get(key, col))
                 + BeeUtils.unbox(row.getDouble(col)))));
