@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.transport;
 import com.google.common.collect.ImmutableMap;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_PLACE_DATE;
 
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
