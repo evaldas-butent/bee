@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.cars.CarsConstants.TBL_SERVICE_EVENTS;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -63,7 +64,6 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -211,6 +211,15 @@ public final class CalendarKeeper {
 
       Long type = null;
       if (calendarId != null) {
+        if (BeeUtils.unbox(CACHE.getBoolean(VIEW_CALENDARS, calendarId, COL_CALENDAR_IS_SERVICE))) {
+          DataInfo dataInfo = Data.getDataInfo(TBL_SERVICE_EVENTS);
+          BeeRow newRow = RowFactory.createEmptyRow(dataInfo);
+          newRow.setValue(dataInfo.getColumnIndex(COL_START_DATE_TIME), start);
+          newRow.setValue(dataInfo.getColumnIndex(COL_END_DATE_TIME), TimeUtils.nextHour(start, 0));
+          newRow.setProperty(TBL_ATTENDEES, attendeeId);
+          RowFactory.createRow(dataInfo, newRow, null);
+          return;
+        }
         BeeRowSet rowSet = CACHE.getRowSet(VIEW_CAL_APPOINTMENT_TYPES);
         if (rowSet != null) {
           for (BeeRow row : rowSet.getRows()) {
@@ -306,7 +315,7 @@ public final class CalendarKeeper {
       final long startMillis = System.currentTimeMillis();
 
       CACHE.getData(CACHED_VIEWS, result -> {
-        setDataLoaded(true);
+        setDataLoaded();
         logger.debug("calendar cache loaded", result, TimeUtils.elapsedMillis(startMillis));
         command.execute();
       });
@@ -403,8 +412,8 @@ public final class CalendarKeeper {
         .onSelectReport(EnumUtils.getEnumByIndex(Report.class, parameters)));
   }
 
-  public static void setDataLoaded(boolean dataLoaded) {
-    CalendarKeeper.dataLoaded = dataLoaded;
+  public static void setDataLoaded() {
+    CalendarKeeper.dataLoaded = true;
   }
 
   public static void openCalendar(final long id, final ViewCallback callback) {
@@ -475,16 +484,8 @@ public final class CalendarKeeper {
     return CACHE.getRowSet(VIEW_ATTENDEES);
   }
 
-  static BeeRowSet getAttendeeTypes() {
-    return CACHE.getRowSet(VIEW_ATTENDEE_TYPES);
-  }
-
   static String getCalendarSupplierKey(long calendarId) {
     return ViewFactory.SupplierKind.CALENDAR.getKey(BeeUtils.toString(calendarId));
-  }
-
-  static void getData(Collection<String> viewNames, final Command command) {
-    CACHE.getData(viewNames, result -> command.execute());
   }
 
   static Long getDefaultAppointmentType() {

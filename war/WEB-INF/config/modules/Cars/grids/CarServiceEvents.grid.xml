@@ -4,12 +4,12 @@
         name="CarServiceEvents" viewName="CarServiceEvents" caption="=calAppointments"
 >
   <g:columns>
-    <DataColumn name="Summary" visible="true" maxWidth="200" />
-    <DataColumn name="Description" visible="false" maxWidth="200" />
+    <DataColumn name="Description" maxWidth="200" />
 
     <DataColumn name="StartDateTime" visible="true" />
     <DataColumn name="EndDateTime" visible="true" />
 
     <DataColumn name="Status" />
+    <DataColumn name="Arrived" editInPlace="true" />
   </g:columns>
 </g:Grid>

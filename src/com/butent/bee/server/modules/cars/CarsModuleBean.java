@@ -37,6 +37,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -192,12 +193,39 @@ public class CarsModuleBean implements BeeModule {
         response = getObject(reqInfo.getParameterLong(COL_OBJECT));
         break;
 
+      case SVC_GET_CALENDAR:
+        response = getCalendar();
+        break;
+
       default:
         String msg = BeeUtils.joinWords("Cars service not recognized:", service);
         logger.warning(msg);
         response = ResponseObject.error(msg);
     }
     return response;
+  }
+
+  private ResponseObject getCalendar() {
+    Long calendarId = qs.getId(VIEW_CALENDARS, COL_CALENDAR_IS_SERVICE, true);
+
+    if (!DataUtils.isId(calendarId)) {
+      SqlInsert si = new SqlInsert(VIEW_CALENDARS)
+          .addConstant(COL_CALENDAR_NAME, usr.getDictionary().carService())
+          .addConstant(COL_CALENDAR_IS_SERVICE, true);
+
+      Map<String, Pair<Defaults.DefaultExpression, Object>> defs =
+          sys.getTableDefaults(VIEW_CALENDARS);
+
+      if (!BeeUtils.isEmpty(defs)) {
+        defs.forEach((field, pair) -> {
+          if (Objects.isNull(pair.getA())) {
+            si.addConstant(field, pair.getB());
+          }
+        });
+      }
+      calendarId = qs.insertData(si);
+    }
+    return ResponseObject.response(calendarId);
   }
 
   @Override

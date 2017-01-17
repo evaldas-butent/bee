@@ -13,6 +13,7 @@ public final class CarsConstants {
   public static final String SVC_SAVE_OBJECT = "SaveObject";
   public static final String SVC_SAVE_OBJECT_INFO = "SaveObjectInfo";
   public static final String SVC_GET_OBJECT = "GetObject";
+  public static final String SVC_GET_CALENDAR = "GetCalendar";
 
   public static final String TBL_CONF_GROUPS = "ConfGroups";
   public static final String TBL_CONF_OPTIONS = "ConfOptions";

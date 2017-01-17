@@ -4,12 +4,16 @@ import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.StageUtils;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.classifiers.VehiclesGrid;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.rights.Module;
 
 public final class CarsKeeper {
@@ -19,6 +23,15 @@ public final class CarsKeeper {
   }
 
   public static void register() {
+    MenuService.CAR_SERVICE_CALENDAR.setHandler(parameters ->
+        BeeKeeper.getRpc().makeGetRequest(createSvcArgs(SVC_GET_CALENDAR), new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            CalendarKeeper.openCalendar(response.getResponseAsLong(), result ->
+                BeeKeeper.getScreen().show(result));
+          }
+        }));
+
     FormFactory.registerFormInterceptor(TBL_CONF_PRICELIST, new ConfPricelistForm());
     FormFactory.registerFormInterceptor(FORM_CONF_OPTION, new PhotoHandler());
     FormFactory.registerFormInterceptor(FORM_CAR_ORDER, new CarOrderForm());

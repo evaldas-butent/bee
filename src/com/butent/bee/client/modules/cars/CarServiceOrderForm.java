@@ -16,6 +16,9 @@ import com.butent.bee.client.view.HasStages;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -41,6 +44,21 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
           break;
         case TBL_SERVICE_ORDER_ITEMS:
           ((ChildGrid) widget).setGridInterceptor(new ParentRowRefreshGrid());
+          break;
+        case TBL_SERVICE_EVENTS:
+          ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+            @Override
+            public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+              newRow.setValue(gridView.getDataIndex(COL_SERVICE_ORDER),
+                  CarServiceOrderForm.this.getActiveRowId());
+              return super.onStartNewRow(gridView, oldRow, newRow);
+            }
+
+            @Override
+            public GridInterceptor getInstance() {
+              return null;
+            }
+          });
           break;
       }
     }

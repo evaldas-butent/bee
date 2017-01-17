@@ -32,8 +32,9 @@
         <Label for="Company" />
         <DataSelector source="Company" choiceColumns="Name TypeName"
                       renderColumns="CompanyName CompanyTypeName" style="&inp;" />
-        <Label for="ServiceOrder" />
-        <DataSelector source="ServiceOrder" style="&inp;" />
+        <cell colSpan="2">
+          <FlowPanel name="ServiceOrder" style="cursor:pointer; font-weight:bold; color:blue;" />
+        </cell>
       </row>
 
       <row>
@@ -48,6 +49,13 @@
       </row>
 
       <row>
+        <Label for="AppointmentType" />
+        <DataSelector source="AppointmentType" renderColumns="TypeName" style="&inp;"/>
+        <text />
+        <CheckBox source="Arrived" />
+      </row>
+
+      <row>
         <Label text="=calAttendees" class="bee-required" />
         <cell colSpan="3">
           <MultiSelector name="Attendees" viewName="Attendees" renderColumns="Name"
@@ -55,11 +63,6 @@
                          newRowEnabled="false" style="width:100%; max-height:100px; overflow:auto;"
                          required="true" />
         </cell>
-      </row>
-
-      <row>
-        <Label for="AppointmentType" />
-        <DataSelector source="AppointmentType" renderColumns="TypeName" style="&inp;"/>
       </row>
     </Table>
 
