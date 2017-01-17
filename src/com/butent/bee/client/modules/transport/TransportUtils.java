@@ -96,7 +96,6 @@ public final class TransportUtils {
                       }
                       if (!newPlaces.isEmpty()) {
                         newPlaces = DataUtils.createRowSetForInsert(newPlaces);
-                        newPlaces.removeColumn(newPlaces.getColumnIndex(COL_PLACE_DATE));
                         Queries.insertRows(newPlaces, new RpcCallback<RowInfoList>() {
                           @Override
                           public void onSuccess(RowInfoList result) {
