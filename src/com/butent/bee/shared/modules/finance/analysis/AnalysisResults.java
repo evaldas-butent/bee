@@ -1,5 +1,8 @@
 package com.butent.bee.shared.modules.finance.analysis;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.shared.Assert;
@@ -19,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public final class AnalysisResults implements BeeSerializable {
 
@@ -120,12 +124,66 @@ public final class AnalysisResults implements BeeSerializable {
     return false;
   }
 
-  public List<AnalysisValue> filterValues(long columnId, long rowId) {
+  public List<AnalysisValue> getValues(long columnId, long rowId) {
     List<AnalysisValue> result = new ArrayList<>();
 
     for (AnalysisValue av : values) {
       if (av.getColumnId() == columnId && av.getRowId() == rowId) {
         result.add(av);
+      }
+    }
+
+    return result;
+  }
+
+  public Multimap<Long, AnalysisValue> getColumnValuesByRow(long columnId,
+      Collection<Long> rowIds, Predicate<AnalysisValue> predicate) {
+
+    Multimap<Long, AnalysisValue> result = ArrayListMultimap.create();
+
+    if (!BeeUtils.isEmpty(rowIds)) {
+      for (long rowId : rowIds) {
+        List<AnalysisValue> list = getValues(columnId, rowId);
+
+        if (!list.isEmpty()) {
+          if (predicate == null) {
+            result.putAll(rowId, list);
+
+          } else {
+            for (AnalysisValue analysisValue : list) {
+              if (predicate.test(analysisValue)) {
+                result.put(rowId, analysisValue);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  public Multimap<Long, AnalysisValue> getRowValuesByColumn(long rowId,
+      Collection<Long> columnIds, Predicate<AnalysisValue> predicate) {
+
+    Multimap<Long, AnalysisValue> result = ArrayListMultimap.create();
+
+    if (!BeeUtils.isEmpty(columnIds)) {
+      for (long columnId : columnIds) {
+        List<AnalysisValue> list = getValues(columnId, rowId);
+
+        if (!list.isEmpty()) {
+          if (predicate == null) {
+            result.putAll(columnId, list);
+
+          } else {
+            for (AnalysisValue analysisValue : list) {
+              if (predicate.test(analysisValue)) {
+                result.put(columnId, analysisValue);
+              }
+            }
+          }
+        }
       }
     }
 
@@ -143,7 +201,7 @@ public final class AnalysisResults implements BeeSerializable {
 
     if (!BeeUtils.isEmpty(splitValues)) {
       if (columnSplitValues.containsKey(columnId)) {
-        columnSplitValues.get(columnId).put(splitType, splitValues);
+        AnalysisSplitValue.putSplitValues(columnSplitValues.get(columnId), splitType, splitValues);
 
       } else {
         Map<AnalysisSplitType, List<AnalysisSplitValue>> map = new HashMap<>();
@@ -165,7 +223,7 @@ public final class AnalysisResults implements BeeSerializable {
 
     if (!BeeUtils.isEmpty(splitValues)) {
       if (rowSplitValues.containsKey(rowId)) {
-        rowSplitValues.get(rowId).put(splitType, splitValues);
+        AnalysisSplitValue.putSplitValues(rowSplitValues.get(rowId), splitType, splitValues);
 
       } else {
         Map<AnalysisSplitType, List<AnalysisSplitValue>> map = new HashMap<>();

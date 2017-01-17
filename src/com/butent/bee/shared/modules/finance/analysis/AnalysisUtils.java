@@ -89,6 +89,20 @@ public final class AnalysisUtils {
     }
   }
 
+  public static Integer getScale(Integer... input) {
+    if (input == null) {
+      return null;
+    }
+
+    for (Integer scale : input) {
+      if (isValidScale(scale)) {
+        return scale;
+      }
+    }
+
+    return null;
+  }
+
   public static MonthRange intersection(MonthRange first, MonthRange second) {
     if (first == null) {
       return second;

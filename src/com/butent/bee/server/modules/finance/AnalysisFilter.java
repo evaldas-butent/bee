@@ -6,16 +6,44 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 class AnalysisFilter {
+
+  static boolean allMatch(AnalysisValue analysisValue, Collection<AnalysisFilter> analysisFilters) {
+    if (!BeeUtils.isEmpty(analysisFilters)) {
+      for (AnalysisFilter analysisFilter : analysisFilters) {
+        if (analysisFilter != null && !analysisFilter.matches(analysisValue)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  static List<AnalysisFilter> list(AnalysisFilter... analysisFilters) {
+    List<AnalysisFilter> result = new ArrayList<>();
+
+    if (analysisFilters != null) {
+      for (AnalysisFilter analysisFilter : analysisFilters) {
+        if (analysisFilter != null && !analysisFilter.isEmpty()) {
+          result.add(analysisFilter);
+        }
+      }
+    }
+
+    return result;
+  }
 
   private static final String KEY_EMPLOYEE = "Employee";
 
@@ -78,6 +106,17 @@ class AnalysisFilter {
 
   boolean isEmpty() {
     return main.isEmpty() && include.isEmpty() && exclude.isEmpty();
+  }
+
+  boolean matches(AnalysisValue analysisValue) {
+    if (analysisValue == null) {
+      return false;
+    }
+
+    if (isEmpty()) {
+      return true;
+    }
+    return true;
   }
 
   void setSubFilters(Collection<BeeRow> data, Map<String, Integer> indexes) {

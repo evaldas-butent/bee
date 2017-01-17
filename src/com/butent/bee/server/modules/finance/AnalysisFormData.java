@@ -442,6 +442,10 @@ class AnalysisFormData {
     return column.isTrue(columnIndexes.get(key));
   }
 
+  List<AnalysisCellType> getColumnCellTypes(BeeRow column) {
+    return AnalysisCellType.normalize(getColumnString(column, COL_ANALYSIS_COLUMN_VALUES));
+  }
+
   List<AnalysisSplitType> getColumnSplits(BeeRow column) {
     return getColumnSplits(column, getHeaderInteger(COL_ANALYSIS_COLUMN_SPLIT_LEVELS));
   }
@@ -465,7 +469,11 @@ class AnalysisFormData {
     return splits;
   }
 
-  private String getColumnScript(BeeRow column) {
+  Integer getColumnScale(BeeRow column) {
+    return getColumnInteger(column, COL_ANALYSIS_COLUMN_SCALE);
+  }
+
+  String getColumnScript(BeeRow column) {
     return getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT);
   }
 
@@ -577,6 +585,10 @@ class AnalysisFormData {
     return row.isTrue(rowIndexes.get(key));
   }
 
+  List<AnalysisCellType> getRowCellTypes(BeeRow row) {
+    return AnalysisCellType.normalize(getRowString(row, COL_ANALYSIS_ROW_VALUES));
+  }
+
   List<AnalysisSplitType> getRowSplits(BeeRow row) {
     return getRowSplits(row, getHeaderInteger(COL_ANALYSIS_ROW_SPLIT_LEVELS));
   }
@@ -600,7 +612,11 @@ class AnalysisFormData {
     return splits;
   }
 
-  private String getRowScript(BeeRow row) {
+  Integer getRowScale(BeeRow row) {
+    return getRowInteger(row, COL_ANALYSIS_ROW_SCALE);
+  }
+
+  String getRowScript(BeeRow row) {
     return getRowString(row, COL_ANALYSIS_ROW_SCRIPT);
   }
 

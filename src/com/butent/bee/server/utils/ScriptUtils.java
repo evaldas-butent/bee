@@ -94,6 +94,36 @@ public final class ScriptUtils {
     }
   }
 
+  public static String evalToString(ScriptEngine engine, Bindings bindings, String script,
+      ResponseObject errorCollector) {
+
+    if (engine == null || BeeUtils.isEmpty(script)) {
+      return null;
+
+    } else {
+      try {
+        Object result;
+        if (bindings == null) {
+          result = engine.eval(script);
+        } else {
+          result = engine.eval(script, bindings);
+        }
+
+        if (result == null) {
+          return null;
+        } else {
+          return result.toString();
+        }
+
+      } catch (ScriptException ex) {
+        if (errorCollector != null) {
+          errorCollector.addError(ex, script, bindings);
+        }
+        return null;
+      }
+    }
+  }
+
   public static ScriptEngine createEngine(String key, Object value) {
     ScriptEngine engine = getEngine();
     if (engine != null && NameUtils.isIdentifier(key)) {

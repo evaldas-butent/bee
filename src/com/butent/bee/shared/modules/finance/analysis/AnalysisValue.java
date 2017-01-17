@@ -37,6 +37,19 @@ public final class AnalysisValue implements BeeSerializable {
     return av;
   }
 
+  public static AnalysisValue of(long columnId, long rowId, String actual, String budget) {
+    AnalysisValue av = new AnalysisValue(columnId, rowId);
+
+    if (!BeeUtils.isEmpty(actual)) {
+      av.setActualValue(actual);
+    }
+    if (!BeeUtils.isEmpty(budget)) {
+      av.setBudgetValue(budget);
+    }
+
+    return av;
+  }
+
   public static AnalysisValue restore(String s) {
     AnalysisValue av = new AnalysisValue();
     av.deserialize(s);
