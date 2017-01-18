@@ -44,7 +44,7 @@ public class CustomTransportReportsBean {
 
     if (loadingRequired || loadingRangeRequired) {
       String als = SqlUtils.uniqueName();
-      IsCondition handlingClause = sys.idInList(TBL_CARGO_TRIPS,
+      IsCondition handlingClause = SqlUtils.inList(TBL_CARGO_TRIPS, COL_TRIP,
           qs.getNotNullLongSet(tmp, COL_TRIP));
 
       SqlSelect handlingQuery =  new SqlSelect()
