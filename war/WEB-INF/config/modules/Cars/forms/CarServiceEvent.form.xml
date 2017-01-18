@@ -21,6 +21,13 @@
       </row>
 
       <row>
+        <Label text="=duration" />
+        <InputTime name="Duration" property="Duration" step="5" style="width:60px;" />
+        <Label for="AppointmentType" />
+        <DataSelector source="AppointmentType" renderColumns="TypeName" style="&inp;" />
+      </row>
+
+      <row>
         <Label for="EndDateTime" visible="true" />
         <InputDateTime source="EndDateTime" visible="true" style="&inp;" />
         <Label for="Creator" />
@@ -49,8 +56,8 @@
       </row>
 
       <row>
-        <Label for="AppointmentType" />
-        <DataSelector source="AppointmentType" renderColumns="TypeName" style="&inp;"/>
+        <text />
+        <text />
         <text />
         <CheckBox source="Arrived" />
       </row>
@@ -59,7 +66,7 @@
         <Label text="=calAttendees" class="bee-required" />
         <cell colSpan="3">
           <MultiSelector name="Attendees" viewName="Attendees" renderColumns="Name"
-                         choiceColumns="Name TypeName"
+                         choiceColumns="Name TypeName" property="Attendees"
                          newRowEnabled="false" style="width:100%; max-height:100px; overflow:auto;"
                          required="true" />
         </cell>

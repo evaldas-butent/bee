@@ -5,33 +5,46 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.TBL_STAGES;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_DOCUMENT_VAT_MODE;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.administration.Stage;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HasStages;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 import java.util.Objects;
 
-public class CarServiceOrderForm extends PrintFormInterceptor implements HasStages {
+public class CarServiceOrderForm extends PrintFormInterceptor implements HasStages,
+    SelectorEvent.Handler {
 
   private HasWidgets stageContainer;
   private List<Stage> orderStages;
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    if (Objects.equals(editableWidget.getColumnId(), COL_CAR) && widget instanceof DataSelector) {
+      ((DataSelector) widget).addSelectorHandler(this);
+    }
+    super.afterCreateEditableWidget(editableWidget, widget);
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -46,19 +59,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
           ((ChildGrid) widget).setGridInterceptor(new ParentRowRefreshGrid());
           break;
         case TBL_SERVICE_EVENTS:
-          ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
-            @Override
-            public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-              newRow.setValue(gridView.getDataIndex(COL_SERVICE_ORDER),
-                  CarServiceOrderForm.this.getActiveRowId());
-              return super.onStartNewRow(gridView, oldRow, newRow);
-            }
-
-            @Override
-            public GridInterceptor getInstance() {
-              return null;
-            }
-          });
+          ((ChildGrid) widget).setGridInterceptor(new CarServiceEventsGrid());
           break;
       }
     }
@@ -82,6 +83,20 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   @Override
   public List<Stage> getStages() {
     return orderStages;
+  }
+
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (event.isNewRow()) {
+      RelationUtils.copyWithDescendants(Data.getDataInfo(getViewName()), COL_CUSTOMER,
+          getActiveRow(), Data.getDataInfo(event.getRelatedViewName()), COL_OWNER,
+          event.getNewRow());
+
+    } else if (event.isOpened()) {
+      Long owner = getLongValue(COL_CUSTOMER);
+      event.getSelector().setAdditionalFilter(Objects.isNull(owner) ? null
+          : Filter.equals(COL_OWNER, owner));
+    }
   }
 
   @Override

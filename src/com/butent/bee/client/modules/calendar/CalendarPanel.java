@@ -88,6 +88,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 public class CalendarPanel extends Split implements AppointmentEvent.Handler, Presenter, View,
     Printable, VisibilityChangeEvent.Handler, HasWidgetSupplier, HandlesStateChange, HasDomain,
@@ -137,6 +138,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   private final Flow todoContainer;
   private TodoMoveController todoMoveController;
 
+  private BiConsumer<DateTime, Long> timePicker;
+
   private final List<ViewType> views = new ArrayList<>();
 
   private final List<HandlerRegistration> registry = new ArrayList<>();
@@ -169,8 +172,14 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     });
 
     calendar.addTimeBlockClickHandler(
-        event -> CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), null,
-            event.getAttendeeId(), null, null));
+        event -> {
+          if (Objects.nonNull(timePicker)) {
+            timePicker.accept(event.getStart(), event.getAttendeeId());
+          } else {
+            CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), null,
+                event.getAttendeeId(), null, null);
+          }
+        });
 
     calendar.addUpdateHandler(event -> {
       if (!updateAppointment(event.getAppointment(), event.getNewStart(), event.getNewEnd(),
@@ -543,6 +552,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   @Override
   public void setEventSource(String eventSource) {
+  }
+
+  public void setTimePickerCallback(BiConsumer<DateTime, Long> callback) {
+    this.timePicker = callback;
   }
 
   @Override

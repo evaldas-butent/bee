@@ -5,7 +5,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
-import static com.butent.bee.shared.modules.cars.CarsConstants.TBL_SERVICE_EVENTS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DESCRIPTION;
+import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -215,7 +216,6 @@ public final class CalendarKeeper {
           DataInfo dataInfo = Data.getDataInfo(TBL_SERVICE_EVENTS);
           BeeRow newRow = RowFactory.createEmptyRow(dataInfo);
           newRow.setValue(dataInfo.getColumnIndex(COL_START_DATE_TIME), start);
-          newRow.setValue(dataInfo.getColumnIndex(COL_END_DATE_TIME), TimeUtils.nextHour(start, 0));
           newRow.setProperty(TBL_ATTENDEES, attendeeId);
           RowFactory.createRow(dataInfo, newRow, null);
           return;

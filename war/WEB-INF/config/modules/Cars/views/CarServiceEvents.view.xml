@@ -7,6 +7,10 @@
 >
   <Columns>
     <SimpleColumn name="ServiceOrder" />
+    <SimpleJoin name="ServiceOrder" joinType="LEFT">
+      <SimpleColumn name="OrderNo" />
+    </SimpleJoin>
+
     <SimpleColumn name="Arrived" />
 
     <SimpleJoin name="Appointment" joinType="INNER">
