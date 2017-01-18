@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-12-14T14:12:32 -->
+<!-- 2017-01-18T11:27:36 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" whenResourceMissingType="Key" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -207,11 +207,11 @@
 	</variable>
 	<group name="Group1"/>
 	<title>
-		<band height="318">
+		<band height="338">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="40" width="480" height="20" isRemoveLineWhenBlank="true" uuid="4095ac60-2a0d-4e55-8f0e-087420f6d337">
+				<reportElement x="0" y="50" width="480" height="20" isRemoveLineWhenBlank="true" uuid="4095ac60-2a0d-4e55-8f0e-087420f6d337">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
@@ -227,7 +227,7 @@
 				<imageExpression><![CDATA["images/logo.png"]]></imageExpression>
 			</image>
 			<frame>
-				<reportElement positionType="Float" isPrintRepeatedValues="false" x="0" y="70" width="280" height="226" isRemoveLineWhenBlank="true" uuid="7c8eae9e-209c-44be-bd71-9eac4e862e1f"/>
+				<reportElement positionType="Float" isPrintRepeatedValues="false" x="0" y="90" width="280" height="226" isRemoveLineWhenBlank="true" uuid="7c8eae9e-209c-44be-bd71-9eac4e862e1f"/>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement positionType="Float" x="0" y="0" width="280" height="12" isRemoveLineWhenBlank="true" uuid="889b7d3c-081f-4f8a-b31d-5f737c9b4881">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -357,7 +357,7 @@
 				</componentElement>
 			</frame>
 			<frame>
-				<reportElement positionType="Float" x="280" y="70" width="275" height="226" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="460da7fc-187e-48f3-8184-3e735f49dc3c">
+				<reportElement positionType="Float" x="280" y="90" width="275" height="226" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="460da7fc-187e-48f3-8184-3e735f49dc3c">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -524,7 +524,7 @@
 				</textField>
 			</frame>
 			<textField isStretchWithOverflow="true" pattern="yyyy.MM.dd">
-				<reportElement positionType="Float" x="0" y="296" width="555" height="22" isRemoveLineWhenBlank="true" uuid="b7836f42-bd7d-47c7-a3a4-6e78957c43b9"/>
+				<reportElement positionType="Float" x="0" y="316" width="555" height="22" isRemoveLineWhenBlank="true" uuid="b7836f42-bd7d-47c7-a3a4-6e78957c43b9"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
@@ -655,13 +655,19 @@
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[$P{SaleItemsDataSet}]]></dataSourceExpression>
 					</datasetRun>
-					<jr:column width="68" uuid="1dc24eb5-e55e-4dfb-886c-f8e9b96931fc">
+					<jr:column width="60" uuid="1dc24eb5-e55e-4dfb-886c-f8e9b96931fc">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<jr:tableFooter height="30" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="20" rowSpan="1">
+							<box>
+								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="68" height="20" uuid="240c74b7-ddbf-4071-b575-ef08c405eb52"/>
+								<reportElement style="TableHeader" x="0" y="0" width="60" height="20" uuid="240c74b7-ddbf-4071-b575-ef08c405eb52"/>
 								<textElement textAlignment="Center" verticalAlignment="Top">
 									<font fontName="DejaVu Sans" size="7" isBold="true"/>
 								</textElement>
@@ -670,8 +676,14 @@
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							<box>
+								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableDetail" x="0" y="0" width="68" height="30" uuid="3e95b948-b614-408f-8dc2-bea080271987">
+								<reportElement style="TableDetail" x="0" y="0" width="60" height="30" uuid="3e95b948-b614-408f-8dc2-bea080271987">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -688,16 +700,28 @@
 						<jr:tableFooter height="30" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="20" rowSpan="1">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
+							<box>
+								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField isStretchWithOverflow="true">
 								<reportElement style="TableHeader" x="0" y="0" width="52" height="20" uuid="57eb5e06-30fb-4c1d-bd0b-0893def278be"/>
 								<textElement textAlignment="Center" verticalAlignment="Top">
 									<font fontName="DejaVu Sans" size="7" isBold="true"/>
 									<paragraph lineSpacing="Single" lineSpacingSize="1.0"/>
 								</textElement>
-								<textFieldExpression><![CDATA["Užsakymo Nr." + "\n" + $P{d}.orderNumber()]]></textFieldExpression>
+								<textFieldExpression><![CDATA["Užsakymo Nr." + "\n" + $R{orderNo}]]></textFieldExpression>
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
+							<box>
+								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField isStretchWithOverflow="true">
 								<reportElement style="TableDetail" x="0" y="0" width="52" height="30" uuid="4ebd8f40-8c7f-42d6-a108-475f87e6e6aa">
 									<printWhenExpression><![CDATA[$V{trMap}.containsKey("OrderNo")]]></printWhenExpression>
@@ -739,6 +763,12 @@
 							<jr:tableFooter height="0" rowSpan="1"/>
 							<jr:columnHeader style="TableCell" height="20" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="px"/>
+								<box>
+									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableHeader" x="0" y="0" width="39" height="20" uuid="49c587c5-effe-49c8-ae41-352a9f13a8e4"/>
 									<textElement textAlignment="Left" verticalAlignment="Top">
@@ -749,6 +779,12 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="30">
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableDetail" x="0" y="0" width="39" height="30" uuid="acf998bf-1d6c-458f-afee-f0b54a14b3bd">
 										<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -769,6 +805,12 @@
 							</jr:tableFooter>
 							<jr:columnHeader style="TableCell" height="20" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="px"/>
+								<box>
+									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableHeader" x="0" y="0" width="61" height="20" uuid="eba90b99-3d58-442a-b261-ee8b308052cd"/>
 									<textElement textAlignment="Left" verticalAlignment="Top">
@@ -778,6 +820,12 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="30">
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableDetail" x="0" y="0" width="61" height="15" uuid="9ff3adb6-cfd1-4738-ba34-7689475d3788">
 										<printWhenExpression><![CDATA[$V{trMap}.containsKey("LoadingDate")]]></printWhenExpression>
@@ -805,6 +853,12 @@
 							</jr:tableFooter>
 							<jr:columnHeader style="TableCell" height="20" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="px"/>
+								<box>
+									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableHeader" x="0" y="0" width="50" height="20" uuid="3dfde1ef-1dd2-4a32-9033-ad7145555443"/>
 									<textElement textAlignment="Left" verticalAlignment="Top">
@@ -814,6 +868,12 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="30">
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableDetail" x="0" y="0" width="50" height="30" uuid="3cb66dd5-8256-45ef-9c82-1567736ed6bd">
 										<printWhenExpression><![CDATA[$V{trMap}.containsKey("Notes")]]></printWhenExpression>
@@ -833,13 +893,19 @@
 							<jr:tableFooter height="0" rowSpan="1"/>
 							<jr:columnHeader style="TableCell" height="20" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="px"/>
+								<box>
+									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableHeader" x="0" y="0" width="61" height="20" uuid="6db34f48-1bbe-42fe-b386-bdbd11db38df"/>
 									<box>
-										<topPen lineWidth="0.5" lineColor="#CFCFCF"/>
-										<leftPen lineWidth="0.0" lineColor="#CFCFCF"/>
-										<bottomPen lineWidth="0.0" lineColor="#CFCFCF"/>
-										<rightPen lineWidth="0.0" lineColor="#CFCFCF"/>
+										<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Left" verticalAlignment="Top">
 										<font fontName="DejaVu Sans" size="7" isBold="true"/>
@@ -848,6 +914,12 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="30">
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableDetail" x="0" y="0" width="61" height="15" uuid="80d98d2f-4806-4f75-a376-88d24071eb89"/>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
@@ -891,6 +963,12 @@
 							</textField>
 						</jr:tableFooter>
 						<jr:columnHeader style="TableCell" height="20" rowSpan="1">
+							<box>
+								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField isStretchWithOverflow="true">
 								<reportElement style="TableHeader" x="0" y="0" width="54" height="20" uuid="5b53e771-e61c-4289-839c-16af1b9fa63e">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -902,6 +980,12 @@
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
+							<box>
+								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField pattern="0.00">
 								<reportElement style="TableDetail" x="0" y="0" width="54" height="30" isRemoveLineWhenBlank="true" uuid="06822776-c684-473c-a1c9-ad4deac6d1a1"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
@@ -937,6 +1021,12 @@
 							</textField>
 						</jr:tableFooter>
 						<jr:columnHeader style="TableCell" height="20" rowSpan="1">
+							<box>
+								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField isStretchWithOverflow="true">
 								<reportElement style="TableHeader" x="0" y="0" width="45" height="20" uuid="9b27c274-5d09-4078-81eb-37da9304f376">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -948,6 +1038,12 @@
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
+							<box>
+								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField>
 								<reportElement x="0" y="0" width="45" height="30" uuid="c97a1181-bfef-4ab3-8f6c-12c342dea465"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
@@ -983,6 +1079,12 @@
 							</textField>
 						</jr:tableFooter>
 						<jr:columnHeader style="TableCell" height="20" rowSpan="1">
+							<box>
+								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField isStretchWithOverflow="true">
 								<reportElement style="TableHeader" x="0" y="0" width="50" height="20" uuid="fffcd18a-1583-43ec-965b-3c44e5be1397">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -994,6 +1096,12 @@
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
+							<box>
+								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField isStretchWithOverflow="true" pattern="0.00">
 								<reportElement style="TableDetail" x="0" y="0" width="50" height="30" isPrintWhenDetailOverflows="true" uuid="b2fa0a6c-7354-4543-91e8-a67b00b0ea63"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
@@ -1030,7 +1138,13 @@
 						</jr:tableFooter>
 						<jr:columnHeader style="TableCell" height="20" rowSpan="1">
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
-							<textField>
+							<box>
+								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<textField isStretchWithOverflow="true">
 								<reportElement style="TableHeader" x="0" y="0" width="30" height="20" uuid="6570bf64-a872-461b-a884-6dd5bad0b86c">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								</reportElement>
@@ -1041,6 +1155,12 @@
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
+							<box>
+								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField>
 								<reportElement style="TableDetail" x="0" y="0" width="30" height="30" uuid="bd22f7db-9026-47bb-baad-caf7519ff668">
 									<printWhenExpression><![CDATA[$F{Vat} != null]]></printWhenExpression>
@@ -1052,12 +1172,18 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="46" uuid="c420d38d-d94f-4ebc-9ea7-75f9701f1909">
+					<jr:column width="54" uuid="c420d38d-d94f-4ebc-9ea7-75f9701f1909">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column11"/>
 						<jr:tableFooter height="30" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="20" rowSpan="1">
-							<textField>
-								<reportElement style="TableHeader" x="0" y="0" width="46" height="20" uuid="223c85ee-85b2-4037-ba6e-a0441e68c9e1">
+							<box>
+								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<textField isStretchWithOverflow="true">
+								<reportElement style="TableHeader" x="0" y="0" width="54" height="20" uuid="223c85ee-85b2-4037-ba6e-a0441e68c9e1">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								</reportElement>
 								<textElement textAlignment="Left" verticalAlignment="Top">
@@ -1067,8 +1193,14 @@
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
+							<box>
+								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#CFCFCF"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
 							<textField isStretchWithOverflow="true">
-								<reportElement x="0" y="0" width="46" height="30" uuid="00797aac-b9e2-4189-a537-0eb328f5fecb">
+								<reportElement x="0" y="0" width="54" height="30" uuid="00797aac-b9e2-4189-a537-0eb328f5fecb">
 									<printWhenExpression><![CDATA[$V{trMap}.containsKey("CargoNotes")]]></printWhenExpression>
 								</reportElement>
 								<textElement verticalAlignment="Middle">
