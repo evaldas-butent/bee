@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 class AnalysisFilter {
 
@@ -43,6 +44,10 @@ class AnalysisFilter {
     }
 
     return result;
+  }
+
+  static Predicate<AnalysisValue> predicate(AnalysisFilter analysisFilter) {
+    return (analysisFilter == null) ? null : analysisFilter::matches;
   }
 
   private static final String KEY_EMPLOYEE = "Employee";

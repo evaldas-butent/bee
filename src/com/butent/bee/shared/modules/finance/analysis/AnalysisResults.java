@@ -212,6 +212,14 @@ public final class AnalysisResults implements BeeSerializable {
     }
   }
 
+  public void addColumnSplitValues(long columnId,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> map) {
+
+    if (!BeeUtils.isEmpty(map)) {
+      map.forEach((type, splitValues) -> addColumnSplitValues(columnId, type, splitValues));
+    }
+  }
+
   public void addRowSplitTypes(long rowId, List<AnalysisSplitType> splitTypes) {
     if (!BeeUtils.isEmpty(splitTypes)) {
       rowSplitTypes.put(rowId, splitTypes);
@@ -234,6 +242,12 @@ public final class AnalysisResults implements BeeSerializable {
     }
   }
 
+  public void addRowSplitValues(long rowId, Map<AnalysisSplitType, List<AnalysisSplitValue>> map) {
+    if (!BeeUtils.isEmpty(map)) {
+      map.forEach((type, splitValues) -> addRowSplitValues(rowId, type, splitValues));
+    }
+  }
+
   public List<AnalysisSplitType> getColumnSplitTypes(long columnId) {
     return columnSplitTypes.getOrDefault(columnId, EMPTY_SPLIT_TYPES);
   }
@@ -242,12 +256,44 @@ public final class AnalysisResults implements BeeSerializable {
     return columnSplitValues.get(columnId);
   }
 
+  public List<Map<AnalysisSplitType, List<AnalysisSplitValue>>> getColumnSplitValues(
+      Collection<Long> columnIds) {
+
+    List<Map<AnalysisSplitType, List<AnalysisSplitValue>>> result = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(columnIds)) {
+      for (long columnId : columnIds) {
+        Map<AnalysisSplitType, List<AnalysisSplitValue>> map = getColumnSplitValues(columnId);
+        if (map != null) {
+          result.add(map);
+        }
+      }
+    }
+    return result;
+  }
+
   public List<AnalysisSplitType> getRowSplitTypes(long rowId) {
     return rowSplitTypes.getOrDefault(rowId, EMPTY_SPLIT_TYPES);
   }
 
   public Map<AnalysisSplitType, List<AnalysisSplitValue>> getRowSplitValues(long rowId) {
     return rowSplitValues.get(rowId);
+  }
+
+  public List<Map<AnalysisSplitType, List<AnalysisSplitValue>>> getRowSplitValues(
+      Collection<Long> rowIds) {
+
+    List<Map<AnalysisSplitType, List<AnalysisSplitValue>>> result = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(rowIds)) {
+      for (long rowId : rowIds) {
+        Map<AnalysisSplitType, List<AnalysisSplitValue>> map = getRowSplitValues(rowId);
+        if (map != null) {
+          result.add(map);
+        }
+      }
+    }
+    return result;
   }
 
   public List<AnalysisValue> getValues() {

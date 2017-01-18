@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.finance;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -42,8 +41,8 @@ import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
-import com.butent.bee.shared.modules.finance.analysis.TurnoverOrBalance;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
+import com.butent.bee.shared.modules.finance.analysis.TurnoverOrBalance;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.TimeUtils;
@@ -216,8 +215,7 @@ public class AnalysisBean {
               IsCondition budgetCondition = null;
 
               if (DataUtils.isId(budgetType)
-                  && (AnalysisCellType.needsBudget(columnCellTypes)
-                  || AnalysisCellType.needsBudget(rowCellTypes))) {
+                  && AnalysisCellType.needsBudget(columnCellTypes, rowCellTypes)) {
 
                 budgetCursor = getBudgetCursor(indicator, indicatorTurnoverOrBalance,
                     budgetType, turnoverOrBalance);
@@ -261,8 +259,7 @@ public class AnalysisBean {
               }
 
               boolean needsActual = !accountFilters.isNull()
-                  && (AnalysisCellType.needsActual(columnCellTypes)
-                  || AnalysisCellType.needsActual(rowCellTypes));
+                  && AnalysisCellType.needsActual(columnCellTypes, rowCellTypes);
 
               if (needsActual) {
                 results.addValues(computeActualValues(column.getId(), row.getId(),
@@ -394,13 +391,7 @@ public class AnalysisBean {
             List<AnalysisCellType> rowCellTypes = formData.getRowCellTypes(row);
 
             AnalysisFilter rowAnalysisFilter = formData.getRowAnalysisFilter(row);
-
-            Predicate<AnalysisValue> analysisValuePredicate;
-            if (rowAnalysisFilter == null) {
-              analysisValuePredicate = null;
-            } else {
-              analysisValuePredicate = rowAnalysisFilter::matches;
-            }
+            Predicate<AnalysisValue> predicate = AnalysisFilter.predicate(rowAnalysisFilter);
 
             for (BeeRow column : formData.getColumns()) {
               MonthRange range = AnalysisUtils.intersection(rowRange,
@@ -413,88 +404,144 @@ public class AnalysisBean {
                     results.getColumnSplitTypes(column.getId());
                 List<AnalysisCellType> columnCellTypes = formData.getColumnCellTypes(column);
 
-                boolean needsActual = AnalysisCellType.needsActual(rowCellTypes)
-                    || AnalysisCellType.needsActual(columnCellTypes);
-                boolean needsBudget = AnalysisCellType.needsBudget(rowCellTypes)
-                    || AnalysisCellType.needsBudget(columnCellTypes);
-
-                Integer scale = AnalysisUtils.getScale(rowScale, columnScale);
+                boolean needsActual = AnalysisCellType.needsActual(rowCellTypes, columnCellTypes);
+                boolean needsBudget = AnalysisCellType.needsBudget(rowCellTypes, columnCellTypes);
 
                 List<AnalysisValue> calculatedValues = new ArrayList<>();
 
                 if (BeeUtils.isEmpty(variables)) {
-                  String actualValue;
-                  if (needsActual) {
-                    actualValue = ScriptUtils.evalToString(engine,
-                        AnalysisScripting.createActualBindings(engine), script, response);
-                  } else {
-                    actualValue = null;
-                  }
+                  AnalysisValue value = AnalysisScripting.calculateUnboundValue(engine, script,
+                      column.getId(), row.getId(), needsActual, needsBudget, response);
 
-                  String budgetValue;
-                  if (needsBudget) {
-                    budgetValue = ScriptUtils.evalToString(engine,
-                        AnalysisScripting.createBudgetBindings(engine), script, response);
-                  } else {
-                    budgetValue = null;
-                  }
-
-                  if (BeeUtils.anyNotEmpty(actualValue, budgetValue)) {
-                    calculatedValues.add(AnalysisValue.of(column.getId(), row.getId(),
-                        actualValue, budgetValue));
+                  if (value != null) {
+                    calculatedValues.add(value);
                   }
 
                 } else {
                   Multimap<Long, AnalysisValue> inputValues = results.getColumnValuesByRow(
-                      column.getId(), variables.keySet(), analysisValuePredicate);
+                      column.getId(), variables.keySet(), predicate);
 
                   if (inputValues != null && !inputValues.isEmpty()) {
                     Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues =
-                        new HashMap<>();
+                        AnalysisSplitValue.mergeSplitValues(rowSplitTypes,
+                            results.getRowSplitValues(inputValues.keySet()));
 
-                    if (!BeeUtils.isEmpty(rowSplitTypes)) {
-                      for (long inputRowId : inputValues.keySet()) {
-                        Map<AnalysisSplitType, List<AnalysisSplitValue>> map =
-                            results.getRowSplitValues(inputRowId);
-
-                        if (!BeeUtils.isEmpty(map)) {
-                          for (AnalysisSplitType splitType : rowSplitTypes) {
-                            List<AnalysisSplitValue> splitValues = map.get(splitType);
-
-                            if (!BeeUtils.isEmpty(splitValues)) {
-                              AnalysisSplitValue.putSplitValues(map, splitType, splitValues);
-                            }
-                          }
-                        }
-                      }
-
-                      if (!rowSplitValues.isEmpty()) {
-                        rowSplitValues.forEach((splitType, splitValues) ->
-                            results.addRowSplitValues(row.getId(), splitType, splitValues));
-                      }
+                    if (!BeeUtils.isEmpty(rowSplitValues)) {
+                      results.addRowSplitValues(row.getId(), rowSplitValues);
                     }
 
                     Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues =
                         results.getColumnSplitValues(column.getId());
 
-                    Multimap<String, AnalysisValue> input = ArrayListMultimap.create();
-                    for (long inputRowId : inputValues.keySet()) {
-                      String variable = variables.get(inputRowId);
-                      if (!BeeUtils.isEmpty(variable)) {
-                        input.putAll(variable, inputValues.get(inputRowId));
-                      }
-                    }
+                    Multimap<String, AnalysisValue> input =
+                        AnalysisScripting.transformInput(inputValues, variables);
 
                     calculatedValues.addAll(
                         AnalysisScripting.calculateValues(engine, script,
                             column.getId(), row.getId(), variables.values(), input,
                             columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
                             needsActual, needsBudget, response));
-
                   }
                 }
 
                 if (!calculatedValues.isEmpty() && !response.hasErrors()) {
+                  Integer scale = AnalysisUtils.getScale(rowScale, columnScale);
+                  if (AnalysisUtils.isValidScale(scale)) {
+                    calculatedValues.forEach(av -> av.round(scale));
+                  }
+
+                  results.addValues(calculatedValues);
+                }
+              }
+
+              if (response.hasErrors()) {
+                break;
+              }
+            }
+
+            if (response.hasErrors()) {
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (!response.hasErrors() && engine != null) {
+      List<BeeRow> secondaryColumns = formData.getSecondaryColumns(response::addError);
+
+      if (!secondaryColumns.isEmpty() && !response.hasErrors()) {
+        for (BeeRow column : secondaryColumns) {
+          MonthRange columnRange = AnalysisUtils.intersection(headerRange,
+              formData.getColumnRange(column));
+
+          if (columnRange != null) {
+            String script = formData.getColumnScript(column);
+            Map<Long, String> variables = formData.getColumnVariables(column);
+
+            Integer columnScale = formData.getColumnScale(column);
+
+            List<AnalysisSplitType> columnSplitTypes = results.getColumnSplitTypes(column.getId());
+            List<AnalysisCellType> columnCellTypes = formData.getColumnCellTypes(column);
+
+            AnalysisFilter columnAnalysisFilter = formData.getColumnAnalysisFilter(column);
+            Predicate<AnalysisValue> predicate = AnalysisFilter.predicate(columnAnalysisFilter);
+
+            for (BeeRow row : formData.getRows()) {
+              MonthRange range = AnalysisUtils.intersection(columnRange, formData.getRowRange(row));
+
+              if (range != null) {
+                Integer rowScale = formData.getRowScale(row);
+
+                List<AnalysisSplitType> rowSplitTypes = results.getRowSplitTypes(row.getId());
+                List<AnalysisCellType> rowCellTypes = formData.getRowCellTypes(row);
+
+                boolean needsActual = AnalysisCellType.needsActual(rowCellTypes, columnCellTypes);
+                boolean needsBudget = AnalysisCellType.needsBudget(rowCellTypes, columnCellTypes);
+
+                List<AnalysisValue> calculatedValues = new ArrayList<>();
+
+                if (BeeUtils.isEmpty(variables)) {
+                  AnalysisValue value = AnalysisScripting.calculateUnboundValue(engine, script,
+                      column.getId(), row.getId(), needsActual, needsBudget, response);
+
+                  if (value != null) {
+                    calculatedValues.add(value);
+                  }
+
+                } else {
+                  Multimap<Long, AnalysisValue> inputValues = results.getRowValuesByColumn(
+                      row.getId(), variables.keySet(), predicate);
+
+                  if (inputValues != null && !inputValues.isEmpty()) {
+                    Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues =
+                        AnalysisSplitValue.mergeSplitValues(columnSplitTypes,
+                            results.getColumnSplitValues(inputValues.keySet()));
+
+                    if (!BeeUtils.isEmpty(columnSplitValues)) {
+                      results.addColumnSplitValues(column.getId(), columnSplitValues);
+                    }
+
+                    Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues =
+                        results.getRowSplitValues(row.getId());
+
+                    Multimap<String, AnalysisValue> input =
+                        AnalysisScripting.transformInput(inputValues, variables);
+
+                    calculatedValues.addAll(
+                        AnalysisScripting.calculateValues(engine, script,
+                            column.getId(), row.getId(), variables.values(), input,
+                            columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
+                            needsActual, needsBudget, response));
+                  }
+                }
+
+                if (!calculatedValues.isEmpty() && !response.hasErrors()) {
+                  Integer scale = AnalysisUtils.getScale(rowScale, columnScale);
+                  if (AnalysisUtils.isValidScale(scale)) {
+                    calculatedValues.forEach(av -> av.round(scale));
+                  }
+
                   results.addValues(calculatedValues);
                 }
               }

@@ -120,6 +120,33 @@ final class AnalysisScripting {
     return result;
   }
 
+  static AnalysisValue calculateUnboundValue(ScriptEngine engine, String script,
+      long columnId, long rowId, boolean needsActual, boolean needsBudget,
+      ResponseObject errorCollector) {
+
+    String actualValue;
+    if (needsActual) {
+      actualValue = ScriptUtils.evalToString(engine,
+          AnalysisScripting.createActualBindings(engine), script, errorCollector);
+    } else {
+      actualValue = null;
+    }
+
+    String budgetValue;
+    if (needsBudget) {
+      budgetValue = ScriptUtils.evalToString(engine,
+          AnalysisScripting.createBudgetBindings(engine), script, errorCollector);
+    } else {
+      budgetValue = null;
+    }
+
+    if (BeeUtils.anyNotEmpty(actualValue, budgetValue)) {
+      return AnalysisValue.of(columnId, rowId, actualValue, budgetValue);
+    } else {
+      return null;
+    }
+  }
+
   static List<AnalysisValue> calculateValues(ScriptEngine engine, String script,
       long columnId, long rowId,
       Collection<String> variables, Multimap<String, AnalysisValue> input,
@@ -225,6 +252,21 @@ final class AnalysisScripting {
 
   static boolean isScriptPrimary(String script) {
     return find(script, currentValuePattern);
+  }
+
+  static Multimap<String, AnalysisValue> transformInput(Multimap<Long, AnalysisValue> values,
+      Map<Long, String> variables) {
+
+    Multimap<String, AnalysisValue> result = ArrayListMultimap.create();
+
+    for (long id : values.keySet()) {
+      String variable = variables.get(id);
+      if (!BeeUtils.isEmpty(variable)) {
+        result.putAll(variable, values.get(id));
+      }
+    }
+
+    return result;
   }
 
   private AnalysisScripting() {

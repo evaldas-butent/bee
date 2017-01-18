@@ -9,7 +9,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -93,6 +95,27 @@ public final class AnalysisSplitValue implements BeeSerializable, Comparable<Ana
       result.addAll(getPermutations(parent, splitTypes, typeIndex, splitValues, valueIndex + 1));
     }
 
+    return result;
+  }
+
+  public static Map<AnalysisSplitType, List<AnalysisSplitValue>> mergeSplitValues(
+      List<AnalysisSplitType> splitTypes,
+      Collection<Map<AnalysisSplitType, List<AnalysisSplitValue>>> input) {
+
+    Map<AnalysisSplitType, List<AnalysisSplitValue>> result = new HashMap<>();
+
+    if (!BeeUtils.isEmpty(splitTypes) && !BeeUtils.isEmpty(input)) {
+      for (Map<AnalysisSplitType, List<AnalysisSplitValue>> map : input) {
+        if (!BeeUtils.isEmpty(map)) {
+          for (AnalysisSplitType splitType : splitTypes) {
+            List<AnalysisSplitValue> splitValues = map.get(splitType);
+            if (!BeeUtils.isEmpty(splitValues)) {
+              putSplitValues(result, splitType, splitValues);
+            }
+          }
+        }
+      }
+    }
     return result;
   }
 
