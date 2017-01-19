@@ -50,6 +50,30 @@ public final class AnalysisValue implements BeeSerializable {
     return av;
   }
 
+  public static AnalysisValue of(long columnId, long rowId,
+      Map<AnalysisSplitType, AnalysisSplitValue> columnSplit,
+      Map<AnalysisSplitType, AnalysisSplitValue> rowSplit,
+      Double actual, Double budget) {
+
+    AnalysisValue av = new AnalysisValue(columnId, rowId);
+
+    if (!BeeUtils.isEmpty(columnSplit)) {
+      av.columnSplit.putAll(columnSplit);
+    }
+    if (!BeeUtils.isEmpty(rowSplit)) {
+      av.rowSplit.putAll(rowSplit);
+    }
+
+    if (BeeUtils.isDouble(actual)) {
+      av.setActualValue(actual);
+    }
+    if (BeeUtils.isDouble(budget)) {
+      av.setBudgetValue(budget);
+    }
+
+    return av;
+  }
+
   public static AnalysisValue restore(String s) {
     AnalysisValue av = new AnalysisValue();
     av.deserialize(s);
@@ -139,6 +163,12 @@ public final class AnalysisValue implements BeeSerializable {
     return !BeeUtils.isEmpty(getBudgetValue());
   }
 
+  public void addColumnSplit(Map<AnalysisSplitType, AnalysisSplitValue> split) {
+    if (!BeeUtils.isEmpty(split)) {
+      columnSplit.putAll(split);
+    }
+  }
+
   public void putColumnSplit(Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
       AnalysisSplitType splitType, AnalysisSplitValue splitValue) {
 
@@ -151,6 +181,22 @@ public final class AnalysisValue implements BeeSerializable {
     }
   }
 
+  public boolean containsColumnSplit(Map<AnalysisSplitType, AnalysisSplitValue> split) {
+    if (BeeUtils.isEmpty(split)) {
+      return true;
+    } else if (columnSplit.isEmpty()) {
+      return false;
+    } else {
+      return columnSplit.entrySet().containsAll(split.entrySet());
+    }
+  }
+
+  public void addRowSplit(Map<AnalysisSplitType, AnalysisSplitValue> split) {
+    if (!BeeUtils.isEmpty(split)) {
+      rowSplit.putAll(split);
+    }
+  }
+
   public void putRowSplit(Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
       AnalysisSplitType splitType, AnalysisSplitValue splitValue) {
 
@@ -160,6 +206,16 @@ public final class AnalysisValue implements BeeSerializable {
 
     if (splitType != null && splitValue != null) {
       rowSplit.put(splitType, splitValue);
+    }
+  }
+
+  public boolean containsRowSplit(Map<AnalysisSplitType, AnalysisSplitValue> split) {
+    if (BeeUtils.isEmpty(split)) {
+      return true;
+    } else if (rowSplit.isEmpty()) {
+      return false;
+    } else {
+      return rowSplit.entrySet().containsAll(split.entrySet());
     }
   }
 

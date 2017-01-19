@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 
 import com.butent.bee.server.utils.ScriptUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.NonNullList;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -14,7 +15,6 @@ import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -147,6 +147,59 @@ final class AnalysisScripting {
     }
   }
 
+  private static AnalysisValue calculateValue(ScriptEngine engine, String script,
+      long columnId, long rowId,
+      Map<AnalysisSplitType, AnalysisSplitValue> columnSplit,
+      Map<AnalysisSplitType, AnalysisSplitValue> rowSplit,
+      Collection<String> variables, Multimap<String, AnalysisValue> input,
+      boolean needsActual, boolean needsBudget, ResponseObject errorCollector) {
+
+    Map<String, Double> actualValues = new HashMap<>();
+    Map<String, Double> budgetValues = new HashMap<>();
+
+    variables.forEach(key -> {
+      actualValues.put(key, BeeConst.DOUBLE_ZERO);
+      budgetValues.put(key, BeeConst.DOUBLE_ZERO);
+    });
+
+    input.forEach((key, value) -> {
+      if (value.containsColumnSplit(columnSplit) && value.containsRowSplit(rowSplit)) {
+        if (needsActual && value.hasActualValue()) {
+          actualValues.merge(key, value.getActualNumber(), Double::sum);
+        }
+        if (needsBudget && value.hasBudgetValue()) {
+          budgetValues.merge(key, value.getBudgetNumber(), Double::sum);
+        }
+      }
+    });
+
+    Double actualValue;
+    if (needsActual) {
+      Bindings actualBindings = createActualBindings(engine);
+      actualBindings.putAll(actualValues);
+
+      actualValue = ScriptUtils.evalToDouble(engine, actualBindings, script, errorCollector);
+    } else {
+      actualValue = null;
+    }
+
+    Double budgetValue;
+    if (needsBudget) {
+      Bindings budgetBindings = createBudgetBindings(engine);
+      budgetBindings.putAll(budgetValues);
+
+      budgetValue = ScriptUtils.evalToDouble(engine, budgetBindings, script, errorCollector);
+    } else {
+      budgetValue = null;
+    }
+
+    if (BeeUtils.nonZero(actualValue) || BeeUtils.nonZero(budgetValue)) {
+      return AnalysisValue.of(columnId, rowId, columnSplit, rowSplit, actualValue, budgetValue);
+    } else {
+      return null;
+    }
+  }
+
   static List<AnalysisValue> calculateValues(ScriptEngine engine, String script,
       long columnId, long rowId,
       Collection<String> variables, Multimap<String, AnalysisValue> input,
@@ -156,63 +209,38 @@ final class AnalysisScripting {
       Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues,
       boolean needsActual, boolean needsBudget, ResponseObject errorCollector) {
 
-    List<AnalysisValue> values = new ArrayList<>();
+    List<AnalysisValue> values = new NonNullList<>();
 
     boolean hasColumnSplits = !BeeUtils.isEmpty(columnSplitTypes)
         && !BeeUtils.isEmpty(columnSplitValues);
     boolean hasRowSplits = !BeeUtils.isEmpty(rowSplitTypes) && !BeeUtils.isEmpty(rowSplitValues);
 
     if (hasColumnSplits && hasRowSplits) {
-      AnalysisSplitValue.getPermutations(null, columnSplitTypes, 0, columnSplitValues, 0);
-      AnalysisSplitValue.getPermutations(null, rowSplitTypes, 0, rowSplitValues, 0);
+      List<Map<AnalysisSplitType, AnalysisSplitValue>> columnPermutations =
+          AnalysisSplitValue.getPermutations(null, columnSplitTypes, 0, columnSplitValues, 0);
+      List<Map<AnalysisSplitType, AnalysisSplitValue>> rowPermutations =
+          AnalysisSplitValue.getPermutations(null, rowSplitTypes, 0, rowSplitValues, 0);
+
+      if (!columnPermutations.isEmpty() && !rowPermutations.isEmpty()) {
+        columnPermutations.forEach(columnPermutation -> rowPermutations.forEach(rowPermutation ->
+            values.add(calculateValue(engine, script, columnId, rowId,
+                columnPermutation, rowPermutation,
+                variables, input, needsActual, needsBudget, errorCollector))));
+      }
 
     } else if (hasColumnSplits) {
-      AnalysisSplitValue.getPermutations(null, columnSplitTypes, 0, columnSplitValues, 0);
+      AnalysisSplitValue.getPermutations(null, columnSplitTypes, 0, columnSplitValues, 0)
+          .forEach(permutation -> values.add(calculateValue(engine, script, columnId, rowId,
+              permutation, null, variables, input, needsActual, needsBudget, errorCollector)));
 
     } else if (hasRowSplits) {
-      AnalysisSplitValue.getPermutations(null, rowSplitTypes, 0, rowSplitValues, 0);
+      AnalysisSplitValue.getPermutations(null, rowSplitTypes, 0, rowSplitValues, 0)
+          .forEach(permutation -> values.add(calculateValue(engine, script, columnId, rowId,
+              null, permutation, variables, input, needsActual, needsBudget, errorCollector)));
 
     } else {
-      Map<String, Double> actualValues = new HashMap<>();
-      Map<String, Double> budgetValues = new HashMap<>();
-
-      variables.forEach(key -> {
-        actualValues.put(key, BeeConst.DOUBLE_ZERO);
-        budgetValues.put(key, BeeConst.DOUBLE_ZERO);
-      });
-
-      input.forEach((key, value) -> {
-        if (needsActual && value.hasActualValue()) {
-          actualValues.merge(key, value.getActualNumber(), Double::sum);
-        }
-        if (needsBudget && value.hasBudgetValue()) {
-          budgetValues.merge(key, value.getBudgetNumber(), Double::sum);
-        }
-      });
-
-      Double actualValue;
-      if (needsActual) {
-        Bindings actualBindings = createActualBindings(engine);
-        actualBindings.putAll(actualValues);
-
-        actualValue = ScriptUtils.evalToDouble(engine, actualBindings, script, errorCollector);
-      } else {
-        actualValue = null;
-      }
-
-      Double budgetValue;
-      if (needsBudget) {
-        Bindings budgetBindings = createBudgetBindings(engine);
-        budgetBindings.putAll(budgetValues);
-
-        budgetValue = ScriptUtils.evalToDouble(engine, budgetBindings, script, errorCollector);
-      } else {
-        budgetValue = null;
-      }
-
-      if (BeeUtils.nonZero(actualValue) || BeeUtils.nonZero(budgetValue)) {
-        values.add(AnalysisValue.of(columnId, rowId, actualValue, budgetValue));
-      }
+      values.add(calculateValue(engine, script, columnId, rowId, null, null,
+          variables, input, needsActual, needsBudget, errorCollector));
     }
 
     return values;
