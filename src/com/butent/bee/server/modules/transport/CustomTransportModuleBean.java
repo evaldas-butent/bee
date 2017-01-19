@@ -121,19 +121,22 @@ public class CustomTransportModuleBean {
 
           if (!BeeConst.isUndef(columnIdx)) {
             double cargoKmValue = BeeUtils.unbox(cargoRow.getDouble(kmColumn));
-            double tripKmValue = tripRow != null ? BeeUtils.unbox(tripRow.getDouble(kmColumn)) : 0;
-            double editedKmValue = BeeUtils.unbox(modifiedRow.getDouble(columnIdx));
-            double oldValue = handlingRow != null
-                ? BeeUtils.unbox(handlingRow.getDouble(kmColumn)) : 0;
 
-            if (cargoKmValue - (tripKmValue - oldValue) - editedKmValue < 0) {
-              event.addErrors(ResponseObject.error(usr.getDictionary().trHandlingKilometerError()));
-              break;
+            if (BeeUtils.isPositive(cargoKmValue)) {
+              double tripKmValue = tripRow != null
+                  ? BeeUtils.unbox(tripRow.getDouble(kmColumn)) : 0;
+              double editedKmValue = BeeUtils.unbox(modifiedRow.getDouble(columnIdx));
+              double oldValue = handlingRow != null
+                  ? BeeUtils.unbox(handlingRow.getDouble(kmColumn)) : 0;
+
+              if (cargoKmValue - (tripKmValue - oldValue) - editedKmValue < 0) {
+                event.addErrors(
+                    ResponseObject.error(usr.getDictionary().trHandlingKilometerError()));
+                break;
+              }
             }
           }
         }
-      } else {
-        event.addErrors(ResponseObject.error(usr.getDictionary().trHandlingKilometerError()));
       }
     }
   }
