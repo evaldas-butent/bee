@@ -16,20 +16,20 @@
       <row>
         <Label for="StartDateTime" visible="true" />
         <InputDateTime source="StartDateTime" visible="true" style="&inp;" />
-        <Label for="Status" visible="true" />
-        <ListBox source="Status" visible="true" style="width: 182px;" />
-      </row>
-
-      <row>
         <Label text="=duration" />
-        <InputTime name="Duration" property="Duration" step="5" style="width:60px;" />
-        <Label for="AppointmentType" />
-        <DataSelector source="AppointmentType" renderColumns="TypeName" style="&inp;" />
+        <InputTime property="Duration" step="5" style="width:60px;" />
       </row>
 
       <row>
         <Label for="EndDateTime" visible="true" />
         <InputDateTime source="EndDateTime" visible="true" style="&inp;" />
+        <Label for="Status" visible="true" />
+        <ListBox source="Status" visible="true" style="width: 182px;" />
+      </row>
+
+      <row>
+        <Label for="AppointmentType" />
+        <DataSelector source="AppointmentType" renderColumns="TypeName" style="&inp;" />
         <Label for="Creator" />
         <DataSelector source="Creator" editSource="CreatorCompanyPerson"
                       renderColumns="CreatorFirstName CreatorLastName" style="&inp;" />
@@ -65,8 +65,8 @@
       <row>
         <Label text="=calAttendees" class="bee-required" />
         <cell colSpan="3">
-          <MultiSelector name="Attendees" viewName="Attendees" renderColumns="Name"
-                         choiceColumns="Name TypeName" property="Attendees"
+          <MultiSelector property="Attendees" viewName="Attendees" renderColumns="Name"
+                         choiceColumns="Name TypeName"
                          newRowEnabled="false" style="width:100%; max-height:100px; overflow:auto;"
                          required="true" />
         </cell>

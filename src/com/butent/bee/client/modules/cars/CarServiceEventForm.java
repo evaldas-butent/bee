@@ -14,9 +14,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -30,6 +28,7 @@ import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarPanel;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -56,17 +55,16 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Set;
 
 public class CarServiceEventForm extends AbstractFormInterceptor implements ClickHandler,
     SelectorEvent.Handler {
 
   private Flow orderContainer;
-  private MultiSelector attendees;
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
@@ -84,9 +82,6 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
       orderContainer = (Flow) widget;
       orderContainer.addClickHandler(this);
     }
-    if (Objects.equals(name, TBL_ATTENDEES) && widget instanceof MultiSelector) {
-      attendees = (MultiSelector) widget;
-    }
     super.afterCreateWidget(name, widget, callback);
   }
 
@@ -100,6 +95,29 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
   public void afterUpdateRow(IsRow result) {
     commitAttendees(result.getLong(getDataIndex(COL_APPOINTMENT)), false);
     super.afterUpdateRow(result);
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (Objects.equals(action, Action.SAVE) && !validateDates()) {
+      return false;
+    }
+    return super.beforeAction(action, presenter);
+  }
+
+  @Override
+  public void beforeRefresh(FormView form, IsRow row) {
+    if (Objects.nonNull(orderContainer)) {
+      Long orderId = row.getLong(getDataIndex(COL_SERVICE_ORDER));
+
+      orderContainer.getElement().setInnerText(DataUtils.isId(orderId)
+          ? BeeUtils.joinWords(Localized.dictionary().serviceOrder(),
+          row.getString(getDataIndex(COL_ORDER_NO)))
+          : Localized.dictionary().newServiceOrder());
+
+      orderContainer.setVisible(!Objects.equals(orderId, DataUtils.NEW_ROW_ID));
+    }
+    super.beforeRefresh(form, row);
   }
 
   @Override
@@ -130,7 +148,7 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
         @Override
         public void onSuccess(BeeRow result) {
           RelationUtils.updateRow(eventInfo, COL_SERVICE_ORDER, eventRow, orderInfo, result, true);
-          refreshOrder(eventRow);
+          getFormView().refresh();
         }
       });
     }
@@ -138,15 +156,22 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
 
   @Override
   public void onDataSelector(SelectorEvent event) {
+    DataInfo eventInfo = Data.getDataInfo(getViewName());
+    DataInfo carInfo = Data.getDataInfo(event.getRelatedViewName());
+    Long owner = getLongValue(COL_COMPANY);
+
     if (event.isNewRow()) {
-      RelationUtils.copyWithDescendants(Data.getDataInfo(getViewName()), COL_COMPANY,
-          getActiveRow(), Data.getDataInfo(event.getRelatedViewName()), COL_OWNER,
-          event.getNewRow());
+      RelationUtils.copyWithDescendants(eventInfo, COL_COMPANY, getActiveRow(),
+          carInfo, COL_OWNER, event.getNewRow());
 
     } else if (event.isOpened()) {
-      Long owner = getLongValue(COL_COMPANY);
       event.getSelector().setAdditionalFilter(Objects.isNull(owner) ? null
           : Filter.equals(COL_OWNER, owner));
+
+    } else if (event.isChanged() && Objects.isNull(owner)) {
+      RelationUtils.copyWithDescendants(carInfo, COL_OWNER, event.getRelatedRow(),
+          eventInfo, COL_COMPANY, getActiveRow());
+      getFormView().refresh();
     }
   }
 
@@ -164,8 +189,8 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
                 CalendarPanel panel = (CalendarPanel) result;
 
                 panel.setTimePickerCallback((dateTime, attendee) -> {
-                  if (BeeUtils.allNotNull(attendees, attendee)) {
-                    attendees.setIds(Collections.singletonList(attendee));
+                  if (Objects.nonNull(attendee)) {
+                    getActiveRow().setProperty(TBL_ATTENDEES, attendee);
                   }
                   updateTime(dateTime);
                   UiHelper.closeDialog(panel);
@@ -191,46 +216,29 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
   }
 
   @Override
-  public void onSetActiveRow(IsRow row) {
-    if (Objects.nonNull(attendees)) {
-      Long appointmentId = row.getLong(getDataIndex(COL_APPOINTMENT));
-
-      if (DataUtils.isId(appointmentId)) {
-        Queries.getDistinctLongs(TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE,
-            Filter.equals(COL_APPOINTMENT, appointmentId), new RpcCallback<Set<Long>>() {
-              @Override
-              public void onSuccess(Set<Long> ids) {
-                attendees.setIds(ids);
-              }
-            });
-      }
-    }
-    refreshOrder(row);
-    super.onSetActiveRow(row);
-  }
-
-  @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     if (BeeUtils.isEmpty(newRow.getProperty(COL_DURATION))) {
-      newRow.setProperty(COL_DURATION, BeeUtils.toString(TimeUtils.MINUTES_PER_HOUR));
+      newRow.setProperty(COL_DURATION, TimeUtils.renderTime(TimeUtils.MILLIS_PER_HOUR, true));
     }
     super.onStartNewRow(form, oldRow, newRow);
   }
 
   private void commitAttendees(Long appointmentId, boolean isNew) {
-    if (Objects.nonNull(attendees)) {
-      Queries.updateChildren(TBL_APPOINTMENTS, appointmentId,
-          Collections.singleton(RowChildren.create(TBL_APPOINTMENT_ATTENDEES,
-              COL_APPOINTMENT, appointmentId, COL_ATTENDEE, attendees.getValue())),
-          getAppointmentCallback(isNew));
-    }
+    Queries.updateChildren(TBL_APPOINTMENTS, appointmentId,
+        Collections.singleton(RowChildren.create(TBL_APPOINTMENT_ATTENDEES,
+            COL_APPOINTMENT, appointmentId, COL_ATTENDEE,
+            getActiveRow().getProperty(TBL_ATTENDEES))), getAppointmentCallback(isNew));
   }
 
-  private static RowCallback getAppointmentCallback(boolean isNew) {
+  private RowCallback getAppointmentCallback(boolean isNew) {
+    Runnable upd = () -> Queries.getRow(getViewName(), getActiveRowId(),
+        new RowUpdateCallback(getViewName()));
+
     if (isNew) {
       return new RowInsertCallback(TBL_APPOINTMENTS) {
         @Override
         public void onSuccess(BeeRow result) {
+          upd.run();
           AppointmentEvent.fire(Appointment.create(result), State.CREATED);
           super.onSuccess(result);
         }
@@ -239,23 +247,11 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
       return new RowUpdateCallback(TBL_APPOINTMENTS) {
         @Override
         public void onSuccess(BeeRow result) {
+          upd.run();
           AppointmentEvent.fire(Appointment.create(result), State.CHANGED);
           super.onSuccess(result);
         }
       };
-    }
-  }
-
-  private void refreshOrder(IsRow row) {
-    if (Objects.nonNull(orderContainer)) {
-      Long orderId = row.getLong(getDataIndex(COL_SERVICE_ORDER));
-
-      orderContainer.getElement().setInnerText(DataUtils.isId(orderId)
-          ? BeeUtils.joinWords(Localized.dictionary().serviceOrder(),
-          row.getString(getDataIndex(COL_ORDER_NO)))
-          : Localized.dictionary().newServiceOrder());
-
-      orderContainer.setVisible(!Objects.equals(orderId, DataUtils.NEW_ROW_ID));
     }
   }
 
@@ -271,5 +267,27 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
           endMillis + (startTime.getTime() - startMillis));
       getFormView().refreshBySource(COL_END_DATE_TIME);
     }
+  }
+
+  private boolean validateDates() {
+    DateTime start = getDateTimeValue(COL_START_DATE_TIME);
+    DateTime end = getDateTimeValue(COL_END_DATE_TIME);
+
+    if (Objects.isNull(end)) {
+      Long duration = TimeUtils.parseTime(getActiveRow().getProperty(COL_DURATION));
+
+      if (BeeUtils.allNotNull(duration, start)) {
+        end = new DateTime(start.getTime() + duration);
+        getActiveRow().setValue(getDataIndex(COL_END_DATE_TIME), end);
+        getFormView().refreshBySource(COL_END_DATE_TIME);
+      }
+    }
+    boolean ok = TimeUtils.isMore(end, start);
+
+    if (!ok) {
+      getFormView().focus(COL_END_DATE_TIME);
+      getFormView().notifySevere(Localized.dictionary().crmFinishDateMustBeGreaterThanStart());
+    }
+    return ok;
   }
 }

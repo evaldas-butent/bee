@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -87,15 +88,22 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
 
   @Override
   public void onDataSelector(SelectorEvent event) {
+    DataInfo eventInfo = Data.getDataInfo(getViewName());
+    DataInfo carInfo = Data.getDataInfo(event.getRelatedViewName());
+    Long owner = getLongValue(COL_CUSTOMER);
+
     if (event.isNewRow()) {
-      RelationUtils.copyWithDescendants(Data.getDataInfo(getViewName()), COL_CUSTOMER,
-          getActiveRow(), Data.getDataInfo(event.getRelatedViewName()), COL_OWNER,
-          event.getNewRow());
+      RelationUtils.copyWithDescendants(eventInfo, COL_CUSTOMER, getActiveRow(),
+          carInfo, COL_OWNER, event.getNewRow());
 
     } else if (event.isOpened()) {
-      Long owner = getLongValue(COL_CUSTOMER);
       event.getSelector().setAdditionalFilter(Objects.isNull(owner) ? null
           : Filter.equals(COL_OWNER, owner));
+
+    } else if (event.isChanged() && Objects.isNull(owner)) {
+      RelationUtils.copyWithDescendants(carInfo, COL_OWNER, event.getRelatedRow(),
+          eventInfo, COL_CUSTOMER, getActiveRow());
+      getFormView().refresh();
     }
   }
 

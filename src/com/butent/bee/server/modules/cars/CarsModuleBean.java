@@ -335,6 +335,28 @@ public class CarsModuleBean implements BeeModule {
               (RowInfoList) event.getUserObject());
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setEventAttendees(DataEvent.ViewQueryEvent event) {
+        if (event.isAfter(TBL_SERVICE_EVENTS) && event.hasData()) {
+          BeeRowSet rowSet = event.getRowset();
+          int idx = rowSet.getColumnIndex(COL_APPOINTMENT);
+
+          SimpleRowSet rs = qs.getData(new SqlSelect()
+              .addFields(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, COL_ATTENDEE)
+              .addFrom(TBL_APPOINTMENT_ATTENDEES)
+              .setWhere(SqlUtils.inList(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT,
+                  rowSet.getDistinctLongs(idx))));
+
+          Multimap<Long, Long> attendees = HashMultimap.create();
+          rs.forEach(row -> attendees.put(row.getLong(COL_APPOINTMENT), row.getLong(COL_ATTENDEE)));
+
+          for (BeeRow row : rowSet) {
+            row.setProperty(TBL_ATTENDEES, DataUtils.buildIdList(attendees.get(row.getLong(idx))));
+          }
+        }
+      }
     });
   }
 
