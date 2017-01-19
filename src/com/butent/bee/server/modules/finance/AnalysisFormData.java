@@ -413,7 +413,7 @@ class AnalysisFormData {
   private String getColumnLabel(Dictionary dictionary, BeeRow column) {
     String label = BeeUtils.joinWords(getColumnString(column, COL_ANALYSIS_COLUMN_ORDINAL),
         BeeUtils.notEmpty(getColumnString(column, COL_ANALYSIS_COLUMN_NAME),
-            getColumnString(column, COL_ANALYSIS_COLUMN_ABBREVIATION)));
+            getColumnAbbreviation(column)));
 
     if (BeeUtils.isEmpty(label)) {
       return BeeUtils.joinWords(dictionary.column(), DataUtils.ID_TAG, column.getId());
@@ -477,6 +477,10 @@ class AnalysisFormData {
     return getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT);
   }
 
+  String getColumnAbbreviation(BeeRow column) {
+    return getColumnString(column, COL_ANALYSIS_COLUMN_ABBREVIATION);
+  }
+
   private boolean columnHasIndicator(BeeRow column) {
     return DataUtils.isId(getColumnLong(column, COL_ANALYSIS_COLUMN_INDICATOR));
   }
@@ -504,7 +508,7 @@ class AnalysisFormData {
 
     for (BeeRow c : columns) {
       if (c.getId() != column.getId()) {
-        String abbreviation = getColumnString(c, COL_ANALYSIS_COLUMN_ABBREVIATION);
+        String abbreviation = getColumnAbbreviation(c);
 
         if (AnalysisUtils.isValidAbbreviation(abbreviation)
             && AnalysisScripting.containsVariable(script, abbreviation)) {
@@ -555,8 +559,7 @@ class AnalysisFormData {
 
   private String getRowLabel(Dictionary dictionary, BeeRow row) {
     String label = BeeUtils.joinWords(getRowString(row, COL_ANALYSIS_ROW_ORDINAL),
-        BeeUtils.notEmpty(getRowString(row, COL_ANALYSIS_ROW_NAME),
-            getRowString(row, COL_ANALYSIS_ROW_ABBREVIATION)));
+        BeeUtils.notEmpty(getRowString(row, COL_ANALYSIS_ROW_NAME), getRowAbbreviation(row)));
 
     if (BeeUtils.isEmpty(label)) {
       return BeeUtils.joinWords(dictionary.row(), DataUtils.ID_TAG, row.getId());
@@ -620,6 +623,10 @@ class AnalysisFormData {
     return getRowString(row, COL_ANALYSIS_ROW_SCRIPT);
   }
 
+  String getRowAbbreviation(BeeRow row) {
+    return getRowString(row, COL_ANALYSIS_ROW_ABBREVIATION);
+  }
+
   private boolean rowHasIndicator(BeeRow row) {
     return DataUtils.isId(getRowLong(row, COL_ANALYSIS_ROW_INDICATOR));
   }
@@ -647,7 +654,7 @@ class AnalysisFormData {
 
     for (BeeRow r : rows) {
       if (r.getId() != row.getId()) {
-        String abbreviation = getRowString(r, COL_ANALYSIS_ROW_ABBREVIATION);
+        String abbreviation = getRowAbbreviation(r);
 
         if (AnalysisUtils.isValidAbbreviation(abbreviation)
             && AnalysisScripting.containsVariable(script, abbreviation)) {
@@ -828,9 +835,9 @@ class AnalysisFormData {
           }
         }
 
-        Bindings primaryBindings = engine.createBindings();
-        primaryBindings.put(AnalysisScripting.VAR_IS_BUDGET, false);
-        primaryBindings.put(AnalysisScripting.VAR_CURRENT_VALUE, BeeConst.DOUBLE_ZERO);
+        Bindings primaryBindings = AnalysisScripting.createActualBindings(engine);
+        AnalysisScripting.putCurrentValue(primaryBindings, BeeConst.DOUBLE_ZERO);
+        AnalysisScripting.putColumnAndRow(primaryBindings, null, null);
 
         Bindings bindings;
 
@@ -845,8 +852,8 @@ class AnalysisFormData {
               bindings = primaryBindings;
 
             } else {
-              bindings = engine.createBindings();
-              bindings.put(AnalysisScripting.VAR_IS_BUDGET, false);
+              bindings = AnalysisScripting.createActualBindings(engine);
+              AnalysisScripting.putColumnAndRow(bindings, null, null);
 
               for (Map.Entry<Long, String> entry : variables.entrySet()) {
                 if (!Objects.equals(entry.getKey(), row.getId())) {

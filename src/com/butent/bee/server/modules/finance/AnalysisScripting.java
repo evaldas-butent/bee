@@ -29,8 +29,11 @@ import javax.script.ScriptEngine;
 
 final class AnalysisScripting {
 
-  static final String VAR_IS_BUDGET = "_b";
-  static final String VAR_CURRENT_VALUE = "_v";
+  private static final String VAR_IS_BUDGET = "_b";
+  private static final String VAR_CURRENT_VALUE = "_v";
+
+  private static final String VAR_COLUMN = "_c";
+  private static final String VAR_ROW = "_r";
 
   private static final Pattern currentValuePattern = getDetectionPattern(VAR_CURRENT_VALUE);
 
@@ -121,21 +124,25 @@ final class AnalysisScripting {
   }
 
   static AnalysisValue calculateUnboundValue(ScriptEngine engine, String script,
-      long columnId, long rowId, boolean needsActual, boolean needsBudget,
-      ResponseObject errorCollector) {
+      long columnId, String columnAbbreviation, long rowId, String rowAbbreviation,
+      boolean needsActual, boolean needsBudget, ResponseObject errorCollector) {
 
     String actualValue;
     if (needsActual) {
-      actualValue = ScriptUtils.evalToString(engine,
-          AnalysisScripting.createActualBindings(engine), script, errorCollector);
+      Bindings actualBindings = AnalysisScripting.createActualBindings(engine);
+      putColumnAndRow(actualBindings, columnAbbreviation, rowAbbreviation);
+
+      actualValue = ScriptUtils.evalToString(engine, actualBindings, script, errorCollector);
     } else {
       actualValue = null;
     }
 
     String budgetValue;
     if (needsBudget) {
-      budgetValue = ScriptUtils.evalToString(engine,
-          AnalysisScripting.createBudgetBindings(engine), script, errorCollector);
+      Bindings budgetBindings = AnalysisScripting.createBudgetBindings(engine);
+      putColumnAndRow(budgetBindings, columnAbbreviation, rowAbbreviation);
+
+      budgetValue = ScriptUtils.evalToString(engine, budgetBindings, script, errorCollector);
     } else {
       budgetValue = null;
     }
@@ -148,7 +155,7 @@ final class AnalysisScripting {
   }
 
   private static AnalysisValue calculateValue(ScriptEngine engine, String script,
-      long columnId, long rowId,
+      long columnId, String columnAbbreviation, long rowId, String rowAbbreviation,
       Map<AnalysisSplitType, AnalysisSplitValue> columnSplit,
       Map<AnalysisSplitType, AnalysisSplitValue> rowSplit,
       Collection<String> variables, Multimap<String, AnalysisValue> input,
@@ -176,6 +183,7 @@ final class AnalysisScripting {
     Double actualValue;
     if (needsActual) {
       Bindings actualBindings = createActualBindings(engine);
+      putColumnAndRow(actualBindings, columnAbbreviation, rowAbbreviation);
       actualBindings.putAll(actualValues);
 
       actualValue = ScriptUtils.evalToDouble(engine, actualBindings, script, errorCollector);
@@ -186,6 +194,7 @@ final class AnalysisScripting {
     Double budgetValue;
     if (needsBudget) {
       Bindings budgetBindings = createBudgetBindings(engine);
+      putColumnAndRow(budgetBindings, columnAbbreviation, rowAbbreviation);
       budgetBindings.putAll(budgetValues);
 
       budgetValue = ScriptUtils.evalToDouble(engine, budgetBindings, script, errorCollector);
@@ -201,7 +210,7 @@ final class AnalysisScripting {
   }
 
   static List<AnalysisValue> calculateValues(ScriptEngine engine, String script,
-      long columnId, long rowId,
+      long columnId, String columnAbbreviation, long rowId, String rowAbbreviation,
       Collection<String> variables, Multimap<String, AnalysisValue> input,
       List<AnalysisSplitType> columnSplitTypes,
       Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues,
@@ -223,23 +232,27 @@ final class AnalysisScripting {
 
       if (!columnPermutations.isEmpty() && !rowPermutations.isEmpty()) {
         columnPermutations.forEach(columnPermutation -> rowPermutations.forEach(rowPermutation ->
-            values.add(calculateValue(engine, script, columnId, rowId,
+            values.add(calculateValue(engine, script,
+                columnId, columnAbbreviation, rowId, rowAbbreviation,
                 columnPermutation, rowPermutation,
                 variables, input, needsActual, needsBudget, errorCollector))));
       }
 
     } else if (hasColumnSplits) {
       AnalysisSplitValue.getPermutations(null, columnSplitTypes, 0, columnSplitValues, 0)
-          .forEach(permutation -> values.add(calculateValue(engine, script, columnId, rowId,
+          .forEach(permutation -> values.add(calculateValue(engine, script,
+              columnId, columnAbbreviation, rowId, rowAbbreviation,
               permutation, null, variables, input, needsActual, needsBudget, errorCollector)));
 
     } else if (hasRowSplits) {
       AnalysisSplitValue.getPermutations(null, rowSplitTypes, 0, rowSplitValues, 0)
-          .forEach(permutation -> values.add(calculateValue(engine, script, columnId, rowId,
+          .forEach(permutation -> values.add(calculateValue(engine, script,
+              columnId, columnAbbreviation, rowId, rowAbbreviation,
               null, permutation, variables, input, needsActual, needsBudget, errorCollector)));
 
     } else {
-      values.add(calculateValue(engine, script, columnId, rowId, null, null,
+      values.add(calculateValue(engine, script,
+          columnId, columnAbbreviation, rowId, rowAbbreviation, null, null,
           variables, input, needsActual, needsBudget, errorCollector));
     }
 
@@ -280,6 +293,15 @@ final class AnalysisScripting {
 
   static boolean isScriptPrimary(String script) {
     return find(script, currentValuePattern);
+  }
+
+  static void putCurrentValue(Bindings bindings, double value) {
+    bindings.put(VAR_CURRENT_VALUE, value);
+  }
+
+  static void putColumnAndRow(Bindings bindings, String column, String row) {
+    bindings.put(VAR_COLUMN, BeeUtils.trim(column));
+    bindings.put(VAR_ROW, BeeUtils.trim(row));
   }
 
   static Multimap<String, AnalysisValue> transformInput(Multimap<Long, AnalysisValue> values,

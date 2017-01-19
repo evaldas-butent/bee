@@ -299,42 +299,41 @@ public class AnalysisBean {
                   Bindings actualBindings;
                   Bindings budgetBindings;
 
-                  if (needsActual) {
-                    actualBindings = engine.createBindings();
-                    actualBindings.put(AnalysisScripting.VAR_IS_BUDGET, false);
+                  String columnAbbreviation = formData.getColumnAbbreviation(column);
+                  String rowAbbreviation = formData.getRowAbbreviation(row);
+
+                  if (AnalysisCellType.needsActual(columnCellTypes, rowCellTypes)) {
+                    actualBindings = AnalysisScripting.createActualBindings(engine);
+                    AnalysisScripting.putColumnAndRow(actualBindings,
+                        columnAbbreviation, rowAbbreviation);
                   } else {
                     actualBindings = null;
                   }
 
-                  if (needsBudget) {
-                    budgetBindings = engine.createBindings();
-                    budgetBindings.put(AnalysisScripting.VAR_IS_BUDGET, true);
+                  if (AnalysisCellType.needsBudget(columnCellTypes, rowCellTypes)) {
+                    budgetBindings = AnalysisScripting.createBudgetBindings(engine);
+                    AnalysisScripting.putColumnAndRow(budgetBindings,
+                        columnAbbreviation, rowAbbreviation);
                   } else {
                     budgetBindings = null;
                   }
 
                   if (actualBindings != null || budgetBindings != null) {
                     for (AnalysisValue av : results.getValues(column.getId(), row.getId())) {
-                      if (actualBindings != null && av.hasActualValue()) {
-                        actualBindings.put(AnalysisScripting.VAR_CURRENT_VALUE,
-                            av.getActualNumber());
+                      if (actualBindings != null) {
+                        AnalysisScripting.putCurrentValue(actualBindings, av.getActualNumber());
                         Double value = ScriptUtils.evalToDouble(engine, actualBindings,
                             script, response);
 
-                        if (BeeUtils.isDouble(value)) {
-                          av.setActualValue(value);
-                        }
+                        av.maybeUpdateActualValue(value);
                       }
 
-                      if (budgetBindings != null && av.hasBudgetValue()) {
-                        budgetBindings.put(AnalysisScripting.VAR_CURRENT_VALUE,
-                            av.getBudgetNumber());
+                      if (budgetBindings != null) {
+                        AnalysisScripting.putCurrentValue(budgetBindings, av.getBudgetNumber());
                         Double value = ScriptUtils.evalToDouble(engine, budgetBindings,
                             script, response);
 
-                        if (BeeUtils.isDouble(value)) {
-                          av.setBudgetValue(value);
-                        }
+                        av.maybeUpdateBudgetValue(value);
                       }
 
                       if (response.hasErrors()) {
@@ -385,6 +384,7 @@ public class AnalysisBean {
             String script = formData.getRowScript(row);
             Map<Long, String> variables = formData.getRowVariables(row);
 
+            String rowAbbreviation = formData.getRowAbbreviation(row);
             Integer rowScale = formData.getRowScale(row);
 
             List<AnalysisSplitType> rowSplitTypes = results.getRowSplitTypes(row.getId());
@@ -398,6 +398,7 @@ public class AnalysisBean {
                   formData.getColumnRange(column));
 
               if (formData.columnIsPrimary(column) && range != null) {
+                String columnAbbreviation = formData.getColumnAbbreviation(column);
                 Integer columnScale = formData.getColumnScale(column);
 
                 List<AnalysisSplitType> columnSplitTypes =
@@ -411,7 +412,8 @@ public class AnalysisBean {
 
                 if (BeeUtils.isEmpty(variables)) {
                   AnalysisValue value = AnalysisScripting.calculateUnboundValue(engine, script,
-                      column.getId(), row.getId(), needsActual, needsBudget, response);
+                      column.getId(), columnAbbreviation, row.getId(), rowAbbreviation,
+                      needsActual, needsBudget, response);
 
                   if (value != null) {
                     calculatedValues.add(value);
@@ -438,7 +440,8 @@ public class AnalysisBean {
 
                     calculatedValues.addAll(
                         AnalysisScripting.calculateValues(engine, script,
-                            column.getId(), row.getId(), variables.values(), input,
+                            column.getId(), columnAbbreviation, row.getId(), rowAbbreviation,
+                            variables.values(), input,
                             columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
                             needsActual, needsBudget, response));
                   }
@@ -479,6 +482,7 @@ public class AnalysisBean {
             String script = formData.getColumnScript(column);
             Map<Long, String> variables = formData.getColumnVariables(column);
 
+            String columnAbbreviation = formData.getColumnAbbreviation(column);
             Integer columnScale = formData.getColumnScale(column);
 
             List<AnalysisSplitType> columnSplitTypes = results.getColumnSplitTypes(column.getId());
@@ -491,6 +495,7 @@ public class AnalysisBean {
               MonthRange range = AnalysisUtils.intersection(columnRange, formData.getRowRange(row));
 
               if (range != null) {
+                String rowAbbreviation = formData.getRowAbbreviation(row);
                 Integer rowScale = formData.getRowScale(row);
 
                 List<AnalysisSplitType> rowSplitTypes = results.getRowSplitTypes(row.getId());
@@ -503,7 +508,8 @@ public class AnalysisBean {
 
                 if (BeeUtils.isEmpty(variables)) {
                   AnalysisValue value = AnalysisScripting.calculateUnboundValue(engine, script,
-                      column.getId(), row.getId(), needsActual, needsBudget, response);
+                      column.getId(), columnAbbreviation, row.getId(), rowAbbreviation,
+                      needsActual, needsBudget, response);
 
                   if (value != null) {
                     calculatedValues.add(value);
@@ -530,7 +536,8 @@ public class AnalysisBean {
 
                     calculatedValues.addAll(
                         AnalysisScripting.calculateValues(engine, script,
-                            column.getId(), row.getId(), variables.values(), input,
+                            column.getId(), columnAbbreviation, row.getId(), rowAbbreviation,
+                            variables.values(), input,
                             columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
                             needsActual, needsBudget, response));
                   }
