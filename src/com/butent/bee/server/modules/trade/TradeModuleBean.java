@@ -1324,7 +1324,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     ResponseObject response = ResponseObject.emptyResponse();
 
     for (SimpleRow invoice : invoices) {
-      for (String col : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER}) {
+      for (String col : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER,
+          COL_TRADE_BOL_CARRIER}) {
         Long id = invoices.hasColumn(col) ? invoice.getLong(col) : null;
 
         if (DataUtils.isId(id) && !companies.containsKey(id)) {
@@ -1396,7 +1397,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         doc.setBolVehicleNumber(invoice.getValue(COL_TRADE_BOL_VEHICLE_NUMBER));
         doc.setBolDriver(invoice.getValue(COL_TRADE_BOL_DRIVER));
         doc.setBolDriverTabNo(invoice.getValue(ALS_TRADE_BOL_DRIVER_TAB_NO));
-        doc.setBolCarrier(invoice.getValue(COL_TRADE_BOL_CARRIER));
+        doc.setBolCarrier(companies.get(invoice.getLong(COL_TRADE_BOL_CARRIER)));
 
         DateTime dt;
         if (!BeeUtils.isEmpty(invoice.getValue(COL_TRADE_BOL_ISSUE_DATE))) {

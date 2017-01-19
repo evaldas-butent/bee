@@ -125,8 +125,7 @@
             <row>
               <Label for="BoLDriverTabNo" />
               <DataSelector source="BoLDriverTabNo" renderColumns="TabNumber" disablable="false"
-                            choiceColumns="TabNumber FirstName LastName"
-                            style="width: 10em;" />
+                            choiceColumns="TabNumber FirstName LastName" style="width: 10em;" />
             </row>
 
             <row>
@@ -142,7 +141,7 @@
             <row>
               <Label for="BoLCarrier" />
               <cell colSpan="5" >
-                <InputText source="BoLCarrier" style="width:100%;" disablable="false" />
+                <DataSelector source="BoLCarrier" style="width:100%;" disablable="false" />
               </cell>
             </row>
           </Table>

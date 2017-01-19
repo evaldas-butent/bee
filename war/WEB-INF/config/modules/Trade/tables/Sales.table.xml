@@ -49,7 +49,7 @@
     <Relation name="BoLDriverTabNo" relation="Employees" label="=ordBoLDriverTabNo" />
     <String name="BoLVehicleNumber" precision="60" label="=vehicleNumber" />
     <String name="BoLDriver" precision="60" label="=trdDriver" />
-    <String name="BoLCarrier" precision="70" label="=carrier" />
+    <Relation name="BoLCarrier" relation="Companies" label="=carrier" />
 
   </Fields>
 

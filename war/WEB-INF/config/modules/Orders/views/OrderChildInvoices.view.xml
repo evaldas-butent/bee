@@ -132,7 +132,11 @@
     <SimpleColumn name="BoLUnloading" />
     <SimpleColumn name="BoLVehicleNumber" />
     <SimpleColumn name="BoLDriver" />
+
     <SimpleColumn name="BoLCarrier" />
+    <SimpleJoin joinType="LEFT" name="BoLCarrier">
+      <SimpleColumn name="Name" alias="BoLCarrierName" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />
