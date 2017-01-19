@@ -3235,6 +3235,8 @@ public interface Dictionary {
 
   default String internalRelation() {return g("internalRelation");}
 
+  default String intrastat() {return g("intrastat");}
+
   default String invalidDate() {return g("invalidDate");}
 
   default String invalidDateFormat() {return g("invalidDateFormat");}
