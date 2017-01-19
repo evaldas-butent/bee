@@ -88,7 +88,8 @@
 
             <FlowPanel style="&section;" for="Description">
               <Label for="Description" style="&top1; &lbl1;" />
-              <InputArea source="Description" style="width: 478px; height: 60px;" readOnly="true" />
+              <InputArea source="Description" style="width: 478px; height: 60px; resize: vertical;"
+                         readOnly="true" />
             </FlowPanel>
 
             <FileGroup name="Files" data="TaskFiles" visibleColumns="icon name size createdoc" />

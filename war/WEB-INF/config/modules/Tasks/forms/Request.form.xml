@@ -28,7 +28,7 @@
               </row>
               <row for="Content">
                 <Label for="Content" />
-                <InputArea source="Content" style="&inp2x; height: 60px;" />
+                <InputArea source="Content" style="&inp2x; height: 60px; resize: vertical;" />
               </row>
             </Table>
 

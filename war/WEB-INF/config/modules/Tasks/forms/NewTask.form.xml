@@ -33,7 +33,8 @@
 
       <row for="Description">
         <Label for="Description" />
-        <InputArea source="Description" style="&inp2x; height: 60px;" name="InputArea" />
+        <InputArea source="Description" style="&inp2x; height: 60px; resize: vertical;"
+                   name="InputArea" />
       </row>
     </Table>
 
