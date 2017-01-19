@@ -117,6 +117,22 @@ public final class ButentWS {
     }
   }
 
+  public SimpleRowSet getERPInvChanges(int days) throws BeeException {
+    logger.debug("GetERPInvChanges");
+    String answer;
+
+    try {
+      answer = process("GetERPInvChanges", XmlUtils.tag("getinvdaysbefore", days));
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "EXTERN_ID", "PREKE", "KIEKIS");
+
+    logger.debug("GetERPInvChanges cols:", data.getNumberOfColumns(), "rows:",
+        data.getNumberOfRows());
+    return data;
+  }
+
   public SimpleRowSet getGoods(String filter) throws BeeException {
     logger.debug("GetGoods");
     String answer;

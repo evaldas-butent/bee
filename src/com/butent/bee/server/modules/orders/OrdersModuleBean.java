@@ -6,6 +6,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
+import com.google.gwt.thirdparty.guava.common.collect.HashBasedTable;
+import com.google.gwt.thirdparty.guava.common.collect.Table;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -17,6 +19,8 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
@@ -67,6 +71,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -405,6 +410,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     if (cb.isParameterTimer(timer, PRM_EXPORT_ERP_RESERVATIONS_TIME)) {
       exportReservations();
     }
+    if (cb.isParameterTimer(timer, PRM_IMPORT_ERP_INV_CHANGES_TIME)) {
+      getERPInvoiceChanges();
+    }
   }
 
   @Override
@@ -423,7 +431,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_MANAGER_WAREHOUSE, true, VIEW_WAREHOUSES,
             COL_WAREHOUSE_CODE),
         BeeParameter.createBoolean(module, PRM_CHECK_DEBT),
-        BeeParameter.createBoolean(module, PRM_NOTIFY_ABOUT_DEBTS));
+        BeeParameter.createBoolean(module, PRM_NOTIFY_ABOUT_DEBTS),
+        BeeParameter.createNumber(module, PRM_IMPORT_ERP_INV_CHANGES_TIME),
+        BeeParameter.createNumber(module, PRM_GET_INV_DAYS_BEFORE));
 
     return params;
   }
@@ -449,6 +459,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     cb.createIntervalTimer(this.getClass(), PRM_IMPORT_ERP_ITEMS_TIME);
     cb.createIntervalTimer(this.getClass(), PRM_IMPORT_ERP_STOCKS_TIME);
     cb.createIntervalTimer(this.getClass(), PRM_EXPORT_ERP_RESERVATIONS_TIME);
+    cb.createIntervalTimer(this.getClass(), PRM_IMPORT_ERP_INV_CHANGES_TIME);
 
     sys.registerDataEventHandler(new DataEventHandler() {
 
@@ -1024,6 +1035,102 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       }
     }
     return ResponseObject.emptyResponse();
+  }
+
+  private void getERPInvoiceChanges() {
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+    SimpleRowSet rs;
+
+    Integer days = prm.getInteger(PRM_GET_INV_DAYS_BEFORE);
+
+    if (!BeeUtils.isPositive(days)) {
+      return;
+    }
+
+    try {
+      rs = ButentWS.connect(remoteAddress, remoteLogin, remotePassword).getERPInvChanges(days);
+
+    } catch (BeeException e) {
+      logger.error(e);
+      sys.eventEnd(sys.eventStart(PRM_IMPORT_ERP_INV_CHANGES_TIME), "ERROR", e.getMessage());
+      return;
+    }
+
+    if (rs.getNumberOfRows() > 0) {
+      Table<Long, Long, Double> table = HashBasedTable.create();
+
+      for (SimpleRow row : rs) {
+        table.put(TradeModuleBean.decodeId(TBL_SALES, row.getLong("EXTERN_ID")),
+            row.getLong("PREKE"), row.getDouble("KIEKIS"));
+      }
+
+      SqlSelect slcSaleItems = new SqlSelect()
+          .addField(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS), COL_SALE_ITEM)
+          .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+          .addFields(TBL_SALE_ITEMS, COL_SALE, COL_TRADE_ITEM_QUANTITY)
+          .addFrom(TBL_SALE_ITEMS)
+          .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
+          .setWhere(SqlUtils.inList(TBL_SALE_ITEMS, COL_SALE, table.rowKeySet()));
+
+      SimpleRowSet saleItems = qs.getData(slcSaleItems);
+
+      List<Long> removeList = new ArrayList<>();
+      Map<Long, Double> update = new HashMap<>();
+
+      for (SimpleRow saleItem : saleItems) {
+        Long sale = saleItem.getLong(COL_SALE);
+        Long externalCode = saleItem.getLong(COL_ITEM_EXTERNAL_CODE);
+        Long saleItemId = saleItem.getLong(COL_SALE_ITEM);
+
+        if (!table.contains(sale, externalCode)) {
+          removeList.add(saleItemId);
+        } else {
+          Double qty = saleItem.getDouble(COL_TRADE_ITEM_QUANTITY);
+          Double changedQty = table.get(sale, externalCode);
+
+          if (!BeeUtils.isPositive(changedQty)) {
+            removeList.add(saleItem.getLong(COL_SALE_ITEM));
+            continue;
+          }
+          if (qty > changedQty) {
+            update.put(saleItem.getLong(COL_SALE_ITEM), changedQty);
+            table.put(sale, externalCode, 0.0);
+          } else {
+            table.put(sale, externalCode, changedQty - qty);
+          }
+        }
+      }
+
+      if (removeList.size() > 0) {
+        qs.updateData(new SqlDelete(TBL_SALE_ITEMS).setWhere(sys.idInList(TBL_SALE_ITEMS,
+            removeList)));
+      }
+
+      if (update.size() > 0) {
+        for (Long id : update.keySet()) {
+          qs.updateData(new SqlUpdate(TBL_SALE_ITEMS)
+            .addConstant(COL_TRADE_ITEM_QUANTITY, update.get(id))
+            .setWhere(sys.idEquals(TBL_SALE_ITEMS, id)));
+        }
+      }
+
+      if (removeList.size() > 0 || update.size() > 0) {
+        Set<Long> ids = new HashSet<>();
+        ids.addAll(removeList);
+        ids.addAll(update.keySet());
+
+        qs.updateData(new SqlUpdate(TBL_ORDERS)
+          .addConstant(COL_ORDERS_STATUS, OrdersStatus.APPROVED.ordinal())
+          .setWhere(SqlUtils.in(TBL_ORDERS, sys.getIdName(TBL_ORDERS), new SqlSelect()
+              .addFields(TBL_ORDER_ITEMS, COL_ORDER)
+              .addFrom(VIEW_ORDER_CHILD_INVOICES)
+              .addFromLeft(TBL_ORDER_ITEMS, sys.joinTables(TBL_ORDER_ITEMS,
+                  VIEW_ORDER_CHILD_INVOICES, COL_ORDER_ITEM))
+              .setWhere(SqlUtils.inList(VIEW_ORDER_CHILD_INVOICES, COL_SALE_ITEM, ids)))));
+      }
+    }
   }
 
   private void getERPItems() {

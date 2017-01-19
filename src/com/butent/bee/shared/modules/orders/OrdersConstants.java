@@ -181,6 +181,8 @@ public final class OrdersConstants {
   public static final String PRM_MANAGER_DISCOUNT = "ManagerDiscount";
   public static final String PRM_CHECK_DEBT = "CheckDebt";
   public static final String PRM_NOTIFY_ABOUT_DEBTS = "NotifyAboutDebts";
+  public static final String PRM_IMPORT_ERP_INV_CHANGES_TIME = "ImportERPInvoiceChangesTime";
+  public static final String PRM_GET_INV_DAYS_BEFORE = "GetInvDaysBefore";
 
   public static final String FORM_CONF_OPTION = "ConfOption";
 
