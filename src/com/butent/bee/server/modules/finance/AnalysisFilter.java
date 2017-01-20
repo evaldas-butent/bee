@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.finance;
 
+import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
+
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlUtils;
@@ -9,42 +11,13 @@ import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 class AnalysisFilter {
-
-  static boolean allMatch(AnalysisValue analysisValue, Collection<AnalysisFilter> analysisFilters) {
-    if (!BeeUtils.isEmpty(analysisFilters)) {
-      for (AnalysisFilter analysisFilter : analysisFilters) {
-        if (analysisFilter != null && !analysisFilter.matches(analysisValue)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  static List<AnalysisFilter> list(AnalysisFilter... analysisFilters) {
-    List<AnalysisFilter> result = new ArrayList<>();
-
-    if (analysisFilters != null) {
-      for (AnalysisFilter analysisFilter : analysisFilters) {
-        if (analysisFilter != null && !analysisFilter.isEmpty()) {
-          result.add(analysisFilter);
-        }
-      }
-    }
-
-    return result;
-  }
 
   static Predicate<AnalysisValue> predicate(AnalysisFilter analysisFilter) {
     return (analysisFilter == null) ? null : analysisFilter::matches;
