@@ -28,7 +28,7 @@ public final class CarsKeeper {
           @Override
           public void onResponse(ResponseObject response) {
             CalendarKeeper.openCalendar(response.getResponseAsLong(), result ->
-                BeeKeeper.getScreen().show(result));
+                BeeKeeper.getScreen().showInNewPlace(result));
           }
         }));
 

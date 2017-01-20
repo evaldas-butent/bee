@@ -123,13 +123,7 @@ public final class CalendarKeeper {
               calName = event.getOptions();
             }
 
-            openCalendar(calId, calName, result -> {
-              if (event.isOpenFavorite()) {
-                BeeKeeper.getScreen().show(result);
-              } else {
-                BeeKeeper.getScreen().showInNewPlace(result);
-              }
-            });
+            openCalendar(calId, calName, result -> BeeKeeper.getScreen().showInNewPlace(result));
           }
 
         } else if (event.hasView(VIEW_APPOINTMENTS)) {
