@@ -10,6 +10,6 @@
     <Relation name="Appointment" notNull="true" unique="true" relation="Appointments"
               editable="true" cascade="DELETE" label="=calAppointment" />
 
-    <Boolean name="Arrived" label="Atvyko" />
+    <Boolean name="Arrived" label="=arrived" />
   </Fields>
 </Table>

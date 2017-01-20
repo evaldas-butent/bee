@@ -35,6 +35,7 @@ public final class CarsConstants {
   public static final String TBL_SERVICE_ORDERS = "CarServiceOrders";
   public static final String TBL_SERVICE_ORDER_ITEMS = "CarServiceItems";
   public static final String TBL_SERVICE_ORDER_JOBS = "CarServiceJobs";
+  public static final String TBL_SERVICE_JOB_PROGRESS = "CarJobProgress";
   public static final String TBL_SERVICE_EVENTS = "CarServiceEvents";
 
   public static final String VIEW_CARS = "Cars";

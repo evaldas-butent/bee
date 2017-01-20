@@ -3,13 +3,14 @@ package com.butent.bee.client.modules.cars;
 import com.google.common.collect.ImmutableMap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_CUSTOMER;
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_OWNER;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -18,12 +19,10 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.modules.calendar.CalendarPanel;
@@ -32,7 +31,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -44,7 +42,6 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
@@ -60,11 +57,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 public class CarServiceEventForm extends AbstractFormInterceptor implements ClickHandler,
     SelectorEvent.Handler {
-
-  private Flow orderContainer;
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
@@ -78,22 +74,21 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       FormFactory.WidgetDescriptionCallback callback) {
 
-    if (Objects.equals(name, COL_SERVICE_ORDER) && widget instanceof Flow) {
-      orderContainer = (Flow) widget;
-      orderContainer.addClickHandler(this);
+    if (Objects.equals(name, COL_SERVICE_ORDER) && widget instanceof HasClickHandlers) {
+      ((HasClickHandlers) widget).addClickHandler(this);
     }
     super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
   public void afterInsertRow(IsRow result, boolean forced) {
-    commitAttendees(result.getLong(getDataIndex(COL_APPOINTMENT)), true);
+    commitAttendees(getActiveRow().getProperty(TBL_ATTENDEES), result, true);
     super.afterInsertRow(result, forced);
   }
 
   @Override
   public void afterUpdateRow(IsRow result) {
-    commitAttendees(result.getLong(getDataIndex(COL_APPOINTMENT)), false);
+    commitAttendees(getActiveRow().getProperty(TBL_ATTENDEES), result, false);
     super.afterUpdateRow(result);
   }
 
@@ -106,52 +101,31 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
   }
 
   @Override
-  public void beforeRefresh(FormView form, IsRow row) {
-    if (Objects.nonNull(orderContainer)) {
-      Long orderId = row.getLong(getDataIndex(COL_SERVICE_ORDER));
-
-      orderContainer.getElement().setInnerText(DataUtils.isId(orderId)
-          ? BeeUtils.joinWords(Localized.dictionary().serviceOrder(),
-          row.getString(getDataIndex(COL_ORDER_NO)))
-          : Localized.dictionary().newServiceOrder());
-
-      orderContainer.setVisible(!Objects.equals(orderId, DataUtils.NEW_ROW_ID));
-    }
-    super.beforeRefresh(form, row);
-  }
-
-  @Override
   public FormInterceptor getInstance() {
     return new CarServiceEventForm();
   }
 
   @Override
   public void onClick(ClickEvent clickEvent) {
-    Long orderId = getLongValue(COL_SERVICE_ORDER);
+    DataInfo eventInfo = Data.getDataInfo(getViewName());
+    IsRow eventRow = getActiveRow();
+    DataInfo orderInfo = Data.getDataInfo(TBL_SERVICE_ORDERS);
+    BeeRow orderRow = RowFactory.createEmptyRow(orderInfo);
 
-    if (DataUtils.isId(orderId)) {
-      RowEditor.open(TBL_SERVICE_ORDERS, orderId, Opener.MODAL);
-    } else {
-      DataInfo eventInfo = Data.getDataInfo(getViewName());
-      IsRow eventRow = getActiveRow();
-      DataInfo orderInfo = Data.getDataInfo(TBL_SERVICE_ORDERS);
-      BeeRow orderRow = RowFactory.createEmptyRow(orderInfo);
+    orderRow.setValue(orderInfo.getColumnIndex(COL_NOTES),
+        eventRow.getString(eventInfo.getColumnIndex(CalendarConstants.COL_DESCRIPTION)));
 
-      orderRow.setValue(orderInfo.getColumnIndex(COL_NOTES),
-          eventRow.getString(eventInfo.getColumnIndex(CalendarConstants.COL_DESCRIPTION)));
+    ImmutableMap.of(COL_COMPANY, COL_TRADE_CUSTOMER, COL_COMPANY_PERSON,
+        COL_TRADE_CUSTOMER + COL_PERSON, COL_CAR, COL_CAR).forEach((s, t) ->
+        RelationUtils.copyWithDescendants(eventInfo, s, eventRow, orderInfo, t, orderRow));
 
-      ImmutableMap.of(COL_COMPANY, COL_TRADE_CUSTOMER, COL_COMPANY_PERSON,
-          COL_TRADE_CUSTOMER + COL_PERSON, COL_CAR, COL_CAR).forEach((s, t) ->
-          RelationUtils.copyWithDescendants(eventInfo, s, eventRow, orderInfo, t, orderRow));
-
-      RowFactory.createRow(orderInfo, orderRow, null, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          RelationUtils.updateRow(eventInfo, COL_SERVICE_ORDER, eventRow, orderInfo, result, true);
-          getFormView().refresh();
-        }
-      });
-    }
+    RowFactory.createRow(orderInfo, orderRow, null, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        RelationUtils.updateRow(eventInfo, COL_SERVICE_ORDER, eventRow, orderInfo, result, true);
+        getFormView().refresh();
+      }
+    });
   }
 
   @Override
@@ -188,11 +162,19 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
               if (result instanceof CalendarPanel) {
                 CalendarPanel panel = (CalendarPanel) result;
 
-                panel.setTimePickerCallback((dateTime, attendee) -> {
+                panel.setTimePickerCallback((startTime, attendee) -> {
                   if (Objects.nonNull(attendee)) {
                     getActiveRow().setProperty(TBL_ATTENDEES, attendee);
                   }
-                  updateTime(dateTime);
+                  Long startMillis = getLongValue(COL_START_DATE_TIME);
+                  Long endMillis = getLongValue(COL_END_DATE_TIME);
+                  getActiveRow().setValue(getDataIndex(COL_START_DATE_TIME), startTime);
+
+                  if (BeeUtils.allNotNull(startMillis, endMillis)) {
+                    getActiveRow().setValue(getDataIndex(COL_END_DATE_TIME),
+                        endMillis + (startTime.getTime() - startMillis));
+                  }
+                  form.refresh();
                   UiHelper.closeDialog(panel);
                 });
                 StyleUtils.setWidth(panel, BeeKeeper.getScreen().getWidth() * 0.7, CssUnit.PX);
@@ -223,50 +205,30 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
     super.onStartNewRow(form, oldRow, newRow);
   }
 
-  private void commitAttendees(Long appointmentId, boolean isNew) {
+  private void commitAttendees(String attendees, IsRow eventRow, boolean isNew) {
+    Long appointmentId = eventRow.getLong(getDataIndex(COL_APPOINTMENT));
+
+    BiConsumer<BeeRow, State> upd = (result, state) -> {
+      AppointmentEvent.fire(Appointment.create(result), state);
+      Queries.getRow(getViewName(), eventRow.getId(), new RowUpdateCallback(getViewName()));
+    };
     Queries.updateChildren(TBL_APPOINTMENTS, appointmentId,
         Collections.singleton(RowChildren.create(TBL_APPOINTMENT_ATTENDEES,
-            COL_APPOINTMENT, appointmentId, COL_ATTENDEE,
-            getActiveRow().getProperty(TBL_ATTENDEES))), getAppointmentCallback(isNew));
-  }
-
-  private RowCallback getAppointmentCallback(boolean isNew) {
-    Runnable upd = () -> Queries.getRow(getViewName(), getActiveRowId(),
-        new RowUpdateCallback(getViewName()));
-
-    if (isNew) {
-      return new RowInsertCallback(TBL_APPOINTMENTS) {
-        @Override
-        public void onSuccess(BeeRow result) {
-          upd.run();
-          AppointmentEvent.fire(Appointment.create(result), State.CREATED);
-          super.onSuccess(result);
-        }
-      };
-    } else {
-      return new RowUpdateCallback(TBL_APPOINTMENTS) {
-        @Override
-        public void onSuccess(BeeRow result) {
-          upd.run();
-          AppointmentEvent.fire(Appointment.create(result), State.CHANGED);
-          super.onSuccess(result);
-        }
-      };
-    }
-  }
-
-  private void updateTime(DateTime startTime) {
-    Long startMillis = getLongValue(COL_START_DATE_TIME);
-    Long endMillis = getLongValue(COL_END_DATE_TIME);
-
-    getActiveRow().setValue(getDataIndex(COL_START_DATE_TIME), startTime);
-    getFormView().refreshBySource(COL_START_DATE_TIME);
-
-    if (BeeUtils.allNotNull(startMillis, endMillis)) {
-      getActiveRow().setValue(getDataIndex(COL_END_DATE_TIME),
-          endMillis + (startTime.getTime() - startMillis));
-      getFormView().refreshBySource(COL_END_DATE_TIME);
-    }
+            COL_APPOINTMENT, appointmentId, COL_ATTENDEE, attendees)), isNew ?
+            new RowInsertCallback(TBL_APPOINTMENTS) {
+              @Override
+              public void onSuccess(BeeRow result) {
+                upd.accept(result, State.CREATED);
+                super.onSuccess(result);
+              }
+            } :
+            new RowUpdateCallback(TBL_APPOINTMENTS) {
+              @Override
+              public void onSuccess(BeeRow result) {
+                upd.accept(result, State.CHANGED);
+                super.onSuccess(result);
+              }
+            });
   }
 
   private boolean validateDates() {

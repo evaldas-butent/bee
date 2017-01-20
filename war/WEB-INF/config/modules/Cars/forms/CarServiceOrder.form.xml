@@ -114,7 +114,11 @@
     <TabbedPages class="flexible">
       <page>
         <text>=serviceJobs</text>
-        <ChildGrid name="CarServiceJobs" relColumn="ServiceOrder" />
+        <FlowPanel class="flexBox-vertical">
+          <ChildGrid name="CarServiceJobs" relColumn="ServiceOrder" class="flexible" />
+          <ChildGrid name="CarJobProgress" parent="CarServiceJobs" relColumn="ServiceJob"
+                     class="flexible" />
+        </FlowPanel>
       </page>
       <page>
         <text>=productsServices</text>

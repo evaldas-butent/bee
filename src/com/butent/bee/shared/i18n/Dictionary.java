@@ -185,6 +185,8 @@ public interface Dictionary {
 
   default String area() {return g("area");}
 
+  default String arrived() {return g("arrived");}
+
   default String article() {return g("article");}
 
   default String article2() {return g("article2");}
@@ -4017,11 +4019,11 @@ public interface Dictionary {
 
   default String ordBoLDriverTabNo() {return g("ordBoLDriverTabNo");}
 
+  default String ordBoLIssueDate() {return g("ordBoLIssueDate");}
+
   default String ordBoLNumber() {return g("ordBoLNumber");}
 
   default String ordBoLSeries() {return g("ordBoLSeries");}
-
-  default String ordBoLIssueDate() {return g("ordBoLIssueDate");}
 
   default String ordCancel() {return g("ordCancel");}
 
