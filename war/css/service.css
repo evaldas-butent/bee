@@ -167,13 +167,13 @@
   color: black;
 }
 
-.bee-svc-object-title{
+.bee-Header-message .bee-svc-object-title{
   font-size:23px;
   color: #484849;
   font-weight: lighter;
 }
 
-.bee-svc-object-small-title{
+.bee-Header-message .bee-svc-object-small-title{
   font-size:14px;
 }
 
