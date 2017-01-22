@@ -82,11 +82,8 @@ import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.add.AddEndEvent;
-import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
-import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -393,16 +390,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     this.gridInterceptor = gridInterceptor;
 
     this.feed = gridOptions == null ? null : gridOptions.getFeed();
-  }
-
-  @Override
-  public HandlerRegistration addAddEndHandler(AddEndEvent.Handler handler) {
-    return addHandler(handler, AddEndEvent.getType());
-  }
-
-  @Override
-  public HandlerRegistration addAddStartHandler(AddStartEvent.Handler handler) {
-    return addHandler(handler, AddStartEvent.getType());
   }
 
   @Override
@@ -836,8 +823,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
-  public HandlerRegistration addEditFormHandler(EditFormEvent.Handler handler) {
-    return addHandler(handler, EditFormEvent.getType());
+  public HandlerRegistration addGridFormHandler(GridFormEvent.Handler handler) {
+    return addHandler(handler, GridFormEvent.getType());
   }
 
   @Override
@@ -1057,10 +1044,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public void finishNewRow(IsRow row) {
     showForm(GridFormKind.NEW_ROW, false);
+    fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, null, State.CLOSED, showNewRowPopup()));
 
-    fireEvent(new AddEndEvent(showNewRowPopup()));
     setAdding(false);
-
     getGrid().setEditing(false);
 
     if (row == null) {
@@ -1982,7 +1968,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private void closeEditForm() {
     showForm(GridFormKind.EDIT, false);
-    fireEvent(new EditFormEvent(State.CLOSED, showEditPopup()));
+    fireEvent(new GridFormEvent(GridFormKind.EDIT, null, State.CLOSED, showEditPopup()));
 
     if (feed != null) {
       getGrid().getRowData().remove(getActiveRow());
@@ -2801,8 +2787,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (form != null) {
-      fireEvent(new EditFormEvent(State.OPEN, showEditPopup()));
-
       GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
 
       String caption = getRowCaption(rowValue);
@@ -2858,6 +2842,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       setOnFormOpen(() -> form.editRow(rowValue, focusCommand));
 
       showForm(GridFormKind.EDIT, true);
+      fireEvent(new GridFormEvent(GridFormKind.EDIT, presenter.getCaption(), State.OPEN,
+          showEditPopup()));
+
       return;
     }
 
@@ -2971,9 +2958,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     getGrid().setEditing(true);
-
-    fireEvent(new AddStartEvent(null, showNewRowPopup()));
-
     setAdding(true);
 
     String caption = getRowCaption(newRow);
@@ -3013,6 +2997,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     });
 
     showForm(GridFormKind.NEW_ROW, true);
+    fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, form.getViewPresenter().getCaption(),
+        State.OPEN, showNewRowPopup()));
   }
 
   private List<GridForm> parseForms(GridFormKind kind) {

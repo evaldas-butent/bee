@@ -28,12 +28,10 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.Evaluator;
-import com.butent.bee.client.view.add.AddEndEvent;
-import com.butent.bee.client.view.add.AddStartEvent;
-import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ExtWidget;
+import com.butent.bee.client.view.grid.GridFormEvent;
 import com.butent.bee.client.view.grid.GridUtils;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -63,8 +61,8 @@ import java.util.Set;
  */
 
 public class GridContainerImpl extends Split implements GridContainerView,
-    HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
-    EditFormEvent.Handler, HasEditState, RenderingEvent.Handler, MutationEvent.Handler {
+    HasSearch, ActiveRowChangeEvent.Handler, GridFormEvent.Handler, HasEditState,
+    RenderingEvent.Handler, MutationEvent.Handler {
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridContainer";
 
@@ -133,10 +131,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
   public void bind() {
     bindDisplay(getGridView().getGrid());
 
-    getGridView().addAddStartHandler(this);
-    getGridView().addAddEndHandler(this);
-
-    getGridView().addEditFormHandler(this);
+    getGridView().addGridFormHandler(this);
   }
 
   @Override
@@ -454,22 +449,6 @@ public class GridContainerImpl extends Split implements GridContainerView,
   }
 
   @Override
-  public void onAddEnd(AddEndEvent event) {
-    if (!event.isPopup()) {
-      showChildren(true);
-    }
-    setEditing(false);
-  }
-
-  @Override
-  public void onAddStart(AddStartEvent event) {
-    setEditing(true);
-    if (!event.isPopup()) {
-      showChildren(false);
-    }
-  }
-
-  @Override
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
     if (isEditing() || !isEnabled()) {
@@ -519,18 +498,13 @@ public class GridContainerImpl extends Split implements GridContainerView,
   }
 
   @Override
-  public void onEditForm(EditFormEvent event) {
-    if (event.isOpening()) {
-      setEditing(true);
-      if (!event.isPopup()) {
-        showChildren(false);
-      }
+  public void onGridForm(GridFormEvent event) {
+    if (event.isOpening() || event.isClosing()) {
+      setEditing(event.isOpening());
 
-    } else if (event.isClosing()) {
       if (!event.isPopup()) {
-        showChildren(true);
+        showChildren(event.isClosing());
       }
-      setEditing(false);
     }
   }
 
