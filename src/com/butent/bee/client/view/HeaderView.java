@@ -34,6 +34,8 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   int getHeight();
 
+  String getRowMessage();
+
   boolean hasAction(Action action);
 
   boolean hasCommands();

@@ -4,9 +4,8 @@ import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.ui.HasCaption;
 
-public class GridFormEvent extends GwtEvent<GridFormEvent.Handler> implements HasCaption {
+public class GridFormEvent extends GwtEvent<GridFormEvent.Handler> {
 
   @FunctionalInterface
   public interface Handler extends EventHandler {
@@ -20,15 +19,13 @@ public class GridFormEvent extends GwtEvent<GridFormEvent.Handler> implements Ha
   }
 
   private GridFormKind kind;
-  private final String caption;
   private final State state;
   private final boolean popup;
 
-  public GridFormEvent(GridFormKind kind, String caption, State state, boolean popup) {
+  public GridFormEvent(GridFormKind kind, State state, boolean popup) {
     super();
 
     this.kind = kind;
-    this.caption = caption;
     this.state = state;
     this.popup = popup;
   }
@@ -46,17 +43,13 @@ public class GridFormEvent extends GwtEvent<GridFormEvent.Handler> implements Ha
     return kind == GridFormKind.NEW_ROW;
   }
 
-  @Override
-  public String getCaption() {
-    return caption;
-  }
-
   public boolean isClosing() {
-    return state == State.CLOSED;
+    return state == State.CLOSING || state == State.CLOSED || state == State.UNLOADING;
   }
 
   public boolean isOpening() {
-    return state == State.OPEN;
+    return state == State.PENDING || state == State.OPEN || state == State.LOADING
+        || state == State.LOADED;
   }
 
   public boolean isPopup() {

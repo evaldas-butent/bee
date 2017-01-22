@@ -29,6 +29,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.HasEditState;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ExtWidget;
 import com.butent.bee.client.view.grid.GridFormEvent;
@@ -314,6 +315,16 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
   @Override
   public String getCaption() {
+    if (isEditing()) {
+      FormView activeForm = getGridView().getActiveForm();
+      Presenter formPresenter = (activeForm == null) ? null : activeForm.getViewPresenter();
+      String formCaption = (formPresenter == null) ? null : formPresenter.getRowMessageOrCaption();
+
+      if (!BeeUtils.isEmpty(formCaption)) {
+        return formCaption;
+      }
+    }
+
     return hasHeader() ? getHeader().getCaption() : null;
   }
 
@@ -504,6 +515,10 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
       if (!event.isPopup()) {
         showChildren(event.isClosing());
+
+        if (!getGridView().isChild()) {
+          BeeKeeper.getScreen().onWidgetChange(this);
+        }
       }
     }
   }

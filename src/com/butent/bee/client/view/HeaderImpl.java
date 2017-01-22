@@ -271,6 +271,12 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   @Override
+  public String getRowMessage() {
+    Element messageElement = Selectors.getElementByClassName(this, STYLE_ROW_MESSAGE);
+    return (messageElement == null) ? null : messageElement.getInnerHTML();
+  }
+
+  @Override
   public Presenter getViewPresenter() {
     return viewPresenter;
   }

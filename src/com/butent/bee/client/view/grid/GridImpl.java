@@ -1044,7 +1044,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public void finishNewRow(IsRow row) {
     showForm(GridFormKind.NEW_ROW, false);
-    fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, null, State.CLOSED, showNewRowPopup()));
+    fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, State.CLOSED, showNewRowPopup()));
 
     setAdding(false);
     getGrid().setEditing(false);
@@ -1968,7 +1968,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private void closeEditForm() {
     showForm(GridFormKind.EDIT, false);
-    fireEvent(new GridFormEvent(GridFormKind.EDIT, null, State.CLOSED, showEditPopup()));
+    fireEvent(new GridFormEvent(GridFormKind.EDIT, State.CLOSED, showEditPopup()));
 
     if (feed != null) {
       getGrid().getRowData().remove(getActiveRow());
@@ -2837,13 +2837,14 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
             event.getOnFormFocus().accept(form);
           }
         }
+
+        fireEvent(new GridFormEvent(GridFormKind.EDIT, State.OPEN, showEditPopup()));
       };
 
       setOnFormOpen(() -> form.editRow(rowValue, focusCommand));
 
+      fireEvent(new GridFormEvent(GridFormKind.EDIT, State.PENDING, showEditPopup()));
       showForm(GridFormKind.EDIT, true);
-      fireEvent(new GridFormEvent(GridFormKind.EDIT, presenter.getCaption(), State.OPEN,
-          showEditPopup()));
 
       return;
     }
@@ -2994,11 +2995,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     setOnFormOpen(() -> {
       form.updateRow(newRow, true);
       form.focus();
+
+      fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, State.OPEN, showNewRowPopup()));
     });
 
+    fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, State.PENDING, showNewRowPopup()));
     showForm(GridFormKind.NEW_ROW, true);
-    fireEvent(new GridFormEvent(GridFormKind.NEW_ROW, form.getViewPresenter().getCaption(),
-        State.OPEN, showNewRowPopup()));
   }
 
   private List<GridForm> parseForms(GridFormKind kind) {
