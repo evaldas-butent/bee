@@ -383,6 +383,14 @@ public class Appointment extends CalendarItem {
     return row.getString(VEHICLE_PARENT_MODEL_INDEX);
   }
 
+  public boolean handlesCopyAction(DateTime newStart, DateTime newEnd) {
+    return false;
+  }
+
+  public boolean handlesOpenAction() {
+    return false;
+  }
+
   @Override
   public boolean isEditable(Long userId) {
     CalendarVisibility visibility = getVisibility();
@@ -416,10 +424,6 @@ public class Appointment extends CalendarItem {
     } else {
       return getVisibility() != CalendarVisibility.PRIVATE;
     }
-  }
-
-  public boolean open() {
-    return false;
   }
 
   public void setEnd(DateTime end) {

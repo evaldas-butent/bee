@@ -199,7 +199,8 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
 
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-    if (BeeUtils.isEmpty(newRow.getProperty(COL_DURATION))) {
+    if (newRow.isEmpty(getDataIndex(COL_END_DATE_TIME))
+        && BeeUtils.isEmpty(newRow.getProperty(COL_DURATION))) {
       newRow.setProperty(COL_DURATION, TimeUtils.renderTime(TimeUtils.MILLIS_PER_HOUR, true));
     }
     super.onStartNewRow(form, oldRow, newRow);

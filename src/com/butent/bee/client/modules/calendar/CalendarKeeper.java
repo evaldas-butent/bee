@@ -580,7 +580,7 @@ public final class CalendarKeeper {
       BeeKeeper.getScreen().notifyInfo(CalendarVisibility.PRIVATE.getCaption());
       return;
     }
-    if (appointment.open()) {
+    if (appointment.handlesOpenAction()) {
       return;
     }
     BeeRow typeRow = getAppointmentTypeRow(appointment);

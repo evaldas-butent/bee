@@ -826,14 +826,15 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   }
 
   private static void copyAppointment(Appointment appointment, DateTime start, DateTime end) {
-
+    if (appointment.handlesCopyAction(start, end)) {
+      return;
+    }
     final String propList = appointment.getRow().getProperty(TBL_APPOINTMENT_PROPS);
     final Long reminderType = BeeUtils.toLong(
         appointment.getRow().getProperty(TBL_APPOINTMENT_REMINDERS));
 
     CalendarUtils.saveAppointment(null, true, null, appointment.getRow(), start, end,
         propList, reminderType, BeeKeeper.getScreen(), null);
-
   }
 
   private boolean updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,
