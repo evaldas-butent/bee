@@ -563,8 +563,8 @@ public class CarsModuleBean implements BeeModule {
         .addField(TBL_CONF_BRANCH_BUNDLES, COL_DESCRIPTION, COL_BUNDLE + COL_DESCRIPTION)
         .addField(TBL_CONF_BRANCH_BUNDLES, COL_CRITERIA, COL_BUNDLE + COL_CRITERIA)
         .addFields(TBL_CONF_BUNDLE_OPTIONS, COL_BUNDLE, COL_OPTION)
-        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_DESCRIPTION,
-            COL_PHOTO)
+        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_CODE2,
+            COL_DESCRIPTION, COL_PHOTO)
         .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
         .addFrom(TBL_CONF_BRANCH_BUNDLES)
         .addFromInner(TBL_CONF_BUNDLE_OPTIONS,
@@ -580,10 +580,11 @@ public class CarsModuleBean implements BeeModule {
     for (SimpleRowSet.SimpleRow row : data) {
       Long id = row.getLong(COL_BUNDLE);
 
-      bundleOptions.put(id, new Option(row.getLong(COL_OPTION),
-          row.getValue(COL_OPTION_NAME), new Dimension(row.getLong(COL_GROUP),
-          row.getValue(COL_GROUP_NAME)).setRequired(row.getBoolean(COL_REQUIRED)))
-          .setCode(row.getValue(COL_CODE))
+      bundleOptions.put(id, new Option(row.getLong(COL_OPTION), row.getValue(COL_OPTION_NAME),
+          new Dimension(row.getLong(COL_GROUP), row.getValue(COL_GROUP_NAME))
+              .setRequired(row.getBoolean(COL_REQUIRED)))
+          .setCode(BeeUtils.join("", row.getValue(COL_CODE),
+              BeeUtils.parenthesize(row.getValue(COL_CODE2))))
           .setDescription(row.getValue(COL_DESCRIPTION))
           .setPhoto(row.getLong(COL_PHOTO)));
 
@@ -606,8 +607,8 @@ public class CarsModuleBean implements BeeModule {
         .addField(TBL_CONF_BRANCH_OPTIONS, COL_PRICE, COL_OPTION + COL_PRICE)
         .addField(TBL_CONF_BRANCH_OPTIONS, COL_DESCRIPTION, COL_OPTION + COL_DESCRIPTION)
         .addField(TBL_CONF_BRANCH_OPTIONS, COL_CRITERIA, COL_OPTION + COL_CRITERIA)
-        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_DESCRIPTION,
-            COL_PHOTO)
+        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_CODE2,
+            COL_DESCRIPTION, COL_PHOTO)
         .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
         .addFields(TBL_CONF_RELATIONS, COL_PRICE)
         .addField(TBL_CONF_RELATIONS, COL_DESCRIPTION, TBL_CONF_RELATIONS + COL_DESCRIPTION)
@@ -629,10 +630,11 @@ public class CarsModuleBean implements BeeModule {
       Long branchOption = row.getLong(COL_BRANCH_OPTION);
 
       if (!branchOptions.containsKey(branchOption)) {
-        Option option = new Option(row.getLong(COL_OPTION),
-            row.getValue(COL_OPTION_NAME), new Dimension(row.getLong(COL_GROUP),
-            row.getValue(COL_GROUP_NAME)).setRequired(row.getBoolean(COL_REQUIRED)))
-            .setCode(row.getValue(COL_CODE))
+        Option option = new Option(row.getLong(COL_OPTION), row.getValue(COL_OPTION_NAME),
+            new Dimension(row.getLong(COL_GROUP), row.getValue(COL_GROUP_NAME))
+                .setRequired(row.getBoolean(COL_REQUIRED)))
+            .setCode(BeeUtils.join("", row.getValue(COL_CODE),
+                BeeUtils.parenthesize(row.getValue(COL_CODE2))))
             .setDescription(row.getValue(COL_DESCRIPTION))
             .setPhoto(row.getLong(COL_PHOTO));
 
@@ -652,8 +654,8 @@ public class CarsModuleBean implements BeeModule {
     }
     data = qs.getData(new SqlSelect()
         .addFields(TBL_CONF_RESTRICTIONS, COL_BRANCH_OPTION, COL_OPTION, COL_DENIED)
-        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_DESCRIPTION,
-            COL_PHOTO)
+        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_CODE2,
+            COL_DESCRIPTION, COL_PHOTO)
         .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
         .addFrom(TBL_CONF_RESTRICTIONS)
         .addFromInner(TBL_CONF_OPTIONS,
@@ -664,10 +666,11 @@ public class CarsModuleBean implements BeeModule {
         .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_OPTIONS, COL_BRANCH, branchId)));
 
     for (SimpleRowSet.SimpleRow row : data) {
-      Option option = new Option(row.getLong(COL_OPTION),
-          row.getValue(COL_OPTION_NAME), new Dimension(row.getLong(COL_GROUP),
-          row.getValue(COL_GROUP_NAME)).setRequired(row.getBoolean(COL_REQUIRED)))
-          .setCode(row.getValue(COL_CODE))
+      Option option = new Option(row.getLong(COL_OPTION), row.getValue(COL_OPTION_NAME),
+          new Dimension(row.getLong(COL_GROUP), row.getValue(COL_GROUP_NAME))
+              .setRequired(row.getBoolean(COL_REQUIRED)))
+          .setCode(BeeUtils.join("", row.getValue(COL_CODE),
+              BeeUtils.parenthesize(row.getValue(COL_CODE2))))
           .setDescription(row.getValue(COL_DESCRIPTION))
           .setPhoto(row.getLong(COL_PHOTO));
 
@@ -683,8 +686,8 @@ public class CarsModuleBean implements BeeModule {
         .addField(TBL_CONF_OBJECTS, COL_DESCRIPTION, COL_BUNDLE + COL_DESCRIPTION)
         .addField(TBL_CONF_OBJECTS, COL_PRICE, COL_BUNDLE + COL_PRICE)
         .addFields(TBL_CONF_OBJECT_OPTIONS, COL_OPTION, COL_PRICE)
-        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_DESCRIPTION,
-            COL_PHOTO_CODE, COL_PHOTO)
+        .addFields(TBL_CONF_OPTIONS, COL_GROUP, COL_OPTION_NAME, COL_CODE, COL_CODE2,
+            COL_DESCRIPTION, COL_PHOTO_CODE, COL_PHOTO)
         .addFields(TBL_CONF_GROUPS, COL_GROUP_NAME, COL_REQUIRED)
         .addFrom(TBL_CONF_OBJECTS)
         .addFromInner(TBL_CONF_OBJECT_OPTIONS,
@@ -709,10 +712,11 @@ public class CarsModuleBean implements BeeModule {
         bundlePrice = row.getInt(COL_BUNDLE + COL_PRICE);
       }
       Integer price = row.getInt(COL_PRICE);
-      Option option = new Option(row.getLong(COL_OPTION),
-          row.getValue(COL_OPTION_NAME), new Dimension(row.getLong(COL_GROUP),
-          row.getValue(COL_GROUP_NAME)).setRequired(row.getBoolean(COL_REQUIRED)))
-          .setCode(row.getValue(COL_CODE))
+      Option option = new Option(row.getLong(COL_OPTION), row.getValue(COL_OPTION_NAME),
+          new Dimension(row.getLong(COL_GROUP), row.getValue(COL_GROUP_NAME))
+              .setRequired(row.getBoolean(COL_REQUIRED)))
+          .setCode(BeeUtils.join("", row.getValue(COL_CODE),
+              BeeUtils.parenthesize(row.getValue(COL_CODE2))))
           .setDescription(row.getValue(COL_DESCRIPTION))
           .setPhoto(row.getLong(COL_PHOTO));
 

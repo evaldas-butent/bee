@@ -45,6 +45,7 @@ public final class CarsConstants {
   public static final String COL_OPTION = "Option";
   public static final String COL_OPTION_NAME = "OptionName";
   public static final String COL_CODE = "Code";
+  public static final String COL_CODE2 = "Code2";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CRITERIA = "Criteria";
   public static final String COL_BUNDLE = "Bundle";

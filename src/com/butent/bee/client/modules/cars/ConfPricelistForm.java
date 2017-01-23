@@ -161,7 +161,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         table.setText(row, col, dimension.getName());
 
         Relation relation = Relation.create(TBL_CONF_OPTIONS,
-            Arrays.asList(COL_CODE, COL_OPTION_NAME));
+            Arrays.asList(COL_CODE, COL_CODE2, COL_OPTION_NAME));
 
         relation.setFilter(Filter.equals(COL_GROUP, dimension.getId()));
 
@@ -183,7 +183,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
                 Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
                 new Dimension(Data.getLong(TBL_CONF_OPTIONS, beeRow, COL_GROUP),
                     Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
-                .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)));
+                .setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE),
+                    BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE2)))));
           }
         }
         if (!options.isEmpty()) {
@@ -564,7 +565,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
           ids.remove(opt.getId());
         }
         Relation relation = Relation.create(TBL_CONF_OPTIONS,
-            Arrays.asList(COL_CODE, COL_OPTION_NAME, COL_GROUP_NAME));
+            Arrays.asList(COL_CODE, COL_CODE2, COL_OPTION_NAME, COL_GROUP_NAME));
 
         relation.disableNewRow();
         relation.setFilter(Filter.idIn(ids));
@@ -577,10 +578,12 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
             UiHelper.getParentPopup(inputOption).close();
 
             restrictions.put(new Option(beeRow.getId(),
-                Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
-                new Dimension(Data.getLong(TBL_CONF_OPTIONS, beeRow, COL_GROUP),
-                    Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
-                .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)), false);
+                    Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
+                    new Dimension(Data.getLong(TBL_CONF_OPTIONS, beeRow, COL_GROUP),
+                        Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
+                    .setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE),
+                        BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE2)))),
+                false);
             renderer.get().run();
           }
         });
@@ -1007,7 +1010,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
 
       input.setText(2, 0, Localized.dictionary().option());
       UnboundSelector inputOption = UnboundSelector.create(TBL_CONF_OPTIONS,
-          Arrays.asList(COL_CODE, COL_OPTION_NAME, COL_GROUP_NAME));
+          Arrays.asList(COL_CODE, COL_CODE2, COL_OPTION_NAME, COL_GROUP_NAME));
 
       inputOption.getOracle().setExclusions(excludedOptions);
       inputOption.addSelectorHandler(event -> {
@@ -1037,7 +1040,8 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
                   Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
                   new Dimension(Data.getLong(TBL_CONF_OPTIONS, beeRow, COL_GROUP),
                       Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
-                  .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)),
+                  .setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE),
+                      BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE2)))),
               Configuration.DataInfo.of(inputPrice.getValue(), null, null));
           refresh();
 
@@ -1057,7 +1061,10 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
                                   Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
                                   new Dimension(inputGroup.getRelatedId(),
                                       Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
-                                  .setCode(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE)),
+                                  .setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS,
+                                      beeRow, COL_CODE),
+                                      BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, beeRow,
+                                          COL_CODE2)))),
                               Configuration.DataInfo.of(null, null, null));
                         }
                         refresh();
