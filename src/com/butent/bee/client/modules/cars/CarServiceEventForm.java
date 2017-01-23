@@ -212,23 +212,30 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
       AppointmentEvent.fire(Appointment.create(result), state);
       Queries.getRow(getViewName(), eventRow.getId(), new RowUpdateCallback(getViewName()));
     };
+
+    RowCallback callback;
+    if (isNew) {
+      callback = new RowInsertCallback(TBL_APPOINTMENTS) {
+        @Override
+        public void onSuccess(BeeRow result) {
+          upd.accept(result, State.CREATED);
+          super.onSuccess(result);
+        }
+      };
+
+    } else {
+      callback = new RowUpdateCallback(TBL_APPOINTMENTS) {
+        @Override
+        public void onSuccess(BeeRow result) {
+          upd.accept(result, State.CHANGED);
+          super.onSuccess(result);
+        }
+      };
+    }
+
     Queries.updateChildren(TBL_APPOINTMENTS, appointmentId,
         Collections.singleton(RowChildren.create(TBL_APPOINTMENT_ATTENDEES,
-            COL_APPOINTMENT, appointmentId, COL_ATTENDEE, attendees)), isNew ?
-            new RowInsertCallback(TBL_APPOINTMENTS) {
-              @Override
-              public void onSuccess(BeeRow result) {
-                upd.accept(result, State.CREATED);
-                super.onSuccess(result);
-              }
-            } :
-            new RowUpdateCallback(TBL_APPOINTMENTS) {
-              @Override
-              public void onSuccess(BeeRow result) {
-                upd.accept(result, State.CHANGED);
-                super.onSuccess(result);
-              }
-            });
+            COL_APPOINTMENT, appointmentId, COL_ATTENDEE, attendees)), callback);
   }
 
   private boolean validateDates() {
