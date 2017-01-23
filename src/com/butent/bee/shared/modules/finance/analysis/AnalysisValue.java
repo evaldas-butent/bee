@@ -219,6 +219,21 @@ public final class AnalysisValue implements BeeSerializable {
     }
   }
 
+  public AnalysisSplitValue getSplitValue(AnalysisSplitType splitType) {
+    if (splitType == null) {
+      return null;
+
+    } else if (columnSplit.containsKey(splitType)) {
+      return columnSplit.get(splitType);
+
+    } else if (rowSplit.containsKey(splitType)) {
+      return rowSplit.get(splitType);
+
+    } else {
+      return null;
+    }
+  }
+
   private void setColumnId(long columnId) {
     this.columnId = columnId;
   }

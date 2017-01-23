@@ -8,6 +8,8 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
+import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -15,6 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 class AnalysisFilter {
@@ -90,9 +93,58 @@ class AnalysisFilter {
     if (analysisValue == null) {
       return false;
     }
-
     if (isEmpty()) {
       return true;
+    }
+
+    if (!main.isEmpty() && !matches(analysisValue, main)) {
+      return false;
+    }
+
+    if (!include.isEmpty()) {
+      boolean ok = false;
+
+      for (Map<String, Long> map : include) {
+        if (matches(analysisValue, map)) {
+          ok = true;
+          break;
+        }
+      }
+
+      if (!ok) {
+        return false;
+      }
+    }
+
+    if (!exclude.isEmpty()) {
+      boolean ok = true;
+
+      for (Map<String, Long> map : exclude) {
+        if (matches(analysisValue, map)) {
+          ok = false;
+          break;
+        }
+      }
+
+      if (!ok) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private static boolean matches(AnalysisValue analysisValue, Map<String, Long> map) {
+    for (Map.Entry<String, Long> entry : map.entrySet()) {
+      AnalysisSplitType splitType = getSplitType(entry.getKey());
+      AnalysisSplitValue splitValue = analysisValue.getSplitValue(splitType);
+
+      if (splitValue == null) {
+        return false;
+      }
+      if (!Objects.equals(splitValue.getId(), entry.getValue())) {
+        return false;
+      }
     }
     return true;
   }
@@ -126,6 +178,23 @@ class AnalysisFilter {
         }
       }
     }
+  }
+
+  private static AnalysisSplitType getSplitType(String key) {
+    if (KEY_EMPLOYEE.equals(key)) {
+      return AnalysisSplitType.EMPLOYEE;
+    }
+
+    Integer ordinal = Dimensions.getRelationColumnOrdinal(key);
+    if (Dimensions.isObserved(ordinal)) {
+      for (AnalysisSplitType splitType : AnalysisSplitType.values()) {
+        if (splitType.isDimension() && Objects.equals(splitType.getIndex(), ordinal)) {
+          return splitType;
+        }
+      }
+    }
+
+    return null;
   }
 
   private static Map<String, Long> parse(BeeRow row, Map<String, Integer> indexes,
