@@ -125,6 +125,10 @@ public final class MonthRange implements HasRange<YearMonth>, BeeSerializable {
     }
   }
 
+  public boolean encloses(MonthRange other) {
+    return other != null && range.encloses(other.range);
+  }
+
   @Override
   public boolean equals(Object obj) {
     return obj instanceof MonthRange && range.equals(((MonthRange) obj).range);

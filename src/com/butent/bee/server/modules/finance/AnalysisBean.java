@@ -378,9 +378,10 @@ public class AnalysisBean {
 
       if (!secondaryRows.isEmpty() && !response.hasErrors()) {
         for (BeeRow row : secondaryRows) {
-          MonthRange rowRange = AnalysisUtils.intersection(headerRange, formData.getRowRange(row));
+          MonthRange rowRange = formData.getRowRange(row);
+          MonthRange headerAndRowRange = AnalysisUtils.intersection(headerRange, rowRange);
 
-          if (rowRange != null) {
+          if (headerAndRowRange != null) {
             String script = formData.getRowScript(row);
             Map<Long, String> variables = formData.getRowVariables(row);
 
@@ -391,10 +392,10 @@ public class AnalysisBean {
             List<AnalysisCellType> rowCellTypes = formData.getRowCellTypes(row);
 
             AnalysisFilter rowAnalysisFilter = formData.getRowAnalysisFilter(row);
-            Predicate<AnalysisValue> predicate = AnalysisFilter.predicate(rowAnalysisFilter);
+            Predicate<AnalysisValue> predicate = getPredicate(rowAnalysisFilter, rowRange);
 
             for (BeeRow column : formData.getColumns()) {
-              MonthRange range = AnalysisUtils.intersection(rowRange,
+              MonthRange range = AnalysisUtils.intersection(headerAndRowRange,
                   formData.getColumnRange(column));
 
               if (formData.columnIsPrimary(column) && range != null) {
@@ -475,10 +476,10 @@ public class AnalysisBean {
 
       if (!secondaryColumns.isEmpty() && !response.hasErrors()) {
         for (BeeRow column : secondaryColumns) {
-          MonthRange columnRange = AnalysisUtils.intersection(headerRange,
-              formData.getColumnRange(column));
+          MonthRange columnRange = formData.getColumnRange(column);
+          MonthRange headerAndColumnRange = AnalysisUtils.intersection(headerRange, columnRange);
 
-          if (columnRange != null) {
+          if (headerAndColumnRange != null) {
             String script = formData.getColumnScript(column);
             Map<Long, String> variables = formData.getColumnVariables(column);
 
@@ -489,10 +490,11 @@ public class AnalysisBean {
             List<AnalysisCellType> columnCellTypes = formData.getColumnCellTypes(column);
 
             AnalysisFilter columnAnalysisFilter = formData.getColumnAnalysisFilter(column);
-            Predicate<AnalysisValue> predicate = AnalysisFilter.predicate(columnAnalysisFilter);
+            Predicate<AnalysisValue> predicate = getPredicate(columnAnalysisFilter, columnRange);
 
             for (BeeRow row : formData.getRows()) {
-              MonthRange range = AnalysisUtils.intersection(columnRange, formData.getRowRange(row));
+              MonthRange range = AnalysisUtils.intersection(headerAndColumnRange,
+                  formData.getRowRange(row));
 
               if (range != null) {
                 String rowAbbreviation = formData.getRowAbbreviation(row);
@@ -1878,5 +1880,19 @@ public class AnalysisBean {
 
   private Long getDefaultCurrency() {
     return prm.getRelation(AdministrationConstants.PRM_CURRENCY);
+  }
+
+  private static Predicate<AnalysisValue> getPredicate(AnalysisFilter filter, MonthRange range) {
+    Predicate<AnalysisValue> filterPredicate = (filter == null) ? null : filter::matches;
+    Predicate<AnalysisValue> rangePredicate =
+        AnalysisUtils.isBounded(range) ? av -> range.encloses(av.getMonthRange()) : null;
+
+    if (filterPredicate == null) {
+      return rangePredicate;
+    } else if (rangePredicate == null) {
+      return filterPredicate;
+    } else {
+      return filterPredicate.and(rangePredicate);
+    }
   }
 }

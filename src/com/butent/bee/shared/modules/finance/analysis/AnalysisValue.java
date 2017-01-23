@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.finance.analysis;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -232,6 +233,21 @@ public final class AnalysisValue implements BeeSerializable {
     } else {
       return null;
     }
+  }
+
+  public MonthRange getMonthRange() {
+    if (columnSplit.isEmpty() && rowSplit.isEmpty()) {
+      return null;
+    }
+
+    for (AnalysisSplitType splitType : AnalysisSplitType.PERIODS_INCREASING) {
+      AnalysisSplitValue splitValue = getSplitValue(splitType);
+
+      if (splitValue != null) {
+        return splitType.getMonthRange(splitValue);
+      }
+    }
+    return null;
   }
 
   private void setColumnId(long columnId) {

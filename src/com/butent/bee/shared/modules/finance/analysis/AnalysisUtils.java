@@ -113,6 +113,18 @@ public final class AnalysisUtils {
     }
   }
 
+  public static boolean isBounded(MonthRange range) {
+    if (range == null) {
+      return false;
+
+    } else if (BeeUtils.isMore(range.getMinMonth(), ANALYSIS_MIN_YEAR_MONTH)) {
+      return true;
+
+    } else {
+      return BeeUtils.isLess(range.getMaxMonth(), ANALYSIS_MAX_YEAR_MONTH);
+    }
+  }
+
   public static boolean isValidAbbreviation(String input) {
     return NameUtils.isIdentifier(input) && Character.isLetter(input.charAt(0));
   }
