@@ -111,7 +111,7 @@ public class OrdEcItemDetails extends Flow {
         linkLabel.setHtml(Localized.dictionary().link());
         flow.add(linkLabel);
 
-        Link linkWidget = new Link(item.getLink(), item.getLink());
+        Link linkWidget = new Link(item.getLink().substring(0, 30), item.getLink());
         linkWidget.addStyleName(stylePrefix + "link");
         flow.add(linkWidget);
 

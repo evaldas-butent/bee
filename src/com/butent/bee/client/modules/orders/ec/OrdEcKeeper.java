@@ -325,6 +325,14 @@ public final class OrdEcKeeper {
     pictures.setBackground(itemWidgets);
   }
 
+  public static void showQuantityWarning(OrdEcItem item) {
+    List<String> msgs = new ArrayList<>();
+
+    msgs.add(Localized.dictionary().ordMinQuantity());
+    msgs.add(Localized.dictionary().minQuantity() + ": " + item.getMinQuantity());
+    Global.showError(item.getName(), msgs);
+  }
+
   public static boolean showGlobalSearch() {
     return Settings.getBoolean("showGlobalSearch");
   }

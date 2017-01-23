@@ -38,6 +38,9 @@ import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
+import com.butent.bee.server.news.ExtendedUsageQueryProvider;
+import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
@@ -112,6 +115,7 @@ import com.butent.bee.shared.modules.orders.ec.OrdEcOrderItem;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
@@ -161,6 +165,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   ClassifiersModuleBean cmb;
   @EJB
   MailModuleBean mail;
+  @EJB
+  NewsBean news;
 
   @Resource
   TimerService timerService;
@@ -540,6 +546,58 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             row.setValue(numberIdx, qs.getNextNumber(TBL_ORDERS, COL_TA_NUMBER, null, null));
           }
         }
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.ORD_EC_ORDERS, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+            OrdersStatus.NEW.ordinal()));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.ORD_EC_ORDERS_MY, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+            OrdersStatus.NEW.ordinal()), SqlUtils.equals(TBL_ORDERS, COL_TRADE_MANAGER, userId)));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.ORDERS, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+            OrdersStatus.APPROVED.ordinal()));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.ORDERS_MY, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+            OrdersStatus.APPROVED.ordinal()), SqlUtils.equals(TBL_ORDERS, COL_TRADE_MANAGER, userId)));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
       }
     });
   }

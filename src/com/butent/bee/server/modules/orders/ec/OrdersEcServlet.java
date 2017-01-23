@@ -348,6 +348,10 @@ public class OrdersEcServlet extends LoginServlet {
             value = (type == null) ? null : type.getCaption(constants);
             break;
 
+          case COL_REGISTRATION_LANGUAGE:
+            value = SupportedLocale.values()[row.getInteger(i)].getLanguage();
+            break;
+
           default:
             value = row.getString(i);
         }

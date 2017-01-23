@@ -155,7 +155,18 @@ public class OrdEcShoppingCart extends Split {
 
     Button submitWidget = new Button(Localized.dictionary().ecShoppingCartSubmit());
     submitWidget.addStyleName(STYLE_PRIMARY + "-submit");
-    submitWidget.addClickHandler(event -> doSubmit(copyByMail.getValue()));
+    submitWidget.addClickHandler(event -> {
+      for (OrdEcCartItem item : OrdEcKeeper.getCart().getItems()) {
+        int minQty = item.getEcItem().getMinQuantity();
+        int qty = item.getQuantity();
+
+        if (minQty > qty) {
+          OrdEcKeeper.showQuantityWarning(item.getEcItem());
+          return;
+        }
+      }
+      doSubmit(copyByMail.getValue());
+    });
     panel.add(submitWidget);
 
     Button saveWidget = new Button(Localized.dictionary().actionSave());

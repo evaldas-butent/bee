@@ -351,9 +351,10 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
                             }
 
                             Data.onViewChange(getViewName(), DataChangeEvent.RESET_REFRESH);
-                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_CHILD_INVOICES);
-                            RowEditor.openForm(dataInfo.getEditForm(), dataInfo, Filter.compareId(row
-                                .getId()), Opener.MODAL);
+                            DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                                VIEW_ORDER_CHILD_INVOICES);
+                            RowEditor.openForm(dataInfo.getEditForm(), dataInfo,
+                                Filter.compareId(row.getId()), Opener.MODAL);
                           }
                         });
                   }
