@@ -82,7 +82,7 @@
   </CalcColumn>
 
   <PropColumn type="string" cellType="html" name="Loading"
-              renderColumns="Date Note Company Contact Address City Country Number"
+              renderColumns="Date City Country"
               label="=cargoLoading" minWidth="140" flexBasis="120">
     <style>
       <bodyStyle>
@@ -93,7 +93,7 @@
   </PropColumn>
 
   <PropColumn type="string" cellType="html" name="Unloading"
-              renderColumns="Date Note Company Contact Address City Country Number"
+              renderColumns="Date City Country"
               label="=cargoUnloading" minWidth="140" flexBasis="120">
     <style>
       <bodyStyle>
