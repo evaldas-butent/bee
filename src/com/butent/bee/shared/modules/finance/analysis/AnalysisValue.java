@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.finance.analysis;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -26,6 +27,43 @@ public final class AnalysisValue implements BeeSerializable {
 
   public static AnalysisValue of(long columnId, long rowId, Double actual, Double budget) {
     AnalysisValue av = new AnalysisValue(columnId, rowId);
+
+    if (BeeUtils.isDouble(actual)) {
+      av.setActualValue(actual);
+    }
+    if (BeeUtils.isDouble(budget)) {
+      av.setBudgetValue(budget);
+    }
+
+    return av;
+  }
+
+  public static AnalysisValue of(long columnId, long rowId, String actual, String budget) {
+    AnalysisValue av = new AnalysisValue(columnId, rowId);
+
+    if (!BeeUtils.isEmpty(actual)) {
+      av.setActualValue(actual);
+    }
+    if (!BeeUtils.isEmpty(budget)) {
+      av.setBudgetValue(budget);
+    }
+
+    return av;
+  }
+
+  public static AnalysisValue of(long columnId, long rowId,
+      Map<AnalysisSplitType, AnalysisSplitValue> columnSplit,
+      Map<AnalysisSplitType, AnalysisSplitValue> rowSplit,
+      Double actual, Double budget) {
+
+    AnalysisValue av = new AnalysisValue(columnId, rowId);
+
+    if (!BeeUtils.isEmpty(columnSplit)) {
+      av.columnSplit.putAll(columnSplit);
+    }
+    if (!BeeUtils.isEmpty(rowSplit)) {
+      av.rowSplit.putAll(rowSplit);
+    }
 
     if (BeeUtils.isDouble(actual)) {
       av.setActualValue(actual);
@@ -110,12 +148,26 @@ public final class AnalysisValue implements BeeSerializable {
     return BeeUtils.toDouble(getActualValue());
   }
 
+  public boolean hasActualValue() {
+    return !BeeUtils.isEmpty(getActualValue());
+  }
+
   public String getBudgetValue() {
     return budgetValue;
   }
 
   public double getBudgetNumber() {
     return BeeUtils.toDouble(getBudgetValue());
+  }
+
+  public boolean hasBudgetValue() {
+    return !BeeUtils.isEmpty(getBudgetValue());
+  }
+
+  public void addColumnSplit(Map<AnalysisSplitType, AnalysisSplitValue> split) {
+    if (!BeeUtils.isEmpty(split)) {
+      columnSplit.putAll(split);
+    }
   }
 
   public void putColumnSplit(Map<AnalysisSplitType, AnalysisSplitValue> parentSplit,
@@ -127,6 +179,22 @@ public final class AnalysisValue implements BeeSerializable {
 
     if (splitType != null && splitValue != null) {
       columnSplit.put(splitType, splitValue);
+    }
+  }
+
+  public boolean containsColumnSplit(Map<AnalysisSplitType, AnalysisSplitValue> split) {
+    if (BeeUtils.isEmpty(split)) {
+      return true;
+    } else if (columnSplit.isEmpty()) {
+      return false;
+    } else {
+      return columnSplit.entrySet().containsAll(split.entrySet());
+    }
+  }
+
+  public void addRowSplit(Map<AnalysisSplitType, AnalysisSplitValue> split) {
+    if (!BeeUtils.isEmpty(split)) {
+      rowSplit.putAll(split);
     }
   }
 
@@ -142,6 +210,46 @@ public final class AnalysisValue implements BeeSerializable {
     }
   }
 
+  public boolean containsRowSplit(Map<AnalysisSplitType, AnalysisSplitValue> split) {
+    if (BeeUtils.isEmpty(split)) {
+      return true;
+    } else if (rowSplit.isEmpty()) {
+      return false;
+    } else {
+      return rowSplit.entrySet().containsAll(split.entrySet());
+    }
+  }
+
+  public AnalysisSplitValue getSplitValue(AnalysisSplitType splitType) {
+    if (splitType == null) {
+      return null;
+
+    } else if (columnSplit.containsKey(splitType)) {
+      return columnSplit.get(splitType);
+
+    } else if (rowSplit.containsKey(splitType)) {
+      return rowSplit.get(splitType);
+
+    } else {
+      return null;
+    }
+  }
+
+  public MonthRange getMonthRange() {
+    if (columnSplit.isEmpty() && rowSplit.isEmpty()) {
+      return null;
+    }
+
+    for (AnalysisSplitType splitType : AnalysisSplitType.PERIODS_INCREASING) {
+      AnalysisSplitValue splitValue = getSplitValue(splitType);
+
+      if (splitValue != null) {
+        return splitType.getMonthRange(splitValue);
+      }
+    }
+    return null;
+  }
+
   private void setColumnId(long columnId) {
     this.columnId = columnId;
   }
@@ -154,16 +262,30 @@ public final class AnalysisValue implements BeeSerializable {
     this.actualValue = actualValue;
   }
 
-  private void setActualValue(double value) {
+  public void setActualValue(double value) {
     setActualValue(format(value));
+  }
+
+  public void maybeUpdateActualValue(Double value) {
+    boolean update = hasActualValue() ? BeeUtils.isDouble(value) : BeeUtils.nonZero(value);
+    if (update) {
+      setActualValue(value);
+    }
   }
 
   private void setBudgetValue(String budgetValue) {
     this.budgetValue = budgetValue;
   }
 
-  private void setBudgetValue(double value) {
+  public void setBudgetValue(double value) {
     setBudgetValue(format(value));
+  }
+
+  public void maybeUpdateBudgetValue(Double value) {
+    boolean update = hasBudgetValue() ? BeeUtils.isDouble(value) : BeeUtils.nonZero(value);
+    if (update) {
+      setBudgetValue(value);
+    }
   }
 
   @Override
@@ -259,6 +381,16 @@ public final class AnalysisValue implements BeeSerializable {
         && rowId == other.rowId
         && columnSplit.equals(other.columnSplit)
         && rowSplit.equals(other.rowSplit);
+  }
+
+  public void round(int scale) {
+    if (BeeUtils.isDouble(actualValue)) {
+      setActualValue(BeeUtils.round(actualValue, scale));
+    }
+
+    if (BeeUtils.isDouble(budgetValue)) {
+      setBudgetValue(BeeUtils.round(budgetValue, scale));
+    }
   }
 
   @Override

@@ -7,9 +7,14 @@
 >
   <Columns>
     <SimpleColumn name="ServiceOrder" />
+    <SimpleJoin name="ServiceOrder" joinType="LEFT">
+      <SimpleColumn name="OrderNo" />
+    </SimpleJoin>
 
-    <SimpleColumn name="Appointment" />
+    <SimpleColumn name="Arrived" />
+
     <SimpleJoin name="Appointment" joinType="INNER">
+      <IdColumn name="Appointment" />
       <SimpleColumn name="AppointmentType" />
       <SimpleJoin joinType="LEFT" name="AppointmentType">
         <SimpleColumn alias="TypeName" name="Name" />
@@ -76,7 +81,7 @@
         </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleColumn name="Vehicle" />
+      <SimpleColumn name="Vehicle" alias="Car" />
       <SimpleJoin name="Vehicle" joinType="LEFT">
         <SimpleColumn name="Model" />
         <SimpleJoin name="Model" joinType="LEFT">

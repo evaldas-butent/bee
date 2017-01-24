@@ -448,6 +448,9 @@ class TaskBuilder extends ProductSupportInterceptor {
           BeeRow r = BeeRow.restore((String) response.getResponse());
           if (r != null) {
             form.updateRow(r, true);
+            if (focusCommand != null) {
+              focusCommand.execute();
+            }
           }
         }
       }

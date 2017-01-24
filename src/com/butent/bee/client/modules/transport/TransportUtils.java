@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.transport;
 import com.google.common.collect.ImmutableMap;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_PLACE_DATE;
 
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
@@ -96,7 +95,6 @@ public final class TransportUtils {
                       }
                       if (!newPlaces.isEmpty()) {
                         newPlaces = DataUtils.createRowSetForInsert(newPlaces);
-                        newPlaces.removeColumn(newPlaces.getColumnIndex(COL_PLACE_DATE));
                         Queries.insertRows(newPlaces, new RpcCallback<RowInfoList>() {
                           @Override
                           public void onSuccess(RowInfoList result) {

@@ -1,5 +1,8 @@
 package com.butent.bee.shared.modules.finance.analysis;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.shared.Assert;
@@ -19,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public final class AnalysisResults implements BeeSerializable {
 
@@ -111,6 +115,81 @@ public final class AnalysisResults implements BeeSerializable {
     }
   }
 
+  public boolean containsValues(long columnId, long rowId) {
+    for (AnalysisValue av : values) {
+      if (av.getColumnId() == columnId && av.getRowId() == rowId) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public List<AnalysisValue> getValues(long columnId, long rowId) {
+    List<AnalysisValue> result = new ArrayList<>();
+
+    for (AnalysisValue av : values) {
+      if (av.getColumnId() == columnId && av.getRowId() == rowId) {
+        result.add(av);
+      }
+    }
+
+    return result;
+  }
+
+  public Multimap<Long, AnalysisValue> getColumnValuesByRow(long columnId,
+      Collection<Long> rowIds, Predicate<AnalysisValue> predicate) {
+
+    Multimap<Long, AnalysisValue> result = ArrayListMultimap.create();
+
+    if (!BeeUtils.isEmpty(rowIds)) {
+      for (long rowId : rowIds) {
+        List<AnalysisValue> list = getValues(columnId, rowId);
+
+        if (!list.isEmpty()) {
+          if (predicate == null) {
+            result.putAll(rowId, list);
+
+          } else {
+            for (AnalysisValue analysisValue : list) {
+              if (predicate.test(analysisValue)) {
+                result.put(rowId, analysisValue);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  public Multimap<Long, AnalysisValue> getRowValuesByColumn(long rowId,
+      Collection<Long> columnIds, Predicate<AnalysisValue> predicate) {
+
+    Multimap<Long, AnalysisValue> result = ArrayListMultimap.create();
+
+    if (!BeeUtils.isEmpty(columnIds)) {
+      for (long columnId : columnIds) {
+        List<AnalysisValue> list = getValues(columnId, rowId);
+
+        if (!list.isEmpty()) {
+          if (predicate == null) {
+            result.putAll(columnId, list);
+
+          } else {
+            for (AnalysisValue analysisValue : list) {
+              if (predicate.test(analysisValue)) {
+                result.put(columnId, analysisValue);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
   public void addColumnSplitTypes(long columnId, List<AnalysisSplitType> splitTypes) {
     if (!BeeUtils.isEmpty(splitTypes)) {
       columnSplitTypes.put(columnId, splitTypes);
@@ -122,7 +201,7 @@ public final class AnalysisResults implements BeeSerializable {
 
     if (!BeeUtils.isEmpty(splitValues)) {
       if (columnSplitValues.containsKey(columnId)) {
-        columnSplitValues.get(columnId).put(splitType, splitValues);
+        AnalysisSplitValue.putSplitValues(columnSplitValues.get(columnId), splitType, splitValues);
 
       } else {
         Map<AnalysisSplitType, List<AnalysisSplitValue>> map = new HashMap<>();
@@ -130,6 +209,14 @@ public final class AnalysisResults implements BeeSerializable {
 
         columnSplitValues.put(columnId, map);
       }
+    }
+  }
+
+  public void addColumnSplitValues(long columnId,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> map) {
+
+    if (!BeeUtils.isEmpty(map)) {
+      map.forEach((type, splitValues) -> addColumnSplitValues(columnId, type, splitValues));
     }
   }
 
@@ -144,7 +231,7 @@ public final class AnalysisResults implements BeeSerializable {
 
     if (!BeeUtils.isEmpty(splitValues)) {
       if (rowSplitValues.containsKey(rowId)) {
-        rowSplitValues.get(rowId).put(splitType, splitValues);
+        AnalysisSplitValue.putSplitValues(rowSplitValues.get(rowId), splitType, splitValues);
 
       } else {
         Map<AnalysisSplitType, List<AnalysisSplitValue>> map = new HashMap<>();
@@ -152,6 +239,12 @@ public final class AnalysisResults implements BeeSerializable {
 
         rowSplitValues.put(rowId, map);
       }
+    }
+  }
+
+  public void addRowSplitValues(long rowId, Map<AnalysisSplitType, List<AnalysisSplitValue>> map) {
+    if (!BeeUtils.isEmpty(map)) {
+      map.forEach((type, splitValues) -> addRowSplitValues(rowId, type, splitValues));
     }
   }
 
@@ -163,12 +256,44 @@ public final class AnalysisResults implements BeeSerializable {
     return columnSplitValues.get(columnId);
   }
 
+  public List<Map<AnalysisSplitType, List<AnalysisSplitValue>>> getColumnSplitValues(
+      Collection<Long> columnIds) {
+
+    List<Map<AnalysisSplitType, List<AnalysisSplitValue>>> result = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(columnIds)) {
+      for (long columnId : columnIds) {
+        Map<AnalysisSplitType, List<AnalysisSplitValue>> map = getColumnSplitValues(columnId);
+        if (map != null) {
+          result.add(map);
+        }
+      }
+    }
+    return result;
+  }
+
   public List<AnalysisSplitType> getRowSplitTypes(long rowId) {
     return rowSplitTypes.getOrDefault(rowId, EMPTY_SPLIT_TYPES);
   }
 
   public Map<AnalysisSplitType, List<AnalysisSplitValue>> getRowSplitValues(long rowId) {
     return rowSplitValues.get(rowId);
+  }
+
+  public List<Map<AnalysisSplitType, List<AnalysisSplitValue>>> getRowSplitValues(
+      Collection<Long> rowIds) {
+
+    List<Map<AnalysisSplitType, List<AnalysisSplitValue>>> result = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(rowIds)) {
+      for (long rowId : rowIds) {
+        Map<AnalysisSplitType, List<AnalysisSplitValue>> map = getRowSplitValues(rowId);
+        if (map != null) {
+          result.add(map);
+        }
+      }
+    }
+    return result;
   }
 
   public List<AnalysisValue> getValues() {
@@ -511,16 +636,22 @@ public final class AnalysisResults implements BeeSerializable {
     this.queryDuration = queryDuration;
   }
 
+  public long getHeaderId() {
+    return header.getId();
+  }
+
   private Integer getHeaderInteger(String key) {
     return header.getInteger(headerIndexes.get(key));
   }
 
-  public List<AnalysisLabel> getHeaderLabels(String period) {
+  public List<AnalysisLabel> getHeaderLabels(String period, boolean includeName) {
     List<AnalysisLabel> labels = new NonNullList<>();
 
-    labels.add(new AnalysisLabel(COL_ANALYSIS_NAME, getHeaderString(COL_ANALYSIS_NAME),
-        getHeaderString(COL_ANALYSIS_HEADER_BACKGROUND),
-        getHeaderString(COL_ANALYSIS_HEADER_FOREGROUND)));
+    if (includeName) {
+      labels.add(new AnalysisLabel(COL_ANALYSIS_NAME, getHeaderString(COL_ANALYSIS_NAME),
+          getHeaderString(COL_ANALYSIS_HEADER_BACKGROUND),
+          getHeaderString(COL_ANALYSIS_HEADER_FOREGROUND)));
+    }
 
     for (int ordinal = 1; ordinal <= Dimensions.getObserved(); ordinal++) {
       labels.add(AnalysisLabel.dimension(header, headerIndexes, ordinal));

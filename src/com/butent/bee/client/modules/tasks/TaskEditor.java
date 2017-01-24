@@ -922,6 +922,9 @@ class TaskEditor extends ProductSupportInterceptor {
       public void onFailure(String... reason) {
         form.updateRow(row, true);
         form.notifySevere(reason);
+        if (focusCommand != null) {
+          focusCommand.execute();
+        }
       }
 
       @Override
@@ -958,6 +961,9 @@ class TaskEditor extends ProductSupportInterceptor {
         }
 
         form.updateRow(data, true);
+        if (focusCommand != null) {
+          focusCommand.execute();
+        }
       }
     });
 

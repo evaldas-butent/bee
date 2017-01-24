@@ -126,6 +126,18 @@ public final class TradeConstants {
   public static final String COL_TRADE_CHECK_NO = "CheckNo";
   public static final String COL_TRADE_JOIN = "Join";
 
+  public static final String COL_TRADE_BOL_SERIES = "BoLSeries";
+  public static final String COL_TRADE_BOL_NUMBER = "BoLNumber";
+  public static final String COL_TRADE_BOL_ISSUE_DATE = "BoLIssueDate";
+  public static final String COL_TRADE_BOL_DEPARTURE_DATE = "BoLDepartureDate";
+  public static final String COL_TRADE_BOL_UNLOADING_DATE = "BoLUnloadingDate";
+  public static final String COL_TRADE_BOL_LOADING = "BoLLoading";
+  public static final String COL_TRADE_BOL_UNLOADING = "BoLUnloading";
+  public static final String COL_TRADE_BOL_DRIVER_TAB_NO = "BoLDriverTabNo";
+  public static final String COL_TRADE_BOL_VEHICLE_NUMBER = "BoLVehicleNumber";
+  public static final String COL_TRADE_BOL_DRIVER = "BoLDriver";
+  public static final String COL_TRADE_BOL_CARRIER = "BoLCarrier";
+
   public static final String COL_TRADE_VAT_PLUS = "VatPlus";
   public static final String COL_TRADE_VAT = "Vat";
   public static final String COL_TRADE_VAT_PERC = "VatPercent";
@@ -224,6 +236,10 @@ public final class TradeConstants {
 
   public static final String COL_TRADE_ITEM_COST = "Cost";
   public static final String COL_TRADE_ITEM_COST_CURRENCY = "Currency";
+
+  public static final String ALS_TRADE_BOL_SERIES = "BoLSeriesName";
+  public static final String ALS_TRADE_BOL_DRIVER_TAB_NO = "DriverTabNo";
+  public static final String ALS_TRADE_BOL_DRIVER_EMPLOYEES = "DriverEmployees";
 
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_PAYER_NAME = "PayerName";

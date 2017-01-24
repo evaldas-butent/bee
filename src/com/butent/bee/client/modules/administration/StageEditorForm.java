@@ -107,20 +107,6 @@ public class StageEditorForm extends AbstractFormInterceptor {
       table.getCellFormatter().setWordWrap(0, 0, false);
       table.setHtml(0, 0, Localized.dictionary().status() + ":");
 
-      emptyCondition = new CheckBox(Localized.dictionary().empty() + ",");
-      emptyCondition.addValueChangeHandler(event -> {
-        if (BeeUtils.unbox(event.getValue())) {
-          Queries.insert(TBL_STAGE_CONDITIONS,
-              Data.getColumns(TBL_STAGE_CONDITIONS, Collections.singletonList(COL_STAGE)),
-              Collections.singletonList(BeeUtils.toString(stage.getId())));
-        } else {
-          Queries.delete(TBL_STAGE_CONDITIONS, Filter.and(Filter.equals(COL_STAGE, stage.getId()),
-              Filter.isNull(COL_STAGE_FROM)), null);
-        }
-      });
-      table.getCellFormatter().setWordWrap(0, 1, false);
-      table.setWidget(0, 1, emptyCondition);
-
       Relation rel = Relation.create(TBL_STAGES, Collections.singletonList(COL_STAGE_NAME));
       rel.disableNewRow();
       conditions = MultiSelector.autonomous(rel, rel.getChoiceColumns());
@@ -132,9 +118,23 @@ public class StageEditorForm extends AbstractFormInterceptor {
                   COL_STAGE, stage.getId(), COL_STAGE_FROM, conditions.getValue())), null);
         }
       });
-      table.getColumnFormatter().setWidth(2, 100, CssUnit.PCT);
-      table.setWidget(0, 2, conditions);
+      table.getColumnFormatter().setWidth(1, 100, CssUnit.PCT);
+      table.setWidget(0, 1, conditions);
       conditions.setWidth("100%");
+
+      emptyCondition = new CheckBox(Localized.dictionary().valueEmpty(""));
+      emptyCondition.addValueChangeHandler(event -> {
+        if (BeeUtils.unbox(event.getValue())) {
+          Queries.insert(TBL_STAGE_CONDITIONS,
+              Data.getColumns(TBL_STAGE_CONDITIONS, Collections.singletonList(COL_STAGE)),
+              Collections.singletonList(BeeUtils.toString(stage.getId())));
+        } else {
+          Queries.delete(TBL_STAGE_CONDITIONS, Filter.and(Filter.equals(COL_STAGE, stage.getId()),
+              Filter.isNull(COL_STAGE_FROM)), null);
+        }
+      });
+      table.getCellFormatter().setWordWrap(0, 2, false);
+      table.setWidget(0, 2, emptyCondition);
       ((HasWidgets) widget).add(table);
     }
     if (Objects.equals(name, TBL_STAGE_ACTIONS) && widget instanceof HasWidgets) {

@@ -33,6 +33,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.FinanceUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisResults;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -150,7 +151,13 @@ public class SimpleAnalysisForm extends AbstractFormInterceptor {
   }
 
   private static void showResults(AnalysisResults results) {
-    AnalysisViewer viewer = new AnalysisViewer(results);
+    Set<Action> enabledActions = new HashSet<>();
+    if (BeeKeeper.getUser().canCreateData(VIEW_ANALYSIS_RESULTS)) {
+      enabledActions.add(Action.SAVE);
+    }
+    enabledActions.add(Action.PRINT);
+
+    AnalysisViewer viewer = new AnalysisViewer(results, enabledActions);
     BeeKeeper.getScreen().showInNewPlace(viewer);
   }
 

@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -64,6 +65,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 public final class NewMailMessage extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<FileInfo> {
@@ -153,6 +155,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
                 dialog.setPreviewEnabled(false);
               }
               newMessage.initHeader(dialog);
+              dialog.focusOnOpen(newMessage.getFocusWidget());
             }
           });
       newMessage.isSignatureAbove = BeeUtils.toBoolean(isAbove);
@@ -204,7 +207,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
       Collection<String> emails = recs.get(type);
 
       if (!BeeUtils.isEmpty(emails)) {
-        recipients.putAll(type, emails);
+        recipients.putAll(type,
+            emails.stream().filter(s -> !BeeUtils.isEmpty(s)).collect(Collectors.toSet()));
 
         if (!isDraft) {
           recipients.remove(type, defaultAccount.getAddress());
@@ -311,6 +315,21 @@ public final class NewMailMessage extends AbstractFormInterceptor
     }
     contentWidget.setValue(currentContent);
     signaturesWidget.setValue(value);
+  }
+
+  private Widget getFocusWidget() {
+    Editor w = null;
+
+    if (BeeUtils.isEmpty(recipients.get(AddressType.TO))) {
+      w = recipientWidgets.get(AddressType.TO);
+    }
+    if (Objects.isNull(w) && BeeUtils.isEmpty(subject)) {
+      w = subjectWidget;
+    }
+    if (Objects.isNull(w)) {
+      w = contentWidget;
+    }
+    return Objects.isNull(w) ? null : w.asWidget();
   }
 
   private boolean hasChanges() {

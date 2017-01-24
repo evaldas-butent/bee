@@ -9,7 +9,7 @@
     <DataColumn name="Code" flexGrow="1" />
 
     <DataColumn name="Duration">
-      <editor type="time" />
+      <editor type="time" stepValue="5" />
     </DataColumn>
     <DataColumn name="Quantity" scale="0" visible="true" />
 

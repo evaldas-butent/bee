@@ -10,14 +10,30 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.modules.finance.FinanceKeeper;
+import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.HeaderImpl;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
@@ -30,16 +46,22 @@ import com.butent.bee.shared.modules.finance.analysis.AnalysisValueType;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
+import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-class AnalysisViewer extends Flow implements HasCaption {
+class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printable {
 
   private static final class SplitTree implements Comparable<SplitTree> {
 
@@ -112,7 +134,9 @@ class AnalysisViewer extends Flow implements HasCaption {
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "fin-AnalysisViewer-";
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
-  private static final String STYLE_HEADER = STYLE_PREFIX + "header";
+  private static final String STYLE_BODY = STYLE_PREFIX + "body";
+
+  private static final String STYLE_CAPTION = STYLE_PREFIX + "caption";
 
   private static final String STYLE_WRAPPER = STYLE_PREFIX + "wrapper";
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
@@ -145,6 +169,8 @@ class AnalysisViewer extends Flow implements HasCaption {
 
   private static final String PERIOD_SEPARATOR = " - ";
 
+  private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
+
   private final AnalysisResults results;
 
   private final List<Long> columnIds = new ArrayList<>();
@@ -173,18 +199,110 @@ class AnalysisViewer extends Flow implements HasCaption {
 
   private final Table<Long, Long, List<AnalysisValue>> values = HashBasedTable.create();
 
-  AnalysisViewer(AnalysisResults results) {
+  AnalysisViewer(AnalysisResults results, Set<Action> enabledActions) {
     super(STYLE_CONTAINER);
 
     this.results = results;
 
+    HeaderView header = new HeaderImpl();
+    header.create(results.getHeaderString(COL_ANALYSIS_NAME), false, true, null, uiOptions,
+        enabledActions, Action.NO_ACTIONS, Action.NO_ACTIONS);
+
+    header.setActionHandler(this);
+    add(header);
+
     layout();
-    render();
+
+    Flow body = new Flow(STYLE_BODY);
+    StyleUtils.setTop(body, header.getHeight());
+
+    render(body);
+    add(body);
   }
 
   @Override
   public String getCaption() {
-    return results.getHeaderString(COL_ANALYSIS_NAME);
+    HeaderView header = getHeader();
+    return (header == null) ? results.getHeaderString(COL_ANALYSIS_NAME) : header.getCaption();
+  }
+
+  @Override
+  public void handleAction(Action action) {
+    switch (action) {
+      case CLOSE:
+        BeeKeeper.getScreen().closeWidget(this);
+        break;
+
+      case PRINT:
+        Printer.print(this);
+        break;
+
+      case SAVE:
+        onSave();
+        break;
+
+      default:
+        logger.warning(NameUtils.getName(this), action, "not implemented");
+    }
+  }
+
+  @Override
+  public Element getPrintElement() {
+    return getElement();
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    return !StyleUtils.hasClassName(source, STYLE_PERFORMANCE)
+        && !StyleUtils.hasClassName(source, STYLE_STATS);
+  }
+
+  public HeaderView getHeader() {
+    for (Widget widget : getChildren()) {
+      if (widget instanceof HeaderView) {
+        return (HeaderView) widget;
+      }
+    }
+    return null;
+  }
+
+  private void onSave() {
+    List<String> labels = results.getHeaderLabels(formatRange(results.getHeaderRange()), false)
+        .stream()
+        .map(AnalysisLabel::getText).collect(Collectors.toList());
+
+    String caption = BeeUtils.isEmpty(labels) ? getCaption() : BeeUtils.joinItems(labels);
+    int maxLength = Data.getColumnPrecision(VIEW_ANALYSIS_RESULTS, COL_ANALYSIS_RESULT_CAPTION);
+
+    Global.inputString(Localized.dictionary().actionSave(),
+        Data.getColumnLabel(VIEW_ANALYSIS_RESULTS, COL_ANALYSIS_RESULT_CAPTION),
+        new StringCallback() {
+          @Override
+          public void onSuccess(String value) {
+            doSave(value);
+          }
+        }, null, caption, maxLength, null, 30, CssUnit.REM);
+  }
+
+  private void doSave(String caption) {
+    HeaderView header = getHeader();
+    if (header != null) {
+      header.showAction(Action.SAVE, false);
+    }
+
+    ParameterList parameters = FinanceKeeper.createArgs(SVC_SAVE_ANALYSIS_RESULTS);
+    parameters.addQueryItem(COL_ANALYSIS_HEADER, results.getHeaderId());
+    parameters.addQueryItem(COL_ANALYSIS_RESULT_DATE, results.getComputeEnd());
+
+    parameters.addDataItem(COL_ANALYSIS_RESULT_CAPTION, caption);
+    parameters.addDataItem(COL_ANALYSIS_RESULTS, results.serialize());
+
+    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ANALYSIS_RESULTS);
+      }
+    });
   }
 
   private void layout() {
@@ -425,7 +543,7 @@ class AnalysisViewer extends Flow implements HasCaption {
     }
   }
 
-  private void render() {
+  private void render(Flow panel) {
     Horizontal performance = new Horizontal(STYLE_PERFORMANCE);
 
     if (Global.isDebug()) {
@@ -446,7 +564,7 @@ class AnalysisViewer extends Flow implements HasCaption {
       performance.add(renderDuration(results.getComputeEnd() - results.getInitStart()));
     }
 
-    add(performance);
+    panel.add(performance);
 
     if (results.getQueryCount() > 0) {
       Horizontal stats = new Horizontal(STYLE_STATS);
@@ -455,17 +573,17 @@ class AnalysisViewer extends Flow implements HasCaption {
       stats.add(renderDuration(results.getQueryDuration() / results.getQueryCount()));
       stats.add(renderDuration(results.getQueryDuration()));
 
-      add(stats);
+      panel.add(stats);
     }
 
-    Flow header = new Flow(STYLE_HEADER);
-    results.getHeaderLabels(formatRange(results.getHeaderRange())).forEach(analysisLabel ->
-        header.add(render(analysisLabel)));
-    add(header);
+    Flow caption = new Flow(STYLE_CAPTION);
+    results.getHeaderLabels(formatRange(results.getHeaderRange()), false).forEach(analysisLabel ->
+        caption.add(render(analysisLabel)));
+    panel.add(caption);
 
     Flow wrapper = new Flow(STYLE_WRAPPER);
     wrapper.add(renderTable());
-    add(wrapper);
+    panel.add(wrapper);
   }
 
   private Widget renderTable() {

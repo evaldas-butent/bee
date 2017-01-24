@@ -31,12 +31,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
@@ -272,6 +275,11 @@ class AnalysisFormData {
     return getRange(yearFrom, monthFrom, yearUntil, monthUntil, errorConsumer);
   }
 
+  boolean hasScripting() {
+    return columns.stream().anyMatch(this::columnHasScript)
+        || rows.stream().anyMatch(this::rowHasScript);
+  }
+
   List<String> validate(Dictionary dictionary, Predicate<String> filterValidator) {
     List<String> messages = new ArrayList<>();
 
@@ -331,6 +339,7 @@ class AnalysisFormData {
         column -> getColumnLabel(dictionary, column)));
 
     messages.addAll(validateScripts(columns,
+        columnIndexes.get(COL_ANALYSIS_COLUMN_INDICATOR),
         columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
         columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT),
         column -> getColumnLabel(dictionary, column)));
@@ -360,6 +369,7 @@ class AnalysisFormData {
         row -> getRowLabel(dictionary, row)));
 
     messages.addAll(validateScripts(rows,
+        rowIndexes.get(COL_ANALYSIS_ROW_INDICATOR),
         rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
         rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),
         row -> getRowLabel(dictionary, row)));
@@ -403,7 +413,7 @@ class AnalysisFormData {
   private String getColumnLabel(Dictionary dictionary, BeeRow column) {
     String label = BeeUtils.joinWords(getColumnString(column, COL_ANALYSIS_COLUMN_ORDINAL),
         BeeUtils.notEmpty(getColumnString(column, COL_ANALYSIS_COLUMN_NAME),
-            getColumnString(column, COL_ANALYSIS_COLUMN_ABBREVIATION)));
+            getColumnAbbreviation(column)));
 
     if (BeeUtils.isEmpty(label)) {
       return BeeUtils.joinWords(dictionary.column(), DataUtils.ID_TAG, column.getId());
@@ -412,7 +422,7 @@ class AnalysisFormData {
     }
   }
 
-  private Integer getColumnInteger(BeeRow column, String key) {
+  Integer getColumnInteger(BeeRow column, String key) {
     return column.getInteger(columnIndexes.get(key));
   }
 
@@ -430,6 +440,10 @@ class AnalysisFormData {
 
   private boolean isColumnTrue(BeeRow column, String key) {
     return column.isTrue(columnIndexes.get(key));
+  }
+
+  List<AnalysisCellType> getColumnCellTypes(BeeRow column) {
+    return AnalysisCellType.normalize(getColumnString(column, COL_ANALYSIS_COLUMN_VALUES));
   }
 
   List<AnalysisSplitType> getColumnSplits(BeeRow column) {
@@ -455,16 +469,83 @@ class AnalysisFormData {
     return splits;
   }
 
+  Integer getColumnScale(BeeRow column) {
+    return getColumnInteger(column, COL_ANALYSIS_COLUMN_SCALE);
+  }
+
+  String getColumnScript(BeeRow column) {
+    return getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT);
+  }
+
+  String getColumnAbbreviation(BeeRow column) {
+    return getColumnString(column, COL_ANALYSIS_COLUMN_ABBREVIATION);
+  }
+
   private boolean columnHasIndicator(BeeRow column) {
     return DataUtils.isId(getColumnLong(column, COL_ANALYSIS_COLUMN_INDICATOR));
   }
 
   private boolean columnHasScript(BeeRow column) {
-    return !BeeUtils.isEmpty(getColumnString(column, COL_ANALYSIS_COLUMN_SCRIPT));
+    return !BeeUtils.isEmpty(getColumnScript(column));
   }
 
   boolean columnIsPrimary(BeeRow column) {
-    return columnHasIndicator(column) || !columnHasScript(column);
+    if (columnHasIndicator(column)) {
+      return true;
+    }
+
+    String script = getColumnScript(column);
+    return BeeUtils.isEmpty(script) || AnalysisScripting.isScriptPrimary(script);
+  }
+
+  Map<Long, String> getColumnVariables(BeeRow column) {
+    Map<Long, String> variables = new HashMap<>();
+
+    String script = getColumnScript(column);
+    if (BeeUtils.isEmpty(script) || columnIsPrimary(column)) {
+      return variables;
+    }
+
+    for (BeeRow c : columns) {
+      if (c.getId() != column.getId()) {
+        String abbreviation = getColumnAbbreviation(c);
+
+        if (AnalysisUtils.isValidAbbreviation(abbreviation)
+            && AnalysisScripting.containsVariable(script, abbreviation)) {
+
+          variables.put(c.getId(), abbreviation);
+        }
+      }
+    }
+
+    return variables;
+  }
+
+  List<BeeRow> getSecondaryColumns(Consumer<String> errorHandler) {
+    List<BeeRow> result = new ArrayList<>();
+
+    Multimap<Integer, Long> sequence =
+        AnalysisScripting.buildCalculationSequence(getColumns(),
+            columnIndexes.get(COL_ANALYSIS_COLUMN_INDICATOR),
+            columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
+            columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT),
+            errorHandler);
+
+    if (sequence != null && !sequence.isEmpty()) {
+      List<Integer> levels = new ArrayList<>(sequence.keySet());
+      levels.sort(null);
+
+      for (int level : levels) {
+        for (long id : sequence.get(level)) {
+          BeeRow column = getColumnById(id);
+          if (column != null) {
+            result.add(column);
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   private BeeRow getRowById(Long id) {
@@ -478,8 +559,7 @@ class AnalysisFormData {
 
   private String getRowLabel(Dictionary dictionary, BeeRow row) {
     String label = BeeUtils.joinWords(getRowString(row, COL_ANALYSIS_ROW_ORDINAL),
-        BeeUtils.notEmpty(getRowString(row, COL_ANALYSIS_ROW_NAME),
-            getRowString(row, COL_ANALYSIS_ROW_ABBREVIATION)));
+        BeeUtils.notEmpty(getRowString(row, COL_ANALYSIS_ROW_NAME), getRowAbbreviation(row)));
 
     if (BeeUtils.isEmpty(label)) {
       return BeeUtils.joinWords(dictionary.row(), DataUtils.ID_TAG, row.getId());
@@ -488,7 +568,7 @@ class AnalysisFormData {
     }
   }
 
-  private Integer getRowInteger(BeeRow row, String key) {
+  Integer getRowInteger(BeeRow row, String key) {
     return row.getInteger(rowIndexes.get(key));
   }
 
@@ -506,6 +586,10 @@ class AnalysisFormData {
 
   private boolean isRowTrue(BeeRow row, String key) {
     return row.isTrue(rowIndexes.get(key));
+  }
+
+  List<AnalysisCellType> getRowCellTypes(BeeRow row) {
+    return AnalysisCellType.normalize(getRowString(row, COL_ANALYSIS_ROW_VALUES));
   }
 
   List<AnalysisSplitType> getRowSplits(BeeRow row) {
@@ -531,16 +615,83 @@ class AnalysisFormData {
     return splits;
   }
 
+  Integer getRowScale(BeeRow row) {
+    return getRowInteger(row, COL_ANALYSIS_ROW_SCALE);
+  }
+
+  String getRowScript(BeeRow row) {
+    return getRowString(row, COL_ANALYSIS_ROW_SCRIPT);
+  }
+
+  String getRowAbbreviation(BeeRow row) {
+    return getRowString(row, COL_ANALYSIS_ROW_ABBREVIATION);
+  }
+
   private boolean rowHasIndicator(BeeRow row) {
     return DataUtils.isId(getRowLong(row, COL_ANALYSIS_ROW_INDICATOR));
   }
 
   private boolean rowHasScript(BeeRow row) {
-    return !BeeUtils.isEmpty(getRowString(row, COL_ANALYSIS_ROW_SCRIPT));
+    return !BeeUtils.isEmpty(getRowScript(row));
   }
 
   boolean rowIsPrimary(BeeRow row) {
-    return rowHasIndicator(row) || !rowHasScript(row);
+    if (rowHasIndicator(row)) {
+      return true;
+    }
+
+    String script = getRowScript(row);
+    return BeeUtils.isEmpty(script) || AnalysisScripting.isScriptPrimary(script);
+  }
+
+  Map<Long, String> getRowVariables(BeeRow row) {
+    Map<Long, String> variables = new HashMap<>();
+
+    String script = getRowScript(row);
+    if (BeeUtils.isEmpty(script) || rowIsPrimary(row)) {
+      return variables;
+    }
+
+    for (BeeRow r : rows) {
+      if (r.getId() != row.getId()) {
+        String abbreviation = getRowAbbreviation(r);
+
+        if (AnalysisUtils.isValidAbbreviation(abbreviation)
+            && AnalysisScripting.containsVariable(script, abbreviation)) {
+
+          variables.put(r.getId(), abbreviation);
+        }
+      }
+    }
+
+    return variables;
+  }
+
+  List<BeeRow> getSecondaryRows(Consumer<String> errorHandler) {
+    List<BeeRow> result = new ArrayList<>();
+
+    Multimap<Integer, Long> sequence =
+        AnalysisScripting.buildCalculationSequence(getRows(),
+            rowIndexes.get(COL_ANALYSIS_ROW_INDICATOR),
+            rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
+            rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),
+            errorHandler);
+
+    if (sequence != null && !sequence.isEmpty()) {
+      List<Integer> levels = new ArrayList<>(sequence.keySet());
+      levels.sort(null);
+
+      for (int level : levels) {
+        for (long id : sequence.get(level)) {
+          BeeRow row = getRowById(id);
+          if (row != null) {
+            result.add(row);
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   private static List<String> getSplitCaptions(Dictionary dictionary,
@@ -661,7 +812,8 @@ class AnalysisFormData {
   }
 
   private static List<String> validateScripts(Collection<BeeRow> input,
-      int abbreviationIndex, int scriptIndex, Function<BeeRow, String> labelFunction) {
+      int indicatorIndex, int abbreviationIndex, int scriptIndex,
+      Function<BeeRow, String> labelFunction) {
 
     List<String> messages = new ArrayList<>();
 
@@ -673,26 +825,63 @@ class AnalysisFormData {
         messages.add("script engine not available");
 
       } else {
-        input.stream()
-            .map(row -> row.getString(abbreviationIndex))
-            .filter(AnalysisUtils::isValidAbbreviation)
-            .forEach(abbreviation -> engine.put(abbreviation, BeeConst.DOUBLE_ZERO));
+        Map<Long, String> variables = new HashMap<>();
+
+        for (BeeRow row : input) {
+          String abbreviation = row.getString(abbreviationIndex);
+
+          if (AnalysisUtils.isValidAbbreviation(abbreviation)) {
+            variables.put(row.getId(), abbreviation);
+          }
+        }
+
+        Bindings primaryBindings = AnalysisScripting.createActualBindings(engine);
+        AnalysisScripting.putCurrentValue(primaryBindings, BeeConst.DOUBLE_ZERO);
+        AnalysisScripting.putColumnAndRow(primaryBindings, null, null);
+
+        Bindings bindings;
 
         for (BeeRow row : input) {
           String script = row.getString(scriptIndex);
 
           if (!BeeUtils.isEmpty(script)) {
+            boolean primary = DataUtils.isId(row.getLong(indicatorIndex))
+                || AnalysisScripting.isScriptPrimary(script);
+
+            if (primary) {
+              bindings = primaryBindings;
+
+            } else {
+              bindings = AnalysisScripting.createActualBindings(engine);
+              AnalysisScripting.putColumnAndRow(bindings, null, null);
+
+              for (Map.Entry<Long, String> entry : variables.entrySet()) {
+                if (!Objects.equals(entry.getKey(), row.getId())) {
+                  bindings.put(entry.getValue(), BeeConst.DOUBLE_ZERO);
+                }
+              }
+            }
+
             try {
-              Object value = engine.eval(script);
+              Object value = engine.eval(script, bindings);
               logger.debug((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
 
             } catch (ScriptException ex) {
               String label = labelFunction.apply(row);
 
-              logger.severe(label, script, ex.getMessage());
+              logger.severe(label, script, bindings, ex.getMessage());
               messages.add(BeeUtils.joinWords(label, ex.getMessage()));
             }
           }
+        }
+      }
+
+      if (messages.isEmpty()) {
+        Multimap<Integer, Long> sequence = AnalysisScripting.buildCalculationSequence(input,
+            indicatorIndex, abbreviationIndex, scriptIndex, messages::add);
+
+        if (sequence != null && !sequence.isEmpty()) {
+          logger.debug("sequence", sequence);
         }
       }
     }

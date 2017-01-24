@@ -270,8 +270,6 @@
       <xs:enumeration value="CalExecutorGroups" />
       <xs:enumeration value="CarEmissionStandards" />
       <xs:enumeration value="CarGearboxes" />
-      <xs:enumeration value="CarJobModels" />
-      <xs:enumeration value="CarJobs" />
       <xs:enumeration value="CarPlaceCodes" />
       <xs:enumeration value="CarStatus" />
       <xs:enumeration value="CarWarranties" />
@@ -288,6 +286,9 @@
       <xs:enumeration value="CargoTrips" />
       <xs:enumeration value="CargoTypes" />
       <xs:enumeration value="CargoUnloading" />
+      <xs:enumeration value="CarJobModels" />
+      <xs:enumeration value="CarJobProgress" />
+      <xs:enumeration value="CarJobs" />
       <xs:enumeration value="CarOrderItems" />
       <xs:enumeration value="CarOrders" />
       <xs:enumeration value="Cars" />
