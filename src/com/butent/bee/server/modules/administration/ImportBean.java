@@ -52,6 +52,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.cars.Bundle;
 import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.modules.cars.Configuration;
+import com.butent.bee.shared.modules.cars.ConfInfo;
 import com.butent.bee.shared.modules.cars.Dimension;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.time.DateTime;
@@ -983,9 +984,9 @@ public class ImportBean {
         }
       }
       if (ok && !BeeUtils.isEmpty(bundleOptions)) {
-        configuration.setBundleInfo(new Bundle(bundleOptions), Configuration.DataInfo.of(price,
-            row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
-            .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)), false);
+        configuration.setBundleInfo(new Bundle(bundleOptions),
+            ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
+                .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)), false);
       }
     }
     qs.sqlDropTemp(tmp);
@@ -1025,9 +1026,9 @@ public class ImportBean {
       if (Objects.isNull(option)) {
         errorProcessor.accept(loc.options() + ": " + loc.code(), code);
       } else if (ok) {
-        configuration.setOptionInfo(option, Configuration.DataInfo.of(price,
-            row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
-            .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)));
+        configuration.setOptionInfo(option,
+            ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
+                .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)));
       }
     }
     qs.sqlDropTemp(tmp);
@@ -1112,9 +1113,9 @@ public class ImportBean {
           ok = false;
         }
         if (ok) {
-          configuration.setRelationInfo(option, bundle, Configuration.DataInfo.of(price,
-              row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
-              .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)));
+          configuration.setRelationInfo(option, bundle,
+              ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
+                  .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)));
         }
       }
     }
@@ -1213,7 +1214,7 @@ public class ImportBean {
           return ResponseObject.error(loc.canceled());
         }
         cars.setBundle(branchId, bundle,
-            Configuration.DataInfo.of(configuration.getBundlePrice(bundle),
+            ConfInfo.of(configuration.getBundlePrice(bundle),
                 configuration.getBundleDescription(bundle), null)
                 .setCriteria(configuration.getBundleCriteria(bundle)), false);
       }
@@ -1229,7 +1230,7 @@ public class ImportBean {
           return ResponseObject.error(loc.canceled());
         }
         cars.setOption(branchId, option.getId(),
-            Configuration.DataInfo.of(configuration.getOptionPrice(option),
+            ConfInfo.of(configuration.getOptionPrice(option),
                 configuration.getOptionDescription(option), null)
                 .setCriteria(configuration.getOptionCriteria(option)));
       }
@@ -1248,7 +1249,7 @@ public class ImportBean {
           }
           if (configuration.hasRelation(option, bundle)) {
             cars.setRelation(branchId, bundle.getKey(), option.getId(),
-                Configuration.DataInfo.of(configuration.getRelationPrice(option, bundle),
+                ConfInfo.of(configuration.getRelationPrice(option, bundle),
                     configuration.getRelationDescription(option, bundle), null)
                     .setCriteria(configuration.getRelationCriteria(option, bundle)));
             cnt++;

@@ -320,6 +320,7 @@
       <xs:enumeration value="CompRelTypeStore" />
       <xs:enumeration value="ConfGroups" />
       <xs:enumeration value="ConfOptions" />
+      <xs:enumeration value="ConfPacketOptions" />
       <xs:enumeration value="ConfPricelist" />
       <xs:enumeration value="Configuration" />
       <xs:enumeration value="ConfTemplates" />

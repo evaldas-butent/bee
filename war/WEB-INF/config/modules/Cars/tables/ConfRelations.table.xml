@@ -10,6 +10,7 @@
     <Integer name="Price" label="=price" />
     <Text name="Description" label="=description" />
     <Text name="Criteria" label="=criteria" />
+    <Text name="PacketOptions" />
   </Fields>
   <Constraints>
     <Unique fields="BranchBundle BranchOption" />

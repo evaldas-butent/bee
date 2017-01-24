@@ -46,6 +46,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.cars.Bundle;
 import com.butent.bee.shared.modules.cars.Configuration;
+import com.butent.bee.shared.modules.cars.ConfInfo;
 import com.butent.bee.shared.modules.cars.Dimension;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
@@ -101,7 +102,7 @@ public class CarsModuleBean implements BeeModule {
       case SVC_SET_BUNDLE:
         response = setBundle(reqInfo.getParameterLong(COL_BRANCH),
             Bundle.restore(reqInfo.getParameter(COL_BUNDLE)),
-            Configuration.DataInfo.restore(reqInfo.getParameter(Service.VAR_DATA)),
+            ConfInfo.restore(reqInfo.getParameter(Service.VAR_DATA)),
             Codec.unpack(reqInfo.getParameter(COL_BLOCKED)));
         break;
 
@@ -131,13 +132,13 @@ public class CarsModuleBean implements BeeModule {
       case SVC_SET_OPTION:
         response = setOption(reqInfo.getParameterLong(COL_BRANCH),
             reqInfo.getParameterLong(COL_OPTION),
-            Configuration.DataInfo.restore(reqInfo.getParameter(Service.VAR_DATA)));
+            ConfInfo.restore(reqInfo.getParameter(Service.VAR_DATA)));
         break;
 
       case SVC_SET_RELATION:
         response = setRelation(reqInfo.getParameterLong(COL_BRANCH), reqInfo.getParameter(COL_KEY),
             reqInfo.getParameterLong(COL_OPTION),
-            Configuration.DataInfo.restore(reqInfo.getParameter(Service.VAR_DATA)));
+            ConfInfo.restore(reqInfo.getParameter(Service.VAR_DATA)));
         break;
 
       case SVC_DELETE_RELATION:
@@ -360,8 +361,7 @@ public class CarsModuleBean implements BeeModule {
     });
   }
 
-  public ResponseObject setBundle(Long branchId, Bundle bundle, Configuration.DataInfo info,
-      boolean blocked) {
+  public ResponseObject setBundle(Long branchId, Bundle bundle, ConfInfo info, boolean blocked) {
     int c = 0;
     Long bundleId = qs.getLong(new SqlSelect()
         .addFields(TBL_CONF_BUNDLES, sys.getIdName(TBL_CONF_BUNDLES))
@@ -398,7 +398,7 @@ public class CarsModuleBean implements BeeModule {
     return ResponseObject.emptyResponse();
   }
 
-  public ResponseObject setOption(Long branchId, Long optionId, Configuration.DataInfo info) {
+  public ResponseObject setOption(Long branchId, Long optionId, ConfInfo info) {
     int c = qs.updateData(new SqlUpdate(TBL_CONF_BRANCH_OPTIONS)
         .addConstant(COL_PRICE, info.getPrice())
         .addConstant(COL_DESCRIPTION, info.getDescription())
@@ -417,9 +417,7 @@ public class CarsModuleBean implements BeeModule {
     return ResponseObject.emptyResponse();
   }
 
-  public ResponseObject setRelation(Long branchId, String key, Long optionId,
-      Configuration.DataInfo info) {
-
+  public ResponseObject setRelation(Long branchId, String key, Long optionId, ConfInfo info) {
     SimpleRowSet.SimpleRow row = qs.getRow(new SqlSelect()
         .addField(TBL_CONF_BRANCH_BUNDLES, sys.getIdName(TBL_CONF_BRANCH_BUNDLES),
             COL_BRANCH_BUNDLE)
@@ -575,7 +573,7 @@ public class CarsModuleBean implements BeeModule {
         .setWhere(SqlUtils.equals(TBL_CONF_BRANCH_BUNDLES, COL_BRANCH, branchId)));
 
     Multimap<Long, Option> bundleOptions = HashMultimap.create();
-    Map<Long, Pair<Bundle, Pair<Configuration.DataInfo, Boolean>>> bundles = new HashMap<>();
+    Map<Long, Pair<Bundle, Pair<ConfInfo, Boolean>>> bundles = new HashMap<>();
 
     for (SimpleRowSet.SimpleRow row : data) {
       Long id = row.getLong(COL_BUNDLE);
@@ -589,14 +587,14 @@ public class CarsModuleBean implements BeeModule {
           .setPhoto(row.getLong(COL_PHOTO)));
 
       if (!bundles.containsKey(id)) {
-        bundles.put(id, Pair.of(null, Pair.of(Configuration.DataInfo.of(row.getValue(COL_PRICE),
+        bundles.put(id, Pair.of(null, Pair.of(ConfInfo.of(row.getValue(COL_PRICE),
             row.getValue(COL_BUNDLE + COL_DESCRIPTION), row.getValue(COL_BUNDLE + COL_CRITERIA)),
             row.getBoolean(COL_BLOCKED))));
       }
     }
     for (Long bundleId : bundles.keySet()) {
       Bundle bundle = new Bundle(bundleOptions.get(bundleId));
-      Pair<Bundle, Pair<Configuration.DataInfo, Boolean>> pair = bundles.get(bundleId);
+      Pair<Bundle, Pair<ConfInfo, Boolean>> pair = bundles.get(bundleId);
       pair.setA(bundle);
       configuration.setBundleInfo(bundle, pair.getB().getA(), pair.getB().getB());
     }
@@ -639,15 +637,12 @@ public class CarsModuleBean implements BeeModule {
             .setPhoto(row.getLong(COL_PHOTO));
 
         branchOptions.put(branchOption, option);
-        configuration.setOptionInfo(option,
-            Configuration.DataInfo.of(row.getValue(COL_OPTION + COL_PRICE),
-                row.getValue(COL_OPTION + COL_DESCRIPTION),
-                row.getValue(COL_OPTION + COL_CRITERIA)));
+        configuration.setOptionInfo(option, ConfInfo.of(row.getValue(COL_OPTION + COL_PRICE),
+            row.getValue(COL_OPTION + COL_DESCRIPTION), row.getValue(COL_OPTION + COL_CRITERIA)));
       }
       if (DataUtils.isId(row.getLong(COL_BUNDLE))) {
         configuration.setRelationInfo(branchOptions.get(branchOption),
-            bundles.get(row.getLong(COL_BUNDLE)).getA(),
-            Configuration.DataInfo.of(row.getValue(COL_PRICE),
+            bundles.get(row.getLong(COL_BUNDLE)).getA(), ConfInfo.of(row.getValue(COL_PRICE),
                 row.getValue(TBL_CONF_RELATIONS + COL_DESCRIPTION),
                 row.getValue(TBL_CONF_RELATIONS + COL_CRITERIA)));
       }

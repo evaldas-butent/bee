@@ -47,5 +47,14 @@
         </ListBox>
       </FlowPanel>
     </row>
+    <row>
+      <Label text="=packet" data="ConfPacketOptions" />
+      <cell colSpan="3">
+        <ChildSelector childTable="ConfPacketOptions" targetRelColumn="Packet"
+                       viewName="ConfOptions" sourceRelColumn="Option" newRowEnabled="false"
+                       style="width:100%;" choiceColumns="Code Code2 OptionName" label="=packet"
+                       data="ConfPacketOptions" />
+      </cell>
+    </row>
   </Table>
 </f:Form>
