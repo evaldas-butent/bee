@@ -202,23 +202,20 @@ public class CustomCargoInvoiceForm extends InvoiceForm {
   @Override
   protected void print(String report) {
     getReportParameters(parameters -> {
-      String[] arr = BeeUtils.split(report, BeeConst.CHAR_ASTERISK);
-      String rep = arr[1];
-      String type = ArrayUtils.getQuietly(arr, 0);
-      parameters.put(AdministrationConstants.COL_FILE_TYPE, type);
+      String[] arr = BeeUtils.split(report, BeeConst.CHAR_UNDER);
+      String rep = arr[0];
 
-      if (Objects.equals("short", type)) {
+      if (Objects.equals("CargoInvoiceShort", rep)) {
         getReportData(data -> getFilteredData(data[0], rowSet -> {
           parameters.put("XmlData", Codec.beeSerialize(getDataFromXml(rowSet)));
-          ReportUtils.showReport(rep, getReportCallback(), parameters, rowSet);
+          ReportUtils.showReport(report, getReportCallback(), parameters, rowSet);
         }));
       } else {
         getReportData(data -> {
           parameters.put("XmlData", Codec.beeSerialize(getDataFromXml(data[0])));
-          ReportUtils.showReport(rep, getReportCallback(), parameters, data);
+          ReportUtils.showReport(report, getReportCallback(), parameters, data);
         });
       }
-
     });
   }
 
