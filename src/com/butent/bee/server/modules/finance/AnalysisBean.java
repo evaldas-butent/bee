@@ -30,6 +30,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -41,6 +42,7 @@ import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
+import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorSource;
 import com.butent.bee.shared.modules.finance.analysis.TurnoverOrBalance;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
@@ -65,6 +67,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -701,10 +704,16 @@ public class AnalysisBean {
 
     ResponseObject response = ResponseObject.emptyResponse();
 
+    Dictionary dictionary = usr.getDictionary();
+
     Predicate<String> extraFilterValidator = input ->
         BeeUtils.isEmpty(input) || finView.parseFilter(input, userId) != null;
 
-    List<String> messages = formData.validate(usr.getDictionary(), extraFilterValidator);
+    List<String> messages = formData.validate(dictionary, extraFilterValidator);
+    if (BeeUtils.isEmpty(messages)) {
+      messages = validateIndicators(formData.getIndicators(), dictionary);
+    }
+
     if (!BeeUtils.isEmpty(messages)) {
       for (String message : messages) {
         response.addWarning(message);
@@ -712,6 +721,135 @@ public class AnalysisBean {
     }
 
     return response;
+  }
+
+  private List<String> validateIndicators(Set<Long> indicators, Dictionary dictionary) {
+    List<String> messages = new ArrayList<>();
+    if (BeeUtils.isEmpty(indicators)) {
+      return messages;
+    }
+
+    BeeRowSet rowSet = qs.getViewData(VIEW_FINANCIAL_INDICATORS);
+    if (DataUtils.isEmpty(rowSet)) {
+      messages.add(dictionary.dataNotAvailable(dictionary.finIndicators()));
+      return messages;
+    }
+
+    int kindIndex = rowSet.getColumnIndex(COL_FIN_INDICATOR_KIND);
+    int nameIndex = rowSet.getColumnIndex(COL_FIN_INDICATOR_NAME);
+
+    int abbreviationIndex = rowSet.getColumnIndex(COL_FIN_INDICATOR_ABBREVIATION);
+    int scriptIndex = rowSet.getColumnIndex(COL_FIN_INDICATOR_SCRIPT);
+
+    Map<Long, String> names = new HashMap<>();
+    Map<Long, String> abbreviations = new HashMap<>();
+
+    Map<Long, Pattern> patterns = new HashMap<>();
+    Map<Long, String> scripts = new HashMap<>();
+
+    Set<Long> primaryIndicators = new HashSet<>();
+
+    for (BeeRow row : rowSet) {
+      long indicator = row.getId();
+
+      String name = row.getString(nameIndex);
+      names.put(indicator, name);
+
+      IndicatorKind kind = row.getEnum(kindIndex, IndicatorKind.class);
+      if (kind == null) {
+        messages.add(BeeUtils.joinWords(dictionary.finIndicator(), indicator, name,
+            dictionary.fieldRequired(COL_FIN_INDICATOR_KIND)));
+        break;
+      }
+
+      String abbreviation = row.getString(abbreviationIndex);
+      if (AnalysisUtils.isValidAbbreviation(abbreviation)) {
+        abbreviations.put(indicator, abbreviation);
+        patterns.put(indicator, AnalysisScripting.getDetectionPattern(abbreviation));
+      }
+
+      switch (kind) {
+        case PRIMARY:
+          primaryIndicators.add(indicator);
+          break;
+
+        case SECONDARY:
+          String script = row.getString(scriptIndex);
+          if (!BeeUtils.isEmpty(script)) {
+            scripts.put(indicator, script);
+          }
+          break;
+      }
+    }
+
+    for (long indicator : indicators) {
+      String name = names.get(indicator);
+
+      if (primaryIndicators.contains(indicator)) {
+        messages.addAll(validatePrimaryIndicator(indicator, name, dictionary));
+
+      } else {
+        messages.addAll(validateSecondaryIndicator(indicator, names, abbreviations, patterns,
+            scripts, primaryIndicators, dictionary));
+      }
+    }
+
+    return messages;
+  }
+
+  private List<String> validatePrimaryIndicator(long indicator, String name,
+      Dictionary dictionary) {
+
+    List<String> messages = new ArrayList<>();
+
+    if (BeeUtils.isEmpty(getIndicatorAccountCodes(indicator))) {
+      messages.add(BeeUtils.joinWords(dictionary.finIndicator(), indicator, name,
+          dictionary.dataNotAvailable(dictionary.finIndicatorAccounts())));
+    }
+
+    return messages;
+  }
+
+  private List<String> validateSecondaryIndicator(long indicator, Map<Long, String> names,
+      Map<Long, String> abbreviations, Map<Long, Pattern> patterns, Map<Long, String> scripts,
+      Set<Long> primaryIndicators, Dictionary dictionary) {
+
+    List<String> messages = new ArrayList<>();
+
+    String name = names.get(indicator);
+
+    String script = scripts.get(indicator);
+
+    if (BeeUtils.isEmpty(script)) {
+      messages.add(BeeUtils.joinWords(dictionary.finIndicator(), indicator, name,
+          dictionary.fieldRequired(dictionary.finAnalysisScript())));
+
+    } else {
+      List<String> errors = AnalysisScripting.validateIndicatorScript(indicator, name,
+          script, abbreviations);
+
+      if (BeeUtils.isEmpty(errors)) {
+        Set<Long> dependencies = AnalysisScripting.getDependencies(
+            Collections.singleton(indicator), scripts, patterns, messages::add);
+
+        if (!BeeUtils.isEmpty(dependencies) && messages.isEmpty()) {
+          for (long id : dependencies) {
+            if (primaryIndicators.contains(id)) {
+              messages.addAll(validatePrimaryIndicator(id, names.get(id), dictionary));
+
+            } else {
+              messages.addAll(validateSecondaryIndicator(id, names, abbreviations, patterns,
+                  scripts, primaryIndicators, dictionary));
+            }
+          }
+        }
+
+      } else {
+        messages.addAll(errors);
+      }
+    }
+
+    return messages;
   }
 
   private Filter getIndicatorFilter(long indicator, BeeView finView, Long userId) {

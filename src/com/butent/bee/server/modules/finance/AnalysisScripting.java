@@ -9,25 +9,34 @@ import com.butent.bee.shared.NonNullList;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 
 final class AnalysisScripting {
+
+  private static BeeLogger logger = LogUtils.getLogger(AnalysisScripting.class);
 
   private static final String VAR_IS_BUDGET = "_b";
   private static final String VAR_CURRENT_VALUE = "_v";
@@ -42,29 +51,33 @@ final class AnalysisScripting {
   static Multimap<Integer, Long> buildCalculationSequence(Collection<BeeRow> input,
       int indicatorIndex, int abbreviationIndex, int scriptIndex, Consumer<String> errorHandler) {
 
-    Multimap<Integer, Long> result = ArrayListMultimap.create();
-    if (BeeUtils.isEmpty(input)) {
-      return result;
-    }
-
     Map<Long, String> scripts = new HashMap<>();
     Map<Long, Pattern> variables = new HashMap<>();
 
-    for (BeeRow row : input) {
-      if (!DataUtils.isId(row.getLong(indicatorIndex))) {
-        String script = row.getString(scriptIndex);
+    if (!BeeUtils.isEmpty(input)) {
+      for (BeeRow row : input) {
+        if (!DataUtils.isId(row.getLong(indicatorIndex))) {
+          String script = row.getString(scriptIndex);
 
-        if (!BeeUtils.isEmpty(script) && !isScriptPrimary(script)) {
-          scripts.put(row.getId(), script);
+          if (!BeeUtils.isEmpty(script) && !isScriptPrimary(script)) {
+            scripts.put(row.getId(), script);
 
-          String abbreviation = row.getString(abbreviationIndex);
-          if (AnalysisUtils.isValidAbbreviation(abbreviation)) {
-            variables.put(row.getId(), getDetectionPattern(abbreviation));
+            String abbreviation = row.getString(abbreviationIndex);
+            if (AnalysisUtils.isValidAbbreviation(abbreviation)) {
+              variables.put(row.getId(), getDetectionPattern(abbreviation));
+            }
           }
         }
       }
     }
 
+    return buildCalculationSequence(scripts, variables, errorHandler);
+  }
+
+  private static Multimap<Integer, Long> buildCalculationSequence(Map<Long, String> scripts,
+      Map<Long, Pattern> variables, Consumer<String> errorHandler) {
+
+    Multimap<Integer, Long> result = ArrayListMultimap.create();
     if (scripts.isEmpty()) {
       return result;
     }
@@ -123,13 +136,47 @@ final class AnalysisScripting {
     return result;
   }
 
+  static Set<Long> getDependencies(Set<Long> ids, Map<Long, String> scripts,
+      Map<Long, Pattern> variables, Consumer<String> errorHandler) {
+
+    Set<Long> result = new HashSet<>();
+    if (BeeUtils.isEmpty(ids) || BeeUtils.isEmpty(scripts) || BeeUtils.isEmpty(variables)) {
+      return result;
+    }
+
+    Set<Long> dependencies = new HashSet<>();
+
+    for (Long id : ids) {
+      String script = scripts.get(id);
+
+      if (!BeeUtils.isEmpty(script)) {
+        for (Map.Entry<Long, Pattern> entry : variables.entrySet()) {
+          if (find(script, entry.getValue())) {
+            dependencies.add(entry.getKey());
+          }
+        }
+      }
+    }
+
+    if (!dependencies.isEmpty()) {
+      dependencies.removeAll(ids);
+
+      if (!dependencies.isEmpty()) {
+        result.addAll(dependencies);
+//        result.addAll(getDependencies(dependencies, scripts, variables, errorHandler));
+      }
+    }
+
+    return result;
+  }
+
   static AnalysisValue calculateUnboundValue(ScriptEngine engine, String script,
       long columnId, String columnAbbreviation, long rowId, String rowAbbreviation,
       boolean needsActual, boolean needsBudget, ResponseObject errorCollector) {
 
     String actualValue;
     if (needsActual) {
-      Bindings actualBindings = AnalysisScripting.createActualBindings(engine);
+      Bindings actualBindings = createActualBindings(engine);
       putColumnAndRow(actualBindings, columnAbbreviation, rowAbbreviation);
 
       actualValue = ScriptUtils.evalToString(engine, actualBindings, script, errorCollector);
@@ -139,7 +186,7 @@ final class AnalysisScripting {
 
     String budgetValue;
     if (needsBudget) {
-      Bindings budgetBindings = AnalysisScripting.createBudgetBindings(engine);
+      Bindings budgetBindings = createBudgetBindings(engine);
       putColumnAndRow(budgetBindings, columnAbbreviation, rowAbbreviation);
 
       budgetValue = ScriptUtils.evalToString(engine, budgetBindings, script, errorCollector);
@@ -302,6 +349,130 @@ final class AnalysisScripting {
   static void putColumnAndRow(Bindings bindings, String column, String row) {
     bindings.put(VAR_COLUMN, BeeUtils.trim(column));
     bindings.put(VAR_ROW, BeeUtils.trim(row));
+  }
+
+  static List<String> validateAnalysisScripts(Collection<BeeRow> input,
+      int indicatorIndex, int abbreviationIndex, int scriptIndex,
+      Function<BeeRow, String> labelFunction) {
+
+    List<String> messages = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(input)
+        && input.stream().anyMatch(row -> !row.isEmpty(scriptIndex))) {
+
+      ScriptEngine engine = ScriptUtils.getEngine();
+      if (engine == null) {
+        messages.add("script engine not available");
+
+      } else {
+        Map<Long, String> variables = new HashMap<>();
+
+        for (BeeRow row : input) {
+          String abbreviation = row.getString(abbreviationIndex);
+
+          if (AnalysisUtils.isValidAbbreviation(abbreviation)) {
+            variables.put(row.getId(), abbreviation);
+          }
+        }
+
+        Bindings primaryBindings = createActualBindings(engine);
+        putCurrentValue(primaryBindings, BeeConst.DOUBLE_ZERO);
+        putColumnAndRow(primaryBindings, null, null);
+
+        Bindings bindings;
+
+        for (BeeRow row : input) {
+          String script = row.getString(scriptIndex);
+
+          if (!BeeUtils.isEmpty(script)) {
+            boolean primary = DataUtils.isId(row.getLong(indicatorIndex))
+                || isScriptPrimary(script);
+
+            if (primary) {
+              bindings = primaryBindings;
+
+            } else {
+              bindings = createActualBindings(engine);
+              putColumnAndRow(bindings, null, null);
+
+              for (Map.Entry<Long, String> entry : variables.entrySet()) {
+                if (!Objects.equals(entry.getKey(), row.getId())) {
+                  bindings.put(entry.getValue(), BeeConst.DOUBLE_ZERO);
+                }
+              }
+            }
+
+            try {
+              Object value = engine.eval(script, bindings);
+              logger.debug((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
+
+            } catch (ScriptException ex) {
+              String label = labelFunction.apply(row);
+
+              logger.severe(label, script, bindings, ex.getMessage());
+              messages.add(BeeUtils.joinWords(label, ex.getMessage()));
+            }
+          }
+        }
+      }
+
+      if (messages.isEmpty()) {
+        Multimap<Integer, Long> sequence = buildCalculationSequence(input,
+            indicatorIndex, abbreviationIndex, scriptIndex, messages::add);
+
+        if (sequence != null && !sequence.isEmpty()) {
+          logger.debug("sequence", sequence);
+        }
+      }
+    }
+
+    return messages;
+  }
+
+  static List<String> validateIndicatorScript(long indicator, String name, String script,
+      Map<Long, String> variables) {
+
+    List<String> messages = new ArrayList<>();
+
+    ScriptEngine engine = ScriptUtils.getEngine();
+    if (engine == null) {
+      messages.add(BeeUtils.joinWords(name, "script engine not available"));
+
+    } else {
+      Bindings bindings;
+
+      if (BeeUtils.isEmpty(variables)
+          || variables.containsKey(indicator) && variables.size() == 1) {
+
+        bindings = null;
+
+      } else {
+        bindings = engine.createBindings();
+
+        for (Map.Entry<Long, String> entry : variables.entrySet()) {
+          if (!Objects.equals(entry.getKey(), indicator)) {
+            bindings.put(entry.getValue(), BeeConst.DOUBLE_ZERO);
+          }
+        }
+      }
+
+      try {
+        Object result;
+        if (bindings == null) {
+          result = engine.eval(script);
+        } else {
+          result = engine.eval(script, bindings);
+        }
+
+        logger.debug(name, (result == null) ? BeeConst.NULL : NameUtils.getName(result), result);
+
+      } catch (ScriptException ex) {
+        logger.severe(name, script, bindings, ex.getMessage());
+        messages.add(BeeUtils.joinWords(name, ex.getMessage()));
+      }
+    }
+
+    return messages;
   }
 
   static Multimap<String, AnalysisValue> transformInput(Multimap<Long, AnalysisValue> values,

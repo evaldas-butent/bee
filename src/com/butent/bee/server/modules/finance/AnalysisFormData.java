@@ -7,16 +7,12 @@ import com.google.common.collect.Multiset;
 
 import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
-import com.butent.bee.server.utils.ScriptUtils;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
-import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisCellType;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitType;
@@ -24,14 +20,14 @@ import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.time.MonthRange;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -39,13 +35,7 @@ import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.script.Bindings;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-
 class AnalysisFormData {
-
-  private static BeeLogger logger = LogUtils.getLogger(AnalysisFormData.class);
 
   private final Map<String, Integer> headerIndexes;
   private final BeeRow header;
@@ -338,7 +328,7 @@ class AnalysisFormData {
         columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
         column -> getColumnLabel(dictionary, column)));
 
-    messages.addAll(validateScripts(columns,
+    messages.addAll(AnalysisScripting.validateAnalysisScripts(columns,
         columnIndexes.get(COL_ANALYSIS_COLUMN_INDICATOR),
         columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
         columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT),
@@ -368,7 +358,7 @@ class AnalysisFormData {
         rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
         row -> getRowLabel(dictionary, row)));
 
-    messages.addAll(validateScripts(rows,
+    messages.addAll(AnalysisScripting.validateAnalysisScripts(rows,
         rowIndexes.get(COL_ANALYSIS_ROW_INDICATOR),
         rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
         rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),
@@ -694,6 +684,28 @@ class AnalysisFormData {
     return result;
   }
 
+  Set<Long> getIndicators() {
+    Set<Long> indicators = new HashSet<>();
+
+    int index = columnIndexes.get(COL_ANALYSIS_COLUMN_INDICATOR);
+    for (BeeRow column : columns) {
+      Long indicator = column.getLong(index);
+      if (DataUtils.isId(indicator)) {
+        indicators.add(indicator);
+      }
+    }
+
+    index = rowIndexes.get(COL_ANALYSIS_ROW_INDICATOR);
+    for (BeeRow row : rows) {
+      Long indicator = row.getLong(index);
+      if (DataUtils.isId(indicator)) {
+        indicators.add(indicator);
+      }
+    }
+
+    return indicators;
+  }
+
   private static List<String> getSplitCaptions(Dictionary dictionary,
       List<AnalysisSplitType> splits) {
 
@@ -811,83 +823,6 @@ class AnalysisFormData {
     return messages;
   }
 
-  private static List<String> validateScripts(Collection<BeeRow> input,
-      int indicatorIndex, int abbreviationIndex, int scriptIndex,
-      Function<BeeRow, String> labelFunction) {
-
-    List<String> messages = new ArrayList<>();
-
-    if (!BeeUtils.isEmpty(input)
-        && input.stream().anyMatch(row -> !row.isEmpty(scriptIndex))) {
-
-      ScriptEngine engine = ScriptUtils.getEngine();
-      if (engine == null) {
-        messages.add("script engine not available");
-
-      } else {
-        Map<Long, String> variables = new HashMap<>();
-
-        for (BeeRow row : input) {
-          String abbreviation = row.getString(abbreviationIndex);
-
-          if (AnalysisUtils.isValidAbbreviation(abbreviation)) {
-            variables.put(row.getId(), abbreviation);
-          }
-        }
-
-        Bindings primaryBindings = AnalysisScripting.createActualBindings(engine);
-        AnalysisScripting.putCurrentValue(primaryBindings, BeeConst.DOUBLE_ZERO);
-        AnalysisScripting.putColumnAndRow(primaryBindings, null, null);
-
-        Bindings bindings;
-
-        for (BeeRow row : input) {
-          String script = row.getString(scriptIndex);
-
-          if (!BeeUtils.isEmpty(script)) {
-            boolean primary = DataUtils.isId(row.getLong(indicatorIndex))
-                || AnalysisScripting.isScriptPrimary(script);
-
-            if (primary) {
-              bindings = primaryBindings;
-
-            } else {
-              bindings = AnalysisScripting.createActualBindings(engine);
-              AnalysisScripting.putColumnAndRow(bindings, null, null);
-
-              for (Map.Entry<Long, String> entry : variables.entrySet()) {
-                if (!Objects.equals(entry.getKey(), row.getId())) {
-                  bindings.put(entry.getValue(), BeeConst.DOUBLE_ZERO);
-                }
-              }
-            }
-
-            try {
-              Object value = engine.eval(script, bindings);
-              logger.debug((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
-
-            } catch (ScriptException ex) {
-              String label = labelFunction.apply(row);
-
-              logger.severe(label, script, bindings, ex.getMessage());
-              messages.add(BeeUtils.joinWords(label, ex.getMessage()));
-            }
-          }
-        }
-      }
-
-      if (messages.isEmpty()) {
-        Multimap<Integer, Long> sequence = AnalysisScripting.buildCalculationSequence(input,
-            indicatorIndex, abbreviationIndex, scriptIndex, messages::add);
-
-        if (sequence != null && !sequence.isEmpty()) {
-          logger.debug("sequence", sequence);
-        }
-      }
-    }
-
-    return messages;
-  }
 
   private static List<String> validateSplits(Dictionary dictionary, String label,
       List<AnalysisSplitType> splits) {
