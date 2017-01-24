@@ -44,11 +44,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class CargoInvoiceForm extends CustomCargoInvoiceForm implements ClickHandler {
+public class CargoInvoiceForm extends InvoiceForm implements ClickHandler {
 
   private Button confirmAction;
 
   public CargoInvoiceForm() {
+    super(null);
   }
 
   @Override
