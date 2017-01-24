@@ -92,7 +92,11 @@ public final class Dimensions {
 
   public static Integer getViewOrdinal(String viewName) {
     int index = ArrayUtils.indexOf(VIEWS, viewName);
-    return (index >= 0) ? index + 1 : null;
+    if (index >= 0) {
+      return index + 1;
+    } else {
+      return null;
+    }
   }
 
   public static boolean isDimensionView(String viewName) {
@@ -113,6 +117,15 @@ public final class Dimensions {
 
   public static String getRelationColumn(Integer ordinal) {
     return isValid(ordinal) ? RELATION_COLUMNS[ordinal - 1] : null;
+  }
+
+  public static Integer getRelationColumnOrdinal(String columnName) {
+    int index = ArrayUtils.indexOf(RELATION_COLUMNS, columnName);
+    if (index >= 0) {
+      return index + 1;
+    } else {
+      return null;
+    }
   }
 
   public static String getForegroundColumn(Integer ordinal) {

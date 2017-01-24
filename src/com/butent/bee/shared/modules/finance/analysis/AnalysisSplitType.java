@@ -92,6 +92,9 @@ public enum AnalysisSplitType implements HasLocalizedCaption {
     PERIOD, FILTER, DIMENSION
   }
 
+  public static final AnalysisSplitType[] PERIODS_INCREASING =
+      new AnalysisSplitType[] {MONTH, QUARTER, YEAR};
+
   public static boolean validateSplits(List<AnalysisSplitType> splits) {
     if (BeeUtils.isEmpty(splits)) {
       return true;

@@ -2940,6 +2940,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS,
         COL_UNPLANNED_MANAGER_KM, COL_UNPLANNED_DRIVER_KM};
 
+    Multimap<Long, Long> defaults = HashMultimap.create();
+
     for (SimpleRow row : rs) {
       String prfx;
       int cmpr;
@@ -2954,8 +2956,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       Long key = row.getLong(keyColumn);
 
       if (!BeeUtils.unbox(row.getBoolean(VAR_PARAMETER_DEFAULT))
-          || !data.contains(key, prfx + COL_PLACE_DATE)) {
-
+          || defaults.put(key, row.getLong(sys.getIdName(TBL_CARGO_PLACES)))) {
         Arrays.stream(calc).forEach(col -> data.put(key, col,
             BeeUtils.toString(BeeUtils.toDouble(data.get(key, col))
                 + BeeUtils.unbox(row.getDouble(col)))));

@@ -93,6 +93,10 @@ public class AnalysisCellType {
     return false;
   }
 
+  public static boolean needsActual(List<AnalysisCellType> first, List<AnalysisCellType> second) {
+    return needsActual(first) || needsActual(second);
+  }
+
   public static boolean needsBudget(List<AnalysisCellType> list) {
     if (!BeeUtils.isEmpty(list)) {
       for (AnalysisCellType item : list) {
@@ -102,6 +106,10 @@ public class AnalysisCellType {
       }
     }
     return false;
+  }
+
+  public static boolean needsBudget(List<AnalysisCellType> first, List<AnalysisCellType> second) {
+    return needsBudget(first) || needsBudget(second);
   }
 
   public static boolean needsBudget(String input) {

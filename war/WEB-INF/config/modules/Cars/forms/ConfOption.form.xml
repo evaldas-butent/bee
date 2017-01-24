@@ -13,7 +13,7 @@
 
       <Label for="Description" />
       <cell rowSpan="4">
-        <InputArea source="Description" style="height:100%; width:300px;" />
+        <InputArea source="Description" visibleLines="10" style="width:300px;" />
       </cell>
     </row>
     <row>
@@ -23,6 +23,10 @@
     <row>
       <Label for="Code" />
       <InputText source="Code" />
+    </row>
+    <row>
+      <Label for="Code2" />
+      <InputText source="Code2" />
     </row>
     <row>
       <Label for="Item" />

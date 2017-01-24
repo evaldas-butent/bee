@@ -68,6 +68,6 @@
   </g:rowStyle>
 
   <g:rowMessage>
-    <ui:expression>row.RowName</ui:expression>
+    <ui:expression>[row.RowName, row.RowAbbreviation].join(' ')</ui:expression>
   </g:rowMessage>
 </g:Grid>

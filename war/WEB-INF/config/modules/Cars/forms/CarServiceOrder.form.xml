@@ -7,7 +7,7 @@
         xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
 
         name="CarServiceOrder" viewName="CarServiceOrders"
-        width="800" height="600"
+        width="1000" height="700"
         caption="=serviceOrder">
 
   <FlowPanel class="flexBox-vertical">
@@ -114,7 +114,11 @@
     <TabbedPages class="flexible">
       <page>
         <text>=serviceJobs</text>
-        <ChildGrid name="CarServiceJobs" relColumn="ServiceOrder" />
+        <FlowPanel class="flexBox-vertical">
+          <ChildGrid name="CarServiceJobs" relColumn="ServiceOrder" class="flexible" />
+          <ChildGrid name="CarJobProgress" parent="CarServiceJobs" relColumn="ServiceJob"
+                     class="flexible" />
+        </FlowPanel>
       </page>
       <page>
         <text>=productsServices</text>

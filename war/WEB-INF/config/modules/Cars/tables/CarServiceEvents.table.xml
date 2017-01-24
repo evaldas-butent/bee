@@ -8,6 +8,8 @@
               label="=serviceOrder" />
 
     <Relation name="Appointment" notNull="true" unique="true" relation="Appointments"
-              editable="true" label="=calAppointment" />
+              editable="true" cascade="DELETE" label="=calAppointment" />
+
+    <Boolean name="Arrived" label="=arrived" />
   </Fields>
 </Table>

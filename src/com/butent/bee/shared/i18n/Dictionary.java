@@ -185,6 +185,8 @@ public interface Dictionary {
 
   default String area() {return g("area");}
 
+  default String arrived() {return g("arrived");}
+
   default String article() {return g("article");}
 
   default String article2() {return g("article2");}
@@ -3241,6 +3243,8 @@ public interface Dictionary {
 
   default String internalRelation() {return g("internalRelation");}
 
+  default String intrastat() {return g("intrastat");}
+
   default String invalidDate() {return g("invalidDate");}
 
   default String invalidDateFormat() {return g("invalidDateFormat");}
@@ -4019,6 +4023,16 @@ public interface Dictionary {
 
   default String ordAskNotChangeWarehouse() {return g("ordAskNotChangeWarehouse");}
 
+  default String ordBoLDepartureDate() {return g("ordBoLDepartureDate");}
+
+  default String ordBoLDriverTabNo() {return g("ordBoLDriverTabNo");}
+
+  default String ordBoLIssueDate() {return g("ordBoLIssueDate");}
+
+  default String ordBoLNumber() {return g("ordBoLNumber");}
+
+  default String ordBoLSeries() {return g("ordBoLSeries");}
+
   default String ordCancel() {return g("ordCancel");}
 
   default String ordCanceled() {return g("ordCanceled");}
@@ -4060,6 +4074,8 @@ public interface Dictionary {
   default String ordSent() {return g("ordSent");}
 
   default String ordSupplierTerm() {return g("ordSupplierTerm");}
+
+  default String ordTransportationActInfo() {return g("ordTransportationActInfo");}
 
   default String ordUncompleted() {return g("ordUncompleted");}
 

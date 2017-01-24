@@ -2466,7 +2466,7 @@ public final class BeeUtils {
     if (str == null) {
       return null;
     } else {
-      return CharMatcher.WHITESPACE.removeFrom(str);
+      return CharMatcher.whitespace().removeFrom(str);
     }
   }
 
