@@ -46,6 +46,8 @@
       </SimpleJoin>
 
       <SimpleColumn name="Notes" editable="true"/>
+
+      <SimpleColumn name="CmrDate" editable="true"/>
     </SimpleJoin>
 
     <SimpleColumn name="Trailer" />

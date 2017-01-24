@@ -132,6 +132,8 @@
       <SimpleJoin joinType="LEFT" name="CargoGroup">
         <SimpleColumn name="CargoGroupName" label="=group"/>
       </SimpleJoin>
+
+      <SimpleColumn name="CmrDate" />
     </ExternalJoin>
   </Columns>
 </View>

@@ -65,10 +65,7 @@
               <col index="3" kind="label" />
               <col index="5" kind="label" />
               <row>
-                <FlowPanel class="flexBox-vertical">
-                  <CheckBox source="MultipleSegments"/>
-                  <CheckBox source="CmrCopy" style="padding-top: 2vh;"/>
-                </FlowPanel>
+                <CheckBox source="MultipleSegments"/>
                 <Label for="Cmr" module="Documents" />
                 <DataSelector source="Cmr" caching="none" newRowEnabled="false" module="Documents"/>
                 <Label for="Directions" />
@@ -79,6 +76,11 @@
                 <cell rowSpan="2">
                   <InputArea source="CargoNotes" visibleLines="3" style="width:200px;" />
                 </cell>
+              </row>
+              <row>
+                <CheckBox source="CmrCopy" style="padding-top: 2vh;"/>
+                <Label for="CmrDate" />
+                <InputDateTime source="CmrDate"/>
               </row>
             </Table>
           </FlowPanel>

@@ -538,6 +538,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_TRIP = "CargoTrip";
   public static final String COL_CARGO_TRIP_ID = "CargoTripID";
   public static final String COL_CARGO_CMR = "Cmr";
+  public static final String COL_CARGO_CMR_DATE = "CmrDate";
   public static final String COL_CARGO_NOTES = "Notes";
   public static final String COL_SHIPPING_TERM = "ShippingTerm";
   public static final String COL_CARGO_QUANTITY = "Quantity";

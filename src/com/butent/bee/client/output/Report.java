@@ -165,7 +165,8 @@ public enum Report implements HasWidgetSupplier {
           new ReportDateTimeItem(ALS_MIN_LOADING_DATE, loc.trMinLoadingDate()),
           new ReportDateTimeItem(ALS_MAX_UNLOADING_DATE, loc.trMaxUnloadingDate()),
           new ReportTextItem(ALS_LOADING_DATE, loc.trLoadingDate()),
-          new ReportTextItem(ALS_UNLOADING_DATE, loc.trUnloadingDate()));
+          new ReportTextItem(ALS_UNLOADING_DATE, loc.trUnloadingDate()),
+          new ReportDateTimeItem(COL_CARGO_CMR_DATE, loc.trCmrDate()));
     }
 
     @Override

@@ -50,5 +50,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="CmrCopy" />
+
+    <SimpleColumn name="CmrDate" editable="true"/>
   </Columns>
 </View>

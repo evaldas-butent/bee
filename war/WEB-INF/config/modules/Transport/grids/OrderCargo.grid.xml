@@ -67,5 +67,7 @@
         </ui:function>
       </render>
     </CalcColumn>
+
+    <DataColumn name="CmrDate" format="DATE_TIME_SHORT" editInPlace="true"/>
   </g:columns>
 </g:Grid>

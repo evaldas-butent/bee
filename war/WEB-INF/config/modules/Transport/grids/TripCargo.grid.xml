@@ -107,5 +107,7 @@
     <DataColumn name="CmrCopy" caption="=trCmrCopy" editInPlace="true" />
 
     <DataColumn name="OrderStatus"/>
+
+    <DataColumn name="CmrDate" format="DATE_TIME_SHORT" editInPlace="true" />
   </g:columns>
 </g:Grid>

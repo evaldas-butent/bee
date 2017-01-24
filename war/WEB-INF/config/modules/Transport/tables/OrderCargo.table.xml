@@ -46,5 +46,7 @@
     <Relation name="CargoGroup" relation="CargoGroups" label="=group" />
 
     <Boolean name="CmrCopy" label="=trCmrCopy" />
+
+    <DateTime name="CmrDate" label="=trCmrDate" />
   </Fields>
 </Table>
