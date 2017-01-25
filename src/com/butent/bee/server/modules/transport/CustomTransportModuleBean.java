@@ -73,6 +73,10 @@ public class CustomTransportModuleBean {
 
         if (!BeeConst.isUndef(cargoTripIdx)) {
           Long cargoTripId = modifiedRow.getLong(cargoTripIdx);
+
+          if (!DataUtils.isId(cargoTripId)) {
+            return;
+          }
           cargoId = qs.getLongById(TBL_CARGO_TRIPS, cargoTripId, COL_CARGO);
         }
       }
