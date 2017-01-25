@@ -16,7 +16,6 @@ import com.butent.bee.shared.modules.finance.analysis.AnalysisSplitValue;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisUtils;
 import com.butent.bee.shared.modules.finance.analysis.AnalysisValue;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,7 +47,7 @@ final class AnalysisScripting {
 
   private static final int ROOT_LEVEL = 0;
 
-  static Multimap<Integer, Long> buildCalculationSequence(Collection<BeeRow> input,
+  static Multimap<Integer, Long> buildSecondaryCalculationSequence(Collection<BeeRow> input,
       int indicatorIndex, int abbreviationIndex, int scriptIndex, Consumer<String> errorHandler) {
 
     Map<Long, String> scripts = new HashMap<>();
@@ -71,11 +70,11 @@ final class AnalysisScripting {
       }
     }
 
-    return buildCalculationSequence(scripts, variables, errorHandler);
+    return buildSecondaryCalculationSequence(scripts, variables, errorHandler);
   }
 
-  private static Multimap<Integer, Long> buildCalculationSequence(Map<Long, String> scripts,
-      Map<Long, Pattern> variables, Consumer<String> errorHandler) {
+  private static Multimap<Integer, Long> buildSecondaryCalculationSequence(
+      Map<Long, String> scripts, Map<Long, Pattern> variables, Consumer<String> errorHandler) {
 
     Multimap<Integer, Long> result = ArrayListMultimap.create();
     if (scripts.isEmpty()) {
@@ -136,35 +135,75 @@ final class AnalysisScripting {
     return result;
   }
 
-  static Set<Long> getDependencies(Set<Long> ids, Map<Long, String> scripts,
-      Map<Long, Pattern> variables, Consumer<String> errorHandler) {
+  static Multimap<Integer, Long> buildIndicatorCalculationSequence(long indicator,
+      Map<Long, String> scripts, Map<Long, Pattern> variables, Consumer<String> errorHandler) {
 
-    Set<Long> result = new HashSet<>();
-    if (BeeUtils.isEmpty(ids) || BeeUtils.isEmpty(scripts) || BeeUtils.isEmpty(variables)) {
+    Multimap<Integer, Long> result = ArrayListMultimap.create();
+    if (BeeUtils.isEmpty(scripts) || BeeUtils.isEmpty(variables)
+        || !scripts.containsKey(indicator)) {
       return result;
     }
 
-    Set<Long> dependencies = new HashSet<>();
+    Set<Long> primaryIds = new HashSet<>();
 
-    for (Long id : ids) {
-      String script = scripts.get(id);
+    Set<Long> secondaryIds = new HashSet<>();
+    secondaryIds.add(indicator);
 
-      if (!BeeUtils.isEmpty(script)) {
+    int level = scripts.size();
+
+    while (!secondaryIds.isEmpty() && level >= 0) {
+      Set<Long> nextIds = new HashSet<>();
+
+      for (Long secondaryId : secondaryIds) {
+        String script = scripts.get(secondaryId);
+
         for (Map.Entry<Long, Pattern> entry : variables.entrySet()) {
           if (find(script, entry.getValue())) {
-            dependencies.add(entry.getKey());
+            Long variableId = entry.getKey();
+
+            if (Objects.equals(secondaryId, variableId)) {
+              if (errorHandler != null) {
+                errorHandler.accept(BeeUtils.joinWords("indicator", secondaryId,
+                    script, "self reference", entry.getValue()));
+              }
+
+            } else if (scripts.containsKey(variableId)) {
+              nextIds.add(variableId);
+
+            } else {
+              primaryIds.add(variableId);
+            }
           }
         }
       }
+
+      for (Long secondaryId : secondaryIds) {
+        if (!nextIds.contains(secondaryId)) {
+          if (result.containsValue(secondaryId)) {
+            nextIds.add(secondaryId);
+          } else {
+            result.put(level, secondaryId);
+          }
+        }
+      }
+
+      if (nextIds.equals(secondaryIds)) {
+        break;
+      }
+
+      secondaryIds.clear();
+      secondaryIds.addAll(nextIds);
+
+      level--;
     }
 
-    if (!dependencies.isEmpty()) {
-      dependencies.removeAll(ids);
+    if (!secondaryIds.isEmpty() && errorHandler != null) {
+      secondaryIds.forEach(id -> errorHandler.accept(BeeUtils.joinWords(
+          "recursive indicator", id, scripts.get(id), variables.get(id))));
+    }
 
-      if (!dependencies.isEmpty()) {
-        result.addAll(dependencies);
-//        result.addAll(getDependencies(dependencies, scripts, variables, errorHandler));
-      }
+    if (!primaryIds.isEmpty()) {
+      result.putAll(level, primaryIds);
     }
 
     return result;
@@ -403,8 +442,7 @@ final class AnalysisScripting {
             }
 
             try {
-              Object value = engine.eval(script, bindings);
-              logger.debug((value == null) ? BeeConst.NULL : NameUtils.getName(value), value);
+              engine.eval(script, bindings);
 
             } catch (ScriptException ex) {
               String label = labelFunction.apply(row);
@@ -417,12 +455,8 @@ final class AnalysisScripting {
       }
 
       if (messages.isEmpty()) {
-        Multimap<Integer, Long> sequence = buildCalculationSequence(input,
-            indicatorIndex, abbreviationIndex, scriptIndex, messages::add);
-
-        if (sequence != null && !sequence.isEmpty()) {
-          logger.debug("sequence", sequence);
-        }
+        buildSecondaryCalculationSequence(input, indicatorIndex, abbreviationIndex, scriptIndex,
+            messages::add);
       }
     }
 
@@ -457,14 +491,11 @@ final class AnalysisScripting {
       }
 
       try {
-        Object result;
         if (bindings == null) {
-          result = engine.eval(script);
+          engine.eval(script);
         } else {
-          result = engine.eval(script, bindings);
+          engine.eval(script, bindings);
         }
-
-        logger.debug(name, (result == null) ? BeeConst.NULL : NameUtils.getName(result), result);
 
       } catch (ScriptException ex) {
         logger.severe(name, script, bindings, ex.getMessage());

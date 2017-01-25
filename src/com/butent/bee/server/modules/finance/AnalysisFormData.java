@@ -515,7 +515,7 @@ class AnalysisFormData {
     List<BeeRow> result = new ArrayList<>();
 
     Multimap<Integer, Long> sequence =
-        AnalysisScripting.buildCalculationSequence(getColumns(),
+        AnalysisScripting.buildSecondaryCalculationSequence(getColumns(),
             columnIndexes.get(COL_ANALYSIS_COLUMN_INDICATOR),
             columnIndexes.get(COL_ANALYSIS_COLUMN_ABBREVIATION),
             columnIndexes.get(COL_ANALYSIS_COLUMN_SCRIPT),
@@ -661,7 +661,7 @@ class AnalysisFormData {
     List<BeeRow> result = new ArrayList<>();
 
     Multimap<Integer, Long> sequence =
-        AnalysisScripting.buildCalculationSequence(getRows(),
+        AnalysisScripting.buildSecondaryCalculationSequence(getRows(),
             rowIndexes.get(COL_ANALYSIS_ROW_INDICATOR),
             rowIndexes.get(COL_ANALYSIS_ROW_ABBREVIATION),
             rowIndexes.get(COL_ANALYSIS_ROW_SCRIPT),

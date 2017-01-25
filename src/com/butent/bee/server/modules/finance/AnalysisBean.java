@@ -790,7 +790,7 @@ public class AnalysisBean {
 
       } else {
         messages.addAll(validateSecondaryIndicator(indicator, names, abbreviations, patterns,
-            scripts, primaryIndicators, dictionary));
+            scripts, primaryIndicators, dictionary, true));
       }
     }
 
@@ -812,7 +812,7 @@ public class AnalysisBean {
 
   private List<String> validateSecondaryIndicator(long indicator, Map<Long, String> names,
       Map<Long, String> abbreviations, Map<Long, Pattern> patterns, Map<Long, String> scripts,
-      Set<Long> primaryIndicators, Dictionary dictionary) {
+      Set<Long> primaryIndicators, Dictionary dictionary, boolean validateSequence) {
 
     List<String> messages = new ArrayList<>();
 
@@ -828,23 +828,25 @@ public class AnalysisBean {
       List<String> errors = AnalysisScripting.validateIndicatorScript(indicator, name,
           script, abbreviations);
 
-      if (BeeUtils.isEmpty(errors)) {
-        Set<Long> dependencies = AnalysisScripting.getDependencies(
-            Collections.singleton(indicator), scripts, patterns, messages::add);
+      if (validateSequence && BeeUtils.isEmpty(errors)) {
+        Multimap<Integer, Long> sequence =
+            AnalysisScripting.buildIndicatorCalculationSequence(indicator, scripts, patterns,
+                messages::add);
 
-        if (!BeeUtils.isEmpty(dependencies) && messages.isEmpty()) {
-          for (long id : dependencies) {
+        if (!sequence.isEmpty() && messages.isEmpty()) {
+          for (long id : sequence.values()) {
             if (primaryIndicators.contains(id)) {
               messages.addAll(validatePrimaryIndicator(id, names.get(id), dictionary));
 
-            } else {
+            } else if (!Objects.equals(id, indicator)) {
               messages.addAll(validateSecondaryIndicator(id, names, abbreviations, patterns,
-                  scripts, primaryIndicators, dictionary));
+                  scripts, primaryIndicators, dictionary, false));
             }
           }
         }
+      }
 
-      } else {
+      if (!BeeUtils.isEmpty(errors)) {
         messages.addAll(errors);
       }
     }
