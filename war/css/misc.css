@@ -510,6 +510,9 @@
   font-weight: bold;
   background-color: lightyellow;
 }
+.bee-conf-packet {
+  color: silver;
+}
 .bee-conf-row-hdr {
   font-weight: bold;
 }

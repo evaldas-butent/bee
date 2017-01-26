@@ -52,7 +52,8 @@
       <cell colSpan="3">
         <ChildSelector childTable="ConfPacketOptions" targetRelColumn="Packet"
                        viewName="ConfOptions" sourceRelColumn="Option" newRowEnabled="false"
-                       style="width:100%;" choiceColumns="Code Code2 OptionName" label="=packet"
+                       style="width:100%;" choiceColumns="Code Code2 OptionName GroupName TypeName"
+                       renderColumns="Code Code2 OptionName" label="=packet"
                        data="ConfPacketOptions" />
       </cell>
     </row>

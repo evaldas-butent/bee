@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class Configuration implements BeeSerializable {
 
   private static final class OptionInfo extends ConfInfo {
-    private final Map<String, ConfInfo> relations = new HashMap<>();
+    private final Map<String, Pair<ConfInfo, String>> relations = new HashMap<>();
     private final Map<Option, Boolean> restrictions = new HashMap<>();
     private Set<Option> packets = new TreeSet<>();
 
@@ -34,8 +34,10 @@ public class Configuration implements BeeSerializable {
       String[] dataInfo = Codec.beeDeserializeCollection(s);
 
       relations.clear();
-      Codec.deserializeHashMap(dataInfo[0]).forEach((key, val) ->
-          relations.put(key, ConfInfo.restore(val)));
+      Codec.deserializeHashMap(dataInfo[0]).forEach((key, val) -> {
+        Pair<String, String> pair = Pair.restore(val);
+        relations.put(key, Pair.of(ConfInfo.restore(pair.getA()), pair.getB()));
+      });
 
       restrictions.clear();
       Codec.deserializeHashMap(dataInfo[1]).forEach((key, val) ->
@@ -48,23 +50,34 @@ public class Configuration implements BeeSerializable {
       super.deserialize(dataInfo[3]);
     }
 
+    public Set<Option> getPackets() {
+      return packets;
+    }
+
     public Map<String, String> getRelationCriteria(Bundle bundle) {
       if (hasRelation(bundle)) {
-        return relations.get(bundle.getKey()).getCriteria();
+        return relations.get(bundle.getKey()).getA().getCriteria();
       }
       return null;
     }
 
     public String getRelationDescription(Bundle bundle) {
       if (hasRelation(bundle)) {
-        return relations.get(bundle.getKey()).getDescription();
+        return relations.get(bundle.getKey()).getA().getDescription();
+      }
+      return null;
+    }
+
+    public String getRelationPackets(Bundle bundle) {
+      if (hasRelation(bundle)) {
+        return relations.get(bundle.getKey()).getB();
       }
       return null;
     }
 
     public String getRelationPrice(Bundle bundle) {
       if (hasRelation(bundle)) {
-        return relations.get(bundle.getKey()).getPrice();
+        return relations.get(bundle.getKey()).getA().getPrice();
       }
       return null;
     }
@@ -105,8 +118,8 @@ public class Configuration implements BeeSerializable {
       setCriteria(info.getCriteria());
     }
 
-    public void setRelationInfo(Bundle bundle, ConfInfo info) {
-      relations.put(bundle.getKey(), info);
+    public void setRelationInfo(Bundle bundle, ConfInfo info, String packet) {
+      relations.put(bundle.getKey(), Pair.of(info, packet));
     }
   }
 
@@ -222,11 +235,6 @@ public class Configuration implements BeeSerializable {
         .collect(Collectors.toSet());
   }
 
-  public boolean isBundleBlocked(Bundle bundle) {
-    Pair<ConfInfo, Boolean> pair = bundles.get(bundle);
-    return pair != null && BeeUtils.unbox(pair.getB());
-  }
-
   public List<Dimension> getColDimensions() {
     return colDimensions;
   }
@@ -300,6 +308,10 @@ public class Configuration implements BeeSerializable {
     return options.keySet();
   }
 
+  public Set<Option> getPackets(Option option) {
+    return addOption(option).getPackets();
+  }
+
   public Map<String, String> getRelationCriteria(Option option, Bundle bundle) {
     OptionInfo optionInfo = options.get(option);
     return Objects.nonNull(optionInfo) ? optionInfo.getRelationCriteria(bundle) : null;
@@ -308,6 +320,11 @@ public class Configuration implements BeeSerializable {
   public String getRelationDescription(Option option, Bundle bundle) {
     OptionInfo optionInfo = options.get(option);
     return Objects.nonNull(optionInfo) ? optionInfo.getRelationDescription(bundle) : null;
+  }
+
+  public String getRelationPackets(Option option, Bundle bundle) {
+    OptionInfo optionInfo = options.get(option);
+    return Objects.nonNull(optionInfo) ? optionInfo.getRelationPackets(bundle) : null;
   }
 
   public String getRelationPrice(Option option, Bundle bundle) {
@@ -349,6 +366,11 @@ public class Configuration implements BeeSerializable {
   public boolean hasRestrictions(Option option) {
     OptionInfo optionInfo = options.get(option);
     return Objects.nonNull(optionInfo) && optionInfo.hasRestrictions();
+  }
+
+  public boolean isBundleBlocked(Bundle bundle) {
+    Pair<ConfInfo, Boolean> pair = bundles.get(bundle);
+    return pair != null && BeeUtils.unbox(pair.getB());
   }
 
   public boolean isDefault(Option option, Bundle bundle) {
@@ -490,13 +512,11 @@ public class Configuration implements BeeSerializable {
   }
 
   public void setOptionInfo(Option option, ConfInfo info) {
-    addOption(option);
-    options.get(option).setInfo(info);
+    addOption(option).setInfo(info);
   }
 
-  public void setRelationInfo(Option option, Bundle bundle, ConfInfo info) {
-    addOption(option);
-    options.get(option).setRelationInfo(bundle, info);
+  public void setRelationInfo(Option option, Bundle bundle, ConfInfo info, String packet) {
+    addOption(option).setRelationInfo(bundle, info, packet);
   }
 
   public void setRestriction(Option option, Option relatedOption, boolean denied) {
@@ -509,10 +529,14 @@ public class Configuration implements BeeSerializable {
     }
   }
 
-  private void addOption(Option option) {
-    if (!options.containsKey(option)) {
-      options.put(option, new OptionInfo());
+  private OptionInfo addOption(Option option) {
+    OptionInfo optionInfo = options.get(option);
+
+    if (Objects.isNull(optionInfo)) {
+      optionInfo = new OptionInfo();
+      options.put(option, optionInfo);
     }
+    return optionInfo;
   }
 
   private void removeRelations(Bundle bundle) {

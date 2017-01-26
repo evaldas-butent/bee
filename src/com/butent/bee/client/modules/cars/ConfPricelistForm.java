@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.cars;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -65,8 +67,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.modules.cars.Bundle;
 import com.butent.bee.shared.modules.cars.CarsConstants;
-import com.butent.bee.shared.modules.cars.Configuration;
 import com.butent.bee.shared.modules.cars.ConfInfo;
+import com.butent.bee.shared.modules.cars.Configuration;
 import com.butent.bee.shared.modules.cars.Dimension;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.ui.Action;
@@ -78,6 +80,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -180,12 +183,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
           BeeRow beeRow = input.getRelatedRow();
 
           if (beeRow != null) {
-            options.add(new Option(beeRow.getId(),
-                Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
-                new Dimension(Data.getLong(TBL_CONF_OPTIONS, beeRow, COL_GROUP),
-                    Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
-                .setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE),
-                    BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE2)))));
+            options.add(new Option(beeRow));
           }
         }
         if (!options.isEmpty()) {
@@ -281,6 +279,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   private static final String STYLE_ROW_HEADER = STYLE_ROW + "-hdr";
   private static final String STYLE_ROW_ADD = STYLE_ROW + "-add";
   private static final String STYLE_ROW_DEL = STYLE_ROW + "-del";
+  private static final String STYLE_PACKET = STYLE_PREFIX + "-packet";
 
   private static final String STYLE_COL = STYLE_PREFIX + "-col";
   private static final String STYLE_COL_HEADER = STYLE_COL + "-hdr";
@@ -575,14 +574,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
 
           if (event.isChanged() && beeRow != null) {
             UiHelper.getParentPopup(inputOption).close();
-
-            restrictions.put(new Option(beeRow.getId(),
-                Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
-                new Dimension(Data.getLong(TBL_CONF_OPTIONS, beeRow, COL_GROUP),
-                    Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
-                .setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE),
-                    BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, beeRow,
-                        COL_CODE2)))), false);
+            restrictions.put(new Option(beeRow), false);
             renderer.get().run();
           }
         });
@@ -985,6 +977,31 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         DomUtils.setDataColumn(cell, c);
       }
       rIdx++;
+      // PACKET OPTIONS
+      for (Option pack : configuration.getPackets(option)) {
+        table.setText(rIdx, 0, pack.getCode(), STYLE_PACKET);
+        table.setText(rIdx, 1, pack.getName(), STYLE_PACKET);
+        table.getCellFormatter().ensureElement(rIdx, 2).setClassName(STYLE_PACKET);
+
+        for (int c = 0; c < cols.size(); c++) {
+          Bundle bundle = cols.get(c);
+          Element cell = table.getCellFormatter().ensureElement(rIdx, c + 3);
+          cell.setClassName(STYLE_PACKET);
+
+          if (configuration.hasRelation(option, bundle)) {
+            cell.addClassName(STYLE_CELL);
+
+            if (!DataUtils.parseIdSet(configuration.getRelationPackets(option, bundle))
+                .contains(pack.getId())) {
+              cell.addClassName(STYLE_OPTIONAL);
+            }
+            DomUtils.setDataIndex(cell, r);
+            DomUtils.setDataColumn(cell, c);
+            DomUtils.setDataKey(cell, BeeUtils.toString(pack.getId()));
+          }
+        }
+        rIdx++;
+      }
     }
     CustomSpan rowAdd = new CustomSpan(STYLE_ROW_ADD);
     rowAdd.addClickHandler(clickEvent -> {
@@ -992,7 +1009,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       Set<Long> excludedGroups = new HashSet<>();
       configuration.getAllDimensions().forEach(dimension -> excludedGroups.add(dimension.getId()));
       Set<Long> excludedOptions = new HashSet<>();
-      configuration.getOptions().stream().map(Option::getId).forEach(excludedOptions::add);
+      rows.stream().map(Option::getId).forEach(excludedOptions::add);
 
       UnboundSelector inputGroup = UnboundSelector.create(TBL_CONF_GROUPS,
           Collections.singletonList(COL_GROUP_NAME));
@@ -1035,14 +1052,9 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         BeeRow beeRow = inputOption.getRelatedRow();
 
         if (beeRow != null) {
-          setOptionInfo(new Option(beeRow.getId(),
-                  Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
-                  new Dimension(Data.getLong(TBL_CONF_OPTIONS, beeRow, COL_GROUP),
-                      Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
-                  .setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE),
-                      BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, beeRow, COL_CODE2)))),
-              ConfInfo.of(inputPrice.getValue(), null, null));
-          refresh();
+          Option opt = new Option(beeRow);
+          setOptionInfo(opt, ConfInfo.of(inputPrice.getValue(), null, null));
+          setPackets(Collections.singleton(opt));
 
         } else if (DataUtils.isId(inputGroup.getRelatedId())) {
           Global.confirm(inputGroup.getRenderedValue(),
@@ -1051,22 +1063,14 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
                   inputGroup.getRelatedId()), Filter.idNotIn(excludedOptions)),
                   new Queries.RowSetCallback() {
                     @Override
-                    public void onSuccess(BeeRowSet result) {
-                      if (DataUtils.isEmpty(result)) {
+                    public void onSuccess(BeeRowSet rs) {
+                      if (DataUtils.isEmpty(rs)) {
                         getFormView().notifyWarning(Localized.dictionary().noData());
                       } else {
-                        for (BeeRow beeRow : result) {
-                          setOptionInfo(new Option(beeRow.getId(),
-                                  Data.getString(TBL_CONF_OPTIONS, beeRow, COL_OPTION_NAME),
-                                  new Dimension(inputGroup.getRelatedId(),
-                                      Data.getString(TBL_CONF_OPTIONS, beeRow, COL_GROUP_NAME)))
-                                  .setCode(BeeUtils.join("", Data.getString(TBL_CONF_OPTIONS,
-                                      beeRow, COL_CODE),
-                                      BeeUtils.parenthesize(Data.getString(TBL_CONF_OPTIONS, beeRow,
-                                          COL_CODE2)))),
-                              ConfInfo.of(null, null, null));
-                        }
-                        refresh();
+                        List<Option> opts = new ArrayList<>();
+                        rs.forEach(row -> opts.add(new Option(row)));
+                        opts.forEach(opt -> setOptionInfo(opt, ConfInfo.of(null, null, null)));
+                        setPackets(opts);
                       }
                     }
                   }));
@@ -1115,14 +1119,28 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
             configuration.removeRelation(option, bundle);
             break;
           case SVC_SET_RELATION:
-            configuration.setRelationInfo(option, bundle, info);
+            String packet = configuration.getRelationPackets(option, bundle);
+            configuration.setRelationInfo(option, bundle, info, packet);
             args.addDataItem(Service.VAR_DATA, info.serialize());
+            args.addNotEmptyData(COL_PACKET, packet);
             break;
         }
         BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
         refresh();
       };
-      if (BeeUtils.isNonNegativeInt(price) || event.isAltKeyDown()) {
+      Long packId = BeeUtils.toLongOrNull(DomUtils.getDataKey(cell));
+
+      if (DataUtils.isId(packId)) {
+        Set<Long> packets = DataUtils.parseIdSet(configuration.getRelationPackets(option, bundle));
+
+        if (!packets.remove(packId)) {
+          packets.add(packId);
+        }
+        configuration.setRelationInfo(option, bundle, null, DataUtils.buildIdList(packets));
+        consumer.accept(SVC_SET_RELATION, ConfInfo.of(price, description, null)
+            .setCriteria(criteria));
+
+      } else if (BeeUtils.isNonNegativeInt(price) || event.isAltKeyDown()) {
         inputInfo(BeeUtils.joinWords(option, bundle), price, false, description, criteria,
             info -> consumer.accept(SVC_SET_RELATION, info),
             !configuration.hasRelation(option, bundle) ? null : dialog -> {
@@ -1130,12 +1148,12 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
               consumer.accept(SVC_DELETE_RELATION, null);
             }, cell);
       } else if (!configuration.hasRelation(option, bundle)) {
-        consumer.accept(SVC_SET_RELATION,
-            ConfInfo.of(Configuration.DEFAULT_PRICE, description, null).setCriteria(criteria));
+        consumer.accept(SVC_SET_RELATION, ConfInfo.of(Configuration.DEFAULT_PRICE, description,
+            null).setCriteria(criteria));
 
       } else if (configuration.isDefault(option, bundle)) {
-        consumer.accept(SVC_SET_RELATION,
-            ConfInfo.of(null, description, null).setCriteria(criteria));
+        consumer.accept(SVC_SET_RELATION, ConfInfo.of(null, description, null)
+            .setCriteria(criteria));
       } else {
         consumer.accept(SVC_DELETE_RELATION, null);
       }
@@ -1174,5 +1192,31 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
     BeeKeeper.getRpc().makePostRequest(args, defaultResponse);
 
     configuration.setOptionInfo(option, info);
+  }
+
+  private void setPackets(Collection<Option> opts) {
+    Queries.getRowSet(TBL_CONF_PACKET_OPTIONS, Arrays.asList(COL_PACKET, COL_OPTION),
+        Filter.any(COL_PACKET, opts.stream().map(Option::getId).collect(Collectors.toSet())),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet packRs) {
+            if (DataUtils.isEmpty(packRs)) {
+              refresh();
+            } else {
+              Multimap<Long, Long> packs = HashMultimap.create();
+              packRs.forEach(row -> packs.put(row.getLong(0), row.getLong(1)));
+
+              Queries.getRowSet(TBL_CONF_OPTIONS, null, Filter.idIn(packs.values()),
+                  new Queries.RowSetCallback() {
+                    @Override
+                    public void onSuccess(BeeRowSet optsRs) {
+                      opts.forEach(opt -> packs.get(opt.getId()).forEach(pack ->
+                          configuration.getPackets(opt).add(new Option(optsRs.getRowById(pack)))));
+                      refresh();
+                    }
+                  });
+            }
+          }
+        });
   }
 }
