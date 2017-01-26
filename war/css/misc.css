@@ -622,6 +622,9 @@
   max-width: 620px;
   max-height: 200px;
 }
+.bee-spec-summary {
+  max-width: 40%;
+}
 .bee-spec-summary tr td:nth-child(2) {
   font-weight: bold;
   text-align: right;

@@ -274,12 +274,12 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   private static final String STYLE_ADD = STYLE_PREFIX + "-add";
   private static final String STYLE_REMOVE = STYLE_PREFIX + "-remove";
 
-  private static final String STYLE_GROUP = STYLE_PREFIX + "-grp";
+  public static final String STYLE_GROUP = STYLE_PREFIX + "-grp";
   private static final String STYLE_ROW = STYLE_PREFIX + "-row";
   private static final String STYLE_ROW_HEADER = STYLE_ROW + "-hdr";
   private static final String STYLE_ROW_ADD = STYLE_ROW + "-add";
   private static final String STYLE_ROW_DEL = STYLE_ROW + "-del";
-  private static final String STYLE_PACKET = STYLE_PREFIX + "-packet";
+  public static final String STYLE_PACKET = STYLE_PREFIX + "-packet";
 
   private static final String STYLE_COL = STYLE_PREFIX + "-col";
   private static final String STYLE_COL_HEADER = STYLE_COL + "-hdr";
@@ -981,7 +981,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       for (Option pack : configuration.getPackets(option)) {
         table.setText(rIdx, 0, pack.getCode(), STYLE_PACKET);
         table.setText(rIdx, 1, pack.getName(), STYLE_PACKET);
-        table.getCellFormatter().ensureElement(rIdx, 2).setClassName(STYLE_PACKET);
+        table.getCellFormatter().setStyleName(rIdx, 2, STYLE_PACKET);
 
         for (int c = 0; c < cols.size(); c++) {
           Bundle bundle = cols.get(c);
