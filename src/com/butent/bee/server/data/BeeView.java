@@ -889,7 +889,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     ListMultimap<String, String> result = ArrayListMultimap.create();
 
     columns.forEach((colName, columnInfo) -> {
-      if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()) {
+      if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()
+          && !BeeUtils.isEmpty(Localized.extractLanguage(colName))) {
         result.put(columnInfo.getField(), colName);
       }
     });
@@ -902,6 +903,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     columns.forEach((colName, columnInfo) -> {
       if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()
+          && !BeeUtils.isEmpty(Localized.extractLanguage(colName))
           && BeeUtils.same(columnInfo.getField(), fieldName)) {
         result.put(columnInfo.getLocale(), colName);
       }
