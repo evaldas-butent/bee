@@ -647,6 +647,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     initWidget(container);
   }
 
+  public String getOldValue() {
+    return oldValue;
+  }
+
   private boolean addChoice(ChoiceWidget choiceWidget) {
     Flow container = getContainer();
 
@@ -790,10 +794,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
     Queries.getRowSet(getOracle().getViewName(), null, Filter.idIn(ids),
         getOracle().getViewOrder(), callback);
-  }
-
-  private String getOldValue() {
-    return oldValue;
   }
 
   private String getSeparators() {

@@ -16,6 +16,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.modules.tasks.TasksReportsInterceptor.ReportType;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -391,7 +392,7 @@ public final class TasksKeeper {
     return createArgs(CRM_TASK_PREFIX + event.name());
   }
 
-  static void fireRelatedDataRefresh(IsRow taskRow, IsRow oldRow) {
+  static void fireRelatedDataRefresh(IsRow taskRow, Relations relations) {
     List<BeeColumn> columns = Data.getColumns(VIEW_TASKS);
 
     if (taskRow instanceof BeeRow) {
@@ -399,8 +400,9 @@ public final class TasksKeeper {
 
     }
 
-    if (TaskUtils.hasRelations(oldRow) || TaskUtils.hasRelations(taskRow)) {
+    if (relations != null && !BeeUtils.isEmpty(relations.getChildrenForUpdate())) {
       fireViewDataRefresh(VIEW_RELATED_TASKS, false);
+      relations.requery(taskRow, taskRow.getId());
     }
 
     for (BeeColumn column : columns) {

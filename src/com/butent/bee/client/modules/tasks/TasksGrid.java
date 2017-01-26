@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import static com.butent.bee.client.modules.mail.Relations.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -186,7 +187,7 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
           ParameterList params = TasksKeeper.createArgs(SVC_GET_TASK_DATA);
           params.addQueryItem(VAR_TASK_ID, getTaskId(presenter.getActiveRow()));
           params.addQueryItem(VAR_TASK_PROPERTIES, PROP_OBSERVERS);
-          params.addQueryItem(VAR_TASK_RELATIONS, 1);
+          params.addQueryItem(VAR_COPY_RELATIONS, BeeConst.STRING_ASTERISK);
 
           BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
             @Override
@@ -799,11 +800,10 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
         newRow.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(users));
       }
     }
-
-    for (String propName : TaskUtils.getRelationPropertyNames()) {
-      String propValue = oldRow.getProperty(propName);
+    for (String propViewName : TaskHelper.getRelatedViews()) {
+      String propValue = oldRow.getProperty(PFX_RELATED + propViewName);
       if (!BeeUtils.isEmpty(propValue)) {
-        newRow.setProperty(propName, propValue);
+        newRow.setProperty(PFX_RELATED + propViewName, propValue);
       }
     }
 
@@ -863,10 +863,10 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
       }
     }
 
-    for (String propName : TaskUtils.getRelationPropertyNames()) {
-      String propValue = oldRow.getProperty(propName);
+    for (String propViewName : TaskHelper.getRelatedViews()) {
+      String propValue = oldRow.getProperty(PFX_RELATED + propViewName);
       if (!BeeUtils.isEmpty(propValue)) {
-        newRow.setProperty(propName, propValue);
+        newRow.setProperty(PFX_RELATED + propViewName, propValue);
       }
     }
 
