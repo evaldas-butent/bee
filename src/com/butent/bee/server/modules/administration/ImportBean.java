@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.administration;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
@@ -1108,10 +1110,24 @@ public class ImportBean {
           errorProcessor.accept(loc.relations() + ": " + loc.option(), option.toString());
           ok = false;
         }
+        Set<Long> packet = new HashSet<>();
+
+        for (String optCode : Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults()
+            .splitToList(Strings.nullToEmpty(row.getValue(prfx + CarsConstants.COL_PACKET)))) {
+          Option opt = options.get(optCode);
+
+          if (Objects.isNull(opt)) {
+            errorProcessor.accept(loc.relations() + ": " + loc.packet(), optCode);
+            ok = false;
+          } else {
+            packet.add(opt.getId());
+          }
+        }
         if (ok) {
           configuration.setRelationInfo(option, bundle,
               ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
-                  .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)), null);
+                  .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)),
+              DataUtils.buildIdList(packet));
         }
       }
     }
@@ -1247,7 +1263,8 @@ public class ImportBean {
             cars.setRelation(branchId, bundle.getKey(), option.getId(),
                 ConfInfo.of(configuration.getRelationPrice(option, bundle),
                     configuration.getRelationDescription(option, bundle), null)
-                    .setCriteria(configuration.getRelationCriteria(option, bundle)), null);
+                    .setCriteria(configuration.getRelationCriteria(option, bundle)),
+                configuration.getRelationPackets(option, bundle));
             cnt++;
           }
         }

@@ -309,7 +309,8 @@ public class Configuration implements BeeSerializable {
   }
 
   public Set<Option> getPackets(Option option) {
-    return addOption(option).getPackets();
+    OptionInfo optionInfo = options.get(option);
+    return Objects.nonNull(optionInfo) ? optionInfo.getPackets() : null;
   }
 
   public Map<String, String> getRelationCriteria(Option option, Bundle bundle) {
