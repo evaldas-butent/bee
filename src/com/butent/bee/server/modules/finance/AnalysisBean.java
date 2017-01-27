@@ -263,7 +263,7 @@ public class AnalysisBean {
 
               String budgetCursor = null;
               IsCondition budgetCondition = null;
-              boolean budgetExchange = false;
+              boolean budgetExchange;
 
               if (DataUtils.isId(budgetType)
                   && AnalysisCellType.needsBudget(columnCellTypes, rowCellTypes)) {
@@ -439,6 +439,8 @@ public class AnalysisBean {
                     }
                   }
                 }
+
+                budgetExchange = true;
               }
 
               if (!BeeUtils.isEmpty(columnSplitValues)) {
@@ -451,6 +453,10 @@ public class AnalysisBean {
               boolean needsBudget = budgetCursor != null;
 
               if (needsBudget && !response.hasErrors()) {
+                if (budgetExchange) {
+                  budgetExchange = qs.sqlExists(budgetCursor,
+                      SqlUtils.notEqual(budgetCursor, COL_BUDGET_HEADER_CURRENCY, currency));
+                }
                 Long exchangeTo = budgetExchange ? currency : null;
 
                 results.mergeValues(computeBudgetValues(column.getId(), row.getId(),
@@ -507,7 +513,7 @@ public class AnalysisBean {
                         Double value = ScriptUtils.evalToDouble(engine, actualBindings,
                             script, response);
 
-                        av.maybeUpdateActualValue(value);
+                        av.updateActualValue(value);
                       }
 
                       if (budgetBindings != null) {
@@ -515,7 +521,7 @@ public class AnalysisBean {
                         Double value = ScriptUtils.evalToDouble(engine, budgetBindings,
                             script, response);
 
-                        av.maybeUpdateBudgetValue(value);
+                        av.updateBudgetValue(value);
                       }
 
                       if (response.hasErrors()) {
