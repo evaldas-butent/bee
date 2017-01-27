@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.finance;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -108,7 +109,7 @@ public class AnalysisBean {
     }
 
     ScriptEngine engine;
-    if (formData.hasScripting()) {
+    if (formData.hasScripting() || containsSecondaryIndicators(formData.getIndicators())) {
       engine = ScriptUtils.getEngine();
       if (engine == null) {
         response.addError("script engine not available");
@@ -144,6 +145,70 @@ public class AnalysisBean {
     Long currency = formData.getHeaderLong(COL_ANALYSIS_HEADER_CURRENCY);
     if (!DataUtils.isId(currency)) {
       currency = getDefaultCurrency();
+    }
+
+    Set<Long> primaryIndicators = new HashSet<>();
+
+    Map<Long, IndicatorSource> indicatorSources = new HashMap<>();
+    Map<Long, TurnoverOrBalance> indicatorTurnoverOrBalance = new HashMap<>();
+    Map<Long, NormalBalance> indicatorNormalBalance = new HashMap<>();
+
+    Map<Long, Integer> indicatorScales = new HashMap<>();
+
+    Map<Long, String> indicatorScripts = new HashMap<>();
+    Map<Long, String> indicatorAbbreviations = new HashMap<>();
+    Map<Long, Pattern> indicatorVariables = new HashMap<>();
+
+    BeeRowSet indicatorData = qs.getViewData(VIEW_FINANCIAL_INDICATORS);
+    if (!DataUtils.isEmpty(indicatorData)) {
+      int kindIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_KIND);
+
+      int sourceIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_SOURCE);
+      int tobIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_TURNOVER_OR_BALANCE);
+      int nbIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_NORMAL_BALANCE);
+
+      int scaleIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_SCALE);
+
+      int abbreviationIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_ABBREVIATION);
+      int scriptIndex = indicatorData.getColumnIndex(COL_FIN_INDICATOR_SCRIPT);
+
+      for (BeeRow indicatorRow : indicatorData) {
+        long indicator = indicatorRow.getId();
+
+        IndicatorKind kind = indicatorRow.getEnum(kindIndex, IndicatorKind.class);
+
+        String abbreviation = indicatorRow.getString(abbreviationIndex);
+        if (AnalysisUtils.isValidAbbreviation(abbreviation)) {
+          indicatorAbbreviations.put(indicator, abbreviation);
+          indicatorVariables.put(indicator, AnalysisScripting.getDetectionPattern(abbreviation));
+        }
+
+        TurnoverOrBalance tob = indicatorRow.getEnum(tobIndex, TurnoverOrBalance.class);
+        indicatorTurnoverOrBalance.put(indicator, BeeUtils.nvl(tob, TurnoverOrBalance.DEFAULT));
+
+        Integer scale = indicatorRow.getInteger(scaleIndex);
+        if (AnalysisUtils.isValidScale(scale)) {
+          indicatorScales.put(indicator, scale);
+        }
+
+        if (kind == IndicatorKind.PRIMARY) {
+          primaryIndicators.add(indicator);
+
+          IndicatorSource source = indicatorRow.getEnum(sourceIndex, IndicatorSource.class);
+          indicatorSources.put(indicator, BeeUtils.nvl(source, IndicatorSource.DEFAULT));
+
+          NormalBalance nb = indicatorRow.getEnum(nbIndex, NormalBalance.class);
+          if (nb != null) {
+            indicatorNormalBalance.put(indicator, nb);
+          }
+
+        } else if (kind == IndicatorKind.SECONDARY) {
+          String script = indicatorRow.getString(scriptIndex);
+          if (!BeeUtils.isEmpty(script)) {
+            indicatorScripts.put(indicator, script);
+          }
+        }
+      }
     }
 
     for (BeeRow column : formData.getColumns()) {
@@ -182,45 +247,28 @@ public class AnalysisBean {
 
               TurnoverOrBalance rowTurnoverOrBalance = formData.getRowEnum(row,
                   COL_ANALYSIS_ROW_TURNOVER_OR_BALANCE, TurnoverOrBalance.class);
-              TurnoverOrBalance indicatorTurnoverOrBalance =
-                  getIndicatorTurnoverOrBalance(indicator);
+              TurnoverOrBalance indicatorTOB = indicatorTurnoverOrBalance.get(indicator);
+
               TurnoverOrBalance turnoverOrBalance = BeeUtils.nvl(columnTurnoverOrBalance,
-                  rowTurnoverOrBalance, indicatorTurnoverOrBalance);
-
-              NormalBalance normalBalance = getIndicatorNormalBalance(indicator);
-
-              Pair<Filter, Filter> accountFilters =
-                  getIndicatorAccountFilters(indicator, turnoverOrBalance, normalBalance);
+                  rowTurnoverOrBalance, indicatorTOB);
 
               Filter rowFilter = formData.getRowFilter(row, COL_FIN_EMPLOYEE, filterParser);
               Filter parentFilter = Filter.and(headerFilter, columnFilter, rowFilter);
 
               AnalysisFilter rowAnalysisFilter = formData.getRowAnalysisFilter(row);
 
-              IndicatorSource indicatorSource = getIndicatorSource(indicator);
-              String sourceColumn = indicatorSource.getSourceColumn();
-              Long sourceCurrency = indicatorSource.hasCurrency() ? currency : null;
-
-              Filter valueFilter = getActualValueFilter(indicator, parentFilter, sourceColumn,
-                  finView, userId);
-
-              Filter plusFilter = accountFilters.getA();
-              Filter minusFilter = accountFilters.getB();
-
               List<AnalysisSplitType> rowSplitTypes = results.getRowSplitTypes(row.getId());
 
-              Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues =
-                  new EnumMap<>(AnalysisSplitType.class);
-              Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues =
-                  new EnumMap<>(AnalysisSplitType.class);
+              boolean needsActual = AnalysisCellType.needsActual(columnCellTypes, rowCellTypes);
 
               String budgetCursor = null;
               IsCondition budgetCondition = null;
+              boolean budgetExchange = false;
 
               if (DataUtils.isId(budgetType)
                   && AnalysisCellType.needsBudget(columnCellTypes, rowCellTypes)) {
 
-                budgetCursor = getBudgetCursor(indicator, indicatorTurnoverOrBalance,
+                budgetCursor = getBudgetCursor(indicator, indicatorTOB,
                     budgetType, turnoverOrBalance);
 
                 if (qs.isEmpty(budgetCursor)) {
@@ -235,49 +283,180 @@ public class AnalysisBean {
                 }
               }
 
-              if (!BeeUtils.isEmpty(columnSplitTypes)) {
-                for (AnalysisSplitType type : columnSplitTypes) {
-                  List<AnalysisSplitValue> splitValues = getSplitValues(type,
-                      valueFilter, plusFilter, minusFilter, finView, userId,
-                      budgetCursor, budgetCondition, range, turnoverOrBalance);
+              Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues = null;
+              Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues = null;
 
-                  if (!splitValues.isEmpty()) {
-                    columnSplitValues.put(type, splitValues);
-                    results.addColumnSplitValues(column.getId(), type, splitValues);
+              if (primaryIndicators.contains(indicator)) {
+                IndicatorSource indicatorSource = indicatorSources.get(indicator);
+                String sourceColumn = indicatorSource.getSourceColumn();
+                Long sourceCurrency = indicatorSource.hasCurrency() ? currency : null;
+
+                Filter valueFilter = getActualValueFilter(indicator, parentFilter, sourceColumn,
+                    finView, userId);
+
+                NormalBalance normalBalance = indicatorNormalBalance.get(indicator);
+                if (normalBalance == null) {
+                  normalBalance = getIndicatorNormalBalance(indicator);
+                }
+
+                Pair<Filter, Filter> accountFilters =
+                    getIndicatorAccountFilters(indicator, turnoverOrBalance, normalBalance);
+                Filter plusFilter = accountFilters.getA();
+                Filter minusFilter = accountFilters.getB();
+
+                if (accountFilters.isNull()) {
+                  needsActual = false;
+                }
+
+                Filter finSplitFilter = Filter.and(valueFilter, Filter.or(plusFilter, minusFilter));
+
+                columnSplitValues = getPotentialSplit(columnSplitTypes,
+                    finView, userId, finSplitFilter, budgetCursor, budgetCondition,
+                    range, turnoverOrBalance);
+                rowSplitValues = getPotentialSplit(rowSplitTypes,
+                    finView, userId, finSplitFilter, budgetCursor, budgetCondition,
+                    range, turnoverOrBalance);
+
+                if (needsActual) {
+                  results.addValues(computeActualValues(column.getId(), row.getId(),
+                      valueFilter, plusFilter, minusFilter, range, turnoverOrBalance,
+                      columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
+                      indicatorSource, finView, userId, sourceCurrency, actualValueStats));
+                }
+
+                budgetExchange = indicatorSource.hasCurrency();
+
+              } else {
+
+                Multimap<Integer, Long> calculationSequence =
+                    AnalysisScripting.buildIndicatorCalculationSequence(indicator,
+                        indicatorScripts, indicatorVariables, response::addError);
+
+                if (!calculationSequence.isEmpty() && !response.hasErrors()) {
+                  Multimap<String, AnalysisValue> values = ArrayListMultimap.create();
+
+                  Set<Long> primaries = BeeUtils.intersection(calculationSequence.values(),
+                      primaryIndicators);
+
+                  CompoundFilter finSplitFilter = Filter.or();
+
+                  Map<Long, Filter> plusFilters = new HashMap<>();
+                  Map<Long, Filter> minusFilters = new HashMap<>();
+
+                  Map<Long, Filter> valueFilters = new HashMap<>();
+
+                  for (long primary : primaries) {
+                    IndicatorSource indicatorSource = indicatorSources.get(primary);
+                    String sourceColumn = indicatorSource.getSourceColumn();
+
+                    Filter valueFilter = getActualValueFilter(primary, parentFilter,
+                        sourceColumn, finView, userId);
+
+                    NormalBalance normalBalance = indicatorNormalBalance.get(primary);
+                    if (normalBalance == null) {
+                      normalBalance = getIndicatorNormalBalance(primary);
+                    }
+
+                    Pair<Filter, Filter> accountFilters =
+                        getIndicatorAccountFilters(primary, turnoverOrBalance, normalBalance);
+                    Filter plusFilter = accountFilters.getA();
+                    Filter minusFilter = accountFilters.getB();
+
+                    finSplitFilter.add(Filter.and(valueFilter,
+                        Filter.or(plusFilter, minusFilter)));
+
+                    plusFilters.put(primary, plusFilter);
+                    minusFilters.put(primary, minusFilter);
+
+                    valueFilters.put(primary, valueFilter);
+                  }
+
+                  columnSplitValues = getPotentialSplit(columnSplitTypes,
+                      finView, userId, finSplitFilter, budgetCursor, budgetCondition,
+                      range, turnoverOrBalance);
+                  rowSplitValues = getPotentialSplit(rowSplitTypes,
+                      finView, userId, finSplitFilter, budgetCursor, budgetCondition,
+                      range, turnoverOrBalance);
+
+                  if (needsActual) {
+                    for (long primary : primaries) {
+                      IndicatorSource indicatorSource = indicatorSources.get(primary);
+                      Long sourceCurrency = indicatorSource.hasCurrency() ? currency : null;
+
+                      Collection<AnalysisValue> primaryValues = computeActualValues(
+                          column.getId(), row.getId(), valueFilters.get(primary),
+                          plusFilters.get(primary), minusFilters.get(primary),
+                          range, turnoverOrBalance,
+                          columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
+                          indicatorSource, finView, userId, sourceCurrency, actualValueStats);
+
+                      if (!BeeUtils.isEmpty(primaryValues)) {
+                        values.putAll(indicatorAbbreviations.get(primary), primaryValues);
+                      }
+                    }
+
+                    List<Integer> levels = new ArrayList<>(calculationSequence.keySet());
+                    levels.sort(null);
+
+                    for (int level : levels) {
+                      for (long secondary : calculationSequence.get(level)) {
+                        if (!primaryIndicators.contains(secondary)
+                            && indicatorScripts.containsKey(secondary)) {
+
+                          List<AnalysisValue> secondaryValues =
+                              AnalysisScripting.calculateSecondaryIndicator(engine,
+                                  indicatorScripts.get(secondary), column.getId(), row.getId(),
+                                  indicatorAbbreviations.values(), values,
+                                  columnSplitTypes, columnSplitValues,
+                                  rowSplitTypes, rowSplitValues, response);
+
+                          if (response.hasErrors()) {
+                            break;
+                          }
+
+                          if (Objects.equals(secondary, indicator)) {
+                            if (!BeeUtils.isEmpty(secondaryValues)) {
+                              results.addValues(secondaryValues);
+                            }
+                            break;
+
+                          } else if (!BeeUtils.isEmpty(secondaryValues)
+                              && indicatorAbbreviations.containsKey(secondary)) {
+
+                            Integer scale = indicatorScales.get(secondary);
+                            if (AnalysisUtils.isValidScale(scale)) {
+                              secondaryValues.forEach(av -> av.round(scale));
+                            }
+
+                            values.putAll(indicatorAbbreviations.get(secondary), secondaryValues);
+                          }
+                        }
+                      }
+
+                      if (response.hasErrors()) {
+                        break;
+                      }
+                    }
                   }
                 }
               }
 
-              if (!BeeUtils.isEmpty(rowSplitTypes)) {
-                for (AnalysisSplitType type : rowSplitTypes) {
-                  List<AnalysisSplitValue> splitValues = getSplitValues(type,
-                      valueFilter, plusFilter, minusFilter, finView, userId,
-                      budgetCursor, budgetCondition, range, turnoverOrBalance);
-
-                  if (!splitValues.isEmpty()) {
-                    rowSplitValues.put(type, splitValues);
-                    results.addRowSplitValues(row.getId(), type, splitValues);
-                  }
-                }
+              if (!BeeUtils.isEmpty(columnSplitValues)) {
+                results.addColumnSplitValues(column.getId(), columnSplitValues);
               }
-
-              boolean needsActual = !accountFilters.isNull()
-                  && AnalysisCellType.needsActual(columnCellTypes, rowCellTypes);
-
-              if (needsActual) {
-                results.addValues(computeActualValues(column.getId(), row.getId(),
-                    valueFilter, plusFilter, minusFilter, range, turnoverOrBalance,
-                    columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
-                    indicatorSource, finView, userId, sourceCurrency, actualValueStats));
+              if (!BeeUtils.isEmpty(rowSplitValues)) {
+                results.addRowSplitValues(row.getId(), rowSplitValues);
               }
 
               boolean needsBudget = budgetCursor != null;
 
-              if (needsBudget) {
+              if (needsBudget && !response.hasErrors()) {
+                Long exchangeTo = budgetExchange ? currency : null;
+
                 results.mergeValues(computeBudgetValues(column.getId(), row.getId(),
                     budgetCursor, budgetCondition, range, turnoverOrBalance,
                     columnSplitTypes, columnSplitValues, rowSplitTypes, rowSplitValues,
-                    sourceCurrency));
+                    exchangeTo));
 
                 qs.sqlDropTemp(budgetCursor);
               }
@@ -352,7 +531,7 @@ public class AnalysisBean {
                     scale = formData.getRowScale(row);
                   }
                   if (!AnalysisUtils.isValidScale(scale)) {
-                    scale = getIndicatorScale(indicator);
+                    scale = indicatorScales.get(indicator);
                   }
 
                   if (AnalysisUtils.isValidScale(scale)) {
@@ -723,6 +902,20 @@ public class AnalysisBean {
     return response;
   }
 
+  private boolean containsSecondaryIndicators(Set<Long> indicators) {
+    if (BeeUtils.isEmpty(indicators)) {
+      return false;
+    }
+
+    String tbl = TBL_FINANCIAL_INDICATORS;
+
+    return qs.sqlExists(tbl,
+        SqlUtils.and(
+            SqlUtils.inList(tbl, sys.getIdName(tbl), indicators),
+            SqlUtils.equals(tbl, COL_FIN_INDICATOR_KIND, IndicatorKind.SECONDARY.ordinal()),
+            SqlUtils.notNull(tbl, COL_FIN_INDICATOR_SCRIPT)));
+  }
+
   private List<String> validateIndicators(Set<Long> indicators, Dictionary dictionary) {
     List<String> messages = new ArrayList<>();
     if (BeeUtils.isEmpty(indicators)) {
@@ -927,9 +1120,31 @@ public class AnalysisBean {
     return AnalysisUtils.normalize(filter);
   }
 
+  private Map<AnalysisSplitType, List<AnalysisSplitValue>> getPotentialSplit(
+      List<AnalysisSplitType> splitTypes, BeeView finView, Long userId, Filter finFilter,
+      String budgetCursor, IsCondition budgetCondition,
+      MonthRange range, TurnoverOrBalance turnoverOrBalance) {
+
+    Map<AnalysisSplitType, List<AnalysisSplitValue>> result =
+        new EnumMap<>(AnalysisSplitType.class);
+
+    if (!BeeUtils.isEmpty(splitTypes)) {
+      for (AnalysisSplitType splitType : splitTypes) {
+        List<AnalysisSplitValue> splitValues = getSplitValues(splitType,
+            finView, userId, finFilter, budgetCursor, budgetCondition, range, turnoverOrBalance);
+
+        if (!BeeUtils.isEmpty(splitValues)) {
+          result.put(splitType, splitValues);
+        }
+      }
+    }
+
+    return result;
+  }
+
   private List<AnalysisSplitValue> getSplitValues(AnalysisSplitType type,
-      Filter parentFilter, Filter plusFilter, Filter minusFilter,
-      BeeView finView, Long userId, String budgetCursor, IsCondition budgetCondition,
+      BeeView finView, Long userId, Filter finFilter,
+      String budgetCursor, IsCondition budgetCondition,
       MonthRange range, TurnoverOrBalance turnoverOrBalance) {
 
     List<AnalysisSplitValue> result = new ArrayList<>();
@@ -940,7 +1155,7 @@ public class AnalysisBean {
     }
 
     CompoundFilter filter = Filter.and();
-    filter.add(parentFilter, Filter.or(plusFilter, minusFilter));
+    filter.add(finFilter);
 
     if (!type.isPeriod() && TurnoverOrBalance.isBalance(turnoverOrBalance)) {
       filter.add(TurnoverOrBalance.CLOSING_BALANCE.getRangeFilter(COL_FIN_DATE, range));
@@ -1197,16 +1412,6 @@ public class AnalysisBean {
     return qs.getValueSet(query);
   }
 
-  private TurnoverOrBalance getIndicatorTurnoverOrBalance(long indicator) {
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_TURNOVER_OR_BALANCE)
-        .addFrom(TBL_FINANCIAL_INDICATORS)
-        .setWhere(sys.idEquals(TBL_FINANCIAL_INDICATORS, indicator));
-
-    TurnoverOrBalance turnoverOrBalance = qs.getEnum(query, TurnoverOrBalance.class);
-    return (turnoverOrBalance == null) ? TurnoverOrBalance.DEFAULT : turnoverOrBalance;
-  }
-
   private NormalBalance getIndicatorNormalBalance(long indicator) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_NORMAL_BALANCE)
@@ -1232,29 +1437,6 @@ public class AnalysisBean {
     }
 
     return (normalBalance == null) ? NormalBalance.DEFAULT : normalBalance;
-  }
-
-  private IndicatorSource getIndicatorSource(long indicator) {
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_SOURCE)
-        .addFrom(TBL_FINANCIAL_INDICATORS)
-        .setWhere(sys.idEquals(TBL_FINANCIAL_INDICATORS, indicator));
-
-    IndicatorSource indicatorSource = qs.getEnum(query, IndicatorSource.class);
-    if (indicatorSource == null) {
-      indicatorSource = IndicatorSource.DEFAULT;
-    }
-
-    return indicatorSource;
-  }
-
-  private Integer getIndicatorScale(long indicator) {
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_FINANCIAL_INDICATORS, COL_FIN_INDICATOR_SCALE)
-        .addFrom(TBL_FINANCIAL_INDICATORS)
-        .setWhere(sys.idEquals(TBL_FINANCIAL_INDICATORS, indicator));
-
-    return qs.getInt(query);
   }
 
   private static Map<AnalysisSplitType, AnalysisSplitValue> getRootSplit() {
@@ -1289,8 +1471,9 @@ public class AnalysisBean {
 
     List<AnalysisValue> values = new ArrayList<>();
 
-    boolean hasColumnSplits = !columnSplitTypes.isEmpty() && !columnSplitValues.isEmpty();
-    boolean hasRowSplits = !rowSplitTypes.isEmpty() && !rowSplitValues.isEmpty();
+    boolean hasColumnSplits = !BeeUtils.isEmpty(columnSplitTypes)
+        && !BeeUtils.isEmpty(columnSplitValues);
+    boolean hasRowSplits = !BeeUtils.isEmpty(rowSplitTypes) && !BeeUtils.isEmpty(rowSplitValues);
 
     if (hasColumnSplits && hasRowSplits) {
       values.addAll(computeActualSplitMatrix(columnId, rowId, getRootSplit(),
@@ -1744,8 +1927,9 @@ public class AnalysisBean {
 
     List<AnalysisValue> values = new ArrayList<>();
 
-    boolean hasColumnSplits = !columnSplitTypes.isEmpty() && !columnSplitValues.isEmpty();
-    boolean hasRowSplits = !rowSplitTypes.isEmpty() && !rowSplitValues.isEmpty();
+    boolean hasColumnSplits = !BeeUtils.isEmpty(columnSplitTypes)
+        && !BeeUtils.isEmpty(columnSplitValues);
+    boolean hasRowSplits = !BeeUtils.isEmpty(rowSplitTypes) && !BeeUtils.isEmpty(rowSplitValues);
 
     if (hasColumnSplits && hasRowSplits) {
       values.addAll(computeBudgetSplitMatrix(columnId, rowId, null,

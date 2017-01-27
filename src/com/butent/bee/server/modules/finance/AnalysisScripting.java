@@ -139,8 +139,7 @@ final class AnalysisScripting {
       Map<Long, String> scripts, Map<Long, Pattern> variables, Consumer<String> errorHandler) {
 
     Multimap<Integer, Long> result = ArrayListMultimap.create();
-    if (BeeUtils.isEmpty(scripts) || BeeUtils.isEmpty(variables)
-        || !scripts.containsKey(indicator)) {
+    if (!BeeUtils.containsKey(scripts, indicator)) {
       return result;
     }
 
@@ -340,6 +339,85 @@ final class AnalysisScripting {
       values.add(calculateValue(engine, script,
           columnId, columnAbbreviation, rowId, rowAbbreviation, null, null,
           variables, input, needsActual, needsBudget, errorCollector));
+    }
+
+    return values;
+  }
+
+  private static AnalysisValue calculateSecondaryIndicator(ScriptEngine engine, String script,
+      long columnId, long rowId,
+      Map<AnalysisSplitType, AnalysisSplitValue> columnSplit,
+      Map<AnalysisSplitType, AnalysisSplitValue> rowSplit,
+      Collection<String> variables, Multimap<String, AnalysisValue> input,
+      ResponseObject errorCollector) {
+
+    Map<String, Double> values = new HashMap<>();
+
+    variables.forEach(key -> values.put(key, BeeConst.DOUBLE_ZERO));
+
+    input.forEach((key, value) -> {
+      if (value.containsColumnSplit(columnSplit) && value.containsRowSplit(rowSplit)) {
+        values.merge(key, value.getActualNumber(), Double::sum);
+      }
+    });
+
+    Bindings bindings;
+    if (values.isEmpty()) {
+      bindings = null;
+    } else {
+      bindings = engine.createBindings();
+      bindings.putAll(values);
+    }
+
+    Double actualValue = ScriptUtils.evalToDouble(engine, bindings, script, errorCollector);
+
+    if (BeeUtils.nonZero(actualValue)) {
+      return AnalysisValue.of(columnId, rowId, columnSplit, rowSplit, actualValue, null);
+    } else {
+      return null;
+    }
+  }
+
+  static List<AnalysisValue> calculateSecondaryIndicator(ScriptEngine engine, String script,
+      long columnId, long rowId,
+      Collection<String> variables, Multimap<String, AnalysisValue> input,
+      List<AnalysisSplitType> columnSplitTypes,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> columnSplitValues,
+      List<AnalysisSplitType> rowSplitTypes,
+      Map<AnalysisSplitType, List<AnalysisSplitValue>> rowSplitValues,
+      ResponseObject errorCollector) {
+
+    List<AnalysisValue> values = new NonNullList<>();
+
+    boolean hasColumnSplits = !BeeUtils.isEmpty(columnSplitTypes)
+        && !BeeUtils.isEmpty(columnSplitValues);
+    boolean hasRowSplits = !BeeUtils.isEmpty(rowSplitTypes) && !BeeUtils.isEmpty(rowSplitValues);
+
+    if (hasColumnSplits && hasRowSplits) {
+      List<Map<AnalysisSplitType, AnalysisSplitValue>> columnPermutations =
+          AnalysisSplitValue.getPermutations(null, columnSplitTypes, 0, columnSplitValues, 0);
+      List<Map<AnalysisSplitType, AnalysisSplitValue>> rowPermutations =
+          AnalysisSplitValue.getPermutations(null, rowSplitTypes, 0, rowSplitValues, 0);
+
+      if (!columnPermutations.isEmpty() && !rowPermutations.isEmpty()) {
+        columnPermutations.forEach(columnPermutation -> rowPermutations.forEach(rowPermutation ->
+            values.add(calculateSecondaryIndicator(engine, script, columnId, rowId,
+                columnPermutation, rowPermutation, variables, input, errorCollector))));
+      }
+
+    } else if (hasColumnSplits) {
+      AnalysisSplitValue.getPermutations(null, columnSplitTypes, 0, columnSplitValues, 0)
+          .forEach(permutation -> values.add(calculateSecondaryIndicator(engine, script,
+              columnId, rowId, permutation, null, variables, input, errorCollector)));
+
+    } else if (hasRowSplits) {
+      AnalysisSplitValue.getPermutations(null, rowSplitTypes, 0, rowSplitValues, 0)
+          .forEach(permutation -> values.add(calculateSecondaryIndicator(engine, script,
+              columnId, rowId, null, permutation, variables, input, errorCollector)));
+
+    } else {
+      values.add(calculateSecondaryIndicator(engine, script, columnId, rowId, null, null,
+          variables, input, errorCollector));
     }
 
     return values;
