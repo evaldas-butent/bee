@@ -75,7 +75,7 @@
       <row module="Projects" data="Projects">
         <Label text="=project" name="ProjectLabel" />
         <DataSelector source="Project" renderColumns="ProjectName" style="&inp2x;" disablable="true"
-          readOnly="true" editPopup="false" />
+                      editPopup="false" />
       </row>
       <row module="Projects" data="ProjectStages">
         <Label text="=prjStage" name="ProjectStageLabel" />

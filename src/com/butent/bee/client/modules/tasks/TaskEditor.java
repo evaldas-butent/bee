@@ -108,6 +108,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -672,7 +673,7 @@ class TaskEditor extends ProductSupportInterceptor {
     final FaLabel createDocument = new FaLabel(FontAwesome.FILE_O);
     createDocument.setTitle(Localized.dictionary().documentNew());
     createDocument.addClickHandler(event -> {
-      setEnabled(createDocument, false);
+      TaskHelper.setWidgetEnabled(createDocument, false);
       ensureDefaultDBAParameters(createDocument, row);
     });
 
@@ -705,7 +706,7 @@ class TaskEditor extends ProductSupportInterceptor {
     setProjectStagesFilter(form, row);
     setProjectUsersFilter(form, row);
 
-    setEnabled(relations, isExecutor() || isOwner());
+    TaskHelper.setWidgetEnabled(relations, isExecutor() || isOwner());
 
     header.addCommandItem(createMenuLabel());
 
@@ -773,7 +774,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    setEnabled(relations, isExecutor() || isOwner());
+    TaskHelper.setWidgetEnabled(relations, isExecutor() || isOwner());
     setLateIndicatorHtml(null);
     super.beforeRefresh(form, row);
   }
@@ -864,7 +865,7 @@ class TaskEditor extends ProductSupportInterceptor {
     TaskStatus oldStatus = EnumUtils.getEnumByIndex(TaskStatus.class,
         row.getInteger(form.getDataIndex(COL_STATUS)));
 
-    setEnabled(form, Objects.equals(owner, userId));
+    TaskHelper.setWidgetEnabled(form, Objects.equals(owner, userId));
 
     TaskStatus newStatus = oldStatus;
 
@@ -1132,23 +1133,6 @@ class TaskEditor extends ProductSupportInterceptor {
     form.refreshBySource(column);
   }
 
-  private static void setEnabled(HasEnabled widget, boolean enabled) {
-    if (widget == null) {
-      return;
-    }
-
-    widget.setEnabled(enabled);
-  }
-
-  private static void setSelectorFilter(DataSelector selector, Filter filter) {
-    if (selector == null) {
-      return;
-    }
-
-    selector.getOracle().setAdditionalFilter(filter, true);
-  }
-
-
   private void createCellValidationHandler(FormView form, IsRow row) {
 
     if (form == null || row == null) {
@@ -1408,18 +1392,6 @@ class TaskEditor extends ProductSupportInterceptor {
 
     int idxSummary = newTaskInfo.getColumnIndex(COL_SUMMARY);
     int idxDescription = newTaskInfo.getColumnIndex(COL_DESCRIPTION);
-    int idxPriority = newTaskInfo.getColumnIndex(COL_PRIORITY);
-    int idxType = newTaskInfo.getColumnIndex(COL_TASK_TYPE);
-    int idxTypeName = newTaskInfo.getColumnIndex(ALS_TASK_TYPE_NAME);
-    int idxCompany = newTaskInfo.getColumnIndex(COL_COMPANY);
-    int idxCompanyName = newTaskInfo.getColumnIndex(ALS_COMPANY_NAME);
-    int idxCompanyType = newTaskInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME);
-    int idxContact = newTaskInfo.getColumnIndex(COL_CONTACT);
-    int idxContactFirstName = newTaskInfo.getColumnIndex(TaskConstants.ALS_CONTACT_FIRST_NAME);
-    int idxContactLastName = newTaskInfo.getColumnIndex(TaskConstants.ALS_CONTACT_LAST_NAME);
-
-    int idxProject = newTaskInfo.getColumnIndex(ProjectConstants.COL_PROJECT);
-    int idxProjectStage = newTaskInfo.getColumnIndex(ProjectConstants.COL_PROJECT_STAGE);
 
     newTaskRow.setValue(idxSummary, Data.clamp(VIEW_TASKS, COL_SUMMARY, BeeUtils.joinWords(taskRow
         .getString(idxSummary), BeeUtils
@@ -1465,53 +1437,33 @@ class TaskEditor extends ProductSupportInterceptor {
 
     newTaskRow.setValue(idxDescription, Data.clamp(VIEW_TASKS, COL_DESCRIPTION, description));
 
-    newTaskRow.setValue(idxPriority, taskRow
-        .getInteger(idxPriority));
+    Arrays.asList(COL_PRIORITY, COL_TASK_TYPE, COL_COMPANY, COL_CONTACT,
+        ProjectConstants.COL_PROJECT, ProjectConstants.COL_PROJECT_STAGE)
+        .forEach((String column) -> {
 
-    newTaskRow.setValue(idxType, taskRow
-        .getLong(idxType));
+          if (!newTaskInfo.containsColumn(column)) {
+            return;
+          }
+          Data.setValue(VIEW_TASKS, newTaskRow, column,
+              Data.getString(VIEW_TASKS, taskRow, column));
 
-    newTaskRow.setValue(idxTypeName, taskRow
-        .getString(idxTypeName));
-
-    newTaskRow.setValue(idxCompany, taskRow
-        .getLong(idxCompany));
-
-    newTaskRow.setValue(idxCompanyName, taskRow
-        .getString(idxCompanyName));
-
-    newTaskRow.setValue(idxCompanyType, taskRow
-        .getLong(idxCompanyType));
-
-    newTaskRow.setValue(idxContact, taskRow
-        .getLong(idxContact));
-
-    newTaskRow.setValue(idxContactFirstName, taskRow
-        .getString(idxContactFirstName));
-
-    newTaskRow.setValue(idxContactLastName, taskRow
-        .getString(idxContactLastName));
-
-    newTaskRow.setValue(idxProject, taskRow
-        .getLong(idxProject));
-
-    newTaskRow.setValue(idxProjectStage, taskRow
-        .getLong(idxProjectStage));
-
+          if (newTaskInfo.hasRelation(column)) {
+            RelationUtils.updateRow(Data.getDataInfo(VIEW_TASKS), column, newTaskRow,
+                Data.getDataInfo(VIEW_TASKS), taskRow, false);
+          }
+        });
     Map<Long, FileInfo> files = Maps.newLinkedHashMap();
-
-    for (FileInfo file : TaskUtils.getFiles(taskRow)) {
-      files.put(file.getId(), file);
-    }
+    TaskUtils.getFiles(taskRow).forEach(file -> files.put(file.getId(), file));
 
     RowFactory.createRow(newTaskInfo.getNewRowForm(), newTaskInfo.getNewRowCaption(), newTaskInfo,
         newTaskRow, Modality.ENABLED, null, new TaskBuilder(files, null, true), null,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
-            if (result != null) {
-              createTaskLinks(taskRow, eventId, result.getString(0));
+            if (result == null || result.getNumberOfCells() < 1) {
+              return;
             }
+            createTaskLinks(taskRow, eventId, result.getString(0));
           }
         });
   }
@@ -1855,7 +1807,7 @@ class TaskEditor extends ProductSupportInterceptor {
             added++;
             if (added >= MAX_PARAM_COUNT) {
               createDocument(null, row, true);
-              setEnabled(widget, true);
+              TaskHelper.setWidgetEnabled(widget, true);
             }
           }
         };
@@ -2249,8 +2201,7 @@ class TaskEditor extends ProductSupportInterceptor {
     if (BeeConst.isUndef(idxProject)) {
       return;
     }
-
-    setEnabled(stagesSelector, false);
+    TaskHelper.setWidgetEnabled(stagesSelector, false);
 
     if (BeeConst.isUndef(idxProjectStatus)) {
       return;
@@ -2269,9 +2220,9 @@ class TaskEditor extends ProductSupportInterceptor {
     if (ProjectStatus.APPROVED.ordinal() == projectStatus) {
       return;
     }
-
-    setSelectorFilter(stagesSelector, Filter.equals(ProjectConstants.COL_PROJECT, projectId));
-    setEnabled(stagesSelector, true);
+    TaskHelper.setSelectorFilter(stagesSelector, Filter.equals(ProjectConstants.COL_PROJECT,
+        projectId));
+    TaskHelper.setWidgetEnabled(stagesSelector, true);
   }
 
   private void setProjectUsers(List<Long> projectUsers) {
@@ -2298,18 +2249,18 @@ class TaskEditor extends ProductSupportInterceptor {
     boolean canChangeOwner = (isOwner() || BeeKeeper.getUser().isAdministrator())
             && validStatus;
 
-
-    setEnabled(ownerSelector, canChangeOwner);
-    setEnabled(observersSelector, isOwner());
+    TaskHelper.setWidgetEnabled(ownerSelector, canChangeOwner);
+    TaskHelper.setWidgetEnabled(observersSelector, isOwner());
 
     if (!DataUtils.isId(projectId)) {
-      setSelectorFilter(ownerSelector, null);
-      setSelectorFilter(observersSelector, null);
+      TaskHelper.setSelectorFilter(ownerSelector, null);
+      TaskHelper.setSelectorFilter(observersSelector, null);
       return;
     }
-
-    setEnabled(observersSelector, isOwner() || (projectOwner == userId && validStatus));
-    setEnabled(ownerSelector, canChangeOwner || (projectOwner == userId && validStatus));
+    TaskHelper.setWidgetEnabled(observersSelector, isOwner()
+        || (projectOwner == userId && validStatus));
+    TaskHelper.setWidgetEnabled(ownerSelector, canChangeOwner
+        || (projectOwner == userId && validStatus));
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(COL_USER), Filter.isEqual(
@@ -2332,11 +2283,10 @@ class TaskEditor extends ProductSupportInterceptor {
             userIds.add(projectUser);
           }
         }
-
         Filter projectTeamFilter = Filter.idIn(userIds);
 
-        setSelectorFilter(observersSelector, projectTeamFilter);
-        setSelectorFilter(ownerSelector, projectTeamFilter);
+        TaskHelper.setSelectorFilter(observersSelector, projectTeamFilter);
+        TaskHelper.setSelectorFilter(ownerSelector, projectTeamFilter);
         setProjectUsers(userIds);
       }
     });

@@ -25,13 +25,14 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.modules.projects.ProjectsHelper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -52,6 +53,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -62,6 +64,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -113,6 +116,8 @@ class TaskBuilder extends ProductSupportInterceptor {
   private MultiSelector executorGroups;
   private MultiSelector observers;
   private MultiSelector observerGroups;
+  private DataSelector projectSelector;
+  private DataSelector stagesSelector;
 
   private InputBoolean notScheduledTask;
   private Relations relations;
@@ -145,31 +150,43 @@ class TaskBuilder extends ProductSupportInterceptor {
     if (BeeUtils.inList(editableWidget.getWidgetName(), NAME_EXPECTED_DURATION,
         NAME_USER_GROUP_SETTINGS)) {
 
-      editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
-        @Override
-        public Boolean validateCell(CellValidateEvent event) {
-          if (event.isCellValidation() && event.isPreValidation()
-              && BeeUtils.isEmpty(event.getNewValue())) {
+      editableWidget.addCellValidationHandler(event -> {
+        if (event.isCellValidation() && event.isPreValidation()
+            && BeeUtils.isEmpty(event.getNewValue())) {
 
-            if (BeeUtils.same(editableWidget.getWidgetName(), NAME_EXPECTED_DURATION)) {
-              endDateInputLabel.removeStyleName(StyleUtils.NAME_HAS_DEFAULTS);
-            } else if (BeeUtils.same(editableWidget.getWidgetName(), NAME_USER_GROUP_SETTINGS)) {
-              executorsLabel.removeStyleName(StyleUtils.NAME_HAS_DEFAULTS);
-            }
-
-          } else if (event.isCellValidation() && event.isPreValidation()
-              && !BeeUtils.isEmpty(event.getNewValue())) {
-            if (BeeUtils.same(editableWidget.getWidgetName(), NAME_EXPECTED_DURATION)) {
-              endDateInputLabel.addStyleName(StyleUtils.NAME_HAS_DEFAULTS);
-            } else if (BeeUtils.same(editableWidget.getWidgetName(), NAME_USER_GROUP_SETTINGS)) {
-              executorsLabel.addStyleName(StyleUtils.NAME_HAS_DEFAULTS);
-            }
+          if (BeeUtils.same(editableWidget.getWidgetName(), NAME_EXPECTED_DURATION)) {
+            endDateInputLabel.removeStyleName(StyleUtils.NAME_HAS_DEFAULTS);
+          } else if (BeeUtils.same(editableWidget.getWidgetName(), NAME_USER_GROUP_SETTINGS)) {
+            executorsLabel.removeStyleName(StyleUtils.NAME_HAS_DEFAULTS);
           }
-          return true;
-        }
-      });
-    }
 
+        } else if (event.isCellValidation() && event.isPreValidation()
+            && !BeeUtils.isEmpty(event.getNewValue())) {
+          if (BeeUtils.same(editableWidget.getWidgetName(), NAME_EXPECTED_DURATION)) {
+            endDateInputLabel.addStyleName(StyleUtils.NAME_HAS_DEFAULTS);
+          } else if (BeeUtils.same(editableWidget.getWidgetName(), NAME_USER_GROUP_SETTINGS)) {
+            executorsLabel.addStyleName(StyleUtils.NAME_HAS_DEFAULTS);
+          }
+        }
+        return true;
+      });
+    } else if (BeeUtils.same(editableWidget.getColumnId(), ProjectConstants.COL_PROJECT)
+        && widget instanceof DataSelector) {
+      projectSelector = (DataSelector) widget;
+      projectSelector.addSelectorHandler(
+          event -> {
+            FormView form = ViewHelper.getForm(event.getSelector());
+
+            if (!BeeUtils.same(form.getViewName(), VIEW_TASKS) && !form.isEnabled()) {
+              return;
+            }
+            setProjectStagesFilter(form, form.getActiveRow(), event);
+            setProjectUsersFilter(form, form.getActiveRow());
+          });
+    } else if (BeeUtils.same(editableWidget.getColumnId(), ProjectConstants.COL_PROJECT_STAGE)
+        && widget instanceof DataSelector) {
+      stagesSelector = (DataSelector) widget;
+    }
     super.afterCreateEditableWidget(editableWidget, widget);
   }
 
@@ -412,7 +429,8 @@ class TaskBuilder extends ProductSupportInterceptor {
       return;
     }
 
-    if (start == null && start == end && noExecutors && notScheduledTask.isChecked()) {
+    if (start == null && start == end && noExecutors && notScheduledTask != null
+      && notScheduledTask.isChecked()) {
       updateRow(event, null, null, null, null);
     } else {
       createTasks(activeRow, event.getCallback(), event);
@@ -521,42 +539,6 @@ class TaskBuilder extends ProductSupportInterceptor {
         callback.onSuccess(users);
       }
     });
-  }
-
-  private static void setProjectStagesFilter(FormView form, IsRow row) {
-    int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
-    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
-    int idxProjectUser = form.getDataIndex(ProjectConstants.ALS_FILTERED_PROJECT_USER);
-
-    if (BeeConst.isUndef(idxProjectOwner) || BeeConst.isUndef(idxProject) || BeeConst.isUndef(
-        idxProjectUser)) {
-      return;
-    }
-
-    Widget wProjectStage = form.getWidgetBySource(ProjectConstants.COL_PROJECT_STAGE);
-
-    if (wProjectStage instanceof DataSelector) {
-      ((DataSelector) wProjectStage).setEnabled(false);
-    } else {
-      return;
-    }
-
-    long projectId = BeeUtils.unbox(row.getLong(idxProject));
-
-    if (DataUtils.isId(projectId)) {
-      setVisibleProjectData(form, true);
-    } else {
-      setVisibleProjectData(form, false);
-    }
-
-    if (!ProjectsHelper.isProjectOwner(form, row) || !ProjectsHelper.isProjectUser(form, row)) {
-      return;
-    }
-
-    ((DataSelector) wProjectStage).getOracle().setAdditionalFilter(
-        Filter.equals(ProjectConstants.COL_PROJECT, projectId), true);
-    ((DataSelector) wProjectStage).setEnabled(true);
-
   }
 
   private static void setVisibleProjectData(FormView form, boolean visible) {
@@ -821,6 +803,67 @@ class TaskBuilder extends ProductSupportInterceptor {
     } else {
       callback.onFailure("Unknown response");
     }
+  }
+
+  private void setProjectStagesFilter(FormView form, IsRow row) {
+    setProjectStagesFilter(form, row, null);
+  }
+
+  private void setProjectStagesFilter(FormView form, IsRow row, SelectorEvent event) {
+    if (event != null && DataUtils.isId(event.getValue())) {
+      if (!Data.equals(form.getViewName(), row, ProjectConstants.COL_PROJECT, event.getValue())) {
+        if (row.getProperties() != null) {
+          row.getProperties().remove(PROP_EXECUTORS);
+          row.getProperties().remove(PROP_OBSERVERS);
+        }
+
+        Data.clearCell(form.getViewName(), row, ProjectConstants.COL_PROJECT_STAGE);
+        RelationUtils.clearRelatedValues(Data.getDataInfo(form.getViewName()),
+            ProjectConstants.COL_PROJECT_STAGE, row);
+
+        form.refreshBySource(PROP_EXECUTORS);
+        form.refreshBySource(PROP_OBSERVERS);
+        form.refreshBySource(ProjectConstants.COL_PROJECT_STAGE);
+      }
+
+      TaskHelper.setSelectorFilter(stagesSelector,
+          Filter.equals(ProjectConstants.COL_PROJECT, event.getValue()));
+      return;
+    }
+
+    int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
+    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+    int idxProjectUser = form.getDataIndex(ProjectConstants.ALS_FILTERED_PROJECT_USER);
+
+    if (BeeConst.isUndef(idxProjectOwner) || BeeConst.isUndef(idxProject) || BeeConst.isUndef(
+        idxProjectUser)) {
+      return;
+    }
+
+    TaskHelper.setWidgetEnabled(projectSelector, false);
+    TaskHelper.setWidgetEnabled(stagesSelector, false);
+
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+
+    setVisibleProjectData(form, DataUtils.isId(projectId));
+
+    if (!ProjectsHelper.isProjectOwner(form, row) || !ProjectsHelper.isProjectUser(form, row)) {
+      return;
+    }
+
+    TaskHelper.setSelectorFilter(projectSelector, Filter.and(
+        Filter.equals(ProjectConstants.COL_PROJECT_OWNER, BeeKeeper.getUser().getUserId()),
+        Filter.or(
+            Filter.equals(ProjectConstants.COL_PROJECT_STATUS, ProjectStatus.ACTIVE.ordinal()),
+            Filter.equals(ProjectConstants.COL_PROJECT_STATUS, ProjectStatus.SCHEDULED.ordinal())
+        )
+    ));
+
+    TaskHelper.setSelectorFilter(stagesSelector,
+        Filter.equals(ProjectConstants.COL_PROJECT, projectId));
+
+    TaskHelper.setWidgetEnabled(projectSelector, ProjectsHelper.isProjectOwner(form, row));
+    TaskHelper.setWidgetEnabled(stagesSelector, true);
   }
 
   private void setProjectUsersFilter(final FormView form, IsRow row) {

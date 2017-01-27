@@ -1,11 +1,12 @@
 package com.butent.bee.client.modules.tasks;
 
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.client.modules.mail.Relations.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.modules.mail.Relations;
@@ -17,6 +18,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -206,6 +208,21 @@ final class TaskHelper {
     return BeeKeeper.getStorage().hasItem(key);
   }
 
+  static void setWidgetEnabled(HasEnabled widget, boolean enabled) {
+    if (widget == null) {
+      return;
+    }
+
+    widget.setEnabled(enabled);
+  }
+
+  static void setSelectorFilter(DataSelector selector, Filter filter) {
+    if (selector == null) {
+      return;
+    }
+
+    selector.getOracle().setAdditionalFilter(filter, true);
+  }
 
   private TaskHelper() {
   }
