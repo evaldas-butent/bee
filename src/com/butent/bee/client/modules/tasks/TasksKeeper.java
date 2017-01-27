@@ -293,7 +293,9 @@ public final class TasksKeeper {
               } else {
                 row.setProperty(COL_PRIVATE_TASK, COL_PRIVATE_TASK);
 
-                String formName = status == TaskStatus.NOT_SCHEDULED ? FORM_NEW_TASK : FORM_TASK;
+                String formName = status == TaskStatus.NOT_SCHEDULED
+                  ? FORM_NEW_TASK
+                  : event.getOptions();
                 RowEditor.openForm(formName, VIEW_TASKS, row, event.getOpener(), null);
               }
             }

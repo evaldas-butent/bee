@@ -40,8 +40,10 @@ import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorAssistant;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridFormKind;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
@@ -327,8 +329,15 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
         event.consume();
         getGridView().notifySevere(Localized.dictionary().actionCanNotBeExecuted(), BeeUtils
             .bracket(Localized.dictionary().createNewRow()));
-      }
+      } else if (BeeKeeper.getUser().openInNewTab()) {
+        event.consume();
+        FormView form = getGridView().getForm(GridFormKind.EDIT);
+        String editForm =
+          form == null ? Data.getDataInfo(getViewName()).getEditForm() : form.getFormName();
 
+        RowEditor.openForm(editForm, Data.getDataInfo(getViewName()), row, Opener.NEW_TAB, null,
+          null);
+      }
     }
   }
 
