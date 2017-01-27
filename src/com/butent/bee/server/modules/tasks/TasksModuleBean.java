@@ -1517,6 +1517,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       case RENEW:
       case ACTIVATE:
       case OUT_OF_OBSERVERS:
+      case CREATE_SCHEDULED:
 
         response = updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
             eventNote, now);

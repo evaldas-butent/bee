@@ -74,6 +74,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -573,7 +574,7 @@ class TaskBuilder extends ProductSupportInterceptor {
     }
   }
 
-  private BeeRow createNewRow(IsRow activeRow, DateTime start, DateTime end, RowCallback callback) {
+  private BeeRow createNewRow(IsRow activeRow, DateTime start, DateTime end) {
     String summary = activeRow.getString(Data.getColumnIndex(VIEW_TASKS, COL_SUMMARY)).trim();
     BeeRow newRow = DataUtils.cloneRow(activeRow);
 
@@ -591,8 +592,12 @@ class TaskBuilder extends ProductSupportInterceptor {
     }
 
     if (relations != null && !relations.getRowChildren(true).isEmpty()) {
-      Collection<RowChildren> relatedData = relations.getRowChildren(true);
+      Collection<RowChildren> relatedData = new ArrayList<>();
 
+      relations.getRowChildren(true).forEach(relation ->
+        relatedData.add(RowChildren.create(relation.getRepository(), relation.getParentColumn(),
+          null, relation.getChildColumn(), relation.getChildrenIds()))
+      );
       newRow.setProperty(VAR_TASK_RELATIONS, Codec.beeSerialize(relatedData));
     }
 
@@ -628,7 +633,7 @@ class TaskBuilder extends ProductSupportInterceptor {
   private void createNotScheduledTask(RowCallback callback) {
     IsRow activeRow = getFormView().getActiveRow();
 
-    BeeRow newRow = createNewRow(activeRow, null, null, callback);
+    BeeRow newRow = createNewRow(activeRow, null, null);
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
         newRow, Sets.newHashSet(COL_STATUS), true);
 
@@ -700,13 +705,16 @@ class TaskBuilder extends ProductSupportInterceptor {
       return;
     }
 
-    BeeRow newRow = createNewRow(activeRow, start, end, callback);
+    BeeRow newRow = createNewRow(activeRow, start, end);
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
         newRow, Sets.newHashSet(COL_EXECUTOR, COL_STATUS), true);
 
     ParameterList args = TasksKeeper.createTaskRequestParameters(TaskEvent.CREATE);
     args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
 
+    if (newRow.hasPropertyValue(VAR_TASK_RELATIONS)) {
+      args.addDataItem(VAR_TASK_RELATIONS, newRow.getProperty(VAR_TASK_RELATIONS));
+    }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -884,24 +892,10 @@ class TaskBuilder extends ProductSupportInterceptor {
     if (!DataUtils.isId(projectId)) {
       return;
     }
-
-    if (executors != null) {
-      executors.setEnabled(false);
-    }
-
-    if (executorGroups != null) {
-      executorGroups.setEnabled(false);
-      executorGroups.getElement().addClassName(StyleUtils.NAME_DISABLED);
-    }
-
-    if (observers != null) {
-      observers.setEnabled(false);
-    }
-
-    if (observerGroups != null) {
-      observerGroups.setEnabled(false);
-      observerGroups.getElement().addClassName(StyleUtils.NAME_DISABLED);
-    }
+    TaskHelper.setWidgetEnabled(executors, false);
+    TaskHelper.setWidgetEnabled(executorGroups, false);
+    TaskHelper.setWidgetEnabled(observers, false);
+    TaskHelper.setWidgetEnabled(observerGroups, false);
 
     Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
         .newArrayList(AdministrationConstants.COL_USER), Filter.isEqual(
@@ -912,7 +906,8 @@ class TaskBuilder extends ProductSupportInterceptor {
         if (DataUtils.isEmpty(result)) {
           if (executors != null) {
             executors.getOracle().setAdditionalFilter(Filter.compareId(projectOwner), true);
-            executors.setEnabled(true);
+            TaskHelper.setWidgetEnabled(executors, notScheduledTask != null
+              && !notScheduledTask.isChecked());
             return;
           }
         }
@@ -935,12 +930,14 @@ class TaskBuilder extends ProductSupportInterceptor {
 
         if (executors != null) {
           executors.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-          executors.setEnabled(true);
+          TaskHelper.setWidgetEnabled(executors, notScheduledTask != null
+            && !notScheduledTask.isChecked());
         }
 
         if (observers != null) {
           observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
-          observers.setEnabled(true);
+          TaskHelper.setWidgetEnabled(observers, notScheduledTask != null
+            && !notScheduledTask.isChecked());
         }
       }
     });
@@ -1096,13 +1093,14 @@ class TaskBuilder extends ProductSupportInterceptor {
     Collection<RowChildren> updatedRelations = relations == null ? null
         : relations.getChildrenForUpdate();
 
-    ParameterList params = TaskHelper.createTaskParams(getFormView(), TaskEvent.EDIT, updateRow,
-        updatedRelations, null);
+    ParameterList params = TaskHelper.createTaskParams(getFormView(), TaskEvent.CREATE_SCHEDULED,
+        updateRow, updatedRelations, null);
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
       @Override
       public void onResponse(ResponseObject response) {
-        BeeRow data = getResponseRow(TaskEvent.EDIT.getCaption(), response, event.getCallback());
+        BeeRow data = getResponseRow(TaskEvent.CREATE_SCHEDULED.getCaption(), response,
+            event.getCallback());
 
         if (data != null) {
           RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
@@ -1117,7 +1115,6 @@ class TaskBuilder extends ProductSupportInterceptor {
         }
       }
     });
-
     event.consume();
     event.getCallback().onCancel();
   }

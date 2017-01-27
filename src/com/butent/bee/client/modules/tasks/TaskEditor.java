@@ -534,7 +534,7 @@ class TaskEditor extends ProductSupportInterceptor {
     showDurations(form, durations);
 
     if (panel.getWidgetCount() > 1 && DomUtils.isVisible(form.getElement())
-        && !TaskHelper.readBoolean(TaskHelper.NAME_ORDER)) {
+        && !TaskHelper.getBooleanValueFromStorage(TaskHelper.NAME_ORDER)) {
       final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
       Scheduler.get().scheduleDeferred(() -> DomUtils.scrollIntoView(last.getElement()));
     }
@@ -728,8 +728,8 @@ class TaskEditor extends ProductSupportInterceptor {
   public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
 
     if (BeeUtils.same(name, "Split")) {
-      Integer size = BeeKeeper.getStorage().getInteger(TaskHelper.getStorageKey(TaskHelper
-          .NAME_TASK_TREE));
+      Integer size = BeeKeeper.getStorage().getInteger(
+        TaskHelper.getStorageKey(TaskHelper.NAME_TASK_TREE));
 
       if (BeeUtils.isPositive(size)) {
 
@@ -879,7 +879,7 @@ class TaskEditor extends ProductSupportInterceptor {
           BeeUtils.toString(newStatus.ordinal()));
     }
 
-    if (TaskHelper.readBoolean(TaskHelper.NAME_ORDER)) {
+    if (TaskHelper.getBooleanValueFromStorage(TaskHelper.NAME_ORDER)) {
       visitedRow.setProperty(PROP_DESCENDING, BeeConst.INT_TRUE);
     } else {
       visitedRow.removeProperty(PROP_DESCENDING);
@@ -995,7 +995,7 @@ class TaskEditor extends ProductSupportInterceptor {
               defaultDBAType.getB());
         }
 
-        docRow.setProperty(PFX_RELATED + COL_TASK, DataUtils.buildIdList(row.getId()));
+        docRow.setProperty(PFX_RELATED + VIEW_TASKS, DataUtils.buildIdList(row.getId()));
 
         if (ensureEnableTemplate && dbaParameters.containsKey(PRM_DEFAULT_DBA_TEMPLATE)) {
           Pair<Long, String> defaultDBATemplate = dbaParameters.get(PRM_DEFAULT_DBA_TEMPLATE);
@@ -1095,13 +1095,12 @@ class TaskEditor extends ProductSupportInterceptor {
   }
 
   private static FaLabel getOrderLabelInfo() {
-    FaLabel label =
-        TaskHelper.readBoolean(TaskHelper.NAME_ORDER)
-            ? new FaLabel(FontAwesome.SORT_NUMERIC_ASC)
-            : new FaLabel(FontAwesome.SORT_NUMERIC_DESC);
+    boolean order = TaskHelper.getBooleanValueFromStorage(TaskHelper.NAME_ORDER);
+    FaLabel label = order
+        ? new FaLabel(FontAwesome.SORT_NUMERIC_ASC)
+        : new FaLabel(FontAwesome.SORT_NUMERIC_DESC);
 
-    label.setTitle(TaskHelper.readBoolean(TaskHelper.NAME_ORDER)
-        ? Localized.dictionary().crmTaskCommentsAsc()
+    label.setTitle(order ? Localized.dictionary().crmTaskCommentsAsc()
         : Localized.dictionary().crmTaskCommentsDesc());
 
     return label;
@@ -1894,7 +1893,7 @@ class TaskEditor extends ProductSupportInterceptor {
     params.addDataItem(VAR_TASK_ID, taskId);
 
     String properties = DEFAULT_TASK_PROPERTIES;
-    if (TaskHelper.readBoolean(TaskHelper.NAME_ORDER)) {
+    if (TaskHelper.getBooleanValueFromStorage(TaskHelper.NAME_ORDER)) {
       properties = BeeUtils.join(BeeConst.STRING_COMMA, properties, PROP_DESCENDING);
     }
     params.addDataItem(VAR_TASK_PROPERTIES, properties);
@@ -2123,11 +2122,12 @@ class TaskEditor extends ProductSupportInterceptor {
             break;
 
           case 1:
-            if (TaskHelper.readBoolean(TaskHelper.NAME_ORDER)) {
+            if (TaskHelper.getBooleanValueFromStorage(TaskHelper.NAME_ORDER)) {
               BeeKeeper.getStorage().remove(TaskHelper.getStorageKey(TaskHelper.NAME_ORDER));
               getActiveRow().removeProperty(PROP_DESCENDING);
             } else {
-              BeeKeeper.getStorage().set(TaskHelper.getStorageKey(TaskHelper.NAME_ORDER), true);
+              BeeKeeper.getStorage().set(
+                TaskHelper.getStorageKey(TaskHelper.NAME_ORDER), true);
               getActiveRow().setProperty(PROP_DESCENDING, BeeConst.INT_TRUE);
             }
 

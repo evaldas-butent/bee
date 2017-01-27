@@ -410,7 +410,9 @@ public final class TaskConstants {
     CREATE_NOT_SCHEDULED(Localized.dictionary().crmTaskEventCreated(),
         Localized.dictionary().crmTasksNotScheduledTasks(),
         null,
-        TaskWorkflowAction.hidden());
+        TaskWorkflowAction.hidden()),
+    CREATE_SCHEDULED(Localized.dictionary().crmTaskForwardedForExecution(),
+        Localized.dictionary().crmTaskStatusScheduled(), null, TaskWorkflowAction.hidden());
 
     private final String caption;
     private final String commandLabel;
