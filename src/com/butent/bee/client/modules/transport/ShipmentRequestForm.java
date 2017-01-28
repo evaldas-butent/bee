@@ -23,9 +23,11 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
@@ -33,6 +35,7 @@ import com.butent.bee.client.modules.administration.AdministrationUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.ReportUtils;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -46,6 +49,8 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
@@ -71,6 +76,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
@@ -158,6 +164,25 @@ class ShipmentRequestForm extends PrintFormInterceptor {
               !BeeUtils.unbox(getFormView().getBooleanValue(COL_CARGO_PARTIAL)));
         }
         renderInputMode();
+      });
+    } else if (widget instanceof ChildGrid && BeeUtils.isSuffix(name, VAR_UNBOUND)) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+
+        @Override
+        public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
+            Collection<RowInfo> selectedRows, DeleteMode defMode) {
+
+          if (BeeUtils.size(presenter.getGridView().getRowData())
+              <= BeeUtils.max(BeeUtils.size(selectedRows), 1)) {
+            return DeleteMode.DENY;
+          }
+          return super.getDeleteMode(presenter, activeRow, selectedRows, defMode);
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
       });
     }
     super.afterCreateWidget(name, widget, callback);
@@ -325,6 +350,25 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       return;
     }
     super.onReadyForInsert(listener, event);
+  }
+
+  @Override
+  public void afterInsertRow(IsRow result, boolean forced) {
+    if (!forced) {
+      DataInfo dataInfo = Data.getDataInfo(TBL_CARGO_LOADING);
+      BeeRow row = RowFactory.createEmptyRow(dataInfo);
+      row.setValue(dataInfo.getColumnIndex(COL_CARGO), result.getLong(getDataIndex(COL_CARGO)));
+
+      RowFactory.createRow(FORM_CARGO_PLACE_UNBOUND, dataInfo.getNewRowCaption(),
+          dataInfo, row, Modality.ENABLED, new RowInsertCallback(dataInfo.getViewName()) {
+            @Override
+            public void onCancel() {
+              Queries.deleteRowAndFire(getViewName(), result.getId());
+              super.onCancel();
+            }
+          });
+    }
+    super.afterInsertRow(result, forced);
   }
 
   @Override
