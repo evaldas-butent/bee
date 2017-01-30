@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-01-27T14:44:42 -->
+<!-- 2017-01-30T16:44:31 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="50" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" whenResourceMissingType="Key" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -186,6 +186,7 @@
 	<parameter name="PayerName2" class="java.lang.String"/>
 	<parameter name="PayerTypeName2" class="java.lang.String"/>
 	<parameter name="PayerAddress2" class="java.lang.String"/>
+	<parameter name="Proforma" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -214,14 +215,14 @@
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="50" width="480" height="20" isRemoveLineWhenBlank="true" uuid="4095ac60-2a0d-4e55-8f0e-087420f6d337">
+				<reportElement x="0" y="50" width="525" height="20" isRemoveLineWhenBlank="true" uuid="4095ac60-2a0d-4e55-8f0e-087420f6d337">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
-					<font fontName="DejaVu Sans" size="13.5" isBold="true" isItalic="false"/>
+					<font fontName="DejaVu Sans" size="12.5" isBold="true" isItalic="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["PVM Sąskaita faktūra Nr. | " + $R{invoice}+ " " + $V{docNo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[(!BeeUtils.isEmpty($P{Proforma}) ? "Sąskaita išankstiniam apmokėjimui | " + $R{proforma}  : "PVM Sąskaita faktūra Nr. | " + $R{invoice}) + " " + $V{docNo}]]></textFieldExpression>
 			</textField>
 			<image>
 				<reportElement x="0" y="0" width="220" height="40" isRemoveLineWhenBlank="true" uuid="d4dbe3fc-4b18-46d7-bda2-b2f4a50d560b">
@@ -821,7 +822,7 @@
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="70" uuid="d7872c56-73ae-40f6-ba48-9d4a38c9dd5e">
+						<jr:column width="61" uuid="d7872c56-73ae-40f6-ba48-9d4a38c9dd5e">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<jr:tableFooter height="0" rowSpan="1">
@@ -836,7 +837,7 @@
 									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableHeader" x="0" y="0" width="70" height="20" uuid="eba90b99-3d58-442a-b261-ee8b308052cd"/>
+									<reportElement style="TableHeader" x="0" y="0" width="61" height="20" uuid="eba90b99-3d58-442a-b261-ee8b308052cd"/>
 									<textElement textAlignment="Left" verticalAlignment="Top">
 										<font fontName="DejaVu Sans" size="7"/>
 									</textElement>
@@ -851,7 +852,7 @@
 									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableDetail" x="0" y="0" width="70" height="15" uuid="9ff3adb6-cfd1-4738-ba34-7689475d3788">
+									<reportElement style="TableDetail" x="0" y="0" width="61" height="15" uuid="9ff3adb6-cfd1-4738-ba34-7689475d3788">
 										<printWhenExpression><![CDATA[$V{trMap}.containsKey("LoadingDate")]]></printWhenExpression>
 									</reportElement>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -860,7 +861,7 @@
 									<textFieldExpression><![CDATA[$V{trMap}.get("LoadingDate")]]></textFieldExpression>
 								</textField>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableDetail" x="0" y="15" width="70" height="15" uuid="d0dc52c3-d36e-46a5-aded-efbbbfefd547">
+									<reportElement style="TableDetail" x="0" y="15" width="61" height="15" uuid="d0dc52c3-d36e-46a5-aded-efbbbfefd547">
 										<printWhenExpression><![CDATA[$V{trMap}.containsKey("UnloadingDate")]]></printWhenExpression>
 									</reportElement>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -870,7 +871,7 @@
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="31" uuid="2a52dfb1-6f02-4a7a-8cea-14784f8fee65">
+						<jr:column width="40" uuid="2a52dfb1-6f02-4a7a-8cea-14784f8fee65">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
 							<jr:tableFooter height="0" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -884,7 +885,7 @@
 									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableHeader" x="0" y="0" width="31" height="20" uuid="3dfde1ef-1dd2-4a32-9033-ad7145555443"/>
+									<reportElement style="TableHeader" x="0" y="0" width="40" height="20" uuid="3dfde1ef-1dd2-4a32-9033-ad7145555443"/>
 									<textElement textAlignment="Left" verticalAlignment="Top">
 										<font fontName="DejaVu Sans" size="7" isBold="true"/>
 									</textElement>
@@ -899,7 +900,7 @@
 									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableDetail" x="0" y="0" width="31" height="30" uuid="3cb66dd5-8256-45ef-9c82-1567736ed6bd">
+									<reportElement style="TableDetail" x="0" y="0" width="40" height="30" uuid="3cb66dd5-8256-45ef-9c82-1567736ed6bd">
 										<printWhenExpression><![CDATA[$V{trMap}.containsKey("Notes")]]></printWhenExpression>
 									</reportElement>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
