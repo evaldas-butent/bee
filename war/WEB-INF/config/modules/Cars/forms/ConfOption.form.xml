@@ -7,6 +7,7 @@
 >
   <Table kind="controls">
     <col index="0" kind="label" />
+    <col index="2" kind="label" />
     <row>
       <Label for="Group" />
       <DataSelector source="Group" renderColumns="TypeName GroupName" />

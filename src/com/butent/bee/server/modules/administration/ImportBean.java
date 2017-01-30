@@ -983,7 +983,7 @@ public class ImportBean {
       }
       if (ok && !BeeUtils.isEmpty(bundleOptions)) {
         configuration.setBundleInfo(new Bundle(bundleOptions),
-            ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
+            ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION))
                 .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)), false);
       }
     }
@@ -1025,7 +1025,7 @@ public class ImportBean {
         errorProcessor.accept(loc.options() + ": " + loc.code(), code);
       } else if (ok) {
         configuration.setOptionInfo(option,
-            ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
+            ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION))
                 .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)));
       }
     }
@@ -1125,7 +1125,7 @@ public class ImportBean {
         }
         if (ok) {
           configuration.setRelationInfo(option, bundle,
-              ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION), null)
+              ConfInfo.of(price, row.getValue(prfx + CarsConstants.COL_DESCRIPTION))
                   .setCriteria(critBuilder.apply(Pair.of(prfx, critCnt), row)),
               DataUtils.buildIdList(packet));
         }
@@ -1227,7 +1227,7 @@ public class ImportBean {
         }
         cars.setBundle(branchId, bundle,
             ConfInfo.of(configuration.getBundlePrice(bundle),
-                configuration.getBundleDescription(bundle), null)
+                configuration.getBundleDescription(bundle))
                 .setCriteria(configuration.getBundleCriteria(bundle)), false);
       }
       if (!BeeUtils.isEmpty(progress)) {
@@ -1243,7 +1243,7 @@ public class ImportBean {
         }
         cars.setOption(branchId, option.getId(),
             ConfInfo.of(configuration.getOptionPrice(option),
-                configuration.getOptionDescription(option), null)
+                configuration.getOptionDescription(option))
                 .setCriteria(configuration.getOptionCriteria(option)));
       }
       if (!BeeUtils.isEmpty(progress)) {
@@ -1262,7 +1262,7 @@ public class ImportBean {
           if (configuration.hasRelation(option, bundle)) {
             cars.setRelation(branchId, bundle.getKey(), option.getId(),
                 ConfInfo.of(configuration.getRelationPrice(option, bundle),
-                    configuration.getRelationDescription(option, bundle), null)
+                    configuration.getRelationDescription(option, bundle))
                     .setCriteria(configuration.getRelationCriteria(option, bundle)),
                 configuration.getRelationPackets(option, bundle));
             cnt++;
