@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-01-24T10:06:37 -->
+<!-- 2017-01-27T10:59:48 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" whenResourceMissingType="Key" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -211,22 +211,22 @@
 	</variable>
 	<group name="Group1"/>
 	<title>
-		<band height="233">
+		<band height="246">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="55" width="554" height="20" isRemoveLineWhenBlank="true" uuid="4095ac60-2a0d-4e55-8f0e-087420f6d337">
+				<reportElement x="0" y="50" width="554" height="20" isRemoveLineWhenBlank="true" uuid="4095ac60-2a0d-4e55-8f0e-087420f6d337">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="12" isBold="true" isItalic="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["PVM Sąskaita faktūra Nr. / " + $R{invoice}+ ": " + $V{docNo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["PVM Sąskaita faktūra Nr. | " + $R{invoice}+ ": " + $V{docNo}]]></textFieldExpression>
 			</textField>
 			<image>
-				<reportElement x="140" y="0" width="270" height="55" isRemoveLineWhenBlank="true" uuid="d4dbe3fc-4b18-46d7-bda2-b2f4a50d560b">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<reportElement x="0" y="0" width="220" height="40" isRemoveLineWhenBlank="true" uuid="d4dbe3fc-4b18-46d7-bda2-b2f4a50d560b">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<imageExpression><![CDATA["images/logo.png"]]></imageExpression>
 			</image>
@@ -239,7 +239,7 @@
 					<textElement verticalAlignment="Middle">
 						<font fontName="DejaVu Sans" size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Ekspeditorius / " + $R{sender}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Ekspeditorius | " + $R{sender}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="13" width="280" height="10" isRemoveLineWhenBlank="true" uuid="28dccf15-d51f-42d1-8420-73b1d1f9894b">
@@ -258,7 +258,7 @@
 					<textElement textAlignment="Left" verticalAlignment="Middle" markup="html">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("Įm.kodas / ", $R{code})  + " " +  $P{SupplierCode}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("Įm.kodas | ", $R{code})  + " " +  $P{SupplierCode}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="0" y="33" width="280" height="10" isRemoveLineWhenBlank="true" uuid="c9bad289-692b-4831-8c31-bcf41726c129">
@@ -267,7 +267,7 @@
 					<textElement textAlignment="Left" verticalAlignment="Middle" markup="html">
 						<font fontName="DejaVu Sans" size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("PVM kodas / ",$R{vat})  + " " +  $P{SupplierVATCode}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("PVM kodas | ",$R{vat})  + " " +  $P{SupplierVATCode}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="43" width="280" height="10" isRemoveLineWhenBlank="true" uuid="bb63d85b-32f0-43cc-94d4-65555f79bd61">
@@ -278,7 +278,7 @@
 					<textElement verticalAlignment="Middle" markup="html">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("Adresas / ", $V{d}.address()) + ": " + BeeUtils.joinItems($P{SupplierAddress}, $P{SupplierPostIndex},  $P{SupplierCityName}, $P{SupplierCountryName})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("Adresas | ", $V{d}.address()) + ": " + BeeUtils.joinItems($P{SupplierAddress}, $P{SupplierPostIndex},  $P{SupplierCityName}, $P{SupplierCountryName})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="53" width="280" height="10" isRemoveLineWhenBlank="true" uuid="1b005576-97bf-41d1-9eb8-a1b428bbafcb">
@@ -290,7 +290,7 @@
 						<font size="8"/>
 						<paragraph lineSpacing="Double"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("Telefonas / ", $V{d}.phone()) + ": " +  BeeUtils.joinItems($P{SupplierPhone}, $P{SupplierMobile})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("Telefonas | ", $V{d}.phone()) + ": " +  BeeUtils.joinItems($P{SupplierPhone}, $P{SupplierMobile})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="63" width="280" height="10" isRemoveLineWhenBlank="true" uuid="3d785d4b-9800-449b-ba44-6dcbde66e7c9">
@@ -300,7 +300,7 @@
 					<textElement verticalAlignment="Middle" markup="html">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("Faksas / ", $V{d}.fax()) + ": " +  $P{SupplierFax}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("Faksas | ", $V{d}.fax()) + ": " +  $P{SupplierFax}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="73" width="280" height="10" isRemoveLineWhenBlank="true" uuid="ce8b6bf3-4251-44ad-ab3e-a72e11199b60">
@@ -310,28 +310,28 @@
 					<textElement verticalAlignment="Middle" markup="html">
 						<font fontName="DejaVu Sans" size="8" isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("El.paštas / ", $V{d}.email()) + ": " +  $P{SupplierEmail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("El. paštas | ", $V{d}.email()) + ": " +  $P{SupplierEmail}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="0" y="113" width="280" height="10" isRemoveLineWhenBlank="true" uuid="39fb7cbb-c4ec-4a9e-b4bc-bd0b0ce62ed3"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Transporto valst.nr./" + $R{vehicle} + ": " +  ($P{XmlDataMap}.containsKey("Vehicle") ? $P{XmlDataMap}.get("Vehicle") : "")]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Transporto valst.nr. | " + $R{vehicle} + ": " +  ($P{XmlDataMap}.containsKey("Vehicle") ? $P{XmlDataMap}.get("Vehicle") : "")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="0" y="123" width="280" height="10" isRemoveLineWhenBlank="true" uuid="73804afd-7d29-4ec0-b1e8-77de440bf95d"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Pakrovimo data/" + $R{loading} + " " +  ($P{XmlDataMap}.containsKey("LoadingDate") ? $P{XmlDataMap}.get("LoadingDate") : "")]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Pakrovimo data | " + $R{loading} + " " +  ($P{XmlDataMap}.containsKey("LoadingDate") ? $P{XmlDataMap}.get("LoadingDate") : "")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="0" y="133" width="280" height="10" isRemoveLineWhenBlank="true" uuid="02b4f2ec-30c9-45b1-a64b-d672aa83896c"/>
 					<textElement verticalAlignment="Middle">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Iškrovimo data/" + $R{unloading} + " " +  ($P{XmlDataMap}.containsKey("UnloadingDate") ? $P{XmlDataMap}.get("UnloadingDate") : "")]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Iškrovimo data | " + $R{unloading} + " " +  ($P{XmlDataMap}.containsKey("UnloadingDate") ? $P{XmlDataMap}.get("UnloadingDate") : "")]]></textFieldExpression>
 				</textField>
 				<componentElement>
 					<reportElement positionType="Float" x="1" y="83" width="279" height="30" isRemoveLineWhenBlank="true" uuid="3b7c9757-adcb-4d16-a56c-50aa2bd32a20">
@@ -364,7 +364,7 @@
 								<textElement verticalAlignment="Middle" markup="html">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$F{Correspondent} == null ? "<b>" +"a.s. / a.n. (Bankas gavėjas / " + $R{bankBeneficiary}  + "): "+ BeeUtils.joinWords(BeeUtils.isEmpty($F{BankName}) ? "" : $F{BankName} + ";",BeeUtils.isEmpty($F{Address}) ? "" : $F{Address} +";") + "</b>" : "Bankas korespondentas / " + $R{bankCorrespondent} + " " +BeeUtils.joinWords(BeeUtils.isEmpty($F{BankName}) ? "" : $F{BankName} + ";",BeeUtils.isEmpty($F{Address}) ? "" : $F{Address} +";")]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$F{Correspondent} == null ? "<b>" +"a.s. | a.n. (Bankas gavėjas | " + $R{bankBeneficiary}  + "): "+ BeeUtils.joinWords(BeeUtils.isEmpty($F{BankName}) ? "" : $F{BankName} + ";",BeeUtils.isEmpty($F{Address}) ? "" : $F{Address} +";") + "</b>" : "Bankas korespondentas | " + $R{bankCorrespondent} + " " +BeeUtils.joinWords(BeeUtils.isEmpty($F{BankName}) ? "" : $F{BankName} + ";",BeeUtils.isEmpty($F{Address}) ? "" : $F{Address} +";")]]></textFieldExpression>
 							</textField>
 							<textField>
 								<reportElement x="0" y="20" width="279" height="10" isRemoveLineWhenBlank="true" uuid="31a95a44-141f-47df-89e5-90f77d39e3c2">
@@ -373,7 +373,7 @@
 								<textElement verticalAlignment="Middle" markup="html">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[($F{Correspondent} == null ? "<b>" : "") + BeeUtils.joinWords(BeeUtils.isEmpty($F{BankCode}) ? "" :  "kodas / " + $R{bankCode} + " " + $F{BankCode} +";", BeeUtils.isEmpty($F{SWIFTCode}) ? "" :  "<b>"+$P{d}.swift() + "</b> " + $F{SWIFTCode} + ";") + ($F{Correspondent} == null ? "</b>" : "")]]></textFieldExpression>
+								<textFieldExpression><![CDATA[($F{Correspondent} == null ? "<b>" : "") + BeeUtils.joinWords(BeeUtils.isEmpty($F{BankCode}) ? "" :  "kodas | " + $R{bankCode} + " " + $F{BankCode} +";", BeeUtils.isEmpty($F{SWIFTCode}) ? "" :  $P{d}.swift() + " " + $F{SWIFTCode} + ";") + ($F{Correspondent} == null ? "</b>" : "")]]></textFieldExpression>
 							</textField>
 						</jr:listContents>
 					</jr:list>
@@ -390,14 +390,14 @@
 					<textElement verticalAlignment="Middle">
 						<font fontName="DejaVu Sans" size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Užsakovas / " + $R{client}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Užsakovas | " + $R{client}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="13" width="275" height="10" isRemoveLineWhenBlank="true" uuid="8050055b-9474-479e-a5b8-707a8caf2556"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="DejaVu Sans" size="8" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.join(" / ", BeeUtils.join(", ", $P{CustomerName}, $P{CustomerTypeName}), BeeUtils.join(", ", $P{CustomerName2}, $P{CustomerTypeName2}))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.join(" | ", BeeUtils.join(", ", $P{CustomerName}, $P{CustomerTypeName}), BeeUtils.join(", ", $P{CustomerName2}, $P{CustomerTypeName2}))]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" mode="Transparent" x="0" y="23" width="275" height="10" isRemoveLineWhenBlank="true" uuid="9f147e6d-168d-46e3-a1ff-2a74fb1bacc0">
@@ -408,7 +408,7 @@
 					<textElement textAlignment="Left" verticalAlignment="Middle" markup="html">
 						<font size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("Įm.kodas / ", $R{code}) + " " +  $P{CustomerCode}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("Įm.kodas | ", $R{code}) + " " +  $P{CustomerCode}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="0" y="33" width="275" height="10" isRemoveLineWhenBlank="true" uuid="908ddfc4-540e-4df8-b20e-c8a55c6d70f7">
@@ -418,7 +418,7 @@
 					<textElement textAlignment="Left" verticalAlignment="Middle" markup="html">
 						<font fontName="DejaVu Sans" size="8" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("PVM kodas / ", $R{vat})  + " " +  $P{CustomerVATCode}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("PVM kodas | ", $R{vat})  + " " +  $P{CustomerVATCode}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="43" width="275" height="10" isRemoveLineWhenBlank="true" uuid="d2b1b309-11a5-4b56-9aaa-e5ed206c7135">
@@ -428,7 +428,7 @@
 					<textElement verticalAlignment="Middle" markup="html">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("Adresas / ", $V{d}.address()) + ": " + BeeUtils.join(" / ", BeeUtils.joinItems($P{CustomerAddress}, $P{CustomerPostIndex},  $P{CustomerCityName}, $P{CustomerCountryName}), BeeUtils.joinItems($P{CustomerAddress2}, $P{CustomerPostIndex}, $P{QS}.getLocalizedValue("Cities", "Name", $P{CustomerCityName}, $P{REPORT_LOCALE}), $P{QS}.getLocalizedValue("Countries", "Name", $P{CustomerCountryName}, $P{REPORT_LOCALE})))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("Adresas | ", $V{d}.address()) + ": " + BeeUtils.join(" | ", BeeUtils.joinItems($P{CustomerAddress}, $P{CustomerPostIndex},  $P{CustomerCityName}, $P{CustomerCountryName}), BeeUtils.joinItems($P{CustomerAddress2}, $P{CustomerPostIndex}, $P{QS}.getLocalizedValue("Cities", "Name", $P{CustomerCityName}, $P{REPORT_LOCALE}), $P{QS}.getLocalizedValue("Countries", "Name", $P{CustomerCountryName}, $P{REPORT_LOCALE})))]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="53" width="275" height="10" isRemoveLineWhenBlank="true" uuid="02718153-f457-48cd-823d-a8512c1f5e84">
@@ -438,7 +438,7 @@
 						<font size="8"/>
 						<paragraph lineSpacing="Double"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("Telefonas / ", $V{d}.phone())  + ": " +  BeeUtils.joinItems($P{CustomerPhone}, $P{CustomerMobile})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("Telefonas | ", $V{d}.phone())  + ": " +  BeeUtils.joinItems($P{CustomerPhone}, $P{CustomerMobile})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="63" width="275" height="10" isRemoveLineWhenBlank="true" uuid="975ab791-fb08-421a-a34c-a4211f6ecc7b">
@@ -447,7 +447,7 @@
 					<textElement verticalAlignment="Middle" markup="html">
 						<font size="8"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("Faksas / ", $V{d}.fax())  + ": " +  $P{CustomerFax}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("Faksas | ", $V{d}.fax())  + ": " +  $P{CustomerFax}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="Font" positionType="Float" x="0" y="73" width="275" height="10" isRemoveLineWhenBlank="true" uuid="df040f9c-0395-4e37-9029-c6a746ffecdb">
@@ -459,15 +459,22 @@
 					<textElement verticalAlignment="Middle" markup="html">
 						<font fontName="DejaVu Sans" size="8" isUnderline="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[BeeUtils.joinWords("El.paštas / ", $V{d}.email())  + ": " +  $P{CustomerEmail}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[BeeUtils.joinWords("El. paštas | ", $V{d}.email())  + ": " +  $P{CustomerEmail}]]></textFieldExpression>
 				</textField>
 			</frame>
 			<textField pattern="yyyy.MM.dd">
-				<reportElement positionType="Float" x="0" y="223" width="555" height="10" uuid="e6847261-278b-4d44-ba4b-7e91e3b2fb3e"/>
+				<reportElement positionType="Float" x="0" y="236" width="555" height="10" uuid="e6847261-278b-4d44-ba4b-7e91e3b2fb3e"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle" markup="html">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Data / " + $V{d}.date() + ":</b> " +  new JustDate(BeeUtils.toLong($P{Date}))]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Data | " + $V{d}.date() + ":</b> " +  new JustDate(BeeUtils.toLong($P{Date}))]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="0" y="224" width="554" height="12" uuid="2e80cab2-574f-4658-90fd-2975a1067efc"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Notes}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -507,14 +514,14 @@
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Sąskaitą apmokėti iki | " + $R{payBy} + " " + new JustDate(BeeUtils.toInt($P{Term})) + " (per/" + $R{per} + " " + (BeeUtils.toLong($P{Term}) - BeeUtils.toLong($P{Date})/86400000) + " " + "dien./" + $R{days} + ")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Sąskaitą apmokėti iki | " + $R{payBy} + " " + new JustDate(BeeUtils.toInt($P{Term})) + " (per | " + $R{per} + " " + (BeeUtils.toLong($P{Term}) - BeeUtils.toLong($P{Date})/86400000) + " " + "dien. | " + $R{days} + ")"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="280" y="276" width="200" height="10" isRemoveLineWhenBlank="true" uuid="6a237a78-0aac-4e91-ba0a-9c2acb32247b"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Gavėjas / " + $R{receiver}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Gavėjas | " + $R{receiver}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="280" y="286" width="274" height="10" isRemoveLineWhenBlank="true" uuid="4c265762-ef40-4fbe-9f86-7ca71f3bfc70"/>
@@ -533,7 +540,7 @@
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Išdavė / " + $R{invoiced}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Išdavė | " + $R{invoiced}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="0" y="296" width="250" height="19" isRemoveLineWhenBlank="true" uuid="cb3aa1d3-fc11-4c0b-b7c3-07469111c030">
@@ -606,14 +613,14 @@
 									<textElement verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA["Kursas / " + $P{d}.currencyRate()+" " + BeeUtils.round($P{amb}.getRate(BeeUtils.toLong($P{Currency}), BeeUtils.toLongOrNull($P{Date})), 4)]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Kursas | " + $P{d}.currencyRate()+" " + BeeUtils.round($P{amb}.getRate(BeeUtils.toLong($P{Currency}), BeeUtils.toLongOrNull($P{Date})), 4)]]></textFieldExpression>
 								</textField>
 								<textField>
 									<reportElement style="TableDetail" x="130" y="0" width="198" height="10" uuid="e8cb46e4-0557-47cf-9cbf-15280dff85d6"/>
 									<textElement textAlignment="Right">
 										<font fontName="DejaVu Sans" size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA["Suma / " + $R{amount} + ":"]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Suma | " + $R{amount} + ":"]]></textFieldExpression>
 								</textField>
 								<textField>
 									<reportElement style="TableDetail" x="130" y="10" width="198" height="10" uuid="b8314f80-2680-4a19-8d55-3274900eb4b8">
@@ -622,14 +629,14 @@
 									<textElement textAlignment="Right">
 										<font fontName="DejaVu Sans" size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA["PVM / " + $P{d}.trdVat() + ":"]]></textFieldExpression>
+									<textFieldExpression><![CDATA["PVM | " + $P{d}.trdVat() + ":"]]></textFieldExpression>
 								</textField>
 								<textField>
 									<reportElement style="TableDetail" x="130" y="20" width="198" height="10" uuid="2c58aae1-6d96-4337-98f8-b72c597e11e7"/>
 									<textElement textAlignment="Right">
 										<font fontName="DejaVu Sans" size="8" isBold="true"/>
 									</textElement>
-									<textFieldExpression><![CDATA["Bendra suma / " + $R{total}]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Bendra suma | " + $R{total}]]></textFieldExpression>
 								</textField>
 							</frame>
 						</jr:tableFooter>
@@ -655,7 +662,7 @@
 										<font size="8"/>
 										<paragraph spacingAfter="0"/>
 									</textElement>
-									<textFieldExpression><![CDATA["Nr. / " + $P{d}.numeroSign()]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Nr. | " + $P{d}.numeroSign()]]></textFieldExpression>
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="30">
@@ -697,7 +704,7 @@
 									<textElement textAlignment="Left" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="8" isBold="true"/>
 									</textElement>
-									<textFieldExpression><![CDATA["Paslauga / "  + $P{d}.service()]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Paslauga | "  + $P{d}.service()]]></textFieldExpression>
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="30">
@@ -717,7 +724,7 @@
 									<textElement>
 										<font size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.join(" / ", $F{ItemName}, Objects.equals($P{REPORT_LOCALE}.getLanguage(), "en") ? $F{ItemName2} : $F{ItemName3})]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.join(" | ", $F{ItemName}, Objects.equals($P{REPORT_LOCALE}.getLanguage(), "en") ? $F{ItemName2} : $F{ItemName3})]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -744,7 +751,7 @@
 										<font fontName="DejaVu Sans" size="8" isBold="true"/>
 										<paragraph lineSpacing="Single" lineSpacingSize="1.0"/>
 									</textElement>
-									<textFieldExpression><![CDATA["Maršrutas / " + $P{d}.route()]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Maršrutas | " + $P{d}.route()]]></textFieldExpression>
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="30">
@@ -789,7 +796,7 @@
 										<font fontName="DejaVu Sans" size="8" isBold="true"/>
 										<paragraph lineSpacing="Single"/>
 									</textElement>
-									<textFieldExpression><![CDATA["Užsakymo Nr. / " + $R{orderNumber}]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Užsakymo Nr. | " + $R{orderNumber}]]></textFieldExpression>
 								</textField>
 								<textField isStretchWithOverflow="true">
 									<reportElement style="TableHeader" x="0" y="25" width="90" height="24" isPrintWhenDetailOverflows="true" uuid="0718b899-6148-4d86-acb0-6759b825716e"/>
@@ -802,7 +809,7 @@
 									<textElement textAlignment="Left" verticalAlignment="Middle">
 										<font size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA["Ref Nr. / " + $R{ref}]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Ref Nr. | " + $R{ref}]]></textFieldExpression>
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="30">
@@ -892,7 +899,7 @@
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA["Suma / " + $R{amountWoVAT}]]></textFieldExpression>
+								<textFieldExpression><![CDATA["Suma | " + $R{amountWoVAT}]]></textFieldExpression>
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
@@ -1000,7 +1007,7 @@
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font fontName="DejaVu Sans" size="8" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA["Suma pagal kursą / " + $P{d}.trdAmountByRate()]]></textFieldExpression>
+								<textFieldExpression><![CDATA["Suma pagal kursą | " + $P{d}.trdAmountByRate()]]></textFieldExpression>
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
@@ -1069,7 +1076,7 @@
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="8" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA["PVM / " + $P{d}.trdVat()]]></textFieldExpression>
+								<textFieldExpression><![CDATA["PVM | " + $P{d}.trdVat()]]></textFieldExpression>
 							</textField>
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="30">
@@ -1114,7 +1121,7 @@
 				<textElement verticalAlignment="Middle">
 					<font fontName="DejaVu Sans" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai. /" + "\n" + $R{text2} + "\n" + "Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. /" + "\n" + $R{text3}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai. |" + "\n" + $R{text2} + "\n" + "Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. |" + "\n" + $R{text3}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="0" y="256" width="554" height="20" isRemoveLineWhenBlank="true" uuid="d7d50fba-fdc1-49ca-be22-2f3ffc4126f7">
@@ -1123,7 +1130,7 @@
 				<textElement verticalAlignment="Top" markup="html">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Kiti dokumentai / " + $R{documents}  + "</b>" + "<br>" +  ($P{XmlDataMap}.containsKey("Documents") ? $P{XmlDataMap}.get("Documents") : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Kiti dokumentai | " + $R{documents}  + "</b>" + "<br>" +  ($P{XmlDataMap}.containsKey("Documents") ? $P{XmlDataMap}.get("Documents") : "")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="280" y="296" width="250" height="19" uuid="0b515ab1-1ecb-42cb-ba1d-08a88e4307df"/>
@@ -1141,7 +1148,7 @@
 				<textElement verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Prašome šią sąskaitą faktūrą apmokėti " + $P{CurrencyName} + " valiuta / " + $R{text4} + " " + $P{CurrencyName} + " " + $R{currency}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Prašome šią sąskaitą faktūrą apmokėti " + $P{CurrencyName} + " valiuta | " + $R{text4} + " " + $P{CurrencyName} + " " + $R{currency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" evaluationTime="Band">
 				<reportElement positionType="Float" x="1" y="142" width="555" height="14" isPrintWhenDetailOverflows="true" uuid="f0ae4d4e-984b-4e39-a5fd-6f9fe26ba657">
