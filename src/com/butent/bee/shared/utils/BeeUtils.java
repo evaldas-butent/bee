@@ -1228,15 +1228,12 @@ public final class BeeUtils {
 
     Set<T> result;
 
-    if (isEmpty(col1)) {
+    if (isEmpty(col1) || isEmpty(col2)) {
       result = new HashSet<>();
 
     } else {
       result = new HashSet<>(col1);
-
-      if (!isEmpty(col2)) {
-        result.retainAll(col2);
-      }
+      result.retainAll(col2);
     }
 
     return result;

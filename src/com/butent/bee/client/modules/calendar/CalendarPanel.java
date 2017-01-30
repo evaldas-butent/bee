@@ -825,8 +825,9 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     }
   }
 
-  private static void copyAppointment(Appointment appointment, DateTime start, DateTime end) {
+  private void copyAppointment(Appointment appointment, DateTime start, DateTime end) {
     if (appointment.handlesCopyAction(start, end)) {
+      refreshCalendar(false);
       return;
     }
     final String propList = appointment.getRow().getProperty(TBL_APPOINTMENT_PROPS);

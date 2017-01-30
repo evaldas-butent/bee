@@ -17,6 +17,7 @@ public final class CarsConstants {
 
   public static final String TBL_CONF_GROUPS = "ConfGroups";
   public static final String TBL_CONF_OPTIONS = "ConfOptions";
+  public static final String TBL_CONF_PACKET_OPTIONS = "ConfPacketOptions";
   public static final String TBL_CONF_PRICELIST = "ConfPricelist";
   public static final String TBL_CONF_DIMENSIONS = "ConfDimensions";
   public static final String TBL_CONF_BUNDLES = "ConfBundles";
@@ -62,6 +63,7 @@ public final class CarsConstants {
   public static final String COL_DENIED = "Denied";
   public static final String COL_OBJECT = "Object";
   public static final String COL_PHOTO_CODE = "PhotoCode";
+  public static final String COL_PACKET = "Packet";
 
   public static final String COL_ORDER = "Order";
   public static final String COL_CAR = "Car";

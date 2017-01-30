@@ -439,7 +439,8 @@ public class DocumentForm extends DocumentDataForm {
   private void createNewTaskRelation(final SelectorEvent event) {
     final BeeRow row = event.getNewRow();
     String summary = BeeUtils.notEmpty(event.getDefValue(), getStringValue(COL_DOCUMENT_NAME));
-    row.setProperty(TaskConstants.PROP_DOCUMENTS, DataUtils.buildIdList(getActiveRowId()));
+    row.setProperty(Relations.PFX_RELATED + VIEW_DOCUMENTS,
+        DataUtils.buildIdList(getActiveRowId()));
 
     if (!BeeUtils.isEmpty(summary)) {
       Data.squeezeValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_SUMMARY,
@@ -482,7 +483,7 @@ public class DocumentForm extends DocumentDataForm {
 
       if (!companies.isEmpty()) {
         if (companies.size() > 1) {
-          row.setProperty(TaskConstants.PROP_COMPANIES,
+          row.setProperty(Relations.PFX_RELATED + VIEW_COMPANIES,
               DataUtils.buildIdList(companies.subList(1, companies.size())));
         }
 
@@ -524,13 +525,14 @@ public class DocumentForm extends DocumentDataForm {
                 }
 
                 if (contact == null) {
-                  row.setProperty(TaskConstants.PROP_PERSONS, DataUtils.buildIdList(persons));
+                  row.setProperty(Relations.PFX_RELATED + VIEW_PERSONS,
+                      DataUtils.buildIdList(persons));
                 } else {
                   RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
                       COL_CONTACT, row, Data.getDataInfo(VIEW_COMPANY_PERSONS), contact, true);
 
                   if (persons.size() > 1) {
-                    row.setProperty(TaskConstants.PROP_PERSONS,
+                    row.setProperty(Relations.PFX_RELATED + VIEW_PERSONS,
                         DataUtils.buildIdList(persons.subList(1, persons.size())));
                   }
                 }
