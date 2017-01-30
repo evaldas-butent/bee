@@ -266,10 +266,11 @@ public final class AnalysisValue implements BeeSerializable {
     setActualValue(format(value));
   }
 
-  public void maybeUpdateActualValue(Double value) {
-    boolean update = hasActualValue() ? BeeUtils.isDouble(value) : BeeUtils.nonZero(value);
-    if (update) {
+  public void updateActualValue(Double value) {
+    if (BeeUtils.nonZero(value)) {
       setActualValue(value);
+    } else {
+      this.actualValue = null;
     }
   }
 
@@ -281,10 +282,11 @@ public final class AnalysisValue implements BeeSerializable {
     setBudgetValue(format(value));
   }
 
-  public void maybeUpdateBudgetValue(Double value) {
-    boolean update = hasBudgetValue() ? BeeUtils.isDouble(value) : BeeUtils.nonZero(value);
-    if (update) {
+  public void updateBudgetValue(Double value) {
+    if (BeeUtils.nonZero(value)) {
       setBudgetValue(value);
+    } else {
+      this.budgetValue = null;
     }
   }
 

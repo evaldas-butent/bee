@@ -5,7 +5,7 @@
       caption="=options"
       editForm="ConfOption" newRowForm="ConfOption"
 >
-  <Relation renderColumns="Code OptionName" />
+  <Relation renderColumns="Code Code2 OptionName" />
   <Columns>
     <SimpleColumn name="Group" />
     <SimpleJoin name="Group" joinType="INNER">

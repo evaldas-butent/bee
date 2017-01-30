@@ -4109,6 +4109,10 @@ public interface Dictionary {
 
   default String packageUnits() {return g("packageUnits");}
 
+  default String packet() {return g("packet");}
+
+  default String packets() {return g("packets");}
+
   default String pallets() {return g("pallets");}
 
   default String parameter() {return g("parameter");}

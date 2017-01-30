@@ -510,6 +510,9 @@
   font-weight: bold;
   background-color: lightyellow;
 }
+.bee-conf-packet {
+  color: silver;
+}
 .bee-conf-row-hdr {
   font-weight: bold;
 }
@@ -618,6 +621,9 @@
   align-items: flex-start;
   max-width: 620px;
   max-height: 200px;
+}
+.bee-spec-summary {
+  max-width: 40%;
 }
 .bee-spec-summary tr td:nth-child(2) {
   font-weight: bold;
