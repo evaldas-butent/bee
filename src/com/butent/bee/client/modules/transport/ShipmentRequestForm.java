@@ -23,11 +23,9 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
-import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
@@ -297,6 +295,14 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   @Override
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+    if (!event.isForced()) {
+      Widget grid = getWidgetByName(TBL_CARGO_LOADING + VAR_UNBOUND);
+
+      if (grid instanceof ChildGrid) {
+        event.consume();
+        ((ChildGrid) grid).getPresenter().handleAction(Action.ADD);
+      }
+    }
     if (!event.isConsumed()) {
       getCommonTerms(terms -> {
         if (BeeUtils.isEmpty(terms)) {
@@ -350,25 +356,6 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       return;
     }
     super.onReadyForInsert(listener, event);
-  }
-
-  @Override
-  public void afterInsertRow(IsRow result, boolean forced) {
-    if (!forced) {
-      DataInfo dataInfo = Data.getDataInfo(TBL_CARGO_LOADING);
-      BeeRow row = RowFactory.createEmptyRow(dataInfo);
-      row.setValue(dataInfo.getColumnIndex(COL_CARGO), result.getLong(getDataIndex(COL_CARGO)));
-
-      RowFactory.createRow(FORM_CARGO_PLACE_UNBOUND, dataInfo.getNewRowCaption(),
-          dataInfo, row, Modality.ENABLED, new RowInsertCallback(dataInfo.getViewName()) {
-            @Override
-            public void onCancel() {
-              Queries.deleteRowAndFire(getViewName(), result.getId());
-              super.onCancel();
-            }
-          });
-    }
-    super.afterInsertRow(result, forced);
   }
 
   @Override
