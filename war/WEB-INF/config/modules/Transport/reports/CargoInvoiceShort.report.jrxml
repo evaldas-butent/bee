@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-01-30T16:44:31 -->
+<!-- 2017-01-31T14:50:27 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="50" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" whenResourceMissingType="Key" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -758,25 +758,25 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:columnGroup width="150" uuid="50a6ddc6-a5aa-48d6-9744-a2f258cece08">
+					<jr:columnGroup width="159" uuid="50a6ddc6-a5aa-48d6-9744-a2f258cece08">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Columns [3]"/>
 						<jr:tableFooter height="30">
 							<textField>
-								<reportElement x="0" y="0" width="150" height="10" uuid="4311a7cb-8680-4a28-85fe-7e66ea61f3e5"/>
+								<reportElement x="0" y="0" width="159" height="10" uuid="4311a7cb-8680-4a28-85fe-7e66ea61f3e5"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font fontName="DejaVu Sans" size="7"/>
 								</textElement>
 								<textFieldExpression><![CDATA["Suma | " + $R{amount} + ":"]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="10" width="150" height="10" uuid="d4b8a287-7bac-46f5-b69e-942d35f1b428"/>
+								<reportElement x="0" y="10" width="159" height="10" uuid="d4b8a287-7bac-46f5-b69e-942d35f1b428"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font fontName="DejaVu Sans" size="7" isBold="false"/>
 								</textElement>
 								<textFieldExpression><![CDATA["PVM | " + $P{d}.trdVat() +":"]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="20" width="150" height="10" uuid="9539fb55-3989-4cba-b9d0-5384b61290e4"/>
+								<reportElement x="0" y="20" width="159" height="10" uuid="9539fb55-3989-4cba-b9d0-5384b61290e4"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font fontName="DejaVu Sans" size="7" isBold="true"/>
 								</textElement>
@@ -822,7 +822,7 @@
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="61" uuid="d7872c56-73ae-40f6-ba48-9d4a38c9dd5e">
+						<jr:column width="70" uuid="d7872c56-73ae-40f6-ba48-9d4a38c9dd5e">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<jr:tableFooter height="0" rowSpan="1">
@@ -837,11 +837,11 @@
 									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableHeader" x="0" y="0" width="61" height="20" uuid="eba90b99-3d58-442a-b261-ee8b308052cd"/>
+									<reportElement style="TableHeader" x="0" y="0" width="70" height="20" uuid="eba90b99-3d58-442a-b261-ee8b308052cd"/>
 									<textElement textAlignment="Left" verticalAlignment="Top">
 										<font fontName="DejaVu Sans" size="7"/>
 									</textElement>
-									<textFieldExpression><![CDATA["Pakrovimo data ir laikas | " + $R{loading} + "\n" + "Iškrovimo data ir laikas | " + $R{unloading}]]></textFieldExpression>
+									<textFieldExpression><![CDATA["Pakrovimo ir iškrovimo data ir laikas | " + $R{loading}]]></textFieldExpression>
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="30">
@@ -852,7 +852,7 @@
 									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableDetail" x="0" y="0" width="61" height="15" uuid="9ff3adb6-cfd1-4738-ba34-7689475d3788">
+									<reportElement style="TableDetail" x="0" y="0" width="70" height="15" uuid="9ff3adb6-cfd1-4738-ba34-7689475d3788">
 										<printWhenExpression><![CDATA[$V{trMap}.containsKey("LoadingDate")]]></printWhenExpression>
 									</reportElement>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -861,7 +861,7 @@
 									<textFieldExpression><![CDATA[$V{trMap}.get("LoadingDate")]]></textFieldExpression>
 								</textField>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableDetail" x="0" y="15" width="61" height="15" uuid="d0dc52c3-d36e-46a5-aded-efbbbfefd547">
+									<reportElement style="TableDetail" x="0" y="15" width="70" height="15" uuid="d0dc52c3-d36e-46a5-aded-efbbbfefd547">
 										<printWhenExpression><![CDATA[$V{trMap}.containsKey("UnloadingDate")]]></printWhenExpression>
 									</reportElement>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -1146,7 +1146,7 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="54" uuid="c420d38d-d94f-4ebc-9ea7-75f9701f1909">
+					<jr:column width="46" uuid="c420d38d-d94f-4ebc-9ea7-75f9701f1909">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column10"/>
 						<jr:tableFooter height="30" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="20" rowSpan="1">
@@ -1157,7 +1157,7 @@
 								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 							</box>
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="54" height="20" uuid="223c85ee-85b2-4037-ba6e-a0441e68c9e1">
+								<reportElement style="TableHeader" x="0" y="0" width="46" height="20" uuid="223c85ee-85b2-4037-ba6e-a0441e68c9e1">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								</reportElement>
 								<textElement textAlignment="Left" verticalAlignment="Top">
@@ -1174,7 +1174,7 @@
 								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 							</box>
 							<textField isStretchWithOverflow="true">
-								<reportElement x="0" y="0" width="54" height="30" uuid="00797aac-b9e2-4189-a537-0eb328f5fecb">
+								<reportElement x="0" y="0" width="46" height="30" uuid="00797aac-b9e2-4189-a537-0eb328f5fecb">
 									<printWhenExpression><![CDATA[$V{trMap}.containsKey("CargoNotes")]]></printWhenExpression>
 								</reportElement>
 								<textElement verticalAlignment="Middle">
