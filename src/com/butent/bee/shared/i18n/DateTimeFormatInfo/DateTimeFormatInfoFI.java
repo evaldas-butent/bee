@@ -10,7 +10,7 @@ public final class DateTimeFormatInfoFI implements DateTimeFormatInfo {
   private DateTimeFormatInfoFI() {
   }
 
-  public static DateTimeFormatInfoFI getInstance() {
+  public static DateTimeFormatInfo getInstance() {
     return instance;
   }
 

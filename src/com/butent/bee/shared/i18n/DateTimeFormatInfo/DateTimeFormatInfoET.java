@@ -10,7 +10,7 @@ public final class DateTimeFormatInfoET implements DateTimeFormatInfo {
   private DateTimeFormatInfoET() {
   }
 
-  public static DateTimeFormatInfoET getInstance() {
+  public static DateTimeFormatInfo getInstance() {
     return instance;
   }
 

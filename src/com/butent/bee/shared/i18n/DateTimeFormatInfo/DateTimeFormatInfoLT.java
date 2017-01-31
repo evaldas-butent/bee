@@ -10,7 +10,7 @@ public final class DateTimeFormatInfoLT implements DateTimeFormatInfo {
   private DateTimeFormatInfoLT() {
   }
 
-  public static DateTimeFormatInfoLT getInstance() {
+  public static DateTimeFormatInfo getInstance() {
     return instance;
   }
 
@@ -140,6 +140,24 @@ public final class DateTimeFormatInfoLT implements DateTimeFormatInfo {
 
   @Override
   public String[] monthsFull() {
+    return new String[] {
+        "sausio",
+        "vasario",
+        "kovo",
+        "balandžio",
+        "gegužės",
+        "birželio",
+        "liepos",
+        "rugpjūčio",
+        "rugsėjo",
+        "spalio",
+        "lapkričio",
+        "gruodžio"
+    };
+  }
+
+  @Override
+  public String[] monthsFullStandalone() {
     return new String[] {
         "sausis",
         "vasaris",

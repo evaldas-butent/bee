@@ -10,7 +10,7 @@ public final class DateTimeFormatInfoLV implements DateTimeFormatInfo {
   private DateTimeFormatInfoLV() {
   }
 
-  public static DateTimeFormatInfoLV getInstance() {
+  public static DateTimeFormatInfo getInstance() {
     return instance;
   }
 

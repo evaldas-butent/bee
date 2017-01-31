@@ -418,18 +418,15 @@ public class UserInfo implements HasInfo {
   }
 
   private SupportedLocale getDateFormatSetting() {
-    if (DataUtils.isEmpty(settings)) {
-      return getUserLocale();
-    } else if (settings.containsColumn(COL_USER_DATE_FORMAT)) {
+    if (!DataUtils.isEmpty(settings) && settings.containsColumn(COL_USER_DATE_FORMAT)) {
       SupportedLocale locale = settings.getEnum(0, COL_USER_DATE_FORMAT,
           SupportedLocale.class);
-      if (locale == null) {
-        return getUserLocale();
+      if (locale != null) {
+        return locale;
       }
-      return locale;
-    } else {
-      return getUserLocale();
     }
+
+    return getUserLocale();
   }
 
   private int getIntSetting(String colName, int def) {
