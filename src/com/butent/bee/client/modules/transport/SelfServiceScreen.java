@@ -116,6 +116,7 @@ public class SelfServiceScreen extends ScreenImpl {
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "AdditionalInfo");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, "RelatedMessages");
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, VIEW_CARGO_INCOMES);
+    FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_ORDER_MANAGER);
 
     if (getCommandPanel() != null) {
       getCommandPanel().clear();

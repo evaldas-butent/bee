@@ -479,3 +479,8 @@
 .bee-tr-SelfService-NewCommandItem:active {
   background-color: #1291b4;
 }
+.tr-shipmentRequest-Date {
+  right: 0px;
+  position: absolute;
+  padding: 10px;
+}
