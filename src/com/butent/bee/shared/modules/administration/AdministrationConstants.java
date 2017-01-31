@@ -383,6 +383,8 @@ public final class AdministrationConstants {
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
   public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
 
+  public static final String COL_USER_DATE_FORMAT = "DateFormat";
+
   public static final String COL_NEWS_REFRESH_INTERVAL_SECONDS = "NewsRefreshIntervalSeconds";
   public static final String COL_LOADING_STATE_DELAY_MILLIS = "LoadingStateDelayMillis";
 
