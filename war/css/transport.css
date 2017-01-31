@@ -348,7 +348,8 @@
 }
 
 .bee-tr-SelfService-screen .bee-MainCommandPanel {
-  left: 270px;
+  left: 20px;
+  top: 65px;
 }
 .bee-tr-SelfService-shell {
   width: 100%;
@@ -455,4 +456,26 @@
 .bee-tr-input-mode-active {
   font-weight: bolder;
   cursor: auto;
+}
+.bee-tr-SelfService-CommandItem {
+  padding: 4px 8px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  background-color:transparent;
+  color: white;
+  border-color: transparent;
+  border-radius: 5px;
+}
+.bee-tr-SelfService-CommandItem:focus {
+  outline: transparent;
+}
+.bee-tr-SelfService-NewCommandItem {
+  background-color: #1eb2d8;
+}
+.bee-tr-SelfService-NewCommandItem:hover {
+  background-color: #1ca5c7;
+}
+.bee-tr-SelfService-NewCommandItem:active {
+  background-color: #1291b4;
 }

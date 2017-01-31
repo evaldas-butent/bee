@@ -3243,6 +3243,8 @@ public interface Dictionary {
 
   default String invalidDateFormat() {return g("invalidDateFormat");}
 
+  default String invalidDateRange() {return g("invalidDateRange");}
+
   default String invalidIdValue() {return g("invalidIdValue");}
 
   default String invalidImageFileType(Object p0, Object p1) {
@@ -3264,8 +3266,6 @@ public interface Dictionary {
   }
 
   default String invalidRange() {return g("invalidRange");}
-
-  default String invalidDateRange() {return g("invalidDateRange");}
 
   default String invalidTime() {return g("invalidTime");}
 
@@ -6106,6 +6106,8 @@ public interface Dictionary {
   default String trSelfService() {return g("trSelfService");}
 
   default String trSelfServiceCommandHistory() {return g("trSelfServiceCommandHistory");}
+
+  default String trSelfServiceCommandNewOrder() {return g("trSelfServiceCommandNewOrder");}
 
   default String trSelfServiceCommandNewRequest() {return g("trSelfServiceCommandNewRequest");}
 

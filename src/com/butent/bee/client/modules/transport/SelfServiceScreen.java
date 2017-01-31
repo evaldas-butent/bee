@@ -80,6 +80,8 @@ public class SelfServiceScreen extends ScreenImpl {
   }
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-SelfService-";
+  private static final String STYLE_COMMAND_ITEM = "CommandItem";
+  private static final String STYLE_NEW_COMMAND_ITEM = "New" + STYLE_COMMAND_ITEM;
 
   private final Map<String, String> activeViews = new HashMap<>();
 
@@ -118,7 +120,7 @@ public class SelfServiceScreen extends ScreenImpl {
     if (getCommandPanel() != null) {
       getCommandPanel().clear();
     }
-    addCommandItem(new Button(Localized.dictionary().trSelfServiceCommandNewRequest(),
+    Button commandNewRequest = new Button(Localized.dictionary().trSelfServiceCommandNewRequest(),
         event -> {
           DataInfo info = Data.getDataInfo(VIEW_SHIPMENT_REQUESTS);
           BeeRow row = RowFactory.createEmptyRow(info, true);
@@ -130,11 +132,17 @@ public class SelfServiceScreen extends ScreenImpl {
               showSuccessInfo(result);
             }
           });
-        }));
-    addCommandItem(new Button(Localized.dictionary().trSelfServiceCommandRequests(),
-        event -> openRequests()));
+        });
+    commandNewRequest.addStyleName(STYLE_PREFIX + STYLE_COMMAND_ITEM);
+    commandNewRequest.addStyleName(STYLE_PREFIX + STYLE_NEW_COMMAND_ITEM);
+    addCommandItem(commandNewRequest);
 
-    addCommandItem(new Button(Localized.dictionary().ecInvoices(),
+    Button commandRequests = new Button(Localized.dictionary().trSelfServiceCommandRequests(),
+        event -> openRequests());
+    commandRequests.addStyleName(STYLE_PREFIX + STYLE_COMMAND_ITEM);
+    addCommandItem(commandRequests);
+
+    Button commandInvoices = new Button(Localized.dictionary().ecInvoices(),
         event -> openGrid(GRID_SELF_SERVICE_INVOICES, Filter.or(
             Filter.equals(TradeConstants.COL_TRADE_CUSTOMER, BeeKeeper.getUser().getCompany()),
             Filter.equals(TradeConstants.COL_SALE_PAYER, BeeKeeper.getUser().getCompany())),
@@ -168,7 +176,9 @@ public class SelfServiceScreen extends ScreenImpl {
                       }
                     });
               }
-            })));
+            }));
+    commandInvoices.addStyleName(STYLE_PREFIX + STYLE_COMMAND_ITEM);
+    addCommandItem(commandInvoices);
   }
 
   @Override
