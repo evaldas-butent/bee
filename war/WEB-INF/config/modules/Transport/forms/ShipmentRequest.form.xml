@@ -18,125 +18,30 @@
   <f:properties jasperReports="OrderContract" />
 
   <FlowPanel>
-    <Table kind="custom" style="&table; margin-top:10px;" cellStyle="&cells;">
-      &cols;
-      <row>
-        <Label for="Date" />
-        <DateTimeLabel source="Date" />
-        <Label for="Locale" />
-        <TextLabel source="Locale" style="font-weight:bold;" />
-        <FlowPanel name="OrderID" style="cursor:pointer; font-weight:bold; color:blue;" />
-        <Label />
-        <Label text="=customerPrice" />
-        <MoneyLabel property="Income" style="font-weight: bold;" />
-        <Label text="=vat" style="margin-left: 5px;" />
-        <MoneyLabel property="Vat" style="font-weight: bold;" />
-      </row>
-    </Table>
-    <Table kind="custom" name="Status">
-      &cols;
-      <row>
-        <Label for="Status" />
-        <TextLabel source="Status" style="font-weight:bold;" />
-        <TextLabel source="LossReason" style="color:red; white-space:pre-wrap;" />
-      </row>
-    </Table>
-    &separator;
-
-    <Details open="true">
-      <Summary text="=trRequestCustomerInfo" style="&summary;" />
-
-      <Table name="Register" kind="controls" style="&table;" cellStyle="&cells;">
+    <FlowPanel name="Status" >
+      <Table kind="custom" style="&table; margin-top:10px;" cellStyle="&cells;">
         &cols;
-
         <row>
-          <Label for="CustomerName" />
-          <cell colSpan="2">
-            <FlowPanel>
-              <InputText source="CustomerName" style="width:20em; margin-right:5px;" />
-              <DataSelector source="CustomerCompanyType" valueSource="Name" viewName="CompanyTypes"
-                            style="width:5em; display:inline;" placeholder="=companyStatus" />
-            </FlowPanel>
-          </cell>
-          <CheckBox source="CustomerRegister" />
-        </row>
-
-        <row>
-          <Label for="CustomerCode" />
-          <InputText source="CustomerCode" />
-          <Label for="CustomerVatCode" />
-          <InputText source="CustomerVATCode" />
-        </row>
-
-        <row>
-          <Label for="CustomerContactPerson" />
-          <InputText source="CustomerContactPerson" />
-          <Label for="CustomerPersonPosition" />
-          <DataSelector source="CustomerPersonPosition" valueSource="Name" viewName="Positions" />
-        </row>
-
-        <row>
-          <Label for="CustomerPhone" />
-          <InputText source="CustomerPhone" />
-          <Label for="CustomerEmail" />
-          <InputText source="CustomerEmail" />
-        </row>
-
-        <row>
-          <Label for="CustomerFax" />
-          <InputText source="CustomerFax" />
-        </row>
-
-        <row>
-          <Label for="CustomerAddress" />
-          <InputText source="CustomerAddress" />
-          <Label for="CustomerPostIndex" />
-          <InputText source="CustomerPostIndex" />
-        </row>
-
-        <row>
-          <Label for="CustomerCity" />
-          <DataSelector source="CustomerCity" valueSource="Name" viewName="Cities"
-                        choiceColumns="Name CountryName" />
-          <Label for="CustomerCountry" />
-          <DataSelector source="CustomerCountry" valueSource="Name" viewName="Countries" />
-        </row>
-
-        <row>
-          <Label for="CustomerNotes" />
-          <cell colSpan="3">
-            <InputArea source="CustomerNotes" visibleLines="2" style="width:100%;" />
-          </cell>
+          <Label for="Locale" />
+          <TextLabel source="Locale" style="font-weight:bold;" />
+          <FlowPanel name="OrderID" style="cursor:pointer; font-weight:bold; color:blue;" />
+          <Label />
+          <Label text="=customerPrice" />
+          <MoneyLabel property="Income" style="font-weight: bold;" />
+          <Label text="=vat" style="margin-left: 5px;" />
+          <MoneyLabel property="Vat" style="font-weight: bold;" />
         </row>
       </Table>
-
-      <Table name="CompanyPerson" kind="controls" style="&table;" cellStyle="&cells;">
+      <Table kind="custom">
         &cols;
-
         <row>
-          <Label for="CompanyPerson" class="bee-required" />
-          <DataSelector source="CompanyPerson" newRowEnabled="false" required="true"
-                        renderColumns="PersonFirstName PersonLastName" />
-          <Label for="CompanyName" />
-          <TextLabel source="CompanyName" />
-        </row>
-
-        <row>
-          <Label for="PersonPhone" />
-          <TextLabel source="PersonPhone" />
-          <Label for="PersonEmail" />
-          <TextLabel source="PersonEmail" />
+          <Label for="Status" />
+          <TextLabel source="Status" style="font-weight:bold;" />
+          <TextLabel source="LossReason" style="color:red; white-space:pre-wrap;" />
         </row>
       </Table>
-    </Details>
-    &separator;
-
-    <Details open="true">
-      <Summary text="=cargoInformation" style="&summary;" />
-      <ChildGrid name="CargoLoadingUnbound" relColumn="Cargo" source="Cargo" />
-      <ChildGrid name="CargoUnloadingUnbound" relColumn="Cargo" source="Cargo" />
-    </Details>
-    &separator;
+      &separator;
+    </FlowPanel>
 
     <Details open="true">
       <Summary text="=trRequestShipmentInfo" style="&summary;" />
@@ -188,21 +93,24 @@
     <Details open="true">
       <Summary text="=trRequestCargoInfo" style="&summary;" />
 
+      <FlowPanel class="flexBox-horizontal">
+        <Label for="Description" style="&colLabel;"/>
+        <InputArea source="Description" visibleLines="1" style="width:600px;" />
+      </FlowPanel>
+
       <Table kind="controls" style="&table;" cellStyle="&cells;">
         &cols;
 
         <row>
-          <cell rowSpan="2">
-            <Label for="Description" />
-          </cell>
-          <cell rowSpan="2">
-            <InputArea source="Description" visibleLines="4" style="width:200px;" />
-          </cell>
           <Label for="Weight" name="WeightLabel" />
           <FlowPanel>
             <InputDecimal source="Weight" style="&decimal;" />
             <DataSelector source="WeightUnit" style="&unit;" />
           </FlowPanel>
+          <Label for="Height" />
+          <InputDecimal source="Height" style="&decimal;" />
+          <text/>
+          <CheckBox source="Dangerous" />
         </row>
 
         <row>
@@ -211,48 +119,49 @@
             <InputDecimal source="Volume" style="&decimal;" />
             <DataSelector source="VolumeUnit" style="&unit;" />
           </FlowPanel>
+          <Label for="Width" />
+          <InputDecimal source="Width" style="&decimal;" />
+          <text/>
+          <CheckBox source="Outsized" />
         </row>
 
         <row>
-          <Label for="Height" />
-          <InputDecimal source="Height" style="&decimal;" />
           <Label for="Quantity" />
           <FlowPanel>
             <InputDecimal source="Quantity" style="&decimal;" />
             <DataSelector source="QuantityUnit" style="&unit;" />
           </FlowPanel>
-        </row>
-
-        <row>
-          <Label for="Width" />
-          <InputDecimal source="Width" style="&decimal;" />
-          <text />
-          <CheckBox source="Dangerous" />
-        </row>
-
-        <row>
           <Label for="Length" />
           <InputDecimal source="Length" style="&decimal;" />
           <text />
-          <CheckBox source="Outsized" />
+          <FlowPanel name="PartialToggle" class="flexBox-horizontal" />
         </row>
 
         <row>
+          <text />
+          <text />
           <Label for="LDM" />
           <InputDecimal source="LDM" style="&decimal;" />
-          <text />
-          <FlowPanel name="PartialToggle" class="flexBox-horizontal" />
         </row>
       </Table>
     </Details>
     &separator;
 
-    <HorizontalPanel>
-      <Label for="Manager" />
-      <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
-                    newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
-    </HorizontalPanel>
+    <Details open="true">
+      <Summary text="=cargoInformation" style="&summary;" />
+      <ChildGrid name="CargoLoadingUnbound" relColumn="Cargo" source="Cargo" />
+      <ChildGrid name="CargoUnloadingUnbound" relColumn="Cargo" source="Cargo" />
+    </Details>
     &separator;
+
+    <FlowPanel name="Manager">
+      <HorizontalPanel>
+        <Label for="Manager" />
+        <DataSelector source="Manager" renderColumns="ManagerFirstName ManagerLastName"
+                      newRowEnabled="false" editSource="ManagerPerson" style="width:15em;" />
+      </HorizontalPanel>
+      &separator;
+    </FlowPanel>
 
     <Details name="AdditionalInfo" open="true">
       <Summary text="=trRequestAdditionalInfo" style="&summary;" />
@@ -304,5 +213,10 @@
         <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" />
       </page>
     </TabbedPages>
+
+    <FlowPanel class="tr-shipmentRequest-Date flexBox-horizontal">
+      <Label for="Date" />
+      <DateTimeLabel source="Date" style="margin-left: 10px;"/>
+    </FlowPanel>
   </FlowPanel>
 </f:Form>
