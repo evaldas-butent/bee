@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.ALS_COMPANY_TYPE_NAME;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -19,6 +20,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public final class ServiceUtils {
@@ -126,8 +128,11 @@ public final class ServiceUtils {
       BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
-          if (!response.isEmpty() && !response.hasErrors()) {
+          if (response.hasErrors()) {
+            Global.showError(Arrays.asList(response.getErrors()));
+          }
 
+          if (!response.isEmpty()) {
             for (Map.Entry<String, String> entry : Codec.deserializeHashMap(response
                 .getResponseAsString()).entrySet()) {
               commentRow.setValue(Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS, entry.getKey()),
