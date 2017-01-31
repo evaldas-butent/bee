@@ -9,6 +9,7 @@ import com.butent.bee.server.logging.LogbackFactory;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.ui.UiHolderBean;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
@@ -62,6 +63,8 @@ public class InitializationBean {
     if (!BeeUtils.isEmpty(props)) {
       props.forEach(Config::setProperty);
     }
+    SupportedLocale.ACTIVE_LOCALES.clear();
+    SupportedLocale.ACTIVE_LOCALES.addAll(Config.getList(Service.PROPERTY_ACTIVE_LOCALES));
 
     sys.initViews();
     chat.init();

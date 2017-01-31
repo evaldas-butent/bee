@@ -25,6 +25,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
@@ -104,6 +105,8 @@ public class DispatcherBean {
 
     data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
     data.put(Service.PROPERTY_VIEW_MODULES, RightsUtils.getViewModulesAsString());
+
+    data.put(Service.PROPERTY_ACTIVE_LOCALES, SupportedLocale.ACTIVE_LOCALES);
 
     Long currency = prm.getRelation(PRM_CURRENCY);
     if (DataUtils.isId(currency)) {

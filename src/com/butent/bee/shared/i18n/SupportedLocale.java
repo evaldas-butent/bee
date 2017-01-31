@@ -14,6 +14,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public enum SupportedLocale implements HasCaption {
   LT {
@@ -173,6 +174,7 @@ public enum SupportedLocale implements HasCaption {
 
   public static final SupportedLocale DICTIONARY_DEFAULT = EN;
   public static final SupportedLocale USER_DEFAULT = LT;
+  public static final List<String> ACTIVE_LOCALES = new ArrayList<>();
 
   public static SupportedLocale getByLanguage(String language) {
     for (SupportedLocale locale : values()) {
@@ -221,4 +223,9 @@ public enum SupportedLocale implements HasCaption {
   public abstract String getLanguage();
 
   public abstract DateTimeFormatInfo getDateTimeFormat();
+
+  public boolean isActive() {
+    return ACTIVE_LOCALES.stream()
+        .anyMatch(loc -> Objects.equals(this, USER_DEFAULT) || BeeUtils.same(loc, getLanguage()));
+  }
 }

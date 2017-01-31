@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
 
+import static com.butent.bee.shared.Service.PROPERTY_ACTIVE_LOCALES;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.animation.RafCallback;
@@ -36,6 +37,7 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
@@ -48,6 +50,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -170,6 +173,12 @@ public class Bee implements EntryPoint, ClosingHandler {
 
         case Service.PROPERTY_VIEW_MODULES:
           RightsUtils.setViewModules(Codec.deserializeHashMap(value));
+          break;
+
+        case PROPERTY_ACTIVE_LOCALES:
+          SupportedLocale.ACTIVE_LOCALES.clear();
+          SupportedLocale.ACTIVE_LOCALES
+              .addAll(Arrays.asList(Codec.beeDeserializeCollection(value)));
           break;
 
         case COL_CURRENCY:
