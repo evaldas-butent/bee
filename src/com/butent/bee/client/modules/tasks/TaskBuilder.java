@@ -76,7 +76,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 
 class TaskBuilder extends ProductSupportInterceptor {
 
@@ -349,22 +348,19 @@ class TaskBuilder extends ProductSupportInterceptor {
 
     if (!TaskStatus.NOT_SCHEDULED.equals(status)) {
 
-      Global.getParameter(TaskConstants.PRM_END_OF_WORK_DAY, new Consumer<String>() {
-        @Override
-        public void accept(String input) {
+      Global.getParameter(TaskConstants.PRM_END_OF_WORK_DAY, input -> {
 
-          Widget w = getFormView().getWidgetByName(NAME_END_TIME);
-          if (w instanceof InputTime) {
-            ((InputTime) w).setValue(input);
-          }
+        Widget w = getFormView().getWidgetByName(NAME_END_TIME);
+        if (w instanceof InputTime) {
+          ((InputTime) w).setValue(input);
         }
       });
 
-      Global.getParameter(TaskConstants.PRM_START_OF_WORK_DAY, new Consumer<String>() {
-        @Override
-        public void accept(String input) {
-          startTime = input;
-        }
+      Global.getParameter(TaskConstants.PRM_START_OF_WORK_DAY, input -> startTime = input);
+
+      Global.getParameter(TaskConstants.PRM_CREATE_PRIVATE_TASK_FIRST, input -> {
+        newRow.setValue(form.getDataIndex(COL_PRIVATE_TASK), BeeUtils.toBooleanOrNull(input));
+        form.refreshBySource(COL_PRIVATE_TASK);
       });
     }
   }
@@ -452,6 +448,9 @@ class TaskBuilder extends ProductSupportInterceptor {
           BeeRow r = BeeRow.restore((String) response.getResponse());
           if (r != null) {
             form.updateRow(r, true);
+            if (focusCommand != null) {
+              focusCommand.execute();
+            }
           }
         }
       }

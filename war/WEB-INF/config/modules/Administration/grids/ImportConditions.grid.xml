@@ -2,8 +2,8 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
         name="ImportConditions" viewName="ImportConditions" caption="=trImportConditions"
-        disabledActions="configure"
-    >
+        disabledActions="configure" flexGrow="1"
+>
   <g:columns>
     <DataColumn name="Property" readOnly="true" />
     <DataColumn name="Value" />

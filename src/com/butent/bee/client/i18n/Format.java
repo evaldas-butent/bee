@@ -349,6 +349,30 @@ public final class Format {
     return d;
   }
 
+  public static String properMonthFull(int month) {
+    return BeeUtils.proper(renderMonthFullStandalone(month));
+  }
+
+  public static String properMonthShort(int month) {
+    return BeeUtils.proper(renderMonthShortStandalone(month));
+  }
+
+  public static String quarterFull(int quarter) {
+    if (TimeUtils.isQuarter(quarter)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersFull()[quarter - 1];
+    } else {
+      return null;
+    }
+  }
+
+  public static String quarterShort(int quarter) {
+    if (TimeUtils.isQuarter(quarter)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersShort()[quarter - 1];
+    } else {
+      return null;
+    }
+  }
+
   public static String render(Boolean value) {
     return BeeUtils.isTrue(value) ? BeeConst.STRING_CHECK_MARK : BeeConst.STRING_EMPTY;
   }
@@ -517,6 +541,15 @@ public final class Format {
     }
   }
 
+  public static String renderMonthShortStandalone(int month) {
+    if (TimeUtils.isMonth(month)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
+          .monthsShortStandalone()[month - 1];
+    } else {
+      return null;
+    }
+  }
+
   public static String renderPeriod(DateTime start, DateTime end) {
     if (start == null || end == null || start.hasTimePart() || end.hasTimePart()) {
       return TimeUtils.renderPeriod(start, end);
@@ -537,6 +570,14 @@ public final class Format {
 
     } else {
       return TimeUtils.renderPeriod(start, end);
+    }
+  }
+
+  public static String renderYearMonth(HasYearMonth ym) {
+    if (ym == null) {
+      return null;
+    } else {
+      return BeeUtils.joinWords(ym.getYear(), renderMonthFullStandalone(ym).toLowerCase());
     }
   }
 

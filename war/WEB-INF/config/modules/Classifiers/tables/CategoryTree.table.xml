@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="CategoryTree"
-  idName="CategoryID"
-  >
+       name="CategoryTree"
+       idName="CategoryID"
+>
   <Fields>
     <String name="Name" precision="60" notNull="true" label="=name" />
     <String name="Name2" precision="60" label="=itemName2" />
     <String name="Name3" precision="60" label="=itemName3" />
     <Relation name="Parent" relation="CategoryTree" label="=category" />
 
-    <Boolean name="Included" label="=ecModule" />
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+              label="=finTradeAccounts" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
-      label="=dimensions" />
+    <Boolean name="Included" label="=ecModule" />
   </Fields>
 
   <Constraints>

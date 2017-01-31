@@ -289,7 +289,7 @@ public final class BeeUtils {
    * @param min the minimum value
    * @param max the maximum value
    * @return true if x is between {@code min} (inclusively) and {@code max} (exclusively), else
-   *         false.
+   * false.
    */
   public static boolean betweenExclusive(int x, int min, int max) {
     return x >= min && x < max;
@@ -400,7 +400,7 @@ public final class BeeUtils {
    *
    * @param x double which value should be rounded to the bigger part.
    * @return the value rounded to the bigger part (closer to the positive infinity) of the value
-   *         provided.
+   * provided.
    */
   public static int ceil(double x) {
     return toInt(Math.ceil(x));
@@ -425,8 +425,8 @@ public final class BeeUtils {
    * @param min the minimum possible value
    * @param max the maximum possible value
    * @return {@code x} if the value is between {@code min} and {@code max}, is the value is less
-   *         than {@code min} it returns {@code min}, if greater than {@code max} it returns
-   *         {@code max}.
+   * than {@code min} it returns {@code min}, if greater than {@code max} it returns
+   * {@code max}.
    */
   public static double clamp(double x, double min, double max) {
     if (!isDouble(x)) {
@@ -468,7 +468,7 @@ public final class BeeUtils {
    * @param min the minimum possible value
    * @param max the maximum possible value
    * @return x if the value is between {@code min} and {@code max}, if the value is less than
-   *         {@code min} it returns {@code min}, if greater than {@code max} it returns {@code max}.
+   * {@code min} it returns {@code min}, if greater than {@code max} it returns {@code max}.
    */
   public static int clamp(int x, int min, int max) {
     int z = Math.min(min, max);
@@ -608,7 +608,7 @@ public final class BeeUtils {
    * @param src source CharSequence to be checked
    * @param ch characters to check for
    * @return true if the src contains only the specified characters, false if src contains any
-   *         different characters.
+   * different characters.
    */
   public static boolean containsOnly(CharSequence src, char ch) {
     if (src == null) {
@@ -716,7 +716,7 @@ public final class BeeUtils {
    * @param start position to start deleting from
    * @param end position to end deleting
    * @return a String without the deleted part. empty String - if {@code src} is {@code null} or
-   *         empty, {@code src} - if start and end is wrong to given String
+   * empty, {@code src} - if start and end is wrong to given String
    */
   public static String delete(String src, int start, int end) {
     if (src == null) {
@@ -798,7 +798,7 @@ public final class BeeUtils {
    * @param s1 the String to compare
    * @param s2 the String to compare
    * @return true if trimmed Strings are equal, false if Strings differ or any of them are empty or
-   *         {@code null}.
+   * {@code null}.
    */
   public static boolean equalsTrim(String s1, String s2) {
     if (s1 == null) {
@@ -884,7 +884,7 @@ public final class BeeUtils {
    *
    * @param s the string to convert
    * @return returns a corresponding Hex symbol for the specified String input, {@code null} if the
-   *         specified String format is wrong
+   * specified String format is wrong
    */
   public static char[] fromHex(String s) {
     if (!isHexString(s)) {
@@ -1100,6 +1100,18 @@ public final class BeeUtils {
     return cs.length() >= min;
   }
 
+  public static boolean hasDistinctElements(List<?> list) {
+    if (size(list) > 1) {
+      return list.stream().distinct().count() == list.size();
+    } else {
+      return true;
+    }
+  }
+
+  public static <T> int indexOf(List<? extends T> list, T item) {
+    return (list == null) ? BeeConst.UNDEF : list.indexOf(item);
+  }
+
   public static int indexOfSame(List<String> list, String s) {
     if (isEmpty(list)) {
       return BeeConst.UNDEF;
@@ -1250,7 +1262,7 @@ public final class BeeUtils {
    * @param c1 first Collection's elements to be compared
    * @param c2 second Collection's elements to be compared
    * @return true if one of the collections contain at least one equal element from the other
-   *         collection, otherwise false.
+   * collection, otherwise false.
    */
   public static <T> boolean intersects(Collection<T> c1, Collection<T> c2) {
     boolean ok = false;
@@ -1377,7 +1389,7 @@ public final class BeeUtils {
    *
    * @param s CharSequence to check
    * @return true if all characters in the sequence are digits, false if sequence is {@code null} or
-   *         empty or contains at least one non-digit character.
+   * empty or contains at least one non-digit character.
    */
   public static boolean isDigit(CharSequence s) {
     if (s == null) {
@@ -1612,7 +1624,7 @@ public final class BeeUtils {
   }
 
   public static boolean isNegative(Integer x) {
-    return (x == null) ? false : x < 0;
+    return x != null && x < 0;
   }
 
   public static boolean isNegativeInt(String s) {
@@ -1628,11 +1640,11 @@ public final class BeeUtils {
   }
 
   public static boolean isNonNegative(Integer x) {
-    return (x == null) ? false : x >= 0;
+    return x != null && x >= 0;
   }
 
   public static boolean isNonNegative(Long x) {
-    return (x == null) ? false : x >= 0L;
+    return x != null && x >= 0L;
   }
 
   public static boolean isNonNegativeDouble(String s) {
@@ -1644,7 +1656,7 @@ public final class BeeUtils {
   }
 
   public static boolean isPositive(BigDecimal x) {
-    return (x == null) ? false : x.compareTo(BigDecimal.ZERO) > 0;
+    return x != null && x.compareTo(BigDecimal.ZERO) > 0;
   }
 
   public static boolean isPositive(Double d) {
@@ -1656,11 +1668,11 @@ public final class BeeUtils {
   }
 
   public static boolean isPositive(Integer x) {
-    return (x == null) ? false : x > 0;
+    return x != null && x > 0;
   }
 
   public static boolean isPositive(Long x) {
-    return (x == null) ? false : x > 0L;
+    return x != null && x > 0L;
   }
 
   public static boolean isPositiveDouble(String s) {
@@ -1703,8 +1715,8 @@ public final class BeeUtils {
    * @param src a sequence to check in
    * @param ch a suffix of prefix to search for
    * @return true if the first or the last character equals {@code pfx}, false if the sequence
-   *         contains only one symbol and is suffix or prefix, and if the sequence does not contain
-   *         nor suffix nor prefix
+   * contains only one symbol and is suffix or prefix, and if the sequence does not contain
+   * nor suffix nor prefix
    */
   public static boolean isPrefixOrSuffix(CharSequence src, char ch) {
     return (isPrefix(src, ch) || isSuffix(src, ch)) && !containsOnly(src, ch);
@@ -1753,8 +1765,9 @@ public final class BeeUtils {
   public static boolean isTrue(Boolean b) {
     if (b == null) {
       return false;
+    } else {
+      return b;
     }
-    return b.booleanValue();
   }
 
   public static boolean isWhitespace(char ch) {
@@ -1804,7 +1817,7 @@ public final class BeeUtils {
    *
    * @param sep separator
    * @return returns a string containing the string representation of each of {@code obj}, using the
-   *         separator {@code sep} between each.
+   * separator {@code sep} between each.
    */
   public static String join(String sep, Object first, Object second, Object... rest) {
     return doJoin(true, sep, first, second, rest);
@@ -2226,6 +2239,22 @@ public final class BeeUtils {
     return z.toString();
   }
 
+  public static String quote(String v) {
+    if (v == null) {
+      return BeeConst.STRING_QUOT + BeeConst.STRING_QUOT;
+
+    } else if (v.contains(BeeConst.STRING_QUOT)) {
+      if (v.contains(BeeConst.STRING_APOS)) {
+        return bracket(v.trim());
+      } else {
+        return BeeConst.STRING_APOS + v.trim() + BeeConst.STRING_APOS;
+      }
+
+    } else {
+      return BeeConst.STRING_QUOT + v.trim() + BeeConst.STRING_QUOT;
+    }
+  }
+
   public static char randomChar(char min, char max) {
     return (char) randomInt(min, max);
   }
@@ -2437,7 +2466,7 @@ public final class BeeUtils {
     if (str == null) {
       return null;
     } else {
-      return CharMatcher.WHITESPACE.removeFrom(str);
+      return CharMatcher.whitespace().removeFrom(str);
     }
   }
 
@@ -2691,6 +2720,16 @@ public final class BeeUtils {
       return isEmpty(c1);
     } else {
       return c1.containsAll(c2) && c2.containsAll(c1);
+    }
+  }
+
+  public static <K, V> boolean sameEntries(Map<K, V> m1, Map<K, V> m2) {
+    if (isEmpty(m1)) {
+      return isEmpty(m2);
+    } else if (isEmpty(m2)) {
+      return isEmpty(m1);
+    } else {
+      return m1.entrySet().equals(m2.entrySet());
     }
   }
 
@@ -3208,6 +3247,10 @@ public final class BeeUtils {
     return isDouble(x) ? toString(x) : null;
   }
 
+  public static String toStringOrNull(Integer x) {
+    return (x == null) ? null : toString(x);
+  }
+
   public static String trim(String s) {
     return (s == null) ? BeeConst.STRING_EMPTY : s.trim();
   }
@@ -3271,7 +3314,7 @@ public final class BeeUtils {
    * @return unboxed double value or 0 if {@code box} is null
    */
   public static double unbox(Double box) {
-    return (box == null) ? 0 : box;
+    return (box == null) ? BeeConst.DOUBLE_ZERO : box;
   }
 
   /**

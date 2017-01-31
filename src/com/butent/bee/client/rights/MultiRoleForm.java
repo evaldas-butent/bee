@@ -112,7 +112,7 @@ abstract class MultiRoleForm extends RightsForm {
   private Long userId;
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void afterCreatePresenter(Presenter presenter) {
     HeaderView header = presenter.getHeader();
 
     if (header != null && !header.hasCommands()) {
@@ -638,7 +638,7 @@ abstract class MultiRoleForm extends RightsForm {
 
           for (RightsObject child : children) {
             if (child.getName().equals(childName)) {
-              enableValueWidet(elem, enabled);
+              enableValueWidget(elem, enabled);
 
               if (child.hasChildren()) {
                 Widget widget = getTable().getWidgetByElement(elem);
@@ -811,7 +811,7 @@ abstract class MultiRoleForm extends RightsForm {
         updateValueCell(widget, isChanged);
 
         if (checked) {
-          enableValueWidet(widget.getElement(), checked);
+          enableValueWidget(widget.getElement(), checked);
         }
       }
     }

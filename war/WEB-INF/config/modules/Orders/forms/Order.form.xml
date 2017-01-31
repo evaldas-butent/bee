@@ -8,9 +8,8 @@
         xmlns:f="http://www.butent.com/form"
 
   name="Order" viewName="Orders" width="800" height="600">
-  <f:properties jasperReports="PrintOffer:=offer, PrintOffer_et:=offer+_EE, PrintOrder:=order,
-    PrintOrder_et:=order+_EE" />
-  <FlowPanel>
+  <f:properties jasperReports="PrintOffer:=offer, PrintOrder:=order" />
+  <FlowPanel class="flexBox-vertical">
     <Table kind="controls">
       <row data="OrdersTemplates" class="bee-ta-template-selection">
         <Label style="margin-right: 1em; text-align: right; padding-left: 30px" text="=template" />
@@ -68,7 +67,7 @@
       </row>
     </Table>
     <br />
-    <TabbedPages style="height: 480px;" name="TabbedPages" >
+    <TabbedPages class="flexible" name="TabbedPages">
       <page>
         <text>=goods</text>
         <ChildGrid name="OrderItems" relColumn="Order" />

@@ -3,8 +3,8 @@ package com.butent.bee.client.view.edit;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.shared.Assert;
@@ -135,7 +135,7 @@ public final class EditorAssistant {
       }
 
     } else {
-      Global.getMsgBoxen().pickStar(starCount, oldValue, element, new ChoiceCallback() {
+      MessageBoxes.pickStar(starCount, oldValue, element, new ChoiceCallback() {
         @Override
         public void onCancel() {
           refocus();

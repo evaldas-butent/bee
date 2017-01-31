@@ -396,6 +396,10 @@
   color: white;
   background-color: dodgerblue;
 }
+.bee-rep-report-global td:first-child div:before {
+  font-family: FontAwesome;
+  content: "\f0ac";
+}
 
 .bee-EventsBoard-content {
   overflow: auto;
@@ -594,7 +598,11 @@
   flex: 1;
 }
 .bee-spec-container {
-  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
 }
@@ -608,14 +616,14 @@
   flex-direction: row;
   flex-wrap: wrap;
   align-items: flex-start;
+  max-width: 620px;
+  max-height: 200px;
 }
 .bee-spec-summary tr td:nth-child(2) {
   font-weight: bold;
   text-align: right;
 }
 .bee-Popup .bee-spec-box {
-  max-width: 620px;
-  max-height: 500px;
   padding: 0 5px;
 }
 .bee-spec-thumbnail {
@@ -643,6 +651,7 @@
 }
 .bee-spec-description {
   background-color: lightgoldenrodyellow;
+  flex: 1;
 }
 .bee-spec-selectable {
   border-collapse: collapse;
@@ -669,6 +678,23 @@
 }
 .bee-row-Mode-upd {
   background-color: #ffb300;
+}
+
+.bee-stage {
+  display: inline-block;
+  padding: 5px;
+  text-align: center;
+  background-color: white;
+  color: #1eb2d8;
+  font-weight: bolder;
+  border: 1px solid #1eb2d8;
+  cursor: pointer;
+}
+
+.bee-stage-active {
+  background-color: #1eb2d8;
+  color: white;
+  cursor: default;
 }
 
 .bee-reminder-dialog-panel{

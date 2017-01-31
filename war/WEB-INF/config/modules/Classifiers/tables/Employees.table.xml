@@ -15,5 +15,8 @@
     <Numeric name="PartTime" precision="5" scale="3" label="=partTime" />
 
     <Text name="Notes" label="=notes" />
+
+    <String name="PersonCode" precision="30" label="=personCode" />
+    <String name="PassportNo" precision="30" label="=passportNo" />
   </Fields>
 </Table>

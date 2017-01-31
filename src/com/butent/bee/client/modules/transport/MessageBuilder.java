@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -35,20 +37,21 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -57,7 +60,6 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -65,10 +67,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class MessageBuilder extends FaLabel implements ClickHandler {
 
   private final class MessageDialog extends DialogBox implements ClickHandler {
+
+    private static final String prfx = TBL_CARGO_PLACES;
 
     private final HtmlTable driverPanel = new HtmlTable();
     private final Label characterCount = new Label();
@@ -77,13 +82,12 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
     private BeeRowSet tripInfo;
     private BeeRowSet cargoInfo;
-    private final Map<Long, Map<String, String>> additionalPlaces = new HashMap<>();
-    private final Map<Long, Map<String, String>> revisedPlaces = new HashMap<>();
+    private SimpleRowSet placesInfo;
 
-    private final Collection<Long> selectedIds = new HashSet<>();
+    private final Map<Long, Long> cargoTripIds = new HashMap<>();
     private final TabBar tabs = new TabBar(Orientation.HORIZONTAL);
 
-    private MessageDialog(BeeRowSet trip, Set<Long> driverIds, Set<Long> cargoIds, Set<Long> ids) {
+    private MessageDialog(BeeRowSet trip, Set<Long> driverIds, Map<Long, Long> ids) {
       super(Localized.dictionary().message());
 
       setAnimationEnabled(true);
@@ -146,46 +150,45 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
             }
           });
       tripInfo = trip;
-      setCargoInfo(Data.createRowSet(TBL_ORDER_CARGO), Data.createRowSet(VIEW_CARGO_HANDLING));
+      cargoTripIds.putAll(ids);
+      setCargoInfo(Data.createRowSet(TBL_ORDER_CARGO), null);
 
-      Queries.getRowSet(TBL_ORDER_CARGO, null, Filter.idIn(cargoIds), new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet cargo) {
-          Queries.getRowSet(VIEW_CARGO_HANDLING, null, Filter.or(Filter.any(COL_CARGO_TRIP, ids),
-              Filter.any(COL_CARGO, cargoIds)), new Queries.RowSetCallback() {
+      Queries.getRowSet(VIEW_ORDER_CARGO, null, Filter.idIn(cargoTripIds.keySet()),
+          new Queries.RowSetCallback() {
             @Override
-            public void onSuccess(BeeRowSet handling) {
-              if (!DataUtils.isEmpty(handling)) {
-                Queries.getRowSet(VIEW_CARGO_TRIPS, Collections.singletonList(COL_CARGO),
-                    Filter.idIn(handling.getDistinctLongs(handling.getColumnIndex(COL_CARGO_TRIP))),
-                    new Queries.RowSetCallback() {
-                      @Override
-                      public void onSuccess(BeeRowSet result) {
-                        for (BeeRow row : handling) {
-                          Long id = row.getLong(handling.getColumnIndex(COL_CARGO_TRIP));
+            public void onSuccess(BeeRowSet cargo) {
+              ParameterList args = TransportHandler.createArgs(SVC_GET_CARGO_PLACES);
+              args.addDataItem(COL_CARGO_TRIP, DataUtils.buildIdList(cargoTripIds.values()));
 
-                          if (DataUtils.isId(id) && !BeeConst.isUndef(result.getRowIndex(id))) {
-                            row.setValue(handling.getColumnIndex(COL_CARGO),
-                                result.getStringByRowId(id, COL_CARGO));
-                          }
-                        }
-                        setCargoInfo(cargo, handling);
-                      }
-                    });
-              } else {
-                setCargoInfo(cargo, handling);
-              }
+              BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+                @Override
+                public void onResponse(ResponseObject response) {
+                  response.notify(gridView);
+                  SimpleRowSet places = null;
+
+                  if (!response.hasErrors()) {
+                    Multimap<Long, Integer> indexes = LinkedListMultimap.create();
+                    places = SimpleRowSet.restore(response.getResponseAsString());
+
+                    for (int i = 0; i < places.getNumberOfRows(); i++) {
+                      indexes.put(places.getLong(i, COL_CARGO), i);
+                    }
+                    for (BeeRow row : cargo) {
+                      row.setProperty(prfx, Codec.beeSerialize(indexes.get(row.getId())));
+                    }
+                  }
+                  setCargoInfo(cargo, places);
+                }
+              });
             }
           });
-        }
-      });
-      selectedIds.addAll(ids);
     }
 
     @Override
     public void onClick(ClickEvent arg) {
-      final String caption;
+      String caption;
       Collection<String> template;
+      Dictionary loc = Localized.dictionary();
 
       if (BeeUtils.isPositive(tabs.getItemCount())) {
         caption = ((Label) tabs.getSelectedWidget()).getText();
@@ -194,95 +197,148 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
         caption = null;
         template = null;
       }
-      Global.inputCollection(Localized.dictionary().template(),
-          caption, false, template, input -> {
-            if (BeeUtils.isEmpty(input)) {
-              templates.remove(caption);
-              renderTemplates(null);
-            } else {
-              Global.inputString(Localized.dictionary().name(), null, new StringCallback() {
-                @Override
-                public void onSuccess(String name) {
-                  templates.put(name, input);
-                  renderTemplates(name);
-                }
-              }, null, caption);
+      Global.inputCollection(loc.template(), caption, false, template, input -> {
+        if (BeeUtils.isEmpty(input)) {
+          templates.remove(caption);
+          renderTemplates(null);
+        } else {
+          Global.inputString(loc.name(), null, new StringCallback() {
+            @Override
+            public void onSuccess(String name) {
+              templates.put(name, input);
+              renderTemplates(name);
             }
-          }, value -> {
-            final InputText editor = new InputText();
-            editor.setWidth("30em");
+          }, null, caption);
+        }
+      }, value -> {
+        InputText editor = new InputText();
 
-            if (!BeeUtils.isEmpty(value)) {
-              editor.setValue(value);
-            } else {
-              final List<String> caps = new ArrayList<>();
-              final List<String> keys = new ArrayList<>();
+        if (!BeeUtils.isEmpty(value)) {
+          editor.setValue(value);
+        } else {
+          List<String> caps = new ArrayList<>();
+          List<String> keys = new ArrayList<>();
 
-              for (BeeRowSet rowSet : new BeeRowSet[] {cargoInfo, tripInfo}) {
-                for (BeeColumn col : rowSet.getColumns()) {
-                  if (col.getType() != ValueType.LONG) {
+          Stream.of(cargoInfo, tripInfo)
+              .forEach(rowSet -> rowSet.getColumns().stream()
+                  .filter(col -> !Objects.equals(col.getType(), ValueType.LONG))
+                  .forEach(col -> {
                     caps.add(Localized.getLabel(col));
-                    keys.add(col.getId());
-                  }
-                }
-              }
-              Global.choice(Localized.dictionary().value(), null, caps,
-                  item -> editor.setValue(caps.get(item) + ": {" + keys.get(item) + "}"));
-            }
-            return editor;
-          });
+                    keys.add(col.getId() + (Objects.equals(col.getType(), ValueType.BOOLEAN)
+                        ? "+" + loc.yes() + "-" + loc.no() : ""));
+                  }));
+          caps.add(loc.cargoHandlingPlaces() + " " + loc.unloading());
+          keys.add(prfx + VAR_UNLOADING + "+" + loc.unloading() + "-" + loc.loading());
+
+          Data.getColumns(TBL_CARGO_LOADING).stream()
+              .filter(col -> col.getType() != ValueType.LONG)
+              .filter(col -> !BeeUtils.isSuffix(col.getId(), VAR_UNBOUND))
+              .forEach(col -> {
+                caps.add(loc.cargoHandlingPlaces() + " " + Localized.getLabel(col));
+                keys.add(prfx + col.getId());
+              });
+          Global.choice(loc.value(), null, caps,
+              item -> editor.setValue(caps.get(item) + ": {" + keys.get(item) + "}"));
+        }
+        return editor;
+      });
     }
 
     private void renderMessage() {
       StringBuilder sb = new StringBuilder();
 
       if (!BeeConst.isUndef(tabs.getSelectedTab()) && !DataUtils.isEmpty(cargoInfo)) {
-        RegExp r = RegExp.compile("\\{\\w+\\}", "g");
+        RegExp regExp = RegExp.compile("\\{\\w+[^\\}]*\\}", "g");
+        RegExp subRegExp = RegExp.compile("\\{(\\w+)(\\+([^\\-]*))?(\\-(.*))?\\}");
 
-        for (int i = 0; i < cargoInfo.getNumberOfRows(); i++) {
+        for (BeeRow cargoRow : cargoInfo) {
           if (sb.length() > 0) {
             sb.append("\n");
           }
           for (String rowExpr : templates.get(((Label) tabs.getSelectedWidget()).getText())) {
-            SplitResult s = r.split(rowExpr);
+            boolean hasPlaces = false;
+            StringBuilder row = new StringBuilder();
+            SplitResult split = regExp.split(rowExpr);
 
-            for (int j = 0; j < s.length(); j++) {
-              sb.append(s.get(j));
+            for (int i = 0; i < split.length(); i++) {
+              row.append(split.get(i));
+              MatchResult match = regExp.exec(rowExpr);
 
-              MatchResult m = r.exec(rowExpr);
-
-              if (m != null) {
-                String chunk = m.getGroup(0);
-                String col = chunk.substring(1, chunk.length() - 1);
-                int idx = DataUtils.getColumnIndex(col, cargoInfo.getColumns());
+              if (match != null) {
+                String chunk = match.getGroup(0);
+                MatchResult subMatch = subRegExp.exec(chunk);
+                String col = subMatch.getGroup(1);
                 String value;
+                int idx = DataUtils.getColumnIndex(col, cargoInfo.getColumns());
 
-                if (BeeConst.isUndef(idx)) {
-                  idx = tripInfo.getColumnIndex(col);
-
-                  if (BeeConst.isUndef(idx)) {
-                    value = chunk;
-                  } else {
-                    value = parseValue(tripInfo, 0, idx);
-                  }
+                if (!BeeConst.isUndef(idx)) {
+                  value = parseValue(cargoInfo.getColumn(idx).getType(), cargoRow, idx,
+                      subMatch.getGroup(3), subMatch.getGroup(5));
                 } else {
-                  Long cargoId = cargoInfo.getRow(i).getId();
+                  idx = DataUtils.getColumnIndex(col, tripInfo.getColumns());
 
-                  if (revisedPlaces.containsKey(cargoId)
-                      && revisedPlaces.get(cargoId).containsKey(col)) {
-                    value = revisedPlaces.get(cargoId).get(col);
+                  if (!BeeConst.isUndef(idx)) {
+                    value = parseValue(tripInfo.getColumn(idx).getType(), tripInfo.getRow(0), idx,
+                        subMatch.getGroup(3), subMatch.getGroup(5));
                   } else {
-                    value = parseValue(cargoInfo, i, idx);
-
-                    if (additionalPlaces.containsKey(cargoId)) {
-                      value = BeeUtils.joinItems(value, additionalPlaces.get(cargoId).get(col));
-                    }
+                    hasPlaces = hasPlaces || BeeUtils.isPrefix(col, prfx);
+                    value = chunk;
                   }
                 }
-                sb.append(BeeUtils.nvl(value, ""));
+                row.append(BeeUtils.nvl(value, ""));
               }
             }
-            sb.append("\n");
+            if (hasPlaces) {
+              String[] indexes = Codec.beeDeserializeCollection(cargoRow.getProperty(prfx));
+
+              if (!ArrayUtils.isEmpty(indexes)) {
+                String expr = row.toString();
+                row = new StringBuilder();
+                SplitResult subSplit = regExp.split(expr);
+                int x = 1;
+
+                for (String idx : indexes) {
+                  if (row.length() > 0) {
+                    row.append("\n");
+                  }
+                  for (int i = 0; i < subSplit.length(); i++) {
+                    row.append(subSplit.get(i));
+                    MatchResult match = regExp.exec(expr);
+
+                    if (match != null) {
+                      String chunk = match.getGroup(0);
+                      MatchResult subMatch = subRegExp.exec(chunk);
+                      String col = subMatch.getGroup(1);
+                      String value;
+
+                      if (BeeUtils.isPrefix(col, prfx)) {
+                        col = BeeUtils.removePrefix(col, prfx);
+                        value = placesInfo.getValue(BeeUtils.toInt(idx), col);
+
+                        switch (col) {
+                          case VAR_UNLOADING:
+                            value = parseBoolean(BeeUtils.toBooleanOrNull(value),
+                                subMatch.getGroup(3), subMatch.getGroup(5));
+                            break;
+
+                          case COL_PLACE_ORDINAL:
+                            value = BeeUtils.notEmpty(value, BeeUtils.toString(x));
+                            break;
+                          case COL_PLACE_DATE:
+                            value = TimeUtils.renderCompact(TimeUtils.toDateTimeOrNull(value));
+                            break;
+                        }
+                      } else {
+                        value = chunk;
+                      }
+                      row.append(BeeUtils.nvl(value, ""));
+                    }
+                  }
+                  x++;
+                }
+              }
+            }
+            sb.append(row).append("\n");
           }
         }
       }
@@ -348,9 +404,9 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
           if (response.hasErrors()) {
             return;
           }
-          if (!BeeUtils.isEmpty(selectedIds)) {
-            Queries.update(gridView.getViewName(), Filter.idIn(selectedIds), COL_CARGO_MESSAGE,
-                Value.getValue(msg), new Queries.IntCallback() {
+          if (!cargoTripIds.isEmpty()) {
+            Queries.update(gridView.getViewName(), Filter.idIn(cargoTripIds.values()),
+                COL_CARGO_MESSAGE, Value.getValue(msg), new Queries.IntCallback() {
                   @Override
                   public void onSuccess(Integer result) {
                     DataChangeEvent.fireRefresh(BeeKeeper.getBus(), gridView.getViewName());
@@ -362,41 +418,9 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       close();
     }
 
-    private void setCargoInfo(BeeRowSet cargo, BeeRowSet handling) {
+    private void setCargoInfo(BeeRowSet cargo, SimpleRowSet places) {
       cargoInfo = cargo;
-      additionalPlaces.clear();
-      revisedPlaces.clear();
-      int aCnt = 1;
-      int rCnt = 0;
-
-      for (int i = 0; i < handling.getNumberOfRows(); i++) {
-        Long cargoId = handling.getLong(i, COL_CARGO);
-        Map<String, String> map;
-        int c;
-
-        if (DataUtils.isId(handling.getLong(i, COL_CARGO_TRIP))) {
-          if (!revisedPlaces.containsKey(cargoId)) {
-            revisedPlaces.put(cargoId, new HashMap<>());
-          }
-          map = revisedPlaces.get(cargoId);
-          c = ++rCnt;
-        } else {
-          if (!additionalPlaces.containsKey(cargoId)) {
-            additionalPlaces.put(cargoId, new HashMap<>());
-          }
-          map = additionalPlaces.get(cargoId);
-          c = ++aCnt;
-        }
-        for (int j = 0; j < handling.getNumberOfColumns(); j++) {
-          String col = handling.getColumnId(j);
-          String val = parseValue(handling, i, j);
-
-          if (!BeeUtils.isEmpty(val)) {
-            map.put(col, BeeUtils.joinItems(map.get(col),
-                BeeUtils.joinWords(c == 1 ? "" : c + ".", val)));
-          }
-        }
-      }
+      placesInfo = places;
       renderMessage();
     }
 
@@ -448,17 +472,19 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       ids.add(gridView.getActiveRow().getId());
     }
     Long tripId = null;
-    Set<Long> cargoIds = new HashSet<>();
+    Map<Long, Long> cargoTripIds = new HashMap<>();
 
     for (IsRow row : gridView.getRowData()) {
-      if (ids.contains(row.getId())) {
+      Long id = row.getId();
+
+      if (ids.contains(id)) {
         if (DataUtils.isId(tripId)
             && !Objects.equals(tripId, row.getLong(gridView.getDataIndex(COL_TRIP)))) {
           tripId = null;
           break;
         }
         tripId = row.getLong(gridView.getDataIndex(COL_TRIP));
-        cargoIds.add(row.getLong(gridView.getDataIndex(COL_CARGO)));
+        cargoTripIds.put(row.getLong(gridView.getDataIndex(COL_CARGO)), id);
       }
     }
     if (!DataUtils.isId(tripId)) {
@@ -472,24 +498,27 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
             Filter.equals(COL_TRIP, trip.getRow(0).getId()), new RpcCallback<Set<Long>>() {
               @Override
               public void onSuccess(Set<Long> driverIds) {
-                new MessageDialog(trip, driverIds, cargoIds, ids);
+                new MessageDialog(trip, driverIds, cargoTripIds);
               }
             });
       }
     });
   }
 
-  private static String parseValue(BeeRowSet rs, int row, int col) {
+  private static String parseBoolean(Boolean value, String yes, String no) {
+    return BeeUtils.unbox(value) ? BeeUtils.notEmpty(yes, "+") : BeeUtils.notEmpty(no, "-");
+  }
+
+  private static String parseValue(ValueType type, BeeRow row, int col, String yes, String no) {
     String value = null;
 
-    switch (rs.getColumn(col).getType()) {
+    switch (type) {
       case BOOLEAN:
-        value = BeeUtils.unbox(rs.getBoolean(row, col))
-            ? Localized.dictionary().yes() : Localized.dictionary().no();
+        value = parseBoolean(row.getBoolean(col), yes, no);
         break;
 
       case DATE:
-        JustDate date = rs.getDate(row, col);
+        JustDate date = row.getDate(col);
 
         if (date != null) {
           value = date.toString();
@@ -497,15 +526,11 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
         break;
 
       case DATE_TIME:
-        DateTime dateTime = rs.getDateTime(row, col);
-
-        if (dateTime != null) {
-          value = dateTime.toCompactString();
-        }
+        value = TimeUtils.renderCompact(row.getDateTime(col));
         break;
 
       default:
-        value = rs.getString(row, col);
+        value = row.getString(col);
         break;
     }
     return value;

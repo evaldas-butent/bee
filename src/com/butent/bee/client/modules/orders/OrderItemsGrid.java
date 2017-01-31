@@ -115,8 +115,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     int status = parentRow.getInteger(statusIdx);
 
     if (BeeUtils.isEmpty(warehouse) && status == OrdersStatus.APPROVED.ordinal()) {
-      presenter.getGridView().notifySevere(Localized.dictionary().warehouse() + " "
-          + Localized.dictionary().valueRequired());
+      presenter.getGridView().notifySevere(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().warehouse()));
     } else {
       ensurePicker().show(parentRow, presenter.getMainView().getElement());
     }
@@ -295,7 +295,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
             case COL_TRADE_ITEM_PRICE:
               Double unpack = row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_UNPACKING));
               if (unpack != null) {
-                newValue = BeeUtils.unbox(newValue) + BeeUtils.unbox(unpack) / BeeUtils.unbox(qty);
+                newValue = BeeUtils.unbox(newValue) + BeeUtils.unbox(unpack)
+                    / BeeUtils.unbox(qty);
               }
 
               cols = Lists.newArrayList(cv.getColumn());

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-01-04T15:35:11 -->
+<!-- 2017-01-26T14:19:07 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -17,6 +17,7 @@
 	<import value="com.butent.bee.server.Invocation"/>
 	<import value="com.butent.bee.server.i18n.Localizations"/>
 	<import value="com.butent.bee.shared.data.BeeRowSet"/>
+	<import value="com.butent.bee.shared.time.DateTime"/>
 	<import value="com.butent.bee.shared.utils.BeeUtils"/>
 	<import value="com.butent.bee.server.data.QueryServiceBean"/>
 	<import value="com.butent.bee.server.RsDataSource"/>
@@ -144,15 +145,19 @@
 	<parameter name="SupplierPhone" class="java.lang.String"/>
 	<parameter name="SupplierFax" class="java.lang.String"/>
 	<parameter name="Amount" class="java.lang.String"/>
-	<parameter name="Loading" class="java.lang.String"/>
-	<parameter name="Unloading" class="java.lang.String"/>
-	<parameter name="DriverInfo" class="java.lang.String"/>
 	<parameter name="Issued" class="java.lang.String"/>
 	<parameter name="InvoicePrefix" class="java.lang.String"/>
 	<parameter name="InvoiceNo" class="java.lang.String"/>
 	<parameter name="QS" class="com.butent.bee.server.data.QueryServiceBean">
 		<defaultValueExpression><![CDATA[Invocation.locateRemoteBean(QueryServiceBean.class)]]></defaultValueExpression>
 	</parameter>
+	<parameter name="BoLLoading" class="java.lang.String"/>
+	<parameter name="BoLUnloading" class="java.lang.String"/>
+	<parameter name="BoLUnloadingDate" class="java.lang.String"/>
+	<parameter name="BoLDepartureDate" class="java.lang.String"/>
+	<parameter name="BoLCarrierName" class="java.lang.String"/>
+	<parameter name="BoLVehicleNumber" class="java.lang.String"/>
+	<parameter name="BoLDriver" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -170,8 +175,8 @@
 	<title>
 		<band height="260">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true" pattern="yyyy.MM.dd" isBlankWhenNull="true">
-				<reportElement x="480" y="20" width="75" height="14" uuid="97ad8c9f-0723-44bb-892e-2b164eda5aeb"/>
+			<textField isStretchWithOverflow="true" pattern="y &apos;m&apos;. MMMM d &apos;d&apos;." isBlankWhenNull="true">
+				<reportElement x="460" y="20" width="95" height="14" uuid="97ad8c9f-0723-44bb-892e-2b164eda5aeb"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>
@@ -368,7 +373,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{Loading}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[BeeUtils.joinItems($P{BoLLoading}, BeeUtils.isEmpty($P{BoLDepartureDate}) ? "" : new DateTime(BeeUtils.toLong($P{BoLDepartureDate})).toCompactString())]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="110" y="193" width="444" height="13" uuid="f66a7fee-e161-477f-a7cd-97655c592ff6"/>
@@ -395,7 +400,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{Unloading}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[BeeUtils.joinItems($P{BoLUnloading}, BeeUtils.isEmpty($P{BoLUnloadingDate}) ? "" : new DateTime(BeeUtils.toLong($P{BoLUnloadingDate})).toCompactString())]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="0" y="206" width="110" height="13" uuid="ae2a10dd-fc88-455f-956d-59921347c268"/>
@@ -416,7 +421,7 @@
 				<textElement>
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{DriverInfo}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[BeeUtils.joinItems($P{BoLCarrierName}, $P{BoLVehicleNumber}, $P{BoLDriver})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="110" y="247" width="444" height="13" uuid="1e75caa6-4507-4d4f-89af-0f3ca801c98e"/>

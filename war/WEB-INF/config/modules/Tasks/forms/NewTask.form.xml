@@ -197,7 +197,7 @@
       </row>
 
       <row data="Relations" for="ServiceObject" module="Service">
-        <Label text="=svcObjects" />
+        <Label text="=svcDevices" />
         <MultiSelector viewName="ServiceObjects" property="ServiceObjects"
           renderColumns="Address" choiceColumns="Address CustomerName"
           newRowEnabled="false" editPopup="true" style="&inp2x;" />
@@ -216,7 +216,14 @@
           renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
           choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
           newRowEnabled="false" editPopup="true" style="&inp2x;" />
-        </row>
+      </row>
+
+      <row data="Relations" for="ServiceMaintenance" module="Service">
+        <Label text="=svcMaintenance" />
+        <MultiSelector viewName="ServiceMaintenance" property="ServiceMaintenance"
+                       renderColumns="ID" choiceColumns="ID TypeName StateName"
+                       newRowEnabled="false" editPopup="true" style="&inp2x;" />
+      </row>
     </Table>
 
   </FlowPanel>

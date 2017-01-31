@@ -231,13 +231,7 @@ public enum Feed implements HasLocalizedCaption {
 
   ORDER_CARGO(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_ORDER_CARGO,
       TransportConstants.VIEW_ORDER_CARGO,
-      Lists.newArrayList(TransportConstants.COL_CARGO_DESCRIPTION),
-      Lists.newArrayList(TransportConstants.loadingColumnAlias(TransportConstants.COL_PLACE_DATE),
-          TransportConstants.loadingColumnAlias(ALS_CITY_NAME),
-          TransportConstants.loadingColumnAlias(ALS_COUNTRY_NAME),
-          TransportConstants.unloadingColumnAlias(TransportConstants.COL_PLACE_DATE),
-          TransportConstants.unloadingColumnAlias(ALS_CITY_NAME),
-          TransportConstants.unloadingColumnAlias(ALS_COUNTRY_NAME))) {
+      Lists.newArrayList(TransportConstants.COL_CARGO_DESCRIPTION)) {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.feedTrCargo();

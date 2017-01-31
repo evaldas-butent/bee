@@ -2,9 +2,12 @@ package com.butent.bee.client.menu;
 
 import com.google.gwt.core.client.Scheduler;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.FORM_STAGES;
+
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.ParametersGrid;
+import com.butent.bee.client.modules.administration.StageEditorForm;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -44,6 +47,10 @@ public class MenuCommand implements Scheduler.ScheduledCommand {
 
       case REPORT:
         Report.open(parameters);
+        break;
+
+      case STAGES:
+        FormFactory.openForm(FORM_STAGES, new StageEditorForm(parameters));
         break;
 
       default:

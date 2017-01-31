@@ -14,6 +14,7 @@ import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -167,11 +168,12 @@ public class SearchByCategory extends OrdEcView implements SelectionHandler<Tree
     final TreeItem treeItem = event.getSelectedItem();
 
     Long id = categoryById.get(treeItem.getId());
-    String query = BeeUtils.isPositive(id) ? id.toString() : "query";
 
-    OrdEcKeeper.searchItems(true, service, query, 0, input -> {
-      itemPanel.setQuery(query);
-      OrdEcKeeper.renderItems(itemPanel, input);
-    });
+    if (DataUtils.isId(id)) {
+      OrdEcKeeper.searchItems(true, service, id.toString(), 0, input -> {
+        itemPanel.setQuery(id.toString());
+        OrdEcKeeper.renderItems(itemPanel, input);
+      });
+    }
   }
 }

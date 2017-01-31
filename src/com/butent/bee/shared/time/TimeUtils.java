@@ -95,6 +95,8 @@ public final class TimeUtils {
 
   private static final int MINIMAL_DAYS_IN_FIRST_WEEK = 4;
 
+  private static final String[] QUARTERS = {"I", "II", "III", "IV"};
+
   /**
    * Adds an amount of field type data to the date.
    *
@@ -500,6 +502,10 @@ public final class TimeUtils {
 
   public static boolean isMore(HasYearMonth d1, HasYearMonth d2) {
     return compare(d1, d2) > 0;
+  }
+
+  public static boolean isQuarter(Integer quarter) {
+    return quarter != null && quarter >= 1 && quarter <= 4;
   }
 
   public static boolean isToday(HasDateValue dt) {
@@ -976,8 +982,26 @@ public final class TimeUtils {
         + MILLIS_PER_SECOND * getField(fields, 2) + getField(fields, 3);
   }
 
-  public static JustDate previousDay(HasDateValue ref) {
-    return nextDay(ref, -1);
+  public static Integer parseQuarter(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+
+    } else if (BeeUtils.isDigit(input.trim())) {
+      int quarter = BeeUtils.toInt(input.trim());
+      if (isQuarter(quarter)) {
+        return quarter;
+      } else {
+        return null;
+      }
+
+    } else {
+      for (int i = 0; i < QUARTERS.length; i++) {
+        if (BeeUtils.same(input, QUARTERS[i])) {
+          return i + 1;
+        }
+      }
+      return null;
+    }
   }
 
   public static Integer parseYear(String input) {
@@ -995,6 +1019,14 @@ public final class TimeUtils {
     } else {
       return null;
     }
+  }
+
+  public static JustDate previousDay(HasDateValue ref) {
+    return nextDay(ref, -1);
+  }
+
+  public static String quarterToString(int quarter) {
+    return isQuarter(quarter) ? QUARTERS[quarter - 1] : null;
   }
 
   /**
@@ -1457,6 +1489,8 @@ public final class TimeUtils {
   public static JustDate toDateOrNull(String s) {
     if (BeeUtils.isInt(s)) {
       return new JustDate(BeeUtils.toInt(s));
+    } else if (BeeUtils.isLong(s)) {
+      return new DateTime(BeeUtils.toLong(s)).getDate();
     } else {
       return null;
     }

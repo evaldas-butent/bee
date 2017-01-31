@@ -300,6 +300,8 @@ public final class TaskUtils {
       taskPropertyToRelation.put(PROP_PROJECTS, ProjectConstants.COL_PROJECT);
       taskPropertyToRelation.put(PROP_TASKS, COL_TASK);
       taskPropertyToRelation.put(PROP_REQUESTS, COL_REQUEST);
+      taskPropertyToRelation.put(PROP_SERVICE_MAINTENANCE,
+          ServiceConstants.COL_SERVICE_MAINTENANCE);
     }
     return taskPropertyToRelation;
   }

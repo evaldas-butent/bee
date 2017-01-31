@@ -4,7 +4,7 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="ServiceObjects" viewName="ServiceObjects"
-  caption="=svcObjects" editShowId="true"
+  caption="=svcDevices" editShowId="true"
   autoFit="true"
   >
   

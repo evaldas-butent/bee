@@ -1,5 +1,8 @@
 package com.butent.bee.server.websocket;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
 import com.butent.bee.server.Config;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.Chat;
@@ -45,7 +48,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.websocket.CloseReason;
@@ -59,8 +61,6 @@ import javax.websocket.OnOpen;
 import javax.websocket.RemoteEndpoint;
 import javax.websocket.RemoteEndpoint.Async;
 import javax.websocket.RemoteEndpoint.Basic;
-import javax.websocket.SendHandler;
-import javax.websocket.SendResult;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 import javax.websocket.server.PathParam;
@@ -81,25 +81,35 @@ public class Endpoint {
   private static BeeLogger logger = LogUtils.getLogger(Endpoint.class);
 
   private static Queue<Session> openSessions = new ConcurrentLinkedQueue<>();
-  private static Map<String, String> progressToSession = new ConcurrentHashMap<>();
+  private static Table<String, String, Long> progressToSession = HashBasedTable.create();
 
   private static Class<? extends RemoteEndpoint> remoteEndpointType;
 
-  public static boolean closeProgress(String progressId) {
-    boolean ok = false;
-    String sessionId = progressToSession.remove(progressId);
+  public static void closeProgress(String progressId) {
+    Map<String, Long> sessions = progressToSession.row(progressId);
 
-    if (BeeUtils.isEmpty(sessionId)) {
+    if (sessions.isEmpty()) {
       logger.info("ws session not found for progress:", progressId);
     } else {
-      Session session = findOpenSession(sessionId, true);
+      sessions.keySet().forEach(sessionId -> {
+        Session session = findOpenSession(sessionId, true);
 
-      if (session != null) {
-        send(session, ProgressMessage.close(progressId));
-        ok = true;
-      }
+        if (session != null) {
+          send(session, ProgressMessage.close(progressId));
+        }
+      });
+      sessions.clear();
     }
-    return ok;
+  }
+
+  public static String createProgress(long userId, String... label) {
+    ProgressMessage message = ProgressMessage.open(BeeUtils.randomString(10), label);
+
+    getUserSessions(userId).forEach(session -> {
+      progressToSession.put(message.getProgressId(), session.getId(), 0L);
+      send(session, message);
+    });
+    return message.getProgressId();
   }
 
   public static FiresModificationEvents getModificationShooter() {
@@ -151,11 +161,7 @@ public class Endpoint {
   }
 
   public static void sendToUser(long userId, Message message) {
-    for (Session session : openSessions) {
-      if (session.isOpen() && Objects.equals(getUserId(session), userId)) {
-        send(session, message);
-      }
-    }
+    getUserSessions(userId).forEach(session -> send(session, message));
   }
 
   public static void sendToUsers(Collection<Long> users, Message message, String mySessionId) {
@@ -177,18 +183,25 @@ public class Endpoint {
   }
 
   public static boolean updateProgress(String progressId, String label, double value) {
-    String sessionId = progressToSession.get(progressId);
+    Map<String, Long> sessions = progressToSession.row(progressId);
 
-    if (BeeUtils.isEmpty(sessionId)) {
+    if (sessions.isEmpty()) {
       logger.info("ws session not found for progress:", progressId, "value", value);
       return false;
-
     } else {
-      Session session = findOpenSession(sessionId, true);
-      if (session != null) {
-        send(session, ProgressMessage.update(progressId, label, value));
-      }
+      sessions.entrySet().forEach(entry -> {
+        if (!BeeUtils.isEmpty(label)) {
+          entry.setValue(0L);
+        }
+        if ((System.currentTimeMillis() - entry.getValue()) > 10) {
+          Session session = findOpenSession(entry.getKey(), true);
 
+          if (session != null) {
+            send(session, ProgressMessage.update(progressId, label, value));
+          }
+          entry.setValue(System.currentTimeMillis());
+        }
+      });
       return true;
     }
   }
@@ -308,15 +321,13 @@ public class Endpoint {
           WsUtils.onEmptyMessage(message, toLog(session));
 
         } else if (pm.isOpen()) {
-          progressToSession.put(progressId, session.getId());
-          logger.info("ws activated progress:", progressId, "session:", session.getId());
-
+          progressToSession.put(progressId, session.getId(), 0L);
+          logger.debug("ws activated progress:", progressId, "session:", session.getId());
           send(session, ProgressMessage.activate(progressId));
 
         } else if (pm.isClosed() || pm.isCanceled()) {
-          String removed = progressToSession.remove(progressId);
-          logger.debug("ws remove progress:", progressId, "session:", removed);
-
+          progressToSession.row(progressId).clear();
+          logger.debug("ws removed progress:", progressId);
         } else {
           WsUtils.onInvalidState(message, toLog(session));
         }
@@ -392,12 +403,6 @@ public class Endpoint {
 
   private static List<Property> getInfo() {
     List<Property> info = getOpenSessionsInfo(openSessions);
-
-    int size = progressToSession.size();
-    info.add(new Property("Progress", BeeUtils.bracket(size)));
-    if (size > 0) {
-      info.addAll(PropertyUtils.createProperties(progressToSession));
-    }
 
     LogLevel level = logger.getLevel();
     if (level != null) {
@@ -536,6 +541,16 @@ public class Endpoint {
         : session.getUserPrincipal().getName();
   }
 
+  private static Collection<Session> getUserSessions(long userId) {
+    List<Session> userSessions = new ArrayList<>();
+
+    openSessions.stream()
+        .filter(session -> session.isOpen() && Objects.equals(getUserId(session), userId))
+        .forEach(userSessions::add);
+
+    return userSessions;
+  }
+
   private static List<Property> getWebSocketContainerInfo(WebSocketContainer wsc) {
     List<Property> info = new ArrayList<>();
 
@@ -589,22 +604,19 @@ public class Endpoint {
         logger.debug("->", message);
 
         info = BeeUtils.joinWords(message.getType(), "length", text.length(), toLog(session));
-        logger.info("->", info);
+        logger.debug("->", info);
       } else {
         info = null;
       }
 
       if (RemoteEndpoint.Async.class.equals(type)) {
-        session.getAsyncRemote().sendText(text, new SendHandler() {
-          @Override
-          public void onResult(SendResult result) {
-            if (result.isOK()) {
-              if (info != null) {
-                logger.debug("transmitted", info);
-              }
-            } else {
-              logger.error(result.getException());
+        session.getAsyncRemote().sendText(text, result -> {
+          if (result.isOK()) {
+            if (info != null) {
+              logger.debug("transmitted", info);
             }
+          } else {
+            logger.error(result.getException());
           }
         });
 
@@ -668,20 +680,7 @@ public class Endpoint {
   @OnClose
   public void onClose(Session session, CloseReason closeReason) {
     openSessions.remove(session);
-
-    if (!progressToSession.isEmpty() && progressToSession.values().contains(session.getId())) {
-      Set<String> keys = new HashSet<>();
-
-      for (Map.Entry<String, String> entry : progressToSession.entrySet()) {
-        if (entry.getValue().equals(session.getId())) {
-          keys.add(entry.getKey());
-        }
-      }
-
-      for (String key : keys) {
-        progressToSession.remove(key);
-      }
-    }
+    progressToSession.column(session.getId()).clear();
 
     String reasonInfo;
     if (closeReason == null) {
@@ -740,7 +739,7 @@ public class Endpoint {
       if (message != null) {
         if (message.isLoggable()) {
           logger.debug("<-", message);
-          logger.info("<-", message.getType(), "length", data.length(), toLog(session));
+          logger.debug("<-", message.getType(), "length", data.length(), toLog(session));
         }
         dispatch(session, message);
       }

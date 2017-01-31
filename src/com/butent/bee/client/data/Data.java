@@ -28,6 +28,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -84,7 +85,7 @@ public final class Data {
   }
 
   public static BeeRowSet createRowSet(String viewName) {
-    return new BeeRowSet(viewName, getColumns(viewName));
+    return new BeeRowSet(viewName, new ArrayList<>(getColumns(viewName)));
   }
 
   public static boolean equals(String viewName, IsRow row, String colName, Long value) {
@@ -195,6 +196,10 @@ public final class Data {
       }
     }
     return result;
+  }
+
+  public static List<BeeColumn> getColumns(String viewName, String col1, String col2) {
+    return getColumns(viewName, Arrays.asList(col1, col2));
   }
 
   public static Integer getColumnScale(String viewName, String colName) {

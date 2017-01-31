@@ -24,6 +24,7 @@
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
     <SimpleColumn name="IBANcode" />
+    <SimpleColumn name="Correspondent" />
     <SimpleColumn name="Notes" />
   </Columns>
 </View>

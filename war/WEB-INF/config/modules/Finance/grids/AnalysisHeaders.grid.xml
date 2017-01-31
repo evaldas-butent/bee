@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="AnalysisHeaders" viewName="AnalysisHeaders" caption="=finAnalysisForms"
+        editForm="SimpleAnalysis" newRowForm="SimpleAnalysis"
+>
+  <xi:include href="columns/Ordinal.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="AnalysisName" minWidth="100" flexGrow="1" visible="true"
+                backgroundSource="Background" foregroundSource="Foreground" />
+  </g:columns>
+
+  <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="columns/HiddenEmployee.columns.xml" />
+
+  <xi:include href="columns/HiddenBudgetType.columns.xml" />
+
+  <g:columns>
+    <DataColumn name="YearFrom" format="0000" />
+    <DataColumn name="MonthFrom" />
+    <DataColumn name="YearUntil" format="0000" />
+    <DataColumn name="MonthUntil" />
+
+    <RelColumn name="Currency" newRowEnabled="false" visible="false" />
+
+    <DataColumn name="Description" flexGrow="1" />
+
+    <DataColumn name="Background" updateMode="row" minWidth="100" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row" minWidth="100" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+  </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>row.AnalysisName</ui:expression>
+  </g:rowMessage>
+</g:Grid>

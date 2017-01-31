@@ -116,9 +116,9 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
     addItem(item, item);
   }
 
-  public void addItem(String item, String value) {
+  public void addItem(String text, String value) {
     OptionElement option = Document.get().createOptionElement();
-    option.setText(item);
+    option.setText(text);
     option.setValue(value);
 
     getSelectElement().add(option, null);
@@ -343,6 +343,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
 
     } else if (EventUtils.isMouseDown(type)) {
       setChangePending(false);
+
     } else if (EventUtils.isMouseUp(type)) {
       if (isChangePending() && isEditing()) {
         setChangePending(false);
@@ -350,8 +351,11 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
       }
 
     } else if (EventUtils.isKeyDown(type)) {
-      if (isNullable() && event.getKeyCode() == KeyCodes.KEY_DELETE) {
+      if (isNullable() && event.getKeyCode() == KeyCodes.KEY_DELETE
+          && !BeeConst.isUndef(getSelectedIndex())) {
+
         clearValue();
+        fireEvent(new EditStopEvent(State.CHANGED));
       }
     }
 

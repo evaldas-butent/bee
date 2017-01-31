@@ -13,5 +13,10 @@
     <Text name="Description" label="=description" />
 
     <Relation name="Contact" unique="true" relation="Contacts" editable="true" label="=contacts"/>
+
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+              label="=finTradeAccounts" />
   </Fields>
 </Table>

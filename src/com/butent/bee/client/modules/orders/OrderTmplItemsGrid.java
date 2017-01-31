@@ -10,6 +10,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -99,12 +100,15 @@ public class OrderTmplItemsGrid extends AbstractGridInterceptor implements
 
   private void addItems(final BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet) && VIEW_ITEMS.equals(rowSet.getViewName())) {
-      getGridView().ensureRelId(result -> {
-        FormView form = ViewHelper.getForm(getGridView());
-        IsRow parentRow = (form == null) ? null : form.getActiveRow();
+      getGridView().ensureRelId(new IdCallback() {
+        @Override
+        public void onSuccess(Long result) {
+          FormView form = ViewHelper.getForm(getGridView());
+          IsRow parentRow = (form == null) ? null : form.getActiveRow();
 
-        if (DataUtils.idEquals(parentRow, result)) {
-          addItems(parentRow, form.getDataColumns(), rowSet);
+          if (DataUtils.idEquals(parentRow, result)) {
+            addItems(parentRow, form.getDataColumns(), rowSet);
+          }
         }
       });
     }

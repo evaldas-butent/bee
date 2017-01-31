@@ -6,6 +6,7 @@
   >
   <Columns>
     <SimpleColumn name="ServiceObject" />
+    <SimpleColumn name="ServiceMaintenance" />
 
     <SimpleColumn name="Task" />
     <SimpleJoin name="Task" joinType="INNER">
@@ -28,6 +29,8 @@
       <SimpleColumn name="Completed" editable="true" />
       <SimpleColumn name="Approved" editable="true" />
       <SimpleColumn name="ExpectedDuration" editable="true" />
+      <SimpleColumn name="Project"  />
+      <SimpleColumn name="ProjectStage" />
 
       <SimpleColumn name="Status" editable="true" />
 

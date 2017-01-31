@@ -845,6 +845,10 @@ public class QueryServiceBean {
     });
   }
 
+  public BeeRowSet getViewDataById(String viewName, long id) {
+    return getViewData(viewName, Filter.compareId(id));
+  }
+
   public int getViewSize(String viewName, Filter filter) {
     BeeView view = sys.getView(viewName);
     SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter);

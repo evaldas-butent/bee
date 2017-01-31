@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="StageActions" source="StageActions"
+      caption="=calListOfActions"
+>
+  <Columns>
+    <SimpleColumn name="Stage" />
+    <SimpleColumn name="Action" />
+  </Columns>
+</View>

@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.orders;
 
+import com.google.gwt.user.client.ui.Widget;
+
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -20,6 +22,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -80,9 +83,8 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
           arg0 -> Global.confirm(Localized.dictionary().trConfirmProforma(), () -> {
 
             if (Data.isNull(VIEW_ORDER_CHILD_INVOICES, row, COL_TRADE_SALE_SERIES)) {
-              getFormView().notifySevere(
-                  Localized.dictionary().trdInvoicePrefix() + " "
-                      + Localized.dictionary().valueRequired());
+              getFormView().notifySevere(Localized.dictionary()
+                  .fieldRequired(Localized.dictionary().trdInvoicePrefix()));
               return;
             }
 
@@ -121,8 +123,10 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
       }
 
       @Override
-      public FontAwesome getIcon() {
-        return FontAwesome.ENVELOPE_O;
+      public Widget getActionWidget() {
+        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
+        action.setTitle(Localized.dictionary().trWriteEmail());
+        return action;
       }
     };
   }
@@ -189,4 +193,3 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
         form.getStringValue(ALS_CUSTOMER_EMAIL)), null, null, attach, null);
   }
 }
-

@@ -430,7 +430,7 @@ public class ClassifiersModuleBean implements BeeModule {
             for (BeeRow row : rowSet.getRows()) {
               if (stock.containsRow(row.getId())) {
                 stock.row(row.getId()).forEach((warehouseCode, quantity) ->
-                    row.setProperty(PROP_STOCK + warehouseCode, quantity));
+                    row.setProperty(keyStockWarehouse(warehouseCode), quantity));
               }
             }
           }
@@ -918,7 +918,7 @@ public class ClassifiersModuleBean implements BeeModule {
         td.setBorderColor("black");
 
         if (ValueType.isNumeric(type) || ValueType.TEXT == type
-            && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
+            && CharMatcher.digit().matchesAnyOf(value) && BeeUtils.isDouble(value)) {
           td.setTextAlign(TextAlign.RIGHT);
         }
       }
@@ -2124,18 +2124,20 @@ public class ClassifiersModuleBean implements BeeModule {
           .addGroup(source, COL_ITEM);
 
       if (Objects.equals(source, TBL_ORDER_ITEMS)) {
-        SqlSelect slcInvoices = new SqlSelect()
+        SqlSelect slcInvoices =
+            new SqlSelect()
                 .addFields(TBL_SALE_ITEMS, COL_ITEM)
                 .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
                 .addFrom(TBL_SALE_ITEMS)
                 .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
-                .setWhere(SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_ITEM, ids),
-                    SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED)))
+                .setWhere(
+                    SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_ITEM, ids), SqlUtils.isNull(
+                        TBL_SALES, COL_TRADE_EXPORTED)))
                 .addGroup(TBL_SALE_ITEMS, COL_ITEM);
 
         for (SimpleRow row : qs.getData(slcInvoices)) {
-          invoices.put(row.getLong(COL_ITEM),
-              BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY)));
+          invoices.put(row.getLong(COL_ITEM), BeeUtils
+              .unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY)));
         }
 
         for (SimpleRow row : qs.getData(select)) {
@@ -2158,7 +2160,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Schedule(hour = "*/1", persistent = false)
   private void notifyCompanyActions() {
-    logger.info("Timer", TIMER_REMIND_COMPANY_ACTIONS, "started");
+    logger.debug("Timer", TIMER_REMIND_COMPANY_ACTIONS, "started");
 
     if (!DataUtils.isId(mail.getSenderAccountId(TIMER_REMIND_COMPANY_ACTIONS))) {
       return;
@@ -2171,7 +2173,7 @@ public class ClassifiersModuleBean implements BeeModule {
       sendCompanyActionsReminder(user, userSettings.get(user));
     }
 
-    logger.info("Timer", TIMER_REMIND_COMPANY_ACTIONS, "ended");
+    logger.debug("Timer", TIMER_REMIND_COMPANY_ACTIONS, "ended");
   }
 
   private void sendCompanyActionsReminder(Long user, Integer remindBefore) {

@@ -126,17 +126,26 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     int qtyIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_TRADE_ITEM_QUANTITY);
     int resRemainderIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_RESERVED_REMAINDER);
     int comQtyIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_COMPLETED_QTY);
+    int itemIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_ITEM);
+
+    Map<Long, Double> freeMap = new HashMap<>();
+
+    for (IsRow row : getGridView().getRowData()) {
+      freeMap.put(row.getLong(itemIdx), Double.valueOf(row.getProperty(PRP_FREE_REMAINDER)));
+    }
+
     for (IsRow row : getGridView().getRowData()) {
       Double qty = row.getDouble(qtyIdx);
-      Double free = Double.valueOf(row.getProperty(PRP_FREE_REMAINDER));
+      Double free = freeMap.get(row.getLong(itemIdx));
       Double compInvc = Double.valueOf(row.getProperty(PRP_COMPLETED_INVOICES));
-      Double resRemainder =
-          (row.getDouble(resRemainderIdx) == null) ? 0 : row.getDouble(resRemainderIdx);
+      double resRemainder = BeeUtils.unbox(row.getDouble(resRemainderIdx));
 
       if (qty - compInvc <= free + resRemainder) {
         row.setValue(comQtyIdx, qty - compInvc);
+        freeMap.put(row.getLong(itemIdx), free - qty + compInvc + resRemainder);
       } else if (qty - compInvc > free + resRemainder) {
         row.setValue(comQtyIdx, free + resRemainder);
+        freeMap.put(row.getLong(itemIdx), BeeConst.DOUBLE_ZERO);
       }
     }
   }

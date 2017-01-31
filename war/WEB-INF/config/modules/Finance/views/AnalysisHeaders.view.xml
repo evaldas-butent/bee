@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="AnalysisHeaders" source="AnalysisHeaders"
+      caption="=finAnalysisForms" newRowCaption="=finAnalysisFormNew"
+>
+  <Columns>
+    <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="AnalysisName" />
+
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
+
+    <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
+
+    <SimpleColumn name="YearFrom" />
+    <SimpleColumn name="MonthFrom" />
+    <SimpleColumn name="YearUntil" />
+    <SimpleColumn name="MonthUntil" />
+
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ColumnDim01" />
+    <SimpleColumn name="ColumnDim02" />
+    <SimpleColumn name="ColumnDim03" />
+    <SimpleColumn name="ColumnDim04" />
+    <SimpleColumn name="ColumnDim05" />
+    <SimpleColumn name="ColumnDim06" />
+    <SimpleColumn name="ColumnDim07" />
+    <SimpleColumn name="ColumnDim08" />
+    <SimpleColumn name="ColumnDim09" />
+    <SimpleColumn name="ColumnDim10" />
+
+    <SimpleColumn name="ColumnEmployee" />
+
+    <SimpleColumn name="ColumnSplitLevels" />
+    <SimpleColumn name="ColumnFilters" />
+
+    <SimpleColumn name="RowDim01" />
+    <SimpleColumn name="RowDim02" />
+    <SimpleColumn name="RowDim03" />
+    <SimpleColumn name="RowDim04" />
+    <SimpleColumn name="RowDim05" />
+    <SimpleColumn name="RowDim06" />
+    <SimpleColumn name="RowDim07" />
+    <SimpleColumn name="RowDim08" />
+    <SimpleColumn name="RowDim09" />
+    <SimpleColumn name="RowDim10" />
+
+    <SimpleColumn name="RowEmployee" />
+
+    <SimpleColumn name="RowSplitLevels" />
+    <SimpleColumn name="RowFilters" />
+
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+    <OrderBy column="AnalysisName" />
+  </Order>
+</View>

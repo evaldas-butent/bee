@@ -82,7 +82,7 @@
         <TextLabel>
           <render>
             <ui:expression>
-              row.DateFrom &amp;&amp; row.DateTo ? (row.DateTo - row.DateFrom) / (1000*24*3600) + 1 : ''
+              row.DateFrom &amp;&amp; row.DateTo ? (Math.floor((row.DateTo - row.DateFrom) / (1000 * 24 * 3600)) + 1) : ''
             </ui:expression>
           </render>
         </TextLabel>
@@ -93,10 +93,19 @@
         <TextLabel source="SpeedometerAfter" />
         <TextLabel>
           <render>
-            <ui:expression>
-              row.SpeedometerBefore &amp;&amp; row.SpeedometerAfter
-              ? row.SpeedometerAfter - row.SpeedometerBefore : ''
-            </ui:expression>
+            <ui:function>
+              if ((row.SpeedometerBefore || row.SpeedometerBefore == 0)
+              &amp;&amp; (row.SpeedometerAfter || row.SpeedometerAfter == 0)) {
+                var difference = row.SpeedometerAfter - row.SpeedometerBefore;
+
+                if (difference &lt; 0) {
+                  var maxValue = Math.pow(10, Math.floor(row.SpeedometerBefore).toString().length);
+                  difference = maxValue + difference;
+                }
+                return difference;
+              }
+              return "";
+            </ui:function>
           </render>
         </TextLabel>
       </row>

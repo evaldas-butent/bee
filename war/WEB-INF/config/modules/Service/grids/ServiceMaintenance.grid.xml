@@ -9,9 +9,9 @@
     <IdColumn name="Id" />
     <DataColumn name="CreatorDepartmentName" visible="true"/>
     <RelColumn name="Type" renderColumns="TypeName" visible="true" />
-    <DataColumn name="CustomerName" label="=client" visible="true"/>
-    <RelColumn name="ContactPerson" renderColumns="ContactFirstName ContactLastName" label="=contact" visible="true" />
-    <DataColumn name="Phone" visible="true"/>
+    <DataColumn name="CompanyName" label="=client" visible="true"/>
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName" label="=contact" visible="true" />
+    <DataColumn name="ContactPhone" visible="true"/>
     <RelColumn name="State" renderColumns="StateName" visible="true" />
     <RelColumn name="Repairer" renderColumns="RepairerFirstName RepairerLastName" visible="true" />
     <DataColumn name="Date" visible="true" />
@@ -20,4 +20,8 @@
     <DataColumn name="SerialNo" visible="true" />
     <DataColumn name="Description" visible="true"/>
   </g:columns>
+  <g:rowStyle>
+    <ui:class>bee-service-maintenance-late</ui:class>
+    <ui:expression>row.Late &gt; 0</ui:expression>
+  </g:rowStyle>
 </g:Grid>

@@ -4,6 +4,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
@@ -21,6 +22,8 @@ public interface IsRow extends HasCustomProperties {
   void addValue(Value value);
 
   void clearCell(int index);
+
+  boolean deepEquals(IsRow other);
 
   Boolean getBoolean(int index);
 
@@ -62,6 +65,10 @@ public interface IsRow extends HasCustomProperties {
 
   boolean isEditable();
 
+  default boolean isEmpty(int index) {
+    return BeeUtils.isEmpty(getString(index));
+  }
+
   default boolean isIndex(int index) {
     return index >= 0 && index < getNumberOfCells();
   }
@@ -70,11 +77,17 @@ public interface IsRow extends HasCustomProperties {
 
   boolean isRemovable();
 
+  default boolean isTrue(int index) {
+    return BeeUtils.isTrue(getBoolean(index));
+  }
+
   void preliminaryUpdate(int col, String value);
 
   void removeCell(int index);
 
   void reset();
+
+  boolean sameValues(IsRow other);
 
   void setCell(int index, IsCell cell);
 
@@ -93,6 +106,10 @@ public interface IsRow extends HasCustomProperties {
   void setValue(int index, DateTime value);
 
   void setValue(int index, Double value);
+
+  default void setValue(int index, Enum<?> value) {
+    setValue(index, EnumUtils.ordinal(value));
+  }
 
   void setValue(int index, Integer value);
 

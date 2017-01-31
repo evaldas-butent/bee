@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="CargoUnloading" source="CargoUnloading"
+      newRowForm="CargoPlace" editForm="CargoPlace"
+      newRowCaption="=newUnloadingPlace" caption="=cargoUnloadingPlaces"
+>
+  <Columns>
+    <SimpleColumn name="Cargo" />
+    <SimpleColumn name="CargoTrip" />
+
+    <SimpleJoin name="UnloadingPlace" joinType="INNER">
+      <xi:include href="viewcolumns/Place.viewcolumns.xml" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Ordinal" />
+    <OrderBy column="Date" />
+  </Order>
+</View>

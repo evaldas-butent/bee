@@ -25,7 +25,6 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -117,7 +116,7 @@ public final class ClassifierUtils {
     });
   }
 
-  public static void getCompanyInfo(Long companyId, final Widget target, final String name) {
+  public static void getCompanyInfo(Long companyId, final Widget target) {
     Assert.notNull(target);
     if (!DataUtils.isId(companyId)) {
       return;
@@ -154,10 +153,6 @@ public final class ClassifierUtils {
 
         for (String col : COMPANY_INFO_COLS) {
           Flow record = new Flow(STYLE_COMPANY + "-" + col.toLowerCase());
-
-          if (!isColumnVisible(name, col)) {
-            continue;
-          }
 
           switch (col) {
             case COL_ADDRESS:
@@ -238,16 +233,6 @@ public final class ClassifierUtils {
         target.getElement().setInnerHTML(flow.getElement().getString());
       }
     });
-  }
-
-  private static boolean isColumnVisible(String widgetName, String columnName) {
-    if (BeeUtils.same(widgetName, TradeConstants.COL_TRADE_SUPPLIER)) {
-      if (BeeUtils.inListSame(columnName, COL_PHONE, COL_FAX, COL_EMAIL, COL_MOBILE,
-          COL_BANK_ACCOUNT)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   private ClassifierUtils() {

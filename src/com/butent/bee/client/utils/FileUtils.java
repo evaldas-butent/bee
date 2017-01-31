@@ -51,8 +51,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import elemental.client.Browser;
-import elemental.events.Event;
-import elemental.events.EventListener;
 import elemental.events.ProgressEvent;
 import elemental.html.File;
 import elemental.html.FileList;
@@ -66,6 +64,10 @@ public final class FileUtils {
 
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
   private static final double BYTES_IN_MB = 1048576;
+
+  public static void commitFile(FileInfo fileInfo, Callback<Long> callback) {
+    uploadFile(fileInfo, true, callback);
+  }
 
   public static void commitFiles(Collection<? extends FileInfo> files, final String viewName,
       final String parentColumn, final Long parentId, final String fileColumn,
@@ -82,35 +84,32 @@ public final class FileUtils {
     final Holder<Integer> latch = Holder.of(files.size());
 
     for (final FileInfo fileInfo : files) {
-      uploadFile(fileInfo, new Callback<Long>() {
-        @Override
-        public void onSuccess(Long result) {
-          BeeRow row = DataUtils.createEmptyRow(columns.size());
+      uploadFile(fileInfo, result -> {
+        BeeRow row = DataUtils.createEmptyRow(columns.size());
 
-          Data.setValue(viewName, row, parentColumn, parentId);
-          Data.setValue(viewName, row, fileColumn, result);
+        Data.setValue(viewName, row, parentColumn, parentId);
+        Data.setValue(viewName, row, fileColumn, result);
 
-          if (!BeeUtils.isEmpty(captionColumn)) {
-            String caption = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+        if (!BeeUtils.isEmpty(captionColumn)) {
+          String caption = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
 
-            Integer precision = Data.getColumnPrecision(viewName, captionColumn);
-            if (BeeUtils.isPositive(precision) && BeeUtils.hasLength(caption, precision)) {
-              caption = BeeUtils.left(caption, precision);
-            }
-
-            Data.setValue(viewName, row, captionColumn, caption);
+          Integer precision = Data.getColumnPrecision(viewName, captionColumn);
+          if (BeeUtils.isPositive(precision) && BeeUtils.hasLength(caption, precision)) {
+            caption = BeeUtils.left(caption, precision);
           }
 
-          Queries.insert(viewName, columns, row, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow br) {
-              latch.set(latch.get() - 1);
-              if (!BeeUtils.isPositive(latch.get())) {
-                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName);
-              }
-            }
-          });
+          Data.setValue(viewName, row, captionColumn, caption);
         }
+
+        Queries.insert(viewName, columns, row, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow br) {
+            latch.set(latch.get() - 1);
+            if (!BeeUtils.isPositive(latch.get())) {
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName);
+            }
+          }
+        });
       });
     }
   }
@@ -189,12 +188,7 @@ public final class FileUtils {
 
     final FileReader reader = Browser.getWindow().newFileReader();
 
-    reader.setOnload(new EventListener() {
-      @Override
-      public void handleEvent(Event evt) {
-        consumer.accept((String) reader.getResult());
-      }
-    });
+    reader.setOnload(evt -> consumer.accept((String) reader.getResult()));
 
     reader.readAsDataURL(file);
   }
@@ -215,16 +209,13 @@ public final class FileUtils {
 
     final FileReader reader = Browser.getWindow().newFileReader();
 
-    reader.setOnload(new EventListener() {
-      @Override
-      public void handleEvent(Event evt) {
-        String text = (String) reader.getResult();
+    reader.setOnload(evt -> {
+      String text = (String) reader.getResult();
 
-        if (BeeUtils.isEmpty(text)) {
-          consumer.accept(BeeConst.EMPTY_IMMUTABLE_STRING_LIST);
-        } else {
-          consumer.accept(lineSplitter.splitToList(text));
-        }
+      if (BeeUtils.isEmpty(text)) {
+        consumer.accept(BeeConst.EMPTY_IMMUTABLE_STRING_LIST);
+      } else {
+        consumer.accept(lineSplitter.splitToList(text));
       }
     });
 
@@ -249,45 +240,8 @@ public final class FileUtils {
     return Math.round(sz * 10d / c) / 10d + prfx;
   }
 
-  public static void uploadFile(FileInfo fileInfo, final Callback<Long> callback) {
-    if (DataUtils.isId(fileInfo.getId())) {
-      callback.onSuccess(fileInfo.getId());
-
-    } else if (!(fileInfo instanceof NewFileInfo)) {
-      callback.onFailure("File is not an instance of " + NameUtils.getClassName(NewFileInfo.class));
-
-    } else {
-      final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
-      final String fileType = fileInfo.getType();
-      final long fileSize = fileInfo.getSize();
-
-      final long start = System.currentTimeMillis();
-
-      upload((NewFileInfo) fileInfo, new Callback<String>() {
-        @Override
-        public void onSuccess(String response) {
-          if (BeeUtils.isLong(response)) {
-            long fileId = BeeUtils.toLong(response);
-
-            logger.info(TimeUtils.elapsedSeconds(start), "uploaded", fileName);
-            logger.info("type:", fileType, "size:", fileSize, "id:", fileId);
-            logger.addSeparator();
-
-            callback.onSuccess(fileId);
-
-          } else {
-            String msg = BeeUtils.joinWords("upload", fileName, "response:", response);
-            logger.warning(msg);
-            callback.onFailure(msg);
-          }
-        }
-
-        @Override
-        public void onFailure(String... reason) {
-          callback.onFailure(reason);
-        }
-      });
-    }
+  public static void uploadFile(FileInfo fileInfo, Callback<Long> callback) {
+    uploadFile(fileInfo, false, callback);
   }
 
   public static <T extends FileInfo> List<T> validateFileSize(Collection<T> input,
@@ -323,18 +277,14 @@ public final class FileUtils {
 
   //@formatter:off
   static native double getLastModifiedMillis(File file) /*-{
-    return file.lastModifiedDate.getTime();
+    return file.lastModifiedDate ? file.lastModifiedDate.getTime() : file.lastModified;
   }-*/;
 //@formatter:on
 
   private static void addProgressListener(XMLHttpRequest xhr, final String progressId) {
     if (progressId != null) {
-      xhr.getUpload().setOnprogress(new EventListener() {
-        @Override
-        public void handleEvent(Event evt) {
-          BeeKeeper.getScreen().updateProgress(progressId, null, ((ProgressEvent) evt).getLoaded());
-        }
-      });
+      xhr.getUpload().setOnprogress(evt -> BeeKeeper.getScreen().updateProgress(progressId, null,
+          ((ProgressEvent) evt).getLoaded()));
     }
   }
 
@@ -347,7 +297,7 @@ public final class FileUtils {
     }
   }
 
-  private static void upload(NewFileInfo fileInfo, Callback<String> callback) {
+  private static void upload(NewFileInfo fileInfo, boolean commit, Callback<String> callback) {
     Assert.noNulls(fileInfo, callback);
 
     String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
@@ -356,42 +306,83 @@ public final class FileUtils {
     XMLHttpRequest xhr = RpcUtils.createXhr();
     xhr.open(RequestBuilder.POST.toString(), getUrl(fileName), true);
 
+    if (commit) {
+      xhr.setRequestHeader(AdministrationConstants.FILE_COMMIT, "true");
+    }
     RpcUtils.addSessionId(xhr);
 
-    xhr.setOnload(new EventListener() {
-      @Override
-      public void handleEvent(Event evt) {
-        if (progressId != null) {
-          BeeKeeper.getScreen().removeProgress(progressId);
-        }
-        String msg = BeeUtils.joinWords("upload", fileName, "response status:");
-
-        if (xhr.getStatus() == Response.SC_OK) {
-          String response = xhr.getResponseText();
-
-          if (JsonUtils.isJson(response)) {
-            JSONObject json = JsonUtils.parseObject(response);
-            JSONObject status = (JSONObject) json.get("Status");
-
-            if (BeeUtils.toBoolean(JsonUtils.toString(status.get("Success")))) {
-              callback.onSuccess(JsonUtils.toString(json.get("Result")));
-              return;
-            }
-            msg = BeeUtils.joinWords(msg, status.toString());
-          } else {
-            msg = BeeUtils.joinWords("Not a json response:", response);
-          }
-        } else {
-          msg = BeeUtils.joinWords(msg, BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
-        }
-        logger.severe(msg);
-        callback.onFailure(msg);
+    xhr.setOnload(evt -> {
+      if (progressId != null) {
+        BeeKeeper.getScreen().removeProgress(progressId);
       }
+      String msg = BeeUtils.joinWords("upload", fileName, "response status:");
+
+      if (xhr.getStatus() == Response.SC_OK) {
+        String response = xhr.getResponseText();
+
+        if (JsonUtils.isJson(response)) {
+          JSONObject json = JsonUtils.parseObject(response);
+          JSONObject status = (JSONObject) json.get("Status");
+
+          if (BeeUtils.toBoolean(JsonUtils.toString(status.get("Success")))) {
+            callback.onSuccess(JsonUtils.toString(json.get("Result")));
+            return;
+          }
+          msg = BeeUtils.joinWords(msg, status.toString());
+        } else {
+          msg = BeeUtils.joinWords("Not a json response:", response);
+        }
+      } else {
+        msg = BeeUtils.joinWords(msg, BeeUtils.bracket(xhr.getStatus()), xhr.getStatusText());
+      }
+      logger.severe(msg);
+      callback.onFailure(msg);
     });
     addProgressListener(xhr, progressId);
     xhr.send(fileInfo.getNewFile());
   }
 
   private FileUtils() {
+  }
+
+  private static void uploadFile(FileInfo fileInfo, boolean commit, Callback<Long> callback) {
+    if (DataUtils.isId(fileInfo.getId())) {
+      callback.onSuccess(fileInfo.getId());
+
+    } else if (!(fileInfo instanceof NewFileInfo)) {
+      callback.onFailure("File is not an instance of " + NameUtils.getClassName(NewFileInfo.class));
+
+    } else {
+      String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+      String fileType = fileInfo.getType();
+      long fileSize = fileInfo.getSize();
+
+      long start = System.currentTimeMillis();
+
+      upload((NewFileInfo) fileInfo, commit, new Callback<String>() {
+        @Override
+        public void onSuccess(String response) {
+          if (BeeUtils.isLong(response)) {
+            long fileId = BeeUtils.toLong(response);
+
+            logger.info(TimeUtils.elapsedSeconds(start), "uploaded", fileName);
+            logger.info("type:", fileType, "size:", fileSize, "id:", fileId);
+            logger.addSeparator();
+
+            callback.onSuccess(fileId);
+
+          } else {
+            String msg = BeeUtils.joinWords("upload", fileName, "response:", response);
+            logger.warning(msg);
+            callback.onFailure(msg);
+          }
+        }
+
+        @Override
+        public void onFailure(String... reason) {
+          callback.onFailure(reason);
+        }
+      });
+    }
   }
 }

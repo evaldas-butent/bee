@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="BudgetTypes"
+       idName="BudgetTypeID"
+>
+  <Fields>
+    <Integer name="Ordinal" label="=ordinal" />
+
+    <String name="BudgetTypeName" precision="30" notNull="true" unique="true" translatable="true"
+            label="=finBudgetType" />
+
+    <Text name="Description" label="=description" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+  </Fields>
+</Table>

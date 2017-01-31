@@ -100,7 +100,7 @@ public final class MailConstants {
       public String getCaption(Dictionary constants) {
         return constants.mailRuleConditionAll();
       }
-    };
+    }
   }
 
   public enum RuleAction implements HasLocalizedCaption {
@@ -145,7 +145,28 @@ public final class MailConstants {
       public String getCaption(Dictionary constants) {
         return constants.mailRuleActionForward();
       }
-    };
+    }
+  }
+
+  public enum SyncMode implements HasLocalizedCaption {
+    SYNC_INBOX {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.mailSynchronizeInbox();
+      }
+    },
+    SYNC_ALL {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.mailSynchronizeAll();
+      }
+    },
+    SYNC_NOTHING {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.mailSynchronizeNothing();
+      }
+    }
   }
 
   public static final String SIGNATURE_SEPARATOR = "<br><br><br>";
@@ -163,6 +184,7 @@ public final class MailConstants {
   public static final String SVC_CHECK_MAIL = "check_mail";
   public static final String SVC_SEND_MAIL = "send_mail";
   public static final String SVC_STRIP_HTML = "strip_html";
+  public static final String SVC_GET_RAW_CONTENT = "get_raw_content";
   public static final String SVC_GET_UNREAD_COUNT = "get_unread_count";
   public static final String SVC_GET_NEWSLETTER_CONTACTS = "get_newsletter_contacts";
 
@@ -220,7 +242,8 @@ public final class MailConstants {
   public static final String COL_ACCOUNT_DESCRIPTION = "Description";
   public static final String COL_ACCOUNT_DEFAULT = "Main";
   public static final String COL_ACCOUNT_PRIVATE = "Private";
-  public static final String COL_ACCOUNT_SYNC_ALL = "SynchronizeAll";
+  public static final String COL_ACCOUNT_SYNC_MODE = "SyncMode";
+  public static final String COL_ACCOUNT_LAST_CONNECT = "LastConnect";
   public static final String COL_STORE_TYPE = "StoreType";
   public static final String COL_STORE_SERVER = "StoreServer";
   public static final String COL_STORE_SPORT = "StorePort";
@@ -240,6 +263,7 @@ public final class MailConstants {
   public static final String COL_FOLDER_PARENT = "Parent";
   public static final String COL_FOLDER_NAME = "Name";
   public static final String COL_FOLDER_UID = "UIDValidity";
+  public static final String COL_FOLDER_MODSEQ = "ModSeq";
 
   public static final String COL_PLACE = "Place";
   public static final String COL_FOLDER = "Folder";
@@ -294,6 +318,7 @@ public final class MailConstants {
     EnumUtils.register(RuleCondition.class);
     EnumUtils.register(RuleAction.class);
     EnumUtils.register(RecipientsGroupsVisibility.class);
+    EnumUtils.register(SyncMode.class);
   }
 
   private MailConstants() {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-01-04T15:13:26 -->
+<!-- 2017-01-26T13:52:18 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -168,8 +168,8 @@
 	<title>
 		<band height="200">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true" pattern="yyyy.MM.dd" isBlankWhenNull="true">
-				<reportElement x="480" y="40" width="75" height="14" uuid="97ad8c9f-0723-44bb-892e-2b164eda5aeb"/>
+			<textField isStretchWithOverflow="true" pattern="y &apos;m&apos;. MMMM d &apos;d&apos;." isBlankWhenNull="true">
+				<reportElement x="460" y="40" width="95" height="14" uuid="97ad8c9f-0723-44bb-892e-2b164eda5aeb"/>
 				<textElement textAlignment="Right">
 					<font size="8"/>
 				</textElement>

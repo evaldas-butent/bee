@@ -1,30 +1,26 @@
 package com.butent.bee.client.modules.orders;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_SERIES_NAME;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_NUMBER;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUSTOMER;
-import static com.butent.bee.shared.modules.transport.TransportConstants.COL_NUMBER;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.grid.ChildGrid;
-import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
@@ -33,7 +29,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -42,31 +37,25 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.NumberValue;
-import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
-import com.butent.bee.shared.modules.orders.Option;
-import com.butent.bee.shared.modules.orders.Specification;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -74,106 +63,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class OrderForm extends PrintFormInterceptor implements Consumer<Specification> {
+public class OrderForm extends PrintFormInterceptor {
 
   private final Dictionary loc = Localized.dictionary();
   private Label warehouseLabel;
-
-  private Flow objectContainer;
-  private Specification objectSpecification;
-
-  @Override
-  public void accept(Specification specification) {
-    Map<Long, Integer> opts = new HashMap<>();
-
-    for (Option option : specification.getOptions()) {
-      opts.put(option.getId(), specification.getOptionPrice(option));
-    }
-    Queries.getRowSet(TBL_CONF_OPTIONS, Collections.singletonList(COL_ITEM),
-        Filter.and(opts.isEmpty() ? Filter.isFalse() : Filter.idIn(opts.keySet()),
-            Filter.notNull(COL_ITEM)), new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet res) {
-            Holder<Integer> price = Holder.of(specification.getPrice());
-            List<BeeColumn> columns = Data.getColumns(VIEW_ORDER_ITEMS, Arrays.asList(COL_ORDER,
-                COL_ITEM, TradeConstants.COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE, COL_OBJECT));
-            BeeRowSet items = new BeeRowSet(VIEW_ORDER_ITEMS, columns);
-
-            for (BeeRow item : res) {
-              BeeRow row = items.addEmptyRow();
-              row.setValue(DataUtils.getColumnIndex(COL_ORDER, columns), getActiveRowId());
-              row.setValue(DataUtils.getColumnIndex(COL_ITEM, columns), item.getLong(0));
-              row.setValue(DataUtils.getColumnIndex(TradeConstants.COL_TRADE_ITEM_QUANTITY,
-                  columns), 1);
-              row.setValue(DataUtils.getColumnIndex(COL_ITEM_PRICE, columns),
-                  opts.get(item.getId()));
-              row.setValue(DataUtils.getColumnIndex(COL_OBJECT, columns), specification.getId());
-              price.set(price.get() - opts.get(item.getId()));
-            }
-            Consumer<Integer> consumer = itemCount -> {
-              BeeRowSet rs = DataUtils.getUpdated(getViewName(), getFormView().getDataColumns(),
-                  getFormView().getOldRow(), getActiveRow(), getFormView().getChildrenForUpdate());
-
-              if (DataUtils.isEmpty(rs)) {
-                rs = new BeeRowSet(getViewName(), new ArrayList<>());
-                rs.addRow(getActiveRowId(), getActiveRow().getVersion(), new ArrayList<>());
-              } else {
-                for (String col : new String[] {COL_DESCRIPTION, TransportConstants.COL_AMOUNT}) {
-                  int idx = DataUtils.getColumnIndex(col, rs.getColumns());
-
-                  if (!BeeConst.isUndef(idx)) {
-                    rs.removeColumn(idx);
-                  }
-                }
-              }
-              Long oldObject = getLongValue(COL_OBJECT);
-              int c = rs.getNumberOfColumns();
-              rs.addColumns(Data.getColumns(getViewName(),
-                  Arrays.asList(COL_OBJECT, TransportConstants.COL_AMOUNT)));
-
-              rs.getRow(0).setValue(c, oldObject);
-              rs.getRow(0).preliminaryUpdate(c, BeeUtils.toString(specification.getId()));
-              rs.getRow(0).setValue(c + 1, getIntegerValue(TransportConstants.COL_AMOUNT));
-              rs.getRow(0).preliminaryUpdate(c + 1, BeeUtils.toString(price.get()));
-
-              Queries.updateRow(rs, new RowUpdateCallback(getViewName()) {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  if (DataUtils.isId(oldObject)) {
-                    Queries.deleteRow(TBL_CONF_OBJECTS, oldObject, new IntCallback() {
-                      @Override
-                      public void onSuccess(Integer cnt) {
-                        Data.onViewChange(VIEW_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
-                      }
-                    });
-                  } else if (BeeUtils.isPositive(itemCount)) {
-                    Data.onViewChange(VIEW_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
-                  }
-                  super.onSuccess(result);
-                }
-              });
-            };
-            if (!DataUtils.isEmpty(items)) {
-              Queries.insertRows(items, new RpcCallback<RowInfoList>() {
-                @Override
-                public void onSuccess(RowInfoList result) {
-                  consumer.accept(result.size());
-                }
-              });
-            } else {
-              consumer.accept(0);
-            }
-          }
-        });
-  }
 
   @Override
   public FormInterceptor getInstance() {
@@ -185,11 +84,11 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
     if (BeeUtils.same(editableWidget.getColumnId(), COL_COMPANY)) {
       editableWidget.addCellValidationHandler(event -> {
         if (!event.sameValue()) {
-          Data.clearCell(VIEW_ORDERS, getActiveRow(), COL_OBJECT);
+          Data.clearCell(VIEW_ORDERS, getActiveRow(), AdministrationConstants.COL_OBJECT);
           Data.clearCell(VIEW_ORDERS, getActiveRow(), COL_COMPANY_OBJECT_NAME);
           Data.clearCell(VIEW_ORDERS, getActiveRow(), COL_COMPANY_OBJECT_ADDRESS);
 
-          getFormView().refreshBySource(COL_OBJECT);
+          getFormView().refreshBySource(AdministrationConstants.COL_OBJECT);
         }
         return true;
       });
@@ -204,13 +103,6 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
       ((ChildGrid) widget).setGridInterceptor(new OrderItemsGrid());
     } else if (BeeUtils.same(name, COL_WAREHOUSE) && widget instanceof Label) {
       warehouseLabel = (Label) widget;
-
-    } else if (BeeUtils.same(name, NameUtils.getClassName(SpecificationBuilder.class))
-        && widget instanceof HasClickHandlers) {
-      ((HasClickHandlers) widget).addClickHandler(clickEvent -> createObject());
-
-    } else if (BeeUtils.same(name, COL_OBJECT) && widget instanceof Flow) {
-      objectContainer = (Flow) widget;
     }
   }
 
@@ -378,8 +270,10 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
       }
 
       @Override
-      public FontAwesome getIcon() {
-        return FontAwesome.ENVELOPE_O;
+      public Widget getActionWidget() {
+        FaLabel action = new FaLabel(FontAwesome.ENVELOPE_O);
+        action.setTitle(Localized.dictionary().trWriteEmail());
+        return action;
       }
     };
   }
@@ -404,45 +298,8 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
     super.getReportParameters(defaultParameters ->
         ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
           defaultParameters.putAll(companiesInfo);
-
-          if (objectSpecification != null) {
-            defaultParameters.put(TBL_CONF_OBJECT_OPTIONS,
-                objectSpecification.renderSummary(false).toString());
-
-            for (int i = 0; i < objectSpecification.getPhotos().size(); i++) {
-              Long photo = objectSpecification.getPhotos().get(i);
-
-              if (DataUtils.isId(photo)) {
-                defaultParameters.put(COL_PHOTO + i, BeeUtils.toString(photo));
-              }
-            }
-          }
           parametersConsumer.accept(defaultParameters);
         }));
-  }
-
-  @Override
-  public void onSetActiveRow(IsRow row) {
-    Long objectId = row.getLong(getDataIndex(COL_OBJECT));
-
-    if (DataUtils.isId(objectId)) {
-      ParameterList args = OrdersKeeper.createSvcArgs(SVC_GET_OBJECT);
-      args.addDataItem(COL_OBJECT, objectId);
-
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          response.notify(getFormView());
-
-          if (!response.hasErrors()) {
-            refreshObject(Specification.restore(response.getResponseAsString()));
-          }
-        }
-      });
-    } else {
-      refreshObject(null);
-    }
-    super.onSetActiveRow(row);
   }
 
   @Override
@@ -539,32 +396,19 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
 
       if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())) {
         if (!BeeUtils.isPositive(warehouse)) {
-          getFormView().notifySevere(Localized.dictionary().warehouse() + " "
-              + Localized.dictionary().valueRequired());
+          getFormView().notifySevere(Localized.dictionary()
+              .fieldRequired(Localized.dictionary().warehouse()));
           return false;
         }
       }
 
       if (!BeeUtils.isPositive(company)) {
-        getFormView().notifySevere(Localized.dictionary().client() + " "
-            + Localized.dictionary().valueRequired());
+        getFormView().notifySevere(Localized.dictionary()
+            .fieldRequired(Localized.dictionary().client()));
         return false;
       }
     }
     return super.beforeAction(action, presenter);
-  }
-
-  private void createObject() {
-    if (DataUtils.isId(getActiveRowId())) {
-      new SpecificationBuilder(objectSpecification, this);
-    } else {
-      FormView form = getFormView();
-
-      if (form.getViewPresenter() instanceof ParentRowCreator) {
-        ((ParentRowCreator) form.getViewPresenter())
-            .createParentRow(form, result -> new SpecificationBuilder(null, OrderForm.this));
-      }
-    }
   }
 
   private String getFileName() {
@@ -587,25 +431,6 @@ public class OrderForm extends PrintFormInterceptor implements Consumer<Specific
 
   private Integer getStatus() {
     return getActiveRow().getInteger(getDataIndex(COL_ORDERS_STATUS));
-  }
-
-  private void refreshObject(Specification specification) {
-    objectSpecification = specification;
-
-    if (objectContainer != null) {
-      objectContainer.clear();
-
-      if (objectSpecification != null) {
-        objectContainer.add(objectSpecification.renderSummary(false));
-
-        objectSpecification.getPhotos().stream().filter(DataUtils::isId).forEach(photo -> {
-          Flow thumbnail = new Flow(SpecificationBuilder.STYLE_THUMBNAIL);
-          thumbnail.addStyleName(StyleUtils.NAME_FLEXIBLE);
-          thumbnail.add(new Image(FileUtils.getUrl(photo)));
-          objectContainer.insert(thumbnail, objectContainer.getWidgetCount() - 1);
-        });
-      }
-    }
   }
 
   private static void updateStatus(FormView form, OrdersStatus status) {

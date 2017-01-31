@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Items" caption="=goods" source="Items" module="Classifiers"
-  newRowForm="Item" newRowCaption="=newItem" editForm="Item"
-  >
+      name="Items" caption="=goods" source="Items" module="Classifiers"
+      newRowForm="Item" newRowCaption="=newItem" editForm="Item"
+>
   <Relation renderColumns="Name" choiceColumns="Name UnitName Article" />
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Name2" />
     <SimpleColumn name="Name3" />
-    <SimpleColumn name="Name" alias="NameET" locale="et" label="Pealkiri" />
 
     <SimpleColumn name="Article" />
     <SimpleColumn name="Article2" />
     <SimpleColumn name="Article3" />
     <SimpleColumn name="Article4" />
     <SimpleColumn name="Barcode" />
-    <SimpleColumn name="KPNCode" />
 
     <SimpleColumn name="Unit" />
     <SimpleJoin joinType="LEFT" name="Unit">
@@ -31,9 +29,14 @@
     <SimpleColumn name="Height" />
     <SimpleColumn name="Width" />
     <SimpleColumn name="Length" />
+
+    <SimpleColumn name="KPNCode" />
     <SimpleColumn name="Volume" />
     <SimpleColumn name="Brutto" />
     <SimpleColumn name="Netto" />
+    <SimpleColumn name="AdditionalUnit" />
+    <SimpleColumn name="CountryOfOrigin" />
+    <SimpleColumn name="Factor" />
 
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />
@@ -125,12 +128,15 @@
       <SimpleColumn name="Name" alias="ItemGroupName" />
     </SimpleJoin>
 
-    <SimpleJoin name="Dimensions" joinType="LEFT">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleColumn name="DaysPerWeek" />
     <SimpleColumn name="MinTerm" />
+
+    <SimpleColumn name="DefaultQuantity" />
 
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="ExternalCode" />

@@ -1,68 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form []>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
-  
-  name="CategoryTree" caption="=itemCategoryTree" data="CategoryTree">
-  
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="CategoryTree" caption="=itemCategoryTree" data="CategoryTree"
+>
+
   <DataTree caption="=itemCategories" viewName="CategoryTree" parentColumn="Parent">
     <calc>
       <ui:expression>row.Name + ' [' + rowId + ']'</ui:expression>
     </calc>
 
     <form>
-      <FlowPanel>
-        <Table kind="controls" style="margin-bottom: 1em;">
-          <col index="0" kind="label" />
-      
-          <row>
-            <Label for="Name" text="=category" />
-            <InputText source="Name" style="width: 300px;" />
-          </row>
-
-          <row>
-            <Label for="Name2" />
-            <InputText source="Name2" style="width: 300px;" />
-          </row>
-
-          <row>
-            <Label for="Name3" />
-            <InputText source="Name3" style="width: 300px;" />
-          </row>
-
-          <row>
-            <Label />
-            <CheckBox source="Included" />
-          </row>
-
-          <row data="Departments">
-            <Label for="Department" />
-            <DataSelector source="Department" renderColumns="DepartmentName"
-              choiceColumns="FullName" searchableColumns="DepartmentName" visibleLines="7"
-              selectorClass="bee-BranchSelector" newRowEnabled="false">
-              <ui:rowRenderer type="branch" />
-            </DataSelector>
-          </row>
-
-          <row data="ActivityTypes">
-            <Label for="ActivityType" />
-            <DataSelector source="ActivityType" />
-          </row>
-
-          <row data="CostCenters">
-            <Label for="CostCenter" />
-            <DataSelector source="CostCenter" />
-          </row>
-
-          <row data="Locations">
-            <Label for="Object" />
-            <DataSelector source="Object" />
-          </row>
-        </Table>
-
-        <ChildGrid name="CategoryDiscounts" relColumn="Category" style="height: 150px;" 
-          module="Orders" />
-      </FlowPanel>
+      <xi:include href="widgets/ItemCategory.widget.xml" />
     </form>
   </DataTree>
 </f:Form>  

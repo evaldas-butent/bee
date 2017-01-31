@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="Dimensions07"
+       idName="Dim07ID"
+>
+  <Fields>
+    <Integer name="Ordinal" label="=ordinal" />
+    <String name="Dim07Name" precision="100" notNull="true" unique="true" translatable="true"
+            label="=name" />
+
+    <String name="Dim07Background" precision="100" label="=backgroundColor" />
+    <String name="Dim07Foreground" precision="100" label="=foregroundColor" />
+
+    <Relation name="Dim01Rel" relation="Dimensions01" />
+    <Relation name="Dim02Rel" relation="Dimensions02" />
+    <Relation name="Dim03Rel" relation="Dimensions03" />
+    <Relation name="Dim04Rel" relation="Dimensions04" />
+    <Relation name="Dim05Rel" relation="Dimensions05" />
+    <Relation name="Dim06Rel" relation="Dimensions06" />
+    <Relation name="Dim08Rel" relation="Dimensions08" />
+    <Relation name="Dim09Rel" relation="Dimensions09" />
+    <Relation name="Dim10Rel" relation="Dimensions10" />
+
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

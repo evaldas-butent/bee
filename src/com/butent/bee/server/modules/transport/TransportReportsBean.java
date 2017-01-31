@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.collect.ImmutableMap;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
@@ -873,6 +875,16 @@ public class TransportReportsBean {
     clause.add(report.getCondition(SqlUtils.field(trucks, COL_VEHICLE_NUMBER), COL_VEHICLE));
     clause.add(report.getCondition(SqlUtils.field(trailers, COL_VEHICLE_NUMBER), COL_TRAILER));
 
+    clause.add(report.getCondition(
+        SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), ALS_TRIP_MANAGER));
+
+    String driverPersonTblAls = SqlUtils.uniqueName();
+    String driverCompPersonTblAls = SqlUtils.uniqueName();
+    clause.add(report.getCondition(SqlUtils.concat(
+        SqlUtils.field(driverPersonTblAls, COL_FIRST_NAME), "' '",
+        SqlUtils.nvl(SqlUtils.field(driverPersonTblAls, COL_LAST_NAME), "''")), COL_MAIN_DRIVER));
+
     HasConditions cargoClause = SqlUtils.and();
     cargoClause.add(report.getCondition(TBL_ORDERS, COL_ORDER_NO));
     cargoClause.add(report.getCondition(SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE),
@@ -906,6 +918,10 @@ public class TransportReportsBean {
             dateTimeToDate.apply(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE))), COL_TRIP_DATE_FROM)
         .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
             SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE)), COL_TRIP_DATE_TO)
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), ALS_TRIP_MANAGER)
+        .addExpr(SqlUtils.concat(SqlUtils.field(driverPersonTblAls, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(driverPersonTblAls, COL_LAST_NAME), "''")), COL_MAIN_DRIVER)
         .addField(trucks, COL_VEHICLE_NUMBER, COL_VEHICLE)
         .addField(trailers, COL_VEHICLE_NUMBER, COL_TRAILER)
         .addEmptyDouble(plannedKilometers)
@@ -924,6 +940,16 @@ public class TransportReportsBean {
             sys.joinTables(TBL_VEHICLES, trucks, TBL_TRIPS, COL_VEHICLE))
         .addFromLeft(TBL_VEHICLES, trailers,
             sys.joinTables(TBL_VEHICLES, trailers, TBL_TRIPS, COL_TRAILER))
+        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_TRIPS, COL_TRIP_MANAGER))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .addFromLeft(TBL_TRIP_DRIVERS, sys.joinTables(TBL_TRIP_DRIVERS, TBL_TRIPS, COL_MAIN_DRIVER))
+        .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
+        .addFromLeft(TBL_COMPANY_PERSONS, driverCompPersonTblAls, sys.joinTables(
+            TBL_COMPANY_PERSONS, driverCompPersonTblAls, TBL_DRIVERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, driverPersonTblAls,
+            sys.joinTables(TBL_PERSONS, driverPersonTblAls, driverCompPersonTblAls, COL_PERSON))
         .setWhere(clause.add(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION)));
 
     String tmp = qs.sqlCreateTemp(query);
@@ -961,73 +987,62 @@ public class TransportReportsBean {
     if (report.requiresField(plannedKilometers) || report.requiresField(plannedFuelCosts)
         || report.requiresField(plannedDailyCosts) || report.requiresField(plannedRoadCosts)) {
 
-      // Revised CargoHandling
       tmpTripCargo = qs.sqlCreateTemp(new SqlSelect()
-          .addFields(tmp, COL_TRIP, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_DATE)
-          .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+          .addFields(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO)
+          .addField(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), COL_CARGO_TRIP)
+          .addFields(tmp, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_DATE)
           .addFields(TBL_ORDER_CARGO, COL_CARGO_TYPE)
-          .addSum(SqlUtils.plus(0.0,
-              SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
-              SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
-              plannedKilometers)
+          .addEmptyDouble(COL_LOADING_PLACE)
+          .addEmptyDouble(COL_UNLOADING_PLACE)
+          .addEmptyDouble(plannedKilometers)
           .addEmptyDouble(plannedFuelCosts)
           .addEmptyDouble(plannedDailyCosts)
           .addEmptyDouble(plannedRoadCosts)
           .addFrom(TBL_CARGO_TRIPS)
           .addFromInner(tmp, SqlUtils.joinUsing(TBL_CARGO_TRIPS, tmp, COL_TRIP))
           .addFromInner(TBL_ORDER_CARGO,
-              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
-          .addFromLeft(TBL_CARGO_HANDLING,
-              sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP))
-          .addGroup(tmp, COL_TRIP, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO, COL_TRIP_DATE)
-          .addGroup(TBL_CARGO_TRIPS, COL_CARGO)
-          .addGroup(TBL_ORDER_CARGO, COL_CARGO_TYPE));
-
-      // Planned main CargoHandling
-      String tmpCargo = qs.sqlCreateTemp(new SqlSelect().setDistinctMode(true)
-          .addFields(tmpTripCargo, COL_CARGO)
-          .addExpr(SqlUtils.plus(0.0,
-              SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
-              SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
-              plannedKilometers)
-          .addFrom(tmpTripCargo)
-          .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tmpTripCargo, COL_CARGO))
-          .addFromLeft(TBL_CARGO_HANDLING,
-              sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
-          .setWhere(SqlUtils.nonPositive(tmpTripCargo, plannedKilometers)));
+              sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO)));
 
       String als = SqlUtils.uniqueName();
 
-      // Planned additional CargoHandling
-      qs.updateData(new SqlUpdate(tmpCargo)
-          .addExpression(plannedKilometers,
-              SqlUtils.plus(SqlUtils.field(tmpCargo, plannedKilometers),
-                  SqlUtils.field(als, plannedKilometers)))
-          .setFrom(new SqlSelect()
-                  .addFields(tmpCargo, COL_CARGO)
-                  .addSum(SqlUtils.plus(0.0,
-                      SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_LOADED_KILOMETERS), 0),
-                      SqlUtils.nvl(SqlUtils.field(TBL_CARGO_HANDLING, COL_EMPTY_KILOMETERS), 0)),
-                      plannedKilometers)
-                  .addFrom(tmpCargo)
-                  .addFromInner(TBL_CARGO_HANDLING,
-                      SqlUtils.joinUsing(tmpCargo, TBL_CARGO_HANDLING, COL_CARGO))
-                  .addGroup(tmpCargo, COL_CARGO),
-              als, SqlUtils.joinUsing(tmpCargo, als, COL_CARGO)));
+      for (Map.Entry<String, String> entry : ImmutableMap.of(TBL_CARGO_LOADING, COL_LOADING_PLACE,
+          TBL_CARGO_UNLOADING, COL_UNLOADING_PLACE).entrySet()) {
+        String tbl = entry.getKey();
+        String col = entry.getValue();
 
+        qs.updateData(new SqlUpdate(tmpTripCargo)
+            .addExpression(col,
+                SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(als, COL_LOADED_KILOMETERS), 0),
+                    SqlUtils.nvl(SqlUtils.field(als, COL_EMPTY_KILOMETERS), 0)))
+            .setFrom(new SqlSelect()
+                    .addFields(tmpTripCargo, COL_CARGO_TRIP)
+                    .addSum(TBL_CARGO_PLACES, COL_LOADED_KILOMETERS)
+                    .addSum(TBL_CARGO_PLACES, COL_EMPTY_KILOMETERS)
+                    .addFrom(tmpTripCargo)
+                    .addFromInner(tbl, SqlUtils.joinUsing(tmpTripCargo, tbl, COL_CARGO_TRIP))
+                    .addFromInner(TBL_CARGO_PLACES, sys.joinTables(TBL_CARGO_PLACES, tbl, col))
+                    .addGroup(tmpTripCargo, COL_CARGO_TRIP),
+                als, SqlUtils.joinUsing(tmpTripCargo, als, COL_CARGO_TRIP)));
+
+        qs.updateData(new SqlUpdate(tmpTripCargo)
+            .addExpression(col,
+                SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(als, COL_LOADED_KILOMETERS), 0),
+                    SqlUtils.nvl(SqlUtils.field(als, COL_EMPTY_KILOMETERS), 0)))
+            .setFrom(new SqlSelect()
+                    .addFields(tmpTripCargo, COL_CARGO_TRIP)
+                    .addSum(TBL_CARGO_PLACES, COL_LOADED_KILOMETERS)
+                    .addSum(TBL_CARGO_PLACES, COL_EMPTY_KILOMETERS)
+                    .addFrom(tmpTripCargo)
+                    .addFromInner(tbl, SqlUtils.joinUsing(tmpTripCargo, tbl, COL_CARGO))
+                    .addFromInner(TBL_CARGO_PLACES, sys.joinTables(TBL_CARGO_PLACES, tbl, col))
+                    .addGroup(tmpTripCargo, COL_CARGO_TRIP),
+                als, SqlUtils.joinUsing(tmpTripCargo, als, COL_CARGO_TRIP))
+            .setWhere(SqlUtils.isNull(tmpTripCargo, col)));
+      }
       qs.updateData(new SqlUpdate(tmpTripCargo)
           .addExpression(plannedKilometers,
-              SqlUtils.divide(SqlUtils.field(als, plannedKilometers), SqlUtils.field(als, "cnt")))
-          .setFrom(new SqlSelect()
-                  .addFields(tmpCargo, COL_CARGO, plannedKilometers)
-                  .addCount("cnt")
-                  .addFrom(tmpCargo)
-                  .addFromInner(tmpTripCargo, SqlUtils.joinUsing(tmpCargo, tmpTripCargo, COL_CARGO))
-                  .addGroup(tmpCargo, COL_CARGO, plannedKilometers),
-              als, SqlUtils.joinUsing(tmpTripCargo, als, COL_CARGO))
-          .setWhere(SqlUtils.nonPositive(tmpTripCargo, plannedKilometers)));
-
-      qs.sqlDropTemp(tmpCargo);
+              SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_LOADING_PLACE), 0),
+                  SqlUtils.nvl(SqlUtils.field(tmpTripCargo, COL_UNLOADING_PLACE), 0))));
     }
     // Planned fuel costs
     if (report.requiresField(plannedFuelCosts)) {
@@ -1199,37 +1214,24 @@ public class TransportReportsBean {
 
         String tmpDates = qs.sqlCreateTemp(query.copyOf()
             .addEmptyDouble(alsDays)
-            .addFromLeft(TBL_CARGO_HANDLING,
-                sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO_TRIP))
+            .addFromLeft(TBL_CARGO_LOADING,
+                sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_LOADING, COL_CARGO_TRIP))
             .addFromLeft(TBL_CARGO_PLACES, alsLoading, sys.joinTables(TBL_CARGO_PLACES, alsLoading,
-                TBL_CARGO_HANDLING, COL_LOADING_PLACE))
+                TBL_CARGO_LOADING, COL_LOADING_PLACE))
+            .addFromLeft(TBL_CARGO_UNLOADING,
+                sys.joinTables(TBL_CARGO_TRIPS, TBL_CARGO_UNLOADING, COL_CARGO_TRIP))
             .addFromLeft(TBL_CARGO_PLACES, alsUnloading, sys.joinTables(TBL_CARGO_PLACES,
-                alsUnloading, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE)));
+                alsUnloading, TBL_CARGO_UNLOADING, COL_UNLOADING_PLACE)));
 
-        String als = SqlUtils.uniqueName();
-
-        String tmpCargoDates = qs.sqlCreateTemp(new SqlSelect()
-            .addFields(als, COL_TRIP, COL_CARGO)
-            .addMin(als, COL_TRIP_DATE_FROM)
-            .addMax(als, COL_TRIP_DATE_TO)
-            .addFrom(query.copyOf()
-                .addFromInner(TBL_ORDER_CARGO,
-                    sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
-                .addFromInner(TBL_CARGO_HANDLING,
-                    sys.joinTables(TBL_CARGO_HANDLING, TBL_ORDER_CARGO, COL_CARGO_HANDLING))
-                .addFromLeft(TBL_CARGO_PLACES, alsLoading, sys.joinTables(TBL_CARGO_PLACES,
-                    alsLoading, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
-                .addFromLeft(TBL_CARGO_PLACES, alsUnloading, sys.joinTables(TBL_CARGO_PLACES,
-                    alsUnloading, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))
-
-                .addUnion(query.copyOf()
-                    .addFromInner(TBL_CARGO_HANDLING,
-                        SqlUtils.joinUsing(TBL_CARGO_TRIPS, TBL_CARGO_HANDLING, COL_CARGO))
-                    .addFromLeft(TBL_CARGO_PLACES, alsLoading, sys.joinTables(TBL_CARGO_PLACES,
-                        alsLoading, TBL_CARGO_HANDLING, COL_LOADING_PLACE))
-                    .addFromLeft(TBL_CARGO_PLACES, alsUnloading, sys.joinTables(TBL_CARGO_PLACES,
-                        alsUnloading, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE))), als)
-            .addGroup(als, COL_TRIP, COL_CARGO));
+        String tmpCargoDates = qs.sqlCreateTemp(query.copyOf()
+            .addFromLeft(TBL_CARGO_LOADING,
+                SqlUtils.joinUsing(TBL_CARGO_TRIPS, TBL_CARGO_LOADING, COL_CARGO))
+            .addFromLeft(TBL_CARGO_PLACES, alsLoading, sys.joinTables(TBL_CARGO_PLACES,
+                alsLoading, TBL_CARGO_LOADING, COL_LOADING_PLACE))
+            .addFromLeft(TBL_CARGO_UNLOADING,
+                SqlUtils.joinUsing(TBL_CARGO_TRIPS, TBL_CARGO_UNLOADING, COL_CARGO))
+            .addFromLeft(TBL_CARGO_PLACES, alsUnloading, sys.joinTables(TBL_CARGO_PLACES,
+                alsUnloading, TBL_CARGO_UNLOADING, COL_UNLOADING_PLACE)));
 
         for (String col : new String[] {COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO}) {
           qs.updateData(new SqlUpdate(tmpDates)
@@ -1252,6 +1254,8 @@ public class TransportReportsBean {
                         dateTimeToDate.apply(SqlUtils.field(tmpDates, COL_TRIP_DATE_FROM))),
                     TimeUtils.MILLIS_PER_DAY), 1)));
 
+        String als = SqlUtils.uniqueName();
+
         qs.updateData(new SqlUpdate(tmpDates)
             .addConstant(alsDays,
                 SqlUtils.divide(SqlUtils.field(tmpDates, alsDays), SqlUtils.field(als, alsDays)))
@@ -1259,7 +1263,8 @@ public class TransportReportsBean {
                 .addFields(tmpDates, COL_TRIP)
                 .addSum(tmpDates, alsDays)
                 .addFrom(tmpDates)
-                .addGroup(tmpDates, COL_TRIP), als, SqlUtils.joinUsing(tmpDates, als, COL_TRIP)));
+                .addGroup(tmpDates, COL_TRIP), als, SqlUtils.joinUsing(tmpDates, als, COL_TRIP))
+            .setWhere(SqlUtils.notEqual(als, alsDays, 0)));
 
         qs.updateData(new SqlUpdate(tt)
             .addConstant(constantCosts, SqlUtils.multiply(SqlUtils.field(tt, constantCosts),

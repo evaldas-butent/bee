@@ -291,7 +291,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
             DocumentConstants.VIEW_DOCUMENT_TEMPLATES,
             DocumentConstants.COL_DOCUMENT_TEMPLATE_NAME),
         BeeParameter.createRelation(module, PRM_DEFAULT_DBA_DOCUMENT_TYPE,
-            DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_TYPE_NAME));
+            DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_TYPE_NAME),
+        BeeParameter.createBoolean(module, PRM_CREATE_PRIVATE_TASK_FIRST, true, null));
 
     return params;
   }
@@ -858,7 +859,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         wh = SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId);
       }
 
-      List timerIdentifiersIds = new ArrayList<String>();
+      List<String> timerIdentifiersIds = new ArrayList<String>();
       timerIdentifiersIds.add(timerIdentifier + userId);
       return Pair.of(wh, timerIdentifiersIds);
 
@@ -875,7 +876,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         Long reminderId = relationId;
         wh = SqlUtils.equals(VIEW_USER_REMINDERS,
             sys.getIdName(VIEW_USER_REMINDERS), reminderId);
-        List timerIdentifiersIds = new ArrayList<String>();
+        List<String> timerIdentifiersIds = new ArrayList<String>();
         timerIdentifiersIds.add(timerIdentifier + reminderId);
         return Pair.of(wh, timerIdentifiersIds);
 
@@ -3225,10 +3226,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       return;
     }
     long timeRemaining = timer.getTimeRemaining();
-    logger.info("task reminder timeout, time remainining", timeRemaining);
+    logger.debug("task reminder timeout, time remainining", timeRemaining);
 
     int count = sendTaskReminders(timeRemaining);
-    logger.info("sent", count, "task reminders");
+    logger.debug("sent", count, "task reminders");
   }
 
   private Document taskToHtml(long taskId, DateTime startTime, DateTime finishTime,

@@ -19,8 +19,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -50,31 +49,7 @@ final class Freight extends OrderCargo {
         row.getLong(COL_CUSTOMER), row.getValue(COL_CUSTOMER_NAME),
         row.getLong(COL_ORDER_MANAGER),
         row.getLong(COL_CARGO), row.getLong(COL_CARGO_TYPE),
-        row.getValue(COL_CARGO_DESCRIPTION), row.getValue(COL_CARGO_NOTES),
-        BeeUtils.nvl(Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE)),
-            Places.getLoadingDate(row, defaultLoadingColumnAlias(COL_PLACE_DATE)), minLoad),
-        BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_PLACE_COUNTRY)),
-            row.getLong(defaultLoadingColumnAlias(COL_PLACE_COUNTRY))),
-        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS)),
-            row.getValue(defaultLoadingColumnAlias(COL_PLACE_ADDRESS))),
-        BeeUtils.nvl(row.getValue(ALS_LOADING_POST_INDEX),
-            row.getValue(defaultLoadingColumnAlias(COL_PLACE_POST_INDEX))),
-        BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_PLACE_CITY)),
-            row.getLong(defaultLoadingColumnAlias(COL_PLACE_CITY))),
-        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_NUMBER)),
-            row.getValue(defaultLoadingColumnAlias(COL_PLACE_NUMBER))),
-        BeeUtils.nvl(Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE)),
-            Places.getUnloadingDate(row, defaultUnloadingColumnAlias(COL_PLACE_DATE)), maxUnload),
-        BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_PLACE_COUNTRY)),
-            row.getLong(defaultUnloadingColumnAlias(COL_PLACE_COUNTRY))),
-        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_ADDRESS)),
-            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_ADDRESS))),
-        BeeUtils.nvl(row.getValue(ALS_UNLOADING_POST_INDEX),
-            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_POST_INDEX))),
-        BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_PLACE_CITY)),
-            row.getLong(defaultUnloadingColumnAlias(COL_PLACE_CITY))),
-        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_NUMBER)),
-            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_NUMBER))),
+        row.getValue(COL_CARGO_DESCRIPTION), row.getValue(COL_CARGO_NOTES), minLoad, maxUnload,
         row.getLong(COL_TRIP_ID), row.getLong(COL_VEHICLE), row.getLong(COL_TRAILER),
         row.getLong(COL_CARGO_TRIP_ID), row.getLong(ALS_CARGO_TRIP_VERSION));
   }
@@ -98,18 +73,11 @@ final class Freight extends OrderCargo {
   private Freight(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
       Long customerId, String customerName, Long manager,
       Long cargoId, Long cargoType, String cargoDescription, String notes,
-      JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
-      Long loadingCity, String loadingNumber,
-      JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
-      String unloadingPostIndex, Long unloadingCity,
-      String unloadingNumber, Long tripId, Long truckId, Long trailerId, Long cargoTripId,
-      Long cargoTripVersion) {
+      JustDate loadingDate, JustDate unloadingDate, Long tripId, Long truckId, Long trailerId,
+      Long cargoTripId, Long cargoTripVersion) {
 
     super(orderId, orderStatus, orderDate, orderNo, customerId, customerName, manager,
-        cargoId, cargoType, cargoDescription, notes,
-        loadingDate, loadingCountry, loadingPlace, loadingPostIndex, loadingCity, loadingNumber,
-        unloadingDate, unloadingCountry, unloadingPlace, unloadingPostIndex, unloadingCity,
-        unloadingNumber);
+        cargoId, cargoType, cargoDescription, notes, loadingDate, unloadingDate);
 
     this.tripId = tripId;
     this.truckId = truckId;

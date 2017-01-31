@@ -23,6 +23,7 @@
     <Relation name="Message" relation="Messages" label="=mailMessage" editable="true" />
     <Relation name="Assessment" relation="Assessments" label="=assessments" cascade="DELETE" />
     <Relation name="Project" relation="Projects" label="=projects" cascade="DELETE" />
+    <Relation name="ServiceMaintenance" relation="ServiceMaintenance" label="=svcMaintenance" cascade="DELETE" />
     <Relation name="Item" relation="Items" label="=goods" cascade="DELETE" />
   </Fields>
 </Table>

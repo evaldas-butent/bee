@@ -111,6 +111,12 @@
     </SimpleJoin>
 
     <SimpleColumn name="Article" />
+    <ExternalJoin joinType="LEFT" targetName="Parent" source="TradeStock"
+                  name="TradeDocumentItem">
+      <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
+        <SimpleColumn name="Article" alias="PrimaryArticle" />
+      </SimpleJoin>
+    </ExternalJoin>
 
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
@@ -151,8 +157,9 @@
       <SimpleColumn name="TabNumber" alias="EmployeeTabNumber" />
     </SimpleJoin>
 
-    <SimpleJoin name="Dimensions" joinType="LEFT">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="../../Classifiers/views/viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleColumn name="Note" />

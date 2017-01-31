@@ -27,13 +27,14 @@ public class AccountsGrid extends AbstractGridInterceptor {
 
   @Override
   public DeleteMode beforeDeleteRow(final GridPresenter presenter, IsRow row) {
-    int idx = getDataIndex(MailConstants.COL_STORE_SERVER);
-    String store = row.getString(idx);
+    int idx = getDataIndex(MailConstants.COL_ACCOUNT_SYNC_MODE);
+    String oldMode = row.getString(idx);
+    String newMode = BeeUtils.toString(MailConstants.SyncMode.SYNC_NOTHING.ordinal());
 
-    if (!BeeUtils.isEmpty(store)) {
+    if (!Objects.equals(oldMode, newMode)) {
       Queries.update(getViewName(), row.getId(), row.getVersion(),
-          DataUtils.getColumns(getDataColumns(), idx), Collections.singletonList(store),
-          Collections.singletonList((String) null), null, new RowCallback() {
+          DataUtils.getColumns(getDataColumns(), idx), Collections.singletonList(oldMode),
+          Collections.singletonList(newMode), null, new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
               presenter.deleteRow(result, false);

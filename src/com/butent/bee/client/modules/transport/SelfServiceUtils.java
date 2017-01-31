@@ -1,16 +1,12 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.gwt.json.client.JSONObject;
-
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -18,15 +14,10 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
 
 final class SelfServiceUtils {
 
@@ -60,58 +51,6 @@ final class SelfServiceUtils {
     private void setRefresh(boolean refresh) {
       this.refresh = refresh;
     }
-  }
-
-  static void getCargos(Filter cargoFilter, Consumer<BeeRowSet> cargoConsumer) {
-    Queries.getRowSet(VIEW_ORDER_CARGO, null, cargoFilter, new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet cargo) {
-        List<Long> cargoIds = cargo.getRowIds();
-        int handlingIdx = cargo.getColumnIndex(COL_CARGO_HANDLING);
-
-        Queries.getRowSet(VIEW_CARGO_HANDLING, null, Filter.or(Filter.any(COL_CARGO, cargoIds),
-            Filter.idIn(cargo.getDistinctLongs(handlingIdx))),
-            new Queries.RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet handling) {
-                cargo.addColumn(ValueType.TEXT, null, TBL_CARGO_PLACES);
-                int placesIdx = cargo.getColumnIndex(TBL_CARGO_PLACES);
-                int cargoIdx = handling.getColumnIndex(COL_CARGO);
-
-                for (BeeRow cargoRow : cargo) {
-                  BeeRowSet currentHandling = new BeeRowSet(handling.getViewName(),
-                      handling.getColumns());
-
-                  for (BeeRow handlingRow : handling) {
-                    if (Objects.equals(handlingRow.getId(), cargoRow.getLong(handlingIdx))
-                        || Objects.equals(handlingRow.getLong(cargoIdx), cargoRow.getId())) {
-
-                      BeeRow cloned = DataUtils.cloneRow(handlingRow);
-
-                      String jsonString = handlingRow
-                          .getString(handling.getColumnIndex(ALS_CARGO_HANDLING_NOTES));
-
-                      if (JsonUtils.isJson(jsonString)) {
-                        JSONObject json = JsonUtils.parseObject(jsonString);
-
-                        for (String key : json.keySet()) {
-                          int idx = handling.getColumnIndex(key + "Name");
-
-                          if (!BeeConst.isUndef(idx) && BeeUtils.isEmpty(cloned.getString(idx))) {
-                            cloned.setValue(idx, JsonUtils.getString(json, key));
-                          }
-                        }
-                      }
-                      currentHandling.addRow(cloned);
-                    }
-                  }
-                  cargoRow.setValue(placesIdx, currentHandling.serialize());
-                }
-                cargoConsumer.accept(cargo);
-              }
-            });
-      }
-    });
   }
 
   static void setDefaultExpeditionType(FormView form, IsRow newRow, String targetColumn) {

@@ -10,9 +10,8 @@
   name="OrderInvoice" viewName="OrderChildInvoices" caption="=trdInvoice"
   width="840" height="600" readOnly="true" showRowId="true">
 
-  <f:properties jasperReports="PrintInvoice:=trdInvoice, PrintInvoice_et:=trdInvoice+_EE,
-  PrintProforma:=trdProformaInvoice, PrintProforma_et:=trdProformaInvoice+_EE,
-  PrintTransportationAct:=printInvoiceBoL, PrintTransportationAct_et:=printInvoiceBoL+_EE" />
+  <f:properties jasperReports="PrintInvoice:=trdInvoice, PrintProforma:=trdProformaInvoice,
+  PrintTransportationAct:=printInvoiceBoL" />
   <FlowPanel class="flexBox-vertical">
     <br />
     <Table kind="controls">
@@ -91,21 +90,63 @@
           <Table kind="controls">
             <col index="0" kind="label" />
             <col index="2" kind="label" />
+            <col index="4" kind="label" />
 
             <row>
-              <Label for="Loading" />
-              <InputText source="Loading" style="&inp;" disablable="false" />
+              <Label for="BoLSeries" />
+              <DataSelector source="BoLSeries" style="width: 7em;" disablable="false" />
+
+              <Label for="BoLNumber" />
+              <InputText source="BoLNumber" style="width: 10em;" disablable="false" />
+
+              <Label for="BoLIssueDate" />
+              <InputDateTime source="BoLIssueDate" style="width: 10em;" disablable="false" />
+            </row>
+
+            <row>
+              <Label for="BoLLoading" />
+              <cell colSpan="3" >
+                <InputText source="BoLLoading" style="width:100%;" disablable="false" />
+              </cell>
+
+              <Label for="BoLDepartureDate" />
+              <InputDateTime source="BoLDepartureDate" style="width: 10em;" disablable="false" />
+            </row>
+
+            <row>
+              <Label for="BoLUnloading" />
+              <cell colSpan="3" >
+                <InputText source="BoLUnloading" style="width:100%;" disablable="false" />
+              </cell>
+
+              <Label for="BoLUnloadingDate" />
+              <InputDateTime source="BoLUnloadingDate" style="width: 10em;" disablable="false" />
+            </row>
+
+            <row>
+              <Label for="BoLDriverTabNo" />
+              <DataSelector source="BoLDriverTabNo" renderColumns="TabNumber" disablable="false"
+                            choiceColumns="TabNumber FirstName LastName" style="width: 10em;" />
 
               <Label for="Issued" />
               <InputText source="Issued" style="&inp;" disablable="false" />
             </row>
 
             <row>
-              <Label for="Unloading" />
-              <InputText source="Unloading" style="&inp;" disablable="false" />
+              <Label for="BoLVehicleNumber" />
+              <InputText source="BoLVehicleNumber" style="width: 10em;" disablable="false" />
 
-              <Label for="DriverInfo" />
-              <InputText source="DriverInfo" style="&inp;" disablable="false" />
+              <Label for="BoLDriver" />
+              <cell colSpan="3" >
+                <InputText source="BoLDriver" style="width:100%;" disablable="false" />
+              </cell>
+            </row>
+
+            <row>
+              <Label for="BoLCarrier" />
+              <cell colSpan="5" >
+                <DataSelector source="BoLCarrier" style="width:100%;" disablable="false" />
+              </cell>
             </row>
           </Table>
         </SimplePanel>

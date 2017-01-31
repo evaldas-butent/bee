@@ -96,6 +96,10 @@ public final class SqlUtils {
     }
   }
 
+  public static IsCondition anyNotNull(String src, String fld1, String fld2) {
+    return or(notNull(src, fld1), notNull(src, fld2));
+  }
+
   public static IsExpression bitAnd(IsExpression expr, Object value) {
     return new FunctionExpression(SqlFunction.BITAND,
         ImmutableMap.of("expression", expr, "value", value));
@@ -412,8 +416,11 @@ public final class SqlUtils {
     return fullText(field(source, field), value);
   }
 
+  public static IsCondition in(IsExpression xpr, SqlSelect query) {
+    return new ComparisonCondition(Operator.IN, xpr, Assert.notNull(query));
+  }
+
   public static IsCondition in(String src, String fld, SqlSelect query) {
-    Assert.notNull(query);
     return new ComparisonCondition(Operator.IN, field(src, fld), query);
   }
 
@@ -465,6 +472,13 @@ public final class SqlUtils {
     return inList(field(source, field), values);
   }
 
+  public static IsCondition isDifferent(String src, String fld1, String fld2) {
+    return or(
+        and(notNull(src, fld1), isNull(src, fld2)),
+        and(isNull(src, fld1), notNull(src, fld2)),
+        compare(field(src, fld1), Operator.NE, field(src, fld2)));
+  }
+
   public static IsCondition isNull(IsExpression expr) {
     return new ComparisonCondition(Operator.IS_NULL, expr);
   }
@@ -500,7 +514,7 @@ public final class SqlUtils {
   public static IsCondition joinUsing(String src1, String src2, String... flds) {
     Assert.minLength(ArrayUtils.length(flds), 1);
 
-    IsCondition cond = null;
+    IsCondition cond;
 
     if (flds.length > 1) {
       HasConditions cb = and();
@@ -675,6 +689,10 @@ public final class SqlUtils {
     return more(source, field, 0);
   }
 
+  public static IsCondition positive(String src, String fld1, String fld2) {
+    return and(positive(src, fld1), positive(src, fld2));
+  }
+
   public static IsQuery renameTable(String from, String to) {
     return new SqlCommand(SqlKeyword.RENAME_TABLE,
         ImmutableMap.of("nameFrom", (Object) name(from), "nameTo", name(to)));
@@ -802,7 +820,11 @@ public final class SqlUtils {
   }
 
   public static String uniqueName() {
-    return BeeUtils.randomString(5);
+    return BeeUtils.randomString(8);
+  }
+
+  public static String uniqueName(String prefix) {
+    return BeeUtils.trim(prefix) + uniqueName();
   }
 
   static <T> Collection<T> addCollection(Collection<T> destination, Collection<T> source) {

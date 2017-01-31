@@ -6,46 +6,42 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 
 public class MailFolder implements BeeSerializable {
 
   private static final long DISCONNECTED_MODE = -1;
 
-  public static MailFolder restore(String s) {
-    MailFolder folder = new MailFolder();
-    folder.deserialize(s);
-    return folder;
-  }
-
   private enum Serial {
-    ID, NAME, UID, UNREAD, CHILDS
+    ID, NAME, UID, MODSEQ, UNREAD, CHILDS
   }
 
   private MailFolder parent;
   private Long id;
   private String name;
   private Long uidValidity;
+  private Long modSeq;
   private int unread;
 
-  private final Map<String, MailFolder> childs = new LinkedHashMap<>();
+  private final List<MailFolder> childs = new ArrayList<>();
 
   public MailFolder() {
-    this(null, null, null, null);
+    this(null, "ROOT", null);
   }
 
-  public MailFolder(MailFolder parent, Long id, String name, Long uidValidity) {
-    this.parent = parent;
+  public MailFolder(Long id, String name, Long uidValidity) {
     this.id = id;
     this.name = name;
     this.uidValidity = uidValidity;
   }
 
   public void addSubFolder(MailFolder subFolder) {
-    childs.put(BeeUtils.normalize(subFolder.getName()), subFolder);
+    childs.add(subFolder);
+    subFolder.parent = this;
   }
 
   @Override
@@ -63,15 +59,14 @@ public class MailFolder implements BeeSerializable {
           String[] data = Codec.beeDeserializeCollection(value);
 
           if (!ArrayUtils.isEmpty(data)) {
-            for (int j = 0; j < data.length; j += 2) {
-              MailFolder child = restore(data[j + 1]);
-              child.parent = this;
-              childs.put(data[j], child);
-            }
+            Arrays.stream(data).forEach(d -> addSubFolder(restore(d)));
           }
           break;
         case ID:
           id = BeeUtils.toLongOrNull(value);
+          break;
+        case MODSEQ:
+          modSeq = BeeUtils.toLongOrNull(value);
           break;
         case NAME:
           name = value;
@@ -88,6 +83,7 @@ public class MailFolder implements BeeSerializable {
 
   public void disconnect() {
     setUidValidity(DISCONNECTED_MODE);
+    setModSeq(null);
   }
 
   public MailFolder findFolder(Long folderId) {
@@ -104,6 +100,10 @@ public class MailFolder implements BeeSerializable {
     return null;
   }
 
+  public Long getModSeq() {
+    return modSeq;
+  }
+
   public Long getId() {
     return id;
   }
@@ -116,8 +116,15 @@ public class MailFolder implements BeeSerializable {
     return parent;
   }
 
+  public String getPath(char separator) {
+    if (Objects.isNull(getParent())) {
+      return "";
+    }
+    return BeeUtils.join(BeeUtils.toString(separator), getParent().getPath(separator), getName());
+  }
+
   public Collection<MailFolder> getSubFolders() {
-    return childs.values();
+    return childs;
   }
 
   public Long getUidValidity() {
@@ -132,8 +139,10 @@ public class MailFolder implements BeeSerializable {
     return !Objects.equals(uidValidity, DISCONNECTED_MODE);
   }
 
-  public MailFolder removeSubFolder(String subFolderName) {
-    return childs.remove(BeeUtils.normalize(subFolderName));
+  public static MailFolder restore(String s) {
+    MailFolder folder = new MailFolder();
+    folder.deserialize(s);
+    return folder;
   }
 
   @Override
@@ -150,6 +159,9 @@ public class MailFolder implements BeeSerializable {
         case ID:
           arr[i++] = id;
           break;
+        case MODSEQ:
+          arr[i++] = modSeq;
+          break;
         case NAME:
           arr[i++] = name;
           break;
@@ -162,6 +174,10 @@ public class MailFolder implements BeeSerializable {
       }
     }
     return Codec.beeSerialize(arr);
+  }
+
+  public void setModSeq(Long modSeq) {
+    this.modSeq = modSeq;
   }
 
   public void setUidValidity(Long uidValidity) {

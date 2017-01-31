@@ -94,8 +94,6 @@ public final class NewsConstants {
     observedColumns.put(TaskConstants.TBL_REQUESTS, TaskConstants.COL_REQUEST_CUSTOMER);
 
     observedColumns.put(TransportConstants.TBL_ORDER_CARGO, TransportConstants.COL_ORDER);
-    observedColumns.put(TransportConstants.TBL_ORDER_CARGO,
-        TransportConstants.loadingColumnAlias(TransportConstants.COL_PLACE_DATE));
 
     observedColumns.put(TransportConstants.TBL_ORDERS, TransportConstants.COL_STATUS);
 

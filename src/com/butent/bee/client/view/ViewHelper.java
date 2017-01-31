@@ -38,6 +38,10 @@ public final class ViewHelper {
 
   private static final ImmutableSet<String> NO_EXCLUSIONS = ImmutableSet.of();
 
+  public static Widget asWidget(View view) {
+    return (view == null) ? null : view.asWidget();
+  }
+
   public static View getActiveView(Element target) {
     Popup popup = Popup.getActivePopup();
 

@@ -19,8 +19,6 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -28,15 +26,12 @@ import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -49,7 +44,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -76,48 +70,6 @@ public final class ClassifierKeeper {
 
   static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.CLASSIFIERS, method);
-  }
-
-  private static class VehiclesGridHandler extends TreeGridInterceptor {
-
-    @Override
-    public VehiclesGridHandler getInstance() {
-      return new VehiclesGridHandler();
-    }
-
-    @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      IsRow model = getSelectedTreeItem();
-
-      if (model != null) {
-        List<BeeColumn> cols = getGridPresenter().getDataColumns();
-        newRow.setValue(DataUtils.getColumnIndex("Model", cols), model.getId());
-        newRow.setValue(DataUtils.getColumnIndex("ParentModelName", cols),
-            getModelValue(model, "ParentName"));
-        newRow.setValue(DataUtils.getColumnIndex("ModelName", cols),
-            getModelValue(model, "Name"));
-      }
-      return true;
-    }
-
-    @Override
-    protected Filter getFilter(Long model) {
-      if (model == null) {
-        return null;
-      } else {
-        Value value = new LongValue(model);
-
-        return Filter.or(Filter.isEqual("ParentModel", value),
-            Filter.isEqual("Model", value));
-      }
-    }
-
-    private String getModelValue(IsRow model, String colName) {
-      if (BeeUtils.allNotNull(model, getTreeDataColumns())) {
-        return model.getString(getTreeColumnIndex(colName));
-      }
-      return null;
-    }
   }
 
   public static void getHolidays(final Consumer<Set<Integer>> consumer) {
@@ -268,13 +220,18 @@ public final class ClassifierKeeper {
       ViewFactory.createAndShow(key);
     });
 
-    GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGrid());
     GridFactory.registerGridInterceptor(TBL_DISCOUNTS, new DiscountsGrid());
 
     ColorStyleProvider csp = ColorStyleProvider.createDefault(VIEW_CHART_OF_ACCOUNTS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CHART_OF_ACCOUNTS, COL_ACCOUNT_CODE, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CHART_OF_ACCOUNTS, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CHART_OF_ACCOUNTS, COL_FOREGROUND, csp);
+
+    csp = ColorStyleProvider.createDefault(VIEW_JOURNALS);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_JOURNALS, COL_JOURNAL_CODE, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_JOURNALS, COL_BACKGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_JOURNALS, COL_FOREGROUND, csp);
 
     FormFactory.registerFormInterceptor("Item", new ItemForm());
 

@@ -23,7 +23,7 @@
           <Label for="Signature" />
           <DataSelector source="Signature" choiceColumns="Description Content" style="width:200px"
                         currentUserFilter="User" />
-          <CheckBox source="SynchronizeAll" />
+          <ListBox source="SyncMode" />
         </row>
         <row>
           <Label text="=users" />
@@ -45,7 +45,7 @@
           <FlowPanel class="flexBox-vertical-center flexible">
             <Table kind="controls">
               <col index="0" kind="label" />
-              
+
               <row>
                 <cell colSpan="2">
                   <TextLabel style="font-weight:bold; text-align:center;">
@@ -113,7 +113,7 @@
           <FlowPanel class="flexBox-vertical-center flexible">
             <Table kind="controls">
               <col index="0" kind="label" />
-              
+
               <row>
                 <cell colSpan="2">
                   <Label text="=mailSMTPServerSettings"

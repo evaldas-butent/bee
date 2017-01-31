@@ -17,11 +17,12 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportItem;
@@ -39,6 +40,8 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -48,6 +51,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
@@ -205,6 +209,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   private static final String STYLE_REPORT = STYLE_PREFIX + "-report";
   private static final String STYLE_REPORT_NORMAL = STYLE_PREFIX + "-report-normal";
   private static final String STYLE_REPORT_ACTIVE = STYLE_PREFIX + "-report-active";
+  private static final String STYLE_REPORT_GLOBAL = STYLE_PREFIX + "-report-global";
 
   private static final String STYLE_FILTER_CAPTION = STYLE_PREFIX + "-filter-cap";
 
@@ -259,11 +264,30 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     switch (action) {
       case SAVE:
         if (activeReport != null && !activeReport.isEmpty()) {
-          Global.inputString(Localized.dictionary().name(), null, new StringCallback() {
+          InputText cap = new InputText();
+          cap.setText(activeReport.getCaption());
+          InputBoolean global = new InputBoolean(Localized.dictionary().mailPublic());
+          global.setChecked(activeReport.isGlobal());
+
+          Vertical flow = new Vertical();
+          flow.add(cap);
+          flow.add(global);
+
+          Global.inputWidget(Localized.dictionary().name(), flow, new InputCallback() {
             @Override
-            public void onSuccess(String value) {
-              final ReportInfo rep = new ReportInfo(value);
+            public String getErrorMessage() {
+              if (cap.isEmpty()) {
+                cap.setFocus(true);
+                return Localized.dictionary().valueRequired();
+              }
+              return null;
+            }
+
+            @Override
+            public void onSuccess() {
+              ReportInfo rep = new ReportInfo(cap.getValue());
               rep.deserialize(activeReport.serialize());
+              rep.setGlobal(global.isChecked());
 
               for (ReportInfo reportInfo : reports) {
                 if (Objects.equals(rep, reportInfo)) {
@@ -273,13 +297,13 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
               }
               if (reports.contains(rep)) {
                 Global.confirm(Localized.dictionary().reports(), Icon.QUESTION,
-                    Arrays.asList(Localized.dictionary().valueExists(value),
+                    Arrays.asList(Localized.dictionary().valueExists(cap.getValue()),
                         Localized.dictionary().actionChange()), () -> saveReport(rep));
               } else {
                 saveReport(rep);
               }
             }
-          }, null, activeReport.getCaption());
+          });
         }
         return false;
 
@@ -421,11 +445,15 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       HtmlTable ft = new HtmlTable(STYLE_REPORT);
       int r = 0;
 
-      for (final ReportInfo rep : reports) {
+      for (ReportInfo rep : reports) {
         if (Objects.equals(rep, activeReport)) {
+          rep.setGlobal(activeReport.isGlobal());
           ft.getRowFormatter().addStyleName(r, STYLE_REPORT_ACTIVE);
         } else {
           ft.getRowFormatter().addStyleName(r, STYLE_REPORT_NORMAL);
+        }
+        if (rep.isGlobal()) {
+          ft.getRowFormatter().addStyleName(r, STYLE_REPORT_GLOBAL);
         }
         Label name = new Label(rep.getCaption());
         name.addClickHandler(event -> {
@@ -1233,16 +1261,19 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     }
   }
 
-  private void saveReport(final ReportInfo rep) {
+  private void saveReport(ReportInfo rep) {
     if (DataUtils.isId(rep.getId())) {
       Queries.update(VIEW_REPORT_SETTINGS, rep.getId(), COL_RS_PARAMETERS,
           TextValue.of(rep.serialize()));
 
+      if (rep.isGlobal()) {
+        Queries.update(VIEW_REPORT_SETTINGS, rep.getId(), COL_RS_USER, LongValue.getNullValue());
+      }
       activateReport(rep);
     } else {
       Queries.insert(VIEW_REPORT_SETTINGS, Data.getColumns(VIEW_REPORT_SETTINGS,
           Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_PARAMETERS)),
-          Arrays.asList(BeeUtils.toString(BeeKeeper.getUser().getUserId()),
+          Arrays.asList(rep.isGlobal() ? null : BeeUtils.toString(BeeKeeper.getUser().getUserId()),
               getReport().getReportName(), rep.serialize()), null,
           new RowCallback() {
             @Override

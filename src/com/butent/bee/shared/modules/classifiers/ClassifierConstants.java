@@ -60,6 +60,10 @@ public final class ClassifierConstants {
 
   public static final String TBL_DISCOUNTS = "Discounts";
 
+  public static final String TBL_CHART_OF_ACCOUNTS = "ChartOfAccounts";
+
+  public static final String TBL_LOSS_REASONS = "LossReasons";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
@@ -101,7 +105,9 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_OBJECTS = "CompanyObjects";
 
   public static final String VIEW_HOLIDAYS = "Holidays";
+
   public static final String VIEW_CHART_OF_ACCOUNTS = "ChartOfAccounts";
+  public static final String VIEW_JOURNALS = "Journals";
 
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
@@ -109,7 +115,9 @@ public final class ClassifierConstants {
   public static final String GRID_COMPANY_USERS = "CompanyUsers";
 
   public static final String GRID_ITEMS = "Items";
+
   public static final String GRID_CHART_OF_ACCOUNTS = "ChartOfAccounts";
+  public static final String GRID_JOURNALS = "Journals";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
@@ -196,10 +204,20 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_LINK = "Link";
   public static final String COL_ITEM_NOT_MANUFACTURED = "NotManufactured";
   public static final String COL_ITEM_REMAINDER_ID = "Id";
+  public static final String COL_ITEM_VAT = "Vat";
+  public static final String COL_ITEM_VAT_PERCENT = "VatPercent";
+  public static final String COL_ITEM_DEFAULT_QUANTITY = "DefaultQuantity";
+  public static final String COL_ITEM_BRUTTO = "Brutto";
+  public static final String COL_ITEM_NETTO = "Netto";
+  public static final String COL_ITEM_VOLUME = "Volume";
+  public static final String COL_ITEM_FACTOR = "Factor";
+  public static final String COL_ITEM_COUNTRY_OF_ORIGIN = "CountryOfOrigin";
+  public static final String COL_ITEM_ADDITIONAL_UNIT = "AdditionalUnit";
   public static final String COL_ITEM_DESCRIPTION = "Description";
   public static final String COL_ITEM_NOT_INCLUDED = "NotIncluded";
   public static final String COL_ITEM_MIN_QUANTITY = "MinQuantity";
   public static final String COL_ITEM_KPN_CODE = "KPNCode";
+
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
@@ -293,6 +311,13 @@ public final class ClassifierConstants {
   public static final String COL_DISCOUNT_CURRENCY = "Currency";
 
   public static final String COL_ACCOUNT_CODE = "AccountCode";
+  public static final String COL_ACCOUNT_NAME = "AccountName";
+  public static final String COL_JOURNAL_CODE = "JournalCode";
+
+  public static final String COL_LOSS_REASON_NAME = "ReasonName";
+  public static final String COL_LOSS_REASON_TEMPLATE = "Template";
+  public static final String COL_LOSS_REASON = "LossReason";
+  public static final String COL_LOSS_NOTES = "LossNotes";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

@@ -742,6 +742,8 @@ public class ScreenImpl implements Screen {
     return userPanel.asWidget();
   }
 
+
+
   protected Notification getNotification() {
     return notification;
   }

@@ -12,9 +12,10 @@
     <DataColumn name="Initial" visible="true" />
     <DataColumn name="Finite" visible="true" />
     <DataColumn name="NotifyCustomer" visible="true" />
+    <DataColumn name="ShowCustomer" visible="true" />
     <DataColumn name="Message" visible="true" />
     <DataColumn name="Comment" visible="true" />
-    <RelColumn name="Item" renderColumns="ItemName" filter="(IsService)"/>
+    <RelColumn name="Item" renderColumns="ItemName" filter="(IsService)" visible="true"/>
     <DataColumn name="Term" visible="true" />
     <DataColumn name="Warranty" visible="true" />
     <DataColumn name="DaysActive" visible="true" />

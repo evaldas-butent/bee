@@ -23,6 +23,7 @@
     <SimpleColumn name="Message" />
     <SimpleColumn name="Assessment" />
     <SimpleColumn name="Project" />
+    <SimpleColumn name="ServiceMaintenance" />
     <SimpleColumn name="Item" />
  </Columns>
 </View>

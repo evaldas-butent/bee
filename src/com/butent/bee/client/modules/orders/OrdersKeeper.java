@@ -13,6 +13,8 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.function.Consumer;
+
 /**
  * Client-side projects module handler.
  */
@@ -35,9 +37,6 @@ public final class OrdersKeeper {
     FormFactory.registerFormInterceptor(COL_ORDER, new OrderForm());
     FormFactory.registerFormInterceptor("OrderInvoice", new OrderInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_NEW_ORDER_INVOICE, new NewOrderInvoiceForm());
-
-    FormFactory.registerFormInterceptor(TBL_CONF_PRICELIST, new ConfPricelistForm());
-    FormFactory.registerFormInterceptor(FORM_CONF_OPTION, new ConfOptionForm());
     FormFactory.registerFormInterceptor(FORM_ORD_EC_REGISTRATION, new OrdEcRegistrationForm());
 
     GridFactory.registerGridInterceptor(VIEW_ORDER_SALES, new OrderInvoiceBuilder());
@@ -48,9 +47,12 @@ public final class OrdersKeeper {
 
     SelectorEvent.register(new OrdersSelectorHandler());
 
-    Global.getParameter(PRM_NOTIFY_ABOUT_DEBTS, input -> {
-      if (BeeUtils.toBoolean(input)) {
-        OrdersObserver.register();
+    Global.getParameter(PRM_NOTIFY_ABOUT_DEBTS, new Consumer<String>() {
+      @Override
+      public void accept(String input) {
+        if (BeeUtils.toBoolean(input)) {
+          OrdersObserver.register();
+        }
       }
     });
   }

@@ -35,8 +35,8 @@ abstract class ProductSupportInterceptor extends AbstractFormInterceptor {
     if (isProductRequired(getActiveRow())
         && Data.isNull(getViewName(), getActiveRow(), COL_PRODUCT)) {
 
-      notifier.accept(BeeUtils.joinWords(Localized.dictionary().crmTaskProduct(),
-          Localized.dictionary().valueRequired()));
+      notifier.accept(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().crmTaskProduct()));
 
       return true;
     }
