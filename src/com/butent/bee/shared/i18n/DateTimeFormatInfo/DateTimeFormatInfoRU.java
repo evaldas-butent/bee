@@ -10,7 +10,7 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
   private DateTimeFormatInfoRU() {
   }
 
-  public static DateTimeFormatInfoRU getInstance() {
+  public static DateTimeFormatInfo getInstance() {
     return instance;
   }
 

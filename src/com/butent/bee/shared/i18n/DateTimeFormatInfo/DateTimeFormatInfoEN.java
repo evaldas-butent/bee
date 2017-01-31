@@ -10,7 +10,7 @@ public final class DateTimeFormatInfoEN implements DateTimeFormatInfo {
   private DateTimeFormatInfoEN() {
   }
 
-  public static DateTimeFormatInfoEN getInstance() {
+  public static DateTimeFormatInfo getInstance() {
     return instance;
   }
 
@@ -60,12 +60,12 @@ public final class DateTimeFormatInfoEN implements DateTimeFormatInfo {
 
   @Override
   public String formatMonthAbbrevDay() {
-    return "MMM d";
+    return "d MMM";
   }
 
   @Override
   public String formatMonthFullDay() {
-    return "MMMM d";
+    return "d MMMM";
   }
 
   @Override
