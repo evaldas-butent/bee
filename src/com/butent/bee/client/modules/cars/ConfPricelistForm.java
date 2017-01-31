@@ -510,7 +510,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       img.setVisible(fileInfo != null);
 
       if (img.isVisible()) {
-        FileUtils.uploadFile(fileInfo, fileId -> img.setUrl(FileUtils.getUrl(fileId)));
+        FileUtils.commitFile(fileInfo, fileId -> img.setUrl(FileUtils.getUrl(fileId)));
       } else {
         img.setUrl("");
       }
@@ -537,6 +537,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       public void onSuccess() {
         String url = img.getUrl();
         infoConsumer.accept(ConfInfo.of(BeeUtils.isNonNegativeInt(inputPrice.getValue())
+            || Objects.equals(inputPrice.getValue(), Configuration.DEFAULT_PRICE)
             ? inputPrice.getValue() : null, newDescription.get()).setCriteria(newCriteria)
             .setPhoto(BeeUtils.toLongOrNull(url.substring(url.lastIndexOf("/") + 1))));
       }
