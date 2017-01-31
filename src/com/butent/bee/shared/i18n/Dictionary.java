@@ -6133,6 +6133,8 @@ public interface Dictionary {
 
   default String trSelfServiceCommandHistory() {return g("trSelfServiceCommandHistory");}
 
+  default String trSelfServiceCommandNewOrder() {return g("trSelfServiceCommandNewOrder");}
+
   default String trSelfServiceCommandNewRequest() {return g("trSelfServiceCommandNewRequest");}
 
   default String trSelfServiceCommandRequests() {return g("trSelfServiceCommandRequests");}
