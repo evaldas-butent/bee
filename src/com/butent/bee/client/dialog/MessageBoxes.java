@@ -2,8 +2,6 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.IndexedPanel;
@@ -14,8 +12,6 @@ import com.google.web.bindery.event.shared.Event;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.Binder;
-import com.butent.bee.client.event.logical.CloseEvent;
-import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
@@ -49,12 +45,15 @@ import java.util.List;
  * Implements a message box user interface component, sending text messages to the user.
  */
 
-public class MessageBoxes {
+public final class MessageBoxes {
 
   public static final String STYLE_MESSAGE_BOX = BeeConst.CSS_CLASS_PREFIX + "MessageBox";
+
   public static final String STYLE_MESSAGE_BOX_DECIDE = STYLE_MESSAGE_BOX + "-decide";
   public static final String STYLE_MESSAGE_BOX_CONFIRM = STYLE_MESSAGE_BOX + "-confirm";
   public static final String STYLE_MESSAGE_BOX_DELETE = STYLE_MESSAGE_BOX + "-delete";
+  public static final String STYLE_MESSAGE_BOX_INFO = STYLE_MESSAGE_BOX + "-info";
+  public static final String STYLE_MESSAGE_BOX_ERROR = STYLE_MESSAGE_BOX + "-error";
 
   private static final BeeLogger logger = LogUtils.getLogger(MessageBoxes.class);
 
@@ -85,7 +84,7 @@ public class MessageBoxes {
   private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
   private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
 
-  public void choice(String caption, String prompt, List<String> options,
+  public static void choice(String caption, String prompt, List<String> options,
       final ChoiceCallback callback, final int defaultValue, final int timeout,
       String cancelHtml, WidgetInitializer initializer) {
 
@@ -123,8 +122,8 @@ public class MessageBoxes {
     final TabBar group = new TabBar(STYLE_CHOICE_GROUP,
         vertical ? Orientation.VERTICAL : Orientation.HORIZONTAL);
 
-    for (int i = 0; i < size; i++) {
-      Widget widget = UiHelper.initialize(new Button(options.get(i)), initializer,
+    for (String option : options) {
+      Widget widget = UiHelper.initialize(new Button(option), initializer,
           DialogConstants.WIDGET_COMMAND_ITEM);
       group.addItem(widget);
     }
@@ -151,49 +150,40 @@ public class MessageBoxes {
 
     final Holder<Integer> selectedIndex = Holder.absent();
 
-    group.addSelectionHandler(new SelectionHandler<Integer>() {
-      @Override
-      public void onSelection(SelectionEvent<Integer> event) {
-        selectedIndex.set(event.getSelectedItem());
-        dialog.close();
-      }
+    group.addSelectionHandler(event -> {
+      selectedIndex.set(event.getSelectedItem());
+      dialog.close();
     });
 
     dialog.setHideOnEscape(true);
 
-    dialog.addOpenHandler(new OpenEvent.Handler() {
-      @Override
-      public void onOpen(OpenEvent event) {
-        int focusIndex;
+    dialog.addOpenHandler(event -> {
+      int focusIndex;
 
-        if (group.isIndex(defaultValue)) {
-          group.getTabWidget(defaultValue).addStyleName(STYLE_CHOICE_DEFAULT);
-          group.selectTab(defaultValue, false);
-          focusIndex = defaultValue;
-        } else if (cancelIndex.isNotNull()) {
-          focusIndex = cancelIndex.get();
-        } else {
-          focusIndex = 0;
-        }
-
-        group.focusTab(focusIndex);
+      if (group.isIndex(defaultValue)) {
+        group.getTabWidget(defaultValue).addStyleName(STYLE_CHOICE_DEFAULT);
+        group.selectTab(defaultValue, false);
+        focusIndex = defaultValue;
+      } else if (cancelIndex.isNotNull()) {
+        focusIndex = cancelIndex.get();
+      } else {
+        focusIndex = 0;
       }
+
+      group.focusTab(focusIndex);
     });
 
-    dialog.addCloseHandler(new CloseEvent.Handler() {
-      @Override
-      public void onClose(CloseEvent event) {
-        if (timer != null) {
-          timer.cancel();
-        }
+    dialog.addCloseHandler(event -> {
+      if (timer != null) {
+        timer.cancel();
+      }
 
-        if (selectedIndex.isNotNull() && !cancelIndex.contains(selectedIndex.get())) {
-          callback.onSuccess(selectedIndex.get());
-        } else if (State.EXPIRED.equals(state.get())) {
-          callback.onTimeout();
-        } else {
-          callback.onCancel();
-        }
+      if (selectedIndex.isNotNull() && !cancelIndex.contains(selectedIndex.get())) {
+        callback.onSuccess(selectedIndex.get());
+      } else if (State.EXPIRED.equals(state.get())) {
+        callback.onTimeout();
+      } else {
+        callback.onCancel();
       }
     });
 
@@ -207,7 +197,7 @@ public class MessageBoxes {
     }
   }
 
-  public void confirm(String caption, Icon icon, List<String> messages,
+  public static void confirm(String caption, Icon icon, List<String> messages,
       String optionYes, String optionNo, final ConfirmationCallback callback,
       String dialogStyle, String messageStyle, String buttonStyle, Element target) {
 
@@ -241,7 +231,7 @@ public class MessageBoxes {
         dialogStyle, messageStyle, buttonStyle, target, null);
   }
 
-  public void decide(String caption, List<String> messages, final DecisionCallback callback,
+  public static void decide(String caption, List<String> messages, final DecisionCallback callback,
       int defaultValue, String dialogStyle, String messageStyle, String buttonStyle,
       Element target) {
     Assert.notEmpty(messages);
@@ -280,10 +270,10 @@ public class MessageBoxes {
 
     display(caption, Icon.QUESTION, messages, options, defaultValue, choice, BeeConst.UNDEF,
         BeeUtils.notEmpty(dialogStyle, STYLE_MESSAGE_BOX_DECIDE), messageStyle, buttonStyle,
-            target, null);
+        target, null);
   }
 
-  public void display(String caption, Icon icon, List<String> messages, List<String> options,
+  public static void display(String caption, Icon icon, List<String> messages, List<String> options,
       final int defaultValue, final ChoiceCallback callback, final int timeout,
       String dialogStyle, String messageStyle, String buttonStyle,
       Element target, WidgetInitializer initializer) {
@@ -334,7 +324,7 @@ public class MessageBoxes {
               messageWidget.addStyleName(messageStyle);
             }
             messagesTable.setWidgetAndStyle(msgRow++, 0, messageWidget,
-                    STYLE_MESSAGE_BOX_MESSAGE_ITEM);
+                STYLE_MESSAGE_BOX_MESSAGE_ITEM);
           }
         }
       }
@@ -418,13 +408,13 @@ public class MessageBoxes {
     }
   }
 
-  public boolean nativeConfirm(String... lines) {
+  public static boolean nativeConfirm(String... lines) {
     Assert.notNull(lines);
     Assert.parameterCount(lines.length, 1);
     return Window.confirm(BeeUtils.buildLines(lines));
   }
 
-  public void pickStar(int starCount, Integer defaultValue, Element target,
+  public static void pickStar(int starCount, Integer defaultValue, Element target,
       final ChoiceCallback callback) {
 
     Assert.notNull(callback);
@@ -478,7 +468,7 @@ public class MessageBoxes {
     }
   }
 
-  public void showError(String caption, List<String> messages, String dialogStyle,
+  public static void showError(String caption, List<String> messages, String dialogStyle,
       String closeHtml) {
 
     List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
@@ -488,7 +478,7 @@ public class MessageBoxes {
         null, null, null);
   }
 
-  public void showInfo(String caption, List<String> messages, String dialogStyle,
+  public static void showInfo(String caption, List<String> messages, String dialogStyle,
       String closeHtml) {
 
     List<String> options = Lists.newArrayList(BeeUtils.notEmpty(closeHtml,
@@ -498,7 +488,7 @@ public class MessageBoxes {
         null, null, null, null);
   }
 
-  public void showTable(String caption, IsTable<?, ?> table, String... styles) {
+  public static void showTable(String caption, IsTable<?, ?> table, String... styles) {
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -512,16 +502,9 @@ public class MessageBoxes {
 
     HtmlTable grid = new HtmlTable(BeeUtils.joinWords(Arrays.asList(styles)));
     grid.addStyleName(STYLE_TABLE);
+    Simple container = new Simple(grid);
+    container.addStyleName(STYLE_TABLE_CONTAINER);
     int index = 0;
-
-    if (!BeeUtils.isEmpty(caption)) {
-      grid.setHtml(index, 0, caption.trim());
-      grid.alignCenter(index, 0);
-      if (c > 1) {
-        grid.getCellFormatter().setColSpan(index, 0, c);
-      }
-      index++;
-    }
 
     for (int j = 0; j < c; j++) {
       grid.setHtml(index, j, table.getColumnLabel(j));
@@ -543,28 +526,19 @@ public class MessageBoxes {
           (index % 2 == 0) ? CellGrid.STYLE_EVEN_ROW : CellGrid.STYLE_ODD_ROW);
       index++;
     }
+    if (BeeUtils.isEmpty(caption)) {
+      CloseButton close = new CloseButton(Localized.dictionary().ok());
+      grid.setWidget(index, 0, close);
+      grid.alignCenter(index, 0);
 
-    CloseButton close = new CloseButton(Localized.dictionary().ok());
-    grid.setWidget(index, 0, close);
-    grid.alignCenter(index, 0);
-    if (c > 1) {
-      grid.getCellFormatter().setColSpan(index, 0, c);
+      if (c > 1) {
+        grid.getCellFormatter().setColSpan(index, 0, c);
+      }
     }
-
-    Simple container = new Simple(grid);
-    container.addStyleName(STYLE_TABLE_CONTAINER);
-
-    Popup popup = new Popup(OutsideClick.CLOSE);
-    popup.setAnimationEnabled(true);
-    popup.setHideOnEscape(true);
-
-    popup.setWidget(container);
-
-    popup.center();
-    close.setFocus(true);
+    showWidget(caption, container, null);
   }
 
-  public void showWidget(String caption, Widget widget, Element target) {
+  public static Popup showWidget(String caption, Widget widget, Element target) {
     Assert.notNull(widget);
 
     Popup popup;
@@ -581,6 +555,8 @@ public class MessageBoxes {
 
     popup.focusOnOpen(widget);
     popup.showRelativeTo(target);
+
+    return popup;
   }
 
   private static void rotateFocus(Event<?> event, IndexedPanel panel, boolean forward) {
@@ -603,5 +579,8 @@ public class MessageBoxes {
     if (newIndex >= 0 && newIndex != oldIndex) {
       UiHelper.focus(panel.getWidget(newIndex));
     }
+  }
+
+  private MessageBoxes() {
   }
 }

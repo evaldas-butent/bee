@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+<View xmlns="http://www.butent.com/view"
 
       name="AssessmentForwarders" source="AssessmentForwarders" caption="=carriers"
-    >
+>
   <Columns>
     <SimpleColumn name="Assessment" />
 
     <SimpleColumn name="CargoTrip" />
     <SimpleJoin name="CargoTrip" joinType="INNER">
       <SimpleColumn name="Cargo" />
-
-      <SimpleColumn name="CargoHandling" />
-      <SimpleJoin name="CargoHandling" joinType="LEFT">
-        <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
-      </SimpleJoin>
 
       <SimpleJoin joinType="LEFT" name="Trip">
         <SimpleColumn name="Expedition" editable="true" />

@@ -2,8 +2,6 @@ package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Node;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONNumber;
@@ -39,8 +37,6 @@ import com.butent.bee.client.widget.CustomHasHtml;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
@@ -65,6 +61,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler,
     HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler,
@@ -447,12 +445,9 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       dropDown.setTitle(Localized.dictionary().tabControl());
       add(dropDown);
 
-      dropDown.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          event.stopPropagation();
-          Workspace.this.showActions(TabWidget.this.getId());
-        }
+      dropDown.addClickHandler(event -> {
+        event.stopPropagation();
+        Workspace.this.showActions(TabWidget.this.getId());
       });
 
       CustomDiv label = new CustomDiv(STYLE_CAPTION);
@@ -464,12 +459,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       closeTab.setTitle(Localized.dictionary().actionWorkspaceCloseTab());
       add(closeTab);
 
-      closeTab.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          TabAction.CLOSE_TAB.execute(Workspace.this, getTabIndex(TabWidget.this.getId()));
-        }
-      });
+      closeTab.addClickHandler(event ->
+          TabAction.CLOSE_TAB.execute(Workspace.this, getTabIndex(TabWidget.this.getId())));
     }
 
     @Override
@@ -669,12 +660,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     newTab.setText(BeeConst.STRING_PLUS);
     newTab.setTitle(Localized.dictionary().newTab());
 
-    newTab.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        insertEmptyPanel(getPageCount());
-      }
-    });
+    newTab.addClickHandler(event -> insertEmptyPanel(getPageCount()));
 
     getTabBar().add(newTab);
   }
@@ -1136,7 +1122,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     TabWidget tab = new TabWidget(Localized.dictionary().newTab());
     maybeSetHeight(tab);
 
-    insert(panel, tab, null, null, before);
+    insert(panel, tab, null, null, null, before);
 
     selectPage(before, SelectionOrigin.INSERT);
     return panel;
@@ -1216,12 +1202,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     if (!contentSuppliers.isEmpty()) {
-      ContentRestorer restorer = new ContentRestorer(contentSuppliers, new Consumer<Boolean>() {
-        @Override
-        public void accept(Boolean b) {
-          callback.accept(b, activePage.get());
-        }
-      });
+      ContentRestorer restorer = new ContentRestorer(contentSuppliers,
+          b -> callback.accept(b, activePage.get()));
 
       restorer.start();
 
@@ -1268,12 +1250,9 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       if (action.isEnabled(this, index)) {
         actionWidget.addStyleName(STYLE_ACTION_ENABLED);
 
-        actionWidget.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            popup.close();
-            action.execute(Workspace.this, index);
-          }
+        actionWidget.addClickHandler(event -> {
+          popup.close();
+          action.execute(Workspace.this, index);
         });
 
       } else {

@@ -16,7 +16,6 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.HtmlList;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
@@ -133,13 +132,10 @@ public class ItemDetails extends Flow {
           final List<EcItem> items = EcKeeper.getResponseItems(response);
 
           if (!BeeUtils.isEmpty(items)) {
-            EcKeeper.ensureClientStockLabels(new Consumer<Boolean>() {
-              @Override
-              public void accept(Boolean input) {
-                ItemList itemList = new ItemList(items);
-                container.clear();
-                container.add(itemList);
-              }
+            EcKeeper.ensureClientStockLabels(input -> {
+              ItemList itemList = new ItemList(items);
+              container.clear();
+              container.add(itemList);
             });
           }
         }
@@ -276,21 +272,18 @@ public class ItemDetails extends Flow {
 
     final HtmlTable table = new HtmlTable(stylePrefix + STYLE_TABLE);
 
-    EcKeeper.ensureWarehouses(new Consumer<Boolean>() {
-      @Override
-      public void accept(Boolean input) {
-        int row = 0;
-        for (ArticleSupplier as : item.getSuppliers()) {
-          for (String warehouse : as.getRemainders().keySet()) {
-            Label warehouseWidget = new Label(EcKeeper.getWarehouseLabel(warehouse));
-            table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
+    EcKeeper.ensureWarehouses(input -> {
+      int row = 0;
+      for (ArticleSupplier as : item.getSuppliers()) {
+        for (String warehouse : as.getRemainders().keySet()) {
+          Label warehouseWidget = new Label(EcKeeper.getWarehouseLabel(warehouse));
+          table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
 
-            double remainder = BeeUtils.toDouble(as.getRemainders().get(warehouse));
-            Widget stockWidget = EcWidgetFactory.createStockWidget(remainder);
-            table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
+          double remainder = BeeUtils.toDouble(as.getRemainders().get(warehouse));
+          Widget stockWidget = EcWidgetFactory.createStockWidget(remainder);
+          table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
 
-            row++;
-          }
+          row++;
         }
       }
     });
@@ -369,33 +362,33 @@ public class ItemDetails extends Flow {
       }
 
       summary = BeeUtils.toString(count);
-      widget.add(remainders, Localized.dictionary().ecItemDetailsRemainders(), summary, null);
+      widget.add(remainders, Localized.dictionary().ecItemDetailsRemainders(), summary, null, null);
     }
 
     Widget oeNumbers = renderOeNumbers(info);
     if (oeNumbers != null) {
       summary = BeeUtils.toString(info.getOeNumbers().size());
-      widget.add(oeNumbers, Localized.dictionary().ecItemDetailsOeNumbers(), summary, null);
+      widget.add(oeNumbers, Localized.dictionary().ecItemDetailsOeNumbers(), summary, null, null);
     }
 
     if (EcKeeper.showItemSuppliers()) {
       Widget suppliers = renderSuppliers(item);
       if (suppliers != null) {
         summary = BeeUtils.toString(item.getSuppliers().size());
-        widget.add(suppliers, Localized.dictionary().ecItemDetailsSuppliers(), summary, null);
+        widget.add(suppliers, Localized.dictionary().ecItemDetailsSuppliers(), summary, null, null);
       }
     }
 
     Widget carTypes = renderCarTypes(info);
     if (carTypes != null) {
       summary = BeeUtils.toString(info.getCarTypes().size());
-      widget.add(carTypes, Localized.dictionary().ecItemDetailsCarTypes(), summary, null);
+      widget.add(carTypes, Localized.dictionary().ecItemDetailsCarTypes(), summary, null, null);
     }
 
     Widget analogs = renderAnalogs(item);
     if (analogs != null) {
       summary = BeeUtils.toString(item.getAnalogCount());
-      widget.add(analogs, Localized.dictionary().ecItemAnalogs(), summary, null);
+      widget.add(analogs, Localized.dictionary().ecItemAnalogs(), summary, null, null);
     }
 
     return widget;

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY inp2x "max-width: 480px; min-width: 480px;">
+    <!ENTITY pricescale "2">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="MaintenanceStateComment" viewName="MaintenanceComments" caption="=svcStateComment" width="650" height="410">
+
+  <FlowPanel style="margin:5px; overflow:scroll;">
+    <Table kind="controls" cellStyle="vertical-align: top">
+      <col index="0" kind="label" />
+      <row>
+        <Label text="=svcServiceState" />
+        <TextLabel source="EventNote" class="bee-output" />
+      </row>
+      <row>
+        <Label for="Comment" class="bee-required"/>
+        <cell colSpan="3">
+          <InputArea source="Comment" required="true" style="&inp2x; height: 120px; max-height: 150px;" />
+        </cell>
+      </row>
+      <row>
+        <text/>
+        <CheckBox source="ShowCustomer" summarize="true" style="width:"/>
+      </row>
+      <row>
+        <text/>
+        <CheckBox source="CustomerSent" summarize="true" />
+      </row>
+      <row>
+        <Label name="TermLabel" for="Term" />
+        <InputDateTime source="Term" />
+      </row>
+      <row>
+        <Label name="ItemLabel" for="Item" />
+        <DataSelector source="Item" filter="(IsService)"/>
+
+        <InputDecimal source="Price" currencySource="Currency" scale="&pricescale;"
+                      summarize="true" />
+        <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"/>
+      </row>
+      <row>
+        <Label name="WarrantyLabel" text="=svcWarrantyValidTo" class="bee-required"/>
+        <InputDateTime name="Warranty" text="=svcWarrantyValidTo"/>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

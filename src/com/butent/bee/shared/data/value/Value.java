@@ -141,12 +141,7 @@ public abstract class Value implements Comparable<Value>, BeeSerializable {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == null || this.getClass() != o.getClass()) {
-      return false;
-    }
-    return this.compareTo((Value) o) == 0;
-  }
+  public abstract boolean equals(Object o);
 
   public abstract Boolean getBoolean();
 

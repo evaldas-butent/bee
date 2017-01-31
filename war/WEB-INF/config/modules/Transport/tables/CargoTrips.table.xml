@@ -8,10 +8,8 @@
     <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" label="=cargo" />
     <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" label="=trip"/>
 
-    <Relation name="CargoHandling" unique="true" relation="CargoHandling" cascade="SET_NULL" editable="true" label="=cargoHandlingPlaces" />
-
-    <Numeric name="TripPercent" precision="12" scale="2" label="=freight" />
-    <Numeric name="CargoPercent" precision="12" scale="2" label="=cost" />
+    <Numeric name="TripPercent" precision="8" scale="5" label="=freight" />
+    <Numeric name="CargoPercent" precision="8" scale="5" label="=cost" />
     <Numeric name="Ordinal" precision="2" scale="0" label="=ordinal" />
     <Text name="Message" label="=message" />
     <Relation name="Trailer" relation="Vehicles" label="=trailer" />

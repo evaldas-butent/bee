@@ -97,6 +97,11 @@ public class TimeOfDayValue extends Value {
   }
 
   @Override
+  public boolean equals(Object o) {
+    return o instanceof TimeOfDayValue && compareTo((TimeOfDayValue) o) == BeeConst.COMPARE_EQUAL;
+  }
+
+  @Override
   public Boolean getBoolean() {
     if (isNull()) {
       return null;

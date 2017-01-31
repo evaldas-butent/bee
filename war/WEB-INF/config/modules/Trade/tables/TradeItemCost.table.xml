@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="TradeItemCost"
+       idName="TradeItemCostID"
+>
+  <Fields>
+    <Relation name="TradeDocumentItem" relation="TradeDocumentItems" notNull="true" unique="true"
+              cascade="DELETE" label="=trdDocumentItem" />
+
+    <Numeric name="Cost" precision="18" scale="8" notNull="true" label="=cost" />
+    <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
+              label="=currency" />
+  </Fields>
+</Table>

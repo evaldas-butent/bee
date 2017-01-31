@@ -8,10 +8,12 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -104,6 +106,19 @@ public class MaintenanceGrid extends AbstractGridInterceptor implements HandlesD
         getGridPresenter().refresh(false, false);
       }
     }
+  }
+
+  @Override
+  public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
+    FormView parentForm = ViewHelper.getForm(gridView.getViewPresenter().getMainView());
+
+    if (parentForm != null && BeeUtils.same(parentForm.getViewName(), TBL_SERVICE_MAINTENANCE)) {
+      event.getColumns().add(Data.getColumn(getViewName(), COL_SERVICE_OBJECT));
+      event.getValues().add(parentForm.getActiveRow().getString(
+          Data.getColumnIndex(parentForm.getViewName(), COL_SERVICE_OBJECT)));
+    }
+
+    super.onReadyForInsert(gridView, event);
   }
 
   @Override

@@ -32,5 +32,6 @@
     <Relation name="Company" relation="Companies" label="=company" />
     <Relation name="CompanyPerson" relation="CompanyPersons" label="=contact" />
     <Relation name="Vehicle" relation="Vehicles" label="=calCar" />
+    <Relation name="Project" relation="Projects" label="=project" />
   </Fields>
 </Table>

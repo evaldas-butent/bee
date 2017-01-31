@@ -16,6 +16,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
+import com.butent.bee.client.event.logical.MutationEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
@@ -27,12 +28,11 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.Evaluator;
-import com.butent.bee.client.view.add.AddEndEvent;
-import com.butent.bee.client.view.add.AddStartEvent;
-import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.edit.HasEditState;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ExtWidget;
+import com.butent.bee.client.view.grid.GridFormEvent;
 import com.butent.bee.client.view.grid.GridUtils;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -62,13 +62,16 @@ import java.util.Set;
  */
 
 public class GridContainerImpl extends Split implements GridContainerView,
-    HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
-    EditFormEvent.Handler, HasEditState, RenderingEvent.Handler {
+    HasSearch, ActiveRowChangeEvent.Handler, GridFormEvent.Handler, HasEditState,
+    RenderingEvent.Handler, MutationEvent.Handler {
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridContainer";
 
   private static final String STYLE_HAS_DATA = STYLE_NAME + "-has-data";
   private static final String STYLE_NO_DATA = STYLE_NAME + "-no-data";
+
+  private static final String STYLE_HAS_ACTIVE_ROW = STYLE_NAME + "-has-active-row";
+  private static final String STYLE_NO_ACTIVE_ROW = STYLE_NAME + "-no-active-row";
 
   private static final String STYLE_SCROLLABLE = STYLE_NAME + "-scrollable";
 
@@ -106,6 +109,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
     super(-1);
 
     addStyleName(STYLE_NAME);
+    addStyleName(STYLE_NO_ACTIVE_ROW);
 
     if (!BeeUtils.isEmpty(gridName)) {
       addStyleName(BeeConst.CSS_CLASS_PREFIX + "grid-" + gridName.trim());
@@ -126,17 +130,23 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
   @Override
   public void bind() {
-    if (hasFooter()) {
-      getGridView().getGrid().addSelectionCountChangeHandler(getFooter());
+    bindDisplay(getGridView().getGrid());
+
+    getGridView().addGridFormHandler(this);
+  }
+
+  @Override
+  public void bindDisplay(CellGrid display) {
+    display.addActiveRowChangeHandler(this);
+    display.addRenderingHandler(this);
+
+    if (getRowMessage() != null && hasHeader()) {
+      display.addMutationHandler(this);
     }
 
-    getGridView().getGrid().addActiveRowChangeHandler(this);
-    getGridView().getGrid().addRenderingHandler(this);
-
-    getGridView().addAddStartHandler(this);
-    getGridView().addAddEndHandler(this);
-
-    getGridView().addEditFormHandler(this);
+    if (hasFooter()) {
+      display.addSelectionCountChangeHandler(getFooter());
+    }
   }
 
   @Override
@@ -305,6 +315,16 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
   @Override
   public String getCaption() {
+    if (isEditing()) {
+      FormView activeForm = getGridView().getActiveForm();
+      Presenter formPresenter = (activeForm == null) ? null : activeForm.getViewPresenter();
+      String formCaption = (formPresenter == null) ? null : formPresenter.getRowMessageOrCaption();
+
+      if (!BeeUtils.isEmpty(formCaption)) {
+        return formCaption;
+      }
+    }
+
     return hasHeader() ? getHeader().getCaption() : null;
   }
 
@@ -420,9 +440,12 @@ public class GridContainerImpl extends Split implements GridContainerView,
       return;
     }
 
-    if (getRowMessage() != null && hasHeader()) {
-      getHeader().showRowMessage(getRowMessage(), rowValue);
+    if ((rowValue == null) != (getLastRow() == null)) {
+      setStyleName(STYLE_HAS_ACTIVE_ROW, rowValue != null);
+      setStyleName(STYLE_NO_ACTIVE_ROW, rowValue == null);
     }
+
+    maybeRefreshRowMessage(rowValue);
 
     if (gridView.getGridInterceptor() != null) {
       gridView.getGridInterceptor().onActiveRowChange(event);
@@ -434,22 +457,6 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
     setLastRow(rowValue);
     setLastEnabled(rowEnabled);
-  }
-
-  @Override
-  public void onAddEnd(AddEndEvent event) {
-    if (!event.isPopup()) {
-      showChildren(true);
-    }
-    setEditing(false);
-  }
-
-  @Override
-  public void onAddStart(AddStartEvent event) {
-    setEditing(true);
-    if (!event.isPopup()) {
-      showChildren(false);
-    }
   }
 
   @Override
@@ -502,24 +509,28 @@ public class GridContainerImpl extends Split implements GridContainerView,
   }
 
   @Override
-  public void onEditForm(EditFormEvent event) {
-    if (event.isOpening()) {
-      setEditing(true);
-      if (!event.isPopup()) {
-        showChildren(false);
-      }
+  public void onGridForm(GridFormEvent event) {
+    if (event.isOpening() || event.isClosing()) {
+      setEditing(event.isOpening());
 
-    } else if (event.isClosing()) {
       if (!event.isPopup()) {
-        showChildren(true);
+        showChildren(event.isClosing());
+
+        if (!getGridView().isChild()) {
+          BeeKeeper.getScreen().onWidgetChange(this);
+        }
       }
-      setEditing(false);
     }
   }
 
   @Override
   public boolean onHistory(Place place, boolean forward) {
     return getGridView().onHistory(place, forward);
+  }
+
+  @Override
+  public void onMutation(MutationEvent event) {
+    maybeRefreshRowMessage(getGridView().getGrid().getActiveRow());
   }
 
   @Override
@@ -568,6 +579,11 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
       setStyleName(STYLE_HAS_DATA, !empty);
       setStyleName(STYLE_NO_DATA, empty);
+
+      boolean hasActiveRow = !empty && getGridView().getActiveRow() != null;
+
+      setStyleName(STYLE_HAS_ACTIVE_ROW, hasActiveRow);
+      setStyleName(STYLE_NO_ACTIVE_ROW, !hasActiveRow);
     }
   }
 
@@ -812,6 +828,12 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
   private boolean isResizeSuspended() {
     return resizeSuspended;
+  }
+
+  private void maybeRefreshRowMessage(IsRow row) {
+    if (getRowMessage() != null && hasHeader()) {
+      getHeader().showRowMessage(getRowMessage(), row);
+    }
   }
 
   private void setExtCreation(WidgetCreationCallback extCreation) {

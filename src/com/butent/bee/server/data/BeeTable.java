@@ -61,7 +61,6 @@ import java.util.Set;
  * extensions and methods for operating with the table.
  */
 
-@SuppressWarnings("hiding")
 public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslations,
     HasExtendedInfo {
 
@@ -132,7 +131,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       if (!BeeUtils.isEmpty(key)) {
         if (!EnumUtils.isRegistered(key)) {
           LogUtils.getRootLogger().severe("Table:", getOwner().getName(), "Field:", this.getName(),
-              "Enum class not registerred:", key);
+              "Enum class not registered:", key);
           key = null;
         }
       }
@@ -623,7 +622,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
                       state.isChecked() ? mask : 0)));
         }
       }
-      if (wh.isEmpty()) {
+      if (wh.isEmpty() && !state.isChecked()) {
         wh.add(SqlUtils.sqlFalse());
       }
       return wh;

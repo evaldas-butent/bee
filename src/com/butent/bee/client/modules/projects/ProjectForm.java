@@ -93,7 +93,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   private static final Set<String> AUDIT_FIELDS = Sets.newHashSet(COL_PROJECT_START_DATE,
       COL_PROJECT_END_DATE, COL_COMAPNY, COL_PROJECT_STATUS, COL_PROJECT_OWNER,
-      COL_EXPECTED_DURATION, COL_PROJECT_TIME_UNIT, COL_PROJECT_PRICE, COL_CONTRACT_PRICE);
+      COL_PROJECT_TIME_UNIT, COL_PROJECT_PRICE, COL_CONTRACT_PRICE);
 
   private static final BeeLogger logger = LogUtils.getLogger(ProjectForm.class);
 
@@ -409,6 +409,16 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
         || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
 
+      if (!Data.getDataInfo(event.getViewName()).containsColumn(COL_PROJECT)) {
+        return;
+      }
+
+      Long relProject = Data.getLong(event.getViewName(), event.getRow(), COL_PROJECT);
+
+      if (BeeUtils.unbox(relProject) != getActiveRow().getId()) {
+        return;
+      }
+
       showComputedTimes(getFormView(), getActiveRow(), true);
     }
 
@@ -431,12 +441,23 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
         || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
 
+      if (!Data.getDataInfo(event.getViewName()).containsColumn(COL_PROJECT)) {
+        return;
+      }
+
+      Long relProject = Data.getLong(event.getViewName(), event.getRow(), COL_PROJECT);
+
+
+      if (BeeUtils.unbox(relProject) != row.getId()) {
+        return;
+      }
+
       Queries.getRow(VIEW_PROJECTS, row.getId(), new RowCallback() {
 
         @Override
         public void onSuccess(BeeRow rowResult) {
           form.updateRow(rowResult, true);
-          showComputedTimes(form, form.getActiveRow(), true);
+          showComputedTimes(form, form.getActiveRow(), false);
         }
       });
     }
@@ -727,10 +748,15 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
           @Override
           public void onSuccess(BeeRow result) {
+            Long updOwner = result.getLong(form.getDataIndex(COL_PROJECT_OWNER));
+            Long oldOwner = oldRow.getLong(form.getDataIndex(COL_PROJECT_OWNER));
 
             RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
-            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PROJECTS);
-            // form.refreshBySource(column);
+
+            if (updOwner != oldOwner) {
+              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PROJECTS);
+            }
+
             Queries.getRow(VIEW_PROJECTS, result.getId(), new RowCallback() {
 
             @Override
@@ -807,7 +833,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_PROJECTS);
+    // TODO : optimise server side ?
+    DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_PROJECTS);
     super.beforeRefresh(form, row);
   }
 

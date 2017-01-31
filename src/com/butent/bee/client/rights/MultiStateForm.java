@@ -20,7 +20,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -42,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 abstract class MultiStateForm extends RightsForm {
 
@@ -129,7 +129,7 @@ abstract class MultiStateForm extends RightsForm {
   private String roleName;
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void afterCreatePresenter(Presenter presenter) {
     HeaderView header = presenter.getHeader();
 
     if (header != null && !header.hasCommands()) {
@@ -498,7 +498,7 @@ abstract class MultiStateForm extends RightsForm {
     return widget;
   }
 
-  private Widget createStateLabel(RightsState state) {
+  private static Widget createStateLabel(RightsState state) {
     Label widget = new Label(state.getCaption());
     widget.addStyleName(STYLE_STATE_LABEL);
 

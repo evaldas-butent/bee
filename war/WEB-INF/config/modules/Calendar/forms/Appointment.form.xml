@@ -65,6 +65,8 @@
         <Label for="Creator" />
         <DataSelector source="Creator" editSource="CreatorCompanyPerson"
           renderColumns="CreatorFirstName CreatorLastName" style="&inp;" />
+        <Label for="Project" />
+        <DataSelector source="Project" choiceColumns="Name" style="&inp;" />
       </row>
     </Table>
     

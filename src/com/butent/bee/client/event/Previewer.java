@@ -18,7 +18,6 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.communication.Presence;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -32,6 +31,7 @@ import com.butent.bee.shared.utils.Property;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class Previewer implements NativePreviewHandler, HasInfo {
 
@@ -184,11 +184,9 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     if (element.getId() != null && element.getId().startsWith("mce_")) {
       return true;
     }
+
     String className = DomUtils.getClassName(element);
-    if (className != null && className.startsWith("mce-")) {
-      return true;
-    }
-    return false;
+    return className != null && className.startsWith("mce-");
   }
 
   private static void onInteraction() {
@@ -242,8 +240,8 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     String type = event.getNativeEvent().getType();
 
     if (modalCount == 0 && EventUtils.EVENT_TYPE_MOUSE_DOWN.equals(type)) {
-      for (int i = 0; i < mouseDownPriorHandlers.size(); i++) {
-        mouseDownPriorHandlers.get(i).onEventPreview(event, getTargetNode(event));
+      for (PreviewHandler mouseDownPriorHandler : mouseDownPriorHandlers) {
+        mouseDownPriorHandler.onEventPreview(event, getTargetNode(event));
         if (event.isCanceled() || event.isConsumed()) {
           return;
         }

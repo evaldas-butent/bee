@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -95,7 +96,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Assert.notNull(values);
 
     if (values.isEmpty()) {
-      return null;
+      return Filter.isFalse();
     }
 
     List<Value> vals = new ArrayList<>();
@@ -333,6 +334,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     }
   }
 
+  public static Filter equalsOrIsNull(String column, Long value) {
+    if (value == null) {
+      return isNull(column);
+    } else {
+      return or(equals(column, value), isNull(column));
+    }
+  }
+
   public static Filter exclude(String column, Collection<Long> values) {
     Filter flt = any(column, values);
     return (flt == null) ? null : isNot(flt);
@@ -410,6 +419,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new IsTrueFilter();
   }
 
+  public static Filter nonNegative(String column) {
+    return or(isNull(column), isMoreEqual(column, IntegerValue.ZERO));
+  }
+
+  public static Filter nonZero(String column) {
+    return isNotEqual(column, IntegerValue.ZERO);
+  }
+
   public static Filter notEquals(String column, Enum<?> value) {
     if (value == null) {
       return notNull(column);
@@ -423,6 +440,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
       return notNull(column);
     } else {
       return compareWithValue(column, Operator.NE, new LongValue(value));
+    }
+  }
+
+  public static Filter notEquals(String column, Double value) {
+    if (value == null) {
+      return notNull(column);
+    } else {
+      return compareWithValue(column, Operator.NE, new NumberValue(value));
     }
   }
 
@@ -480,6 +505,11 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Filter flt = getFilter(clazz);
     flt.deserialize(data);
     return flt;
+  }
+
+  public static Filter startsWith(String column, String value) {
+    Assert.notEmpty(value);
+    return new ColumnValueFilter(column, Operator.STARTS, new TextValue(value));
   }
 
   private static Filter getFilter(String clazz) {
@@ -554,7 +584,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return false;
   }
 
-  protected int getColumnIndex(String colName, List<? extends IsColumn> columns) {
+  protected static int getColumnIndex(String colName, List<? extends IsColumn> columns) {
     return DataUtils.getColumnIndex(colName, columns);
   }
 

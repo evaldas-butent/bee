@@ -89,11 +89,12 @@
       <AggregateColumn aggregate="MAX" name="Outsized" />
       <AggregateColumn aggregate="MAX" name="Dangerous" />
 
-      <SimpleJoin name="CargoHandling" joinType="LEFT">
+      <ExternalJoin name="Cargo" source="CargoUnloading" joinType="LEFT">
         <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-          <AggregateColumn name="Date" alias="UnloadingDate" aggregate="MIN" />
+          <AggregateColumn name="Date" alias="UnloadingDate" aggregate="MIN"
+                           label="=taMinTermShort+=trUnloadingDateShort"/>
         </SimpleJoin>
-      </SimpleJoin>
+      </ExternalJoin>
 
       <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
         <HiddenColumn name="Sale" />

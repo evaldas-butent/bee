@@ -489,6 +489,10 @@ public class QueryServiceBean {
     return getSingleColumn(query).getDoubleColumn(0);
   }
 
+  public <E extends Enum<?>> E getEnum(IsQuery query, Class<E> clazz) {
+    return getSingleValue(query).getEnum(0, 0, clazz);
+  }
+
   public SimpleRowSet getHistogram(String viewName, Filter filter, List<String> columns,
       List<String> order) {
 
@@ -839,6 +843,10 @@ public class QueryServiceBean {
         throw new BeeRuntimeException("Query must return a ResultSet");
       }
     });
+  }
+
+  public BeeRowSet getViewDataById(String viewName, long id) {
+    return getViewData(viewName, Filter.compareId(id));
   }
 
   public int getViewSize(String viewName, Filter filter) {

@@ -13,6 +13,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -78,6 +79,14 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       return getRowSet().getDouble(rowIndex, colName);
     }
 
+    public <E extends Enum<?>> E getEnum(int colIndex, Class<E> clazz) {
+      return getRowSet().getEnum(rowIndex, colIndex, clazz);
+    }
+
+    public <E extends Enum<?>> E getEnum(String colName, Class<E> clazz) {
+      return getRowSet().getEnum(rowIndex, colName, clazz);
+    }
+
     public Integer getInt(int colIndex) {
       return getRowSet().getInt(rowIndex, colIndex);
     }
@@ -110,16 +119,20 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       return getRowSet().getValue(rowIndex, colIndex);
     }
 
-    public String[] getValues() {
-      return getRowSet().getValues(rowIndex);
-    }
-
     public String getValue(String colName) {
       return getRowSet().getValue(rowIndex, colName);
     }
 
+    public String[] getValues() {
+      return getRowSet().getValues(rowIndex);
+    }
+
     public boolean hasColumn(String colName) {
       return getRowSet().hasColumn(colName);
+    }
+
+    public boolean isTrue(String colName) {
+      return BeeUtils.isTrue(getBoolean(colName));
     }
 
     public void setValue(int colIndex, String value) {
@@ -394,6 +407,14 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
 
   public Double[] getDoubleColumn(String colName) {
     return getDoubleColumn(getColumnIndex(colName));
+  }
+
+  public <E extends Enum<?>> E getEnum(int rowIndex, int colIndex, Class<E> clazz) {
+    return EnumUtils.getEnumByIndex(clazz, getInt(rowIndex, colIndex));
+  }
+
+  public <E extends Enum<?>> E getEnum(int rowIndex, String colName, Class<E> clazz) {
+    return getEnum(rowIndex, getColumnIndex(colName), clazz);
   }
 
   public Integer getInt(int rowIndex, int colIndex) {

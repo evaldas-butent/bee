@@ -13,7 +13,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
@@ -38,6 +37,10 @@ public final class ViewHelper {
   private static final BeeLogger logger = LogUtils.getLogger(ViewHelper.class);
 
   private static final ImmutableSet<String> NO_EXCLUSIONS = ImmutableSet.of();
+
+  public static Widget asWidget(View view) {
+    return (view == null) ? null : view.asWidget();
+  }
 
   public static View getActiveView(Element target) {
     Popup popup = Popup.getActivePopup();
@@ -290,6 +293,14 @@ public final class ViewHelper {
     return null;
   }
 
+  public static HeaderView getHeader(View view) {
+    if (view != null && view.getViewPresenter() != null) {
+      return view.getViewPresenter().getHeader();
+    } else {
+      return null;
+    }
+  }
+
   public static Collection<PagerView> getPagers(HasWidgets container) {
     Assert.notNull(container);
     Collection<PagerView> pagers = new HashSet<>();
@@ -413,9 +424,7 @@ public final class ViewHelper {
       return false;
 
     } else {
-      Presenter presenter = view.getViewPresenter();
-      HeaderView header = (presenter == null) ? null : presenter.getHeader();
-
+      HeaderView header = getHeader(view);
       return header != null && header.isActionEnabled(action);
     }
   }
@@ -424,12 +433,7 @@ public final class ViewHelper {
     final FormView form = getForm(widget);
 
     if (form != null) {
-      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          form.onResize();
-        }
-      });
+      Scheduler.get().scheduleDeferred(form::onResize);
     }
   }
 

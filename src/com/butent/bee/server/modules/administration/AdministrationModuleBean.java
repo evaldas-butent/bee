@@ -58,8 +58,12 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.Menu;
+import com.butent.bee.shared.menu.MenuItem;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.SysObject;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
@@ -74,7 +78,6 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -196,6 +199,9 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_DICTIONARY_DATABASE_TO_PROPERTIES)) {
       response = dictionaryDatabaseToProperties(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_INIT_DIMENSION_NAMES)) {
+      response = initDimensionNames();
+
     } else {
       String msg = BeeUtils.joinWords("Administration service not recognized:", svc);
       logger.warning(msg);
@@ -206,7 +212,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void ejbTimeout(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
       refreshCurrencyRates();
     }
   }
@@ -225,7 +231,9 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, PRM_ERP_ADDRESS),
         BeeParameter.createText(module, PRM_ERP_LOGIN),
         BeeParameter.createText(module, PRM_ERP_PASSWORD),
-        BeeParameter.createText(module, PRM_URL));
+        BeeParameter.createText(module, PRM_URL),
+        BeeParameter.createNumber(module, Dimensions.PRM_DIMENSIONS, false,
+            Dimensions.SPACETIME / 2));
 
     params.addAll(getSqlEngineParameters());
     return params;
@@ -368,7 +376,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
             final Collator collator = Collator.getInstance(usr.getLocale());
             collator.setStrength(Collator.IDENTICAL);
 
-            Collections.sort(rowSet.getRows(), (row1, row2) -> {
+            rowSet.getRows().sort((row1, row2) -> {
               String name1 = row1.getProperty(PROP_DEPARTMENT_FULL_NAME);
               if (BeeUtils.isEmpty(name1)) {
                 name1 = row1.getString(nameIndex);
@@ -406,6 +414,48 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
           Endpoint.updateUserData(usr.getAllUserData());
         }
       }
+    });
+
+    MenuService.EXTRA_DIMENSIONS.setTransformer(input -> {
+      List<Menu> result = new ArrayList<>();
+
+      Integer count = prm.getInteger(Dimensions.PRM_DIMENSIONS);
+
+      if (input instanceof MenuItem && BeeUtils.isPositive(count)) {
+        Map<Integer, String> labels = new HashMap<>();
+
+        BeeRowSet data = qs.getViewData(Dimensions.VIEW_NAMES);
+
+        if (!DataUtils.isEmpty(data)) {
+          String language = usr.getLanguage();
+          int ordinalIndex = data.getColumnIndex(Dimensions.COL_ORDINAL);
+
+          for (BeeRow row : data) {
+            labels.put(row.getInteger(ordinalIndex),
+                DataUtils.getTranslation(data, row, Dimensions.COL_PLURAL_NAME, language));
+          }
+        }
+
+        Dictionary dictionary = usr.getDictionary();
+
+        for (int i = 1; i <= Math.min(count, Dimensions.SPACETIME); i++) {
+          String viewName = Dimensions.getViewName(i);
+
+          if (usr.isDataVisible(viewName)) {
+            String label = BeeUtils.notEmpty(labels.get(i), dictionary.dimensionNameDefault(i));
+
+            MenuItem item = (MenuItem) input.copy();
+
+            item.setName(viewName);
+            item.setLabel(BeeUtils.trim(label));
+            item.setParameters(Dimensions.menuParameter(i));
+
+            result.add(item);
+          }
+        }
+      }
+
+      return result;
     });
   }
 
@@ -1003,6 +1053,36 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
           BeeUtils.join(BeeConst.STRING_EMPTY, PRM_SQL_MESSAGES, engine), false, value));
     }
     return params;
+  }
+
+  private ResponseObject initDimensionNames() {
+    int count = BeeUtils.unbox(prm.getInteger(Dimensions.PRM_DIMENSIONS));
+    if (count <= 0) {
+      return ResponseObject.emptyResponse();
+    }
+    count = Math.min(count, Dimensions.SPACETIME);
+
+    Set<Integer> ordinals = qs.getIntSet(new SqlSelect()
+        .addFields(Dimensions.TBL_NAMES, Dimensions.COL_ORDINAL)
+        .addFrom(Dimensions.TBL_NAMES));
+
+    for (int i = 1; i <= count; i++) {
+      if (!ordinals.contains(i)) {
+        String name = Localized.dictionary().dimensionNameDefault(i);
+
+        SqlInsert insert = new SqlInsert(Dimensions.TBL_NAMES)
+            .addConstant(Dimensions.COL_ORDINAL, i)
+            .addConstant(Dimensions.COL_PLURAL_NAME, name)
+            .addConstant(Dimensions.COL_SINGULAR_NAME, name);
+
+        ResponseObject response = qs.insertDataWithResponse(insert);
+        if (response.hasErrors()) {
+          return response;
+        }
+      }
+    }
+
+    return ResponseObject.response(count);
   }
 
   private void refreshCurrencyRates() {

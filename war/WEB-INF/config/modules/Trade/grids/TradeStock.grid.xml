@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="TradeStock" viewName="TradeStock" caption="=trdStock"
-  filter="Quantity > 0" readOnly="true"
-  >
+        name="TradeStock" viewName="TradeStock" caption="=trdStock"
+        filter="Quantity > 0" readOnly="true"
+>
   <g:columns>
     <DataColumn name="PrimaryDocumentItem" visible="false" />
     <DataColumn name="PrimaryDocument" editSource="PrimaryDocument" editViewName="TradeDocuments"
@@ -13,8 +14,8 @@
     <DataColumn name="SupplierName" flexGrow="1" />
 
     <DataColumn name="TradeDocumentItem" visible="false" />
-    <DataColumn name="TradeDocument" editSource="TradeDocument" editViewName="TradeDocuments"
-                visible="false" />
+    <DataColumn name="TradeDocument" caption="=trdDocumentShort"
+                editSource="TradeDocument" editViewName="TradeDocuments" visible="false" />
     <DataColumn name="Date" />
 
     <DataColumn name="ItemName" flexGrow="2" editSource="Item" editViewName="Items"
@@ -25,5 +26,14 @@
 
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
+
+    <DataColumn name="Cost" scale="2" />
+    <DataColumn name="CurrencyName" label="=currencyShort" />
+
+    <CalcColumn name="Amount" type="decimal" scale="2" label="=amount">
+      <render>
+        <ui:expression>row.Quantity * row.Cost</ui:expression>
+      </render>
+    </CalcColumn>
   </g:columns>
 </g:Grid>

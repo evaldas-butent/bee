@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Grid[
-  <!ENTITY pricescale "2">
-  <!ENTITY costscale "2">
-]>
+    <!ENTITY pricescale "2">
+    <!ENTITY costscale "2">
+    ]>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
-  xmlns:w="http://www.butent.com/widget"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:ui="http://www.butent.com/ui"
+        xmlns:w="http://www.butent.com/widget"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Items" viewName="Items"
-  newRowForm="Item" editForm="Item" editShowId="true"
-  newRowPopup="true" editPopup="true" editInPlace="true"
-  >
+        name="Items" viewName="Items"
+        newRowForm="Item" editForm="Item" editShowId="true"
+        newRowPopup="true" editPopup="true" editInPlace="true"
+>
   <g:west size="200" splitterSize="2">
     <w:DataTree name="Categories" caption="=categories" viewName="CategoryTree"
-      parentColumn="Parent">
+                parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
       </w:calc>
@@ -38,7 +38,7 @@
 
     <DataColumn name="TimeUnit" module="Trade.Acts" />
     <DataColumn name="DaysPerWeek" caption="=taDaysPerWeekShort" module="Trade.Acts"
-      visible="false" />
+                visible="false" />
     <DataColumn name="MinTerm" caption="=taMinTermShort" module="Trade.Acts" visible="false" />
 
     <DataColumn name="Weight" visible="false" />
@@ -62,28 +62,36 @@
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="columns/HiddenTradeAccounts.columns.xml" />
 
   <g:columns>
+    <DataColumn name="DefaultQuantity" visible="false" />
     <DataColumn name="ExternalCode" visible="false" />
 
     <DataColumn name="Description" visible="false" />
     <DataColumn name="Notes" visible="false" />
 
-    <PropColumn name="ResRemainder" type="string" label="=ordResRemainder" module="Orders" >
+    <PropColumn name="ResRemainder" type="string" label="=ordResRemainder" module="Orders">
       <dynStyle>
         <ui:inline>text-decoration: underline; cursor: pointer;</ui:inline>
         <ui:expression>row.ResRemainder > -1</ui:expression>
       </dynStyle>
     </PropColumn>
 
-    <CalcColumn name="FreeRemainder" type="string" label="=ordFreeRemainder" module="Orders" >
+    <CalcColumn name="FreeRemainder" type="double" format="0.000" label="=ordFreeRemainder"
+                module="Orders">
       <render>
         <ui:expression>(row.WarehouseRemainder ? row.WarehouseRemainder : 0 )
-          - (row.ResRemainder ? row.ResRemainder : 0) </ui:expression>
+          - (row.ResRemainder ? row.ResRemainder : 0)
+        </ui:expression>
       </render>
     </CalcColumn>
 
     <PropColumn name="Remainder" type="string" dynamic="true" module="Orders" />
-
+    <PropColumn name="Stock" type="double" dynamic="true" module="Trade" />
   </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>[row.Name, row.Article].join(' ')</ui:expression>
+  </g:rowMessage>
 </g:Grid>

@@ -39,7 +39,7 @@
     </cell>
   </row>
   <row for="Address">
-    <Label text="=address" />
+    <Label for="Address" name="Address"/>
     <cell colSpan="5">
       <InputText source="Address" style="width: 100%;" summarize="true" />
     </cell>
@@ -73,7 +73,7 @@
   </row>
   
   <row for="SocialContacts">
-    <Label text="=socialContacts" style="margin-bottom: 10px;" />
+    <Label for="SocialContacts" style="margin-bottom: 10px;" />
     <cell colSpan="5">
       <InputText source="SocialContacts" style="width: 100%; margin-bottom: 10px;" summarize="true" />
     </cell>

@@ -1,7 +1,6 @@
 package com.butent.bee.client.tree;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.DataTransfer;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -83,6 +82,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation,
     HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<TreeItem>,
@@ -114,9 +114,9 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
       Element elem = EventUtils.getEventTargetElement(event).cast();
       String ev = event.getType();
 
-      if (ev == DragStartEvent.getType().getName()) {
+      if (Objects.equals(ev, DragStartEvent.getType().getName())) {
         if (isEnabled()) {
-          source = getItemByContentId(elem.getId());
+          source = getItemByContentId(getElementId(elem));
         }
         if (source == null) {
           event.preventDefault();
@@ -126,7 +126,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
           dto.setData(EventUtils.DEFAULT_DND_DATA_FORMAT, elem.getId());
           JsUtils.setProperty(dto, EventUtils.PROPERTY_EFFECT_ALLOWED, EventUtils.EFFECT_MOVE);
         }
-      } else if (ev == DragEvent.getType().getName()) {
+      } else if (Objects.equals(ev, DragEvent.getType().getName())) {
         int border = 10;
         int width = getOffsetWidth();
         int left = getAbsoluteLeft();
@@ -167,27 +167,27 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
             }
           }
         }
-      } else if (ev == DragEndEvent.getType().getName()) {
+      } else if (Objects.equals(ev, DragEndEvent.getType().getName())) {
         elem.removeClassName(StyleUtils.DND_SOURCE);
         source = null;
 
-      } else if (ev == DragEnterEvent.getType().getName()) {
+      } else if (Objects.equals(ev, DragEnterEvent.getType().getName())) {
         if (isTarget(elem)) {
           elem.addClassName(StyleUtils.DND_OVER);
-          TreeItem item = getItemByContentId(elem.getId());
+          TreeItem item = getItemByContentId(getElementId(elem));
 
           if (item != null && !item.isOpen()) {
             item.setOpen(true);
           }
         }
-      } else if (ev == DragOverEvent.getType().getName()) {
+      } else if (Objects.equals(ev, DragOverEvent.getType().getName())) {
         JsUtils.setProperty(dto, EventUtils.PROPERTY_DROP_EFFECT, EventUtils.EFFECT_MOVE);
 
-      } else if (ev == DragLeaveEvent.getType().getName()) {
+      } else if (Objects.equals(ev, DragLeaveEvent.getType().getName())) {
         if (isTarget(elem)) {
           elem.removeClassName(StyleUtils.DND_OVER);
         }
-      } else if (ev == DropEvent.getType().getName()) {
+      } else if (Objects.equals(ev, DropEvent.getType().getName())) {
         event.stopPropagation();
 
         if (isTarget(elem)) {
@@ -200,19 +200,15 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
           if (isCaption(elem)) {
             target = Tree.this;
           } else {
-            dst = getItemByContentId(elem.getId());
+            dst = getItemByContentId(getElementId(elem));
             target = dst;
           }
 
-          CatchEvent<TreeItem> catchEvent = CatchEvent.fire(Tree.this, src, dst,
-              new Scheduler.ScheduledCommand() {
-                @Override
-                public void execute() {
-                  target.addItem(src);
-                  setSelectedItem(src);
-                  ensureSelectedItemVisible();
-                }
-              });
+          CatchEvent<TreeItem> catchEvent = CatchEvent.fire(Tree.this, src, dst, () -> {
+            target.addItem(src);
+            setSelectedItem(src);
+            ensureSelectedItemVisible();
+          });
 
           if (!catchEvent.isConsumed()) {
             catchEvent.consume();
@@ -223,6 +219,15 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
       return true;
     }
 
+    private String getElementId(Element elem) {
+      String id = elem.getId();
+
+      while (BeeUtils.isEmpty(id) && elem.hasParentElement()) {
+        id = elem.getParentElement().getId();
+      }
+      return id;
+    }
+
     private boolean isTarget(Element elem) {
       if (elem == null || source == null) {
         return false;
@@ -230,7 +235,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
       if (isCaption(elem)) {
         return source.getParentItem() != null;
       }
-      TreeItem item = getItemByContentId(elem.getId());
+      TreeItem item = getItemByContentId(getElementId(elem));
 
       if (item == null || item == source.getParentItem()) {
         return false;
@@ -651,7 +656,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     }
   }
 
-  protected boolean isKeyboardNavigationEnabled() {
+  protected static boolean isKeyboardNavigationEnabled() {
     return true;
   }
 
@@ -695,15 +700,15 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     }
   }
 
-  void showClosedImage(TreeItem treeItem) {
+  static void showClosedImage(TreeItem treeItem) {
     showImage(treeItem, treeClosed);
   }
 
-  void showOpenImage(TreeItem treeItem) {
+  static void showOpenImage(TreeItem treeItem) {
     showImage(treeItem, treeOpen);
   }
 
-  private void collectElementChain(List<Element> chain, Element hRoot, Element hElem) {
+  private static void collectElementChain(List<Element> chain, Element hRoot, Element hElem) {
     if ((hElem == null) || (hElem == hRoot)) {
       return;
     }
@@ -735,14 +740,14 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return false;
   }
 
-  private TreeItem findDeepestOpenChild(TreeItem item) {
+  private static TreeItem findDeepestOpenChild(TreeItem item) {
     if (!item.isOpen()) {
       return item;
     }
     return findDeepestOpenChild(item.getChild(item.getChildCount() - 1));
   }
 
-  private TreeItem findItemByChain(List<Element> chain, int idx, TreeItem rootItem) {
+  private static TreeItem findItemByChain(List<Element> chain, int idx, TreeItem rootItem) {
     if (idx == chain.size()) {
       return rootItem;
     }

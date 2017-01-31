@@ -4,8 +4,13 @@
       editForm="OrderInvoice" newRowForm="NewOrderInvoice">
 
   <Columns>
-    <ExternalJoin name="Sale" joinType="LEFT" source="OrderChildInvoices">
-      <SimpleColumn name="Order" />
+    <ExternalJoin name="Sale" joinType="LEFT" source="SaleItems">
+      <ExternalJoin name="SaleItem" joinType="LEFT" source="OrderChildInvoices">
+        <SimpleJoin name="OrderItem" joinType="LEFT">
+          <HiddenColumn name="Order" />
+          <AggregateColumn name="Order" aggregate="COUNT_DISTINCT" alias="OrderCount" />
+        </SimpleJoin>
+      </ExternalJoin>
     </ExternalJoin>
 
     <SimpleColumn name="Date" />
@@ -14,6 +19,7 @@
     <SimpleJoin name="Operation" joinType="LEFT">
       <SimpleColumn name="OperationName" />
       <SimpleColumn name="CashRegisterNo" />
+      <SimpleColumn name="Join" />
     </SimpleJoin>
 
     <SimpleColumn name="WarehouseFrom" />
@@ -46,7 +52,7 @@
     <SimpleColumn name="PaymentTime" />
     <SimpleColumn name="Paid" />
 
-    <SimpleColumn name="Debt">
+    <SimpleColumn name="Debt" label="=trdDebt">
       <x:minus>
         <x:number>"Amount"</x:number>
         <x:nvl type="DECIMAL">
@@ -100,6 +106,36 @@
           </SimpleJoin>
         </SimpleJoin>
       </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="BoLSeries" />
+    <SimpleJoin name="BoLSeries" joinType="LEFT">
+      <SimpleColumn name="SeriesName" alias="BoLSeriesName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="BoLDriverTabNo" />
+    <SimpleJoin name="BoLDriverTabNo" joinType="LEFT">
+      <SimpleColumn name="TabNumber" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="DriverFirstName" />
+          <SimpleColumn name="LastName" alias="DriverLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
+    <SimpleColumn name="BoLNumber" />
+    <SimpleColumn name="BoLIssueDate" />
+    <SimpleColumn name="BoLDepartureDate" />
+    <SimpleColumn name="BoLUnloadingDate" />
+    <SimpleColumn name="BoLLoading" />
+    <SimpleColumn name="BoLUnloading" />
+    <SimpleColumn name="BoLVehicleNumber" />
+    <SimpleColumn name="BoLDriver" />
+
+    <SimpleColumn name="BoLCarrier" />
+    <SimpleJoin joinType="LEFT" name="BoLCarrier">
+      <SimpleColumn name="Name" alias="BoLCarrierName" />
     </SimpleJoin>
   </Columns>
   <Order>

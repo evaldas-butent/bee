@@ -8,10 +8,8 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -42,17 +40,17 @@ import java.util.Set;
 public class ImportConditionsGrid extends AbstractGridInterceptor {
 
   private Long optionId;
-  private String optionData;
+  private String viewName;
   private final Table<String, String, String> captions = HashBasedTable.create();
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    addNewCondition(optionId, optionData);
+    addNewCondition(optionId, viewName);
     return false;
   }
 
   @Override
-  public AbstractCellRenderer getRenderer(final String columnName,
+  public AbstractCellRenderer getRenderer(String columnName,
       List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
       CellSource cellSource) {
 
@@ -63,7 +61,7 @@ public class ImportConditionsGrid extends AbstractGridInterceptor {
           String data = Data.getString(getViewName(), row, COL_IMPORT_DATA);
 
           if (!captions.containsRow(data)) {
-            for (ImportProperty prop : ImportDataForm.getDataProperties(data).values()) {
+            for (ImportProperty prop : ImportOptionMappingsForm.getDataProperties(data).values()) {
               captions.put(data, prop.getName(), prop.getCaption());
             }
           }
@@ -82,27 +80,26 @@ public class ImportConditionsGrid extends AbstractGridInterceptor {
 
   @Override
   public void onParentRow(ParentRowEvent event) {
-    if (!DataUtils.isId(optionId)) {
-      if (event.getRow() != null) {
-        optionId = Data.getLong(event.getViewName(), event.getRow(), COL_IMPORT_OPTION);
-        Queries.getValue(TBL_IMPORT_OPTIONS, optionId, COL_IMPORT_DATA, new RpcCallback<String>() {
-          @Override
-          public void onSuccess(String result) {
-            optionData = result;
-          }
-        });
-      }
+    if (!DataUtils.isId(optionId) && event.getRow() != null) {
+      optionId = Data.getLong(event.getViewName(), event.getRow(), COL_IMPORT_OPTION);
+
+      Queries.getValue(TBL_IMPORT_OPTIONS, optionId, COL_IMPORT_DATA, new RpcCallback<String>() {
+        @Override
+        public void onSuccess(String result) {
+          viewName = result;
+        }
+      });
     }
     super.onParentRow(event);
   }
 
-  private void addNewCondition(Long option, final String data) {
+  private void addNewCondition(Long option, String view) {
     Queries.getRowSet(TBL_IMPORT_PROPERTIES,
         Arrays.asList(COL_IMPORT_PROPERTY, COL_IMPORT_RELATION_OPTION),
         Filter.equals(COL_IMPORT_OPTION, option), new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
-            Map<String, ImportProperty> props = ImportDataForm.getDataProperties(data);
+            Map<String, ImportProperty> props = ImportOptionMappingsForm.getDataProperties(view);
             final Map<Long, String> choices = new LinkedHashMap<>();
             final Map<Long, Pair<Long, String>> relations = new HashMap<>();
 
@@ -114,9 +111,10 @@ public class ImportConditionsGrid extends AbstractGridInterceptor {
             }
             for (int i = 0; i < result.getNumberOfRows(); i++) {
               Long propId = result.getRow(i).getId();
+              String propName = result.getString(i, COL_IMPORT_PROPERTY);
 
-              if (!exists.contains(propId)) {
-                ImportProperty prop = props.get(result.getString(i, COL_IMPORT_PROPERTY));
+              if (!exists.contains(propId) && props.containsKey(propName)) {
+                ImportProperty prop = props.get(propName);
                 choices.put(propId, prop.getCaption());
 
                 if (!BeeUtils.isEmpty(prop.getRelation())) {
@@ -130,30 +128,23 @@ public class ImportConditionsGrid extends AbstractGridInterceptor {
               getGridView().notifyWarning(Localized.dictionary().noData());
               return;
             }
-            Global.choice(Data.getViewCaption(data), Localized.dictionary().trImportProperty(),
-                new ArrayList<>(choices.values()), new ChoiceCallback() {
-                  @Override
-                  public void onSuccess(int value) {
-                    final Long propId = new ArrayList<>(choices.keySet()).get(value);
-                    Pair<Long, String> pair = relations.get(propId);
+            Global.choice(Data.getViewCaption(view), Localized.dictionary().trImportProperty(),
+                new ArrayList<>(choices.values()), value -> {
+                  Long propId = new ArrayList<>(choices.keySet()).get(value);
+                  Pair<Long, String> pair = relations.get(propId);
 
-                    if (pair != null) {
-                      addNewCondition(pair.getA(), pair.getB());
-                    } else {
-                      getGridView().ensureRelId(new IdCallback() {
-                        @Override
-                        public void onSuccess(Long id) {
-                          Queries.insert(getViewName(), Data.getColumns(getViewName(),
-                              Arrays.asList(COL_IMPORT_MAPPING, COL_IMPORT_PROPERTY)),
-                              Queries.asList(id, propId), null, new RowCallback() {
-                                @Override
-                                public void onSuccess(BeeRow row) {
-                                  getGridView().getGrid().insertRow(row, true);
-                                }
-                              });
-                        }
-                      });
-                    }
+                  if (pair != null) {
+                    addNewCondition(pair.getA(), pair.getB());
+                  } else {
+                    getGridView().ensureRelId(id -> Queries.insert(getViewName(),
+                        Data.getColumns(getViewName(),
+                            Arrays.asList(COL_IMPORT_MAPPING, COL_IMPORT_PROPERTY)),
+                        Queries.asList(id, propId), null, new RowCallback() {
+                          @Override
+                          public void onSuccess(BeeRow row) {
+                            getGridView().getGrid().insertRow(row, true);
+                          }
+                        }));
                   }
                 });
           }

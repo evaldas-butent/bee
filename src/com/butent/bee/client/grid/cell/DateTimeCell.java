@@ -1,15 +1,9 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.time.DateTime;
-
-/**
- * Enables using columns which contain time type data.
- */
 
 public class DateTimeCell extends AbstractCell<DateTime> implements HasDateTimeFormat {
 
@@ -30,9 +24,11 @@ public class DateTimeCell extends AbstractCell<DateTime> implements HasDateTimeF
   }
 
   @Override
-  public void render(CellContext context, DateTime value, SafeHtmlBuilder sb) {
+  public String render(CellContext context, DateTime value) {
     if (value != null) {
-      sb.appendEscaped((format == null) ? value.toCompactString() : format.format(value));
+      return (format == null) ? value.toCompactString() : format.format(value);
+    } else {
+      return null;
     }
   }
 

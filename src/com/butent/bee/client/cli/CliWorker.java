@@ -16,13 +16,7 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.StyleInjector;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ErrorEvent;
-import com.google.gwt.event.dom.client.ErrorHandler;
-import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -56,7 +50,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.NotificationOptions;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -111,7 +105,6 @@ import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Theme;
-import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.JsUtils;
@@ -134,7 +127,6 @@ import com.butent.bee.client.widget.Svg;
 import com.butent.bee.client.widget.Video;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Resource;
@@ -211,6 +203,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import elemental.js.JsBrowser;
 import elemental.js.css.JsCSSRuleList;
@@ -533,6 +526,13 @@ public final class CliWorker {
 
     } else if ("run".equals(z)) {
       BeeKeeper.getRpc().sendText(new ParameterList(Service.RUN), args, null);
+
+    } else if ("script".equals(z)) {
+      if (args.isEmpty() || "info".equals(args)) {
+        BeeKeeper.getRpc().invoke("scriptEngineInfo", ResponseHandler.callback(v));
+      } else {
+        BeeKeeper.getRpc().invoke("execScript", args, ResponseHandler.callback(args));
+      }
 
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args, errorPopup);
@@ -1218,7 +1218,6 @@ public final class CliWorker {
 
     } else {
       showError(errorPopup, "dictionary service not recognized:", args);
-      service = null;
       return;
     }
 
@@ -1276,22 +1275,19 @@ public final class CliWorker {
               dsns);
           panel.add(rg);
 
-          Global.inputWidget("Choose DSN", panel, new InputCallback() {
-            @Override
-            public void onSuccess() {
-              String dsn = dsns.get(rg.getSelectedIndex());
+          Global.inputWidget("Choose DSN", panel, () -> {
+            String dsn = dsns.get(rg.getSelectedIndex());
 
-              if (!BeeUtils.same(dsn, currentDsn)) {
-                ParameterList params = BeeKeeper.getRpc().createParameters(Service.SWITCH_DSN);
-                params.addQueryItem(Service.VAR_DSN, dsn);
+            if (!BeeUtils.same(dsn, currentDsn)) {
+              ParameterList params = BeeKeeper.getRpc().createParameters(Service.SWITCH_DSN);
+              params.addQueryItem(Service.VAR_DSN, dsn);
 
-                BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject rsp) {
-                    logger.info("DSN switched to:", rsp.getResponseAsString());
-                  }
-                });
-              }
+              BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+                @Override
+                public void onResponse(ResponseObject rsp) {
+                  logger.info("DSN switched to:", rsp.getResponseAsString());
+                }
+              });
             }
           });
         }
@@ -1485,6 +1481,9 @@ public final class CliWorker {
     } else if (BeeUtils.same(args, "load")) {
       BeeKeeper.getMenu().loadMenu();
 
+    } else if (BeeUtils.same(args, "refresh")) {
+      BeeKeeper.getMenu().refresh();
+
     } else if (BeeUtils.isDigit(args)) {
       BeeKeeper.getScreen().closeAll();
 
@@ -1507,6 +1506,7 @@ public final class CliWorker {
           case PARAMETERS:
           case REPORT:
           case SERVICE_CALENDAR:
+          case SERVICE_MAINTENANCE_LIST:
           case SHIPPING_SCHEDULE:
           case TASK_LIST:
           case TASK_REPORTS:
@@ -1527,12 +1527,9 @@ public final class CliWorker {
       final Holder<String> progId = Holder.of(null);
 
       InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
-      close.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          BeeKeeper.getScreen().removeProgress(progId.get());
-          progId.set(null);
-        }
+      close.addClickHandler(event -> {
+        BeeKeeper.getScreen().removeProgress(progId.get());
+        progId.set(null);
       });
 
       Thermometer thermometer = new Thermometer(args, (double) commands.size(), close);
@@ -1696,12 +1693,8 @@ public final class CliWorker {
         inform("endpoint already open");
       } else {
         logger.debug("opening endpoint");
-        Endpoint.open(BeeKeeper.getUser().getUserId(), new Consumer<Boolean>() {
-          @Override
-          public void accept(Boolean input) {
-            logger.debug("endpoint open", input);
-          }
-        });
+        Endpoint.open(BeeKeeper.getUser().getUserId(),
+            input -> logger.debug("endpoint open", input));
       }
 
     } else if (BeeUtils.same(args, "close")) {
@@ -2004,12 +1997,8 @@ public final class CliWorker {
     widget.getVideoElement().setSrc(src);
     widget.getVideoElement().setControls(true);
 
-    widget.addDomHandler(new ErrorHandler() {
-      @Override
-      public void onError(ErrorEvent event) {
-        BeeKeeper.getScreen().notifyWarning(src, EventUtils.transformMediaError(widget.getError()));
-      }
-    }, ErrorEvent.getType());
+    widget.addDomHandler(event -> BeeKeeper.getScreen().notifyWarning(src,
+        EventUtils.transformMediaError(widget.getError())), ErrorEvent.getType());
 
     BeeKeeper.getScreen().show(widget);
   }
@@ -2141,31 +2130,29 @@ public final class CliWorker {
 
   private static void rebuildSomething(final String args) {
     if (BeeUtils.same(args, "check")) {
-      Endpoint.initProgress("rebuild", new Consumer<String>() {
-        @Override
-        public void accept(final String progress) {
-          ParameterList params = new ParameterList(Service.REBUILD);
+      Endpoint.initProgress("rebuild", progress -> {
+        ParameterList params = new ParameterList(Service.REBUILD);
 
-          if (!BeeUtils.isEmpty(progress)) {
-            params.addQueryItem(Service.VAR_PROGRESS, progress);
-          }
-          BeeKeeper.getRpc().sendText(params, args, new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject response) {
-              Assert.notNull(response);
-
-              if (progress != null) {
-                Endpoint.removeProgress(progress);
-                Endpoint.send(ProgressMessage.close(progress));
-              }
-              if (response.hasResponse()) {
-                showPropData(BeeUtils.joinWords("Rebuild", args),
-                    PropertyUtils.restoreProperties((String) response.getResponse()));
-              }
-            }
-          });
+        if (!BeeUtils.isEmpty(progress)) {
+          params.addQueryItem(Service.VAR_PROGRESS, progress);
         }
+        BeeKeeper.getRpc().sendText(params, args, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            Assert.notNull(response);
+
+            if (progress != null) {
+              Endpoint.removeProgress(progress);
+              Endpoint.send(ProgressMessage.close(progress));
+            }
+            if (response.hasResponse()) {
+              showPropData(BeeUtils.joinWords("Rebuild", args),
+                  PropertyUtils.restoreProperties((String) response.getResponse()));
+            }
+          }
+        });
       });
+
     } else {
       BeeKeeper.getRpc().sendText(new ParameterList(Service.REBUILD), args, new ResponseCallback() {
         @Override
@@ -2251,18 +2238,15 @@ public final class CliWorker {
       final InputFile widget = new InputFile();
       widget.setAccept(Keywords.ACCEPT_IMAGE);
 
-      widget.addChangeHandler(new ChangeHandler() {
-        @Override
-        public void onChange(ChangeEvent event) {
-          popup.close();
+      widget.addChangeHandler(event -> {
+        popup.close();
 
-          List<NewFileInfo> fileInfos = FileUtils.getNewFileInfos(widget.getFiles());
-          List<NewFileInfo> files = Images.sanitizeInput(fileInfos, BeeKeeper.getScreen());
+        List<NewFileInfo> fileInfos = FileUtils.getNewFileInfos(widget.getFiles());
+        List<NewFileInfo> files = Images.sanitizeInput(fileInfos, BeeKeeper.getScreen());
 
-          if (!BeeUtils.isEmpty(files)) {
-            FileUtils.readAsDataURL(files.get(0).getNewFile(),
-                e -> BeeKeeper.getStorage().set(key, e));
-          }
+        if (!BeeUtils.isEmpty(files)) {
+          FileUtils.readAsDataURL(files.get(0).getNewFile(),
+              e -> BeeKeeper.getStorage().set(key, e));
         }
       });
 
@@ -2438,7 +2422,7 @@ public final class CliWorker {
       }
     }
 
-    Global.getMsgBoxen().choice(caption, prompt, options, new ChoiceCallback() {
+    MessageBoxes.choice(caption, prompt, options, new ChoiceCallback() {
       @Override
       public void onCancel() {
         logger.info("cancel");
@@ -2454,15 +2438,12 @@ public final class CliWorker {
         logger.info("timeout");
       }
 
-    }, defaultValue, timeout, cancelHtml, new WidgetInitializer() {
-      @Override
-      public Widget initialize(Widget widget, String name) {
-        if (BeeUtils.containsSame(name, widgetName.get())) {
-          StyleUtils.updateAppearance(widget, null, widgetStyle.get());
-          logger.info(name, StyleUtils.getCssText(widget));
-        }
-        return widget;
+    }, defaultValue, timeout, cancelHtml, (widget, name) -> {
+      if (BeeUtils.containsSame(name, widgetName.get())) {
+        StyleUtils.updateAppearance(widget, null, widgetStyle.get());
+        logger.info(name, StyleUtils.getCssText(widget));
       }
+      return widget;
     });
   }
 
@@ -2736,8 +2717,8 @@ public final class CliWorker {
       showMatrix("DateTime", data, "Format", "Pattern", "Value");
 
     } else {
-      DateTimeFormat dtf = null;
-      DateTime t = null;
+      DateTimeFormat dtf;
+      DateTime t;
 
       char sep = ';';
       if (BeeUtils.contains(args, sep)) {
@@ -2902,34 +2883,31 @@ public final class CliWorker {
       }
 
     } else {
-      Callback<Integer> callback = new Callback<Integer>() {
-        @Override
-        public void onSuccess(Integer result) {
-          int row = 0;
-          int col = 0;
+      Callback<Integer> callback = result -> {
+        int row = 0;
+        int col = 0;
 
-          Map<String, String> flags = new TreeMap<>(Flags.getFlags());
+        Map<String, String> flags = new TreeMap<>(Flags.getFlags());
 
-          for (Map.Entry<String, String> entry : flags.entrySet()) {
-            table.setHtml(row, col, entry.getKey());
-            table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
-            col++;
+        for (Map.Entry<String, String> entry : flags.entrySet()) {
+          table.setHtml(row, col, entry.getKey());
+          table.getCellFormatter().setHorizontalAlignment(row, col, TextAlign.RIGHT);
+          col++;
 
-            ImageElement imageElement = Document.get().createImageElement();
-            imageElement.setSrc(entry.getValue());
-            CustomWidget widget = new CustomWidget(imageElement);
+          ImageElement imageElement = Document.get().createImageElement();
+          imageElement.setSrc(entry.getValue());
+          CustomWidget widget = new CustomWidget(imageElement);
 
-            table.setWidget(row, col, widget);
-            col++;
-            if (col > 20) {
-              row++;
-              col = 0;
-            }
+          table.setWidget(row, col, widget);
+          col++;
+          if (col > 20) {
+            row++;
+            col = 0;
           }
+        }
 
-          if (!table.isEmpty()) {
-            BeeKeeper.getScreen().show(table);
-          }
+        if (!table.isEmpty()) {
+          BeeKeeper.getScreen().show(table);
         }
       };
 
@@ -2970,19 +2948,39 @@ public final class CliWorker {
         CssProperties.PADDING, CssUnit.format(5, CssUnit.PX));
 
     if (!BeeUtils.isEmpty(args)) {
-      if (args.startsWith("4.1")) {
+      String st;
+
+      if (args.contains("4.1")) {
         range = Range.closed(FontAwesome.SPACE_SHUTTLE.getCode(), FontAwesome.BOMB.getCode());
-      } else if (args.startsWith("4.2")) {
+        st = args.replace("4.1", "");
+
+      } else if (args.contains("4.2")) {
         range = Range.closed(FontAwesome.SOCCER_BALL_O.getCode(), FontAwesome.MEANPATH.getCode());
-      } else if (args.startsWith("4.3")) {
+        st = args.replace("4.2", "");
+
+      } else if (args.contains("4.3")) {
         range = Range.closed(FontAwesome.BUYSELLADS.getCode(), FontAwesome.MEDIUM.getCode());
-      } else if (args.startsWith("4.4")) {
+        st = args.replace("4.3", "");
+
+      } else if (args.contains("4.4")) {
         range = Range.closed(FontAwesome.YC.getCode(), FontAwesome.FONTICONS.getCode());
-      } else if (args.startsWith("4.5")) {
+        st = args.replace("4.4", "");
+
+      } else if (args.contains("4.5")) {
         range = Range.closed(FontAwesome.REDDIT_ALIEN.getCode(), FontAwesome.PERCENT.getCode());
+        st = args.replace("4.5", "");
+
+      } else if (args.contains("4.7")) {
+        range = Range.closed(FontAwesome.GITLAB.getCode(), FontAwesome.MEETUP.getCode());
+        st = args.replace("4.7", "");
+
+      } else {
+        st = args;
       }
 
-      styles.addAll(StyleUtils.parseStyles(args));
+      if (!BeeUtils.isEmpty(st)) {
+        styles.addAll(StyleUtils.parseStyles(st.trim()));
+      }
     }
 
     int count = 0;
@@ -3059,23 +3057,20 @@ public final class CliWorker {
   }
 
   private static void showGeo() {
-    Consumer<Position> onPosition = new Consumer<Position>() {
-      @Override
-      public void accept(Position input) {
-        Coordinates coords = input.getCoordinates();
+    Consumer<Position> onPosition = input -> {
+      Coordinates coords = input.getCoordinates();
 
-        List<Property> info = PropertyUtils.createProperties(
-            "Latitude", coords.getLatitude(),
-            "Longitude", coords.getLongitude(),
-            "Accuracy", coords.getAccuracy(),
-            "Altitude", coords.getAltitude(),
-            "Accuracy", coords.getAltitudeAccuracy(),
-            "Speed", coords.getSpeed(),
-            "Heading", coords.getHeading(),
-            "Timestamp", input.getTimestamp());
+      List<Property> info = PropertyUtils.createProperties(
+          "Latitude", coords.getLatitude(),
+          "Longitude", coords.getLongitude(),
+          "Accuracy", coords.getAccuracy(),
+          "Altitude", coords.getAltitude(),
+          "Accuracy", coords.getAltitudeAccuracy(),
+          "Speed", coords.getSpeed(),
+          "Heading", coords.getHeading(),
+          "Timestamp", input.getTimestamp());
 
-        showPropData("Position", info);
-      }
+      showPropData("Position", info);
     };
 
     MapUtils.getCurrentPosition(onPosition);
@@ -3241,15 +3236,12 @@ public final class CliWorker {
             }
           }
         }, null, defaultValue, maxLength, null, width, widthUnit, timeout, confirmHtml, cancelHtml,
-        new WidgetInitializer() {
-          @Override
-          public Widget initialize(Widget widget, String name) {
-            if (BeeUtils.containsSame(name, widgetName.get())) {
-              StyleUtils.updateAppearance(widget, null, widgetStyle.get());
-              logger.info(name, StyleUtils.getCssText(widget));
-            }
-            return widget;
+        (widget, name) -> {
+          if (BeeUtils.containsSame(name, widgetName.get())) {
+            StyleUtils.updateAppearance(widget, null, widgetStyle.get());
+            logger.info(name, StyleUtils.getCssText(widget));
           }
+          return widget;
         });
   }
 
@@ -3322,37 +3314,31 @@ public final class CliWorker {
 
     final String caption = ArrayUtils.joinWords(arr);
 
-    ApiLoader.ensureApi(new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        LatLng latLng = LatLng.create(latitude, longitude);
-        MapOptions mapOptions = (zoom >= 0) ? MapOptions.create(latLng, zoom)
-            : MapOptions.create(latLng);
+    ApiLoader.ensureApi(() -> {
+      LatLng latLng = LatLng.create(latitude, longitude);
+      MapOptions mapOptions = (zoom >= 0) ? MapOptions.create(latLng, zoom)
+          : MapOptions.create(latLng);
 
-        final MapWidget widget = MapWidget.create(mapOptions);
+      final MapWidget widget = MapWidget.create(mapOptions);
 
-        if (widget != null) {
-          if (pos < arr.length - 2) {
-            widget.addAttachHandler(new AttachEvent.Handler() {
-              @Override
-              public void onAttachOrDetach(AttachEvent event) {
-                if (event.isAttached() && widget.getMapImpl() != null) {
-                  for (int i = pos; i < arr.length - 2; i += 3) {
-                    Double lat = BeeUtils.toDoubleOrNull(arr[i + 1]);
-                    Double lng = BeeUtils.toDoubleOrNull(arr[i + 2]);
+      if (widget != null) {
+        if (pos < arr.length - 2) {
+          widget.addAttachHandler(event -> {
+            if (event.isAttached() && widget.getMapImpl() != null) {
+              for (int i = pos; i < arr.length - 2; i += 3) {
+                Double lat = BeeUtils.toDoubleOrNull(arr[i + 1]);
+                Double lng = BeeUtils.toDoubleOrNull(arr[i + 2]);
 
-                    if (lat != null && lng != null) {
-                      widget.addMarker(lat, lng, BeeUtils.joinWords(lat, lng, arr[i]));
-                    }
-                  }
+                if (lat != null && lng != null) {
+                  widget.addMarker(lat, lng, BeeUtils.joinWords(lat, lng, arr[i]));
                 }
               }
-            });
-          }
-
-          MapContainer container = new MapContainer(caption, widget);
-          BeeKeeper.getScreen().show(container);
+            }
+          });
         }
+
+        MapContainer container = new MapContainer(caption, widget);
+        BeeKeeper.getScreen().show(container);
       }
     });
   }
@@ -3575,12 +3561,7 @@ public final class CliWorker {
                   BeeUtils.toString(prog.start - now) + "-" + BeeUtils.toString(prog.finish - now);
 
               InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
-              close.addClickHandler(new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent event) {
-                  BeeKeeper.getScreen().removeProgress(prog.id);
-                }
-              });
+              close.addClickHandler(event -> BeeKeeper.getScreen().removeProgress(prog.id));
 
               Thermometer thermometer = new Thermometer(caption, prog.max, close);
               prog.id = BeeKeeper.getScreen().addProgress(thermometer);
@@ -4190,9 +4171,7 @@ public final class CliWorker {
     if (unit != null) {
       units.add(unit);
     } else {
-      for (CssUnit u : CssUnit.values()) {
-        units.add(u);
-      }
+      Collections.addAll(units, CssUnit.values());
     }
 
     List<Property> info = PropertyUtils.createProperties("Value", value);
@@ -4657,21 +4636,14 @@ public final class CliWorker {
     final Popup popup = new Popup(OutsideClick.CLOSE);
 
     final InputFile widget = new InputFile(true);
-    widget.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        popup.close();
-        List<NewFileInfo> files = FileUtils.getNewFileInfos(widget.getFiles());
+    widget.addChangeHandler(event -> {
+      popup.close();
+      List<NewFileInfo> files = FileUtils.getNewFileInfos(widget.getFiles());
 
-        for (final NewFileInfo fi : files) {
-          logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
-          FileUtils.uploadFile(fi, new Callback<Long>() {
-            @Override
-            public void onSuccess(Long result) {
-              logger.debug("uploaded", fi.getName(), ", result:", result);
-            }
-          });
-        }
+      for (final NewFileInfo fi : files) {
+        logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
+        FileUtils.uploadFile(fi,
+            result -> logger.debug("uploaded", fi.getName(), ", result:", result));
       }
     });
 

@@ -62,6 +62,11 @@ public class TableRow extends AbstractRow {
   }
 
   @Override
+  public boolean sameValues(IsRow other) {
+    return other != null && cells.equals(other.getCells());
+  }
+
+  @Override
   public void setCell(int index, IsCell cell) {
     assertIndex(index);
     cells.set(index, cell);

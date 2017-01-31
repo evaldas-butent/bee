@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="ServiceMaintenance"
+  idName="ServiceMaintenanceID"
+  >
+  <Fields>
+    <Relation name="Type" notNull="true" relation="MaintenanceTypes" label="=svcServiceType" />
+    <Relation name="State" notNull="true" relation="MaintenanceStates" label="=svcServiceState" />
+    <Relation name="ServiceObject" notNull="true" relation="ServiceObjects" label="=svcDevice" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=date" />
+    <Text name="Description" label="=svcFaultInfo" />
+    <Boolean name="Urgent" label="=svcUrgent" />
+    <Relation name="WarrantyType" relation="WarrantyTypes" label="=svcWarrantyType" />
+    <Relation name="Repairer" relation="Users" label="=svcMaster" />
+    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="=creator" />
+    <Relation name="WarrantyMaintenance" relation="ServiceMaintenance" label="=svcWarrantyBasis" />
+    <DateTime name="WarrantyValidTo"  label="=svcWarrantyValidTo" />
+    <DateTime name="EndingDate"  label="=endingDate" />
+    <Text name="Notes" label="=notes" />
+    <Text name="Equipment" label="=svcEquipment" />
+    <Relation name="Company" relation="Companies" label="=company" />
+    <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
+  </Fields>
+</Table>

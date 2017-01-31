@@ -17,7 +17,7 @@
         service="update_exchange_rates" />
 
   <Item name="TradeOperations" label="=trdOperations" service="grid" parameters="TradeOperations"
-        separator="true" module="Orders" />
+        separator="true" module="Trade Orders" />
 
   <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses"
         separator="true" module="Trade Ec Orders" />
@@ -28,7 +28,7 @@
   <Item name="Employees" label="=employees" service="grid" parameters="Employees"
         separator="true" />
   <Item name="Holidays" label="=holidays" service="form" parameters="Holidays"
-        module="Trade.Acts" />
+        module="Trade.Acts Payroll" />
 
   <Item name="Banks" label="=banks" service="grid" parameters="Banks" separator="true" />
 
@@ -46,8 +46,9 @@
   <Item name="Themes" label="=colorThemes" service="grid" parameters="Themes" />
 
   <Item name="Discounts" label="=discounts" service="grid" parameters="Discounts" separator="true"
-        module="Orders" />
+        module="Trade Orders" />
 
   <Item name="ChartOfAccounts" label="=chartOfAccounts" service="grid" parameters="ChartOfAccounts"
-        separator="true" />
+        separator="true" module="Finance" />
+  <Item name="Journals" label="=journals" service="grid" parameters="Journals" module="Finance" />
 </Entry>

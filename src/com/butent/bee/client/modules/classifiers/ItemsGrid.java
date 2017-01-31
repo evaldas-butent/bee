@@ -2,13 +2,14 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
@@ -23,19 +24,21 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,8 +61,10 @@ class ItemsGrid extends TreeGridInterceptor {
       + "manager-";
   private static final String STYLE_RES_ORDER_WAREHOUSE_PREFIX = STYLE_RES_ORDER_PREFIX
       + "warehouse-";
-  private static final String STYLE_RES_ORDER_QUANTITY_PREFIX = STYLE_RES_ORDER_PREFIX
-      + "quantity-";
+  private static final String STYLE_RES_ORDER_REMAINDER_PREFIX = STYLE_RES_ORDER_PREFIX
+      + "remainderQty-";
+  private static final String STYLE_RES_ORDER_INVOICE_QTY_PREFIX = STYLE_RES_ORDER_PREFIX
+      + "invoiceQty-";
 
   static String getSupplierKey(boolean services) {
     return BeeUtils.join(BeeConst.STRING_UNDER, GRID_ITEMS, services ? "services" : "goods");
@@ -81,6 +86,10 @@ class ItemsGrid extends TreeGridInterceptor {
       switch (id) {
         case COL_ITEM_WEIGHT:
         case COL_ITEM_AREA:
+        case COL_RESERVED_REMAINDER:
+        case PRP_FREE_REMAINDER:
+        case COL_WAREHOUSE_REMAINDER:
+        case TradeConstants.PROP_STOCK:
           return null;
       }
 
@@ -137,15 +146,13 @@ class ItemsGrid extends TreeGridInterceptor {
   @Override
   public void onEditStart(EditStartEvent event) {
 
-    if (BeeUtils.same(event.getColumnId(), OrdersConstants.COL_RESERVED_REMAINDER)) {
+    if (BeeUtils.same(event.getColumnId(), COL_RESERVED_REMAINDER)) {
       event.consume();
 
       IsRow row = event.getRowValue();
-      final Long itemId = row.getId();
 
-      Filter filter =
-          Filter.and(Filter.equals(COL_ORDERS_STATUS, OrdersStatus.APPROVED), Filter.in("OrderID",
-              VIEW_ORDER_ITEMS, COL_ORDER, Filter.equals(COL_ITEM, itemId)));
+      Filter filter = Filter.and(Filter.equals(COL_ORDERS_STATUS, OrdersStatus.APPROVED),
+          Filter.in("OrderID", VIEW_ORDER_ITEMS, COL_ORDER, Filter.equals(COL_ITEM, row.getId())));
 
       Queries.getRowSet(VIEW_ORDERS, Arrays.asList(ProjectConstants.COL_DATES_START_DATE,
           ALS_COMPANY_NAME, ALS_MANAGER_FIRST_NAME, ALS_MANAGER_LAST_NAME, ALS_WAREHOUSE_CODE),
@@ -153,25 +160,26 @@ class ItemsGrid extends TreeGridInterceptor {
 
             @Override
             public void onSuccess(BeeRowSet orders) {
+
               if (orders.getNumberOfRows() > 0) {
-                Filter flt =
-                    Filter.and(Filter.any(COL_ORDER, orders.getRowIds()), Filter.equals(COL_ITEM,
-                        itemId));
-                Queries.getRowSet(VIEW_ORDER_ITEMS, Arrays
-                    .asList(COL_ORDER, COL_RESERVED_REMAINDER), flt,
-                    new RowSetCallback() {
+                ParameterList params = ClassifierKeeper.createArgs(SVC_FILTER_ORDERS);
+                params.addDataItem(TBL_ORDERS, Codec.beeSerialize(orders.getRowIds()));
+                params.addDataItem(COL_ITEM, row.getId());
 
-                      @Override
-                      public void onSuccess(BeeRowSet result) {
-                        Map<Long, String> remainderMap = new HashMap<>();
-
-                        for (BeeRow orderItem : result) {
-                          remainderMap.put(orderItem.getLong(0), orderItem.getString(1));
-                        }
-
-                        Global.showModalWidget(renderOrders(orders, remainderMap));
+                BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+                  @Override
+                  public void onResponse(ResponseObject response) {
+                    if (!response.hasErrors()) {
+                      Map<String, Pair<String, String>> remainders = new HashMap<>();
+                      for (Map.Entry<String, String> entry : Codec.deserializeHashMap(response
+                          .getResponseAsString()).entrySet()) {
+                        remainders.put(entry.getKey(), Pair.restore(entry.getValue()));
                       }
-                    });
+
+                      Global.showModalWidget(renderOrders(orders, remainders));
+                    }
+                  }
+                });
               }
             }
           });
@@ -201,7 +209,8 @@ class ItemsGrid extends TreeGridInterceptor {
     return getSelectedTreeItem();
   }
 
-  private static HtmlTable renderOrders(BeeRowSet rowSet, Map<Long, String> remainderMap) {
+  private static HtmlTable renderOrders(BeeRowSet rowSet,
+      Map<String, Pair<String, String>> remainderMap) {
 
     HtmlTable table = new HtmlTable(STYLE_RES_ORDER_TABLE);
     Dictionary lc = Localized.dictionary();
@@ -212,7 +221,9 @@ class ItemsGrid extends TreeGridInterceptor {
     table.setText(0, 3, lc.manager(), STYLE_RES_ORDER_MANAGER_PREFIX
         + STYLE_LABEL_SUFFIX);
     table.setText(0, 4, lc.warehouse(), STYLE_RES_ORDER_WAREHOUSE_PREFIX + STYLE_LABEL_SUFFIX);
-    table.setText(0, 5, lc.quantity(), STYLE_RES_ORDER_QUANTITY_PREFIX + STYLE_LABEL_SUFFIX);
+    table.setText(0, 5, lc.ordResQty(), STYLE_RES_ORDER_REMAINDER_PREFIX + STYLE_LABEL_SUFFIX);
+    table.setText(0, 6, lc.ordInvoiceQty(), STYLE_RES_ORDER_INVOICE_QTY_PREFIX
+        + STYLE_LABEL_SUFFIX);
     table.getRowFormatter().addStyleName(0, STYLE_RES_ORDER_HEADER);
 
     for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
@@ -226,25 +237,23 @@ class ItemsGrid extends TreeGridInterceptor {
           .getString(3)), STYLE_RES_ORDER_MANAGER_PREFIX + STYLE_CELL_SUFFIX);
       table.setText(i + 1, 4, rowSet.getRow(i).getString(4), STYLE_RES_ORDER_WAREHOUSE_PREFIX
           + STYLE_CELL_SUFFIX);
-      table.setText(i + 1, 5, remainderMap.get(rowSet.getRow(i).getId()),
-          STYLE_RES_ORDER_QUANTITY_PREFIX + STYLE_CELL_SUFFIX);
-
+      table.setText(i + 1, 5, remainderMap.get(String.valueOf(rowSet.getRow(i).getId())).getA(),
+          STYLE_RES_ORDER_REMAINDER_PREFIX + STYLE_CELL_SUFFIX);
+      table.setText(i + 1, 6, remainderMap.get(String.valueOf(rowSet.getRow(i).getId())).getB(),
+          STYLE_RES_ORDER_INVOICE_QTY_PREFIX + STYLE_CELL_SUFFIX);
       table.getRowFormatter().addStyleName(i + 1, STYLE_RES_ORDER_INFO);
     }
 
-    table.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Element target = EventUtils.getEventTargetElement(event);
-        TableCellElement cell = DomUtils.getParentCell(target, true);
+    table.addClickHandler(event -> {
+      Element target = EventUtils.getEventTargetElement(event);
+      TableCellElement cell = DomUtils.getParentCell(target, true);
 
-        if (cell != null && cell.hasClassName(STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX)) {
+      if (cell != null && cell.hasClassName(STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX)) {
 
-          long id = Long.valueOf(cell.getInnerText());
-          if (DataUtils.isId(id)) {
-            RowEditor.openForm(COL_ORDER, Data.getDataInfo(VIEW_ORDERS), Filter.compareId(id),
-                Opener.MODAL, null, new OrderForm());
-          }
+        long id = Long.valueOf(cell.getInnerText());
+        if (DataUtils.isId(id)) {
+          RowEditor.openForm(COL_ORDER, Data.getDataInfo(VIEW_ORDERS), Filter.compareId(id),
+              Opener.MODAL, null, new OrderForm());
         }
       }
     });

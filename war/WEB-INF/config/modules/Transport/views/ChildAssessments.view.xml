@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="ChildAssessments"
-  source="Assessments"
-  caption="=assessments"
-  newRowCaption="=trNewAssessment"
-  >
+      name="ChildAssessments"
+      source="Assessments"
+      caption="=assessments"
+      newRowCaption="=trNewAssessment"
+>
   <Columns>
     <SimpleColumn name="Assessment" />
     <SimpleColumn name="Status" />
@@ -26,12 +26,6 @@
             <SimpleColumn name="LastName" />
           </SimpleJoin>
         </SimpleJoin>
-      </SimpleJoin>
-    </SimpleJoin>
-    
-    <SimpleJoin name="Cargo" joinType="LEFT">
-      <SimpleJoin name="Currency" joinType="LEFT">
-        <SimpleColumn name="Name" alias="CurrencyName" />
       </SimpleJoin>
     </SimpleJoin>
   </Columns>

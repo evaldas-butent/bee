@@ -9,7 +9,6 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -25,9 +24,11 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class Data {
 
@@ -83,7 +85,7 @@ public final class Data {
   }
 
   public static BeeRowSet createRowSet(String viewName) {
-    return new BeeRowSet(viewName, getColumns(viewName));
+    return new BeeRowSet(viewName, new ArrayList<>(getColumns(viewName)));
   }
 
   public static boolean equals(String viewName, IsRow row, String colName, Long value) {
@@ -196,6 +198,10 @@ public final class Data {
     return result;
   }
 
+  public static List<BeeColumn> getColumns(String viewName, String col1, String col2) {
+    return getColumns(viewName, Arrays.asList(col1, col2));
+  }
+
   public static Integer getColumnScale(String viewName, String colName) {
     return getDataInfo(viewName).getColumnScale(colName);
   }
@@ -230,6 +236,12 @@ public final class Data {
 
   public static Double getDouble(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getDouble(viewName, row, colName);
+  }
+
+  public static <E extends Enum<?>> E getEnum(String viewName, IsRow row, String colName,
+      Class<E> clazz) {
+
+    return EnumUtils.getEnumByIndex(clazz, getInteger(viewName, row, colName));
   }
 
   public static String getIdColumn(String viewName) {

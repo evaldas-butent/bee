@@ -889,8 +889,23 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     ListMultimap<String, String> result = ArrayListMultimap.create();
 
     columns.forEach((colName, columnInfo) -> {
-      if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()) {
+      if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()
+          && !BeeUtils.isEmpty(Localized.extractLanguage(colName))) {
         result.put(columnInfo.getField(), colName);
+      }
+    });
+
+    return result;
+  }
+
+  public Map<String, String> getTranslationColumns(String fieldName) {
+    Map<String, String> result = new HashMap<>();
+
+    columns.forEach((colName, columnInfo) -> {
+      if (!BeeUtils.isEmpty(columnInfo.getLocale()) && columnInfo.field.isTranslatable()
+          && !BeeUtils.isEmpty(Localized.extractLanguage(colName))
+          && BeeUtils.same(columnInfo.getField(), fieldName)) {
+        result.put(columnInfo.getLocale(), colName);
       }
     });
 
@@ -1037,7 +1052,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
                 relTable.getName() + "." + field.getName(), "View:", getName());
             continue;
           }
-          join = SqlUtils.join(alias, table.getIdName(), relAls, field.getName());
+          join = SqlUtils.join(alias,
+              BeeUtils.notEmpty(((XmlExternalJoin) col).targetName, table.getIdName()),
+              relAls, field.getName());
         } else {
           Assert.state(table.hasField(col.name), BeeUtils.joinWords("View:", getName(),
               "Unknown field name:", table.getName(), col.name));

@@ -5,6 +5,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -93,6 +94,14 @@ public interface IsTable<R extends IsRow, C extends IsColumn> extends Iterable<R
   Set<String> getDistinctStrings(int colIndex);
 
   Double getDouble(int rowIndex, int colIndex);
+
+  default <E extends Enum<?>> E getEnum(int rowIndex, int colIndex, Class<E> clazz) {
+    return EnumUtils.getEnumByIndex(clazz, getInteger(rowIndex, colIndex));
+  }
+
+  default <E extends Enum<?>> E getEnum(int rowIndex, String columnId, Class<E> clazz) {
+    return getEnum(rowIndex, getColumnIndex(columnId), clazz);
+  }
 
   String getFormattedValue(int rowIndex, int colIndex);
 

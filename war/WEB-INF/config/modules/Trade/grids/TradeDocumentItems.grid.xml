@@ -2,47 +2,64 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="TradeDocumentItems" viewName="TradeDocumentItems"
-        flexGrow="1" newRowCaption="=newItem"
+        name="TradeDocumentItems" viewName="TradeDocumentItems" newRowCaption="=newItem"
+        autoFlex="true"
 >
   <g:columns>
-    <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true">
+    <DataColumn name="ItemName" editSource="Item" flexGrow="2" visible="true">
       <dynStyle>
         <ui:inline>color: blue;</ui:inline>
         <ui:expression>row.IsService</ui:expression>
       </dynStyle>
       <footer text="=totalOf" horizontalAlignment="right" />
-    </RelColumn>
-    <DataColumn name="Article" />
+    </DataColumn>
+
+    <DataColumn name="Article" sortBy="PrimaryArticle Article" searchBy="Article PrimaryArticle"
+                flexGrow="1">
+      <render>
+        <ui:expression>row.Parent ? row.PrimaryArticle : row.Article</ui:expression>
+      </render>
+      <editable>
+        <ui:expression>!row.Parent</ui:expression>
+      </editable>
+    </DataColumn>
 
     <DataColumn name="Quantity" scale="0" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
-    <DataColumn name="UnitName" flexGrow="0" label="=unitShort" />
+    <DataColumn name="UnitName" label="=unitShort" />
 
     <DataColumn name="Price" scale="2" />
-    <CalcColumn name="Amount" type="decimal" caption="=amount" scale="2">
+    <CalcColumn name="Amount" type="decimal" caption="=amount" scale="2" visible="false">
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <DataColumn name="Discount" scale="0" carry="true" flexGrow="0" />
+    <DataColumn name="Discount" scale="0" carry="true">
+      <editor type="number" percentageTag="DiscountIsPercent" />
+    </DataColumn>
     <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" carry="true" />
-    <CalcColumn name="DiscountAmount" type="decimal" caption="=discountAmountShort" scale="2">
+    <CalcColumn name="DiscountAmount" type="decimal" caption="=discountAmountShort" scale="2"
+                visible="false">
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <CalcColumn name="PriceWithoutVat" type="decimal" caption="=priceWithoutVat" scale="2" />
-    <CalcColumn name="AmountWithoutVat" type="decimal" caption="=amountWithoutVat" scale="2">
+    <CalcColumn name="PriceWithoutVat" type="decimal" caption="=priceWithoutVat" scale="2"
+                visible="false" />
+    <CalcColumn name="AmountWithoutVat" type="decimal" caption="=amountWithoutVat" scale="2"
+                visible="false">
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <DataColumn name="Vat" scale="0" carry="true" flexGrow="0" />
+    <DataColumn name="Vat" scale="0" carry="true">
+      <editor type="number" percentageTag="VatIsPercent" />
+    </DataColumn>
     <DataColumn name="VatIsPercent" width="20" sortable="false" format="%" carry="true" />
-    <CalcColumn name="VatAmount" type="decimal" caption="=vatAmount" scale="2">
+    <CalcColumn name="VatAmount" type="decimal" caption="=vatAmount" scale="2" visible="false">
       <footer aggregate="sum" />
     </CalcColumn>
 
-    <CalcColumn name="PriceWithVat" type="decimal" caption="=priceWithVat" scale="2" />
+    <CalcColumn name="PriceWithVat" type="decimal" caption="=priceWithVat" scale="2"
+                visible="false" />
     <CalcColumn name="Total" type="decimal" caption="=total" scale="2">
       <style>
         <bodyStyle>
@@ -52,19 +69,32 @@
       <footer aggregate="sum" />
     </CalcColumn>
 
+    <CalcColumn name="Cost" type="decimal" label="=cost" format="0.00######">
+      <render>
+        <ui:expression>row.Parent ? row.ParentCost : row.Cost</ui:expression>
+      </render>
+      <footer aggregate="sum" scale="2"
+              expression="(row.Parent ? row.ParentCost : row.Cost) * row.Quantity" />
+    </CalcColumn>
+
     <RelColumn name="Warehouse" choiceColumns="Code Name" renderColumns="WarehouseCode"
-               newRowEnabled="false" flexGrow="0" visible="false" />
+               newRowEnabled="false" visible="false" />
 
     <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"
                sortBy="EmployeeLastName EmployeeFirstName" newRowEnabled="false" visible="false" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
+  <xi:include href="../../Classifiers/grids/columns/HiddenTradeAccounts.columns.xml" />
 
   <g:columns>
-    <DataColumn name="Note" maxWidth="300" />
+    <DataColumn name="Note" maxWidth="300" flexGrow="1" />
 
-    <IdColumn name="Id" flexGrow="0" visible="false" />
-    <DataColumn name="Parent" flexGrow="0" visible="false" />
+    <IdColumn name="Id" visible="false" />
+    <DataColumn name="Parent" visible="false" />
   </g:columns>
+
+  <g:rowMessage>
+    <ui:expression>[row.ItemName, row.Article].join(' ')</ui:expression>
+  </g:rowMessage>
 </g:Grid>

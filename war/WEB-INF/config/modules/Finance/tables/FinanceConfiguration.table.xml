@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="FinanceConfiguration"
+       idName="FinanceConfigurationID"
+>
+  <Fields>
+    <Relation name="DefaultJournal" relation="Journals" label="=finDefaultJournal" />
+
+    <Relation name="PettyCash" relation="ChartOfAccounts" label="=finPettyCash" />
+    <Relation name="CashInBank" relation="ChartOfAccounts" label="=finCashInBank" />
+
+    <Relation name="ReceivablesFromEmployees" relation="ChartOfAccounts"
+              label="=finReceivablesFromEmployees" />
+    <Relation name="LiabilitiesToEmployees" relation="ChartOfAccounts"
+              label="=finLiabilitiesToEmployees" />
+
+    <Relation name="RevenueAndExpenseSummary" relation="ChartOfAccounts"
+              label="=finRevenueAndExpenseSummary" />
+    <Relation name="TransitoryAccount" relation="ChartOfAccounts" label="=finTransitoryAccount" />
+
+    <Relation name="ForeignExchangeGain" relation="ChartOfAccounts"
+              label="=finForeignExchangeGain" />
+    <Relation name="ForeignExchangeLoss" relation="ChartOfAccounts"
+              label="=finForeignExchangeLoss" />
+
+    <Relation name="VatPayable" relation="ChartOfAccounts" label="=finVatPayable" />
+    <Relation name="VatReceivable" relation="ChartOfAccounts" label="=finVatReceivable" />
+
+    <Relation name="TradePayables" relation="ChartOfAccounts" label="=finTradePayables" />
+    <Relation name="TradeReceivables" relation="ChartOfAccounts" label="=finTradeReceivables" />
+
+    <Relation name="AdvancePaymentsGiven" relation="ChartOfAccounts"
+              label="=finAdvancePaymentsGiven" />
+    <Relation name="AdvancePaymentsReceived" relation="ChartOfAccounts"
+              label="=finAdvancePaymentsReceived" />
+
+    <Relation name="SalesRevenue" relation="ChartOfAccounts" label="=finSalesRevenue" />
+    <Relation name="CostOfGoodsSold" relation="ChartOfAccounts" label="=finCostOfGoodsSold" />
+
+    <Relation name="CostOfMerchandise" relation="ChartOfAccounts" label="=finCostOfMerchandise" />
+
+    <Text name="TradeAccountsPrecedence" label="=finTradeAccountsPrecedence" />
+    <Text name="TradeDimensionsPrecedence" label="=finTradeDimensionsPrecedence" />
+  </Fields>
+</Table>

@@ -10,6 +10,7 @@ import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.HasYearMonth;
@@ -140,8 +141,6 @@ public final class Format {
     }
   }
 
-  private static final int DEFAULT_MONEY_SCALE = 2;
-
   private static final String DEFAULT_MONEY_PATTERN = "#,##0.00;(#)";
 
   private static final String DEFAULT_DECIMAL_PATTERN_INTEGER = "#,##0";
@@ -234,7 +233,7 @@ public final class Format {
   }
 
   public static int getDefaultMoneyScale() {
-    return DEFAULT_MONEY_SCALE;
+    return Localized.MONEY_SCALE;
   }
 
   public static DateTimeFormat getDefaultDateFormat() {
@@ -348,6 +347,30 @@ public final class Format {
       d = null;
     }
     return d;
+  }
+
+  public static String properMonthFull(int month) {
+    return BeeUtils.proper(renderMonthFullStandalone(month));
+  }
+
+  public static String properMonthShort(int month) {
+    return BeeUtils.proper(renderMonthShortStandalone(month));
+  }
+
+  public static String quarterFull(int quarter) {
+    if (TimeUtils.isQuarter(quarter)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersFull()[quarter - 1];
+    } else {
+      return null;
+    }
+  }
+
+  public static String quarterShort(int quarter) {
+    if (TimeUtils.isQuarter(quarter)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersShort()[quarter - 1];
+    } else {
+      return null;
+    }
   }
 
   public static String render(Boolean value) {
@@ -518,6 +541,15 @@ public final class Format {
     }
   }
 
+  public static String renderMonthShortStandalone(int month) {
+    if (TimeUtils.isMonth(month)) {
+      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
+          .monthsShortStandalone()[month - 1];
+    } else {
+      return null;
+    }
+  }
+
   public static String renderPeriod(DateTime start, DateTime end) {
     if (start == null || end == null || start.hasTimePart() || end.hasTimePart()) {
       return TimeUtils.renderPeriod(start, end);
@@ -538,6 +570,14 @@ public final class Format {
 
     } else {
       return TimeUtils.renderPeriod(start, end);
+    }
+  }
+
+  public static String renderYearMonth(HasYearMonth ym) {
+    if (ym == null) {
+      return null;
+    } else {
+      return BeeUtils.joinWords(ym.getYear(), renderMonthFullStandalone(ym).toLowerCase());
     }
   }
 

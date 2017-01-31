@@ -124,8 +124,11 @@ public abstract class ChartBase extends TimeBoard {
 
   private boolean showAdditionalInfo;
 
+  private boolean showOrderCustomer;
+  private boolean showOrderNo;
+
   private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_ORDER_CARGO,
-      VIEW_CARGO_TYPES, VIEW_CARGO_HANDLING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
+      VIEW_CARGO_TYPES, TBL_CARGO_LOADING, TBL_CARGO_UNLOADING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
       VIEW_TRANSPORT_GROUPS, ClassifierConstants.VIEW_COUNTRIES,
       AdministrationConstants.VIEW_COLORS, AdministrationConstants.VIEW_THEME_COLORS);
 
@@ -379,6 +382,10 @@ public abstract class ChartBase extends TimeBoard {
 
   protected abstract String getShowCountryFlagsColumnName();
 
+  protected abstract String getShowOrderCustomerColumnName();
+
+  protected abstract String getShowOderNoColumnName();
+
   protected abstract String getShowPlaceCitiesColumnName();
 
   protected abstract String getShowPlaceCodesColumnName();
@@ -417,6 +424,16 @@ public abstract class ChartBase extends TimeBoard {
       setShowAdditionalInfo(TimeBoardHelper.getBoolean(getSettings(), colName));
     }
 
+    String colOrderCustomerName = getShowOrderCustomerColumnName();
+    if (!BeeUtils.isEmpty(colOrderCustomerName)) {
+      setShowOrderCustomer(TimeBoardHelper.getBoolean(getSettings(), colOrderCustomerName));
+    }
+
+    String colOrderNoName = getShowOderNoColumnName();
+    if (!BeeUtils.isEmpty(colOrderNoName)) {
+      setShowOrderNo(TimeBoardHelper.getBoolean(getSettings(), colOrderNoName));
+    }
+
     setShowCountryFlags(TimeBoardHelper.getBoolean(getSettings(), getShowCountryFlagsColumnName()));
     setShowPlaceInfo(TimeBoardHelper.getBoolean(getSettings(), getShowPlaceInfoColumnName()));
 
@@ -440,8 +457,30 @@ public abstract class ChartBase extends TimeBoard {
   }
 
   protected void renderCargoShipment(HasWidgets panel, OrderCargo cargo, String parentTitle) {
+    renderCargoShipment(panel, cargo, parentTitle, null);
+  }
+
+  protected void renderCargoShipment(HasWidgets panel, OrderCargo cargo, String parentTitle,
+      String styleInfo) {
     if (panel == null || cargo == null) {
       return;
+    }
+
+    if (showOrderNo() || showOrderCustomer()) {
+      String orderInfo = null;
+      if (showOrderNo()) {
+        orderInfo = BeeUtils.joinWords(orderInfo, cargo.getOrderNo());
+      }
+
+      if (showOrderCustomer()) {
+        orderInfo = BeeUtils.joinWords(orderInfo, cargo.getCustomerName());
+      }
+
+      if (!BeeUtils.isEmpty(orderInfo)) {
+        CustomDiv infoWidget = new CustomDiv(styleInfo);
+        infoWidget.setText(orderInfo);
+        panel.add(infoWidget);
+      }
     }
 
     Range<JustDate> range = TimeBoardHelper.normalizedIntersection(cargo.getRange(),
@@ -832,7 +871,7 @@ public abstract class ChartBase extends TimeBoard {
             String chUnloading = entry.getValue().contains(CargoEvent.Type.UNLOADING)
                 ? Places.getUnloadingInfo(entry.getKey()) : null;
 
-            title.add(entry.getKey().getTitle(chLoading, chUnloading));
+            title.add(CargoHandling.getTitle(chLoading, chUnloading));
           }
         }
       }
@@ -1003,6 +1042,14 @@ public abstract class ChartBase extends TimeBoard {
     }
   }
 
+  private void setShowOrderCustomer(boolean showOrderCustomer) {
+    this.showOrderCustomer = showOrderCustomer;
+  }
+
+  private void setShowOrderNo(boolean showOrderNo) {
+    this.showOrderNo = showOrderNo;
+  }
+
   private void setShowAdditionalInfo(boolean showAdditionalInfo) {
     this.showAdditionalInfo = showAdditionalInfo;
   }
@@ -1029,6 +1076,14 @@ public abstract class ChartBase extends TimeBoard {
 
   private boolean showCountryFlags() {
     return showCountryFlags;
+  }
+
+  private boolean showOrderCustomer() {
+    return showOrderCustomer;
+  }
+
+  private boolean showOrderNo() {
+    return showOrderNo;
   }
 
   private boolean showPlaceCities() {

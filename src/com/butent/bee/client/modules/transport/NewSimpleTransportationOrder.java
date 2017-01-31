@@ -7,7 +7,6 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
@@ -28,7 +27,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -52,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 class NewSimpleTransportationOrder extends AbstractFormInterceptor {
 
@@ -109,12 +108,8 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
         return;
       }
 
-      DateTime from = formView.getDateTimeValue(ALS_LOADING_DATE);
-      if (from == null) {
-        from = getOrderDate();
-      }
-
-      DateTime until = formView.getDateTimeValue(ALS_UNLOADING_DATE);
+      DateTime from = getOrderDate();
+      DateTime until = null;
 
       if (from == null && until == null) {
         consumer.accept(null);
@@ -150,29 +145,7 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
         filter.add(Filter.or(Filter.isNull(COL_TRIP_PLANNED_END_DATE),
             Filter.isMoreEqual(COL_TRIP_PLANNED_END_DATE, new DateValue(until.getDate()))));
       }
-
-      if (from == null || until == null) {
-        consumer.accept(filter);
-        return;
-      }
-
-      Filter intersectionFilter = Filter.and(
-          Filter.notNull(ALS_LOADING_DATE),
-          Filter.isLessEqual(ALS_LOADING_DATE, new DateTimeValue(until)),
-          Filter.notNull(ALS_UNLOADING_DATE),
-          Filter.isMoreEqual(ALS_UNLOADING_DATE, new DateTimeValue(from)));
-
-      Queries.getDistinctLongs(VIEW_TRIP_CARGO, COL_TRIP, intersectionFilter,
-          new RpcCallback<Set<Long>>() {
-            @Override
-            public void onSuccess(Set<Long> result) {
-              if (!BeeUtils.isEmpty(result)) {
-                filter.add(Filter.idNotIn(result));
-              }
-
-              consumer.accept(filter);
-            }
-          });
+      consumer.accept(filter);
     }
   }
 
@@ -276,8 +249,8 @@ class NewSimpleTransportationOrder extends AbstractFormInterceptor {
     }
 
     if (!DataUtils.isId(customer)) {
-      getFormView().notifySevere(Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER),
-          Localized.dictionary().valueRequired());
+      getFormView().notifySevere(Localized.dictionary()
+          .fieldRequired(Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER)));
       return;
     }
 

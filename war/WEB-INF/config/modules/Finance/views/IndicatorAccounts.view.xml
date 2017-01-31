@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="IndicatorAccounts" source="IndicatorAccounts"
+      caption="=finIndicatorAccounts"
+>
+  <Columns>
+    <SimpleColumn name="Indicator" />
+
+    <SimpleColumn name="Account" />
+    <SimpleJoin joinType="LEFT" name="Account">
+      <SimpleColumn name="AccountCode" />
+      <SimpleColumn name="AccountName" />
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
+  </Columns>
+</View>

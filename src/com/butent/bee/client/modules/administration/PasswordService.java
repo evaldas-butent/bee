@@ -17,7 +17,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InputPassword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -26,6 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public final class PasswordService {
 

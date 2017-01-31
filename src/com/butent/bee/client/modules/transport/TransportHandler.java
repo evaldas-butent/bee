@@ -35,7 +35,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.TreeGridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -49,7 +48,6 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.ui.Preloader;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -57,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class TransportHandler {
 
@@ -153,13 +152,7 @@ public final class TransportHandler {
     }
   }
 
-  private static boolean bindExpensesToIncomes;
-
   private TransportHandler() {
-  }
-
-  public static boolean bindExpensesToIncomes() {
-    return bindExpensesToIncomes;
   }
 
   public static ParameterList createArgs(String method) {
@@ -196,8 +189,6 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_TRIPS, new CargoTripChecker());
     GridFactory.registerGridInterceptor(VIEW_EXPEDITION_TRIPS, new CargoTripChecker());
 
-    GridFactory.registerGridInterceptor(VIEW_CARGO_HANDLING, new CargoHandlingGrid());
-
     GridFactory.registerGridInterceptor("CargoDocuments", new TransportDocumentsGrid(COL_CARGO));
     GridFactory.registerGridInterceptor("TranspOrderDocuments",
         new TransportDocumentsGrid(COL_TRANSPORTATION_ORDER));
@@ -229,6 +220,8 @@ public final class TransportHandler {
       GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
       GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
     }
+    GridFactory.registerGridInterceptor(TBL_CARGO_LOADING, new CargoHandlingGrid());
+    GridFactory.registerGridInterceptor(TBL_CARGO_UNLOADING, new CargoHandlingGrid());
 
     FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
     FormFactory.registerFormInterceptor(FORM_NEW_SIMPLE_ORDER, new NewSimpleTransportationOrder());
@@ -239,15 +232,7 @@ public final class TransportHandler {
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
-    final Preloader assessmentConsumer = command ->
-        Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, prm -> {
-          bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
-          command.run();
-        });
-    FormFactory.registerPreloader(FORM_CARGO,
-        command -> OrderCargoForm.preload(() -> assessmentConsumer.accept(command)));
-    FormFactory.registerPreloader(FORM_ASSESSMENT, assessmentConsumer);
-    FormFactory.registerPreloader(FORM_ASSESSMENT_FORWARDER, assessmentConsumer);
+    FormFactory.registerPreloader(FORM_CARGO, OrderCargoForm::preload);
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_FORWARDER, new AssessmentForwarderForm());
@@ -260,7 +245,8 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_TRIP_PURCHASE_INVOICE, new InvoiceForm(null));
 
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
-    FormFactory.registerFormInterceptor(FORM_CARGO_PLACE_UNBOUND, new CargoPlaceUnboundForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_PLACE, new CargoPlaceForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_PLACE_UNBOUND, new CargoPlaceForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler());
 

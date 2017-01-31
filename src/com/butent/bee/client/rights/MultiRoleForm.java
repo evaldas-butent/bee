@@ -33,7 +33,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -57,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 abstract class MultiRoleForm extends RightsForm {
 
@@ -112,7 +112,7 @@ abstract class MultiRoleForm extends RightsForm {
   private Long userId;
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void afterCreatePresenter(Presenter presenter) {
     HeaderView header = presenter.getHeader();
 
     if (header != null && !header.hasCommands()) {
@@ -638,7 +638,7 @@ abstract class MultiRoleForm extends RightsForm {
 
           for (RightsObject child : children) {
             if (child.getName().equals(childName)) {
-              enableValueWidet(elem, enabled);
+              enableValueWidget(elem, enabled);
 
               if (child.hasChildren()) {
                 Widget widget = getTable().getWidgetByElement(elem);
@@ -811,7 +811,7 @@ abstract class MultiRoleForm extends RightsForm {
         updateValueCell(widget, isChanged);
 
         if (checked) {
-          enableValueWidet(widget.getElement(), checked);
+          enableValueWidget(widget.getElement(), checked);
         }
       }
     }
