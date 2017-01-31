@@ -114,6 +114,9 @@
           <FlowPanel for="UiTheme" class="flexBox-horizontal">
             <Label for="UiTheme" style="&labelStyle;"/>
             <DataSelector source="UiTheme" style="&inputStyle;" summarize="true" />
+
+            <Label for="DateFormat" style="&labelStyle;"/>
+            <ListBox source="DateFormat" />
           </FlowPanel>
 
           <CheckBox source="OpenInNewTab" summarize="true" style="&tabbedFlowCheckStyle;" />

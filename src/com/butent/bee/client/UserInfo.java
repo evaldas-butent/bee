@@ -20,6 +20,8 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
@@ -58,6 +60,8 @@ public class UserInfo implements HasInfo {
   private int loadingStateDelayMillis;
 
   private String styleId;
+
+  private SupportedLocale dateFormat;
 
   private Presence presence = Presence.ONLINE;
   private Timer presenceTimer;
@@ -110,6 +114,10 @@ public class UserInfo implements HasInfo {
 
   public String getCompanyName() {
     return isLoggedIn() ? userData.getCompanyName() : null;
+  }
+
+  public SupportedLocale getDateFormat() {
+    return dateFormat;
   }
 
   public Filter getFilter(String column) {
@@ -195,6 +203,10 @@ public class UserInfo implements HasInfo {
       return null;
     }
     return userData.getUserId();
+  }
+
+  public static SupportedLocale getUserLocale() {
+    return SupportedLocale.getByLanguage(Localized.dictionary().languageTag());
   }
 
   public String getUserSign() {
@@ -405,6 +417,21 @@ public class UserInfo implements HasInfo {
     }
   }
 
+  private SupportedLocale getDateFormatSetting() {
+    if (DataUtils.isEmpty(settings)) {
+      return getUserLocale();
+    } else if (settings.containsColumn(COL_USER_DATE_FORMAT)) {
+      SupportedLocale locale = settings.getEnum(0, COL_USER_DATE_FORMAT,
+          SupportedLocale.class);
+      if (locale == null) {
+        return getUserLocale();
+      }
+      return locale;
+    } else {
+      return getUserLocale();
+    }
+  }
+
   private int getIntSetting(String colName, int def) {
     if (DataUtils.isEmpty(settings)) {
       return def;
@@ -472,6 +499,10 @@ public class UserInfo implements HasInfo {
     this.newsRefreshIntervalSeconds = newsRefreshIntervalSeconds;
   }
 
+  private void setUserDateFormat(SupportedLocale df) {
+    this.dateFormat = df;
+  }
+
   private void setOpenInNewTab(boolean openInNewTab) {
     this.openInNewTab = openInNewTab;
   }
@@ -495,6 +526,7 @@ public class UserInfo implements HasInfo {
 
     setNewsRefreshIntervalSeconds(getIntSetting(COL_NEWS_REFRESH_INTERVAL_SECONDS, BeeConst.UNDEF));
     setLoadingStateDelayMillis(getIntSetting(COL_LOADING_STATE_DELAY_MILLIS, BeeConst.UNDEF));
+    setUserDateFormat(getDateFormatSetting());
   }
 
   private void updateStyle(String css) {
