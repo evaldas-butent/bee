@@ -262,6 +262,9 @@ public class MailStorageBean {
     }
     p.set("envelope");
 
+    if (MessageFlag.DELETED.isSet(envelope.getFlagMask())) {
+      return messageId;
+    }
     cb.synchronizedCall(TBL_MESSAGES, () -> {
       messageId.setA(qs.getLong(new SqlSelect()
           .addFields(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES))
