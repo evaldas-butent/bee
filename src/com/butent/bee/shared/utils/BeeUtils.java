@@ -3314,6 +3314,10 @@ public final class BeeUtils {
     return (box == null) ? BeeConst.DOUBLE_ZERO : box;
   }
 
+  public static double unbox(Number box) {
+    return (box == null) ? BeeConst.DOUBLE_ZERO : box.doubleValue();
+  }
+
   /**
    * Null-safe Integer unboxing.
    *

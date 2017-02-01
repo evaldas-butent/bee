@@ -35,38 +35,33 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
 class OrderCargoForm extends AbstractFormInterceptor {
 
   private FaLabel copyAction;
 
   static void preload(Runnable command) {
-    Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
-      @Override
-      public void accept(String input) {
-        if (DataUtils.isId(input)) {
-          Queries.getRow(VIEW_CARGO_TYPES, BeeUtils.toLong(input), new RowCallback() {
-            @Override
-            public void onFailure(String... reason) {
-              super.onFailure(reason);
-              defaultCargoType = null;
-              command.run();
-            }
+    Long typeId = Global.getParameterRelation(PRM_CARGO_TYPE);
 
-            @Override
-            public void onSuccess(BeeRow result) {
-              defaultCargoType = result;
-              command.run();
-            }
-          });
-
-        } else {
+    if (DataUtils.isId(typeId)) {
+      Queries.getRow(VIEW_CARGO_TYPES, typeId, new RowCallback() {
+        @Override
+        public void onFailure(String... reason) {
+          super.onFailure(reason);
           defaultCargoType = null;
           command.run();
         }
-      }
-    });
+
+        @Override
+        public void onSuccess(BeeRow result) {
+          defaultCargoType = result;
+          command.run();
+        }
+      });
+    } else {
+      defaultCargoType = null;
+      command.run();
+    }
   }
 
   private static IsRow defaultCargoType;

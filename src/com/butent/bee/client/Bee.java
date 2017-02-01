@@ -21,7 +21,6 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
-import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.screen.Workspace;
@@ -39,6 +38,7 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
@@ -181,16 +181,15 @@ public class Bee implements EntryPoint, ClosingHandler {
               .addAll(Arrays.asList(Codec.beeDeserializeCollection(value)));
           break;
 
-        case COL_CURRENCY:
-          ClientDefaults.setCurrency(BeeUtils.toLongOrNull(value));
+        case PRM_CURRENCY:
+          ClientDefaults.setCurrency(Pair.restore(value));
           break;
 
-        case ALS_CURRENCY_NAME:
-          ClientDefaults.setCurrencyName(value);
-          break;
-
-        case PRM_COMPANY:
-          AdministrationKeeper.setCompany(BeeUtils.toLongOrNull(value));
+        case TBL_PARAMETERS:
+          for (String s : Codec.beeDeserializeCollection(value)) {
+            Global.storeParameter(BeeParameter.restore(s));
+          }
+          LogUtils.getRootLogger().info("parameters", value.length());
           break;
 
         case TBL_DICTIONARY:

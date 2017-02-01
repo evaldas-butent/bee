@@ -103,7 +103,8 @@ class TaskBuilder extends ProductSupportInterceptor {
 
   private static final String NAME_FILES = "Files";
 
-  private String[] widgets = {NAME_START_DATE, NAME_START_TIME, NAME_END_DATE, NAME_END_TIME,
+  private String[] widgets = {
+      NAME_START_DATE, NAME_START_TIME, NAME_END_DATE, NAME_END_TIME,
       NAME_EXPECTED_DURATION, NAME_EXECUTORS, NAME_USER_GROUP_SETTINGS, COL_PRIVATE_TASK,
       PROP_MAIL, NAME_OBSERVERS, NAME_OBSERVER_GROUPS};
 
@@ -126,8 +127,6 @@ class TaskBuilder extends ProductSupportInterceptor {
   private final Map<Long, FileInfo> filesToUpload = new HashMap<>();
   private Long executor;
   private boolean taskIdsCallback;
-
-  String startTime;
 
   TaskBuilder() {
     super();
@@ -267,7 +266,7 @@ class TaskBuilder extends ProductSupportInterceptor {
       observers = (MultiSelector) widget;
     } else if (BeeUtils.same(NAME_OBSERVER_GROUPS, name) && (widget instanceof MultiSelector)) {
       observerGroups = (MultiSelector) widget;
-    }  else if (BeeUtils.same(name, NAME_NOT_SCHEDULED_TASK)) {
+    } else if (BeeUtils.same(name, NAME_NOT_SCHEDULED_TASK)) {
       notScheduledTask = (InputBoolean) widget;
 
       notScheduledTask.addValueChangeHandler(valueChangeEvent -> {
@@ -299,7 +298,7 @@ class TaskBuilder extends ProductSupportInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    Integer status =  getActiveRow().getInteger(getDataIndex(COL_STATUS));
+    Integer status = getActiveRow().getInteger(getDataIndex(COL_STATUS));
     if (Objects.equals(TaskStatus.NOT_SCHEDULED.ordinal(), status)) {
       notScheduledTask.setChecked(true);
     }
@@ -371,21 +370,14 @@ class TaskBuilder extends ProductSupportInterceptor {
     }
 
     if (!TaskStatus.NOT_SCHEDULED.equals(status)) {
-
-      Global.getParameter(TaskConstants.PRM_END_OF_WORK_DAY, input -> {
-
-        Widget w = getFormView().getWidgetByName(NAME_END_TIME);
-        if (w instanceof InputTime) {
-          ((InputTime) w).setValue(input);
-        }
-      });
-
-      Global.getParameter(TaskConstants.PRM_START_OF_WORK_DAY, input -> startTime = input);
-
-      Global.getParameter(TaskConstants.PRM_CREATE_PRIVATE_TASK_FIRST, input -> {
-        newRow.setValue(form.getDataIndex(COL_PRIVATE_TASK), BeeUtils.toBooleanOrNull(input));
-        form.refreshBySource(COL_PRIVATE_TASK);
-      });
+      Widget w = getFormView().getWidgetByName(NAME_END_TIME);
+      if (w instanceof InputTime) {
+        ((InputTime) w).setTime(TimeUtils
+            .toDateTimeOrNull(Global.getParameterTime(TaskConstants.PRM_END_OF_WORK_DAY)));
+      }
+      newRow.setValue(form.getDataIndex(COL_PRIVATE_TASK),
+          Global.getParameterBoolean(TaskConstants.PRM_CREATE_PRIVATE_TASK_FIRST));
+      form.refreshBySource(COL_PRIVATE_TASK);
     }
 
     if (relations != null) {
@@ -431,7 +423,7 @@ class TaskBuilder extends ProductSupportInterceptor {
     }
 
     if (start == null && start == end && noExecutors && notScheduledTask != null
-      && notScheduledTask.isChecked()) {
+        && notScheduledTask.isChecked()) {
       updateRow(event, null, null, null, null);
     } else {
       createTasks(activeRow, event.getCallback(), event);
@@ -595,8 +587,8 @@ class TaskBuilder extends ProductSupportInterceptor {
       Collection<RowChildren> relatedData = new ArrayList<>();
 
       relations.getRowChildren(true).forEach(relation ->
-        relatedData.add(RowChildren.create(relation.getRepository(), relation.getParentColumn(),
-          null, relation.getChildColumn(), relation.getChildrenIds()))
+          relatedData.add(RowChildren.create(relation.getRepository(), relation.getParentColumn(),
+              null, relation.getChildColumn(), relation.getChildrenIds()))
       );
       newRow.setProperty(VAR_TASK_RELATIONS, Codec.beeSerialize(relatedData));
     }
@@ -665,7 +657,8 @@ class TaskBuilder extends ProductSupportInterceptor {
 
       if (BeeUtils.isEmpty(time)) {
         if (nowTime.getDate().getDays() < start.getDate().getDays()) {
-          widget.setValue(startTime);
+          widget.setTime(TimeUtils
+              .toDateTimeOrNull(Global.getParameterTime(TaskConstants.PRM_START_OF_WORK_DAY)));
         } else {
           widget.setTime(TimeUtils.nowMillis());
         }
@@ -907,7 +900,7 @@ class TaskBuilder extends ProductSupportInterceptor {
           if (executors != null) {
             executors.getOracle().setAdditionalFilter(Filter.compareId(projectOwner), true);
             TaskHelper.setWidgetEnabled(executors, notScheduledTask != null
-              && !notScheduledTask.isChecked());
+                && !notScheduledTask.isChecked());
             return;
           }
         }
@@ -931,13 +924,13 @@ class TaskBuilder extends ProductSupportInterceptor {
         if (executors != null) {
           executors.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
           TaskHelper.setWidgetEnabled(executors, notScheduledTask != null
-            && !notScheduledTask.isChecked());
+              && !notScheduledTask.isChecked());
         }
 
         if (observers != null) {
           observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
           TaskHelper.setWidgetEnabled(observers, notScheduledTask != null
-            && !notScheduledTask.isChecked());
+              && !notScheduledTask.isChecked());
         }
       }
     });

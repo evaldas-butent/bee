@@ -141,25 +141,25 @@ public final class NewMailMessage extends AbstractFormInterceptor
     NewMailMessage newMessage = new NewMailMessage(availableAccounts, defaultAccount,
         to, cc, bcc, subject, content, attachments, relatedId, isDraft);
 
-    Global.getParameter(PRM_SIGNATURE_POSITION, isAbove -> {
-      FormFactory.createFormView(FORM_NEW_MAIL_MESSAGE, null, null, false, newMessage,
-          (formDescription, formView) -> {
-            if (formView != null) {
-              formView.start(null);
-              boolean modal = Popup.hasEventPreview();
+    FormFactory.createFormView(FORM_NEW_MAIL_MESSAGE, null, null, false, newMessage,
+        (formDescription, formView) -> {
+          if (formView != null) {
+            formView.start(null);
+            boolean modal = Popup.hasEventPreview();
 
-              DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
-                  newMessage.new DialogCallback(), RowFactory.DIALOG_STYLE);
+            DialogBox dialog = Global.inputWidget(formView.getCaption(), formView,
+                newMessage.new DialogCallback(), RowFactory.DIALOG_STYLE);
 
-              if (!modal) {
-                dialog.setPreviewEnabled(false);
-              }
-              newMessage.initHeader(dialog);
-              dialog.focusOnOpen(newMessage.getFocusWidget());
+            if (!modal) {
+              dialog.setPreviewEnabled(false);
             }
-          });
-      newMessage.isSignatureAbove = BeeUtils.toBoolean(isAbove);
-    });
+            newMessage.initHeader(dialog);
+            dialog.focusOnOpen(newMessage.getFocusWidget());
+          }
+        });
+    newMessage.isSignatureAbove =
+        BeeUtils.unbox(Global.getParameterBoolean(PRM_SIGNATURE_POSITION));
+
     return newMessage;
   }
 

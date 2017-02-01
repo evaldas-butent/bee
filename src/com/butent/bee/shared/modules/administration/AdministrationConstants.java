@@ -119,7 +119,6 @@ public final class AdministrationConstants {
 
   public static final String PARAMETERS_PREFIX = "parameters_";
 
-  public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_RELATION_PARAMETER = PARAMETERS_PREFIX + "relation_parameter";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 

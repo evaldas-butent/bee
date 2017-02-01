@@ -46,6 +46,7 @@ public class InitializationBean {
 
   @PostConstruct
   public void init() {
+    stop();
     Config.setInitialized(false);
 
     LogUtils.setLoggerFactory(new LogbackFactory());
@@ -57,7 +58,7 @@ public class InitializationBean {
     sys.init();
 
     prm.init();
-    moduleBean.getModules().forEach((moduleName) -> prm.refreshParameters(moduleName));
+    moduleBean.getModules().forEach(moduleName -> prm.refreshParameters(moduleName));
 
     Map<String, String> props = prm.getMap(AdministrationConstants.PRM_SERVER_PROPERTIES);
     if (!BeeUtils.isEmpty(props)) {
