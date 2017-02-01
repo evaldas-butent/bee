@@ -258,8 +258,8 @@
         </row>
 
         <row>
-          <Label for="Vehicle" />
-          <InputText source="Vehicle" />
+          <Label for="Vehicle" visible="false" />
+          <InputText source="Vehicle" visible="false" />
           <cell rowSpan="2">
             <Label for="Notes" />
           </cell>
@@ -268,7 +268,7 @@
           </cell>
         </row>
 
-        <row>
+        <row visible="false" >
           <Label for="Driver" />
           <InputText source="Driver" />
         </row>

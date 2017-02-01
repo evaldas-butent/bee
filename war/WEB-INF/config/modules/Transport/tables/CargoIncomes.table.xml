@@ -11,7 +11,7 @@
     <Relation name="Service" notNull="true" relation="Services" label="=trServiceName" />
     <Numeric name="Amount" precision="12" scale="2" notNull="true" label="=amount" />
     <Relation name="Currency" relation="Currencies" notNull="true" label="=currency" defExpr="MAIN_CURRENCY" />
-    <Boolean name="VatPlus" label="=vatPlus" />
+    <Boolean name="VatPlus" label="=vatPlus" defValue="1" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="=vatPercent" />
 

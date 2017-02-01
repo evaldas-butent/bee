@@ -2,9 +2,9 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:x="http://www.butent.com/expression"
 
-  name="CargoInvoices" source="Sales"
-  editForm="CargoInvoice" newRowForm="NewSale" newRowCaption="=trNewCargoInvoice"
-  >
+      name="CargoInvoices" source="Sales"
+      editForm="CargoInvoice" newRowForm="NewSale" newRowCaption="=trNewCargoInvoice"
+>
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Number" />
@@ -57,7 +57,7 @@
     <SimpleColumn name="Payer" />
     <SimpleJoin joinType="LEFT" name="Payer">
       <SimpleColumn name="Name" alias="PayerName" label="=trdPayer" />
-       <SimpleJoin joinType="LEFT" name="CompanyType">
+      <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="PayerTypeName" />
       </SimpleJoin>
     </SimpleJoin>
@@ -83,6 +83,16 @@
     </SimpleJoin>
 
     <ExternalJoin name="Sale" source="CargoIncomes" joinType="LEFT">
+      <SimpleJoin name="Cargo" joinType="LEFT">
+        <SimpleJoin name="Order" joinType="LEFT">
+          <SimpleJoin name="CustomerPerson" joinType="LEFT">
+            <SimpleJoin name="Person" joinType="LEFT">
+              <SimpleColumn alias="PersonFirstName" name="FirstName" />
+              <SimpleColumn alias="PersonLastName" name="LastName" />
+            </SimpleJoin>
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
       <AggregateColumn name="Sale" aggregate="MAX" />
     </ExternalJoin>
   </Columns>

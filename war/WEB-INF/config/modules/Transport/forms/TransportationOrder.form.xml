@@ -48,7 +48,7 @@
         <Label for="ShippingTerm" />
         <DataSelector source="ShippingTerm" style="&inp;" />
       </row>
-      <row>
+      <row visible="false" >
         <Label for="Vehicle" />
         <InputText source="Vehicle" style="&inp;" />
         <Label for="Driver" />

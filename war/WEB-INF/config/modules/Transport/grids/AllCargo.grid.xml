@@ -11,6 +11,9 @@
     <RelColumn name="Customer" caption="=customer" />
     <RelColumn name="Manager" caption="=manager" />
 
+    <DataColumn name="CargoTypeName" />
+    <DataColumn name="CargoGroupName" />
+
     <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Cargo" label="=captionId"
       editEnabled="true" filterSupplier="value" horizontalAlignment="right" />
     <DataColumn name="Description" maxWidth="200" />

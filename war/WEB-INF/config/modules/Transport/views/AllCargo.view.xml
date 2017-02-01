@@ -63,6 +63,16 @@
 
     <ExternalJoin source="OrderCargo" name="Order" joinType="INNER">
       <IdColumn name="Cargo" />
+
+      <SimpleColumn name="CargoType" />
+      <SimpleJoin joinType="LEFT" name="CargoType">
+        <SimpleColumn name="CargoTypeName" />
+      </SimpleJoin>
+      <SimpleColumn name="CargoGroup" />
+      <SimpleJoin joinType="LEFT" name="CargoGroup">
+        <SimpleColumn name="CargoGroupName" />
+      </SimpleJoin>
+
       <SimpleColumn name="Description" />
       <SimpleColumn name="Number" />
 
