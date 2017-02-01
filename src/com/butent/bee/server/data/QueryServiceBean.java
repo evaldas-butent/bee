@@ -1525,7 +1525,7 @@ public class QueryServiceBean {
 
           case DATE:
             Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
-            values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
+            values[i] = (time == null) ? null : BeeUtils.toString(JustDate.readDays(time));
             break;
 
           case NUMBER:

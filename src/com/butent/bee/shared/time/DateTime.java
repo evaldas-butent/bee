@@ -134,6 +134,12 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     this.time = time;
   }
 
+  public void clearTimePart() {
+    if (hasTimePart()) {
+      setLocalDate(getYear(), getMonth(), getDom());
+    }
+  }
+
   /**
    * Compares two {@code DateTime} objects by date and time values.
    * @param other the {@code DateTime} to be compared
@@ -285,7 +291,16 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   @SuppressWarnings("deprecation")
   @Override
   public int getTimezoneOffset() {
-    return new Date(getTime()).getTimezoneOffset();
+    if (getTime() <= 0L) {
+      return 0;
+    }
+
+    int tzo = new Date(getTime()).getTimezoneOffset();
+    return (getTime() + tzo * TimeUtils.MILLIS_PER_MINUTE > 0L) ? tzo : 0;
+  }
+
+  public int getTimezoneOffsetInMillis() {
+    return getTimezoneOffset() * TimeUtils.MILLIS_PER_MINUTE;
   }
 
   @Override
@@ -623,10 +638,6 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     if (utcFields == null) {
       computeUtcFields();
     }
-  }
-
-  private int getTimezoneOffsetInMillis() {
-    return getTimezoneOffset() * TimeUtils.MILLIS_PER_MINUTE;
   }
 
   private void resetComputedFields() {
