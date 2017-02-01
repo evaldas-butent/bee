@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-01-31T14:50:26 -->
+<!-- 2017-02-01T13:51:24 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="525" leftMargin="50" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" whenResourceMissingType="Key" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -933,19 +933,23 @@
 									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableDetail" positionType="Float" x="0" y="0" width="50" height="15" uuid="80d98d2f-4806-4f75-a376-88d24071eb89"/>
+									<reportElement style="TableDetail" positionType="Float" x="0" y="0" width="50" height="15" uuid="80d98d2f-4806-4f75-a376-88d24071eb89">
+										<printWhenExpression><![CDATA[$V{trMap}.containsKey("Driver")]]></printWhenExpression>
+									</reportElement>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="7"/>
 										<paragraph lineSpacing="1_1_2"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$P{Driver}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$V{trMap}.get("Driver")]]></textFieldExpression>
 								</textField>
 								<textField isStretchWithOverflow="true">
-									<reportElement style="TableDetail" positionType="Float" x="0" y="15" width="50" height="15" uuid="910fa85e-90f6-4c70-85f9-65759214ff57"/>
+									<reportElement style="TableDetail" positionType="Float" x="0" y="15" width="50" height="15" uuid="910fa85e-90f6-4c70-85f9-65759214ff57">
+										<printWhenExpression><![CDATA[$V{trMap}.containsKey("Vehicle")]]></printWhenExpression>
+									</reportElement>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
 										<font size="7"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$P{Vehicle}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$V{trMap}.get("Vehicle")]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
