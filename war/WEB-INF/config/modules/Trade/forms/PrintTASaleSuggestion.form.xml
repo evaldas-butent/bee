@@ -9,25 +9,26 @@
   name="&form;" caption="Komercinis pasiūlymas" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
   <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
     class="bee-form-TradeActPrint bee-PrintableForm">
-    <FlowPanel>
-      <Image url="images/logo.png" style="position: relative; width:33%;"/>
-      <FlowPanel style="margin-top:-35px; padding-top: 20px;">
-        <br />
-        <TextLabel style="text-align:center; &bold;">
-          <render>
-            <ui:expression>'Komercinis pasiūlymas Nr. ' + row.SeriesName + '-' + (row.Number ?
-              row.Number :
-              rowId)</ui:expression>
-          </render>
-        </TextLabel>
-        <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
-      </FlowPanel>
-    </FlowPanel>
+    <Table kind="output" style="width:15cm">
+      <row>
+        <Image url="images/logo.png" style="width:6cm;" />
+        <FlowPanel style="padding: 10px; width:9cm;">
+          <TextLabel style="text-align: center; &bold; ">
+            <render>
+              <ui:expression>'Komercinis pasiūlymas Nr. ' + row.SeriesName + '-' + (row.Number ?
+                row.Number :
+                rowId)</ui:expression>
+            </render>
+          </TextLabel>
+          <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
+        </FlowPanel>
+      </row>
+    </Table>
 
     <FlowPanel style="margin-top:12px;">
        <Table style="width:100%; border:1px solid black;" kind="output">
         <row>
-         <cell style="vertical-align:top;">
+         <cell style="vertical-align:top; width: 50%">
            <FlowPanel style="margin-left:10px;">
              <FlowPanel name="Company"  />
              <TextLabel source="Contact">
@@ -37,13 +38,9 @@
              </TextLabel>
             </FlowPanel>
          </cell>
-         <cell style="vertical-align:top;">
+         <cell style="vertical-align:top; width: 50%">
            <FlowPanel name="Supplier" style="margin-left:10px;" />
          </cell>
-        </row>
-        <row>
-          <br />
-          <br />
         </row>
       </Table>
     </FlowPanel>
@@ -62,8 +59,6 @@
         <renderToken source="Notes" prefix="Pastabos: " />
       </TextLabel>
     </FlowPanel>
-
-    <br />
 
     <Label html="Būtų malonu, kad šis pasiūlymas virstu sandoriu!" />
 

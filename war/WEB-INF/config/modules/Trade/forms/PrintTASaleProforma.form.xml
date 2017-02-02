@@ -9,26 +9,27 @@
   name="&form;" caption="Išankstinė sąskaita" disabledActions="save" width="70" widthUnit="%" height="90" heightUnit="%">
   <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
     class="bee-form-TradeActPrint bee-PrintableForm">
-    <FlowPanel>
-       <Image url="images/logo.png" style="position: relative; width:33%;" />
-      <FlowPanel style="margin-top:-70px; padding-top: 20px;">
-        <br />
-        <TextLabel style="text-align:center; &bold;">
-          <render>
-            <ui:expression>'IŠANKSTINĖ SĄSKAITA Nr. ' + rowId</ui:expression>
-          </render>
-        </TextLabel>
-        <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
-      </FlowPanel>
-    </FlowPanel>
+    <Table kind="output" style="width:15cm">
+      <row>
+        <Image url="images/logo.png" style="width:6cm;" />
+        <FlowPanel style="padding: 10px; width:9cm;">
+          <TextLabel style="text-align:center; &bold; ">
+            <render>
+              <ui:expression>'IŠANKSTINĖ SĄSKAITA Nr. ' + rowId</ui:expression>
+            </render>
+          </TextLabel>
+          <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
+        </FlowPanel>
+      </row>
+    </Table>
 
     <FlowPanel style="margin-top:12px;">
       <Table style="width:100%; border:1px solid black;" kind="output">
         <row>
-          <cell style="vertical-align:top;">
+          <cell style="vertical-align:top; width: 60%">
             <Label html="Pardavėjas" style="font-weight: bold; margin-left:10px;" />
           </cell>
-          <cell style="vertical-align:top;">
+          <cell style="vertical-align:top; width: 40%">
             <Label html="Pirkėjas" style="font-weight: bold;" />
           </cell>
         </row>
@@ -60,7 +61,7 @@
         </row>
       </Table>
     </FlowPanel>
-   <br />
+    <br />
     <FlowPanel name="TradeActItems" class="TradeActItems" style="&section;" />
     <br />
     <FlowPanel name="TradeActServices" class="TradeActServices" style="&section;" />

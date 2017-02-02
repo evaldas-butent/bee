@@ -12,66 +12,58 @@
         height="90" heightUnit="%">
   <FlowPanel style="padding: 10px; background-color: white; font-size:12px;" contentEditable="true"
     class="bee-form-TradeActPrint bee-PrintableForm">
-    <FlowPanel>
-      <Image url="images/logo.png" style="position: relative; width:33%;" />
-      <FlowPanel style="margin-top:-35px; padding-top: 20px;">
-        <br />
-        <TextLabel style="text-align:center; &bold;">
-          <render>
-            <ui:expression>'Priedas Nr. ' + rowId + ' prie nuomos sutarties: ' + (row.ContractNumber ? row.ContractNumber : '')</ui:expression>
-          </render>
-        </TextLabel>
-        <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
-      </FlowPanel>
-    </FlowPanel>
+    <Table kind="output" style="width:15cm">
+      <row>
+        <Image url="images/logo.png" style="width:6cm;" />
+        <FlowPanel style="padding: 10px; width:9cm;">
+          <TextLabel style="text-align: center; &bold; ">
+            <render>
+              <ui:expression>'Priedas Nr. ' + rowId + ' prie nuomos sutarties: ' + (row.ContractNumber ? row.ContractNumber : '')</ui:expression>
+            </render>
+          </TextLabel>
+          <DateTimeLabel source="Date" format="DATE_TIME_SHORT" style="text-align: center;" />
+        </FlowPanel>
+      </row>
+    </Table>
 
     <FlowPanel style="margin-top:12px;">
       <Table style="width:100%; border:1px solid black;" kind="output">
         <row>
-          <cell style="vertical-align:top;">
+          <cell style="vertical-align:top; width: 60%">
             <Label html="Nuomotojas" style="font-weight: bold; margin-left:10px;" />
           </cell>
-          <cell style="vertical-align:top;">
+          <cell style="vertical-align:top; width: 40%">
             <Label html="Nuomininkas" style="font-weight: bold;" />
           </cell>
         </row>
-        <row>
-          <cell style="vertical-align:top;">
+        <row style="vertical-align: top">
+          <FlowPanel class="flexBox-vertical">
             <FlowPanel name="Supplier" style="margin-left:10px;" />
-          </cell>
-          <cell style="vertical-align:top;">
+            <TextLabel source="Manager" style="margin-left:10px;">
+              <renderToken source="ManagerFirstName" prefix="Atsakingas asmuo: " />
+              <renderToken source="ManagerLastName" />
+              <renderToken source="ManagerMobile" prefix=" Mob.: " />
+            </TextLabel>
+          </FlowPanel>
+          <FlowPanel class="flexBox-vertical">
             <FlowPanel name="Company" />
-          </cell>
-        </row>
-        <row>
-          <TextLabel />
-          <TextLabel source="Contract" style="border-left: 1px solid black;">
-            <renderToken source="ContractName" />
-            <renderToken source="ContractNumber" />
-          </TextLabel>
-        </row>
-        <row>
-          <TextLabel />
-          <TextLabel source="Object">
-            <renderToken source="ObjectName" prefix="Objektas: " />
-            <renderToken source="ObjectAddress" />
-          </TextLabel>
-        </row>
-        <row>
-          <TextLabel source="Manager" style="margin-left:10px;">
-            <renderToken source="ManagerFirstName" prefix="Atsakingas asmuo: " />
-            <renderToken source="ManagerLastName" />
-            <renderToken source="ManagerMobile" prefix=" Mob.: " />
-          </TextLabel>
-          <TextLabel source="Contact">
-            <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
-            <renderToken source="ContactLastName" />
-            <renderToken source="ContactMobile" prefix=" Mob.: " />
-          </TextLabel>
+            <TextLabel source="Contract" style="border-left: 1px solid black;">
+              <renderToken source="ContractName" />
+              <renderToken source="ContractNumber" />
+            </TextLabel>
+            <TextLabel source="Object">
+              <renderToken source="ObjectName" prefix="Objektas: " />
+              <renderToken source="ObjectAddress" />
+            </TextLabel>
+            <TextLabel source="Contact">
+              <renderToken source="ContactFirstName" prefix="Atsakingas asmuo: " />
+              <renderToken source="ContactLastName" />
+              <renderToken source="ContactMobile" prefix=" Mob.: " />
+            </TextLabel>
+          </FlowPanel>
         </row>
       </Table>
     </FlowPanel>
-    <br />
     <HtmlPanel style="&section;">
       <span style="display:block; white-space:pre-wrap;">Pagal nuomos sutarties 3 straipsnį NUOMOTOJAS ir NUOMININKAS susitaria dėl šių toliau išdėstytų nuomos sąlygų bei įkainių.</span>
     </HtmlPanel>
