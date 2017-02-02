@@ -574,7 +574,7 @@ public class QueryServiceBean {
         .addFrom(tblName)
         .setWhere(SqlUtils.equals(tblName, fldName, fldValue));
 
-    String als = sys.joinTranslationField(query, tblName, null, fldName, locale.getLanguage());
+    String als = sys.joinTranslationField(query, tblName, tblName, fldName, locale.getLanguage());
 
     return ArrayUtils.getQuietly(getColumn(query.addFields(als, fldName)), 0);
   }
