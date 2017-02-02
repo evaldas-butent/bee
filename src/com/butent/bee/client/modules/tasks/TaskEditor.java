@@ -1461,11 +1461,12 @@ class TaskEditor extends ProductSupportInterceptor {
                 Data.getDataInfo(VIEW_TASKS), taskRow, false);
           }
         });
-    Map<Long, FileInfo> files = Maps.newLinkedHashMap();
-    TaskUtils.getFiles(taskRow).forEach(file -> files.put(file.getId(), file));
 
+    if (taskRow.hasPropertyValue(PROP_FILES)) {
+      newTaskRow.setProperty(PROP_FILES, taskRow.getProperty(PROP_FILES));
+    }
     RowFactory.createRow(newTaskInfo.getNewRowForm(), newTaskInfo.getNewRowCaption(), newTaskInfo,
-        newTaskRow, Modality.ENABLED, null, new TaskBuilder(files, null, true), null,
+        newTaskRow, Modality.ENABLED, null, new TaskBuilder(true), null,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
@@ -1534,6 +1535,7 @@ class TaskEditor extends ProductSupportInterceptor {
         doVisit();
         break;
       case CREATE_NOT_SCHEDULED:
+      case CREATE_SCHEDULED:
       case EDIT:
         Assert.untouchable();
     }
