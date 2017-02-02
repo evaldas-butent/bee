@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+           xmlns:ui="http://www.butent.com/ui">
   <DataColumn name="Price" visible="true" required="true">
+    <dynStyle>
+      <ui:inline>
+        background-color: #fcc;
+      </ui:inline>
+      <ui:expression>!(row.Price)</ui:expression>
+    </dynStyle>
     <footer expression="row.Quantity * row.Price" />
   </DataColumn>
 </g:columns>

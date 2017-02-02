@@ -52,6 +52,12 @@
     </DataColumn>
 
     <DataColumn name="Price" visible="true" required="true">
+      <dynStyle>
+        <ui:inline>
+          background-color: #fcc;
+        </ui:inline>
+        <ui:expression>!(row.Price)</ui:expression>
+      </dynStyle>
       <footer expression="&qty; * row.Price" />
     </DataColumn>
 

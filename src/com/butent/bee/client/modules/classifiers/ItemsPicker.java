@@ -40,7 +40,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.FaLabel;
@@ -57,7 +56,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
@@ -397,7 +395,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       ItemPrice defPrice = selectedPrices.containsKey(item.getId())
           ? selectedPrices.get(item.getId()) : itemPrice;
 
-      boolean enableQty = false;
       for (ItemPrice ip : ItemPrice.values()) {
         String html = renderPrice(item, priceIndexes.get(ip), currencyIndexes.get(ip));
 
@@ -407,10 +404,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           table.setHtml(r, c, html,
               (ip == defPrice) ? STYLE_SELECTED_PRICE_CELL : STYLE_PRICE_CELL);
           DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
-
-          if (ip == defPrice) {
-            enableQty = true;
-          }
         }
         c++;
       }
@@ -454,12 +447,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       }
 
       Double qty = quantities.get(item.getId());
-      InputNumber wQty = (InputNumber) renderQty(qtyColumn, qty);
-      wQty.setStyleName(StyleUtils.NAME_DISABLED, !enableQty);
-      wQty.setStyleName(StyleUtils.NAME_TEXT_BOX, enableQty);
-      wQty.setEnabled(enableQty);
-
-      table.setWidget(r, c, wQty, STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
+      table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
 
       DomUtils.setDataIndex(table.getRow(r), item.getId());
 
@@ -669,10 +657,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     Collection<InputNumber> inputs = UiHelper.getChildren(itemPanel, InputNumber.class);
 
     for (InputNumber input : inputs) {
-      if (!input.isEnabled()) {
-        continue;
-      }
-
       Double qty = input.getNumber();
 
       if (BeeUtils.isPositive(qty)) {
@@ -735,27 +719,15 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
             Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_COLUMN, ip.ordinal()));
 
         for (Element row : rows) {
-          Element qtyInput = Selectors.getElementByClassName(row, STYLE_QTY_INPUT);
           if (!selectedPrices.containsKey(DomUtils.getDataIndexLong(row))) {
             if (itemPrice != null) {
               deselectPrice(row);
-              if (DomUtils.isInputElement(qtyInput)) {
-                qtyInput.addClassName(StyleUtils.NAME_DISABLED);
-                qtyInput.removeClassName(StyleUtils.NAME_TEXT_BOX);
-                qtyInput.setAttribute(Attributes.DISABLED, "");
-              }
             }
 
             Element el = Selectors.getElement(row, priceSelector);
             if (el != null) {
               el.removeClassName(STYLE_PRICE_CELL);
               el.addClassName(STYLE_SELECTED_PRICE_CELL);
-
-              if (DomUtils.isInputElement(qtyInput)) {
-                qtyInput.removeClassName(StyleUtils.NAME_DISABLED);
-                qtyInput.addClassName(StyleUtils.NAME_TEXT_BOX);
-                qtyInput.removeAttribute(Attributes.DISABLED);
-              }
             }
           }
         }
