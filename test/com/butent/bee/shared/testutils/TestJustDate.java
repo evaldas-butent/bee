@@ -282,14 +282,13 @@ public class TestJustDate {
     jd = new JustDate(1);
     assertEquals( TimeUtils.MILLIS_PER_HOUR * 22, jd.getTime());
     jd = new JustDate(0);
-    assertEquals(0, jd.getTime());
+    assertEquals(TimeUtils.MILLIS_PER_HOUR * -2, jd.getTime());
     jd = new JustDate(-1);
-    assertEquals( -TimeUtils.MILLIS_PER_DAY, jd.getTime());
+    assertEquals( -TimeUtils.MILLIS_PER_DAY - TimeUtils.MILLIS_PER_HOUR * 2, jd.getTime());
 
     jd = new JustDate(1900, 1, 1);
     assertEquals(-25567, jd.getDays());
-    assertEquals(-2208988800000L, TimeUtils.MILLIS_PER_DAY * jd.getDays());
-    assertEquals(-2208988800000L, jd.getTime());
+    assertEquals(-2208996000000L, jd.getTime());
   }
 
   @Test

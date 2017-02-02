@@ -251,18 +251,22 @@ public class TestDateTime {
     assertEquals(-180, varDate.getTimezoneOffset());
 
     varDate = new DateTime(-1L);
-    assertEquals(0, varDate.getTimezoneOffset());
+    assertEquals(-120, varDate.getTimezoneOffset());
     varDate = new DateTime(0L);
-    assertEquals(0, varDate.getTimezoneOffset());
+    assertEquals(-120, varDate.getTimezoneOffset());
     varDate = new DateTime(2 * TimeUtils.MILLIS_PER_HOUR);
-    assertEquals(0, varDate.getTimezoneOffset());
+    assertEquals(-120, varDate.getTimezoneOffset());
     varDate = new DateTime(2 * TimeUtils.MILLIS_PER_HOUR + 1);
     assertEquals(-120, varDate.getTimezoneOffset());
 
     varDate = new DateTime(1969, 1, 1);
-    assertEquals(0, varDate.getTimezoneOffset());
+    assertEquals(-120, varDate.getTimezoneOffset());
+    varDate = new DateTime(1920, 1, 1);
+    assertEquals(-120, varDate.getTimezoneOffset());
+    varDate = new DateTime(1910, 1, 1);
+    assertEquals(-120, varDate.getTimezoneOffset());
     varDate = new DateTime(1900, 1, 1);
-    assertEquals(0, varDate.getTimezoneOffset());
+    assertEquals(-120, varDate.getTimezoneOffset());
   }
 
   @Test

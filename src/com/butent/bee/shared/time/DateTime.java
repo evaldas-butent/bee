@@ -291,12 +291,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   @SuppressWarnings("deprecation")
   @Override
   public int getTimezoneOffset() {
-    if (getTime() <= 0L) {
-      return 0;
-    }
-
-    int tzo = new Date(getTime()).getTimezoneOffset();
-    return (getTime() + tzo * TimeUtils.MILLIS_PER_MINUTE > 0L) ? tzo : 0;
+    return new Date(Math.max(getTime(), 0L)).getTimezoneOffset();
   }
 
   public int getTimezoneOffsetInMillis() {
