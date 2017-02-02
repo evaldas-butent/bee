@@ -110,6 +110,9 @@ public class SelfServiceScreen extends ScreenImpl {
     GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_STATUS);
     GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_REASON);
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
+    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_HOST);
+    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_AGENT);
+    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_EXPEDITION_LOGISTICS);
 
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_ORDER_ID);
     FormFactory.hideWidget(FORM_SHIPMENT_REQUEST, COL_STATUS);
