@@ -45,6 +45,8 @@
     <RelColumn name="ValueCurrency" />
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+    <DataColumn name="Vehicle" />
+    <DataColumn name="Driver" />
 
     <DataColumn name="LossReason" />
     <DataColumn name="Host" />
