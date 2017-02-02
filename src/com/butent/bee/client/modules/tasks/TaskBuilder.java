@@ -372,8 +372,7 @@ class TaskBuilder extends ProductSupportInterceptor {
     if (!TaskStatus.NOT_SCHEDULED.equals(status)) {
       Widget w = getFormView().getWidgetByName(NAME_END_TIME);
       if (w instanceof InputTime) {
-        ((InputTime) w).setTime(TimeUtils
-            .toDateTimeOrNull(Global.getParameterTime(TaskConstants.PRM_END_OF_WORK_DAY)));
+        ((InputTime) w).setMillis(Global.getParameterTime(TaskConstants.PRM_END_OF_WORK_DAY));
       }
       newRow.setValue(form.getDataIndex(COL_PRIVATE_TASK),
           Global.getParameterBoolean(TaskConstants.PRM_CREATE_PRIVATE_TASK_FIRST));
@@ -657,8 +656,7 @@ class TaskBuilder extends ProductSupportInterceptor {
 
       if (BeeUtils.isEmpty(time)) {
         if (nowTime.getDate().getDays() < start.getDate().getDays()) {
-          widget.setTime(TimeUtils
-              .toDateTimeOrNull(Global.getParameterTime(TaskConstants.PRM_START_OF_WORK_DAY)));
+          widget.setMillis(Global.getParameterTime(TaskConstants.PRM_START_OF_WORK_DAY));
         } else {
           widget.setTime(TimeUtils.nowMillis());
         }
