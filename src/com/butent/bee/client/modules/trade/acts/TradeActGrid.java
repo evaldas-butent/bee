@@ -347,16 +347,24 @@ public class TradeActGrid extends AbstractGridInterceptor {
             int idxSeries = getGridView().getDataIndex(COL_TA_SERIES);
             int idxCompany = getGridView().getDataIndex(COL_TA_COMPANY);
 
-            IsRow activeRow = getGridView().getActiveRow();
-            TradeActKind rowKind = TradeActKeeper.getKind(getViewName(), activeRow);
+            IsRow activeRow = null;
+            TradeActKind rowKind = null;
+//            TradeActKind rowKind = TradeActKeeper.getKind(getViewName(), activeRow);
             boolean mixedReturn = false;
 
-            if (rowKind == null || !rowKind.enableReturn()) {
-              getGridView().notifyWarning(Localized.dictionary().taIsDifferent());
-              return;
-            }
-
             for (IsRow row : getGridView().getRowData()) {
+              if (activeRow == null && getGridView().isRowSelected(row.getId())) {
+                activeRow = row;
+                rowKind = TradeActKeeper.getKind(getViewName(), activeRow);
+
+                if (rowKind == null || !rowKind.enableReturn()) {
+                  getGridView().notifyWarning(Localized.dictionary().taIsDifferent());
+                  return;
+                }
+              } else if (activeRow == null) {
+                continue;
+              }
+
               if (getGridView().isRowSelected(row.getId()) || DataUtils.sameId(row, activeRow)) {
                 if (BeeUtils.compare(activeRow.getLong(idxObject), row.getLong(idxObject),
                     null) != BeeConst.COMPARE_EQUAL) {
@@ -395,6 +403,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
               multiReturn(rows);
             } else if (mixedReturn) {
               multiMixedReturn(rows);
+            } else {
+              getGridView().notifyWarning(Localized.dictionary().selectAtLeastOneRow());
             }
           });
 
@@ -817,30 +827,17 @@ public class TradeActGrid extends AbstractGridInterceptor {
   }
 
   private void refreshCommands(IsRow row) {
-    if (row == null) {
-      return;
-    }
+    TradeActKind k = null;
 
-    TradeActKind k = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
-
-    if (supplementCommand != null) {
-      TradeActKeeper.setCommandEnabled(supplementCommand, k != null && k.enableSupplement());
+    if (row != null) {
+      k = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
     }
-    if (returnCommand != null) {
-      TradeActKeeper.setCommandEnabled(returnCommand, k != null && k.enableReturn()
-          && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, row, COL_TA_CONTINUOUS)));
-    }
-
-    if (alterCommand != null) {
-      TradeActKeeper.setCommandEnabled(alterCommand, k != null && k.enableAlter());
-    }
-
-    if (copyCommand != null) {
-      TradeActKeeper.setCommandEnabled(copyCommand, k != null && k.enableCopy());
-    }
-    if (templateCommand != null) {
-      TradeActKeeper.setCommandEnabled(templateCommand, k != null && k.enableTemplate());
-    }
+    TradeActKeeper.setCommandEnabled(supplementCommand, k != null && k.enableSupplement());
+    TradeActKeeper.setCommandEnabled(returnCommand, k != null && k.enableReturn()
+      && !DataUtils.isId(Data.getLong(VIEW_TRADE_ACTS, row, COL_TA_CONTINUOUS)));
+    TradeActKeeper.setCommandEnabled(alterCommand, k != null && k.enableAlter());
+    TradeActKeeper.setCommandEnabled(copyCommand, k != null && k.enableCopy());
+    TradeActKeeper.setCommandEnabled(templateCommand, k != null && k.enableTemplate());
   }
 
   private void saveAsTemplate(String name) {

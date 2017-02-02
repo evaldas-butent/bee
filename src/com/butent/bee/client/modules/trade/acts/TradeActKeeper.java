@@ -702,12 +702,12 @@ public final class TradeActKeeper {
   }
 
   static void setCommandEnabled(EnablableWidget command, boolean enabled) {
+    if (command == null) {
+      return;
+    }
     command.setEnabled(enabled);
     command.setStyleName(STYLE_COMMAND_DISABLED, !enabled);
   }
-
-
-
 
   static void setDefaultOperation(IsRow row, TradeActKind kind) {
     Pair<Long, String> operation = getDefaultOperation(kind);
