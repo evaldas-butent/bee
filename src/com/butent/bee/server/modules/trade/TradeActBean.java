@@ -3387,7 +3387,11 @@ public class TradeActBean implements HasTimerService {
 
     SqlUpdate upd = new SqlUpdate(TBL_TRADE_ACTS)
         .addConstant(COL_TA_STATUS, apprId)
-        .setWhere(SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), actsForApprove));
+        .setWhere(
+          SqlUtils.and(
+            SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_STATUS, retId),
+            SqlUtils.inList(TBL_TRADE_ACTS, sys.getIdName(TBL_TRADE_ACTS), actsForApprove)
+          ));
 
     qs.updateData(upd);
   }
