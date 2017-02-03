@@ -3248,6 +3248,10 @@ public final class BeeUtils {
     return (x == null) ? null : toString(x);
   }
 
+  public static String toStringOrNull(Long x) {
+    return (x == null) ? null : toString(x);
+  }
+
   public static String trim(String s) {
     return (s == null) ? BeeConst.STRING_EMPTY : s.trim();
   }
@@ -3312,6 +3316,10 @@ public final class BeeUtils {
    */
   public static double unbox(Double box) {
     return (box == null) ? BeeConst.DOUBLE_ZERO : box;
+  }
+
+  public static double unbox(Number box) {
+    return (box == null) ? BeeConst.DOUBLE_ZERO : box.doubleValue();
   }
 
   /**

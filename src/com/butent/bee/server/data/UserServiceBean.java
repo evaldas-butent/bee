@@ -228,22 +228,22 @@ public class UserServiceBean {
 
   public boolean canCreateData(String viewName) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().canCreateData(viewName);
+    return info != null && info.getUserData().canCreateData(viewName);
   }
 
   public boolean canEditColumn(String viewName, String column) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().canEditColumn(viewName, column);
+    return info != null && info.getUserData().canEditColumn(viewName, column);
   }
 
   public boolean canDeleteData(String viewName) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().canDeleteData(viewName);
+    return info != null && info.getUserData().canDeleteData(viewName);
   }
 
   public boolean canEditData(String viewName) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().canEditData(viewName);
+    return info != null && info.getUserData().canEditData(viewName);
   }
 
   public BeeRowSet ensureUserSettings() {
@@ -519,7 +519,7 @@ public class UserServiceBean {
 
   public boolean hasDataRight(String viewName, RightsState state) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().hasDataRight(viewName, state);
+    return info != null && info.getUserData().hasDataRight(viewName, state);
   }
 
   @Lock(LockType.WRITE)
@@ -644,7 +644,7 @@ public class UserServiceBean {
 
   public boolean isActive(Long userId) {
     UserInfo userInfo = getUserInfo(userId);
-    return (userInfo == null) ? false : !userInfo.isBlocked(System.currentTimeMillis());
+    return userInfo != null && !userInfo.isBlocked(System.currentTimeMillis());
   }
 
   public boolean isAdministrator() {
@@ -653,7 +653,7 @@ public class UserServiceBean {
 
   public boolean isAnyModuleVisible(String input) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isAnyModuleVisible(input);
+    return info != null && info.getUserData().isAnyModuleVisible(input);
   }
 
   public Boolean isBlocked(String user) {
@@ -663,7 +663,7 @@ public class UserServiceBean {
 
   public boolean isColumnRequired(BeeView viewName, String column) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isColumnRequired(viewName.getName(), column);
+    return info != null && info.getUserData().isColumnRequired(viewName.getName(), column);
   }
 
   public boolean isColumnVisible(BeeView view, String column) {
@@ -691,17 +691,17 @@ public class UserServiceBean {
 
   public boolean isDataVisible(String viewName) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isDataVisible(viewName);
+    return info != null && info.getUserData().isDataVisible(viewName);
   }
 
   public boolean isMenuVisible(String object) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isMenuVisible(object);
+    return info != null && info.getUserData().isMenuVisible(object);
   }
 
   public boolean isModuleVisible(ModuleAndSub moduleAndSub) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isModuleVisible(moduleAndSub);
+    return info != null && info.getUserData().isModuleVisible(moduleAndSub);
   }
 
   public boolean isUser(String user) {
@@ -710,7 +710,7 @@ public class UserServiceBean {
 
   public boolean isWidgetVisible(RegulatedWidget widget) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isWidgetVisible(widget);
+    return info != null && info.getUserData().isWidgetVisible(widget);
   }
 
   public ResponseObject login(String host, String agent) {

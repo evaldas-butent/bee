@@ -118,19 +118,15 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
 
       setWidget(panel);
 
-      Global.getParameter(PRM_MESSAGE_TEMPLATE, parameter -> {
-        for (Map.Entry<String, String> entry : Codec.deserializeLinkedHashMap(
-            parameter).entrySet()) {
-          String[] items;
-
-          try {
-            items = Codec.beeDeserializeCollection(entry.getValue());
-          } catch (Exception e) {
-            items = null;
-          }
-          if (!ArrayUtils.isEmpty(items)) {
-            templates.put(entry.getKey(), Arrays.asList(items));
-          }
+      Global.getParameterMap(PRM_MESSAGE_TEMPLATE).forEach((key, value) -> {
+        String[] items;
+        try {
+          items = Codec.beeDeserializeCollection(value);
+        } catch (Exception e) {
+          items = null;
+        }
+        if (!ArrayUtils.isEmpty(items)) {
+          templates.put(key, Arrays.asList(items));
         }
         renderTemplates(null);
       });

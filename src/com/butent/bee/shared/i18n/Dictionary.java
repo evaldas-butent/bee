@@ -4660,6 +4660,8 @@ public interface Dictionary {
 
   default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
 
+  default String prmSmsRequestContactInfoFrom() {return g("prmSmsRequestContactInfoFrom");}
+
   default String prmSmsRequestServiceAddress() {return g("prmSmsRequestServiceAddress");}
 
   default String prmSmsRequestServiceFrom() {return g("prmSmsRequestServiceFrom");}
@@ -5110,6 +5112,8 @@ public interface Dictionary {
   default String svcDeviceCategory() {return g("svcDeviceCategory");}
 
   default String svcDevices() {return g("svcDevices");}
+
+  default String svcEmptySmsFromError() {return g("svcEmptySmsFromError");}
 
   default String svcEquipment() {return g("svcEquipment");}
 

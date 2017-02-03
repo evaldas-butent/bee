@@ -115,11 +115,11 @@ public class CargoSalesGrid extends InvoiceBuilder {
       newRow.setValue(targetInfo.getColumnIndex(COL_CURRENCY), entry.getKey());
       newRow.setValue(targetInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
     }
-    Global.getRelationParameter(PRM_INVOICE_PREFIX, (prefixId, prefix) -> {
+    Global.getParameterRelation(PRM_INVOICE_PREFIX, (prefixId, prefix) -> {
       newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SALE_SERIES), prefixId);
       newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
 
-      Global.getRelationParameter(PRM_SALE_OPERATION, (opId, op) -> {
+      Global.getParameterRelation(PRM_SALE_OPERATION, (opId, op) -> {
         if (DataUtils.isId(opId)) {
           newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), opId);
           newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), op);

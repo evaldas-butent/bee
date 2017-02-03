@@ -27,6 +27,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.imports.ImportCallback;
 import com.butent.bee.client.imports.ImportOptionForm;
@@ -38,6 +39,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -46,6 +48,7 @@ import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputSpinner;
@@ -241,7 +244,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
 
         inputInfo(bundle.toString(), price, true,
             configuration.getBundleDescription(bundle), configuration.getBundleCriteria(bundle),
-            info -> {
+            configuration.getBundlePhoto(bundle), info -> {
               ParameterList args = CarsKeeper.createSvcArgs(SVC_SET_BUNDLE);
               args.addDataItem(COL_BRANCH, getBranchId());
               args.addDataItem(COL_BUNDLE, Codec.beeSerialize(bundle));
@@ -440,10 +443,12 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
   }
 
   private static void inputInfo(String title, String price, boolean priceRequired,
-      String description, Map<String, String> criteria, Consumer<ConfInfo> infoConsumer,
-      Consumer<DialogBox> destroyer, Element target, Widget... widgets) {
+      String description, Map<String, String> criteria, Long photoFile,
+      Consumer<ConfInfo> infoConsumer, Consumer<DialogBox> destroyer, Element target,
+      Widget... widgets) {
 
     HtmlTable table = new HtmlTable();
+    table.setColumnCellKind(0, CellKind.LABEL);
     table.setWidth("100%");
 
     InputSpinner inputPrice = new InputSpinner();
@@ -493,6 +498,23 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
             Localized.dictionary().criterionValue(), newCriteria, critConsumer));
     critConsumer.accept(criteria);
 
+    Label photoCap = new Label(Localized.dictionary().photo());
+    photoCap.setStyleName(StyleUtils.NAME_LINK);
+    table.setWidget(3, 0, photoCap);
+
+    Image img = new Image(DataUtils.isId(photoFile) ? FileUtils.getUrl(photoFile) : "");
+    StyleUtils.updateStyle(img, "max-width:20em; max-height:150px; object-fit:contain;");
+    table.setWidget(3, 1, img);
+
+    photoCap.addClickHandler(new PhotoPicker(fileInfo -> {
+      img.setVisible(fileInfo != null);
+
+      if (img.isVisible()) {
+        FileUtils.commitFile(fileInfo, fileId -> img.setUrl(FileUtils.getUrl(fileId)));
+      } else {
+        img.setUrl("");
+      }
+    }));
     if (!ArrayUtils.isEmpty(widgets)) {
       Arrays.stream(widgets).forEach(w -> table.setWidget(table.getRowCount(), 1, w));
     }
@@ -513,8 +535,11 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
 
       @Override
       public void onSuccess() {
+        String url = img.getUrl();
         infoConsumer.accept(ConfInfo.of(BeeUtils.isNonNegativeInt(inputPrice.getValue())
-            ? inputPrice.getValue() : null, newDescription.get(), null).setCriteria(newCriteria));
+            || Objects.equals(inputPrice.getValue(), Configuration.DEFAULT_PRICE)
+            ? inputPrice.getValue() : null, newDescription.get()).setCriteria(newCriteria)
+            .setPhoto(BeeUtils.toLongOrNull(url.substring(url.lastIndexOf("/") + 1))));
       }
     }, null, target, destroyer != null ? EnumSet.of(Action.DELETE) : null);
   }
@@ -1053,7 +1078,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
 
         if (beeRow != null) {
           Option opt = new Option(beeRow);
-          setOptionInfo(opt, ConfInfo.of(inputPrice.getValue(), null, null));
+          setOptionInfo(opt, ConfInfo.of(inputPrice.getValue(), null));
           setPackets(Collections.singleton(opt));
 
         } else if (DataUtils.isId(inputGroup.getRelatedId())) {
@@ -1069,7 +1094,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
                       } else {
                         List<Option> opts = new ArrayList<>();
                         rs.forEach(row -> opts.add(new Option(row)));
-                        opts.forEach(opt -> setOptionInfo(opt, ConfInfo.of(null, null, null)));
+                        opts.forEach(opt -> setOptionInfo(opt, ConfInfo.of(null, null)));
                         setPackets(opts);
                       }
                     }
@@ -1096,7 +1121,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
         } else {
           inputInfo(option.toString(), configuration.getOptionPrice(option), false,
               configuration.getOptionDescription(option), configuration.getOptionCriteria(option),
-              info -> {
+              configuration.getOptionPhoto(option), info -> {
                 setOptionInfo(option, info);
                 refresh();
               }, null, cell);
@@ -1107,6 +1132,7 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
       String price = configuration.getRelationPrice(option, bundle);
       String description = configuration.getRelationDescription(option, bundle);
       Map<String, String> criteria = configuration.getRelationCriteria(option, bundle);
+      Long photo = configuration.getRelationPhoto(option, bundle);
 
       BiConsumer<String, ConfInfo> consumer = (svc, info) -> {
         ParameterList args = CarsKeeper.createSvcArgs(svc);
@@ -1137,23 +1163,23 @@ public class ConfPricelistForm extends AbstractFormInterceptor implements Select
           packets.add(packId);
         }
         configuration.setRelationInfo(option, bundle, null, DataUtils.buildIdList(packets));
-        consumer.accept(SVC_SET_RELATION, ConfInfo.of(price, description, null)
-            .setCriteria(criteria));
+        consumer.accept(SVC_SET_RELATION, ConfInfo.of(price, description).setCriteria(criteria)
+            .setPhoto(photo));
 
       } else if (BeeUtils.isNonNegativeInt(price) || event.isAltKeyDown()) {
-        inputInfo(BeeUtils.joinWords(option, bundle), price, false, description, criteria,
+        inputInfo(BeeUtils.joinWords(option, bundle), price, false, description, criteria, photo,
             info -> consumer.accept(SVC_SET_RELATION, info),
             !configuration.hasRelation(option, bundle) ? null : dialog -> {
               dialog.close();
               consumer.accept(SVC_DELETE_RELATION, null);
             }, cell);
       } else if (!configuration.hasRelation(option, bundle)) {
-        consumer.accept(SVC_SET_RELATION, ConfInfo.of(Configuration.DEFAULT_PRICE, description,
-            null).setCriteria(criteria));
+        consumer.accept(SVC_SET_RELATION, ConfInfo.of(Configuration.DEFAULT_PRICE, description)
+            .setCriteria(criteria).setPhoto(photo));
 
       } else if (configuration.isDefault(option, bundle)) {
-        consumer.accept(SVC_SET_RELATION, ConfInfo.of(null, description, null)
-            .setCriteria(criteria));
+        consumer.accept(SVC_SET_RELATION, ConfInfo.of(null, description).setCriteria(criteria)
+            .setPhoto(photo));
       } else {
         consumer.accept(SVC_DELETE_RELATION, null);
       }

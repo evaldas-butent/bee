@@ -5,7 +5,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.server.Config;
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
@@ -22,7 +21,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeObject;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
@@ -73,6 +71,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -1141,11 +1140,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
               col.editable);
 
           if (field.isTranslatable() && BeeUtils.allEmpty(parent, col.locale)) {
-            for (String locale : Config.getList(Service.PROPERTY_ACTIVE_LOCALES)) {
-              addColumn(alias, field, Localized.column(colName, locale), locale, aggregate, hidden,
-                  parent, null, Localized.maybeTranslate(BeeUtils.notEmpty(col.label,
-                      field.getLabel()), Localizations.getGlossary(locale)),
-                  col.editable);
+            for (SupportedLocale locale : SupportedLocale.values()) {
+              if (locale.isActive() && !Objects.equals(locale, SupportedLocale.USER_DEFAULT)) {
+                String lang = locale.getLanguage();
+                addColumn(alias, field, Localized.column(colName, lang), lang, aggregate, hidden,
+                    parent, null, Localized.maybeTranslate(BeeUtils.notEmpty(col.label,
+                        field.getLabel()), Localizations.getGlossary(locale)), col.editable);
+              }
             }
           }
         }

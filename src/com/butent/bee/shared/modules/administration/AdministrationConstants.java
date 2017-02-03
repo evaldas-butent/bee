@@ -119,7 +119,6 @@ public final class AdministrationConstants {
 
   public static final String PARAMETERS_PREFIX = "parameters_";
 
-  public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_RELATION_PARAMETER = PARAMETERS_PREFIX + "relation_parameter";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 
@@ -382,6 +381,8 @@ public final class AdministrationConstants {
 
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
   public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
+
+  public static final String COL_USER_DATE_FORMAT = "DateFormat";
 
   public static final String COL_NEWS_REFRESH_INTERVAL_SECONDS = "NewsRefreshIntervalSeconds";
   public static final String COL_LOADING_STATE_DELAY_MILLIS = "LoadingStateDelayMillis";
