@@ -266,13 +266,13 @@ public class TripForm extends PrintFormInterceptor {
           Queries.getRow(TBL_DRIVERS, Filter.compareId(driverId),
               Arrays.asList(ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME),
               new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              Global.confirm(Localized.dictionary().employment()
-                      + " (" + BeeUtils.joinWords(result.getValues()) + ")", Icon.WARNING, messages,
-                  () -> listener.fireEvent(event));
-            }
-          });
+                @Override
+                public void onSuccess(BeeRow result) {
+                  Global.confirm(Localized.dictionary().employment() + " ("
+                          + BeeUtils.joinWords(result.getValues()) + ")", Icon.WARNING, messages,
+                      () -> listener.fireEvent(event));
+                }
+              });
         }
       }
     });
@@ -381,8 +381,7 @@ public class TripForm extends PrintFormInterceptor {
       copyAction = new FaLabel(FontAwesome.COPY);
       copyAction.setTitle(Localized.dictionary().actionCopy());
 
-      copyAction.addClickHandler(clickEvent ->
-          Global.getParameter(PRM_TRIP_PREFIX, prefix -> {
+      copyAction.addClickHandler(clickEvent -> {
         DataInfo info = Data.getDataInfo(getViewName());
         BeeRow newRow = RowFactory.createEmptyRow(info, true);
 
@@ -399,7 +398,7 @@ public class TripForm extends PrintFormInterceptor {
         }
 
         /* @since Hoptransa, Task ID 17242 */
-          renderSeparateTripPrefix(newRow, prefix);
+        renderSeparateTripPrefix(newRow, Global.getParameterText(PRM_TRIP_PREFIX));
 
         TripForm interceptor = getInstance();
         interceptor.defaultDriver = getLongValue(COL_DRIVER);
@@ -431,7 +430,8 @@ public class TripForm extends PrintFormInterceptor {
                             if (BeeUtils.isEmpty(newDriverIds)
                                 || !newDriverIds.contains(tripDriver.getLong(driverColumnIndex))) {
                               tripDriver.setValue(tripColumnIndex, tripId);
-                              Queries.insert(dataInfo.getViewName(), dataInfo.getColumns(), tripDriver, null);
+                              Queries.insert(dataInfo.getViewName(), dataInfo.getColumns(),
+                                  tripDriver, null);
                             }
                           }
                         }
@@ -439,7 +439,7 @@ public class TripForm extends PrintFormInterceptor {
                 }
               }
             });
-      }));
+      });
     }
     return copyAction;
   }
@@ -490,7 +490,7 @@ public class TripForm extends PrintFormInterceptor {
       if (BeeUtils.isPositive(oldTripNo.indexOf("_"))) {
         String newTemplate = BeeUtils.join(BeeConst.STRING_EMPTY,
             BeeUtils.isPrefix(getStringValue(COL_TRIP_NO), prefix) ? prefix : BeeConst.STRING_EMPTY,
-            BeeUtils.left(oldTripNo, oldTripNo.indexOf("_")),  VAR_AUTO_NUMBER_SUFFIX);
+            BeeUtils.left(oldTripNo, oldTripNo.indexOf("_")), VAR_AUTO_NUMBER_SUFFIX);
         newRow.setValue(getDataIndex(COL_TRIP_NO), newTemplate);
       }
     }

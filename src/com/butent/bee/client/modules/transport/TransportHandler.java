@@ -239,18 +239,15 @@ public final class TransportHandler {
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     if (!BeeKeeper.getUser().isAdministrator()) {
-      Global.getParameter(PRM_SALES_RESPONSIBILITY, s -> {
+      Filter mngFilter = Filter.or(BeeKeeper.getUser().getFilter(COL_ORDER_MANAGER),
+          Filter.isNull(COL_ORDER_MANAGER));
+      Long s = Global.getParameterRelation(PRM_SALES_RESPONSIBILITY);
 
-        Filter mngFilter = Filter.or(BeeKeeper.getUser().getFilter(COL_ORDER_MANAGER),
-            Filter.isNull(COL_ORDER_MANAGER));
-
-        if (DataUtils.isId(s)) {
-          mngFilter = Filter.or(mngFilter, Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, s));
-        }
-
-        GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
-        GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
-      });
+      if (DataUtils.isId(s)) {
+        mngFilter = Filter.or(mngFilter, Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, s));
+      }
+      GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
+      GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
     }
     GridFactory.registerGridInterceptor(TBL_CARGO_LOADING, new CargoHandlingGrid());
     GridFactory.registerGridInterceptor(TBL_CARGO_UNLOADING, new CargoHandlingGrid());

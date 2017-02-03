@@ -31,16 +31,13 @@ public abstract class TransportVatGridInterceptor extends ParentRowRefreshGrid {
           String vat = form.getActiveRow().getString(vatColumnIndex);
 
           if (BeeUtils.toBoolean(valueChangeEvent.getValue()) && BeeUtils.isEmpty(vat)) {
-            Global.getParameter(ClassifierConstants.COL_ITEM_VAT_PERCENT, input -> {
-              Double defaultVatPercent = BeeUtils.toDoubleOrNull(input);
+            getActiveRow().setValue(vatColumnIndex, BeeUtils.unbox(Global
+                .getParameterNumber(ClassifierConstants.COL_ITEM_VAT_PERCENT)));
+            getActiveRow().setValue(Data.getColumnIndex(getViewName(),
+                ClassifierConstants.COL_ITEM_VAT_PERCENT), true);
 
-              getActiveRow().setValue(vatColumnIndex, defaultVatPercent);
-              getActiveRow().setValue(Data.getColumnIndex(getViewName(),
-                  ClassifierConstants.COL_ITEM_VAT_PERCENT), true);
-
-              form.refreshBySource(COL_COSTS_VAT);
-              form.refreshBySource(ClassifierConstants.COL_ITEM_VAT_PERCENT);
-            });
+            form.refreshBySource(COL_COSTS_VAT);
+            form.refreshBySource(ClassifierConstants.COL_ITEM_VAT_PERCENT);
           }
         });
       }

@@ -42,15 +42,6 @@ import java.util.Set;
 public abstract class CustomCompanyForm extends AbstractFormInterceptor implements ClickHandler {
 
   private final Button toErp = new Button(Localized.dictionary().trSendToERP(), this);
-  private Long company;
-
-  @Override
-  public void afterCreate(FormView form) {
-    Global.getParameter(AdministrationConstants.PRM_COMPANY,
-        input -> company = BeeUtils.toLongOrNull(input));
-
-    super.afterCreate(form);
-  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -72,9 +63,9 @@ public abstract class CustomCompanyForm extends AbstractFormInterceptor implemen
                   for (IsRow row : getGridView().getRowData()) {
                     ids.add(row.getLong(idx));
                   }
-                  event.getSelector()
-                      .setAdditionalFilter(Filter.and(Filter.equals(COL_COMPANY, company),
-                          Filter.idNotIn(ids)));
+                  event.getSelector().setAdditionalFilter(Filter.and(Filter.equals(COL_COMPANY,
+                      Global.getParameterRelation(AdministrationConstants.PRM_COMPANY)),
+                      Filter.idNotIn(ids)));
                 }
               }
             });
