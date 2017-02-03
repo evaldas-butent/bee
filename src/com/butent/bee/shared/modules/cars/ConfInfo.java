@@ -76,8 +76,8 @@ public class ConfInfo implements BeeSerializable {
     this.description = BeeUtils.isEmpty(description) ? null : description.replace("\n", "<br>");
   }
 
-  public ConfInfo setPhoto(Long photo) {
-    this.photo = photo;
+  public ConfInfo setPhoto(Long newPhoto) {
+    this.photo = newPhoto;
     return this;
   }
 

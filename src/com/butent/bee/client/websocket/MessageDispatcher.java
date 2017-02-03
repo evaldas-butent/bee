@@ -68,7 +68,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-class MessageDispatcher {
+final class MessageDispatcher {
 
   private static BeeLogger logger = LogUtils.getLogger(MessageDispatcher.class);
 
@@ -319,9 +319,9 @@ class MessageDispatcher {
 
         if (lm.isQuery()) {
           MapUtils.getCurrentPosition(input -> {
-            Coordinates coords = input.getCoordinates();
+            Coordinates coordinates = input.getCoordinates();
             Endpoint.send(LocationMessage.coordinates(Endpoint.getSessionId(), from,
-                coords.getLatitude(), coords.getLongitude(), coords.getAccuracy()));
+                coordinates.getLatitude(), coordinates.getLongitude(), coordinates.getAccuracy()));
           }, input ->
               Endpoint.send(LocationMessage.response(Endpoint.getSessionId(), from, input)));
 
