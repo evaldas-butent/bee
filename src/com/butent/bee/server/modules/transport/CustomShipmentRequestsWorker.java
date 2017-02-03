@@ -74,7 +74,8 @@ public class CustomShipmentRequestsWorker {
         .text(".bee-tr-contract-main-img {width: 300px;}")
         .text(".bee-tr-contract-main-div {position: absolute; left: 25em; top: 15vh; width: 320px; "
             + "background-color: #21d126;padding-top: 10px; padding-bottom: 10px; font-size: 15px;"
-            + "color: white;border-radius: 5px; border-style: none; text-align: center;}")
+            + "color: white;border-radius: 5px; border-style: none; text-align: center; "
+            + "font-family: Arial;}")
         .text(".bee-tr-contract-main-buttons-div {position: absolute; left: 25em; top: 15vh;}")
         .text(".bee-tr-contract-main-container {width: 50em; position: absolute; top: 20vh; "
             + "left: 25%; border-top: 1px solid #21d126; padding-top: 50px;}")
