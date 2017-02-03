@@ -150,7 +150,8 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_PRICE = "Price";
   public static final String COL_TRADE_ITEM_NOTE = "Note";
   public static final String COL_TRADE_ITEM_PARENT = "Parent";
-  public static final String COL_TRADE_ITEM_WAREHOUSE = "Warehouse";
+  public static final String COL_TRADE_ITEM_WAREHOUSE_FROM = "ItemWarehouseFrom";
+  public static final String COL_TRADE_ITEM_WAREHOUSE_TO = "ItemWarehouseTo";
   public static final String COL_TRADE_ITEM_EMPLOYEE = "Employee";
 
   public static final String COL_SERIES = "Series";

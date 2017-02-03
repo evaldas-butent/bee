@@ -6482,6 +6482,10 @@ public interface Dictionary {
 
   default String trdInvoices() {return g("trdInvoices");}
 
+  default String trdItemWarehouseFrom() {return g("trdItemWarehouseFrom");}
+
+  default String trdItemWarehouseTo() {return g("trdItemWarehouseTo");}
+
   default String trdManager() {return g("trdManager");}
 
   default String trdMovement() {return g("trdMovement");}
@@ -6632,7 +6636,11 @@ public interface Dictionary {
 
   default String trdWarehouseFrom() {return g("trdWarehouseFrom");}
 
+  default String trdWarehouseFromShort() {return g("trdWarehouseFromShort");}
+
   default String trdWarehouseTo() {return g("trdWarehouseTo");}
+
+  default String trdWarehouseToShort() {return g("trdWarehouseToShort");}
 
   default String trigger() {return g("trigger");}
 
