@@ -14,7 +14,7 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.client.modules.mail.Relations.*;
+import static com.butent.bee.client.modules.mail.Relations.PFX_RELATED;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
@@ -67,17 +67,33 @@ import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.XmlUtils;
-import com.butent.bee.client.widget.*;
 import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.edit.*;
+import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputDateTime;
+import com.butent.bee.client.widget.InternalLink;
+import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.*;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -93,8 +109,7 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
@@ -159,7 +174,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private List<Long> projectUsers;
   private Map<String, Pair<Long, String>> dbaParameters = Maps.newConcurrentMap();
-  private String prmEndOfWorkDay;
+  private Long prmEndOfWorkDay;
 
   private boolean isDefaultLayout;
 
@@ -222,7 +237,6 @@ class TaskEditor extends ProductSupportInterceptor {
     }
     return result;
   }
-
 
   private static BeeRow getResponseRow(String caption, ResponseObject ro, RpcCallback<?> callback) {
     if (!Queries.checkResponse(caption, BeeConst.UNDEF, VIEW_TASKS, ro, BeeRow.class, callback)) {
@@ -384,7 +398,7 @@ class TaskEditor extends ProductSupportInterceptor {
     Long photo = row.getLong(DataUtils.getColumnIndex(COL_PHOTO, columns));
 
     photoUrl = DataUtils.isId(photo) ? PhotoRenderer.getUrl(photo)
-            : PhotoRenderer.DEFAULT_PHOTO_IMAGE;
+        : PhotoRenderer.DEFAULT_PHOTO_IMAGE;
 
     Image image = new Image(photoUrl);
     image.addStyleName(STYLE_EVENT + STYLE_PHOTO);
@@ -448,7 +462,7 @@ class TaskEditor extends ProductSupportInterceptor {
       int idxExecutor = Data.getColumnIndex(VIEW_TASKS, COL_EXECUTOR);
       if (event == TaskEvent.COMMENT
           && (Objects.equals(taskRow.getLong(idxOwner), userId) || Objects.equals(taskRow
-              .getLong(idxExecutor), userId))) {
+          .getLong(idxExecutor), userId))) {
         FaLabel createTask = new FaLabel(TaskEvent.CREATE.getCommandIcon());
         createTask.addStyleName(STYLE_EVENT_CREATE_TASK);
         createTask.setTitle(TaskEvent.CREATE.getCommandLabel());
@@ -589,7 +603,7 @@ class TaskEditor extends ProductSupportInterceptor {
       ownerSelector = (DataSelector) widget;
       ownerSelector.addSelectorHandler(this::changeTaskOwner);
     } else if (BeeUtils.same(editableWidget.getColumnId(), ProjectConstants.COL_PROJECT_STAGE)
-            && widget instanceof DataSelector) {
+        && widget instanceof DataSelector) {
       stagesSelector = (DataSelector) widget;
     }
   }
@@ -684,7 +698,7 @@ class TaskEditor extends ProductSupportInterceptor {
     for (final TaskEvent event : TaskEvent.values()) {
 
       if (!event.canExecute(getExecutor(), getOwner(), getObserversSelector(),
-              EnumUtils.getEnumByIndex(TaskStatus.class, status))) {
+          EnumUtils.getEnumByIndex(TaskStatus.class, status))) {
         continue;
       }
       String label = event.getCommandLabel();
@@ -729,12 +743,12 @@ class TaskEditor extends ProductSupportInterceptor {
 
     if (BeeUtils.same(name, "Split")) {
       Integer size = BeeKeeper.getStorage().getInteger(
-        TaskHelper.getStorageKey(TaskHelper.NAME_TASK_TREE));
+          TaskHelper.getStorageKey(TaskHelper.NAME_TASK_TREE));
 
       if (BeeUtils.isPositive(size)) {
 
         com.google.gwt.xml.client.Element west = XmlUtils.getFirstChildElement(description,
-                Direction.WEST.name().toLowerCase());
+            Direction.WEST.name().toLowerCase());
 
         if (west != null) {
           west.setAttribute(UiConstants.ATTR_SIZE, size.toString());
@@ -787,10 +801,10 @@ class TaskEditor extends ProductSupportInterceptor {
   @Override
   public boolean isRowEditable(IsRow row) {
     return row != null
-            && (BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)))
-            || BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_EXECUTOR)))
-            || BeeKeeper.getUser().is(row.getLong(getDataIndex(ALS_PROJECT_OWNER)))
-            || BeeKeeper.getUser().isAdministrator());
+        && (BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)))
+        || BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_EXECUTOR)))
+        || BeeKeeper.getUser().is(row.getLong(getDataIndex(ALS_PROJECT_OWNER)))
+        || BeeKeeper.getUser().isAdministrator());
   }
 
   @Override
@@ -949,8 +963,7 @@ class TaskEditor extends ProductSupportInterceptor {
         }
       }
     });
-
-    Global.getParameter(PRM_END_OF_WORK_DAY, this::setPrmEndOfWorkDay);
+    setPrmEndOfWorkDay(Global.getParameterTime(PRM_END_OF_WORK_DAY));
 
     return false;
   }
@@ -976,7 +989,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
         if (!BeeUtils.isEmpty(companyName)) {
           docRow.setValue(dataInfo
-              .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
+                  .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
               companyName);
           docRow.setValue(dataInfo
               .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
@@ -1014,8 +1027,8 @@ class TaskEditor extends ProductSupportInterceptor {
             Set<Long> relDocuments = DataUtils.parseIdSet(
                 row.getProperty(PFX_RELATED + DocumentConstants.VIEW_DOCUMENTS));
             AbstractCellRenderer render =
-              RendererFactory.createRenderer(DocumentConstants.VIEW_DOCUMENTS,
-                Data.getRelation(DocumentConstants.VIEW_DOCUMENTS).getOriginalRenderColumns());
+                RendererFactory.createRenderer(DocumentConstants.VIEW_DOCUMENTS,
+                    Data.getRelation(DocumentConstants.VIEW_DOCUMENTS).getOriginalRenderColumns());
 
             relDocuments.add(createdDocument.getId());
             relatedRows.add(RowChildren.create(TBL_RELATIONS, COL_TASK, null,
@@ -1023,8 +1036,8 @@ class TaskEditor extends ProductSupportInterceptor {
                 DataUtils.buildIdList(relDocuments)));
 
             ParameterList prm = createParams(TaskEvent.EDIT, getNewRow(), relatedRows,
-              TaskUtils.getInsertNote(Localized.dictionary().document(),
-                render.render(createdDocument)));
+                TaskUtils.getInsertNote(Localized.dictionary().document(),
+                    render.render(createdDocument)));
             sendRequest(prm, TaskEvent.EDIT);
           }
         });
@@ -1123,11 +1136,8 @@ class TaskEditor extends ProductSupportInterceptor {
         continue;
       }
 
-
       newRow.setValue(idxCol, oldRow.getValue(idxCol));
     }
-
-
 
     form.refreshBySource(column);
   }
@@ -1151,7 +1161,7 @@ class TaskEditor extends ProductSupportInterceptor {
   }
 
   private void createTaskLinks(final IsRow taskRow, final Long eventId,
-                               final String taskIds) {
+      final String taskIds) {
     final Consumer<Boolean> consumer = new Consumer<Boolean>() {
       private int consumeCount = 2;
 
@@ -1198,7 +1208,7 @@ class TaskEditor extends ProductSupportInterceptor {
           }
 
           Queries.update(VIEW_TASK_EVENTS, eventId, COL_EVENT_DATA, Value.getValue(Codec
-              .beeSerialize(data)),
+                  .beeSerialize(data)),
               new IntCallback() {
 
                 @Override
@@ -1217,7 +1227,7 @@ class TaskEditor extends ProductSupportInterceptor {
     relIds.addAll(DataUtils.parseIdList(taskIds));
 
     Queries.updateChildren(VIEW_TASKS, taskRow.getId(), Lists.newArrayList(RowChildren
-        .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
+            .create(TBL_RELATIONS, COL_TASK, null, COL_TASK, DataUtils.buildIdList(relIds))),
         new RowCallback() {
 
           @Override
@@ -1405,10 +1415,10 @@ class TaskEditor extends ProductSupportInterceptor {
 
       if (event != null
           && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-              .getColumnIndex(TaskConstants.COL_EVENT)))) {
+          .getColumnIndex(TaskConstants.COL_EVENT)))) {
         description = BeeUtils.join(BeeConst.STRING_EOL
-            + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
-            + BeeConst.STRING_EOL, description,
+                + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
+                + BeeConst.STRING_EOL, description,
             BeeUtils.joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
                 BeeUtils.nvl(event.getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
                     BeeConst.STRING_EMPTY),
@@ -1420,10 +1430,10 @@ class TaskEditor extends ProductSupportInterceptor {
       for (IsRow event : events) {
         if (event != null
             && Objects.equals(TaskEvent.COMMENT.ordinal(), event.getInteger(events
-                .getColumnIndex(TaskConstants.COL_EVENT)))) {
+            .getColumnIndex(TaskConstants.COL_EVENT)))) {
           description = BeeUtils.join(BeeConst.STRING_EOL
-              + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
-              + BeeConst.STRING_EOL, description,
+                  + BeeUtils.replicate(BeeConst.CHAR_MINUS, BeeConst.MAX_SCALE)
+                  + BeeConst.STRING_EOL, description,
               BeeUtils.joinWords(event.getDateTime(events.getColumnIndex(COL_PUBLISH_TIME)),
                   BeeUtils.nvl(event.getString(events.getColumnIndex(ALS_PUBLISHER_FIRST_NAME)),
                       BeeConst.STRING_EMPTY),
@@ -1451,11 +1461,12 @@ class TaskEditor extends ProductSupportInterceptor {
                 Data.getDataInfo(VIEW_TASKS), taskRow, false);
           }
         });
-    Map<Long, FileInfo> files = Maps.newLinkedHashMap();
-    TaskUtils.getFiles(taskRow).forEach(file -> files.put(file.getId(), file));
 
+    if (taskRow.hasPropertyValue(PROP_FILES)) {
+      newTaskRow.setProperty(PROP_FILES, taskRow.getProperty(PROP_FILES));
+    }
     RowFactory.createRow(newTaskInfo.getNewRowForm(), newTaskInfo.getNewRowCaption(), newTaskInfo,
-        newTaskRow, Modality.ENABLED, null, new TaskBuilder(files, null, true), null,
+        newTaskRow, Modality.ENABLED, null, new TaskBuilder(true), null,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
@@ -1470,7 +1481,7 @@ class TaskEditor extends ProductSupportInterceptor {
   private void doEvent(TaskEvent event) {
 
     if (!event.canExecute(getExecutor(), getOwner(), getObserversSelector(),
-            EnumUtils.getEnumByIndex(TaskStatus.class, getStatus()))) {
+        EnumUtils.getEnumByIndex(TaskStatus.class, getStatus()))) {
       showError(Localized.dictionary().actionNotAllowed());
       return;
     }
@@ -1524,6 +1535,7 @@ class TaskEditor extends ProductSupportInterceptor {
         doVisit();
         break;
       case CREATE_NOT_SCHEDULED:
+      case CREATE_SCHEDULED:
       case EDIT:
         Assert.untouchable();
     }
@@ -1551,9 +1563,8 @@ class TaskEditor extends ProductSupportInterceptor {
       minTime.increment();
       DateTime extendTime = new DateTime(minTime.getDateTime().getTime());
 
-      if (BeeUtils.isPositive(TimeUtils.parseTime(getPrmEndOfWorkDay()))) {
-        extendTime = new DateTime(new JustDate().getDateTime().getTime()
-            + TimeUtils.parseTime(getPrmEndOfWorkDay()));
+      if (BeeUtils.isPositive(getPrmEndOfWorkDay())) {
+        extendTime = new DateTime(new JustDate().getDateTime().getTime() + getPrmEndOfWorkDay());
       }
 
       input.setDateTime(extendTime);
@@ -1564,19 +1575,20 @@ class TaskEditor extends ProductSupportInterceptor {
     InputDateTime newEndInput = dialog.getInputDateTime(endId);
     newEndInput.addEditStopHandler(event -> {
       if (event.isChanged()) {
-        Global.getParameter(TaskConstants.PRM_END_OF_WORK_DAY, input -> {
-          if (!BeeUtils.isEmpty(input)) {
-            DateTime dateTime = TimeUtils.toDateTimeOrNull(TimeUtils.parseTime(input));
-            if (dateTime != null) {
-              int hour = dateTime.getUtcHour();
-              int minute = dateTime.getUtcMinute();
-              DateTime value = newEndInput.getDateTime();
-              value.setHour(hour);
-              value.setMinute(minute);
-              newEndInput.setDateTime(value);
-            }
+        Long input = Global.getParameterTime(PRM_END_OF_WORK_DAY);
+
+        if (Objects.nonNull(input)) {
+          DateTime dateTime = TimeUtils.toDateTimeOrNull(input);
+
+          if (dateTime != null) {
+            int hour = dateTime.getUtcHour();
+            int minute = dateTime.getUtcMinute();
+            DateTime value = newEndInput.getDateTime();
+            value.setHour(hour);
+            value.setMinute(minute);
+            newEndInput.setDateTime(value);
           }
-        });
+        }
       }
     });
 
@@ -1811,18 +1823,18 @@ class TaskEditor extends ProductSupportInterceptor {
           }
         };
 
-    Global.getRelationParameter(PRM_DEFAULT_DBA_TEMPLATE, (id, name)
-            -> paramHolder.accept(PRM_DEFAULT_DBA_TEMPLATE, Pair.of(id, name)));
+    Global.getParameterRelation(PRM_DEFAULT_DBA_TEMPLATE, (id, name)
+        -> paramHolder.accept(PRM_DEFAULT_DBA_TEMPLATE, Pair.of(id, name)));
 
-    Global.getRelationParameter(PRM_DEFAULT_DBA_DOCUMENT_TYPE, (id, name)
-            -> paramHolder.accept(PRM_DEFAULT_DBA_DOCUMENT_TYPE, Pair.of(id, name)));
+    Global.getParameterRelation(PRM_DEFAULT_DBA_DOCUMENT_TYPE, (id, name)
+        -> paramHolder.accept(PRM_DEFAULT_DBA_DOCUMENT_TYPE, Pair.of(id, name)));
   }
 
   private DateTime getDateTime(String colName) {
     return getFormView().getActiveRow().getDateTime(getFormView().getDataIndex(colName));
   }
 
-  private String getPrmEndOfWorkDay() {
+  private Long getPrmEndOfWorkDay() {
     return prmEndOfWorkDay;
   }
 
@@ -1928,7 +1940,6 @@ class TaskEditor extends ProductSupportInterceptor {
     table.setColumnCellKind(0, CellKind.LABEL);
     table.setColumnCellStyles(1, "width:300px");
 
-
     table.setText(0, 0, Localized.dictionary().project(), StyleUtils.NAME_REQUIRED);
     table.setWidget(0, 1, prjSelector);
     table.setText(1, 0, Localized.dictionary().prjStage());
@@ -2033,7 +2044,7 @@ class TaskEditor extends ProductSupportInterceptor {
     }
   }
 
-  private void setPrmEndOfWorkDay(String prmEndOfWorkDay) {
+  private void setPrmEndOfWorkDay(Long prmEndOfWorkDay) {
     this.prmEndOfWorkDay = prmEndOfWorkDay;
   }
 
@@ -2127,7 +2138,7 @@ class TaskEditor extends ProductSupportInterceptor {
               getActiveRow().removeProperty(PROP_DESCENDING);
             } else {
               BeeKeeper.getStorage().set(
-                TaskHelper.getStorageKey(TaskHelper.NAME_ORDER), true);
+                  TaskHelper.getStorageKey(TaskHelper.NAME_ORDER), true);
               getActiveRow().setProperty(PROP_DESCENDING, BeeConst.INT_TRUE);
             }
 
@@ -2236,7 +2247,7 @@ class TaskEditor extends ProductSupportInterceptor {
     setProjectUsers(null);
 
     if (BeeConst.isUndef(idxProjectOwner) || BeeConst.isUndef(idxProject)
-            || BeeConst.isUndef(idxTaskStatus)) {
+        || BeeConst.isUndef(idxTaskStatus)) {
       return;
     }
 
@@ -2244,10 +2255,10 @@ class TaskEditor extends ProductSupportInterceptor {
     long projectId = BeeUtils.unbox(row.getLong(idxProject));
     int taskStatus = BeeUtils.unbox(row.getInteger(idxTaskStatus));
     boolean validStatus = !TaskStatus.in(taskStatus, TaskStatus.APPROVED, TaskStatus.CANCELED,
-            TaskStatus.COMPLETED, TaskStatus.SUSPENDED);
+        TaskStatus.COMPLETED, TaskStatus.SUSPENDED);
 
     boolean canChangeOwner = (isOwner() || BeeKeeper.getUser().isAdministrator())
-            && validStatus;
+        && validStatus;
 
     TaskHelper.setWidgetEnabled(ownerSelector, canChangeOwner);
     TaskHelper.setWidgetEnabled(observersSelector, isOwner());
@@ -2316,11 +2327,9 @@ class TaskEditor extends ProductSupportInterceptor {
     IsRow row = form.getActiveRow();
     IsRow oldRow = form.getOldRow();
 
-
     if (row == null || DataUtils.isNewRow(form.getActiveRow())) {
       return;
     }
-
 
     Long newOwner = event.getValue();
     Boolean taskPrivate = row.getBoolean(form.getDataIndex(COL_PRIVATE_TASK));

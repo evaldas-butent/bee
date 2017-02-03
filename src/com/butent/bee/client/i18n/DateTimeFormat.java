@@ -1,9 +1,8 @@
 package com.butent.bee.client.i18n;
 
-import com.google.gwt.i18n.client.LocaleInfo;
-import com.google.gwt.i18n.shared.DateTimeFormatInfo;
-import com.google.gwt.i18n.shared.DefaultDateTimeFormatInfo;
-
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.UserInfo;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -192,7 +191,11 @@ public class DateTimeFormat {
         default:
           throw new IllegalStateException("Unexpected predef type " + predef);
       }
-      return getFormat(pattern, LocaleInfo.getCurrentLocale(), new DefaultDateTimeFormatInfo());
+
+      if (BeeKeeper.getUser().getDateFormat() == null) {
+        return getFormat(pattern, UserInfo.getUserLocale().getDateTimeFormat());
+      }
+      return getFormat(pattern, BeeKeeper.getUser().getDateFormat().getDateTimeFormat());
     }
 
     DateTimeFormatInfo dtfi = getDefaultDateTimeFormatInfo();
@@ -251,10 +254,10 @@ public class DateTimeFormat {
         pattern = dtfi.formatMonthAbbrev();
         break;
       case MONTH_ABBR_DAY:
-        pattern = LocaleUtils.formatMonthAbbrevDay(LocaleInfo.getCurrentLocale());
+        pattern = dtfi.formatMonthAbbrevDay();
         break;
       case MONTH_DAY:
-        pattern = LocaleUtils.formatMonthFullDay(LocaleInfo.getCurrentLocale());
+        pattern = dtfi.formatMonthFullDay();
         break;
       case MONTH_NUM_DAY:
         pattern = dtfi.formatMonthNumDay();
@@ -308,15 +311,14 @@ public class DateTimeFormat {
         throw new IllegalArgumentException("Unexpected predefined format " + predef);
     }
 
-    return getFormat(pattern, LocaleInfo.getCurrentLocale(), dtfi);
+    return getFormat(pattern, dtfi);
   }
 
   public static DateTimeFormat getFormat(String pattern) {
-    return getFormat(pattern, LocaleInfo.getCurrentLocale(), getDefaultDateTimeFormatInfo());
+    return getFormat(pattern, getDefaultDateTimeFormatInfo());
   }
 
-  protected static DateTimeFormat getFormat(String pattern, LocaleInfo localeInfo,
-      DateTimeFormatInfo dtfi) {
+  protected static DateTimeFormat getFormat(String pattern, DateTimeFormatInfo dtfi) {
 
     DateTimeFormatInfo defaultDtfi = getDefaultDateTimeFormatInfo();
     DateTimeFormat dtf = null;
@@ -324,7 +326,7 @@ public class DateTimeFormat {
       dtf = cache.get(pattern);
     }
     if (dtf == null) {
-      dtf = new DateTimeFormat(pattern, localeInfo, dtfi);
+      dtf = new DateTimeFormat(pattern, dtfi);
       if (dtfi == defaultDtfi) {
         cache.put(pattern, dtf);
       }
@@ -333,7 +335,10 @@ public class DateTimeFormat {
   }
 
   private static DateTimeFormatInfo getDefaultDateTimeFormatInfo() {
-    return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
+    if (BeeKeeper.getUser().getDateFormat() == null) {
+      return UserInfo.getUserLocale().getDateTimeFormat();
+    }
+    return BeeKeeper.getUser().getDateFormat().getDateTimeFormat();
   }
 
   private static boolean usesFixedEnglishStrings(PredefinedFormat predef) {
@@ -355,13 +360,13 @@ public class DateTimeFormat {
   private final String pattern;
 
   protected DateTimeFormat(String pattern) {
-    this(pattern, LocaleInfo.getCurrentLocale(), getDefaultDateTimeFormatInfo());
+    this(pattern, getDefaultDateTimeFormatInfo());
   }
 
-  protected DateTimeFormat(String pattern, LocaleInfo localeInfo, DateTimeFormatInfo dtfi) {
+  protected DateTimeFormat(String pattern, DateTimeFormatInfo dtfi) {
     this.pattern = pattern;
     this.dateTimeFormatInfo = dtfi;
-    this.monthsFull = LocaleUtils.monthsFull(localeInfo);
+    this.monthsFull = dtfi.monthsFull();
 
     parsePattern(pattern);
   }

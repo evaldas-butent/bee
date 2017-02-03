@@ -12,6 +12,7 @@ public class ConfInfo implements BeeSerializable {
   private String price;
   private String description;
   private Map<String, String> criteria = new LinkedHashMap<>();
+  private Long photo;
 
   protected ConfInfo() {
   }
@@ -22,6 +23,7 @@ public class ConfInfo implements BeeSerializable {
     this.price = dataInfo[0];
     this.description = dataInfo[1];
     setCriteria(Codec.deserializeLinkedHashMap(ArrayUtils.getQuietly(dataInfo, 2)));
+    this.photo = BeeUtils.toLongOrNull(dataInfo[3]);
   }
 
   public Map<String, String> getCriteria() {
@@ -32,15 +34,18 @@ public class ConfInfo implements BeeSerializable {
     return description;
   }
 
+  public Long getPhoto() {
+    return photo;
+  }
+
   public String getPrice() {
     return price;
   }
 
-  public static ConfInfo of(String prc, String descr, String crit) {
+  public static ConfInfo of(String prc, String descr) {
     ConfInfo info = new ConfInfo();
     info.setPrice(prc);
     info.setDescription(descr);
-    info.setCriteria(Codec.deserializeLinkedHashMap(crit));
     return info;
   }
 
@@ -55,7 +60,7 @@ public class ConfInfo implements BeeSerializable {
 
   @Override
   public String serialize() {
-    return Codec.beeSerialize(new Object[] {price, description, criteria});
+    return Codec.beeSerialize(new Object[] {price, description, criteria, photo});
   }
 
   public ConfInfo setCriteria(Map<String, String> newCriteria) {
@@ -69,6 +74,11 @@ public class ConfInfo implements BeeSerializable {
 
   public void setDescription(String description) {
     this.description = BeeUtils.isEmpty(description) ? null : description.replace("\n", "<br>");
+  }
+
+  public ConfInfo setPhoto(Long newPhoto) {
+    this.photo = newPhoto;
+    return this;
   }
 
   public void setPrice(String price) {

@@ -92,7 +92,7 @@ public class Endpoint {
       logger.info("ws session not found for progress:", progressId);
     } else {
       sessions.keySet().forEach(sessionId -> {
-        Session session = findOpenSession(sessionId, true);
+        Session session = findOpenSession(sessionId);
 
         if (session != null) {
           send(session, ProgressMessage.close(progressId));
@@ -194,7 +194,7 @@ public class Endpoint {
           entry.setValue(0L);
         }
         if ((System.currentTimeMillis() - entry.getValue()) > 10) {
-          Session session = findOpenSession(entry.getKey(), true);
+          Session session = findOpenSession(entry.getKey());
 
           if (session != null) {
             send(session, ProgressMessage.update(progressId, label, value));
@@ -227,7 +227,7 @@ public class Endpoint {
       case LOCATION:
       case NOTIFICATION:
       case SIGNALING:
-        Session toSession = findOpenSession(((HasRecipient) message).getTo(), true);
+        Session toSession = findOpenSession(((HasRecipient) message).getTo());
         if (toSession != null) {
           send(toSession, message);
         }
@@ -361,22 +361,20 @@ public class Endpoint {
       case INFO:
       case MAIL:
       case ONLINE:
+      case PARAMETER:
       case USERS:
         logger.severe("ws message not supported", message, toLog(session));
         break;
     }
   }
 
-  private static Session findOpenSession(String sessionId, boolean warn) {
+  private static Session findOpenSession(String sessionId) {
     for (Session session : openSessions) {
       if (session.getId().endsWith(sessionId) && session.isOpen()) {
         return session;
       }
     }
-
-    if (warn) {
-      logger.warning("ws open session not found", sessionId);
-    }
+    logger.warning("ws open session not found", sessionId);
     return null;
   }
 
