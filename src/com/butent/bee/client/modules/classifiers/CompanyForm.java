@@ -71,7 +71,6 @@ import java.util.function.Consumer;
 class CompanyForm extends CustomCompanyForm {
 
   private FaLabel switchAction;
-  private Long mainResponsibility;
 
   CompanyForm() {
   }
@@ -99,8 +98,8 @@ class CompanyForm extends CustomCompanyForm {
                   Long creator = parentRow.getLong(Data.getColumnIndex(VIEW_COMPANIES, "Creator"));
 
                   if (!BeeKeeper.getUser().isAdministrator() && !Objects.equals(user, creator)) {
-                    event.getSelector().setAdditionalFilter(Filter.idNotIn(
-                        Collections.singletonList(mainResponsibility)));
+                    event.getSelector().setAdditionalFilter(Filter.idNotIn(Collections
+                        .singletonList(Global.getParameterRelation(PRM_SALES_RESPONSIBILITY))));
                   }
                 }
               }
@@ -111,9 +110,6 @@ class CompanyForm extends CustomCompanyForm {
 
         @Override
         public void afterCreatePresenter(GridPresenter presenter) {
-          Global.getParameter(PRM_SALES_RESPONSIBILITY,
-              s -> mainResponsibility = BeeUtils.toLong(s));
-
           HeaderView header = presenter.getHeader();
           header.clearCommandPanel();
 

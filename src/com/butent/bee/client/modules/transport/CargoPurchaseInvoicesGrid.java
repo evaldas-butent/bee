@@ -45,14 +45,14 @@ public class CargoPurchaseInvoicesGrid extends InvoicesGrid {
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    Global.getRelationParameter(PRM_ACCUMULATION_OPERATION, (opId, opName) -> {
+    Global.getParameterRelation(PRM_ACCUMULATION_OPERATION, (opId, opName) -> {
       if (DataUtils.isId(opId)) {
         operationId = opId;
         operation = opName;
         presenter.getHeader().addCommandItem(joinAction);
       }
     });
-    Global.getRelationParameter(PRM_PURCHASE_OPERATION, (op2Id, op2Name) -> {
+    Global.getParameterRelation(PRM_PURCHASE_OPERATION, (op2Id, op2Name) -> {
       operation2Id = op2Id;
       operation2 = op2Name;
     });

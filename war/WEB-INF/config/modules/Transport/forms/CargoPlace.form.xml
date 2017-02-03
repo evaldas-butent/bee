@@ -47,14 +47,14 @@
           <ui:renderer type="flag" />
         </selectorColumn>
       </DataSelector>
-      <Label for="LoadedKilometers" />
-      <InputInteger source="LoadedKilometers" style="width:70px;" />
+      <Label for="LoadedKilometers" style="visibility:hidden;" />
+      <InputInteger source="LoadedKilometers" style="visibility:hidden; width:70px;" />
     </row>
     <row>
       <Label for="PostIndex" />
       <InputText source="PostIndex" autocompleteKey="cargo-place-postal-code" />
-      <Label for="EmptyKilometers" />
-      <InputInteger source="EmptyKilometers" style="width:70px;" />
+      <Label for="EmptyKilometers" style="visibility:hidden;" />
+      <InputInteger source="EmptyKilometers" style="visibility:hidden; width:70px;" />
     </row>
     <row>
       <Label for="Country" />
@@ -70,8 +70,8 @@
 
         <Flag source="CountryCode" style="padding-left: 2px;" />
       </FlowPanel>
-      <Label for="CargoWeight" />
-      <InputDecimal source="CargoWeight" format="0.000" style="width:70px;" />
+      <Label for="CargoWeight" style="visibility:hidden;" />
+      <InputDecimal source="CargoWeight" format="0.000" style="visibility:hidden; width:70px;" />
     </row>
     <row>
       <Label for="Contact" />

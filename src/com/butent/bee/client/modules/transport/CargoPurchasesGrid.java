@@ -127,7 +127,7 @@ public class CargoPurchasesGrid extends InvoiceBuilder {
       consumer.accept(data, newRow);
       return;
     }
-    Global.getRelationParameter(operation, (opId, op) -> {
+    Global.getParameterRelation(operation, (opId, op) -> {
       if (DataUtils.isId(opId)) {
         newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_OPERATION), opId);
         newRow.setValue(targetInfo.getColumnIndex(COL_OPERATION_NAME), op);

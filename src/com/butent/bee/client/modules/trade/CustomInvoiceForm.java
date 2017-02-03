@@ -14,7 +14,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -24,14 +23,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Objects;
 
 public abstract class CustomInvoiceForm extends PrintFormInterceptor {
-
-  private String operationId;
-
-  @Override
-  public void afterCreate(FormView form) {
-    Global.getParameter(PRM_ACCUMULATION_OPERATION, opId -> operationId = opId);
-    super.afterCreate(form);
-  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -62,7 +53,9 @@ public abstract class CustomInvoiceForm extends PrintFormInterceptor {
   @Override
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
     if (Objects.equals(Data.getViewTable(getViewName()), TBL_PURCHASES)
-        && !Objects.equals(getStringValue(COL_TRADE_OPERATION), operationId)) {
+        && !Objects.equals(getLongValue(COL_TRADE_OPERATION),
+        Global.getParameterRelation(PRM_ACCUMULATION_OPERATION))) {
+
       for (String col : new String[] {COL_TRADE_INVOICE_NO, COL_TRADE_TERM}) {
         Widget widget = getFormView().getWidgetBySource(col);
 

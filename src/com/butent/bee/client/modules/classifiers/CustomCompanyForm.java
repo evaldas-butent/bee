@@ -41,7 +41,6 @@ import java.util.Set;
 public abstract class CustomCompanyForm extends AbstractFormInterceptor implements ClickHandler {
 
   private final Button toErp = new Button(Localized.dictionary().trSendToERP(), this);
-  private Long company;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -62,7 +61,8 @@ public abstract class CustomCompanyForm extends AbstractFormInterceptor implemen
                     ids.add(row.getLong(idx));
                   }
                   event.getSelector()
-                      .setAdditionalFilter(Filter.and(Filter.equals(COL_COMPANY, company),
+                      .setAdditionalFilter(Filter.and(Filter.equals(COL_COMPANY,
+                          Global.getParameterRelation(AdministrationConstants.PRM_COMPANY)),
                           Filter.idNotIn(ids)));
                 }
               }
@@ -114,9 +114,6 @@ public abstract class CustomCompanyForm extends AbstractFormInterceptor implemen
 
   @Override
   public void onLoad(FormView form) {
-    Global.getParameter(AdministrationConstants.PRM_COMPANY,
-        input -> company = BeeUtils.toLongOrNull(input));
-
     if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
       form.getViewPresenter().getHeader().addCommandItem(toErp);
     }
