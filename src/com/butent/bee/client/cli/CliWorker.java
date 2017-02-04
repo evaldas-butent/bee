@@ -2692,7 +2692,7 @@ public final class CliWorker {
         "Utc Date String", t.toUtcDateString(),
         "Utc Time String", t.toUtcTimeString(),
         "Utc String", t.toUtcString(),
-        "JustDate", TimeUtils.toDate(t).toString(),
+        "JustDate", Format.renderDate(TimeUtils.toDate(t)),
         "Java Date", TimeUtils.toJava(t).toString());
 
     showPropData(BeeUtils.joinWords(cmnd, args), lst);

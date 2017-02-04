@@ -61,8 +61,6 @@ public class UserInfo implements HasInfo {
 
   private String styleId;
 
-  private SupportedLocale dateFormat;
-
   private Presence presence = Presence.ONLINE;
   private Timer presenceTimer;
 
@@ -114,10 +112,6 @@ public class UserInfo implements HasInfo {
 
   public String getCompanyName() {
     return isLoggedIn() ? userData.getCompanyName() : null;
-  }
-
-  public SupportedLocale getDateFormat() {
-    return dateFormat;
   }
 
   public Filter getFilter(String column) {
@@ -496,8 +490,8 @@ public class UserInfo implements HasInfo {
     this.newsRefreshIntervalSeconds = newsRefreshIntervalSeconds;
   }
 
-  private void setUserDateFormat(SupportedLocale df) {
-    this.dateFormat = df;
+  private static void setUserDateFormat(SupportedLocale df) {
+    SupportedLocale.setDateFormat(df);
   }
 
   private void setOpenInNewTab(boolean openInNewTab) {

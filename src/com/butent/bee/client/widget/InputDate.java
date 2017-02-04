@@ -151,7 +151,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     if (date == null) {
       text = BeeConst.STRING_EMPTY;
     } else if (getDateTimeFormat() == null) {
-      text = date.getDate().toString();
+      text = Format.renderDate(date.getDate());
     } else {
       text = getDateTimeFormat().format(date.getDate());
     }

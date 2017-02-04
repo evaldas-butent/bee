@@ -68,7 +68,7 @@ public class InputDateTime extends InputDate {
     if (dt == null) {
       text = BeeConst.STRING_EMPTY;
     } else if (getDateTimeFormat() == null) {
-      text = dt.toCompactString();
+      text = Format.renderDate(dt);
     } else {
       text = getDateTimeFormat().format(dt);
     }

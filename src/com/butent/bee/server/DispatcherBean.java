@@ -329,6 +329,16 @@ public class DispatcherBean {
               }
 
               data.put(component.key(), Pair.of(userSettings, theme));
+
+              if (userSettings.containsColumn(COL_USER_DATE_FORMAT)) {
+                SupportedLocale locale = userSettings.getEnum(0, COL_USER_DATE_FORMAT,
+                    SupportedLocale.class);
+                if (locale != null) {
+                  SupportedLocale.setDateFormat(locale);
+                } else {
+                  SupportedLocale.setDateFormat(userService.getSupportedLocale());
+                }
+              }
             }
             break;
 

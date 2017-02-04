@@ -1,8 +1,8 @@
 package com.butent.bee.client.i18n;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.UserInfo;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -192,10 +192,10 @@ public class DateTimeFormat {
           throw new IllegalStateException("Unexpected predef type " + predef);
       }
 
-      if (BeeKeeper.getUser().getDateFormat() == null) {
+      if (SupportedLocale.getDateFormat() == null) {
         return getFormat(pattern, UserInfo.getUserLocale().getDateTimeFormat());
       }
-      return getFormat(pattern, BeeKeeper.getUser().getDateFormat().getDateTimeFormat());
+      return getFormat(pattern, SupportedLocale.getDateFormat().getDateTimeFormat());
     }
 
     DateTimeFormatInfo dtfi = getDefaultDateTimeFormatInfo();
@@ -335,10 +335,10 @@ public class DateTimeFormat {
   }
 
   private static DateTimeFormatInfo getDefaultDateTimeFormatInfo() {
-    if (BeeKeeper.getUser().getDateFormat() == null) {
+    if (SupportedLocale.getDateFormat() == null) {
       return UserInfo.getUserLocale().getDateTimeFormat();
     }
-    return BeeKeeper.getUser().getDateFormat().getDateTimeFormat();
+    return SupportedLocale.getDateFormat().getDateTimeFormat();
   }
 
   private static boolean usesFixedEnglishStrings(PredefinedFormat predef) {
