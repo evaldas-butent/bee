@@ -18,7 +18,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
-
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
