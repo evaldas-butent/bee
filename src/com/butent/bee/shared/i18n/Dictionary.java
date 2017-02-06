@@ -6179,6 +6179,10 @@ public interface Dictionary {
 
   default String trTbSettingsPlaceInfo() {return g("trTbSettingsPlaceInfo");}
 
+  default String trTbSettingsRefreshLocalChanges() {return g("trTbSettingsRefreshLocalChanges");}
+
+  default String trTbSettingsRefreshRemoteChanges() {return g("trTbSettingsRefreshRemoteChanges");}
+
   default String trTbSettingsSeparateCargo() {return g("trTbSettingsSeparateCargo");}
 
   default String trTbSettingsSeparateTrips() {return g("trTbSettingsSeparateTrips");}

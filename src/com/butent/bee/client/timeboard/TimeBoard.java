@@ -337,14 +337,14 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
   @Override
   public void onDataChange(DataChangeEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
@@ -511,7 +511,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
@@ -549,21 +549,21 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   @Override
   public void onRowDelete(RowDeleteEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
     if (isDataEventRelevant(event)) {
-      refresh();
+      onRelevantDataEvent(event);
     }
   }
 
@@ -953,10 +953,6 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     }
   }
 
-  /**
-   * @param row
-   * @param date
-   */
   protected void onDoubleClickChart(int row, JustDate date) {
   }
 
@@ -1010,6 +1006,10 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     render(true);
 
     ReadyEvent.fire(this);
+  }
+
+  protected void onRelevantDataEvent(ModificationEvent<?> event) {
+    refresh();
   }
 
   protected void onRowResizerMove(MoveEvent event) {
