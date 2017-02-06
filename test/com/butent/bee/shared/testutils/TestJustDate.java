@@ -280,11 +280,11 @@ public class TestJustDate {
     assertEquals(jd.getDays() * TimeUtils.MILLIS_PER_DAY - 180 * 60000, jd.getTime());
 
     jd = new JustDate(1);
-    assertEquals( TimeUtils.MILLIS_PER_HOUR * 22, jd.getTime());
+    assertEquals(TimeUtils.MILLIS_PER_HOUR * 22, jd.getTime());
     jd = new JustDate(0);
     assertEquals(TimeUtils.MILLIS_PER_HOUR * -2, jd.getTime());
     jd = new JustDate(-1);
-    assertEquals( -TimeUtils.MILLIS_PER_DAY - TimeUtils.MILLIS_PER_HOUR * 2, jd.getTime());
+    assertEquals(-TimeUtils.MILLIS_PER_DAY - TimeUtils.MILLIS_PER_HOUR * 2, jd.getTime());
 
     jd = new JustDate(1900, 1, 1);
     assertEquals(-25567, jd.getDays());
