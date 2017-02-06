@@ -892,6 +892,7 @@ public class TransportReportsBean {
     cargoClause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_ORDER_CARGO,
         sys.getIdName(TBL_ORDER_CARGO)), SqlConstants.SqlDataType.STRING, 20, 0), COL_CARGO));
     cargoClause.add(report.getCondition(TBL_ORDER_CARGO, COL_CARGO_PARTIAL));
+    cargoClause.add(report.getCondition(SqlUtils.field(TBL_ORDERS, COL_STATUS), ALS_ORDER_STATUS));
 
     if (!cargoClause.isEmpty()) {
       clause.add(SqlUtils.in(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
@@ -1149,7 +1150,7 @@ public class TransportReportsBean {
     boolean cargoRequired = report.requiresField(COL_ORDER_NO)
         || report.requiresField(COL_ORDER + COL_ORDER_DATE) || report.requiresField(COL_CUSTOMER)
         || report.requiresField(COL_ORDER_MANAGER) || report.requiresField(COL_CARGO)
-        || report.requiresField(COL_CARGO_PARTIAL);
+        || report.requiresField(COL_CARGO_PARTIAL) || report.requiresField(ALS_ORDER_STATUS);
 
     if (cargoRequired) {
       String tmpPercents = getCargoTripPercents(COL_TRIP,
@@ -1159,6 +1160,7 @@ public class TransportReportsBean {
 
       query = new SqlSelect()
           .addFields(TBL_ORDERS, COL_ORDER_NO)
+          .addField(TBL_ORDERS, COL_STATUS, ALS_ORDER_STATUS)
           .addField(TBL_ORDERS, COL_ORDER_DATE, COL_ORDER + COL_ORDER_DATE)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER)
           .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
