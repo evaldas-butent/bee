@@ -37,7 +37,7 @@
 
     <DataColumn name="Note" />
 
-    <RelColumn name="Creator" readOnly="true" />
+    <RelColumn name="Creator" readOnly="true" filterSupplier="list" />
 
     <DataColumn name="Vehicle" />
     <DataColumn name="Trailer" />

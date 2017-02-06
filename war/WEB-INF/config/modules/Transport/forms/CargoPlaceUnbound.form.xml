@@ -31,6 +31,8 @@
                     choiceColumns="Name NameEn NameRu CountryName" required="true" options="CountryUnbound" >
         <ui:rowRenderer type="join" separator="/" />
       </DataSelector>
+      <Label for="EmptyKilometers" />
+      <InputInteger source="EmptyKilometers" style="width:70px;" />
     </row>
     <row>
       <Label for="PostIndex" class="bee-required" />

@@ -16,7 +16,8 @@
 
     <RelColumn name="Customer" />
     <RelColumn name="Payer" />
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
+               filterSupplier="list" />
     <CalcColumn name="Cargo" type="string" caption="=cargos" maxWidth="300" searchBy="MinCargo MaxCargo">
       <render>
         <ui:function>

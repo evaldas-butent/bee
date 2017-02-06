@@ -56,7 +56,7 @@
     <DataColumn name="ERPGroup" />
 
     <DataColumn name="Created" readOnly="true" />
-    <RelColumn name="Creator" readOnly="true" />
+    <RelColumn name="Creator" readOnly="true" filterSupplier="list" />
 
     <DataColumn name="Notes" visible="false" />
 

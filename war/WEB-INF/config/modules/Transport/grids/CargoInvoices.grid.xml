@@ -41,7 +41,7 @@
 
     <DataColumn name="SentDate" />
     <DataColumn name="OtherDate" />
-    <RelColumn name="Creator" readOnly="true" />
+    <RelColumn name="Creator" readOnly="true" filterSupplier="list" />
 
     <DataColumn name="Attribute"/>
   </g:columns>

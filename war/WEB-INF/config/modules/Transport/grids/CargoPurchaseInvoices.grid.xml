@@ -30,7 +30,7 @@
 
     <DataColumn name="Exported" />
 
-    <RelColumn name="Creator" readOnly="true" />
+    <RelColumn name="Creator" readOnly="true" filterSupplier="list" />
   </g:columns>
 
   <g:rowStyle>

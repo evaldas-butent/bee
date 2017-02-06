@@ -33,7 +33,7 @@
     <DataColumn name="DateFrom" caption="=trDeparted" />
     <DataColumn name="DateTo" caption="=trReturned" />
     <DataColumn name="PlannedEndDate" caption="=trPlannedEndDate" />
-    <RelColumn name="Manager" />
+    <RelColumn name="Manager" filterSupplier="list" />
     <DataColumn name="Created" />
     <PropColumn name="Creator" type="string" caption="=trAccountant"
                 verticalAlignment="top" flexGrow="1" />

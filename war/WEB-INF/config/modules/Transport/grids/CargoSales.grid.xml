@@ -51,6 +51,6 @@
     <DataColumn name="Trailer" />
     <DataColumn name="Driver" searchBy="FirstName LastName" />
 
-    <RelColumn name="Creator" readOnly="true" />
+    <RelColumn name="Creator" readOnly="true" filterSupplier="list" />
   </g:columns>
 </g:Grid>
