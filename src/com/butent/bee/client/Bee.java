@@ -195,6 +195,17 @@ public class Bee implements EntryPoint, ClosingHandler {
         case TBL_DICTIONARY:
           Localized.setGlossary(Codec.deserializeHashMap(value));
           break;
+
+        case VAR_LOCALE:
+          BeeKeeper.getUser().setSupportedLocale(SupportedLocale.getByLanguage(value));
+          break;
+
+        case COL_USER_DATE_FORMAT:
+          SupportedLocale dtfLocale = SupportedLocale.getByLanguage(value);
+          if (dtfLocale != null) {
+            BeeKeeper.getUser().setDateTimeFormatInfo(dtfLocale.getDateTimeFormatInfo());
+          }
+          break;
       }
     }
 

@@ -1,20 +1,16 @@
 package com.butent.bee.client.i18n;
 
-import com.google.gwt.core.client.JsArrayInteger;
-import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.i18n.client.TimeZoneInfo;
-
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 
-public final class TimeZone {
+final class TimeZone {
 
   private static final int STD_SHORT_NAME = 0;
   private static final int STD_LONG_NAME = 1;
   private static final int DLT_SHORT_NAME = 2;
   private static final int DLT_LONG_NAME = 3;
 
-  public static TimeZone createTimeZone(int timeZoneOffsetInMinutes) {
+  static TimeZone createTimeZone(int timeZoneOffsetInMinutes) {
     TimeZone tz = new TimeZone();
     tz.standardOffset = timeZoneOffsetInMinutes;
     tz.timezoneID = composePosixTimeZoneID(timeZoneOffsetInMinutes);
@@ -23,44 +19,6 @@ public final class TimeZone {
     tz.tzNames[1] = composeUTCString(timeZoneOffsetInMinutes);
     tz.transitionPoints = null;
     tz.adjustments = null;
-    return tz;
-  }
-
-  public static TimeZone createTimeZone(String tzJson) {
-    TimeZoneInfo tzData = TimeZoneInfo.buildTimeZoneData(tzJson);
-
-    return createTimeZone(tzData);
-  }
-
-  public static TimeZone createTimeZone(TimeZoneInfo timezoneData) {
-    TimeZone tz = new TimeZone();
-
-    tz.timezoneID = timezoneData.getID();
-    tz.standardOffset = -timezoneData.getStandardOffset();
-
-    JsArrayString jsTimezoneNames = timezoneData.getNames();
-
-    tz.tzNames = new String[jsTimezoneNames.length()];
-
-    for (int i = 0; i < jsTimezoneNames.length(); i++) {
-      tz.tzNames[i] = jsTimezoneNames.get(i);
-    }
-
-    JsArrayInteger transitions = timezoneData.getTransitions();
-
-    if (transitions == null || transitions.length() == 0) {
-      tz.transitionPoints = null;
-      tz.adjustments = null;
-    } else {
-      int transitionNum = transitions.length() / 2;
-      tz.transitionPoints = new int[transitionNum];
-      tz.adjustments = new int[transitionNum];
-
-      for (int i = 0; i < transitionNum; ++i) {
-        tz.transitionPoints[i] = transitions.get(i * 2);
-        tz.adjustments[i] = transitions.get(i * 2 + 1);
-      }
-    }
     return tz;
   }
 
@@ -114,11 +72,11 @@ public final class TimeZone {
 
   private static String offsetDisplay(int offset) {
     int hour = offset / 60;
-    int mins = offset % 60;
-    if (mins == 0) {
+    int minutes = offset % 60;
+    if (minutes == 0) {
       return Integer.toString(hour);
     }
-    return Integer.toString(hour) + ":" + Integer.toString(mins);
+    return Integer.toString(hour) + ":" + Integer.toString(minutes);
   }
 
   private String timezoneID;
@@ -130,14 +88,14 @@ public final class TimeZone {
   private TimeZone() {
   }
 
-  public int getDaylightAdjustment(HasDateValue date) {
+  int getDaylightAdjustment(HasDateValue date) {
     if (!(date instanceof DateTime)) {
       return 0;
     }
     if (transitionPoints == null) {
       return 0;
     }
-    long timeInHours = ((DateTime) date).getTime() / 1000 / 3600;
+    long timeInHours = date.getTime() / 1000 / 3600;
     int index = 0;
     while (index < transitionPoints.length && timeInHours >= transitionPoints[index]) {
       ++index;
@@ -145,15 +103,15 @@ public final class TimeZone {
     return (index == 0) ? 0 : adjustments[index - 1];
   }
 
-  public String getGMTString(HasDateValue date) {
+  String getGMTString(HasDateValue date) {
     return composeGMTString(getOffset(date));
   }
 
-  public String getID() {
+  String getID() {
     return timezoneID;
   }
 
-  public String getISOTimeZoneString(HasDateValue date) {
+  String getISOTimeZoneString(HasDateValue date) {
     int offset = -getOffset(date);
     char[] data = {'+', '0', '0', ':', '0', '0'};
     if (offset < 0) {
@@ -167,15 +125,15 @@ public final class TimeZone {
     return new String(data);
   }
 
-  public String getLongName(HasDateValue date) {
+  String getLongName(HasDateValue date) {
     return tzNames[isDaylightTime(date) ? DLT_LONG_NAME : STD_LONG_NAME];
   }
 
-  public int getOffset(HasDateValue date) {
+  int getOffset(HasDateValue date) {
     return standardOffset - getDaylightAdjustment(date);
   }
 
-  public String getRFCTimeZoneString(HasDateValue date) {
+  String getRFCTimeZoneString(HasDateValue date) {
     int offset = -getOffset(date);
     char[] data = {'+', '0', '0', '0', '0'};
     if (offset < 0) {
@@ -189,15 +147,11 @@ public final class TimeZone {
     return new String(data);
   }
 
-  public String getShortName(HasDateValue date) {
+  String getShortName(HasDateValue date) {
     return tzNames[isDaylightTime(date) ? DLT_SHORT_NAME : STD_SHORT_NAME];
   }
 
-  public int getStandardOffset() {
-    return standardOffset;
-  }
-
-  public boolean isDaylightTime(HasDateValue date) {
+  boolean isDaylightTime(HasDateValue date) {
     return getDaylightAdjustment(date) > 0;
   }
 }

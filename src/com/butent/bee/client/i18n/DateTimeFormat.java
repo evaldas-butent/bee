@@ -1,19 +1,18 @@
 package com.butent.bee.client.i18n;
 
-import com.butent.bee.client.UserInfo;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
-import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class DateTimeFormat {
+public final class DateTimeFormat {
 
   /**
    * PredefinedFormat is enum for date/time formatting patterns which formats and parses dates or
@@ -162,12 +161,12 @@ public class DateTimeFormat {
     }
   }
 
-  protected static final String RFC2822_PATTERN = "EEE, d MMM yyyy HH:mm:ss Z";
-  protected static final String ISO8601_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
+  private static BeeLogger logger = LogUtils.getLogger(DateTimeFormat.class);
+
+  private static final String RFC2822_PATTERN = "EEE, d MMM yyyy HH:mm:ss Z";
+  private static final String ISO8601_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
 
   private static final int NUMBER_BASE = 10;
-
-  private static final Map<String, DateTimeFormat> cache = new HashMap<>();
 
   private static final String PATTERN_CHARS = "GyMLdkHmsSEcDahKzZv";
 
@@ -178,30 +177,29 @@ public class DateTimeFormat {
   private static final String GMT = "GMT";
   private static final String UTC = "UTC";
 
-  public static DateTimeFormat getFormat(PredefinedFormat predef) {
-    if (usesFixedEnglishStrings(predef)) {
-      String pattern;
-      switch (predef) {
-        case RFC_2822:
-          pattern = RFC2822_PATTERN;
-          break;
-        case ISO_8601:
-          pattern = ISO8601_PATTERN;
-          break;
-        default:
-          throw new IllegalStateException("Unexpected predef type " + predef);
-      }
-
-      if (SupportedLocale.getDateFormat() == null) {
-        return getFormat(pattern, UserInfo.getUserLocale().getDateTimeFormat());
-      }
-      return getFormat(pattern, SupportedLocale.getDateFormat().getDateTimeFormat());
+  public static DateTimeFormat of(PredefinedFormat predef, DateTimeFormatInfo dtfi) {
+    if (predef == null) {
+      logger.severe(NameUtils.getClassName(DateTimeFormat.class), "getFormat",
+          NameUtils.getClassName(PredefinedFormat.class), "is null");
+      return null;
     }
 
-    DateTimeFormatInfo dtfi = getDefaultDateTimeFormatInfo();
-    String pattern;
+    if (dtfi == null) {
+      logger.severe(NameUtils.getClassName(DateTimeFormat.class), "getFormat",
+          NameUtils.getClassName(DateTimeFormatInfo.class), "is null");
+      return null;
+    }
+
+    String pattern = null;
 
     switch (predef) {
+      case RFC_2822:
+        pattern = RFC2822_PATTERN;
+        break;
+      case ISO_8601:
+        pattern = ISO8601_PATTERN;
+        break;
+
       case DATE_FULL:
         pattern = dtfi.dateFormatFull();
         break;
@@ -307,66 +305,34 @@ public class DateTimeFormat {
       case YEAR_QUARTER_ABBR:
         pattern = dtfi.formatYearQuarterShort();
         break;
-      default:
-        throw new IllegalArgumentException("Unexpected predefined format " + predef);
     }
 
-    return getFormat(pattern, dtfi);
+    return of(pattern, dtfi);
   }
 
-  public static DateTimeFormat getFormat(String pattern) {
-    return getFormat(pattern, getDefaultDateTimeFormatInfo());
-  }
+  public static DateTimeFormat of(String pattern, DateTimeFormatInfo dtfi) {
+    if (BeeUtils.isEmpty(pattern)) {
+      logger.severe(NameUtils.getClassName(DateTimeFormat.class), "pattern is empty");
+      return null;
 
-  protected static DateTimeFormat getFormat(String pattern, DateTimeFormatInfo dtfi) {
+    } else if (dtfi == null) {
+      logger.severe(NameUtils.getClassName(DateTimeFormat.class),
+          NameUtils.getClassName(PredefinedFormat.class), "is null");
+      return null;
 
-    DateTimeFormatInfo defaultDtfi = getDefaultDateTimeFormatInfo();
-    DateTimeFormat dtf = null;
-    if (dtfi == defaultDtfi) {
-      dtf = cache.get(pattern);
-    }
-    if (dtf == null) {
-      dtf = new DateTimeFormat(pattern, dtfi);
-      if (dtfi == defaultDtfi) {
-        cache.put(pattern, dtf);
-      }
-    }
-    return dtf;
-  }
-
-  private static DateTimeFormatInfo getDefaultDateTimeFormatInfo() {
-    if (SupportedLocale.getDateFormat() == null) {
-      return UserInfo.getUserLocale().getDateTimeFormat();
-    }
-    return SupportedLocale.getDateFormat().getDateTimeFormat();
-  }
-
-  private static boolean usesFixedEnglishStrings(PredefinedFormat predef) {
-    switch (predef) {
-      case RFC_2822:
-        return true;
-      case ISO_8601:
-        return true;
-      default:
-        return false;
+    } else {
+      return new DateTimeFormat(pattern, dtfi);
     }
   }
+
+  private final String pattern;
+  private final DateTimeFormatInfo dateTimeFormatInfo;
 
   private final List<PatternPart> patternParts = new ArrayList<>();
 
-  private final DateTimeFormatInfo dateTimeFormatInfo;
-  private final String[] monthsFull;
-
-  private final String pattern;
-
-  protected DateTimeFormat(String pattern) {
-    this(pattern, getDefaultDateTimeFormatInfo());
-  }
-
-  protected DateTimeFormat(String pattern, DateTimeFormatInfo dtfi) {
+  private DateTimeFormat(String pattern, DateTimeFormatInfo dtfi) {
     this.pattern = pattern;
     this.dateTimeFormatInfo = dtfi;
-    this.monthsFull = dtfi.monthsFull();
 
     parsePattern(pattern);
   }
@@ -375,7 +341,7 @@ public class DateTimeFormat {
     return format(date, createTimeZone(date.getTimezoneOffset()));
   }
 
-  public String format(HasDateValue date, TimeZone timeZone) {
+  private String format(HasDateValue date, TimeZone timeZone) {
     long diff = date.supportsTimezoneOffset()
         ? (date.getTimezoneOffset() - timeZone.getOffset(date)) * 60000 : 0;
     DateTime keepDate = new DateTime(date.getTime() + diff);
@@ -488,7 +454,7 @@ public class DateTimeFormat {
     return parse(text, true);
   }
 
-  protected TimeZone createTimeZone(int timezoneOffset) {
+  private static TimeZone createTimeZone(int timezoneOffset) {
     return TimeZone.createTimeZone(timezoneOffset);
   }
 
@@ -597,7 +563,7 @@ public class DateTimeFormat {
         buf.append(dateTimeFormatInfo.monthsNarrow()[value]);
         break;
       case 4:
-        buf.append(monthsFull[value]);
+        buf.append(dateTimeFormatInfo.monthsFull()[value]);
         break;
       case 3:
         buf.append(dateTimeFormatInfo.monthsShort()[value]);
@@ -1165,7 +1131,7 @@ public class DateTimeFormat {
   private boolean subParseMonth(String text, int[] pos, DateRecord cal, int value, int start) {
     int v = value;
     if (v < 0) {
-      v = matchString(text, start, monthsFull, pos);
+      v = matchString(text, start, dateTimeFormatInfo.monthsFull(), pos);
       if (v < 0) {
         v = matchString(text, start, dateTimeFormatInfo.monthsShort(), pos);
       }

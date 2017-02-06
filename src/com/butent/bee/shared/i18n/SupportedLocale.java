@@ -34,7 +34,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoLT.getInstance();
     }
   },
@@ -56,7 +56,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoEN.getInstance();
     }
   },
@@ -78,7 +78,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoET.getInstance();
     }
   },
@@ -100,7 +100,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoRU.getInstance();
     }
   },
@@ -122,10 +122,9 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoFI.getInstance();
     }
-
   },
 
   LV {
@@ -145,7 +144,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoLV.getInstance();
     }
   },
@@ -167,7 +166,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoDE.getInstance();
     }
   };
@@ -175,7 +174,6 @@ public enum SupportedLocale implements HasCaption {
   public static final SupportedLocale DICTIONARY_DEFAULT = EN;
   public static final SupportedLocale USER_DEFAULT = LT;
   public static final List<String> ACTIVE_LOCALES = new ArrayList<>();
-  private static SupportedLocale dateFormat;
 
   public static SupportedLocale getByLanguage(String language) {
     for (SupportedLocale locale : values()) {
@@ -223,18 +221,10 @@ public enum SupportedLocale implements HasCaption {
 
   public abstract String getLanguage();
 
-  public abstract DateTimeFormatInfo getDateTimeFormat();
-
-  public static SupportedLocale getDateFormat() {
-    return dateFormat;
-  }
+  public abstract DateTimeFormatInfo getDateTimeFormatInfo();
 
   public boolean isActive() {
     return ACTIVE_LOCALES.stream()
         .anyMatch(loc -> Objects.equals(this, USER_DEFAULT) || BeeUtils.same(loc, getLanguage()));
-  }
-
-  public static void setDateFormat(SupportedLocale df) {
-    dateFormat = df;
   }
 }

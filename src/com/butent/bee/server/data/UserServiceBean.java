@@ -30,6 +30,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -422,6 +423,40 @@ public class UserServiceBean {
 
   public SupportedLocale getSupportedLocale(String user) {
     return getSupportedLocale(getUserId(user));
+  }
+
+  public DateTimeFormatInfo getDateTimeFormatInfo() {
+    return getDateTimeFormatInfo(getCurrentUserId());
+  }
+
+  public DateTimeFormatInfo getDateTimeFormatInfo(Long userId) {
+    return getDateTimeFormatLocale(userId).getDateTimeFormatInfo();
+  }
+
+  public SupportedLocale getDateTimeFormatLocale() {
+    return getDateTimeFormatLocale(getCurrentUserId());
+  }
+
+  public SupportedLocale getDateTimeFormatLocale(Long userId) {
+    SupportedLocale locale = null;
+
+    if (userId != null) {
+      SqlSelect query = new SqlSelect()
+          .addFields(TBL_USER_SETTINGS, COL_USER_LOCALE, COL_USER_DATE_FORMAT)
+          .addFrom(TBL_USER_SETTINGS)
+          .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId));
+
+      SimpleRow row = qs.getRow(query);
+
+      if (row != null) {
+        locale = row.getEnum(COL_USER_DATE_FORMAT, SupportedLocale.class);
+        if (locale == null) {
+          locale = row.getEnum(COL_USER_LOCALE, SupportedLocale.class);
+        }
+      }
+    }
+
+    return (locale == null) ? SupportedLocale.USER_DEFAULT : locale;
   }
 
   public String getUserEmail(Long userId, boolean checkCompany) {
@@ -882,7 +917,7 @@ public class UserServiceBean {
           .addConstant(COL_USER, userId)
           .addConstant(COL_USER_LOCALE, locale.ordinal()));
 
-      logger.info("created user setings for:", user, ", locale:", locale.getLanguage());
+      logger.info("created user settings for:", user, ", locale:", locale.getLanguage());
       return true;
 
     } else {

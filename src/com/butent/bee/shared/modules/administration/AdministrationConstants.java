@@ -287,6 +287,7 @@ public final class AdministrationConstants {
   public static final String COL_PASSWORD = "Password";
   public static final String COL_USER_LOCALE = "Locale";
   public static final String COL_USER_INTERFACE = "Interface";
+  public static final String COL_USER_DATE_FORMAT = "DateFormat";
   public static final String COL_USER_BLOCK_FROM = "BlockAfter";
   public static final String COL_USER_BLOCK_UNTIL = "BlockBefore";
   public static final String COL_REMOTE_HOST = "Host";
@@ -381,8 +382,6 @@ public final class AdministrationConstants {
 
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
   public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
-
-  public static final String COL_USER_DATE_FORMAT = "DateFormat";
 
   public static final String COL_NEWS_REFRESH_INTERVAL_SECONDS = "NewsRefreshIntervalSeconds";
   public static final String COL_LOADING_STATE_DELAY_MILLIS = "LoadingStateDelayMillis";

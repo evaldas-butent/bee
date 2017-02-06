@@ -22,7 +22,7 @@ public class DateTimeRenderer extends AbstractRenderer<DateTime> implements HasD
   }
 
   public DateTimeRenderer(String pattern) {
-    this.format = BeeUtils.isEmpty(pattern) ? null : Format.getDateTimeFormat(pattern);
+    this.format = BeeUtils.isEmpty(pattern) ? null : Format.parseDateTimeFormat(pattern);
   }
 
   @Override

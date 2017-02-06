@@ -2607,7 +2607,7 @@ public final class CliWorker {
 
     char sep = ';';
     if (BeeUtils.contains(args, sep)) {
-      dtf = Format.getDateTimeFormat(BeeUtils.getPrefix(args, sep));
+      dtf = Format.parseDateTimeFormat(BeeUtils.getPrefix(args, sep));
       inp = BeeUtils.getSuffix(args, sep);
     } else if (BeeUtils.contains(cmnd, 'f') && !BeeUtils.isEmpty(args)) {
       dtf = Format.getDefaultDateTimeFormat();
@@ -2708,7 +2708,7 @@ public final class CliWorker {
       for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
         data[i][0] = dtf.toString();
 
-        DateTimeFormat format = DateTimeFormat.getFormat(dtf);
+        DateTimeFormat format = Format.getPredefinedFormat(dtf);
         data[i][1] = format.getPattern();
         data[i][2] = format.format(d);
         i++;
@@ -2722,10 +2722,10 @@ public final class CliWorker {
 
       char sep = ';';
       if (BeeUtils.contains(args, sep)) {
-        dtf = Format.getDateTimeFormat(BeeUtils.getPrefix(args, sep));
+        dtf = Format.parseDateTimeFormat(BeeUtils.getPrefix(args, sep));
         t = TimeUtils.parseDateTime(BeeUtils.getSuffix(args, sep));
       } else {
-        dtf = Format.getDateTimeFormat(args);
+        dtf = Format.parseDateTimeFormat(args);
         t = new DateTime();
       }
 

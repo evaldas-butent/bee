@@ -23,7 +23,7 @@ public class DateRenderer extends AbstractRenderer<JustDate> implements HasDateT
   }
 
   public DateRenderer(String pattern) {
-    this.format = BeeUtils.isEmpty(pattern) ? null : Format.getDateTimeFormat(pattern);
+    this.format = BeeUtils.isEmpty(pattern) ? null : Format.parseDateTimeFormat(pattern);
   }
 
   @Override

@@ -2,10 +2,10 @@ package com.butent.bee.client.i18n;
 
 import com.butent.bee.shared.time.DateTime;
 
-public class DateRecord {
+class DateRecord {
 
-  public static final int AM = 0;
-  public static final int PM = 1;
+  static final int AM = 0;
+  static final int PM = 1;
 
   private int era;
   private int year;
@@ -20,7 +20,7 @@ public class DateRecord {
   private int tzOffset;
   private int dayOfWeek;
 
-  public DateRecord() {
+  DateRecord() {
     era = -1;
     year = Integer.MIN_VALUE;
     month = -1;
@@ -34,7 +34,7 @@ public class DateRecord {
     tzOffset = Integer.MIN_VALUE;
   }
 
-  public boolean calcDate(DateTime date, boolean strict) {
+  boolean calcDate(DateTime date, boolean strict) {
     if (this.era == 0 && this.year > 0) {
       this.year = -(this.year - 1);
     }
@@ -120,47 +120,47 @@ public class DateRecord {
     return true;
   }
 
-  public void setAmpm(int ampm) {
+  void setAmpm(int ampm) {
     this.ampm = ampm;
   }
 
-  public void setDayOfMonth(int day) {
+  void setDayOfMonth(int day) {
     this.dayOfMonth = day;
   }
 
-  public void setDayOfWeek(int dayOfWeek) {
+  void setDayOfWeek(int dayOfWeek) {
     this.dayOfWeek = dayOfWeek;
   }
 
-  public void setEra(int era) {
+  void setEra(int era) {
     this.era = era;
   }
 
-  public void setHours(int hours) {
+  void setHours(int hours) {
     this.hours = hours;
   }
 
-  public void setMilliseconds(int milliseconds) {
+  void setMilliseconds(int milliseconds) {
     this.milliseconds = milliseconds;
   }
 
-  public void setMinutes(int minutes) {
+  void setMinutes(int minutes) {
     this.minutes = minutes;
   }
 
-  public void setMonth(int month) {
+  void setMonth(int month) {
     this.month = month;
   }
 
-  public void setSeconds(int seconds) {
+  void setSeconds(int seconds) {
     this.seconds = seconds;
   }
 
-  public void setTzOffset(int tzOffset) {
+  void setTzOffset(int tzOffset) {
     this.tzOffset = tzOffset;
   }
 
-  public void setYear(int value) {
+  void setYear(int value) {
     this.year = value;
   }
 }
