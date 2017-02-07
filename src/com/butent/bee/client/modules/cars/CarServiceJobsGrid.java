@@ -164,7 +164,7 @@ public class CarServiceJobsGrid extends ParentRowRefreshGrid implements Selector
             @Override
             public void onSuccess(Collection<BeeRowSet> result) {
               RpcCallback<RowInfoList> insertCallback = new RpcCallback<RowInfoList>() {
-                int cnt = views.size();
+                long cnt = result.stream().filter(rs -> !rs.isEmpty()).count();
 
                 @Override
                 public void onSuccess(RowInfoList res) {
