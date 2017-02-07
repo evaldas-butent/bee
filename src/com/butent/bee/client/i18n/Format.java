@@ -347,7 +347,7 @@ public final class Format {
 
   public static String quarterFull(int quarter) {
     if (TimeUtils.isQuarter(quarter)) {
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersFull()[quarter - 1];
+      return getDefaultDateTimeFormatInfo().quartersFull()[quarter - 1];
     } else {
       return null;
     }
@@ -355,7 +355,7 @@ public final class Format {
 
   public static String quarterShort(int quarter) {
     if (TimeUtils.isQuarter(quarter)) {
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().quartersShort()[quarter - 1];
+      return getDefaultDateTimeFormatInfo().quartersShort()[quarter - 1];
     } else {
       return null;
     }
@@ -500,7 +500,7 @@ public final class Format {
   public static String renderDayOfWeek(int dow) {
     if (TimeUtils.isDow(dow)) {
       int index = (dow == 7) ? 0 : dow;
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().weekdaysFull()[index];
+      return getDefaultDateTimeFormatInfo().weekdaysFull()[index];
     } else {
       return null;
     }
@@ -509,15 +509,14 @@ public final class Format {
   public static String renderDayOfWeekShort(int dow) {
     if (TimeUtils.isDow(dow)) {
       int index = (dow == 7) ? 0 : dow;
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo().weekdaysShort()[index];
+      return getDefaultDateTimeFormatInfo().weekdaysShort()[index];
     } else {
       return null;
     }
   }
 
   public static String renderMonthFull(HasYearMonth date) {
-    return (date == null)
-        ? null : LocaleUtils.monthsFull(LocaleInfo.getCurrentLocale())[date.getMonth() - 1];
+    return (date == null) ? null : getDefaultDateTimeFormatInfo().monthsFull()[date.getMonth() - 1];
   }
 
   public static String renderMonthFullStandalone(HasYearMonth date) {
@@ -526,8 +525,7 @@ public final class Format {
 
   public static String renderMonthFullStandalone(int month) {
     if (TimeUtils.isMonth(month)) {
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
-          .monthsFullStandalone()[month - 1];
+      return getDefaultDateTimeFormatInfo().monthsFullStandalone()[month - 1];
     } else {
       return null;
     }
@@ -535,8 +533,7 @@ public final class Format {
 
   public static String renderMonthShortStandalone(int month) {
     if (TimeUtils.isMonth(month)) {
-      return LocaleInfo.getCurrentLocale().getDateTimeFormatInfo()
-          .monthsShortStandalone()[month - 1];
+      return getDefaultDateTimeFormatInfo().monthsShortStandalone()[month - 1];
     } else {
       return null;
     }
