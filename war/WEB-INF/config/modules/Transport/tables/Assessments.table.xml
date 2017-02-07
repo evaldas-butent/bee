@@ -16,7 +16,6 @@
     <Numeric name="LogCount" precision="2" label="Korekcijų sk." />
     <Boolean name="Finished" label="Baigtas" />
     <Numeric name="FinishedCount" precision="2" label="Pajamų korekcijų sk." />
-    <Boolean name="ShowAdditionalRoute" label="Šalys maršrute" />
     <Boolean name="ExpensesRegistered" label="=trExpensesRegistered" />
     <Text name="Documents" label="Dokumentai" />
 

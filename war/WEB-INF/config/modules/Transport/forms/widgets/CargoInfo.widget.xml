@@ -15,8 +15,6 @@
     <InputArea source="OrderNotes" required="true" visibleLines="6" style="width:400px;" />
   </FlowPanel>
 
-  <CheckBox source="ShowAdditionalRoute" />
-
   <FlowPanel style="&section;">
     <Label for="CargoNotes" text="=additionalInfo" style="&labelLeft; vertical-align:top;" />
     <InputArea source="CargoNotes" style="width:400px;" />
