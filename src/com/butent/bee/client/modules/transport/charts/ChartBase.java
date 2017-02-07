@@ -17,6 +17,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
@@ -64,9 +65,11 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -252,7 +255,7 @@ public abstract class ChartBase extends TimeBoard implements HasState {
         addStyleName(STYLE_STATE_PREFIX + state.name().toLowerCase());
       }
 
-      logger.debug(getCaption(), getId(), state);
+      logger.debug(NameUtils.getName(this), getId(), state);
     }
   }
 
@@ -530,15 +533,58 @@ public abstract class ChartBase extends TimeBoard implements HasState {
           public void onResponse(ResponseObject response) {
             setState(State.UPDATING);
 
-            if (setData(response, false)) {
-              render(false);
-              setState(refreshTimer.isRunning() ? State.PENDING : State.LOADED);
+            scheduleDeferred(() -> {
+              if (setData(response, false)) {
+                render(false, new Callback<Integer>() {
+                  @Override
+                  public void onFailure(String... reason) {
+                    onSuccess(null);
+                    logger.warning(ArrayUtils.joinWords(reason));
+                  }
 
-            } else {
-              setState(refreshTimer.isRunning() ? State.PENDING : State.ERROR);
-            }
+                  @Override
+                  public void onSuccess(Integer result) {
+                    setState(refreshTimer.isRunning() ? State.PENDING : State.LOADED);
+                  }
+                });
+
+              } else {
+                setState(refreshTimer.isRunning() ? State.PENDING : State.ERROR);
+              }
+            });
           }
         });
+  }
+
+  @Override
+  protected void render(boolean updateRange) {
+    final State previousState = getState();
+
+    setState(State.UPDATING);
+
+    scheduleDeferred(() ->
+        super.render(updateRange, new Callback<Integer>() {
+          @Override
+          public void onFailure(String... reason) {
+            logger.warning(ArrayUtils.joinWords(reason));
+            setState(previousState);
+          }
+
+          @Override
+          public void onSuccess(Integer result) {
+            if (getState() == State.UPDATING) {
+              State currentState;
+
+              if (previousState == State.PENDING && !refreshTimer.isRunning()) {
+                currentState = State.LOADED;
+              } else {
+                currentState = previousState;
+              }
+
+              setState(currentState);
+            }
+          }
+        }));
   }
 
   protected void renderCargoShipment(HasWidgets panel, OrderCargo cargo, String parentTitle) {
@@ -1137,6 +1183,22 @@ public abstract class ChartBase extends TimeBoard implements HasState {
       getFilterLabel().getElement().setInnerText(label);
       getRemoveFilter().setVisible(true);
     }
+  }
+
+  private static void scheduleDeferred(Runnable command) {
+    RafCallback raf = new RafCallback(10_000) {
+      @Override
+      protected boolean run(double elapsed) {
+        return false;
+      }
+
+      @Override
+      protected void onComplete() {
+        command.run();
+      }
+    };
+
+    raf.start();
   }
 
   private void scheduleRefresh(int seconds) {
