@@ -116,8 +116,11 @@
         <text>=serviceJobs</text>
         <FlowPanel class="flexBox-vertical">
           <ChildGrid name="CarServiceJobs" relColumn="ServiceOrder" class="flexible" />
-          <ChildGrid name="CarJobProgress" parent="CarServiceJobs" relColumn="ServiceJob"
+          <FlowPanel class="flexible flexBox-horizontal">
+            <FlowPanel style="width:100px;" />
+            <ChildGrid name="CarJobProgress" parent="CarServiceJobs" relColumn="ServiceJob"
                      class="flexible" />
+          </FlowPanel>
         </FlowPanel>
       </page>
       <page>

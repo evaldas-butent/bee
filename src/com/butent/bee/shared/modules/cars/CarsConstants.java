@@ -33,6 +33,10 @@ public final class CarsConstants {
   public static final String TBL_CAR_ORDERS = "CarOrders";
   public static final String TBL_CAR_ORDER_ITEMS = "CarOrderItems";
 
+  public static final String TBL_CAR_BUNDLES = "CarBundles";
+  public static final String TBL_CAR_BUNDLE_JOBS = "CarBundleJobs";
+  public static final String TBL_CAR_BUNDLE_ITEMS = "CarBundleItems";
+
   public static final String TBL_SERVICE_ORDERS = "CarServiceOrders";
   public static final String TBL_SERVICE_ORDER_ITEMS = "CarServiceItems";
   public static final String TBL_SERVICE_ORDER_JOBS = "CarServiceJobs";
@@ -71,6 +75,8 @@ public final class CarsConstants {
   public static final String COL_JOB = "Job";
   public static final String COL_DURATION = "Duration";
   public static final String COL_SERVICE_EVENT = "ServiceEvent";
+  public static final String COL_BUNDLE_NAME = "BundleName";
+  public static final String COL_VALID_UNTIL = "ValidUntil";
 
   public static final String FORM_CONF_OPTION = "ConfOption";
   public static final String FORM_CAR_ORDER = "CarOrder";

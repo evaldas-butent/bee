@@ -261,6 +261,10 @@ public interface Dictionary {
 
   default String brutto() {return g("brutto");}
 
+  default String bundle() {return g("bundle");}
+
+  default String bundles() {return g("bundles");}
+
   default String calAction() {return g("calAction");}
 
   default String calActionRegisterResult() {return g("calActionRegisterResult");}
@@ -3746,6 +3750,8 @@ public interface Dictionary {
   default String newBank() {return g("newBank");}
 
   default String newBranch() {return g("newBranch");}
+
+  default String newBundle() {return g("newBundle");}
 
   default String newCar() {return g("newCar");}
 

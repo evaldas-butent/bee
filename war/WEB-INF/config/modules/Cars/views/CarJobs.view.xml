@@ -15,6 +15,12 @@
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
 
+    <SimpleColumn name="Item"/>
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+      <SimpleColumn name="Article" />
+    </SimpleJoin>
+
     <ExternalJoin name="Job" joinType="LEFT" source="CarJobModels">
       <HiddenColumn name="Model" />
       <AggregateColumn name="Duration" alias="ModelDuration" aggregate="MAX" />
