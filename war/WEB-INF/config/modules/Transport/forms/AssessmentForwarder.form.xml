@@ -54,7 +54,7 @@
       <Label name="IncomeLabel" for="Income" style="&labelRight; margin-left:30px;" />
       <DataSelector name="Income" source="Income" style="&inline; width:70px;"
                     newRowEnabled="false" editEnabled="false" caching="none"
-                    choiceColumns="ServiceName Amount CurrencyName" />
+                    choiceColumns="ID ServiceName Amount CurrencyName" />
     </FlowPanel>
 
     <FlowPanel for="Note" style="&section;">
