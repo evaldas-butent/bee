@@ -587,6 +587,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void init() {
+    System.setProperty("mail.mime.charset", BeeConst.CHARSET_UTF8);
     System.setProperty("mail.mime.decodetext.strict", "false");
     System.setProperty("mail.mime.decodefilename", "true");
     System.setProperty("mail.mime.parameters.strict", "false");

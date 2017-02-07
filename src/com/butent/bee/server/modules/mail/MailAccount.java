@@ -49,12 +49,11 @@ public class MailAccount {
     private static final int MAX_CONCURRENT_THEADS = 15;
 
     final Store store;
-    final long start;
+    long lastActivity = System.currentTimeMillis();
     int cnt;
 
     private MailStore(Store store) {
       this.store = Assert.notNull(store);
-      this.start = System.currentTimeMillis();
     }
 
     public Store getStore() {
@@ -63,10 +62,11 @@ public class MailAccount {
 
     private void enter() {
       cnt++;
+      lastActivity = System.currentTimeMillis();
     }
 
     private boolean expired() {
-      return BeeUtils.isMore(System.currentTimeMillis() - start, TIMEOUT);
+      return BeeUtils.isMore(System.currentTimeMillis() - lastActivity, TimeUtils.MILLIS_PER_HOUR);
     }
 
     private boolean full() {
