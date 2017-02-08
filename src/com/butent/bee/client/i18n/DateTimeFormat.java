@@ -14,142 +14,170 @@ import java.util.List;
 
 public final class DateTimeFormat {
 
-  /**
-   * PredefinedFormat is enum for date/time formatting patterns which formats and parses dates or
-   * time in a language-independent manner.
-   *
-   * The date/time formatting patterns, allows for formatting
-   * (i.e., date → text), parsing (text → date), and normalization. The date is represented as a
-   * AbstractDate object or as the milliseconds since January 1, 1970, 00:00:00 GMT.
-   *
-   * PredefinedFormat provides many patterns for obtaining default date/time formatters based on the
-   * default or a given locale and a number of formatting styles.
-   * The formatting styles include FULL, LONG, MEDIUM, and SHORT. More detail and examples of using
-   * these styles are provided in the enum descriptions.
-   * <p>
-   * PredefinedFormat helps you to format and parse dates for any locale.
-   * Your code can be completely independent of the locale conventions for months, days of the week,
-   * or even the calendar format: lunar vs. solar.
-   * <p>
-   * Use getFormat method to get the normal date format for that country. There are other static
-   * factory methods available.  You can pass in different options to this factory method to control
-   * the length of the result; from SHORT to MEDIUM to LONG to FULL.
-   * The exact result depends on the locale, but generally:
-   * <p>
-   * SHORT is completely numeric, such as 12.13.52 or 3:30pm <br />
-   * MEDIUM is longer, such as Jan 12, 1952 <br />
-   * LONG is longer, such as January 12, 1952 or 3:30:32pm <br />
-   * FULL is pretty completely specified, such as Tuesday, April 12, 1952 AD or 3:30:42pm PST. <br/>
-   * You can also set the time zone on the format if you wish.
-   *
-   */
-  public enum PredefinedFormat {
-    ISO_8601,
-    RFC_2822,
+  private static final class DateRecord {
 
-    DATE_FULL,
-    DATE_LONG,
-    DATE_MEDIUM,
-    DATE_SHORT,
+    private static final int PM = 1;
 
-    TIME_FULL,
-    TIME_LONG,
-    TIME_MEDIUM,
-    TIME_SHORT,
+    private int era;
+    private int year;
+    private int month;
+    private int dayOfMonth;
+    private int ampm;
+    private int hours;
+    private int minutes;
+    private int seconds;
+    private int milliseconds;
 
-    DATE_TIME_FULL,
-    /**
-     * Format time with fields (ordinal of fields depends from locale).
-     * {@code
-     * years (number),
-     * month (text),
-     * day (number),
-     * hours (number),
-     * minutes (number),
-     * seconds (number),
-     * UTC time zone (text).
-     * }
-     * Examples:
-     * English version: January 12, 1952 3:30:32pm UTC-3
-     * Lithuanian version: 1952 m. sausio 12 d. 15:30:32 UTC-3
-     */
-    DATE_TIME_LONG,
+    private int tzOffset;
+    private int dayOfWeek;
 
-    /**
-     * Format time with fields (ordinal of fields depends from locale).
-     * {@code
-     * years (number),
-     * month (text, short notation),
-     * day (number),
-     * hours (number),
-     * minutes (number),
-     * seconds (number),
-     * }
-     *
-     * Examples:
-     * English version: Jan 12, 1952 3:30:32pm
-     * Lithuanian version: 1952 m. saus. 12 15:30:32
-     */
-    DATE_TIME_MEDIUM,
-    /**
-     * Format time with fields (ordinal of fields depends from locale).
-     * {@code
-     * years (number),
-     * month (text, short notation),
-     * day (number),
-     * hours (number),
-     * minutes (number),
-     * seconds (number),
-     * }
-     *
-     * Examples:
-     * English version: Jan 12, 1952 3:30:32pm
-     * Lithuanian version: 1952 m. saus. 12 15:30:32
-     */
-    DATE_TIME_SHORT,
+    private DateRecord() {
+      this.era = -1;
+      this.year = Integer.MIN_VALUE;
+      this.month = -1;
+      this.dayOfMonth = -1;
+      this.ampm = -1;
+      this.hours = -1;
+      this.minutes = -1;
+      this.seconds = -1;
+      this.milliseconds = -1;
+      this.dayOfWeek = -1;
+      this.tzOffset = Integer.MIN_VALUE;
+    }
 
-    /**
-     * Format time with fields (ordinal of fields depends from locale).
-     * {@code
-     * years (number),
-     * month (number),
-     * day (number),
-     * hours (number),
-     * minutes (number),
-     * seconds (number),
-     * }
-     *
-     * Examples:
-     * English version: 12.13.52 3:30:32pm
-     * Lithuanian version: 1952-12-13 15:30:32
-     */
-    DATE_SHORT_TIME_MEDIUM,
+    private boolean calcDate(DateTime date, boolean strict) {
+      if (this.era == 0 && this.year > 0) {
+        this.year = -(this.year - 1);
+      }
 
-    DAY,
-    HOUR_MINUTE,
-    HOUR_MINUTE_SECOND,
-    HOUR24_MINUTE,
-    HOUR24_MINUTE_SECOND,
-    MINUTE_SECOND,
-    MONTH,
-    MONTH_ABBR,
-    MONTH_ABBR_DAY,
-    MONTH_DAY,
-    MONTH_NUM_DAY,
-    MONTH_WEEKDAY_DAY,
-    YEAR,
-    YEAR_MONTH,
-    YEAR_MONTH_ABBR,
-    YEAR_MONTH_ABBR_DAY,
-    YEAR_MONTH_DAY,
-    YEAR_MONTH_NUM,
-    YEAR_MONTH_NUM_DAY,
-    YEAR_MONTH_WEEKDAY_DAY,
-    YEAR_QUARTER,
-    YEAR_QUARTER_ABBR,
+      if (this.year > Integer.MIN_VALUE) {
+        date.setYear(this.year);
+      }
+      if (this.month > 0) {
+        date.setMonth(this.month);
+      }
+      if (this.dayOfMonth > 0) {
+        date.setDom(this.dayOfMonth);
+      }
+
+      int h = this.hours;
+      if (h < 0) {
+        h = date.getHour();
+      }
+      if (this.ampm == PM && h < 12) {
+        h += 12;
+      }
+      date.setHour(h);
+
+      if (this.minutes >= 0) {
+        date.setMinute(this.minutes);
+      }
+      if (this.seconds >= 0) {
+        date.setSecond(this.seconds);
+      }
+      if (this.milliseconds >= 0) {
+        date.setMillis(this.milliseconds);
+      }
+
+      if (strict) {
+        if (this.year > Integer.MIN_VALUE && this.year != date.getYear()) {
+          return false;
+        }
+        if (this.month > 0 && this.month != date.getMonth()) {
+          return false;
+        }
+        if (this.dayOfMonth > 0 && this.dayOfMonth != date.getDom()) {
+          return false;
+        }
+
+        if (this.hours >= 24) {
+          return false;
+        }
+        if (this.minutes >= 60) {
+          return false;
+        }
+        if (this.seconds >= 60) {
+          return false;
+        }
+        if (this.milliseconds >= 1000) {
+          return false;
+        }
+      }
+
+      if (this.dayOfWeek > 0) {
+        if (this.dayOfMonth <= 0) {
+          int adjustment = (7 + this.dayOfWeek - date.getDow()) % 7;
+          if (adjustment > 3) {
+            adjustment -= 7;
+          }
+          int orgMonth = date.getMonth();
+          date.setDom(date.getDom() + adjustment);
+
+          if (date.getMonth() != orgMonth) {
+            date.setDom(date.getDom() + (adjustment > 0 ? -7 : 7));
+          }
+        } else {
+          if (date.getDow() != this.dayOfWeek) {
+            return false;
+          }
+        }
+      }
+
+      if (this.tzOffset > Integer.MIN_VALUE) {
+        int offset = date.getTimezoneOffset();
+        date.setTime(date.getTime() + (this.tzOffset - offset) * 60 * 1000);
+      }
+
+      return true;
+    }
+
+    private void setAmpm(int ampm) {
+      this.ampm = ampm;
+    }
+
+    private void setDayOfMonth(int day) {
+      this.dayOfMonth = day;
+    }
+
+    private void setDayOfWeek(int dayOfWeek) {
+      this.dayOfWeek = dayOfWeek;
+    }
+
+    private void setEra(int era) {
+      this.era = era;
+    }
+
+    private void setHours(int hours) {
+      this.hours = hours;
+    }
+
+    private void setMilliseconds(int milliseconds) {
+      this.milliseconds = milliseconds;
+    }
+
+    private void setMinutes(int minutes) {
+      this.minutes = minutes;
+    }
+
+    private void setMonth(int month) {
+      this.month = month;
+    }
+
+    private void setSeconds(int seconds) {
+      this.seconds = seconds;
+    }
+
+    private void setTzOffset(int tzOffset) {
+      this.tzOffset = tzOffset;
+    }
+
+    private void setYear(int value) {
+      this.year = value;
+    }
   }
 
   private static final class PatternPart {
+
     private String text;
     private int count;
     private boolean abutStart;
@@ -158,6 +186,159 @@ public final class DateTimeFormat {
       text = txt;
       count = cnt;
       abutStart = false;
+    }
+  }
+
+  private static final class TimeZone {
+
+    private static final int STD_SHORT_NAME = 0;
+    private static final int STD_LONG_NAME = 1;
+    private static final int DLT_SHORT_NAME = 2;
+    private static final int DLT_LONG_NAME = 3;
+
+    private static TimeZone createTimeZone(int timeZoneOffsetInMinutes) {
+      TimeZone tz = new TimeZone();
+      tz.standardOffset = timeZoneOffsetInMinutes;
+      tz.timezoneID = composePosixTimeZoneID(timeZoneOffsetInMinutes);
+      tz.tzNames = new String[2];
+      tz.tzNames[0] = composeUTCString(timeZoneOffsetInMinutes);
+      tz.tzNames[1] = composeUTCString(timeZoneOffsetInMinutes);
+      tz.transitionPoints = null;
+      tz.adjustments = null;
+      return tz;
+    }
+
+    private static String composeGMTString(int offset) {
+      char[] data = {'G', 'M', 'T', '-', '0', '0', ':', '0', '0'};
+      int x = offset;
+
+      if (x <= 0) {
+        data[3] = '+';
+        x = -x;
+      }
+      data[4] += (x / 60) / 10;
+      data[5] += (x / 60) % 10;
+      data[7] += (x % 60) / 10;
+      data[8] += x % 10;
+
+      return new String(data);
+    }
+
+    private static String composePosixTimeZoneID(int offset) {
+      int x = offset;
+      if (x == 0) {
+        return "Etc/GMT";
+      }
+
+      String str;
+      if (x < 0) {
+        x = -x;
+        str = "Etc/GMT-";
+      } else {
+        str = "Etc/GMT+";
+      }
+      return str + offsetDisplay(x);
+    }
+
+    private static String composeUTCString(int offset) {
+      int x = offset;
+      if (x == 0) {
+        return "UTC";
+      }
+
+      String str;
+      if (x < 0) {
+        x = -x;
+        str = "UTC+";
+      } else {
+        str = "UTC-";
+      }
+      return str + offsetDisplay(x);
+    }
+
+    private static String offsetDisplay(int offset) {
+      int hour = offset / 60;
+      int minutes = offset % 60;
+      if (minutes == 0) {
+        return Integer.toString(hour);
+      }
+      return Integer.toString(hour) + ":" + Integer.toString(minutes);
+    }
+
+    private String timezoneID;
+    private int standardOffset;
+    private String[] tzNames;
+    private int[] transitionPoints;
+    private int[] adjustments;
+
+    private TimeZone() {
+    }
+
+    private int getDaylightAdjustment(HasDateValue date) {
+      if (!(date instanceof DateTime)) {
+        return 0;
+      }
+      if (transitionPoints == null) {
+        return 0;
+      }
+      long timeInHours = date.getTime() / 1000 / 3600;
+      int index = 0;
+      while (index < transitionPoints.length && timeInHours >= transitionPoints[index]) {
+        ++index;
+      }
+      return (index == 0) ? 0 : adjustments[index - 1];
+    }
+
+    private String getGMTString(HasDateValue date) {
+      return composeGMTString(getOffset(date));
+    }
+
+    private String getID() {
+      return timezoneID;
+    }
+
+    private String getISOTimeZoneString(HasDateValue date) {
+      int offset = -getOffset(date);
+      char[] data = {'+', '0', '0', ':', '0', '0'};
+      if (offset < 0) {
+        data[0] = '-';
+        offset = -offset;
+      }
+      data[1] += (offset / 60) / 10;
+      data[2] += (offset / 60) % 10;
+      data[4] += (offset % 60) / 10;
+      data[5] += offset % 10;
+      return new String(data);
+    }
+
+    private String getLongName(HasDateValue date) {
+      return tzNames[isDaylightTime(date) ? DLT_LONG_NAME : STD_LONG_NAME];
+    }
+
+    private int getOffset(HasDateValue date) {
+      return standardOffset - getDaylightAdjustment(date);
+    }
+
+    private String getRFCTimeZoneString(HasDateValue date) {
+      int offset = -getOffset(date);
+      char[] data = {'+', '0', '0', '0', '0'};
+      if (offset < 0) {
+        data[0] = '-';
+        offset = -offset;
+      }
+      data[1] += (offset / 60) / 10;
+      data[2] += (offset / 60) % 10;
+      data[3] += (offset % 60) / 10;
+      data[4] += offset % 10;
+      return new String(data);
+    }
+
+    private String getShortName(HasDateValue date) {
+      return tzNames[isDaylightTime(date) ? DLT_SHORT_NAME : STD_SHORT_NAME];
+    }
+
+    private boolean isDaylightTime(HasDateValue date) {
+      return getDaylightAdjustment(date) > 0;
     }
   }
 

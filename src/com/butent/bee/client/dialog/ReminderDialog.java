@@ -11,8 +11,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.i18n.PredefinedFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
@@ -287,8 +287,7 @@ public class ReminderDialog extends DialogBox {
 
     dateTimeInput = new InputDateTime();
     dateTimeInput.addStyleName(STYLE_DIALOG_COMPONENT);
-    dateTimeInput.setDateTimeFormat(
-        Format.getPredefinedFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT));
+    dateTimeInput.setDateTimeFormat(Format.getPredefinedFormat(PredefinedFormat.DATE_TIME_SHORT));
 
     if (dataValue != null) {
       dateTimeInput.setDateTime(dataValue);
@@ -466,8 +465,8 @@ public class ReminderDialog extends DialogBox {
 
   private static String formatDate(DateTime dateTime) {
     return BeeUtils.joinItems(" ",
-        Format.render(DateTimeFormat.PredefinedFormat.DATE_FULL, dateTime),
-        Format.render(DateTimeFormat.PredefinedFormat.TIME_SHORT, dateTime));
+        Format.render(PredefinedFormat.DATE_FULL, dateTime),
+        Format.render(PredefinedFormat.TIME_SHORT, dateTime));
   }
 
   private void setTime() {

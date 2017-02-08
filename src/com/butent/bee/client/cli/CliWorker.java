@@ -71,6 +71,7 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.i18n.Money;
+import com.butent.bee.client.i18n.PredefinedFormat;
 import com.butent.bee.client.images.Flags;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.js.Markdown;
@@ -2700,12 +2701,12 @@ public final class CliWorker {
 
   private static void showDateFormat(String args) {
     if (BeeUtils.isEmpty(args)) {
-      int r = DateTimeFormat.PredefinedFormat.values().length;
+      int r = PredefinedFormat.values().length;
       String[][] data = new String[r][3];
 
       DateTime d = new DateTime();
       int i = 0;
-      for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
+      for (PredefinedFormat dtf : PredefinedFormat.values()) {
         data[i][0] = dtf.toString();
 
         DateTimeFormat format = Format.getPredefinedFormat(dtf);

@@ -7,7 +7,6 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.client.constants.NumberConstants;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
@@ -606,7 +605,7 @@ public final class Format {
   }
 
   private static DateTimeFormat parsePredefinedFormat(String name) {
-    for (DateTimeFormat.PredefinedFormat pf : DateTimeFormat.PredefinedFormat.values()) {
+    for (PredefinedFormat pf : PredefinedFormat.values()) {
       if (BeeUtils.same(name, pf.name())) {
         return DateTimeFormat.of(pf, getDefaultDateTimeFormatInfo());
       }
