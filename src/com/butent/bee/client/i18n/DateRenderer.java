@@ -38,7 +38,7 @@ public class DateRenderer extends AbstractRenderer<JustDate> implements HasDateT
     if (object == null) {
       return BeeConst.STRING_EMPTY;
     } else if (getDateTimeFormat() == null) {
-      return object.toString();
+      return Format.renderDate(object);
     } else {
       return getDateTimeFormat().format(object);
     }

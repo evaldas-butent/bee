@@ -37,7 +37,7 @@ public class DateTimeRenderer extends AbstractRenderer<DateTime> implements HasD
     if (object == null) {
       return BeeConst.STRING_EMPTY;
     } else if (getDateTimeFormat() == null) {
-      return object.toCompactString();
+      return Format.renderDateTime(object);
     } else {
       return getDateTimeFormat().format(object);
     }

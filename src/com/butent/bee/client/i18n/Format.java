@@ -407,10 +407,8 @@ public final class Format {
           result = null;
         } else if (dateTimeFormat != null) {
           result = dateTimeFormat.format(jd);
-        } else if (getDefaultDateFormat() != null) {
-          result = getDefaultDateFormat().format(jd);
         } else {
-          result = jd.toString();
+          result = renderDate(jd);
         }
         break;
 
@@ -420,10 +418,8 @@ public final class Format {
           result = null;
         } else if (dateTimeFormat != null) {
           result = dateTimeFormat.format(dt);
-        } else if (getDefaultDateTimeFormat() != null) {
-          result = getDefaultDateTimeFormat().format(dt);
         } else {
-          result = dt.toString();
+          result = renderDateTime(dt);
         }
         break;
 
@@ -486,8 +482,26 @@ public final class Format {
   public static String renderDateTime(DateTime dateTime) {
     if (dateTime == null) {
       return null;
+
+    } else if (dateTime.hasTimePart()) {
+      PredefinedFormat timeFormat;
+
+      if (dateTime.getMillis() != 0) {
+        timeFormat = PredefinedFormat.HOUR24_MINUTE_SECOND_MILLISECOND;
+      } else if (dateTime.getSecond() != 0) {
+        timeFormat = PredefinedFormat.HOUR24_MINUTE_SECOND;
+      } else {
+        timeFormat = PredefinedFormat.HOUR24_MINUTE;
+      }
+
+      DateTimeFormatInfo dtfInfo = getDefaultDateTimeFormatInfo();
+      String pattern = dtfInfo.dateTime(PredefinedFormat.DATE_SHORT.getPattern(dtfInfo),
+          timeFormat.getPattern(dtfInfo));
+
+      return DateTimeFormat.of(pattern, dtfInfo).format(dateTime);
+
     } else {
-      return getDefaultDateTimeFormat().format(dateTime);
+      return render(PredefinedFormat.DATE_SHORT, dateTime);
     }
   }
 

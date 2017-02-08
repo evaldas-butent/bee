@@ -103,7 +103,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
       DateTime publishTime = row.getDateTime(idxColTerm);
       if (publishTime != null) {
         rowCellTerm.add(createCellHtmlItem(COL_TERM, BeeUtils.joinWords(LC.svcTerm(),
-            Format.getDefaultDateFormat().format(publishTime))));
+            Format.renderDate(publishTime))));
       }
     }
 

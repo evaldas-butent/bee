@@ -27,7 +27,7 @@ public class DateTimeCell extends AbstractCell<DateTime> implements HasDateTimeF
   @Override
   public String render(CellContext context, DateTime value) {
     if (value != null) {
-      return (format == null) ? Format.renderDate(value) : format.format(value);
+      return (format == null) ? Format.renderDateTime(value) : format.format(value);
     } else {
       return null;
     }

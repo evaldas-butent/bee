@@ -83,8 +83,8 @@ public final class TasksKeeper {
             Data.getLong(event.getViewName(), event.getRow(), COL_TASK),
             Data.getString(event.getViewName(), event.getRow(), ALS_PUBLISHER_FIRST_NAME),
             Data.getString(event.getViewName(), event.getRow(), ALS_PUBLISHER_LAST_NAME),
-            Format.getDefaultDateTimeFormat().format(Data.getDateTime(event.getViewName(),
-                event.getRow(), COL_PUBLISH_TIME)),
+            Format.renderDateTime(Data.getDateTime(event.getViewName(), event.getRow(),
+                COL_PUBLISH_TIME)),
             Data.getString(event.getViewName(), event.getRow(), COL_COMMENT)));
       } else if (event.hasView(VIEW_TASK_FILES)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_TASK_FILES), event.getRow(),
