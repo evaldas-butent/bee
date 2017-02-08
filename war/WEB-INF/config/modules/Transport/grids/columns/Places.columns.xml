@@ -73,7 +73,7 @@
   <PropColumn type="integer" name="EmptyKilometers" label="=trEmptyKilometers" visible="false" />
   <PropColumn type="integer" name="LoadedKilometers" label="=trLoadedKilometers" visible="false" />
 
-  <PropColumn type="string" cellType="html" name="Loading"
+  <PropColumn type="string" cellType="html" name="Loading" exportable="false"
               renderColumns="Date Note Company Contact Address City Country Number"
               label="=cargoLoading" minWidth="140" flexBasis="120">
     <style>
@@ -84,7 +84,7 @@
     <renderer type="place" options="&renderLoadingOptions;"/>
   </PropColumn>
 
-  <PropColumn type="string" cellType="html" name="Unloading"
+  <PropColumn type="string" cellType="html" name="Unloading" exportable="false"
               renderColumns="Date Note Company Contact Address City Country Number"
               label="=cargoUnloading" minWidth="140" flexBasis="120">
     <style>
