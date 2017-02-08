@@ -344,9 +344,6 @@ public final class DateTimeFormat {
 
   private static BeeLogger logger = LogUtils.getLogger(DateTimeFormat.class);
 
-  private static final String RFC2822_PATTERN = "EEE, d MMM yyyy HH:mm:ss Z";
-  private static final String ISO8601_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ";
-
   private static final int NUMBER_BASE = 10;
 
   private static final String PATTERN_CHARS = "GyMLdkHmsSEcDahKzZv";
@@ -360,135 +357,18 @@ public final class DateTimeFormat {
 
   public static DateTimeFormat of(PredefinedFormat predef, DateTimeFormatInfo dtfi) {
     if (predef == null) {
-      logger.severe(NameUtils.getClassName(DateTimeFormat.class), "getFormat",
+      logger.severe(NameUtils.getClassName(DateTimeFormat.class),
           NameUtils.getClassName(PredefinedFormat.class), "is null");
       return null;
-    }
 
-    if (dtfi == null) {
-      logger.severe(NameUtils.getClassName(DateTimeFormat.class), "getFormat",
+    } else if (dtfi == null) {
+      logger.severe(NameUtils.getClassName(DateTimeFormat.class),
           NameUtils.getClassName(DateTimeFormatInfo.class), "is null");
       return null;
+
+    } else {
+      return of(predef.getPattern(dtfi), dtfi);
     }
-
-    String pattern = null;
-
-    switch (predef) {
-      case RFC_2822:
-        pattern = RFC2822_PATTERN;
-        break;
-      case ISO_8601:
-        pattern = ISO8601_PATTERN;
-        break;
-
-      case DATE_FULL:
-        pattern = dtfi.dateFormatFull();
-        break;
-      case DATE_LONG:
-        pattern = dtfi.dateFormatLong();
-        break;
-      case DATE_MEDIUM:
-        pattern = dtfi.dateFormatMedium();
-        break;
-      case DATE_SHORT:
-        pattern = dtfi.dateFormatShort();
-        break;
-      case DATE_TIME_FULL:
-        pattern = dtfi.dateTimeFull(dtfi.timeFormatFull(), dtfi.dateFormatFull());
-        break;
-      case DATE_TIME_LONG:
-        pattern = dtfi.dateTimeLong(dtfi.timeFormatLong(), dtfi.dateFormatLong());
-        break;
-      case DATE_TIME_MEDIUM:
-        pattern = dtfi.dateTimeMedium(dtfi.timeFormatMedium(), dtfi.dateFormatMedium());
-        break;
-      case DATE_TIME_SHORT:
-        pattern = dtfi.dateTimeShort(dtfi.timeFormatShort(), dtfi.dateFormatShort());
-        break;
-      case DATE_SHORT_TIME_MEDIUM:
-        pattern = dtfi.dateTime(dtfi.timeFormatMedium(), dtfi.dateFormatShort());
-        break;
-      case DAY:
-        pattern = dtfi.formatDay();
-        break;
-      case HOUR24_MINUTE:
-        pattern = dtfi.formatHour24Minute();
-        break;
-      case HOUR24_MINUTE_SECOND:
-        pattern = dtfi.formatHour24MinuteSecond();
-        break;
-      case HOUR_MINUTE:
-        pattern = dtfi.formatHour12Minute();
-        break;
-      case HOUR_MINUTE_SECOND:
-        pattern = dtfi.formatHour12MinuteSecond();
-        break;
-      case MINUTE_SECOND:
-        pattern = dtfi.formatMinuteSecond();
-        break;
-      case MONTH:
-        pattern = dtfi.formatMonthFull();
-        break;
-      case MONTH_ABBR:
-        pattern = dtfi.formatMonthAbbrev();
-        break;
-      case MONTH_ABBR_DAY:
-        pattern = dtfi.formatMonthAbbrevDay();
-        break;
-      case MONTH_DAY:
-        pattern = dtfi.formatMonthFullDay();
-        break;
-      case MONTH_NUM_DAY:
-        pattern = dtfi.formatMonthNumDay();
-        break;
-      case MONTH_WEEKDAY_DAY:
-        pattern = dtfi.formatMonthFullWeekdayDay();
-        break;
-      case TIME_FULL:
-        pattern = dtfi.timeFormatFull();
-        break;
-      case TIME_LONG:
-        pattern = dtfi.timeFormatLong();
-        break;
-      case TIME_MEDIUM:
-        pattern = dtfi.timeFormatMedium();
-        break;
-      case TIME_SHORT:
-        pattern = dtfi.timeFormatShort();
-        break;
-      case YEAR:
-        pattern = dtfi.formatYear();
-        break;
-      case YEAR_MONTH:
-        pattern = dtfi.formatYearMonthFull();
-        break;
-      case YEAR_MONTH_ABBR:
-        pattern = dtfi.formatYearMonthAbbrev();
-        break;
-      case YEAR_MONTH_ABBR_DAY:
-        pattern = dtfi.formatYearMonthAbbrevDay();
-        break;
-      case YEAR_MONTH_DAY:
-        pattern = dtfi.formatYearMonthFullDay();
-        break;
-      case YEAR_MONTH_NUM:
-        pattern = dtfi.formatYearMonthNum();
-        break;
-      case YEAR_MONTH_NUM_DAY:
-        pattern = dtfi.formatYearMonthNumDay();
-        break;
-      case YEAR_MONTH_WEEKDAY_DAY:
-        pattern = dtfi.formatYearMonthWeekdayDay();
-        break;
-      case YEAR_QUARTER:
-        pattern = dtfi.formatYearQuarterFull();
-        break;
-      case YEAR_QUARTER_ABBR:
-        pattern = dtfi.formatYearQuarterShort();
-        break;
-    }
-
-    return of(pattern, dtfi);
   }
 
   public static DateTimeFormat of(String pattern, DateTimeFormatInfo dtfi) {
