@@ -20,5 +20,7 @@
     <DataColumn name="DateOfBirth" />
     <DataColumn name="PassportNo" />
     <DataColumn name="StartDate" />
+
+    <PropColumn name="Value" type="double" label="=trDailyAmount" />
   </g:columns>
 </g:Grid>

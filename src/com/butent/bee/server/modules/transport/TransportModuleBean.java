@@ -485,6 +485,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_VEHICLES);
     cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_EMPLOYEES);
 
+    CustomTransportModuleBean customTrp = com.butent.bee.server.Invocation
+        .locateRemoteBean(CustomTransportModuleBean.class);
+    customTrp.init();
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       @AllowConcurrentEvents
@@ -994,22 +998,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             }
           }
         }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void convertVATToMainCurrency(ViewQueryEvent event) {
-        CustomTransportModuleBean customTrp = com.butent.bee.server.Invocation
-            .locateRemoteBean(CustomTransportModuleBean.class);
-        customTrp.convertVATToMainCurrency(event);
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void validateHandlingKm(DataEvent.ViewModifyEvent event) {
-        CustomTransportModuleBean customTrp = com.butent.bee.server.Invocation
-            .locateRemoteBean(CustomTransportModuleBean.class);
-        customTrp.validateHandlingKm(event);
       }
     });
 

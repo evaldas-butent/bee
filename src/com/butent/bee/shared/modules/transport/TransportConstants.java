@@ -657,6 +657,7 @@ public final class TransportConstants {
   public static final String COL_VEHICLE_NOTES = "Notes";
 
   public static final String COL_DRIVER = "Driver";
+  public static final String COL_DRIVER_DAILY_COST_VALUE = "Value";
   public static final String COL_DRIVER_PERSON = "CompanyPerson";
   public static final String COL_DRIVER_START_DATE = "StartDate";
   public static final String COL_DRIVER_END_DATE = "EndDate";
