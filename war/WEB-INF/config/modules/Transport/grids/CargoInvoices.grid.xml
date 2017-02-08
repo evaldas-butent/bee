@@ -24,6 +24,24 @@
       <footer aggregate="sum" />
     </DataColumn>
     <DataColumn name="CurrencyName" />
+
+    <PropColumn name="Vat" type="decimal" caption="=printItemVatAmount" format="#.##" >
+      <footer aggregate="sum" format="#.##"/>
+    </PropColumn>
+    <PropColumn name="WithoutVat" type="decimal" caption="=trdAmountWoVat" format="#.##"
+                horizontalAlignment="right">
+      <render>
+        <ui:function>
+          if (row.Vat) {
+          return Math.round((row.Amount - row.Vat) * 100) / 100;
+          } else {
+          return row.Amount;
+          }
+        </ui:function>
+      </render>
+      <footer aggregate="sum" format="#.##"/>
+    </PropColumn>
+
     <DataColumn name="Term" />
 
     <DataColumn name="PaymentTime" />

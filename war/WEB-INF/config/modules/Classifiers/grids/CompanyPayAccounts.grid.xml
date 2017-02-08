@@ -9,8 +9,8 @@
     <DataColumn name="BankName" />
     <DataColumn name="BankCode" />
     <DataColumn name="SWIFTCode" />
-    <RelColumn name="Account" visible="true" renderColumns="BankAccount"
-               choiceColumns="BankName BankCode SWIFTCode BankAccount CurrencyName" />
+    <RelColumn name="Account" visible="true" renderColumns="BankName BankAccount"
+               choiceColumns="BankName BankCode SWIFTCode BankAccount CurrencyName" width="250" />
     <DataColumn name="CurrencyName" />
     <DataColumn name="IBANCode" />
     <DataColumn name="Notes" />

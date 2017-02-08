@@ -998,6 +998,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       @Subscribe
       @AllowConcurrentEvents
+      public void convertVATToMainCurrency(ViewQueryEvent event) {
+        CustomTransportModuleBean customTrp = com.butent.bee.server.Invocation
+            .locateRemoteBean(CustomTransportModuleBean.class);
+        customTrp.convertVATToMainCurrency(event);
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
       public void validateHandlingKm(DataEvent.ViewModifyEvent event) {
         CustomTransportModuleBean customTrp = com.butent.bee.server.Invocation
             .locateRemoteBean(CustomTransportModuleBean.class);

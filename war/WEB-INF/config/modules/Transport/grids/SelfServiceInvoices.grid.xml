@@ -19,9 +19,43 @@
                 searchBy="InvoicePrefix InvoiceNo" />
     <RelColumn name="Customer" filterSupplier="value" />
     <RelColumn name="Payer" filterSupplier="value" />
-    <DataColumn name="Amount" />
+
+    <PropColumn name="Vat" type="decimal" caption="=printItemVatAmount" format="#.##" >
+      <footer aggregate="sum" format="#.##"/>
+    </PropColumn>
+    <PropColumn name="VatInEUR" type="decimal" caption="=printItemVatAmount+ +EUR" format="#.##" >
+      <footer aggregate="sum" format="#.##"/>
+    </PropColumn>
+    <PropColumn name="WithoutVat" type="decimal" caption="=trdAmountWoVat" format="#.##"
+                horizontalAlignment="right">
+      <render>
+        <ui:function>
+          if (row.Vat) {
+          return Math.round((row.Amount - row.Vat) * 100) / 100;
+          } else {
+          return row.Amount;
+          }
+        </ui:function>
+      </render>
+      <footer aggregate="sum" format="#.##"/>
+    </PropColumn>
+    <PropColumn name="WithoutVatEUR" type="decimal" caption="=trdAmountWoVat+ +EUR" format="#.##"
+                horizontalAlignment="right">
+      <render>
+        <ui:function>
+          if (row.VatInEUR) {
+          return Math.round((row.AmountInEUR - row.VatInEUR) * 100) / 100;
+          } else {
+          return row.AmountInEUR;
+          }
+        </ui:function>
+      </render>
+      <footer aggregate="sum" format="#.##"/>
+    </PropColumn>
+
+    <DataColumn name="Amount" caption="=trTotalWithVAT" />
     <DataColumn name="CurrencyName" />
-    <PropColumn name="AmountInEUR" type="double" format="0.00" caption="=trdTotal+ +EUR">
+    <PropColumn name="AmountInEUR" type="double" format="0.00" caption="=trTotalWithVAT+ +EUR" >
       <footer aggregate="sum" />
     </PropColumn>
 
