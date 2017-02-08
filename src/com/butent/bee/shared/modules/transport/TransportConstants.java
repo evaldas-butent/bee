@@ -950,6 +950,7 @@ public final class TransportConstants {
   public static final String PROP_VEHICLE_MANAGER = "VehicleManager";
   public static final String PROP_AMOUNT_IN_EUR = "AmountInEUR";
   public static final String PROP_PAID_IN_EUR = "PaidInEUR";
+  public static final String PROP_VAT_IN_EUR = "VatInEUR";
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";

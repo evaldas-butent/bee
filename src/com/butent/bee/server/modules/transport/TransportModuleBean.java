@@ -502,7 +502,8 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void calcInvoiceVat(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_CARGO_INVOICES, VIEW_CARGO_PURCHASE_INVOICES) && event.hasData()) {
+        if (event.isAfter(VIEW_CARGO_INVOICES, VIEW_CARGO_PURCHASE_INVOICES,
+            VIEW_SELF_SERVICE_INVOICES) && event.hasData()) {
           String tbl;
           String fld;
 
@@ -867,6 +868,14 @@ public class TransportModuleBean implements BeeModule {
             }
           }
         }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void convertVATToMainCurrency(ViewQueryEvent event) {
+        CustomTransportModuleBean customTrp = com.butent.bee.server.Invocation
+            .locateRemoteBean(CustomTransportModuleBean.class);
+        customTrp.convertVATToMainCurrency(event);
       }
 
       @Subscribe

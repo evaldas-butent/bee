@@ -25,10 +25,11 @@
     </DataColumn>
     <DataColumn name="CurrencyName" filterSupplier="list" />
 
-    <PropColumn name="Vat" type="decimal" caption="PVM suma" format="#.##" >
+    <PropColumn name="Vat" type="decimal" caption="=printItemVatAmount" format="#.##" >
       <footer aggregate="sum" format="#.##"/>
     </PropColumn>
-    <PropColumn name="WithoutVat" type="decimal" caption="Be PVM" format="#.##" horizontalAlignment="right">
+    <PropColumn name="WithoutVat" type="decimal" caption="=trdAmountWoVat" format="#.##"
+                horizontalAlignment="right">
       <render>
         <ui:function>
           if (row.Vat) {
