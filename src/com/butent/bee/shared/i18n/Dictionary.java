@@ -701,6 +701,8 @@ public interface Dictionary {
 
   default String checkNo() {return g("checkNo");}
 
+  default String checked() {return g("checked");}
+
   default String chief() {return g("chief");}
 
   default String chooseContactSource() {return g("chooseContactSource");}
@@ -4739,6 +4741,10 @@ public interface Dictionary {
   }
 
   default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
+
+  default String recall() {return g("recall");}
+
+  default String recalls() {return g("recalls");}
 
   default String received() {return g("received");}
 
