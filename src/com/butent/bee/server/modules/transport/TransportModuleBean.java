@@ -3865,8 +3865,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         if (!ArrayUtils.isEmpty(phones)) {
           if (!DataUtils.isId(contact)) {
             contact = qs.insertData(new SqlInsert(TBL_CONTACTS)
-                .addConstant(COL_PHONE, ArrayUtils.getQuietly(phones, 0))
-                .addConstant(COL_MOBILE, ArrayUtils.getQuietly(phones, 1)));
+                .addConstant(COL_PHONE, ArrayUtils.getQuietly(phones, 0)));
 
             qs.updateData(new SqlUpdate(TBL_COMPANY_PERSONS)
                 .addConstant(COL_CONTACT, contact)
@@ -3874,7 +3873,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           } else {
             qs.updateData(new SqlUpdate(TBL_CONTACTS)
                 .addConstant(COL_PHONE, ArrayUtils.getQuietly(phones, 0))
-                .addConstant(COL_MOBILE, ArrayUtils.getQuietly(phones, 1))
                 .setWhere(sys.idEquals(TBL_CONTACTS, contact)));
           }
         }
