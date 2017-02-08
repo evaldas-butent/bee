@@ -5,6 +5,7 @@ import com.google.gwt.i18n.client.LocalizedNames;
 import com.google.gwt.i18n.client.constants.NumberConstants;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;

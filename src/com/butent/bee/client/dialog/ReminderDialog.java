@@ -12,7 +12,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.i18n.PredefinedFormat;
+import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;

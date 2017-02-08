@@ -29,7 +29,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.i18n.PredefinedFormat;
+import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;

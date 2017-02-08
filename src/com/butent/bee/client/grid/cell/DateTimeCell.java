@@ -1,9 +1,9 @@
 package com.butent.bee.client.grid.cell;
 
 import com.butent.bee.client.grid.CellContext;
-import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.shared.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.i18n.HasDateTimeFormat;
+import com.butent.bee.shared.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.time.DateTime;
 
 public class DateTimeCell extends AbstractCell<DateTime> implements HasDateTimeFormat {
