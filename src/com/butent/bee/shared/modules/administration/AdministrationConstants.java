@@ -162,6 +162,7 @@ public final class AdministrationConstants {
   public static final String SVC_BLOCK_HOST = "block_host";
   public static final String SVC_CREATE_USER = "create_user";
   public static final String SVC_COPY_RIGHTS = "copy_rights";
+  public static final String SVC_CREATE_DATA_IMPORT_TEMPLATES = "create_data_import_templates";
 
   public static final String VAR_IMPORT_TEST = "Test";
   public static final String VAR_IMPORT_FILE = "File";

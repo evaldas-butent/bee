@@ -1459,6 +1459,8 @@ public interface Dictionary {
 
   default String data() {return g("data");}
 
+  default String dataCreateImportTemplates() {return g("dataCreateImportTemplates");}
+
   default String dataImport() {return g("dataImport");}
 
   default String dataNotAvailable(Object p0) {
