@@ -446,6 +446,10 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                     text = BeeUtils.notEmpty(result.getString(0, localizedContent),
                         result.getString(0, COL_TEXT_CONTENT));
                   }
+
+                  fileInfo.setCaption(CustomShipmentRequestForm.createFileName(
+                      fileInfo.getDescription(), getOrderNo(getActiveRow())));
+
                   sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
                           ? null : text.replace("{CONTRACT_PATH}",
                       "rest/transport/confirm/" + getActiveRowId()),
