@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
       name="AllCargo" source="TransportationOrders"
       newRowForm="TransportationOrder" editForm="TransportationOrder"
@@ -117,7 +118,20 @@
 
       <ExternalJoin name="Cargo" joinType="LEFT" source="CargoIncomes">
         <SimpleJoin name="Sale" joinType="LEFT">
-          <AggregateColumn name="InvoiceNo" aggregate="MAX" />
+          <SimpleJoin name="SaleSeries" joinType="LEFT">
+            <HiddenColumn name="SeriesName" />
+          </SimpleJoin>
+          <HiddenColumn name="InvoiceNo" alias="SaleInvoiceNo"/>
+          <AggregateColumn name="InvoiceNo" aggregate="MAX" label="=trdInvoice">
+            <x:concat>
+              <x:nvl type="STRING">
+                <x:string>"SeriesName"</x:string>
+                <x:string>''</x:string>
+              </x:nvl>
+              <x:string>' '</x:string>
+              <x:string>"SaleInvoiceNo"</x:string>
+            </x:concat>
+          </AggregateColumn>
         </SimpleJoin>
       </ExternalJoin>
 
