@@ -12,7 +12,7 @@ public class CustomShipmentRequestForm {
     translations.put("lt", "Kontraktas");
     translations.put("ru", "Контракт");
 
-    return translations.getOrDefault(Localized.extractLanguage(report), "en")
-      + "_" + orderNo + ".pdf";
+    return translations.getOrDefault(Localized.extractLanguage(report), translations.get("en"))
+        + "_" + orderNo + ".pdf";
   }
 }
