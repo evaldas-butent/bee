@@ -7,4 +7,5 @@
   <Item name="Calendar" label="=calendar" service="car_service_calendar" separator="true" />
   <Item name="Stages" label="=statuses" service="stages" parameters="CarServiceOrders" separator="true" />
   <Item name="CarJobs" label="=serviceJobs" service="grid" parameters="CarJobs" />
+  <Item name="CarBundles" label="=bundles" service="grid" parameters="CarBundles" />
 </Entry>

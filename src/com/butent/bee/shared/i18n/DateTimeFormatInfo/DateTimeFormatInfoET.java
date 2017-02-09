@@ -74,6 +74,11 @@ public final class DateTimeFormatInfoET implements DateTimeFormatInfo {
   }
 
   @Override
+  public String formatHour24MinuteSecondMillisecond() {
+    return "H:mm:ss.SSS";
+  }
+
+  @Override
   public String formatMinuteSecond() {
     return "mm.ss";
   }

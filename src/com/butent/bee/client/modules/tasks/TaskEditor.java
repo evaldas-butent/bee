@@ -419,8 +419,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     DateTime publishTime = row.getDateTime(DataUtils.getColumnIndex(COL_PUBLISH_TIME, columns));
     if (publishTime != null) {
-      row1.add(createEventCell(COL_PUBLISH_TIME,
-          Format.getDefaultDateTimeFormat().format(publishTime)));
+      row1.add(createEventCell(COL_PUBLISH_TIME, Format.renderDateTime(publishTime)));
     }
 
     if (lastAccess != null && publishTime != null) {

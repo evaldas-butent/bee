@@ -25,6 +25,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.view.grid.GridView;
@@ -517,7 +518,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
         JustDate date = row.getDate(col);
 
         if (date != null) {
-          value = date.toString();
+          value = Format.renderDate(date);
         }
         break;
 

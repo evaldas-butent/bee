@@ -215,13 +215,6 @@ public final class TransportHandler {
         new FileGridInterceptor(COL_CARGO, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
-    if (!BeeKeeper.getUser().isAdministrator()) {
-      Filter mngFilter = Filter.or(BeeKeeper.getUser().getFilter(COL_ORDER_MANAGER),
-          Filter.isNull(COL_ORDER_MANAGER));
-
-      GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
-      GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
-    }
     GridFactory.registerGridInterceptor(TBL_CARGO_LOADING, new CargoHandlingGrid());
     GridFactory.registerGridInterceptor(TBL_CARGO_UNLOADING, new CargoHandlingGrid());
 

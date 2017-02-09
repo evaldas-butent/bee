@@ -13,6 +13,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -43,6 +44,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -97,6 +99,7 @@ import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -278,8 +281,237 @@ public class ImportBean {
   @EJB FileStorageBean fs;
   @EJB UserServiceBean usr;
   @EJB DataEditorBean deb;
+  @EJB IdGeneratorBean ig;
   @EJB CarsModuleBean cars;
   @Resource EJBContext ctx;
+
+  public ResponseObject createDataImportTemplates() {
+    final Map<String, String> glossary = usr.getGlossary();
+    final String[] tblImportPropertiesHeader = new String[] {
+      sys.getIdName(TBL_IMPORT_PROPERTIES), COL_IMPORT_OPTION, COL_IMPORT_PROPERTY,
+      COL_IMPORT_VALUE
+    };
+
+    Stream.of(
+      TBL_BANKS, TBL_CITIES, VIEW_COLORS, TBL_COMPANIES, TBL_COMPANY_PERSONS, TBL_PERSONS
+    ).forEach(viewName -> {
+      final DataInfo viewInfo = sys.getDataInfo(viewName);
+
+      if (!usr.isAnyModuleVisible(viewInfo.getModule())) {
+        return;
+      }
+      SqlInsert optionInsertQuery = createImportOptionsInsertionQuery(viewName);
+      long optionId = qs.insertData(optionInsertQuery.addConstant(COL_IMPORT_DESCRIPTION,
+        Localized.maybeTranslate(viewInfo.getCaption(), glossary)));
+      long subOptionId;
+      long subOptionIdL2;
+
+      switch (viewName) {
+        case TBL_BANKS:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "5")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_BANK_NAME, "=A")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_BANK_CODE, "=B")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_SWIFT_CODE, "=C")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_PHONE, "=D")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_MOBILE, "=E")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_ADDRESS, "=G")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_POST_INDEX, "=H")
+          );
+          insertEmailOptions(optionId, "=F");
+          insertCityAndCountryOptions(optionId, "=I", "=J");
+          insertCountryOptions(optionId, "=J");
+          break;
+        case TBL_CITIES:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "5")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_CITY_NAME, "=A")
+          );
+          // Cities->Countries
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_COUNTRIES));
+          insertSubOption(optionId, subOptionId, COL_COUNTRY);
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COUNTRY_NAME, "=B")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COUNTRY_CODE, "=C")
+          );
+          break;
+        case VIEW_COLORS:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "5")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_COLOR_NAME, "=A")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_BACKGROUND, "=B")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FOREGROUND, "=C")
+          );
+          break;
+        case TBL_COMPANIES:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "6")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_COMPANY_NAME, "=B")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_COMPANY_CODE, "=C")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_COMPANY_VAT_CODE, "=D")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_PHONE, "=F")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_MOBILE, "=G")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FAX, "=H")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_WEBSITE, "=J")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_ADDRESS, "=K")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_POST_INDEX, "=N")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_NOTES, "=S")
+          );
+          // Companies->CompanyTypes
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_COMPANY_TYPES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_TYPE);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COMPANY_TYPE_NAME, "=A")
+          );
+          // Companies->CompanyPriorities
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_COMPANY_PRIORITIES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_PRIORITY);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=E")
+          );
+          // Companies->Emails
+          insertEmailOptions(optionId, "=I");
+          // Companies->Cities
+          insertCityAndCountryOptions(optionId, "=L", "=M");
+          insertCountryOptions(optionId, "=M");
+          // Companies->CompanySizes
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_COMPANY_SIZES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_SIZE);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "SizeName", "=O")
+          );
+          // Companies->InformationSources
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_INFORMATION_SOURCES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_INFORMATION_SOURCE);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=P")
+          );
+          // Companies->Turnovers
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery("Turnovers"));
+          insertSubOption(optionId, subOptionId, "Turnover");
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=Q")
+          );
+          // Companies->FinancialStates
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_FINANCIAL_STATES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY_FINANCIAL_STATE);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=R")
+          );
+          break;
+        case TBL_COMPANY_PERSONS:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "8")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_PHONE, "=G")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_MOBILE, "=H")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FAX, "=I")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_ADDRESS, "=K")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_POST_INDEX, "=L")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_WEBSITE, "=M")
+          );
+          // CompanyPersons->Companies
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_COMPANIES));
+          insertSubOption(optionId, subOptionId, COL_COMPANY, true);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COMPANY_NAME, "=A")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_COMPANY_CODE, "=B")
+          );
+          // CompanyPersons->Persons
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_PERSONS));
+          insertSubOption(optionId, subOptionId, COL_PERSON);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_FIRST_NAME, "=C")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_LAST_NAME, "=D")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_PHONE, "=G")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_MOBILE, "=H")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_FAX, "=I")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_ADDRESS, "=K")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_POST_INDEX, "=L")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_WEBSITE, "=M")
+          );
+          // CompanyPersons->Persons->Emails
+          insertEmailOptions(subOptionId, "=J");
+          // CompanyPersons->Persons->Cities
+          insertCityAndCountryOptions(subOptionId, "=N", "=O");
+          // CompanyPersons->CompanyDepartments
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(VIEW_COMPANY_DEPARTMENTS));
+          insertSubOption(optionId, subOptionId, COL_DEPARTMENT);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, "Name", "=E")
+          );
+          // CompanyPersons->CompanyDepartments->Company
+          subOptionIdL2 = qs.insertData(createImportOptionsInsertionQuery(TBL_COMPANIES));
+          insertSubOption(subOptionId, subOptionIdL2, COL_COMPANY, true);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionIdL2, COL_COMPANY_NAME, "=A")
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionIdL2, COL_COMPANY_CODE, "=B")
+          );
+          // CompanyPersons->Positions
+          subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_POSITIONS));
+          insertSubOption(optionId, subOptionId, COL_POSITION);
+
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+            .addFields(tblImportPropertiesHeader)
+            .addValues(ig.getId(TBL_IMPORT_PROPERTIES), subOptionId, COL_POSITION_NAME, "=F")
+          );
+          // CompanyPersons->Emails
+          insertEmailOptions(optionId, "=J");
+          insertCityAndCountryOptions(optionId, "=N", "=O");
+          insertCountryOptions(optionId, "=O");
+          break;
+        case TBL_PERSONS:
+          qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+              .addFields(tblImportPropertiesHeader)
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, VAR_IMPORT_START_ROW, "6")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FIRST_NAME, "=A")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_LAST_NAME, "=B")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_PHONE, "=C")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_MOBILE, "=D")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_FAX, "=E")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_ADDRESS, "=G")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_POST_INDEX, "=H")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_WEBSITE, "=I")
+              // .addValues(ig.getId(tblImpPropName), optionId, COL_DATE_OF_BIRTH, "")
+              .addValues(ig.getId(TBL_IMPORT_PROPERTIES), optionId, COL_NOTES, "=L")
+          );
+          //Persons->Emails
+          insertEmailOptions(optionId, "=F");
+          //Persons->Cities
+          insertCityAndCountryOptions(optionId, "=K", "=J");
+          insertCountryOptions(optionId, "=J");
+          break;
+        default:
+          break;
+      }
+    });
+    return ResponseObject.emptyResponse();
+  }
 
   public ResponseObject doImport(RequestInfo reqInfo) {
     ResponseObject response;
@@ -321,6 +553,14 @@ public class ImportBean {
       response = ResponseObject.error("Import type not recognized");
     }
     return response;
+  }
+
+  private static SqlInsert createImportOptionsInsertionQuery(String viewName) {
+    Assert.notEmpty(viewName);
+
+    return new SqlInsert(TBL_IMPORT_OPTIONS)
+      .addConstant(COL_IMPORT_TYPE, ImportType.DATA)
+      .addConstant(COL_IMPORT_DATA, viewName);
   }
 
   private void applyMappings(ImportObject io, String data, String parentName) {
@@ -1874,6 +2114,56 @@ public class ImportBean {
       }
     }
     return null;
+  }
+
+  private void insertCityAndCountryOptions(Long optionId, String cityName, String countryName) {
+    Long subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_CITIES));
+    insertSubOption(optionId, subOptionId, COL_CITY);
+
+    if (!BeeUtils.isEmpty(cityName)) {
+      qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+        .addConstant(COL_IMPORT_OPTION, subOptionId)
+        .addConstant(COL_IMPORT_PROPERTY, COL_CITY_NAME)
+        .addConstant(COL_IMPORT_VALUE, cityName));
+    }
+    insertCountryOptions(subOptionId, countryName);
+  }
+
+  private void insertCountryOptions(Long optionId, String country) {
+    Long subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_COUNTRIES));
+    insertSubOption(optionId, subOptionId, COL_COUNTRY);
+
+    if (!BeeUtils.isEmpty(country)) {
+      qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+        .addConstant(COL_IMPORT_OPTION, subOptionId)
+        .addConstant(COL_IMPORT_PROPERTY, COL_COUNTRY_NAME)
+        .addConstant(COL_IMPORT_VALUE, country));
+    }
+  }
+
+  private void insertEmailOptions(Long optionId, String email) {
+    Long subOptionId = qs.insertData(createImportOptionsInsertionQuery(TBL_EMAILS));
+    insertSubOption(optionId, subOptionId, ALS_EMAIL_ID);
+
+    if (!BeeUtils.isEmpty(email)) {
+      qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+        .addConstant(COL_IMPORT_OPTION, subOptionId)
+        .addConstant(COL_IMPORT_PROPERTY, COL_EMAIL)
+        .addConstant(COL_IMPORT_VALUE, email));
+    }
+  }
+
+  private void insertSubOption(long optionId, long subOptionId, String column) {
+    insertSubOption(optionId, subOptionId, column, false);
+  }
+
+  private void insertSubOption(long optionId, long subOptionId, String column, boolean lock) {
+    qs.insertData(new SqlInsert(TBL_IMPORT_PROPERTIES)
+      .addConstant(COL_IMPORT_OPTION, optionId)
+      .addConstant(COL_IMPORT_PROPERTY, column)
+      .addConstant(COL_IMPORT_RELATION_OPTION, subOptionId)
+      .addConstant(COL_IMPORT_VALUE, lock)
+    );
   }
 
   private static double toDouble(String number) {

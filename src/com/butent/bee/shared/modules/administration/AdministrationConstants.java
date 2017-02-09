@@ -162,6 +162,7 @@ public final class AdministrationConstants {
   public static final String SVC_BLOCK_HOST = "block_host";
   public static final String SVC_CREATE_USER = "create_user";
   public static final String SVC_COPY_RIGHTS = "copy_rights";
+  public static final String SVC_CREATE_DATA_IMPORT_TEMPLATES = "create_data_import_templates";
 
   public static final String VAR_IMPORT_TEST = "Test";
   public static final String VAR_IMPORT_FILE = "File";
@@ -287,6 +288,7 @@ public final class AdministrationConstants {
   public static final String COL_PASSWORD = "Password";
   public static final String COL_USER_LOCALE = "Locale";
   public static final String COL_USER_INTERFACE = "Interface";
+  public static final String COL_USER_DATE_FORMAT = "DateFormat";
   public static final String COL_USER_BLOCK_FROM = "BlockAfter";
   public static final String COL_USER_BLOCK_UNTIL = "BlockBefore";
   public static final String COL_REMOTE_HOST = "Host";
@@ -381,8 +383,6 @@ public final class AdministrationConstants {
 
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
   public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
-
-  public static final String COL_USER_DATE_FORMAT = "DateFormat";
 
   public static final String COL_NEWS_REFRESH_INTERVAL_SECONDS = "NewsRefreshIntervalSeconds";
   public static final String COL_LOADING_STATE_DELAY_MILLIS = "LoadingStateDelayMillis";

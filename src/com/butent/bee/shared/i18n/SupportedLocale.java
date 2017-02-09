@@ -34,7 +34,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoLT.getInstance();
     }
   },
@@ -56,7 +56,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoEN.getInstance();
     }
   },
@@ -78,7 +78,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoET.getInstance();
     }
   },
@@ -100,7 +100,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoRU.getInstance();
     }
   },
@@ -122,10 +122,9 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoFI.getInstance();
     }
-
   },
 
   LV {
@@ -145,7 +144,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoLV.getInstance();
     }
   },
@@ -167,7 +166,7 @@ public enum SupportedLocale implements HasCaption {
     }
 
     @Override
-    public DateTimeFormatInfo getDateTimeFormat() {
+    public DateTimeFormatInfo getDateTimeFormatInfo() {
       return DateTimeFormatInfoDE.getInstance();
     }
   };
@@ -222,7 +221,7 @@ public enum SupportedLocale implements HasCaption {
 
   public abstract String getLanguage();
 
-  public abstract DateTimeFormatInfo getDateTimeFormat();
+  public abstract DateTimeFormatInfo getDateTimeFormatInfo();
 
   public boolean isActive() {
     return ACTIVE_LOCALES.stream()

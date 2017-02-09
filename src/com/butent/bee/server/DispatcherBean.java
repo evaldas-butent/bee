@@ -119,7 +119,13 @@ public class DispatcherBean {
 
     data.put(TBL_PARAMETERS, params);
 
-    data.put(TBL_DICTIONARY, Localizations.getGlossary(userService.getSupportedLocale()));
+    SupportedLocale locale = userService.getSupportedLocale();
+    data.put(VAR_LOCALE, locale.getLanguage());
+
+    data.put(TBL_DICTIONARY, Localizations.getGlossary(locale));
+
+    SupportedLocale dateTimeFormatLocale = userService.getDateTimeFormatLocale();
+    data.put(COL_USER_DATE_FORMAT, dateTimeFormatLocale.getLanguage());
 
     return response.setResponse(data);
   }
