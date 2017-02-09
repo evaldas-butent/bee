@@ -39,7 +39,7 @@ public final class DateTimeFormatInfoLV implements DateTimeFormatInfo {
 
   @Override
   public String dateFormatShort() {
-    return "dd.MM.yy";
+    return "dd.MM.y";
   }
 
   @Override

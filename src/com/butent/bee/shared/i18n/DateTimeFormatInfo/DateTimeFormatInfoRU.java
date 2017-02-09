@@ -16,7 +16,10 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
 
   @Override
   public String[] ampms() {
-    return new String[0];
+    return new String[] {
+        "AM",
+        "PM"
+    };
   }
 
   @Override
@@ -36,7 +39,7 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
 
   @Override
   public String dateFormatShort() {
-    return "dd.MM.yy";
+    return "dd.MM.y";
   }
 
   @Override

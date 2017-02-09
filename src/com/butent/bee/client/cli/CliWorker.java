@@ -162,6 +162,7 @@ import com.butent.bee.shared.html.Keywords;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -2702,20 +2703,37 @@ public final class CliWorker {
   private static void showDateFormat(String args) {
     if (BeeUtils.isEmpty(args)) {
       int r = PredefinedFormat.values().length;
-      String[][] data = new String[r][3];
+      int c = SupportedLocale.values().length * 2 + 1;
+
+      String[][] data = new String[r][c];
 
       DateTime d = new DateTime();
       int i = 0;
-      for (PredefinedFormat dtf : PredefinedFormat.values()) {
-        data[i][0] = dtf.toString();
+      int j;
 
-        DateTimeFormat format = Format.getPredefinedFormat(dtf);
-        data[i][1] = format.getPattern();
-        data[i][2] = format.format(d);
+      for (PredefinedFormat pf : PredefinedFormat.values()) {
+        j = 0;
+        data[i][j++] = pf.name();
+
+        for (SupportedLocale locale : SupportedLocale.values()) {
+          DateTimeFormat dtf = DateTimeFormat.of(pf, locale.getDateTimeFormatInfo());
+          data[i][j++] = dtf.getPattern();
+          data[i][j++] = dtf.format(d);
+        }
+
         i++;
       }
 
-      showMatrix("DateTime", data, "Format", "Pattern", "Value");
+      String[] labels = new String[c];
+      j = 0;
+      labels[j++] = "Format";
+
+      for (SupportedLocale locale : SupportedLocale.values()) {
+        labels[j++] = "Pattern " + locale.getLanguage();
+        labels[j++] = "Value " + locale.getLanguage();
+      }
+
+      showMatrix("DateTimeFormats", data, labels);
 
     } else {
       DateTimeFormat dtf;
