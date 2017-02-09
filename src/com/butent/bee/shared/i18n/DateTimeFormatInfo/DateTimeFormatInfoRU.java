@@ -40,22 +40,7 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
   }
 
   @Override
-  public String dateTimeFull(String timePattern, String datePattern) {
-    return datePattern + ", " + timePattern;
-  }
-
-  @Override
-  public String dateTimeLong(String timePattern, String datePattern) {
-    return datePattern + ", " + timePattern;
-  }
-
-  @Override
-  public String dateTimeMedium(String timePattern, String datePattern) {
-    return datePattern + ", " + timePattern;
-  }
-
-  @Override
-  public String dateTimeShort(String timePattern, String datePattern) {
+  public String dateTime(String datePattern, String timePattern) {
     return datePattern + ", " + timePattern;
   }
 
@@ -83,6 +68,11 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
   @Override
   public String formatHour24MinuteSecond() {
     return "H:mm:ss";
+  }
+
+  @Override
+  public String formatHour24MinuteSecondMillisecond() {
+    return "H:mm:ss.SSS";
   }
 
   @Override

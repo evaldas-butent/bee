@@ -201,7 +201,8 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
     } else if (BeeUtils.same(svc, SVC_INIT_DIMENSION_NAMES)) {
       response = initDimensionNames();
-
+    } else if (BeeUtils.same(svc, SVC_CREATE_DATA_IMPORT_TEMPLATES)) {
+      response = imp.createDataImportTemplates();
     } else {
       String msg = BeeUtils.joinWords("Administration service not recognized:", svc);
       logger.warning(msg);

@@ -81,7 +81,7 @@
     </render>
   </CalcColumn>
 
-  <PropColumn type="string" cellType="html" name="Loading"
+  <PropColumn type="string" cellType="html" name="Loading" exportable="false"
               renderColumns="Date City Country"
               label="=cargoLoading" minWidth="140" flexBasis="120">
     <style>
@@ -92,7 +92,7 @@
     <renderer type="place" options="&renderLoadingOptions;"/>
   </PropColumn>
 
-  <PropColumn type="string" cellType="html" name="Unloading"
+  <PropColumn type="string" cellType="html" name="Unloading" exportable="false"
               renderColumns="Date City Country"
               label="=cargoUnloading" minWidth="140" flexBasis="120">
     <style>

@@ -25,8 +25,12 @@
         <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
                       style="width:50px;" placeholder="=currencyShort" />
       </row>
+      <row>
+        <Label for="Item" />
+        <DataSelector source="Item" newRowEnabled="false" editEnabled="false" filter="IsService" />
+      </row>
     </Table>
-    <br/>
+    <br />
     <ChildGrid class="flexible" name="CarJobModels" relColumn="Job" />
   </FlowPanel>
 </f:Form>

@@ -266,6 +266,9 @@
       <xs:enumeration value="CalendarExecutors" />
       <xs:enumeration value="Calendars" />
       <xs:enumeration value="CalExecutorGroups" />
+      <xs:enumeration value="CarBundleItems" />
+      <xs:enumeration value="CarBundleJobs" />
+      <xs:enumeration value="CarBundles" />
       <xs:enumeration value="CarEmissionStandards" />
       <xs:enumeration value="CarGearboxes" />
       <xs:enumeration value="CarPlaceCodes" />
@@ -289,6 +292,7 @@
       <xs:enumeration value="CarJobs" />
       <xs:enumeration value="CarOrderItems" />
       <xs:enumeration value="CarOrders" />
+      <xs:enumeration value="CarRecalls" />
       <xs:enumeration value="Cars" />
       <xs:enumeration value="CarServiceEvents" />
       <xs:enumeration value="CarServiceItems" />

@@ -29,7 +29,6 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -104,7 +103,7 @@ public class MaintenanceEventsHandler extends EventsBoard {
       DateTime publishTime = row.getDateTime(idxColTerm);
       if (publishTime != null) {
         rowCellTerm.add(createCellHtmlItem(COL_TERM, BeeUtils.joinWords(LC.svcTerm(),
-            Format.getDefaultDateFormat().format(publishTime))));
+            Format.renderDate(publishTime))));
       }
     }
 

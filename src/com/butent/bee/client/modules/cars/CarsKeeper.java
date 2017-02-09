@@ -42,6 +42,7 @@ public final class CarsKeeper {
     FormFactory.registerFormInterceptor(FORM_CAR_SERVICE_EVENT, new CarServiceEventForm());
 
     GridFactory.registerGridInterceptor(VIEW_CARS, new VehiclesGrid());
+    GridFactory.registerGridInterceptor(TBL_CAR_BUNDLE_JOBS, new CarBundleJobsGrid());
 
     Dictionary loc = Localized.dictionary();
     StageUtils.registerStageAction(TBL_CAR_ORDERS, STAGE_ACTION_READONLY, loc.rowIsReadOnly());

@@ -2,10 +2,6 @@ package com.butent.bee.shared.i18n.DateTimeFormatInfo;
 
 /**
  * Information required for formatting and parsing localized date/time values.
- *
- * <p>Implementors should subclass {@link DateTimeFormatInfo} so when
- * methods are added they will get reasonable defaults and not break.  See the
- * same class for example values returned by these methods.
  */
 public interface DateTimeFormatInfo {
 
@@ -46,55 +42,27 @@ public interface DateTimeFormatInfo {
    * Returns a date/time format from a date format pattern and a time format
    * pattern, using the locale default joining.
    *
-   * @param timePattern the time pattern String
    * @param datePattern the data pattern String
-   */
-  default String dateTime(String timePattern, String datePattern) {
-    return dateTimeMedium(timePattern, datePattern);
-  }
-
-  /**
-   * Returns a date/time format from a date format pattern and a time format
-   * pattern, using "full" joining.
-   *
    * @param timePattern the time pattern String
-   * @param datePattern the data pattern String
    */
-  default String dateTimeFull(String timePattern, String datePattern) {
+  default String dateTime(String datePattern, String timePattern) {
     return datePattern + " " + timePattern;
   }
 
-  /**
-   * Returns a date/time format from a date format pattern and a time format
-   * pattern, using "full" joining.
-   *
-   * @param timePattern the time pattern String
-   * @param datePattern the data pattern String
-   */
-  default String dateTimeLong(String timePattern, String datePattern) {
-    return datePattern + " " + timePattern;
+  default String dateTimeFull() {
+    return dateTime(dateFormatFull(), timeFormatFull());
   }
 
-  /**
-   * Returns a date/time format from a date format pattern and a time format
-   * pattern, using "full" joining.
-   *
-   * @param timePattern the time pattern String
-   * @param datePattern the data pattern String
-   */
-  default String dateTimeMedium(String timePattern, String datePattern) {
-    return datePattern + " " + timePattern;
+  default String dateTimeLong() {
+    return dateTime(dateFormatLong(), timeFormatLong());
   }
 
-  /**
-   * Returns a date/time format from a date format pattern and a time format
-   * pattern, using "full" joining.
-   *
-   * @param timePattern the time pattern String
-   * @param datePattern the data pattern String
-   */
-  default String dateTimeShort(String timePattern, String datePattern) {
-    return datePattern + " " + timePattern;
+  default String dateTimeMedium() {
+    return dateTime(dateFormatMedium(), timeFormatMedium());
+  }
+
+  default String dateTimeShort() {
+    return dateTime(dateFormatShort(), timeFormatShort());
   }
 
   /**
@@ -148,6 +116,10 @@ public interface DateTimeFormatInfo {
    */
   default String formatHour24MinuteSecond() {
     return "HH:mm:ss";
+  }
+
+  default String formatHour24MinuteSecondMillisecond() {
+    return "HH:mm:ss.SSS";
   }
 
   /**

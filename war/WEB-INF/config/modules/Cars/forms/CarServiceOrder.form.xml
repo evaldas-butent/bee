@@ -28,8 +28,14 @@
 
         <row>
           <Label for="Customer" style="&lbl;" />
-          <DataSelector source="Customer" style="&inpw;"
-                        renderColumns="CustomerName CustomerTypeName" />
+          <FlowPanel>
+            <DataSelector source="Customer" style="&inpw;"
+                          renderColumns="CustomerName CustomerTypeName" />
+            <FlowPanel style="display:inline-block;">
+              <FaLabel char="exclamation_circle" name="CustomerWarning"
+                       style="display:none; color:red; margin-left:5px;" />
+            </FlowPanel>
+          </FlowPanel>
 
           <Label for="Manager" style="&lbl;" />
           <DataSelector source="Manager" editSource="ManagerPerson"
@@ -43,8 +49,14 @@
                         choiceColumns="FirstName LastName CompanyName" options="Customer" />
 
           <Label for="Car" style="&lbl;" />
-          <DataSelector source="Car" viewName="Cars" style="&inpw;"
-                        renderColumns="ParentModelName ModelName CarNumber" />
+          <FlowPanel>
+            <DataSelector source="Car" viewName="Cars" style="&inpw;"
+                          renderColumns="ParentModelName ModelName CarNumber" />
+            <FlowPanel style="display:inline-block;">
+              <FaLabel char="exclamation_circle" name="CarWarning"
+                       style="display:none; color:red; margin-left:5px;" />
+            </FlowPanel>
+          </FlowPanel>
         </row>
       </Table>
       <FlowPanel class="flexible" style="min-width:200px; overflow:auto; margin:5px; padding:5px;
@@ -116,8 +128,11 @@
         <text>=serviceJobs</text>
         <FlowPanel class="flexBox-vertical">
           <ChildGrid name="CarServiceJobs" relColumn="ServiceOrder" class="flexible" />
-          <ChildGrid name="CarJobProgress" parent="CarServiceJobs" relColumn="ServiceJob"
-                     class="flexible" />
+          <FlowPanel class="flexible flexBox-horizontal">
+            <FlowPanel style="width:100px;" />
+            <ChildGrid name="CarJobProgress" parent="CarServiceJobs" relColumn="ServiceJob"
+                       class="flexible" />
+          </FlowPanel>
         </FlowPanel>
       </page>
       <page>

@@ -263,6 +263,10 @@ public interface Dictionary {
 
   default String brutto() {return g("brutto");}
 
+  default String bundle() {return g("bundle");}
+
+  default String bundles() {return g("bundles");}
+
   default String calAction() {return g("calAction");}
 
   default String calActionRegisterResult() {return g("calActionRegisterResult");}
@@ -698,6 +702,8 @@ public interface Dictionary {
   default String chatsShowAll() {return g("chatsShowAll");}
 
   default String checkNo() {return g("checkNo");}
+
+  default String checked() {return g("checked");}
 
   default String chief() {return g("chief");}
 
@@ -1454,6 +1460,8 @@ public interface Dictionary {
   default String dangerousShort() {return g("dangerousShort");}
 
   default String data() {return g("data");}
+
+  default String dataCreateImportTemplates() {return g("dataCreateImportTemplates");}
 
   default String dataImport() {return g("dataImport");}
 
@@ -3755,6 +3763,8 @@ public interface Dictionary {
 
   default String newBranch() {return g("newBranch");}
 
+  default String newBundle() {return g("newBundle");}
+
   default String newCar() {return g("newCar");}
 
   default String newCargo() {return g("newCargo");}
@@ -4741,6 +4751,10 @@ public interface Dictionary {
   }
 
   default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
+
+  default String recall() {return g("recall");}
+
+  default String recalls() {return g("recalls");}
 
   default String received() {return g("received");}
 
@@ -6212,6 +6226,10 @@ public interface Dictionary {
   default String trTbSettingsPlaceCodes() {return g("trTbSettingsPlaceCodes");}
 
   default String trTbSettingsPlaceInfo() {return g("trTbSettingsPlaceInfo");}
+
+  default String trTbSettingsRefreshLocalChanges() {return g("trTbSettingsRefreshLocalChanges");}
+
+  default String trTbSettingsRefreshRemoteChanges() {return g("trTbSettingsRefreshRemoteChanges");}
 
   default String trTbSettingsSeparateCargo() {return g("trTbSettingsSeparateCargo");}
 

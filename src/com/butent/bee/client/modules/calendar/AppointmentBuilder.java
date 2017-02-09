@@ -34,7 +34,8 @@ import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.shared.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.view.AppointmentForm;
 import com.butent.bee.client.presenter.Presenter;
@@ -1291,7 +1292,7 @@ class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handle
     DateTime start = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_START_DATE_TIME);
     DateTime end = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_END_DATE_TIME);
 
-    DateTimeFormat format = DateTimeFormat.getFormat("MMM d HH:mm");
+    DateTimeFormat format = Format.parseDateTimePattern("MMM d HH:mm");
     if (start != null) {
       info.append(format.format(start));
     }

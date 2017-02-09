@@ -152,9 +152,6 @@ public enum Report implements HasWidgetSupplier {
 
           new ReportNumericItem("Planned" + COL_ROUTE_KILOMETERS,
               BeeUtils.joinWords(loc.kilometers(), plan)),
-          new ReportNumericItem(COL_EMPTY_KILOMETERS, "Tušti kilometrai"),
-          new ReportNumericItem(COL_UNPLANNED_MANAGER_KM, "Neplanuoti km (vadb)"),
-          new ReportNumericItem(COL_UNPLANNED_DRIVER_KM, "Neplanuoti km (vair)"),
           new ReportNumericItem("PlannedFuelCosts", BeeUtils.joinWords(loc.trFuelCosts(), plan))
               .setPrecision(2),
           new ReportNumericItem("PlannedDailyCosts", BeeUtils.joinWords(loc.trDailyCosts(), plan))
@@ -162,11 +159,17 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem("PlannedRoadCosts", BeeUtils.joinWords(loc.trRoadCosts(), plan))
               .setPrecision(2),
 
+          new ReportNumericItem(COL_EMPTY_KILOMETERS, "Tušti kilometrai"),
+          new ReportNumericItem(COL_UNPLANNED_MANAGER_KM, "Neplanuoti km (vadb)"),
+          new ReportNumericItem(COL_UNPLANNED_DRIVER_KM, "Neplanuoti km (vair)"),
           new ReportDateTimeItem(ALS_MIN_LOADING_DATE, loc.trMinLoadingDate()),
           new ReportDateTimeItem(ALS_MAX_UNLOADING_DATE, loc.trMaxUnloadingDate()),
           new ReportTextItem(ALS_LOADING_DATE, loc.trLoadingDate()),
           new ReportTextItem(ALS_UNLOADING_DATE, loc.trUnloadingDate()),
-          new ReportDateTimeItem(COL_CARGO_CMR_DATE, loc.trCmrDate()));
+          new ReportDateTimeItem(COL_CARGO_CMR_DATE, loc.trCmrDate()),
+
+          new ReportEnumItem(TransportConstants.ALS_ORDER_STATUS,
+              Data.getColumnLabel(TBL_ORDERS, TransportConstants.COL_STATUS), OrderStatus.class));
     }
 
     @Override

@@ -67,10 +67,11 @@ import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
-import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.shared.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.i18n.Money;
+import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.client.images.Flags;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.js.Markdown;
@@ -2607,7 +2608,7 @@ public final class CliWorker {
 
     char sep = ';';
     if (BeeUtils.contains(args, sep)) {
-      dtf = Format.getDateTimeFormat(BeeUtils.getPrefix(args, sep));
+      dtf = Format.parseDateTimeFormat(BeeUtils.getPrefix(args, sep));
       inp = BeeUtils.getSuffix(args, sep);
     } else if (BeeUtils.contains(cmnd, 'f') && !BeeUtils.isEmpty(args)) {
       dtf = Format.getDefaultDateTimeFormat();
@@ -2692,7 +2693,7 @@ public final class CliWorker {
         "Utc Date String", t.toUtcDateString(),
         "Utc Time String", t.toUtcTimeString(),
         "Utc String", t.toUtcString(),
-        "JustDate", TimeUtils.toDate(t).toString(),
+        "JustDate", Format.renderDate(TimeUtils.toDate(t)),
         "Java Date", TimeUtils.toJava(t).toString());
 
     showPropData(BeeUtils.joinWords(cmnd, args), lst);
@@ -2700,15 +2701,15 @@ public final class CliWorker {
 
   private static void showDateFormat(String args) {
     if (BeeUtils.isEmpty(args)) {
-      int r = DateTimeFormat.PredefinedFormat.values().length;
+      int r = PredefinedFormat.values().length;
       String[][] data = new String[r][3];
 
       DateTime d = new DateTime();
       int i = 0;
-      for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
+      for (PredefinedFormat dtf : PredefinedFormat.values()) {
         data[i][0] = dtf.toString();
 
-        DateTimeFormat format = DateTimeFormat.getFormat(dtf);
+        DateTimeFormat format = Format.getPredefinedFormat(dtf);
         data[i][1] = format.getPattern();
         data[i][2] = format.format(d);
         i++;
@@ -2722,10 +2723,10 @@ public final class CliWorker {
 
       char sep = ';';
       if (BeeUtils.contains(args, sep)) {
-        dtf = Format.getDateTimeFormat(BeeUtils.getPrefix(args, sep));
+        dtf = Format.parseDateTimeFormat(BeeUtils.getPrefix(args, sep));
         t = TimeUtils.parseDateTime(BeeUtils.getSuffix(args, sep));
       } else {
-        dtf = Format.getDateTimeFormat(args);
+        dtf = Format.parseDateTimeFormat(args);
         t = new DateTime();
       }
 
