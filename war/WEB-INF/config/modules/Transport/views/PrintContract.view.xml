@@ -24,6 +24,8 @@
         </SimpleJoin>
 
         <SimpleJoin name="Order" joinType="INNER">
+          <SimpleColumn name="OrderNo" />
+
           <SimpleJoin name="Manager" joinType="INNER">
             <SimpleJoin name="CompanyPerson" joinType="LEFT">
               <SimpleJoin name="Position" joinType="LEFT">

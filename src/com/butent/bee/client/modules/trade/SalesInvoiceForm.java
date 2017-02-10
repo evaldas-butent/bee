@@ -6,7 +6,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -19,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class SalesInvoiceForm extends PrintFormInterceptor {
 

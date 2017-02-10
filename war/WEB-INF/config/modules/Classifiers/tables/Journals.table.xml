@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="Journals"
+  idName="JournalID"
+  >
+  <Fields>
+    <String name="JournalCode" precision="10" notNull="true" unique="true" label="=code" />
+    <String name="JournalName" precision="100" notNull="true" translatable="true" label="=name" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+  </Fields>
+</Table>

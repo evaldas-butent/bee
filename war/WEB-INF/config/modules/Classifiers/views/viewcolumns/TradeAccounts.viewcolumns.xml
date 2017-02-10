@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Columns xmlns="http://www.butent.com/view">
+  <SimpleColumn name="CostAccount" />
+  <SimpleJoin joinType="LEFT" name="CostAccount">
+    <SimpleColumn name="AccountCode" alias="CostAccountCode" />
+  </SimpleJoin>
+
+  <SimpleColumn name="TradePayables" />
+  <SimpleJoin joinType="LEFT" name="TradePayables">
+    <SimpleColumn name="AccountCode" alias="TradePayablesCode" />
+  </SimpleJoin>
+  <SimpleColumn name="TradeReceivables" />
+  <SimpleJoin joinType="LEFT" name="TradeReceivables">
+    <SimpleColumn name="AccountCode" alias="TradeReceivablesCode" />
+  </SimpleJoin>
+
+  <SimpleColumn name="VatPayable" />
+  <SimpleJoin joinType="LEFT" name="VatPayable">
+    <SimpleColumn name="AccountCode" alias="VatPayableCode" />
+  </SimpleJoin>
+  <SimpleColumn name="VatReceivable" />
+  <SimpleJoin joinType="LEFT" name="VatReceivable">
+    <SimpleColumn name="AccountCode" alias="VatReceivableCode" />
+  </SimpleJoin>
+
+  <SimpleColumn name="SalesRevenue" />
+  <SimpleJoin joinType="LEFT" name="SalesRevenue">
+    <SimpleColumn name="AccountCode" alias="SalesRevenueCode" />
+  </SimpleJoin>
+  <SimpleColumn name="SalesDiscounts" />
+  <SimpleJoin joinType="LEFT" name="SalesDiscounts">
+    <SimpleColumn name="AccountCode" alias="SalesDiscountsCode" />
+  </SimpleJoin>
+
+  <SimpleColumn name="CostOfGoodsSold" />
+  <SimpleJoin joinType="LEFT" name="CostOfGoodsSold">
+    <SimpleColumn name="AccountCode" alias="CostOfGoodsSoldCode" />
+  </SimpleJoin>
+  <SimpleColumn name="WriteOffAccount" />
+  <SimpleJoin joinType="LEFT" name="WriteOffAccount">
+    <SimpleColumn name="AccountCode" alias="WriteOffAccountCode" />
+  </SimpleJoin>
+</Columns>

@@ -640,14 +640,11 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   public void center() {
-    setPopupPositionAndShow(new PositionCallback() {
-      @Override
-      public void setPosition(int offsetWidth, int offsetHeight) {
-        int left = (Window.getClientWidth() - offsetWidth) >> 1;
-        int top = (Window.getClientHeight() - offsetHeight) >> 1;
+    setPopupPositionAndShow((offsetWidth, offsetHeight) -> {
+      int left = (Window.getClientWidth() - offsetWidth) >> 1;
+      int top = (Window.getClientHeight() - offsetHeight) >> 1;
 
-        setPopupPosition(Math.max(left, 0), Math.max(top, 0));
-      }
+      setPopupPosition(Math.max(left, 0), Math.max(top, 0));
     });
   }
 
@@ -656,12 +653,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   public void focusOnOpen(final Widget target) {
-    addOpenHandler(new OpenEvent.Handler() {
-      @Override
-      public void onOpen(OpenEvent event) {
-        UiHelper.focus(target);
-      }
-    });
+    addOpenHandler(event -> UiHelper.focus(target));
   }
 
   public Animation getAnimation() {
@@ -878,14 +870,11 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   }
 
   public void showAt(final int x, final int y) {
-    setPopupPositionAndShow(new PositionCallback() {
-      @Override
-      public void setPosition(int offsetWidth, int offsetHeight) {
-        int left = clampLeft(x, offsetWidth);
-        int top = clampTop(y, offsetHeight);
+    setPopupPositionAndShow((offsetWidth, offsetHeight) -> {
+      int left = clampLeft(x, offsetWidth);
+      int top = clampTop(y, offsetHeight);
 
-        setPopupPosition(left, top);
-      }
+      setPopupPosition(left, top);
     });
   }
 
@@ -893,17 +882,14 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     if (target == null) {
       center();
     } else {
-      setPopupPositionAndShow(new PositionCallback() {
-        @Override
-        public void setPosition(int offsetWidth, int offsetHeight) {
-          int x = target.getAbsoluteLeft();
-          int y = target.getAbsoluteTop();
+      setPopupPositionAndShow((offsetWidth, offsetHeight) -> {
+        int x = target.getAbsoluteLeft();
+        int y = target.getAbsoluteTop();
 
-          int left = clampLeft(x, offsetWidth);
-          int top = clampTop(y, offsetHeight);
+        int left = clampLeft(x, offsetWidth);
+        int top = clampTop(y, offsetHeight);
 
-          setPopupPosition(left, top);
-        }
+        setPopupPosition(left, top);
       });
     }
   }
@@ -916,12 +902,8 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     if (target == null) {
       center();
     } else {
-      setPopupPositionAndShow(new PositionCallback() {
-        @Override
-        public void setPosition(int offsetWidth, int offsetHeight) {
-          position(target, margins, offsetWidth, offsetHeight);
-        }
-      });
+      setPopupPositionAndShow((offsetWidth, offsetHeight) ->
+          position(target, margins, offsetWidth, offsetHeight));
     }
   }
 
@@ -952,9 +934,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-  /**
-   * @param event
-   */
   protected boolean isCaptionEvent(NativeEvent event) {
     return false;
   }

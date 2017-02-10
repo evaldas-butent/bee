@@ -30,7 +30,6 @@ import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -138,14 +137,11 @@ class HolidaysForm extends AbstractFormInterceptor implements SelectorEvent.Hand
           init(lastCountry, getYear(lastDay));
 
         } else {
-          Global.getParameter(AdministrationConstants.PRM_COUNTRY, new Consumer<String>() {
-            @Override
-            public void accept(String input) {
-              if (DataUtils.isId(input)) {
-                init(BeeUtils.toLongOrNull(input), TimeUtils.year());
-              }
-            }
-          });
+          Long countryId = Global.getParameterRelation(AdministrationConstants.PRM_COUNTRY);
+
+          if (DataUtils.isId(countryId)) {
+            init(countryId, TimeUtils.year());
+          }
         }
       }
     });

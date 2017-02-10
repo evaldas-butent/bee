@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="Cars" source="Vehicles" caption="=cars"
+      editForm="Car" newRowForm="Car" newRowCaption="=newCar"
+>
+  <Relation renderColumns="Number" choiceColumns="Number ParentModelName ModelName" />
+  <Columns>
+    <SimpleColumn name="Type" />
+    <SimpleJoin name="Type" joinType="LEFT">
+      <SimpleColumn name="Name" alias="TypeName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Model" />
+    <SimpleJoin name="Model" joinType="LEFT">
+      <SimpleJoin name="Parent" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ParentModelName" />
+      </SimpleJoin>
+      <SimpleColumn name="Name" alias="ModelName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ModelNumber" />
+    <SimpleColumn name="Status" />
+    <SimpleJoin name="Status" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CarStatusName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CarWarranty" />
+    <SimpleJoin name="CarWarranty" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CarWarrantyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CarPlaceCode" />
+    <SimpleJoin name="CarPlaceCode" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CarPlaceCodeName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CarGearbox" />
+    <SimpleJoin name="CarGearbox" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CarGearboxName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CarEmissionStandard" />
+    <SimpleJoin name="CarEmissionStandard" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CarEmissionStandardName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="BodyNumber" />
+    <SimpleColumn name="EngineCode" />
+    <SimpleColumn name="EngineNumber" />
+    <SimpleColumn name="ManufacturerNumber" />
+    <SimpleColumn name="EngineVolume" />
+    <SimpleColumn name="ProductionDate" />
+    <SimpleColumn name="StartDate" />
+    <SimpleColumn name="EndDate" />
+
+    <SimpleColumn name="Fuel" />
+    <SimpleJoin name="Fuel" joinType="LEFT">
+      <SimpleColumn name="Name" alias="FuelType" />
+    </SimpleJoin>
+
+    <SimpleColumn name="TankCapacity" />
+    <SimpleColumn name="Power" />
+    <SimpleColumn name="Horsepower" />
+    <SimpleColumn name="Speedometer" />
+    <SimpleColumn name="CylinderNumber" />
+    <SimpleColumn name="DoorsNumber" />
+    <SimpleColumn name="GearsNumber" />
+    <SimpleColumn name="Netto" />
+    <SimpleColumn name="Brutto" />
+    <SimpleColumn name="Owner" />
+    <SimpleJoin name="Owner" joinType="LEFT">
+      <SimpleColumn name="Name" alias="OwnerName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="OwnerTypeName" />
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="ResponsiblePerson" />
+    <SimpleColumn name="Phone" />
+    <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Body" />
+    <SimpleColumn name="Chassis" />
+    <SimpleColumn name="Gearbox" />
+    <SimpleColumn name="Conditioner" />
+
+    <SimpleColumn name="Object" />
+  </Columns>
+  <Order>
+    <OrderBy column="TypeName" />
+    <OrderBy column="ModelName" />
+    <OrderBy column="Number" />
+  </Order>
+</View>

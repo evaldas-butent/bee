@@ -36,6 +36,11 @@ public class LongValue extends Value {
   }
 
   @Override
+  public boolean equals(Object o) {
+    return o instanceof LongValue && compareTo((LongValue) o) == BeeConst.COMPARE_EQUAL;
+  }
+
+  @Override
   public Boolean getBoolean() {
     if (isNull()) {
       return null;

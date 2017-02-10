@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view"
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="Warehouses" source="Warehouses" caption="=warehouses" module="Classifiers"
-  editForm="Warehouse" newRowForm="Warehouse" newRowCaption="=newWarehouse"
-  >
+      name="Warehouses" source="Warehouses" caption="=warehouses" module="Classifiers"
+      editForm="Warehouse" newRowForm="Warehouse" newRowCaption="=newWarehouse"
+>
   <Columns>
     <SimpleColumn name="Code" />
     <SimpleColumn name="Name" />
@@ -42,7 +42,13 @@
 
       <SimpleColumn name="SocialContacts" />
     </SimpleJoin>
+
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="viewcolumns/TradeAccounts.viewcolumns.xml" />
+    </SimpleJoin>
   </Columns>
+
   <Order>
     <OrderBy column="Code" />
   </Order>

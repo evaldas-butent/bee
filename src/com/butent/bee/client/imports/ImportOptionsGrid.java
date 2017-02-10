@@ -1,34 +1,69 @@
 package com.butent.bee.client.imports;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
+import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.ListBox;
+import com.butent.bee.client.widget.CustomAction;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.Objects;
 
 public class ImportOptionsGrid extends AbstractGridInterceptor {
 
+  private static final String LABEL_CREATE_TEMPLATES_ACTION = Localized.dictionary()
+    .dataCreateImportTemplates();
+
+  private final CustomAction createImportTemplates;
+
+  public ImportOptionsGrid() {
+    createImportTemplates = new CustomAction(FontAwesome.MAGIC, handler ->
+      Global.confirm(LABEL_CREATE_TEMPLATES_ACTION, this::createTemplates));
+    createImportTemplates.setTitle(LABEL_CREATE_TEMPLATES_ACTION);
+  }
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.getHeader().addCommandItem(createImportTemplates);
+    super.afterCreatePresenter(presenter);
+  }
+
   @Override
   public GridInterceptor getInstance() {
-    return null;
+    return new ImportOptionsGrid();
+  }
+
+  @Override
+  public void onDataReceived(List<? extends IsRow> rows) {
+    createImportTemplates.setVisible(BeeUtils.isEmpty(rows));
+    super.onDataReceived(rows);
   }
 
   @Override
@@ -49,28 +84,36 @@ public class ImportOptionsGrid extends AbstractGridInterceptor {
 
           case DATA:
             event.consume();
-            final ListBox listBox = new ListBox();
-            Map<String, String> map = new TreeMap<>();
+            Tree tree = new Tree(Localized.dictionary().modules());
+            tree.setPixelSize(500, 600);
+            Multimap<String, String> multi = TreeMultimap.create();
 
             for (DataInfo dataInfo : Data.getDataInfoProvider().getViews()) {
               String viewName = dataInfo.getViewName();
-              map.put(BeeUtils.parenthesize(dataInfo.getModule() + "." + viewName), viewName);
-            }
-            for (Entry<String, String> entry : map.entrySet()) {
-              listBox.addItem(BeeUtils.joinWords(Data.getViewCaption(entry.getValue()),
-                  entry.getKey()), entry.getValue());
-            }
-            Global.inputWidget(Localized.dictionary().data(), listBox, new InputCallback() {
-              @Override
-              public void onSuccess() {
-                String viewName = listBox.getValue();
+              String module = dataInfo.getModule();
+              ModuleAndSub moduleAndSub = ModuleAndSub.parse(module);
 
-                if (!BeeUtils.isEmpty(viewName)) {
-                  event.getColumns()
-                      .add(DataUtils.getColumn(COL_IMPORT_DATA, gridView.getDataColumns()));
-                  event.getValues().add(viewName);
-                  gridView.fireEvent(event);
+              if (Objects.nonNull(moduleAndSub)) {
+                module = moduleAndSub.getModule().getCaption();
+
+                if (moduleAndSub.hasSubModule()) {
+                  module += " (" + moduleAndSub.getSubModule().getCaption() + ")";
                 }
+              }
+              multi.put(module, viewName);
+            }
+            for (String module : multi.keySet()) {
+              TreeItem item = tree.addItem(module);
+              multi.get(module).forEach(vw -> item.addItem(Data.getViewCaption(vw)).setTitle(vw));
+            }
+            Global.inputWidget(Localized.dictionary().data(), tree, () -> {
+              TreeItem selected = tree.getSelectedItem();
+
+              if (Objects.nonNull(selected)) {
+                event.getColumns().add(DataUtils.getColumn(COL_IMPORT_DATA,
+                    gridView.getDataColumns()));
+                event.getValues().add(selected.getTitle());
+                gridView.fireEvent(event);
               }
             });
             return;
@@ -82,5 +125,24 @@ public class ImportOptionsGrid extends AbstractGridInterceptor {
       }
     }
     super.onReadyForInsert(gridView, event);
+  }
+
+  private void createTemplates() {
+    if (!(BeeKeeper.getUser().canCreateData(TBL_IMPORT_OPTIONS)
+      && BeeKeeper.getUser().canCreateData(TBL_IMPORT_PROPERTIES))) {
+      getGridView().notifySevere(Localized.dictionary().role(),
+        Localized.dictionary().actionCanNotBeExecuted());
+      return;
+    }
+    ParameterList prm = AdministrationKeeper.createArgs(SVC_CREATE_DATA_IMPORT_TEMPLATES);
+    createImportTemplates.running();
+    BeeKeeper.getRpc().makePostRequest(prm, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(getGridView());
+        createImportTemplates.idle();
+        getGridPresenter().handleAction(Action.REFRESH);
+      }
+    });
   }
 }

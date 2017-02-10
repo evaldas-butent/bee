@@ -5,8 +5,6 @@
   name="AllCargo" viewName="AllCargo" caption="=cargos" disabledActions="add delete audit"
   flexGrow="1" order="OrderID desc"
   >
-  <g:body height="50" />
-
   <g:columns>
     <DataColumn name="OrderNo" caption="=orderNumber" />
     <DataColumn name="Status" caption="=status" />
@@ -18,7 +16,7 @@
     <DataColumn name="Description" maxWidth="200" />
   </g:columns>
 
-  <xi:include href="columns/Handling.columns.xml" />
+  <xi:include href="columns/Places.columns.xml" />
 
   <g:columns>
     <PropColumn name="Income" type="decimal" caption="=income" format="0.00">

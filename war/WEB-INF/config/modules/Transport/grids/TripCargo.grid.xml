@@ -6,8 +6,6 @@
         editForm="CargoHandling"
         caption="=cargos" flexGrow="1"
 >
-  <g:body height="50" />
-
   <g:columns>
     <RelColumn name="OrderNo" caption="=orderNumber" minWidth="100" editEnabled="true"
                editPopup="false" editSource="Order" readOnly="true" />
@@ -15,9 +13,9 @@
                editSource="Customer" readOnly="true" />
     <RelColumn name="Cargo" renderColumns="Cargo Description" editEnabled="true" maxWidth="300"
                editPopup="false" editSource="Cargo" readOnly="true" />
-    <DataColumn name="Weight" caption="=trWeightInTons" />
-    <DataColumn name="Volume" caption="=volume" />
-    <DataColumn name="Quantity" caption="=quantity" />
+    <DataColumn name="Weight" />
+    <DataColumn name="Volume" />
+    <DataColumn name="Quantity" />
     <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" renderColumns="CmrName CmrNumber" />
     <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
@@ -33,17 +31,25 @@
       </style>
       <dynStyle>
         <ui:inline>color:silver;</ui:inline>
-        <ui:expression>!row.TripPercent</ui:expression>
+        <ui:expression>row.TripPercent==null</ui:expression>
       </dynStyle>
       <render>
         <ui:expression>row.Income</ui:expression>
       </render>
     </DataColumn>
 
-    <DataColumn name="CargoPercent" minValue="0" editInPlace="true" />
+    <DataColumn name="CargoPercent" horizontalAlignment="right">
+      <dynStyle>
+        <ui:inline>color:silver;</ui:inline>
+        <ui:expression>row.CargoPercent==null</ui:expression>
+      </dynStyle>
+      <render>
+        <ui:expression>row.Expense</ui:expression>
+      </render>
+    </DataColumn>
   </g:columns>
 
-  <xi:include href="columns/Handling.columns.xml" />
+  <xi:include href="columns/Places.columns.xml" />
 
   <g:columns>
     <RelColumn name="Trailer" viewName="UserVehicles" filter="IsTrailer" newRowEnabled="false"

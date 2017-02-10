@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfTypes"
+       idName="TypeID"
+>
+  <Fields>
+    <String name="TypeName" precision="50" unique="true" notNull="true" label="=optionType" />
+  </Fields>
+</Table>

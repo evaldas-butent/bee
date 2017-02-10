@@ -6,9 +6,9 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -30,6 +30,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -40,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Provides suggestions data management functionality for data changing events.
@@ -484,11 +486,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private Filter getQueryFilter(List<String> parts) {
     Filter filter = null;
+    DateOrdering dateOrdering = Format.getDefaultDateOrdering();
 
     for (String part : parts) {
       Filter sub = null;
       for (IsColumn column : searchColumns) {
-        sub = Filter.or(sub, Filter.compareWithValue(column, searchType, part));
+        sub = Filter.or(sub, Filter.compareWithValue(column, searchType, part, dateOrdering));
       }
 
       filter = Filter.and(filter, sub);

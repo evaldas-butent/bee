@@ -1,12 +1,12 @@
 package com.butent.bee.shared.utils;
 
-import com.google.common.base.Predicate;
-
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.function.Predicate;
 
 public class StringList implements List<String> {
 
@@ -46,9 +46,7 @@ public class StringList implements List<String> {
     StringList result = new StringList();
 
     if (values != null) {
-      for (String s : values) {
-        result.add(s);
-      }
+      Collections.addAll(result, values);
     }
 
     return result;
@@ -84,7 +82,7 @@ public class StringList implements List<String> {
   }
 
   public boolean accepts(String element) {
-    return (predicate == null) ? true : predicate.apply(element);
+    return predicate == null || predicate.test(element);
   }
 
   @Override

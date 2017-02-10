@@ -16,6 +16,7 @@ import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -38,7 +39,6 @@ import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
@@ -64,6 +64,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public final class ParametersGrid extends AbstractGridInterceptor {
 
@@ -109,7 +110,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
           JustDate date = prm.supportsUsers() ? prm.getDate(userId) : prm.getDate();
 
           if (date != null) {
-            value = date.toString();
+            value = Format.renderDate(date);
           }
           break;
 
@@ -117,7 +118,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
           DateTime dateTime = prm.supportsUsers() ? prm.getDateTime(userId) : prm.getDateTime();
 
           if (dateTime != null) {
-            value = dateTime.toCompactString();
+            value = Format.renderDate(dateTime);
           }
           break;
 

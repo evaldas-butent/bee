@@ -1,14 +1,12 @@
 package com.butent.bee.client.grid;
 
-import com.google.common.base.Function;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.client.grid.cell.FooterCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
-import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.shared.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.i18n.HasDateTimeFormat;
+import com.butent.bee.shared.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.modules.trade.DiscountRenderer;
 import com.butent.bee.client.modules.trade.TotalRenderer;
@@ -49,6 +47,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class ColumnFooter extends Header<String> implements HasTextAlign, HasVerticalAlign,
     HasWhiteSpace, HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions, HasValueType,
@@ -174,8 +173,8 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
   }
 
   @Override
-  public String getValue() {
-    return getHtml();
+  public String getValue(CellContext context) {
+    return (context == null) ? null : reduce(context.getGrid().getRowData());
   }
 
   @Override
@@ -215,16 +214,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign, HasVer
       }
     }
 
-    return getValue();
-  }
-
-  @Override
-  public void render(CellContext context, SafeHtmlBuilder sb) {
-    String value = reduce(context.getGrid().getRowData());
-
-    if (value != null) {
-      getCell().render(context, value, sb);
-    }
+    return getHtml();
   }
 
   public void setAggregate(Aggregate aggregate) {

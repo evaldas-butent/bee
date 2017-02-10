@@ -45,7 +45,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.Chat;
@@ -80,6 +79,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class ChatManager implements HasInfo, HasEnabled {
 

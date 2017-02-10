@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.output.Printable;
@@ -16,6 +17,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
@@ -24,6 +26,7 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
@@ -80,6 +83,11 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   boolean focus(String source);
 
   int flush();
+
+  default GridView getBackingGrid() {
+    return (getViewPresenter() instanceof HasGridView)
+        ? ((HasGridView) getViewPresenter()).getGridView() : null;
+  }
 
   Boolean getBooleanValue(String source);
 
@@ -162,6 +170,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   boolean printHeader();
 
   void refreshChildWidgets(IsRow row);
+
+  void saveChanges(RowCallback callback);
 
   void setAdding(boolean adding);
 

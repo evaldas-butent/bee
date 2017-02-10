@@ -4,10 +4,10 @@ import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.ec.EcStyles;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Frame;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 class HtmlViewer extends EcView {
 

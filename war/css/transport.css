@@ -347,6 +347,25 @@
   margin-top: 5px;
 }
 
+.bee-tr-chart-state-loading .bee-timeboard-progress-container,
+.bee-tr-chart-state-updating .bee-timeboard-progress-container,
+.bee-tr-chart-state-pending .bee-timeboard-progress-container,
+.bee-tr-chart-state-changed .bee-timeboard-progress-container {
+  display: block;
+}
+.bee-tr-chart-state-loading .bee-timeboard-progress-bar {
+  animation: indeterminate 2s linear infinite;
+}
+.bee-tr-chart-state-updating .bee-timeboard-progress-bar {
+  background-color: hotpink;
+}
+.bee-tr-chart-state-pending .bee-timeboard-progress-bar {
+  background-color: gold;
+}
+.bee-tr-chart-state-changed .bee-timeboard-progress-bar {
+  background-color: goldenrod;
+}
+
 .bee-tr-SelfService-screen .bee-MainCommandPanel {
   left: 160px;
 }
@@ -425,4 +444,20 @@
   font-weight: bold;
   font-size: medium;
   padding: 2px 5px;
+}
+
+.bee-tr-input-mode-toggle {
+  font-size: large;
+  cursor: pointer;
+  color: #414142;
+}
+.bee-tr-input-mode-partial,
+.bee-tr-input-mode-full {
+  margin-left: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+ }
+.bee-tr-input-mode-active {
+  font-weight: bolder;
+  cursor: auto;
 }

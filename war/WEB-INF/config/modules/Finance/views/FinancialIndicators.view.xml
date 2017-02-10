@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="FinancialIndicators" source="FinancialIndicators"
+      caption="=finIndicators"
+>
+  <Columns>
+    <SimpleColumn name="IndicatorKind" />
+
+    <SimpleColumn name="IndicatorName" />
+    <SimpleColumn name="IndicatorAbbreviation" />
+
+    <SimpleColumn name="IndicatorSource" />
+    <SimpleColumn name="IndicatorScript" />
+
+    <SimpleColumn name="IndicatorTurnoverOrBalance" />
+    <SimpleColumn name="IndicatorNormalBalance" />
+
+    <SimpleColumn name="IndicatorClosingEntries" />
+
+    <SimpleColumn name="IndicatorScale" />
+
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="IndicatorName" />
+  </Order>
+</View>

@@ -26,13 +26,17 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -99,6 +103,14 @@ public class TripForm extends PrintFormInterceptor {
 
         case TBL_TRIP_FUEL_COSTS:
           ((ChildGrid) widget).setGridInterceptor(new TripFuelCostsGrid());
+          ((ChildGrid) widget).addReadyHandler(re -> {
+            GridView gridView = ViewHelper.getChildGrid(getFormView(), TBL_TRIP_FUEL_COSTS);
+
+            if (gridView != null) {
+              gridView.getGrid().addMutationHandler(mu ->
+                  refreshFuelConsumption(getActiveRow(), null, null));
+            }
+          });
           break;
       }
     } else if (BeeUtils.same(name, COL_TRIP_ROUTE) && widget instanceof HasClickHandlers) {
@@ -154,6 +166,11 @@ public class TripForm extends PrintFormInterceptor {
   }
 
   @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    refreshFuelConsumption(row, null, null);
+  }
+
+  @Override
   public TripForm getInstance() {
     return new TripForm();
   }
@@ -161,6 +178,15 @@ public class TripForm extends PrintFormInterceptor {
   @Override
   public FormInterceptor getPrintFormInterceptor() {
     return new PrintTripForm();
+  }
+
+  @Override
+  public void onEditEnd(EditEndEvent event, Object source) {
+    String colId = event.getColumnId();
+
+    if (BeeUtils.inList(colId, COL_FUEL_BEFORE, COL_FUEL_AFTER) && event.valueChanged()) {
+      refreshFuelConsumption(getActiveRow(), colId, BeeUtils.toDoubleOrNull(event.getNewValue()));
+    }
   }
 
   @Override
@@ -374,6 +400,41 @@ public class TripForm extends PrintFormInterceptor {
       });
     }
     return copyAction;
+  }
+
+  private void refreshFuelConsumption(IsRow row, String colId, Double fuel) {
+    Widget widget = getFormView().getWidgetByName(TBL_FUEL_CONSUMPTIONS);
+
+    if (!(widget instanceof TextLabel) || row == null) {
+      return;
+    }
+    ((TextLabel) widget).clear();
+    Double fuelBefore = row.getDouble(Data.getColumnIndex(getViewName(), COL_FUEL_BEFORE));
+    Double fuelAfter = row.getDouble(Data.getColumnIndex(getViewName(), COL_FUEL_AFTER));
+
+    if (BeeUtils.same(colId, COL_FUEL_BEFORE)) {
+      fuelBefore = fuel;
+    } else if (BeeUtils.same(colId, COL_FUEL_AFTER)) {
+      fuelAfter = fuel;
+    }
+
+    if (BeeUtils.isDouble(fuelBefore) && BeeUtils.isDouble(fuelAfter)) {
+      double fuelConsumption = fuelBefore - fuelAfter;
+      GridView grid = ViewHelper.getChildGrid(getFormView(), TBL_TRIP_FUEL_COSTS);
+
+      if (grid != null && !grid.isEmpty()) {
+        int fillIndex = Data.getColumnIndex(TBL_TRIP_FUEL_COSTS, COL_COSTS_QUANTITY);
+
+        for (IsRow childRow : grid.getRowData()) {
+          fuelConsumption += BeeUtils.toDouble(childRow.getString(fillIndex));
+        }
+      }
+      if (widget instanceof TextLabel) {
+        ((TextLabel) widget).setValue(BeeConst.STRING_LEFT_PARENTHESIS
+            + BeeConst.CHAR_SPACE + BeeUtils.round(fuelConsumption)
+            + BeeConst.CHAR_SPACE + BeeConst.STRING_RIGHT_PARENTHESIS);
+      }
+    }
   }
 
   private void showDriver(boolean show) {

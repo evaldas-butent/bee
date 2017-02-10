@@ -13,7 +13,6 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -22,15 +21,18 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
-import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
 
@@ -127,7 +129,7 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     return null;
   }
 
-  protected Consumer<FileInfo> getReportCallback() {
+  protected ReportUtils.ReportCallback getReportCallback() {
     return null;
   }
 
@@ -144,6 +146,13 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
       if (!BeeUtils.isEmpty(value)) {
         params.put(column.getId(), value);
       }
+    }
+    if (Objects.nonNull(getActiveRow()) && !BeeUtils.isEmpty(getActiveRow().getProperties())) {
+      getActiveRow().getProperties().forEach((key, value) -> {
+        if (!BeeUtils.isEmpty(value)) {
+          params.put(key, value);
+        }
+      });
     }
     parametersConsumer.accept(params);
   }
@@ -182,13 +191,14 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
     }
     Consumer<String> consumer = report -> {
       if (BeeUtils.isEmpty(Localized.extractLanguage(report))) {
-        List<String> locales = new ArrayList<>();
+        Map<String, String> locales = new LinkedHashMap<>();
+        Arrays.stream(SupportedLocale.values()).filter(SupportedLocale::isActive)
+            .forEach(locale -> locales.put(locale.getLanguage(),
+                BeeUtils.notEmpty(locale.getCaption(), locale.getLanguage())));
 
-        for (SupportedLocale locale : SupportedLocale.values()) {
-          locales.add(BeeUtils.notEmpty(locale.getCaption(), locale.getLanguage()));
-        }
-        Global.choice(Localized.dictionary().chooseLanguage(), null, locales, idx ->
-            print(Localized.setLanguage(report, SupportedLocale.values()[idx].getLanguage())));
+        Global.choice(Localized.dictionary().chooseLanguage(), null,
+            new ArrayList<>(locales.values()), idx ->
+                print(Localized.setLanguage(report, new ArrayList<>(locales.keySet()).get(idx))));
       } else {
         print(report);
       }

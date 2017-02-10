@@ -10,17 +10,12 @@ import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
-import com.butent.bee.server.communication.ChatBean;
-import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
-import com.butent.bee.server.modules.classifiers.TimerBuilder;
-import com.butent.bee.shared.html.builder.Document;
-import com.butent.bee.shared.modules.calendar.CalendarConstants;
-import com.butent.bee.shared.modules.calendar.CalendarHelper;
-
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.cars.CarsConstants.COL_SERVICE_EVENT;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
+import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -34,6 +29,8 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
+import com.butent.bee.server.modules.classifiers.TimerBuilder;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
@@ -45,6 +42,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -54,6 +52,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -64,10 +63,13 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.calendar.CalendarHelper;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.calendar.CalendarTask;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -84,6 +86,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
@@ -94,7 +97,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
@@ -290,6 +292,8 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
   ClassifiersModuleBean cmb;
   @EJB
   ChatBean chat;
+  @EJB
+  UiServiceBean usb;
 
   @EJB
   NewsBean news;
@@ -302,56 +306,56 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
     List<Timer> timersList = new ArrayList<>();
 
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_CALENDAR_EVENTS)) {
-    String reminderIdName = sys.getIdName(TBL_APPOINTMENT_REMINDERS);
+      String reminderIdName = sys.getIdName(TBL_APPOINTMENT_REMINDERS);
 
-    SimpleRowSet data = qs.getData(new SqlSelect()
-        .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
-        .addFields(TBL_APPOINTMENT_REMINDERS, reminderIdName, COL_APPOINTMENT,
-            COL_HOURS, COL_MINUTES, COL_SCHEDULED)
-        .addField(TBL_REMINDER_TYPES, COL_HOURS, COL_ALIAS_DEF_HOURS)
-        .addField(TBL_REMINDER_TYPES, COL_MINUTES, COL_ALIAS_DEL_MINUTES)
-        .addFrom(TBL_APPOINTMENTS)
-        .addFromInner(TBL_APPOINTMENT_REMINDERS,
-            sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
-        .addFromInner(TBL_REMINDER_TYPES,
-            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
-                COL_REMINDER_TYPE))
-        .setWhere(SqlUtils.and(wh,
-            SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME, System.currentTimeMillis()),
-            SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
-                AppointmentStatus.CANCELED.ordinal()))));
+      SimpleRowSet data = qs.getData(new SqlSelect()
+          .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
+          .addFields(TBL_APPOINTMENT_REMINDERS, reminderIdName, COL_APPOINTMENT,
+              COL_HOURS, COL_MINUTES, COL_SCHEDULED)
+          .addField(TBL_REMINDER_TYPES, COL_HOURS, COL_ALIAS_DEF_HOURS)
+          .addField(TBL_REMINDER_TYPES, COL_MINUTES, COL_ALIAS_DEL_MINUTES)
+          .addFrom(TBL_APPOINTMENTS)
+          .addFromInner(TBL_APPOINTMENT_REMINDERS,
+              sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
+          .addFromInner(TBL_REMINDER_TYPES,
+              sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
+                  COL_REMINDER_TYPE))
+          .setWhere(SqlUtils.and(wh,
+              SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME, System.currentTimeMillis()),
+              SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
+                  AppointmentStatus.CANCELED.ordinal()))));
 
-    for (SimpleRow row : data) {
-      Long start = row.getLong(COL_SCHEDULED);
+      for (SimpleRow row : data) {
+        Long start = row.getLong(COL_SCHEDULED);
 
-      if (start == null) {
-        long offset = BeeUtils.unbox(row.getInt(COL_HOURS)) * TimeUtils.MILLIS_PER_HOUR
-            + BeeUtils.unbox(row.getInt(COL_MINUTES)) * TimeUtils.MILLIS_PER_MINUTE;
+        if (start == null) {
+          long offset = BeeUtils.unbox(row.getInt(COL_HOURS)) * TimeUtils.MILLIS_PER_HOUR
+              + BeeUtils.unbox(row.getInt(COL_MINUTES)) * TimeUtils.MILLIS_PER_MINUTE;
 
-        if (offset == 0) {
-          offset = BeeUtils.unbox(row.getInt(COL_ALIAS_DEF_HOURS)) * TimeUtils.MILLIS_PER_HOUR
-              + BeeUtils.unbox(row.getInt(COL_ALIAS_DEL_MINUTES))
-              * TimeUtils.MILLIS_PER_MINUTE;
-        }
-        if (offset != 0) {
-          start = BeeUtils.unbox(row.getLong(COL_START_DATE_TIME)) - offset;
-        }
-      }
-      if (start != null) {
-        DateTime time = TimeUtils.toDateTimeOrNull(start);
-        long from = BeeUtils.unbox(prm.getTime(PRM_REMINDER_TIME_FROM));
-        long until = BeeUtils.unbox(prm.getTime(PRM_REMINDER_TIME_UNTIL));
-
-        if (from < until) {
-          int current = TimeUtils.minutesSinceDayStarted(time) * TimeUtils.MILLIS_PER_MINUTE;
-
-          if (current < from || current > until) {
-            time =
-                new DateTime((current < from) ? TimeUtils.previousDay(time) : time.getDate());
-            time.setTime(time.getTime() + until);
+          if (offset == 0) {
+            offset = BeeUtils.unbox(row.getInt(COL_ALIAS_DEF_HOURS)) * TimeUtils.MILLIS_PER_HOUR
+                + BeeUtils.unbox(row.getInt(COL_ALIAS_DEL_MINUTES))
+                * TimeUtils.MILLIS_PER_MINUTE;
+          }
+          if (offset != 0) {
+            start = BeeUtils.unbox(row.getLong(COL_START_DATE_TIME)) - offset;
           }
         }
-        if (time.getTime() > System.currentTimeMillis()) {
+        if (start != null) {
+          DateTime time = TimeUtils.toDateTimeOrNull(start);
+          long from = BeeUtils.unbox(prm.getTime(PRM_REMINDER_TIME_FROM));
+          long until = BeeUtils.unbox(prm.getTime(PRM_REMINDER_TIME_UNTIL));
+
+          if (from < until) {
+            int current = TimeUtils.minutesSinceDayStarted(time) * TimeUtils.MILLIS_PER_MINUTE;
+
+            if (current < from || current > until) {
+              time =
+                  new DateTime((current < from) ? TimeUtils.previousDay(time) : time.getDate());
+              time.setTime(time.getTime() + until);
+            }
+          }
+          if (time.getTime() > System.currentTimeMillis()) {
             Timer timer = timerService.createSingleActionTimer(time.getJava(),
                 new TimerConfig(TIMER_REMIND_CALENDAR_EVENTS + row.getLong(reminderIdName), false));
 
@@ -366,7 +370,7 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
   }
 
   @Override
-  protected  Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
+  protected Pair<IsCondition, List<String>> getConditionAndTimerIdForUpdate(String timerIdentifier,
       String viewName, Long relationId) {
     if (BeeUtils.same(timerIdentifier, TIMER_REMIND_CALENDAR_EVENTS)) {
       IsCondition wh;
@@ -388,7 +392,7 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
                 SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
                     AppointmentStatus.CANCELED.ordinal()))));
 
-        List timerIdentifiersIds = new ArrayList<String>();
+        List<String> timerIdentifiersIds = new ArrayList<String>();
         if (data != null) {
           for (SimpleRow row : data) {
             timerIdentifiersIds.add(
@@ -401,7 +405,7 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
       } else if (BeeUtils.same(idName, TBL_APPOINTMENT_REMINDERS)) {
         wh = SqlUtils.equals(TBL_APPOINTMENT_REMINDERS, reminderIdName, id);
 
-        List timerIdentifiersIds = new ArrayList<String>();
+        List<String> timerIdentifiersIds = new ArrayList<String>();
         timerIdentifiersIds.add(timerIdentifier + id);
         return Pair.of(wh, timerIdentifiersIds);
       }
@@ -771,26 +775,25 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
     }
   }
 
-
   private SimpleRowSet getAppointmentAttendeeEmails(Long appointmentId) {
     if (!DataUtils.isId(appointmentId)) {
       return null;
     }
     SqlSelect select = new SqlSelect()
-            .addFields(TBL_EMAILS, COL_EMAIL)
-            .addFields(TBL_USERS, sys.getIdName(TBL_USERS))
-            .addFrom(TBL_APPOINTMENT_ATTENDEES)
-            .addFromLeft(TBL_ATTENDEES,
-                    sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
-            .addFromInner(TBL_COMPANY_PERSONS,
-                    sys.joinTables(TBL_COMPANY_PERSONS, TBL_ATTENDEES, COL_COMPANY_PERSON))
-            .addFromInner(TBL_CONTACTS,
-                    sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
-            .addFromInner(TBL_EMAILS,
-                    sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-            .addFromInner(TBL_USERS,
-                    sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
-            .setWhere(SqlUtils.equals(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appointmentId));
+        .addFields(TBL_EMAILS, COL_EMAIL)
+        .addFields(TBL_USERS, sys.getIdName(TBL_USERS))
+        .addFrom(TBL_APPOINTMENT_ATTENDEES)
+        .addFromLeft(TBL_ATTENDEES,
+            sys.joinTables(TBL_ATTENDEES, TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE))
+        .addFromInner(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_ATTENDEES, COL_COMPANY_PERSON))
+        .addFromInner(TBL_CONTACTS,
+            sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+        .addFromInner(TBL_EMAILS,
+            sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .addFromInner(TBL_USERS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .setWhere(SqlUtils.equals(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appointmentId));
 
     return qs.getData(select);
   }
@@ -802,53 +805,53 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
     IsCondition wh = sys.idEquals(TBL_APPOINTMENT_REMINDERS, reminderId);
     String ownerCompanyPerson = SqlUtils.uniqueName();
     return qs.getRow(new SqlSelect()
-            .addFields(TBL_APPOINTMENTS, sys.getIdName(TBL_APPOINTMENTS), COL_CREATED, COL_SUMMARY,
-                    COL_STATUS, COL_DESCRIPTION, COL_START_DATE_TIME, COL_END_DATE_TIME)
-            .addField(TBL_APPOINTMENT_TYPES, COL_APPOINTMENT_TYPE_NAME, ALS_APPOINTMENT_TYPE_NAME)
-            .addExpr(SqlUtils.concat(
-                    SqlUtils.nvl(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "''"), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME), "''")),
-                    ALS_COMPANY_NAME)
-            .addExpr(SqlUtils.concat(
-                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "''"), "' '",
-                    SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
-                    ALS_CONTACT_PERSON)
-            .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, ALS_OWNER_EMAIL)
-            .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE, COL_REMINDER_TYPE)
-            .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD, COL_REMINDER_TEMPLATE,
-                    COL_REMINDER_TEMPLATE_CAPTION)
-            .addFields(TBL_USERS, sys.getIdName(TBL_USERS))
-            .addFrom(TBL_APPOINTMENTS)
-            .addFromLeft(TBL_APPOINTMENT_TYPES,
-                    sys.joinTables(TBL_APPOINTMENT_TYPES, TBL_APPOINTMENTS, COL_APPOINTMENT_TYPE))
-            .addFromInner(TBL_APPOINTMENT_REMINDERS,
-                    sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
-            .addFromInner(TBL_REMINDER_TYPES,
-                    sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
-                            COL_REMINDER_TYPE))
-            .addFromLeft(TBL_COMPANIES,
-                    sys.joinTables(TBL_COMPANIES, CalendarConstants.TBL_APPOINTMENTS, COL_COMPANY))
-            .addFromLeft(TBL_COMPANY_TYPES,
-                    sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
-            .addFromLeft(TBL_COMPANY_PERSONS,
-                    sys.joinTables(TBL_COMPANY_PERSONS, CalendarConstants.TBL_APPOINTMENTS,
-                            COL_COMPANY_PERSON))
-            .addFromLeft(TBL_PERSONS,
-                    sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-            .addFromLeft(TBL_USERS,
-                    sys.joinTables(TBL_USERS, TBL_APPOINTMENTS, COL_CREATOR))
-            .addFromLeft(TBL_COMPANY_PERSONS, ownerCompanyPerson,
-                    sys.joinTables(TBL_COMPANY_PERSONS, ownerCompanyPerson, TBL_USERS,
-                            COL_COMPANY_PERSON))
-            .addFromLeft(TBL_CONTACTS,
-                    sys.joinTables(TBL_CONTACTS, ownerCompanyPerson, COL_CONTACT))
-            .addFromLeft(TBL_EMAILS,
-                    sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
-            .setWhere(SqlUtils.and(wh,
-                    SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME,
-                            System.currentTimeMillis() - TimeUtils.MILLIS_PER_MINUTE),
-                    SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
-                            AppointmentStatus.CANCELED.ordinal()))));
+        .addFields(TBL_APPOINTMENTS, sys.getIdName(TBL_APPOINTMENTS), COL_CREATED, COL_SUMMARY,
+            COL_STATUS, COL_DESCRIPTION, COL_START_DATE_TIME, COL_END_DATE_TIME)
+        .addField(TBL_APPOINTMENT_TYPES, COL_APPOINTMENT_TYPE_NAME, ALS_APPOINTMENT_TYPE_NAME)
+        .addExpr(SqlUtils.concat(
+            SqlUtils.nvl(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), "''"), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME), "''")),
+            ALS_COMPANY_NAME)
+        .addExpr(SqlUtils.concat(
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "''"), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
+            ALS_CONTACT_PERSON)
+        .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, ALS_OWNER_EMAIL)
+        .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE, COL_REMINDER_TYPE)
+        .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD, COL_REMINDER_TEMPLATE,
+            COL_REMINDER_TEMPLATE_CAPTION)
+        .addFields(TBL_USERS, sys.getIdName(TBL_USERS))
+        .addFrom(TBL_APPOINTMENTS)
+        .addFromLeft(TBL_APPOINTMENT_TYPES,
+            sys.joinTables(TBL_APPOINTMENT_TYPES, TBL_APPOINTMENTS, COL_APPOINTMENT_TYPE))
+        .addFromInner(TBL_APPOINTMENT_REMINDERS,
+            sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
+        .addFromInner(TBL_REMINDER_TYPES,
+            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS,
+                COL_REMINDER_TYPE))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, CalendarConstants.TBL_APPOINTMENTS, COL_COMPANY))
+        .addFromLeft(TBL_COMPANY_TYPES,
+            sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, CalendarConstants.TBL_APPOINTMENTS,
+                COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .addFromLeft(TBL_USERS,
+            sys.joinTables(TBL_USERS, TBL_APPOINTMENTS, COL_CREATOR))
+        .addFromLeft(TBL_COMPANY_PERSONS, ownerCompanyPerson,
+            sys.joinTables(TBL_COMPANY_PERSONS, ownerCompanyPerson, TBL_USERS,
+                COL_COMPANY_PERSON))
+        .addFromLeft(TBL_CONTACTS,
+            sys.joinTables(TBL_CONTACTS, ownerCompanyPerson, COL_CONTACT))
+        .addFromLeft(TBL_EMAILS,
+            sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+        .setWhere(SqlUtils.and(wh,
+            SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME,
+                System.currentTimeMillis() - TimeUtils.MILLIS_PER_MINUTE),
+            SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
+                AppointmentStatus.CANCELED.ordinal()))));
   }
 
   private List<BeeRow> getAppointments(Filter filter, Order order, boolean checkVisibility) {
@@ -1167,7 +1170,14 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
       appFilter.add(Filter.any(COL_APPOINTMENT_TYPE,
           DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
     }
+    Boolean isService = BeeUtils.unbox(qs.getBooleanById(VIEW_CALENDARS, calendarId,
+        COL_CALENDAR_IS_SERVICE));
 
+    if (isService) {
+      appFilter.add(Filter.notNull(COL_SERVICE_EVENT));
+    } else {
+      appFilter.add(Filter.isNull(COL_SERVICE_EVENT));
+    }
     long millis = System.currentTimeMillis();
 
     List<BeeRow> appointments = getAppointments(appFilter, null, false);
@@ -1176,7 +1186,8 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
     }
     long appDuration = System.currentTimeMillis() - millis;
 
-    List<CalendarTask> tasks = getCalendarTasks(calendarId, startTime, endTime);
+    List<CalendarTask> tasks = isService ? Collections.emptyList()
+        : getCalendarTasks(calendarId, startTime, endTime);
     long taskDuration = System.currentTimeMillis() - millis - appDuration;
 
     logger.info(reqInfo.getService(), calendarId,
@@ -1718,16 +1729,15 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
           }
 
           List<String> exclCols = Lists.newArrayList(ALS_OWNER_EMAIL, COL_APPOINTMENT, COL_MESSAGE,
-                  COL_REMINDER_METHOD, COL_REMINDER_TEMPLATE, COL_REMINDER_TEMPLATE_CAPTION,
-                  sys.getIdName(TBL_USERS), COL_REMINDER_TYPE);
+              COL_REMINDER_METHOD, COL_REMINDER_TEMPLATE, COL_REMINDER_TEMPLATE_CAPTION,
+              sys.getIdName(TBL_USERS), COL_REMINDER_TYPE);
           Map<String, String> labels = CalendarHelper.getAppointmentReminderDataLabels(dic, idName);
           Map<String, ValueType> format = CalendarHelper.getAppointmentReminderDataTypes(idName);
-          Map<String, String> enumKeys =  CalendarHelper.getAppointmentReminderDataEnumKeys();
-
+          Map<String, String> enumKeys = CalendarHelper.getAppointmentReminderDataEnumKeys();
 
           Document content = cmb.createRemindTemplate(data.getRowSet(),
-                  labels, format, enumKeys, exclCols, BeeConst.STRING_EMPTY,
-                  template, usr.getCurrentUserId());
+              labels, format, enumKeys, exclCols, BeeConst.STRING_EMPTY,
+              template, usr.getCurrentUserId());
 
           String contentLines = content.buildLines();
 
@@ -1756,9 +1766,12 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
           linkData.put(VIEW_APPOINTMENTS, data.getValue(sys.getIdName(TBL_APPOINTMENTS)));
           if (DataUtils.isId(userId)) {
             chat.putMessage(
-                BeeUtils.joinWords(usr.getDictionary(userId).event(), data.getValue(COL_SUMMARY),
-                    usr.getDictionary(userId).scheduledStartingTime(),
-                    data.getDateTime(COL_START_DATE_TIME).toCompactString()),
+                BeeUtils.joinWords(usr.getDictionary(userId).event(),
+                    BeeConst.STRING_QUOT + data.getValue(COL_SUMMARY) + BeeConst.STRING_QUOT
+                        + BeeConst.STRING_POINT,
+                    usr.getDictionary(userId).scheduledStartingTime() + BeeConst.STRING_COLON,
+                    data.getDateTime(COL_START_DATE_TIME).toCompactString()
+                        + BeeConst.STRING_POINT),
                 userId,
                 linkData);
           }
@@ -1854,6 +1867,10 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
     }
 
     String viewName = VIEW_APPOINTMENTS;
+
+    Collection<RowChildren> children = new ArrayList<>();
+    final String propChildren = "_row_children";
+
     BeeRowSet oldRowSet = qs.getViewData(viewName, Filter.compareId(appId));
     if (oldRowSet == null || oldRowSet.isEmpty()) {
       return ResponseObject.error(reqInfo.getService(), ": old row not found", appId);
@@ -1861,11 +1878,26 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
 
     BeeRow oldRow = oldRowSet.getRow(0);
 
+    if (newRowSet.getRow(0).hasPropertyValue(propChildren)) {
+      String serialized = newRowSet.getRow(0).getProperty(propChildren);
+
+      String[] arr = Codec.beeDeserializeCollection(serialized);
+      if (!ArrayUtils.isEmpty(arr)) {
+        for (String s : arr) {
+          children.add(RowChildren.restore(s));
+        }
+      }
+    }
+
     BeeRowSet updated = DataUtils.getUpdated(viewName, oldRowSet.getColumns(), oldRow,
-        newRowSet.getRow(0), null);
+        newRowSet.getRow(0), children);
 
     ResponseObject response;
     if (updated == null) {
+      if (!children.isEmpty()) {
+        usb.updateRelatedValues(viewName, appId, Codec.beeSerialize(children));
+      }
+
       response = ResponseObject.response(oldRow);
     } else {
       response = deb.commitRow(updated);

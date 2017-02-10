@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="ConfOptions" source="ConfOptions"
+      caption="=options"
+      editForm="ConfOption" newRowForm="ConfOption"
+>
+  <Relation renderColumns="Code Code2 OptionName" />
+  <Columns>
+    <SimpleColumn name="Group" />
+    <SimpleJoin name="Group" joinType="INNER">
+      <SimpleColumn name="Type" />
+      <SimpleJoin name="Type" joinType="INNER">
+        <SimpleColumn name="TypeName" />
+      </SimpleJoin>
+      <SimpleColumn name="GroupName" />
+    </SimpleJoin>
+    <SimpleColumn name="OptionName" />
+    <SimpleColumn name="Code" />
+    <SimpleColumn name="Code2" />
+    <SimpleColumn name="Description" />
+    <SimpleColumn name="PhotoFile" />
+    <SimpleColumn name="PhotoCode" />
+
+    <SimpleColumn name="Item" />
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="TypeName" />
+    <OrderBy column="GroupName" />
+    <OrderBy column="OptionName" />
+  </Order>
+</View>

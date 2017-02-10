@@ -1,9 +1,6 @@
 package com.butent.bee.client.grid.cell;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.BeeKeeper;
@@ -26,6 +23,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
+import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -39,7 +37,7 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
   private static final String STYLE_SUFFIX_ON = "-on";
   private static final String STYLE_SUFFIX_OFF = "-off";
 
-  private static final Map<RightsState, Pair<SafeHtml, SafeHtml>> TEMPLATE;
+  private static final Map<RightsState, Pair<String, String>> TEMPLATE;
   private static final Map<String, Pair<RightsState, Boolean>> TARGETS;
 
   static {
@@ -84,8 +82,8 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
       widgetOff.addStyleName(STYLE_PREFIX + state.name().toLowerCase() + STYLE_SUFFIX_OFF);
       widgetOff.setTitle(state.getCaption());
 
-      SafeHtml htmlOn = SafeHtmlUtils.fromTrustedString(widgetOn.getElement().getString());
-      SafeHtml htmlOff = SafeHtmlUtils.fromTrustedString(widgetOff.getElement().getString());
+      String htmlOn = widgetOn.getElement().getString();
+      String htmlOff = widgetOff.getElement().getString();
 
       TEMPLATE.put(state, Pair.of(htmlOn, htmlOff));
 
@@ -106,6 +104,11 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
     this.roleId = roleId;
 
     this.userId = BeeKeeper.getUser().getUserId();
+  }
+
+  @Override
+  public CellType getCellType() {
+    return CellType.HTML;
   }
 
   @Override
@@ -134,33 +137,36 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
   }
 
   @Override
-  public void render(CellContext context, String value, SafeHtmlBuilder sb) {
+  public String render(CellContext context, String value) {
     if (context.getRow() != null) {
-      render(context.getRow(), sb);
+      return render(context.getRow());
+    } else {
+      return null;
     }
   }
 
-  private void render(IsRow row, SafeHtmlBuilder sb) {
+  private String render(IsRow row) {
+    StringBuilder sb = new StringBuilder();
+
     for (RightsState state : GridMenu.ALL_STATES) {
       String value = row.getProperty(RightsUtils.getAlias(state, roleId), userId);
 
       if (!BeeUtils.isEmpty(value)) {
         boolean on = Codec.unpack(value);
 
-        Pair<SafeHtml, SafeHtml> pair = TEMPLATE.get(state);
-        SafeHtml html = on ? pair.getA() : pair.getB();
+        Pair<String, String> pair = TEMPLATE.get(state);
+        String html = on ? pair.getA() : pair.getB();
 
         sb.append(html);
       }
     }
+    return sb.toString();
   }
 
   private void update(IsRow row, RightsState state, boolean value, Element cellElement) {
     row.setProperty(RightsUtils.getAlias(state, roleId), userId, Codec.pack(value));
 
-    SafeHtmlBuilder sb = new SafeHtmlBuilder();
-    render(row, sb);
-    cellElement.setInnerHTML(sb.toSafeHtml().asString());
+    cellElement.setInnerHTML(render(row));
 
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.SET_ROW_RIGHTS);
 

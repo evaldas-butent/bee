@@ -18,6 +18,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
@@ -31,7 +32,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.ListFilterSupplier;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -55,6 +55,7 @@ import com.butent.bee.shared.utils.StringList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class TradeActGrid extends AbstractGridInterceptor {
 
@@ -358,37 +359,34 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
       final long actId = row.getId();
 
-      Global.getMsgBoxen().choice(Localized.dictionary().taAlterKind(),
+      MessageBoxes.choice(Localized.dictionary().taAlterKind(),
           BeeUtils.joinWords(tak.getCaption(), row.getString(getDataIndex(COL_TRADE_ACT_NAME))),
-          choices, new ChoiceCallback() {
-            @Override
-            public void onSuccess(int value) {
-              if (DataUtils.idEquals(getGridView().getActiveRow(), actId)
-                  && BeeUtils.isIndex(targets, value)) {
+          choices, value -> {
+            if (DataUtils.idEquals(getGridView().getActiveRow(), actId)
+                && BeeUtils.isIndex(targets, value)) {
 
-                ParameterList params = TradeActKeeper.createArgs(SVC_ALTER_ACT_KIND);
-                params.addQueryItem(COL_TRADE_ACT, actId);
-                params.addQueryItem(COL_TA_KIND, targets.get(value).ordinal());
+              ParameterList params = TradeActKeeper.createArgs(SVC_ALTER_ACT_KIND);
+              params.addQueryItem(COL_TRADE_ACT, actId);
+              params.addQueryItem(COL_TA_KIND, targets.get(value).ordinal());
 
-                BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    if (response.hasResponse(BeeRow.class)) {
-                      BeeRow updated = BeeRow.restore(response.getResponseAsString());
-                      RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), updated);
+              BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+                @Override
+                public void onResponse(ResponseObject response) {
+                  if (response.hasResponse(BeeRow.class)) {
+                    BeeRow updated = BeeRow.restore(response.getResponseAsString());
+                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), updated);
 
-                      GridView gridView = getGridView();
+                    GridView gridView = getGridView();
 
-                      if (gridView != null && gridView.asWidget().isAttached()) {
-                        if (DataUtils.idEquals(gridView.getActiveRow(), actId)) {
-                          refreshCommands(updated);
-                        }
-                        maybeOpenAct(gridView, updated);
+                    if (gridView != null && gridView.asWidget().isAttached()) {
+                      if (DataUtils.idEquals(gridView.getActiveRow(), actId)) {
+                        refreshCommands(updated);
                       }
+                      maybeOpenAct(gridView, updated);
                     }
                   }
-                });
-              }
+                }
+              });
             }
           }, BeeConst.UNDEF, BeeConst.UNDEF, Localized.dictionary().cancel(), null);
     }

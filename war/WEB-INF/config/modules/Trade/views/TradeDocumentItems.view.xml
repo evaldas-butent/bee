@@ -16,6 +16,12 @@
     </SimpleJoin>
 
     <SimpleColumn name="Article" />
+    <ExternalJoin joinType="LEFT" targetName="Parent" source="TradeStock"
+                  name="TradeDocumentItem">
+      <SimpleJoin joinType="LEFT" name="PrimaryDocumentItem">
+        <SimpleColumn name="Article" alias="PrimaryArticle" />
+      </SimpleJoin>
+    </ExternalJoin>
 
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
@@ -26,10 +32,29 @@
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatIsPercent" />
 
-    <SimpleColumn name="Warehouse" />
-    <SimpleJoin joinType="LEFT" name="Warehouse">
-      <SimpleColumn name="Code" alias="WarehouseCode" />
-      <SimpleColumn name="Name" alias="WarehouseName" />
+    <ExternalJoin joinType="LEFT" source="TradeItemCost" name="TradeDocumentItem">
+      <SimpleColumn name="Cost" />
+      <SimpleColumn name="Currency" alias="CostCurrency" />
+    </ExternalJoin>
+    <ExternalJoin joinType="LEFT" targetName="Parent" source="TradeStock"
+                  name="TradeDocumentItem">
+      <ExternalJoin joinType="LEFT" targetName="PrimaryDocumentItem" source="TradeItemCost"
+                    name="TradeDocumentItem">
+        <SimpleColumn name="Cost" alias="ParentCost" />
+        <SimpleColumn name="Currency" alias="ParentCostCurrency" />
+      </ExternalJoin>
+    </ExternalJoin>
+
+    <SimpleColumn name="ItemWarehouseFrom" />
+    <SimpleJoin joinType="LEFT" name="ItemWarehouseFrom">
+      <SimpleColumn name="Code" alias="ItemWarehouseFromCode" />
+      <SimpleColumn name="Name" alias="ItemWarehouseFromName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="ItemWarehouseTo" />
+    <SimpleJoin joinType="LEFT" name="ItemWarehouseTo">
+      <SimpleColumn name="Code" alias="ItemWarehouseToCode" />
+      <SimpleColumn name="Name" alias="ItemWarehouseToName" />
     </SimpleJoin>
 
     <SimpleColumn name="Employee" />
@@ -45,8 +70,9 @@
       <SimpleColumn name="TabNumber" alias="EmployeeTabNumber" />
     </SimpleJoin>
 
-    <SimpleJoin name="Dimensions" joinType="LEFT">
-      <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <SimpleJoin name="TradeAccounts" joinType="LEFT">
+      <xi:include href="../../Classifiers/views/viewcolumns/TradeAccounts.viewcolumns.xml" />
     </SimpleJoin>
 
     <SimpleColumn name="Note" />

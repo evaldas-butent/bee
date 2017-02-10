@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Maintenance" source="Maintenance"
-  caption="=svcMaintenance" newRowCaption="=svcNewMaintenance"
+  caption="=svcMaintenanceItemsServices" newRowCaption="=svcNewMaintenanceItemService"
   >
   <Columns>
     <SimpleColumn name="ServiceObject"/>
@@ -48,6 +48,8 @@
 
     <SimpleColumn name="Description" />
     <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="ServiceMaintenance" />
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

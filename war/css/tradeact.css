@@ -28,6 +28,7 @@
 .bee-ta-picker-search-panel {
   margin-top: 2ex;
   margin-bottom: 2ex;
+  width: 400px;
 }
 .bee-ta-picker-search-box {
   margin-left: 1em;
@@ -41,6 +42,18 @@
 }
 .bee-ta-picker-search-command:hover {
   color: black;
+}
+
+.bee-ta-picker-search-spinner{
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 20px;
+  color: #888;
+  visibility: hidden;
+}
+.bee-ta-picker-search-spinner-loading{
+  visibility: visible;
+  animation: rotate 1s linear infinite;
 }
 
 .bee-ta-picker-item-panel,

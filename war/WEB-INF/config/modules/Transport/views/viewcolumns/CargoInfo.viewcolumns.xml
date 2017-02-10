@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Columns xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude">
+<Columns xmlns="http://www.butent.com/view">
   <SimpleColumn name="Description" />
-
-  <SimpleColumn name="CargoHandling" />
-  <SimpleJoin name="CargoHandling" joinType="LEFT">
-    <SimpleColumn name="Notes" alias="HandlingNotes" />
-    <SimpleColumn name="EmptyKilometers" />
-    <SimpleColumn name="LoadedKilometers" />
-    <SimpleColumn name="Weight" alias="CargoWeight" />
-
-    <xi:include href="Handling.viewcolumns.xml" />
-  </SimpleJoin>
 
   <SimpleColumn name="Weight" />
   <SimpleColumn name="WeightUnit" />

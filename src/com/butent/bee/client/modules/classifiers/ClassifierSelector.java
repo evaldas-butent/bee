@@ -19,11 +19,13 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class ClassifierSelector implements SelectorEvent.Handler {
 
@@ -66,7 +68,7 @@ public class ClassifierSelector implements SelectorEvent.Handler {
   }
 
   private static void handleCities(SelectorEvent event) {
-    if (!event.isChanged()) {
+    if (!event.isChangePending()) {
       return;
     }
 
@@ -90,6 +92,18 @@ public class ClassifierSelector implements SelectorEvent.Handler {
     String targetColumn = BeeUtils.notEmpty(event.getSelector().getOptions(), COL_COUNTRY);
     int targetIndex = targetInfo.getColumnIndex(targetColumn);
     if (BeeConst.isUndef(targetIndex)) {
+      return;
+    }
+
+    if (!Objects.equals(targetInfo.getColumnType(targetColumn), ValueType.LONG)) {
+      String countryName = source.getString(sourceInfo.getColumnIndex(ALS_COUNTRY_NAME));
+
+      if (dataView.isFlushable()) {
+        target.setValue(targetIndex, countryName);
+      } else {
+        target.preliminaryUpdate(targetIndex, countryName);
+      }
+      dataView.refreshBySource(targetColumn);
       return;
     }
 

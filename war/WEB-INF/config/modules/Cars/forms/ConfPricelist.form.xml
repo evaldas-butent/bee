@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="ConfPricelist" caption="=configuration"
+>
+  <SplitPanel>
+    <west size="300" splitterSize="2">
+      <DataTree caption="=categories" viewName="ConfPricelist"
+                parentColumn="Branch" orderColumn="Ordinal">
+        <calc>
+          <ui:expression>String.fromCharCode(60) + "span class="
+            + (row.Blocked ? "\"bee-spec-blocked\"" : "") + ">"
+            + row.BranchName + String.fromCharCode(60) + "/span>"</ui:expression>
+        </calc>
+        <form name="EditConfiguration">
+          <FlowPanel>
+            <Table kind="controls">
+              <col index="0" kind="label" />
+              <row>
+                <Label for="BranchName" />
+                <InputText source="BranchName" style="width:20em;" />
+              </row>
+              <row>
+                <Label for="PhotoFile" />
+                <cell rowSpan="2">
+                  <Image name="PhotoFile" style="width:20em; height:150px; object-fit:contain;" />
+                </cell>
+              </row>
+              <row>
+                <FlowPanel>
+                  <Label for="PhotoCode" />
+                  <ListBox source="PhotoCode">
+                    <item>LOGO</item>
+                    <item>MAIN</item>
+                  </ListBox>
+                </FlowPanel>
+              </row>
+              <row>
+                <Label for="Description" />
+                <InputArea source="Description" visibleLines="4" style="width:20em;" />
+              </row>
+              <row>
+                <Label for="Ordinal" />
+                <FlowPanel>
+                  <InputDecimal source="Ordinal" style="width:40px;" />
+                  <CheckBox source="Blocked" style="float:right;" />
+                </FlowPanel>
+              </row>
+              <row>
+                <Label for="Type" />
+                <DataSelector source="Type" style="width:20em;" />
+              </row>
+            </Table>
+          </FlowPanel>
+        </form>
+      </DataTree>
+    </west>
+    <center>
+      <FlowPanel name="Container" style="margin:10px;" />
+    </center>
+  </SplitPanel>
+</f:Form>

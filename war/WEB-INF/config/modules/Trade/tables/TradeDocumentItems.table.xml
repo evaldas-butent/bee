@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="TradeDocumentItems"
-  idName="TradeDocumentItemID"
-  >
+       name="TradeDocumentItems"
+       idName="TradeDocumentItemID"
+>
   <Fields>
     <Relation name="TradeDocument" notNull="true" relation="TradeDocuments" cascade="DELETE"
-      label="=trdDocument" />
+              label="=trdDocument" />
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
 
     <String name="Article" precision="30" label="=article" />
@@ -20,12 +20,15 @@
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatIsPercent" label="=vatIsPercent" />
 
-    <Relation name="Warehouse" relation="Warehouses" label="=trdWarehouseTo" />
+    <Relation name="ItemWarehouseFrom" relation="Warehouses" label="=trdItemWarehouseFrom" />
+    <Relation name="ItemWarehouseTo" relation="Warehouses" label="=trdItemWarehouseTo" />
 
     <Relation name="Employee" relation="Employees" label="=employee" />
 
-    <Relation name="Dimensions" unique="true" relation="Dimensions" editable="true"
-      label="=dimensions" />
+    <Relation name="ExtraDimensions" unique="true" relation="ExtraDimensions" editable="true"
+              label="=dimensions" />
+    <Relation name="TradeAccounts" unique="true" relation="TradeAccounts" editable="true"
+              label="=finTradeAccounts" />
 
     <Text name="Note" label="=trdNote" />
 

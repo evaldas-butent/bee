@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="ConfGroups" source="ConfGroups"
+      caption="=optionGroups"
+>
+  <Relation renderColumns="TypeName GroupName" />
+  <Columns>
+    <SimpleColumn name="Type" />
+    <SimpleJoin name="Type" joinType="INNER">
+      <SimpleColumn name="TypeName" />
+    </SimpleJoin>
+    <SimpleColumn name="GroupName" />
+    <SimpleColumn name="Required" />
+  </Columns>
+  <Order>
+    <OrderBy column="TypeName" />
+    <OrderBy column="GroupName" />
+  </Order>
+</View>

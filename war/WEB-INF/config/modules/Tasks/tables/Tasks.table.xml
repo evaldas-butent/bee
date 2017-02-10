@@ -40,7 +40,7 @@
     <Relation name="ProjectStage" relation="ProjectStages" cascade="SET_NULL" label="=prjStage" />
 
     <Boolean name="PrivateTask" label="=crmTaskPrivate" />
-    
+
     <Relation name="Product" relation="TaskProducts" label="=crmTaskProduct" />
   </Fields>
 </Table>

@@ -84,18 +84,24 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     ColorStyleProvider csp = ColorStyleProvider.createDefault(VIEW_TRADE_OPERATIONS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_FOREGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_OPERATION_NAME,
+        csp);
 
     csp = ColorStyleProvider.createDefault(VIEW_TRADE_STATUSES);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_FOREGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_STATUS_NAME, csp);
 
     csp = ColorStyleProvider.createDefault(VIEW_TRADE_TAGS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_FOREGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_TAGS, COL_TAG_NAME, csp);
 
     csp = ColorStyleProvider.createDefault(VIEW_EXPENDITURE_TYPES);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_EXPENDITURE_TYPES, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_EXPENDITURE_TYPES, COL_FOREGROUND, csp);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_EXPENDITURE_TYPES,
+        COL_EXPENDITURE_TYPE_NAME, csp);
 
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENTS, COL_TRADE_OPERATION,
         ColorStyleProvider.create(VIEW_TRADE_DOCUMENTS,
@@ -103,6 +109,14 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_DOCUMENTS,
         COL_TRADE_DOCUMENT_STATUS,
         ColorStyleProvider.create(VIEW_TRADE_DOCUMENTS,
+            ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
+
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_ITEM_MOVEMENT, COL_TRADE_OPERATION,
+        ColorStyleProvider.create(VIEW_TRADE_MOVEMENT,
+            ALS_OPERATION_BACKGROUND, ALS_OPERATION_FOREGROUND));
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_ITEM_MOVEMENT,
+        COL_TRADE_DOCUMENT_STATUS,
+        ColorStyleProvider.create(VIEW_TRADE_MOVEMENT,
             ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
 
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_EXPENDITURES,

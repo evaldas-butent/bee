@@ -23,6 +23,7 @@
         <SimpleJoin name="Contact" joinType="LEFT">
           <SimpleColumn name="Address"  alias="PersonAddress"  />
         </SimpleJoin>
+        <SimpleColumn name="DateOfBirth" />
       </SimpleJoin>
 
       <SimpleColumn name="Department" />
@@ -59,6 +60,9 @@
     <SimpleColumn name="PartTime" />
 
     <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="PersonCode" />
+    <SimpleColumn name="PassportNo" />
   </Columns>
 
   <Order>

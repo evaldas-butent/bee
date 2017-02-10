@@ -1270,6 +1270,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     reset();
 
     if (fire) {
+      SelectorEvent.fire(this, State.CHANGE_PENDING);
       fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
       SelectorEvent.fire(this, State.CHANGED);
     }
@@ -1487,7 +1488,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (BeeUtils.isEmpty(value)) {
       return null;
     } else {
-      return Value.parseValue(valueType, value, false);
+      return Value.parseValue(valueType, value, false, null);
     }
   }
 

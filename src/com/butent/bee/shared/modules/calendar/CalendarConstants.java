@@ -251,6 +251,8 @@ public final class CalendarConstants {
 
   public static final String VIEW_REPORT_OPTIONS = "ReportOptions";
 
+  public static final String FORM_APPOINTMENT = "Appointment";
+
   public static final String GRID_CALENDAR_EXECUTORS = "CalendarExecutors";
   public static final String GRID_CAL_EXECUTOR_GROUPS = "CalExecutorGroups";
 
@@ -273,6 +275,7 @@ public final class CalendarConstants {
 
   public static final String COL_CALENDAR_NAME = "Name";
   public static final String COL_CALENDAR_OWNER = "Owner";
+  public static final String COL_CALENDAR_IS_SERVICE = "IsService";
 
   public static final String COL_DEFAULT_DISPLAYED_DAYS = "DefaultDisplayedDays";
 

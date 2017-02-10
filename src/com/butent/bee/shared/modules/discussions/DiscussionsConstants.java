@@ -117,15 +117,12 @@ public final class DiscussionsConstants {
   public static final String ALS_OWNER_PHOTO = "OwnerPhoto";
   public static final String ALS_LAST_COMMET = "LastComment";
   public static final String ALS_LAST_COMMENT_PUBLISH_TIME = "LastCommentPublishTime";
-  public static final String ALS_FILES_COUNT = "FilesCount";
-  public static final String ALS_RELATIONS_COUNT = "RelCount";
   public static final String ALS_TOPIC_NAME = "TopicName";
   public static final String ALS_NEW_ANNOUCEMENT = "NewAnnouncement";
 
   public static final String COL_ACCESSIBILITY = "Accessibility";
   public static final String COL_CAPTION = "Caption";
   public static final String COL_COMMENT = "Comment";
-  public static final String COL_COMMENT_COUNT = "CommentCount";
   public static final String COL_COMMENT_TEXT = "CommentText";
   public static final String COL_CREATED = "Created";
   public static final String COL_DISCUSSION = "Discussion";
@@ -176,16 +173,15 @@ public final class DiscussionsConstants {
   public static final String GRID_DISCUSSION_FILES = "DiscussionFiles";
 
   public static final String PROP_COMMENTS = "Comments";
-  public static final String PROP_DESCRIPTION = "Description";
   public static final String PROP_FILES = "Files";
   public static final String PROP_LAST_ACCESS = "LastAccess";
   public static final String PROP_LAST_COMMENT = "LastComment";
   public static final String PROP_LAST_COMMENT_DATA = "LastCommentData";
+  public static final String PROP_COMMENT_COUNT = "CommentCount";
   public static final String PROP_MEMBERS = "Members";
-  public static final String PROP_MEMBER_GROUP = "MemeberGroup";
+  public static final String PROP_MEMBER_GROUP = "MemberGroup";
   public static final String PROP_STAR = "Star";
   public static final String PROP_USER = "User";
-  public static final String PROP_ATTACHMENT = "Attachment";
   public static final String PROP_MARKS = "Marks";
   public static final String PROP_MAIL = "Mail";
 

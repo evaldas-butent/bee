@@ -386,6 +386,16 @@ final class DriverTimeBoard extends ChartBase {
   }
 
   @Override
+  protected String getRefreshLocalChangesColumnName() {
+    return COL_DTB_REFRESH_LOCAL_CHANGES;
+  }
+
+  @Override
+  protected String getRefreshRemoteChangesColumnName() {
+    return COL_DTB_REFRESH_REMOTE_CHANGES;
+  }
+
+  @Override
   protected String getRowHeightColumnName() {
     return COL_DTB_PIXELS_PER_ROW;
   }
@@ -408,6 +418,16 @@ final class DriverTimeBoard extends ChartBase {
   @Override
   protected String getShowCountryFlagsColumnName() {
     return COL_DTB_COUNTRY_FLAGS;
+  }
+
+  @Override
+  protected String getShowOrderCustomerColumnName() {
+    return null;
+  }
+
+  @Override
+  protected String getShowOderNoColumnName() {
+    return null;
   }
 
   @Override

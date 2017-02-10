@@ -3,7 +3,7 @@
 
       name="ImportMappings" source="ImportMappings"
       caption="=trImportMappings" newRowCaption="=trImportNewMapping"
-    >
+>
   <Columns>
     <SimpleColumn name="Option" />
     <SimpleColumn name="Mapping" />

@@ -26,7 +26,6 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Frame;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -37,6 +36,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.EnumSet;
+import java.util.function.BiConsumer;
 
 public class HtmlEditor extends Flow implements Presenter, View, Printable, HasWidgetSupplier {
 

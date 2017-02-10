@@ -1,6 +1,5 @@
 package com.butent.bee.client.output;
 
-import com.google.common.base.Function;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -24,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class ReportFormulaItem extends ReportNumericItem {
 

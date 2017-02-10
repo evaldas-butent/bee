@@ -1,6 +1,11 @@
 package com.butent.bee.shared.modules.trade;
 
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -184,6 +189,37 @@ public class TradeDocumentSums {
     return BeeUtils.isTrue(value);
   }
 
+  public static TradeDocumentSums of(BeeRowSet docData, BeeRowSet itemData) {
+    if (DataUtils.isEmpty(docData)) {
+      return null;
+    }
+
+    TradeDocumentSums tds = new TradeDocumentSums(
+        docData.getEnum(0, COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class),
+        docData.getEnum(0, COL_TRADE_DOCUMENT_DISCOUNT_MODE, TradeDiscountMode.class));
+
+    tds.updateDocumentDiscount(docData.getDouble(0, COL_TRADE_DOCUMENT_DISCOUNT));
+
+    if (!DataUtils.isEmpty(itemData)) {
+      int qtyIndex = itemData.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+      int priceIndex = itemData.getColumnIndex(COL_TRADE_ITEM_PRICE);
+
+      int discountIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
+      int dipIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT);
+
+      int vatIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT);
+      int vipIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
+
+      for (BeeRow row : itemData) {
+        tds.add(row.getId(), row.getDouble(qtyIndex), row.getDouble(priceIndex),
+            row.getDouble(discountIndex), row.getBoolean(dipIndex),
+            row.getDouble(vatIndex), row.getBoolean(vipIndex));
+      }
+    }
+
+    return tds;
+  }
+
   private static double normalize(Double value) {
     return BeeUtils.isDouble(value) ? value : BeeConst.DOUBLE_ZERO;
   }
@@ -221,7 +257,12 @@ public class TradeDocumentSums {
   public TradeDocumentSums() {
   }
 
-  public void add(long id, Double quantity, Double price,
+  public TradeDocumentSums(TradeVatMode vatMode, TradeDiscountMode discountMode) {
+    this.vatMode = vatMode;
+    this.discountMode = discountMode;
+  }
+
+  public TradeDocumentSums add(long id, Double quantity, Double price,
       Double discount, Boolean discountIsPercent, Double vat, Boolean vatIsPercent) {
 
     Item item = new Item();
@@ -236,6 +277,7 @@ public class TradeDocumentSums {
     item.setVatIsPercent(vatIsPercent);
 
     items.put(id, item);
+    return this;
   }
 
   public void addPayment(long id, Double amount) {
@@ -304,6 +346,15 @@ public class TradeDocumentSums {
     }
 
     return changed;
+  }
+
+  public void disableRounding() {
+    setAmountScale(BeeConst.UNDEF);
+    setDiscountScale(BeeConst.UNDEF);
+    setVatScale(BeeConst.UNDEF);
+
+    setPriceScale(BeeConst.UNDEF);
+    setDocumentScale(BeeConst.UNDEF);
   }
 
   public int getAmountScale() {

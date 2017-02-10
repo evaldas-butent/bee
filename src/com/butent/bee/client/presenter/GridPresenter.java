@@ -50,7 +50,6 @@ import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
@@ -97,6 +96,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasDataProvider, HasActiveRow,
@@ -322,7 +322,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     } else {
       options.add(Localized.dictionary().cancel());
 
-      Global.getMsgBoxen().display(getCaption(), Icon.ALARM,
+      MessageBoxes.display(getCaption(), Icon.ALARM,
           Collections.singletonList(Localized.dictionary().deleteQuestion()), options, 2,
           value -> {
             if (value == 0) {
@@ -670,16 +670,16 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       @Override
       public void onSuccess(BeeRow row) {
-        if (event.getCallback() != null) {
-          event.getCallback().onSuccess(row);
-        }
-
         if (rowMode) {
           RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), row);
         } else {
           String value = row.getString(0);
           CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), rowId, row.getVersion(),
               source, value);
+        }
+
+        if (event.getCallback() != null) {
+          event.getCallback().onSuccess(row);
         }
       }
     };
@@ -980,7 +980,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             options.add(Localized.dictionary().actionMerge());
             options.add(Localized.dictionary().cancel());
 
-            Global.getMsgBoxen().display(getCaption(), Icon.ALARM, messages, options, 1,
+            MessageBoxes.display(getCaption(), Icon.ALARM, messages, options, 1,
                 value -> {
                   if (value == 0) {
                     long from = rows.get(1 - index).getId();
@@ -1077,11 +1077,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private void reset() {
+    getGridView().getGrid().clearSelection();
+
     GridFactory.getGridDescription(getGridView().getGridName(), result -> {
       getGridView().reset(result);
 
       CellGrid display = getGridView().getGrid();
+
       getDataProvider().setDisplay(display);
+      gridContainer.bindDisplay(display);
 
       Collection<PagerView> pagers = gridContainer.getPagers();
       if (pagers != null) {

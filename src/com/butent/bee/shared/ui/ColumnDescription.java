@@ -80,7 +80,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
     AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC,
-    EXPORTABLE, EXPORT_WIDTH_FACTOR, EDIT_IN_PLACE, DRAGGABLE
+    EXPORTABLE, EXPORT_WIDTH_FACTOR, EDIT_IN_PLACE, DRAGGABLE,
+    BACKGROUND_SOURCE, FOREGROUND_SOURCE, INSTANT_KARMA
   }
 
   public static final String TBL_COLUMN_SETTINGS = "GridColumnSettings";
@@ -186,6 +187,11 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private Boolean editInPlace;
   private Boolean draggable;
+
+  private String backgroundSource;
+  private String foregroundSource;
+
+  private Boolean instantKarma;
 
   private boolean relationInitialized;
 
@@ -400,12 +406,25 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case DRAGGABLE:
           setDraggable(BeeUtils.toBooleanOrNull(value));
           break;
+        case BACKGROUND_SOURCE:
+          setBackgroundSource(value);
+          break;
+        case FOREGROUND_SOURCE:
+          setForegroundSource(value);
+          break;
+        case INSTANT_KARMA:
+          setInstantKarma(BeeUtils.toBooleanOrNull(value));
+          break;
       }
     }
   }
 
   public String getAutoFit() {
     return autoFit;
+  }
+
+  public String getBackgroundSource() {
+    return backgroundSource;
   }
 
   public StyleDeclaration getBodyStyle() {
@@ -500,6 +519,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return footerStyle;
   }
 
+  public String getForegroundSource() {
+    return foregroundSource;
+  }
+
   public String getFormat() {
     return format;
   }
@@ -559,7 +582,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Export Width Factor", getExportWidthFactor(),
         "Carry On", getCarryOn(),
         "Edit In Place", getEditInPlace(),
-        "Draggable", getDraggable());
+        "Draggable", getDraggable(),
+        "Background Source", getBackgroundSource(),
+        "Foreground Source", getForegroundSource(),
+        "Instant Karma", getInstantKarma());
 
     if (getFlexibility() != null) {
       info.addAll(getFlexibility().getInfo());
@@ -628,6 +654,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
+  }
+
+  public Boolean getInstantKarma() {
+    return instantKarma;
   }
 
   public String getLabel() {
@@ -991,6 +1021,15 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case DRAGGABLE:
           arr[i++] = getDraggable();
           break;
+        case BACKGROUND_SOURCE:
+          arr[i++] = getBackgroundSource();
+          break;
+        case FOREGROUND_SOURCE:
+          arr[i++] = getForegroundSource();
+          break;
+        case INSTANT_KARMA:
+          arr[i++] = getInstantKarma();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -998,6 +1037,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setAutoFit(String autoFit) {
     this.autoFit = autoFit;
+  }
+
+  public void setBackgroundSource(String backgroundSource) {
+    this.backgroundSource = backgroundSource;
   }
 
   public void setBodyStyle(StyleDeclaration bodyStyle) {
@@ -1088,6 +1131,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.footerStyle = footerStyle;
   }
 
+  public void setForegroundSource(String foregroundSource) {
+    this.foregroundSource = foregroundSource;
+  }
+
   public void setFormat(String format) {
     this.format = format;
   }
@@ -1102,6 +1149,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setId(String id) {
     this.id = id;
+  }
+
+  public void setInstantKarma(Boolean instantKarma) {
+    this.instantKarma = instantKarma;
   }
 
   public void setLabel(String label) {

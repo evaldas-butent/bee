@@ -11,7 +11,7 @@ name="MyCompany" label="=myCompanyMenu" order="1100" module="Administration Clas
         parameters="UserGroupSettings" />
 
   <Item name="Departments" label="=departments" service="grid" parameters="Departments"
-        separator="true" />
+        separator="true" module="Administration"/>
 
   <Item name="CompanyStructure" label="=companyStructure" service="form"
         parameters="CompanyStructure" data="Departments" />

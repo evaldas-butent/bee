@@ -111,6 +111,16 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   }
 
   @Override
+  protected String getRefreshLocalChangesColumnName() {
+    return COL_TRUCK_REFRESH_LOCAL_CHANGES;
+  }
+
+  @Override
+  protected String getRefreshRemoteChangesColumnName() {
+    return COL_TRUCK_REFRESH_REMOTE_CHANGES;
+  }
+
+  @Override
   protected String getRowHeightColumnName() {
     return COL_TRUCK_PIXELS_PER_ROW;
   }
@@ -138,6 +148,16 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   @Override
   protected String getShowCountryFlagsColumnName() {
     return COL_TRUCK_COUNTRY_FLAGS;
+  }
+
+  @Override
+  protected String getShowOrderCustomerColumnName() {
+    return null;
+  }
+
+  @Override
+  protected String getShowOderNoColumnName() {
+    return null;
   }
 
   @Override

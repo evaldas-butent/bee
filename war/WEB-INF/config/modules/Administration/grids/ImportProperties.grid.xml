@@ -3,8 +3,8 @@
         xmlns:ui="http://www.butent.com/ui"
 
         name="ImportProperties" viewName="ImportProperties" caption="=trImportProperties"
-        disabledActions="configure"
-    >
+        disabledActions="configure" flexGrow="1"
+>
   <g:columns>
     <DataColumn name="Property" readOnly="true" cellType="html" />
     <DataColumn name="Value">

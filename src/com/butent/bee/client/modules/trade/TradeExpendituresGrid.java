@@ -154,7 +154,7 @@ public class TradeExpendituresGrid extends AbstractGridInterceptor {
       column.getCell().addClickHandler(event -> {
         Element target = EventUtils.getEventTargetElement(event);
         IsRow row = (event.getSource() instanceof AbstractCell)
-            ? ((AbstractCell) event.getSource()).getEventRow() : null;
+            ? ((AbstractCell<?>) event.getSource()).getEventRow() : null;
 
         if (target != null && row != null) {
           if (target.hasClassName(GEN_STYLE_BUILD) && canGenerate(row)) {
@@ -191,6 +191,13 @@ public class TradeExpendituresGrid extends AbstractGridInterceptor {
     }
 
     return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
+  }
+
+  @Override
+  public void onDataReceived(List<? extends IsRow> rows) {
+    TradeUtils.configureCostCalculation(getGridView());
+
+    super.onDataReceived(rows);
   }
 
   private boolean canGenerate(IsRow row) {

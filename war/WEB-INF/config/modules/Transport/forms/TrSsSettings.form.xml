@@ -86,6 +86,16 @@
       <CheckBox source="SsAdditionalInfo" html="-" style="&cb_inp;" />
     </FlowPanel>
 
+    <FlowPanel style="&cb_row;">
+      <Label text="=trTbSettingsOrderNo" style="&lbl;" />
+      <CheckBox source="SsOrderNo" html="-" style="&cb_inp;" />
+    </FlowPanel>
+
+    <FlowPanel style="&cb_row;">
+      <Label text="=trTbSettingsOrderCustomer" style="&lbl;" />
+      <CheckBox source="SsOrderCustomer" html="-" style="&cb_inp;" />
+    </FlowPanel>
+
     &separator;
     <FlowPanel style="&row;">
       <Label text="=timeboardPixelsPerDay" style="&lbl;" />
@@ -104,6 +114,16 @@
     <FlowPanel style="&row;">
       <Label text="=timeboardFooterHeight" style="&lbl;" />
       <InputSpinner source="SsFooterHeight" minValue="3" maxValue="1000" style="&spin;" />
+    </FlowPanel>
+
+    &separator;
+    <FlowPanel style="&row;">
+      <Label text="=trTbSettingsRefreshLocalChanges" style="&lbl;" />
+      <InputSpinner source="SsRefreshLocalChanges" minValue="-1" maxValue="999" style="&spin;" />
+    </FlowPanel>
+    <FlowPanel style="&row;">
+      <Label text="=trTbSettingsRefreshRemoteChanges" style="&lbl;" />
+      <InputSpinner source="SsRefreshRemoteChanges" minValue="-1" maxValue="999" style="&spin;" />
     </FlowPanel>
 
     &separator;

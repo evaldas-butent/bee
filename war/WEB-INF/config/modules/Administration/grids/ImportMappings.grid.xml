@@ -2,9 +2,9 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
         name="ImportMappings" viewName="ImportMappings" caption="=trImportMappings"
-        disabledActions="configure"
-    >
+        disabledActions="configure" flexGrow="1"
+>
   <g:columns>
-    <RelColumn name="Mapping" />
+    <RelColumn name="Mapping" editEnabled="false" newRowEnabled="false" />
   </g:columns>
 </g:Grid>

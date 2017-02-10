@@ -3,6 +3,9 @@ package com.butent.bee.client.i18n;
 import com.google.gwt.text.shared.AbstractRenderer;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.i18n.DateTimeFormat;
+import com.butent.bee.shared.i18n.HasDateTimeFormat;
+import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -15,7 +18,7 @@ public class DateRenderer extends AbstractRenderer<JustDate> implements HasDateT
   private DateTimeFormat format;
 
   public DateRenderer() {
-    this(Format.getDefaultDateFormat());
+    this(Format.getPredefinedFormat(PredefinedFormat.DATE_SHORT));
   }
 
   public DateRenderer(DateTimeFormat format) {
@@ -23,7 +26,7 @@ public class DateRenderer extends AbstractRenderer<JustDate> implements HasDateT
   }
 
   public DateRenderer(String pattern) {
-    this.format = BeeUtils.isEmpty(pattern) ? null : Format.getDateTimeFormat(pattern);
+    this.format = BeeUtils.isEmpty(pattern) ? null : Format.parseDateTimeFormat(pattern);
   }
 
   @Override
@@ -36,7 +39,7 @@ public class DateRenderer extends AbstractRenderer<JustDate> implements HasDateT
     if (object == null) {
       return BeeConst.STRING_EMPTY;
     } else if (getDateTimeFormat() == null) {
-      return object.toString();
+      return Format.renderDate(object);
     } else {
       return getDateTimeFormat().format(object);
     }

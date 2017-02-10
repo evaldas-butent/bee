@@ -1,7 +1,5 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.HandlesFormat;
@@ -41,11 +39,8 @@ public class BooleanCell extends AbstractCell<Boolean> implements HandlesFormat 
   }
 
   @Override
-  public void render(CellContext context, Boolean value, SafeHtmlBuilder sb) {
-    String text = (value == null) ? nullText : (value ? trueText : falseText);
-    if (text != null) {
-      sb.appendEscaped(text);
-    }
+  public String render(CellContext context, Boolean value) {
+    return (value == null) ? nullText : (value ? trueText : falseText);
   }
 
   public void setFalseText(String falseText) {
@@ -60,12 +55,16 @@ public class BooleanCell extends AbstractCell<Boolean> implements HandlesFormat 
 
       if (length > 0) {
         setTrueText(arr[0]);
-      }
-      if (length > 1) {
-        setFalseText(arr[1]);
-      }
-      if (length > 2) {
-        setNullText(arr[2]);
+
+        if (length > 1) {
+          setFalseText(arr[1]);
+
+          if (length > 2) {
+            setNullText(arr[2]);
+          } else {
+            setNullText(arr[1]);
+          }
+        }
       }
     }
   }

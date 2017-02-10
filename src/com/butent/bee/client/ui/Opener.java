@@ -7,7 +7,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Consumer;
+
+import java.util.function.Consumer;
 
 public final class Opener {
 

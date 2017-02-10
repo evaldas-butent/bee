@@ -13,7 +13,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.grid.HtmlTable;
@@ -23,7 +22,6 @@ import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -155,50 +153,41 @@ public final class GridSettings implements HandlesAllDataEvents {
     wrapper.add(table);
 
     DndHelper.makeTarget(wrapper, Lists.newArrayList(DND_CONTENT_TYPE), null,
-        DndHelper.ALWAYS_TARGET, new BiConsumer<DropEvent, Object>() {
-          @Override
-          public void accept(DropEvent t, Object u) {
-            if (u instanceof Integer) {
-              onDrop(t, table, BeeUtils.unbox((Integer) u), gridView, predefinedColumns);
-            }
+        DndHelper.ALWAYS_TARGET, (t, u) -> {
+          if (u instanceof Integer) {
+            onDrop(t, table, BeeUtils.unbox((Integer) u), gridView, predefinedColumns);
           }
         });
 
-    Global.inputWidget(Localized.dictionary().columns(), wrapper, new InputCallback() {
-      @Override
-      public void onSuccess() {
-        List<Integer> selectedColumns = getSelectedColumns(table, predefinedColumns);
+    Global.inputWidget(Localized.dictionary().columns(), wrapper, () -> {
+      List<Integer> selectedColumns = getSelectedColumns(table, predefinedColumns);
 
-        final Set<String> editInPlaceColumns;
-        if (canEditInPlace) {
-          editInPlaceColumns = getEditInPlaceColumns(table, predefinedColumns);
-        } else {
-          editInPlaceColumns = BeeConst.EMPTY_IMMUTABLE_STRING_SET;
-        }
+      final Set<String> editInPlaceColumns;
+      if (canEditInPlace) {
+        editInPlaceColumns = getEditInPlaceColumns(table, predefinedColumns);
+      } else {
+        editInPlaceColumns = BeeConst.EMPTY_IMMUTABLE_STRING_SET;
+      }
 
-        if (grid.updateStaticVisibleColumns(selectedColumns)) {
-          List<String> names = new ArrayList<>();
+      if (grid.updateStaticVisibleColumns(selectedColumns)) {
+        List<String> names = new ArrayList<>();
 
-          List<ColumnInfo> columns = grid.getColumns();
-          for (ColumnInfo columnInfo : columns) {
-            if (!columnInfo.isDynamic()) {
-              names.add(columnInfo.getColumnId());
-            }
+        List<ColumnInfo> columns = grid.getColumns();
+        for (ColumnInfo columnInfo : columns) {
+          if (!columnInfo.isDynamic()) {
+            names.add(columnInfo.getColumnId());
           }
-
-          INSTANCE.saveGridSetting(key, GridConfig.getColumnsIndex(), NameUtils.join(names),
-              new IdCallback() {
-                @Override
-                public void onSuccess(Long result) {
-                  if (canEditInPlace) {
-                    INSTANCE.maybeUpdateEditInplace(key, gridView, editInPlaceColumns);
-                  }
-                }
-              });
-
-        } else if (canEditInPlace) {
-          INSTANCE.maybeUpdateEditInplace(key, gridView, editInPlaceColumns);
         }
+
+        INSTANCE.saveGridSetting(key, GridConfig.getColumnsIndex(), NameUtils.join(names),
+            result -> {
+              if (canEditInPlace) {
+                INSTANCE.maybeUpdateEditInPlace(key, gridView, editInPlaceColumns);
+              }
+            });
+
+      } else if (canEditInPlace) {
+        INSTANCE.maybeUpdateEditInPlace(key, gridView, editInPlaceColumns);
       }
     }, STYLE_DIALOG, target);
   }
@@ -269,13 +258,9 @@ public final class GridSettings implements HandlesAllDataEvents {
 
     } else if (HasDimensions.ATTR_WIDTH.equals(event.getAttribute())) {
       if (!BeeUtils.isEmpty(event.getColumnName())) {
-        INSTANCE.ensureGridConfig(key, new Callback<GridConfig>() {
-          @Override
-          public void onSuccess(GridConfig result) {
-            result.saveColumnSetting(event.getColumnName(), ColumnConfig.getWidthIndex(),
-                event.getValue());
-          }
-        });
+        INSTANCE.ensureGridConfig(key,
+            result -> result.saveColumnSetting(event.getColumnName(), ColumnConfig.getWidthIndex(),
+                event.getValue()));
       }
 
     } else {
@@ -426,14 +411,8 @@ public final class GridSettings implements HandlesAllDataEvents {
 
       if (targetRow == BeeConst.UNDEF) {
         Element rowElement = table.getRow(i);
-
-        int top = rowElement.getAbsoluteTop();
-        int height = rowElement.getOffsetHeight();
-
-        if (y < top + height / 2) {
+        if (y >= rowElement.getAbsoluteTop() && y < rowElement.getAbsoluteBottom()) {
           targetRow = i;
-        } else if (i >= rowCount - 1) {
-          targetRow = rowCount;
         }
       }
     }
@@ -642,7 +621,7 @@ public final class GridSettings implements HandlesAllDataEvents {
     }
   }
 
-  private void maybeUpdateEditInplace(String key, final GridView gridView,
+  private void maybeUpdateEditInPlace(String key, final GridView gridView,
       final Set<String> newColumns) {
 
     final Set<String> oldColumns = gridView.getEditInPlace();
@@ -650,25 +629,22 @@ public final class GridSettings implements HandlesAllDataEvents {
       return;
     }
 
-    ensureGridConfig(key, new Callback<GridConfig>() {
-      @Override
-      public void onSuccess(GridConfig gridConfig) {
-        int index = ColumnConfig.getEditInPlaceIndex();
+    ensureGridConfig(key, gridConfig -> {
+      int index = ColumnConfig.getEditInPlaceIndex();
 
-        for (String column : oldColumns) {
-          if (!newColumns.contains(column)) {
-            gridConfig.saveColumnSetting(column, index, null);
-          }
+      for (String column : oldColumns) {
+        if (!newColumns.contains(column)) {
+          gridConfig.saveColumnSetting(column, index, null);
         }
-
-        for (String column : newColumns) {
-          if (!oldColumns.contains(column)) {
-            gridConfig.saveColumnSetting(column, index, BooleanValue.S_TRUE);
-          }
-        }
-
-        BeeUtils.overwrite(gridView.getEditInPlace(), newColumns);
       }
+
+      for (String column : newColumns) {
+        if (!oldColumns.contains(column)) {
+          gridConfig.saveColumnSetting(column, index, BooleanValue.S_TRUE);
+        }
+      }
+
+      BeeUtils.overwrite(gridView.getEditInPlace(), newColumns);
     });
   }
 

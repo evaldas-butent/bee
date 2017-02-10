@@ -15,7 +15,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -28,9 +27,11 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 final class DefectBuilder {
 
@@ -42,17 +43,40 @@ final class DefectBuilder {
     }
 
     final FormView form = ViewHelper.getForm(sourceWidget.asWidget());
-    if (form == null || !form.isEnabled() || !VIEW_SERVICE_OBJECTS.equals(form.getViewName())) {
+    if (form == null || !form.isEnabled()
+        || !BeeUtils.inList(form.getViewName(), VIEW_SERVICE_OBJECTS, COL_SERVICE_MAINTENANCE)) {
       return;
     }
 
-    final long objId = form.getActiveRowId();
+    final long objId;
+    final Long maintenanceId;
+
+    if (BeeUtils.equals(form.getViewName(), VIEW_SERVICE_OBJECTS)) {
+      objId = form.getActiveRowId();
+      maintenanceId = null;
+
+    } else {
+      objId = form.getActiveRow().getLong(
+          Data.getColumnIndex(form.getViewName(), COL_SERVICE_OBJECT));
+      maintenanceId = form.getActiveRowId();
+    }
+
     if (!DataUtils.isId(objId)) {
       return;
     }
 
-    Filter filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
-        Filter.isNull(COL_MAINTENANCE_DEFECT));
+    Filter filter;
+
+    if (BeeUtils.equals(form.getViewName(), VIEW_SERVICE_OBJECTS)
+        || !DataUtils.isId(maintenanceId)) {
+      filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
+          Filter.isNull(COL_MAINTENANCE_DEFECT));
+
+    } else {
+      filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
+          Filter.isNull(COL_MAINTENANCE_DEFECT),
+          Filter.equals(COL_SERVICE_MAINTENANCE, maintenanceId));
+    }
 
     Queries.getRowSet(VIEW_MAINTENANCE, null, filter, new Queries.RowSetCallback() {
       @Override
@@ -66,7 +90,7 @@ final class DefectBuilder {
               STYLE_PREFIX, new BiConsumer<Long, BeeRowSet>() {
                 @Override
                 public void accept(Long t, BeeRowSet u) {
-                  buildHeader(t, u);
+                  buildHeader(t, maintenanceId, u);
                 }
               });
         }
@@ -74,7 +98,7 @@ final class DefectBuilder {
     });
   }
 
-  private static void buildHeader(long objId, final BeeRowSet items) {
+  private static void buildHeader(long objId, Long maintenanceId, final BeeRowSet items) {
     Queries.getRow(VIEW_SERVICE_OBJECTS, objId, new RowCallback() {
       @Override
       public void onSuccess(BeeRow objRow) {
@@ -82,6 +106,10 @@ final class DefectBuilder {
         BeeRow dfRow = RowFactory.createEmptyRow(dfInfo, true);
 
         dfRow.setValue(dfInfo.getColumnIndex(COL_SERVICE_OBJECT), objRow.getId());
+
+        if (DataUtils.isId(maintenanceId)) {
+          dfRow.setValue(dfInfo.getColumnIndex(COL_SERVICE_MAINTENANCE), maintenanceId);
+        }
 
         Long customer = Data.getLong(VIEW_SERVICE_OBJECTS, objRow, COL_SERVICE_CUSTOMER);
         if (DataUtils.isId(customer)) {

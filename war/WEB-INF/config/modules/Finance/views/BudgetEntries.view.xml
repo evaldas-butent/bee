@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="BudgetEntries" source="BudgetEntries"
+      caption="=finBudgetEntries" newRowCaption="=finBudgetEntryNew"
+>
+  <Columns>
+    <SimpleColumn name="BudgetHeader" />
+
+    <SimpleColumn name="Ordinal" />
+
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
+
+    <xi:include href="viewcolumns/Indicator.viewcolumns.xml" />
+    <SimpleColumn name="TurnoverOrBalance" />
+
+    <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
+
+    <SimpleColumn name="Year" />
+
+    <SimpleColumn name="Month01" />
+    <SimpleColumn name="Month02" />
+    <SimpleColumn name="Month03" />
+    <SimpleColumn name="Month04" />
+    <SimpleColumn name="Month05" />
+    <SimpleColumn name="Month06" />
+    <SimpleColumn name="Month07" />
+    <SimpleColumn name="Month08" />
+    <SimpleColumn name="Month09" />
+    <SimpleColumn name="Month10" />
+    <SimpleColumn name="Month11" />
+    <SimpleColumn name="Month12" />
+
+    <SimpleColumn name="Note" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Year" />
+    <OrderBy column="Ordinal" />
+  </Order>
+</View>

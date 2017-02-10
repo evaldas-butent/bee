@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+    <!ENTITY mrcl "flexBox-horizontal-top">
+    <!ENTITY mrst "margin-top: 0.5vh;margin-right: 1em;">
+    <!ENTITY mfld "margin-left: 1em; min-width: 5em;">
+    <!ENTITY flbl "margin-bottom: 1px;">
+    <!ENTITY finp "width: 100&#37;">
+    <!ENTITY separator "<hr class=&#34;bee-svc-separator&#34;/>">
+    <!ENTITY tgcl "bee-svc-toggle">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="ServiceMaintenance" viewName="ServiceMaintenance" caption="=svcMaintenance" showRowId="true"
+  width="80" widthUnit="vw" height="80" heightUnit="vh"
+>
+  <SplitPanel splitterSize="4" name="Split" class="bee-svc-split-panel">
+    <south size="300">
+      <FlowPanel class="flexBox-vertical">
+        <Toggle name="SouthExpander" upFace="chevron_up" downFace="chevron_down"
+                  stylePrefix="&tgcl;" options="10" />
+        <TabbedPages class="flexible" resizable="false">
+          <page>
+            <text>=svcComments</text>
+            <FlowPanel name="MaintenanceComments" class="flex-horizontal"/>
+          </page>
+          <page>
+            <text>=svcMaintenanceItemsServices</text>
+            <ChildGrid name="Maintenance" relColumn="ServiceMaintenance" />
+          </page>
+          <page>
+            <text>=svcInvoices</text>
+            <GridPanel name="ObjectInvoices" parent="{form}" child="true" />
+          </page>
+          <page>
+            <text>=svcDefects</text>
+            <ChildGrid name="ObjectDefects" relColumn="ServiceMaintenance" />
+          </page>
+          <page module="Tasks">
+            <text>=crmTasks</text>
+            <ChildGrid name="RelatedTasks" relColumn="ServiceMaintenance" />
+          </page>
+          <page>
+            <text>=svcDates</text>
+            <ChildGrid name="ServiceDates" relColumn="ServiceMaintenance" />
+          </page>
+        </TabbedPages>
+      </FlowPanel>
+    </south>
+
+    <center>
+      <FlowPanel>
+        <FlowPanel class="flexBox-horizontal">
+          <FlowPanel class="bee-svc-maintenance-panel">
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Type">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Type" class="bee-required" style="&flbl;"/>
+                <DataSelector name="Type" source="Type" required="true" choiceColumns="Name" style="&finp;"
+                              newRowEnabled="false" renderColumns="TypeName" />
+              </FlowPanel>
+            </FlowPanel>
+
+            <FlowPanel class="&mrcl;" style="&mrst;">
+              <FlowPanel style="&mfld; width: 21em;" for="ServiceObject">
+                <Label text="=svcDevice" class="bee-required bee-svc-panel-title" style="&flbl;"/>
+                <DataSelector name="ServiceObject" source="ServiceObject" updateMode="row"
+                              choiceColumns="SerialNo CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
+                              style="&finp;"/>
+              </FlowPanel>
+              <FlowPanel for="ServiceObject">
+                <FaLabel name="ServiceObjectAdd" char="plus_circle" class="bee-MultiSelector-plus bee-svc-add-button"/>
+              </FlowPanel>
+              <FlowPanel style="&mfld; margin-top: 5ex;" for="Urgent">
+                <CheckBox source="Urgent" summarize="true"/>
+              </FlowPanel>
+            </FlowPanel>
+          </FlowPanel>
+
+          <FlowPanel class="bee-svc-maintenance-panel">
+            <FlowPanel class="&mrcl;" style="&mrst;" for="State">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="State" text="=status" class="bee-required" style="&flbl;"/>
+                <DataSelector name="State" source="State" required="true" choiceColumns="Name" style="&finp;"
+                              caching="local" newRowEnabled="false"/>
+              </FlowPanel>
+            </FlowPanel>
+
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Contact">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Contact" class="bee-svc-panel-title" style="&flbl;"/>
+                  <DataSelector name="Contact" source="Contact"
+                                choiceColumns="FirstName LastName Phone Email Address CompanyName"
+                                renderColumns="ContactFirstName ContactLastName" style="&finp;"/>
+              </FlowPanel>
+              <FlowPanel>
+                <FaLabel name="ContactAdd" char="plus_circle" class="bee-MultiSelector-plus bee-svc-add-button"/>
+              </FlowPanel>
+            </FlowPanel>
+          </FlowPanel>
+        </FlowPanel>
+
+        <Disclosure open="false" name="OtherInfo" class="bee-svc-maintenance-other-info">
+          <Label text="=otherInfo"/>
+          <FlowPanel class="flexBox-horizontal">
+            <FlowPanel style="&mrst;" class="bee-svc-maintenance-panel">
+              <Table kind="controls" style="&mfld;">
+                <col index="0" cellClass="bee-svc-maintenance-info-label" />
+                <col index="1" cellClass="bee-svc-maintenance-info-field" />
+                <row for="Category" data="ServiceObjects">
+                  <Label text="=category" class="bee-required" />
+                  <TextLabel source="CategoryName"/>
+                </row>
+                <row for="Model" data="ServiceObjects">
+                  <Label for="Model" />
+                  <TextLabel source="Model"/>
+                </row>
+                <row for="Manufacturer" data="ServiceObjects">
+                  <Label text="=tcdBrand" />
+                  <TextLabel source="ManufacturerName"/>
+                </row>
+                <row for="SerialNo" data="ServiceObjects">
+                  <Label text="=svcSerialNo"/>
+                  <TextLabel source="SerialNo"/>
+                </row>
+                <row for="Contractor" data="ServiceObjects">
+                  <Label for="Contractor" text="=svcContractor" />
+                  <TextLabel source="ContractorName"/>
+                </row>
+              </Table>
+            </FlowPanel>
+
+            <FlowPanel style="&mrst;" for="Contact" class="bee-svc-maintenance-panel">
+              <Table kind="controls" style="&mfld;">
+                <col index="0" cellClass="bee-svc-maintenance-info-label" />
+                <col index="1" cellClass="bee-svc-maintenance-info-field" />
+                <row>
+                  <Label text="=phone" class="bee-required" />
+                  <TextLabel name="Phone" source="ContactPhone"/>
+                </row>
+                <row>
+                  <Label text="=client" />
+                  <TextLabel name="Company" source="Company">
+                    <renderToken source="CompanyName"/>
+                    <renderToken source="CompanyTypeName"/>
+                  </TextLabel>
+                </row>
+                <row>
+                  <Label text="=email" />
+                  <TextLabel name="Email" source="ContactEmail"/>
+                </row>
+                <row>
+                  <Label name="AddressLabel" text="=address" />
+                  <TextLabel name="Address" source="ContactAddress"/>
+                </row>
+              </Table>
+            </FlowPanel>
+          </FlowPanel>
+        </Disclosure>
+
+        <FlowPanel class="flexBox-horizontal">
+          <FlowPanel class="bee-svc-maintenance-panel" style="margin-bottom: 1em;">
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Equipment">
+              <FlowPanel style="&mfld; width: 30em;">
+                <Label for="Equipment" style="&flbl;"/>
+                <MultiSelector source="Equipment" viewName="Equipment" filter="IsValid" choiceColumns="Name" renderColumns="Name"
+                               class="bee-svc-maintenance-equipment-area" />
+              </FlowPanel>
+            </FlowPanel>
+          </FlowPanel>
+
+          <FlowPanel class="bee-svc-maintenance-panel">
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Description">
+              <FlowPanel style="&mfld;width: 30em;">
+                <Label for="Description" style="&flbl;"/>
+                <InputArea source="Description" visibleLines="4" style="&finp;"/>
+              </FlowPanel>
+            </FlowPanel>
+          </FlowPanel>
+        </FlowPanel>
+
+        <FlowPanel class="flexBox-horizontal">
+          <FlowPanel class="bee-svc-maintenance-panel" style="margin-bottom: 1em;">
+            <FlowPanel class="&mrcl;" style="&mrst;">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <CheckBox name="Warranty" text="=svcWarrantyMaintenance" summarize="true" style="&finp;"/>
+              </FlowPanel>
+            </FlowPanel>
+
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Department">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Department" class="bee-required" style="&flbl;"/>
+                <DataSelector name="Department" source="Department" required="true" renderColumns="DepartmentName"
+                              style="&finp;"/>
+              </FlowPanel>
+            </FlowPanel>
+
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Repairer">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Repairer" style="&flbl;"/>
+                <DataSelector source="Repairer" renderColumns="RepairerFirstName RepairerLastName"
+                              style="&finp;"/>
+              </FlowPanel>
+            </FlowPanel>
+          </FlowPanel>
+
+          <FlowPanel class="bee-svc-maintenance-panel">
+            <FlowPanel class="bee-svc-maintenance-creator-info" style="&mrst;">
+              <FlowPanel style="&mfld; width: 21em;" class="flexBox-horizontal">
+                <DateTimeLabel source="Date" class="bee-svc-maintenance-info-label"/>
+                <TextLabel for="Creator" class="bee-svc-maintenance-info-label">
+                  <renderToken source="CreatorFirstName"/>
+                  <renderToken source="CreatorLastName"/>
+                </TextLabel>
+                <Label for="EndingDate" class="bee-svc-maintenance-info-label">
+                  <dynStyle>
+                    <ui:inline>display:none</ui:inline>
+                    <ui:expression>!(row.EndingDate)</ui:expression>
+                  </dynStyle>
+                </Label>
+                <DateTimeLabel source="EndingDate" format="DATE_TIME_SHORT" class="bee-svc-maintenance-info-label"/>
+              </FlowPanel>
+            </FlowPanel>
+
+            <FlowPanel name="WarrantyPanel" class="flexBox-horizontal" style="&mrst;width: 32em;">
+              <FlowPanel style="&mfld;" for="WarrantyType">
+                <Label name="WarrantyTypeName" for="WarrantyType" style="&flbl;"/>
+                <DataSelector source="WarrantyType" style="&finp;"/>
+              </FlowPanel>
+
+              <FlowPanel style="&mfld;" for="WarrantyMaintenance">
+                <Label for="WarrantyMaintenance" style="&flbl;"/>
+                <DataSelector name="WarrantyMaintenance" source="WarrantyMaintenance" choiceColumns="Id"
+                              filter="WarrantyValidTo > {t}" style="&finp;"/>
+              </FlowPanel>
+
+              <FlowPanel style="&mfld;" for="WarrantyValidTo" >
+                <Label for="WarrantyValidTo" style="&flbl;"/>
+                <InputDateTime source="WarrantyValidTo" style="&finp;"/>
+              </FlowPanel>
+            </FlowPanel>
+          </FlowPanel>
+        </FlowPanel>
+      </FlowPanel>
+    </center>
+  </SplitPanel>
+</f:Form>

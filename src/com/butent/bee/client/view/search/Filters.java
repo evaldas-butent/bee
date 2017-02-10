@@ -25,7 +25,6 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.BeeColumn;
@@ -51,6 +50,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 public class Filters implements HasExtendedInfo {
 

@@ -147,7 +147,7 @@ public enum Module implements HasLocalizedCaption {
     }
   },
 
-  ORDERS(SubModule.CAR_DEALERS) {
+  ORDERS {
     @Override
     public String getCaption(Dictionary constants) {
       return constants.orders();
@@ -156,6 +156,18 @@ public enum Module implements HasLocalizedCaption {
     @Override
     public String getStyleSheet(SubModule subModule) {
       return "orders";
+    }
+  },
+
+  CARS(SubModule.SERVICE) {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.cars();
+    }
+
+    @Override
+    public String getStyleSheet(SubModule subModule) {
+      return null;
     }
   },
 
@@ -168,6 +180,18 @@ public enum Module implements HasLocalizedCaption {
     @Override
     public String getStyleSheet(SubModule subModule) {
       return "payroll";
+    }
+  },
+
+  FINANCE {
+    @Override
+    public String getCaption(Dictionary constants) {
+      return constants.finance();
+    }
+
+    @Override
+    public String getStyleSheet(SubModule subModule) {
+      return "finance";
     }
   },
 

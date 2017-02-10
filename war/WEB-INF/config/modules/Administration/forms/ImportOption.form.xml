@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="ImportOption" viewName="ImportOptions" caption="=trImportOption"
+        width="500" height="600"
+>
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel class="flexBox-horizontal" style="margin:10px;">
+      <TextLabel source="Type" style="font-weight:bold; margin-right:10px;" />
+      <InputText source="Description" required="true" class="flexible" />
+    </FlowPanel>
+    <ChildGrid name="ImportProperties" relColumn="Option" class="flexible" />
+  </FlowPanel>
+</f:Form>

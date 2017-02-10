@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+<View xmlns="http://www.butent.com/view"
 
-      name="TripCargo"
-      source="CargoTrips"
+      name="TripCargo" source="CargoTrips" caption="=trip+ +=cargos"
 >
   <Columns>
     <SimpleColumn name="Trip" />
@@ -36,30 +35,17 @@
       </SimpleJoin>
 
       <SimpleColumn name="Notes" />
-      <HiddenColumn name="CargoHandling" alias="DefaultHandling" />
-    </SimpleJoin>
-
-    <SimpleColumn name="CargoHandling" />
-    <SimpleJoin name="CargoHandling" joinType="LEFT"
-                filter="OR !(CargoHandling) AND Handling=DefaultHandling">
-
-      <IdColumn name="Handling" hidden="true" />
-
-      <xi:include href="viewcolumns/Handling.viewcolumns.xml" />
-      
-      <SimpleColumn name="EmptyKilometers" />
-      <SimpleColumn name="LoadedKilometers" />
-      <SimpleColumn name="Weight" alias="CargoWeight" />
     </SimpleJoin>
 
     <SimpleColumn name="Trailer" />
     <SimpleJoin name="Trailer" joinType="LEFT">
       <SimpleColumn name="Number" alias="TrailerNumber" />
     </SimpleJoin>
+
+    <SimpleColumn name="Trip" alias="CargoLoadingDate" label="=trLoadingDate"/>
+    <SimpleColumn name="Trip" alias="CargoUnloadingDate" label="=trUnloadingDate"/>
   </Columns>
   <Order>
     <OrderBy column="Ordinal" />
-    <OrderBy column="LoadingDate" />
-    <OrderBy column="UnloadingDate" />
   </Order>
 </View>

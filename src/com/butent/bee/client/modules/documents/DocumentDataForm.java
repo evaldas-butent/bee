@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.documents;
 
-import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
@@ -64,7 +63,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
@@ -98,6 +96,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class DocumentDataForm extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<Pair<Integer, SelectionOrigin>> {
@@ -418,16 +418,11 @@ public class DocumentDataForm extends AbstractFormInterceptor
       if (BeeUtils.isEmpty(content)) {
         getFormView().notifyWarning(Localized.dictionary().documentContentIsEmpty());
       } else {
-        parseContent(content, getLongValue(COL_DOCUMENT_DATA), new Consumer<String>() {
-          @Override
-          public void accept(final String input) {
-            Global.getParameter(PRM_PRINT_AS_PDF, (asPdf) -> {
-              if (BeeUtils.toBoolean(asPdf)) {
-                ReportUtils.getPdf(input, (fileInfo) -> ReportUtils.preview(fileInfo));
-              } else {
-                Printer.print(input, null);
-              }
-            });
+        parseContent(content, getLongValue(COL_DOCUMENT_DATA), input -> {
+          if (BeeUtils.unbox(Global.getParameterBoolean(PRM_PRINT_AS_PDF))) {
+            ReportUtils.getPdf(input, ReportUtils::preview);
+          } else {
+            Printer.print(input, null);
           }
         });
       }
@@ -730,7 +725,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       callback.onSuccess(dataId);
     } else {
       Queries.insert(VIEW_DOCUMENT_DATA, Data.getColumns(VIEW_DOCUMENT_DATA,
-              Lists.newArrayList(COL_DOCUMENT_CONTENT)), Lists.newArrayList((String) null), null,
+          Lists.newArrayList(COL_DOCUMENT_CONTENT)), Lists.newArrayList((String) null), null,
           new RowCallback() {
             @Override
             public void onSuccess(final BeeRow dataRow) {
@@ -906,7 +901,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       final Consumer<Long> consumer = (id) -> {
         for (Entry<String, String> entry : newValues.entrySet()) {
           Queries.insert(VIEW_CRITERIA, Data.getColumns(VIEW_CRITERIA,
-                  Lists.newArrayList(COL_CRITERIA_GROUP, COL_CRITERION_NAME, COL_CRITERION_VALUE)),
+              Lists.newArrayList(COL_CRITERIA_GROUP, COL_CRITERION_NAME, COL_CRITERION_VALUE)),
               Lists.newArrayList(BeeUtils.toString(id), entry.getKey(), entry.getValue()), null,
               new RowCallback() {
                 @Override

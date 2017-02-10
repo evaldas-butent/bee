@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="CarOrderItems"
+       idName="OrderItemID">
+  <Fields>
+
+    <Relation name="Order" notNull="true" relation="CarOrders" cascade="DELETE" label="=order" />
+
+    <Relation name="Item" notNull="true" relation="Items" label="=item" />
+    <Numeric name="Quantity" precision="12" scale="5" notNull="true" label="=quantity" />
+    <Numeric name="Price" precision="15" scale="5" label="=price" />
+    <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
+    <Boolean name="VatPlus" label="=vatPlus" />
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatPercent" label="=vatPercent" />
+
+    <Relation name="Object" relation="ConfObjects" label="=specification" cascade="DELETE" />
+  </Fields>
+</Table>
