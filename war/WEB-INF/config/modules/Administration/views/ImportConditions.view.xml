@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
       name="ImportConditions" source="ImportConditions" caption="=trImportConditions"
-    >
+>
   <Columns>
     <SimpleColumn name="Mapping" />
     <SimpleColumn name="Property" />

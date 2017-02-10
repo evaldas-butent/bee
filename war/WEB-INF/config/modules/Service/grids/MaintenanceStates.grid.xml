@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+
+  name="MaintenanceStates" viewName="MaintenanceStates"
+  caption="=svcServiceStates" newRowCaption="=svcNewServiceState"
+  flexGrow="1" flexShrink="1"
+  >
+  <g:columns>
+    <DataColumn name="Name" caption="=status" visible="true" />
+    <DataColumn name="Background" visible="true" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" visible="true" editInPlace="true"
+                backgroundSource="Background" foregroundSource="Foreground">
+      <editor type="color" />
+    </DataColumn>
+  </g:columns>
+</g:Grid>

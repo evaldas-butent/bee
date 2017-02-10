@@ -47,6 +47,25 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
+  public boolean deepEquals(IsRow other) {
+    if (other == null) {
+      return false;
+
+    } else if (this == other) {
+      return true;
+
+    } else {
+      return id == other.getId()
+          && version == other.getVersion()
+          && editable == other.isEditable()
+          && removable == other.isRemovable()
+          && sameProperties(other)
+          && BeeUtils.sameEntries(shadow, other.getShadow())
+          && sameValues(other);
+    }
+  }
+
+  @Override
   public boolean equals(Object obj) {
     return (obj instanceof IsRow) && id == ((IsRow) obj).getId();
   }
@@ -315,12 +334,6 @@ public abstract class AbstractRow implements IsRow {
       sb.append("p=").append(getProperties());
     }
     return sb.toString();
-  }
-
-  protected void copyProperties(IsRow target) {
-    if (getProperties() != null) {
-      target.setProperties(getProperties().copy());
-    }
   }
 
   protected void setShadow(Map<Integer, String> shadow) {

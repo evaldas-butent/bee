@@ -33,20 +33,12 @@
     <Boolean name="CustomsBrokerage" label="=trRequestCustomsBrokerage" />
     <Boolean name="FreightInsurance" label="=trRequestFreightInsurance" />
 
+    <!--TODO: remove-->
     <Relation name="CargoHandling" unique="true" relation="CargoHandling" cascade="SET_NULL"
               editable="true" label="=cargoHandlingPlaces" />
 
-    <!--TODO: drop LoadingPlace, UnloadingPlace, EmptyKilometers, LoadedKilometers-->
-    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true"
-              label="=loading" />
-    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true"
-              label="=unloading" />
-    <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
-    <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
-
     <Text name="Notes" label="=cargoNotes" />
     <Text name="Directions" label="=trDirections" />
-    <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
 
     <Relation name="CargoType" relation="CargoTypes" label="=trCargoType" />
     <Relation name="CargoGroup" relation="CargoGroups" label="=group" />

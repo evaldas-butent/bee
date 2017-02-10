@@ -640,6 +640,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       public void onFailure(String... reason) {
         form.updateRow(row, true);
         form.notifySevere(reason);
+        if (focusCommand != null) {
+          focusCommand.execute();
+        }
       }
 
       @Override
@@ -674,6 +677,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         }
 
         form.updateRow(data, true);
+        if (focusCommand != null) {
+          focusCommand.execute();
+        }
       }
     });
     return false;
@@ -1401,7 +1407,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
             && !showInHeader;
       case MODIFY:
         boolean hasComments =
-            BeeUtils.isPositive(row.getInteger(form.getDataIndex(COL_COMMENT_COUNT)));
+            BeeUtils.isPositive(row.getPropertyInteger(PROP_COMMENT_COUNT));
         boolean hasMarks = BeeUtils.isPositiveInt(row.getProperty(PROP_MARK_COUNT));
         return (DiscussionHelper.isOwner(row) || DiscussionHelper.isDiscussionAdmin(adminLogin))
                 && !(hasComments || hasMarks);

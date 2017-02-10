@@ -78,6 +78,10 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> i
     return column;
   }
 
+  public String getColumnId() {
+    return (getColumn() == null) ? null : getColumn().getId();
+  }
+
   public String getNewValue() {
     return newValue;
   }

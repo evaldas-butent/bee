@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
@@ -128,7 +129,8 @@ public class TransportSelfService extends LoginServlet {
   }
 
   private String doQuery(HttpServletRequest req, Map<String, String> parameters) {
-    Map<Integer, Map<String, String>> handling = new TreeMap<>();
+    Map<Integer, Map<String, String>> loading = new TreeMap<>();
+    Map<Integer, Map<String, String>> unloading = new TreeMap<>();
     JsonObjectBuilder json = Json.createObjectBuilder();
 
     json.add(COL_QUERY_HOST, req.getRemoteAddr());
@@ -142,18 +144,24 @@ public class TransportSelfService extends LoginServlet {
           String[] arr = key.split("-", 2);
           String subKey = arr[0];
           Integer idx = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1));
+          String prefix;
+          Map<Integer, Map<String, String>> places;
 
-          if (!handling.containsKey(idx)) {
-            handling.put(idx, new HashMap<>());
+          if (BeeUtils.startsWith(key, VAR_LOADING)) {
+            prefix = VAR_LOADING;
+            places = loading;
+          } else {
+            prefix = VAR_UNLOADING;
+            places = unloading;
           }
+          places.putIfAbsent(idx, new HashMap<>());
+
           if (BeeUtils.isSuffix(subKey, "Time")) {
             subKey = subKey.replace("Time", COL_DATE);
             value = BeeUtils.joinWords(parameters.get(key.replace("Time", COL_DATE)), value);
-            handling.get(idx).remove(subKey);
+            places.get(idx).remove(BeeUtils.removePrefix(subKey, prefix));
           }
-          if (!handling.get(idx).containsKey(subKey)) {
-            handling.get(idx).put(subKey, value);
-          }
+          places.get(idx).putIfAbsent(BeeUtils.removePrefix(subKey, prefix), value);
         } else {
           json.add(key, value);
         }
@@ -174,15 +182,18 @@ public class TransportSelfService extends LoginServlet {
     } catch (IOException | ServletException e) {
       logger.error(e);
     }
-    JsonArrayBuilder places = Json.createArrayBuilder();
+    ImmutableMap.of(TBL_CARGO_LOADING, loading, TBL_CARGO_UNLOADING, unloading)
+        .forEach((view, handling) -> {
+          JsonArrayBuilder places = Json.createArrayBuilder();
 
-    for (Map<String, String> map : handling.values()) {
-      JsonObjectBuilder obj = Json.createObjectBuilder();
-      map.forEach(obj::add);
-      places.add(obj);
-    }
-    RestResponse result = worker.request(json.add(TBL_CARGO_HANDLING, places)
-        .add(TBL_FILES, files).build());
+          for (Map<String, String> map : handling.values()) {
+            JsonObjectBuilder obj = Json.createObjectBuilder();
+            map.forEach(obj::add);
+            places.add(obj);
+          }
+          json.add(view, places);
+        });
+    RestResponse result = worker.request(json.add(VIEW_CARGO_FILES, files).build());
 
     return (result.hasError() ? result.getStatus() : result.getResult()).toString();
   }
@@ -245,10 +256,8 @@ public class TransportSelfService extends LoginServlet {
               order = Order.ascending(fld);
             }
             BeeRowSet rs = qs.getViewData(tbl, filter, order, columns);
+            node.appendChild(form.createElement("option"));
 
-            if (Objects.equals(tag, "select")) {
-              node.appendChild(form.createElement("option"));
-            }
             for (int j = 0; j < rs.getNumberOfRows(); j++) {
               org.w3c.dom.Element opt = form.createElement("option");
               String value = rs.getString(j, fld);

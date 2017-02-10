@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+  xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="AssessmentReportDrillDown" viewName="Assessments" caption="=trAssessmentRequests"
   flexGrow="1" order="AssessmentID desc" disabledActions="add delete filter remove_filter"
@@ -11,29 +11,15 @@
     <DataColumn name="Date" width="110" visible="true" />
     <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
+  </g:columns>
 
-    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70"
-      format="DATE_SHORT" />
-    <DataColumn name="UnloadingDate" caption="=trUnloadingDateShort" width="70"
-      format="DATE_SHORT" />
-    
+  <xi:include href="columns/Places.columns.xml" />
+
+  <g:columns>
     <DataColumn name="CustomerName" />
 
     <RelColumn name="Department" />
     <RelColumn name="Manager" />
-
-    <RelColumn name="LoadingCountry" visible="false" readOnly="true" />
-    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-
-    <RelColumn name="UnloadingCountry" visible="false" readOnly="true"/>
-    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-
     <DataColumn name="OrderNotes" minWidth="100" whiteSpace="nowrap" />
     <DataColumn name="Description" minWidth="100" whiteSpace="nowrap" />
 
@@ -49,10 +35,10 @@
         <ui:function>
           if (!row.MinVehicle) {
             return row.MaxVehicle;
-          
+
           } else if(!row.MaxVehicle || row.MinVehicle == row.MaxVehicle) {
             return row.MinVehicle;
-          
+
           } else {
             return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
           }

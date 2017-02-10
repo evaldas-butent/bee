@@ -42,7 +42,8 @@
       <DataSelector source="Currency" style="&inline; width:5em; margin-left:5px;"
                     editEnabled="false" placeholder="=currencyShort" />
       <CheckBox source="VatPlus" text="=vatPlus" style="&inline; margin-left:5px;" />
-      <InputMoney source="Vat" placeholder="=vat" style="&inline; width:5em; margin-left:5px;" />
+      <InputMoney source="Vat" placeholder="=vat" percentageTag="VatPercent"
+                  style="&inline; width:5em; margin-left:5px;" />
       <CheckBox source="VatPercent" style="&inline; margin-left:5px;" text="%" />
     </FlowPanel>
 
@@ -50,10 +51,9 @@
       <Label for="Supplier" style="&labelLeft;" />
       <DataSelector source="Supplier" renderColumns="SupplierName SupplierTypeName"
                     choiceColumns="Name TypeName" style="&input; width:200px;" />
-      <Label name="IncomeLabel" for="Income" class="bee-required"
-             style="&labelRight; margin-left:30px;" />
+      <Label name="IncomeLabel" for="Income" style="&labelRight; margin-left:30px;" />
       <DataSelector name="Income" source="Income" style="&inline; width:70px;"
-                    newRowEnabled="false" editEnabled="false" required="true"
+                    newRowEnabled="false" editEnabled="false" caching="none"
                     choiceColumns="ServiceName Amount CurrencyName" />
     </FlowPanel>
 
@@ -74,6 +74,7 @@
       <InputArea source="Notes" visibleLines="4" style="width:350px;" />
     </FlowPanel>
 
-    <ChildGrid class="flexible" name="CargoHandling" relColumn="CargoTrip" source="CargoTrip" />
+    <ChildGrid name="CargoLoading" relColumn="CargoTrip" source="CargoTrip" class="flexible" />
+    <ChildGrid name="CargoUnloading" relColumn="CargoTrip" source="CargoTrip" class="flexible" />
   </FlowPanel>
 </f:Form>

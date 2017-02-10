@@ -1,6 +1,5 @@
 package com.butent.bee.shared.data.view;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
@@ -27,6 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Enables to get main information about data objects, like row count, ID column etc.

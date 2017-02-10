@@ -7,6 +7,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -16,6 +17,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
@@ -37,9 +39,11 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Size;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
@@ -61,9 +65,11 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,7 +81,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class ChartBase extends TimeBoard {
+public abstract class ChartBase extends TimeBoard implements HasState {
 
   private static final BeeLogger logger = LogUtils.getLogger(ChartBase.class);
 
@@ -87,6 +93,11 @@ public abstract class ChartBase extends TimeBoard {
   private static final String STYLE_SHIPMENT_DAY_EMPTY = STYLE_SHIPMENT_DAY_PREFIX + "empty";
   private static final String STYLE_SHIPMENT_DAY_FLAG = STYLE_SHIPMENT_DAY_PREFIX + "flag";
   private static final String STYLE_SHIPMENT_DAY_LABEL = STYLE_SHIPMENT_DAY_PREFIX + "label";
+
+  private static final String STYLE_STATE_PREFIX = STYLE_PREFIX + "state-";
+
+  private static final int DEFAULT_LOCAL_REFRESH_INTERVAL_SECONDS = 0;
+  private static final int DEFAULT_REMOTE_REFRESH_INTERVAL_SECONDS = 600;
 
   public static void registerBoards() {
     ensureStyleSheet();
@@ -124,15 +135,37 @@ public abstract class ChartBase extends TimeBoard {
 
   private boolean showAdditionalInfo;
 
+  private boolean showOrderCustomer;
+  private boolean showOrderNo;
+
   private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_ORDER_CARGO,
-      VIEW_CARGO_TYPES, VIEW_CARGO_HANDLING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
+      VIEW_CARGO_TYPES, TBL_CARGO_LOADING, TBL_CARGO_UNLOADING, VIEW_CARGO_TRIPS, VIEW_TRIP_CARGO,
       VIEW_TRANSPORT_GROUPS, ClassifierConstants.VIEW_COUNTRIES,
       AdministrationConstants.VIEW_COLORS, AdministrationConstants.VIEW_THEME_COLORS);
+
+  private final Timer refreshTimer;
+  private long refreshTimerScheduled;
+
+  private State state;
 
   private final List<ChartData> filterData = new ArrayList<>();
 
   protected ChartBase() {
     super();
+
+    this.refreshTimer = new Timer() {
+      @Override
+      public void run() {
+        if (isAttached()) {
+          refresh();
+        }
+      }
+    };
+  }
+
+  @Override
+  public State getState() {
+    return state;
   }
 
   @Override
@@ -206,6 +239,23 @@ public abstract class ChartBase extends TimeBoard {
 
       default:
         super.handleAction(action);
+    }
+  }
+
+  @Override
+  public void setState(State state) {
+    if (state != getState()) {
+      if (getState() != null) {
+        removeStyleName(STYLE_STATE_PREFIX + getState().name().toLowerCase());
+      }
+
+      this.state = state;
+
+      if (state != null) {
+        addStyleName(STYLE_STATE_PREFIX + state.name().toLowerCase());
+      }
+
+      logger.debug(NameUtils.getName(this), getId(), state);
     }
   }
 
@@ -371,6 +421,10 @@ public abstract class ChartBase extends TimeBoard {
 
   protected abstract String getFiltersColumnName();
 
+  protected abstract String getRefreshLocalChangesColumnName();
+
+  protected abstract String getRefreshRemoteChangesColumnName();
+
   protected abstract Collection<String> getSettingsColumnsTriggeringRefresh();
 
   protected abstract String getSettingsFormName();
@@ -378,6 +432,10 @@ public abstract class ChartBase extends TimeBoard {
   protected abstract String getShowAdditionalInfoColumnName();
 
   protected abstract String getShowCountryFlagsColumnName();
+
+  protected abstract String getShowOrderCustomerColumnName();
+
+  protected abstract String getShowOderNoColumnName();
 
   protected abstract String getShowPlaceCitiesColumnName();
 
@@ -406,6 +464,34 @@ public abstract class ChartBase extends TimeBoard {
     return item != null && (!isFiltered() || item.matched(FilterType.PERSISTENT));
   }
 
+  @Override
+  protected void onRelevantDataEvent(ModificationEvent<?> event) {
+    if (event != null && getState() != null && getState() != State.LOADING) {
+      String colName = event.isSpookyActionAtADistance()
+          ? getRefreshRemoteChangesColumnName() : getRefreshLocalChangesColumnName();
+
+      Integer seconds = TimeBoardHelper.getInteger(getSettings(), colName);
+      if (seconds == null) {
+        seconds = event.isSpookyActionAtADistance()
+            ? DEFAULT_REMOTE_REFRESH_INTERVAL_SECONDS : DEFAULT_LOCAL_REFRESH_INTERVAL_SECONDS;
+      }
+
+      if (seconds == 0) {
+        refresh();
+      } else if (seconds > 0) {
+        scheduleRefresh(seconds);
+      } else {
+        setState(State.CHANGED);
+      }
+    }
+  }
+
+  @Override
+  protected void onUnload() {
+    super.onUnload();
+    cancelRefreshTimer();
+  }
+
   protected abstract boolean persistFilter();
 
   @Override
@@ -415,6 +501,16 @@ public abstract class ChartBase extends TimeBoard {
     String colName = getShowAdditionalInfoColumnName();
     if (!BeeUtils.isEmpty(colName)) {
       setShowAdditionalInfo(TimeBoardHelper.getBoolean(getSettings(), colName));
+    }
+
+    String colOrderCustomerName = getShowOrderCustomerColumnName();
+    if (!BeeUtils.isEmpty(colOrderCustomerName)) {
+      setShowOrderCustomer(TimeBoardHelper.getBoolean(getSettings(), colOrderCustomerName));
+    }
+
+    String colOrderNoName = getShowOderNoColumnName();
+    if (!BeeUtils.isEmpty(colOrderNoName)) {
+      setShowOrderNo(TimeBoardHelper.getBoolean(getSettings(), colOrderNoName));
     }
 
     setShowCountryFlags(TimeBoardHelper.getBoolean(getSettings(), getShowCountryFlagsColumnName()));
@@ -428,20 +524,94 @@ public abstract class ChartBase extends TimeBoard {
 
   @Override
   protected void refresh() {
+    cancelRefreshTimer();
+    setState(State.LOADING);
+
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(getDataService()),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            if (setData(response, false)) {
-              render(false);
-            }
+            setState(State.UPDATING);
+
+            scheduleDeferred(() -> {
+              if (setData(response, false)) {
+                render(false, new Callback<Integer>() {
+                  @Override
+                  public void onFailure(String... reason) {
+                    onSuccess(null);
+                    logger.warning(ArrayUtils.joinWords(reason));
+                  }
+
+                  @Override
+                  public void onSuccess(Integer result) {
+                    setState(refreshTimer.isRunning() ? State.PENDING : State.LOADED);
+                  }
+                });
+
+              } else {
+                setState(refreshTimer.isRunning() ? State.PENDING : State.ERROR);
+              }
+            });
           }
         });
   }
 
+  @Override
+  protected void render(boolean updateRange) {
+    final State previousState = getState();
+
+    setState(State.UPDATING);
+
+    scheduleDeferred(() ->
+        super.render(updateRange, new Callback<Integer>() {
+          @Override
+          public void onFailure(String... reason) {
+            logger.warning(ArrayUtils.joinWords(reason));
+            setState(previousState);
+          }
+
+          @Override
+          public void onSuccess(Integer result) {
+            if (getState() == State.UPDATING) {
+              State currentState;
+
+              if (previousState == State.PENDING && !refreshTimer.isRunning()) {
+                currentState = State.LOADED;
+              } else {
+                currentState = previousState;
+              }
+
+              setState(currentState);
+            }
+          }
+        }));
+  }
+
   protected void renderCargoShipment(HasWidgets panel, OrderCargo cargo, String parentTitle) {
+    renderCargoShipment(panel, cargo, parentTitle, null);
+  }
+
+  protected void renderCargoShipment(HasWidgets panel, OrderCargo cargo, String parentTitle,
+      String styleInfo) {
     if (panel == null || cargo == null) {
       return;
+    }
+
+    if (showOrderNo() || showOrderCustomer()) {
+      String orderInfo = null;
+      if (showOrderNo()) {
+        orderInfo = BeeUtils.joinWords(orderInfo, cargo.getOrderNo());
+      }
+
+      if (showOrderCustomer()) {
+        orderInfo = BeeUtils.joinWords(orderInfo, cargo.getCustomerName());
+      }
+
+      if (!BeeUtils.isEmpty(orderInfo)) {
+        CustomDiv infoWidget = new CustomDiv(styleInfo);
+        infoWidget.setText(orderInfo);
+        panel.add(infoWidget);
+      }
     }
 
     Range<JustDate> range = TimeBoardHelper.normalizedIntersection(cargo.getRange(),
@@ -620,11 +790,13 @@ public abstract class ChartBase extends TimeBoard {
 
     millis = System.currentTimeMillis();
     updateMaxRange();
+
     logger.debug("update max range", TimeUtils.elapsedMillis(millis));
 
     millis = System.currentTimeMillis();
     if (init) {
       initFilterData();
+      setState(State.LOADED);
     } else {
       updateFilterData();
     }
@@ -703,6 +875,12 @@ public abstract class ChartBase extends TimeBoard {
 
     } else {
       clearFilter();
+    }
+  }
+
+  private void cancelRefreshTimer() {
+    if (refreshTimer.isRunning()) {
+      refreshTimer.cancel();
     }
   }
 
@@ -832,7 +1010,7 @@ public abstract class ChartBase extends TimeBoard {
             String chUnloading = entry.getValue().contains(CargoEvent.Type.UNLOADING)
                 ? Places.getUnloadingInfo(entry.getKey()) : null;
 
-            title.add(entry.getKey().getTitle(chLoading, chUnloading));
+            title.add(CargoHandling.getTitle(chLoading, chUnloading));
           }
         }
       }
@@ -871,6 +1049,10 @@ public abstract class ChartBase extends TimeBoard {
     }
 
     return types;
+  }
+
+  private long getRefreshTimerScheduled() {
+    return refreshTimerScheduled;
   }
 
   private List<ChartFilter> getSavedFilters() {
@@ -1003,6 +1185,52 @@ public abstract class ChartBase extends TimeBoard {
     }
   }
 
+  private static void scheduleDeferred(Runnable command) {
+    RafCallback raf = new RafCallback(10_000) {
+      @Override
+      protected boolean run(double elapsed) {
+        return false;
+      }
+
+      @Override
+      protected void onComplete() {
+        command.run();
+      }
+    };
+
+    raf.start();
+  }
+
+  private void scheduleRefresh(int seconds) {
+    int delayMillis = seconds * TimeUtils.MILLIS_PER_SECOND;
+    long now = System.currentTimeMillis();
+
+    if (!refreshTimer.isRunning()
+        || now + delayMillis + TimeUtils.MILLIS_PER_SECOND < getRefreshTimerScheduled()) {
+
+      setState(State.PENDING);
+
+      setRefreshTimerScheduled(now + delayMillis);
+
+      if (refreshTimer.isRunning()) {
+        refreshTimer.cancel();
+      }
+      refreshTimer.schedule(delayMillis);
+    }
+  }
+
+  private void setRefreshTimerScheduled(long refreshTimerScheduled) {
+    this.refreshTimerScheduled = refreshTimerScheduled;
+  }
+
+  private void setShowOrderCustomer(boolean showOrderCustomer) {
+    this.showOrderCustomer = showOrderCustomer;
+  }
+
+  private void setShowOrderNo(boolean showOrderNo) {
+    this.showOrderNo = showOrderNo;
+  }
+
   private void setShowAdditionalInfo(boolean showAdditionalInfo) {
     this.showAdditionalInfo = showAdditionalInfo;
   }
@@ -1029,6 +1257,14 @@ public abstract class ChartBase extends TimeBoard {
 
   private boolean showCountryFlags() {
     return showCountryFlags;
+  }
+
+  private boolean showOrderCustomer() {
+    return showOrderCustomer;
+  }
+
+  private boolean showOrderNo() {
+    return showOrderNo;
   }
 
   private boolean showPlaceCities() {

@@ -7,13 +7,11 @@
         editForm="AssessmentForwarder"
         flexGrow="1"
     >
-  <g:body height="50" />
-
   <g:columns>
     <DataColumn name="ForwarderName" />
     <DataColumn name="ForwarderVehicle" />
     <RelColumn name="Expedition" />
   </g:columns>
 
-  <xi:include href="columns/Handling.columns.xml" />
+  <xi:include href="columns/Places.columns.xml" />
 </g:Grid>

@@ -2,7 +2,6 @@ package com.butent.bee.client.style;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
@@ -180,6 +179,8 @@ public final class StyleUtils {
   public static final String NAME_ANIMATE_HOVER = BeeConst.CSS_CLASS_PREFIX + "animate-hover";
   public static final String NAME_ANIMATE_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "animate-active";
   public static final String NAME_ACTIVE = BeeConst.CSS_CLASS_PREFIX + "active";
+
+  public static final String NAME_LINK = BeeConst.CSS_CLASS_PREFIX + "InternalLink";
 
   public static final String TRANSFORM_ROTATE = "rotate";
   public static final String TRANSFORM_SCALE = "scale";
@@ -406,7 +407,7 @@ public final class StyleUtils {
 
   public static String buildClasses(Collection<String> styleNames) {
     Assert.notNull(styleNames);
-    return CLASS_NAME_JOINER.join(Iterables.filter(styleNames, StringPredicate.NOT_EMPTY));
+    return CLASS_NAME_JOINER.join(styleNames.stream().filter(StringPredicate.NOT_EMPTY).iterator());
   }
 
   public static String buildClasses(String... styleNames) {

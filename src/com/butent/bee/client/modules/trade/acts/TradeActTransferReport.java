@@ -152,14 +152,14 @@ public class TradeActTransferReport extends ReportInterceptor {
     DateTime end = getDateTime(NAME_END_DATE);
 
     if (start == null) {
-      getFormView().notifyWarning(Localized.dictionary().dateFrom(),
-          Localized.dictionary().valueRequired());
+      getFormView().notifyWarning(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().dateFrom()));
       getFormView().focus(NAME_START_DATE);
       return;
     }
     if (end == null) {
-      getFormView().notifyWarning(Localized.dictionary().dateTo(),
-          Localized.dictionary().valueRequired());
+      getFormView().notifyWarning(Localized.dictionary()
+          .fieldRequired(Localized.dictionary().dateTo()));
       getFormView().focus(NAME_END_DATE);
       return;
     }

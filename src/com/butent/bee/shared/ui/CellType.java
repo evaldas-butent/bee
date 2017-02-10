@@ -1,5 +1,9 @@
 package com.butent.bee.shared.ui;
 
+import com.google.common.base.Strings;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -7,7 +11,19 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public enum CellType {
-  HTML("html"), INPUT("input"), DIV("div");
+  HTML("html") {
+    @Override
+    public SafeHtml renderSafeHtml(String input) {
+      return SafeHtmlUtils.fromTrustedString(Strings.nullToEmpty(input));
+    }
+  },
+
+  TEXT("text") {
+    @Override
+    public SafeHtml renderSafeHtml(String input) {
+      return SafeHtmlUtils.fromString(Strings.nullToEmpty(input));
+    }
+  };
 
   public static CellType getByCode(String code) {
     if (!BeeUtils.isEmpty(code)) {
@@ -29,4 +45,6 @@ public enum CellType {
   public String getCode() {
     return code;
   }
+
+  public abstract SafeHtml renderSafeHtml(String input);
 }

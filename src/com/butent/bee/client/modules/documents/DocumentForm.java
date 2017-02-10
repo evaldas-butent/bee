@@ -28,6 +28,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -37,8 +38,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
@@ -69,6 +68,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class DocumentForm extends DocumentDataForm {
 
@@ -108,6 +109,17 @@ public class DocumentForm extends DocumentDataForm {
             if (event.isNewRow()
                 && ServiceConstants.VIEW_SERVICE_OBJECTS.equals(event.getRelatedViewName())) {
               createNewServiceObjectRelation(event);
+            }
+            break;
+        }
+      } else if (event.getCallback() == null && event.isRowCreated()) {
+        final String viewName = event.getRelatedViewName();
+
+        switch (viewName) {
+
+          case TaskConstants.TBL_TASKS:
+            if (rel != null) {
+              rel.requery(null, getActiveRowId());
             }
             break;
         }
@@ -338,7 +350,7 @@ public class DocumentForm extends DocumentDataForm {
                   JustDate date = Data.getDate(viewName, row, column.getId());
 
                   if (date != null) {
-                    val = date.toString();
+                    val = Format.renderDate(date);
                   }
                   break;
 
@@ -428,6 +440,8 @@ public class DocumentForm extends DocumentDataForm {
   private void createNewTaskRelation(final SelectorEvent event) {
     final BeeRow row = event.getNewRow();
     String summary = BeeUtils.notEmpty(event.getDefValue(), getStringValue(COL_DOCUMENT_NAME));
+    row.setProperty(Relations.PFX_RELATED + VIEW_DOCUMENTS,
+        DataUtils.buildIdList(getActiveRowId()));
 
     if (!BeeUtils.isEmpty(summary)) {
       Data.squeezeValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_SUMMARY,
@@ -470,7 +484,7 @@ public class DocumentForm extends DocumentDataForm {
 
       if (!companies.isEmpty()) {
         if (companies.size() > 1) {
-          row.setProperty(TaskConstants.PROP_COMPANIES,
+          row.setProperty(Relations.PFX_RELATED + VIEW_COMPANIES,
               DataUtils.buildIdList(companies.subList(1, companies.size())));
         }
 
@@ -512,13 +526,14 @@ public class DocumentForm extends DocumentDataForm {
                 }
 
                 if (contact == null) {
-                  row.setProperty(TaskConstants.PROP_PERSONS, DataUtils.buildIdList(persons));
+                  row.setProperty(Relations.PFX_RELATED + VIEW_PERSONS,
+                      DataUtils.buildIdList(persons));
                 } else {
                   RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
                       COL_CONTACT, row, Data.getDataInfo(VIEW_COMPANY_PERSONS), contact, true);
 
                   if (persons.size() > 1) {
-                    row.setProperty(TaskConstants.PROP_PERSONS,
+                    row.setProperty(Relations.PFX_RELATED + VIEW_PERSONS,
                         DataUtils.buildIdList(persons.subList(1, persons.size())));
                   }
                 }

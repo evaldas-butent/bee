@@ -1,10 +1,9 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-
 import com.butent.bee.client.grid.CellContext;
-import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.client.i18n.HasDateTimeFormat;
+import com.butent.bee.shared.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.Format;
+import com.butent.bee.shared.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.time.JustDate;
 
 /**
@@ -30,9 +29,11 @@ public class DateCell extends AbstractCell<JustDate> implements HasDateTimeForma
   }
 
   @Override
-  public void render(CellContext context, JustDate value, SafeHtmlBuilder sb) {
+  public String render(CellContext context, JustDate value) {
     if (value != null) {
-      sb.appendEscaped((format == null) ? value.toString() : format.format(value));
+      return (format == null) ? Format.renderDate(value) : format.format(value);
+    } else {
+      return null;
     }
   }
 

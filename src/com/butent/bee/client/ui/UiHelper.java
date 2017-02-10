@@ -29,7 +29,6 @@ import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.css.CssProperties;
@@ -46,6 +45,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class UiHelper {
 

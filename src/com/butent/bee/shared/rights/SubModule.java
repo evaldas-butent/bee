@@ -46,15 +46,10 @@ public enum SubModule implements HasLocalizedCaption {
       return constants.classifiers();
     }
   },
-  CAR_DEALERS {
+  SERVICE {
     @Override
     public String getCaption(Dictionary constants) {
-      return constants.carDealers();
-    }
-
-    @Override
-    public String getName() {
-      return "CarDealers";
+      return constants.service();
     }
   },
   ACTS {

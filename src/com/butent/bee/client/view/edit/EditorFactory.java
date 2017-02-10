@@ -30,6 +30,7 @@ import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.HasPercentageTag;
 import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
@@ -283,7 +284,12 @@ public final class EditorFactory {
 
     if (editor instanceof HasRelatedCurrency
         && !BeeUtils.isEmpty(description.getCurrencySource())) {
+
       ((HasRelatedCurrency) editor).setCurrencySource(description.getCurrencySource());
+    }
+
+    if (editor instanceof HasPercentageTag && !BeeUtils.isEmpty(description.getPercentageTag())) {
+      ((HasPercentageTag) editor).setPercentageTag(description.getPercentageTag());
     }
 
     if (column != null) {

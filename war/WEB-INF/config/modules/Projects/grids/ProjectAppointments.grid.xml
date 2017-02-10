@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+
+        name="ProjectAppointments" viewName="Appointments" caption="=calAppointments"
+>
+  <g:columns>
+    <IdColumn name="Id" visible="false" />
+
+    <DataColumn name="TypeName" label="=calAppointmentType" />
+    <DataColumn name="Summary" visible="true" maxWidth="200" />
+
+    <DataColumn name="Description" visible="false" maxWidth="200" />
+
+    <DataColumn name="CompanyName" label="=company" />
+    <DataColumn name="CompanyPhone" visible="false" />
+
+    <DataColumn name="VehicleNumber" visible="false" />
+    <DataColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel"
+                visible="false" />
+
+    <DataColumn name="StartDateTime" visible="true" />
+    <DataColumn name="EndDateTime" visible="true" />
+
+    <DataColumn name="Status" />
+    <DataColumn name="Visibility" visible="false" />
+
+    <DataColumn name="Location" maxWidth="200" />
+
+    <DataColumn name="ColorName" label="=color" visible="false" />
+
+    <DataColumn name="StyleName" label="=style" visible="false" />
+
+    <RelColumn name="Project" visible="false" />
+  </g:columns>
+</g:Grid>

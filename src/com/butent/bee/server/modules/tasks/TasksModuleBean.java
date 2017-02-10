@@ -1,10 +1,8 @@
 package com.butent.bee.server.modules.tasks;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
@@ -14,6 +12,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.communication.ChatBean;
 import com.butent.bee.server.data.BeeView;
@@ -43,6 +42,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -156,6 +156,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   SearchBean src;
   @EJB
   ChatBean chat;
+  @EJB
+  UiServiceBean usb;
 
   @Resource
   EJBContext ctx;
@@ -292,6 +294,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
             DocumentConstants.COL_DOCUMENT_TEMPLATE_NAME),
         BeeParameter.createRelation(module, PRM_DEFAULT_DBA_DOCUMENT_TYPE,
             DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_TYPE_NAME),
+        BeeParameter.createBoolean(module, PRM_CREATE_PRIVATE_TASK_FIRST, true, null),
         BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_FORM, VIEW_REQUEST_FORMS,
             COL_REQUEST_FROM_NAME),
         BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_TYPE, VIEW_REQUEST_TYPES,
@@ -862,7 +865,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         wh = SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId);
       }
 
-      List timerIdentifiersIds = new ArrayList<String>();
+      List<String> timerIdentifiersIds = new ArrayList<String>();
       timerIdentifiersIds.add(timerIdentifier + userId);
       return Pair.of(wh, timerIdentifiersIds);
 
@@ -879,7 +882,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         Long reminderId = relationId;
         wh = SqlUtils.equals(VIEW_USER_REMINDERS,
             sys.getIdName(VIEW_USER_REMINDERS), reminderId);
-        List timerIdentifiersIds = new ArrayList<String>();
+        List<String> timerIdentifiersIds = new ArrayList<String>();
         timerIdentifiersIds.add(timerIdentifier + reminderId);
         return Pair.of(wh, timerIdentifiersIds);
 
@@ -1039,10 +1042,13 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       row.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
     }
 
+
     if (addRelations) {
-      Multimap<String, Long> taskRelations = getRelations(COL_TASK, taskId);
-      for (String property : taskRelations.keySet()) {
-        row.setProperty(property, DataUtils.buildIdList(taskRelations.get(property)));
+      Collection<RowChildren> relations = getRelations(COL_TASK, row.getId());
+
+      for (RowChildren relation : relations) {
+        String relView = sys.getDataInfo(TBL_RELATIONS).getRelation(relation.getChildColumn());
+        row.setProperty(Relations.PFX_RELATED + relView, relation.getChildrenIds());
       }
     }
 
@@ -1080,7 +1086,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   }
 
   private ResponseObject commitTaskData(BeeRowSet data, Collection<Long> oldUsers,
-      Set<String> updatedRelations, Long eventId) {
+     String updatedRelations, Long eventId) {
 
     ResponseObject response;
     BeeRow row = data.getRow(0);
@@ -1096,15 +1102,13 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     }
 
     if (!BeeUtils.isEmpty(updatedRelations)) {
-      updateTaskRelations(row.getId(), updatedRelations, row);
+      usb.updateRelatedValues(data.getViewName(), row.getId(), updatedRelations);
     }
 
-    Set<String> propNames = Sets.newHashSet(PROP_OBSERVERS, PROP_FILES, PROP_EVENTS);
+    Set<String> propNames = NameUtils.toSet(DEFAULT_TASK_PROPERTIES);
     if (row.hasPropertyValue(PROP_DESCENDING)) {
       propNames.add(PROP_DESCENDING);
     }
-
-    boolean addRelations = true;
 
     Map<Integer, String> shadow = row.getShadow();
     if (shadow != null && !shadow.isEmpty()) {
@@ -1137,11 +1141,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         newUsers.remove(DataUtils.getLong(columns, respRow, COL_OWNER));
         newUsers.remove(DataUtils.getLong(columns, respRow, COL_EXECUTOR));
 
-        addTaskProperties(respRow, newUsers, eventId, propNames, addRelations);
+        addTaskProperties(respRow, newUsers, eventId, propNames, false);
       }
 
     } else {
-      response = getTaskData(row.getId(), eventId, propNames, addRelations);
+      response = getTaskData(row.getId(), eventId, propNames, false);
     }
 
     return response;
@@ -1306,8 +1310,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       }
     }
 
-    if (!response.hasErrors()) {
-      response = createTaskRelations(taskId, properties);
+    if (!response.hasErrors() && !BeeUtils.isEmpty(properties.get(VAR_TASK_RELATIONS))) {
+      response = usb.updateRelatedValues(data.getViewName(), taskId,
+          properties.get(VAR_TASK_RELATIONS));
     }
 
     if (!response.hasErrors()) {
@@ -1321,31 +1326,6 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     response = ResponseObject.response(DataUtils.buildIdList(tasks));
 
     return response;
-  }
-
-  private ResponseObject createTaskRelations(long taskId, Map<String, String> properties) {
-    int count = 0;
-    if (BeeUtils.isEmpty(properties)) {
-      return ResponseObject.response(count);
-    }
-
-    ResponseObject response = new ResponseObject();
-    List<RowChildren> children = new ArrayList<>();
-
-    for (Map.Entry<String, String> entry : properties.entrySet()) {
-      String relation = TaskUtils.translateTaskPropertyToRelation(entry.getKey());
-
-      if (BeeUtils.allNotEmpty(relation, entry.getValue())) {
-        children.add(RowChildren.create(TBL_RELATIONS, COL_TASK, null,
-            relation, entry.getValue()));
-      }
-    }
-
-    if (!BeeUtils.isEmpty(children)) {
-      count = deb.commitChildren(taskId, children, response);
-    }
-
-    return response.setResponse(count);
   }
 
   private ResponseObject createTasks(BeeRowSet data, BeeRow row, long owner) {
@@ -1415,8 +1395,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         }
       }
 
-      if (!response.hasErrors()) {
-        response = createTaskRelations(taskId, properties);
+      if (!response.hasErrors() && !BeeUtils.isEmpty(properties.get(VAR_TASK_RELATIONS))) {
+        response = usb.updateRelatedValues(data.getViewName(), taskId,
+            properties.get(VAR_TASK_RELATIONS));
       }
       if (!response.hasErrors()) {
         tasks.add(taskId);
@@ -1474,9 +1455,6 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     long currentUser = usr.getCurrentUserId();
     long now = System.currentTimeMillis();
-    TaskStatus status =
-        EnumUtils.getEnumByIndex(TaskStatus.class, taskRow.getInteger(taskData
-            .getColumnIndex(COL_STATUS)));
 
     String eventNote;
 
@@ -1486,7 +1464,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     } else {
       eventNote = BeeUtils.buildLines(Codec.beeDeserializeCollection(notes));
     }
-    Set<String> updatedRelations = NameUtils.toSet(reqInfo.get(VAR_TASK_RELATIONS));
+    String updatedRelations = reqInfo.get(VAR_TASK_RELATIONS);
 
     switch (event) {
       case CREATE_NOT_SCHEDULED:
@@ -1543,14 +1521,11 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       case RENEW:
       case ACTIVATE:
       case OUT_OF_OBSERVERS:
+      case CREATE_SCHEDULED:
 
-        if (TaskEvent.EDIT.equals(event) && TaskStatus.NOT_SCHEDULED.equals(status)) {
-          response = ResponseObject.emptyResponse();
-        } else {
-          response =
-              updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
-                  eventNote, now);
-        }
+        response = updateTaskData(reqInfo, taskData, taskRow, event, updatedRelations, currentUser,
+            eventNote, now);
+
         break;
     }
 
@@ -1914,22 +1889,26 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return result;
   }
 
-  private Multimap<String, Long> getRelations(String filterColumn, long filterValue) {
-    Multimap<String, Long> res = HashMultimap.create();
+  private Collection<RowChildren> getRelations(String relTaskColumn, long taskId) {
+   Collection<RowChildren> relations = new ArrayList<>();
+   DataInfo relationsView = sys.getDataInfo(TBL_RELATIONS);
 
-    for (String relation : TaskUtils.getRelations()) {
-      Long[] ids = qs.getRelatedValues(TBL_RELATIONS, filterColumn, filterValue,
-          relation);
 
-      if (ids != null && ids.length > 0) {
-        String property = TaskUtils.translateRelationToTaskProperty(relation);
+    for (BeeColumn relation : relationsView.getColumns()) {
+      if (relation.isForeign() && !relation.isEditable()) {
+        continue;
+      }
 
-        for (Long id : ids) {
-          res.put(property, id);
-        }
+
+      Long[] ids = qs.getRelatedValues(TBL_RELATIONS, relTaskColumn, taskId,
+          relation.getId());
+
+      if (!ArrayUtils.isEmpty(ids)) {
+        relations.add(RowChildren.create(TBL_RELATIONS, relTaskColumn, null, relation.getId(),
+            DataUtils.buildIdList(ids)));
       }
     }
-    return res;
+    return relations;
   }
 
   private ResponseObject getRequestFiles(Long requestId) {
@@ -2127,45 +2106,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return dates;
   }
 
-  // private SimpleRowSet getTaskActualTimesAndExpenses(List<Long> ids) {
-  // SimpleRowSet result = new SimpleRowSet(new String[] {
-  // COL_TASK, COL_ACTUAL_DURATION, COL_ACTUAL_EXPENSES
-  // });
-  //
-  // SimpleRowSet data = getTaskEventTimeAndExpensesData(ids);
-  //
-  // if (data.isEmpty()) {
-  // return result;
-  // }
-  //
-  // Map<String, String> times = Codec.deserializeMap(data.getValue(0, COL_ACTUAL_DURATION));
-  // Map<String, String> expenses = Codec.deserializeMap(data.getValue(0, COL_ACTUAL_EXPENSES));
-  //
-  // for (Long id : ids) {
-  // Long time = 0L;
-  // double expense = 0.0;
-  //
-  // if (times.containsKey(BeeUtils.toString(id))) {
-  // time = BeeUtils.toLong(times.get(BeeUtils.toString(id)));
-  //
-  // }
-  //
-  // if (expenses.containsKey(BeeUtils.toString(id))) {
-  // expense = BeeUtils.toDouble(expenses.get(BeeUtils.toString(id)));
-  // }
-  //
-  // result.addRow(new String[] {
-  // BeeUtils.toString(id),
-  // BeeUtils.toString(time),
-  // BeeUtils.toString(expense)
-  // });
-  // }
-  //
-  // return result;
-  // }
-
   private ResponseObject getTaskData(long taskId, Long eventId, Collection<String> propNames,
-      boolean addRelations) {
+                                     boolean addRelations) {
 
     BeeRowSet rowSet = qs.getViewData(VIEW_TASKS, Filter.compareId(taskId));
     if (DataUtils.isEmpty(rowSet)) {
@@ -2197,9 +2139,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       propNames.addAll(NameUtils.toSet(propList));
     }
 
-    boolean addRelations = reqInfo.hasParameter(VAR_TASK_RELATIONS);
-
-    return getTaskData(taskId, null, propNames, addRelations);
+    return getTaskData(taskId, null, propNames, !BeeUtils.isEmpty(VAR_COPY_RELATIONS));
   }
 
   private List<FileInfo> getTaskFiles(long taskId) {
@@ -2851,7 +2791,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
       Set<Long> observers = getRecurringTaskObservers(rtId);
 
-      Multimap<String, Long> relations = getRelations(COL_RECURRING_TASK, rtId);
+      Collection<RowChildren> relations = getRelations(COL_RECURRING_TASK, rtId);
       SimpleRowSet fileData = getRecurringTaskFileData(rtId);
 
       for (JustDate date : cronDates) {
@@ -3027,7 +2967,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   }
 
   private Set<Long> spawnTasks(List<BeeColumn> rtColumns, BeeRow rtRow, JustDate date,
-      Set<Long> executors, Set<Long> observers, Multimap<String, Long> relations,
+      Set<Long> executors, Set<Long> observers, Collection<RowChildren> relations,
       SimpleRowSet fileData, List<BeeColumn> taskColumns) {
 
     long rtId = rtRow.getId();
@@ -3151,9 +3091,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     }
 
     if (!relations.isEmpty()) {
-      for (String property : relations.keySet()) {
-        taskRow.setProperty(property, DataUtils.buildIdList(relations.get(property)));
-      }
+      taskRow.setProperty(VAR_TASK_RELATIONS, Codec.beeSerialize(relations));
     }
 
     ResponseObject response = createTasks(taskData, taskRow, owner);
@@ -3213,7 +3151,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     Set<Long> observers = getRecurringTaskObservers(rtId);
 
-    Multimap<String, Long> relations = getRelations(COL_RECURRING_TASK, rtId);
+    Collection<RowChildren> relations = getRelations(COL_RECURRING_TASK, rtId);
     SimpleRowSet fileData = getRecurringTaskFileData(rtId);
 
     List<BeeColumn> taskColumns = sys.getView(VIEW_TASKS).getRowSetColumns();
@@ -3236,10 +3174,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       return;
     }
     long timeRemaining = timer.getTimeRemaining();
-    logger.info("task reminder timeout, time remainining", timeRemaining);
+    logger.debug("task reminder timeout, time remainining", timeRemaining);
 
     int count = sendTaskReminders(timeRemaining);
-    logger.info("sent", count, "task reminders");
+    logger.debug("sent", count, "task reminders");
   }
 
   private Document taskToHtml(long taskId, DateTime startTime, DateTime finishTime,
@@ -3308,16 +3246,23 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   }
 
   private ResponseObject updateTaskData(Map<String, String> reqInfo, BeeRowSet taskData,
-      BeeRow taskRow, TaskEvent event, Set<String> updatedRelations, Long currentUser,
+      BeeRow taskRow, TaskEvent event, String updatedRelations, Long currentUser,
       String eventNote, long now) {
 
     long taskId = taskRow.getId();
     Long finishTime = BeeUtils.toLongOrNull(reqInfo.get(VAR_TASK_FINISH_TIME));
     Long eventId = null;
+    TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class, taskRow.getInteger(
+        DataUtils.getColumnIndex(COL_STATUS, taskData.getColumns())));
 
-    ResponseObject response =
-        registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime,
-            now);
+    ResponseObject response = null;
+
+    if (status != TaskStatus.NOT_SCHEDULED) {
+      response = registerTaskEvent(taskId, currentUser, event, reqInfo, eventNote, finishTime, now);
+    } else {
+      response = ResponseObject.emptyResponse();
+    }
+
     if (response.hasResponse(Long.class)) {
       eventId = (Long) response.getResponse();
     }
@@ -3325,7 +3270,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       response = registerTaskVisit(taskId, currentUser, now);
     }
 
-    if (!response.hasErrors()) {
+    if (!response.hasErrors() || status == TaskStatus.NOT_SCHEDULED) {
       response = commitTaskData(taskData, DataUtils.parseIdSet(reqInfo.get(VAR_TASK_USERS)),
           updatedRelations, eventId);
     }
@@ -3341,27 +3286,6 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     }
 
     return response;
-  }
-
-  private ResponseObject updateTaskRelations(long taskId, Set<String> updatedRelations,
-      BeeRow row) {
-    ResponseObject response = new ResponseObject();
-    List<RowChildren> children = new ArrayList<>();
-
-    for (String property : updatedRelations) {
-      String relation = TaskUtils.translateTaskPropertyToRelation(property);
-
-      if (!BeeUtils.isEmpty(relation)) {
-        children.add(RowChildren.create(TBL_RELATIONS, COL_TASK, taskId,
-            relation, row.getProperty(property)));
-      }
-    }
-    int count = 0;
-
-    if (!BeeUtils.isEmpty(children)) {
-      count = deb.commitChildren(taskId, children, response);
-    }
-    return response.setResponse(count);
   }
 
   private void updateTaskUsers(long taskId, Collection<Long> oldUsers, Collection<Long> newUsers) {

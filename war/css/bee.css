@@ -1,6 +1,6 @@
 ﻿@font-face {
   font-family: FontAwesome;
-  src: url(../fonts/fontawesome-webfont.woff?v=4.5.0);
+  src: url(../fonts/fontawesome-webfont.woff?v=4.7.0);
   font-weight: normal;
   font-style: normal;
 }
@@ -30,6 +30,21 @@
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
   100% { transform: scale(1); }
+}
+
+@keyframes indeterminate {
+  0% {transform: translateX(-100%) scaleX(0.2);}
+  20% {transform: translateX(-40%) scaleX(0.2);}
+  30% {transform: translateX(0%) scaleX(0.5);}
+  55% {transform: translateX(100%) scaleX(0.7);}
+  55.99% {transform: scaleX(0);}
+  56% {transform: translateX(-100%) scaleX(0);}
+  56.99% {transform: translateX(-100%) scaleX(0.6);}
+  75% {transform: translateX(-5%) scaleX(0.6);}
+  85% {transform: translateX(30%) scaleX(0.3);}
+  98% {transform: translateX(100%) scaleX(0.2);}
+  99.99% {transform: scaleX(0);}
+  100% {transform: translateX(-100%);}
 }
 
 .bee-Body {
@@ -99,6 +114,18 @@
   -ms-flex-pack: justify;
 }
 
+.flexBox-horizontal-space-around {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  justify-content: space-around;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: justify;
+}
+
 .flexBox-vertical,
 .bee-TreeView,
 .bee-TabbedPages-container,
@@ -156,6 +183,10 @@
   top: 1px;
   width: calc(100% - 2px);
   height: calc(100% - 2px);
+}
+
+.bee-rotate {
+  animation: rotate 1s linear infinite;
 }
 
 .bee-Screen {
@@ -254,6 +285,10 @@
 
 .bee-RadioButton-vertical {
   display: block;
+}
+.bee-RadioButton > input[type="radio"] {
+  margin-top: 0;
+  vertical-align: middle;
 }
 
 .bee-Split {
@@ -482,10 +517,11 @@
   border-collapse: collapse;
 }
 .bee-Header-commandPanel .bee-Button {
-  padding: 2px 6px;
+  margin-right: 3px;
+  padding: 3px 8px;
   background-color: #fafafa;
   border: 1px solid #ccc;
-  border-radius: 2px;
+  border-radius: 5px;
 }
 .bee-Header-commandPanel .bee-Button:hover {
   cursor: pointer;
@@ -735,6 +771,7 @@
   border: 1px solid #b4b4b4;
   border-radius: 2px;
   background-color: White;
+  overflow: hidden;
 }
 
 .bee-Dialog-header {
@@ -1187,6 +1224,8 @@
 }
 .bee-TabbedPages-resized {
   background-color: inherit;
+  left: 0;
+  width: 100%;
 }
 
 .bee-TabbedPages-tabPanel {
@@ -1210,12 +1249,12 @@
 }
 @media (min-height: 600px) and (max-height: 1200px) {
   .bee-TabbedPages-tab {
-    height: 4.5vh;
+    min-height: 4.5vh;
   }
 }
 @media (min-height: 1200px) {
   .bee-TabbedPages-tab {
-    height: 54px;
+    min-height: 54px;
   }
 }
 
@@ -1530,22 +1569,28 @@
 
 .bee-MessageBox-decide,
 .bee-MessageBox-delete,
-.bee-MessageBox-confirm {
-  min-width:360px;
-  min-height:215px;
-  max-height:430px;
+.bee-MessageBox-confirm,
+.bee-MessageBox-info,
+.bee-MessageBox-error {
+  min-width: 360px;
+  min-height: 215px;
+  max-height: 430px;
 }
 
 .bee-MessageBox-decide .bee-Dialog-header,
 .bee-MessageBox-delete .bee-Dialog-header,
-.bee-MessageBox-confirm .bee-Dialog-header{
+.bee-MessageBox-confirm .bee-Dialog-header,
+.bee-MessageBox-info .bee-Dialog-header,
+.bee-MessageBox-error .bee-Dialog-header {
   padding: 0 15px 0 15px;
   height: 45px;
 }
 
 .bee-MessageBox-decide .bee-Dialog-caption,
 .bee-MessageBox-delete .bee-Dialog-caption,
-.bee-MessageBox-confirm .bee-Dialog-caption{
+.bee-MessageBox-confirm .bee-Dialog-caption,
+.bee-MessageBox-info .bee-Dialog-caption,
+.bee-MessageBox-error .bee-Dialog-caption {
   font-size: 16pt;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1554,57 +1599,71 @@
 
 .bee-MessageBox-decide .bee-Dialog-header .bee-Dialog-action,
 .bee-MessageBox-delete .bee-Dialog-header .bee-Dialog-action,
-.bee-MessageBox-confirm .bee-Dialog-header .bee-Dialog-action {
+.bee-MessageBox-confirm .bee-Dialog-header .bee-Dialog-action,
+.bee-MessageBox-info .bee-Dialog-header .bee-Dialog-action,
+.bee-MessageBox-error .bee-Dialog-header .bee-Dialog-action {
   margin-right: 0;
 }
 
 .bee-MessageBox-decide .bee-Dialog-content,
 .bee-MessageBox-delete .bee-Dialog-content,
-.bee-MessageBox-confirm .bee-Dialog-content {
+.bee-MessageBox-confirm .bee-Dialog-content,
+.bee-MessageBox-info .bee-Dialog-content,
+.bee-MessageBox-error .bee-Dialog-content {
   margin: 4px 0 15px 0;
   font-size: 14px;
   width: 100%;
 }
 .bee-MessageBox-decide .bee-MessageBox-icon-cell,
 .bee-MessageBox-delete .bee-MessageBox-icon-cell,
-.bee-MessageBox-confirm .bee-MessageBox-icon-cell {
+.bee-MessageBox-confirm .bee-MessageBox-icon-cell,
+.bee-MessageBox-info .bee-MessageBox-icon-cell,
+.bee-MessageBox-error .bee-MessageBox-icon-cell {
   width: 80px;
 }
 .bee-MessageBox-decide .bee-MessageBox-icon,
 .bee-MessageBox-delete .bee-MessageBox-icon,
-.bee-MessageBox-confirm .bee-MessageBox-icon {
+.bee-MessageBox-confirm .bee-MessageBox-icon,
+.bee-MessageBox-info .bee-MessageBox-icon,
+.bee-MessageBox-error .bee-MessageBox-icon {
   padding: 4px;
   font-size: 80px;
-  color: whitesmoke;
   text-align: center;
   max-width: 80px;
 }
 
 .bee-MessageBox-decide .bee-MessageBox-icon,
-.bee-MessageBox-confirm .bee-MessageBox-icon {
-  color: #E3E3E3;
+.bee-MessageBox-confirm .bee-MessageBox-icon,
+.bee-MessageBox-info .bee-MessageBox-icon {
+  color: #e3e3e3;
 }
 
-.bee-MessageBox-delete .bee-MessageBox-icon {
-  color:  #cc0000;
+.bee-MessageBox-delete .bee-MessageBox-icon,
+.bee-MessageBox-error .bee-MessageBox-icon {
+  color: #cc0000;
 }
-
 
 .bee-MessageBox-decide .bee-MessageBox-buttonGroup,
 .bee-MessageBox-delete .bee-MessageBox-buttonGroup,
-.bee-MessageBox-confirm .bee-MessageBox-buttonGroup {
+.bee-MessageBox-confirm .bee-MessageBox-buttonGroup,
+.bee-MessageBox-info .bee-MessageBox-buttonGroup,
+.bee-MessageBox-error .bee-MessageBox-buttonGroup {
   margin: auto;
 }
 
 .bee-MessageBox-decide .bee-MessageBox-message,
 .bee-MessageBox-delete .bee-MessageBox-message,
-.bee-MessageBox-confirm .bee-MessageBox-message {
+.bee-MessageBox-confirm .bee-MessageBox-message,
+.bee-MessageBox-info .bee-MessageBox-message,
+.bee-MessageBox-error .bee-MessageBox-message {
   padding-top: 10px;
 }
 
 .bee-MessageBox-decide .bee-MessageBox-message-cell,
 .bee-MessageBox-delete .bee-MessageBox-message-cell,
-.bee-MessageBox-confirm .bee-MessageBox-message-cell {
+.bee-MessageBox-confirm .bee-MessageBox-message-cell,
+.bee-MessageBox-info .bee-MessageBox-message-cell,
+.bee-MessageBox-error .bee-MessageBox-message-cell {
   padding: 5px 0 0 0;
   max-height: 305px;
   display: inline-block;
@@ -1621,13 +1680,17 @@
 
 .bee-MessageBox-decide .bee-MessageBox-message,
 .bee-MessageBox-delete .bee-MessageBox-message,
-.bee-MessageBox-confirm .bee-MessageBox-message {
+.bee-MessageBox-confirm .bee-MessageBox-message,
+.bee-MessageBox-info .bee-MessageBox-message,
+.bee-MessageBox-error .bee-MessageBox-message {
   margin-left: 0px;
 }
 
 .bee-MessageBox-decide .bee-MessageBox-button,
 .bee-MessageBox-delete .bee-MessageBox-button,
-.bee-MessageBox-confirm .bee-MessageBox-button {
+.bee-MessageBox-confirm .bee-MessageBox-button,
+.bee-MessageBox-info .bee-MessageBox-button,
+.bee-MessageBox-error .bee-MessageBox-button {
   min-width: 60px;
   min-height: 32px;
   height: 100%;
@@ -1636,24 +1699,24 @@
   margin: 4px;
 }
 
-.bee-MessageBox-decide .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button,
-.bee-MessageBox-confirm .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button {
-    color: white;
-    background-color: #6bae45;
+.bee-MessageBox-decide .bee-MessageBox-buttonGroup td:first-child > .bee-MessageBox-button,
+.bee-MessageBox-confirm .bee-MessageBox-buttonGroup td:first-child > .bee-MessageBox-button {
+  color: white;
+  background-color: #6bae45;
 }
 
 .bee-MessageBox-delete .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button {
-    color: white;
-    background-color:  #cc0000
+  color: white;
+  background-color: #cc0000;
 }
 
-.bee-MessageBox-decide .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button:hover,
-.bee-MessageBox-confirm .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button:hover {
-    background-color: #63a140;
+.bee-MessageBox-decide .bee-MessageBox-buttonGroup td:first-child > .bee-MessageBox-button:hover,
+.bee-MessageBox-confirm .bee-MessageBox-buttonGroup td:first-child > .bee-MessageBox-button:hover {
+  background-color: #63a140;
 }
 
-.bee-MessageBox-delete .bee-MessageBox-buttonGroup  td:first-child > .bee-MessageBox-button:hover {
-    background-color: #c0392b;
+.bee-MessageBox-delete .bee-MessageBox-buttonGroup td:first-child > .bee-MessageBox-button:hover {
+  background-color: #c0392b;
 }
 
 .bee-MessageBox-message-cell {
@@ -2283,6 +2346,10 @@
   font-size: inherit;
 }
 
+.bee-TextBox.bee-InputSpinner {
+  padding-right: initial;
+}
+
 .bee-Label-withColon:after {
   content: ': '
 }
@@ -2322,7 +2389,9 @@
 .bee-GridSettings-label {
   min-width: 80px;
   font-size: 12px;
-  cursor: move;
+  border: 1px solid transparent;
+  cursor: grab;
+  cursor: -webkit-grab;
 }
 .bee-GridSettings-visibility,
 .bee-GridSettings-editInPlace {
@@ -2346,8 +2415,7 @@
 }
 .bee-GridSettings-drag {
   background-color: yellow;
-  box-sizing: border-box;
-  border: 1px solid darkgreen;
+  border-color: darkgreen;
 }
 
 .bee-Photo-embedded {
@@ -3927,19 +3995,30 @@ textarea,
   color: #888;
 }
 
-.bee-Grid-Spinner {
+.bee-Grid-ProgressContainer {
   display: none;
-}
-.bee-loading .bee-CellGrid {
-  opacity: 0.25;
-}
-.bee-loading .bee-Grid-Spinner {
-  display: block;
   position: absolute;
-  left: 45%;
-  top: 45%;
-  font-size: xx-large;
-  animation: rotate 1s linear infinite;
+  overflow: hidden;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #b0d0ef;
+}
+.bee-Grid-ProgressBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #3a81f0;
+}
+
+.bee-loading .bee-Grid-ProgressContainer {
+  display: block;
+}
+.bee-loading .bee-Grid-ProgressBar {
+  animation: indeterminate 2s linear infinite;
 }
 
 .bee-MenuRoot .bee-potentially-bold::after,

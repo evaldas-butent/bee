@@ -7,7 +7,6 @@ import com.google.gwt.core.client.JsDate;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.HasCustomProperties;
 import com.butent.bee.shared.data.HasRowValue;
 import com.butent.bee.shared.data.IsColumn;
@@ -305,17 +304,17 @@ public final class Evaluator extends Calculation implements HasRowValue {
 
   private Parameters parameters;
 
-  private final JavaScriptObject interpeter;
+  private final JavaScriptObject interpreter;
 
   private Evaluator(String expression, String function) {
     super(expression, function);
 
     if (!BeeUtils.isEmpty(expression)) {
-      this.interpeter = createExprInterpreter(expression);
+      this.interpreter = createExprInterpreter(expression);
     } else if (!BeeUtils.isEmpty(function)) {
-      this.interpeter = createFuncInterpreter(function);
+      this.interpreter = createFuncInterpreter(function);
     } else {
-      this.interpeter = null;
+      this.interpreter = null;
     }
   }
 
@@ -326,7 +325,7 @@ public final class Evaluator extends Calculation implements HasRowValue {
   }
 
   public String evaluate() {
-    return evaluate(getInterpeter());
+    return evaluate(getInterpreter());
   }
 
   public String evaluate(JavaScriptObject fnc) {
@@ -358,7 +357,7 @@ public final class Evaluator extends Calculation implements HasRowValue {
   }
 
   public boolean hasInterpreter() {
-    return getInterpeter() != null;
+    return getInterpreter() != null;
   }
 
   public String replace(String src) {
@@ -430,8 +429,8 @@ public final class Evaluator extends Calculation implements HasRowValue {
   }-*/;
 //@formatter:on
 
-  private JavaScriptObject getInterpeter() {
-    return interpeter;
+  private JavaScriptObject getInterpreter() {
+    return interpreter;
   }
 
   private Parameters getParameters() {
@@ -469,7 +468,7 @@ public final class Evaluator extends Calculation implements HasRowValue {
       List<? extends IsColumn> columns = getParameters().getDataColumns();
       for (int i = 0; i < columns.size(); i++) {
         IsColumn column = columns.get(i);
-        value = BeeUtils.notEmpty(row.getString(i), BeeConst.NULL);
+        value = BeeUtils.trim(row.getString(i));
         result = BeeUtils.replace(result,
             pfx + ROW_OBJECT + PROPERTY_SEPARATOR + column.getId() + sfx, value);
       }
@@ -480,16 +479,16 @@ public final class Evaluator extends Calculation implements HasRowValue {
     result = BeeUtils.replace(result, pfx + VAR_COL_INDEX + sfx,
         BeeUtils.toString(getParameters().getColIndex()));
 
-    value = BeeUtils.notEmpty(getParameters().getColName(), BeeConst.NULL);
+    value = BeeUtils.trim(getParameters().getColName());
     result = BeeUtils.replace(result, pfx + VAR_COL_ID + sfx, value);
 
-    value = BeeUtils.notEmpty(getParameters().getLastCellValue(), BeeConst.NULL);
+    value = BeeUtils.trim(getParameters().getLastCellValue());
     result = BeeUtils.replace(result,
         pfx + CELL_OBJECT + PROPERTY_SEPARATOR + PROPERTY_VALUE + sfx, value);
-    value = BeeUtils.notEmpty(getParameters().getLastOldValue(), BeeConst.NULL);
+    value = BeeUtils.trim(getParameters().getLastOldValue());
     result = BeeUtils.replace(result,
         pfx + CELL_OBJECT + PROPERTY_SEPARATOR + PROPERTY_OLD_VALUE + sfx, value);
-    value = BeeUtils.notEmpty(getParameters().getLastNewValue(), BeeConst.NULL);
+    value = BeeUtils.trim(getParameters().getLastNewValue());
     result = BeeUtils.replace(result,
         pfx + CELL_OBJECT + PROPERTY_SEPARATOR + PROPERTY_NEW_VALUE + sfx, value);
 

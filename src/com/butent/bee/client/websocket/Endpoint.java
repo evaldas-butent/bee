@@ -1,6 +1,5 @@
 package com.butent.bee.client.websocket;
 
-import com.google.common.base.Function;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.user.client.Timer;
@@ -13,7 +12,6 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -29,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import elemental.client.Browser;
 import elemental.events.CloseEvent;
@@ -68,8 +68,6 @@ public final class Endpoint {
 
   private static WebSocket socket;
   private static String sessionId;
-
-  private static MessageDispatcher dispatcher = new MessageDispatcher();
 
   private static Map<String, Consumer<String>> progressQueue = new HashMap<>();
   private static Map<String, Function<ProgressMessage, Boolean>> progressHandlers = new HashMap<>();
@@ -168,17 +166,26 @@ public final class Endpoint {
     return false;
   }
 
+  public static String createProgress(String caption, String id) {
+    InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
+    Thermometer th = new Thermometer(caption, BeeConst.DOUBLE_ONE, close);
+
+    if (!BeeUtils.isEmpty(id)) {
+      th.setId(id);
+    }
+    String progressId = BeeKeeper.getScreen().addProgress(th);
+
+    if (!BeeUtils.isEmpty(progressId)) {
+      close.addClickHandler(ev -> cancelProgress(progressId));
+    }
+    return progressId;
+  }
+
   public static void initProgress(String caption, final Consumer<String> consumer) {
-    final String progressId;
+    String progressId;
 
     if (Endpoint.isOpen()) {
-      InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
-      Thermometer th = new Thermometer(caption, BeeConst.DOUBLE_ONE, close);
-      progressId = BeeKeeper.getScreen().addProgress(th);
-
-      if (progressId != null) {
-        close.addClickHandler(ev -> cancelProgress(progressId));
-      }
+      progressId = createProgress(caption, null);
     } else {
       progressId = null;
     }
@@ -295,7 +302,7 @@ public final class Endpoint {
     }
   }
 
-  static boolean startPropgress(String progressId) {
+  static boolean startProgress(String progressId) {
     if (!progressQueue.isEmpty()) {
       Consumer<String> starter = progressQueue.remove(progressId);
       if (starter != null) {
@@ -350,7 +357,7 @@ public final class Endpoint {
           logger.info("<-", ((String) data).length(), message.getType().name().toLowerCase(),
               message.brief());
         }
-        dispatcher.dispatch(message);
+        MessageDispatcher.dispatch(message);
       }
 
     } else if (data == null) {

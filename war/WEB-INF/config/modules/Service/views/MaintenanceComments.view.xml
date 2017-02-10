@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="MaintenanceComments" source="MaintenanceComments"
+      caption="=svcComments" newRowForm="MaintenanceComment" editForm="MaintenanceComment"
+>
+  <Columns>
+    <SimpleColumn name="ServiceMaintenance" />
+    <SimpleColumn name="Publisher" />
+    <SimpleJoin name="Publisher" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="PublisherFirstName" name="FirstName" />
+          <SimpleColumn alias="PublisherLastName" name="LastName" />
+          <SimpleColumn name="PhotoFile" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="PublishTime" />
+    <SimpleColumn name="Comment" />
+    <SimpleColumn name="ShowCustomer" />
+    <SimpleColumn name="Term" />
+    <SimpleColumn name="CustomerSent" />
+    <SimpleColumn name="EventNote"/>
+
+    <SimpleColumn name="MaintenanceState"/>
+    <SimpleJoin joinType="LEFT" name="MaintenanceState">
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Item"/>
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+    </SimpleJoin>
+    <SimpleColumn name="Price" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="SentEmail"/>
+    <SimpleColumn name="SentSms"/>
+
+    <SimpleColumn name="StateComment"/>
+  </Columns>
+</View>

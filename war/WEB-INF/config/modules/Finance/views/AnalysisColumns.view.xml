@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
+
+      name="AnalysisColumns" source="AnalysisColumns"
+      caption="=finAnalysisColumns" newRowCaption="=finAnalysisColumnNew"
+>
+  <Columns>
+    <SimpleColumn name="AnalysisHeader" />
+
+    <SimpleColumn name="Selected" />
+    <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="ColumnName" />
+    <SimpleColumn name="ColumnAbbreviation" />
+
+    <xi:include href="viewcolumns/Indicator.viewcolumns.xml" />
+    <SimpleColumn name="TurnoverOrBalance" />
+
+    <SimpleColumn name="ColumnValues" />
+    <xi:include href="viewcolumns/BudgetType.viewcolumns.xml" />
+
+    <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
+    <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
+
+    <SimpleColumn name="YearFrom" />
+    <SimpleColumn name="MonthFrom" />
+    <SimpleColumn name="YearUntil" />
+    <SimpleColumn name="MonthUntil" />
+
+    <SimpleColumn name="ColumnScript" />
+
+    <SimpleColumn name="ColumnScale" />
+
+    <SimpleColumn name="ColumnSplit01" />
+    <SimpleColumn name="ColumnSplit02" />
+    <SimpleColumn name="ColumnSplit03" />
+    <SimpleColumn name="ColumnSplit04" />
+    <SimpleColumn name="ColumnSplit05" />
+    <SimpleColumn name="ColumnSplit06" />
+    <SimpleColumn name="ColumnSplit07" />
+    <SimpleColumn name="ColumnSplit08" />
+    <SimpleColumn name="ColumnSplit09" />
+    <SimpleColumn name="ColumnSplit10" />
+
+    <SimpleColumn name="Note" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+
+    <SimpleColumn name="ColumnStyle" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="Ordinal" />
+  </Order>
+</View>

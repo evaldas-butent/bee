@@ -78,7 +78,7 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   }
 
   public void update(Element cellElement, boolean value) {
-    ((SelectionCell) getCell()).update(cellElement, value);
+    SelectionCell.update(cellElement, value);
   }
 
   private CellGrid getGrid() {

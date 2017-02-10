@@ -3,22 +3,12 @@ package com.butent.bee.client.modules.calendar;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.gwt.dom.client.Style.Visibility;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.FocusEvent;
-import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
-import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
@@ -36,7 +26,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
@@ -45,8 +34,10 @@ import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.shared.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.calendar.view.AppointmentForm;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
@@ -57,7 +48,6 @@ import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputNumber;
@@ -80,6 +70,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -97,7 +88,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEvent.Handler {
+class AppointmentBuilder extends AppointmentForm implements SelectorEvent.Handler {
 
   private class DateOrTimeKeyDownHandler implements KeyDownHandler {
 
@@ -271,23 +262,20 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
       Global.confirmDelete(Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY), Icon.WARNING,
           Collections.singletonList(Localized.dictionary().calDeleteAppointment()),
-          new ConfirmationCallback() {
-            @Override
-            public void onConfirm() {
-              dialog.close();
+          () -> {
+            dialog.close();
 
-              Queries.deleteRow(VIEW_APPOINTMENTS, id, version, new Queries.IntCallback() {
-                @Override
-                public void onFailure(String... reason) {
-                  BeeKeeper.getScreen().notifySevere(reason);
-                }
+            Queries.deleteRow(VIEW_APPOINTMENTS, id, version, new Queries.IntCallback() {
+              @Override
+              public void onFailure(String... reason) {
+                BeeKeeper.getScreen().notifySevere(reason);
+              }
 
-                @Override
-                public void onSuccess(Integer result) {
-                  RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_APPOINTMENTS, id);
-                }
-              });
-            }
+              @Override
+              public void onSuccess(Integer result) {
+                RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_APPOINTMENTS, id);
+              }
+            });
           });
     }
 
@@ -395,6 +383,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private final List<Long> ucAttendees = new ArrayList<>();
 
+  private FormView appointmentView;
+
   AppointmentBuilder(boolean isNew) {
     super();
     this.isNew = isNew;
@@ -418,12 +408,9 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     } else if (BeeUtils.same(name, NAME_REPAIR_TYPE)) {
       setRepairTypeWidgetId(widget.getId());
       if (widget instanceof HasChangeHandlers) {
-        ((HasChangeHandlers) widget).addChangeHandler(new ChangeHandler() {
-          @Override
-          public void onChange(ChangeEvent event) {
-            updateDuration();
-            checkOverlap(true);
-          }
+        ((HasChangeHandlers) widget).addChangeHandler(event -> {
+          updateDuration();
+          checkOverlap(true);
         });
       }
 
@@ -436,12 +423,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     } else if (BeeUtils.same(name, NAME_OVERLAP)) {
       setOverlapWidgetId(widget.getId());
       if (widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            showOverlappingAppointments();
-          }
-        });
+        ((HasClickHandlers) widget).addClickHandler(event -> showOverlappingAppointments());
       }
       widget.asWidget().getElement().getStyle().setVisibility(Visibility.HIDDEN);
       setOverlapVisible(false);
@@ -468,12 +450,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       }
       if (widget instanceof InputDate) {
         setDateBounds((InputDate) widget);
-        ((InputDate) widget).addFocusHandler(new FocusHandler() {
-          @Override
-          public void onFocus(FocusEvent event) {
-            onEndDateFocus((InputDate) event.getSource());
-          }
-        });
+        ((InputDate) widget)
+            .addFocusHandler(event -> onEndDateFocus((InputDate) event.getSource()));
       }
 
     } else if (BeeUtils.same(name, NAME_END_TIME)) {
@@ -482,12 +460,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         ((InputTime) widget).addKeyDownHandler(dateOrTimeKeyDownHandler);
       }
       if (widget instanceof InputTime) {
-        ((InputTime) widget).addFocusHandler(new FocusHandler() {
-          @Override
-          public void onFocus(FocusEvent event) {
-            onEndTimeFocus((InputTime) event.getSource());
-          }
-        });
+        ((InputTime) widget)
+            .addFocusHandler(event -> onEndTimeFocus((InputTime) event.getSource()));
       }
 
     } else if (BeeUtils.same(name, NAME_HOURS)) {
@@ -512,16 +486,13 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     } else if (BeeUtils.same(name, NAME_BUILD)) {
       if (widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            buildIncrementally();
-          }
-        });
+        ((HasClickHandlers) widget).addClickHandler(event -> buildIncrementally());
       }
     } else if (BeeUtils.same(name, NAME_BUILD_INFO)) {
       setBuildInfoWidgetId(widget.getId());
     }
+
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
@@ -696,7 +667,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   void setDuration(String duration) {
-    List<Integer> fields = TimeUtils.parseFields(duration);
+    List<Integer> fields = TimeUtils.splitFields(duration);
 
     if (fields.size() >= 1 && !BeeUtils.isEmpty(getHourWidgetId())) {
       Integer hours = fields.get(0);
@@ -719,6 +690,10 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         }
       }
     }
+  }
+
+  public void setProjectData(IsRow projectRow) {
+    getProjectSelector().setSelection((BeeRow) projectRow, null, true);
   }
 
   void setProperties(List<Long> properties) {
@@ -758,23 +733,17 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   private void addColorHandlers() {
-    colorWidget.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
-      @Override
-      public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
-        Widget widget = colorWidget.getSelectedWidget();
-        if (widget != null) {
-          widget.getElement().setInnerHTML(BeeConst.STRING_EMPTY);
-        }
+    colorWidget.addBeforeSelectionHandler(event -> {
+      Widget widget = colorWidget.getSelectedWidget();
+      if (widget != null) {
+        widget.getElement().setInnerHTML(BeeConst.STRING_EMPTY);
       }
     });
 
-    colorWidget.addSelectionHandler(new SelectionHandler<Integer>() {
-      @Override
-      public void onSelection(SelectionEvent<Integer> event) {
-        Widget widget = colorWidget.getSelectedWidget();
-        if (widget != null) {
-          widget.getElement().setInnerHTML("X");
-        }
+    colorWidget.addSelectionHandler(event -> {
+      Widget widget = colorWidget.getSelectedWidget();
+      if (widget != null) {
+        widget.getElement().setInnerHTML("X");
       }
     });
   }
@@ -797,7 +766,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   private void checkOverlap(boolean whenPeriodChanged, List<Long> resourcesList,
-                                                                              boolean fromSelect) {
+      boolean fromSelect) {
     List<Long> resources;
     if (fromSelect) {
       resources = resourcesList;
@@ -851,7 +820,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         if (response.hasResponse(BeeRowSet.class)) {
           BeeRowSet rowSet = BeeRowSet.restore((String) response.getResponse());
           for (BeeRow row : rowSet.getRows()) {
-            Appointment app = new Appointment(row);
+            Appointment app = Appointment.create(row);
             overlappingAppointments.add(app);
           }
         }
@@ -1323,7 +1292,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     DateTime start = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_START_DATE_TIME);
     DateTime end = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_END_DATE_TIME);
 
-    DateTimeFormat format = DateTimeFormat.getFormat("MMM d HH:mm");
+    DateTimeFormat format = Format.parseDateTimePattern("MMM d HH:mm");
     if (start != null) {
       info.append(format.format(start));
     }
@@ -1361,7 +1330,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, end);
       Data.clearCell(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
     }
-    Data.clearCell(VIEW_APPOINTMENTS, row, COL_DESCRIPTION);
+    Data.clearCell(VIEW_APPOINTMENTS, row, CalendarConstants.COL_DESCRIPTION);
 
     getFormView().updateRow(row, false);
   }
@@ -1379,7 +1348,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     final Long reminderType = getSelectedId(getReminderWidgetId(), reminderTypes);
 
     return CalendarUtils.saveAppointment(callback, isNew, this, getFormView().getActiveRow(),
-        getStart(), getEnd(getStart()), propList, reminderType, getFormView());
+        getStart(), getEnd(getStart()), propList, reminderType, getFormView(), appointmentView);
 
   }
 
@@ -1443,6 +1412,10 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
   private void setResourceWidgetId(String resourceWidgetId) {
     this.resourceWidgetId = resourceWidgetId;
+  }
+
+  public void setAppointmentView(FormView appointmentView) {
+    this.appointmentView = appointmentView;
   }
 
   public void setSaving(boolean saving) {

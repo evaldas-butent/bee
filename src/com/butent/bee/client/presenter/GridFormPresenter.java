@@ -25,7 +25,6 @@ import com.butent.bee.client.view.grid.GridFormKind;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -37,6 +36,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class GridFormPresenter extends AbstractPresenter implements HasGridView, Printable,
     ParentRowCreator {
@@ -289,7 +289,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     Global.confirm(getCaption(), Icon.QUESTION,
         Collections.singletonList(Localized.dictionary().saveAndPrintQuestion()),
         Localized.dictionary().saveAndPrintAction(), Localized.dictionary().cancel(),
-        () -> saveAndPrint());
+        this::saveAndPrint);
   }
 
   private void print() {

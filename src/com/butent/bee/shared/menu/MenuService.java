@@ -2,6 +2,8 @@ package com.butent.bee.shared.menu;
 
 import com.google.common.collect.Sets;
 
+import static com.butent.bee.shared.modules.cars.CarsConstants.TBL_SERVICE_EVENTS;
+
 import com.butent.bee.shared.data.DataNameProvider;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
@@ -9,6 +11,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -33,6 +36,8 @@ public enum MenuService {
   PARAMETERS(RightsState.VIEW),
   @XmlEnumValue("report")
   REPORT(RightsState.VIEW),
+  @XmlEnumValue("stages")
+  STAGES(EnumSet.of(RightsState.VIEW, RightsState.EDIT, RightsState.CREATE), true),
 
   @XmlEnumValue("items")
   ITEMS(RightsState.VIEW, ClassifierConstants.VIEW_ITEMS),
@@ -91,6 +96,9 @@ public enum MenuService {
   SERVICE_CALENDAR(RightsState.VIEW,
       Sets.newHashSet(ServiceConstants.VIEW_SERVICE_OBJECTS, TaskConstants.VIEW_TASKS)),
 
+  @XmlEnumValue("car_service_calendar")
+  CAR_SERVICE_CALENDAR(RightsState.VIEW, TBL_SERVICE_EVENTS),
+
   @XmlEnumValue("trade_act_new")
   TRADE_ACT_NEW(RightsState.CREATE, TradeActConstants.VIEW_TRADE_ACTS),
   @XmlEnumValue("trade_act_list")
@@ -100,7 +108,18 @@ public enum MenuService {
   TRADE_DOCUMENTS(RightsState.VIEW, TradeConstants.VIEW_TRADE_DOCUMENTS),
   @XmlEnumValue("rebuild_trade_stock")
   REBUILD_TRADE_STOCK(EnumSet.of(RightsState.CREATE, RightsState.EDIT, RightsState.DELETE),
-      TradeConstants.VIEW_TRADE_STOCK);
+      TradeConstants.VIEW_TRADE_STOCK),
+
+  @XmlEnumValue("finance_default_accounts")
+  FINANCE_DEFAULT_ACCOUNTS(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION),
+  @XmlEnumValue("finance_posting_precedence")
+  FINANCE_POSTING_PRECEDENCE(RightsState.EDIT, FinanceConstants.VIEW_FINANCE_CONFIGURATION),
+
+  @XmlEnumValue("extra_dimensions")
+  EXTRA_DIMENSIONS(RightsState.VIEW),
+
+  @XmlEnumValue("service_maintenance_list")
+  SERVICE_MAINTENANCE_LIST(RightsState.VIEW, ServiceConstants.TBL_SERVICE_MAINTENANCE);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;

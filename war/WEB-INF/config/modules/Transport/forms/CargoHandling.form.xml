@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<f:Form xmlns="http://www.butent.com/widget"
-        xmlns:f="http://www.butent.com/form"
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
-        name="CargoHandling"
-    >
-  <ChildGrid gridName="CargoHandling" relColumn="CargoTrip" />
+        name="CargoHandling" caption="=cargoHandlingPlaces"
+>
+  <FlowPanel class="flexBox-vertical">
+    <ChildGrid name="CargoLoading" relColumn="CargoTrip" class="flexible" />
+    <ChildGrid name="CargoUnloading" relColumn="CargoTrip" class="flexible" />
+  </FlowPanel>
 </f:Form>

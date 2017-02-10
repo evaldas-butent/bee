@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="ConfGroups"
+       idName="GroupID"
+>
+  <Fields>
+    <Relation name="Type" relation="ConfTypes" notNull="true" label="=optionType" />
+    <String name="GroupName" precision="100" notNull="true" label="=optionGroup" />
+    <Boolean name="Required" label="=required" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Type GroupName" />
+  </Constraints>
+</Table>

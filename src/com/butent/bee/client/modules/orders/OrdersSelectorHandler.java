@@ -85,8 +85,8 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
       }
 
       ParameterList params = OrdersKeeper.createSvcArgs(SVC_GET_TEMPLATE_ITEMS);
-
       params.addQueryItem(COL_TEMPLATE, templRow.getId());
+
       if (DataUtils.hasId(targetRow)) {
         params.addQueryItem(COL_ORDER, targetRow.getId());
       }
@@ -155,8 +155,7 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
     int ordIndex = orderItems.getColumnIndex(COL_ORDER);
     int qtyIndex = orderItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
-    boolean qtyNullable = BeeConst.isUndef(qtyIndex)
-        ? true : orderItems.getColumn(qtyIndex).isNullable();
+    boolean qtyNullable = BeeConst.isUndef(qtyIndex) || orderItems.getColumn(qtyIndex).isNullable();
 
     for (BeeRow templItem : templChildren) {
       BeeRow ordItem = DataUtils.createEmptyRow(orderItems.getNumberOfColumns());
@@ -197,15 +196,17 @@ public class OrdersSelectorHandler implements SelectorEvent.Handler {
           if (!Objects.equals(form.getIntegerValue(COL_ORDERS_STATUS), OrdersStatus.PREPARED
               .ordinal())) {
 
-            if (!BeeUtils.isPositive(form.getLongValue(COL_WAREHOUSE))) {
-              form.notifySevere(lc.warehouse() + " " + lc.valueRequired());
+            if (!BeeUtils.isPositive(relatedRow.getLong(Data.getColumnIndex(VIEW_ORDERS_TEMPLATES,
+                COL_WAREHOUSE))) && !BeeUtils.isPositive(form.getLongValue(COL_WAREHOUSE))) {
+              form.notifySevere(lc.fieldRequired(lc.warehouse()));
               event.getSelector().clearValue();
               return;
             }
           }
 
-          if (!BeeUtils.isPositive(form.getLongValue(COL_COMPANY))) {
-            form.notifySevere(lc.client() + " " + lc.valueRequired());
+          if (!BeeUtils.isPositive(relatedRow.getLong(Data.getColumnIndex(VIEW_ORDERS_TEMPLATES,
+              COL_COMPANY))) && !BeeUtils.isPositive(form.getLongValue(COL_COMPANY))) {
+            form.notifySevere(lc.fieldRequired(lc.client()));
             event.getSelector().clearValue();
             return;
           }

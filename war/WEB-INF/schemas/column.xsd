@@ -48,6 +48,9 @@
     <xs:attribute name="exportable" type="xs:boolean" />
     <xs:attribute name="exportWidthFactor" type="tp:positiveDecimal" />
     <xs:attribute name="draggable" type="xs:boolean" />
+    <xs:attribute name="backgroundSource" type="tp:fieldNameType" />
+    <xs:attribute name="foregroundSource" type="tp:fieldNameType" />
+    <xs:attribute name="instantKarma" type="xs:boolean" />
     <xs:attribute ref="xml:base" />
   </xs:complexType>
 

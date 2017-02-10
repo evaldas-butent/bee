@@ -42,6 +42,11 @@ public class DecimalValue extends Value {
   }
 
   @Override
+  public boolean equals(Object o) {
+    return o instanceof DecimalValue && compareTo((DecimalValue) o) == BeeConst.COMPARE_EQUAL;
+  }
+
+  @Override
   public Boolean getBoolean() {
     if (isNull()) {
       return null;

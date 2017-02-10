@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <DataColumn name="DateFrom" carry="true" visible="true" />
+  <DataColumn name="DateTo" carry="true" visible="true" />
+
+  <RelColumn name="Debit" renderColumns="DebitCode" choiceColumns="AccountCode AccountName"
+             newRowEnabled="false" carry="true" visible="true" />
+  <RelColumn name="Credit" renderColumns="CreditCode" choiceColumns="AccountCode AccountName"
+             newRowEnabled="false" carry="true" visible="true" />
+
+  <DataColumn name="Percent" visible="true" />
+</g:columns>

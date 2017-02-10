@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="Journals" source="Journals" module="Classifiers"
+      caption="=journals" newRowCaption="=newJournal"
+>
+  <Columns>
+    <SimpleColumn name="JournalCode" />
+    <SimpleColumn name="JournalName" />
+
+    <SimpleColumn name="Background" />
+    <SimpleColumn name="Foreground" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="JournalCode" />
+  </Order>
+</View>

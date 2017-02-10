@@ -2,9 +2,9 @@ package com.butent.bee.client.grid.cell;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Event;
 
@@ -16,6 +16,7 @@ import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -73,6 +74,15 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
   }
 
   @Override
+  public CellType getCellType() {
+    return CellType.HTML;
+  }
+
+  public static boolean isCaptionEvent(NativeEvent event) {
+    return EventUtils.hasClassName(event, STYLE_CAPTION);
+  }
+
+  @Override
   public EventState onBrowserEvent(CellContext context, Element parent, String value, Event event) {
     EventState state = super.onBrowserEvent(context, parent, value, event);
 
@@ -93,19 +103,21 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
   }
 
   @Override
-  public void render(CellContext context, String value, SafeHtmlBuilder sb) {
-    renderHeader(context, value, sb);
+  public String render(CellContext context, String value) {
+    return renderHeader(context, value);
   }
 
-  public void renderHeader(CellContext context, String columnId, SafeHtmlBuilder sb) {
+  private String renderHeader(CellContext context, String columnId) {
+    StringBuilder sb = new StringBuilder();
+
     if (!BeeUtils.isEmpty(caption)) {
       sb.append(template.caption(captionId, STYLE_CAPTION,
-          SafeHtmlUtils.fromTrustedString(caption)));
+          SafeHtmlUtils.fromTrustedString(caption)).asString());
     }
 
     CellGrid grid = context.getGrid();
-    if (grid != null && grid.isSortable(columnId)) {
 
+    if (grid != null && grid.isSortable(columnId)) {
       Order sortOrder = grid.getSortOrder();
       int size = (sortOrder == null) ? 0 : sortOrder.getSize();
 
@@ -116,12 +128,16 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
         String classes = StyleUtils.buildClasses(STYLE_SORT_INFO,
             ascending ? STYLE_ASCENDING : STYLE_DESCENDING);
         String sortInfo = (size > 1) ? BeeUtils.toString(sortIndex + 1) : BeeConst.STRING_EMPTY;
-        sb.append(template.sorted(sortInfoId, classes, sortInfo));
+
+        sb.append(template.sorted(sortInfoId, classes, sortInfo).asString());
+
       } else {
         sb.append(template.sortable(sortInfoId,
-            StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
+            StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)).asString());
       }
     }
+
+    return sb.toString();
   }
 
   public void setCaption(String caption) {

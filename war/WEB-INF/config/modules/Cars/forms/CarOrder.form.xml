@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+    <!ENTITY inpw "width: 200px;">
+    <!ENTITY lbl "margin-right: 1em; text-align: right; padding-left: 30px">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="CarOrder" viewName="CarOrders" width="800" height="600" caption="=order">
+  <f:properties jasperReports="Offer" />
+
+  <FlowPanel class="flexBox-vertical">
+    <Table kind="controls">
+      <row>
+        <Label for="Date" style="&lbl;" />
+        <InputDateTime source="Date" style="width: 10em;" />
+
+        <cell colSpan="2">
+          <FlowPanel name="Stages" style="text-align:right;" />
+        </cell>
+
+        <cell rowSpan="2" verticalAlignment="top">
+          <TextLabel source="LossReason" style="color:red; white-space:pre-wrap;">
+            <renderToken source="ReasonName" />
+            <renderToken source="LossNotes" prefix="&lt;br>" />
+          </TextLabel>
+        </cell>
+      </row>
+      <row>
+        <Label for="OrderNo" visible="true" style="&lbl;" />
+        <InputText source="OrderNo" style="&inpw;" />
+
+        <Label for="Customer" style="&lbl;" />
+        <DataSelector source="Customer" style="&inpw;"
+                      renderColumns="CustomerName CustomerTypeName" />
+      </row>
+      <row>
+        <Label for="CustomerPerson" style="&lbl;" />
+        <DataSelector source="CustomerPerson" newRowEnabled="false" style="&inpw;"
+                      renderColumns="ContactFirstName ContactLastName"
+                      choiceColumns="FirstName LastName CompanyName" options="Customer" />
+
+        <Label for="Manager" style="&lbl;" />
+        <DataSelector source="Manager" editSource="ManagerPerson"
+                      renderColumns="ManagerFirstName ManagerLastName"
+                      newRowEnabled="false" style="&inpw;" />
+      </row>
+    </Table>
+    <br />
+    <TabbedPages class="flexible">
+      <page>
+        <text>=car</text>
+        <FlowPanel class="flexBox-horizontal">
+          <xi:include href="widgets/Specification.widget.xml" />
+
+          <Table kind="controls">
+            <col index="0" kind="label" />
+            <row>
+              <Label for="Amount" />
+              <InputInteger source="Amount" style="width:8em;" />
+              <DataSelector source="Currency" style="width:5em;" newRowEnabled="false"
+                            editEnabled="false" placeholder="=currencyShort" />
+            </row>
+            <row>
+              <Label for="Discount" />
+              <InputDecimal source="Discount" style="width:8em;" />
+            </row>
+            <row>
+              <CheckBox source="VatPlus" text="=vatPlus" />
+              <InputMoney source="Vat" style="width:8em;" placeholder="=vat"
+                          percentageTag="VatPercent" />
+              <CheckBox source="VatPercent" text="%" />
+            </row>
+            <row>
+              <Label text="=totalOf" />
+              <DoubleLabel style="font-weight:bold;">
+                <renderer type="total" />
+              </DoubleLabel>
+            </row>
+            <row>
+              <cell colSpan="3" style="text-align:center;">
+                <FlowPanel>
+                  <Label name="Car" text="=newCar" class="bee-InternalLink">
+                    <dynStyle>
+                      <ui:inline>display:none</ui:inline>
+                      <ui:expression>row.Car</ui:expression>
+                    </dynStyle>
+                    <dynStyle>
+                      <ui:inline>display:inline</ui:inline>
+                      <ui:expression>!row.Car</ui:expression>
+                    </dynStyle>
+                  </Label>
+                  <Label text="=car">
+                    <dynStyle>
+                      <ui:inline>display:none</ui:inline>
+                      <ui:expression>!row.Car</ui:expression>
+                    </dynStyle>
+                    <dynStyle>
+                      <ui:inline>display:inline</ui:inline>
+                      <ui:expression>row.Car</ui:expression>
+                    </dynStyle>
+                  </Label>
+                </FlowPanel>
+              </cell>
+            </row>
+            <row>
+              <Label for="ModelName" style="font-weight:bold;" />
+              <TextLabel>
+                <renderToken source="ParentModelName" />
+                <renderToken source="ModelName" />
+              </TextLabel>
+            </row>
+            <row>
+              <Label for="BodyNumber" style="font-weight:bold;" />
+              <TextLabel source="BodyNumber" />
+            </row>
+            <row>
+              <Label for="CarNumber" style="font-weight:bold;" />
+              <TextLabel source="CarNumber" />
+            </row>
+          </Table>
+        </FlowPanel>
+      </page>
+      <page>
+        <text>=ecOrderItems</text>
+        <ChildGrid name="CarOrderItems" relColumn="Order" />
+      </page>
+      <page>
+        <text>=notes</text>
+        <InputArea source="Notes" class="occupy-1" summarize="true" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

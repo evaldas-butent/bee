@@ -2,7 +2,7 @@ package com.butent.bee.client.grid.column;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.grid.CellContext;
@@ -92,10 +92,7 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
       }
 
     } else {
-      SafeHtmlBuilder sb = new SafeHtmlBuilder();
-      render(context, sb);
-
-      text = sb.toSafeHtml().asString();
+      text = render(context);
     }
 
     return Exporter.createCell(text, type, context.getColumnIndex(), styleRef);
@@ -201,8 +198,8 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
     return styleRef;
   }
 
-  public boolean instantKarma(IsRow row) {
-    return instantKarma && getValue(row) != null;
+  public boolean instantKarma() {
+    return instantKarma;
   }
 
   public boolean isDraggable() {
@@ -217,8 +214,12 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
     return cell.onBrowserEvent(context, elem, getValue(row), event);
   }
 
-  public void render(CellContext context, SafeHtmlBuilder sb) {
-    cell.render(context, getValue(context.getRow()), sb);
+  public String render(CellContext context) {
+    return cell.render(context, getValue(context.getRow()));
+  }
+
+  public SafeHtml renderSafeHtml(CellContext context) {
+    return cell.getCellType().renderSafeHtml(render(context));
   }
 
   public void setDraggable(boolean draggable) {

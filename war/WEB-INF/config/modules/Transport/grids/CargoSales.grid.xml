@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-        xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="CargoSales" viewName="CargoSales"
         flexGrow="1"
@@ -19,20 +19,11 @@
       </render>
     </DataColumn>
     <DataColumn name="PayerName" />
+  </g:columns>
 
-    <RelColumn name="LoadingCountry" visible="false" readOnly="true" />
-    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-                horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-    <DataColumn name="LoadingDate" />
+  <xi:include href="columns/Places.columns.xml" />
 
-    <RelColumn name="UnloadingCountry" visible="false" readOnly="true" />
-    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-                horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
-      <renderer type="flag" />
-    </CalcColumn>
-    <DataColumn name="UnloadingDate" />
+  <g:columns>
     <DataColumn name="Cmr" caption="CMR" renderColumns="CmrName CmrNumber" />
 
     <DataColumn name="ServiceName" />

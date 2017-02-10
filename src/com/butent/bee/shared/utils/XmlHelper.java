@@ -1,8 +1,6 @@
 package com.butent.bee.shared.utils;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
 
 import com.butent.bee.shared.Assert;
 
@@ -24,12 +22,7 @@ public final class XmlHelper {
 
   public static String getList(Collection<String> items) {
     Assert.notNull(items);
-    return LIST_JOINER.join(Iterables.filter(items, StringPredicate.NOT_EMPTY));
-  }
-
-  public static String getNameList(Collection<? extends Enum<?>> items) {
-    Assert.notNull(items);
-    return LIST_JOINER.join(Collections2.transform(items, NameUtils.GET_NAME));
+    return LIST_JOINER.join(items.stream().filter(StringPredicate.NOT_EMPTY).iterator());
   }
 
   private XmlHelper() {

@@ -489,6 +489,10 @@ public class QueryServiceBean {
     return getSingleColumn(query).getDoubleColumn(0);
   }
 
+  public <E extends Enum<?>> E getEnum(IsQuery query, Class<E> clazz) {
+    return getSingleValue(query).getEnum(0, 0, clazz);
+  }
+
   public SimpleRowSet getHistogram(String viewName, Filter filter, List<String> columns,
       List<String> order) {
 
@@ -570,7 +574,7 @@ public class QueryServiceBean {
         .addFrom(tblName)
         .setWhere(SqlUtils.equals(tblName, fldName, fldValue));
 
-    String als = sys.joinTranslationField(query, tblName, null, fldName, locale.getLanguage());
+    String als = sys.joinTranslationField(query, tblName, tblName, fldName, locale.getLanguage());
 
     return ArrayUtils.getQuietly(getColumn(query.addFields(als, fldName)), 0);
   }
@@ -839,6 +843,10 @@ public class QueryServiceBean {
         throw new BeeRuntimeException("Query must return a ResultSet");
       }
     });
+  }
+
+  public BeeRowSet getViewDataById(String viewName, long id) {
+    return getViewData(viewName, Filter.compareId(id));
   }
 
   public int getViewSize(String viewName, Filter filter) {
@@ -1517,7 +1525,7 @@ public class QueryServiceBean {
 
           case DATE:
             Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
-            values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
+            values[i] = (time == null) ? null : BeeUtils.toString(JustDate.readDays(time));
             break;
 
           case NUMBER:

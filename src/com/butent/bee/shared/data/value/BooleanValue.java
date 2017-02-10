@@ -8,11 +8,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 
-/**
- * The {@code BooleanValue} class represents a boolean value. These values
- * are set by using {@link com.butent.bee.shared.data.value.BooleanValue#getInstance(Boolean)} and
- * are comparable.
- */
 public final class BooleanValue extends Value {
 
   public static final String S_TRUE = "t";
@@ -139,6 +134,11 @@ public final class BooleanValue extends Value {
   @Override
   public ValueType getType() {
     return ValueType.BOOLEAN;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    return o instanceof BooleanValue && compareTo((BooleanValue) o) == BeeConst.COMPARE_EQUAL;
   }
 
   @Override

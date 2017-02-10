@@ -1,15 +1,15 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.base.Predicate;
-
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.function.Predicate;
 
 public abstract class RowPredicate implements Predicate<IsRow> {
 
   public static RowPredicate isNull(final int index) {
     return new RowPredicate() {
       @Override
-      public boolean apply(IsRow input) {
+      public boolean test(IsRow input) {
         return input == null || input.isNull(index);
       }
     };
@@ -18,7 +18,7 @@ public abstract class RowPredicate implements Predicate<IsRow> {
   public static RowPredicate isTrue(final int index) {
     return new RowPredicate() {
       @Override
-      public boolean apply(IsRow input) {
+      public boolean test(IsRow input) {
         return input != null && BeeUtils.isTrue(input.getBoolean(index));
       }
     };
@@ -27,7 +27,7 @@ public abstract class RowPredicate implements Predicate<IsRow> {
   public static RowPredicate notNull(final int index) {
     return new RowPredicate() {
       @Override
-      public boolean apply(IsRow input) {
+      public boolean test(IsRow input) {
         return input != null && !input.isNull(index);
       }
     };

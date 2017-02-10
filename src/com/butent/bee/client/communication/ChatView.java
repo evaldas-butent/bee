@@ -1,14 +1,12 @@
 package com.butent.bee.client.communication;
 
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import static com.butent.bee.shared.communication.ChatConstants.*;
+import static com.butent.bee.shared.communication.ChatConstants.COL_CHAT_MESSAGE;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -110,14 +108,8 @@ public class ChatView extends Flow implements Presenter, View,
         Flow linkContainer = new Flow(STYLE_MESSAGE_TEXT);
         for (String view : message.getLinkData().keySet()) {
           InternalLink link = new InternalLink(message.getText());
-          link.addClickHandler(new ClickHandler() {
-
-            @Override
-            public void onClick(ClickEvent arg0) {
-              RowEditor.open(view,
-                                  BeeUtils.toLong(message.getLinkData().get(view)), Opener.NEW_TAB);
-            }
-          });
+          link.addClickHandler(arg0 -> RowEditor.open(view,
+              BeeUtils.toLong(message.getLinkData().get(view)), Opener.NEW_TAB));
           linkContainer.add(link);
         }
 
@@ -290,7 +282,7 @@ public class ChatView extends Flow implements Presenter, View,
       }
     });
 
-    this.fileCollector = FileCollector.headless(fileInfos -> addFiles(fileInfos));
+    this.fileCollector = FileCollector.headless(this::addFiles);
     fileCollector.bindDnd(this);
 
     FaLabel attach = new FaLabel(FontAwesome.PAPERCLIP);
@@ -339,9 +331,8 @@ public class ChatView extends Flow implements Presenter, View,
     if (message != null
         && (message.isValid() || Global.getChatManager().isAssistant(message.getUserId()))) {
       boolean incoming = !BeeKeeper.getUser().is(message.getUserId());
-      boolean addPhoto = incoming;
 
-      MessageWidget messageWidget = new MessageWidget(message, addPhoto);
+      MessageWidget messageWidget = new MessageWidget(message, incoming);
 
       messageWidget.addStyleName(incoming ? STYLE_MESSAGE_INCOMING : STYLE_MESSAGE_OUTGOING);
       if (message.getTime() - getLastMessageTime() < FAST_INTERVAL) {
@@ -549,8 +540,8 @@ public class ChatView extends Flow implements Presenter, View,
       Latch latch = new Latch(input.size());
       List<FileInfo> files = new ArrayList<>();
 
-      for (final FileInfo fileInfo : input) {
-        FileUtils.uploadFile(fileInfo, id -> {
+      for (FileInfo fileInfo : input) {
+        FileUtils.commitFile(fileInfo, id -> {
           files.add(new FileInfo(id, fileInfo.getName(), fileInfo.getSize(), fileInfo.getType()));
           latch.decrement();
 

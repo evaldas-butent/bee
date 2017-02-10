@@ -682,7 +682,7 @@ public class ExportServlet extends LoginServlet {
 
       case Service.EXPORT_CLEAR:
         result = maybeClearRows(id);
-        return;
+        break;
 
       default:
         HttpUtils.badRequest(resp, NameUtils.getName(this), "service not recognized", svc);

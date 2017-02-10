@@ -141,6 +141,7 @@
     <xs:complexContent>
       <xs:extension base="joinSimple">
         <xs:attribute name="source" type="tp:tableNameType" use="required" />
+        <xs:attribute name="targetName" type="tp:fieldNameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

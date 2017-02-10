@@ -9,10 +9,12 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.modules.trade.InvoiceBuilder;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -24,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 
 public class CargoSalesGrid extends InvoiceBuilder {
 
@@ -103,19 +106,30 @@ public class CargoSalesGrid extends InvoiceBuilder {
       newRow.setValue(targetInfo.getColumnIndex(COL_CURRENCY), entry.getKey());
       newRow.setValue(targetInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
     }
-    Global.getRelationParameter(PRM_INVOICE_PREFIX, new BiConsumer<Long, String>() {
-      @Override
-      public void accept(Long prefixId, String prefix) {
-        newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SALE_SERIES), prefixId);
-        newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
-        consumer.accept(data, newRow);
-      }
+    Global.getParameterRelation(PRM_INVOICE_PREFIX, (prefixId, prefix) -> {
+      newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_SALE_SERIES), prefixId);
+      newRow.setValue(targetInfo.getColumnIndex(COL_TRADE_INVOICE_PREFIX), prefix);
+      consumer.accept(data, newRow);
     });
   }
 
   @Override
   public GridInterceptor getInstance() {
     return new CargoSalesGrid();
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (Objects.equals(event.getColumnId(), COL_ORDER_NO)) {
+      Long assessment = Data.getLong(getViewName(), event.getRowValue(), COL_ASSESSMENT);
+
+      if (DataUtils.isId(assessment)) {
+        RowEditor.open(VIEW_ASSESSMENTS, assessment, Opener.NEW_TAB);
+        event.consume();
+        return;
+      }
+    }
+    super.onEditStart(event);
   }
 
   @Override

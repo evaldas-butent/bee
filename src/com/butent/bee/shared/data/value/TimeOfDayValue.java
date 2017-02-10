@@ -69,7 +69,8 @@ public class TimeOfDayValue extends Value {
       this.milliseconds = BeeConst.UNDEF;
 
     } else {
-      List<Integer> fields = TimeUtils.parseFields(s);
+      List<Integer> fields = TimeUtils.splitFields(s);
+
       this.hours = TimeUtils.getField(fields, 0);
       this.minutes = TimeUtils.getField(fields, 1);
       this.seconds = TimeUtils.getField(fields, 2);
@@ -94,6 +95,11 @@ public class TimeOfDayValue extends Value {
           other.getMilliseconds()).result();
     }
     return diff;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    return o instanceof TimeOfDayValue && compareTo((TimeOfDayValue) o) == BeeConst.COMPARE_EQUAL;
   }
 
   @Override

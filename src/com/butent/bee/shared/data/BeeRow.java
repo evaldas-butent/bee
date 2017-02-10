@@ -29,6 +29,16 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   private static final String PROPERTY_CHILDREN = "_row_children";
 
+  public static BeeRow from(IsRow row) {
+    if (row == null) {
+      return null;
+    } else if (row instanceof BeeRow) {
+      return (BeeRow) row;
+    } else {
+      return DataUtils.cloneRow(row);
+    }
+  }
+
   public static BeeRow restore(String s) {
     BeeRow row = new BeeRow(0, 0);
     row.deserialize(s);

@@ -2,27 +2,23 @@ package com.butent.bee.client.presenter;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.CatchEvent;
-import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.TreeView;
@@ -30,6 +26,7 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -100,6 +97,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private CustomProperties properties;
   private Evaluator evaluator;
   private final Element editor;
+  private FormInterceptor editorInterceptor;
 
   private final HandlerRegistration catchHandler;
 
@@ -131,11 +129,13 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   }
 
   public String evaluate(IsRow row) {
+    String value = null;
+
     if (BeeUtils.allNotNull(evaluator, row)) {
       evaluator.update(row);
-      return evaluator.evaluate();
+      value = evaluator.evaluate();
     }
-    return null;
+    return value;
   }
 
   @Override
@@ -239,6 +239,10 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     catchHandler.removeHandler();
   }
 
+  public void setEditorInterceptor(FormInterceptor editorInterceptor) {
+    this.editorInterceptor = editorInterceptor;
+  }
+
   public void updateRelation(Long parentId) {
     this.relationId = parentId;
     requery();
@@ -292,7 +296,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     }
 
     final FormView formView = new FormImpl(FormDescription.getName(editor));
-    formView.create(new FormDescription(editor), getViewName(), getDataColumns(), false, null);
+    formView.create(new FormDescription(editor), getViewName(), getDataColumns(), false,
+        editorInterceptor);
     formView.setEditing(true);
     formView.start(null);
     formView.setCaption(getCaption());
@@ -372,19 +377,11 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
               formView.getChildrenForUpdate(), new CommitCallback(false));
         }
       }
-    }, styleName, null, Action.NO_ACTIONS, new WidgetInitializer() {
-      @Override
-      public Widget initialize(Widget widget, String name) {
-        if (DialogConstants.WIDGET_DIALOG.equals(name) && widget instanceof Popup) {
-          ((Popup) widget).addOpenHandler(new OpenEvent.Handler() {
-            @Override
-            public void onOpen(OpenEvent event) {
-              formView.updateRow(row, true);
-            }
-          });
-        }
-        return widget;
+    }, styleName, null, Action.NO_ACTIONS, (widget, name) -> {
+      if (DialogConstants.WIDGET_DIALOG.equals(name) && widget instanceof Popup) {
+        ((Popup) widget).addOpenHandler(event -> formView.updateRow(row, true));
       }
+      return widget;
     });
   }
 
@@ -405,20 +402,15 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
       String message = BeeUtils.joinWords(Localized.dictionary().delete(),
           BeeUtils.bracket(evaluate(data)), "?");
 
-      Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message),
-          new ConfirmationCallback() {
-            @Override
-            public void onConfirm() {
-              Queries.deleteRow(getViewName(), data.getId(), data.getVersion(),
-                  new IntCallback() {
-                    @Override
-                    public void onSuccess(Integer result) {
-                      getView().removeItem(data);
-                      RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), data.getId());
-                    }
-                  });
-            }
-          });
+      Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message), () ->
+          Queries.deleteRow(getViewName(), data.getId(), data.getVersion(),
+              new IntCallback() {
+                @Override
+                public void onSuccess(Integer result) {
+                  getView().removeItem(data);
+                  RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), data.getId());
+                }
+              }));
     }
   }
 

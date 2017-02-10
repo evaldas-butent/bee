@@ -42,7 +42,7 @@ final class Places {
     }
   }
 
-  static JustDate getLoadingDate(SimpleRow row, String colName) {
+  static JustDate getDate(SimpleRow row, String colName) {
     return JustDate.get(row.getDateTime(colName));
   }
 
@@ -80,10 +80,6 @@ final class Places {
       return BeeUtils.joinNoDuplicates(BeeConst.STRING_SPACE, countryLabel, placeName, postIndex,
           cityLabel, number);
     }
-  }
-
-  static JustDate getUnloadingDate(SimpleRow row, String colName) {
-    return JustDate.get(row.getDateTime(colName));
   }
 
   static String getUnloadingInfo(HasShipmentInfo item) {

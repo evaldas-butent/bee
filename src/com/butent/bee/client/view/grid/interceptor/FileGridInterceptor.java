@@ -22,7 +22,6 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.CellSource;
@@ -41,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class FileGridInterceptor extends AbstractGridInterceptor {
 

@@ -33,6 +33,7 @@ import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlEnum;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.DateTime;
@@ -61,7 +62,6 @@ import java.util.Set;
  * extensions and methods for operating with the table.
  */
 
-@SuppressWarnings("hiding")
 public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslations,
     HasExtendedInfo {
 
@@ -132,7 +132,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       if (!BeeUtils.isEmpty(key)) {
         if (!EnumUtils.isRegistered(key)) {
           LogUtils.getRootLogger().severe("Table:", getOwner().getName(), "Field:", this.getName(),
-              "Enum class not registerred:", key);
+              "Enum class not registered:", key);
           key = null;
         }
       }
@@ -148,7 +148,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           break;
 
         case DATE:
-          JustDate date = TimeUtils.parseDate(xmlField.defValue);
+          JustDate date = TimeUtils.parseDate(xmlField.defValue, DateOrdering.DEFAULT);
 
           if (date != null) {
             this.defValue = date.getDays();
@@ -158,7 +158,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           break;
 
         case DATETIME:
-          DateTime time = TimeUtils.parseDateTime(xmlField.defValue);
+          DateTime time = TimeUtils.parseDateTime(xmlField.defValue, DateOrdering.DEFAULT);
 
           if (time != null) {
             this.defValue = time.getTime();
@@ -624,7 +624,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
         }
       }
       if (wh.isEmpty()) {
-        wh.add(SqlUtils.sqlFalse());
+        wh.add(defaultCondition);
       }
       return wh;
     }

@@ -57,7 +57,6 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -91,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     SelectorEvent.Handler {
@@ -533,7 +533,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   @Override
-  public void onShow(Presenter presenter) {
+  public void afterCreatePresenter(Presenter presenter) {
     HeaderView header = presenter.getHeader();
 
     if (header != null && !header.hasCommands()) {
@@ -572,7 +572,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       header.addCommandItem(commandSave);
     }
 
-    super.onShow(presenter);
+    super.afterCreatePresenter(presenter);
   }
 
   private void doCompose(final Collection<Integer> holidays) {
@@ -1053,12 +1053,12 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     List<String> messages = new ArrayList<>();
 
     if (start == null) {
-      Collections.addAll(messages, Localized.dictionary().dateFrom(),
-          Localized.dictionary().valueRequired());
+      Collections.addAll(messages, Localized.dictionary()
+          .fieldRequired(Localized.dictionary().dateFrom()));
 
     } else if (end == null) {
-      Collections.addAll(messages, Localized.dictionary().dateTo(),
-          Localized.dictionary().valueRequired());
+      Collections.addAll(messages, Localized.dictionary()
+          .fieldRequired(Localized.dictionary().dateTo()));
 
     } else if (TimeUtils.isMeq(start, end)) {
       Collections.addAll(messages, Localized.dictionary().invalidRange(),
@@ -1145,9 +1145,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     Long company = getCompany();
     if (!DataUtils.isId(company)) {
       if (notify) {
-        List<String> messages = Lists.newArrayList(Localized.dictionary().client(),
-            Localized.dictionary().valueRequired());
-        Global.showError(messages);
+        Global.showError(Localized.dictionary().fieldRequired(Localized.dictionary().client()));
       }
       return;
     }

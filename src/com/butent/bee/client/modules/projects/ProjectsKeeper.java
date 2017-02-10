@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.projects;
 
 import com.google.common.collect.Lists;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_ERP_ADDRESS;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -21,12 +22,13 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -150,21 +152,15 @@ public final class ProjectsKeeper {
       public void beforeCreateColumns(List<? extends IsColumn> dataColumns,
           final List<ColumnDescription> columnDescriptions) {
 
-        Global.getParameter(AdministrationConstants.PRM_ERP_ADDRESS, new Consumer<String>() {
+        setErpConnectionActive(!BeeUtils.isEmpty(Global.getParameterText(PRM_ERP_ADDRESS)));
 
-          @Override
-          public void accept(String erpAddress) {
-            setErpConnectionActive(!BeeUtils.isEmpty(erpAddress));
-
-            for (ColumnDescription columnDescription : columnDescriptions) {
-              if (BeeUtils.inListSame(columnDescription.getId(),
-                  TradeConstants.COL_TRADE_PAYMENT_TIME,
-                  TradeConstants.COL_TRADE_PAID)) {
-                columnDescription.setEditInPlace(!isErpConnectionActive());
-              }
-            }
+        for (ColumnDescription columnDescription : columnDescriptions) {
+          if (BeeUtils.inListSame(columnDescription.getId(),
+              TradeConstants.COL_TRADE_PAYMENT_TIME,
+              TradeConstants.COL_TRADE_PAID)) {
+            columnDescription.setEditInPlace(!isErpConnectionActive());
           }
-        });
+        }
       }
 
       @Override
@@ -190,6 +186,7 @@ public final class ProjectsKeeper {
 
     GridFactory.registerGridInterceptor(GRID_PROJECT_TEMPLATES, new ProjectTemplatesGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_DATES, new ProjectDatesGrid());
+    GridFactory.registerGridInterceptor(GRID_PROJECT_APPOINTMENTS, new ProjectAppointmentsGrid());
 
     /* Register form handlers */
     FormFactory.registerFormInterceptor(FORM_PROJECT, new ProjectForm());
@@ -212,6 +209,21 @@ public final class ProjectsKeeper {
             Long projectId = Data.getLong(event.getViewName(), event.getRow(), COL_PROJECT);
             RowEditor.open(VIEW_PROJECTS, projectId, event.getOpener());
           }
+        }
+      }
+    });
+  }
+
+  static void fireRowSetUpdateRefresh(String viewName, Filter filter) {
+    if (BeeUtils.isEmpty(viewName) || filter != null) {
+      return;
+    }
+
+    Queries.getRowSet(viewName, null, filter, new Queries.RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        for (BeeRow row : result) {
+          RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, row);
         }
       }
     });

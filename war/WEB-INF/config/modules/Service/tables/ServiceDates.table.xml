@@ -13,5 +13,7 @@
     
     <String name="Color" precision="100" label="=color" />
     <String name="Note" precision="100" label="=note" />
+    <Relation name="ServiceMaintenance" relation="ServiceMaintenance" cascade="SET_NULL"
+              label="=svcMaintenance" />
   </Fields>
 </Table>

@@ -13,6 +13,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
@@ -32,6 +33,7 @@ import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.SysObject;
+import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
@@ -157,14 +159,16 @@ public class UiHolderBean {
   SystemBean sys;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  ParamHolderBean prm;
 
   private final Map<String, UiObjectInfo> gridCache = new HashMap<>();
   private final Map<String, UiObjectInfo> formCache = new HashMap<>();
   private final Map<String, Menu> menuCache = new HashMap<>();
   private final Map<String, UiObjectInfo> reportCache = new HashMap<>();
 
-  public void checkWidgetChildrenVisibility(Element parent) {
-    checkWidgetChildrenVisibility(parent, null);
+  public void checkWidgetChildrenVisibility(Element parent, Set<String> hiddenColumns) {
+    checkWidgetChildrenVisibility(parent, null, hiddenColumns);
   }
 
   public ResponseObject getForm(String formName) {
@@ -182,7 +186,7 @@ public class UiHolderBean {
     String viewName = getFormViewName(formName);
     BeeView view = sys.isView(viewName) ? sys.getView(viewName) : null;
 
-    checkWidgetChildrenVisibility(formElement, view);
+    checkWidgetChildrenVisibility(formElement, view, getHiddenColumns());
 
     return ResponseObject.response(XmlUtils.toString(doc, false));
   }
@@ -223,7 +227,7 @@ public class UiHolderBean {
       return ResponseObject.error("Grid name doesn't match resource name:",
           gridElement.getAttribute(UiConstants.ATTR_NAME), "!=", gridName);
     }
-    GridDescription grid = gridBean.getGridDescription(gridElement);
+    GridDescription grid = gridBean.getGridDescription(gridElement, getHiddenColumns());
 
     if (grid == null) {
       return ResponseObject.error("Cannot create grid description:", gridName);
@@ -387,7 +391,9 @@ public class UiHolderBean {
     return !BeeUtils.isEmpty(reportName) && reportCache.containsKey(key(reportName));
   }
 
-  private void checkWidgetChildrenVisibility(Element parent, BeeView view) {
+  private void checkWidgetChildrenVisibility(Element parent, BeeView view,
+      Set<String> hiddenColumns) {
+
     List<Element> elements = XmlUtils.getAllDescendantElements(parent);
     boolean visible;
 
@@ -395,7 +401,7 @@ public class UiHolderBean {
       if (element.hasAttribute(UiConstants.ATTR_VISIBLE)) {
         visible = !BeeConst.isFalse(element.getAttribute(UiConstants.ATTR_VISIBLE));
       } else {
-        visible = isWidgetVisible(element, view);
+        visible = isWidgetVisible(element, view, hiddenColumns);
       }
 
       if (!visible && isHidable(XmlUtils.getParentElement(element))) {
@@ -442,6 +448,19 @@ public class UiHolderBean {
       }
     }
     return gridInfo.getViewName();
+  }
+
+  private Set<String> getHiddenColumns() {
+    Set<String> result = new HashSet<>();
+
+    Integer count = prm.getInteger(Dimensions.PRM_DIMENSIONS);
+    if (count != null && !Objects.equals(count, Dimensions.getObserved())) {
+      Dimensions.setObserved(count);
+    }
+
+    result.addAll(Dimensions.getHiddenRelationColumns());
+
+    return result;
   }
 
   private Menu getMenu(String parent, Menu entry, boolean checkRights, boolean transform) {
@@ -618,7 +637,11 @@ public class UiHolderBean {
     }
   }
 
-  private boolean isWidgetVisible(Element element, BeeView view) {
+  private boolean isSourceVisible(BeeView view, String source, Set<String> hiddenColumns) {
+    return usr.isColumnVisible(view, source) && !BeeUtils.contains(hiddenColumns, source);
+  }
+
+  private boolean isWidgetVisible(Element element, BeeView view, Set<String> hiddenColumns) {
     if (element.hasAttribute(UiConstants.ATTR_MODULE)
         && !usr.isAnyModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
       return false;
@@ -626,7 +649,7 @@ public class UiHolderBean {
 
     if (view != null) {
       String source = element.getAttribute(UiConstants.ATTR_SOURCE);
-      if (!BeeUtils.isEmpty(source) && !usr.isColumnVisible(view, source)) {
+      if (!BeeUtils.isEmpty(source) && !isSourceVisible(view, source, hiddenColumns)) {
         return false;
       }
     }
@@ -635,7 +658,8 @@ public class UiHolderBean {
     String field = element.getAttribute(UiConstants.ATTR_FOR);
 
     if (BeeUtils.isEmpty(data)) {
-      if (view != null && !BeeUtils.isEmpty(field) && !usr.isColumnVisible(view, field)) {
+      if (view != null && !BeeUtils.isEmpty(field)
+          && !isSourceVisible(view, field, hiddenColumns)) {
         return false;
       }
 
@@ -644,7 +668,7 @@ public class UiHolderBean {
         return false;
       }
 
-      if (!BeeUtils.isEmpty(field) && !usr.isColumnVisible(sys.getView(data), field)) {
+      if (!BeeUtils.isEmpty(field) && !isSourceVisible(sys.getView(data), field, hiddenColumns)) {
         return false;
       }
     }

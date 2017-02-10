@@ -5,6 +5,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class CellValidateEvent {
 
+  @FunctionalInterface
   public interface Handler {
     Boolean validateCell(CellValidateEvent event);
   }

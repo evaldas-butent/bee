@@ -43,7 +43,7 @@
       </row>
 
       <row for="Code">
-        <Label text="=companyCode" />
+        <Label for="Code" />
         <InputText source="Code" visible="true"/>
       </row>
 
@@ -58,13 +58,13 @@
       </row>
 
       <row>
-        <Label text="=notes" style="&notesLabelStyle;" />
+        <Label for="Notes" style="&notesLabelStyle;" />
         <InputArea source="Notes" visibleLines="5" />
       </row>
       <Label text="=contactInfo" style="&sectionLabelStyle;" />
 
       <row for="Address">
-        <Label text="=address" />
+        <Label for="Address" />
         <InputText source="Address" />
       </row>
 
@@ -154,7 +154,7 @@
       </row>
 
       <row for="Turnover">
-        <Label text="=trdTurnover" />
+        <Label for="Turnover" text="=trdTurnover" />
         <DataSelector source="Turnover"/>
       </row>
 
