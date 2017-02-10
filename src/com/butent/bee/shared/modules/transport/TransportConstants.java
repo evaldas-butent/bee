@@ -674,6 +674,9 @@ public final class TransportConstants {
   public static final String COL_FX_HEADER_HEIGHT = "FxHeaderHeight";
   public static final String COL_FX_FOOTER_HEIGHT = "FxFooterHeight";
 
+  public static final String COL_FX_REFRESH_LOCAL_CHANGES = "FxRefreshLocalChanges";
+  public static final String COL_FX_REFRESH_REMOTE_CHANGES = "FxRefreshRemoteChanges";
+
   public static final String COL_FX_THEME = "FxTheme";
 
   public static final String COL_FX_ITEM_OPACITY = "FxItemOpacity";
@@ -710,6 +713,9 @@ public final class TransportConstants {
   public static final String COL_SS_HEADER_HEIGHT = "SsHeaderHeight";
   public static final String COL_SS_FOOTER_HEIGHT = "SsFooterHeight";
 
+  public static final String COL_SS_REFRESH_LOCAL_CHANGES = "SsRefreshLocalChanges";
+  public static final String COL_SS_REFRESH_REMOTE_CHANGES = "SsRefreshRemoteChanges";
+
   public static final String COL_SS_THEME = "SsTheme";
 
   public static final String COL_SS_ITEM_OPACITY = "SsItemOpacity";
@@ -739,6 +745,9 @@ public final class TransportConstants {
 
   public static final String COL_DTB_HEADER_HEIGHT = "DtbHeaderHeight";
   public static final String COL_DTB_FOOTER_HEIGHT = "DtbFooterHeight";
+
+  public static final String COL_DTB_REFRESH_LOCAL_CHANGES = "DtbRefreshLocalChanges";
+  public static final String COL_DTB_REFRESH_REMOTE_CHANGES = "DtbRefreshRemoteChanges";
 
   public static final String COL_DTB_COLOR = "DtbColor";
 
@@ -772,6 +781,9 @@ public final class TransportConstants {
   public static final String COL_TRUCK_HEADER_HEIGHT = "TruckHeaderHeight";
   public static final String COL_TRUCK_FOOTER_HEIGHT = "TruckFooterHeight";
 
+  public static final String COL_TRUCK_REFRESH_LOCAL_CHANGES = "TruckRefreshLocalChanges";
+  public static final String COL_TRUCK_REFRESH_REMOTE_CHANGES = "TruckRefreshRemoteChanges";
+
   public static final String COL_TRUCK_THEME = "TruckTheme";
 
   public static final String COL_TRUCK_ITEM_OPACITY = "TruckItemOpacity";
@@ -802,6 +814,9 @@ public final class TransportConstants {
 
   public static final String COL_TRAILER_HEADER_HEIGHT = "TrailerHeaderHeight";
   public static final String COL_TRAILER_FOOTER_HEIGHT = "TrailerFooterHeight";
+
+  public static final String COL_TRAILER_REFRESH_LOCAL_CHANGES = "TrailerRefreshLocalChanges";
+  public static final String COL_TRAILER_REFRESH_REMOTE_CHANGES = "TrailerRefreshRemoteChanges";
 
   public static final String COL_TRAILER_THEME = "TrailerTheme";
 

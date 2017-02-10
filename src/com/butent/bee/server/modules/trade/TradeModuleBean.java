@@ -77,6 +77,7 @@ import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -110,9 +111,11 @@ import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -588,24 +591,24 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             int docIndex = DataUtils.getColumnIndex(COL_TRADE_DOCUMENT, columns);
             int itemIndex = DataUtils.getColumnIndex(COL_ITEM, columns);
             int qtyIndex = DataUtils.getColumnIndex(COL_TRADE_ITEM_QUANTITY, columns);
-            int wrhIndex = DataUtils.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE, columns);
+            int wrhToIndex = DataUtils.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE_TO, columns);
             int parentIndex = DataUtils.getColumnIndex(COL_TRADE_ITEM_PARENT, columns);
 
             Long docId = DataUtils.getLongQuietly(row, docIndex);
             Long item = DataUtils.getLongQuietly(row, itemIndex);
             Double quantity = DataUtils.getDoubleQuietly(row, qtyIndex);
-            Long warehouse = DataUtils.getLongQuietly(row, wrhIndex);
+            Long warehouseTo = DataUtils.getLongQuietly(row, wrhToIndex);
             Long parent = DataUtils.getLongQuietly(row, parentIndex);
 
             if (DataUtils.isId(docId) && isStockItem(item) && modifyDocumentStock(docId)) {
               if (event.isBefore()) {
-                String message = verifyTradeItemInsert(docId, quantity, warehouse, parent);
+                String message = verifyTradeItemInsert(docId, quantity, warehouseTo, parent);
                 if (!BeeUtils.isEmpty(message)) {
                   event.addErrorMessage(message);
                 }
 
               } else if (event.isAfter()) {
-                event.addErrors(afterTradeItemInsert(docId, quantity, warehouse, parent,
+                event.addErrors(afterTradeItemInsert(docId, quantity, warehouseTo, parent,
                     row.getId()));
               }
             }
@@ -622,9 +625,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 }
 
                 if (!event.hasErrors()) {
-                  index = DataUtils.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE, columns);
+                  index = DataUtils.getColumnIndex(COL_TRADE_ITEM_WAREHOUSE_TO, columns);
                   if (!BeeConst.isUndef(index)) {
-                    event.addErrors(onTradeItemWarehouseUpdate(row.getId(), row.getLong(index)));
+                    event.addErrors(onTradeItemWarehouseReceiverUpdate(row.getId(),
+                        row.getLong(index)));
                   }
                 }
               }
@@ -660,13 +664,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               Long warehouse = row.getLong(index);
 
               if (event.isBefore()) {
-                Set<Long> itemIds = getTradeDocumentStockItemsWithoutWarehouse(row.getId());
+                Set<Long> itemIds = getTradeDocumentStockItemsWithoutWarehouseReceiver(row.getId());
 
                 if (!BeeUtils.isEmpty(itemIds)) {
                   if (DataUtils.isId(warehouse)) {
                     event.setUserObject(DataUtils.buildIdList(itemIds));
                   } else {
-                    event.addErrorMessage("warehouse required for items");
+                    event.addErrorMessage("warehouse-receiver required for items");
                     event.addErrorMessage(DataUtils.buildIdList(itemIds));
                   }
                 }
@@ -877,7 +881,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       idxTerm = idxDate;
     }
 
-    int start = 0;
+    int start;
     int end = (new JustDate()).getDays();
 
     if (row.getDate(idxTerm) != null) {
@@ -888,7 +892,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return overdue;
     }
 
-    overdue = Integer.valueOf(end - start);
+    overdue = end - start;
 
     return overdue;
   }
@@ -915,9 +919,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     String[] arr = Codec.beeDeserializeCollection(reqInfo.getParameter(VIEW_CURRENCIES));
     if (arr != null) {
-      for (String s : arr) {
-        currencyNames.add(s);
-      }
+      Collections.addAll(currencyNames, arr);
     }
 
     BeeRowSet companies;
@@ -1235,7 +1237,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               c += qs.updateData(new SqlUpdate(table)
                   .addConstant(COL_TRADE_PAID, paid)
                   .addConstant(COL_TRADE_PAYMENT_TIME,
-                      TimeUtils.parseDateTime(payment.getValue("data")))
+                      TimeUtils.parseDateTime(payment.getValue("data"), DateOrdering.YMD))
                   .setWhere(SqlUtils.equals(table, idName, id)));
             }
           }
@@ -1294,9 +1296,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             .addFromLeft(OrdersConstants.TBL_ORDER_SERIES,
                 sys.joinTables(OrdersConstants.TBL_ORDER_SERIES, trade, COL_TRADE_BOL_SERIES))
             .addFromLeft(PayrollConstants.TBL_EMPLOYEES, ALS_TRADE_BOL_DRIVER_EMPLOYEES,
-               SqlUtils.join(ALS_TRADE_BOL_DRIVER_EMPLOYEES,
-                   sys.getIdName(PayrollConstants.TBL_EMPLOYEES), trade,
-                   COL_TRADE_BOL_DRIVER_TAB_NO));
+                SqlUtils.join(ALS_TRADE_BOL_DRIVER_EMPLOYEES,
+                    sys.getIdName(PayrollConstants.TBL_EMPLOYEES), trade,
+                    COL_TRADE_BOL_DRIVER_TAB_NO));
 
         break;
 
@@ -1324,7 +1326,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     ResponseObject response = ResponseObject.emptyResponse();
 
     for (SimpleRow invoice : invoices) {
-      for (String col : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER,
+      for (String col : new String[] {
+          COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER,
           COL_TRADE_BOL_CARRIER}) {
         Long id = invoices.hasColumn(col) ? invoice.getLong(col) : null;
 
@@ -1509,14 +1512,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       Long warehouseFrom = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_WAREHOUSE_FROM));
       Long warehouseTo = newRow.getLong(newRowSet.getColumnIndex(COL_TRADE_WAREHOUSE_TO));
 
-      String errorMessage = verifyPhaseTransition(docId, operationType, warehouseFrom, warehouseTo,
-          newStock);
-      if (!BeeUtils.isEmpty(errorMessage)) {
-        return ResponseObject.error(reqInfo.getLabel(), docId, errorMessage);
+      Collection<String> errorMessages = verifyPhaseTransition(docId, operationType,
+          warehouseFrom, warehouseTo, newStock);
+
+      ResponseObject response;
+
+      if (!BeeUtils.isEmpty(errorMessages)) {
+        response = ResponseObject.error(reqInfo.getLabel(), docId);
+        errorMessages.forEach(response::addError);
+        return response;
       }
 
-      ResponseObject response = doPhaseTransition(docId, operationType, warehouseFrom, warehouseTo,
-          newStock);
+      response = doPhaseTransition(docId, operationType, warehouseFrom, warehouseTo, newStock);
       if (response != null && response.hasErrors()) {
         return response;
       }
@@ -1606,41 +1613,63 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return response;
   }
 
-  private ResponseObject adoptItems(IsCondition itemCondition, Long warehouseFrom) {
+  private ResponseObject adoptItems(IsCondition itemCondition, Long documentWarehouseFrom) {
     int count = 0;
 
     String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
 
     SqlSelect itemQuery = new SqlSelect()
-        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_ITEM, COL_TRADE_ITEM_QUANTITY)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_ITEM, COL_TRADE_ITEM_WAREHOUSE_FROM,
+            COL_TRADE_ITEM_QUANTITY)
         .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
-        .setWhere(SqlUtils.and(itemCondition, SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)));
+        .setWhere(SqlUtils.and(itemCondition, SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)))
+        .addOrder(TBL_TRADE_DOCUMENT_ITEMS, idName);
 
     SimpleRowSet itemData = qs.getData(itemQuery);
+
     if (!DataUtils.isEmpty(itemData)) {
+      Map<Long, Double> usedParents = new HashMap<>();
       ResponseObject response;
 
       for (SimpleRow itemRow : itemData) {
         Long id = itemRow.getLong(idName);
         Long item = itemRow.getLong(COL_ITEM);
 
+        Long warehouseFrom = itemRow.getLong(COL_TRADE_ITEM_WAREHOUSE_FROM);
+        if (!DataUtils.isId(warehouseFrom)) {
+          warehouseFrom = documentWarehouseFrom;
+        }
+
         Double qty = itemRow.getDouble(COL_TRADE_ITEM_QUANTITY);
 
-        Long parent = findParent(item, warehouseFrom, qty);
+        Long parent = null;
+        Map<Long, Double> parentQuantities = getParentQuantities(item, warehouseFrom, usedParents);
+
+        if (!BeeUtils.isEmpty(parentQuantities)) {
+          for (Map.Entry<Long, Double> entry : parentQuantities.entrySet()) {
+            if (BeeUtils.isMeq(entry.getValue(), qty)) {
+              parent = entry.getKey();
+              break;
+            }
+          }
+        }
+
         if (!DataUtils.isId(parent)) {
           return ResponseObject.error("parent not found for id", id, "item", item, "qty", qty,
               "warehouse", warehouseFrom);
         }
 
-        SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
-            .addExpression(COL_STOCK_QUANTITY,
-                SqlUtils.minus(SqlUtils.field(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), qty))
-            .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
+        if (BeeUtils.nonZero(qty)) {
+          SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
+              .addExpression(COL_STOCK_QUANTITY,
+                  SqlUtils.minus(SqlUtils.field(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), qty))
+              .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
 
-        response = qs.updateDataWithResponse(stockUpdate);
-        if (response.hasErrors()) {
-          return response;
+          response = qs.updateDataWithResponse(stockUpdate);
+          if (response.hasErrors()) {
+            return response;
+          }
         }
 
         SqlUpdate itemUpdate = new SqlUpdate(TBL_TRADE_DOCUMENT_ITEMS)
@@ -1659,16 +1688,24 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return ResponseObject.response(count);
   }
 
-  private Long findParent(Long item, Long warehouse, Double qty) {
+  private Map<Long, Double> getParentQuantities(Long item, Long warehouse,
+      Map<Long, Double> exclude) {
+
+    Map<Long, Double> result = new LinkedHashMap<>();
+
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM)
+        .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, COL_STOCK_QUANTITY)
         .addFrom(TBL_TRADE_STOCK)
         .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
-            TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM));
+            TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM))
+        .addFromInner(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+        .addOrder(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE)
+        .addOrder(TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM);
 
     HasConditions where = SqlUtils.and(
         SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, item),
-        SqlUtils.moreEqual(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, qty));
+        SqlUtils.positive(TBL_TRADE_STOCK, COL_STOCK_QUANTITY));
 
     if (DataUtils.isId(warehouse)) {
       where.add(SqlUtils.equals(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, warehouse));
@@ -1676,25 +1713,36 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     query.setWhere(where);
 
-    return BeeUtils.getQuietly(qs.getLongList(query), 0);
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        Long parent = row.getLong(COL_TRADE_DOCUMENT_ITEM);
+        Double quantity = row.getDouble(COL_STOCK_QUANTITY);
+
+        if (!BeeUtils.isEmpty(exclude) && exclude.containsKey(parent)) {
+          quantity -= exclude.get(parent);
+        }
+
+        if (BeeUtils.isPositive(quantity)) {
+          result.put(parent, quantity);
+        }
+      }
+    }
+
+    return result;
   }
 
   private ResponseObject leaveParents(IsCondition itemCondition) {
     int count = 0;
 
     String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
-    String itemQty = SqlUtils.uniqueName();
-    String stockQty = SqlUtils.uniqueName();
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_TRADE_ITEM_PARENT)
-        .addField(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY, itemQty)
-        .addField(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, stockQty)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_TRADE_ITEM_PARENT, COL_TRADE_ITEM_QUANTITY)
         .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
-        .addFromInner(TBL_TRADE_STOCK,
-            SqlUtils.join(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT,
-                TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
-        .setWhere(itemCondition);
+        .setWhere(SqlUtils.and(itemCondition,
+            SqlUtils.notNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT)));
 
     SimpleRowSet data = qs.getData(query);
 
@@ -1705,16 +1753,18 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         Long id = row.getLong(idName);
         Long parent = row.getLong(COL_TRADE_ITEM_PARENT);
 
-        double qty = BeeUtils.unbox(row.getDouble(stockQty))
-            + BeeUtils.unbox(row.getDouble(itemQty));
+        Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
 
-        SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
-            .addConstant(COL_STOCK_QUANTITY, qty)
-            .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
+        if (BeeUtils.nonZero(qty)) {
+          SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
+              .addExpression(COL_STOCK_QUANTITY,
+                  SqlUtils.plus(SqlUtils.field(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), qty))
+              .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
 
-        response = qs.updateDataWithResponse(stockUpdate);
-        if (response.hasErrors()) {
-          return response;
+          response = qs.updateDataWithResponse(stockUpdate);
+          if (response.hasErrors()) {
+            return response;
+          }
         }
 
         SqlUpdate itemUpdate = new SqlUpdate(TBL_TRADE_DOCUMENT_ITEMS)
@@ -1748,7 +1798,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_TRADE_ITEM_PARENT,
-            COL_TRADE_ITEM_WAREHOUSE, COL_TRADE_ITEM_QUANTITY)
+            COL_TRADE_ITEM_WAREHOUSE_TO, COL_TRADE_ITEM_QUANTITY)
         .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
         .setWhere(SqlUtils.and(itemCondition, SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)));
@@ -1762,7 +1812,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         Long parent = row.getLong(COL_TRADE_ITEM_PARENT);
         Long primary = DataUtils.isId(parent) ? getPrimary(parent) : id;
 
-        Long warehouse = BeeUtils.nvl(row.getLong(COL_TRADE_ITEM_WAREHOUSE), warehouseTo);
+        Long warehouse = BeeUtils.nvl(row.getLong(COL_TRADE_ITEM_WAREHOUSE_TO), warehouseTo);
         Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
 
         SqlInsert insert = new SqlInsert(TBL_TRADE_STOCK)
@@ -1787,87 +1837,86 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return qs.getLong(TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM, COL_TRADE_DOCUMENT_ITEM, parent);
   }
 
-  private String verifyPhaseTransition(long docId, OperationType operationType,
+  private Collection<String> verifyPhaseTransition(long docId, OperationType operationType,
       Long warehouseFrom, Long warehouseTo, boolean toStock) {
+
+    List<String> messages = new ArrayList<>();
 
     IsCondition itemCondition = SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT,
         docId);
     if (!qs.sqlExists(TBL_TRADE_DOCUMENT_ITEMS, itemCondition)) {
-      return null;
+      return messages;
     }
 
     if (operationType == null) {
-      return "operation type not specified";
+      messages.add("operation type not specified");
+      return messages;
     }
     if (toStock && operationType.producesStock() && !DataUtils.isId(warehouseTo)) {
-      return "warehouse-receiver not specified";
+      messages.add("warehouse-receiver not specified");
+      return messages;
     }
-
-    String errorMessage = null;
 
     if (operationType.producesStock() && !toStock && hasChildren(itemCondition)) {
-      errorMessage = "document has children";
+      messages.add("document has children");
     }
-    if (operationType.consumesStock() && toStock && !verifyStock(itemCondition, warehouseFrom)) {
-      errorMessage = "not enough stock";
+    if (operationType.consumesStock() && toStock) {
+      messages.addAll(verifyStock(itemCondition, warehouseFrom));
     }
 
-    return errorMessage;
+    return messages;
   }
 
-  private boolean verifyStock(IsCondition itemCondition, Long warehouseFrom) {
-    SqlSelect inputQuery = new SqlSelect()
-        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-        .addSum(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+  private List<String> verifyStock(IsCondition itemCondition, Long documentWarehouseFrom) {
+    List<String> messages = new ArrayList<>();
+
+    String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
+
+    SqlSelect itemQuery = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, idName, COL_ITEM, COL_TRADE_ITEM_WAREHOUSE_FROM,
+            COL_TRADE_ITEM_QUANTITY)
         .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
         .setWhere(SqlUtils.and(itemCondition, SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)))
-        .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM);
+        .addOrder(TBL_TRADE_DOCUMENT_ITEMS, idName);
 
-    Map<Long, Double> inputQuantities = getQuantities(inputQuery);
-    if (BeeUtils.isEmpty(inputQuantities)) {
-      return true;
-    }
+    SimpleRowSet itemData = qs.getData(itemQuery);
 
-    SqlSelect stockQuery = new SqlSelect()
-        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-        .addSum(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)
-        .addFrom(TBL_TRADE_STOCK)
-        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
-            TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
-        .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM);
+    if (!DataUtils.isEmpty(itemData)) {
+      Map<Long, Double> usedParents = new HashMap<>();
 
-    if (DataUtils.isId(warehouseFrom)) {
-      stockQuery.setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, warehouseFrom));
-    }
+      for (SimpleRow itemRow : itemData) {
+        Long id = itemRow.getLong(idName);
+        Long item = itemRow.getLong(COL_ITEM);
 
-    Map<Long, Double> stockQuantities = getQuantities(stockQuery);
-    if (stockQuantities.isEmpty()) {
-      return false;
-    }
+        Long warehouseFrom = itemRow.getLong(COL_TRADE_ITEM_WAREHOUSE_FROM);
+        if (!DataUtils.isId(warehouseFrom)) {
+          warehouseFrom = documentWarehouseFrom;
+        }
 
-    for (Map.Entry<Long, Double> entry : inputQuantities.entrySet()) {
-      Double qty = stockQuantities.get(entry.getKey());
-      if (qty == null || BeeUtils.isMore(entry.getValue(), qty)) {
-        return false;
+        Double qty = itemRow.getDouble(COL_TRADE_ITEM_QUANTITY);
+
+        Long parent = null;
+        Map<Long, Double> parentQuantities = getParentQuantities(item, warehouseFrom, usedParents);
+
+        if (!BeeUtils.isEmpty(parentQuantities)) {
+          for (Map.Entry<Long, Double> entry : parentQuantities.entrySet()) {
+            if (BeeUtils.isMeq(entry.getValue(), qty)) {
+              parent = entry.getKey();
+              usedParents.merge(parent, qty, Double::sum);
+              break;
+            }
+          }
+        }
+
+        if (!DataUtils.isId(parent)) {
+          messages.add(BeeUtils.joinWords("parent not found for id", id, "item", item,
+              "qty", qty, "warehouse", warehouseFrom));
+        }
       }
     }
 
-    return true;
-  }
-
-  private Map<Long, Double> getQuantities(SqlSelect query) {
-    Map<Long, Double> quantities = new HashMap<>();
-
-    SimpleRowSet data = qs.getData(query);
-
-    if (!DataUtils.isEmpty(data)) {
-      for (SimpleRow row : data) {
-        quantities.put(row.getLong(0), row.getDouble(1));
-      }
-    }
-
-    return quantities;
+    return messages;
   }
 
   private boolean hasChildren(IsCondition itemCondition) {
@@ -2075,13 +2124,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return qs.getValue(query);
   }
 
-  private ResponseObject onTradeItemWarehouseUpdate(long itemId, Long newValue) {
+  private ResponseObject onTradeItemWarehouseReceiverUpdate(long itemId, Long newValue) {
     OperationType operationType = getOperationTypeByTradeItem(itemId);
 
     if (operationType != null && operationType.producesStock() && modifyItemStock(itemId)) {
       String idName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
 
-      Long oldValue = qs.getLong(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE,
+      Long oldValue = qs.getLong(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE_TO,
           idName, itemId);
 
       Long warehouse;
@@ -2116,15 +2165,15 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return ResponseObject.emptyResponse();
   }
 
-  private Long getWarehouseTo(long docId, Long itemWarehouse) {
-    if (DataUtils.isId(itemWarehouse)) {
-      return itemWarehouse;
+  private Long getWarehouseReceiver(long docId, Long itemWarehouseTo) {
+    if (DataUtils.isId(itemWarehouseTo)) {
+      return itemWarehouseTo;
     } else {
       return qs.getLongById(TBL_TRADE_DOCUMENTS, docId, COL_TRADE_WAREHOUSE_TO);
     }
   }
 
-  private String verifyTradeItemInsert(long docId, Double quantity, Long warehouse, Long parent) {
+  private String verifyTradeItemInsert(long docId, Double quantity, Long warehouseTo, Long parent) {
     if (!BeeUtils.isDouble(quantity)) {
       return "item quantity not available";
     }
@@ -2155,8 +2204,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         return "quantity must be >= 0";
       }
 
-      Long warehouseTo = getWarehouseTo(docId, warehouse);
-      if (!DataUtils.isId(warehouseTo)) {
+      Long warehouseReceiver = getWarehouseReceiver(docId, warehouseTo);
+      if (!DataUtils.isId(warehouseReceiver)) {
         return "warehouse-receiver not specified";
       }
     }
@@ -2164,7 +2213,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return null;
   }
 
-  private ResponseObject afterTradeItemInsert(long docId, Double quantity, Long warehouse,
+  private ResponseObject afterTradeItemInsert(long docId, Double quantity, Long warehouseTo,
       Long parent, long itemId) {
 
     OperationType operationType = getOperationTypeByTradeDocument(docId);
@@ -2191,12 +2240,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     if (operationType != null && operationType.producesStock()) {
       Long primary = DataUtils.isId(parent) ? getPrimary(parent) : itemId;
-      Long warehouseTo = getWarehouseTo(docId, warehouse);
+      Long warehouse = getWarehouseReceiver(docId, warehouseTo);
 
       SqlInsert insert = new SqlInsert(TBL_TRADE_STOCK)
           .addConstant(COL_PRIMARY_DOCUMENT_ITEM, primary)
           .addConstant(COL_TRADE_DOCUMENT_ITEM, itemId)
-          .addConstant(COL_STOCK_WAREHOUSE, warehouseTo)
+          .addConstant(COL_STOCK_WAREHOUSE, warehouse)
           .addConstant(COL_STOCK_QUANTITY, quantity);
 
       ResponseObject response = qs.insertDataWithResponse(insert);
@@ -2306,7 +2355,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return refresh ? ResponseObject.response(Action.REFRESH) : ResponseObject.emptyResponse();
   }
 
-  private Set<Long> getTradeDocumentStockItemsWithoutWarehouse(long docId) {
+  private Set<Long> getTradeDocumentStockItemsWithoutWarehouseReceiver(long docId) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM)
         .addFrom(TBL_TRADE_STOCK)
@@ -2315,7 +2364,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM))
         .setWhere(SqlUtils.and(
             SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docId),
-            SqlUtils.isNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE),
+            SqlUtils.isNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE_TO),
             SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE)));
 
     return qs.getLongSet(query);
@@ -2361,14 +2410,14 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     IsCondition phaseCondition = SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE,
         stockPhases);
 
-    IsCondition warehouseCondition = SqlUtils.or(
+    IsCondition warehouseToCondition = SqlUtils.or(
         SqlUtils.notNull(TBL_TRADE_DOCUMENTS, COL_TRADE_WAREHOUSE_TO),
-        SqlUtils.notNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE));
+        SqlUtils.notNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE_TO));
 
     IsCondition itemCondition = SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE);
 
     SqlSelect rootQuery = createStockProducerQuery(null,
-        SqlUtils.and(rootCondition, phaseCondition, warehouseCondition, itemCondition,
+        SqlUtils.and(rootCondition, phaseCondition, warehouseToCondition, itemCondition,
             SqlUtils.isNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT)));
 
     String parents = qs.sqlCreateTemp(rootQuery);
@@ -2402,7 +2451,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       qs.sqlIndex(parents, COL_TRADE_DOCUMENT_ITEM);
 
       SqlSelect childQuery = createStockProducerQuery(parents,
-          SqlUtils.and(producerCondition, phaseCondition, warehouseCondition, consumerCondition));
+          SqlUtils.and(producerCondition, phaseCondition, warehouseToCondition, consumerCondition));
 
       String children = qs.sqlCreateTemp(childQuery);
       qs.sqlDropTemp(parents);
@@ -2628,7 +2677,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
   private SqlSelect createStockProducerQuery(String parents, IsCondition condition) {
     IsExpression warehouseExpression = SqlUtils.nvl(
-        SqlUtils.field(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE),
+        SqlUtils.field(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_WAREHOUSE_TO),
         SqlUtils.field(TBL_TRADE_DOCUMENTS, COL_TRADE_WAREHOUSE_TO));
 
     String tdItemIdName = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);

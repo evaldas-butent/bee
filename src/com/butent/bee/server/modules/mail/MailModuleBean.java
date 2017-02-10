@@ -158,9 +158,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   TimerService timerService;
 
   @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-  public void checkMail(boolean async, MailAccount account, MailFolder localFolder,
-      boolean syncAll, boolean silent) {
-
+  public void checkMail(boolean async, MailAccount account, MailFolder localFolder, boolean force) {
     Assert.noNulls(account, localFolder);
 
     if (async) {
@@ -176,8 +174,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
         @Override
         public void run() {
-          MailModuleBean bean = Assert.notNull(Invocation.locateRemoteBean(MailModuleBean.class));
-          bean.checkMail(false, account, localFolder, syncAll, silent);
+          Invocation.locateRemoteBean(MailModuleBean.class)
+              .checkMail(false, account, localFolder, force);
         }
       });
       return;
@@ -188,8 +186,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       int f = 0;
       String error = null;
       boolean connectError = false;
-      String progressId = silent ? null : Endpoint.createProgress(usr.getCurrentUserId(),
-          account.getFolderCaption(localFolder.getId()));
+      String progressId = DataUtils.isId(usr.getCurrentUserId())
+          ? Endpoint.createProgress(usr.getCurrentUserId(),
+          account.getFolderCaption(localFolder.getId())) : null;
 
       try {
         store = account.connectToStore();
@@ -199,21 +198,21 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
           Holder<Consumer<MailFolder>> holder = Holder.absent();
           holder.set(mailFolder -> {
-            mailFolder.getSubFolders().forEach(folder ->
-                checkMail(true, account, folder, syncAll, silent));
+            mailFolder.getSubFolders().forEach(folder -> checkMail(true, account, folder, force));
             mailFolder.getSubFolders().forEach(folder -> holder.get().accept(folder));
           });
           holder.get().accept(localFolder);
         } else {
           c += checkFolder(account, account.getRemoteFolder(store.getStore(), localFolder),
-              localFolder, syncAll, progressId);
+              localFolder, force, progressId);
         }
       } catch (Throwable e) {
         error = BeeUtils.joinWords(account.getStoreProtocol(), account.getStoreHost(),
             account.getStoreLogin(), localFolder.getName());
 
         if (e instanceof ConnectionFailureException) {
-          if (silent && (account.isRoot(localFolder) || account.isInbox(localFolder))
+          if (BeeUtils.isEmpty(progressId)
+              && (account.isRoot(localFolder) || account.isInbox(localFolder))
               && (System.currentTimeMillis() - BeeUtils.unbox(qs.getLongById(TBL_ACCOUNTS,
               account.getAccountId(), COL_ACCOUNT_LAST_CONNECT))) > TimeUtils.MILLIS_PER_DAY) {
 
@@ -417,7 +416,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           response = ResponseObject.error("Folder does not exist: ID =", folderId);
         } else {
           ctx.getBusinessObject(this.getClass()).checkMail(false, account, folder,
-              reqInfo.getParameterBoolean(Service.VAR_CHECK), false);
+              reqInfo.getParameterBoolean(Service.VAR_CHECK));
           response = ResponseObject.emptyResponse();
         }
       } else if (BeeUtils.same(svc, SVC_SEND_MAIL)) {
@@ -588,6 +587,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void init() {
+    System.setProperty("mail.mime.charset", BeeConst.CHARSET_UTF8);
     System.setProperty("mail.mime.decodetext.strict", "false");
     System.setProperty("mail.mime.decodefilename", "true");
     System.setProperty("mail.mime.parameters.strict", "false");
@@ -1470,14 +1470,13 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     for (SimpleRow row : rs) {
       MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
 
-      checkMail(true, account, Objects.equals(row.getInt(COL_ACCOUNT_SYNC_MODE),
-          SyncMode.SYNC_ALL.ordinal()) ? account.getRootFolder() : account.getInboxFolder(), false,
-          true);
+      checkMail(account, Objects.equals(row.getInt(COL_ACCOUNT_SYNC_MODE),
+          SyncMode.SYNC_ALL.ordinal()) ? account.getRootFolder() : account.getInboxFolder());
     }
   }
 
   private void checkMail(MailAccount account, MailFolder localFolder) {
-    checkMail(true, account, localFolder, false, false);
+    checkMail(true, account, localFolder, false);
   }
 
   private int copyMessages(MailAccount account, List<Long> places, MailFolder target,

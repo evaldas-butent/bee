@@ -69,8 +69,6 @@ public final class Endpoint {
   private static WebSocket socket;
   private static String sessionId;
 
-  private static MessageDispatcher dispatcher = new MessageDispatcher();
-
   private static Map<String, Consumer<String>> progressQueue = new HashMap<>();
   private static Map<String, Function<ProgressMessage, Boolean>> progressHandlers = new HashMap<>();
 
@@ -359,7 +357,7 @@ public final class Endpoint {
           logger.info("<-", ((String) data).length(), message.getType().name().toLowerCase(),
               message.brief());
         }
-        dispatcher.dispatch(message);
+        MessageDispatcher.dispatch(message);
       }
 
     } else if (data == null) {

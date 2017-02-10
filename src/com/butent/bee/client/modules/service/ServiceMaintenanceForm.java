@@ -7,7 +7,6 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
@@ -21,7 +20,6 @@ import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCheckedness;
-
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -29,12 +27,13 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_DEPARTMENT;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.VIEW_DEPARTMENT_EMPLOYEES;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_TYPE_NAME;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -46,20 +45,18 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
+import java.util.Map;
 
 public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     implements SelectorEvent.Handler, RowUpdateEvent.Handler {
@@ -71,7 +68,6 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   private static final String WIDGET_MAINTENANCE_COMMENTS = "MaintenanceComments";
   private static final String WIDGET_WARRANTY_PANEL = "WarrantyPanel";
   private static final String WIDGET_WARRANTY_TYPE_NAME = "WarrantyTypeName";
-  private static final int NEW_MAINTENANCE_DATA_LOAD_PROCESS_COUNT = 8;
   private static final String WIDGET_OTHER_INFO = "OtherInfo";
 
   private static final String STYLE_PROGRESS_CONTAINER =
@@ -150,6 +146,14 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           warrantyPanel.setVisible(BeeUtils.toBoolean(event.getValue()));
         }
       });
+
+    } else if (widget instanceof DataSelector
+        && BeeUtils.same(name, AdministrationConstants.COL_DEPARTMENT)) {
+      Filter departmentFilter =
+          Filter.in(Data.getIdColumn(AdministrationConstants.VIEW_DEPARTMENTS),
+              VIEW_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT, Filter.equals(COL_COMPANY_PERSON,
+                  BeeKeeper.getUser().getUserData().getCompanyPerson()));
+      ((DataSelector) widget).setAdditionalFilter(departmentFilter);
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -396,119 +400,27 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     form.addStyleName(STYLE_PROGRESS_CONTAINER);
     form.addStyleName(STYLE_PROGRESS_BAR);
 
-    final Consumer<Pair<String, String>> consumer = new Consumer<Pair<String, String>>() {
-      Set<Pair<String, String>> values = new HashSet<>();
-      int processCount;
-
+    ParameterList params = ServiceKeeper.createArgs(SVC_GET_MAINTENANCE_NEW_ROW_VALUES);
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
-      public void accept(Pair<String, String> columnAndValue) {
-        processCount++;
-
-        if (columnAndValue != null) {
-          values.add(columnAndValue);
+      public void onResponse(ResponseObject response) {
+        if (!response.isEmpty() && !response.hasErrors()) {
+          Map<String, String> columnsData = Codec
+              .deserializeLinkedHashMap(response.getResponseAsString());
+          columnsData.forEach((column, value) -> newRow.setValue(getDataIndex(column), value));
         }
+        form.removeStyleName(STYLE_PROGRESS_CONTAINER);
+        form.removeStyleName(STYLE_PROGRESS_BAR);
 
-        if (processCount == NEW_MAINTENANCE_DATA_LOAD_PROCESS_COUNT) {
-          values.forEach(value -> newRow.setValue(getDataIndex(value.getA()), value.getB()));
-
-          form.removeStyleName(STYLE_PROGRESS_CONTAINER);
-          form.removeStyleName(STYLE_PROGRESS_BAR);
-
-          getFormView().refresh(false, false);
-        }
-      }
-    };
-
-    Global.getRelationParameter(PRM_DEFAULT_MAINTENANCE_TYPE, (prefixId, prefix) -> {
-     if (DataUtils.isId(prefixId)) {
-        consumer.accept(Pair.of(COL_TYPE, BeeUtils.toString(prefixId)));
-        consumer.accept(Pair.of(ALS_MAINTENANCE_TYPE_NAME, prefix));
-
-        Queries.getValue(TBL_MAINTENANCE_TYPES, prefixId, COL_ADDRESS_REQUIRED,
-            new RpcCallback<String>() {
-          @Override
-          public void onSuccess(String result) {
-            consumer.accept(Pair.of(COL_ADDRESS_REQUIRED, result));
-          }
-
-          @Override
-          public void onFailure(String... reason) {
-            consumeProcess(consumer, 1);
-          }
-        });
-
-      } else {
-        consumeProcess(consumer, 2);
-      }
-
-      Queries.getRowSet(TBL_STATE_PROCESS, null,
-          ServiceUtils.getStateFilter(null, prefixId, Filter.isPositive(COL_INITIAL)),
-          new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          if (!DataUtils.isEmpty(result)) {
-            IsRow processRow = result.getRow(0);
-            consumer.accept(Pair.of(AdministrationConstants.COL_STATE, processRow.
-                    getString(Data.getColumnIndex(TBL_STATE_PROCESS, COL_MAINTENANCE_STATE))));
-
-            consumer.accept(Pair.of(ALS_STATE_NAME, processRow.
-                getString(Data.getColumnIndex(TBL_STATE_PROCESS, ALS_MAINTENANCE_STATE_NAME))));
-
-          } else {
-            consumeProcess(consumer, 2);
-          }
-        }
-
-        @Override
-        public void onFailure(String... reason) {
-          consumeProcess(consumer, 2);
-        }
-      });
-    });
-
-    Global.getRelationParameter(PRM_DEFAULT_WARRANTY_TYPE, (prefixId, prefix) -> {
-      if (DataUtils.isId(prefixId)) {
-        consumer.accept(Pair.of(COL_WARRANTY_TYPE, BeeUtils.toString(prefixId)));
-        consumer.accept(Pair.of(ALS_WARRANTY_TYPE_NAME, prefix));
-      } else {
-        consumeProcess(consumer, 2);
+        getFormView().refresh(false, false);
       }
     });
-
-    Filter personFilter = Filter.in(Data.getIdColumn(VIEW_COMPANY_PERSONS),
-        AdministrationConstants.TBL_USERS, COL_COMPANY_PERSON,
-        Filter.compareId(BeeKeeper.getUser().getUserId()));
-
-    Queries.getRowSet(VIEW_COMPANY_PERSONS, null, personFilter, new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (!DataUtils.isEmpty(result)) {
-              IsRow personRow = result.getRow(0);
-              consumer.accept(Pair.of(ALS_CREATOR_DEPARTMENT_NAME, personRow.
-                  getString(Data.getColumnIndex(VIEW_COMPANY_PERSONS, ALS_DEPARTMENT_NAME))));
-
-            } else {
-              consumeProcess(consumer, 1);
-            }
-          }
-
-          @Override
-          public void onFailure(String... reason) {
-            consumeProcess(consumer, 1);
-          }
-        });
   }
 
   @Override
   public void onUnload(FormView form) {
     super.onUnload(form);
     EventUtils.clearRegistry(registry);
-  }
-
-  private static void consumeProcess(Consumer<Pair<String, String>> consumer, int processCount) {
-    for (int i = 0; i < processCount; i++) {
-      consumer.accept(null);
-    }
   }
 
   private void createStateChangeComment(IsRow row, IsRow stateProcessRow) {
@@ -631,14 +543,6 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         form.notifySevere(Localized.dictionary().fieldRequired(Localized.dictionary().address()));
         return false;
       }
-    }
-
-    String department = row.getString(getDataIndex(ALS_CREATOR_DEPARTMENT_NAME));
-
-    if (BeeUtils.isEmpty(department)) {
-      form.notifySevere(Localized.dictionary()
-          .fieldRequired(Localized.dictionary().companyDepartment()));
-      return false;
     }
 
     Long warrantyTypeId = row.getLong(getDataIndex(COL_WARRANTY_TYPE));

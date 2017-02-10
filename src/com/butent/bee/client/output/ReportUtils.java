@@ -142,7 +142,9 @@ public final class ReportUtils {
         response.notify(BeeKeeper.getScreen());
 
         if (!response.hasErrors()) {
-          responseConsumer.accept(FileInfo.restore(response.getResponseAsString()));
+          FileInfo fileInfo = FileInfo.restore(response.getResponseAsString());
+          fileInfo.setDescription(report);
+          responseConsumer.accept(fileInfo);
         }
       }
     });

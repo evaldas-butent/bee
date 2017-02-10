@@ -75,6 +75,13 @@ public class Configuration implements BeeSerializable {
       return null;
     }
 
+    public Long getRelationPhoto(Bundle bundle) {
+      if (hasRelation(bundle)) {
+        return relations.get(bundle.getKey()).getA().getPhoto();
+      }
+      return null;
+    }
+
     public String getRelationPrice(Bundle bundle) {
       if (hasRelation(bundle)) {
         return relations.get(bundle.getKey()).getA().getPrice();
@@ -116,6 +123,7 @@ public class Configuration implements BeeSerializable {
       setPrice(info.getPrice());
       setDescription(info.getDescription());
       setCriteria(info.getCriteria());
+      setPhoto(info.getPhoto());
     }
 
     public void setRelationInfo(Bundle bundle, ConfInfo info, String packet) {
@@ -225,6 +233,11 @@ public class Configuration implements BeeSerializable {
     return pair != null && pair.getA() != null ? pair.getA().getDescription() : null;
   }
 
+  public Long getBundlePhoto(Bundle bundle) {
+    Pair<ConfInfo, Boolean> pair = bundles.get(bundle);
+    return pair != null && pair.getA() != null ? pair.getA().getPhoto() : null;
+  }
+
   public String getBundlePrice(Bundle bundle) {
     Pair<ConfInfo, Boolean> pair = bundles.get(bundle);
     return pair != null && pair.getA() != null ? pair.getA().getPrice() : null;
@@ -299,6 +312,11 @@ public class Configuration implements BeeSerializable {
     return Objects.nonNull(optionInfo) ? optionInfo.getDescription() : null;
   }
 
+  public Long getOptionPhoto(Option option) {
+    OptionInfo optionInfo = options.get(option);
+    return Objects.nonNull(optionInfo) ? optionInfo.getPhoto() : null;
+  }
+
   public String getOptionPrice(Option option) {
     OptionInfo optionInfo = options.get(option);
     return Objects.nonNull(optionInfo) ? optionInfo.getPrice() : null;
@@ -326,6 +344,11 @@ public class Configuration implements BeeSerializable {
   public String getRelationPackets(Option option, Bundle bundle) {
     OptionInfo optionInfo = options.get(option);
     return Objects.nonNull(optionInfo) ? optionInfo.getRelationPackets(bundle) : null;
+  }
+
+  public Long getRelationPhoto(Option option, Bundle bundle) {
+    OptionInfo optionInfo = options.get(option);
+    return Objects.nonNull(optionInfo) ? optionInfo.getRelationPhoto(bundle) : null;
   }
 
   public String getRelationPrice(Option option, Bundle bundle) {

@@ -702,21 +702,25 @@ public class RequestEditor extends ProductSupportInterceptor {
         .getString(form.getDataIndex(COL_REQUEST_CONTENT)));
 
     DataSelector managerSel = (DataSelector) form.getWidgetByName(WIDGET_MANGAER_NAME);
-    Map<Long, FileInfo> files = Maps.newHashMap();
     FileGroup filesList = (FileGroup) form.getWidgetByName(WIDGET_FILES_NAME);
 
-    for (FileInfo f : filesList.getFiles()) {
-      files.put(f.getId(), f);
+    if (filesList != null) {
+      taskRow.setProperty(PROP_FILES, Codec.beeSerialize(filesList.getFiles()));
     }
 
+    if (managerSel != null && BeeUtils.isLong(managerSel.getValue())) {
+      taskRow.setProperty(PROP_EXECUTORS,
+        DataUtils.buildIdList(BeeUtils.toLong(managerSel.getValue())));
+    }
     taskRow.setProperty(PFX_RELATED + VIEW_REQUESTS, DataUtils.buildIdList(reqRow.getId()));
     RowFactory.createRow(taskDataInfo.getNewRowForm(), null, taskDataInfo, taskRow,
-        Modality.ENABLED, null,
-        new TaskBuilder(files, BeeUtils.toLongOrNull(managerSel.getValue()), true), null,
-        new RowCallback() {
+        Modality.ENABLED, null, new TaskBuilder(true), null, new RowCallback() {
 
           @Override
           public void onSuccess(BeeRow result) {
+            if (result == null) {
+              return;
+            }
             Map<String, String> data = Maps.newLinkedHashMap();
             data.put(BeeUtils.toString(TaskEvent.CREATE.ordinal()), result.getString(0));
 

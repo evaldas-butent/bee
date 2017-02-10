@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.RendererFactory;
@@ -40,6 +41,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.time.JustDate;
@@ -109,13 +111,13 @@ class ReportManager {
     JustDate lower = Data.getDate(VIEW_REPORT_OPTIONS, row, COL_LOWER_DATE);
     if (lower != null) {
       sb.append(separator).append(Localized.dictionary().dateFromShort().toLowerCase()).append(
-          separator).append(lower.toString());
+          separator).append(Format.renderDate(lower));
     }
 
     JustDate upper = Data.getDate(VIEW_REPORT_OPTIONS, row, COL_UPPER_DATE);
     if (upper != null) {
       sb.append(separator).append(Localized.dictionary().dateToShort().toLowerCase()).append(
-          separator).append(upper.toString());
+          separator).append(Format.renderDate(upper));
     }
 
     return sb.toString();
@@ -322,8 +324,10 @@ class ReportManager {
           AutocompleteProvider.retainValue(caption);
         }
 
-        JustDate vLd = TimeUtils.parseDate(lowerDate.getValue());
-        JustDate vUd = TimeUtils.parseDate(upperDate.getValue());
+        DateOrdering dateOrdering = Format.getDefaultDateOrdering();
+
+        JustDate vLd = TimeUtils.parseDate(lowerDate.getValue(), dateOrdering);
+        JustDate vUd = TimeUtils.parseDate(upperDate.getValue(), dateOrdering);
 
         if (vLd != null && vUd != null && TimeUtils.isMeq(vLd, vUd)) {
           Global.showError(Localized.dictionary().calInvalidDateInterval());
