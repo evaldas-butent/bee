@@ -9,7 +9,6 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.UnboundSelector;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.grid.HtmlTable;
@@ -40,7 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class TaskDialog extends DialogBox {
+class TaskDialog extends CustomTaskDialog {
 
   private static final String STYLE_DIALOG = CRM_STYLE_PREFIX + "taskDialog";
   private static final String STYLE_CELL = "Cell";
@@ -351,7 +350,11 @@ class TaskDialog extends DialogBox {
     return DomUtils.getChildQuietly(getContent(), id);
   }
 
-  private HtmlTable getContainer() {
+  /**
+   * Verslo Aljansas TID 25505.
+   */
+  @Override
+  protected HtmlTable getContainer() {
     return (HtmlTable) getContent();
   }
 }

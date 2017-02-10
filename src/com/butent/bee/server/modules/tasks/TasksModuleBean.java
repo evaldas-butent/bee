@@ -2607,10 +2607,17 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       return ResponseObject.error("task duration time not specified");
     }
 
+    // Verslo Aljansas TID 25505
+    String vaMileage = reqInfo.get(VAR_VA_TASK_DURATION_MILEAGE);
+
     return qs.insertDataWithResponse(new SqlInsert(TBL_EVENT_DURATIONS)
         .addConstant(COL_DURATION_TYPE, durationType)
         .addConstant(COL_DURATION_DATE, date)
-        .addConstant(COL_DURATION, time));
+        .addConstant(COL_DURATION, time)
+
+        // Verslo Aljansas TID 25505
+        .addConstant(COL_VA_MILEAGE, vaMileage)
+    );
   }
 
   private ResponseObject registerTaskEvent(long taskId, long userId, TaskEvent event, long millis) {

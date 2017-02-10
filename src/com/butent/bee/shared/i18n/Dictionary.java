@@ -3715,6 +3715,8 @@ public interface Dictionary {
 
   default String messageSent() {return g("messageSent");}
 
+  default String mileage() {return g("mileage");}
+
   default String minValue() {return g("minValue");}
 
   default String minorCaption() {return g("minorCaption");}

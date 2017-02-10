@@ -8,5 +8,8 @@
     <Relation name="DurationType" notNull="true" relation="DurationTypes" label="=crmDurationType" />
     <DateTime name="DurationDate" notNull="true" label="=date" />
     <String name="Duration" precision="20" notNull="true" label="=crmSpentTime" />
+    <!-- Verslo Aljansas TID 25505 {-->
+    <Double name="VAMileage" label="=mileage" />
+    <!-- } Verslo Aljansas TID 25505 -->
   </Fields>
 </Table>

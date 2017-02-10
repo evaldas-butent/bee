@@ -1054,6 +1054,11 @@ public final class TaskConstants {
   public static final String DEFAULT_TASK_PROPERTIES  =
         BeeUtils.join(BeeConst.STRING_COMMA, PROP_OBSERVERS, PROP_FILES, PROP_EVENTS);
 
+  // Verslo Aljansas TID 25505
+  public static final String COL_VA_MILEAGE = "VAMileage";
+  public static final String VAR_VA_TASK_DURATION_MILEAGE = Service.RPC_VAR_PREFIX
+    + "task_duration_mileage";
+
   private TaskConstants() {
   }
 }

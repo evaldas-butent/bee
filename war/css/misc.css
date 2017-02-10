@@ -747,3 +747,18 @@
 .bee-reminder-dialog-not-visible {
   display: none;
 }
+
+
+/* Verslo Aljansas TID 25505 */
+.bee-crm-taskDialog-va-mileageInput {
+  width: 60px;
+}
+
+.bee-crm-taskDialog-va-mileageLabel{
+  float:right;
+}
+
+.bee-crm-taskEvent-VAMileage {
+  font-weight: bolder;
+  padding-right: 10px;
+}

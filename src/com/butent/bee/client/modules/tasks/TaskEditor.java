@@ -298,6 +298,12 @@ class TaskEditor extends ProductSupportInterceptor {
         date = TimeUtils.nowMinutes();
       }
 
+      // Verslo Aljansas TID 25505
+      Double vaMileage = BeeUtils.toDoubleOrNull(dialog.getMileage(ids.get(COL_VA_MILEAGE)));
+      if (BeeUtils.isPositive(vaMileage)) {
+        params.addDataItem(VAR_VA_TASK_DURATION_MILEAGE, vaMileage);
+      }
+
       params.addDataItem(VAR_TASK_DURATION_DATE, date.serialize());
       params.addDataItem(VAR_TASK_DURATION_TIME, time);
       params.addDataItem(VAR_TASK_DURATION_TYPE, type);
@@ -511,6 +517,18 @@ class TaskEditor extends ProductSupportInterceptor {
       }
 
       body.add(row4);
+
+      // Verslo Aljansas TID 25505
+      Double vaMileage = DataUtils.getDouble(columns, row, COL_VA_MILEAGE);
+      if (BeeUtils.isPositive(vaMileage)) {
+        Flow row5 = new Flow();
+        row5.addStyleName(STYLE_EVENT_COL_ROW);
+        row5.addStyleName(STYLE_EVENT_FLEX);
+
+        row5.add(createEventCell(COL_VA_MILEAGE, BeeUtils.joinWords(Localized.dictionary()
+          .mileage(), BeeUtils.round(vaMileage, 3))));
+        body.add(row5);
+      }
 
       Long millis = TimeUtils.parseTime(duration);
       if (BeeUtils.isPositive(millis)
@@ -2025,6 +2043,10 @@ class TaskEditor extends ProductSupportInterceptor {
 
   private Map<String, String> setDurations(TaskDialog dialog) {
     final String durId = dialog.addTime(Localized.dictionary().crmSpentTime(), false);
+
+    // Verslo Aljansas TID 25505
+    final String vaMileageId = dialog.addMileage();
+
     String durTypeId = dialog.addSelector(Localized.dictionary().crmDurationType(),
         VIEW_TASK_DURATION_TYPES, Lists.newArrayList(ALS_DURATION_TYPE_NAME), false, null, null,
         COL_DURATION_TYPE);
@@ -2037,6 +2059,9 @@ class TaskEditor extends ProductSupportInterceptor {
     final Map<String, String> durIds = new HashMap<>();
     durIds.put(COL_DURATION, durId);
     durIds.put(COL_DURATION_TYPE, durTypeId);
+
+    // Verslo Aljansas TID 25505
+    durIds.put(COL_VA_MILEAGE, vaMileageId);
 
     return durIds;
   }
