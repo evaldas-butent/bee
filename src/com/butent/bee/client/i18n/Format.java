@@ -10,6 +10,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.DateTimeFormat;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.HasDateTimeFormat;
@@ -219,12 +220,8 @@ public final class Format {
     return Localized.MONEY_SCALE;
   }
 
-  public static DateTimeFormat getDefaultDateFormat() {
-    return getPredefinedFormat(PredefinedFormat.DATE_SHORT);
-  }
-
-  public static DateTimeFormat getDefaultDateTimeFormat() {
-    return getPredefinedFormat(PredefinedFormat.DATE_TIME_SHORT);
+  public static DateOrdering getDefaultDateOrdering() {
+    return getDefaultDateTimeFormatInfo().dateOrdering();
   }
 
   public static NumberFormat getDefaultDoubleFormat() {
@@ -304,7 +301,7 @@ public final class Format {
     if (BeeUtils.isEmpty(s)) {
       return null;
     } else if (format == null) {
-      return TimeUtils.parseDate(s);
+      return TimeUtils.parseDate(s, getDefaultDateOrdering());
     } else {
       return JustDate.get(parseDateTimeQuietly(format, s));
     }
@@ -322,7 +319,7 @@ public final class Format {
       }
     }
 
-    return TimeUtils.parseDateTime(s);
+    return TimeUtils.parseDateTime(s, getDefaultDateOrdering());
   }
 
   public static Double parseQuietly(NumberFormat format, String s) {

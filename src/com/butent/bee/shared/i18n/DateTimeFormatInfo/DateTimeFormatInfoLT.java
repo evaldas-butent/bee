@@ -1,5 +1,7 @@
 package com.butent.bee.shared.i18n.DateTimeFormatInfo;
 
+import com.butent.bee.shared.i18n.DateOrdering;
+
 /**
  * Implementation of DateTimeFormatInfo for the "lt" locale.
  */
@@ -40,6 +42,11 @@ public final class DateTimeFormatInfoLT implements DateTimeFormatInfo {
   @Override
   public String dateFormatShort() {
     return "y-MM-dd";
+  }
+
+  @Override
+  public DateOrdering dateOrdering() {
+    return DateOrdering.YMD;
   }
 
   @Override

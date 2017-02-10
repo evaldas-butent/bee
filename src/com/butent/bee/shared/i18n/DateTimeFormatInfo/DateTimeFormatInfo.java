@@ -1,5 +1,7 @@
 package com.butent.bee.shared.i18n.DateTimeFormatInfo;
 
+import com.butent.bee.shared.i18n.DateOrdering;
+
 /**
  * Information required for formatting and parsing localized date/time values.
  */
@@ -37,6 +39,8 @@ public interface DateTimeFormatInfo {
    * Returns a "short" date format.
    */
   String dateFormatShort();
+
+  DateOrdering dateOrdering();
 
   /**
    * Returns a date/time format from a date format pattern and a time format

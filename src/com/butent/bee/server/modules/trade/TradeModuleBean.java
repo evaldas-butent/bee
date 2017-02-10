@@ -77,6 +77,7 @@ import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -1236,7 +1237,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
               c += qs.updateData(new SqlUpdate(table)
                   .addConstant(COL_TRADE_PAID, paid)
                   .addConstant(COL_TRADE_PAYMENT_TIME,
-                      TimeUtils.parseDateTime(payment.getValue("data")))
+                      TimeUtils.parseDateTime(payment.getValue("data"), DateOrdering.YMD))
                   .setWhere(SqlUtils.equals(table, idName, id)));
             }
           }

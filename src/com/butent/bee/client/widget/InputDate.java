@@ -169,7 +169,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
   @Override
   public void setMaxValue(String maxValue) {
-    setMaxDate(TimeUtils.parseDate(maxValue));
+    setMaxDate(TimeUtils.parseDate(maxValue, Format.getDefaultDateOrdering()));
   }
 
   public void setMinDate(HasDateValue minDate) {
@@ -178,7 +178,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
 
   @Override
   public void setMinValue(String minValue) {
-    setMinDate(TimeUtils.parseDate(minValue));
+    setMinDate(TimeUtils.parseDate(minValue, Format.getDefaultDateOrdering()));
   }
 
   @Override
