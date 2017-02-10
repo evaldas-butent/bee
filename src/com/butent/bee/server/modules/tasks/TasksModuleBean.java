@@ -1711,10 +1711,16 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     }
 
     SimpleRowSet companiesListSet = qs.getData(companiesListQuery);
-    SimpleRowSet result = new SimpleRowSet(new String[] {COL_COMPANY_NAME, COL_DURATION});
+
+    // Verslo Aljansas TID 25505
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_COMPANY_NAME, COL_DURATION,
+      COL_VA_MILEAGE});
+
     long totalTimeMls = 0;
 
-    result.addRow(new String[] {constants.client(), constants.crmSpentTime()});
+    // Verslo Aljansas TID 25505
+    double totalMileage = 0;
+    result.addRow(new String[] {constants.client(), constants.crmSpentTime(), constants.mileage()});
 
     /* Register times in tasks without company */
     companiesListSet.addRow(new String[] {null, "—", null});
@@ -1726,6 +1732,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
               ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
 
       SqlSelect companyTimesQuery = new SqlSelect()
+          // Verslo Aljansas TID 25505
+          .addFields(TBL_EVENT_DURATIONS, COL_VA_MILEAGE)
+
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
           .addFrom(TBL_TASK_EVENTS)
           .addFromRight(TBL_EVENT_DURATIONS,
@@ -1786,21 +1795,32 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       SimpleRowSet companyTimes = qs.getData(companyTimesQuery);
       long dTimeMls = 0;
 
+      // Verslo Aljansas TID 25505
+      double mileage = 0D;
+
       for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
         Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
             .getColumnIndex(COL_DURATION)));
         dTimeMls += timeMls;
+
+        // Verslo Aljansas TID 25505
+         mileage += BeeUtils.nvl(companyTimes.getDouble(j, COL_VA_MILEAGE), 0D);
+         totalMileage += BeeUtils.nvl(companyTimes.getDouble(j, COL_VA_MILEAGE), 0D);
       }
 
       totalTimeMls += dTimeMls;
 
       if (!(hideZeroTimes && dTimeMls <= 0)) {
-        result.addRow(new String[] {compFullName, TimeUtils.renderTime(dTimeMls, false)});
+        // Verslo Aljansas TID 25505
+        result.addRow(new String[] {compFullName, TimeUtils.renderTime(dTimeMls, false),
+        BeeUtils.toString(mileage, VAR_VA_MILEAGE_PREC)});
       }
     }
 
+    // Verslo Aljansas TID 25505
     result.addRow(new String[] {
-        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false)});
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false),
+      BeeUtils.toString(totalMileage, VAR_VA_MILEAGE_PREC)});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
@@ -1955,6 +1975,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     select.addField(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, ALS_DURATION_TYPE_NAME);
     select.addFields(TBL_EVENT_DURATIONS, COL_DURATION_DATE, COL_DURATION);
+
+    // Verslo Aljansas TID 25505
+    select.addFields(TBL_EVENT_DURATIONS, COL_VA_MILEAGE);
 
     addExprForUserFirstLastNames(select, ownerPerson, TaskConstants.COL_OWNER);
 
@@ -2204,9 +2227,16 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     }
 
     SimpleRowSet dTypesList = qs.getData(durationTypes);
-    SimpleRowSet result = new SimpleRowSet(new String[] {COL_DURATION_TYPE_NAME, COL_DURATION});
 
-    result.addRow(new String[] {constants.crmDurationType(), constants.crmSpentTime()});
+    // Verslo Aljansas TID 25505
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_DURATION_TYPE_NAME, COL_DURATION,
+    COL_VA_MILEAGE});
+
+    // Verslo Aljansas TID 25505
+    result.addRow(new String[] {constants.crmDurationType(), constants.crmSpentTime(),
+    constants.mileage()});
+    double totalMileage = 0;
+
     Assert.notNull(dTypesList);
 
     long totalTimeMls = 0;
@@ -2228,6 +2258,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
               sys.joinTables(TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
           .addFields(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME)
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
+
+          // Verslo Aljansas TID 25505
+          .addFields(TBL_EVENT_DURATIONS, COL_VA_MILEAGE)
+
           .setWhere(SqlUtils.equals(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, dType));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
@@ -2275,20 +2309,32 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
       long dTimeMls = 0;
 
+      // Verslo Aljansas TID 25505
+      double mileage = 0D;
+
       for (int j = 0; j < dTypeTimes.getNumberOfRows(); j++) {
         Long timeMls = TimeUtils.parseTime(dTypeTimes.getValue(j, COL_DURATION));
         dTimeMls += timeMls;
+
+        // Verslo Aljansas TID 25505
+        mileage += BeeUtils.nvl(dTypeTimes.getDouble(j, COL_VA_MILEAGE), 0D);
+        totalMileage += BeeUtils.nvl(dTypeTimes.getDouble(j, COL_VA_MILEAGE), 0D);
       }
 
       totalTimeMls += dTimeMls;
 
       if (!(hideTimeZeros && dTimeMls <= 0)) {
-        result.addRow(new String[] {dType, TimeUtils.renderTime(dTimeMls, false)});
+
+        // Verslo Aljansas TID 25505
+        result.addRow(new String[] {dType, TimeUtils.renderTime(dTimeMls, false),
+        BeeUtils.toString(mileage, VAR_VA_MILEAGE_PREC)});
       }
     }
 
+    // Verslo Aljansas TID 25505
     result.addRow(new String[] {
-        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false)});
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false),
+    BeeUtils.toString(totalMileage, VAR_VA_MILEAGE_PREC)});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;
@@ -2328,11 +2374,16 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     }
 
     SimpleRowSet usersListSet = qs.getData(userListQuery);
-    SimpleRowSet result = new SimpleRowSet(new String[] {COL_USER, COL_DURATION});
+
+    // Verslo Aljansas TID 25505
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_USER, COL_DURATION, COL_VA_MILEAGE});
+    double totalMileage = 0D;
+
     long totalTimeMls = 0;
 
+    // Verslo Aljansas TID 25505
     result.addRow(new String[] {
-        constants.executorFullName(), constants.crmSpentTime()});
+        constants.executorFullName(), constants.crmSpentTime(), constants.mileage()});
 
     for (int i = 0; i < usersListSet.getNumberOfRows(); i++) {
       String userFullName =
@@ -2344,6 +2395,9 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       userFullName = BeeUtils.isEmpty(userFullName) ? "—" : userFullName;
 
       SqlSelect userTimesQuery = new SqlSelect()
+          // Verslo Aljansas TID 25505
+          .addFields(TBL_EVENT_DURATIONS, COL_VA_MILEAGE)
+
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
           .addFrom(TBL_TASK_EVENTS)
           .addFromRight(TBL_EVENT_DURATIONS,
@@ -2404,21 +2458,32 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       SimpleRowSet companyTimes = qs.getData(userTimesQuery);
       long dTimeMls = 0;
 
+      // Verslo Aljansas TID 25505
+      double mileage = 0D;
+
       for (int j = 0; j < companyTimes.getNumberOfRows(); j++) {
         Long timeMls = TimeUtils.parseTime(companyTimes.getValue(j, companyTimes
             .getColumnIndex(COL_DURATION)));
         dTimeMls += timeMls;
+
+        // Verslo Aljansas TID 25505
+        mileage += BeeUtils.nvl(companyTimes.getDouble(j, COL_VA_MILEAGE), 0D);
+        totalMileage += BeeUtils.nvl(companyTimes.getDouble(j, COL_VA_MILEAGE), 0D);
       }
 
       totalTimeMls += dTimeMls;
 
       if (!(hideTimeZeros && dTimeMls <= 0)) {
-        result.addRow(new String[] {userFullName, TimeUtils.renderTime(dTimeMls, false)});
+        // Verslo Aljansas TID 25505
+        result.addRow(new String[] {userFullName, TimeUtils.renderTime(dTimeMls, false),
+        BeeUtils.toString(mileage, VAR_VA_MILEAGE_PREC)});
       }
     }
 
+    // Verslo Aljansas TID 25505
     result.addRow(new String[] {
-        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false)});
+        constants.totalOf() + ":", TimeUtils.renderTime(totalTimeMls, false),
+    BeeUtils.toString(totalMileage, VAR_VA_MILEAGE_PREC)});
 
     ResponseObject resp = ResponseObject.response(result);
     return resp;

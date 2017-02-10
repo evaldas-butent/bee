@@ -11,6 +11,10 @@
     <DataColumn name="DurationType" visible="true" />
     <DataColumn name="Duration" visible="true" />
 
+    <!-- Verslo Aljansas TID 25505 {-->
+    <DataColumn name="VAMileage" visible="true"/>
+    <!-- } Verslo Aljansas TID 25505 -->
+
     <DataColumn name="Comment" flexGrow="1" flexShrink="2" flexBasis="30" flexBasisUnit="%" />
 
     <RelColumn name="Company" caption="=client" renderColumns="CompanyName CompanyTypeName" />

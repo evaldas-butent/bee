@@ -412,8 +412,10 @@ public enum Report implements HasWidgetSupplier {
           new ReportTimeDurationItem(COL_DURATION,
               BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
                   Data.getColumnLabel(TBL_EVENT_DURATIONS,
-                      COL_DURATION), loc.unitHourShort()))
+                      COL_DURATION), loc.unitHourShort())),
 
+          // Verslo Aljansas TID 25505
+          new ReportNumericItem(COL_VA_MILEAGE, loc.mileage()).setPrecision(VAR_VA_MILEAGE_PREC)
           );
     }
 
@@ -445,7 +447,10 @@ public enum Report implements HasWidgetSupplier {
           ProjectConstants.ALS_STAGE_NAME,
           ALS_DURATION_TYPE_NAME,
           COL_DURATION_DATE,
-          COL_DURATION
+          COL_DURATION,
+
+          // Verslo Aljansas TID 25505
+          COL_VA_MILEAGE
 
       }) {
         report.addColItem(items.get(item));

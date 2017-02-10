@@ -67,6 +67,11 @@
       <SimpleJoin name="DurationType" joinType="LEFT">
         <SimpleColumn alias="DurationType" name="Name" />
       </SimpleJoin>
+
+      <!-- Verslo Aljansas TID 25505 {-->
+      <SimpleColumn name="VAMileage" />
+      <!-- } Verslo Aljansas TID 25505 -->
+
     </SimpleJoin>
   </Columns>
 

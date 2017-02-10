@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.tasks;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Table;
 
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
@@ -229,6 +230,25 @@ public final class TaskUtils {
       return DataUtils.sameIdSet(oldRow.getProperty(PROP_OBSERVERS),
           newRow.getProperty(PROP_OBSERVERS));
     }
+  }
+
+  // Verslo Aljansas TID 25505
+  public static void vaSummarizeMileage(Table<String, String, Double> mileage, IsRow row,
+                                        List<BeeColumn> columns) {
+    Assert.notNull(mileage);
+
+    String publisher = BeeUtils.joinWords(
+      DataUtils.getString(columns, row, ALS_PUBLISHER_FIRST_NAME),
+      DataUtils.getString(columns, row, ALS_PUBLISHER_LAST_NAME)
+    );
+    String durType = DataUtils.getString(columns, row, COL_DURATION_TYPE);
+
+    if (BeeUtils.isEmpty(publisher) || BeeUtils.isEmpty(durType)) {
+      return;
+    }
+
+    Double m = BeeUtils.nvl(DataUtils.getDouble(columns, row, COL_VA_MILEAGE), 0D);
+    mileage.put(publisher, durType, m + BeeUtils.nvl(mileage.get(publisher, durType), 0D));
   }
 
   private TaskUtils() {
