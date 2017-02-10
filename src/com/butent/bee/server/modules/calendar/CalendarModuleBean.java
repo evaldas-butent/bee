@@ -1186,7 +1186,7 @@ public class CalendarModuleBean extends TimerBuilder implements BeeModule {
     }
     long appDuration = System.currentTimeMillis() - millis;
 
-    List<CalendarTask> tasks = isService ? Collections.EMPTY_LIST
+    List<CalendarTask> tasks = isService ? Collections.emptyList()
         : getCalendarTasks(calendarId, startTime, endTime);
     long taskDuration = System.currentTimeMillis() - millis - appDuration;
 

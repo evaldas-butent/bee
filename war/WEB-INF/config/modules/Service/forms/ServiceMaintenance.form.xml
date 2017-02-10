@@ -187,6 +187,14 @@
               </FlowPanel>
             </FlowPanel>
 
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Department">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Department" class="bee-required" style="&flbl;"/>
+                <DataSelector name="Department" source="Department" required="true" renderColumns="DepartmentName"
+                              style="&finp;"/>
+              </FlowPanel>
+            </FlowPanel>
+
             <FlowPanel class="&mrcl;" style="&mrst;" for="Repairer">
               <FlowPanel style="&mfld; width: 21em;" >
                 <Label for="Repairer" style="&flbl;"/>
@@ -204,7 +212,6 @@
                   <renderToken source="CreatorFirstName"/>
                   <renderToken source="CreatorLastName"/>
                 </TextLabel>
-                <TextLabel source="CreatorDepartmentName" for="Creator" class="bee-svc-maintenance-info-label"/>
                 <Label for="EndingDate" class="bee-svc-maintenance-info-label">
                   <dynStyle>
                     <ui:inline>display:none</ui:inline>

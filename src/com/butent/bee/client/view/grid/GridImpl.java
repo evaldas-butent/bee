@@ -941,7 +941,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     IsRow row = form.getActiveRow();
 
     if (DataUtils.isNewRow(row)) {
-      prepareForInsert(row, form, new RowCallback() {
+      prepareForInsert(row, form, true, new RowCallback() {
         @Override
         public void onFailure(String... reason) {
           if (callback != null) {
@@ -1081,7 +1081,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (isAdding()) {
       if (DataUtils.isNewRow(newRow)) {
-        prepareForInsert(newRow, form, new RowCallback() {
+        prepareForInsert(newRow, form, false, new RowCallback() {
           @Override
           public void onFailure(String... reason) {
             form.notifySevere(reason);
@@ -3036,7 +3036,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return result;
   }
 
-  private void prepareForInsert(IsRow row, FormView form, RowCallback callback) {
+  private void prepareForInsert(IsRow row, FormView form, boolean forced, RowCallback callback) {
     List<BeeColumn> columns = new ArrayList<>();
     List<String> values = new ArrayList<>();
 
@@ -3072,6 +3072,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     ReadyForInsertEvent event = new ReadyForInsertEvent(columns, values,
         form.getChildrenForInsert(), callback, getId());
+    event.setForced(forced);
 
     if (form.getFormInterceptor() != null) {
       form.getFormInterceptor().onReadyForInsert(this, event);

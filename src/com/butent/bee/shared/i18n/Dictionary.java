@@ -261,6 +261,10 @@ public interface Dictionary {
 
   default String brutto() {return g("brutto");}
 
+  default String bundle() {return g("bundle");}
+
+  default String bundles() {return g("bundles");}
+
   default String calAction() {return g("calAction");}
 
   default String calActionRegisterResult() {return g("calActionRegisterResult");}
@@ -696,6 +700,8 @@ public interface Dictionary {
   default String chatsShowAll() {return g("chatsShowAll");}
 
   default String checkNo() {return g("checkNo");}
+
+  default String checked() {return g("checked");}
 
   default String chief() {return g("chief");}
 
@@ -1452,6 +1458,8 @@ public interface Dictionary {
   default String dangerousShort() {return g("dangerousShort");}
 
   default String data() {return g("data");}
+
+  default String dataCreateImportTemplates() {return g("dataCreateImportTemplates");}
 
   default String dataImport() {return g("dataImport");}
 
@@ -3747,6 +3755,8 @@ public interface Dictionary {
 
   default String newBranch() {return g("newBranch");}
 
+  default String newBundle() {return g("newBundle");}
+
   default String newCar() {return g("newCar");}
 
   default String newCargo() {return g("newCargo");}
@@ -4658,6 +4668,8 @@ public interface Dictionary {
 
   default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
 
+  default String prmSmsRequestContactInfoFrom() {return g("prmSmsRequestContactInfoFrom");}
+
   default String prmSmsRequestServiceAddress() {return g("prmSmsRequestServiceAddress");}
 
   default String prmSmsRequestServiceFrom() {return g("prmSmsRequestServiceFrom");}
@@ -4731,6 +4743,10 @@ public interface Dictionary {
   }
 
   default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
+
+  default String recall() {return g("recall");}
+
+  default String recalls() {return g("recalls");}
 
   default String received() {return g("received");}
 
@@ -5108,6 +5124,8 @@ public interface Dictionary {
   default String svcDeviceCategory() {return g("svcDeviceCategory");}
 
   default String svcDevices() {return g("svcDevices");}
+
+  default String svcEmptySmsFromError() {return g("svcEmptySmsFromError");}
 
   default String svcEquipment() {return g("svcEquipment");}
 
@@ -6175,6 +6193,10 @@ public interface Dictionary {
 
   default String trTbSettingsPlaceInfo() {return g("trTbSettingsPlaceInfo");}
 
+  default String trTbSettingsRefreshLocalChanges() {return g("trTbSettingsRefreshLocalChanges");}
+
+  default String trTbSettingsRefreshRemoteChanges() {return g("trTbSettingsRefreshRemoteChanges");}
+
   default String trTbSettingsSeparateCargo() {return g("trTbSettingsSeparateCargo");}
 
   default String trTbSettingsSeparateTrips() {return g("trTbSettingsSeparateTrips");}
@@ -6478,6 +6500,10 @@ public interface Dictionary {
 
   default String trdInvoices() {return g("trdInvoices");}
 
+  default String trdItemWarehouseFrom() {return g("trdItemWarehouseFrom");}
+
+  default String trdItemWarehouseTo() {return g("trdItemWarehouseTo");}
+
   default String trdManager() {return g("trdManager");}
 
   default String trdMovement() {return g("trdMovement");}
@@ -6628,7 +6654,11 @@ public interface Dictionary {
 
   default String trdWarehouseFrom() {return g("trdWarehouseFrom");}
 
+  default String trdWarehouseFromShort() {return g("trdWarehouseFromShort");}
+
   default String trdWarehouseTo() {return g("trdWarehouseTo");}
+
+  default String trdWarehouseToShort() {return g("trdWarehouseToShort");}
 
   default String trigger() {return g("trigger");}
 

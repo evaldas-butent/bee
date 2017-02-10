@@ -70,10 +70,11 @@ class ChildTasksGrid extends TasksGrid {
         }
         if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECTS)
             && parentFormRow != null) {
+          Data.setValue(VIEW_TASKS, childTaskRow, COL_TASK_COMPANY, Data.getLong(
+            ProjectConstants.VIEW_PROJECTS, parentFormRow, ProjectConstants.COL_COMAPNY));
           RelationUtils.updateRow(childTaskDataInfo, COL_TASK_COMPANY, childTaskRow,
-              parentFormDataInfo, parentFormRow, true);
+              parentFormDataInfo, parentFormRow, false);
         } else if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECT_STAGES)) {
-
           IsRow prjRow = ViewHelper.getParentRow(parentForm.asWidget(), ProjectConstants
               .VIEW_PROJECTS);
 
@@ -81,8 +82,10 @@ class ChildTasksGrid extends TasksGrid {
             RelationUtils.updateRow(childTaskDataInfo, ProjectConstants.COL_PROJECT, childTaskRow,
                 Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), prjRow, true);
 
+            Data.setValue(VIEW_TASKS, childTaskRow, COL_TASK_COMPANY, Data.getLong(
+              ProjectConstants.VIEW_PROJECTS, prjRow, ProjectConstants.COL_COMAPNY));
             RelationUtils.updateRow(childTaskDataInfo, COL_TASK_COMPANY, childTaskRow,
-                Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), prjRow, true);
+                Data.getDataInfo(ProjectConstants.VIEW_PROJECTS), prjRow, false);
           }
         }
       }

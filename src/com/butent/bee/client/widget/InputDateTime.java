@@ -68,7 +68,7 @@ public class InputDateTime extends InputDate {
     if (dt == null) {
       text = BeeConst.STRING_EMPTY;
     } else if (getDateTimeFormat() == null) {
-      text = dt.toCompactString();
+      text = Format.renderDateTime(dt);
     } else {
       text = getDateTimeFormat().format(dt);
     }
@@ -77,12 +77,12 @@ public class InputDateTime extends InputDate {
 
   @Override
   public void setMaxValue(String maxValue) {
-    setMaxDate(TimeUtils.parseDateTime(maxValue));
+    setMaxDate(TimeUtils.parseDateTime(maxValue, Format.getDefaultDateOrdering()));
   }
 
   @Override
   public void setMinValue(String minValue) {
-    setMinDate(TimeUtils.parseDateTime(minValue));
+    setMinDate(TimeUtils.parseDateTime(minValue, Format.getDefaultDateOrdering()));
   }
 
   @Override

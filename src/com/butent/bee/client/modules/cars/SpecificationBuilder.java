@@ -607,13 +607,18 @@ public class SpecificationBuilder implements InputCallback {
           specification.addOption(option, normPrice(option));
         }
         List<Widget[]> caps = new ArrayList<>();
-        opts.forEach(o -> caps.add(new Widget[] {getPhoto(o.getPhoto()), new Label(o.toString())}));
+        opts.forEach(o -> caps.add(new Widget[] {
+            getPhoto(BeeUtils.nvl(configuration.getRelationPhoto(o, specification.getBundle()),
+                configuration.getOptionPhoto(o), o.getPhoto())), new Label(o.toString())}));
 
         optionBox.add(buildThumbnail(dimension.getName(), caps,
             index -> toggleOption(allOptions, opts.get(index), true, false),
             Objects.isNull(option) ? null : new Widget[] {
                 new Label(dimension.getName()),
-                getPhoto(option.getPhoto()), new Label(option.toString())}));
+                getPhoto(BeeUtils.nvl(configuration.getRelationPhoto(option,
+                    specification.getBundle()), configuration.getOptionPhoto(option),
+                    option.getPhoto())),
+                new Label(option.toString())}));
       } else {
         int rowSelectable = BeeConst.UNDEF;
 

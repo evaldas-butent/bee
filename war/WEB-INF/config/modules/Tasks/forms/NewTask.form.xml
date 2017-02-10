@@ -170,7 +170,7 @@
                 newRowEnabled="false"
                 editPopup="true"/>
       <Relation viewName="Documents" property="RelDocuments"
-                renderColumns="Name Name Number RegistrationNumber DocumentDate"
+                renderColumns="Name Number RegistrationNumber DocumentDate"
                 newRowEnabled="false" editPopup="true"/>
       <Relation viewName="Discussions" property="RelDiscussions" renderColumns="Subject"
                 newRowEnabled="false" editPopup="true"/>
@@ -178,9 +178,9 @@
                 newRowEnabled="false" editPopup="true"
                 choiceColumns="Address CustomerName"/>
       <Relation viewName="Tasks" property="RelTasks"
-                renderColumns="Summary ExecutorFirstName ExecutorLastName"
+                renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
                 newRowEnabled="false" editPopup="true" style="&inp2x;"
-                choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"/>
+                choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"/>
       <Relation viewName="OrderCargo" property="RelOrderCargo"
                 renderColumns="Description" newRowEnabled="false" editPopup="true" />
       <Relation viewName="ServiceMaintenance" property="RelServiceMaintenance"
