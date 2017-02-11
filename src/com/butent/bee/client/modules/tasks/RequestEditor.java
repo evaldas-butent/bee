@@ -418,6 +418,10 @@ public class RequestEditor extends ProductSupportInterceptor {
     final String cid = dialog.addComment(true);
 
     String durId = dialog.addTime(Localized.dictionary().crmSpentTime(), true);
+
+    // Verslo Aljansas TID 25514
+    String vaMileageId = dialog.addMileage();
+
     String durTypeId = dialog.addSelector(Localized.dictionary().crmDurationType(),
         VIEW_REQUEST_DURATION_TYPES, Lists.newArrayList(ALS_DURATION_TYPE_NAME), true, null, null,
         COL_DURATION_TYPE);
@@ -435,6 +439,9 @@ public class RequestEditor extends ProductSupportInterceptor {
 
       final String comment = dialog.getComment(cid);
       final String time = dialog.getTime(durId);
+
+      // Verslo Aljansas TID 25514
+      final String vaMileage = dialog.getMileage(vaMileageId);
 
       if (BeeUtils.isEmpty(comment)) {
         Global.showError(Localized.dictionary().error(), Collections.singletonList(Localized
@@ -480,7 +487,9 @@ public class RequestEditor extends ProductSupportInterceptor {
 
             @Override
             public void onSuccess(BeeRow result) {
-              finishRequestWithTask(result, time, type, comment, date);
+
+              // Verslo Aljansas TID 25514
+              finishRequestWithTask(result, time, type, comment, date, vaMileage);
               new FinishSaveCallback(form).onSuccess(result);
             }
           });
@@ -562,8 +571,9 @@ public class RequestEditor extends ProductSupportInterceptor {
     return menu;
   }
 
+  // Verslo Aljansas TID 25514
   private void finishRequestWithTask(IsRow reqRow, String time, Long type, String comment,
-      DateTime date) {
+      DateTime date, String vaMileage) {
     FormView form = getFormView();
     boolean edited = (reqRow != null) && form.isEditing();
 
@@ -618,6 +628,11 @@ public class RequestEditor extends ProductSupportInterceptor {
     params.addDataItem(VAR_TASK_DURATION_TIME, time);
     params.addDataItem(VAR_TASK_COMMENT, comment);
     params.addDataItem(VAR_TASK_DURATION_DATE, date.serialize());
+
+    // Verslo Aljansas TID 25514
+    if (BeeUtils.isPositiveDouble(vaMileage)) {
+      params.addDataItem(VAR_VA_TASK_DURATION_MILEAGE, BeeUtils.toDouble(vaMileage));
+    }
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
