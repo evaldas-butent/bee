@@ -77,7 +77,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
           ((ChildGrid) widget).setGridInterceptor(new CarServiceJobsGrid());
           break;
         case TBL_SERVICE_ORDER_ITEMS:
-          ((ChildGrid) widget).setGridInterceptor(new ParentRowRefreshGrid());
+          ((ChildGrid) widget).setGridInterceptor(new CarServiceItemsGrid());
           break;
         case TBL_SERVICE_EVENTS:
           ((ChildGrid) widget).setGridInterceptor(new CarServiceEventsGrid());
