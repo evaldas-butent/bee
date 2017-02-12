@@ -511,7 +511,11 @@ public final class TimeUtils {
   }
 
   public static boolean isWeekend(HasDateValue dt) {
-    return dt != null && dt.getDow() >= 6;
+    return dt != null && isWeekend(dt.getDow());
+  }
+
+  public static boolean isWeekend(int dow) {
+    return dow >= 6;
   }
 
   public static boolean isYear(Integer year) {

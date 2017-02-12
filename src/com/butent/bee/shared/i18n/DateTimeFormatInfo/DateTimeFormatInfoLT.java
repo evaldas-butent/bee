@@ -116,6 +116,11 @@ public final class DateTimeFormatInfoLT implements DateTimeFormatInfo {
   }
 
   @Override
+  public String formatYearMonthStandalone() {
+    return "y LLLL";
+  }
+
+  @Override
   public String formatYearMonthFullDay() {
     return "y 'm'. MMMM d 'd'.";
   }

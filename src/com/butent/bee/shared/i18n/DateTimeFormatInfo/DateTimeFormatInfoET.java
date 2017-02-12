@@ -101,11 +101,6 @@ public final class DateTimeFormatInfoET implements DateTimeFormatInfo {
   }
 
   @Override
-  public String formatMonthFull() {
-    return "MMMM";
-  }
-
-  @Override
   public String formatMonthFullDay() {
     return "d. MMMM";
   }
@@ -133,6 +128,11 @@ public final class DateTimeFormatInfoET implements DateTimeFormatInfo {
   @Override
   public String formatYearMonthFull() {
     return "MMMM y";
+  }
+
+  @Override
+  public String formatYearMonthStandalone() {
+    return "LLLL y";
   }
 
   @Override

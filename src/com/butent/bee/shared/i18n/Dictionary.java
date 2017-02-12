@@ -2593,10 +2593,9 @@ public interface Dictionary {
 
   default String expression() {return g("expression");}
 
-  default String extendWorkSchedule(Object year, Object month) {
+  default String extendWorkSchedule(Object ym) {
     Map<String, Object> _m = new HashMap<>();
-    _m.put("{year}", year);
-    _m.put("{month}", month);
+    _m.put("{ym}", ym);
     return Localized.format(g("extendWorkSchedule"), _m);
   }
 
@@ -6990,12 +6989,10 @@ public interface Dictionary {
 
   default String workScheduleActualShort() {return g("workScheduleActualShort");}
 
-  default String workScheduleExtension(Object fromyear, Object frommonth, Object toyear, Object tomonth) {
+  default String workScheduleExtension(Object from, Object to) {
     Map<String, Object> _m = new HashMap<>();
-    _m.put("{fromyear}", fromyear);
-    _m.put("{frommonth}", frommonth);
-    _m.put("{toyear}", toyear);
-    _m.put("{tomonth}", tomonth);
+    _m.put("{from}", from);
+    _m.put("{to}", to);
     return Localized.format(g("workScheduleExtension"), _m);
   }
 

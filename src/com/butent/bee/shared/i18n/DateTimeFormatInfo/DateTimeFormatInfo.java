@@ -149,7 +149,7 @@ public interface DateTimeFormatInfo {
    * Returns localized format equivalent to the "MMMM" skeleton pattern.
    */
   default String formatMonthFull() {
-    return "LLLL";
+    return "MMMM";
   }
 
   /**
@@ -161,6 +161,13 @@ public interface DateTimeFormatInfo {
    * Returns localized format equivalent to the "MMMMEEEEd" skeleton pattern.
    */
   String formatMonthFullWeekdayDay();
+
+  /**
+   * Returns localized format equivalent to the "LLLL" skeleton pattern.
+   */
+  default String formatMonthStandalone() {
+    return "LLLL";
+  }
 
   /**
    * Returns localized format equivalent to the "Md" skeleton pattern.
@@ -203,6 +210,11 @@ public interface DateTimeFormatInfo {
    * Returns localized format equivalent to the "yMd" skeleton pattern.
    */
   String formatYearMonthNumDay();
+
+  /**
+   * Returns localized format equivalent to the "yLLLL" skeleton pattern.
+   */
+  String formatYearMonthStandalone();
 
   /**
    * Returns localized format equivalent to the "yMMMEEEd" skeleton pattern.
@@ -340,24 +352,4 @@ public interface DateTimeFormatInfo {
    * stand-alone context.
    */
   String[] weekdaysShortStandalone();
-
-  /**
-   * Returns the day which ends the weekend, as an index into the return value
-   * of {@link #weekdaysFull()}.
-   *
-   * <p>Note that this value may be numerically less than
-   * {@link #weekendStart()} - for example, {@link #weekendStart()} of 6 and
-   * {@link #weekendEnd()} of 0 means Saturday and Sunday are the weekend.
-   */
-  default int weekendEnd() {
-    return 0;
-  }
-
-  /**
-   * Returns the day which starts the weekend, as an index into the return value
-   * of {@link #weekdaysFull()}.
-   */
-  default int weekendStart() {
-    return 6;
-  }
 }

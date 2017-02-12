@@ -117,6 +117,11 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
 
   @Override
   public String formatYearMonthFull() {
+    return "MMMM y";
+  }
+
+  @Override
+  public String formatYearMonthStandalone() {
     return "LLLL y";
   }
 
