@@ -663,8 +663,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
         Integer itemVat = item.getInteger(vatPrcItemIdx);
 
         if (BeeUtils.unbox(item.getBoolean(vatItemIdx)) || BeeUtils.isPositive(trOperationVat)) {
-          Integer vat = BeeUtils.isPositive(trOperationVat) ? trOperationVat :
-              BeeUtils.isPositive(itemVat) ?  itemVat : item.getInteger(vatPrcDefaultIdx);
+          Integer vat = BeeUtils.isPositive(trOperationVat) ? trOperationVat
+              : BeeUtils.isPositive(itemVat) ?  itemVat : item.getInteger(vatPrcDefaultIdx);
 
           row.setValue(vatIdx, vat);
           row.setValue(vatPrcIndex, true);

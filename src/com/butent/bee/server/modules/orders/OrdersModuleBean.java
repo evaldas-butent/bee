@@ -51,11 +51,7 @@ import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.orders.OrdersConstants;
-import com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import com.butent.bee.shared.modules.trade.Totalizer;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -127,7 +123,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         response = getTemplateItems(reqInfo);
         break;
 
-      case OrdersConstants.SVC_CREATE_INVOICE_ITEMS:
+      case com.butent.bee.shared.modules.orders.OrdersConstants.SVC_CREATE_INVOICE_ITEMS:
         response = createInvoiceItems(reqInfo);
         break;
 
@@ -425,7 +421,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     SqlSelect query = new SqlSelect();
     query.addFields(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS), COL_ORDER, COL_TRADE_VAT_PLUS,
-        TradeConstants.COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_INCOME_ITEM, COL_RESERVED_REMAINDER,
+        COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_INCOME_ITEM, COL_RESERVED_REMAINDER,
         COL_TRADE_DISCOUNT, COL_TRADE_ITEM_QUANTITY)
         .addFields(TBL_ITEMS, COL_ITEM_ARTICLE)
         .addFrom(TBL_ORDER_ITEMS)
