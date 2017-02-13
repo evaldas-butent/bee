@@ -299,7 +299,8 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
 
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
-    Long warehouse = reqInfo.getParameterLong(ClassifierConstants.COL_WAREHOUSE);
+    Long warehouse = reqInfo.getParameterLong(COL_WAREHOUSE);
+    boolean remChecked = reqInfo.hasParameter(COL_WAREHOUSE_REMAINDER);
 
     CompoundFilter filter = Filter.and();
     filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
@@ -308,9 +309,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       filter.add(Filter.restore(where));
     }
 
-    if (warehouse != null) {
-      filter.add(Filter.in(sys.getIdName(TBL_ITEMS), VIEW_ITEM_REMAINDERS, COL_ITEM, Filter.equals(
-          ClassifierConstants.COL_WAREHOUSE, warehouse)));
+    if (warehouse != null && !remChecked) {
+      filter.add(Filter.in(sys.getIdName(TBL_ITEMS), VIEW_ITEM_REMAINDERS, COL_ITEM, Filter.and(
+          Filter.equals(COL_WAREHOUSE, warehouse), Filter.notNull(COL_WAREHOUSE_REMAINDER))));
     }
 
     BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter);

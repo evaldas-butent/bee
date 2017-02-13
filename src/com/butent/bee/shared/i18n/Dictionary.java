@@ -4024,6 +4024,8 @@ public interface Dictionary {
 
   default String ordAskNotChangeWarehouse() {return g("ordAskNotChangeWarehouse");}
 
+  default String ordAskSearchValue() {return g("ordAskSearchValue");}
+
   default String ordBoLDepartureDate() {return g("ordBoLDepartureDate");}
 
   default String ordBoLDriverTabNo() {return g("ordBoLDriverTabNo");}
@@ -6982,6 +6984,8 @@ public interface Dictionary {
   default String winter() {return g("winter");}
 
   default String withoutVat() {return g("withoutVat");}
+
+  default String withoutRemainder() {return g("withoutRemainder");}
 
   default String workSchedule() {return g("workSchedule");}
 
