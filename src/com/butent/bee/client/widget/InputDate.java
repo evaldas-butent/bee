@@ -152,9 +152,9 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
     if (date == null) {
       text = BeeConst.STRING_EMPTY;
     } else if (getDateTimeFormat() == null) {
-      text = Format.renderDate(date.getDate());
+      text = Format.renderDate(date);
     } else {
-      text = getDateTimeFormat().format(date.getDate());
+      text = getDateTimeFormat().format(date);
     }
     setText(text);
   }

@@ -177,8 +177,7 @@ public final class TimeUtils {
       } else if (d2 instanceof JustDate) {
         return d1.getDate().compareTo((JustDate) d2);
       } else if (d2 instanceof HasDateValue) {
-        return d1.getDate().getDateTime()
-            .compareTo(((HasDateValue) d2).getDateTime());
+        return d1.getDate().getDateTime().compareTo(((HasDateValue) d2).getDateTime());
       }
 
     } else if (d1 instanceof JustDate) {
@@ -1097,14 +1096,6 @@ public final class TimeUtils {
     }
   }
 
-  public static String renderDate(HasDateValue dt) {
-    if (dt == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return dt.getDate().toString();
-    }
-  }
-
   public static String renderDateTime(long time) {
     return renderDateTime(time, false);
   }
@@ -1213,22 +1204,6 @@ public final class TimeUtils {
     } else {
       return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR
           + renderCompact(end, dropCurrentYear);
-    }
-  }
-
-  public static String renderPeriod(JustDate start, JustDate end) {
-    if (start == null) {
-      if (end == null) {
-        return BeeConst.STRING_EMPTY;
-      } else {
-        return PERIOD_SEPARATOR + end.toString();
-      }
-
-    } else if (end == null) {
-      return start.toString() + PERIOD_SEPARATOR;
-
-    } else {
-      return start.toString() + PERIOD_SEPARATOR + end.toString();
     }
   }
 

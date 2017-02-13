@@ -796,7 +796,8 @@ abstract class EarningsWidget extends Flow implements HasSummaryChangeHandlers, 
         && (from != null && !Objects.equals(from, activeMonth.getDate())
             || until != null && !Objects.equals(until, activeMonth.getLast()))) {
 
-      Label periodWidget = new Label(TimeUtils.renderPeriod(from, until));
+      Label periodWidget = new Label(TimeUtils.renderPeriod(Format.renderDate(from),
+          Format.renderDate(until)));
       periodWidget.addStyleName(STYLE_PARTITION_PERIOD);
 
       panel.add(periodWidget);
