@@ -7,5 +7,9 @@
   <g:columns>
     <DataColumn name="Ordinal" width="20" />
     <RelColumn name="DurationType" />
+
+    <!-- Verslo Aljansas TID25515 {-->
+    <DataColumn name="VAMileageRequired" />
+    <!-- } Verslo Aljansas TID25515 -->
   </g:columns>
 </g:Grid>

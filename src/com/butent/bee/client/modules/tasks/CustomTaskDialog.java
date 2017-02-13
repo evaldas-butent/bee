@@ -23,6 +23,9 @@ abstract class CustomTaskDialog extends DialogBox {
   private static final String STYLE_DIALOG = CRM_STYLE_PREFIX + "taskDialog";
   private static final String STYLE_CELL = "Cell";
 
+  // Verslo Aljansas TID 25515.
+  private static final String DATA_LABEL_ID = "-label-id";
+
   /**
    * Verslo Aljansas TID 25505.
    */
@@ -63,6 +66,9 @@ abstract class CustomTaskDialog extends DialogBox {
     table.setWidget(row, col, input);
     table.getCellFormatter().addStyleName(row, col, styleName + STYLE_CELL);
 
+    // Verslo Aljansas TID 25515.
+    DomUtils.setDataProperty(input.getElement(), DATA_LABEL_ID, label.getId());
+
     return input.getId();
   }
 
@@ -75,6 +81,21 @@ abstract class CustomTaskDialog extends DialogBox {
       return ((InputNumber) child).getNormalizedValue();
     } else {
       return null;
+    }
+  }
+
+  /**
+   * Verslo Aljansas TID 25515.
+   */
+  void setRequiredMileage(String id, boolean required) {
+    Widget child = DomUtils.getChildQuietly(getContent(), id);
+    if (child instanceof InputNumber) {
+      Widget label = DomUtils.getChildQuietly(getContent(),
+        DomUtils.getDataProperty(child.getElement(), DATA_LABEL_ID));
+
+      if (label instanceof Label) {
+        label.setStyleName(StyleUtils.NAME_REQUIRED, required);
+      }
     }
   }
 

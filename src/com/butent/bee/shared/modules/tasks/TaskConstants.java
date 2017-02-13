@@ -1059,6 +1059,8 @@ public final class TaskConstants {
   public static final String VAR_VA_TASK_DURATION_MILEAGE = Service.RPC_VAR_PREFIX
     + "task_duration_mileage";
   public static final int VAR_VA_MILEAGE_PREC = 3;
+  // Verslo Aljansas TID 25515
+  public static final String COL_VA_MILEAGE_REQUIRED = "VAMileageRequired";
 
   private TaskConstants() {
   }

@@ -13,6 +13,10 @@
     </SimpleJoin>
 
     <SimpleColumn name="Ordinal" />
+
+    <!-- Verslo Aljansas TID25515 {-->
+    <SimpleColumn name="VAMileageRequired" />
+    <!-- }Verslo Aljansas TID25515 -->
   </Columns>
 
   <Order>

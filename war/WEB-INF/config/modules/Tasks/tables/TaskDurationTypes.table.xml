@@ -4,6 +4,10 @@
     <Relation name="Type" notNull="true" relation="TaskTypes" label="=crmTaskType" />
     <Relation name="DurationType" notNull="true" relation="DurationTypes" label="=crmDurationType" />
     <Integer name="Ordinal" label="=ordinal" />
+
+    <!-- Verslo Aljansas TID25515 {-->
+    <Boolean name="VAMileageRequired" label="=mileageRequired" />
+    <!-- }Verslo Aljansas TID25515 -->
   </Fields>
 
   <Constraints>

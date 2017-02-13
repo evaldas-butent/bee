@@ -432,6 +432,16 @@ public class RequestEditor extends ProductSupportInterceptor {
     dialog.getSelector(durTypeId).getOracle()
         .setAdditionalFilter(filter, true);
 
+    // Verslo Aljansas TID 25514
+    dialog.getSelector(durTypeId).addSelectorHandler(e -> {
+      BeeRow r = e.getRelatedRow();
+      if (r == null) {
+        return;
+      }
+      dialog.setRequiredMileage(vaMileageId, BeeUtils.isTrue(
+        Data.getBoolean(VIEW_TASK_DURATION_TYPES, r, COL_VA_MILEAGE_REQUIRED)));
+    });
+
     final String did = dialog.addDateTime(Localized.dictionary().crmTaskFinishDate(), false,
         TimeUtils.nowMinutes());
 
@@ -465,6 +475,14 @@ public class RequestEditor extends ProductSupportInterceptor {
       final DateTime date = dialog.getDateTime(did);
       if (date == null) {
         Global.showError(Localized.dictionary().crmEnterDueDate());
+        return;
+      }
+
+      //Verslo Aljansas TID 25515
+      boolean required = BeeUtils.unbox(Data.getBoolean(VIEW_TASK_DURATION_TYPES, reqDurTypes,
+        COL_VA_MILEAGE_REQUIRED));
+      if (required && !BeeUtils.isPositive(BeeUtils.toDoubleOrNull(vaMileage))) {
+        Global.showError(Localized.dictionary().crmEnterMileage());
         return;
       }
 

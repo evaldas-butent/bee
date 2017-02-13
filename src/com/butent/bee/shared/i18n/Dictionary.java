@@ -1007,6 +1007,8 @@ public interface Dictionary {
 
   default String crmEnterFinishDateOrEstimatedTime() {return g("crmEnterFinishDateOrEstimatedTime");}
 
+  default String crmEnterMileage() {return g("crmEnterMileage");}
+
   default String crmEnterStartDate() {return g("crmEnterStartDate");}
 
   default String crmEnterSubject() {return g("crmEnterSubject");}
@@ -3716,6 +3718,8 @@ public interface Dictionary {
   default String messageSent() {return g("messageSent");}
 
   default String mileage() {return g("mileage");}
+
+  default String mileageRequired() {return g("mileageRequired");}
 
   default String minValue() {return g("minValue");}
 

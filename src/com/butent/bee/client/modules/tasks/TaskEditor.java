@@ -298,10 +298,15 @@ class TaskEditor extends ProductSupportInterceptor {
         date = TimeUtils.nowMinutes();
       }
 
-      // Verslo Aljansas TID 25505
+      // Verslo Aljansas TID 25515
       Double vaMileage = BeeUtils.toDoubleOrNull(dialog.getMileage(ids.get(COL_VA_MILEAGE)));
+      boolean required = BeeUtils.unbox(Data.getBoolean(VIEW_TASK_DURATION_TYPES, durType,
+        COL_VA_MILEAGE_REQUIRED));
       if (BeeUtils.isPositive(vaMileage)) {
         params.addDataItem(VAR_VA_TASK_DURATION_MILEAGE, vaMileage);
+      } else if (required) {
+        showError(Localized.dictionary().crmEnterMileage());
+        return false;
       }
 
       params.addDataItem(VAR_TASK_DURATION_DATE, date.serialize());
@@ -2124,6 +2129,16 @@ class TaskEditor extends ProductSupportInterceptor {
 
     // Verslo Aljansas TID 25505
     durIds.put(COL_VA_MILEAGE, vaMileageId);
+
+    //Verslo Aljansas TID 25515
+    dialog.getSelector(durTypeId).addSelectorHandler(e -> {
+      BeeRow r = e.getRelatedRow();
+      if (r == null) {
+        return;
+      }
+      dialog.setRequiredMileage(vaMileageId, BeeUtils.isTrue(
+        Data.getBoolean(VIEW_TASK_DURATION_TYPES, r, COL_VA_MILEAGE_REQUIRED)));
+    });
 
     return durIds;
   }
