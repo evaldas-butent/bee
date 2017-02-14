@@ -1,7 +1,7 @@
 package com.butent.bee.client.modules.cars;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
-import static com.butent.bee.shared.modules.cars.CarsConstants.*;
+import static com.butent.bee.shared.modules.cars.CarsConstants.COL_PRICE;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -57,7 +57,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid implements Selecto
       options.put(COL_DISCOUNT_COMPANY, parentForm.getLongValue(COL_CUSTOMER));
       options.put(Service.VAR_TIME, parentForm.getLongValue(COL_DATE));
       options.put(COL_DISCOUNT_CURRENCY, parentForm.getLongValue(COL_CURRENCY));
-      options.put(COL_CAR, parentForm.getLongValue(COL_CAR));
+      options.put(COL_MODEL, parentForm.getLongValue(COL_MODEL));
 
       ClassifierKeeper.getPriceAndDiscount(event.getValue(), options, (price, percent) -> {
         if (BeeUtils.isPositive(price)) {
