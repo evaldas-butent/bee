@@ -5220,6 +5220,8 @@ public interface Dictionary {
 
   default String svcStateProcess() {return g("svcStateProcess");}
 
+  default String svcStickers() {return g("svcStickers");}
+
   default String svcTerm() {return g("svcTerm");}
 
   default String svcTypeOfWork() {return g("svcTypeOfWork");}

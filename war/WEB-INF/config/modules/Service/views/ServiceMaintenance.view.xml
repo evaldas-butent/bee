@@ -38,6 +38,7 @@
 
       <SimpleColumn name="Model" />
       <SimpleColumn name="SerialNo" />
+      <SimpleColumn name="ArticleNo" />
     </SimpleJoin>
 
     <SimpleColumn name="Date"/>
@@ -65,6 +66,7 @@
     <SimpleJoin name="Creator" joinType="LEFT">
       <SimpleColumn alias="CreatorCompanyPerson" name="CompanyPerson" />
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleColumn name="Company" alias="CreatorCompany" />
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn alias="CreatorFirstName" name="FirstName" />
           <SimpleColumn alias="CreatorLastName" name="LastName" />
@@ -104,6 +106,9 @@
     <SimpleColumn name="Department" />
     <SimpleJoin name="Department" joinType="LEFT">
       <SimpleColumn name="DepartmentName" />
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Phone" alias="DepartmentPhone"/>
+      </SimpleJoin>
     </SimpleJoin>
     </Columns>
   <Order>
