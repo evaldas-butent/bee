@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema targetNamespace="http://www.butent.com/type" elementFormDefault="qualified"
-  xmlns="http://www.butent.com/type"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+           xmlns="http://www.butent.com/type"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
   <xs:simpleType name="dataType">
     <xs:restriction base="xs:string">
@@ -171,7 +171,7 @@
         <xs:list itemType="fileInfoColumn" />
       </xs:simpleType>
       <xs:simpleType>
-        <xs:restriction base="xs:string" >
+        <xs:restriction base="xs:string">
           <xs:enumeration value="all" />
           <xs:enumeration value="none" />
         </xs:restriction>
@@ -227,6 +227,10 @@
   </xs:simpleType>
 
   <xs:simpleType name="dataView">
+    <xs:union memberTypes="listDataView customDataView" />
+  </xs:simpleType>
+
+  <xs:simpleType name="listDataView">
     <xs:restriction base="xs:string">
       <xs:enumeration value="AbsenceTypes" />
       <xs:enumeration value="Accounts" />
@@ -493,7 +497,7 @@
       <xs:enumeration value="ProjectTMLStages" />
       <xs:enumeration value="ProjectTMLTaskCopy" />
       <xs:enumeration value="ProjectTMLUsers" />
-      <xs:enumeration value="ProjectTree"/>
+      <xs:enumeration value="ProjectTree" />
       <xs:enumeration value="ProjectTypes" />
       <xs:enumeration value="ProjectUsers" />
       <xs:enumeration value="PropertyGroups" />
@@ -676,8 +680,14 @@
       <xs:enumeration value="WorkSchedule" />
       <xs:enumeration value="Workspaces" />
 
-<!-- samples -->
+      <!-- samples -->
       <xs:enumeration value="DataTypes" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="customDataView">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="Custom[A-Z][a-zA-Z0-9]*" />
     </xs:restriction>
   </xs:simpleType>
 
