@@ -133,6 +133,7 @@ public class CarServiceJobsGrid extends ParentRowRefreshGrid implements Selector
         options.put(Service.VAR_TIME, mainDate.getTime());
         options.put(COL_DISCOUNT_CURRENCY, mainCurrency);
         options.put(COL_MODEL, parentForm.getLongValue(COL_MODEL));
+        options.put(COL_PRODUCTION_DATE, parentForm.getLongValue(COL_PRODUCTION_DATE));
         options.put(COL_JOB, event.getValue());
 
         ClassifierKeeper.getPriceAndDiscount(item, options, (prc, percent) -> {
@@ -263,6 +264,7 @@ public class CarServiceJobsGrid extends ParentRowRefreshGrid implements Selector
                     options.put(Service.VAR_TIME, parentForm.getLongValue(COL_DATE));
                     options.put(COL_DISCOUNT_CURRENCY, parentForm.getLongValue(COL_CURRENCY));
                     options.put(COL_MODEL, parentForm.getLongValue(COL_MODEL));
+                    options.put(COL_PRODUCTION_DATE, parentForm.getLongValue(COL_PRODUCTION_DATE));
 
                     if (rs.containsColumn(COL_JOB)) {
                       options.put(COL_JOB, beeRow.getLong(rs.getColumnIndex(COL_JOB)));

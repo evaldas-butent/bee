@@ -58,6 +58,7 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid implements Selecto
       options.put(Service.VAR_TIME, parentForm.getLongValue(COL_DATE));
       options.put(COL_DISCOUNT_CURRENCY, parentForm.getLongValue(COL_CURRENCY));
       options.put(COL_MODEL, parentForm.getLongValue(COL_MODEL));
+      options.put(COL_PRODUCTION_DATE, parentForm.getLongValue(COL_PRODUCTION_DATE));
 
       ClassifierKeeper.getPriceAndDiscount(event.getValue(), options, (price, percent) -> {
         if (BeeUtils.isPositive(price)) {

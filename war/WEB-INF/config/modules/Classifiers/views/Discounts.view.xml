@@ -8,8 +8,6 @@
   <Columns>
     <xi:include href="viewcolumns/Discounts.viewcolumns.xml" />
 
-    <ExternalJoin name="Discount" joinType="LEFT" source="CarDiscounts">
-      <IdColumn name="CarDiscount" hidden="true" />
-    </ExternalJoin>
+    <HiddenColumn name="CarDiscount" />
   </Columns>
 </View>
