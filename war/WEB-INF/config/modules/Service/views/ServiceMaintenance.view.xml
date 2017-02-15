@@ -12,6 +12,7 @@
     <SimpleJoin joinType="INNER" name="Type">
       <SimpleColumn name="Name" alias="TypeName" />
       <SimpleColumn name="AddressRequired"/>
+      <SimpleColumn name="Conditions" />
     </SimpleJoin>
 
     <SimpleColumn name="State"/>
@@ -84,6 +85,13 @@
       <SimpleJoin joinType="LEFT" name="CompanyType">
         <SimpleColumn name="Name" alias="CompanyTypeName" />
       </SimpleJoin>
+      <SimpleColumn name="Code" alias="CompanyCode" />
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Address" alias="CompanyAddress"/>
+        <SimpleJoin name="City" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CompanyCityName" />
+        </SimpleJoin>
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Contact"/>
@@ -94,11 +102,15 @@
       </SimpleJoin>
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn name="Phone" alias="ContactPhone"/>
+        <SimpleColumn name="Mobile" alias="ContactMobile" />
         <SimpleColumn name="Email" />
         <SimpleJoin name="Email" joinType="LEFT">
           <SimpleColumn name="Email" alias="ContactEmail"/>
         </SimpleJoin>
         <SimpleColumn name="Address" alias="ContactAddress"/>
+        <SimpleJoin name="City" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ContactCityName" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 

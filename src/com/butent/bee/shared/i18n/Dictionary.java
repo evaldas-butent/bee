@@ -5158,6 +5158,8 @@ public interface Dictionary {
 
   default String svcMaintenanceState() {return g("svcMaintenanceState");}
 
+  default String svcMaintenanceTicket() {return g("svcMaintenanceTicket");}
+
   default String svcMaster() {return g("svcMaster");}
 
   default String svcMenu() {return g("svcMenu");}

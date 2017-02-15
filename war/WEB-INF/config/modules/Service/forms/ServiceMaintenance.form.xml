@@ -15,7 +15,7 @@
   name="ServiceMaintenance" viewName="ServiceMaintenance" caption="=svcMaintenance" showRowId="true"
   width="80" widthUnit="vw" height="80" heightUnit="vh"
 >
-  <f:properties jasperReports="ServiceMaintenanceSticker:=svcStickers" />
+  <f:properties jasperReports="ServiceMaintenanceTicket:=svcMaintenanceTicket, ServiceMaintenanceSticker:=svcStickers" />
 
   <SplitPanel splitterSize="4" name="Split" class="bee-svc-split-panel">
     <south size="300">

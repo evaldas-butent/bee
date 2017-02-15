@@ -9,6 +9,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Disclosure;
+import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.EventUtils;
@@ -217,11 +218,25 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   @Override
   protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
     super.getReportParameters(defaultParameters -> {
+      Widget widget = getFormView().getWidgetBySource(COL_EQUIPMENT);
+
+      if (widget instanceof MultiSelector) {
+        MultiSelector selector = (MultiSelector) widget;
+        List<Long> ids = DataUtils.parseIdList(selector.getValue());
+
+        if (!ids.isEmpty()) {
+          List<String> labels = new ArrayList<>();
+          for (Long id : ids) {
+            labels.add(selector.getRowLabel(id));
+          }
+          defaultParameters.put(COL_EQUIPMENT, BeeUtils.joinItems(labels));
+        }
+      }
       defaultParameters.put(PRM_EXTERNAL_MAINTENANCE_URL,
           Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL));
 
       Map<String, Long> companies = new HashMap<>();
-      String creatorCompanyAlias = COL_MANUFACTURER_CREATOR + COL_COMPANY;
+      String creatorCompanyAlias = COL_CREATOR + COL_COMPANY;
       companies.put(creatorCompanyAlias, getLongValue(creatorCompanyAlias));
 
       ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
