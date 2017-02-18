@@ -466,7 +466,7 @@ public class TestDateTime {
 
     s1 = "21:02:52";
     d1 = TimeUtils.parseDateTime(s1, DateOrdering.YMD);
-    varDate = new DateTime(2021, 2, 52, 0, 0, 0, 0);
+    varDate = new DateTime(2021, 2, 1);
     assertEquals(d1.getTime(), varDate.getTime());
 
     s1 = "2011-02-22 10:15:10,5";
