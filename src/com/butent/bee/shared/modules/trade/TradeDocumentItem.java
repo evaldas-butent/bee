@@ -408,7 +408,7 @@ public class TradeDocumentItem implements BeeSerializable {
       values.put(COL_TRADE_ITEM_EMPLOYEE, new LongValue(getEmployee()));
     }
 
-    if (BeeUtils.isEmpty(getNote())) {
+    if (!BeeUtils.isEmpty(getNote())) {
       values.put(COL_TRADE_ITEM_NOTE, new TextValue(getNote()));
     }
 

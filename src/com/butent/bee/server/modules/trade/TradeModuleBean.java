@@ -93,7 +93,9 @@ import com.butent.bee.shared.modules.trade.ItemStock;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeCostBasis;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
+import com.butent.bee.shared.modules.trade.TradeDocument;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
+import com.butent.bee.shared.modules.trade.TradeDocumentItem;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
@@ -122,6 +124,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -455,6 +458,28 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     return result;
+  }
+
+  public ResponseObject createDocument(TradeDocument document, List<TradeDocumentItem> inputItems) {
+    if (document == null) {
+      return ResponseObject.error(SVC_CREATE_DOCUMENT, "document is null");
+    }
+    if (!document.isValid()) {
+      return ResponseObject.error(SVC_CREATE_DOCUMENT, "document is not valid");
+    }
+    if (BeeUtils.isEmpty(inputItems)) {
+      return ResponseObject.error(SVC_CREATE_DOCUMENT, "items not specified");
+    }
+
+    List<TradeDocumentItem> items = inputItems.stream()
+        .filter(item -> item != null && item.isValid())
+        .collect(Collectors.toList());
+
+    if (BeeUtils.isEmpty(items)) {
+      return ResponseObject.error(SVC_CREATE_DOCUMENT, "no valid items found");
+    }
+
+    return null;
   }
 
   @Override
