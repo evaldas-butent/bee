@@ -17,6 +17,36 @@
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
 
+    <DataColumn name="Completed" label="=ordCompleted" visible="true">
+      <style>
+        <bodyStyle>
+          <ui:inline>color: green; font-weight: bold;</ui:inline>
+        </bodyStyle>
+      </style>
+
+      <render>
+        <ui:function>
+          if (row.Completed){
+            return row.Completed;
+          } else {
+            return 0;
+          }
+        </ui:function>
+      </render>
+    </DataColumn>
+
+    <CalcColumn name="Uncompleted" type="double" label="=ordUncompleted" visible="true" >
+      <style>
+        <bodyStyle>
+          <ui:inline>color: blue; font-weight: bold;</ui:inline>
+        </bodyStyle>
+      </style>
+
+      <render>
+        <ui:expression>row.Quantity - row.Completed</ui:expression>
+      </render>
+    </CalcColumn>
+
     <DataColumn name="Price" scale="2" />
     <DataColumn name="Discount" scale="0">
       <editor type="number" percentageTag="DiscountIsPercent" />
