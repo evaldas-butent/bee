@@ -1,14 +1,26 @@
 package com.butent.bee.shared.modules.trade;
 
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.NumberValue;
+import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class TradeDocument implements BeeSerializable {
 
@@ -66,12 +78,27 @@ public class TradeDocument implements BeeSerializable {
   private Dimensions extraDimensions;
   private TradeAccounts tradeAccounts;
 
-  public TradeDocument(Long operation, TradeDocumentPhase phase) {
+  public TradeDocument(Long operation, SimpleRow operationRow, TradeDocumentPhase phase) {
     this.operation = operation;
     this.phase = phase;
 
     this.id = DataUtils.NEW_ROW_ID;
     this.version = DataUtils.NEW_ROW_VERSION;
+
+    if (operationRow != null) {
+      this.documentVatMode = operationRow.getEnum(COL_OPERATION_VAT_MODE, TradeVatMode.class);
+      this.documentDiscountMode = operationRow.getEnum(COL_OPERATION_DISCOUNT_MODE,
+          TradeDiscountMode.class);
+
+      OperationType operationType = operationRow.getEnum(COL_OPERATION_TYPE, OperationType.class);
+
+      if (operationType != null && operationType.consumesStock()) {
+        this.warehouseFrom = operationRow.getLong(COL_OPERATION_WAREHOUSE_FROM);
+      }
+      if (operationType != null && operationType.producesStock()) {
+        this.warehouseTo = operationRow.getLong(COL_OPERATION_WAREHOUSE_TO);
+      }
+    }
   }
 
   private TradeDocument() {
@@ -474,5 +501,90 @@ public class TradeDocument implements BeeSerializable {
 
   public boolean isValid() {
     return DataUtils.isId(getOperation()) && getPhase() != null;
+  }
+
+  public Map<String, Value> getValues() {
+    Map<String, Value> values = new HashMap<>();
+
+    if (getDate() != null) {
+      values.put(COL_TRADE_DATE, new DateTimeValue(getDate()));
+    }
+
+    if (!BeeUtils.isEmpty(getSeries())) {
+      values.put(COL_SERIES, new TextValue(getSeries()));
+    }
+    if (!BeeUtils.isEmpty(getNumber())) {
+      values.put(COL_TRADE_NUMBER, new TextValue(getNumber()));
+    }
+
+    if (!BeeUtils.isEmpty(getNumber1())) {
+      values.put(COL_TRADE_DOCUMENT_NUMBER_1, new TextValue(getNumber1()));
+    }
+    if (!BeeUtils.isEmpty(getNumber2())) {
+      values.put(COL_TRADE_DOCUMENT_NUMBER_2, new TextValue(getNumber2()));
+    }
+
+    if (getOperation() != null) {
+      values.put(COL_TRADE_OPERATION, new LongValue(getOperation()));
+    }
+    if (getPhase() != null) {
+      values.put(COL_TRADE_DOCUMENT_PHASE, IntegerValue.of(getPhase()));
+    }
+    if (getStatus() != null) {
+      values.put(COL_TRADE_DOCUMENT_STATUS, new LongValue(getStatus()));
+    }
+
+    if (getSupplier() != null) {
+      values.put(COL_TRADE_SUPPLIER, new LongValue(getSupplier()));
+    }
+    if (getCustomer() != null) {
+      values.put(COL_TRADE_CUSTOMER, new LongValue(getCustomer()));
+    }
+
+    if (getWarehouseFrom() != null) {
+      values.put(COL_TRADE_WAREHOUSE_FROM, new LongValue(getWarehouseFrom()));
+    }
+    if (getWarehouseTo() != null) {
+      values.put(COL_TRADE_WAREHOUSE_TO, new LongValue(getWarehouseTo()));
+    }
+
+    if (getCurrency() != null) {
+      values.put(COL_TRADE_CURRENCY, new LongValue(getCurrency()));
+    }
+
+    if (getPayer() != null) {
+      values.put(COL_TRADE_PAYER, new LongValue(getPayer()));
+    }
+    if (getTerm() != null) {
+      values.put(COL_TRADE_TERM, new DateTimeValue(getTerm()));
+    }
+
+    if (getManager() != null) {
+      values.put(COL_TRADE_MANAGER, new LongValue(getManager()));
+    }
+
+    if (BeeUtils.nonZero(getDocumentDiscount())) {
+      values.put(COL_TRADE_DOCUMENT_DISCOUNT, new NumberValue(getDocumentDiscount()));
+    }
+    if (getPriceName() != null) {
+      values.put(COL_TRADE_DOCUMENT_PRICE_NAME, IntegerValue.of(getPriceName()));
+    }
+
+    if (getDocumentVatMode() != null) {
+      values.put(COL_TRADE_DOCUMENT_VAT_MODE, IntegerValue.of(getDocumentVatMode()));
+    }
+    if (getDocumentDiscountMode() != null) {
+      values.put(COL_TRADE_DOCUMENT_DISCOUNT_MODE, IntegerValue.of(getDocumentDiscountMode()));
+    }
+
+    if (getReceivedDate() != null) {
+      values.put(COL_TRADE_DOCUMENT_RECEIVED_DATE, new DateTimeValue(getReceivedDate()));
+    }
+
+    if (!BeeUtils.isEmpty(getNotes())) {
+      values.put(COL_TRADE_NOTES, new TextValue(getNotes()));
+    }
+
+    return values;
   }
 }
