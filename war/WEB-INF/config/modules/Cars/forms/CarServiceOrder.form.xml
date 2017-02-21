@@ -24,6 +24,9 @@
         <row>
           <Label for="OrderNo" visible="true" style="&lbl;" />
           <InputText source="OrderNo" style="&inpw;" />
+
+          <Label for="Warehouse" style="&lbl;" class="bee-required" />
+          <DataSelector source="Warehouse" style="&inpw;" required="true" />
         </row>
 
         <row>

@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
+import com.google.gwt.thirdparty.guava.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
@@ -44,12 +45,14 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.cars.Bundle;
 import com.butent.bee.shared.modules.cars.ConfInfo;
 import com.butent.bee.shared.modules.cars.Configuration;
 import com.butent.bee.shared.modules.cars.Dimension;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -228,6 +231,17 @@ public class CarsModuleBean implements BeeModule {
       calendarId = qs.insertData(si);
     }
     return ResponseObject.response(calendarId);
+  }
+
+  @Override
+  public Collection<BeeParameter> getDefaultParameters() {
+    String module = getModule().getName();
+
+    return Lists.newArrayList(
+        BeeParameter.createRelation(module, PRM_SERVICE_WAREHOUSE, true,
+            ClassifierConstants.VIEW_WAREHOUSES, ClassifierConstants.COL_WAREHOUSE_CODE),
+        BeeParameter.createRelation(module, PRM_SERVICE_TRADE_OPERATION, true,
+            VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME));
   }
 
   @Override

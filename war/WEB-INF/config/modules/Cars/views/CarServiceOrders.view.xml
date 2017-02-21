@@ -61,6 +61,12 @@
       </SimpleJoin>
     </SimpleJoin>
 
+    <SimpleColumn name="Warehouse" />
+    <SimpleJoin name="Warehouse" joinType="LEFT">
+      <SimpleColumn name="Code" alias="WarehouseCode" />
+      <SimpleColumn name="Name" alias="WarehouseName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Car" />
     <SimpleJoin name="Car" joinType="LEFT">
       <SimpleColumn name="Model" />

@@ -47,6 +47,9 @@ public final class CarsConstants {
 
   public static final String VIEW_CARS = "Cars";
   public static final String VIEW_CAR_RECALLS = "CarRecalls";
+  public static final String VIEW_CAR_SERVICE_ITEMS = "CarServiceItems";
+  public static final String VIEW_CAR_SERVICE_JOBS = "CarServiceJobs";
+  public static final String VIEW_CAR_SERVICE_ORDERS = "CarServiceOrders";
 
   public static final String COL_BRANCH = "Branch";
   public static final String COL_BRANCH_NAME = "BranchName";
@@ -86,6 +89,9 @@ public final class CarsConstants {
   public static final String COL_PRODUCED_FROM = "ProducedFrom";
   public static final String COL_PRODUCED_TO = "ProducedTo";
 
+  public static final String ALS_COMPLETED = "Completed";
+  public static final String ALS_JOB_NAME = "JobName";
+
   public static final String FORM_CONF_OPTION = "ConfOption";
   public static final String FORM_CAR_ORDER = "CarOrder";
   public static final String FORM_CAR = "Car";
@@ -102,6 +108,9 @@ public final class CarsConstants {
   public static final String STAGE_ACTION_LOST = "EnterOrderLostReason";
   public static final String STAGE_TRIGGER_NEW = "OnCreateNewOrder";
   public static final String STAGE_TRIGGER_SENT = "OnSendOrder";
+
+  public static final String PRM_SERVICE_WAREHOUSE = "ServiceWarehouse";
+  public static final String PRM_SERVICE_TRADE_OPERATION = "ServiceTradeOperation";
 
   private CarsConstants() {
   }

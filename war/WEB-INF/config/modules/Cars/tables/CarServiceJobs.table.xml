@@ -20,5 +20,7 @@
 
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatIsPercent" label="=vatIsPercent" />
+
+    <Relation name="TradeDocumentItem" relation="TradeDocumentItems" />
   </Fields>
 </Table>
