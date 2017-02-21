@@ -44,7 +44,8 @@ function setSelectedLanguage(form) {
 }
 
 function translate(lng) {
-  boldMe(lng);
+  selectLabel("label-" + lng);
+
   var dictionary = eval("dictionary" + lng);
 
   if (dictionary) {
@@ -64,13 +65,12 @@ function translate(lng) {
   }
 }
 
-function boldMe(clicked_id) {
+function selectLabel(id) {
   var elements = document.getElementsByClassName("bee-SignIn-Locale-label");
 
   for (var i = 0; i < elements.length; i++) {
-    elements[i].style.fontWeight = 'normal';
+    elements[i].style.fontWeight = (elements[i].id == id) ? 'bold' : 'normal';
   }
-  document.getElementById(clicked_id).style.fontWeight = 'bold';
 }
 
 function inputValidationStyle() {

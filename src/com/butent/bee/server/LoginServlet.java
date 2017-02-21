@@ -313,7 +313,8 @@ public class LoginServlet extends HttpServlet {
       String language = locale.getLanguage();
 
       localeContainer.append(
-          label().addClass(STYLE_PREFIX + "Locale-label").id(language).text(locale.getCaption())
+          label().addClass(STYLE_PREFIX + "Locale-label").id("label-" + language)
+              .text(locale.getCaption())
               .append(
                   input().addClass(STYLE_PREFIX + "Locale-input").type(Type.RADIO)
                       .id(language).name(HttpConst.PARAM_LOCALE).value(language)
