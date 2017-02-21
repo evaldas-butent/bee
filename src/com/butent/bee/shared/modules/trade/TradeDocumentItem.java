@@ -375,14 +375,14 @@ public class TradeDocumentItem implements BeeSerializable {
       values.put(COL_TRADE_ITEM_ARTICLE, new TextValue(getArticle()));
     }
 
-    if (BeeUtils.isDouble(getQuantity())) {
+    if (BeeUtils.nonZero(getQuantity())) {
       values.put(COL_TRADE_ITEM_QUANTITY, new NumberValue(getQuantity()));
     }
-    if (BeeUtils.isDouble(getPrice())) {
+    if (BeeUtils.nonZero(getPrice())) {
       values.put(COL_TRADE_ITEM_PRICE, new NumberValue(getPrice()));
     }
 
-    if (BeeUtils.isDouble(getDiscount())) {
+    if (BeeUtils.nonZero(getDiscount())) {
       values.put(COL_TRADE_DOCUMENT_ITEM_DISCOUNT, new NumberValue(getDiscount()));
     }
     if (getDiscountIsPercent() != null) {
@@ -390,7 +390,7 @@ public class TradeDocumentItem implements BeeSerializable {
           BooleanValue.of(getDiscountIsPercent()));
     }
 
-    if (BeeUtils.isDouble(getVat())) {
+    if (BeeUtils.nonZero(getVat())) {
       values.put(COL_TRADE_DOCUMENT_ITEM_VAT, new NumberValue(getVat()));
     }
     if (getVatIsPercent() != null) {
@@ -414,6 +414,28 @@ public class TradeDocumentItem implements BeeSerializable {
 
     if (getParent() != null) {
       values.put(COL_TRADE_ITEM_PARENT, new LongValue(getParent()));
+    }
+
+    return values;
+  }
+
+  public Map<String, Value> getDimensionValues() {
+    Map<String, Value> values = new HashMap<>();
+
+    if (getExtraDimensions() != null) {
+      getExtraDimensions().getRelationValues()
+          .forEach((key, value) -> values.put(key, new LongValue(value)));
+    }
+
+    return values;
+  }
+
+  public Map<String, Value> getTradeAccountValues() {
+    Map<String, Value> values = new HashMap<>();
+
+    if (getTradeAccounts() != null) {
+      getTradeAccounts().getValues()
+          .forEach((key, value) -> values.put(key, new LongValue(value)));
     }
 
     return values;

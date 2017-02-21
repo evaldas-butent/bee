@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Builds an INSERT SQL statement for a given target using specified field and value lists.
@@ -31,6 +32,13 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   public SqlInsert(String target) {
     Assert.notEmpty(target);
     this.target = target;
+  }
+
+  public SqlInsert addAll(Map<String, ?> map) {
+    if (map != null) {
+      map.forEach(this::addConstant);
+    }
+    return getReference();
   }
 
   /**

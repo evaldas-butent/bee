@@ -587,4 +587,26 @@ public class TradeDocument implements BeeSerializable {
 
     return values;
   }
+
+  public Map<String, Value> getDimensionValues() {
+    Map<String, Value> values = new HashMap<>();
+
+    if (getExtraDimensions() != null) {
+      getExtraDimensions().getRelationValues()
+          .forEach((key, value) -> values.put(key, new LongValue(value)));
+    }
+
+    return values;
+  }
+
+  public Map<String, Value> getTradeAccountValues() {
+    Map<String, Value> values = new HashMap<>();
+
+    if (getTradeAccounts() != null) {
+      getTradeAccounts().getValues()
+          .forEach((key, value) -> values.put(key, new LongValue(value)));
+    }
+
+    return values;
+  }
 }
