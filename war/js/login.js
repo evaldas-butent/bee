@@ -84,18 +84,21 @@ function inputValidationStyle() {
 function onload(reqLng) {
   if (browserSupported()) {
     var lng = getStoredLanguage();
-    if (!lng) {
-      lng = reqLng;
-    }
+    var el = null;
 
     if (lng) {
-      var el = document.getElementById(lng);
-      if (el) {
-        el.checked = true;
-      }
+      el = document.getElementById(lng);
+    }
+    if (!el) {
+      lng = reqLng;
+      el = document.getElementById(lng);
+    }
+
+    if (el) {
+      el.checked = true;
       translate(lng);
     }
-    
+
     customizeStyle();
     customizeBackground();
 
