@@ -751,16 +751,3 @@
 .bee-reminder-dialog-not-visible {
   display: none;
 }
-
-.bee-cars-quantity-remove:after {
-  margin-left: 1px;
-  content: "\00d7";
-  font-weight: bold;
-  font-size: 15px;
-  color: red;
-  cursor: pointer;
-  visibility: hidden;
-}
-.bee-cars-quantity-remove:hover:after {
-  visibility: visible;
-}

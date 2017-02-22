@@ -6,13 +6,13 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
-import com.google.gwt.thirdparty.guava.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
+import static com.butent.bee.shared.modules.cars.CarsConstants.COL_BRANCH_NAME;
 import static com.butent.bee.shared.modules.cars.CarsConstants.COL_DESCRIPTION;
 import static com.butent.bee.shared.modules.cars.CarsConstants.COL_ORDINAL;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PHOTO;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.DataEvent;
@@ -52,7 +52,6 @@ import com.butent.bee.shared.modules.cars.Configuration;
 import com.butent.bee.shared.modules.cars.Dimension;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -237,11 +236,12 @@ public class CarsModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
 
-    return Lists.newArrayList(
-        BeeParameter.createRelation(module, PRM_SERVICE_WAREHOUSE, true,
-            ClassifierConstants.VIEW_WAREHOUSES, ClassifierConstants.COL_WAREHOUSE_CODE),
+    return Arrays.asList(
+        BeeParameter.createRelation(module, PRM_SERVICE_WAREHOUSE, true, VIEW_WAREHOUSES,
+            COL_WAREHOUSE_CODE),
         BeeParameter.createRelation(module, PRM_SERVICE_TRADE_OPERATION, true,
-            VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME));
+            VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME)
+    );
   }
 
   @Override

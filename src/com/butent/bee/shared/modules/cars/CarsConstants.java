@@ -15,6 +15,9 @@ public final class CarsConstants {
   public static final String SVC_GET_OBJECT = "GetObject";
   public static final String SVC_GET_CALENDAR = "GetCalendar";
 
+  public static final String PRM_SERVICE_WAREHOUSE = "ServiceWarehouse";
+  public static final String PRM_SERVICE_TRADE_OPERATION = "ServiceTradeOperation";
+
   public static final String TBL_CONF_GROUPS = "ConfGroups";
   public static final String TBL_CONF_OPTIONS = "ConfOptions";
   public static final String TBL_CONF_PACKET_OPTIONS = "ConfPacketOptions";
@@ -38,6 +41,7 @@ public final class CarsConstants {
   public static final String TBL_CAR_BUNDLES = "CarBundles";
   public static final String TBL_CAR_BUNDLE_JOBS = "CarBundleJobs";
   public static final String TBL_CAR_BUNDLE_ITEMS = "CarBundleItems";
+  public static final String TBL_CAR_RECALLS = "CarRecalls";
 
   public static final String TBL_SERVICE_ORDERS = "CarServiceOrders";
   public static final String TBL_SERVICE_ORDER_ITEMS = "CarServiceItems";
@@ -46,10 +50,6 @@ public final class CarsConstants {
   public static final String TBL_SERVICE_EVENTS = "CarServiceEvents";
 
   public static final String VIEW_CARS = "Cars";
-  public static final String VIEW_CAR_RECALLS = "CarRecalls";
-  public static final String VIEW_CAR_SERVICE_ITEMS = "CarServiceItems";
-  public static final String VIEW_CAR_SERVICE_JOBS = "CarServiceJobs";
-  public static final String VIEW_CAR_SERVICE_ORDERS = "CarServiceOrders";
 
   public static final String COL_BRANCH = "Branch";
   public static final String COL_BRANCH_NAME = "BranchName";
@@ -90,7 +90,7 @@ public final class CarsConstants {
   public static final String COL_PRODUCED_TO = "ProducedTo";
 
   public static final String ALS_COMPLETED = "Completed";
-  public static final String ALS_JOB_NAME = "JobName";
+  public static final String COL_JOB_NAME = "JobName";
 
   public static final String FORM_CONF_OPTION = "ConfOption";
   public static final String FORM_CAR_ORDER = "CarOrder";
@@ -108,9 +108,6 @@ public final class CarsConstants {
   public static final String STAGE_ACTION_LOST = "EnterOrderLostReason";
   public static final String STAGE_TRIGGER_NEW = "OnCreateNewOrder";
   public static final String STAGE_TRIGGER_SENT = "OnSendOrder";
-
-  public static final String PRM_SERVICE_WAREHOUSE = "ServiceWarehouse";
-  public static final String PRM_SERVICE_TRADE_OPERATION = "ServiceTradeOperation";
 
   private CarsConstants() {
   }

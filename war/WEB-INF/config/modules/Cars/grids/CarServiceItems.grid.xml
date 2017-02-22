@@ -17,33 +17,22 @@
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
 
-    <DataColumn name="Completed" label="=ordCompleted" visible="true">
+    <DataColumn name="Completed" label="=ordCompleted">
       <style>
         <bodyStyle>
-          <ui:inline>color: green; font-weight: bold;</ui:inline>
+          <ui:inline>color:green;</ui:inline>
         </bodyStyle>
       </style>
-
-      <render>
-        <ui:function>
-          if (row.Completed){
-            return row.Completed;
-          } else {
-            return 0;
-          }
-        </ui:function>
-      </render>
     </DataColumn>
 
-    <CalcColumn name="Uncompleted" type="double" label="=ordUncompleted" visible="true" >
+    <CalcColumn name="Uncompleted" type="double" label="=ordUncompleted">
       <style>
         <bodyStyle>
-          <ui:inline>color: blue; font-weight: bold;</ui:inline>
+          <ui:inline>color:red;</ui:inline>
         </bodyStyle>
       </style>
-
       <render>
-        <ui:expression>row.Quantity - row.Completed</ui:expression>
+        <ui:expression>row.Quantity>row.Completed ? row.Quantity-row.Completed : ""</ui:expression>
       </render>
     </CalcColumn>
 
