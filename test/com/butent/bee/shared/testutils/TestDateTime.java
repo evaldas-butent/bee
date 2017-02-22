@@ -515,23 +515,6 @@ public class TestDateTime {
   }
 
   @Test
-  public final void testToDateString() {
-    varDate = new DateTime(2011, 2, 22, 8, 13, 8, 446);
-    assertEquals("2011-02-22", varDate.toDateString());
-    varDate = new DateTime(2011, 3, 6, 5, 1, 45);
-    assertEquals("2011-03-06", varDate.toDateString());
-
-    varDate = new DateTime(2011, 3, 19, 5, 1, 45);
-    assertEquals("2011-03-19", varDate.toDateString());
-
-    varDate = new DateTime(2011, 3, 27, 4, 1, 45);
-    assertEquals("2011-03-27", varDate.toDateString());
-
-    varDate = new DateTime(2011, 1, 1, 0, 1, 2);
-    assertEquals("2011-01-01", varDate.toDateString());
-  }
-
-  @Test
   public final void testToString() {
     varDate = new DateTime(2011, 2, 22, 8, 13, 8, 446);
     assertEquals("2011-02-22 08:13:08.446", varDate.toString());

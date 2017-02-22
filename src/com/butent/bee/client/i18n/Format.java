@@ -503,6 +503,10 @@ public final class Format {
     }
   }
 
+  public static String renderDateTime(long time) {
+    return renderDateTime(new DateTime(time));
+  }
+
   public static String renderDateTime(DateTime dateTime) {
     if (dateTime == null) {
       return null;
