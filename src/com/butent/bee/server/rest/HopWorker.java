@@ -53,13 +53,13 @@ public class HopWorker {
     }
     if (dateTo != null) {
       clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM),
-          SqlUtils.lessEqual(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM, dateTo)),
+          SqlUtils.less(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM, dateTo)),
           SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM),
               SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-              SqlUtils.lessEqual(TBL_TRIPS, COL_TRIP_DATE_FROM, dateTo)),
+              SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, dateTo)),
           SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM),
               SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-              SqlUtils.lessEqual(TBL_TRIPS, COL_TRIP_DATE, dateTo))));
+              SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, dateTo))));
     }
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)
