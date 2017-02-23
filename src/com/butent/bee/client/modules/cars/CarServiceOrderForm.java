@@ -8,17 +8,23 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.payroll.PayrollConstants.COL_EMPLOYEE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.administration.Stage;
@@ -27,6 +33,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HasStages;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
@@ -41,6 +48,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Latch;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontStyle;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
@@ -58,7 +66,15 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.modules.trade.ItemStock;
 import com.butent.bee.shared.modules.trade.Totalizer;
+import com.butent.bee.shared.modules.trade.TradeDiscountMode;
+import com.butent.bee.shared.modules.trade.TradeDocument;
+import com.butent.bee.shared.modules.trade.TradeDocumentItem;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,6 +144,9 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
           ((ChildGrid) widget).setGridInterceptor(new CarJobProgressGrid());
           break;
       }
+    }
+    if (Objects.equals(name, TBL_SERVICE_INVOICES) && widget instanceof GridPanel) {
+      ((GridPanel) widget).setGridInterceptor(new CarServiceInvoicesGrid());
     }
     if (Objects.equals(name, COL_CUSTOMER + "Warning") && widget instanceof HasClickHandlers) {
       customerWarning = widget.asWidget();
@@ -225,7 +244,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     orderStages = stages;
   }
 
-  private static void renderInvoiceTable(Collection<BeeRowSet> result, Map<Long, Double> stocks) {
+  private void renderInvoiceTable(Collection<BeeRowSet> result, Map<Long, Double> stocks) {
     Map<IsRow, InputNumber> items = new HashMap<>();
     DoubleLabel itemsTotal = new DoubleLabel(true);
     Map<IsRow, InputNumber> jobs = new HashMap<>();
@@ -233,7 +252,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     HashMap<Long, Double> copyOfStocks = new HashMap<>(stocks);
 
     Consumer<Map<IsRow, InputNumber>> totalizer = map -> {
-      boolean isJobs = (map == jobs);
+      boolean isJobs = Objects.equals(map, jobs);
       Totalizer tot = new Totalizer(Data.getColumns(isJobs ? TBL_SERVICE_ORDER_JOBS
           : TBL_SERVICE_ORDER_ITEMS));
       tot.setQuantityFunction(row -> map.get(row).getNumber());
@@ -278,7 +297,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     table.getRowFormatter().addStyleName(rNo.get(), StyleUtils.className(TextAlign.CENTER));
 
     Flow container = new Flow();
-    container.add(new InlineLabel(d.quantity()));
+    container.add(new InlineLabel(d.quantity() + BeeConst.STRING_SPACE));
     FaLabel clear = new FaLabel(FontAwesome.TIMES, true);
     StyleUtils.setColor(clear, "red");
     clear.addClickHandler(event -> {
@@ -304,7 +323,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     ImmutableMap.of(TBL_SERVICE_ORDER_ITEMS, items, TBL_SERVICE_ORDER_JOBS, jobs)
         .forEach((view, map) -> {
           if (!map.isEmpty()) {
-            boolean isJobs = (map == jobs);
+            boolean isJobs = Objects.equals(map, jobs);
             rNo.increment();
             table.getRowFormatter().addStyleName(rNo.get(), StyleUtils.className(FontStyle.ITALIC));
             table.getRowFormatter().addStyleName(rNo.get(), StyleUtils.className(FontWeight.BOLD));
@@ -374,6 +393,63 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
 
       @Override
       public void onSuccess() {
+        ParameterList args = CarsKeeper.createSvcArgs(SVC_CREATE_INVOICE);
+        TradeDocument doc = new TradeDocument(Global
+            .getParameterRelation(PRM_SERVICE_TRADE_OPERATION), TradeDocumentPhase.COMPLETED);
+
+        ImmutableMap.of(TBL_SERVICE_ORDER_ITEMS, items, TBL_SERVICE_ORDER_JOBS, jobs)
+            .forEach((view, map) -> {
+              Map<Long, Double> data = new HashMap<>();
+
+              map.forEach((row, input) -> {
+                Double qty = input.getNumber();
+
+                if (BeeUtils.isPositive(qty)) {
+                  TradeDocumentItem tradeItem = doc.addItem(Data.getLong(view, row, COL_ITEM), qty);
+
+                  tradeItem.setPrice(Data.getDouble(view, row, COL_PRICE));
+
+                  tradeItem.setDiscount(Data.getDouble(view, row,
+                      COL_TRADE_DOCUMENT_ITEM_DISCOUNT));
+                  tradeItem.setDiscountIsPercent(Data.getBoolean(view, row,
+                      COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT));
+
+                  tradeItem.setVat(Data.getDouble(view, row, COL_TRADE_DOCUMENT_ITEM_VAT));
+                  tradeItem.setVatIsPercent(Data.getBoolean(view, row,
+                      COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT));
+
+                  data.put(row.getId(), qty);
+                }
+              });
+              args.addDataItem(view, Codec.beeSerialize(data));
+            });
+        if (!doc.isValid()) {
+          getFormView().notifyWarning(d.noData());
+          return;
+        }
+        doc.setDocumentDiscountMode(TradeDiscountMode.FROM_AMOUNT);
+        doc.setDate(TimeUtils.nowSeconds());
+        doc.setCurrency(getLongValue(COL_CURRENCY));
+        doc.setNumber1(getStringValue(COL_ORDER_NO));
+        doc.setCustomer(getLongValue(COL_CUSTOMER));
+        doc.setManager(getLongValue(COL_EMPLOYEE));
+        doc.setWarehouseFrom(getLongValue(COL_WAREHOUSE));
+        doc.setDocumentVatMode(EnumUtils.getEnumByIndex(TradeVatMode.class,
+            getIntegerValue(COL_TRADE_DOCUMENT_VAT_MODE)));
+
+        args.addDataItem(VAR_DOCUMENT, Codec.beeSerialize(doc));
+
+        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            response.notify(getFormView());
+
+            if (!response.hasErrors()) {
+              getFormView().refresh();
+              RowEditor.open(VIEW_TRADE_DOCUMENTS, response.getResponseAsLong(), Opener.NEW_TAB);
+            }
+          }
+        });
       }
     });
   }

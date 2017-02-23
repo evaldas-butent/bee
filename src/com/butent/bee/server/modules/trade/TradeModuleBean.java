@@ -112,14 +112,12 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -255,7 +253,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       response = stock.isEmpty() ? ResponseObject.emptyResponse() : ResponseObject.response(stock);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_DOCUMENT)) {
-      response = createDocument(reqInfo);
+      response = createDocument(TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT)));
 
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
@@ -467,39 +465,14 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return result;
   }
 
-  private ResponseObject createDocument(RequestInfo reqInfo) {
-    if (!reqInfo.hasParameter(VAR_DOCUMENT)) {
-      return ResponseObject.parameterNotFound(reqInfo.getLabel(), VAR_DOCUMENT);
-    }
-    if (!reqInfo.hasParameter(VAR_ITEMS)) {
-      return ResponseObject.parameterNotFound(reqInfo.getLabel(), VAR_ITEMS);
-    }
-
-    TradeDocument tradeDocument = TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT));
-    List<TradeDocumentItem> tradeDocumentItems = new ArrayList<>();
-
-    String[] arr = Codec.beeDeserializeCollection(reqInfo.getParameter(VAR_ITEMS));
-    if (arr != null) {
-      for (String s : arr) {
-        tradeDocumentItems.add(TradeDocumentItem.restore(s));
-      }
-    }
-
-    return createDocument(tradeDocument, tradeDocumentItems);
-  }
-
-  public ResponseObject createDocument(TradeDocument document, List<TradeDocumentItem> inputItems) {
+  public ResponseObject createDocument(TradeDocument document) {
     if (document == null) {
       return ResponseObject.error(SVC_CREATE_DOCUMENT, "document is null");
     }
     if (!document.isValid()) {
       return ResponseObject.error(SVC_CREATE_DOCUMENT, "document is not valid");
     }
-    if (BeeUtils.isEmpty(inputItems)) {
-      return ResponseObject.error(SVC_CREATE_DOCUMENT, "items not specified");
-    }
-
-    List<TradeDocumentItem> tradeDocumentItems = inputItems.stream()
+    List<TradeDocumentItem> tradeDocumentItems = document.getItems().stream()
         .filter(item -> item != null && item.isValid())
         .collect(Collectors.toList());
 
@@ -1178,13 +1151,6 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     Set<Long> companyIds = DataUtils.parseIdSet(reqInfo.getParameter(VIEW_COMPANIES));
-
-    Set<String> currencyNames = new HashSet<>();
-
-    String[] arr = Codec.beeDeserializeCollection(reqInfo.getParameter(VIEW_CURRENCIES));
-    if (arr != null) {
-      Collections.addAll(currencyNames, arr);
-    }
 
     BeeRowSet companies;
     BeeRowSet bankAccounts;

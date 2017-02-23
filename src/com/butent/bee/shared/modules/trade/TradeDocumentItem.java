@@ -63,7 +63,7 @@ public class TradeDocumentItem implements BeeSerializable {
   private Dimensions extraDimensions;
   private TradeAccounts tradeAccounts;
 
-  public TradeDocumentItem(Long item, Double quantity) {
+  TradeDocumentItem(Long item, Double quantity) {
     this.item = item;
     this.quantity = quantity;
 

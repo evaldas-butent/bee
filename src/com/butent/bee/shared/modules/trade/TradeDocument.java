@@ -5,7 +5,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
@@ -19,7 +18,9 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TradeDocument implements BeeSerializable {
@@ -28,7 +29,7 @@ public class TradeDocument implements BeeSerializable {
     ID, VERSION, DATE, SERIES, NUMBER, NUMBER_1, NUMBER_2, OPERATION, PHASE, STATUS,
     SUPPLIER, CUSTOMER, WAREHOUSE_FROM, WAREHOUSE_TO, CURRENCY, PAYER, TERM, MANAGER,
     DOCUMENT_DISCOUNT, PRICE_NAME, DOCUMENT_VAT_MODE, DOCUMENT_DISCOUNT_MODE,
-    RECEIVED_DATE, NOTES, EXTRA_DIMENSIONS, TRADE_ACCOUNTS
+    RECEIVED_DATE, NOTES, EXTRA_DIMENSIONS, TRADE_ACCOUNTS, ITEMS
   }
 
   public static TradeDocument restore(String s) {
@@ -78,30 +79,23 @@ public class TradeDocument implements BeeSerializable {
   private Dimensions extraDimensions;
   private TradeAccounts tradeAccounts;
 
-  public TradeDocument(Long operation, SimpleRow operationRow, TradeDocumentPhase phase) {
+  private final List<TradeDocumentItem> items = new ArrayList<>();
+
+  public TradeDocument(Long operation, TradeDocumentPhase phase) {
     this.operation = operation;
     this.phase = phase;
 
     this.id = DataUtils.NEW_ROW_ID;
     this.version = DataUtils.NEW_ROW_VERSION;
-
-    if (operationRow != null) {
-      this.documentVatMode = operationRow.getEnum(COL_OPERATION_VAT_MODE, TradeVatMode.class);
-      this.documentDiscountMode = operationRow.getEnum(COL_OPERATION_DISCOUNT_MODE,
-          TradeDiscountMode.class);
-
-      OperationType operationType = operationRow.getEnum(COL_OPERATION_TYPE, OperationType.class);
-
-      if (operationType != null && operationType.consumesStock()) {
-        this.warehouseFrom = operationRow.getLong(COL_OPERATION_WAREHOUSE_FROM);
-      }
-      if (operationType != null && operationType.producesStock()) {
-        this.warehouseTo = operationRow.getLong(COL_OPERATION_WAREHOUSE_TO);
-      }
-    }
   }
 
   private TradeDocument() {
+  }
+
+  public TradeDocumentItem addItem(Long item, Double quantity) {
+    TradeDocumentItem tradeItem = new TradeDocumentItem(item, quantity);
+    items.add(tradeItem);
+    return tradeItem;
   }
 
   @Override
@@ -192,6 +186,13 @@ public class TradeDocument implements BeeSerializable {
             break;
           case TRADE_ACCOUNTS:
             setTradeAccounts(TradeAccounts.restore(value));
+            break;
+          case ITEMS:
+            items.clear();
+
+            for (String item : Codec.beeDeserializeCollection(value)) {
+              items.add(TradeDocumentItem.restore(item));
+            }
             break;
         }
       }
@@ -285,10 +286,17 @@ public class TradeDocument implements BeeSerializable {
         case TRADE_ACCOUNTS:
           arr[i++] = getTradeAccounts();
           break;
+        case ITEMS:
+          arr[i++] = getItems();
+          break;
       }
     }
 
     return Codec.beeSerialize(arr);
+  }
+
+  public List<TradeDocumentItem> getItems() {
+    return items;
   }
 
   public long getId() {
@@ -500,7 +508,7 @@ public class TradeDocument implements BeeSerializable {
   }
 
   public boolean isValid() {
-    return DataUtils.isId(getOperation()) && getPhase() != null;
+    return DataUtils.isId(getOperation()) && getPhase() != null && !items.isEmpty();
   }
 
   public Map<String, Value> getValues() {

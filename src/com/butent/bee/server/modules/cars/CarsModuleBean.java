@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.cars;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
@@ -52,6 +53,7 @@ import com.butent.bee.shared.modules.cars.Configuration;
 import com.butent.bee.shared.modules.cars.Dimension;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
+import com.butent.bee.shared.modules.trade.TradeDocument;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -84,6 +86,8 @@ public class CarsModuleBean implements BeeModule {
   SystemBean sys;
   @EJB
   UserServiceBean usr;
+  @EJB
+  TradeModuleBean trd;
 
   @Override
   public ResponseObject doService(String service, RequestInfo reqInfo) {
@@ -199,6 +203,18 @@ public class CarsModuleBean implements BeeModule {
 
       case SVC_GET_CALENDAR:
         response = getCalendar();
+        break;
+
+      case SVC_CREATE_INVOICE:
+        TradeDocument doc = TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT));
+        Map<Long, Double> items = new HashMap<>();
+        Map<Long, Double> jobs = new HashMap<>();
+
+        ImmutableMap.of(TBL_SERVICE_ORDER_ITEMS, items, TBL_SERVICE_ORDER_JOBS, jobs)
+            .forEach((view, map) -> Codec.deserializeHashMap(reqInfo.getParameter(view))
+                .forEach((id, qty) -> map.put(BeeUtils.toLong(id), BeeUtils.toDouble(qty))));
+
+        response = createInvoice(doc, items, jobs);
         break;
 
       default:
@@ -562,6 +578,24 @@ public class CarsModuleBean implements BeeModule {
       }
     }
     return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject createInvoice(TradeDocument document, Map<Long, Double> items,
+      Map<Long, Double> jobs) {
+    ResponseObject response = trd.createDocument(document);
+
+    if (response.hasErrors()) {
+      return response;
+    }
+    Long tradeId = response.getResponseAsLong();
+
+    ImmutableMap.of(COL_SERVICE_ITEM, items, COL_SERVICE_JOB, jobs).forEach((col, map) ->
+        map.forEach((id, qty) -> qs.insertData(new SqlInsert(TBL_SERVICE_INVOICES)
+            .addConstant(COL_TRADE_DOCUMENT, tradeId)
+            .addConstant(col, id)
+            .addConstant(COL_TRADE_ITEM_QUANTITY, qty))));
+
+    return ResponseObject.response(tradeId);
   }
 
   private ResponseObject getConfiguration(Long branchId) {

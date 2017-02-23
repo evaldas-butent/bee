@@ -14,7 +14,7 @@
     </DataColumn>
     <DataColumn name="Quantity" scale="0" visible="true" />
 
-    <DataColumn name="Completed" label="=ordCompleted">
+    <DataColumn name="Completed" scale="0" label="=ordCompleted">
       <style>
         <bodyStyle>
           <ui:inline>color:green;</ui:inline>
@@ -22,7 +22,7 @@
       </style>
     </DataColumn>
 
-    <CalcColumn name="Uncompleted" type="double" label="=ordUncompleted">
+    <CalcColumn name="Uncompleted" type="double" scale="0" label="=ordUncompleted">
       <style>
         <bodyStyle>
           <ui:inline>color:red;</ui:inline>
@@ -53,4 +53,7 @@
       <renderer type="total" />
     </CalcColumn>
   </g:columns>
+  <g:rowEditable>
+    <ui:expression>!row.Completed</ui:expression>
+  </g:rowEditable>
 </g:Grid>

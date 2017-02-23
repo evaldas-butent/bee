@@ -14,6 +14,7 @@ public final class CarsConstants {
   public static final String SVC_SAVE_OBJECT_INFO = "SaveObjectInfo";
   public static final String SVC_GET_OBJECT = "GetObject";
   public static final String SVC_GET_CALENDAR = "GetCalendar";
+  public static final String SVC_CREATE_INVOICE = "CreateInvoice";
 
   public static final String PRM_SERVICE_WAREHOUSE = "ServiceWarehouse";
   public static final String PRM_SERVICE_TRADE_OPERATION = "ServiceTradeOperation";
@@ -48,6 +49,7 @@ public final class CarsConstants {
   public static final String TBL_SERVICE_ORDER_JOBS = "CarServiceJobs";
   public static final String TBL_SERVICE_JOB_PROGRESS = "CarJobProgress";
   public static final String TBL_SERVICE_EVENTS = "CarServiceEvents";
+  public static final String TBL_SERVICE_INVOICES = "CarServiceInvoices";
 
   public static final String VIEW_CARS = "Cars";
 
@@ -83,6 +85,9 @@ public final class CarsConstants {
   public static final String COL_SERVICE_EVENT = "ServiceEvent";
   public static final String COL_BUNDLE_NAME = "BundleName";
   public static final String COL_VALID_UNTIL = "ValidUntil";
+
+  public static final String COL_SERVICE_ITEM = "ServiceItem";
+  public static final String COL_SERVICE_JOB = "ServiceJob";
 
   public static final String COL_CHECKED = "Checked";
   public static final String COL_CAR_DISCOUNT = "CarDiscount";
