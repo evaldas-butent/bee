@@ -43,13 +43,13 @@ public class HopWorker {
 
     if (dateFrom != null) {
       clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO),
-          SqlUtils.more(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO, dateFrom)),
+          SqlUtils.moreEqual(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO, dateFrom)),
           SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO),
               SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
-              SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE_TO, dateFrom)),
+              SqlUtils.moreEqual(TBL_TRIPS, COL_TRIP_DATE_TO, dateFrom)),
           SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO),
               SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
-              SqlUtils.more(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE, dateFrom))));
+              SqlUtils.moreEqual(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE, dateFrom))));
     }
     if (dateTo != null) {
       clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM),
