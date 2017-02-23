@@ -1282,12 +1282,12 @@ public class ClassifiersModuleBean implements BeeModule {
   private ResponseObject getPriceAndDiscount(RequestInfo reqInfo) {
     Long company = reqInfo.getParameterLong(COL_DISCOUNT_COMPANY);
     if (company == null) {
-      return ResponseObject.parameterNotFound(SVC_GET_PRICE_AND_DISCOUNT, COL_DISCOUNT_COMPANY);
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_DISCOUNT_COMPANY);
     }
 
     Long item = reqInfo.getParameterLong(COL_DISCOUNT_ITEM);
     if (!DataUtils.isId(item)) {
-      return ResponseObject.parameterNotFound(SVC_GET_PRICE_AND_DISCOUNT, COL_DISCOUNT_ITEM);
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_DISCOUNT_ITEM);
     }
 
     Long operation = reqInfo.getParameterLong(COL_DISCOUNT_OPERATION);
@@ -1596,7 +1596,7 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     List<PriceInfo> input = new ArrayList<>(discounts);
-    Collections.sort(input, (o1, o2) -> {
+    input.sort((o1, o2) -> {
       boolean x1 = o1.hasPrice() && o1.hasPercent();
       boolean x2 = o2.hasPrice() && o2.hasPercent();
 
@@ -1674,7 +1674,7 @@ public class ClassifiersModuleBean implements BeeModule {
         List<Long> branch = new ArrayList<>(roots.get(root));
 
         if (branch.size() > 1) {
-          Collections.sort(branch, (o1, o2) ->
+          branch.sort((o1, o2) ->
               BeeUtils.compareNullsLast(categoryLevels.get(o2), categoryLevels.get(o1)));
         }
 

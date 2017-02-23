@@ -4749,6 +4749,16 @@ public interface Dictionary {
 
   default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
 
+  default String recalculateTradeItemPriceCaption() {return g("recalculateTradeItemPriceCaption");}
+
+  default String recalculateTradeItemPriceForAllItems() {return g("recalculateTradeItemPriceForAllItems");}
+
+  default String recalculateTradeItemPriceNotification(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("recalculateTradeItemPriceNotification"), _m);
+  }
+
   default String recall() {return g("recall");}
 
   default String recalls() {return g("recalls");}
