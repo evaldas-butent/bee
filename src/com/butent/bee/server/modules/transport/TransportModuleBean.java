@@ -71,6 +71,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
@@ -432,9 +433,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public void ejbTimeout(Timer timer) {
-    if (cb.isParameterTimer(timer, PRM_SYNC_ERP_VEHICLES)) {
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_SYNC_ERP_VEHICLES)) {
       importVehicles();
-    } else if (cb.isParameterTimer(timer, PRM_SYNC_ERP_EMPLOYEES)) {
+    } else if (ConcurrencyBean.isParameterTimer(timer, PRM_SYNC_ERP_EMPLOYEES)) {
       importEmployees();
     }
   }
@@ -1775,7 +1776,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
         String value = BeeUtils.join("\n", row.getValue(COL_ORDER_NOTES),
             BeeUtils.join("-", places.get(cargo, ALS_LOADING_COUNTRY_CODE),
-                places.get(cargo,ALS_LOADING_POST_INDEX)),
+                places.get(cargo, ALS_LOADING_POST_INDEX)),
             BeeUtils.join("-", places.get(cargo, ALS_UNLOADING_COUNTRY_CODE),
                 places.get(cargo, ALS_UNLOADING_POST_INDEX)));
 
@@ -3925,7 +3926,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           posNew++;
         }
         qs.updateData(new SqlUpdate(TBL_PERSONS)
-            .addConstant(COL_DATE_OF_BIRTH, TimeUtils.parseDate(row.getValue("BIRTHDAY")))
+            .addConstant(COL_DATE_OF_BIRTH,
+                TimeUtils.parseDate(row.getValue("BIRTHDAY"), DateOrdering.YMD))
             .setWhere(sys.idEquals(TBL_PERSONS, person)));
 
         qs.updateData(new SqlUpdate(PayrollConstants.TBL_EMPLOYEES)
@@ -3938,9 +3940,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             .addConstant(COL_DEPARTMENT, departments.get(department))
             .addConstant(COL_POSITION, positions.get(position))
             .addConstant(PayrollConstants.COL_DATE_OF_EMPLOYMENT,
-                TimeUtils.parseDate(row.getValue("DIRBA_NUO")))
+                TimeUtils.parseDate(row.getValue("DIRBA_NUO"), DateOrdering.YMD))
             .addConstant(PayrollConstants.COL_DATE_OF_DISMISSAL,
-                TimeUtils.parseDate(row.getValue("DISMISSED")))
+                TimeUtils.parseDate(row.getValue("DISMISSED"), DateOrdering.YMD))
             .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, companyPerson)));
 
         if (!BeeUtils.isEmpty(driverPosition) && Objects
@@ -4019,8 +4021,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       int c = qs.updateData(new SqlUpdate(TBL_DRIVER_ABSENCE)
           .addConstant(COL_DRIVER, driver)
           .addConstant(COL_ABSENCE, absenceTypes.get(type))
-          .addConstant(COL_ABSENCE_FROM, TimeUtils.parseDate(row.getValue("DATA_NUO")))
-          .addConstant(COL_ABSENCE_TO, TimeUtils.parseDate(row.getValue("DATA_IKI")))
+          .addConstant(COL_ABSENCE_FROM,
+              TimeUtils.parseDate(row.getValue("DATA_NUO"), DateOrdering.YMD))
+          .addConstant(COL_ABSENCE_TO,
+              TimeUtils.parseDate(row.getValue("DATA_IKI"), DateOrdering.YMD))
           .addConstant(COL_ABSENCE_NOTES, row.getValue("ISAK_PAVAD"))
           .setWhere(SqlUtils.equals(TBL_DRIVER_ABSENCE, COL_COSTS_EXTERNAL_ID, id)));
 
@@ -4030,8 +4034,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         qs.insertData(new SqlInsert(TBL_DRIVER_ABSENCE)
             .addConstant(COL_DRIVER, driver)
             .addConstant(COL_ABSENCE, absenceTypes.get(type))
-            .addConstant(COL_ABSENCE_FROM, TimeUtils.parseDate(row.getValue("DATA_NUO")))
-            .addConstant(COL_ABSENCE_TO, TimeUtils.parseDate(row.getValue("DATA_IKI")))
+            .addConstant(COL_ABSENCE_FROM,
+                TimeUtils.parseDate(row.getValue("DATA_NUO"), DateOrdering.YMD))
+            .addConstant(COL_ABSENCE_TO,
+                TimeUtils.parseDate(row.getValue("DATA_IKI"), DateOrdering.YMD))
             .addConstant(COL_ABSENCE_NOTES, row.getValue("ISAK_PAVAD"))
             .addConstant(COL_COSTS_EXTERNAL_ID, id));
         ins++;

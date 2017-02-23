@@ -4,7 +4,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.ALS_LOADING_DATE;
 
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -15,8 +14,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.report.ReportInfo;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.SortedSet;
@@ -47,7 +45,7 @@ public class CustomTransportReportsBean {
       IsCondition handlingClause = SqlUtils.inList(TBL_CARGO_TRIPS, COL_TRIP,
           qs.getNotNullLongSet(tmp, COL_TRIP));
 
-      SqlSelect handlingQuery =  new SqlSelect()
+      SqlSelect handlingQuery = new SqlSelect()
           .addFields(TBL_CARGO_PLACES, COL_DATE)
           .addAllFields(als)
           .addFields(TBL_CARGO_TRIPS, COL_TRIP)
@@ -55,7 +53,7 @@ public class CustomTransportReportsBean {
           .addFromInner(trp.getHandlingQuery(handlingClause, true), als,
               SqlUtils.joinUsing(TBL_CARGO_PLACES, als, sys.getIdName(TBL_CARGO_PLACES)))
           .addFromLeft(TBL_CARGO_TRIPS, sys.joinTables(TBL_CARGO_TRIPS, als, COL_CARGO_TRIP));
-      SimpleRowSet handlingRowSet =  qs.getData(handlingQuery);
+      SimpleRowSet handlingRowSet = qs.getData(handlingQuery);
 
       if (!DataUtils.isEmpty(handlingRowSet)) {
         Table<Long, Boolean, SortedSet<Long>> dates = HashBasedTable.create();
@@ -87,8 +85,8 @@ public class CustomTransportReportsBean {
           }
           if (loadingRequired) {
             updateSql.addConstant(unloading ? ALS_UNLOADING_DATE : ALS_LOADING_DATE,
-                BeeUtils.joinItems(dateRow.getValue().stream().map((dateLong) ->
-                    TimeUtils.dateToString(new DateTime(dateLong))).collect(Collectors.toList())));
+                BeeUtils.joinItems(dateRow.getValue().stream().map(dateLong ->
+                    new JustDate(dateLong).toString()).collect(Collectors.toList())));
           }
           qs.updateData(updateSql);
         }

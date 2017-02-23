@@ -1525,8 +1525,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
         for (SimpleRow newRow : rs) {
           Long id = TradeModuleBean.decodeId(TBL_SALES, newRow.getLong("id"));
-          JustDate sentDate = TimeUtils.parseDate(newRow.getValue(sent));
-          DateTime otherDate = TimeUtils.parseDateTime(newRow.getValue(other));
+          JustDate sentDate = TimeUtils.parseDate(newRow.getValue(sent), DateOrdering.YMD);
+          DateTime otherDate = TimeUtils.parseDateTime(newRow.getValue(other), DateOrdering.YMD);
           String otherAttr = newRow.getValue(attribute);
           SimpleRow oldRow = data.getRowByKey(idName, BeeUtils.toString(id));
 

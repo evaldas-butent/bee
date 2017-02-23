@@ -9,6 +9,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
 import com.butent.bee.shared.time.JustDate;
@@ -32,8 +33,8 @@ public class HopWorker {
   @GET
   @Path("timecards")
   public String getTimeCards(@QueryParam("from") String from, @QueryParam("to") String to) {
-    JustDate dateFrom = TimeUtils.parseDate(from);
-    JustDate dateTo = TimeUtils.parseDate(to);
+    JustDate dateFrom = TimeUtils.parseDate(from, DateOrdering.YMD);
+    JustDate dateTo = TimeUtils.parseDate(to, DateOrdering.YMD);
 
     HasConditions clause = SqlUtils.and(SqlUtils.or(
         SqlUtils.notNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO),
@@ -42,7 +43,7 @@ public class HopWorker {
 
     if (dateFrom != null) {
       clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO),
-              SqlUtils.more(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO, dateFrom)),
+          SqlUtils.more(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO, dateFrom)),
           SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_TO),
               SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
               SqlUtils.more(TBL_TRIPS, COL_TRIP_DATE_TO, dateFrom)),
@@ -52,13 +53,13 @@ public class HopWorker {
     }
     if (dateTo != null) {
       clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM),
-              SqlUtils.less(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM, dateTo)),
+          SqlUtils.lessEqual(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM, dateTo)),
           SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM),
               SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-              SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_FROM, dateTo)),
+              SqlUtils.lessEqual(TBL_TRIPS, COL_TRIP_DATE_FROM, dateTo)),
           SqlUtils.and(SqlUtils.isNull(TBL_TRIP_DRIVERS, COL_TRIP_DRIVER_FROM),
               SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
-              SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE, dateTo))));
+              SqlUtils.lessEqual(TBL_TRIPS, COL_TRIP_DATE, dateTo))));
     }
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(PayrollConstants.TBL_EMPLOYEES, PayrollConstants.COL_TAB_NUMBER)

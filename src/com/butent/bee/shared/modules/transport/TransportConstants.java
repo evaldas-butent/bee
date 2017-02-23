@@ -384,8 +384,6 @@ public final class TransportConstants {
   public static final String TBL_VEHICLES = "Vehicles";
   public static final String TBL_VEHICLE_SERVICES = "VehicleServices";
   public static final String TBL_VEHICLE_TRACKING = "VehicleTracking";
-  public static final String TBL_VEHICLE_TYPES = "VehicleTypes";
-  public static final String TBL_VEHICLE_MODELS = "VehicleModels";
   public static final String TBL_VEHICLE_GROUPS = "VehicleGroups";
   public static final String TBL_VEHICLE_SERVICE_TYPES = "ServiceTypes";
   public static final String TBL_EXPEDITION_TYPES = "ExpeditionTypes";
