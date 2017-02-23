@@ -165,16 +165,17 @@
           <Relation viewName="Persons" renderColumns="FirstName LastName"
                     newRowEnabled="false" editPopup="true"/>
           <Relation viewName="Documents"
-                    renderColumns="Name Name Number RegistrationNumber DocumentDate"
+                    renderColumns="Name Number RegistrationNumber DocumentDate"
                     newRowEnabled="false" editPopup="true"/>
           <Relation viewName="Discussions" renderColumns="Subject"
                     newRowEnabled="false" editPopup="true"/>
           <Relation viewName="ServiceObjects" renderColumns="Address"
                     newRowEnabled="false" editPopup="true" choiceColumns="Address CustomerName"/>
           <Relation viewName="Tasks"
-                    renderColumns="Summary ExecutorFirstName ExecutorLastName"
+                    renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
                     newRowEnabled="false" editPopup="true"
-                    choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"/>
+                    choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime
+                      FinishTime"/>
           <Relation viewName="OrderCargo"
                     renderColumns="Description" newRowEnabled="false" editPopup="true" />
           <Relation viewName="ServiceMaintenance"

@@ -129,8 +129,9 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
         if (!ArrayUtils.isEmpty(items)) {
           templates.put(key, Arrays.asList(items));
         }
-        renderTemplates(null);
       });
+      renderTemplates(null, false);
+
       Queries.getRowSet(TBL_DRIVERS,
           Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_MOBILE),
           BeeUtils.isEmpty(driverIds) ? Filter.isFalse() : Filter.idIn(driverIds),
@@ -197,13 +198,13 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       Global.inputCollection(loc.template(), caption, false, template, input -> {
         if (BeeUtils.isEmpty(input)) {
           templates.remove(caption);
-          renderTemplates(null);
+          renderTemplates(null, true);
         } else {
           Global.inputString(loc.name(), null, new StringCallback() {
             @Override
             public void onSuccess(String name) {
               templates.put(name, input);
-              renderTemplates(name);
+              renderTemplates(name, true);
             }
           }, null, caption);
         }
@@ -343,7 +344,7 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       updateCharacterCount();
     }
 
-    private void renderTemplates(String name) {
+    private void renderTemplates(String name, boolean save) {
       tabs.clear();
       int idx = BeeConst.UNDEF;
       int c = 0;
@@ -361,7 +362,9 @@ public class MessageBuilder extends FaLabel implements ClickHandler {
       if (!BeeConst.isUndef(idx)) {
         tabs.selectTab(idx);
       }
-      Global.setParameter(PRM_MESSAGE_TEMPLATE, Codec.beeSerialize(templates), false);
+      if (save) {
+        Global.setParameter(PRM_MESSAGE_TEMPLATE, Codec.beeSerialize(templates), false);
+      }
     }
 
     private void sendMessage() {

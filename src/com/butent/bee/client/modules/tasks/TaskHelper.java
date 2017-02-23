@@ -220,7 +220,7 @@ final class TaskHelper {
 
     widget.setEnabled(enabled);
 
-    if (widget instanceof UIObject) {
+    if (widget instanceof UIObject && !(widget instanceof Relations)) {
       ((UIObject) widget).setStyleName(StyleUtils.NAME_DISABLED, !enabled);
     }
   }

@@ -971,76 +971,91 @@ class TaskEditor extends ProductSupportInterceptor {
     createDocument(fileInfo, row, false);
   }
 
-  public void createDocument(final FileInfo fileInfo, final IsRow row,
+  public void createDocument(final FileInfo fileInfo, final IsRow taskRow,
       final boolean enableTemplates) {
-
-    final DataInfo dataInfo = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
-    final BeeRow docRow = RowFactory.createEmptyRow(dataInfo, true);
+    final DataInfo documentViewInfo = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
+    final DataInfo taskViewInfo = Data.getDataInfo(VIEW_TASKS);
+    final BeeRow docRow = RowFactory.createEmptyRow(documentViewInfo, true);
     final boolean ensureEnableTemplate = enableTemplates && dbaParameters != null;
 
     if (docRow != null) {
-
-      int idxCompanyName = Data.getColumnIndex(VIEW_TASKS, ALS_COMPANY_NAME);
       int idxCompany = Data.getColumnIndex(VIEW_TASKS, COL_TASK_COMPANY);
 
-      if (!BeeConst.isUndef(idxCompanyName) && !BeeConst.isUndef(idxCompany)) {
-        String companyName = row.getString(idxCompanyName);
-
-        if (!BeeUtils.isEmpty(companyName)) {
-          docRow.setValue(dataInfo
-                  .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
-              companyName);
-          docRow.setValue(dataInfo
-              .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
-              .getLong(idxCompany));
-          docRow.setValue(dataInfo
-              .getColumnIndex(DocumentConstants.COL_DOCUMENT_DATE), new DateTime(new JustDate()));
-        }
-
-        FileCollector.pushFiles(Lists.newArrayList(fileInfo));
-
-        if (ensureEnableTemplate && dbaParameters.containsKey(PRM_DEFAULT_DBA_DOCUMENT_TYPE)) {
-          Pair<Long, String> defaultDBAType = dbaParameters.get(PRM_DEFAULT_DBA_DOCUMENT_TYPE);
-          docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.COL_DOCUMENT_TYPE),
-              defaultDBAType.getA());
-          docRow.setValue(dataInfo.getColumnIndex(DocumentConstants.ALS_TYPE_NAME),
-              defaultDBAType.getB());
-        }
-
-        docRow.setProperty(PFX_RELATED + VIEW_TASKS, DataUtils.buildIdList(row.getId()));
-
-        if (ensureEnableTemplate && dbaParameters.containsKey(PRM_DEFAULT_DBA_TEMPLATE)) {
-          Pair<Long, String> defaultDBATemplate = dbaParameters.get(PRM_DEFAULT_DBA_TEMPLATE);
-          docRow.setProperty(PRM_DEFAULT_DBA_TEMPLATE,
-              BeeUtils.toString(defaultDBATemplate.getA()));
-        }
-
-        RowFactory.createRow(dataInfo, docRow, Modality.ENABLED, new RowCallback() {
-
-          @Override
-          public void onSuccess(final BeeRow createdDocument) {
-            RowInsertEvent.fire(BeeKeeper.getBus(), DocumentConstants.VIEW_DOCUMENTS,
-                createdDocument, null);
-
-            Collection<RowChildren> relatedRows = new ArrayList<>();
-            Set<Long> relDocuments = DataUtils.parseIdSet(
-                row.getProperty(PFX_RELATED + DocumentConstants.VIEW_DOCUMENTS));
-            AbstractCellRenderer render =
-                RendererFactory.createRenderer(DocumentConstants.VIEW_DOCUMENTS,
-                    Data.getRelation(DocumentConstants.VIEW_DOCUMENTS).getOriginalRenderColumns());
-
-            relDocuments.add(createdDocument.getId());
-            relatedRows.add(RowChildren.create(TBL_RELATIONS, COL_TASK, null,
-                DocumentConstants.COL_DOCUMENT,
-                DataUtils.buildIdList(relDocuments)));
-
-            ParameterList prm = createParams(TaskEvent.EDIT, getNewRow(), relatedRows,
-                TaskUtils.getInsertNote(Localized.dictionary().document(),
-                    render.render(createdDocument)));
-            sendRequest(prm, TaskEvent.EDIT);
-          }
-        });
+      if (!BeeConst.isUndef(idxCompany)) {
+        docRow.setValue(documentViewInfo
+          .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), taskRow
+          .getLong(idxCompany));
+        RelationUtils.updateRow(documentViewInfo, DocumentConstants.COL_DOCUMENT_COMPANY, docRow,
+          taskViewInfo, taskRow, false);
       }
+      docRow.setValue(documentViewInfo
+        .getColumnIndex(DocumentConstants.COL_DOCUMENT_DATE), new DateTime(new JustDate()));
+      FileCollector.pushFiles(Lists.newArrayList(fileInfo));
+
+      if (ensureEnableTemplate && dbaParameters.containsKey(PRM_DEFAULT_DBA_DOCUMENT_TYPE)) {
+        Pair<Long, String> defaultDBAType = dbaParameters.get(PRM_DEFAULT_DBA_DOCUMENT_TYPE);
+        docRow.setValue(documentViewInfo.getColumnIndex(DocumentConstants.COL_DOCUMENT_TYPE),
+          defaultDBAType.getA());
+        docRow.setValue(documentViewInfo.getColumnIndex(DocumentConstants.ALS_TYPE_NAME),
+          defaultDBAType.getB());
+      }
+      Set<Long> relDocTasks = new HashSet<>();
+
+      if (docRow.hasPropertyValue(PFX_RELATED + VIEW_TASKS)) {
+        relDocTasks = DataUtils.parseIdSet(docRow.getProperty(PFX_RELATED + VIEW_TASKS));
+      }
+      relDocTasks.add(taskRow.getId());
+      docRow.setProperty(PFX_RELATED + VIEW_TASKS, DataUtils.buildIdList(relDocTasks));
+
+      if (ensureEnableTemplate && dbaParameters.containsKey(PRM_DEFAULT_DBA_TEMPLATE)) {
+        Pair<Long, String> defaultDBATemplate = dbaParameters.get(PRM_DEFAULT_DBA_TEMPLATE);
+        docRow.setProperty(PRM_DEFAULT_DBA_TEMPLATE,
+          BeeUtils.toString(defaultDBATemplate.getA()));
+      }
+      RowFactory.createRow(documentViewInfo, docRow, Modality.ENABLED, new RowCallback() {
+
+        @Override
+        public void onSuccess(final BeeRow createdDocument) {
+          Collection<RowChildren> relatedRows = relations != null
+            ? relations.getRowChildren(true) : new ArrayList<>();
+          Collection<RowChildren> updatedRelations = relations != null
+            ? relations.getChildrenForUpdate() : new ArrayList<>();
+          RowChildren relDocuments = null;
+          RowInsertEvent.fire(BeeKeeper.getBus(), DocumentConstants.VIEW_DOCUMENTS,
+            createdDocument, null);
+
+          for (RowChildren rel : relatedRows) {
+            relDocuments = BeeUtils.same(rel.getChildColumn(), DocumentConstants.COL_DOCUMENT)
+              ? rel : null;
+
+            if (relDocuments != null) {
+              break;
+            }
+          }
+          if (relDocuments != null) {
+            for (RowChildren rel : updatedRelations) {
+              if (BeeUtils.same(rel.getChildColumn(), DocumentConstants.COL_DOCUMENT)) {
+                updatedRelations.remove(rel);
+                break;
+              }
+            }
+          }
+          Set<Long> relDocumentIds = relDocuments != null
+            ? DataUtils.parseIdSet(relDocuments.getChildrenIds())
+            : new HashSet<>();
+          AbstractCellRenderer render =
+            RendererFactory.createRenderer(DocumentConstants.VIEW_DOCUMENTS,
+              Data.getRelation(DocumentConstants.VIEW_DOCUMENTS).getOriginalRenderColumns());
+          relDocumentIds.add(createdDocument.getId());
+          updatedRelations.add(RowChildren.create(TBL_RELATIONS, COL_TASK, null,
+            DocumentConstants.COL_DOCUMENT, DataUtils.buildIdList(relDocumentIds)));
+
+          ParameterList prm = createParams(TaskEvent.EDIT, getNewRow(), updatedRelations,
+            TaskUtils.getInsertNote(Localized.dictionary().document(),
+              render.render(createdDocument)));
+          sendRequest(prm, TaskEvent.EDIT);
+        }
+      });
     }
   }
 
@@ -2029,7 +2044,9 @@ class TaskEditor extends ProductSupportInterceptor {
   private void setCommentsLayout() {
     if (isDefaultLayout) {
       if (taskWidget != null) {
-        int height = getFormView().getWidgetByName("TaskContainer").getElement().getScrollHeight();
+        int height = BeeUtils.max(getFormView().getWidgetByName("TaskContainer").getElement()
+          .getScrollHeight(), 660);
+
         split.addNorth(taskWidget, height + 52);
         StyleUtils.autoWidth(taskWidget.getElement());
         split.updateCenter(taskEventsWidget);
