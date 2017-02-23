@@ -2,15 +2,19 @@ package com.butent.bee.client.modules.service;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Disclosure;
+import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputBoolean;
@@ -55,8 +59,10 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     implements SelectorEvent.Handler, RowUpdateEvent.Handler {
@@ -66,8 +72,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   private static final String FA_LABEL_SUFFIX = "Add";
   private static final String WIDGET_ADDRESS_NAME = "AddressLabel";
   private static final String WIDGET_MAINTENANCE_COMMENTS = "MaintenanceComments";
-  private static final String WIDGET_WARRANTY_PANEL = "WarrantyPanel";
-  private static final String WIDGET_WARRANTY_TYPE_NAME = "WarrantyTypeName";
+  private static final String WIDGET_PANEL_NAME = "Panel";
   private static final String WIDGET_OTHER_INFO = "OtherInfo";
 
   private static final String STYLE_PROGRESS_CONTAINER =
@@ -80,6 +85,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   private Flow maintenanceComments;
   private Disclosure otherInfo;
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
+  private FlowPanel warrantyMaintenancePanel;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -140,10 +146,19 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     } else if (widget instanceof InputBoolean && BeeUtils.same(name, COL_WARRANTY)) {
       final InputBoolean warranty = (InputBoolean) widget;
       warranty.addValueChangeHandler(event -> {
-        Widget warrantyPanel = getFormView().getWidgetByName(WIDGET_WARRANTY_PANEL);
+        boolean isWarranty = BeeUtils.toBoolean(event.getValue());
 
-        if (warrantyPanel != null) {
-          warrantyPanel.setVisible(BeeUtils.toBoolean(event.getValue()));
+        if (warrantyMaintenancePanel != null) {
+          warrantyMaintenancePanel.setVisible(isWarranty);
+        }
+
+        if (!isWarranty) {
+          getActiveRow().clearCell(getDataIndex(COL_WARRANTY_MAINTENANCE));
+
+          Widget warrantySelector = getFormView().getWidgetByName(COL_WARRANTY_MAINTENANCE, false);
+          if (warrantySelector instanceof DataSelector) {
+            ((DataSelector) warrantySelector).clearDisplay();
+          }
         }
       });
 
@@ -154,6 +169,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
               VIEW_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT, Filter.equals(COL_COMPANY_PERSON,
                   BeeKeeper.getUser().getUserData().getCompanyPerson()));
       ((DataSelector) widget).setAdditionalFilter(departmentFilter);
+
+    } else if (BeeUtils.same(name, COL_WARRANTY_MAINTENANCE + WIDGET_PANEL_NAME)
+        && widget instanceof FlowPanel) {
+      warrantyMaintenancePanel = (FlowPanel) widget;
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -174,17 +193,23 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
     updateStateDataSelector(false);
 
-    updateWarrantyTypeWidget(DataUtils.isId(row.getLong(getDataIndex(COL_WARRANTY_MAINTENANCE))));
+    updateWarrantyMaintenanceWidget(DataUtils
+        .isId(row.getLong(getDataIndex(COL_WARRANTY_MAINTENANCE))));
 
     if (BeeUtils.isTrue(row.getBoolean(getDataIndex(COL_ADDRESS_REQUIRED)))) {
       updateContactAddressLabel(true);
     }
 
-    if (!DataUtils.isNewRow(row)) {
-      Widget typeWidget = form.getWidgetBySource(COL_TYPE);
-      if (typeWidget instanceof DataSelector) {
-        ((DataSelector) typeWidget).setEnabled(false);
-      }
+    Widget typeWidget = form.getWidgetBySource(COL_TYPE);
+
+    if (typeWidget instanceof DataSelector) {
+      ((DataSelector) typeWidget).setEnabled(DataUtils.isNewRow(row));
+    }
+
+    Widget warrantyPanel = getFormView().getWidgetByName(COL_WARRANTY + WIDGET_PANEL_NAME, false);
+
+    if (warrantyPanel != null) {
+      warrantyPanel.setVisible(!DataUtils.isNewRow(row));
     }
   }
 
@@ -203,6 +228,42 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   public Flow getMaintenanceComments() {
     return maintenanceComments;
+  }
+
+  @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    super.getReportData(dataConsumer);
+  }
+
+  @Override
+  protected void getReportParameters(Consumer<Map<String, String>> parametersConsumer) {
+    super.getReportParameters(defaultParameters -> {
+      Widget widget = getFormView().getWidgetBySource(COL_EQUIPMENT);
+
+      if (widget instanceof MultiSelector) {
+        MultiSelector selector = (MultiSelector) widget;
+        List<Long> ids = DataUtils.parseIdList(selector.getValue());
+
+        if (!ids.isEmpty()) {
+          List<String> labels = new ArrayList<>();
+          for (Long id : ids) {
+            labels.add(selector.getRowLabel(id));
+          }
+          defaultParameters.put(COL_EQUIPMENT, BeeUtils.joinItems(labels));
+        }
+      }
+      defaultParameters.put(PRM_EXTERNAL_MAINTENANCE_URL,
+          Global.getParameterText(PRM_EXTERNAL_MAINTENANCE_URL));
+
+      Map<String, Long> companies = new HashMap<>();
+      String creatorCompanyAlias = COL_CREATOR + COL_COMPANY;
+      companies.put(creatorCompanyAlias, getLongValue(creatorCompanyAlias));
+
+      ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
+        defaultParameters.putAll(companiesInfo);
+        parametersConsumer.accept(defaultParameters);
+      });
+    });
   }
 
   @Override
@@ -256,10 +317,6 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           ServiceUtils.fillCompanyValues(getActiveRow(), event.getRelatedRow(),
               event.getRelatedViewName(), COL_COMPANY, ALS_COMPANY_NAME, ALS_COMPANY_TYPE_NAME);
           getFormView().refreshBySource(COL_COMPANY);
-          break;
-
-        case COL_SERVICE_MAINTENANCE:
-          updateWarrantyTypeWidget(DataUtils.isId(event.getValue()));
           break;
 
         case VIEW_SERVICE_OBJECTS:
@@ -545,12 +602,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       }
     }
 
-    Long warrantyTypeId = row.getLong(getDataIndex(COL_WARRANTY_TYPE));
     Long serviceMaintenanceId = row.getLong(getDataIndex(COL_WARRANTY_MAINTENANCE));
-
-    if (DataUtils.isId(serviceMaintenanceId) && !DataUtils.isId(warrantyTypeId)) {
+    Widget warrantyWidget = getFormView().getWidgetByName(COL_WARRANTY, false);
+    if (warrantyWidget instanceof HasCheckedness && ((HasCheckedness) warrantyWidget).isChecked()
+        && !DataUtils.isId(serviceMaintenanceId)) {
       form.notifySevere(Localized.dictionary()
-          .fieldRequired(Localized.dictionary().svcWarrantyType()));
+          .fieldRequired(Localized.dictionary().svcWarrantyMaintenance()));
       return false;
     }
 
@@ -578,6 +635,8 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
             eventRow.getValue(Data.getColumnIndex(viewName, COL_MODEL)));
         row.setValue(form.getDataIndex(COL_SERIAL_NO),
             eventRow.getValue(Data.getColumnIndex(viewName, COL_SERIAL_NO)));
+        row.setValue(form.getDataIndex(COL_ARTICLE_NO),
+            eventRow.getValue(Data.getColumnIndex(viewName, COL_ARTICLE_NO)));
         row.setValue(form.getDataIndex(ALS_SERVICE_CONTRACTOR_NAME),
             eventRow.getValue(Data.getColumnIndex(viewName, ALS_SERVICE_CONTRACTOR_NAME)));
         ServiceUtils.fillContactValues(row, eventRow);
@@ -649,27 +708,14 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     }
   }
 
-  private void updateWarrantyTypeWidget(boolean mandatory) {
-    Widget warrantyWidget = getFormView().getWidgetByName(COL_WARRANTY, false);
+  private void updateWarrantyMaintenanceWidget(boolean mandatory) {
+    if (warrantyMaintenancePanel != null) {
+      warrantyMaintenancePanel.setVisible(mandatory);
+    }
 
+    Widget warrantyWidget = getFormView().getWidgetByName(COL_WARRANTY, false);
     if (warrantyWidget instanceof HasCheckedness) {
       ((HasCheckedness) warrantyWidget).setChecked(mandatory);
-    }
-
-    Widget warrantyPanel = getFormView().getWidgetByName(WIDGET_WARRANTY_PANEL);
-
-    if (warrantyPanel != null) {
-      warrantyPanel.setVisible(mandatory);
-    }
-
-    Widget warrantyTypeName = getFormView().getWidgetByName(WIDGET_WARRANTY_TYPE_NAME, false);
-
-    if (warrantyTypeName != null) {
-      if (mandatory) {
-        warrantyTypeName.addStyleName(StyleUtils.NAME_REQUIRED);
-      } else {
-        warrantyTypeName.removeStyleName(StyleUtils.NAME_REQUIRED);
-      }
     }
   }
 }

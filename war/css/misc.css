@@ -513,6 +513,10 @@
 .bee-conf-packet {
   color: silver;
 }
+.bee-conf-packet-collapsed {
+  color: blue;
+  cursor: pointer;
+}
 .bee-conf-row-hdr {
   font-weight: bold;
 }
@@ -619,7 +623,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   align-items: flex-start;
-  max-width: 620px;
+  max-width: 80vw;
   max-height: 200px;
 }
 .bee-spec-summary {

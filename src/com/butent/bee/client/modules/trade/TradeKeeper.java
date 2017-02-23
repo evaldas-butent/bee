@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -7,6 +10,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -19,6 +23,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseMessage;
@@ -36,18 +41,23 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.trade.ItemStock;
+import com.butent.bee.shared.modules.trade.TradeDocument;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public final class TradeKeeper implements HandlesAllDataEvents {
 
@@ -57,6 +67,53 @@ public final class TradeKeeper implements HandlesAllDataEvents {
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, method);
+  }
+
+  public static void createDocument(TradeDocument tradeDocument, IdCallback callback) {
+    Assert.notNull(tradeDocument, SVC_CREATE_DOCUMENT + " document required");
+    Assert.notNull(callback, SVC_CREATE_DOCUMENT + " callback required");
+
+    ParameterList parameters = createArgs(SVC_CREATE_DOCUMENT);
+    parameters.addDataItem(VAR_DOCUMENT, tradeDocument.serialize());
+
+    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          callback.onFailure(response.getErrors());
+        } else {
+          callback.onSuccess(response.getResponseAsLong());
+        }
+      }
+    });
+  }
+
+  public static void getStock(Long warehouse, Collection<Long> items,
+      final Consumer<Multimap<Long, ItemStock>> consumer) {
+
+    Assert.notNull(consumer, SVC_GET_STOCK + " consumer required");
+
+    ParameterList parameters = createArgs(SVC_GET_STOCK);
+    if (DataUtils.isId(warehouse)) {
+      parameters.addQueryItem(COL_STOCK_WAREHOUSE, warehouse);
+    }
+    if (!BeeUtils.isEmpty(items)) {
+      parameters.addDataItem(VAR_ITEMS, DataUtils.buildIdList(items));
+    }
+
+    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Multimap<Long, ItemStock> result = ArrayListMultimap.create();
+
+        if (response.hasResponse()) {
+          Codec.deserializeMultiMap(response.getResponseAsString())
+              .forEach((k, v) -> result.put(BeeUtils.toLong(k), ItemStock.restore(v)));
+        }
+
+        consumer.accept(result);
+      }
+    });
   }
 
   public static void register() {

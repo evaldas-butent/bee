@@ -1,5 +1,7 @@
 package com.butent.bee.shared.i18n.DateTimeFormatInfo;
 
+import com.butent.bee.shared.i18n.DateOrdering;
+
 /**
  * Implementation of DateTimeFormatInfo for the "ru" locale.
  */
@@ -16,7 +18,10 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
 
   @Override
   public String[] ampms() {
-    return new String[0];
+    return new String[] {
+        "AM",
+        "PM"
+    };
   }
 
   @Override
@@ -36,7 +41,17 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
 
   @Override
   public String dateFormatShort() {
+    return "dd.MM.y";
+  }
+
+  @Override
+  public String dateFormatCompact() {
     return "dd.MM.yy";
+  }
+
+  @Override
+  public DateOrdering dateOrdering() {
+    return DateOrdering.DMY;
   }
 
   @Override
@@ -107,6 +122,11 @@ public final class DateTimeFormatInfoRU implements DateTimeFormatInfo {
 
   @Override
   public String formatYearMonthFull() {
+    return "MMMM y";
+  }
+
+  @Override
+  public String formatYearMonthStandalone() {
     return "LLLL y";
   }
 

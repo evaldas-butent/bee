@@ -526,7 +526,7 @@ class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printab
 
       } else {
         return BeeUtils.join(PERIOD_SEPARATOR,
-            Format.renderYearMonth(minYm), Format.renderMonthFullStandalone(maxYm).toLowerCase());
+            Format.renderYearMonth(minYm), Format.renderMonthFullStandalone(maxYm));
       }
 
     } else {
@@ -995,7 +995,7 @@ class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printab
   }
 
   private static Widget renderMillis(long millis) {
-    Label label = new Label(TimeUtils.renderDateTime(millis, true));
+    Label label = new Label(Format.renderDateTime(millis));
     label.addStyleName(STYLE_TIME);
     return label;
   }

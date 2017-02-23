@@ -24,6 +24,9 @@
         <row>
           <Label for="OrderNo" visible="true" style="&lbl;" />
           <InputText source="OrderNo" style="&inpw;" />
+
+          <Label for="Warehouse" style="&lbl;" class="bee-required" />
+          <DataSelector source="Warehouse" required="true" />
         </row>
 
         <row>
@@ -44,13 +47,14 @@
         </row>
         <row>
           <Label for="CustomerPerson" style="&lbl;" />
-          <DataSelector source="CustomerPerson" newRowEnabled="false" style="&inpw;"
+          <DataSelector source="CustomerPerson" style="&inpw;"
                         renderColumns="ContactFirstName ContactLastName"
                         choiceColumns="FirstName LastName CompanyName" options="Customer" />
 
           <Label for="Car" style="&lbl;" />
           <FlowPanel>
             <DataSelector source="Car" viewName="Cars" style="&inpw;"
+                          choiceColumns="ParentModelName ModelName BodyNumber CarNumber"
                           renderColumns="ParentModelName ModelName CarNumber" />
             <FlowPanel style="display:inline-block;">
               <FaLabel char="exclamation_circle" name="CarWarning"
@@ -142,6 +146,10 @@
       <page>
         <text>=calAppointments</text>
         <ChildGrid name="CarServiceEvents" relColumn="ServiceOrder" />
+      </page>
+      <page>
+        <text>=trdInvoices</text>
+        <GridPanel name="CarServiceInvoices" child="true" parent="{form}" />
       </page>
       <page>
         <text>=notes</text>

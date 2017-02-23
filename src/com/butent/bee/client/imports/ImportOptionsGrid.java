@@ -38,26 +38,31 @@ import java.util.Objects;
 
 public class ImportOptionsGrid extends AbstractGridInterceptor {
 
-  private CustomAction createImportTemplates;
+  private static final String LABEL_CREATE_TEMPLATES_ACTION = Localized.dictionary()
+    .dataCreateImportTemplates();
+
+  private final CustomAction createImportTemplates;
+
+  public ImportOptionsGrid() {
+    createImportTemplates = new CustomAction(FontAwesome.MAGIC, handler ->
+      Global.confirm(LABEL_CREATE_TEMPLATES_ACTION, this::createTemplates));
+    createImportTemplates.setTitle(LABEL_CREATE_TEMPLATES_ACTION);
+  }
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    createImportTemplates = new CustomAction(FontAwesome.MAGIC, handler -> createTemplates());
-    createImportTemplates.setTitle(Localized.dictionary().dataCreateImportTemplates());
     presenter.getHeader().addCommandItem(createImportTemplates);
     super.afterCreatePresenter(presenter);
   }
 
   @Override
   public GridInterceptor getInstance() {
-    return null;
+    return new ImportOptionsGrid();
   }
 
   @Override
   public void onDataReceived(List<? extends IsRow> rows) {
-    if (createImportTemplates != null) {
-      createImportTemplates.setVisible(BeeUtils.isEmpty(rows));
-    }
+    createImportTemplates.setVisible(BeeUtils.isEmpty(rows));
     super.onDataReceived(rows);
   }
 

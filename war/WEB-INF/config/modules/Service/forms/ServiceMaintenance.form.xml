@@ -15,6 +15,8 @@
   name="ServiceMaintenance" viewName="ServiceMaintenance" caption="=svcMaintenance" showRowId="true"
   width="80" widthUnit="vw" height="80" heightUnit="vh"
 >
+  <f:properties jasperReports="ServiceMaintenanceTicket:=svcMaintenanceTicket, ServiceMaintenanceSticker:=svcStickers" />
+
   <SplitPanel splitterSize="4" name="Split" class="bee-svc-split-panel">
     <south size="300">
       <FlowPanel class="flexBox-vertical">
@@ -65,7 +67,7 @@
               <FlowPanel style="&mfld; width: 21em;" for="ServiceObject">
                 <Label text="=svcDevice" class="bee-required bee-svc-panel-title" style="&flbl;"/>
                 <DataSelector name="ServiceObject" source="ServiceObject" updateMode="row"
-                              choiceColumns="SerialNo CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
+                              choiceColumns="SerialNo ArticleNo CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
                               style="&finp;"/>
               </FlowPanel>
               <FlowPanel for="ServiceObject">
@@ -122,6 +124,10 @@
                 <row for="SerialNo" data="ServiceObjects">
                   <Label text="=svcSerialNo"/>
                   <TextLabel source="SerialNo"/>
+                </row>
+                <row for="ArticleNo" data="ServiceObjects">
+                  <Label text="=ecItemCode"/>
+                  <TextLabel source="ArticleNo"/>
                 </row>
                 <row for="Contractor" data="ServiceObjects">
                   <Label for="Contractor" text="=svcContractor" />
@@ -180,26 +186,16 @@
         </FlowPanel>
 
         <FlowPanel class="flexBox-horizontal">
-          <FlowPanel class="bee-svc-maintenance-panel" style="margin-bottom: 1em;">
-            <FlowPanel class="&mrcl;" style="&mrst;">
+          <FlowPanel class="bee-svc-maintenance-panel" >
+            <FlowPanel class="flexBox-horizontal &mrcl;" style="&mrst;">
               <FlowPanel style="&mfld; width: 21em;" >
                 <CheckBox name="Warranty" text="=svcWarrantyMaintenance" summarize="true" style="&finp;"/>
               </FlowPanel>
-            </FlowPanel>
 
-            <FlowPanel class="&mrcl;" style="&mrst;" for="Department">
-              <FlowPanel style="&mfld; width: 21em;" >
-                <Label for="Department" class="bee-required" style="&flbl;"/>
-                <DataSelector name="Department" source="Department" required="true" renderColumns="DepartmentName"
-                              style="&finp;"/>
-              </FlowPanel>
-            </FlowPanel>
-
-            <FlowPanel class="&mrcl;" style="&mrst;" for="Repairer">
-              <FlowPanel style="&mfld; width: 21em;" >
-                <Label for="Repairer" style="&flbl;"/>
-                <DataSelector source="Repairer" renderColumns="RepairerFirstName RepairerLastName"
-                              style="&finp;"/>
+              <FlowPanel name="WarrantyMaintenancePanel" style="&mfld;" for="WarrantyMaintenance">
+                <Label for="WarrantyMaintenance" style="&flbl;" class="bee-required"/>
+                <DataSelector name="WarrantyMaintenance" source="WarrantyMaintenance" choiceColumns="Id"
+                              filter="WarrantyValidTo > {t}" style="&finp;"/>
               </FlowPanel>
             </FlowPanel>
           </FlowPanel>
@@ -221,17 +217,33 @@
                 <DateTimeLabel source="EndingDate" format="DATE_TIME_SHORT" class="bee-svc-maintenance-info-label"/>
               </FlowPanel>
             </FlowPanel>
+          </FlowPanel>
+        </FlowPanel>
 
-            <FlowPanel name="WarrantyPanel" class="flexBox-horizontal" style="&mrst;width: 32em;">
-              <FlowPanel style="&mfld;" for="WarrantyType">
-                <Label name="WarrantyTypeName" for="WarrantyType" style="&flbl;"/>
-                <DataSelector source="WarrantyType" style="&finp;"/>
+        <FlowPanel class="flexBox-horizontal">
+          <FlowPanel class="bee-svc-maintenance-panel" style="margin-bottom: 1em;">
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Department">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Department" class="bee-required" style="&flbl;"/>
+                <DataSelector name="Department" source="Department" required="true" renderColumns="DepartmentName"
+                              style="&finp;"/>
               </FlowPanel>
+            </FlowPanel>
 
-              <FlowPanel style="&mfld;" for="WarrantyMaintenance">
-                <Label for="WarrantyMaintenance" style="&flbl;"/>
-                <DataSelector name="WarrantyMaintenance" source="WarrantyMaintenance" choiceColumns="Id"
-                              filter="WarrantyValidTo > {t}" style="&finp;"/>
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Repairer">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Repairer" style="&flbl;"/>
+                <DataSelector source="Repairer" renderColumns="RepairerFirstName RepairerLastName"
+                              style="&finp;"/>
+              </FlowPanel>
+            </FlowPanel>
+          </FlowPanel>
+
+          <FlowPanel class="bee-svc-maintenance-panel">
+            <FlowPanel name="WarrantyPanel" class="flexBox-horizontal" style="&mrst;width: 32em;" >
+              <FlowPanel style="&mfld;" for="WarrantyType">
+                <Label for="WarrantyType" style="&flbl;"/>
+                <DataSelector source="WarrantyType" style="&finp;"/>
               </FlowPanel>
 
               <FlowPanel style="&mfld;" for="WarrantyValidTo" >
