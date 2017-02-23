@@ -39,7 +39,7 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
-import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
@@ -93,7 +93,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   private HasWidgets stageContainer;
   private List<Stage> orderStages;
 
-  private Button createInvoice = new Button(Localized.dictionary().createInvoice(),
+  private CustomAction createInvoice = new CustomAction(FontAwesome.FILE_TEXT_O,
       clickEvent -> selectServicesAndJobs());
 
   Widget customerWarning;
@@ -120,6 +120,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   @Override
   public void afterCreatePresenter(Presenter presenter) {
     if (Data.isViewEditable(TBL_TRADE_DOCUMENTS)) {
+      createInvoice.setTitle(Localized.dictionary().createInvoice());
       presenter.getHeader().addCommandItem(createInvoice);
     }
     super.afterCreatePresenter(presenter);
@@ -438,10 +439,12 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
             getIntegerValue(COL_TRADE_DOCUMENT_VAT_MODE)));
 
         args.addDataItem(VAR_DOCUMENT, Codec.beeSerialize(doc));
+        createInvoice.running();
 
         BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
+            createInvoice.idle();
             response.notify(getFormView());
 
             if (!response.hasErrors()) {
