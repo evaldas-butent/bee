@@ -999,6 +999,8 @@ public interface Dictionary {
 
   default String crmEnterDuration() {return g("crmEnterDuration");}
 
+  default String crmEnterDurationAndType() {return g("crmEnterDurationAndType");}
+
   default String crmEnterDurationType() {return g("crmEnterDurationType");}
 
   default String crmEnterExecutor() {return g("crmEnterExecutor");}

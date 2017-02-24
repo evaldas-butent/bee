@@ -285,6 +285,9 @@ class TaskEditor extends ProductSupportInterceptor {
       ParameterList params) {
     String time = dialog.getTime(ids.get(COL_DURATION));
 
+    // Verslo Aljansas TID 25505
+    Double vaMileage = BeeUtils.toDoubleOrNull(dialog.getMileage(ids.get(COL_VA_MILEAGE)));
+
     if (!BeeUtils.isEmpty(time)) {
       BeeRow durType = dialog.getSelector(ids.get(COL_DURATION_TYPE)).getRelatedRow();
       Long type = durType.getLong(Data.getColumnIndex(VIEW_TASK_DURATION_TYPES, COL_DURATION_TYPE));
@@ -298,8 +301,7 @@ class TaskEditor extends ProductSupportInterceptor {
         date = TimeUtils.nowMinutes();
       }
 
-      // Verslo Aljansas TID 25515
-      Double vaMileage = BeeUtils.toDoubleOrNull(dialog.getMileage(ids.get(COL_VA_MILEAGE)));
+      // Verslo Aljansas TID 25515, TID 25505
       boolean required = BeeUtils.unbox(Data.getBoolean(VIEW_TASK_DURATION_TYPES, durType,
         COL_VA_MILEAGE_REQUIRED));
       if (BeeUtils.isPositive(vaMileage)) {
@@ -312,6 +314,11 @@ class TaskEditor extends ProductSupportInterceptor {
       params.addDataItem(VAR_TASK_DURATION_DATE, date.serialize());
       params.addDataItem(VAR_TASK_DURATION_TIME, time);
       params.addDataItem(VAR_TASK_DURATION_TYPE, type);
+
+      // Verslo Aljansas TID 25505
+    } else if (BeeUtils.isEmpty(time) && BeeUtils.isPositive(vaMileage)) {
+      showError(Localized.dictionary().crmEnterDurationAndType());
+      return false;
     }
     return true;
   }
