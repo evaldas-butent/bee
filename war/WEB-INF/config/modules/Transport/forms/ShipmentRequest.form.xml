@@ -43,6 +43,96 @@
       &separator;
     </FlowPanel>
 
+    <FlowPanel name="Customer">
+      <Details open="true">
+        <Summary text="=trRequestCustomerInfo" style="&summary;" />
+
+        <Table name="Register" kind="controls" style="&table;" cellStyle="&cells;">
+          &cols;
+
+          <row>
+            <Label for="CustomerName" />
+            <cell colSpan="2">
+              <FlowPanel>
+                <InputText source="CustomerName" style="width:20em; margin-right:5px;" />
+                <DataSelector source="CustomerCompanyType" valueSource="Name" viewName="CompanyTypes"
+                              style="width:5em; display:inline;" placeholder="=companyStatus" />
+              </FlowPanel>
+            </cell>
+            <CheckBox source="CustomerRegister" />
+          </row>
+
+          <row>
+            <Label for="CustomerCode" />
+            <InputText source="CustomerCode" />
+            <Label for="CustomerVatCode" />
+            <InputText source="CustomerVATCode" />
+          </row>
+
+          <row>
+            <Label for="CustomerContactPerson" />
+            <InputText source="CustomerContactPerson" />
+            <Label for="CustomerPersonPosition" />
+            <DataSelector source="CustomerPersonPosition" valueSource="Name" viewName="Positions" />
+          </row>
+
+          <row>
+            <Label for="CustomerPhone" />
+            <InputText source="CustomerPhone" />
+            <Label for="CustomerEmail" />
+            <InputText source="CustomerEmail" />
+          </row>
+
+          <row>
+            <Label for="CustomerFax" />
+            <InputText source="CustomerFax" />
+          </row>
+
+          <row>
+            <Label for="CustomerAddress" />
+            <InputText source="CustomerAddress" />
+            <Label for="CustomerPostIndex" />
+            <InputText source="CustomerPostIndex" />
+          </row>
+
+          <row>
+            <Label for="CustomerCity" />
+            <DataSelector source="CustomerCity" valueSource="Name" viewName="Cities"
+                          choiceColumns="Name CountryName" />
+            <Label for="CustomerCountry" />
+            <DataSelector source="CustomerCountry" valueSource="Name" viewName="Countries" />
+          </row>
+
+          <row>
+            <Label for="CustomerNotes" />
+            <cell colSpan="3">
+              <InputArea source="CustomerNotes" visibleLines="2" style="width:100%;" />
+            </cell>
+          </row>
+        </Table>
+
+        <Table name="CompanyPerson" kind="controls" style="&table;" cellStyle="&cells;">
+          &cols;
+
+          <row>
+            <Label for="CompanyPerson" class="bee-required" />
+            <DataSelector source="CompanyPerson" newRowEnabled="false" required="true"
+                          renderColumns="PersonFirstName PersonLastName" />
+            <Label for="CompanyName" />
+            <TextLabel source="CompanyName" />
+          </row>
+
+          <row>
+            <Label for="PersonPhone" />
+            <TextLabel source="PersonPhone" />
+            <Label for="PersonEmail" />
+            <TextLabel source="PersonEmail" />
+          </row>
+        </Table>
+      </Details>
+      &separator;
+    </FlowPanel>
+
     <Details open="true">
       <Summary text="=trRequestShipmentInfo" style="&summary;" />
 
