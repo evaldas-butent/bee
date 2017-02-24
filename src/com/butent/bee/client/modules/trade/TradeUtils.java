@@ -494,6 +494,10 @@ public final class TradeUtils {
     }
   }
 
+  static double roundPrice(Double price) {
+    return Localized.normalizeMoney(price);
+  }
+
   private static Multimap<String, Element> getNamedElements(Element element) {
     Multimap<String, Element> elements = HashMultimap.create();
     String name = DomUtils.getDataProperty(element, COL_NAME);

@@ -10,8 +10,10 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.i18n.Money;
+import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
@@ -21,9 +23,12 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
@@ -35,6 +40,7 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
@@ -740,29 +746,127 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(parentRow);
     TradeDiscountMode discountMode = TradeUtils.getDocumentDiscountMode(parentRow);
 
-    Map<String, Long> options = new HashMap<>();
+    Map<String, String> options = new HashMap<>();
 
-    options.put(COL_DISCOUNT_COMPANY, company);
-    options.put(COL_DISCOUNT_OPERATION, operation);
+    options.put(COL_DISCOUNT_COMPANY, BeeUtils.toStringOrNull(company));
+    options.put(COL_DISCOUNT_OPERATION, BeeUtils.toStringOrNull(operation));
 
-    options.put(Service.VAR_TIME, date.getTime());
-    options.put(COL_DISCOUNT_CURRENCY, currency);
+    options.put(Service.VAR_TIME, BeeUtils.toString(date.getTime()));
+    options.put(COL_DISCOUNT_CURRENCY, BeeUtils.toStringOrNull(currency));
 
     if (itemPrice != null) {
-      options.put(COL_DISCOUNT_PRICE_NAME, (long) itemPrice.ordinal());
+      options.put(COL_DISCOUNT_PRICE_NAME, BeeUtils.toString(itemPrice.ordinal()));
     }
 
-    for (IsRow row : rows) {
-      Long item = row.getLong(getDataIndex(COL_ITEM));
+    final Latch latch = new Latch(rows.size());
+    final Holder<Integer> updated = Holder.of(0);
 
+    for (IsRow row : rows) {
       Double quantity = row.getDouble(getDataIndex(COL_TRADE_ITEM_QUANTITY));
-      Long unit = row.getLong(getDataIndex(COL_UNIT));
+      options.put(Service.VAR_QTY, BeeUtils.toStringOrNull(quantity));
+      options.put(COL_DISCOUNT_UNIT, row.getString(getDataIndex(COL_UNIT)));
 
       Long warehouse = row.getLong(getDataIndex(operationType.consumesStock()
           ? COL_TRADE_ITEM_WAREHOUSE_FROM : COL_TRADE_ITEM_WAREHOUSE_TO));
       if (warehouse == null) {
         warehouse = documentWarehouse;
       }
+      options.put(COL_DISCOUNT_WAREHOUSE, BeeUtils.toStringOrNull(warehouse));
+
+      getPriceAndDiscount(row, options, discountMode, changed -> {
+        if (changed) {
+          updated.set(updated.get() + 1);
+        }
+
+        latch.decrement();
+        if (latch.isOpen()) {
+          getGridView().notifyInfo(
+              Localized.dictionary().recalculateTradeItemPriceNotification(updated.get()));
+        }
+      });
     }
+  }
+
+  private void getPriceAndDiscount(final IsRow row, Map<String, String> options,
+      final TradeDiscountMode discountMode, final Consumer<Boolean> callback) {
+
+    Long item = row.getLong(getDataIndex(COL_ITEM));
+
+    final int priceIndex = getDataIndex(COL_TRADE_ITEM_PRICE);
+    final int discountIndex = getDataIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
+    final int discountIsPercentIndex = getDataIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT);
+
+    Double oldPrice = row.getDouble(priceIndex);
+    Double oldDiscount = row.getDouble(discountIndex);
+    boolean oldDiscountIsPercent = row.isTrue(discountIsPercentIndex);
+
+    ClassifierKeeper.getPriceAndDiscount(item, options, (price, discount) -> {
+      Double newPrice = oldPrice;
+      Double newDiscount = oldDiscount;
+      boolean newDiscountIsPercent = oldDiscountIsPercent;
+
+      if (BeeUtils.isDouble(price)) {
+        if (BeeUtils.nonZero(price) && BeeUtils.nonZero(discount) && discountMode == null) {
+          newPrice = TradeUtils.roundPrice(BeeUtils.minusPercent(price, discount));
+          newDiscount = null;
+          newDiscountIsPercent = false;
+        } else {
+          newPrice = price;
+        }
+      }
+
+      if (BeeUtils.isDouble(discount) && discountMode != null) {
+        if (BeeUtils.isZero(discount)) {
+          newDiscount = null;
+          newDiscountIsPercent = false;
+        } else {
+          newDiscount = discount;
+          newDiscountIsPercent = true;
+        }
+      }
+
+      boolean priceChanged = !Objects.equals(oldPrice, newPrice);
+      boolean discountChanged = !Objects.equals(oldDiscount, newDiscount);
+      boolean discountIsPercentChanged = oldDiscountIsPercent ^ newDiscountIsPercent;
+
+      if (priceChanged || discountChanged || discountIsPercentChanged) {
+        final List<BeeColumn> columns = new ArrayList<>();
+        List<String> oldValues = new ArrayList<>();
+        List<String> newValues = new ArrayList<>();
+
+        if (priceChanged) {
+          columns.add(getDataColumns().get(priceIndex));
+          oldValues.add(BeeUtils.toStringOrNull(oldPrice));
+          newValues.add(BeeUtils.toStringOrNull(newPrice));
+        }
+
+        if (discountChanged) {
+          columns.add(getDataColumns().get(discountIndex));
+          oldValues.add(BeeUtils.toStringOrNull(oldDiscount));
+          newValues.add(BeeUtils.toStringOrNull(newDiscount));
+        }
+
+        if (discountIsPercentChanged) {
+          columns.add(getDataColumns().get(discountIsPercentIndex));
+          oldValues.add(BooleanValue.pack(oldDiscountIsPercent));
+          newValues.add(BooleanValue.pack(newDiscountIsPercent));
+        }
+
+        Queries.update(getViewName(), row.getId(), row.getVersion(), columns, oldValues, newValues,
+            null, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+                getGridView().getGrid().addUpdatedSources(row.getId(),
+                    DataUtils.getColumnNames(columns));
+
+                callback.accept(true);
+              }
+            });
+
+      } else {
+        callback.accept(false);
+      }
+    });
   }
 }
