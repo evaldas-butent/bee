@@ -709,13 +709,28 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     DateTime date = TradeUtils.getDocumentDate(parentRow);
-    if (date == null) {
+    Long currency = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_CURRENCY);
+    if (date == null || currency == null) {
       return;
     }
 
     Long operation = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_OPERATION);
     OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
     if (operation == null || operationType == null) {
+      return;
+    }
+
+    ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(parentRow);
+
+    final Latch latch = new Latch(rows.size());
+    final Holder<Integer> counter = Holder.of(0);
+
+    if (operationType.consumesStock() && ItemPrice.COST == itemPrice) {
+      for (IsRow row : rows) {
+        setPriceToParentCost(row, date, currency,
+            changed -> afterRecalculatePrice(changed, latch, counter));
+      }
+
       return;
     }
 
@@ -732,6 +747,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
           company = Global.getParameterRelation(PRM_COMPANY);
 
           if (company == null) {
+            getGridView().notifyWarning("company not specified");
             return;
           }
         }
@@ -741,9 +757,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     Long documentWarehouse = TradeUtils.getDocumentRelation(parentRow,
         operationType.consumesStock() ? COL_TRADE_WAREHOUSE_FROM : COL_TRADE_WAREHOUSE_TO);
 
-    Long currency = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_CURRENCY);
-
-    ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(parentRow);
     TradeDiscountMode discountMode = TradeUtils.getDocumentDiscountMode(parentRow);
 
     Map<String, String> options = new HashMap<>();
@@ -758,9 +771,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       options.put(COL_DISCOUNT_PRICE_NAME, BeeUtils.toString(itemPrice.ordinal()));
     }
 
-    final Latch latch = new Latch(rows.size());
-    final Holder<Integer> updated = Holder.of(0);
-
     for (IsRow row : rows) {
       Double quantity = row.getDouble(getDataIndex(COL_TRADE_ITEM_QUANTITY));
       options.put(Service.VAR_QTY, BeeUtils.toStringOrNull(quantity));
@@ -773,17 +783,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       }
       options.put(COL_DISCOUNT_WAREHOUSE, BeeUtils.toStringOrNull(warehouse));
 
-      getPriceAndDiscount(row, options, discountMode, changed -> {
-        if (changed) {
-          updated.set(updated.get() + 1);
-        }
-
-        latch.decrement();
-        if (latch.isOpen()) {
-          getGridView().notifyInfo(
-              Localized.dictionary().recalculateTradeItemPriceNotification(updated.get()));
-        }
-      });
+      getPriceAndDiscount(row, options, discountMode,
+          changed -> afterRecalculatePrice(changed, latch, counter));
     }
   }
 
@@ -868,5 +869,52 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
         callback.accept(false);
       }
     });
+  }
+
+  private void setPriceToParentCost(IsRow row, DateTime date, Long currency,
+      Consumer<Boolean> callback) {
+
+    Double cost = row.getDouble(getDataIndex(ALS_PARENT_COST));
+    Long costCurrency = row.getLong(getDataIndex(ALS_PARENT_COST_CURRENCY));
+
+    if (BeeUtils.isDouble(cost) && costCurrency != null) {
+      Double oldPrice = row.getDouble(getDataIndex(COL_TRADE_ITEM_PRICE));
+
+      Double newPrice;
+      if (Objects.equals(currency, costCurrency)) {
+        newPrice = cost;
+      } else {
+        newPrice = Data.round(getViewName(), COL_TRADE_ITEM_PRICE,
+            Money.exchange(costCurrency, currency, cost, date));
+      }
+
+      if (Objects.equals(oldPrice, newPrice)) {
+        callback.accept(false);
+
+      } else {
+        Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(),
+            COL_TRADE_ITEM_PRICE, BeeUtils.toStringOrNull(oldPrice),
+            BeeUtils.toStringOrNull(newPrice));
+
+        getGridView().getGrid().addUpdatedSources(row.getId(),
+            Collections.singleton(COL_TRADE_ITEM_PRICE));
+        callback.accept(true);
+      }
+
+    } else {
+      callback.accept(false);
+    }
+  }
+
+  private void afterRecalculatePrice(boolean changed, Latch latch, Holder<Integer> counter) {
+    if (changed) {
+      counter.set(counter.get() + 1);
+    }
+
+    latch.decrement();
+    if (latch.isOpen()) {
+      getGridView().notifyInfo(
+          Localized.dictionary().recalculateTradeItemPriceNotification(counter.get()));
+    }
   }
 }
