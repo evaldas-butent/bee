@@ -818,7 +818,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         for (Integer idx : ss.get(svc.id())) {
           Range<DateTime> r = svc.ranges.get(idx);
-          String period = TimeUtils.renderPeriod(r.lowerEndpoint(), r.upperEndpoint());
+          String period = Format.renderPeriod(r.lowerEndpoint(), r.upperEndpoint());
           notes.add(BeeUtils.joinItems(itemName, period, objectInfo));
         }
       }

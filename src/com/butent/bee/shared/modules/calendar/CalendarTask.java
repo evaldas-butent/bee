@@ -16,6 +16,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
 
 public class CalendarTask extends CalendarItem implements BeeSerializable {
 
@@ -326,7 +328,7 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
 
   @Override
   public Map<String, String> getSubstitutes(long calendarId, Map<Long, UserData> users,
-      boolean addLabels) {
+      boolean addLabels, BiFunction<HasDateValue, HasDateValue, String> periodRenderer) {
 
     Map<String, String> result = new HashMap<>();
 
@@ -368,7 +370,7 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
     }
 
     result.put(wrap(KEY_PERIOD), build(Localized.dictionary().period(),
-        TimeUtils.renderPeriod(getStart(), getEnd(), !addLabels), addLabels));
+        periodRenderer.apply(getStart(), getEnd()), addLabels));
 
     return result;
   }

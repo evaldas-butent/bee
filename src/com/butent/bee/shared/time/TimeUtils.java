@@ -400,14 +400,6 @@ public final class TimeUtils {
     }
   }
 
-  public static boolean hasTimePart(HasDateValue dt) {
-    if (dt instanceof DateTime) {
-      return dt.getHour() > 0 || dt.getMinute() > 0 || dt.getSecond() > 0 || dt.getMillis() > 0;
-    } else {
-      return false;
-    }
-  }
-
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);
@@ -1137,14 +1129,6 @@ public final class TimeUtils {
         + padTwo(minutes % MINUTES_PER_HOUR);
   }
 
-  public static String renderMinutes(long time, boolean leadingZero) {
-    if (time < 0) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return renderMinutes(BeeUtils.toInt(time % MILLIS_PER_DAY / MILLIS_PER_MINUTE), leadingZero);
-    }
-  }
-
   public static String renderMonthDay(HasDateValue date) {
     if (date == null) {
       return BeeConst.STRING_EMPTY;
@@ -1155,34 +1139,6 @@ public final class TimeUtils {
 
   public static String renderMonthDay(int month, int dom) {
     return monthToString(month) + DATE_FIELD_SEPARATOR + dayOfMonthToString(dom);
-  }
-
-  public static String renderPeriod(DateTime start, DateTime end) {
-    return renderPeriod(start, end, false);
-  }
-
-  public static String renderPeriod(DateTime start, DateTime end, boolean dropCurrentYear) {
-    if (start == null) {
-      if (end == null) {
-        return BeeConst.STRING_EMPTY;
-      } else {
-        return PERIOD_SEPARATOR + renderCompact(end, dropCurrentYear);
-      }
-
-    } else if (end == null) {
-      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR;
-
-    } else if (start.equals(end)) {
-      return renderCompact(start, dropCurrentYear);
-
-    } else if (sameDate(start, end)) {
-      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR
-          + (hasTimePart(end) ? end.toCompactTimeString() : renderCompact(end, dropCurrentYear));
-
-    } else {
-      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR
-          + renderCompact(end, dropCurrentYear);
-    }
   }
 
   public static String renderPeriod(String start, String end) {
