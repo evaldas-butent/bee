@@ -762,7 +762,11 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     Map<String, String> options = new HashMap<>();
 
     options.put(COL_DISCOUNT_COMPANY, BeeUtils.toStringOrNull(company));
+
     options.put(COL_DISCOUNT_OPERATION, BeeUtils.toStringOrNull(operation));
+    if (operationType.requireOperationForPriceCalculation()) {
+      options.put(Service.VAR_REQUIRED, COL_DISCOUNT_OPERATION);
+    }
 
     options.put(Service.VAR_TIME, BeeUtils.toString(date.getTime()));
     options.put(COL_DISCOUNT_CURRENCY, BeeUtils.toStringOrNull(currency));
