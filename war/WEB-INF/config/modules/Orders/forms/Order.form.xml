@@ -64,6 +64,10 @@
         <Label for="Object" style="&lbl;"/>
         <DataSelector source="Object" choiceColumns="CompanyName ObjectName ObjectAddress"
                       newRowEnabled="false" renderColumns="ObjectName" style="&inpw;" />
+
+        <Label for="TradeOperation" style="&lbl;" class="bee-required" />
+        <DataSelector source="TradeOperation" style="&inpw;" required="true"
+                      renderColumns="OperationName" />
       </row>
     </Table>
     <br />

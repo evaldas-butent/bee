@@ -15,7 +15,7 @@
     <String name="Number" precision="30" label="=number" />
 
     <Relation name="Warehouse" relation="Warehouses" label="=warehouse" />
-
+    <Relation name="TradeOperation" relation="TradeOperations" label="=trdOperation" />
     <Relation name="Object" relation="CompanyObjects" label="=object" />
 
     <Relation name="Company" relation="Companies" label="=client" />
