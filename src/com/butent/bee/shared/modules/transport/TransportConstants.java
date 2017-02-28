@@ -623,6 +623,17 @@ public final class TransportConstants {
   public static final String COL_ROUTE_WEIGHT = "CargoWeight";
   public static final String COL_ROUTE_SEASON = "Season";
   public static final String COL_ROUTE_CONSUMPTION = "Consumption";
+  public static final String COL_ROUTE_GAS_STATION = "GasStation";
+  public static final String COL_ROUTE_VEHICLE_SERVICE = "VehicleService";
+  public static final String COL_ROUTE_PARKING = "Parking";
+  public static final String COL_ROUTE_CMR_DELIVERY = "CmrDelivery";
+  public static final String COL_ROUTE_HOTEL = "Hotel";
+  public static final String COL_ROUTE_ROAD_MAINTENANCE = "RoadMaintenance";
+  public static final String COL_ROUTE_CAR_CRASH = "CarCrash";
+  public static final String COL_ROUTE_ROAD_SIGNS = "RoadSigns";
+  public static final String COL_ROUTE_TRAILER_OVERHANGING = "TrailerOverhanging";
+  public static final String COL_ROUTE_HELP_ANOTHER_DRIVER = "HelpAnotherDriver";
+  public static final String COL_ROUTE_OTHER = "Other";
 
   public static final String COL_LOADED_KILOMETERS = "LoadedKilometers";
   public static final String COL_EMPTY_KILOMETERS = "EmptyKilometers";

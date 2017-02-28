@@ -983,6 +983,8 @@ public class TransportReportsBean {
             sys.joinTables(TBL_PERSONS, driverPersonTblAls, driverCompPersonTblAls, COL_PERSON))
         .setWhere(clause.add(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION)));
 
+    CustomTransportReportsBean.addRoadKilometersFieldsToQuery(query);
+
     String tmp = qs.sqlCreateTemp(query);
 
     // Routes
@@ -1012,6 +1014,10 @@ public class TransportReportsBean {
                   .addGroup(TBL_TRIP_ROUTES, COL_TRIP), als,
               SqlUtils.joinUsing(tmp, als, COL_TRIP)));
     }
+    CustomTransportReportsBean customTransportReportsBean = Invocation
+        .locateRemoteBean(CustomTransportReportsBean.class);
+    customTransportReportsBean.addRoadKilometersCalculation(report, tmp);
+
     String tmpTripCargo = null;
 
     // Planned kilometers
@@ -1270,7 +1276,11 @@ public class TransportReportsBean {
           .addFrom(tmp)
           .setWhere(SqlUtils.sqlFalse())).getColumnNames()) {
 
-        if (BeeUtils.inList(column, kilometers, fuelCosts, dailyCosts, roadCosts, otherCosts)) {
+        if (BeeUtils.inList(column, kilometers, fuelCosts, dailyCosts, roadCosts, otherCosts,
+            COL_ROUTE_GAS_STATION, COL_ROUTE_VEHICLE_SERVICE, COL_ROUTE_PARKING,
+            COL_ROUTE_CMR_DELIVERY, COL_ROUTE_HOTEL, COL_ROUTE_ROAD_MAINTENANCE,
+            COL_ROUTE_CAR_CRASH, COL_ROUTE_ROAD_SIGNS, COL_ROUTE_TRAILER_OVERHANGING,
+            COL_ROUTE_HELP_ANOTHER_DRIVER, COL_ROUTE_OTHER)) {
           query.addExpr(SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(tmp, column), 100.0),
               SqlUtils.nvl(SqlUtils.field(tmpPercents, COL_CARGO_PERCENT), 100)), column);
         } else {
@@ -1384,8 +1394,6 @@ public class TransportReportsBean {
       qs.sqlDropTemp(tmpTripCargo);
     }
 
-    CustomTransportReportsBean customTransportReportsBean = Invocation
-        .locateRemoteBean(CustomTransportReportsBean.class);
     customTransportReportsBean.calculateLoadingDates(report, cargoRequired, tmp);
 
     // Incomes

@@ -29,5 +29,17 @@
     <Double name="Consumption" label="=trFuelConsumptions" />
 
     <Relation name="Item" relation="Items" label="=productService" />
+
+    <Double name="GasStation" label="=trGasStation" />
+    <Double name="VehicleService" label="=vehicleService" />
+    <Double name="Parking" label="=trParking" />
+    <Double name="CmrDelivery" label="=trCmrDelivery" />
+    <Double name="Hotel" label="=trHotel" />
+    <Double name="RoadMaintenance" label="=trRoadMaintenance" />
+    <Double name="CarCrash" label="=trCarCrash" />
+    <Double name="RoadSigns" label="=trRoadSigns" />
+    <Double name="TrailerOverhanging" label="=trTrailerOverhanging" />
+    <Double name="HelpAnotherDriver" label="=trHelpAnotherDriver" />
+    <Double name="Other" label="=trOther" />
   </Fields>
 </Table>

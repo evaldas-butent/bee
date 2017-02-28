@@ -5,9 +5,34 @@
         name="TripRoutes" viewName="TripRoutes" caption="=trTripRoutes"
     >
   <g:columns>
-    <RelColumn name="TripCargo" viewName="TripCargo" choiceColumns="Cargo Description"
-               renderColumns="Cargo" editSource="Cargo"
-               newRowEnabled="false" editEnabled="true" editPopup="false" />
+    <RelColumn name="TripCargo" viewName="TripCargo" choiceColumns="Cargo Description LoadingDate LoadingCityName LoadingCountryName UnloadingDate UnloadingCityName UnloadingCountryName"
+               renderColumns="Cargo" editSource="Cargo" required="true"
+               newRowEnabled="false" editEnabled="true" editPopup="false" >
+      <selectorColumn source="LoadingDate" >
+        <ui:render>
+          <ui:function>
+            if (row.LoadingDate) {
+              var date = new Date(Number(row.LoadingDate));
+              return date.toLocaleDateString();
+            } else {
+              return "";
+            }
+          </ui:function>
+        </ui:render>
+      </selectorColumn>
+      <selectorColumn source="UnloadingDate" >
+        <ui:render>
+          <ui:function>
+            if (row.LoadingDate) {
+              var date = new Date(Number(row.UnloadingDate));
+              return date.toLocaleDateString();
+            } else {
+              return "";
+            }
+          </ui:function>
+        </ui:render>
+      </selectorColumn>
+    </RelColumn>
 
     <DataColumn name="DepartureDate" caption="=trDepartureDate" updateMode="row">
       <carry>
@@ -90,5 +115,50 @@
         <ui:expression>row.Item</ui:expression>
       </carry>
     </RelColumn>
+
+    <DataColumn name="GasStation" caption="=trGasStation" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="VehicleService" caption="=vehicleService" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="Parking" caption="=trParking" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="CmrDelivery" caption="=trCmrDelivery" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="Hotel" caption="=trHotel" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="RoadMaintenance" caption="=trRoadMaintenance" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="CarCrash" caption="=trCarCrash" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="RoadSigns" caption="=trRoadSigns" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="TrailerOverhanging" caption="=trTrailerOverhanging" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="HelpAnotherDriver" caption="=trHelpAnotherDriver" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="Other" caption="=trOther" format="#.0" minValue="0"
+                updateMode="row">
+      <footer aggregate="sum" />
+    </DataColumn>
   </g:columns>
 </g:Grid>

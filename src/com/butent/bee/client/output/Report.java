@@ -169,7 +169,20 @@ public enum Report implements HasWidgetSupplier {
           new ReportDateTimeItem(COL_CARGO_CMR_DATE, loc.trCmrDate()),
 
           new ReportEnumItem(TransportConstants.ALS_ORDER_STATUS,
-              Data.getColumnLabel(TBL_ORDERS, TransportConstants.COL_STATUS), OrderStatus.class));
+              Data.getColumnLabel(TBL_ORDERS, TransportConstants.COL_STATUS), OrderStatus.class),
+
+          new ReportNumericItem(COL_ROUTE_GAS_STATION, loc.trGasStation()),
+          new ReportNumericItem(COL_ROUTE_VEHICLE_SERVICE, loc.vehicleService()),
+          new ReportNumericItem(COL_ROUTE_PARKING, loc.trParking()),
+          new ReportNumericItem(COL_ROUTE_CMR_DELIVERY, loc.trCmrDelivery()),
+          new ReportNumericItem(COL_ROUTE_HOTEL, loc.trHotel()),
+          new ReportNumericItem(COL_ROUTE_ROAD_MAINTENANCE, loc.trRoadMaintenance()),
+          new ReportNumericItem(COL_ROUTE_CAR_CRASH, loc.trCarCrash()),
+          new ReportNumericItem(COL_ROUTE_ROAD_SIGNS, loc.trRoadSigns()),
+          new ReportNumericItem(COL_ROUTE_TRAILER_OVERHANGING, loc.trTrailerOverhanging()),
+          new ReportNumericItem(COL_ROUTE_HELP_ANOTHER_DRIVER, loc.trHelpAnotherDriver()),
+          new ReportNumericItem(COL_ROUTE_OTHER, loc.trOther())
+          );
     }
 
     @Override

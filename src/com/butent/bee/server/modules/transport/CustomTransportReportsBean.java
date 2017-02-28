@@ -17,6 +17,7 @@ import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -33,6 +34,45 @@ public class CustomTransportReportsBean {
   QueryServiceBean qs;
   @EJB
   TransportModuleBean trp;
+
+  public static void addRoadKilometersFieldsToQuery(SqlSelect query) {
+    query.addEmptyDouble(COL_ROUTE_GAS_STATION);
+    query.addEmptyDouble(COL_ROUTE_VEHICLE_SERVICE);
+    query.addEmptyDouble(COL_ROUTE_PARKING);
+    query.addEmptyDouble(COL_ROUTE_CMR_DELIVERY);
+    query.addEmptyDouble(COL_ROUTE_HOTEL);
+    query.addEmptyDouble(COL_ROUTE_ROAD_MAINTENANCE);
+    query.addEmptyDouble(COL_ROUTE_CAR_CRASH);
+    query.addEmptyDouble(COL_ROUTE_ROAD_SIGNS);
+    query.addEmptyDouble(COL_ROUTE_TRAILER_OVERHANGING);
+    query.addEmptyDouble(COL_ROUTE_HELP_ANOTHER_DRIVER);
+    query.addEmptyDouble(COL_ROUTE_OTHER);
+  }
+
+  public void addRoadKilometersCalculation(ReportInfo report, String tmp) {
+    SqlSelect subQuery = new SqlSelect();
+    String als = SqlUtils.uniqueName();
+    SqlUpdate updateQuery = new SqlUpdate(tmp);
+
+    for (String fieldName : Arrays.asList(COL_ROUTE_GAS_STATION, COL_ROUTE_VEHICLE_SERVICE,
+        COL_ROUTE_PARKING, COL_ROUTE_CMR_DELIVERY, COL_ROUTE_HOTEL, COL_ROUTE_ROAD_MAINTENANCE,
+        COL_ROUTE_CAR_CRASH, COL_ROUTE_ROAD_SIGNS, COL_ROUTE_TRAILER_OVERHANGING,
+        COL_ROUTE_HELP_ANOTHER_DRIVER, COL_ROUTE_OTHER)) {
+      if (report.requiresField(fieldName)) {
+        updateQuery.addExpression(fieldName, SqlUtils.field(als, fieldName));
+        subQuery.addSum(TBL_TRIP_ROUTES, fieldName);
+      }
+    }
+    if (!subQuery.isEmpty()) {
+      qs.updateData(updateQuery
+          .setFrom(subQuery
+                  .addFields(TBL_TRIP_ROUTES, COL_TRIP)
+                  .addFrom(TBL_TRIP_ROUTES)
+                  .addFromInner(tmp, SqlUtils.joinUsing(TBL_TRIP_ROUTES, tmp, COL_TRIP))
+                  .addGroup(TBL_TRIP_ROUTES, COL_TRIP), als,
+              SqlUtils.joinUsing(tmp, als, COL_TRIP)));
+    }
+  }
 
   public void calculateLoadingDates(ReportInfo report, boolean cargoRequired, String tmp) {
     boolean loadingRangeRequired = report.requiresField(ALS_MIN_LOADING_DATE)

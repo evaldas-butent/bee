@@ -47,6 +47,18 @@
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
     </SimpleJoin>
+
+    <SimpleColumn name="GasStation" />
+    <SimpleColumn name="VehicleService" />
+    <SimpleColumn name="Parking" />
+    <SimpleColumn name="CmrDelivery" />
+    <SimpleColumn name="Hotel" />
+    <SimpleColumn name="RoadMaintenance" />
+    <SimpleColumn name="CarCrash" />
+    <SimpleColumn name="RoadSigns" />
+    <SimpleColumn name="TrailerOverhanging" />
+    <SimpleColumn name="HelpAnotherDriver" />
+    <SimpleColumn name="Other" />
   </Columns>
   <Order>
     <OrderBy column="DepartureDate" />

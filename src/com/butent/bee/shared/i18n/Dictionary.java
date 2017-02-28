@@ -5576,6 +5576,8 @@ public interface Dictionary {
 
   default String trBriefInvoice() {return g("trBriefInvoice");}
 
+  default String trCarCrash() {return g("trCarCrash");}
+
   default String trCargoActualPlaces() {return g("trCargoActualPlaces");}
 
   default String trCargoCreditInvoiceReason() {return g("trCargoCreditInvoiceReason");}
@@ -5611,6 +5613,8 @@ public interface Dictionary {
   default String trCmrCopy() {return g("trCmrCopy");}
 
   default String trCmrDate() {return g("trCmrDate");}
+
+  default String trCmrDelivery() {return g("trCmrDelivery");}
 
   default String trCommandCreateNewOrder() {return g("trCommandCreateNewOrder");}
 
@@ -5726,6 +5730,8 @@ public interface Dictionary {
 
   default String trFuelTypesName() {return g("trFuelTypesName");}
 
+  default String trGasStation() {return g("trGasStation");}
+
   default String trGenerateDailyCosts() {return g("trGenerateDailyCosts");}
 
   default String trGenerateRoute() {return g("trGenerateRoute");}
@@ -5733,6 +5739,10 @@ public interface Dictionary {
   default String trGroup() {return g("trGroup");}
 
   default String trHandlingKilometerError() {return g("trHandlingKilometerError");}
+
+  default String trHelpAnotherDriver() {return g("trHelpAnotherDriver");}
+
+  default String trHotel() {return g("trHotel");}
 
   default String trImportConditions() {return g("trImportConditions");}
 
@@ -5910,6 +5920,8 @@ public interface Dictionary {
 
   default String trOrders() {return g("trOrders");}
 
+  default String trOther() {return g("trOther");}
+
   default String trOtherCosts() {return g("trOtherCosts");}
 
   default String trOwned() {return g("trOwned");}
@@ -5919,6 +5931,8 @@ public interface Dictionary {
   default String trPalettesQuantity() {return g("trPalettesQuantity");}
 
   default String trParameters() {return g("trParameters");}
+
+  default String trParking() {return g("trParking");}
 
   default String trPlannedEndDate() {return g("trPlannedEndDate");}
 
@@ -6154,6 +6168,10 @@ public interface Dictionary {
 
   default String trRoadCostsItem() {return g("trRoadCostsItem");}
 
+  default String trRoadMaintenance() {return g("trRoadMaintenance");}
+
+  default String trRoadSigns() {return g("trRoadSigns");}
+
   default String trSeason() {return g("trSeason");}
 
   default String trSelfService() {return g("trSelfService");}
@@ -6251,6 +6269,10 @@ public interface Dictionary {
   default String trTemperatureShort() {return g("trTemperatureShort");}
 
   default String trTonneKilometer() {return g("trTonneKilometer");}
+
+  default String trTotalWithVAT() {return g("trTotalWithVAT");}
+
+  default String trTrailerOverhanging() {return g("trTrailerOverhanging");}
 
   default String trTransportGroups() {return g("trTransportGroups");}
 
