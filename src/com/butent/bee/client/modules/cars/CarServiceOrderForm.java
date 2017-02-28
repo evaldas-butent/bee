@@ -64,7 +64,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.cars.CarsConstants;
-import com.butent.bee.shared.modules.trade.ItemStock;
+import com.butent.bee.shared.modules.trade.ItemQuantities;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocument;
@@ -477,9 +477,9 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
         if (items.isEmpty()) {
           renderInvoiceTable(result, stocks);
         } else {
-          TradeKeeper.getStock(getLongValue(COL_WAREHOUSE), items, stockMultimap -> {
+          TradeKeeper.getStock(getLongValue(COL_WAREHOUSE), items, true, stockMultimap -> {
             stockMultimap.keySet().forEach(item -> stocks.put(item, stockMultimap.get(item)
-                .stream().mapToDouble(ItemStock::getQuantity).sum()));
+                .stream().mapToDouble(ItemQuantities::getStock).sum()));
             renderInvoiceTable(result, stocks);
           });
         }

@@ -280,6 +280,8 @@ public final class TradeConstants {
   public static final String VAR_DOCUMENT = "Document";
   public static final String VAR_ITEMS = "Items";
 
+  public static final String VAR_RESERVATIONS = "Reservations";
+
   public static final String GRID_TRADE_OPERATIONS = "TradeOperations";
   public static final String GRID_TRADE_STATUSES = "TradeStatuses";
   public static final String GRID_TRADE_TAGS = "TradeTags";

@@ -93,7 +93,7 @@ import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.payroll.PayrollConstants;
-import com.butent.bee.shared.modules.trade.ItemStock;
+import com.butent.bee.shared.modules.trade.ItemQuantities;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeCostBasis;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
@@ -125,6 +125,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -140,6 +141,9 @@ import javax.ejb.TimerService;
 public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerService {
 
   private static BeeLogger logger = LogUtils.getLogger(TradeModuleBean.class);
+
+  private static final Map<ModuleAndSub, StockReservationsProvider> stockReservationsProviders =
+      new HashMap<>();
 
   @EJB
   SystemBean sys;
@@ -248,8 +252,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       response = calculateCost(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_STOCK)) {
-      Multimap<Long, ItemStock> stock = getStock(reqInfo.getParameterLong(COL_STOCK_WAREHOUSE),
-          DataUtils.parseIdSet(reqInfo.getParameter(VAR_ITEMS)));
+      Multimap<Long, ItemQuantities> stock = getStock(reqInfo.getParameterLong(COL_STOCK_WAREHOUSE),
+          DataUtils.parseIdSet(reqInfo.getParameter(VAR_ITEMS)),
+          reqInfo.getParameterBoolean(VAR_RESERVATIONS));
       response = stock.isEmpty() ? ResponseObject.emptyResponse() : ResponseObject.response(stock);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_DOCUMENT)) {
@@ -427,13 +432,38 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     return Module.TRADE;
   }
 
+  public static Multimap<Long, ItemQuantities> getReservations(Long warehouse,
+      Collection<Long> items) {
+    Multimap<Long, ItemQuantities> reservations = HashMultimap.create();
+
+    stockReservationsProviders.values().forEach(provider -> {
+      Multimap<Long, ItemQuantities> result = provider.getStockReservations(warehouse, items);
+
+      if (Objects.nonNull(result)) {
+        result.forEach((item, itemQuantities) -> {
+          ItemQuantities existing = reservations.get(item).stream()
+              .filter(current -> Objects.equals(current.getArticle(), itemQuantities.getArticle()))
+              .findAny().orElse(null);
+
+          if (Objects.isNull(existing)) {
+            reservations.put(item, itemQuantities);
+          } else {
+            existing.setReserved(existing.getReserved() + itemQuantities.getReserved());
+          }
+        });
+      }
+    });
+    return reservations;
+  }
+
   @Override
   public String getResourcePath() {
     return getModule().getName();
   }
 
-  public Multimap<Long, ItemStock> getStock(Long warehouse, Collection<Long> items) {
-    Multimap<Long, ItemStock> result = ArrayListMultimap.create();
+  public Multimap<Long, ItemQuantities> getStock(Long warehouse, Collection<Long> items,
+      boolean includeReservations) {
+    Multimap<Long, ItemQuantities> result = ArrayListMultimap.create();
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, COL_TRADE_ITEM_ARTICLE)
@@ -457,11 +487,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     SimpleRowSet data = qs.getData(query);
     if (!DataUtils.isEmpty(data)) {
       for (SimpleRow row : data) {
-        result.put(row.getLong(COL_ITEM),
-            new ItemStock(row.getValue(COL_TRADE_ITEM_ARTICLE), row.getDouble(COL_STOCK_QUANTITY)));
+        result.put(row.getLong(COL_ITEM), ItemQuantities.stock(row.getValue(COL_TRADE_ITEM_ARTICLE),
+            row.getDouble(COL_STOCK_QUANTITY)));
       }
     }
+    if (includeReservations) {
+      getReservations(warehouse, items).forEach((item, itemQuantities) -> {
+        Optional<ItemQuantities> existing = result.get(item).stream()
+            .filter(current -> Objects.equals(current.getArticle(), itemQuantities.getArticle()))
+            .findAny();
 
+        if (existing.isPresent()) {
+          existing.get().setReserved(itemQuantities.getReserved());
+        } else {
+          result.put(item, itemQuantities);
+        }
+      });
+    }
     return result;
   }
 
@@ -982,6 +1024,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     });
 
     act.init();
+  }
+
+  public static void registerStockReservationsProvider(ModuleAndSub moduleAndSub,
+      StockReservationsProvider provider) {
+    stockReservationsProviders.put(Assert.notNull(moduleAndSub), Assert.notNull(provider));
   }
 
   private ResponseObject getDocumentTypeCaptionAndFilter(RequestInfo reqInfo) {
