@@ -164,8 +164,8 @@ public final class TransportHandler {
     MenuService.ASSESSMENTS_GRID.setHandler(
         parameters -> openAssessment(parameters, ViewHelper.getPresenterCallback()));
 
-    ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_REQUESTS, null),
-        callback -> openAssessment(GRID_ASSESSMENT_REQUESTS,
+    ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_REQUESTS,
+        new AssessmentRequestsGrid()), callback -> openAssessment(GRID_ASSESSMENT_REQUESTS,
             ViewFactory.getPresenterCallback(callback)));
     ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_ORDERS, null),
         callback -> openAssessment(GRID_ASSESSMENT_ORDERS,

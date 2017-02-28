@@ -53,12 +53,12 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid implements Selecto
       values.put(COL_TRADE_DOCUMENT_ITEM_DISCOUNT, null);
       values.put(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT, null);
 
-      Map<String, Long> options = new HashMap<>();
-      options.put(COL_DISCOUNT_COMPANY, parentForm.getLongValue(COL_CUSTOMER));
-      options.put(Service.VAR_TIME, parentForm.getLongValue(COL_DATE));
-      options.put(COL_DISCOUNT_CURRENCY, parentForm.getLongValue(COL_CURRENCY));
-      options.put(COL_MODEL, parentForm.getLongValue(COL_MODEL));
-      options.put(COL_PRODUCTION_DATE, parentForm.getLongValue(COL_PRODUCTION_DATE));
+      Map<String, String> options = new HashMap<>();
+      options.put(COL_DISCOUNT_COMPANY, parentForm.getStringValue(COL_CUSTOMER));
+      options.put(Service.VAR_TIME, parentForm.getStringValue(COL_DATE));
+      options.put(COL_DISCOUNT_CURRENCY, parentForm.getStringValue(COL_CURRENCY));
+      options.put(COL_MODEL, parentForm.getStringValue(COL_MODEL));
+      options.put(COL_PRODUCTION_DATE, parentForm.getStringValue(COL_PRODUCTION_DATE));
 
       ClassifierKeeper.getPriceAndDiscount(event.getValue(), options, (price, percent) -> {
         if (BeeUtils.isPositive(price)) {

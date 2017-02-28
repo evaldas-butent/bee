@@ -10,6 +10,8 @@ public interface Dictionary {
 
   String g(String key);
 
+  default String accept() {return g("accept");}
+
   default String account() {return g("account");}
 
   default String actionAdd() {return g("actionAdd");}
@@ -1511,6 +1513,8 @@ public interface Dictionary {
 
   default String debt() {return g("debt");}
 
+  default String decline() {return g("decline");}
+
   default String defaultBankAccount() {return g("defaultBankAccount");}
 
   default String defaultBankAccountShort() {return g("defaultBankAccountShort");}
@@ -2563,6 +2567,8 @@ public interface Dictionary {
   default String errorMessage() {return g("errorMessage");}
 
   default String errors() {return g("errors");}
+
+  default String eulaAgreement() {return g("eulaAgreement");}
 
   default String event() {return g("event");}
 
@@ -4750,6 +4756,16 @@ public interface Dictionary {
   }
 
   default String recalculateTradeItemCostsQuestion() {return g("recalculateTradeItemCostsQuestion");}
+
+  default String recalculateTradeItemPriceCaption() {return g("recalculateTradeItemPriceCaption");}
+
+  default String recalculateTradeItemPriceForAllItems() {return g("recalculateTradeItemPriceForAllItems");}
+
+  default String recalculateTradeItemPriceNotification(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("recalculateTradeItemPriceNotification"), _m);
+  }
 
   default String recall() {return g("recall");}
 

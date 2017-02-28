@@ -18,6 +18,8 @@
 
     <DataColumn name="Interface" />
 
+    <DataColumn name="EulaAgreement" readOnly="true" visible="false" />
+
     <DataColumn name="BlockAfter" />
     <DataColumn name="BlockBefore" />
   </g:columns>
