@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.DateTimeFormat;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
+import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.PredefinedFormat;
@@ -513,21 +514,7 @@ public final class Format {
   }
 
   public static String renderDateTime(HasDateValue dateTime) {
-    if (dateTime == null) {
-      return null;
-
-    } else if (dateTime.hasTimePart()) {
-      DateTimeFormatInfo dtfInfo = getDefaultDateTimeFormatInfo();
-      PredefinedFormat timeFormat = getTimeFormat(dateTime);
-
-      String pattern = dtfInfo.dateTime(PredefinedFormat.DATE_SHORT.getPattern(dtfInfo),
-          timeFormat.getPattern(dtfInfo));
-
-      return DateTimeFormat.of(pattern, dtfInfo).format(dateTime);
-
-    } else {
-      return render(PredefinedFormat.DATE_SHORT, dateTime);
-    }
+    return Formatter.renderDateTime(getDefaultDateTimeFormatInfo(), dateTime);
   }
 
   public static String renderDateTimeFull(DateTime dateTime) {
@@ -615,15 +602,7 @@ public final class Format {
   }
 
   public static String renderTime(HasDateValue dateTime) {
-    if (dateTime == null) {
-      return null;
-
-    } else if (dateTime.hasTimePart()) {
-      return render(getTimeFormat(dateTime), dateTime);
-
-    } else {
-      return BeeConst.STRING_EMPTY;
-    }
+    return Formatter.renderTime(getDefaultDateTimeFormatInfo(), dateTime);
   }
 
   public static String renderYearMonth(HasYearMonth ym) {
@@ -667,16 +646,6 @@ public final class Format {
 
   private static DateTimeFormatInfo getDefaultDateTimeFormatInfo() {
     return BeeKeeper.getUser().getDateTimeFormatInfo();
-  }
-
-  private static PredefinedFormat getTimeFormat(HasDateValue dateTime) {
-    if (dateTime.getMillis() != 0) {
-      return PredefinedFormat.HOUR24_MINUTE_SECOND_MILLISECOND;
-    } else if (dateTime.getSecond() != 0) {
-      return PredefinedFormat.HOUR24_MINUTE_SECOND;
-    } else {
-      return PredefinedFormat.HOUR24_MINUTE;
-    }
   }
 
   private static DateTimeFormat parsePredefinedFormat(String name) {

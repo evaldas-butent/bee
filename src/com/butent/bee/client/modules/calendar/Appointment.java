@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class Appointment extends CalendarItem {
 
@@ -297,7 +298,8 @@ public class Appointment extends CalendarItem {
 
   @Override
   public Map<String, String> getSubstitutes(long calendarId, Map<Long, UserData> users,
-      boolean addLabels, BiFunction<HasDateValue, HasDateValue, String> periodRenderer) {
+      boolean addLabels, Function<HasDateValue, String> dateTimeRenderer,
+      BiFunction<HasDateValue, HasDateValue, String> periodRenderer) {
 
     Map<String, String> result = new HashMap<>();
 

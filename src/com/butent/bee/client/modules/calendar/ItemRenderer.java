@@ -114,7 +114,7 @@ final class ItemRenderer {
       boolean addLabels) {
 
     return item.getSubstitutes(calendarId, Global.getUsers().getUserData(), addLabels,
-        Format.getPeriodRenderer());
+        Format.getDateTimeRenderer(), Format.getPeriodRenderer());
   }
 
   private static String parseLine(String line, Map<String, String> substitutes) {
