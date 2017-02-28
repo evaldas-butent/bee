@@ -71,6 +71,8 @@ public class Totalizer {
       amount -= discount;
     }
 
+    amount = BeeUtils.round(amount, 2);
+
     if (!isVatInclusive(row)) {
       Double vat = getVat(row, amount);
       if (BeeUtils.isDouble(vat)) {
@@ -96,6 +98,8 @@ public class Totalizer {
         if (BeeUtils.isDouble(discount)) {
           base -= discount;
         }
+
+        base = BeeUtils.round(base, 2);
 
         return getVat(row, base);
       }
