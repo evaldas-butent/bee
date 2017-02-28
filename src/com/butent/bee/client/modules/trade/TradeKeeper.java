@@ -124,9 +124,6 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     GridFactory.registerGridInterceptor(GRID_SERIES_MANAGERS,
         UniqueChildInterceptor.forUsers(Localized.dictionary().managers(),
             COL_SERIES, COL_TRADE_MANAGER));
-    GridFactory.registerGridInterceptor(GRID_DEBTS, new DebtsGrid());
-    GridFactory.registerGridInterceptor(GRID_DEBT_REPORTS, new DebtReportsGrid());
-
     GridFactory.registerGridInterceptor(GRID_TRADE_DOCUMENT_FILES,
         new FileGridInterceptor(COL_TRADE_DOCUMENT, COL_FILE, COL_FILE_CAPTION, ALS_FILE_NAME));
 
@@ -188,6 +185,11 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     if (ModuleAndSub.of(Module.TRADE, SubModule.ACTS).isEnabled()) {
       TradeActKeeper.register();
     }
+  }
+
+  public static void registerCommons() {
+    GridFactory.registerGridInterceptor(GRID_DEBTS, new DebtsGrid());
+    GridFactory.registerGridInterceptor(GRID_DEBT_REPORTS, new DebtReportsGrid());
   }
 
   private static String getDocumentGridSupplierKey(long typeId) {

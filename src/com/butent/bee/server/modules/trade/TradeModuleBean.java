@@ -410,9 +410,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
     Collection<BeeParameter> params = new ArrayList<>();
-    params.add(BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL));
     params.addAll(act.getDefaultParameters(module));
-    params.add(BeeParameter.createBoolean(module, PRM_OVERDUE_INVOICES));
     return params;
   }
 
