@@ -172,7 +172,7 @@ public final class TradeActConstants {
   public static  final Set<String> VAR_COPY_TA_COLUMN_NAMES =
       Sets.newHashSet(COL_TA_NAME, COL_TA_SERIES, COL_TA_COMPANY, COL_TA_CONTACT, COL_TA_OBJECT,
           COL_TA_CURRENCY, COL_TA_VEHICLE, COL_TA_INPUT_VEHICLE, COL_TA_DRIVER,
-          COL_TA_INPUT_DRIVER);
+          COL_TA_INPUT_DRIVER, COL_TA_OPERATION);
 
   public static void register() {
     EnumUtils.register(TradeActKind.class);

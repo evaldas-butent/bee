@@ -12,7 +12,9 @@
 	<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
 		<RelColumn name="CustomerCode" caption="=companyCode" label="=companyCode"  />
 		<RelColumn name="Customer" renderColumns="CustomerName" caption="=company" label="=company" editEnabled="true" />
-		<RelColumn name="FinancialState" renderColumns="FinancialStateName" caption="=financialState" label="=financialState" />
+		<!-- Duplicate filter options with RelColumn-->
+		<DataColumn name="FinancialStateName"
+				   caption="=financialState" label="=financialState" filterSupplier="list"/>
 		<RelColumn name="SaleSeries" />
 		<DataColumn name="InvoiceNo" />
 		<RelColumn name="Manager" />

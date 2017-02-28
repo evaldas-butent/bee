@@ -4685,7 +4685,7 @@ public class TradeActBean implements HasTimerService {
           + getNextChildActNumber(TradeActKind.RETURN, series, sourceId, COL_TA_NUMBER));
     }
 
-    if (operation != null) {
+    if (operation != null && !fillCols.contains(COL_TA_OPERATION)) {
       actUpdate.addConstant(COL_TA_OPERATION, operation);
     }
 
