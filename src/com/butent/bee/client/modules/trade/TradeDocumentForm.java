@@ -248,6 +248,11 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   }
 
   @Override
+  public boolean isRowEditable(IsRow row) {
+    return super.isRowEditable(row) && TradeUtils.isDocumentEditable(row);
+  }
+
+  @Override
   public void onSetActiveRow(IsRow row) {
     if (row == null) {
       tdSums.clear();

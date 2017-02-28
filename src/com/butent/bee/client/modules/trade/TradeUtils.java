@@ -494,6 +494,11 @@ public final class TradeUtils {
     }
   }
 
+  static boolean isDocumentEditable(IsRow row) {
+    TradeDocumentPhase phase = getDocumentPhase(row);
+    return phase != null && phase.isEditable(BeeKeeper.getUser().isAdministrator());
+  }
+
   static double roundPrice(Double price) {
     return Localized.normalizeMoney(price);
   }
