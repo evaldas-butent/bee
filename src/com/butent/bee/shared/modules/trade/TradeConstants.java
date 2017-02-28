@@ -264,6 +264,10 @@ public final class TradeConstants {
   public static final String ALS_EXPENDITURE_TYPE_SUPPLIER = "TypeSupplier";
 
   public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
+  public static final String ALS_WAREHOUSE_FROM_NAME = "WarehouseFromName";
+  public static final String ALS_WAREHOUSE_TO_CODE = "WarehouseToCode";
+  public static final String ALS_WAREHOUSE_TO_NAME = "WarehouseToName";
+
   public static final String ALS_STOCK_PRIMARY_DATE = "PrimaryDate";
 
   public static final String ALS_COST_CURRENCY = "CostCurrency";
