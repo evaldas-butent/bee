@@ -4,9 +4,19 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.time.HasDateValue;
 
+import java.util.function.Function;
+
 public final class Formatter {
 
   private Formatter() {
+  }
+
+  public static Function<HasDateValue, String> getDateRenderer(DateTimeFormatInfo dtfInfo) {
+    return date -> renderDate(dtfInfo, date);
+  }
+
+  public static Function<HasDateValue, String> getDateTimeRenderer(DateTimeFormatInfo dtfInfo) {
+    return dateTime -> renderDateTime(dtfInfo, dateTime);
   }
 
   public static String renderDate(DateTimeFormatInfo dtfInfo, HasDateValue date) {

@@ -81,6 +81,8 @@ import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
 import com.butent.bee.shared.i18n.DateOrdering;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
+import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -1305,6 +1307,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
         TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
 
+    DateTimeFormatInfo dateTimeFormatInfo = usr.getDateTimeFormatInfo();
+
     for (IsRow row : rs) {
       Tr tr = tr();
 
@@ -1315,7 +1319,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         }
 
         ValueType type = rs.getColumnType(i);
-        String value = DataUtils.render(rs.getColumn(i), row, i);
+        String value = DataUtils.render(rs.getColumn(i), row, i,
+            Formatter.getDateRenderer(dateTimeFormatInfo),
+            Formatter.getDateTimeRenderer(dateTimeFormatInfo));
 
         if (type == ValueType.LONG) {
           Long x = row.getLong(i);
