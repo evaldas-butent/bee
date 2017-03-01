@@ -1,16 +1,19 @@
 package com.butent.bee.client.modules.cars;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
-import static com.butent.bee.shared.modules.cars.CarsConstants.COL_PRICE;
+import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
@@ -73,6 +76,20 @@ public class CarServiceItemsGrid extends ParentRowRefreshGrid implements Selecto
           dataView.refreshBySource(col);
         });
       });
+    }
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (Objects.equals(event.getColumnId(), COL_RESERVE)) {
+      event.consume();
+      IsRow row = event.getRowValue();
+      String value = Data.getString(getViewName(), row, COL_RESERVE);
+
+      Queries.updateCellAndFire(getViewName(), row.getId(), row.getVersion(), COL_RESERVE,
+          value, BeeUtils.toString(!BeeUtils.toBoolean(value)));
+    } else {
+      super.onEditStart(event);
     }
   }
 }

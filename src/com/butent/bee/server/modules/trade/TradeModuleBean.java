@@ -439,14 +439,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       if (Objects.nonNull(result)) {
         result.forEach((item, itemQuantities) -> {
-          ItemQuantities existing = reservations.get(item).stream()
-              .filter(current -> Objects.equals(current.getArticle(), itemQuantities.getArticle()))
-              .findAny().orElse(null);
+          Optional<ItemQuantities> existing = reservations.get(item).stream()
+              .filter(itemQuantities::equals).findAny();
 
-          if (Objects.isNull(existing)) {
-            reservations.put(item, itemQuantities);
+          if (existing.isPresent()) {
+            itemQuantities.getReservedMap().forEach(existing.get()::addReserved);
           } else {
-            existing.setReserved(existing.getReserved() + itemQuantities.getReserved());
+            reservations.put(item, itemQuantities);
           }
         });
       }
@@ -473,13 +472,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addOrder(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, COL_TRADE_ITEM_ARTICLE);
 
     HasConditions where = SqlUtils.and(SqlUtils.positive(TBL_TRADE_STOCK, COL_STOCK_QUANTITY));
+
     if (DataUtils.isId(warehouse)) {
       where.add(SqlUtils.equals(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE, warehouse));
     }
     if (!BeeUtils.isEmpty(items)) {
       where.add(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items));
     }
-
     query.setWhere(where);
 
     SimpleRowSet data = qs.getData(query);
@@ -492,11 +491,10 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     if (includeReservations) {
       getReservations(warehouse, items).forEach((item, itemQuantities) -> {
         Optional<ItemQuantities> existing = result.get(item).stream()
-            .filter(current -> Objects.equals(current.getArticle(), itemQuantities.getArticle()))
-            .findAny();
+            .filter(itemQuantities::equals).findAny();
 
         if (existing.isPresent()) {
-          existing.get().setReserved(itemQuantities.getReserved());
+          itemQuantities.getReservedMap().forEach(existing.get()::addReserved);
         } else {
           result.put(item, itemQuantities);
         }

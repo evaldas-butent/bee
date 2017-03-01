@@ -4859,6 +4859,8 @@ public interface Dictionary {
 
   default String required() {return g("required");}
 
+  default String reserve() {return g("reserve");}
+
   default String resource() {return g("resource");}
 
   default String responsibilities() {return g("responsibilities");}
