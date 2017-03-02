@@ -52,7 +52,7 @@ public final class Formatter {
     }
   }
 
-  private static String render(PredefinedFormat predefinedFormat, DateTimeFormatInfo dtfInfo,
+  public static String render(PredefinedFormat predefinedFormat, DateTimeFormatInfo dtfInfo,
       HasDateValue value) {
 
     if (predefinedFormat == null || value == null || dtfInfo == null) {
