@@ -182,6 +182,7 @@ public final class TradeConstants {
   public static final String COL_TEMPLATE_LAST_PARAGRAPH = "LastParagraph";
 
   public static final String COL_TRADE_DOCUMENT_PHASE = "Phase";
+  public static final String COL_TRADE_DOCUMENT_OWNER = "Owner";
   public static final String COL_TRADE_DOCUMENT_STATUS = "Status";
   public static final String COL_TRADE_DOCUMENT_NUMBER_1 = "Number1";
   public static final String COL_TRADE_DOCUMENT_NUMBER_2 = "Number2";
