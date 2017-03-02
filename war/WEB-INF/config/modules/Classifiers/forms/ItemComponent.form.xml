@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form []>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+
+        name="ItemComponent" viewName="ItemComponents" caption="=component"
+        height="150" width="540"
+>
+  <FlowPanel>
+    <Table kind="controls" style="margin: 1ex 1em;">
+      <row>
+        <Label for="Component" name="ComponentLabel" style="margin-right: 5px;" />
+        <DataSelector source="Component" style="width:400px;" />
+        <FaLabel name="Plus" char="f067" title="=components" style="display:none; font-size:20px;"/>
+      </row>
+      <row>
+        <Label for="Quantity" style="margin-right: 5px;" />
+        <InputInteger source="Quantity" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

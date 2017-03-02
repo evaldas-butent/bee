@@ -400,6 +400,7 @@
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="ItemSuppliers" />
       <xs:enumeration value="ItemCategories" />
+      <xs:enumeration value="ItemComponents" />
       <xs:enumeration value="ItemGraphics" />
       <xs:enumeration value="ItemManufacturers" />
       <xs:enumeration value="ItemRemainders" />

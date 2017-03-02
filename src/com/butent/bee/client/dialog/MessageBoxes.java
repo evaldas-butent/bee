@@ -2,6 +2,7 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.IndexedPanel;
@@ -34,6 +35,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -485,7 +487,8 @@ public final class MessageBoxes {
         null, null, null, null);
   }
 
-  public static void showTable(String caption, IsTable<?, ?> table, String... styles) {
+  public static void showTable(String caption, IsTable<?, ?> table, Action action,
+      ClickHandler clickHandler, String... styles) {
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -504,7 +507,7 @@ public final class MessageBoxes {
     int index = 0;
 
     for (int j = 0; j < c; j++) {
-      grid.setHtml(index, j, table.getColumnLabel(j));
+      grid.setHtml(index, j, Localized.maybeTranslate(table.getColumnLabel(j)));
       grid.alignCenter(index, j);
     }
     index++;
@@ -532,26 +535,38 @@ public final class MessageBoxes {
         grid.getCellFormatter().setColSpan(index, 0, c);
       }
     }
-    showWidget(caption, container, null);
+    showWidget(caption, container, null, action, clickHandler);
   }
 
-  public static void showWidget(String caption, Widget widget, Element target) {
+  public static void showWidget(String caption, Widget widget, Element target, Action action,
+      ClickHandler clickHandler) {
     Assert.notNull(widget);
 
-    Popup popup;
+
     if (BeeUtils.isEmpty(caption)) {
-      popup = new Popup(OutsideClick.CLOSE);
+      Popup popup = new Popup(OutsideClick.CLOSE);
+
+      popup.setAnimationEnabled(true);
+      popup.setHideOnEscape(true);
+      popup.setWidget(widget);
+      popup.focusOnOpen(widget);
+      popup.showRelativeTo(target);
     } else {
-      popup = DialogBox.create(caption);
+      DialogBox dialogBox = DialogBox.create(caption);
+
+      dialogBox.setAnimationEnabled(true);
+      dialogBox.setHideOnEscape(true);
+      dialogBox.setWidget(widget);
+      dialogBox.focusOnOpen(widget);
+      dialogBox.showRelativeTo(target);
+
+      if (action != null && clickHandler != null) {
+        FaLabel faLabel = new FaLabel(action.getIcon());
+        faLabel.setTitle(action.getCaption());
+        faLabel.addClickHandler(clickHandler);
+        dialogBox.insertAction(1, faLabel);
+      }
     }
-
-    popup.setAnimationEnabled(true);
-    popup.setHideOnEscape(true);
-
-    popup.setWidget(widget);
-
-    popup.focusOnOpen(widget);
-    popup.showRelativeTo(target);
   }
 
   private static void rotateFocus(Event<?> event, IndexedPanel panel, boolean forward) {

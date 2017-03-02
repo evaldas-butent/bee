@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="ItemComponents" viewName="ItemComponents"
+        caption="=components" newRowCaption="=component"
+        newRowForm="ItemComponent"
+
+>
+  <g:columns>
+    <CalcColumn name="ComponentCount" type="string" visible="false" horizontalAlignment="center"
+                caption="-">
+      <style>
+        <bodyStyle>
+          <ui:class>bee-fa-label</ui:class>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:expression>row.ComponentCount > 0 ? "&#xf067;" : ""</ui:expression>
+      </render>
+    </CalcColumn>
+    <RelColumn name="Component" renderColumns="Name" choiceColumns="Article Name" />
+    <RelColumn name="Article"/>
+    <DataColumn name="Quantity" />
+  </g:columns>
+</g:Grid>

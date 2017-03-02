@@ -5,6 +5,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 public final class ClassifierConstants {
 
+  public static final String SVC_ADD_COMPONENTS = "AddComponents";
   public static final String SVC_CREATE_COMPANY = "create_company";
   public static final String SVC_CREATE_COMPANY_PERSON = "create_company_person";
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
@@ -67,6 +68,7 @@ public final class ClassifierConstants {
   public static final String FORM_PERSON = "Person";
   public static final String FORM_NEW_COMPANY = "NewCompany";
   public static final String FORM_COMPANY_PERSON = "CompanyPerson";
+  public static final String FORM_ITEM_COMPONENT = "ItemComponent";
 
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
@@ -78,6 +80,7 @@ public final class ClassifierConstants {
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
   public static final String VIEW_ITEM_REMAINDERS = "ItemRemainders";
   public static final String VIEW_ITEM_SUPPLIERS = "ItemSuppliers";
+  public static final String VIEW_ITEM_COMPONENTS = "ItemComponents";
 
   public static final String VIEW_COUNTRIES = "Countries";
   public static final String VIEW_CITIES = "Cities";
@@ -163,6 +166,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
   public static final String COL_ITEM_PRICE = "Price";
   public static final String COL_ITEM_CURRENCY = "Currency";
+  public static final String COL_ITEM_COMPONENT = "Component";
+  public static final String COL_ITEM_COMPLECT = "Complect";
   public static final String COL_ITEM_COST = "Cost";
   public static final String COL_ITEM_COST_CURRENCY = "CostCurrency";
   public static final String COL_ITEM_PACKAGE_UNITS = "PackageUnits";
@@ -333,6 +338,7 @@ public final class ClassifierConstants {
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";
   public static final String PROP_WAREHOUSE_REMAINDER = "WarehouseRemainder";
+  public static final String PROP_ITEM_COMPONENT = "ItemComponent";
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";

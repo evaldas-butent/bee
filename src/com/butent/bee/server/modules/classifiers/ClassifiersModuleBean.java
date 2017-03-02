@@ -247,6 +247,10 @@ public class ClassifiersModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_FILTER_ORDERS)) {
       response = filterOrders(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_ADD_COMPONENTS)) {
+      response = addComponents(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -355,6 +359,30 @@ public class ClassifiersModuleBean implements BeeModule {
               event.addErrorMessage(BeeUtils.joinWords("Wrong address ", email, ": ",
                   ex.getMessage()));
             }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setItemComponents(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_ITEMS) && event.hasData()) {
+          BeeRowSet items = event.getRowset();
+          Map<Long, Integer> componentsMap = new HashMap<>();
+
+          SqlSelect select = new SqlSelect()
+              .addFields(VIEW_ITEM_COMPONENTS, COL_ITEM)
+              .addCount(VIEW_ITEM_COMPONENTS, COL_ITEM_COMPONENT)
+              .addFrom(VIEW_ITEM_COMPONENTS)
+              .setWhere(SqlUtils.inList(VIEW_ITEM_COMPONENTS, COL_ITEM, items.getRowIds()))
+              .addGroup(VIEW_ITEM_COMPONENTS, COL_ITEM);
+
+          for (SimpleRow row : qs.getData(select)) {
+            componentsMap.put(row.getLong(COL_ITEM), row.getInt(COL_ITEM_COMPONENT));
+          }
+
+          for (BeeRow item : items) {
+            item.setProperty(PROP_ITEM_COMPONENT, BeeUtils.unbox(componentsMap.get(item.getId())));
           }
         }
       }
@@ -1963,6 +1991,48 @@ public class ClassifiersModuleBean implements BeeModule {
     }
   }
 
+  private ResponseObject addComponents(RequestInfo reqInfo) {
+    Long itemId = reqInfo.getParameterLong(COL_ITEM);
+    Long componentId = reqInfo.getParameterLong(COL_ITEM_COMPONENT);
+    Double quantity = reqInfo.getParameterDouble(COL_TRADE_ITEM_QUANTITY);
+    ResponseObject response = ResponseObject.emptyResponse();
+
+    if (!DataUtils.isId(itemId)) {
+      return ResponseObject.parameterNotFound(SVC_ADD_COMPONENTS, COL_ITEM);
+    }
+    if (!DataUtils.isId(componentId)) {
+      return ResponseObject.parameterNotFound(SVC_ADD_COMPONENTS, COL_ITEM_COMPONENT);
+    }
+    if (!BeeUtils.isDouble(quantity)) {
+      return ResponseObject.parameterNotFound(SVC_ADD_COMPONENTS, COL_TRADE_ITEM_QUANTITY);
+    }
+
+    SqlSelect selectComponents = new SqlSelect()
+        .addAllFields(VIEW_ITEM_COMPONENTS)
+        .addFrom(VIEW_ITEM_COMPONENTS)
+        .setWhere(SqlUtils.equals(VIEW_ITEM_COMPONENTS, COL_ITEM, componentId));
+
+    SimpleRowSet components = qs.getData(selectComponents);
+
+    SqlSelect selectItems = new SqlSelect()
+        .addAllFields(VIEW_ITEM_COMPONENTS)
+        .addFrom(VIEW_ITEM_COMPONENTS)
+        .setWhere(SqlUtils.equals(VIEW_ITEM_COMPONENTS, COL_ITEM,  itemId));
+
+    SimpleRowSet items = qs.getData(selectItems);
+
+    if (components.getNumberOfRows() > 0) {
+      for (SimpleRow row : components) {
+        response = updateComponentData(items, itemId, row.getLong(COL_ITEM_COMPONENT),
+            row.getDouble(COL_TRADE_ITEM_QUANTITY) * quantity);
+      }
+    } else {
+      response = updateComponentData(items, itemId, componentId, quantity);
+    }
+
+    return response;
+  }
+
   private List<Long> getDiscountParents(Long company) {
     List<Long> result = new ArrayList<>();
 
@@ -2218,6 +2288,36 @@ public class ClassifiersModuleBean implements BeeModule {
       createActionRemindMail(user, appointments);
     } else {
       logger.info("no actions remind for user", user);
+    }
+  }
+
+  private ResponseObject updateComponentData(SimpleRowSet items, Long itemId, Long componentId,
+      double quantity) {
+    boolean update = false;
+
+    for (SimpleRow row : items) {
+      if (Objects.equals(row.getLong(COL_ITEM), itemId)
+          && Objects.equals(row.getLong(COL_ITEM_COMPONENT), componentId)) {
+        quantity += row.getDouble(COL_TRADE_ITEM_QUANTITY);
+        update = true;
+        break;
+      }
+    }
+
+    if (update) {
+      SqlUpdate updateSql = new SqlUpdate(VIEW_ITEM_COMPONENTS)
+          .addConstant(COL_TRADE_ITEM_QUANTITY, quantity)
+          .setWhere(SqlUtils.and(SqlUtils.equals(VIEW_ITEM_COMPONENTS, COL_ITEM, itemId,
+              COL_ITEM_COMPONENT, componentId)));
+      return qs.updateDataWithResponse(updateSql);
+
+    } else {
+      SqlInsert insertSql = new SqlInsert(VIEW_ITEM_COMPONENTS)
+          .addConstant(COL_ITEM, itemId)
+          .addConstant(COL_ITEM_COMPONENT, componentId)
+          .addConstant(COL_TRADE_ITEM_QUANTITY, quantity);
+
+      return qs.insertDataWithResponse(insertSql);
     }
   }
 

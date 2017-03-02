@@ -833,6 +833,14 @@ public interface Dictionary {
 
   default String companyVATCode() {return g("companyVATCode");}
 
+  default String complect() {return g("complect");}
+
+  default String complects() {return g("complects");}
+
+  default String component() {return g("component");}
+
+  default String components() {return g("components");}
+
   default String configuration() {return g("configuration");}
 
   default String constant() {return g("constant");}

@@ -338,6 +338,11 @@
         <ChildGrid name="ItemRemainders" relColumn="Item" />
       </page>
 
+      <page>
+        <text>=components</text>
+        <ChildGrid name="ItemComponents" relColumn="Item" class="occupy-1" summarize="true" />
+      </page>
+
       <page module="Trade" predicate="rowId > 0">
         <text>=trdMovement</text>
         <ChildGrid name="ItemMovement" relColumn="Item" paging="true" />
