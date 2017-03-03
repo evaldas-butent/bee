@@ -259,6 +259,11 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           reqInfo.getParameterBoolean(VAR_RESERVATIONS));
       response = stock.isEmpty() ? ResponseObject.emptyResponse() : ResponseObject.response(stock);
 
+    } else if (BeeUtils.same(svc, SVC_GET_RESERVATIONS_INFO)) {
+      response = ResponseObject
+          .response(getReservationsInfo(reqInfo.getParameterLong(COL_STOCK_WAREHOUSE),
+              reqInfo.getParameterLong(COL_ITEM), reqInfo.getParameterDateTime(COL_DATE_TO)));
+
     } else if (BeeUtils.same(svc, SVC_CREATE_DOCUMENT)) {
       response = createDocument(TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT)));
 
@@ -453,6 +458,21 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       }
     });
     return reservations;
+  }
+
+  public static Map<ModuleAndSub, Map<String, Double>> getReservationsInfo(Long warehouse,
+      Long item, DateTime dateTo) {
+    Map<ModuleAndSub, Map<String, Double>> reservationsInfo = new LinkedHashMap<>();
+
+    stockReservationsProviders.forEach((moduleAndSub, stockReservationsProvider) -> {
+      Map<String, Double> info = stockReservationsProvider.getItemReservationsInfo(warehouse, item,
+          dateTo);
+
+      if (!BeeUtils.isEmpty(info)) {
+        reservationsInfo.put(moduleAndSub, info);
+      }
+    });
+    return reservationsInfo;
   }
 
   @Override

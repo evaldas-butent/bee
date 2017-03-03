@@ -868,8 +868,18 @@ public class TransportReportsBean {
     clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_NO));
     clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_STATUS));
     clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_DATE));
-    clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_DATE_FROM));
-    clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_DATE_TO));
+
+    clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+        report.getCondition(TBL_TRIPS, COL_TRIP_DATE_FROM)),
+        SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_FROM),
+            report.getCondition(SqlUtils.field(TBL_TRIPS, COL_DATE), COL_TRIP_DATE_FROM))));
+
+    clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.notNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+        report.getCondition(TBL_TRIPS, COL_TRIP_DATE_TO)),
+        SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_TRIP_DATE_TO),
+            report.getCondition(SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE),
+                COL_TRIP_DATE_TO))));
+
     clause.add(report.getCondition(SqlUtils.field(trucks, COL_VEHICLE_NUMBER), COL_VEHICLE));
     clause.add(report.getCondition(SqlUtils.field(trailers, COL_VEHICLE_NUMBER), COL_TRAILER));
 
