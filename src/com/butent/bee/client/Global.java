@@ -59,6 +59,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -243,6 +244,12 @@ public final class Global {
     BeeParameter parameter = parameters.get(prm);
     return Objects.isNull(parameter) ? null : (parameter.supportsUsers()
         ? parameter.getBoolean(BeeKeeper.getUser().getUserId()) : parameter.getBoolean());
+  }
+
+  public static JustDate getParameterDate(String prm) {
+    BeeParameter parameter = parameters.get(prm);
+    return Objects.isNull(parameter) ? null : (parameter.supportsUsers()
+        ? parameter.getDate(BeeKeeper.getUser().getUserId()) : parameter.getDate());
   }
 
   public static Map<String, String> getParameterMap(String prm) {
