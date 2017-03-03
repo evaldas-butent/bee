@@ -2608,23 +2608,26 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                 SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT, docId),
                 SqlUtils.notNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT)));
 
-        SimpleRow row = qs.getRow(query);
-        if (row != null) {
-          Long parent = row.getLong(COL_TRADE_ITEM_PARENT);
-          Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+        SimpleRowSet data = qs.getData(query);
 
-          if (DataUtils.isId(parent) && BeeUtils.nonZero(qty)) {
-            SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
-                .addExpression(COL_STOCK_QUANTITY,
-                    SqlUtils.plus(SqlUtils.field(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), qty))
-                .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
+        if (!DataUtils.isEmpty(data)) {
+          for (SimpleRow row : data) {
+            Long parent = row.getLong(COL_TRADE_ITEM_PARENT);
+            Double qty = row.getDouble(COL_TRADE_ITEM_QUANTITY);
 
-            ResponseObject response = qs.updateDataWithResponse(stockUpdate);
-            if (response.hasErrors()) {
-              return response;
+            if (DataUtils.isId(parent) && BeeUtils.nonZero(qty)) {
+              SqlUpdate stockUpdate = new SqlUpdate(TBL_TRADE_STOCK)
+                  .addExpression(COL_STOCK_QUANTITY,
+                      SqlUtils.plus(SqlUtils.field(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), qty))
+                  .setWhere(SqlUtils.equals(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, parent));
+
+              ResponseObject response = qs.updateDataWithResponse(stockUpdate);
+              if (response.hasErrors()) {
+                return response;
+              }
+
+              refresh = true;
             }
-
-            refresh = true;
           }
         }
       }
