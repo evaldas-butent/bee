@@ -47,6 +47,8 @@ import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -495,8 +497,34 @@ public final class TradeUtils {
   }
 
   static boolean isDocumentEditable(IsRow row) {
-    TradeDocumentPhase phase = getDocumentPhase(row);
-    return phase != null && phase.isEditable(BeeKeeper.getUser().isAdministrator());
+    if (row == null) {
+      return false;
+
+    } else if (!DataUtils.isNewRow(row)) {
+      TradeDocumentPhase phase = getDocumentPhase(row);
+      if (phase != null && !phase.isEditable(BeeKeeper.getUser().isAdministrator())) {
+        return false;
+      }
+
+      if (isDocumentProtected(row)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  static boolean isDocumentProtected(IsRow row) {
+    JustDate minDate = Global.getParameterDate(PRM_PROTECT_TRADE_DOCUMENTS_BEFORE);
+
+    if (minDate != null) {
+      DateTime date = getDocumentDate(row);
+      if (date != null && TimeUtils.isLess(date, minDate)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   static double roundPrice(Double price) {

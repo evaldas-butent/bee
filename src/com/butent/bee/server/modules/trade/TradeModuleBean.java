@@ -416,8 +416,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
+
     Collection<BeeParameter> params = new ArrayList<>();
+    params.add(BeeParameter.createDate(module, PRM_PROTECT_TRADE_DOCUMENTS_BEFORE, true, null));
+
     params.addAll(act.getDefaultParameters(module));
+
     return params;
   }
 
