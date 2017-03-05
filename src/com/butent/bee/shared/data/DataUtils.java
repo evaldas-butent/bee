@@ -1209,7 +1209,7 @@ public final class DataUtils {
       return EnumUtils.getCaption(column.getEnumKey(), row.getInteger(index));
 
     } else {
-      return row.getValue(index, column.getType()).toString();
+      return row.getValue(index, column.getType()).render(dateRenderer, dateTimeRenderer);
     }
   }
 

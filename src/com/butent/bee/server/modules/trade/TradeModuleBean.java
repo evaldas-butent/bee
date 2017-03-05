@@ -84,6 +84,7 @@ import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -1351,12 +1352,12 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           Long x = row.getLong(i);
           if (x != null && maybeTime.contains(x)) {
             type = ValueType.DATE_TIME;
-            value = new JustDate(x).toString();
+            value = Formatter.renderDate(dateTimeFormatInfo, new JustDate(x));
           }
         }
 
         if (type == ValueType.DATE_TIME) {
-          value = new JustDate(row.getLong(i)).toString();
+          value = Formatter.renderDate(dateTimeFormatInfo, new JustDate(row.getLong(i)));
         }
 
         if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
@@ -1705,32 +1706,22 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         doc.setBolDriverTabNo(invoice.getValue(ALS_TRADE_BOL_DRIVER_TAB_NO));
         doc.setBolCarrier(companies.get(invoice.getLong(COL_TRADE_BOL_CARRIER)));
 
+        DateTimeFormatInfo dtfInfo = SupportedLocale.LT.getDateTimeFormatInfo();
+
         DateTime dt;
         if (!BeeUtils.isEmpty(invoice.getValue(COL_TRADE_BOL_ISSUE_DATE))) {
           dt = new DateTime(BeeUtils.toLong(invoice.getValue(COL_TRADE_BOL_ISSUE_DATE)));
-          if (dt.hasTimePart()) {
-            doc.setBolIssueDate(dt.toCompactString());
-          } else {
-            doc.setBolIssueDate(dt.getDate().toString());
-          }
+          doc.setBolIssueDate(Formatter.renderDateTime(dtfInfo, dt));
         }
 
         if (!BeeUtils.isEmpty(invoice.getValue(COL_TRADE_BOL_DEPARTURE_DATE))) {
           dt = new DateTime(BeeUtils.toLong(invoice.getValue(COL_TRADE_BOL_DEPARTURE_DATE)));
-          if (dt.hasTimePart()) {
-            doc.setBolDepartureDate(dt.toCompactString());
-          } else {
-            doc.setBolDepartureDate(dt.getDate().toString());
-          }
+          doc.setBolDepartureDate(Formatter.renderDateTime(dtfInfo, dt));
         }
 
         if (!BeeUtils.isEmpty(invoice.getValue(COL_TRADE_BOL_UNLOADING_DATE))) {
           dt = new DateTime(BeeUtils.toLong(invoice.getValue(COL_TRADE_BOL_UNLOADING_DATE)));
-          if (dt.hasTimePart()) {
-            doc.setBolUnloadingDate(dt.toCompactString());
-          } else {
-            doc.setBolUnloadingDate(dt.getDate().toString());
-          }
+          doc.setBolUnloadingDate(Formatter.renderDateTime(dtfInfo, dt));
         }
       }
 
