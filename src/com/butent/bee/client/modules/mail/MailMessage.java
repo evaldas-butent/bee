@@ -37,6 +37,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
@@ -672,7 +673,7 @@ public class MailMessage extends AbstractFormInterceptor {
     Widget widget = widgets.get(DATE);
 
     if (widget != null && widget instanceof DateTimeLabel) {
-      return ((DateTimeLabel) widget).getValue().toString();
+      return Format.renderDateTime(((DateTimeLabel) widget).getValue());
     }
     return null;
   }

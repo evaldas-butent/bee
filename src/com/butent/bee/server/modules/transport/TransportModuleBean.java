@@ -864,7 +864,7 @@ public class TransportModuleBean implements BeeModule {
     });
 
     HeadlineProducer assessmentsHeadlineProducer =
-        (feed, userId, rowSet, row, isNew, constants) -> {
+        (feed, userId, rowSet, row, isNew, constants, dtfInfo) -> {
           String caption = "";
           String pid = DataUtils.getString(rowSet, row, COL_ASSESSMENT);
 

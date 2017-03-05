@@ -82,7 +82,9 @@ import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
 import com.butent.bee.shared.html.builder.elements.Tr;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
 import com.butent.bee.shared.i18n.Dictionary;
+import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -865,6 +867,8 @@ public class ClassifiersModuleBean implements BeeModule {
         TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
         TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
 
+    DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
+
     for (SimpleRow row : data) {
       Tr tr = tr();
 
@@ -891,7 +895,7 @@ public class ClassifiersModuleBean implements BeeModule {
             Long x = row.getLong(i);
             if (x != null && maybeTime.contains(x)) {
               type = ValueType.DATE_TIME;
-              value = new DateTime(x).toCompactString();
+              value = Formatter.renderDateTime(dtfInfo, x);
             }
             break;
           case INTEGER:
@@ -901,7 +905,7 @@ public class ClassifiersModuleBean implements BeeModule {
             }
             break;
           case DATE_TIME:
-            value = row.getDateTime(i).toCompactString();
+            value = Formatter.renderDateTime(dtfInfo, row.getDateTime(i));
             break;
           default:
             value = BeeUtils.nvl(row.getValue(i), BeeConst.STRING_EMPTY);

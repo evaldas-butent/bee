@@ -1299,8 +1299,8 @@ public final class CliWorker {
 
   private static void doEval(String args) {
     String result;
-    if (BeeUtils.isDigit(args)) {
-      result = new DateTime(BeeUtils.toLong(args)).toString();
+    if (BeeUtils.isDigit(args) && BeeUtils.toLong(args) >= new DateTime(2000, 1, 1).getTime()) {
+      result = Format.renderDateTime(new DateTime(BeeUtils.toLong(args)));
     } else {
       result = JsUtils.evalToString(args);
     }

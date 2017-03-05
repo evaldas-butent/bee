@@ -65,7 +65,7 @@ final class ServiceHelper {
 
       Label dateLabel = new Label();
       if (date != null) {
-        dateLabel.setText(date.toCompactString());
+        dateLabel.setText(Format.renderDateTime(date));
       }
       table.setWidgetAndStyle(r, c++, dateLabel, stylePrefix + "date");
 

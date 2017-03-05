@@ -544,37 +544,32 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       }
     });
 
-    HeadlineProducer headlineProducer = new HeadlineProducer() {
-      @Override
-      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew,
-          Dictionary constants) {
-
-        String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
-        if (BeeUtils.isEmpty(caption)) {
-          caption = BeeUtils.bracket(row.getId());
-        }
-
-        List<String> subtitles = new ArrayList<>();
-
-        DateTime finish = DataUtils.getDateTime(rowSet, row, COL_FINISH_TIME);
-        if (finish != null) {
-          subtitles.add(finish.toCompactString());
-        }
-
-        TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
-            DataUtils.getInteger(rowSet, row, COL_STATUS));
-        if (status != null) {
-          subtitles.add(status.getCaption(constants));
-        }
-
-        if (feed != Feed.TASKS_ASSIGNED) {
-          subtitles.add(BeeUtils.joinWords(
-              DataUtils.getString(rowSet, row, ALS_EXECUTOR_FIRST_NAME),
-              DataUtils.getString(rowSet, row, ALS_EXECUTOR_LAST_NAME)));
-        }
-
-        return Headline.create(row.getId(), caption, subtitles, isNew);
+    HeadlineProducer headlineProducer = (feed, userId, rowSet, row, isNew, constants, dtfInfo) -> {
+      String caption = DataUtils.getString(rowSet, row, COL_SUMMARY);
+      if (BeeUtils.isEmpty(caption)) {
+        caption = BeeUtils.bracket(row.getId());
       }
+
+      List<String> subtitles = new ArrayList<>();
+
+      DateTime finish = DataUtils.getDateTime(rowSet, row, COL_FINISH_TIME);
+      if (finish != null) {
+        subtitles.add(Formatter.renderDateTime(dtfInfo, finish));
+      }
+
+      TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class,
+          DataUtils.getInteger(rowSet, row, COL_STATUS));
+      if (status != null) {
+        subtitles.add(status.getCaption(constants));
+      }
+
+      if (feed != Feed.TASKS_ASSIGNED) {
+        subtitles.add(BeeUtils.joinWords(
+            DataUtils.getString(rowSet, row, ALS_EXECUTOR_FIRST_NAME),
+            DataUtils.getString(rowSet, row, ALS_EXECUTOR_LAST_NAME)));
+      }
+
+      return Headline.create(row.getId(), caption, subtitles, isNew);
     };
 
     news.registerHeadlineProducer(Feed.TASKS_ALL, headlineProducer);

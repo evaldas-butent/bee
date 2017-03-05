@@ -454,7 +454,7 @@ public final class Global {
             Long x = row.getLong(i);
             if (x != null && maybeTime.contains(x)) {
               type = ValueType.DATE_TIME;
-              value = new DateTime(x).toCompactString();
+              value = Format.renderDateTime(x);
             }
           }
 
