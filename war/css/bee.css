@@ -2032,6 +2032,9 @@
 .bee-Form .bee-CheckBox.bee-disabled {
   background-color: inherit;
 }
+.bee-Form .bee-disabled .bee-GridView {
+  background-color: #f3f3f3;
+}
 
 .bee-FilterSupplier-dialog {
   background-color: white;
