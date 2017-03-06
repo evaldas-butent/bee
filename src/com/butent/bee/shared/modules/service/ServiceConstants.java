@@ -27,6 +27,7 @@ public final class ServiceConstants {
   public static final String PRM_DEFAULT_WARRANTY_TYPE = "DefaultWarrantyType";
   public static final String PRM_MAINTENANCE_SERVICE_GROUP = "MaintenanceServiceGroup";
   public static final String PRM_URGENT_RATE = "UrgentRate";
+  public static final String PRM_SERVICE_MANAGER_WAREHOUSE = "ServiceManagerWarehouse";
   public static final String PRM_SMS_REQUEST_SERVICE_ADDRESS = "SmsRequestServiceAddress";
   public static final String PRM_SMS_REQUEST_SERVICE_USER_NAME = "SmsRequestServiceUserName";
   public static final String PRM_SMS_REQUEST_SERVICE_PASSWORD = "SmsRequestServicePassword";
@@ -42,6 +43,7 @@ public final class ServiceConstants {
           = "update_service_maintenance_object";
   public static final String SVC_INFORM_CUSTOMER = "inform_customer";
   public static final String SVC_GET_MAINTENANCE_NEW_ROW_VALUES = "getMaintenanceNewRowValues";
+  public static final String SVC_CREATE_RESERVATION_INVOICE_ITEMS = "CreateReservationInvoiceItems";
 
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";
@@ -49,6 +51,7 @@ public final class ServiceConstants {
   public static final String TBL_MAINTENANCE_COMMENTS = "MaintenanceComments";
   public static final String TBL_MAINTENANCE_TYPES = "MaintenanceTypes";
   public static final String TBL_SERVICE_DATES = "ServiceDates";
+  public static final String TBL_SERVICE_ITEMS = "ServiceItems";
   public static final String TBL_SERVICE_SETTINGS = "ServiceSettings";
   public static final String TBL_SERVICE_DEFECT_ITEMS = "ServiceDefectItems";
   public static final String TBL_SERVICE_CRITERIA_GROUPS = "ServiceCritGroups";
@@ -77,6 +80,7 @@ public final class ServiceConstants {
   public static final String VIEW_SERVICE_DEFECTS = "ServiceDefects";
   public static final String VIEW_SERVICE_DEFECT_ITEMS = "ServiceDefectItems";
 
+  public static final String VIEW_SERVICE_SALES = "ServiceSales";
   public static final String VIEW_SERVICE_SETTINGS = "ServiceSettings";
 
   public static final String COL_ADDRESS_REQUIRED = "AddressRequired";
@@ -126,6 +130,7 @@ public final class ServiceConstants {
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_SERIAL_NO = "SerialNo";
   public static final String COL_SERVICE_MAINTENANCE = "ServiceMaintenance";
+  public static final String COL_SERVICE_ITEM = "ServiceItem";
   public static final String COL_SERVICE_DATE_FROM = "DateFrom";
   public static final String COL_SERVICE_DATE_UNTIL = "DateUntil";
   public static final String COL_SERVICE_DATE_COLOR = "Color";

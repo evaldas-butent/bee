@@ -4675,6 +4675,8 @@ public interface Dictionary {
 
   default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
 
+  default String prmServiceManagerWarehouse() {return g("prmServiceManagerWarehouse");}
+
   default String prmServiceTradeOperation() {return g("prmServiceTradeOperation");}
 
   default String prmServiceWarehouse() {return g("prmServiceWarehouse");}

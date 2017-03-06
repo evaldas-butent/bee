@@ -28,6 +28,14 @@
             <FlowPanel name="MaintenanceComments" class="flex-horizontal"/>
           </page>
           <page>
+            <text>=goods</text>
+            <ChildGrid name="ServiceItems" relColumn="ServiceMaintenance" />
+          </page>
+          <page>
+            <text>=trInvoices</text>
+            <ChildGrid name="OrderChildInvoices" relColumn="ServiceMaintenance"/>
+          </page>
+          <page>
             <text>=svcMaintenanceItemsServices</text>
             <ChildGrid name="Maintenance" relColumn="ServiceMaintenance" />
           </page>
@@ -222,6 +230,13 @@
 
         <FlowPanel class="flexBox-horizontal">
           <FlowPanel class="bee-svc-maintenance-panel" style="margin-bottom: 1em;">
+            <FlowPanel class="&mrcl;" style="&mrst;" for="Warehouse">
+              <FlowPanel style="&mfld; width: 21em;" >
+                <Label for="Warehouse" style="&flbl;"/>
+                <DataSelector source="Warehouse" style="&finp;" visible="true" />
+              </FlowPanel>
+            </FlowPanel>
+
             <FlowPanel class="&mrcl;" style="&mrst;" for="Department">
               <FlowPanel style="&mfld; width: 21em;" >
                 <Label for="Department" class="bee-required" style="&flbl;"/>

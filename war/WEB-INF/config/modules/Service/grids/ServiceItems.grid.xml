@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Grid[
+    ]>
+<g:Grid
+  xmlns="http://www.butent.com/column"
+  xmlns:g="http://www.butent.com/grid"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  name="ServiceItems" viewName="ServiceItems"
+  flexGrow="1" renderMode="full"
+  newRowCaption="=newItem" disabledActions="filter">
+
+  <xi:include href="../../Orders/grids/columns/ItemsReservation.columns.xml" />
+
+  <g:columns>
+    <RelColumn name="Repairer" renderColumns="RepairerFirstName RepairerLastName"
+               choiceColumns="FirstName LastName" visible="true" editInPlace="true" />
+  </g:columns>
+</g:Grid>

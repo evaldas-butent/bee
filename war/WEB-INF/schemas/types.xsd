@@ -556,11 +556,13 @@
       <xs:enumeration value="ServiceDistinctCritValues" />
       <xs:enumeration value="ServiceFiles" />
       <xs:enumeration value="ServiceInvoices" />
+      <xs:enumeration value="ServiceItems" />
       <xs:enumeration value="ServiceMaintenance" />
       <xs:enumeration value="MaintenanceComments" />
       <xs:enumeration value="ServiceObjectCriteria" />
       <xs:enumeration value="ServiceObjects" />
       <xs:enumeration value="Services" />
+      <xs:enumeration value="ServiceSales" />
       <xs:enumeration value="ServiceSettings" />
       <xs:enumeration value="ServiceTree" />
       <xs:enumeration value="ServiceTypes" />
