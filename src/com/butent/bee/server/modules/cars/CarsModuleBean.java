@@ -51,6 +51,8 @@ import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
+import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
+import com.butent.bee.shared.i18n.Formatter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -334,10 +336,12 @@ public class CarsModuleBean implements BeeModule {
       query.setWhere(SqlUtils.and(query.getWhere(),
           SqlUtils.less(TBL_SERVICE_ORDERS, COL_DATE, date)));
     }
+
+    DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
     Map<String, Double> map = new LinkedHashMap<>();
 
     qs.getData(query).forEach(row -> {
-      String key = BeeUtils.joinItems(row.getDateTime(COL_DATE).toCompactString(),
+      String key = BeeUtils.joinItems(Formatter.renderDateTime(dtfInfo, row.getDateTime(COL_DATE)),
           row.getValue(COL_ORDER_NO));
 
       map.put(key, BeeUtils.unbox(map.get(key))
