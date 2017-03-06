@@ -258,6 +258,9 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     if (warrantyPanel != null) {
       warrantyPanel.setVisible(!DataUtils.isNewRow(row));
     }
+
+    ServiceHelper.setGridEnabled(form, TBL_SERVICE_ITEMS,
+        BeeUtils.isEmpty(row.getString(getDataIndex(COL_ENDING_DATE))));
   }
 
   @Override
