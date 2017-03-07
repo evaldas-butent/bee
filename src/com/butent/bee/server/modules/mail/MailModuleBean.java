@@ -191,10 +191,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           account.getFolderCaption(localFolder.getId())) : null;
 
       try {
-        store = account.connectToStore();
+        store = account.connect();
 
         if (account.isRoot(localFolder)) {
-          f += syncFolders(account, store.getStore());
+          f += syncFolders(account, store.get());
 
           Holder<Consumer<MailFolder>> holder = Holder.absent();
           holder.set(mailFolder -> {
@@ -203,7 +203,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           });
           holder.get().accept(localFolder);
         } else {
-          c += checkFolder(account, account.getRemoteFolder(store.getStore(), localFolder),
+          c += checkFolder(account, account.getRemoteFolder(store.get(), localFolder),
               localFolder, force, progressId);
         }
       } catch (Throwable e) {
@@ -234,7 +234,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         if (!BeeUtils.isEmpty(progressId)) {
           Endpoint.closeProgress(progressId);
         }
-        account.disconnectFromStore(store);
+        account.disconnect(store);
       }
       if (!connectError && account.isInbox(localFolder)) {
         mail.updateAccount(account.getAccountId(), COL_ACCOUNT_LAST_CONNECT,
@@ -1770,9 +1770,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         MailAccount.MailStore store = null;
 
         try {
-          store = account.connectToStore();
+          store = account.connect();
           MailFolder localFolder = account.findFolder(row.getLong(COL_FOLDER));
-          Folder remoteFolder = account.getRemoteFolder(store.getStore(), localFolder);
+          Folder remoteFolder = account.getRemoteFolder(store.get(), localFolder);
 
           remoteFolder.open(Folder.READ_ONLY);
           Message msg = ((UIDFolder) remoteFolder).getMessageByUID(row.getLong(COL_MESSAGE_UID));
@@ -1788,7 +1788,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         } catch (Throwable e) {
           logger.error(e);
         } finally {
-          account.disconnectFromStore(store);
+          account.disconnect(store);
         }
       }
     }
