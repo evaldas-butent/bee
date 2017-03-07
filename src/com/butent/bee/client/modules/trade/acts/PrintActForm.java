@@ -399,15 +399,16 @@ public class PrintActForm extends AbstractFormInterceptor {
         break;
       case COL_TA_RETURNED_QTY:
       case COL_TRADE_ITEM_QUANTITY:
+        addDataEntry(data, id, cell, BeeUtils.round(
+          BeeUtils.toString(
+                BeeUtils.toDouble(getDataValue(data, id, cell)) + BeeUtils.toDouble(value)), 2));
+          break;
       case "AmountTotal":
       case "Amount":
       case "AmountVat":
         addDataEntry(data, id, cell, BeeUtils.round(
-            BeeUtils.toString(
-                BeeUtils.toDouble(getDataValue(data, id, cell)) + BeeUtils.toDouble(value)), 2));
+            BeeUtils.toString(BeeUtils.toDouble(value)), 2));
         break;
-
-
       default:
         addDataEntry(data, id, cell, value);
     }
@@ -578,12 +579,7 @@ public class PrintActForm extends AbstractFormInterceptor {
               addDataToTable(data, id, col, value);
             }
           }
-          double qty = BeeUtils.same(FORM_PRINT_TA_RETURN, BeeUtils.removeSuffix(getFormView()
-              .getFormName(), VAR_PRINT_RENTAL))
-              ? BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_ITEM_QUANTITY))
-              : BeeUtils.nvl(remainQty.get(itemId), BeeUtils.toDouble(getDataValue(data, id,
-              COL_TRADE_ITEM_QUANTITY)) - BeeUtils.toDouble(getDataValue(data, id,
-              COL_TA_RETURNED_QTY)));
+          double qty = getQuantity(data, id, itemId);
           double prc = BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_ITEM_PRICE));
           double sum = qty * prc;
 
@@ -737,6 +733,15 @@ public class PrintActForm extends AbstractFormInterceptor {
 
       default: return  row.getValue(typeTable);
     }
+  }
+
+  private double getQuantity(Map<String, Map<String, String>> data, String id, Long itemId) {
+    return BeeUtils.same(FORM_PRINT_TA_RETURN, BeeUtils.removeSuffix(getFormView()
+      .getFormName(), VAR_PRINT_RENTAL))
+      ? BeeUtils.toDouble(getDataValue(data, id, COL_TRADE_ITEM_QUANTITY))
+      : BeeUtils.nvl(remainQty.get(itemId), BeeUtils.toDouble(getDataValue(data, id,
+      COL_TRADE_ITEM_QUANTITY)) - BeeUtils.toDouble(getDataValue(data, id,
+      COL_TA_RETURNED_QTY)));
   }
 
   private void renderTotalOf(double tot) {
