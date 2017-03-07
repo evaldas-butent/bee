@@ -564,7 +564,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private void refreshItems() {
     GridView gridView = ViewHelper.getChildGrid(getFormView(), GRID_TRADE_DOCUMENT_ITEMS);
 
-    if (gridView != null && !gridView.isEmpty()) {
+    if (gridView != null) {
       gridView.refresh(false, false);
     }
   }

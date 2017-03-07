@@ -12,12 +12,14 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -344,6 +346,32 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }, null, presenter.getHeader().getElement());
 
     return false;
+  }
+
+  @Override
+  public void beforeRender(GridView gridView, RenderingEvent event) {
+    IsRow parentRow = ViewHelper.getFormRow(gridView);
+
+    if (parentRow != null) {
+      boolean changed = false;
+      CellGrid grid = getGridView().getGrid();
+
+      boolean visible = TradeUtils.getDocumentDiscountMode(parentRow) != null;
+
+      changed |= grid.setColumnVisible(COL_TRADE_DOCUMENT_ITEM_DISCOUNT, visible);
+      changed |= grid.setColumnVisible(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT, visible);
+
+      visible = TradeUtils.getDocumentVatMode(parentRow) != null;
+
+      changed |= grid.setColumnVisible(COL_TRADE_DOCUMENT_ITEM_VAT, visible);
+      changed |= grid.setColumnVisible(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT, visible);
+
+      if (changed) {
+        event.setDataChanged();
+      }
+    }
+
+    super.beforeRender(gridView, event);
   }
 
   @Override
