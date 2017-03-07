@@ -655,6 +655,10 @@ public class TradeActBean implements HasTimerService {
             actNumbersQuery))));
 
     for (String colName : VAR_COPY_TA_COLUMN_NAMES) {
+      if (BeeUtils.same(colName, COL_TA_OPERATION)) {
+        continue;
+      }
+
       if (!parentActs.containsColumn(colName)) {
         continue;
       }
