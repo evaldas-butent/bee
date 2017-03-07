@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.trade;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_COMPANY;
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_VAT_PERCENT;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -333,11 +332,14 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
                         COL_TRADE_WAREHOUSE_FROM);
 
                     if (DataUtils.isId(warehouse)) {
-                      getStock(itemIds, warehouse,
-                          stock -> addItems(documentRow, itemRows, true, stock));
+                      getStock(itemIds, warehouse, stock ->
+                          TradeUtils.getDocumentVatPercent(documentRow, defVatPercent ->
+                              addItems(documentRow, itemRows, true, stock, defVatPercent)));
                     }
+
                   } else {
-                    addItems(documentRow, itemRows, false, null);
+                    TradeUtils.getDocumentVatPercent(documentRow, defVatPercent ->
+                        addItems(documentRow, itemRows, false, null, defVatPercent));
                   }
                 }
               }
@@ -607,7 +609,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   private void addItems(IsRow documentRow, List<? extends IsRow> itemRows,
-      boolean stockRequired, Map<Long, Pair<Long, Double>> stock) {
+      boolean stockRequired, Map<Long, Pair<Long, Double>> stock, Double defVatPercent) {
 
     DateTime date = Data.getDateTime(VIEW_TRADE_DOCUMENTS, documentRow, COL_TRADE_DATE);
     Long currency = Data.getLong(VIEW_TRADE_DOCUMENTS, documentRow, COL_TRADE_CURRENCY);
@@ -657,9 +659,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
       Double vat;
       if (vatMode != null && BeeUtils.isTrue(row.getBoolean(vatIndex))) {
-        Number number = Global.getParameterNumber(PRM_VAT_PERCENT);
-        vat = BeeUtils.nvl(row.getDouble(vatPercentIndex),
-            Objects.isNull(number) ? null : number.doubleValue());
+        vat = BeeUtils.nvl(row.getDouble(vatPercentIndex), defVatPercent);
       } else {
         vat = null;
       }

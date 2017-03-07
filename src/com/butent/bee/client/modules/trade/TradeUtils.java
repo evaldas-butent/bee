@@ -17,6 +17,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -54,6 +55,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class TradeUtils {
 
@@ -493,6 +495,36 @@ public final class TradeUtils {
     } else {
       return Data.getEnum(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DOCUMENT_VAT_MODE,
           TradeVatMode.class);
+    }
+  }
+
+  static void getDocumentVatPercent(IsRow row, final Consumer<Double> consumer) {
+    if (getDocumentVatMode(row) == null) {
+      consumer.accept(null);
+
+    } else {
+      Long operation = getDocumentRelation(row, COL_TRADE_OPERATION);
+      if (operation == null) {
+        consumer.accept(null);
+
+      } else {
+        Queries.getValue(VIEW_TRADE_OPERATIONS, operation, COL_OPERATION_VAT_PERCENT,
+            new RpcCallback<String>() {
+              @Override
+              public void onSuccess(String result) {
+                Double vatPercent = BeeUtils.toDoubleOrNull(result);
+
+                if (vatPercent == null) {
+                  Number p = Global.getParameterNumber(PRM_VAT_PERCENT);
+                  if (p != null) {
+                    vatPercent = p.doubleValue();
+                  }
+                }
+
+                consumer.accept(vatPercent);
+              }
+            });
+      }
     }
   }
 
