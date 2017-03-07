@@ -4737,6 +4737,8 @@ public interface Dictionary {
 
   default String rating() {return g("rating");}
 
+  default String readOnly() {return g("readOnly");}
+
   default String reason() {return g("reason");}
 
   default String reasons() {return g("reasons");}

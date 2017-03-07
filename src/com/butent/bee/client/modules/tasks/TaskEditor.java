@@ -967,6 +967,11 @@ class TaskEditor extends ProductSupportInterceptor {
     return false;
   }
 
+  @Override
+  public boolean showReadOnly(boolean readOnly) {
+    return false;
+  }
+
   public void createDocument(final FileInfo fileInfo, final IsRow row) {
     createDocument(fileInfo, row, false);
   }
