@@ -24,6 +24,13 @@ import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.COL_ORDER;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.projects.ProjectConstants.COL_DATES_START_DATE;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_ENDING_DATE;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_REPAIRER;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_ITEM;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_MAINTENANCE;
+import static com.butent.bee.shared.modules.service.ServiceConstants.TBL_SERVICE_ITEMS;
+import static com.butent.bee.shared.modules.service.ServiceConstants.TBL_SERVICE_MAINTENANCE;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.TBL_ORDERS;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -258,6 +265,10 @@ public class ClassifiersModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_FILTER_ORDERS)) {
       response = filterOrders(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_RESERVATION)) {
+      response = getReservation(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -1828,25 +1839,53 @@ public class ClassifiersModuleBean implements BeeModule {
 
   private ResponseObject filterOrders(RequestInfo reqInfo) {
     String[] orders = Codec.beeDeserializeCollection(reqInfo.getParameter(TBL_ORDERS));
+    String[] repairs = Codec.beeDeserializeCollection(reqInfo
+        .getParameter(COL_SERVICE_MAINTENANCE));
     Long itemId = reqInfo.getParameterLong(COL_ITEM);
 
-    if (orders.length == 0) {
+    if (orders.length == 0 && repairs.length == 0) {
       return ResponseObject.parameterNotFound(SVC_FILTER_ORDERS, TBL_ORDERS);
     }
     if (!DataUtils.isId(itemId)) {
       return ResponseObject.parameterNotFound(SVC_FILTER_ORDERS, COL_ITEM);
     }
 
-    Map<Long, Pair<Double, Double>> remainderMap = new HashMap<>();
+    Map<Pair<String, String>, Pair<Double, Double>> remainderMap = new HashMap<>();
 
-    for (String orderId : orders) {
+    List<Pair<String, String>> objects = new ArrayList<>();
 
+    if (orders != null) {
+      Arrays.asList(orders).forEach(orderId -> {
+        if (DataUtils.isId(orderId)) {
+          objects.add(Pair.of(COL_ORDER, orderId));
+        }
+      });
+    }
+    if (repairs != null) {
+      Arrays.asList(repairs).forEach(repairId -> {
+        if (DataUtils.isId(repairId)) {
+          objects.add(Pair.of(COL_SERVICE_MAINTENANCE, repairId));
+        }
+      });
+    }
+
+    for (Pair<String, String> object : objects) {
       SqlSelect slcOrderItems = new SqlSelect()
           .addField(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS), COL_ORDER_ITEM)
           .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
-          .addFrom(TBL_ORDER_ITEMS)
-          .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER, orderId, COL_ITEM,
-              itemId)));
+          .addFrom(TBL_ORDER_ITEMS);
+
+      if (BeeUtils.same(object.getA(), COL_ORDER)) {
+        slcOrderItems.setWhere(SqlUtils.and(SqlUtils
+            .equals(TBL_ORDER_ITEMS, COL_ORDER, object.getB(), COL_ITEM, itemId)));
+
+      } else if (BeeUtils.same(object.getA(), COL_SERVICE_MAINTENANCE)) {
+        slcOrderItems.setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId),
+            SqlUtils.in(TBL_ORDER_ITEMS, COL_SERVICE_ITEM,
+                TBL_SERVICE_ITEMS, sys.getIdName(TBL_SERVICE_ITEMS),
+                SqlUtils.equals(TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE, object.getB()))
+            ));
+      }
 
       SimpleRowSet orderItems = qs.getData(slcOrderItems);
       double resQty = BeeConst.DOUBLE_ZERO;
@@ -1870,7 +1909,7 @@ public class ClassifiersModuleBean implements BeeModule {
         invoiceQty += BeeUtils.unbox(invoice.getDouble(COL_TRADE_ITEM_QUANTITY));
       }
 
-      remainderMap.put(Long.valueOf(orderId), Pair.of(resQty, invoiceQty));
+      remainderMap.put(object, Pair.of(resQty, invoiceQty));
     }
 
     return ResponseObject.response(remainderMap);
@@ -2244,6 +2283,62 @@ public class ClassifiersModuleBean implements BeeModule {
     }
 
     return remainders;
+  }
+
+  private ResponseObject getReservation(RequestInfo reqInfo) {
+    Arrays.asList(COL_DATES_START_DATE,
+        ALS_COMPANY_NAME, ALS_MANAGER_FIRST_NAME, ALS_MANAGER_LAST_NAME, ALS_WAREHOUSE_CODE);
+
+    Long itemId = reqInfo.getParameterLong(COL_ITEM);
+    if (!DataUtils.isId(itemId)) {
+      return ResponseObject.parameterNotFound(SVC_GET_RESERVATION, COL_ITEM);
+    }
+
+    SqlSelect objectsSql = new SqlSelect()
+        .addField(TBL_ORDERS, sys.getIdName(TBL_ORDERS), COL_ORDER)
+        .addEmptyLong(COL_SERVICE_MAINTENANCE)
+        .addFields(TBL_ORDERS, COL_DATES_START_DATE)
+        .addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+        .addFields(VIEW_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+        .addField(VIEW_WAREHOUSES, COL_WAREHOUSE_CODE, ALS_WAREHOUSE_CODE)
+        .addFrom(TBL_ORDERS)
+        .addFromLeft(VIEW_COMPANIES, sys.joinTables(VIEW_COMPANIES, TBL_ORDERS, COL_COMPANY))
+        .addFromLeft(VIEW_COMPANY_PERSONS,
+            sys.joinTables(VIEW_COMPANY_PERSONS, TBL_ORDERS, COL_TRADE_MANAGER))
+        .addFromLeft(VIEW_PERSONS, sys.joinTables(VIEW_PERSONS, VIEW_COMPANY_PERSONS, COL_PERSON))
+        .addFromLeft(VIEW_WAREHOUSES, sys.joinTables(VIEW_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
+        .setWhere(SqlUtils.and(SqlUtils.in(TBL_ORDERS, sys.getIdName(TBL_ORDERS),
+            VIEW_ORDER_ITEMS, COL_ORDER, SqlUtils.equals(VIEW_ORDER_ITEMS, COL_ITEM, itemId)),
+            SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS, OrdersStatus.APPROVED)));
+
+    objectsSql.addUnion(new SqlSelect()
+        .addEmptyLong(COL_ORDER)
+        .addField(TBL_SERVICE_MAINTENANCE,
+            sys.getIdName(TBL_SERVICE_MAINTENANCE), COL_SERVICE_MAINTENANCE)
+        .addField(TBL_SERVICE_MAINTENANCE, COL_TRADE_DATE, COL_DATES_START_DATE)
+        .addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+        .addFields(VIEW_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+        .addField(VIEW_WAREHOUSES, COL_WAREHOUSE_CODE, ALS_WAREHOUSE_CODE)
+        .addFrom(TBL_SERVICE_MAINTENANCE)
+        .addFromLeft(VIEW_COMPANIES,
+            sys.joinTables(VIEW_COMPANIES, TBL_SERVICE_MAINTENANCE, COL_COMPANY))
+        .addFromLeft(VIEW_USERS,
+            sys.joinTables(VIEW_USERS, TBL_SERVICE_MAINTENANCE, COL_REPAIRER))
+        .addFromLeft(VIEW_COMPANY_PERSONS,
+            sys.joinTables(VIEW_COMPANY_PERSONS, VIEW_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(VIEW_PERSONS, sys.joinTables(VIEW_PERSONS, VIEW_COMPANY_PERSONS, COL_PERSON))
+        .addFromLeft(VIEW_WAREHOUSES,
+            sys.joinTables(VIEW_WAREHOUSES, TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE))
+        .setWhere(SqlUtils.and(SqlUtils.isNull(TBL_SERVICE_MAINTENANCE, COL_ENDING_DATE),
+            SqlUtils.in(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE),
+                TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE,
+                SqlUtils.in(TBL_SERVICE_ITEMS, sys.getIdName(TBL_SERVICE_ITEMS), VIEW_ORDER_ITEMS,
+                    COL_SERVICE_ITEM, SqlUtils.equals(VIEW_ORDER_ITEMS, COL_ITEM, itemId)))))
+    );
+
+    SimpleRowSet rqs = qs.getData(objectsSql);
+
+    return ResponseObject.response(rqs);
   }
 
   @Schedule(hour = "*/1", persistent = false)
