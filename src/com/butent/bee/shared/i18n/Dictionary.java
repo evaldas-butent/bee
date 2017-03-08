@@ -5994,7 +5994,13 @@ public interface Dictionary {
 
   default String trRepairsHistory() {return g("trRepairsHistory");}
 
+  default String trReportCustomerProfit() {return g("trReportCustomerProfit");}
+
   default String trReportFuelUsage() {return g("trReportFuelUsage");}
+
+  default String trReportOrderProfit() {return g("trReportOrderProfit");}
+
+  default String trReportProfitability() {return g("trReportProfitability");}
 
   default String trReportTripProfit() {return g("trReportTripProfit");}
 
