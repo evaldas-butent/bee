@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-03-08T13:57:57 -->
+<!-- 2017-03-08T16:55:53 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="AssessmenTransportation" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" uuid="3ad2372d-bb52-4e1f-9dfe-aaf5bdceb74c">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.server.Invocation"/>
@@ -458,7 +458,7 @@
 				<textFieldExpression><![CDATA[msg($R{contractMsg}, BeeUtils.joinWords($P{CompanyName}, $P{CompanyTypeName}), BeeUtils.joinWords($P{ManagerFirstName}, $P{ManagerLastName}), BeeUtils.joinWords($P{ForwarderName}, $P{ForwarderTypeName}))]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="112" width="555" height="12" uuid="db153eae-6530-4ee9-9498-a07aeeb4df17">
+				<reportElement positionType="Float" x="0" y="112" width="555" height="12" uuid="db153eae-6530-4ee9-9498-a07aeeb4df17">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -617,7 +617,7 @@
 				</textField>
 			</frame>
 			<textField>
-				<reportElement x="0" y="160" width="555" height="12" uuid="d7eef403-1a5e-4964-ae28-91e8e5625b15">
+				<reportElement positionType="Float" x="0" y="160" width="555" height="12" uuid="d7eef403-1a5e-4964-ae28-91e8e5625b15">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
@@ -628,7 +628,7 @@
 				<textFieldExpression><![CDATA["1.1 " + $V{d}.cargos()]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="0" y="172" width="556" height="32" uuid="2a1be28c-751a-4487-adfe-2591bae8e536">
+				<reportElement positionType="Float" x="0" y="172" width="556" height="32" uuid="2a1be28c-751a-4487-adfe-2591bae8e536">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
