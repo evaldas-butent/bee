@@ -481,7 +481,6 @@
       <xs:enumeration value="PersonFamily" />
       <xs:enumeration value="Places" />
       <xs:enumeration value="Positions" />
-      <xs:enumeration value="PrintContract" />
       <xs:enumeration value="PrintOrder" />
       <xs:enumeration value="Projects" />
       <xs:enumeration value="ProjectContacts" />
