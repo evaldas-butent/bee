@@ -83,6 +83,7 @@
     <SimpleColumn name="SupplierTerm" />
     <SimpleColumn name="Discount" />
     <SimpleColumn name="InvisibleDiscount" />
+    <SimpleColumn name="Parent" />
     <SimpleColumn name="Note" />
   </Columns>
 </View>

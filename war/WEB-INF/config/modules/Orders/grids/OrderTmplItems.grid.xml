@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Grid[
 ]>
-<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
-  xmlns:xi="http://www.w3.org/2001/XInclude" name="OrderTmplItems" viewName="OrderTmplItems" flexGrow="1" renderMode="full"
-  newRowCaption="=newItem" disabledActions="filter">
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="OrderTmplItems" viewName="OrderTmplItems" flexGrow="1" renderMode="full"
+        newRowCaption="=newItem" disabledActions="filter" filter="!(Parent)" >
   <g:columns>
+    <CalcColumn name="Plus" type="string" caption="-" width="25" visible="true" >
+      <style>
+        <headerStyle><ui:class>bee-fa-label</ui:class></headerStyle>
+        <bodyStyle><ui:class>bee-fa-label</ui:class></bodyStyle>
+      </style>
+      <render><ui:expression>row.ItemComponent > 0 ? '\uf067' : ""</ui:expression></render>
+    </CalcColumn>
+
     <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" filter="!(IsService)"
       editPopup="true" visible="true" readOnly="true">
       <footer text="=totalOf" horizontalAlignment="right" />
@@ -20,6 +31,9 @@
 
     <DataColumn name="Price" visible="true">
       <footer expression="row.Quantity * row.Price" />
+      <editable>
+        <ui:expression>row.ItemComponent &lt; 1</ui:expression>
+      </editable>
     </DataColumn>
 
     <CalcColumn name="ItemPrices" type="string" cellType="html" label="=taItemPrices" width="100" exportable="false"
@@ -27,14 +41,32 @@
 
     <DataColumn name="Discount">
       <footer evaluator="discount" scale="2" />
+      <editable>
+        <ui:expression>row.ItemComponent &lt; 1</ui:expression>
+      </editable>
     </DataColumn>
-    <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" visible="false" />
+
+    <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true"
+                visible="false" >
+      <editable>
+        <ui:expression>row.ItemComponent &lt; 1</ui:expression>
+      </editable>
+    </DataColumn>
 
     <DataColumn name="Vat" carry="true" flexGrow="0" visible="false">
       <footer evaluator="vat" />
+      <editable>
+        <ui:expression>row.ItemComponent &lt; 1</ui:expression>
+      </editable>
     </DataColumn>
 
-    <DataColumn name="VatPercent" width="20" sortable="false" caption="%" format="%" carry="true" visible="false" />
+    <DataColumn name="VatPercent" width="20" sortable="false" caption="%" format="%" carry="true"
+                visible="false" >
+      <editable>
+        <ui:expression>row.ItemComponent &lt; 1</ui:expression>
+      </editable>
+    </DataColumn>
+
     <CalcColumn name="Total" type="decimal" caption="=trdAmount" scale="2">
       <style>
         <bodyStyle>

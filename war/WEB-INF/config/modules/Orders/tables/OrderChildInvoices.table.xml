@@ -8,5 +8,6 @@
     <Relation name="OrderItem" relation="OrderItems" notNull="true" />
     <Relation name="SaleItem" notNull="true" editable="true" unique="true" relation="SaleItems"
               cascade="DELETE" />
+    <Relation name="OrderSale" relation="Sales" cascade="DELETE" />
   </Fields>
 </Table>

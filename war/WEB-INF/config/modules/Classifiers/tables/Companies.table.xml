@@ -49,6 +49,7 @@
 
     <Relation name="Raport" relation="Raports" editable="true" />
 
+    <Boolean name="RemindEmail" label="=sendReminderMail" />
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

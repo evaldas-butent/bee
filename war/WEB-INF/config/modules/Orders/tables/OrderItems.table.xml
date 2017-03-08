@@ -17,6 +17,7 @@
     <Relation name="Supplier" relation="Companies" label="=supplier" />
     <Numeric name="Unpacking" precision="15" scale="5" label="=unpacking" />
     <Date name="SupplierTerm" label="=ordSupplierTerm" />
+    <Relation name="Parent" relation="OrderItems" label="=taParent" cascade="SET_NULL"/>
     <Text name="Note" label="=note" />
   </Fields>
 </Table>

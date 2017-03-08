@@ -6,6 +6,7 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
+        xmlns:ui="http://www.butent.com/ui"
 
   name="Order" viewName="Orders" width="800" height="600">
 
@@ -86,4 +87,13 @@
       </page>
     </TabbedPages>
   </FlowPanel>
+
+  <f:rowMessage>
+    <ui:function>
+      if (row.Number) {
+        return "&lt;span style&#61;\"padding-bottom:2px; align-self: flex-end; -webkit-align-self: flex-end; -ms-flex-item-align: end;\"&gt;" + "[" + row.Number + "]"
+      + "&lt;&#47;span&gt;" + "&lt;span style&#61;\"font-size:23px; margin-left: 8px; color: #484849;\"&gt;" + row.CompanyName + "&lt;&#47;span&gt;";
+      }
+      </ui:function>
+  </f:rowMessage>
 </f:Form>

@@ -45,7 +45,10 @@
         </cell>
         <Label for="EmailId" style="&lbl;" />
         <cell colSpan="1" for="EmailId">
-          <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
+          <FlowPanel>
+            <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
+            <CheckBox html="-" name="RemindEmail" source="RemindEmail" title="=sendReminder"/>
+          </FlowPanel>
         </cell>
       </row>
 

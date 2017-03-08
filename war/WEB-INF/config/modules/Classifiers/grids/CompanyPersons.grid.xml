@@ -16,6 +16,7 @@
     <DataColumn name="Mobile" />
     <DataColumn name="Fax" visible="false" />
     <RelColumn name="EmailId" editEnabled="true" filterSupplier="value" flexGrow="1" />
+    <DataColumn name="RemindEmail" editInPlace="true" />
 
     <DataColumn name="DateOfDismissal" searchBy="DateOfDismissal" filterOptions="empty">
       <style><bodyStyle><ui:inline>color:red</ui:inline></bodyStyle></style>
