@@ -17,6 +17,7 @@ import static com.butent.bee.shared.modules.orders.OrdersConstants.COL_RESERVED_
 import static com.butent.bee.shared.modules.orders.OrdersConstants.COL_SALE_ITEM;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.TBL_ORDER_ITEMS;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.VIEW_ORDER_CHILD_INVOICES;
+import static com.butent.bee.shared.modules.projects.ProjectConstants.COL_INCOME_ITEM;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_COMMENT;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_EVENT_NOTE;
@@ -160,6 +161,9 @@ public class ServiceModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_CREATE_RESERVATION_INVOICE_ITEMS)) {
       response = createReservationInvoiceItems(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_ITEMS_INFO)) {
+        response = getItemsInfo(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -1031,6 +1035,45 @@ public class ServiceModuleBean implements BeeModule {
     }
 
     return rs;
+  }
+
+  private ResponseObject getItemsInfo(RequestInfo reqInfo) {
+    Long serviceId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SERVICE_MAINTENANCE));
+    if (!DataUtils.isId(serviceId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_SERVICE_MAINTENANCE);
+    }
+
+    Long currency = prm.getRelation(PRM_CURRENCY);
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CURRENCY);
+    }
+
+    String priceAlias = COL_ITEM_PRICE;
+    SqlSelect query = new SqlSelect();
+    query.addFields(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS), COL_TRADE_VAT_PLUS,
+        COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_INCOME_ITEM, COL_RESERVED_REMAINDER,
+        COL_TRADE_DISCOUNT, COL_TRADE_ITEM_QUANTITY)
+        .addFields(TBL_ITEMS, COL_ITEM_ARTICLE)
+        .addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME)
+        .addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromLeft(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+        .addFromLeft(TBL_SERVICE_ITEMS,
+            sys.joinTables(TBL_SERVICE_ITEMS, TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
+        .addFromLeft(TBL_SERVICE_MAINTENANCE,
+            sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .setWhere(sys.idEquals(TBL_SERVICE_MAINTENANCE, serviceId));
+    IsExpression priceExch =
+        ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_ITEM_PRICE),
+            SqlUtils.field(TBL_ORDER_ITEMS, COL_TRADE_CURRENCY),
+            SqlUtils.field(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_DATE),
+            SqlUtils.constant(currency));
+
+    query.addExpr(priceExch, priceAlias)
+        .addOrder(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS));
+
+    return ResponseObject.response(qs.getViewData(query, sys.getView(TBL_ORDER_ITEMS), false));
   }
 
   private ResponseObject getMaintenanceNewRowValues() {

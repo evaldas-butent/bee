@@ -5146,6 +5146,8 @@ public interface Dictionary {
 
   default String svcDefects() {return g("svcDefects");}
 
+  default String svcDetailedMaintenanceTicket() {return g("svcDetailedMaintenanceTicket");}
+
   default String svcDevice() {return g("svcDevice");}
 
   default String svcDeviceAddress() {return g("svcDeviceAddress");}

@@ -44,6 +44,7 @@ public final class ServiceConstants {
   public static final String SVC_INFORM_CUSTOMER = "inform_customer";
   public static final String SVC_GET_MAINTENANCE_NEW_ROW_VALUES = "getMaintenanceNewRowValues";
   public static final String SVC_CREATE_RESERVATION_INVOICE_ITEMS = "CreateReservationInvoiceItems";
+  public static final String SVC_GET_ITEMS_INFO = "getItemsInfo";
 
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";

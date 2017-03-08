@@ -85,7 +85,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       BeeConst.CSS_CLASS_PREFIX + "Grid-ProgressContainer";
   private static final String STYLE_PROGRESS_BAR =
       BeeConst.CSS_CLASS_PREFIX + "Grid-ProgressBar";
-  private static final int REPORT_DATA_CONSUMPTIONS_COUNT = 2;
+  private static final int REPORT_DATA_CONSUMPTIONS_COUNT = 3;
 
   private final MaintenanceEventsHandler eventsHandler = new MaintenanceEventsHandler();
   private Flow maintenanceComments;
@@ -282,7 +282,18 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   @Override
   protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
-    super.getReportData(dataConsumer);
+    ParameterList params = ServiceKeeper.createArgs(SVC_GET_ITEMS_INFO);
+    params.addDataItem(COL_SERVICE_MAINTENANCE, getActiveRowId());
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (!response.isEmpty() && !response.hasErrors()) {
+          BeeRowSet items = BeeRowSet.restore((String) response.getResponse());
+          dataConsumer.accept(new BeeRowSet[] {items});
+        }
+      }
+    });
   }
 
   @Override
@@ -340,6 +351,17 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       } else {
         action.run();
       }
+
+      Filter commentsFilter = Filter.and(Filter.equals(COL_SERVICE_MAINTENANCE, getActiveRowId()),
+          Filter.notNull(COL_SHOW_CUSTOMER));
+      Queries.getRowSet(TBL_MAINTENANCE_COMMENTS, null, commentsFilter,
+          new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet comments) {
+              defaultParameters.put(TBL_MAINTENANCE_COMMENTS, comments.serialize());
+              action.run();
+            }
+      });
     });
   }
 
