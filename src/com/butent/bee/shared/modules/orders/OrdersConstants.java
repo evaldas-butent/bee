@@ -67,6 +67,9 @@ public final class OrdersConstants {
   public static final String GRID_COMPANY_ORDERS = "CompanyOrders";
   public static final String GRID_OFFERS = "Offers";
   public static final String GRID_ORDERS_INVOICES = "OrdersInvoices";
+  public static final String GRID_ORDER_COMPLECT_ITEMS = "OrderComplectItems";
+  public static final String GRID_ORDER_TMPL_COMPLECT_ITEMS = "OrderTmplComplectItems";
+  public static final String GRID_ORDER_SALES = "OrderSales";
 
   public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
   public static final String ALS_CONTACT_EMAIL = "ContactEmail";

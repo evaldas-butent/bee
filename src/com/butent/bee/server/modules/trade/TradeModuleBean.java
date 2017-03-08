@@ -295,6 +295,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     Multimap<Long, String> emails = HashMultimap.create();
 
     SqlSelect select = new SqlSelect()
+        .setUnionAllMode(true)
+        .setDistinctMode(true)
         .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
         .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
         .addFrom(TBL_COMPANIES)
@@ -304,7 +306,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
         .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
             companyIds), SqlUtils.notNull(TBL_COMPANY_CONTACTS, COL_REMIND_EMAIL)))
-        .setDistinctMode(true);
+        .addUnion(new SqlSelect()
+            .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+            .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
+            .addFrom(TBL_COMPANIES)
+            .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+            .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
+                companyIds), SqlUtils.notNull(TBL_COMPANIES, COL_REMIND_EMAIL))))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+            .addField(TBL_EMAILS, COL_EMAIL_ADDRESS, COL_EMAIL_ADDRESS)
+            .addFrom(TBL_COMPANY_PERSONS)
+            .addFromInner(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS,
+                COL_CONTACT))
+            .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+            .setWhere(SqlUtils.and(SqlUtils.inList(TBL_COMPANY_PERSONS, COL_COMPANY, companyIds),
+                SqlUtils.notNull(TBL_COMPANY_PERSONS, COL_REMIND_EMAIL))));
 
     SimpleRowSet companiesEmails = qs.getData(select);
 

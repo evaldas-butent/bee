@@ -84,6 +84,12 @@ class OrderItemsPicker extends ItemsPicker {
     return Objects.equals(row.getInteger(statusIdx), OrdersStatus.APPROVED.ordinal());
   }
 
+
+  @Override
+  public boolean showNewUpdateToggle() {
+    return true;
+  }
+
   private static Filter getDefaultItemFilter() {
     return Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
   }

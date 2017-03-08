@@ -66,6 +66,32 @@
   animation: rotate 1s linear infinite;
 }
 
+.bee-ta-picker-input-mode-toggle {
+  font-size: large;
+  cursor: pointer;
+  color: #414142;
+}
+.bee-ta-picker-input-mode-update,
+.bee-ta-picker-input-mode-add {
+  margin-left: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+.bee-ta-picker-input-mode-active {
+  font-weight: bolder;
+  cursor: auto;
+}
+.bee-ta-picker-input-mode-panel {
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: center;
+  width: 100%;
+}
+
 .bee-ta-picker-item-panel,
 .bee-ta-return-items-wrapper,
 .bee-ta-import-items-wrapper {

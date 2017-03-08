@@ -46,4 +46,8 @@ public class OrderTmplItemsPicker extends ItemsPicker {
     return false;
   }
 
+  @Override
+  public boolean showNewUpdateToggle() {
+    return false;
+  }
 }

@@ -63,4 +63,9 @@ class TradeActItemPicker extends ItemsPicker {
   public boolean setIsOrder(IsRow row) {
     return false;
   }
+
+  @Override
+  public boolean showNewUpdateToggle() {
+    return false;
+  }
 }
