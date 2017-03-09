@@ -3712,6 +3712,8 @@ public interface Dictionary {
 
   default String ordCompleted() {return g("ordCompleted");}
 
+  default String ordComponentsImport() {return g("ordComponentsImport");}
+
   default String ordCreditLimitEmpty() {return g("ordCreditLimitEmpty");}
 
   default String ordDebtExceedsCreditLimit() {return g("ordDebtExceedsCreditLimit");}
@@ -3723,6 +3725,10 @@ public interface Dictionary {
   default String ordFreeRemainder() {return g("ordFreeRemainder");}
 
   default String ordInvoiceQty() {return g("ordInvoiceQty");}
+
+  default String ordItemList() {return g("ordItemList");}
+
+  default String ordLack() {return g("ordLack");}
 
   default String ordMaxDiscount() {return g("ordMaxDiscount");}
 
@@ -6304,6 +6310,8 @@ public interface Dictionary {
   default String units() {return g("units");}
 
   default String unloading() {return g("unloading");}
+
+  default String unpack() {return g("unpack");}
 
   default String unpacking() {return g("unpacking");}
 

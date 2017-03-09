@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.COL_NOTE;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_NUMBER;
 
 import com.butent.bee.client.BeeKeeper;
@@ -243,38 +244,46 @@ public class OrderForm extends PrintFormInterceptor {
 
   @Override
   protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
-    Queries.getRowSet(VIEW_ORDER_ITEMS, null, Filter.equals(COL_ORDER, getActiveRowId()),
-        new Queries.RowSetCallback() {
+    Queries.getRowSet(VIEW_ORDER_ITEMS, null, Filter.and(Filter.equals(COL_ORDER, getActiveRowId()),
+        Filter.isNull(TradeConstants.COL_TRADE_ITEM_PARENT)), new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
             if (result.getNumberOfRows() > 0) {
               int dateIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_SUPPLIER_TERM);
+              int noteIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_NOTE);
+              int reservedIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+              int qtyIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS,
+                  TradeConstants.COL_TRADE_ITEM_QUANTITY);
+
               for (BeeRow row : result) {
                 String term;
-                double qty = BeeUtils.unbox(row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS,
-                    TradeConstants.COL_TRADE_ITEM_QUANTITY)));
-                double reserved = BeeUtils.unbox(row.getDouble(Data.getColumnIndex(VIEW_ORDER_ITEMS,
-                    COL_RESERVED_REMAINDER)));
-                double free = BeeUtils.unbox(row.getPropertyDouble(PRP_FREE_REMAINDER));
-                double invoices = BeeUtils.unbox(row.getPropertyDouble(PRP_COMPLETED_INVOICES));
+                if (BeeUtils.isEmpty(row.getString(noteIdx))) {
+                  double qty = BeeUtils.unbox(row.getDouble(qtyIdx));
+                  double reserved = BeeUtils.unbox(row.getDouble(reservedIdx));
+                  double free = BeeUtils.unbox(row.getPropertyDouble(PRP_FREE_REMAINDER));
+                  double invoices = BeeUtils.unbox(row.getPropertyDouble(PRP_COMPLETED_INVOICES));
 
-                if (row.getDate(dateIdx) == null) {
-                  if (reserved + free < qty - invoices) {
-                    DateTime date = row.getDateTime(Data.getColumnIndex(VIEW_ORDER_ITEMS,
-                        ProjectConstants.COL_DATES_START_DATE));
-                    int weekDay = date.getDow();
+                  if (row.getDate(dateIdx) == null) {
+                    if (reserved + free < qty - invoices) {
+                      DateTime date = row.getDateTime(Data.getColumnIndex(VIEW_ORDER_ITEMS,
+                          ProjectConstants.COL_DATES_START_DATE));
+                      int weekDay = date.getDow();
 
-                    if (weekDay < 3) {
-                      term = new JustDate(date.getDate().getDays() + 9 - weekDay).toString();
+                      if (weekDay < 3) {
+                        term = new JustDate(date.getDate().getDays() + 9 - weekDay).toString();
+                      } else {
+                        term = new JustDate(date.getDate().getDays() + 16 - weekDay).toString();
+                      }
                     } else {
-                      term = new JustDate(date.getDate().getDays() + 16 - weekDay).toString();
+                      term = "t";
                     }
                   } else {
-                    term = "t";
+                    term = row.getDate(dateIdx).toString();
                   }
                 } else {
-                  term = row.getDate(dateIdx).toString();
+                  term = row.getString(noteIdx);
                 }
+
                 row.setProperty(COL_SUPPLIER_TERM, term);
               }
             }
@@ -468,8 +477,8 @@ public class OrderForm extends PrintFormInterceptor {
   }
 
   private static void checkIsFinish(final FormView form) {
-
     Filter filter = Filter.equals(COL_ORDER, form.getActiveRowId());
+
     Queries.getRowSet(VIEW_ORDER_ITEMS, null, filter, new RowSetCallback() {
 
       @Override

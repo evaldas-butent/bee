@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-11-07T13:33:59 -->
+<!-- 2017-01-05T11:44:59 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.shared.i18n.Localized"/>
@@ -118,7 +118,7 @@
 	<parameter name="SupplierCountryName" class="java.lang.String"/>
 	<parameter name="CustomerCityName" class="java.lang.String"/>
 	<parameter name="CustomerCountryName" class="java.lang.String"/>
-	<parameter name="Discount" class="java.lang.String"/>
+	<parameter name="DiscountCount" class="java.lang.String"/>
 	<parameter name="SupplierCompanyBankAccounts" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="CustomerCompanyBankAccounts" class="java.lang.String"/>
 	<queryString>
@@ -133,7 +133,7 @@
 		<initialValueExpression><![CDATA[BeeUtils.joinWords("Serija", $P{InvoicePrefix}, "Nr.", $P{InvoiceNo})]]></initialValueExpression>
 	</variable>
 	<title>
-		<band height="120" splitType="Stretch">
+		<band height="162" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="555" height="20" uuid="2989e748-c56f-40bd-8009-ed6a87c2c699">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -238,7 +238,7 @@
 				</componentElement>
 			</frame>
 			<frame>
-				<reportElement x="280" y="50" width="275" height="70" isRemoveLineWhenBlank="true" uuid="fb5582a7-cb9c-42b4-830e-3e18320d4fbb"/>
+				<reportElement x="280" y="50" width="275" height="112" isRemoveLineWhenBlank="true" uuid="fb5582a7-cb9c-42b4-830e-3e18320d4fbb"/>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement positionType="Float" x="0" y="0" width="70" height="14" uuid="34244968-8bac-43be-9b1b-145456542fc9"/>
 					<textElement>
@@ -316,7 +316,7 @@
 					<textFieldExpression><![CDATA[$V{loc}.email() + ": " + $P{CustomerEmail}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="yyyy.MM.dd" isBlankWhenNull="true">
-					<reportElement positionType="Float" x="199" y="118" width="75" height="14" uuid="963945da-d81a-4948-aa6c-e995b0eebcfc"/>
+					<reportElement positionType="Float" x="200" y="112" width="75" height="14" uuid="963945da-d81a-4948-aa6c-e995b0eebcfc"/>
 					<textElement>
 						<font size="8"/>
 					</textElement>
@@ -390,10 +390,9 @@
 			<componentElement>
 				<reportElement x="0" y="0" width="555" height="110" uuid="a4cec004-a006-48d7-8e25-1ffbd37f1186">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
-					<property name="com.jaspersoft.studio.components.autoresize.proportional" value="true"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="SaleItems" uuid="8780de20-faef-42a6-9b3e-b61f3242a92b">
+					<datasetRun subDataset="SaleItems" uuid="e7494e88-5798-4937-b6ee-350d4f285f6e">
 						<datasetParameter name="loc">
 							<datasetParameterExpression><![CDATA[$V{loc}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -404,7 +403,7 @@
 							<datasetParameterExpression><![CDATA[$P{SaleItemsDataSet}]]></datasetParameterExpression>
 						</datasetParameter>
 						<datasetParameter name="DiscountCount">
-							<datasetParameterExpression><![CDATA[$P{Discount}]]></datasetParameterExpression>
+							<datasetParameterExpression><![CDATA[$P{DiscountCount}]]></datasetParameterExpression>
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[$P{SaleItemsDataSet}]]></dataSourceExpression>
 					</datasetRun>
@@ -609,7 +608,7 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="15">
-								<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+								<textField isStretchWithOverflow="true" pattern="0.00000" isBlankWhenNull="true">
 									<reportElement key="" style="TableDetail" x="0" y="0" width="67" height="15" uuid="0b8c96a6-e6d9-4d4a-8d29-c3040f87fd6f"/>
 									<textElement textAlignment="Right">
 										<font size="8"/>
@@ -620,7 +619,7 @@
 						</jr:column>
 						<jr:column width="49" uuid="40c8bec3-18e1-4c34-a282-604a49099cb2">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
-							<printWhenExpression><![CDATA[BeeUtils.toInt($P{Discount}) > 0]]></printWhenExpression>
+							<printWhenExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0]]></printWhenExpression>
 							<jr:tableFooter height="0" rowSpan="1"/>
 							<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 								<textField>

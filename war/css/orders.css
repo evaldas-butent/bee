@@ -24,3 +24,7 @@
   cursor: pointer;
   text-decoration: underline;
 }
+
+.bee-order-item-lack {
+  color: #ff5252;
+}

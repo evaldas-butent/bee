@@ -67,7 +67,6 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-
     Button amount = new Button(Localized.dictionary().amount());
     amount.addClickHandler(this::getItemsAmount);
     presenter.getHeader().addCommandItem(amount);
@@ -86,25 +85,35 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
         IsRow row = cv.getRow();
         int qtyIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_TRADE_ITEM_QUANTITY);
         int resRemainderIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_RESERVED_REMAINDER);
+        int completedIdx = Data.getColumnIndex(VIEW_ORDER_SALES, PRP_COMPLETED_INVOICES);
+
+        double compInvc = BeeUtils.unbox(row.getDouble(completedIdx));
+        double resRemainder = BeeUtils.unbox(row.getDouble(resRemainderIdx));
+
         Double qty = row.getDouble(qtyIdx);
         Double free = Double.valueOf(row.getProperty(PRP_FREE_REMAINDER));
-        Double compInvc = Double.valueOf(row.getProperty(PRP_COMPLETED_INVOICES));
-        Double resRemainder =
-            (row.getDouble(resRemainderIdx) == null) ? 0 : row.getDouble(resRemainderIdx);
         Double newValue = BeeUtils.toDouble(cv.getNewValue());
         Double complQty = null;
 
         if (BeeUtils.isPositive(newValue)) {
-          if (qty - compInvc <= free + resRemainder) {
-            complQty = qty - compInvc;
-          } else if (qty - compInvc > free + resRemainder) {
-            complQty = free + resRemainder;
-          }
+          if (OrdersKeeper.isComplect(row)) {
+            if (newValue > qty - compInvc) {
+              getGridPresenter().getGridView().notifySevere(
+                  Localized.dictionary().maxValue() + " " + (qty - compInvc));
+              return false;
+            }
+          } else {
+            if (qty - compInvc <= free + resRemainder) {
+              complQty = qty - compInvc;
+            } else if (qty - compInvc > free + resRemainder) {
+              complQty = free + resRemainder;
+            }
 
-          if (complQty < newValue) {
-            getGridPresenter().getGridView().notifySevere(
-                Localized.dictionary().maxValue() + " " + complQty);
-            return false;
+            if (complQty < newValue) {
+              getGridPresenter().getGridView().notifySevere(
+                  Localized.dictionary().maxValue() + " " + complQty);
+              return false;
+            }
           }
         } else {
           getGridPresenter().getGridView().notifySevere(
@@ -124,6 +133,7 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     int resRemainderIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_RESERVED_REMAINDER);
     int comQtyIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_COMPLETED_QTY);
     int itemIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_ITEM);
+    int completedIdx = Data.getColumnIndex(VIEW_ORDER_SALES, PRP_COMPLETED_INVOICES);
 
     Map<Long, Double> freeMap = new HashMap<>();
 
@@ -132,17 +142,23 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     }
 
     for (IsRow row : getGridView().getRowData()) {
-      Double qty = row.getDouble(qtyIdx);
-      Double free = freeMap.get(row.getLong(itemIdx));
-      Double compInvc = Double.valueOf(row.getProperty(PRP_COMPLETED_INVOICES));
-      double resRemainder = BeeUtils.unbox(row.getDouble(resRemainderIdx));
+      if (OrdersKeeper.isComplect(row)) {
+        row.setValue(comQtyIdx, row.getDouble(qtyIdx) - BeeUtils.unbox(row.getPropertyDouble(
+            PRP_COMPLETED_INVOICES)));
 
-      if (qty - compInvc <= free + resRemainder) {
-        row.setValue(comQtyIdx, qty - compInvc);
-        freeMap.put(row.getLong(itemIdx), free - qty + compInvc + resRemainder);
-      } else if (qty - compInvc > free + resRemainder) {
-        row.setValue(comQtyIdx, free + resRemainder);
-        freeMap.put(row.getLong(itemIdx), BeeConst.DOUBLE_ZERO);
+      } else {
+        Double qty = row.getDouble(qtyIdx);
+        Double free = freeMap.get(row.getLong(itemIdx));
+        Double compInvc = BeeUtils.unbox(row.getDouble(completedIdx));
+        double resRemainder = BeeUtils.unbox(row.getDouble(resRemainderIdx));
+
+        if (qty - compInvc <= free + resRemainder) {
+          row.setValue(comQtyIdx, qty - compInvc);
+          freeMap.put(row.getLong(itemIdx), free - qty + compInvc + resRemainder);
+        } else if (qty - compInvc > free + resRemainder) {
+          row.setValue(comQtyIdx, free + resRemainder);
+          freeMap.put(row.getLong(itemIdx), BeeConst.DOUBLE_ZERO);
+        }
       }
     }
   }
@@ -152,10 +168,10 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
     final Set<Long> ids = new HashSet<>();
     int comQtyIdx = Data.getColumnIndex(VIEW_ORDER_SALES, COL_COMPLETED_QTY);
     BeeRowSet rowSet = new BeeRowSet(VIEW_ORDER_SALES, Data.getColumns(VIEW_ORDER_SALES));
+    BeeRowSet complects = new BeeRowSet(VIEW_ORDER_SALES, Data.getColumns(VIEW_ORDER_SALES));
 
     for (RowInfo row : getGridView().getSelectedRows(GridView.SelectedRows.ALL)) {
       ids.add(row.getId());
-
     }
 
     if (ids.isEmpty()) {
@@ -168,8 +184,11 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
         Double comQty = row.getDouble(comQtyIdx);
 
         if (BeeUtils.isPositive(comQty)) {
-          rowSet.addRow((BeeRow) row);
-
+          if (!BeeUtils.isPositive(row.getPropertyInteger(PROP_ITEM_COMPONENT))) {
+            rowSet.addRow((BeeRow) row);
+          } else {
+            complects.addRow((BeeRow) row);
+          }
         } else {
           getGridView().notifySevere(Localized.dictionary().ordEmptyFreeRemainder());
           return;
@@ -177,7 +196,28 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
       }
     }
 
-    createInvoice(rowSet);
+    if (complects.getNumberOfRows() > 0) {
+      ParameterList params = OrdersKeeper.createSvcArgs(SVC_GET_COMPLECT_FREE_REMAINDERS);
+      params.addDataItem(COL_ITEM_COMPLECT, Codec.beeSerialize(complects));
+      params.addDataItem(Service.VAR_DATA, Codec.beeSerialize(rowSet));
+
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (!response.hasErrors()) {
+            BeeRowSet result = BeeRowSet.restore(response.getResponseAsString());
+            if (!result.isEmpty()) {
+              createInvoice(result);
+            }
+          } else {
+            getGridView().notifySevere(response.getErrors());
+          }
+        }
+      });
+
+    } else {
+      createInvoice(rowSet);
+    }
   }
 
   @Override
