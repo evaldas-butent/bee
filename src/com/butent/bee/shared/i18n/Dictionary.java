@@ -3256,7 +3256,11 @@ public interface Dictionary {
 
   default String invalidDateFormat() {return g("invalidDateFormat");}
 
-  default String invalidIdValue() {return g("invalidIdValue");}
+  default String invalidIdValue(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("invalidIdValue"), _m);
+  }
 
   default String invalidImageFileType(Object p0, Object p1) {
     Map<String, Object> _m = new HashMap<>();
@@ -3701,6 +3705,8 @@ public interface Dictionary {
   default String manager() {return g("manager");}
 
   default String managers() {return g("managers");}
+
+  default String manufacturer() {return g("manufacturer");}
 
   default String manufacturers() {return g("manufacturers");}
 

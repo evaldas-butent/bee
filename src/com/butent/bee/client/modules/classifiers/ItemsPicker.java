@@ -350,8 +350,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       ok = true;
 
     } else if (COL_ITEM.equals(by) && !DataUtils.isId(query)) {
-      BeeKeeper.getScreen().notifyWarning(
-          BeeUtils.joinWords(Localized.dictionary().invalidIdValue(), query));
+      BeeKeeper.getScreen().notifyWarning(Localized.dictionary().invalidIdValue(query));
       ok = false;
 
     } else {
