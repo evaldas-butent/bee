@@ -1030,7 +1030,16 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     for (BeeRow item : items) {
       if (quantities.containsKey(item.getId())) {
         BeeRow row = DataUtils.cloneRow(item);
-        row.setProperty(PRP_QUANTITY, BeeUtils.toString(quantities.get(item.getId())));
+        if (OrdersKeeper.isComplect(item)) {
+          Double qty = BeeUtils.round(quantities.get(item.getId()), 0);
+          if (qty == 0) {
+            qty = 1.0;
+          }
+          row.setProperty(PRP_QUANTITY, qty);
+        } else {
+          row.setProperty(PRP_QUANTITY, BeeUtils.toString(quantities.get(item.getId())));
+        }
+
 
         ItemPrice ip = selectedPrices.get(item.getId());
         if (ip != null && ip != itemPrice) {

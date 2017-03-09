@@ -52,6 +52,16 @@ public final class OrdersConstants {
   public static final String SVC_GET_ERP_STOCKS = "GetERPStocks";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
 
+  public static final String SVC_ADD_COMPLECTS_TO_ORDER = "AddComplectsToOrder";
+  public static final String SVC_CHECK_FOR_COMPLECTS = "CheckForComplects";
+  public static final String SVC_FILTER_COMPONENTS = "FilterComponents";
+  public static final String SVC_TMPL_FILTER_COMPONENTS = "FilterTmplComponents";
+  public static final String SVC_UPDATE_ORDER_ITEMS = "UpdateOrderItems";
+  public static final String SVC_GET_COMPLECT_FREE_REMAINDERS = "GetComplectFreeRemainder";
+  public static final String SVC_INSERT_COMPLECTS = "InsertComplects";
+  public static final String SVC_GET_ALL_ORDER_ITEMS = "GetAllOrderItems";
+  public static final String SVC_JOIN_INVOICES = "JoinInvoices";
+
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";
 
@@ -61,9 +71,11 @@ public final class OrdersConstants {
   public static final String VIEW_ORDERS_TEMPLATES = "OrdersTemplates";
   public static final String VIEW_ORDER_TMPL_ITEMS = "OrderTmplItems";
   public static final String VIEW_ORDER_SALES = "OrderSales";
+  public static final String VIEW_ORDER_SALES_FILTERED = "OrderSalesFiltered";
 
   public static final String FORM_NEW_ORDER_INVOICE = "NewOrderInvoice";
 
+  public static final String GRID_ORDER_ALL_ITEMS = "OrderAllItems";
   public static final String GRID_COMPANY_ORDERS = "CompanyOrders";
   public static final String GRID_OFFERS = "Offers";
   public static final String GRID_ORDERS_INVOICES = "OrdersInvoices";
@@ -95,6 +107,7 @@ public final class OrdersConstants {
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
   public static final String PRP_COMPLETED_INVOICES = "CompletedInvoices";
   public static final String PRP_AMOUNT_WO_VAT = "AmountWoVAT";
+  public static final String PRP_TOTAL_PRICE = "TotalPrice";
   public static final String PRM_MANAGER_WAREHOUSE = "ManagerWarehouse";
 
   public static final String PRM_UPDATE_ITEMS_PRICES = "UpdateItemsPrices";
@@ -106,6 +119,7 @@ public final class OrdersConstants {
   public static final String PRM_MANAGER_DISCOUNT = "ManagerDiscount";
   public static final String PRM_CHECK_DEBT = "CheckDebt";
   public static final String PRM_NOTIFY_ABOUT_DEBTS = "NotifyAboutDebts";
+  public static final String PRP_EMPTY_REMAINDER = "EmptyRemainder";
 
   private OrdersConstants() {
   }

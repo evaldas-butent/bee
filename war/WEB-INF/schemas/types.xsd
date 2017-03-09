@@ -423,9 +423,9 @@
       <xs:enumeration value="ObjectSalaryFund" />
       <xs:enumeration value="Orders" />
       <xs:enumeration value="OrderChildInvoices" />
-      <xs:enumeration value="OrdersInvoices" />
       <xs:enumeration value="OrderItems" />
       <xs:enumeration value="OrderSales" />
+      <xs:enumeration value="OrderSalesFiltered" />
       <xs:enumeration value="OrderSeries" />
       <xs:enumeration value="OrdersTemplates" />
       <xs:enumeration value="OrderTypes" />

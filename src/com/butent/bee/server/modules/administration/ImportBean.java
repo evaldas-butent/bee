@@ -1504,6 +1504,17 @@ public class ImportBean {
 
     error = commitData(io, tmp, null, null, progress, status, !usr.canCreateData(io.getViewName()));
 
+    if (BeeUtils.isEmpty(error) && Objects.equals(VIEW_ITEM_COMPONENTS, io.getViewName())) {
+      List<Long> ids = qs.getLongList(new SqlSelect()
+      .addFields(VIEW_ITEM_COMPONENTS, sys.getIdName(VIEW_ITEM_COMPONENTS))
+      .addFrom(tmp)
+      .addFromLeft(VIEW_ITEM_COMPONENTS, SqlUtils.joinUsing(tmp, VIEW_ITEM_COMPONENTS, COL_ITEM,
+          COL_ITEM_COMPONENT)));
+
+      qs.updateData(new SqlDelete(VIEW_ITEM_COMPONENTS).setWhere(SqlUtils.not(sys.idInList(
+          VIEW_ITEM_COMPONENTS, ids))));
+    }
+
     qs.sqlDropTemp(tmp);
 
     if (!BeeUtils.isEmpty(error)) {

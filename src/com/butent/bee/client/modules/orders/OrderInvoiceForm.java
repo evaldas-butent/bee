@@ -8,6 +8,8 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUS
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -24,6 +26,7 @@ import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -100,13 +103,17 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
 
   @Override
   protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
-    Queries.getRowSet(VIEW_SALE_ITEMS, null, Filter.equals(COL_SALE, getActiveRowId()),
-        new Queries.RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            dataConsumer.accept(new BeeRowSet[] {result});
-          }
-        });
+    ParameterList params = OrdersKeeper.createSvcArgs(SVC_CHECK_FOR_COMPLECTS);
+    params.addDataItem(COL_SALE, getActiveRowId());
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse()) {
+          dataConsumer.accept(new BeeRowSet[] {BeeRowSet.restore(response.getResponseAsString())});
+        }
+      }
+    });
   }
 
   @Override
@@ -135,7 +142,14 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
     super.getReportParameters(defaultParameters ->
         ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
           defaultParameters.putAll(companiesInfo);
-          parametersConsumer.accept(defaultParameters);
+          Queries.getRowCount(VIEW_SALE_ITEMS, Filter.and(Filter.equals(COL_SALE, getActiveRowId()),
+                  Filter.notNull(COL_TRADE_DISCOUNT)), new IntCallback() {
+                @Override
+                public void onSuccess(Integer result) {
+                  defaultParameters.put("DiscountCount", BeeUtils.toString(result));
+                  parametersConsumer.accept(defaultParameters);
+                }
+              });
         }));
   }
 

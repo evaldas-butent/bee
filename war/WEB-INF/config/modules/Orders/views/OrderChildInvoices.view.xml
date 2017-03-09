@@ -4,14 +4,14 @@
       editForm="OrderInvoice" newRowForm="NewOrderInvoice">
 
   <Columns>
-    <ExternalJoin name="Sale" joinType="LEFT" source="SaleItems">
-      <ExternalJoin name="SaleItem" joinType="LEFT" source="OrderChildInvoices">
+      <ExternalJoin name="OrderSale" joinType="LEFT" source="OrderChildInvoices">
+        <SimpleColumn name="OrderSale" />
+        <HiddenColumn name="OrderItem" />
         <SimpleJoin name="OrderItem" joinType="LEFT">
           <HiddenColumn name="Order" />
           <AggregateColumn name="Order" aggregate="COUNT_DISTINCT" alias="OrderCount" />
         </SimpleJoin>
       </ExternalJoin>
-    </ExternalJoin>
 
     <SimpleColumn name="Date" />
 
