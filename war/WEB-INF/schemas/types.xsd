@@ -454,6 +454,7 @@
       <xs:enumeration value="LossReasons" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="MaintenanceStates" />
+      <xs:enumeration value="MaintenanceTariffs" />
       <xs:enumeration value="MaintenanceTypes" />
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Newsletters" />

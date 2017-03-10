@@ -5222,6 +5222,8 @@ public interface Dictionary {
 
   default String svcNewServiceType() {return g("svcNewServiceType");}
 
+  default String svcNewTariff() {return g("svcNewTariff");}
+
   default String svcNewWarrantyType() {return g("svcNewWarrantyType");}
 
   default String svcNotifyCustomer() {return g("svcNotifyCustomer");}
@@ -5259,6 +5261,10 @@ public interface Dictionary {
   default String svcStateProcess() {return g("svcStateProcess");}
 
   default String svcStickers() {return g("svcStickers");}
+
+  default String svcTariff() {return g("svcTariff");}
+
+  default String svcTariffs() {return g("svcTariffs");}
 
   default String svcTerm() {return g("svcTerm");}
 
