@@ -94,8 +94,8 @@ public class MailAccount {
       return running.size() == 0;
     }
 
-    private void set(Store store) {
-      this.store = store;
+    private void set(Store st) {
+      this.store = st;
       running.clear();
     }
   }
