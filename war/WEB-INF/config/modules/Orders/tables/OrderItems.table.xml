@@ -19,6 +19,6 @@
     <Date name="SupplierTerm" label="=ordSupplierTerm" />
     <Text name="Note" label="=note" />
 
-    <Relation name="ServiceItem" relation="ServiceItems" cascade="DELETE" label="=ServiceMaintenance" />
+    <Relation name="ServiceItem" relation="ServiceItems" cascade="DELETE" label="=svcMaintenance" />
   </Fields>
 </Table>

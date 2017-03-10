@@ -43,6 +43,10 @@
             <text>=svcDates</text>
             <ChildGrid name="ServiceDates" relColumn="ServiceMaintenance" />
           </page>
+          <page>
+            <text>=payroll</text>
+            <ChildGrid name="MaintenancePayroll" relColumn="ServiceMaintenance" />
+          </page>
         </TabbedPages>
       </FlowPanel>
     </south>

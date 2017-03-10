@@ -5120,6 +5120,8 @@ public interface Dictionary {
 
   default String suppliers() {return g("suppliers");}
 
+  default String svcBasicAmount() {return g("svcBasicAmount");}
+
   default String svcCalendar() {return g("svcCalendar");}
 
   default String svcCalendarPixelsPerCompany() {return g("svcCalendarPixelsPerCompany");}
@@ -5131,6 +5133,12 @@ public interface Dictionary {
   default String svcComment() {return g("svcComment");}
 
   default String svcComments() {return g("svcComments");}
+
+  default String svcConfirmationDate() {return g("svcConfirmationDate");}
+
+  default String svcConfirmedPayroll() {return g("svcConfirmedPayroll");}
+
+  default String svcConfirmedUser() {return g("svcConfirmedUser");}
 
   default String svcContractor() {return g("svcContractor");}
 
