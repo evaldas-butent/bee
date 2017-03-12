@@ -67,6 +67,8 @@ import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
@@ -205,6 +207,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import elemental.js.JsBrowser;
@@ -600,7 +603,10 @@ public final class CliWorker {
     } else if ("video".equals(z)) {
       playVideo(args);
 
-    } else if (z.startsWith("view")) {
+    } else if ("view".equals(z) && !args.isEmpty()) {
+      showView(v, arr);
+
+    } else if (z.startsWith("viewinf")) {
       showViewInfo(v, args);
 
     } else if ("vm".equals(z)) {
@@ -4245,6 +4251,85 @@ public final class CliWorker {
     }
 
     BeeKeeper.getScreen().show(container);
+  }
+
+  private static void showView(String input, String[] arr) {
+    String viewName = arr[1];
+    DataInfo dataInfo = Data.getDataInfo(viewName);
+    if (dataInfo == null) {
+      return;
+    }
+
+    final List<String> columns = new ArrayList<>();
+    final Holder<Filter> filter = Holder.absent();
+    final Holder<Order> order = Holder.absent();
+    final Holder<Integer> offset = Holder.of(BeeConst.UNDEF);
+    final Holder<Integer> limit = Holder.of(BeeConst.UNDEF);
+
+    if (arr.length > 2) {
+      String md = null;
+      List<String> value = new ArrayList<>();
+
+      BiConsumer<String, String> parser = (x, y) -> {
+        switch (x) {
+          case "c":
+            columns.addAll(dataInfo.parseColumns(y));
+            break;
+
+          case "f":
+            filter.set(dataInfo.parseFilter(y, BeeKeeper.getUser().getUserId()));
+            break;
+
+          case "s":
+            order.set(dataInfo.parseOrder(y));
+            break;
+
+          case "o":
+            if (BeeUtils.isPositiveInt(y)) {
+              offset.set(BeeUtils.toInt(y));
+            }
+            break;
+
+          case "l":
+            if (BeeUtils.isPositiveInt(y)) {
+              limit.set(BeeUtils.toInt(y));
+            }
+            break;
+        }
+      };
+
+      for (int i = 2; i < arr.length; i++) {
+        switch (arr[i]) {
+          case "c":
+          case "f":
+          case "s":
+          case "o":
+          case "l":
+            if (md != null && !value.isEmpty()) {
+              parser.accept(md, BeeUtils.joinWords(value));
+            }
+
+            md = arr[i];
+            value.clear();
+            break;
+
+          default:
+            value.add(arr[i]);
+        }
+      }
+
+      if (md != null && !value.isEmpty()) {
+        parser.accept(md, BeeUtils.joinWords(value));
+      }
+    }
+
+    Queries.getRowSet(viewName, columns, filter.get(), order.get(), offset.get(), limit.get(),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            showTable(input, result);
+          }
+        });
   }
 
   private static void showViewInfo(String input, String args) {

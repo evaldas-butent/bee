@@ -430,7 +430,8 @@ public final class Global {
 
     int r = 0;
     for (int i = 0; i < c; i++) {
-      String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
+      String label = BeeUtils.notEmpty(Localized.maybeTranslate(data.getColumnLabel(i)),
+          data.getColumnId(i));
       table.setHtml(r, i, label);
 
       TableCellElement cell = table.getCellFormatter().getElement(r, i);
