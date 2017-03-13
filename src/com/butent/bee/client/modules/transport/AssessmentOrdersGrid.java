@@ -17,7 +17,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Latch;
@@ -39,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AssessmentOrdersGrid extends AbstractGridInterceptor implements ClickHandler {
+public class AssessmentOrdersGrid extends AssessmentRequestsGrid implements ClickHandler {
 
   private final Button action = new Button(Localized.dictionary().trCreateTransportation(), this);
 
