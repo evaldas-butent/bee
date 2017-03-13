@@ -507,7 +507,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
       DateTime durDate = row.getDateTime(DataUtils.getColumnIndex(COL_DURATION_DATE, columns));
       if (durDate != null) {
-        row4.add(createEventCell(COL_DURATION_DATE, durDate.toCompactString()));
+        row4.add(createEventCell(COL_DURATION_DATE, Format.renderDateTime(durDate)));
       }
 
       body.add(row4);
@@ -581,7 +581,7 @@ class TaskEditor extends ProductSupportInterceptor {
 
     if (!extensions.isEmpty()) {
       for (int i = extensions.size() - 1; i >= 0; i--) {
-        Label label = new Label(extensions.get(i).toCompactString());
+        Label label = new Label(Format.renderDateTime(extensions.get(i)));
         label.addStyleName(STYLE_EXTENSION);
         panel.add(label);
       }
@@ -964,6 +964,11 @@ class TaskEditor extends ProductSupportInterceptor {
     });
     setPrmEndOfWorkDay(Global.getParameterTime(PRM_END_OF_WORK_DAY));
 
+    return false;
+  }
+
+  @Override
+  public boolean showReadOnly(boolean readOnly) {
     return false;
   }
 
@@ -1632,7 +1637,7 @@ class TaskEditor extends ProductSupportInterceptor {
       if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
         Global.showError("Time travel not supported",
             Collections.singletonList(Localized.dictionary().crmFinishDateMustBeGreaterThan()
-                + " " + now.toCompactString()));
+                + " " + Format.renderDateTime(now)));
         return;
       }
 

@@ -3264,7 +3264,11 @@ public interface Dictionary {
 
   default String invalidDateRange() {return g("invalidDateRange");}
 
-  default String invalidIdValue() {return g("invalidIdValue");}
+  default String invalidIdValue(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("invalidIdValue"), _m);
+  }
 
   default String invalidImageFileType(Object p0, Object p1) {
     Map<String, Object> _m = new HashMap<>();
@@ -3709,6 +3713,8 @@ public interface Dictionary {
   default String manager() {return g("manager");}
 
   default String managers() {return g("managers");}
+
+  default String manufacturer() {return g("manufacturer");}
 
   default String manufacturers() {return g("manufacturers");}
 
@@ -4683,6 +4689,8 @@ public interface Dictionary {
 
   default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
 
+  default String prmServiceManagerWarehouse() {return g("prmServiceManagerWarehouse");}
+
   default String prmServiceTradeOperation() {return g("prmServiceTradeOperation");}
 
   default String prmServiceWarehouse() {return g("prmServiceWarehouse");}
@@ -4742,6 +4750,8 @@ public interface Dictionary {
   default String questionLogout() {return g("questionLogout");}
 
   default String rating() {return g("rating");}
+
+  default String readOnly() {return g("readOnly");}
 
   default String reason() {return g("reason");}
 
@@ -4866,6 +4876,8 @@ public interface Dictionary {
   default String requestUpdatingQuestion() {return g("requestUpdatingQuestion");}
 
   default String required() {return g("required");}
+
+  default String reservation() {return g("reservation");}
 
   default String reserve() {return g("reserve");}
 
@@ -5116,6 +5128,8 @@ public interface Dictionary {
 
   default String suppliers() {return g("suppliers");}
 
+  default String svcBasicAmount() {return g("svcBasicAmount");}
+
   default String svcCalendar() {return g("svcCalendar");}
 
   default String svcCalendarPixelsPerCompany() {return g("svcCalendarPixelsPerCompany");}
@@ -5127,6 +5141,12 @@ public interface Dictionary {
   default String svcComment() {return g("svcComment");}
 
   default String svcComments() {return g("svcComments");}
+
+  default String svcConfirmationDate() {return g("svcConfirmationDate");}
+
+  default String svcConfirmedPayroll() {return g("svcConfirmedPayroll");}
+
+  default String svcConfirmedUser() {return g("svcConfirmedUser");}
 
   default String svcContractor() {return g("svcContractor");}
 
@@ -5147,6 +5167,8 @@ public interface Dictionary {
   default String svcDefectSupplier() {return g("svcDefectSupplier");}
 
   default String svcDefects() {return g("svcDefects");}
+
+  default String svcDetailedMaintenanceTicket() {return g("svcDetailedMaintenanceTicket");}
 
   default String svcDevice() {return g("svcDevice");}
 
@@ -5216,6 +5238,8 @@ public interface Dictionary {
 
   default String svcNewServiceType() {return g("svcNewServiceType");}
 
+  default String svcNewTariff() {return g("svcNewTariff");}
+
   default String svcNewWarrantyType() {return g("svcNewWarrantyType");}
 
   default String svcNotifyCustomer() {return g("svcNotifyCustomer");}
@@ -5253,6 +5277,10 @@ public interface Dictionary {
   default String svcStateProcess() {return g("svcStateProcess");}
 
   default String svcStickers() {return g("svcStickers");}
+
+  default String svcTariff() {return g("svcTariff");}
+
+  default String svcTariffs() {return g("svcTariffs");}
 
   default String svcTerm() {return g("svcTerm");}
 
@@ -6034,7 +6062,13 @@ public interface Dictionary {
 
   default String trRepairsHistory() {return g("trRepairsHistory");}
 
+  default String trReportCustomerProfit() {return g("trReportCustomerProfit");}
+
   default String trReportFuelUsage() {return g("trReportFuelUsage");}
+
+  default String trReportOrderProfit() {return g("trReportOrderProfit");}
+
+  default String trReportProfitability() {return g("trReportProfitability");}
 
   default String trReportTripProfit() {return g("trReportTripProfit");}
 
@@ -6588,6 +6622,8 @@ public interface Dictionary {
   default String trdInvoiceId() {return g("trdInvoiceId");}
 
   default String trdInvoiceNo() {return g("trdInvoiceNo");}
+
+  default String trdInvoiceOverdue() {return g("trdInvoiceOverdue");}
 
   default String trdInvoicePrefix() {return g("trdInvoicePrefix");}
 

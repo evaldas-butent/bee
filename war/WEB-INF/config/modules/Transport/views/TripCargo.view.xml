@@ -35,8 +35,17 @@
 
       <SimpleColumn name="Description" />
       <SimpleColumn name="Weight" editable="true"/>
+      <SimpleJoin joinType="LEFT" name="WeightUnit">
+        <SimpleColumn name="Name" alias="WeightUnit" />
+      </SimpleJoin>
       <SimpleColumn name="Volume" editable="true"/>
+      <SimpleJoin joinType="LEFT" name="VolumeUnit">
+        <SimpleColumn name="Name" alias="VolumeUnit" />
+      </SimpleJoin>
       <SimpleColumn name="Quantity" editable="true"/>
+      <SimpleJoin joinType="LEFT" name="QuantityUnit">
+        <SimpleColumn name="Name" alias="QuantityUnit" />
+      </SimpleJoin>
       <SimpleColumn name="Number" editable="true"/>
 
       <SimpleColumn name="Cmr" />
