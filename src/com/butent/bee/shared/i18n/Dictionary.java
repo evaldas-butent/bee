@@ -4655,8 +4655,6 @@ public interface Dictionary {
 
   default String prmImportERPStocksTime() {return g("prmImportERPStocksTime");}
 
-  default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
-
   default String prmManagerDiscount() {return g("prmManagerDiscount");}
 
   default String prmManagerWarehouse() {return g("prmManagerWarehouse");}

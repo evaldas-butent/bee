@@ -183,8 +183,6 @@ public class ServiceModuleBean implements BeeModule {
             COL_TYPE_NAME),
         BeeParameter.createRelation(module, PRM_DEFAULT_WARRANTY_TYPE, TBL_WARRANTY_TYPES,
             COL_TYPE_NAME),
-        BeeParameter.createRelation(module, PRM_MAINTENANCE_SERVICE_GROUP, TBL_ITEM_CATEGORY_TREE,
-            COL_SERVICE_CATEGORY_NAME),
         BeeParameter.createNumber(module, PRM_URGENT_RATE),
         BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_ADDRESS),
         BeeParameter.createText(module, PRM_SMS_REQUEST_SERVICE_USER_NAME),
