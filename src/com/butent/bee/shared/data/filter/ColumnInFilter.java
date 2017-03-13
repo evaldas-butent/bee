@@ -10,6 +10,8 @@ public class ColumnInFilter extends Filter {
     COLUMN, IN_VIEW, IN_COLUMN, IN_FILTER
   }
 
+  public static final String ID_TAG = "_ID_";
+
   private String column;
 
   private String inView;
