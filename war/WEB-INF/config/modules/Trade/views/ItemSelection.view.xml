@@ -2,7 +2,6 @@
 <View xmlns="http://www.butent.com/view"
 
       name="ItemSelection" caption="=productsServices" source="Items" module="Trade"
-      editForm="Item"
 >
   <Columns>
     <SimpleColumn name="Name" />

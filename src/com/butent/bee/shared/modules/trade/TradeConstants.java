@@ -97,6 +97,7 @@ public final class TradeConstants {
   public static final String VIEW_TRADE_EXPENDITURES = "TradeExpenditures";
 
   public static final String VIEW_TRADE_MOVEMENT = "TradeMovement";
+  public static final String VIEW_ITEM_SELECTION = "ItemSelection";
 
   public static final String COL_PURCHASE = "Purchase";
 
@@ -275,6 +276,8 @@ public final class TradeConstants {
   public static final String ALS_COST_CURRENCY = "CostCurrency";
   public static final String ALS_PARENT_COST = "ParentCost";
   public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
+
+  public static final String ALS_ITEM_STOCK = "Stock";
 
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";
