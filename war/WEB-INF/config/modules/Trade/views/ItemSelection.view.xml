@@ -98,7 +98,10 @@
     </SimpleJoin>
 
     <SimpleColumn name="DefaultQuantity" />
+
     <SimpleColumn name="Ordinal" />
+
+    <SimpleColumn name="Description" />
 
     <ExternalJoin joinType="LEFT" source="TradeDocumentItems" name="Item">
       <ExternalJoin joinType="LEFT" source="TradeStock" name="TradeDocumentItem">
