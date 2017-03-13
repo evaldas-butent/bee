@@ -744,7 +744,7 @@ public class ChatManager implements HasInfo, HasEnabled {
     info.add(new Property("Chats", BeeUtils.bracket(chats.size())));
 
     for (Chat chat : chats) {
-      info.addAll(chat.getInfo());
+      info.addAll(chat.getInfo(Format.getDateTimeRenderer()));
 
       ChatView chatView = findChatView(chat.getId());
       if (chatView != null) {

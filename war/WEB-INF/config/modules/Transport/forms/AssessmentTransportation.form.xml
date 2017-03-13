@@ -12,9 +12,9 @@
 
   name="AssessmentTransportation" viewName="AssessmentTransportations" caption="=carrier"
   >
-  <f:properties reports="PrintTransportation" />
+  <f:properties jasperReports="AssessmentTransportation" />
 
-  <FlowPanel style="padding: 10px 20px 10px 20px;">
+  <FlowPanel class="flexBox-vertical" style="padding: 10px 20px 10px 20px;">
     <css id="&form;">
       .&form; table {border-collapse:collapse;}
       .&form; tr:first-child {text-align:center; font-weight:bold;}
@@ -50,9 +50,9 @@
     <FlowPanel style="&section;">
       <Label text="=transportConditions" style="&header;" />
     </FlowPanel>
-    <FlowPanel style="&section;">      
+    <FlowPanel style="&section;">
       <Label text="=price" class="bee-required" style="&labelLeft;" />
-      <InputMoney source="TransportationPrice" required="true" style="width: 100px;" /> 
+      <InputMoney source="TransportationPrice" required="true" style="width: 100px;" />
       <DataSelector name="TransportationCurrency" required="true" class="bee-disabled" editEnabled="false" source="TransportationCurrency" style="width:50px; margin-left: 8px" />
     </FlowPanel>
     <FlowPanel style="&section;">
@@ -62,20 +62,18 @@
           <item>PVM (0%, 45 str.)</item>
           <item>Menamas</item>
           <item>be PVM (13/2 str.)</item>
-      </ListBox>       
-      
+      </ListBox>
+
       <Label text="=unitDays" class="bee-required" style="&labelLeft;margin-left:8px;" />
-      <InputInteger source="PaymentDays"  required="true" minValue="0" style="width: 50px;" /> 
+      <InputInteger source="PaymentDays"  required="true" minValue="0" style="width: 50px;" />
     </FlowPanel>
     <hr/>
-    <Details style="&section;" open="true">
-      <Summary text="=totalOf"  style="&summary;" />
-      <FlowPanel name="Totals" class="&form;" />
-    </Details>
-    <hr/>
-    <Details style="&section;" open="true">
-      <Summary text="=cargos" style="&summary;" />
-      <FlowPanel name="Cargo" class="&form;" />
-    </Details>
+
+    <TabbedPages class="flexible" >
+    <page>
+      <text>=cargos</text>
+      <ChildGrid name="TransportationCargo" relColumn="Trip" />
+    </page>
+    </TabbedPages>
   </FlowPanel>
 </f:Form>

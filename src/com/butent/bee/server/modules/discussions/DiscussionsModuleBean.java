@@ -225,6 +225,8 @@ public class DiscussionsModuleBean implements BeeModule {
           SimpleRowSet fileData = getDiscussionFileData(discussionsIds);
           Set<Long> relDiscussionData = getRelatedDiscussionIds(discussionsIds);
 
+          DateTimeFormatInfo dtfInfo = usr.getDateTimeFormatInfo();
+
           for (BeeRow row : rowSet.getRows().subList(0,
               BeeUtils.min(rowSet.getNumberOfRows(), MAX_NUMBERS_OF_ROWS))) {
 
@@ -248,9 +250,9 @@ public class DiscussionsModuleBean implements BeeModule {
               long publishTime = BeeUtils.unbox(lastCommentData.getLong(COL_PUBLISH_TIME));
 
               String lastCommentVal = lastCommentData != null
-                  ? BeeUtils.joinWords(new DateTime(TimeUtils.dropMillis(publishTime)).toString()
-                      + ",", lastCommentData.getValue(COL_FIRST_NAME),
-                  lastCommentData.getValue(COL_LAST_NAME))
+                  ? BeeUtils.joinWords(
+                      Formatter.renderDateTime(dtfInfo, TimeUtils.dropMillis(publishTime)) + ",",
+                  lastCommentData.getValue(COL_FIRST_NAME), lastCommentData.getValue(COL_LAST_NAME))
                   : BeeConst.STRING_EMPTY;
 
               row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
@@ -456,9 +458,10 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private ResponseObject deleteDiscussionComment(long discussionId, long commentId) {
 
-    String reasonText = BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(", usr
-        .getDictionary().discussEventCommentDeleted()
-        + " )</i>:", new DateTime().toString() + ",", usr.getCurrentUserSign());
+    String reasonText = BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(",
+        usr.getDictionary().discussEventCommentDeleted() + " )</i>:",
+        Formatter.renderDateTime(usr.getDateTimeFormatInfo(), new DateTime()) + ",",
+        usr.getCurrentUserSign());
 
     SqlUpdate update =
         new SqlUpdate(TBL_DISCUSSIONS_COMMENTS)

@@ -2,22 +2,32 @@ package com.butent.bee.shared.modules.trade;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 public class ItemQuantities implements BeeSerializable {
 
   private String article;
   private double stock;
-  private double reserved;
+  private final Map<Long, Double> reservedMap = new TreeMap<>();
 
   public ItemQuantities(String article) {
     setArticle(article);
   }
 
   private ItemQuantities() {
+  }
+
+  public ItemQuantities addReserved(DateTime dateTime, Double quantity) {
+    long millis = Objects.isNull(dateTime) ? 0 : dateTime.getTime();
+    reservedMap.put(millis, BeeUtils.unbox(reservedMap.get(millis)) + BeeUtils.unbox(quantity));
+    return this;
   }
 
   @Override
@@ -27,7 +37,10 @@ public class ItemQuantities implements BeeSerializable {
 
     setArticle(arr[0]);
     setStock(BeeUtils.toDouble(arr[1]));
-    setReserved(BeeUtils.toDouble(arr[2]));
+
+    reservedMap.clear();
+    Codec.deserializeHashMap(arr[2]).forEach((millis, qty) ->
+        reservedMap.put(BeeUtils.toLong(millis), BeeUtils.toDouble(qty)));
   }
 
   @Override
@@ -40,9 +53,7 @@ public class ItemQuantities implements BeeSerializable {
     }
     ItemQuantities itemQuantities = (ItemQuantities) o;
 
-    return Double.compare(itemQuantities.stock, stock) == 0
-        && Double.compare(itemQuantities.reserved, reserved) == 0
-        && Objects.equals(article, itemQuantities.article);
+    return Objects.equals(article, itemQuantities.article);
   }
 
   public String getArticle() {
@@ -50,7 +61,13 @@ public class ItemQuantities implements BeeSerializable {
   }
 
   public double getReserved() {
-    return reserved;
+    return reservedMap.values().stream().mapToDouble(Double::doubleValue).sum();
+  }
+
+  public Map<DateTime, Double> getReservedMap() {
+    Map<DateTime, Double> map = new LinkedHashMap<>();
+    reservedMap.forEach((millis, qty) -> map.put(new DateTime(millis), qty));
+    return map;
   }
 
   public double getStock() {
@@ -59,13 +76,7 @@ public class ItemQuantities implements BeeSerializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(article, stock, reserved);
-  }
-
-  public static ItemQuantities reserved(String article, Double reserved) {
-    ItemQuantities itemQuantities = new ItemQuantities(article);
-    itemQuantities.setReserved(reserved);
-    return itemQuantities;
+    return Objects.hash(article);
   }
 
   public static ItemQuantities restore(String s) {
@@ -82,11 +93,7 @@ public class ItemQuantities implements BeeSerializable {
 
   @Override
   public String serialize() {
-    return Codec.beeSerialize(new Object[] {getArticle(), getStock(), getReserved()});
-  }
-
-  public void setReserved(Double reserved) {
-    this.reserved = BeeUtils.unbox(reserved);
+    return Codec.beeSerialize(new Object[] {article, stock, reservedMap});
   }
 
   public void setStock(Double stock) {
@@ -96,7 +103,7 @@ public class ItemQuantities implements BeeSerializable {
   @Override
   public String toString() {
     return "a=" + article + " s=" + BeeUtils.toString(stock)
-        + " r=" + BeeUtils.toString(reserved);
+        + " r=" + BeeUtils.toString(getReserved());
   }
 
   private void setArticle(String article) {

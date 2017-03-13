@@ -2,11 +2,22 @@ package com.butent.bee.shared.i18n;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
+
+import java.util.function.Function;
 
 public final class Formatter {
 
   private Formatter() {
+  }
+
+  public static Function<HasDateValue, String> getDateRenderer(DateTimeFormatInfo dtfInfo) {
+    return date -> renderDate(dtfInfo, date);
+  }
+
+  public static Function<HasDateValue, String> getDateTimeRenderer(DateTimeFormatInfo dtfInfo) {
+    return dateTime -> renderDateTime(dtfInfo, dateTime);
   }
 
   public static String renderDate(DateTimeFormatInfo dtfInfo, HasDateValue date) {
@@ -30,6 +41,14 @@ public final class Formatter {
     }
   }
 
+  public static String renderDateTime(DateTimeFormatInfo dtfInfo, Long time) {
+    if (time == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return renderDateTime(dtfInfo, new DateTime(time));
+    }
+  }
+
   public static String renderTime(DateTimeFormatInfo dtfInfo, HasDateValue dateTime) {
     if (dtfInfo == null || dateTime == null) {
       return BeeConst.STRING_EMPTY;
@@ -42,7 +61,7 @@ public final class Formatter {
     }
   }
 
-  private static String render(PredefinedFormat predefinedFormat, DateTimeFormatInfo dtfInfo,
+  public static String render(PredefinedFormat predefinedFormat, DateTimeFormatInfo dtfInfo,
       HasDateValue value) {
 
     if (predefinedFormat == null || value == null || dtfInfo == null) {

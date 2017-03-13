@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.cars;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -48,6 +49,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Latch;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontStyle;
 import com.butent.bee.shared.css.values.FontWeight;
@@ -71,6 +73,8 @@ import com.butent.bee.shared.modules.trade.TradeDocument;
 import com.butent.bee.shared.modules.trade.TradeDocumentItem;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -80,6 +84,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -203,10 +208,14 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
       event.getSelector().setAdditionalFilter(Objects.isNull(owner) ? null
           : Filter.equals(COL_OWNER, owner));
 
-    } else if (event.isChanged() && Objects.isNull(owner)) {
-      RelationUtils.copyWithDescendants(carInfo, COL_OWNER, event.getRelatedRow(),
-          eventInfo, COL_CUSTOMER, getActiveRow());
-      getFormView().refresh();
+    } else if (event.isChanged()) {
+      if (Objects.isNull(owner)) {
+        RelationUtils.copyWithDescendants(carInfo, COL_OWNER, event.getRelatedRow(),
+            eventInfo, COL_CUSTOMER, getActiveRow());
+        getFormView().refresh();
+      } else {
+        showCarWarning();
+      }
     }
   }
 
@@ -245,12 +254,17 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     orderStages = stages;
   }
 
-  private void renderInvoiceTable(Collection<BeeRowSet> result, Map<Long, Double> stocks) {
+  private void renderInvoiceTable(Collection<BeeRowSet> result,
+      Map<Long, Pair<Double, Double>> quantities) {
+
     Map<IsRow, InputNumber> items = new HashMap<>();
     DoubleLabel itemsTotal = new DoubleLabel(true);
     Map<IsRow, InputNumber> jobs = new HashMap<>();
     DoubleLabel jobsTotal = new DoubleLabel(true);
-    HashMap<Long, Double> copyOfStocks = new HashMap<>(stocks);
+
+    HashMap<Long, Double> stocks = new HashMap<>();
+    quantities.forEach((item, pair) ->
+        stocks.put(item, Double.max(pair.getA() - pair.getB(), BeeConst.DOUBLE_ZERO)));
 
     Consumer<Map<IsRow, InputNumber>> totalizer = map -> {
       boolean isJobs = Objects.equals(map, jobs);
@@ -269,14 +283,14 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
             - BeeUtils.unbox(row.getDouble(rs.getColumnIndex(ALS_COMPLETED)));
 
         if (BeeUtils.isPositive(qty)) {
-          row.setProperty(COL_ITEM_DEFAULT_QUANTITY, qty);
+          row.setProperty(COL_RESERVE, qty);
           Long item = row.getLong(rs.getColumnIndex(COL_ITEM));
 
-          double stock = copyOfStocks.getOrDefault(item,
+          double stock = stocks.getOrDefault(item,
               row.isTrue(rs.getColumnIndex(COL_ITEM_IS_SERVICE)) ? Double.MAX_VALUE
                   : BeeConst.DOUBLE_ZERO);
           qty = BeeUtils.min(qty, stock);
-          copyOfStocks.put(item, stock - qty);
+          stocks.put(item, stock - qty);
 
           InputNumber input = new InputNumber();
           input.addInputHandler(event -> totalizer.accept(map));
@@ -327,7 +341,6 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
             boolean isJobs = Objects.equals(map, jobs);
             rNo.increment();
             table.getRowFormatter().addStyleName(rNo.get(), StyleUtils.className(FontStyle.ITALIC));
-            table.getRowFormatter().addStyleName(rNo.get(), StyleUtils.className(FontWeight.BOLD));
             table.getCellFormatter().setColSpan(rNo.get(), 0, 8);
             Flow flow = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL);
             flow.add(new Label(Data.getViewCaption(view)));
@@ -345,9 +358,29 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
               table.setText(rNo.get(), cNo++, BeeUtils.joinWords(Data.getString(view, row,
                   COL_ITEM_ARTICLE), isJobs ? BeeUtils.parenthesize(Data.getString(view, row,
                   COL_CODE)) : null));
-              table.setText(rNo.get(), cNo++, row.getProperty(COL_ITEM_DEFAULT_QUANTITY));
+              table.setText(rNo.get(), cNo++, row.getProperty(COL_RESERVE));
               table.setText(rNo.get(), cNo++, Data.getString(view, row, ALS_UNIT_NAME));
-              table.setWidget(rNo.get(), cNo++, input);
+
+              Flow cont = new Flow(StyleUtils.NAME_FLEX_BOX_HORIZONTAL + "-center");
+              cont.add(input);
+
+              FaLabel info = new FaLabel(FontAwesome.INFO_CIRCLE);
+              info.addClickHandler(clickEvent ->
+                  TradeKeeper.getReservationsInfo(getLongValue(COL_WAREHOUSE),
+                      Data.getLong(view, row, COL_ITEM), Data.isTrue(view, row, COL_RESERVE)
+                          ? getDateTimeValue(COL_DATE) : null, reservations ->
+                          showReservations(BeeUtils.joinWords(Data.getString(view, row,
+                              ALS_ITEM_NAME), BeeUtils.parenthesize(Localized.dictionary()
+                                  .trdStock() + ": " + quantities.getOrDefault(Data.getLong(view,
+                              row, COL_ITEM), Pair.of(BeeConst.DOUBLE_ZERO, null)).getA())),
+                              reservations)));
+
+              if (Data.isTrue(view, row, COL_ITEM_IS_SERVICE)) {
+                info.getElement().getStyle().setVisibility(Style.Visibility.HIDDEN);
+              }
+              cont.add(info);
+              table.setWidget(rNo.get(), cNo++, cont);
+
               table.setText(rNo.get(), cNo++, Data.getString(view, row, COL_PRICE));
 
               table.setText(rNo.get(), cNo++, BeeUtils.join("", Data.getString(view, row,
@@ -364,8 +397,9 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     Global.inputWidget(d.createInvoice(), table, new InputCallback() {
       @Override
       public String getErrorMessage() {
-        copyOfStocks.clear();
-        copyOfStocks.putAll(stocks);
+        stocks.clear();
+        quantities.forEach((item, pair) ->
+            stocks.put(item, Double.max(pair.getA() - pair.getB(), BeeConst.DOUBLE_ZERO)));
 
         for (Map<IsRow, InputNumber> map : Arrays.asList(items, jobs)) {
           String view = (map == jobs) ? TBL_SERVICE_ORDER_JOBS : TBL_SERVICE_ORDER_ITEMS;
@@ -375,9 +409,9 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
             InputNumber input = entry.getValue();
             Long item = Data.getLong(view, row, COL_ITEM);
 
-            double stock = copyOfStocks.getOrDefault(item, Data.isNull(view, row,
-                COL_ITEM_IS_SERVICE) ? BeeConst.DOUBLE_ZERO : Double.MAX_VALUE);
-            double qty = BeeUtils.min(row.getPropertyDouble(COL_ITEM_DEFAULT_QUANTITY), stock);
+            double stock = stocks.getOrDefault(item, Data.isTrue(view, row,
+                COL_ITEM_IS_SERVICE) ? Double.MAX_VALUE : BeeConst.DOUBLE_ZERO);
+            double qty = BeeUtils.min(row.getPropertyDouble(COL_RESERVE), stock);
 
             input.setMaxValue(BeeUtils.toString(qty));
             List<String> messages = input.validate(true);
@@ -386,7 +420,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
               input.setFocus(true);
               return BeeUtils.joinItems(messages);
             }
-            copyOfStocks.put(item, stock - qty);
+            stocks.put(item, stock - BeeUtils.unbox(input.getNumber()));
           }
         }
         return InputCallback.super.getErrorMessage();
@@ -468,18 +502,31 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
       @Override
       public void onSuccess(Collection<BeeRowSet> result) {
         BeeRowSet itemsRs = result.stream()
-            .filter(rs -> Objects.equals(rs.getViewName(), TBL_SERVICE_ORDER_ITEMS)).findFirst()
-            .orElseThrow(() -> new BeeRuntimeException(Localized.dictionary().error()));
+            .filter(rs -> Objects.equals(rs.getViewName(), TBL_SERVICE_ORDER_ITEMS)).findAny()
+            .orElseThrow(() -> new BeeRuntimeException(Localized.dictionary()
+                .keyNotFound(TBL_SERVICE_ORDER_ITEMS)));
 
         Set<Long> items = itemsRs.getDistinctLongs(itemsRs.getColumnIndex(COL_ITEM));
-        Map<Long, Double> stocks = new HashMap<>();
+        Map<Long, Pair<Double, Double>> stocks = new HashMap<>();
 
         if (items.isEmpty()) {
           renderInvoiceTable(result, stocks);
         } else {
+          DateTime dateTime = getDateTimeValue(COL_DATE);
+          Set<Long> rsv = new HashSet<>();
+          itemsRs.getRows().stream()
+              .filter(beeRow -> beeRow.isTrue(itemsRs.getColumnIndex(COL_RESERVE)))
+              .forEach(beeRow -> rsv.add(beeRow.getLong(itemsRs.getColumnIndex(COL_ITEM))));
+
           TradeKeeper.getStock(getLongValue(COL_WAREHOUSE), items, true, stockMultimap -> {
-            stockMultimap.keySet().forEach(item -> stocks.put(item, stockMultimap.get(item)
-                .stream().mapToDouble(ItemQuantities::getStock).sum()));
+            stockMultimap.asMap().forEach((item, quantities) -> stocks.put(item,
+                Pair.of(quantities.stream().mapToDouble(ItemQuantities::getStock).sum(),
+                    quantities.stream().mapToDouble(itemQuantities ->
+                        itemQuantities.getReservedMap().entrySet().stream().filter(entry ->
+                            !rsv.contains(item) || TimeUtils.isLess(entry.getKey(), dateTime))
+                            .mapToDouble(Map.Entry::getValue).sum())
+                        .sum())));
+
             renderInvoiceTable(result, stocks);
           });
         }
@@ -538,5 +585,32 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     } else {
       customerWarning.setVisible(false);
     }
+  }
+
+  private static void showReservations(String cap, Map<ModuleAndSub, Map<String, Double>> info) {
+    HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
+
+    table.getRowFormatter().addStyleName(0, StyleUtils.className(FontWeight.BOLD));
+    table.getRowFormatter().addStyleName(0, StyleUtils.className(TextAlign.CENTER));
+    table.setText(0, 0, Localized.dictionary().reservation());
+    table.setText(0, 1, Localized.dictionary().quantity());
+    table.setColumnCellClasses(1, StyleUtils.className(TextAlign.RIGHT));
+
+    if (!BeeUtils.isEmpty(info)) {
+      info.keySet().forEach(mod -> {
+        int r = table.getRowCount();
+        table.getCellFormatter().setColSpan(r, 0, 2);
+        table.getRowFormatter().addStyleName(r, StyleUtils.className(FontStyle.ITALIC));
+        table.setText(r, 0, BeeUtils.joinWords(mod.getModule().getCaption(), mod.hasSubModule()
+            ? BeeUtils.parenthesize(mod.getSubModule().getCaption()) : null));
+
+        info.get(mod).forEach((text, qty) -> {
+          int r2 = table.getRowCount();
+          table.setText(r2, 0, text);
+          table.setText(r2, 1, BeeUtils.toString(qty));
+        });
+      });
+    }
+    Global.showModalWidget(cap, table);
   }
 }

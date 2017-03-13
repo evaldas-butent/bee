@@ -22,7 +22,7 @@ import com.butent.bee.shared.modules.orders.OrdersConstants.OrdersStatus;
 
 import java.util.Objects;
 
-class OrderItemsPicker extends ItemsPicker {
+public class OrderItemsPicker extends ItemsPicker {
 
   @Override
   public void getItems(Filter filter, final RowSetCallback callback) {
