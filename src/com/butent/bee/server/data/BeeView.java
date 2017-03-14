@@ -1212,10 +1212,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         .setDistinctMode(true)
         .addFields(inTbl, inFld);
 
-    if (inView.getSourceAlias().equals(inTbl) && inFilter == null) {
-      inQuery.addFrom(inTbl);
-    } else {
+    if (flt.needsFrom() || !inView.getSourceAlias().equals(inTbl)) {
       inQuery.setFrom(inView.getFrom());
+    } else {
+      inQuery.addFrom(inTbl);
     }
 
     if (inFilter != null) {

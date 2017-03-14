@@ -361,7 +361,11 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   }
 
   public static Filter idIn(String inView, String inColumn, Filter inFilter) {
-    return in(ColumnInFilter.ID_TAG, inView, inColumn, inFilter);
+    return idIn(inView, inColumn, inFilter, null);
+  }
+
+  public static Filter idIn(String inView, String inColumn, Filter inFilter, String options) {
+    return in(ColumnInFilter.ID_TAG, inView, inColumn, inFilter, options);
   }
 
   public static Filter idNotIn(Collection<Long> values) {
@@ -374,11 +378,17 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   }
 
   public static Filter in(String column, String inView, String inColumn, Filter inFilter) {
+    return in(column, inView, inColumn, inFilter, null);
+  }
+
+  public static Filter in(String column, String inView, String inColumn, Filter inFilter,
+      String options) {
+
     Assert.notEmpty(column);
     Assert.notEmpty(inView);
     Assert.notEmpty(inColumn);
 
-    return new ColumnInFilter(column, inView, inColumn, inFilter);
+    return new ColumnInFilter(column, inView, inColumn, inFilter, options);
   }
 
   public static Filter inId(String column, String inView, Filter inFilter) {

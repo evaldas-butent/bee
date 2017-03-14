@@ -4,6 +4,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.ColumnInFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.TextValue;
@@ -144,7 +145,8 @@ public enum TradeItemSearch implements HasLocalizedCaption {
 
     @Override
     public Filter getItemFilter(String query) {
-      return Filter.idIn(VIEW_ITEM_SUPPLIERS, COL_ITEM, condition(ALS_ITEM_SUPPLIER_NAME, query));
+      return Filter.idIn(VIEW_ITEM_SUPPLIERS, COL_ITEM, condition(ALS_ITEM_SUPPLIER_NAME, query),
+          ColumnInFilter.OPTION_FROM);
     }
   },
 
@@ -157,7 +159,7 @@ public enum TradeItemSearch implements HasLocalizedCaption {
     @Override
     public Filter getItemFilter(String query) {
       return Filter.idIn(VIEW_ITEM_MANUFACTURERS, COL_ITEM,
-          condition(ALS_ITEM_MANUFACTURER_NAME, query));
+          condition(ALS_ITEM_MANUFACTURER_NAME, query), ColumnInFilter.OPTION_FROM);
     }
   },
 
