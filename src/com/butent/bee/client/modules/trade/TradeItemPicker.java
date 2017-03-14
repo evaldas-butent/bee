@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableRowElement;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -7,15 +10,20 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.Storage;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -26,6 +34,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeItemSearch;
@@ -35,8 +44,10 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 class TradeItemPicker extends Flow {
 
@@ -54,18 +65,47 @@ class TradeItemPicker extends Flow {
   private static final String STYLE_SEARCH_BY_CONTAINER = STYLE_SEARCH_PREFIX + "by-container";
   private static final String STYLE_SEARCH_BY_SELECTOR = STYLE_SEARCH_PREFIX + "by-selector";
 
+  private static final String STYLE_ITEM_PANEL = STYLE_PREFIX + "item-panel";
+  private static final String STYLE_ITEM_TABLE = STYLE_PREFIX + "item-table";
+
+  private static final String STYLE_HEADER_ROW = STYLE_PREFIX + "header";
+  private static final String STYLE_ITEM_ROW = STYLE_PREFIX + "item";
+  private static final String STYLE_SERVICE_ROW = STYLE_PREFIX + "service";
+  private static final String STYLE_SELECTED_ROW = STYLE_PREFIX + "item-selected";
+
+  private static final String STYLE_ID = STYLE_PREFIX + "id";
+  private static final String STYLE_STOCK = STYLE_PREFIX + "stock";
+  private static final String STYLE_RESERVED = STYLE_PREFIX + "reserved";
+  private static final String STYLE_QTY = STYLE_PREFIX + "qty";
+
+  private static final String STYLE_HEADER_CELL_SUFFIX = "-label";
+  private static final String STYLE_CELL_SUFFIX = "-cell";
+
+  private static final String STYLE_QTY_INPUT = STYLE_QTY + "-input";
+
   private static final int SEARCH_BY_SIZE = 3;
+
   private static final String SEARCH_BY_STORAGE_PREFIX =
       NameUtils.getClassName(TradeItemPicker.class) + "-by";
+
+  private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
 
   private TradeDocumentPhase documentPhase;
   private OperationType operationType;
   private Long warehouse;
 
+  private ItemPrice itemPrice;
+  private Long currency;
+
+  private final Map<Long, Double> selection = new LinkedHashMap<>();
+
+  private ChangeHandler quantityChangeHandler;
+
   TradeItemPicker(IsRow documentRow) {
     super(STYLE_NAME);
 
     add(createSearch());
+    add(itemPanel);
 
     setDocumentRow(documentRow);
   }
@@ -74,6 +114,9 @@ class TradeItemPicker extends Flow {
     setDocumentPhase(TradeUtils.getDocumentPhase(row));
     setOperationType(TradeUtils.getDocumentOperationType(row));
     setWarehouse(TradeUtils.getDocumentRelation(row, COL_TRADE_WAREHOUSE_FROM));
+
+    setItemPrice(TradeUtils.getDocumentItemPrice(row));
+    setCurrency(TradeUtils.getDocumentRelation(row, COL_TRADE_CURRENCY));
   }
 
   private static String searchByStorageKey(int index) {
@@ -219,9 +262,7 @@ class TradeItemPicker extends Flow {
 
     addStyleName(STYLE_SEARCH_RUNNING);
 
-    Queries.getRowSet(VIEW_ITEM_SELECTION,
-        Arrays.asList(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_IS_SERVICE, ALS_ITEM_STOCK),
-        filter, new Queries.RowSetCallback() {
+    Queries.getRowSet(VIEW_ITEM_SELECTION, null, filter, new Queries.RowSetCallback() {
       @Override
       public void onFailure(String... reason) {
         removeStyleName(STYLE_SEARCH_RUNNING);
@@ -234,7 +275,7 @@ class TradeItemPicker extends Flow {
 
         } else {
           logger.debug(filter, result.getNumberOfRows());
-          Global.showModalGrid(query, result);
+          renderItems(result, searchBy);
         }
 
         removeStyleName(STYLE_SEARCH_RUNNING);
@@ -306,5 +347,249 @@ class TradeItemPicker extends Flow {
 
   private void setWarehouse(Long warehouse) {
     this.warehouse = warehouse;
+  }
+
+  private ItemPrice getItemPrice() {
+    return itemPrice;
+  }
+
+  private void setItemPrice(ItemPrice itemPrice) {
+    this.itemPrice = itemPrice;
+  }
+
+  private Long getCurrency() {
+    return currency;
+  }
+
+  private void setCurrency(Long currency) {
+    this.currency = currency;
+  }
+
+  private ItemPrice getItemPriceForRender(BeeRowSet items) {
+    ItemPrice ip = getItemPrice();
+    if (ip == null && getOperationType() != null) {
+      ip = getOperationType().getDefaultPrice();
+    }
+
+    if (ip != null && DataUtils.isId(getCurrency())
+        && items.containsColumn(ip.getPriceColumn())
+        && items.containsColumn(ip.getCurrencyColumn())) {
+
+      return ip;
+    } else {
+      return null;
+    }
+  }
+
+  private static List<String> getItemColumnsForRender(BeeRowSet items,
+      Collection<TradeItemSearch> by, ItemPrice ip) {
+
+    List<String> columns = new ArrayList<>();
+
+    if (items.containsColumn(ALS_ITEM_TYPE_NAME) && by.contains(TradeItemSearch.TYPE)) {
+      columns.add(ALS_ITEM_TYPE_NAME);
+    }
+    if (items.containsColumn(ALS_ITEM_GROUP_NAME) && by.contains(TradeItemSearch.GROUP)) {
+      columns.add(ALS_ITEM_GROUP_NAME);
+    }
+
+    if (items.containsColumn(COL_ITEM_NAME)) {
+      columns.add(COL_ITEM_NAME);
+    }
+    if (items.containsColumn(COL_ITEM_NAME_2) && by.contains(TradeItemSearch.NAME_2)) {
+      columns.add(COL_ITEM_NAME_2);
+    }
+    if (items.containsColumn(COL_ITEM_NAME_3) && by.contains(TradeItemSearch.NAME_3)) {
+      columns.add(COL_ITEM_NAME_3);
+    }
+
+    if (items.containsColumn(COL_ITEM_ARTICLE)) {
+      columns.add(COL_ITEM_ARTICLE);
+    }
+    if (items.containsColumn(COL_ITEM_ARTICLE_2) && by.contains(TradeItemSearch.ARTICLE_2)) {
+      columns.add(COL_ITEM_ARTICLE);
+    }
+    if (items.containsColumn(COL_ITEM_BARCODE) && by.contains(TradeItemSearch.BARCODE)) {
+      columns.add(COL_ITEM_BARCODE);
+    }
+
+    if (items.containsColumn(COL_ITEM_DESCRIPTION) && by.contains(TradeItemSearch.DESCRIPTION)) {
+      columns.add(COL_ITEM_DESCRIPTION);
+    }
+
+    if (ip != null) {
+      columns.add(ip.getPriceColumn());
+    }
+
+    if (items.containsColumn(ALS_UNIT_NAME)) {
+      columns.add(ALS_UNIT_NAME);
+    }
+
+    return columns;
+  }
+
+  private static String getColumnLabel(BeeRowSet items, String column) {
+    switch (column) {
+      case ALS_ITEM_TYPE_NAME:
+        return Localized.dictionary().type();
+      case ALS_ITEM_GROUP_NAME:
+        return Localized.dictionary().group();
+      case ALS_UNIT_NAME:
+        return Localized.dictionary().unitShort();
+
+      default:
+        return Localized.getLabel(items.getColumn(column));
+    }
+  }
+
+  private static String getColumnStylePrefix(String column) {
+    String styleName;
+
+    switch (column) {
+      case ALS_ITEM_TYPE_NAME:
+        styleName = "type";
+        break;
+
+      case ALS_ITEM_GROUP_NAME:
+        styleName = "group";
+        break;
+
+      case ALS_UNIT_NAME:
+        styleName = "unit";
+        break;
+
+      default:
+        styleName = column.toLowerCase();
+    }
+
+    return STYLE_PREFIX + styleName;
+  }
+
+  private static String render(BeeRowSet items, BeeRow item, String column) {
+    switch (column) {
+      case ALS_ITEM_TYPE_NAME:
+        if (items.containsColumn(ALS_PARENT_TYPE_NAME)) {
+          return BeeUtils.buildLines(DataUtils.getString(items, item, ALS_PARENT_TYPE_NAME),
+              DataUtils.getString(items, item, column));
+        }
+        break;
+
+      case ALS_ITEM_GROUP_NAME:
+        if (items.containsColumn(ALS_PARENT_GROUP_NAME)) {
+          return BeeUtils.buildLines(DataUtils.getString(items, item, ALS_PARENT_GROUP_NAME),
+              DataUtils.getString(items, item, column));
+        }
+    }
+
+    return DataUtils.getString(items, item, column);
+  }
+
+  private Widget renderQty(BeeColumn column, Double qty) {
+    InputNumber input = new InputNumber();
+
+    input.setMinValue(BeeConst.STRING_ZERO);
+
+    if (column != null) {
+      input.setMaxValue(DataUtils.getMaxValue(column));
+      input.setScale(column.getScale());
+      input.setMaxLength(UiHelper.getMaxLength(column));
+    }
+
+    input.addStyleName(STYLE_QTY_INPUT);
+
+    if (BeeUtils.isPositive(qty)) {
+      input.setValue(qty);
+    }
+
+    input.addChangeHandler(ensureQuantityChangeHandler());
+
+    return input;
+  }
+
+  private void renderItems(BeeRowSet items, Collection<TradeItemSearch> searchBy) {
+    ItemPrice ip = getItemPriceForRender(items);
+    List<String> itemColumns = getItemColumnsForRender(items, searchBy, ip);
+
+    itemPanel.clear();
+    HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
+
+    int r = 0;
+    int c = 0;
+
+    table.setText(r, c++, Localized.dictionary().captionId(), STYLE_ID + STYLE_HEADER_CELL_SUFFIX);
+
+    for (String itemColumn : itemColumns) {
+      table.setText(r, c++, getColumnLabel(items, itemColumn),
+          getColumnStylePrefix(itemColumn) + STYLE_HEADER_CELL_SUFFIX);
+    }
+
+    table.setText(r, c++, "Stock", STYLE_STOCK + STYLE_HEADER_CELL_SUFFIX);
+    table.setText(r, c, Localized.dictionary().quantity(), STYLE_QTY + STYLE_HEADER_CELL_SUFFIX);
+
+    table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
+
+    BeeColumn qtyColumn = Data.getColumn(VIEW_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY);
+
+    int serviceTagIndex = items.getColumnIndex(COL_ITEM_IS_SERVICE);
+
+    r++;
+    for (BeeRow item : items) {
+      c = 0;
+
+      table.setValue(r, c++, item.getId(), STYLE_ID + STYLE_CELL_SUFFIX);
+
+      for (String itemColumn : itemColumns) {
+        table.setText(r, c++, render(items, item, itemColumn),
+            getColumnStylePrefix(itemColumn) + STYLE_CELL_SUFFIX);
+      }
+
+      table.setText(r, c++, render(items, item, ALS_ITEM_STOCK), STYLE_STOCK + STYLE_CELL_SUFFIX);
+
+      Double qty = selection.get(item.getId());
+      table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY + STYLE_CELL_SUFFIX);
+
+      DomUtils.setDataIndex(table.getRow(r), item.getId());
+
+      table.getRowFormatter().addStyleName(r, STYLE_ITEM_ROW);
+      if (BeeUtils.isPositive(qty)) {
+        table.getRowFormatter().addStyleName(r, STYLE_SELECTED_ROW);
+      }
+
+      if (item.isTrue(serviceTagIndex)) {
+        table.getRowFormatter().addStyleName(r, STYLE_SERVICE_ROW);
+      }
+
+      r++;
+    }
+
+    itemPanel.add(table);
+  }
+
+  private ChangeHandler ensureQuantityChangeHandler() {
+    if (quantityChangeHandler == null) {
+      quantityChangeHandler = event -> {
+        if (event.getSource() instanceof InputNumber) {
+          InputNumber input = (InputNumber) event.getSource();
+          onQuantityChange(input.getElement(), input.getNumber());
+        }
+      };
+    }
+    return quantityChangeHandler;
+  }
+
+  private void onQuantityChange(Element source, Double qty) {
+    TableRowElement row = DomUtils.getParentRow(source, true);
+    long id = DomUtils.getDataIndexLong(row);
+
+    if (DataUtils.isId(id)) {
+      if (BeeUtils.isPositive(qty)) {
+        row.addClassName(STYLE_SELECTED_ROW);
+        selection.put(id, qty);
+
+      } else {
+        row.removeClassName(STYLE_SELECTED_ROW);
+        selection.remove(id);
+      }
+    }
   }
 }

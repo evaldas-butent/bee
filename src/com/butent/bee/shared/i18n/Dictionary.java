@@ -3320,6 +3320,8 @@ public interface Dictionary {
 
   default String itemOrService() {return g("itemOrService");}
 
+  default String itemSelection() {return g("itemSelection");}
+
   default String itemType() {return g("itemType");}
 
   default String itemTypes() {return g("itemTypes");}
