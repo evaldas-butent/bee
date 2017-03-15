@@ -81,17 +81,10 @@
     <SimpleColumn name="Ordinal" />
 
     <SimpleColumn name="Description" />
-
-    <ExternalJoin joinType="LEFT" source="TradeDocumentItems" name="Item">
-      <ExternalJoin joinType="LEFT" source="TradeStock" name="TradeDocumentItem">
-        <AggregateColumn name="Quantity" aggregate="SUM" alias="Stock" />
-      </ExternalJoin>
-    </ExternalJoin>
   </Columns>
 
   <Order>
     <OrderBy column="IsService" nulls="first" />
-    <OrderBy column="Stock" descending="true" nulls="last" />
     <OrderBy column="Ordinal" />
     <OrderBy column="Name" />
     <OrderBy column="Article" />

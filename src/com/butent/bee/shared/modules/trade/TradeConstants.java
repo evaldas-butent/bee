@@ -277,8 +277,6 @@ public final class TradeConstants {
   public static final String ALS_PARENT_COST = "ParentCost";
   public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
 
-  public static final String ALS_ITEM_STOCK = "Stock";
-
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";
   public static final String PROP_STOCK = "Stock";
@@ -320,6 +318,8 @@ public final class TradeConstants {
   public static final String FORM_TRADE_DOCUMENT = "TradeDocument";
 
   public static final String PRM_PROTECT_TRADE_DOCUMENTS_BEFORE = "ProtectTradeDocumentsBefore";
+
+  public static final String FILTER_ITEM_HAS_STOCK = "item_has_stock";
 
   public static final int MAX_STOCK_DEPTH = 1_000;
 

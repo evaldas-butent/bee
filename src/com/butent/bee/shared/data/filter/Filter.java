@@ -305,6 +305,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new CustomFilter(key, Lists.newArrayList(arg));
   }
 
+  public static Filter custom(String key, Long arg) {
+    if (arg == null) {
+      return custom(key);
+    } else {
+      return custom(key, BeeUtils.toString(arg));
+    }
+  }
+
   public static Filter custom(String key, String arg1, String arg2) {
     Assert.notEmpty(key);
     return new CustomFilter(key, Lists.newArrayList(arg1, arg2));

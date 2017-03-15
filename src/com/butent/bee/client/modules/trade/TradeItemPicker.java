@@ -302,7 +302,8 @@ class TradeItemPicker extends Flow {
 
   private Filter buildParentFilter() {
     if (getDocumentPhase().modifyStock() && getOperationType().consumesStock()) {
-      return Filter.or(Filter.notNull(COL_ITEM_IS_SERVICE), Filter.isPositive(ALS_ITEM_STOCK));
+      return Filter.or(Filter.notNull(COL_ITEM_IS_SERVICE),
+          Filter.custom(FILTER_ITEM_HAS_STOCK, getWarehouse()));
     } else {
       return null;
     }
@@ -523,7 +524,6 @@ class TradeItemPicker extends Flow {
           getColumnStylePrefix(itemColumn) + STYLE_HEADER_CELL_SUFFIX);
     }
 
-    table.setText(r, c++, "Stock", STYLE_STOCK + STYLE_HEADER_CELL_SUFFIX);
     table.setText(r, c, Localized.dictionary().quantity(), STYLE_QTY + STYLE_HEADER_CELL_SUFFIX);
 
     table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
@@ -542,8 +542,6 @@ class TradeItemPicker extends Flow {
         table.setText(r, c++, render(items, item, itemColumn),
             getColumnStylePrefix(itemColumn) + STYLE_CELL_SUFFIX);
       }
-
-      table.setText(r, c++, render(items, item, ALS_ITEM_STOCK), STYLE_STOCK + STYLE_CELL_SUFFIX);
 
       Double qty = selection.get(item.getId());
       table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY + STYLE_CELL_SUFFIX);
