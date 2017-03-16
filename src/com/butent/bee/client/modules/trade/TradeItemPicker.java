@@ -40,14 +40,18 @@ import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeItemSearch;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 
 class TradeItemPicker extends Flow {
 
@@ -77,6 +81,7 @@ class TradeItemPicker extends Flow {
   private static final String STYLE_STOCK = STYLE_PREFIX + "stock";
   private static final String STYLE_RESERVED = STYLE_PREFIX + "reserved";
   private static final String STYLE_QTY = STYLE_PREFIX + "qty";
+  private static final String STYLE_MAIN_WAREHOUSE = STYLE_PREFIX + "main-warehouse";
 
   private static final String STYLE_HEADER_CELL_SUFFIX = "-label";
   private static final String STYLE_CELL_SUFFIX = "-cell";
@@ -511,6 +516,11 @@ class TradeItemPicker extends Flow {
     ItemPrice ip = getItemPriceForRender(items);
     List<String> itemColumns = getItemColumnsForRender(items, searchBy, ip);
 
+    Map<Long, String> warehouses = extractWarehouses(items);
+
+    Map<String, Long> warehouseCodes = new TreeMap<>();
+    warehouses.forEach((id, code) -> warehouseCodes.put(code, id));
+
     itemPanel.clear();
     HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
 
@@ -522,6 +532,17 @@ class TradeItemPicker extends Flow {
     for (String itemColumn : itemColumns) {
       table.setText(r, c++, getColumnLabel(items, itemColumn),
           getColumnStylePrefix(itemColumn) + STYLE_HEADER_CELL_SUFFIX);
+    }
+
+    for (Map.Entry<String, Long> entry : warehouseCodes.entrySet()) {
+      table.setText(r, c, entry.getKey(), STYLE_STOCK + STYLE_HEADER_CELL_SUFFIX);
+
+      if (Objects.equals(entry.getValue(), getWarehouse())) {
+        table.getCellFormatter().addStyleName(r, c,
+            STYLE_MAIN_WAREHOUSE + STYLE_HEADER_CELL_SUFFIX);
+      }
+
+      c++;
     }
 
     table.setText(r, c, Localized.dictionary().quantity(), STYLE_QTY + STYLE_HEADER_CELL_SUFFIX);
@@ -541,6 +562,20 @@ class TradeItemPicker extends Flow {
       for (String itemColumn : itemColumns) {
         table.setText(r, c++, render(items, item, itemColumn),
             getColumnStylePrefix(itemColumn) + STYLE_CELL_SUFFIX);
+      }
+
+      for (Map.Entry<String, Long> entry : warehouseCodes.entrySet()) {
+        String stock = item.getProperty(keyStockWarehouse(entry.getKey()));
+
+        if (!BeeUtils.isEmpty(stock)) {
+          table.setText(r, c, stock, STYLE_STOCK + STYLE_CELL_SUFFIX);
+
+          if (Objects.equals(entry.getValue(), getWarehouse())) {
+            table.getCellFormatter().addStyleName(r, c, STYLE_MAIN_WAREHOUSE + STYLE_CELL_SUFFIX);
+          }
+        }
+
+        c++;
       }
 
       Double qty = selection.get(item.getId());
@@ -589,5 +624,22 @@ class TradeItemPicker extends Flow {
         selection.remove(id);
       }
     }
+  }
+
+  private static Map<Long, String> extractWarehouses(BeeRowSet items) {
+    Map<Long, String> warehouses = new HashMap<>();
+
+    String serialized = (items == null) ? null : items.getTableProperty(PROP_WAREHOUSES);
+    if (!BeeUtils.isEmpty(serialized)) {
+      Map<String, String> map = Codec.deserializeHashMap(serialized);
+
+      map.forEach((id, code) -> {
+        if (DataUtils.isId(id) && !BeeUtils.isEmpty(code)) {
+          warehouses.put(BeeUtils.toLong(id), code);
+        }
+      });
+    }
+
+    return warehouses;
   }
 }

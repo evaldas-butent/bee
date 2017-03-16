@@ -3,7 +3,6 @@ package com.butent.bee.server.modules.trade;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -49,6 +48,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
@@ -117,6 +117,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -1028,15 +1029,23 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             && DataUtils.containsNull(event.getRowset(), COL_ITEM_IS_SERVICE)) {
 
           BeeRowSet rowSet = event.getRowset();
-          com.google.common.collect.Table<Long, String, String> stock =
+          Multimap<Long, Triplet<Long, String, Double>> stock =
               getStockByWarehouse(rowSet.getRowIds());
 
           if (!stock.isEmpty()) {
             for (BeeRow row : rowSet.getRows()) {
-              if (stock.containsRow(row.getId())) {
-                stock.row(row.getId()).forEach((warehouseCode, quantity) ->
-                    row.setProperty(keyStockWarehouse(warehouseCode), quantity));
+              if (stock.containsKey(row.getId())) {
+                stock.get(row.getId()).forEach(value -> {
+                  row.setProperty(keyStockWarehouse(value.getB()), value.getC());
+                });
               }
+            }
+
+            if (event.isTarget(VIEW_ITEM_SELECTION)) {
+              Map<Long, String> warehouses = new HashMap<>();
+              stock.values().forEach(value -> warehouses.put(value.getA(), value.getB()));
+
+              rowSet.setTableProperty(PROP_WAREHOUSES, Codec.beeSerialize(warehouses));
             }
           }
         }
@@ -3475,13 +3484,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
   }
 
-  private com.google.common.collect.Table<Long, String, String> getStockByWarehouse(
+  private Multimap<Long, Triplet<Long, String, Double>> getStockByWarehouse(
       Collection<Long> items) {
-
-    com.google.common.collect.Table<Long, String, String> result = HashBasedTable.create();
+    Multimap<Long, Triplet<Long, String, Double>> result = ArrayListMultimap.create();
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addFields(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE)
         .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
         .addSum(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)
         .addFrom(TBL_TRADE_STOCK)
@@ -3492,6 +3501,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         .setWhere(SqlUtils.and(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items),
             SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)))
         .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
+        .addGroup(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE)
         .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
 
     SimpleRowSet data = qs.getData(query);
@@ -3501,8 +3511,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
         Double quantity = row.getDouble(COL_STOCK_QUANTITY);
 
         if (BeeUtils.nonZero(quantity)) {
-          result.put(row.getLong(COL_ITEM), row.getValue(COL_WAREHOUSE_CODE),
-              BeeUtils.toString(quantity));
+          result.put(row.getLong(COL_ITEM), Triplet.of(row.getLong(COL_STOCK_WAREHOUSE),
+              row.getValue(COL_WAREHOUSE_CODE), quantity));
         }
       }
     }
