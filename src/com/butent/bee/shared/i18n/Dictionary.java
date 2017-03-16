@@ -4669,6 +4669,8 @@ public interface Dictionary {
 
   default String prmProjectHourUnit() {return g("prmProjectHourUnit");}
 
+  default String prmRole() {return g("prmRole");}
+
   default String prmSQLMessagesGENERIC() {return g("prmSQLMessagesGENERIC");}
 
   default String prmSQLMessagesMSSQL() {return g("prmSQLMessagesMSSQL");}

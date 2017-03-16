@@ -33,6 +33,7 @@ public final class ServiceConstants {
   public static final String PRM_SMS_REQUEST_SERVICE_FROM = "SmsRequestServiceFrom";
   public static final String PRM_EXTERNAL_MAINTENANCE_URL = "ExternalMaintenanceUrl";
   public static final String PRM_SMS_REQUEST_CONTACT_INFO_FROM = "SmsRequestContactInfoFrom";
+  public static final String PRM_ROLE = "Role";
 
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_CREATE_DEFECT_ITEMS = "CreateDefectItems";
@@ -45,6 +46,7 @@ public final class ServiceConstants {
   public static final String SVC_CREATE_RESERVATION_INVOICE_ITEMS = "CreateReservationInvoiceItems";
   public static final String SVC_GET_ITEMS_INFO = "getItemsInfo";
 
+  public static final String TBL_EQUIPMENT = "Equipment";
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";
   public static final String TBL_MAINTENANCE = "Maintenance";
@@ -92,6 +94,7 @@ public final class ServiceConstants {
   public static final String COL_ENDING_DATE = "EndingDate";
   public static final String COL_EVENT_NOTE = "EventNote";
   public static final String COL_EQUIPMENT = "Equipment";
+  public static final String COL_EQUIPMENT_NAME = "Name";
   public static final String COL_INITIAL = "Initial";
   public static final String COL_FINITE = "Finite";
   public static final String COL_TYPE = "Type";
@@ -124,6 +127,7 @@ public final class ServiceConstants {
   public static final String COL_MAINTENANCE_ITEM = "Item";
   public static final String COL_MAINTENANCE_INVOICE = "Invoice";
   public static final String COL_MAINTENANCE_DEFECT = "Defect";
+  public static final String COL_MAINTENANCE_DESCRIPTION = "Description";
   public static final String COL_MAINTENANCE_NOTES = "Notes";
   public static final String COL_MAINTENANCE_TYPE = "MaintenanceType";
   public static final String COL_MODEL = "Model";

@@ -191,7 +191,8 @@ public class ServiceModuleBean implements BeeModule {
         BeeParameter.createText(module, PRM_EXTERNAL_MAINTENANCE_URL),
         BeeParameter.createText(module, PRM_SMS_REQUEST_CONTACT_INFO_FROM, false, VIEW_DEPARTMENTS),
         BeeParameter.createRelation(module, PRM_SERVICE_MANAGER_WAREHOUSE, true, VIEW_WAREHOUSES,
-            COL_WAREHOUSE_CODE)
+            COL_WAREHOUSE_CODE),
+        BeeParameter.createRelation(module, PRM_ROLE, true, TBL_ROLES, COL_ROLE_NAME)
     );
 
     return params;
