@@ -15,6 +15,7 @@
     <SimpleJoin name="Currency" joinType="LEFT">
       <SimpleColumn name="Name" alias="ItemCurrencyName" />
     </SimpleJoin>
+    <SimpleColumn name="IsService" />
   </SimpleJoin>
   <SimpleColumn name="Quantity" />
   <SimpleColumn name="CompletedQty" />

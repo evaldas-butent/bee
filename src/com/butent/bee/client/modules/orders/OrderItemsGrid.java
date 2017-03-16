@@ -586,7 +586,7 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
           values.add(resRemainder);
         }
 
-        Queries.update(getViewName(), Filter.equals(Data.getIdColumn(getViewName()), row.getId()),
+        Queries.update(getViewName(), Filter.compareId(row.getId()),
             columns, values, new IntCallback() {
 
               @Override

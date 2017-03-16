@@ -368,10 +368,12 @@ public class ServiceModuleBean implements BeeModule {
             TBL_ORDER_ITEMS, COL_SERVICE_ITEM))
         .addFromLeft(TBL_SERVICE_MAINTENANCE,
             sys.joinTables(TBL_SERVICE_MAINTENANCE, TBL_SERVICE_ITEMS, COL_SERVICE_MAINTENANCE))
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
 
         .setWhere(SqlUtils.and(
             SqlUtils.equals(TBL_SERVICE_MAINTENANCE, COL_WAREHOUSE, warehouseId),
             SqlUtils.equals(TBL_ORDER_ITEMS, COL_ITEM, itemId),
+            SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
             SqlUtils.isNull(TBL_SERVICE_MAINTENANCE, COL_ENDING_DATE)))
         .addGroup(TBL_ORDER_ITEMS, COL_ITEM);
     return BeeUtils.unbox(qs.getDouble(qry));

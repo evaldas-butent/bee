@@ -5,9 +5,21 @@
   xmlns="http://www.butent.com/column"
   xmlns:g="http://www.butent.com/grid"
   xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:ui="http://www.butent.com/ui"
   name="OrderItems" viewName="OrderItems"
   flexGrow="1" renderMode="full"
   newRowCaption="=newItem" disabledActions="filter">
 
+  <g:columns>
+    <RelColumn name="Item" renderColumns="ItemName"
+               choiceColumns="Name Article" filter="!(IsService)" editPopup="true"
+               visible="true" readOnly="true">
+      <dynStyle>
+        <ui:inline>color: #ff5252; font-weight: bold;</ui:inline>
+        <ui:expression>(row.Quantity - row.CompletedInvoices) &gt; (row.FreeRemainder + row.ResRemainder)</ui:expression>
+      </dynStyle>
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </RelColumn>
+  </g:columns>
   <xi:include href="columns/ItemsReservation.columns.xml" />
 </g:Grid>
