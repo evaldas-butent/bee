@@ -106,7 +106,8 @@
             <row>
               <Label for="BoLLoading" />
               <cell colSpan="3" >
-                <InputText source="BoLLoading" style="width:100%;" disablable="false" />
+                <InputText source="BoLLoading" autocomplete="true" style="width:100%;"
+                           disablable="false" />
               </cell>
 
               <Label for="BoLDepartureDate" />
@@ -116,7 +117,8 @@
             <row>
               <Label for="BoLUnloading" />
               <cell colSpan="3" >
-                <InputText source="BoLUnloading" style="width:100%;" disablable="false" />
+                <InputText source="BoLUnloading" autocomplete="true" style="width:100%;"
+                           disablable="false" />
               </cell>
 
               <Label for="BoLUnloadingDate" />
@@ -134,7 +136,8 @@
 
             <row>
               <Label for="BoLVehicleNumber" />
-              <InputText source="BoLVehicleNumber" style="width: 10em;" disablable="false" />
+              <InputText source="BoLVehicleNumber" autocomplete="true" style="width: 10em;"
+                         disablable="false" />
 
               <Label for="BoLDriver" />
               <cell colSpan="3" >

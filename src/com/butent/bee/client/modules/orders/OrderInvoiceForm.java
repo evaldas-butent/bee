@@ -12,6 +12,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.output.ReportUtils;
@@ -26,6 +27,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -88,16 +90,19 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
               return;
             }
 
-            Queries.update(getViewName(), IdFilter.compareId(getActiveRowId()),
-                COL_SALE_PROFORMA, BooleanValue.getNullValue(), new IntCallback() {
-                  @Override
-                  public void onSuccess(Integer result) {
-                    if (BeeUtils.isPositive(result)) {
-                      Data.onViewChange(getViewName(), DataChangeEvent.CANCEL_RESET_REFRESH);
-                    }
-                  }
-                });
+            getActiveRow().setValue(getDataIndex(COL_SALE_PROFORMA), BooleanValue.getNullValue());
+
+            BeeRowSet update = DataUtils.getUpdated(form.getViewName(), form.getDataColumns(),
+                form.getOldRow(), getActiveRow(), form.getChildrenForUpdate());
+
+            Queries.updateRow(update, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                Data.onViewChange(getViewName(), DataChangeEvent.CANCEL_RESET_REFRESH);
+              }
+            });
           }));
+
       header.addCommandItem(confirmAction);
     }
     confirmAction.setVisible(proforma && form.isEnabled());

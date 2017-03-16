@@ -2127,9 +2127,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (!BeeUtils.isIndex(getTabOrder(), index)) {
       return;
     }
-    if (hasData() && !isRowEnabled(getActiveRow())) {
-      return;
-    }
 
     Widget widget = getWidgetById(getTabOrder().get(index).getWidgetId());
     if (UiHelper.focus(widget)) {

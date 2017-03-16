@@ -404,7 +404,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       @AllowConcurrentEvents
       public void fillOrderNumber(DataEvent.ViewModifyEvent event) {
         if (event.isBefore()
-            && Objects.equals(sys.getViewSource(event.getTargetName()), TBL_ORDERS)) {
+            && (Objects.equals(sys.getViewSource(event.getTargetName()), TBL_ORDERS)
+            || Objects.equals(sys.getViewSource(event.getTargetName()), TBL_SALES))) {
+
+          String viewName = sys.getViewSource(event.getTargetName());
           List<BeeColumn> cols;
           IsRow row;
           Long series = null;
@@ -419,23 +422,33 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             return;
           }
 
-          int seriesIdx = DataUtils.getColumnIndex(COL_TA_SERIES, cols);
+          String seriesCol = null;
+          String numberCol = null;
+          if (Objects.equals(viewName, TBL_SALES)) {
+            seriesCol = COL_TRADE_BOL_SERIES;
+            numberCol = COL_TRADE_BOL_NUMBER;
+          } else {
+            seriesCol = COL_TA_SERIES;
+            numberCol = COL_TA_NUMBER;
+          }
+
+          int seriesIdx = DataUtils.getColumnIndex(seriesCol, cols);
 
           if (!BeeConst.isUndef(seriesIdx)) {
             series = row.getLong(seriesIdx);
           }
           if (DataUtils.isId(series)) {
-            int numberIdx = DataUtils.getColumnIndex(COL_TA_NUMBER, cols);
+            int numberIdx = DataUtils.getColumnIndex(numberCol, cols);
 
             if (BeeConst.isUndef(numberIdx)) {
-              cols.add(new BeeColumn(COL_TA_NUMBER));
+              cols.add(new BeeColumn(numberCol));
               row.addValue(null);
               numberIdx = row.getNumberOfCells() - 1;
 
             } else if (!BeeUtils.isEmpty(row.getString(numberIdx))) {
               return;
             }
-            row.setValue(numberIdx, qs.getNextNumber(TBL_ORDERS, COL_TA_NUMBER, null, null));
+            row.setValue(numberIdx, qs.getNextNumber(viewName, numberCol, null, null));
           }
         }
       }
