@@ -121,6 +121,8 @@ public class OrderForm extends PrintFormInterceptor {
             public void onResponse(ResponseObject response) {
               if (!response.hasErrors()) {
                 updateStatus(form, OrdersStatus.APPROVED);
+                int dateIdx = Data.getColumnIndex(VIEW_ORDERS, COL_START_DATE);
+                getActiveRow().setValue(dateIdx, TimeUtils.nowMinutes());
                 save(form);
               }
             }

@@ -1,23 +1,20 @@
 package com.butent.bee.client.modules.classifiers;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.utils.BeeUtils;
 
 public class DiscountsGrid extends AbstractGridInterceptor {
 
@@ -38,33 +35,22 @@ public class DiscountsGrid extends AbstractGridInterceptor {
 
     Button clearAll = new Button();
     clearAll.setText(Localized.dictionary().clear());
-    clearAll.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent event) {
-        if (!getGridView().isEmpty()) {
-          Global.confirm(Localized.dictionary().askDeleteAll(), new ConfirmationCallback() {
-
-            @Override
-            public void onConfirm() {
-
-              Filter filter = Filter.or(Filter.notNull(COL_COMPANY), Filter.notNull(COL_ITEM),
-                  Filter.notNull(COL_CATEGORY));
-              Queries.delete(TBL_DISCOUNTS, filter, new IntCallback() {
-
-                @Override
-                public void onSuccess(Integer result) {
-                  if (BeeUtils.isPositive(result)) {
-                    getGridPresenter().handleAction(Action.REFRESH);
-                  }
-                }
-              });
+    clearAll.addClickHandler(clickEvent -> Queries.getRowSet(TBL_DISCOUNTS, null,
+        presenter.getDataProvider().getFilter(), new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (!DataUtils.isEmpty(result)) {
+              Global.confirm(Localized.dictionary().askDelete(result.getNumberOfRows()),
+                  () -> Queries.delete(TBL_DISCOUNTS, Filter.idIn(result.getRowIds()),
+                      new IntCallback() {
+                        @Override
+                        public void onSuccess(Integer result) {
+                          getGridPresenter().handleAction(Action.REFRESH);
+                        }
+                      }));
             }
-          });
-        }
-      }
-    });
-
+          }
+        }));
     header.addCommandItem(clearAll);
   }
 }

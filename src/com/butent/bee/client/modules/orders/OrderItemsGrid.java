@@ -85,6 +85,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -108,13 +109,15 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
   private Double managerDiscount;
   private GridView grid;
   private Long orderForm;
+  private String complectName;
 
   public OrderItemsGrid() {
   }
 
-  public OrderItemsGrid(Long complectId, GridView gridView) {
+  public OrderItemsGrid(Long complectId, GridView gridView, String complectName) {
     this.complectId = complectId;
     this.grid = gridView;
+    this.complectName = complectName;
   }
 
   @Override
@@ -489,12 +492,13 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
         && OrdersKeeper.isComplect(event.getRowValue())) {
 
       IsRow row = event.getRowValue();
+      String itemName = row.getString(Data.getColumnIndex(VIEW_ORDER_ITEMS, ALS_ITEM_NAME));
 
       GridPanel gridPanel = new GridPanel(GRID_ORDER_COMPLECT_ITEMS, GridFactory.GridOptions
           .forFilter(Filter.and(Filter.equals(COL_ORDER, row.getLong(getDataIndex(COL_ORDER))),
           Filter.equals(COL_TRADE_ITEM_PARENT, row.getId()))), false);
 
-      gridPanel.setGridInterceptor(new OrderItemsGrid(row.getId(), getGridView()));
+      gridPanel.setGridInterceptor(new OrderItemsGrid(row.getId(), getGridView(), itemName));
 
       StyleUtils.setWidth(gridPanel, BeeKeeper.getScreen().getWidth() * 0.9, CssUnit.DEFAULT);
       StyleUtils.setHeight(gridPanel, BeeKeeper.getScreen().getHeight() * 0.5, CssUnit.DEFAULT);
@@ -555,6 +559,15 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     } else {
       return DeleteMode.SINGLE;
     }
+  }
+
+  @Override
+  public boolean initDescription(GridDescription gridDescription) {
+    if (!BeeUtils.isEmpty(complectName)) {
+      gridDescription.setCaption(complectName);
+    }
+
+    return super.initDescription(gridDescription);
   }
 
   @Override

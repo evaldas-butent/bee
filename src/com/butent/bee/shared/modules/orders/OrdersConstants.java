@@ -92,6 +92,7 @@ public final class OrdersConstants {
   public static final String ALS_PAYER_EMAIL = "PayerEmail";
 
   public static final String COL_END_DATE = "EndDate";
+  public static final String COL_START_DATE = "StartDate";
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDERS_STATUS = "Status";
   public static final String COL_RESERVED_REMAINDER = "ResRemainder";
