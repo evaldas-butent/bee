@@ -174,7 +174,7 @@
           </cell>
           <Label for="Value" name="ValueLabel" />
           <FlowPanel>
-            <InputMoney source="Value" style="&decimal;" />
+            <InputMoney source="Value" style="&decimal;" currencySource="ValueCurrency"/>
             <DataSelector source="ValueCurrency" newRowEnabled="false" editEnabled="false"
                           placeholder="=currencyShort" style="&unit;" filter="SelfService" />
           </FlowPanel>
