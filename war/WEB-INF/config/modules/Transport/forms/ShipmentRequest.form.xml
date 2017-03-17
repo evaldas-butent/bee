@@ -290,7 +290,7 @@
       </dynStyle>
       <page>
         <text>=files</text>
-        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" />
+        <ChildGrid name="CargoFiles" relColumn="Cargo" source="Cargo" disablable="false"/>
       </page>
       <page>
         <text>=mails</text>
