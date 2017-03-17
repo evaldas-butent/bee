@@ -110,8 +110,6 @@
       </SimpleJoin>
     </SimpleJoin>
 
-    <SimpleColumn name="Offshore" />
-
     <SimpleColumn name="DiscountPercent" />
 
     <SimpleColumn name="DiscountParent" />

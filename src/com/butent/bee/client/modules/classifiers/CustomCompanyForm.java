@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_SERVICE;
@@ -12,15 +11,11 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -120,41 +115,5 @@ public abstract class CustomCompanyForm extends AbstractFormInterceptor implemen
       form.getViewPresenter().getHeader().addCommandItem(toErp);
     }
     super.onLoad(form);
-  }
-
-  @Override
-  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-    if (!checkRequired()) {
-      event.consume();
-      return;
-    }
-    super.onReadyForInsert(listener, event);
-  }
-
-  @Override
-  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
-    if (!checkRequired()) {
-      event.consume();
-      return;
-    }
-    super.onSaveChanges(listener, event);
-  }
-
-  private boolean checkRequired() {
-    if (!BeeUtils.toBoolean(getStringValue("Offshore"))) {
-      for (String field : new String[] {
-          COL_COMPANY_CODE, COL_COMPANY_VAT_CODE, COL_ADDRESS, COL_CITY, COL_COUNTRY}) {
-
-        if (BeeUtils.isEmpty(getStringValue(field))) {
-          DomUtils.setFocus(getFormView().getWidgetBySource(field), true);
-
-          getFormView().notifySevere(Data.getColumnLabel(getViewName(), field),
-              Localized.dictionary().valueRequired());
-
-          return false;
-        }
-      }
-    }
-    return true;
   }
 }

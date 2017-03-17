@@ -48,7 +48,6 @@
 
     <String name="ERPType" precision="30" label="Būtent tipas" />
     <String name="ERPGroup" precision="60" label="Būtent grupė" />
-    <Boolean name="Offshore" label="Ofšorinė" />
 
     <DateTime name="Created" label="Registruota" defExpr="CURRENT_TIME" />
     <Relation name="Creator" relation="Users" label="=creator" defExpr="CURRENT_USER" />

@@ -176,11 +176,6 @@
         <DataSelector source="CompanyGroup" />
       </row>
 
-      <row>
-        <br />
-        <CheckBox source="Offshore" />
-      </row>
-
     </Table>
 
     <ChildGrid name="CompanyBankAccounts" relColumn="Company" style="min-height: 150px;" />

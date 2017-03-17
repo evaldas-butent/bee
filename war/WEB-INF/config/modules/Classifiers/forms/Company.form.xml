@@ -222,7 +222,6 @@
             <row>
               <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" />
               <DataSelector source="CompanyGroup" summarize="true" />
-              <CheckBox source="Offshore" />
             </row>
             <row>
               <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />
