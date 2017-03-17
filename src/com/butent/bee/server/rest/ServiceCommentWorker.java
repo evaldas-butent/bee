@@ -4,7 +4,6 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_COMPANIES;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_NAME;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
-import static com.butent.bee.shared.modules.service.ServiceConstants.TBL_MAINTENANCE_COMMENTS;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_PUBLISHER;
 
 import com.butent.bee.server.data.QueryServiceBean;
@@ -21,7 +20,6 @@ import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
