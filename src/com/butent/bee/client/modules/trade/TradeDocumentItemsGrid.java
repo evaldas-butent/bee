@@ -670,7 +670,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
         vat = null;
       }
 
-      Boolean vatIsPercent = BeeUtils.isDouble(vat) ? true : null;
+      Boolean vatIsPercent = TradeUtils.vatIsPercent(vat);
 
       Long parent = null;
 
@@ -958,11 +958,12 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
   private void testPicker() {
     IsRow parentRow = getParentRow(getGridView());
-    if (!DataUtils.hasId(parentRow)) {
-      return;
-    }
 
-    TradeItemPicker picker = new TradeItemPicker(parentRow);
-    Global.showModalWidget(picker);
+    if (DataUtils.hasId(parentRow)) {
+      TradeUtils.getDocumentVatPercent(parentRow, defVatPercent -> {
+        TradeItemPicker picker = new TradeItemPicker(parentRow, defVatPercent);
+        Global.showModalWidget(picker);
+      });
+    }
   }
 }

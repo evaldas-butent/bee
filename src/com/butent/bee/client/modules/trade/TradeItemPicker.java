@@ -14,6 +14,7 @@ import com.butent.bee.client.Storage;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.UiHelper;
@@ -22,6 +23,7 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -34,10 +36,14 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.OperationType;
+import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeItemSearch;
+import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -47,7 +53,6 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -76,15 +81,21 @@ class TradeItemPicker extends Flow {
   private static final String STYLE_ITEM_ROW = STYLE_PREFIX + "item";
   private static final String STYLE_SERVICE_ROW = STYLE_PREFIX + "service";
   private static final String STYLE_SELECTED_ROW = STYLE_PREFIX + "item-selected";
+  private static final String STYLE_FOOTER_ROW = STYLE_PREFIX + "footer";
 
   private static final String STYLE_ID = STYLE_PREFIX + "id";
   private static final String STYLE_STOCK = STYLE_PREFIX + "stock";
   private static final String STYLE_RESERVED = STYLE_PREFIX + "reserved";
-  private static final String STYLE_QTY = STYLE_PREFIX + "qty";
   private static final String STYLE_MAIN_WAREHOUSE = STYLE_PREFIX + "main-warehouse";
+  private static final String STYLE_QTY = STYLE_PREFIX + "qty";
+  private static final String STYLE_PRICE = STYLE_PREFIX + "price";
+  private static final String STYLE_DISCOUNT = STYLE_PREFIX + "discount";
+  private static final String STYLE_VAT = STYLE_PREFIX + "vat";
+  private static final String STYLE_TOTAL = STYLE_PREFIX + "total";
 
   private static final String STYLE_HEADER_CELL_SUFFIX = "-label";
   private static final String STYLE_CELL_SUFFIX = "-cell";
+  private static final String STYLE_FOOTER_CELL_SUFFIX = "-footer";
 
   private static final String STYLE_QTY_INPUT = STYLE_QTY + "-input";
 
@@ -101,18 +112,24 @@ class TradeItemPicker extends Flow {
 
   private ItemPrice itemPrice;
   private Long currency;
+  private String currencyName;
 
-  private final Map<Long, Double> selection = new LinkedHashMap<>();
+  private final TradeDocumentSums documentSums = new TradeDocumentSums();
+
+  private Double defaultVatPercent;
 
   private ChangeHandler quantityChangeHandler;
 
-  TradeItemPicker(IsRow documentRow) {
+  private BeeRowSet data;
+
+  TradeItemPicker(IsRow documentRow, Double defaultVatPercent) {
     super(STYLE_NAME);
 
     add(createSearch());
     add(itemPanel);
 
     setDocumentRow(documentRow);
+    setDefaultVatPercent(defaultVatPercent);
   }
 
   void setDocumentRow(IsRow row) {
@@ -122,6 +139,15 @@ class TradeItemPicker extends Flow {
 
     setItemPrice(TradeUtils.getDocumentItemPrice(row));
     setCurrency(TradeUtils.getDocumentRelation(row, COL_TRADE_CURRENCY));
+    setCurrencyName(TradeUtils.getDocumentString(row, AdministrationConstants.ALS_CURRENCY_NAME));
+
+    setDiscountMode(TradeUtils.getDocumentDiscountMode(row));
+    setDocumentDiscount(TradeUtils.getDocumentDiscount(row));
+    setVatMode(TradeUtils.getDocumentVatMode(row));
+  }
+
+  void setDefaultVatPercent(Double defaultVatPercent) {
+    this.defaultVatPercent = defaultVatPercent;
   }
 
   private static String searchByStorageKey(int index) {
@@ -371,6 +397,38 @@ class TradeItemPicker extends Flow {
     this.currency = currency;
   }
 
+  private String getCurrencyName() {
+    return currencyName;
+  }
+
+  private void setCurrencyName(String currencyName) {
+    this.currencyName = currencyName;
+  }
+
+  private TradeDiscountMode getDiscountMode() {
+    return documentSums.getDiscountMode();
+  }
+
+  private void setDiscountMode(TradeDiscountMode discountMode) {
+    documentSums.updateDiscountMode(discountMode);
+  }
+
+  private void setDocumentDiscount(Double documentDiscount) {
+    documentSums.updateDocumentDiscount(documentDiscount);
+  }
+
+  private TradeVatMode getVatMode() {
+    return documentSums.getVatMode();
+  }
+
+  private void setVatMode(TradeVatMode vatMode) {
+    documentSums.updateVatMode(vatMode);
+  }
+
+  private Double getDefaultVatPercent() {
+    return defaultVatPercent;
+  }
+
   private ItemPrice getItemPriceForRender(BeeRowSet items) {
     ItemPrice ip = getItemPrice();
     if (ip == null && getOperationType() != null) {
@@ -490,6 +548,44 @@ class TradeItemPicker extends Flow {
     return DataUtils.getString(items, item, column);
   }
 
+  private static String renderPrice(Double price) {
+    return BeeUtils.toStringOrNull(price);
+  }
+
+  private static String renderDiscountInfo(Double discount, Boolean isPercent) {
+    if (BeeUtils.nonZero(discount)) {
+      if (BeeUtils.isTrue(isPercent)) {
+        return BeeUtils.joinWords(discount, BeeConst.STRING_PERCENT);
+      } else {
+        return BeeUtils.toString(discount);
+      }
+
+    } else {
+      return null;
+    }
+  }
+
+  private static String renderVatInfo(Double vat, Boolean isPercent) {
+    if (BeeUtils.nonZero(vat)) {
+      if (BeeUtils.isTrue(isPercent)) {
+        return BeeUtils.joinWords(vat, BeeConst.STRING_PERCENT);
+      } else {
+        return BeeUtils.toString(vat);
+      }
+
+    } else {
+      return null;
+    }
+  }
+
+  private static String renderAmount(Double amount) {
+    return BeeUtils.toStringOrNull(amount);
+  }
+
+  private static String renderTotal(Double total) {
+    return BeeUtils.toStringOrNull(total);
+  }
+
   private Widget renderQty(BeeColumn column, Double qty) {
     InputNumber input = new InputNumber();
 
@@ -513,6 +609,8 @@ class TradeItemPicker extends Flow {
   }
 
   private void renderItems(BeeRowSet items, Collection<TradeItemSearch> searchBy) {
+    setData(items);
+
     ItemPrice ip = getItemPriceForRender(items);
     List<String> itemColumns = getItemColumnsForRender(items, searchBy, ip);
 
@@ -520,6 +618,12 @@ class TradeItemPicker extends Flow {
 
     Map<String, Long> warehouseCodes = new TreeMap<>();
     warehouses.forEach((id, code) -> warehouseCodes.put(code, id));
+
+    int qtyCol;
+    int priceCol;
+    int discountCol = BeeConst.UNDEF;
+    int vatCol = BeeConst.UNDEF;
+    int totalCol;
 
     itemPanel.clear();
     HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
@@ -543,9 +647,29 @@ class TradeItemPicker extends Flow {
       }
 
       c++;
+
     }
 
-    table.setText(r, c, Localized.dictionary().quantity(), STYLE_QTY + STYLE_HEADER_CELL_SUFFIX);
+    qtyCol = c;
+
+    table.setText(r, c++, Localized.dictionary().quantity(), STYLE_QTY + STYLE_HEADER_CELL_SUFFIX);
+
+    priceCol = c;
+    table.setText(r, c++, Localized.dictionary().price(), STYLE_PRICE + STYLE_HEADER_CELL_SUFFIX);
+
+    if (getDiscountMode() != null) {
+      discountCol = c;
+      table.setText(r, c++, Localized.dictionary().discount(),
+          STYLE_DISCOUNT + STYLE_HEADER_CELL_SUFFIX);
+    }
+    if (getVatMode() != null) {
+      vatCol = c;
+      table.setText(r, c++, Localized.dictionary().vat(), STYLE_VAT + STYLE_HEADER_CELL_SUFFIX);
+    }
+
+    totalCol = c;
+    table.setText(r, c, BeeUtils.joinWords(Localized.dictionary().total(), getCurrencyName()),
+        STYLE_TOTAL + STYLE_HEADER_CELL_SUFFIX);
 
     table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
 
@@ -555,9 +679,11 @@ class TradeItemPicker extends Flow {
 
     r++;
     for (BeeRow item : items) {
+      long id = item.getId();
+
       c = 0;
 
-      table.setValue(r, c++, item.getId(), STYLE_ID + STYLE_CELL_SUFFIX);
+      table.setValue(r, c++, id, STYLE_ID + STYLE_CELL_SUFFIX);
 
       for (String itemColumn : itemColumns) {
         table.setText(r, c++, render(items, item, itemColumn),
@@ -579,21 +705,71 @@ class TradeItemPicker extends Flow {
         c++;
       }
 
-      Double qty = selection.get(item.getId());
-      table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY + STYLE_CELL_SUFFIX);
+      Double qty;
+      if (documentSums.containsItem(id)) {
+        qty = documentSums.getQuantity(id);
+      } else {
+        qty = null;
+      }
 
-      DomUtils.setDataIndex(table.getRow(r), item.getId());
+      table.setWidget(r, qtyCol, renderQty(qtyColumn, qty), STYLE_QTY + STYLE_CELL_SUFFIX);
 
-      table.getRowFormatter().addStyleName(r, STYLE_ITEM_ROW);
       if (BeeUtils.isPositive(qty)) {
+        table.setText(r, priceCol, renderPrice(documentSums.getPrice(id)),
+            STYLE_PRICE + STYLE_CELL_SUFFIX);
+
+        if (!BeeConst.isUndef(discountCol)) {
+          Pair<Double, Boolean> discountInfo = documentSums.getDiscountInfo(id);
+          if (discountInfo != null) {
+            table.setText(r, discountCol,
+                renderDiscountInfo(discountInfo.getA(), discountInfo.getB()),
+                STYLE_DISCOUNT + STYLE_CELL_SUFFIX);
+          }
+        }
+
+        if (!BeeConst.isUndef(vatCol)) {
+          Pair<Double, Boolean> vatInfo = documentSums.getVatInfo(id);
+          if (vatInfo != null) {
+            table.setText(r, vatCol, renderVatInfo(vatInfo.getA(), vatInfo.getB()),
+                STYLE_VAT + STYLE_CELL_SUFFIX);
+          }
+        }
+
+        table.setText(r, totalCol, renderTotal(documentSums.getItemTotal(id)),
+            STYLE_TOTAL + STYLE_CELL_SUFFIX);
+
         table.getRowFormatter().addStyleName(r, STYLE_SELECTED_ROW);
       }
 
+      DomUtils.setDataIndex(table.getRow(r), id);
+
+      table.getRowFormatter().addStyleName(r, STYLE_ITEM_ROW);
       if (item.isTrue(serviceTagIndex)) {
         table.getRowFormatter().addStyleName(r, STYLE_SERVICE_ROW);
       }
 
       r++;
+    }
+
+    if (documentSums.hasItems()) {
+      table.setText(r, qtyCol, BeeUtils.toString(documentSums.sumQuantity()),
+          STYLE_QTY + STYLE_FOOTER_CELL_SUFFIX);
+      table.setText(r, priceCol, renderAmount(documentSums.getAmount()),
+          STYLE_PRICE + STYLE_FOOTER_CELL_SUFFIX);
+
+      if (!BeeConst.isUndef(discountCol)) {
+        table.setText(r, discountCol, renderAmount(documentSums.getDiscount()),
+            STYLE_DISCOUNT + STYLE_FOOTER_CELL_SUFFIX);
+      }
+      if (!BeeConst.isUndef(vatCol)) {
+        table.setText(r, vatCol, renderAmount(documentSums.getVat()),
+            STYLE_VAT + STYLE_FOOTER_CELL_SUFFIX);
+      }
+
+      table.setText(r, totalCol, renderTotal(documentSums.getTotal()),
+          STYLE_TOTAL + STYLE_FOOTER_CELL_SUFFIX);
+
+      table.getRowFormatter().addStyleName(r, STYLE_FOOTER_ROW);
     }
 
     itemPanel.add(table);
@@ -612,17 +788,92 @@ class TradeItemPicker extends Flow {
   }
 
   private void onQuantityChange(Element source, Double qty) {
-    TableRowElement row = DomUtils.getParentRow(source, true);
-    long id = DomUtils.getDataIndexLong(row);
+    TableRowElement rowElement = DomUtils.getParentRow(source, true);
+    long id = DomUtils.getDataIndexLong(rowElement);
 
     if (DataUtils.isId(id)) {
       if (BeeUtils.isPositive(qty)) {
-        row.addClassName(STYLE_SELECTED_ROW);
-        selection.put(id, qty);
+        rowElement.addClassName(STYLE_SELECTED_ROW);
+
+        BeeRow item = getRow(id);
+        if (item != null) {
+          ItemPrice ip = getItemPriceForRender(data);
+          Double price = (ip == null) ? null : item.getDouble(getDataIndex(ip.getPriceColumn()));
+
+          Double vat = null;
+          if (getVatMode() != null && item.isTrue(getDataIndex(COL_ITEM_VAT))) {
+            vat = BeeUtils.nvl(item.getDouble(getDataIndex(COL_ITEM_VAT_PERCENT)),
+                getDefaultVatPercent());
+          }
+          Boolean vatIsPercent = TradeUtils.vatIsPercent(vat);
+
+          documentSums.add(id, qty, price, null, null, vat, vatIsPercent);
+        }
 
       } else {
-        row.removeClassName(STYLE_SELECTED_ROW);
-        selection.remove(id);
+        rowElement.removeClassName(STYLE_SELECTED_ROW);
+        documentSums.deleteItem(id);
+      }
+
+      refreshSums(id, rowElement);
+    }
+  }
+
+  private void refreshSums(long id, TableRowElement rowElement) {
+    Element el;
+
+    if (documentSums.containsItem(id)) {
+      el = Selectors.getElementByClassName(rowElement, STYLE_PRICE + STYLE_CELL_SUFFIX);
+      if (el != null) {
+        el.setInnerText(renderPrice(documentSums.getPrice(id)));
+      }
+
+      el = Selectors.getElementByClassName(rowElement, STYLE_DISCOUNT + STYLE_CELL_SUFFIX);
+      if (el != null) {
+        Pair<Double, Boolean> discountInfo = documentSums.getDiscountInfo(id);
+
+        if (discountInfo == null) {
+          DomUtils.clearText(el);
+        } else {
+          el.setInnerText(renderDiscountInfo(discountInfo.getA(), discountInfo.getB()));
+        }
+      }
+
+      el = Selectors.getElementByClassName(rowElement, STYLE_VAT + STYLE_CELL_SUFFIX);
+      if (el != null) {
+        Pair<Double, Boolean> vatInfo = documentSums.getVatInfo(id);
+
+        if (vatInfo == null) {
+          DomUtils.clearText(el);
+        } else {
+          el.setInnerText(renderVatInfo(vatInfo.getA(), vatInfo.getB()));
+        }
+      }
+
+      el = Selectors.getElementByClassName(rowElement, STYLE_TOTAL + STYLE_CELL_SUFFIX);
+      if (el != null) {
+        el.setInnerText(renderTotal(documentSums.getItemTotal(id)));
+      }
+
+    } else {
+      el = Selectors.getElementByClassName(rowElement, STYLE_PRICE + STYLE_CELL_SUFFIX);
+      if (el != null) {
+        DomUtils.clearText(el);
+      }
+
+      el = Selectors.getElementByClassName(rowElement, STYLE_DISCOUNT + STYLE_CELL_SUFFIX);
+      if (el != null) {
+        DomUtils.clearText(el);
+      }
+
+      el = Selectors.getElementByClassName(rowElement, STYLE_VAT + STYLE_CELL_SUFFIX);
+      if (el != null) {
+        DomUtils.clearText(el);
+      }
+
+      el = Selectors.getElementByClassName(rowElement, STYLE_TOTAL + STYLE_CELL_SUFFIX);
+      if (el != null) {
+        DomUtils.clearText(el);
       }
     }
   }
@@ -642,5 +893,21 @@ class TradeItemPicker extends Flow {
     }
 
     return warehouses;
+  }
+
+  private void setData(BeeRowSet data) {
+    this.data = data;
+  }
+
+  private BeeRow getRow(Long id) {
+    if (data != null && id != null) {
+      return data.getRowById(id);
+    } else {
+      return null;
+    }
+  }
+
+  private int getDataIndex(String column) {
+    return (data == null) ? BeeConst.UNDEF : data.getColumnIndex(column);
   }
 }
