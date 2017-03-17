@@ -11,6 +11,7 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
@@ -54,10 +55,14 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
 import com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -174,6 +179,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
       case SVC_JOIN_INVOICES:
         response = joinInvoices(reqInfo);
+        break;
+
+      case SVC_ORDER_REPORTS:
+        response = getReportData();
         break;
 
       default:
@@ -448,6 +457,51 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     return getTmplItems(items);
+  }
+
+  private ResponseObject getReportData() {
+    SqlSelect select = new SqlSelect()
+        .addFields(TBL_ORDERS, COL_ORDERS_STATUS, COL_START_DATE, COL_END_DATE, COL_TRADE_NUMBER)
+        .addFields(TBL_ORDER_ITEMS, COL_DISCOUNT, COL_ITEM_PRICE, COL_TRADE_ITEM_QUANTITY,
+            COL_TRADE_ITEM_NOTE, COL_SUPPLIER_TERM)
+        .addField(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS), COL_ORDER_ITEM)
+        .addField("SupplierCompany", COL_COMPANY_NAME, COL_TRADE_SUPPLIER)
+        .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE)
+        .addField(ALS_ITEM_TYPES, COL_CATEGORY_NAME, ALS_ITEM_TYPE_NAME)
+        .addField(ALS_ITEM_GROUPS, COL_CATEGORY_NAME, ALS_ITEM_GROUP_NAME)
+        .addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME)
+        .addFields(TBL_ORDER_TYPES, TransportConstants.COL_TYPE_NAME)
+        .addFields(TBL_ORDER_SERIES, COL_SERIES_NAME)
+        .addFields(TBL_WAREHOUSES, ClassifierConstants.COL_WAREHOUSE_CODE)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+        .addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME),
+          SqlUtils.constant(BeeConst.STRING_EMPTY)),
+          SqlUtils.constant(BeeConst.STRING_SPACE),
+          SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME),
+            SqlUtils.constant(BeeConst.STRING_EMPTY))), TradeConstants.COL_TRADE_MANAGER)
+        .addFields(TBL_ORDER_ITEMS, COL_ORDER)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
+        .addFromLeft(TBL_ORDER_TYPES, sys.joinTables(TBL_ORDER_TYPES, TBL_ORDERS, COL_TYPE))
+        .addFromLeft(TBL_ORDER_SERIES, sys.joinTables(TBL_ORDER_SERIES, TBL_ORDERS, COL_SERIES))
+        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_COMPANY))
+        .addFromLeft(TBL_COMPANIES, "SupplierCompany", sys.joinTables(TBL_COMPANIES,
+            "SupplierCompany", TBL_ORDER_ITEMS, COL_TRADE_SUPPLIER))
+        .addFromLeft(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
+        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_TRADE_MANAGER))
+        .addFromLeft(TBL_COMPANY_PERSONS, sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS,
+            sys.getIdName(TBL_USERS)))
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
+            sys.getIdName(TBL_COMPANY_PERSONS)))
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromLeft(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
+        .addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES, sys.joinTables(TBL_ITEM_CATEGORY_TREE,
+            ALS_ITEM_TYPES, TBL_ITEMS, COL_TYPE))
+        .addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS,
+            sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS, TBL_ITEMS, COL_ITEM_GROUP))
+        .setWhere(SqlUtils.isNull(TBL_ORDER_ITEMS, COL_TRADE_ITEM_PARENT));
+
+    return ResponseObject.response(qs.getData(select));
   }
 
   private ResponseObject createInvoiceItems(RequestInfo reqInfo) {

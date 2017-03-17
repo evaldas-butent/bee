@@ -5,4 +5,5 @@ name="Orders" label="=orders" order="95" module="Orders"
   <Item name="Offers" label="=offers" service="grid" parameters="Offers" />
   <Item name="Orders" label="=orders" service="grid" parameters="Orders" />
   <Item label="=templates" name="OrdersTemplates" parameters="OrdersTemplates" service="grid"/>
+  <Item name="OrderReports" label="=report" service="report" parameters="OrderReports" />
 </Entry>

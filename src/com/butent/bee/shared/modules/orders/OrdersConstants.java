@@ -62,8 +62,12 @@ public final class OrdersConstants {
   public static final String SVC_GET_ALL_ORDER_ITEMS = "GetAllOrderItems";
   public static final String SVC_JOIN_INVOICES = "JoinInvoices";
 
+  public static final String SVC_ORDER_REPORTS = "OrderReports";
+
   public static final String TBL_ORDER_ITEMS = "OrderItems";
   public static final String TBL_ORDERS = "Orders";
+  public static final String TBL_ORDER_TYPES = "OrderTypes";
+  public static final String TBL_ORDER_SERIES = "OrderSeries";
 
   public static final String VIEW_ORDERS = "Orders";
   public static final String VIEW_ORDER_CHILD_INVOICES = "OrderChildInvoices";
@@ -95,6 +99,7 @@ public final class OrdersConstants {
   public static final String COL_START_DATE = "StartDate";
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDERS_STATUS = "Status";
+  public static final String COL_TYPE = "Type";
   public static final String COL_RESERVED_REMAINDER = "ResRemainder";
   public static final String COL_TEMPLATE = "Template";
   public static final String COL_SOURCE = "Source";
@@ -104,6 +109,7 @@ public final class OrdersConstants {
   public static final String COL_SUPPLIER_TERM = "SupplierTerm";
   public static final String COL_INVISIBLE_DISCOUNT = "InvisibleDiscount";
   public static final String COL_SALE_ITEM = "SaleItem";
+  public static final String COL_DISCOUNT = "Discount";
 
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
   public static final String PRP_COMPLETED_INVOICES = "CompletedInvoices";

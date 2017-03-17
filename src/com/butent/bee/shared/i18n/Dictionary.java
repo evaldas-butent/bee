@@ -3746,6 +3746,8 @@ public interface Dictionary {
 
   default String ordQtyIsTooBig() {return g("ordQtyIsTooBig");}
 
+  default String ordReport() {return g("ordReport");}
+
   default String ordResNotIncrease() {return g("ordResNotIncrease");}
 
   default String ordResQty() {return g("ordResQty");}
