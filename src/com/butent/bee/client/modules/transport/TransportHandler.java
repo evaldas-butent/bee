@@ -239,16 +239,20 @@ public final class TransportHandler {
         new FileGridInterceptor(COL_CARGO, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
-    if (!BeeKeeper.getUser().isAdministrator()) {
-      Filter mngFilter = Filter.or(BeeKeeper.getUser().getFilter(COL_ORDER_MANAGER),
-          Filter.isNull(COL_ORDER_MANAGER));
-      Long s = Global.getParameterRelation(PRM_SALES_RESPONSIBILITY);
+    Long s = Global.getParameterRelation(PRM_SALES_RESPONSIBILITY);
 
-      if (DataUtils.isId(s)) {
-        mngFilter = Filter.or(mngFilter, Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, s));
-      }
-      GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
-      GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
+    if (!BeeKeeper.getUser().isAdministrator() && DataUtils.isId(s)) {
+      Filter responsibilityFilter = Filter.equals(COL_COMPANY_USER_RESPONSIBILITY, s);
+      Queries.getRowCount(VIEW_COMPANY_USERS, Filter.and(responsibilityFilter,
+          Filter.equals(COL_USER, BeeKeeper.getUserId())), new Queries.IntCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          if (BeeUtils.isPositive(result)) {
+            GridFactory.registerImmutableFilter(VIEW_ORDERS, responsibilityFilter);
+            GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, responsibilityFilter);
+          }
+        }
+      });
     }
     GridFactory.registerGridInterceptor(TBL_CARGO_LOADING, new CargoHandlingGrid());
     GridFactory.registerGridInterceptor(TBL_CARGO_UNLOADING, new CargoHandlingGrid());
