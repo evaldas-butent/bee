@@ -1912,8 +1912,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     SimpleRowSet data =
         qs.getData(new SqlSelect()
             .addFields(TBL_REQUEST_FILES, COL_FILE, COL_CAPTION)
-            .addFields(TBL_FILES, COL_FILE_NAME,
-                COL_FILE_SIZE, COL_FILE_TYPE)
+            .addFields(TBL_FILES, COL_FILE_HASH, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
             .addFrom(TBL_REQUEST_FILES)
             .addFromInner(TBL_FILES,
                 sys.joinTables(TBL_FILES, TBL_REQUEST_FILES, COL_FILE))
@@ -1923,6 +1922,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     for (SimpleRow file : data) {
       FileInfo sf = new FileInfo(file.getLong(COL_FILE),
+          file.getValue(COL_FILE_HASH),
           file.getValue(COL_FILE_NAME),
           file.getLong(COL_FILE_SIZE),
           file.getValue(COL_FILE_TYPE));
@@ -2147,6 +2147,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     for (BeeRow row : rowSet.getRows()) {
       FileInfo sf = new FileInfo(DataUtils.getLong(rowSet, row, COL_FILE),
+          DataUtils.getString(rowSet, row, COL_FILE_HASH),
           DataUtils.getString(rowSet, row, ALS_FILE_NAME),
           DataUtils.getLong(rowSet, row, ALS_FILE_SIZE),
           DataUtils.getString(rowSet, row, ALS_FILE_TYPE));

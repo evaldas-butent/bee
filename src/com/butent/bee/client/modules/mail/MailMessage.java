@@ -350,10 +350,10 @@ public class MailMessage extends AbstractFormInterceptor {
                   break;
 
                 case ATTACHMENTS:
-                  Map<Long, String> files = new HashMap<>();
+                  Map<String, String> files = new HashMap<>();
 
                   for (FileInfo fileInfo : attachments) {
-                    files.put(fileInfo.getId(),
+                    files.put(fileInfo.getHash(),
                         BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
                   }
                   BrowsingContext.open(FileUtils.getUrl(Localized.dictionary().mailAttachments()
@@ -592,6 +592,7 @@ public class MailMessage extends AbstractFormInterceptor {
           Long fileSize = attachment.getLong(AdministrationConstants.COL_FILE_SIZE);
 
           FileInfo fileInfo = new FileInfo(attachment.getLong(AdministrationConstants.COL_FILE),
+              attachment.getValue(AdministrationConstants.COL_FILE_HASH),
               attachment.getValue(AdministrationConstants.COL_FILE_NAME), fileSize,
               attachment.getValue(AdministrationConstants.COL_FILE_TYPE));
 

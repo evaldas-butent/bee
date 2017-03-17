@@ -4732,8 +4732,7 @@ public final class CliWorker {
 
       for (final NewFileInfo fi : files) {
         logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
-        FileUtils.uploadFile(fi,
-            result -> logger.debug("uploaded", fi.getName(), ", result:", result));
+        FileUtils.uploadFile(fi, result -> logger.debug("uploaded", fi.getName()));
       }
     });
 
