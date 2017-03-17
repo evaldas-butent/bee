@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_NOTE;
 import static com.butent.bee.shared.modules.transport.TransportConstants.COL_NUMBER;
 
@@ -303,7 +304,14 @@ public class OrderForm extends PrintFormInterceptor {
     super.getReportParameters(defaultParameters ->
         ClassifierUtils.getCompaniesInfo(companies, companiesInfo -> {
           defaultParameters.putAll(companiesInfo);
-          parametersConsumer.accept(defaultParameters);
+          Queries.getRowCount(VIEW_ORDER_ITEMS, Filter.and(Filter.equals(COL_ORDER,
+              getActiveRowId()), Filter.notNull(COL_TRADE_DISCOUNT)), new IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              defaultParameters.put("DiscountCount", BeeUtils.toString(result));
+              parametersConsumer.accept(defaultParameters);
+            }
+          });
         }));
   }
 

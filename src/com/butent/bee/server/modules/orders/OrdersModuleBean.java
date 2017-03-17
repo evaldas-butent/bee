@@ -301,6 +301,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           if (Objects.equals(viewName, VIEW_ORDER_SALES_FILTERED)) {
             filterOrderSales(rowSet);
           }
+
+          if (BeeUtils.inList(viewName, VIEW_ORDER_ITEMS, VIEW_ORDER_TMPL_ITEMS)) {
+            fillOrderDiscounts(rowSet);
+          }
         }
       }
 
@@ -725,12 +729,13 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     SimpleRowSet saleItemsSet = qs.getData(slcSaleItems);
     BeeRowSet saleItems = qs.getViewData(VIEW_SALE_ITEMS, Filter.equals(COL_SALE, saleId));
 
+    fillOrderDiscounts(saleItems);
+
     if (saleItemsSet.getNumberOfRows() == 0) {
       return ResponseObject.response(saleItems);
     }
 
     Long[] parentsColumn = saleItemsSet.getLongColumn(COL_TRADE_ITEM_PARENT);
-    Long[] saleItemsColumn = saleItemsSet.getLongColumn(COL_SALE_ITEM);
 
     Set<Long> complectIds = new HashSet<>();
     Collections.addAll(complectIds, parentsColumn);
@@ -746,12 +751,13 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       Double complectQty = complect.getDouble(complectQtyIdx);
       double componentQty = 0;
       double saleItemQty = 0;
+      Set<Long> removeIds = new HashSet<>();
 
       for (SimpleRow sr : saleItemsSet) {
         if (Objects.equals(sr.getLong(COL_TRADE_ITEM_PARENT), complect.getId())) {
           componentQty = BeeUtils.unbox(sr.getDouble(COL_TRADE_ITEM_QUANTITY));
           saleItemQty = BeeUtils.unbox(sr.getDouble("SaleItemQuantity"));
-          break;
+          removeIds.add(sr.getLong(COL_SALE_ITEM));
         }
       }
 
@@ -774,11 +780,14 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         row.setValue(DataUtils.getColumnIndex(COL_ITEM_VAT, columns), vat);
       }
 
-      saleItems.addRow(row);
-    }
+      double discount = 0.0;
+      for (BeeRow saleItem : DataUtils.filterRows(saleItems.getRows(), removeIds)) {
+        discount += BeeUtils.unbox(saleItem.getPropertyDouble(PRP_DISCOUNT_VALUE));
+        saleItems.removeRowById(saleItem.getId());
+      }
+      row.setProperty(PRP_DISCOUNT_VALUE, discount);
 
-    for (Long saleItem : saleItemsColumn) {
-      saleItems.removeRowById(saleItem);
+      saleItems.addRow(row);
     }
 
     return ResponseObject.response(saleItems);
@@ -1663,6 +1672,33 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     }
 
     return update;
+  }
+
+  private void fillOrderDiscounts(BeeRowSet rowSet) {
+    Totalizer total = new Totalizer(rowSet.getColumns());
+
+    if (DataUtils.isEmpty(rowSet)) {
+      return;
+    }
+
+    for (BeeRow row : rowSet) {
+      Double discount = 0.0;
+
+      if (!BeeUtils.isPositive(row.getPropertyInteger(ClassifierConstants.PROP_ITEM_COMPONENT))) {
+        discount = BeeUtils.unbox(total.getDiscount(row));
+      } else {
+        Long complectId = row.getId();
+
+        for (BeeRow component : qs.getViewData(rowSet.getViewName(),
+            Filter.equals(COL_TRADE_ITEM_PARENT, complectId))) {
+          discount += BeeUtils.unbox(total.getDiscount(component));
+        }
+      }
+
+      if (BeeUtils.isPositive(discount)) {
+        row.setProperty(PRP_DISCOUNT_VALUE, BeeUtils.round(discount, 2));
+      }
+    }
   }
 
   private ResponseObject filterComponents(RequestInfo reqInfo) {

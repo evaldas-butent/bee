@@ -48,6 +48,7 @@
 		<parameter name="OrderItemsDataSet" class="com.butent.bee.server.RsDataSource"/>
 		<parameter name="d" class="com.butent.bee.shared.i18n.Dictionary"/>
 		<parameter name="currency" class="java.lang.String"/>
+		<parameter name="DiscountCount" class="java.lang.String"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -69,7 +70,7 @@
 			<variableExpression><![CDATA[$V{totalizer}.getVat($P{OrderItemsDataSet}.getRowValue()) == null ? 0.00 : $V{totalizer}.getVat($P{OrderItemsDataSet}.getRowValue())]]></variableExpression>
 		</variable>
 		<variable name="amount" class="java.lang.Double">
-			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{OrderItemsDataSet}.getRowValue()) - BeeUtils.unbox($V{vatAmount})]]></variableExpression>
+			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{OrderItemsDataSet}.getRowValue())]]></variableExpression>
 		</variable>
 		<variable name="totalVatAmount" class="java.lang.Double" calculation="Sum">
 			<variableExpression><![CDATA[$V{vatAmount}]]></variableExpression>
@@ -82,7 +83,7 @@
 			<variableExpression><![CDATA[$F{Quantity}]]></variableExpression>
 		</variable>
 		<variable name="discount" class="java.lang.Double">
-			<variableExpression><![CDATA[$V{totalizer}.getDiscount($P{OrderItemsDataSet}.getRowValue())]]></variableExpression>
+			<variableExpression><![CDATA[$P{OrderItemsDataSet}.getRowValue().getPropertyDouble("DiscountValue")]]></variableExpression>
 		</variable>
 		<variable name="totalDiscount" class="java.lang.Double" calculation="Sum">
 			<variableExpression><![CDATA[$V{discount}]]></variableExpression>
@@ -126,6 +127,7 @@
 	<parameter name="ManagerPhone" class="java.lang.String"/>
 	<parameter name="ManagerMobile" class="java.lang.String"/>
 	<parameter name="ManagerPosition" class="java.lang.String"/>
+	<parameter name="DiscountCount" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -446,7 +448,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="OrderItems" uuid="1641c0c6-ea84-42f2-9d3b-11d54f509241">
+					<datasetRun subDataset="OrderItems" uuid="3cebdf96-65c3-4054-9f9a-c4791acab7e8">
 						<datasetParameter name="d">
 							<datasetParameterExpression><![CDATA[$V{d}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -455,6 +457,9 @@
 						</datasetParameter>
 						<datasetParameter name="OrderItemsDataSet">
 							<datasetParameterExpression><![CDATA[$P{OrderItemsDataSet}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="DiscountCount">
+							<datasetParameterExpression><![CDATA[$P{DiscountCount}]]></datasetParameterExpression>
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[$P{OrderItemsDataSet}]]></dataSourceExpression>
 					</datasetRun>
@@ -480,12 +485,12 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="41" uuid="1f6d4f15-2a08-4670-88f6-b37762469b43">
+					<jr:column width="51" uuid="1f6d4f15-2a08-4670-88f6-b37762469b43">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
 						<jr:tableFooter height="28" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="41" height="30" uuid="70dcd25b-4f92-4789-b864-b0c5dedc5f17"/>
+								<reportElement style="TableHeader" x="0" y="0" width="51" height="30" uuid="70dcd25b-4f92-4789-b864-b0c5dedc5f17"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="6" isBold="true"/>
 								</textElement>
@@ -494,7 +499,7 @@
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="15">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableDetail" x="0" y="0" width="41" height="15" uuid="3d1ed0b6-d5eb-4a73-be2e-c9472231fe84">
+								<reportElement style="TableDetail" x="0" y="0" width="51" height="15" uuid="3d1ed0b6-d5eb-4a73-be2e-c9472231fe84">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 								</reportElement>
@@ -505,12 +510,14 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="130" uuid="cfd8a73b-b23e-40a0-9d00-0d4e97178e66">
+					<jr:column width="145" uuid="cfd8a73b-b23e-40a0-9d00-0d4e97178e66">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<jr:tableFooter height="28" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
+							<property name="com.jaspersoft.studio.unit.width" value="px"/>
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="130" height="30" uuid="9235679f-73b1-4893-9920-e3fe959a8e62"/>
+								<reportElement style="TableHeader" x="0" y="0" width="145" height="30" uuid="9235679f-73b1-4893-9920-e3fe959a8e62"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font size="6" isBold="true"/>
 								</textElement>
@@ -519,7 +526,7 @@
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="15">
 							<textField isStretchWithOverflow="true">
-								<reportElement style="TableDetail" x="0" y="0" width="130" height="15" uuid="8e709781-deb4-499b-9c2b-39d9c0507d87">
+								<reportElement style="TableDetail" x="0" y="0" width="145" height="15" uuid="8e709781-deb4-499b-9c2b-39d9c0507d87">
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 								</reportElement>
@@ -578,32 +585,10 @@
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="40" uuid="9adbe5ac-41bb-4995-9669-c13d3bf5ea5a">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
-						<jr:tableFooter height="28" rowSpan="1"/>
-						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
-							<textField isStretchWithOverflow="true">
-								<reportElement style="TableHeader" x="0" y="0" width="40" height="30" uuid="bff36ca0-8e3c-4103-bd76-68a2f4f70a18"/>
-								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font size="6" isBold="true"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$P{d}.discount()]]></textFieldExpression>
-							</textField>
-						</jr:columnHeader>
-						<jr:detailCell style="TableCell" height="15">
-							<textField pattern="0.00">
-								<reportElement style="TableDetail" x="0" y="0" width="40" height="15" uuid="9a3f2664-354c-4188-892d-1527584b3d20"/>
-								<textElement>
-									<font size="6"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{Discount}]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
 					<jr:columnGroup width="114" uuid="08355ea9-feda-47e2-ba0b-3a234f5495d7">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Columns [2]"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-						<jr:tableFooter height="28">
+						<jr:tableFooter height="28" rowSpan="1">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
 							<textField>
 								<reportElement style="TableDetail" mode="Transparent" x="0" y="0" width="114" height="7" uuid="ed3c4696-4cb4-44ad-9da7-62d9e6e5b706">
@@ -630,7 +615,7 @@
 							</textField>
 							<textField>
 								<reportElement style="TableDetail" x="0" y="21" width="114" height="7" uuid="e5afa40d-7dec-42d1-9f6a-f3cb3862d5dd">
-									<printWhenExpression><![CDATA[$V{totalDiscount} > 0]]></printWhenExpression>
+									<printWhenExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0]]></printWhenExpression>
 								</reportElement>
 								<textElement textAlignment="Right">
 									<font fontName="DejaVu Sans" size="6"/>
@@ -639,7 +624,7 @@
 							</textField>
 						</jr:tableFooter>
 						<jr:column width="53" uuid="8cea00a4-64d2-4315-83a3-035276bd4991">
-							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
 							<jr:tableFooter height="0" rowSpan="1"/>
 							<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 								<textField isStretchWithOverflow="true">
@@ -656,12 +641,12 @@
 									<textElement textAlignment="Right" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="6"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.round(($V{amount} - $V{vatAmount}) / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
 						<jr:column width="61" uuid="aedb7e57-dc17-4bc6-be8d-569fc5f5ae5d">
-							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
 							<jr:tableFooter height="0" rowSpan="1"/>
 							<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 								<textField>
@@ -669,7 +654,7 @@
 									<textElement textAlignment="Center" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="6" isBold="true"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$P{d}.priceEURWithVAT()]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0 ? "Kaina EUR, su Nuolaida ir PVM" : $P{d}.priceEURWithVAT()]]></textFieldExpression>
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="15">
@@ -678,20 +663,20 @@
 									<textElement textAlignment="Right" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="6"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue() + $V{vatAmount} / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
 					</jr:columnGroup>
 					<jr:column width="50" uuid="cda1270c-9317-4167-8cd3-e1837b678e5b">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column9"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
 						<jr:tableFooter height="28" rowSpan="1">
 							<textField pattern="0.00">
 								<reportElement style="TableDetail" x="0" y="0" width="50" height="7" uuid="aa0cf847-3505-4611-92c2-20fff709d4a0"/>
 								<textElement textAlignment="Right">
 									<font size="6"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{totalAmount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{totalAmount} - $V{totalVatAmount}]]></textFieldExpression>
 							</textField>
 							<textField pattern="0.00">
 								<reportElement style="TableDetail" x="0" y="7" width="50" height="7" uuid="d4a7f390-7413-426d-ad76-6cd8dd2d9180"/>
@@ -705,11 +690,11 @@
 								<textElement textAlignment="Right">
 									<font size="6" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{totalAmount} + $V{totalVatAmount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{totalAmount}]]></textFieldExpression>
 							</textField>
 							<textField pattern="0.00">
 								<reportElement key="" style="TableDetail" x="0" y="21" width="50" height="7" uuid="402ef8be-1d6a-46b0-a9e8-b660960c2f66">
-									<printWhenExpression><![CDATA[$V{totalDiscount} > 0]]></printWhenExpression>
+									<printWhenExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0]]></printWhenExpression>
 								</reportElement>
 								<textElement textAlignment="Right">
 									<font size="6"/>
@@ -732,37 +717,37 @@
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="6"/>
 								</textElement>
-								<textFieldExpression><![CDATA[BeeUtils.round($V{amount} + $V{vatAmount} , 5)]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="50" uuid="62a0d805-118f-4cd8-b4a4-70e90100432c">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column10"/>
+					<jr:column width="60" uuid="62a0d805-118f-4cd8-b4a4-70e90100432c">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column9"/>
 						<jr:tableFooter height="28" rowSpan="1">
 							<textField>
-								<reportElement style="TableDetail" x="0" y="0" width="50" height="7" uuid="6f266bfd-2a47-438b-9154-6d2bda14de28"/>
+								<reportElement style="TableDetail" x="0" y="0" width="60" height="7" uuid="6f266bfd-2a47-438b-9154-6d2bda14de28"/>
 								<textElement>
 									<font size="6"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$P{currency}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement style="TableDetail" x="0" y="7" width="50" height="7" uuid="7a21bc3f-bd42-4dad-8141-e5639ee11a5c"/>
+								<reportElement style="TableDetail" x="0" y="7" width="60" height="7" uuid="7a21bc3f-bd42-4dad-8141-e5639ee11a5c"/>
 								<textElement>
 									<font size="6"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$P{currency}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement style="TableDetail" x="0" y="14" width="50" height="7" uuid="efe54866-1b91-4107-a0b8-f06b46dac75f"/>
+								<reportElement style="TableDetail" x="0" y="14" width="60" height="7" uuid="efe54866-1b91-4107-a0b8-f06b46dac75f"/>
 								<textElement>
 									<font size="6" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$P{currency}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement key="" style="TableDetail" x="0" y="21" width="50" height="7" uuid="2629aa33-954c-4a2f-95c7-695f4c9defab">
-									<printWhenExpression><![CDATA[$V{totalDiscount} > 0]]></printWhenExpression>
+								<reportElement key="" style="TableDetail" x="0" y="21" width="60" height="7" uuid="2629aa33-954c-4a2f-95c7-695f4c9defab">
+									<printWhenExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0]]></printWhenExpression>
 								</reportElement>
 								<textElement>
 									<font size="6"/>
@@ -772,7 +757,7 @@
 						</jr:tableFooter>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 							<textField>
-								<reportElement style="TableHeader" x="0" y="0" width="50" height="30" uuid="0a89b647-c97a-476d-ad26-00d9b76c56ba"/>
+								<reportElement style="TableHeader" x="0" y="0" width="60" height="30" uuid="0a89b647-c97a-476d-ad26-00d9b76c56ba"/>
 								<textElement>
 									<font size="6"/>
 								</textElement>
@@ -781,7 +766,7 @@
 						</jr:columnHeader>
 						<jr:detailCell style="TableCell" height="15">
 							<textField>
-								<reportElement key="" style="TableDetail" x="0" y="0" width="50" height="15" uuid="978b0914-966c-4799-819a-eadf20584b4f"/>
+								<reportElement key="" style="TableDetail" x="0" y="0" width="60" height="15" uuid="978b0914-966c-4799-819a-eadf20584b4f"/>
 								<textElement>
 									<font size="6"/>
 								</textElement>
@@ -790,7 +775,7 @@
 						</jr:detailCell>
 					</jr:column>
 					<jr:column width="40" uuid="f3b87198-95d2-46b8-9768-9814888a2708">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column11"/>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column10"/>
 						<jr:tableFooter height="28" rowSpan="1"/>
 						<jr:columnHeader style="TableCell" height="30" rowSpan="1">
 							<textField>

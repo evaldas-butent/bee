@@ -80,12 +80,15 @@
     </render>
   </CalcColumn>
 
-  <DataColumn name="Discount">
-    <footer evaluator="discount" scale="2" />
+  <DataColumn name="Discount" >
     <editable>
       <ui:expression>row.ItemComponent &lt; 1</ui:expression>
     </editable>
   </DataColumn>
+
+  <PropColumn name="DiscountValue" type="double" format="0.00" caption="=discount" >
+    <footer aggregate="sum" format="0.00" />
+  </PropColumn>
 
   <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" >
     <editable>

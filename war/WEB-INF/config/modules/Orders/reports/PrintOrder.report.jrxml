@@ -48,6 +48,7 @@
 		<parameter name="OrderItemsDataSet" class="com.butent.bee.server.RsDataSource"/>
 		<parameter name="d" class="com.butent.bee.shared.i18n.Dictionary"/>
 		<parameter name="currency" class="java.lang.String"/>
+		<parameter name="DiscountCount" class="java.lang.String"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -69,7 +70,7 @@
 			<variableExpression><![CDATA[$V{totalizer}.getVat($P{OrderItemsDataSet}.getRowValue()) == null ? 0.00 : $V{totalizer}.getVat($P{OrderItemsDataSet}.getRowValue())]]></variableExpression>
 		</variable>
 		<variable name="amount" class="java.lang.Double">
-			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{OrderItemsDataSet}.getRowValue()) - BeeUtils.unbox($V{vatAmount})]]></variableExpression>
+			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{OrderItemsDataSet}.getRowValue())]]></variableExpression>
 		</variable>
 		<variable name="totalVatAmount" class="java.lang.Double" calculation="Sum">
 			<variableExpression><![CDATA[$V{vatAmount}]]></variableExpression>
@@ -82,7 +83,7 @@
 			<variableExpression><![CDATA[$F{Quantity}]]></variableExpression>
 		</variable>
 		<variable name="discount" class="java.lang.Double">
-			<variableExpression><![CDATA[$V{totalizer}.getDiscount($P{OrderItemsDataSet}.getRowValue())]]></variableExpression>
+			<variableExpression><![CDATA[$P{OrderItemsDataSet}.getRowValue().getPropertyDouble("DiscountValue")]]></variableExpression>
 		</variable>
 		<variable name="totalDiscount" class="java.lang.Double" calculation="Sum">
 			<variableExpression><![CDATA[$V{discount}]]></variableExpression>
@@ -126,6 +127,7 @@
 	<parameter name="ManagerPhone" class="java.lang.String"/>
 	<parameter name="ManagerMobile" class="java.lang.String"/>
 	<parameter name="ManagerPosition" class="java.lang.String"/>
+	<parameter name="DiscountCount" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -217,11 +219,11 @@
 				<textFieldExpression><![CDATA[$V{d}.printInvoiceBuyer()]]></textFieldExpression>
 			</textField>
 			<frame>
-				<reportElement x="0" y="124" width="279" height="50" isPrintWhenDetailOverflows="true" uuid="b0528bd9-9cc8-4fb6-89a9-77413b8343bb">
+				<reportElement positionType="Float" x="0" y="124" width="279" height="50" isPrintWhenDetailOverflows="true" uuid="b0528bd9-9cc8-4fb6-89a9-77413b8343bb">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="0" y="0" width="279" height="10" uuid="734b34bd-673a-4a9e-a9a4-d3cb1aca3184">
+					<reportElement positionType="Float" x="0" y="0" width="279" height="10" isRemoveLineWhenBlank="true" uuid="734b34bd-673a-4a9e-a9a4-d3cb1aca3184">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<textElement>
@@ -230,7 +232,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.join(", ",  $P{SupplierName}, $P{SupplierTypeName})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement mode="Transparent" x="0" y="10" width="279" height="10" isRemoveLineWhenBlank="true" uuid="a0923265-7e99-4dd6-bf16-8f45a08c1810">
+					<reportElement positionType="Float" mode="Transparent" x="0" y="10" width="279" height="10" isRemoveLineWhenBlank="true" uuid="a0923265-7e99-4dd6-bf16-8f45a08c1810">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<printWhenExpression><![CDATA[$P{SupplierCode} != null]]></printWhenExpression>
@@ -241,7 +243,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{d}.companyCode(), $P{SupplierCode})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="0" y="20" width="279" height="10" isRemoveLineWhenBlank="true" uuid="0cfd95a7-44b9-4908-a242-6506378d45f5">
+					<reportElement positionType="Float" x="0" y="20" width="279" height="10" isRemoveLineWhenBlank="true" uuid="0cfd95a7-44b9-4908-a242-6506378d45f5">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<printWhenExpression><![CDATA[$P{SupplierVATCode} != null]]></printWhenExpression>
@@ -252,7 +254,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{d}.companyVATCode(), $P{SupplierVATCode})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="0" y="30" width="279" height="10" isRemoveLineWhenBlank="true" uuid="37fbf233-dda9-40a3-867c-4de29927624a">
+					<reportElement positionType="Float" x="0" y="30" width="279" height="10" isRemoveLineWhenBlank="true" uuid="37fbf233-dda9-40a3-867c-4de29927624a">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<printWhenExpression><![CDATA[$P{SupplierAddress} != null]]></printWhenExpression>
@@ -294,7 +296,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="0" y="0" width="275" height="10" uuid="8594fae9-422c-4abd-8e39-251f042884e2">
+					<reportElement positionType="Float" x="0" y="0" width="275" height="10" isRemoveLineWhenBlank="true" uuid="8594fae9-422c-4abd-8e39-251f042884e2">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<textElement>
@@ -303,7 +305,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.join(", ",  $P{CustomerName}, $P{CustomerTypeName})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="0" y="10" width="275" height="10" isRemoveLineWhenBlank="true" uuid="42cbd198-d552-4820-bb31-6238dd206646">
+					<reportElement positionType="Float" x="0" y="10" width="275" height="10" isRemoveLineWhenBlank="true" uuid="42cbd198-d552-4820-bb31-6238dd206646">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -315,7 +317,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{d}.companyCode(), $P{CustomerCode})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="0" y="20" width="275" height="10" isRemoveLineWhenBlank="true" uuid="32e5b8ea-4815-41db-a7d0-b030deca7c6d">
+					<reportElement positionType="Float" x="0" y="20" width="275" height="10" isRemoveLineWhenBlank="true" uuid="32e5b8ea-4815-41db-a7d0-b030deca7c6d">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -327,7 +329,7 @@
 					<textFieldExpression><![CDATA[BeeUtils.join(": ", $V{d}.companyVATCode(), $P{CustomerVATCode})]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="0" y="30" width="275" height="10" isRemoveLineWhenBlank="true" uuid="4a81bec6-1396-49b8-9f47-6aa3c843ed7c">
+					<reportElement positionType="Float" x="0" y="30" width="275" height="10" isRemoveLineWhenBlank="true" uuid="4a81bec6-1396-49b8-9f47-6aa3c843ed7c">
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						<printWhenExpression><![CDATA[$P{CustomerAddress} != null]]></printWhenExpression>
 					</reportElement>
@@ -481,7 +483,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="OrderItems" uuid="1710ca86-5f67-4ea1-96ab-74226d01b21d">
+					<datasetRun subDataset="OrderItems" uuid="8da1262a-7501-4dfb-987b-87bdc48a7540">
 						<datasetParameter name="d">
 							<datasetParameterExpression><![CDATA[$V{d}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -490,6 +492,9 @@
 						</datasetParameter>
 						<datasetParameter name="OrderItemsDataSet">
 							<datasetParameterExpression><![CDATA[$P{OrderItemsDataSet}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="DiscountCount">
+							<datasetParameterExpression><![CDATA[$P{DiscountCount}]]></datasetParameterExpression>
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[$P{OrderItemsDataSet}]]></dataSourceExpression>
 					</datasetRun>
@@ -634,7 +639,7 @@
 							</textField>
 							<textField>
 								<reportElement x="0" y="24" width="114" height="7" uuid="b65ddf48-3e34-48fd-b997-f6d44e85a227">
-									<printWhenExpression><![CDATA[$V{totalDiscount} > 0]]></printWhenExpression>
+									<printWhenExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0]]></printWhenExpression>
 								</reportElement>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font fontName="DejaVu Sans" size="6" isBold="true"/>
@@ -659,7 +664,7 @@
 									<textElement textAlignment="Right" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="6"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.round(($V{amount} - $V{vatAmount})/ $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -671,7 +676,7 @@
 									<textElement textAlignment="Center" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="6" isBold="true"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$P{d}.priceEURWithVAT()]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0 ? "Kaina EUR, su Nuolaida ir PVM" : $P{d}.priceEURWithVAT()]]></textFieldExpression>
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="15">
@@ -680,7 +685,7 @@
 									<textElement textAlignment="Right" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="6"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue() + $V{vatAmount} / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -694,7 +699,7 @@
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="6" isBold="true" isUnderline="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{totalAmount} + $V{totalVatAmount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{totalAmount}]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true" pattern="0.00">
 								<reportElement x="0" y="10" width="63" height="7" uuid="f88dd294-aa39-4b3b-9d37-7a1163f7512e"/>
@@ -712,7 +717,7 @@
 							</textField>
 							<textField pattern="0.00">
 								<reportElement x="0" y="24" width="63" height="7" uuid="13555a83-6c3e-4fba-af0f-3fde3c024edf">
-									<printWhenExpression><![CDATA[$V{totalDiscount} > 0]]></printWhenExpression>
+									<printWhenExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0]]></printWhenExpression>
 								</reportElement>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font fontName="DejaVu Sans" size="6" isBold="true" isUnderline="true"/>
@@ -735,7 +740,7 @@
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="6"/>
 								</textElement>
-								<textFieldExpression><![CDATA[BeeUtils.round($V{amount} + $V{vatAmount} , 5)]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -765,7 +770,7 @@
 							</textField>
 							<textField>
 								<reportElement style="TableDetail" x="0" y="24" width="58" height="7" uuid="0deed8ea-c33d-47f5-a9af-1f84a9826177">
-									<printWhenExpression><![CDATA[$V{totalDiscount} > 0]]></printWhenExpression>
+									<printWhenExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0]]></printWhenExpression>
 								</reportElement>
 								<textElement verticalAlignment="Middle" markup="none">
 									<font fontName="DejaVu Sans" size="6" isBold="true"/>

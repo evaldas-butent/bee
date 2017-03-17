@@ -39,12 +39,15 @@
     <CalcColumn name="ItemPrices" type="string" cellType="html" label="=taItemPrices" width="100" exportable="false"
       verticalAlignment="middle" />
 
-    <DataColumn name="Discount">
-      <footer evaluator="discount" scale="2" />
+    <DataColumn name="Discount" >
       <editable>
         <ui:expression>row.ItemComponent &lt; 1</ui:expression>
       </editable>
     </DataColumn>
+
+    <PropColumn name="DiscountValue" type="double" caption="=discount" format="0.00" >
+      <footer aggregate="sum" format="0.00" />
+    </PropColumn>
 
     <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true"
                 visible="false" >
