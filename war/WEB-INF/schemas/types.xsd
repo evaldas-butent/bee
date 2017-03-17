@@ -376,6 +376,14 @@
       <xs:enumeration value="DistinctCargoPlaceAddressUnloading" />
       <xs:enumeration value="DistinctCargoPlaceCompanyLoading" />
       <xs:enumeration value="DistinctCargoPlaceCompanyUnloading" />
+      <xs:enumeration value="DistinctCargoPlaceUnboundAddressLoading" />
+      <xs:enumeration value="DistinctCargoPlaceUnboundAddressUnloading" />
+      <xs:enumeration value="DistinctCargoPlaceUnboundCompanyLoading" />
+      <xs:enumeration value="DistinctCargoPlaceUnboundCompanyUnloading" />
+      <xs:enumeration value="DistinctCargoPlaceUnboundContactLoading" />
+      <xs:enumeration value="DistinctCargoPlaceUnboundContactUnloading" />
+      <xs:enumeration value="DistinctCargoPlaceUnboundPostIndexLoading" />
+      <xs:enumeration value="DistinctCargoPlaceUnboundPostIndexUnloading" />
       <xs:enumeration value="DistinctCriteria" />
       <xs:enumeration value="DistinctCriteriaGroups" />
       <xs:enumeration value="DistinctCriterionValues" />

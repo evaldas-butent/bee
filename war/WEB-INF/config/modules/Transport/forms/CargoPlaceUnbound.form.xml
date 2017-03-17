@@ -15,11 +15,25 @@
     </row>
     <row>
       <Label for="Company" class="bee-required" />
-      <InputText source="Company" style="width:300px;" required="true" />
+      <FlowPanel>
+        <DataSelector name="CompanyLoading" source="Company" viewName="DistinctCargoPlaceUnboundCompanyLoading"
+                      valueSource="Company" strict="false" caching="local"
+                      style="width:300px;" required="true"/>
+        <DataSelector name="CompanyUnloading" source="Company" viewName="DistinctCargoPlaceUnboundCompanyUnloading"
+                      valueSource="Company" strict="false" caching="local"
+                      style="width:300px;" required="true"/>
+      </FlowPanel>
     </row>
     <row>
       <Label for="Address" class="bee-required" />
-      <InputText source="Address" style="width:300px;" required="true" />
+      <FlowPanel>
+        <DataSelector name="AddressLoading" source="Address" viewName="DistinctCargoPlaceUnboundAddressLoading"
+                      valueSource="Address" strict="false" caching="local"
+                      style="width:300px;" required="true"/>
+        <DataSelector name="AddressUnloading" source="Address" viewName="DistinctCargoPlaceUnboundAddressUnloading"
+                      valueSource="Address" strict="false" caching="local"
+                      style="width:300px;" required="true"/>
+      </FlowPanel>
     </row>
     <row>
       <Label for="CityUnbound" class="bee-required" />
@@ -30,7 +44,14 @@
     </row>
     <row>
       <Label for="PostIndex" class="bee-required" />
-      <InputText source="PostIndex" required="true" />
+      <FlowPanel>
+        <DataSelector name="PostIndexLoading" source="PostIndex" viewName="DistinctCargoPlaceUnboundPostIndexLoading"
+                      valueSource="PostIndex" strict="false" caching="local"
+                      style="width:300px;" required="true"/>
+        <DataSelector name="PostIndexUnloading" source="PostIndex" viewName="DistinctCargoPlaceUnboundPostIndexUnloading"
+                      valueSource="PostIndex" strict="false" caching="local"
+                      style="width:300px;" required="true"/>
+      </FlowPanel>
     </row>
     <row>
       <Label for="CountryUnbound" class="bee-required" />
@@ -41,7 +62,14 @@
     </row>
     <row>
       <Label for="Contact" class="bee-required" />
-      <InputText source="Contact" style="width:300px;" required="true" />
+      <FlowPanel>
+        <DataSelector name="ContactLoading" source="Contact" viewName="DistinctCargoPlaceUnboundContactLoading"
+                      valueSource="Contact" strict="false" caching="local"
+                      style="width:300px;" required="true"/>
+        <DataSelector name="ContactUnloading" source="Contact" viewName="DistinctCargoPlaceUnboundContactUnloading"
+                      valueSource="Contact" strict="false" caching="local"
+                      style="width:300px;" required="true"/>
+      </FlowPanel>
     </row>
     <row>
       <Label for="Number" />
