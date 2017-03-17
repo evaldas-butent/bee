@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+      name="DistinctCargoPlaceUnboundPostIndexLoading" source="CargoLoading"
+      filter="PostIndex and UserId = {u}"
+>
+  <Columns>
+    <SimpleJoin name="LoadingPlace" joinType="INNER">
+      <SimpleColumn name="PostIndex" />
+    </SimpleJoin>
+
+    <ExternalJoin name="Cargo" joinType="INNER" source="ShipmentRequests" targetName="Cargo">
+      <ExternalJoin name="CompanyPerson" joinType="INNER" source="Users" targetName="CompanyPerson">
+        <IdColumn name="UserId" hidden="true" />
+      </ExternalJoin>
+    </ExternalJoin>
+  </Columns>
+  <GroupBy columns="PostIndex" />
+  <Order>
+    <OrderBy column="PostIndex" />
+  </Order>
+</View>
