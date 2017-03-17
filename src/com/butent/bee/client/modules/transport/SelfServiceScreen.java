@@ -107,7 +107,6 @@ public class SelfServiceScreen extends ScreenImpl {
 
     Data.setColumnReadOnly(VIEW_SHIPMENT_REQUESTS, ClassifierConstants.COL_COMPANY_PERSON);
 
-    GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_STATUS);
     GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_REASON);
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
     GridFactory.hideColumn("ShipmentRegisteredRequests", COL_QUERY_HOST);
