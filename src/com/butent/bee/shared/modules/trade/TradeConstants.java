@@ -280,6 +280,7 @@ public final class TradeConstants {
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
   public static final String PROP_OVERALL_TOTAL = "OveralTotal";
   public static final String PROP_STOCK = "Stock";
+  public static final String PROP_RESERVED = "Reserved";
   public static final String PROP_WAREHOUSES = "Warehouses";
 
   public static final String VAR_TOTAL = "Total";
@@ -326,6 +327,10 @@ public final class TradeConstants {
 
   public static String keyStockWarehouse(String warehouseCode) {
     return PROP_STOCK + BeeUtils.trim(warehouseCode);
+  }
+
+  public static String keyReservedWarehouse(String warehouseCode) {
+    return PROP_RESERVED + BeeUtils.trim(warehouseCode);
   }
 
   private TradeConstants() {

@@ -568,7 +568,8 @@ class TradeItemPicker extends Flow {
         String stock = item.getProperty(keyStockWarehouse(entry.getKey()));
 
         if (!BeeUtils.isEmpty(stock)) {
-          table.setText(r, c, stock, STYLE_STOCK + STYLE_CELL_SUFFIX);
+          String reserved = item.getProperty(keyReservedWarehouse(entry.getKey()));
+          table.setText(r, c, BeeUtils.joinWords(stock, reserved), STYLE_STOCK + STYLE_CELL_SUFFIX);
 
           if (Objects.equals(entry.getValue(), getWarehouse())) {
             table.getCellFormatter().addStyleName(r, c, STYLE_MAIN_WAREHOUSE + STYLE_CELL_SUFFIX);
