@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -13,11 +14,13 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Storage;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.navigation.SimplePager;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputText;
@@ -99,6 +102,8 @@ class TradeItemPicker extends Flow {
 
   private static final String STYLE_QTY_INPUT = STYLE_QTY + "-input";
 
+  private static final String STYLE_PAGER = STYLE_PREFIX + "pager";
+
   private static final int SEARCH_BY_SIZE = 3;
 
   private static final String SEARCH_BY_STORAGE_PREFIX =
@@ -114,7 +119,7 @@ class TradeItemPicker extends Flow {
   private Long currency;
   private String currencyName;
 
-  private final TradeDocumentSums documentSums = new TradeDocumentSums();
+  private final TradeDocumentSums tds = new TradeDocumentSums();
 
   private Double defaultVatPercent;
 
@@ -127,6 +132,7 @@ class TradeItemPicker extends Flow {
 
     add(createSearch());
     add(itemPanel);
+    add(createPager());
 
     setDocumentRow(documentRow);
     setDefaultVatPercent(defaultVatPercent);
@@ -172,6 +178,13 @@ class TradeItemPicker extends Flow {
     }
 
     return selector;
+  }
+
+  private Widget createPager() {
+    SimplePager pager = new SimplePager(999);
+    pager.addStyleName(STYLE_PAGER);
+
+    return pager;
   }
 
   private Widget createSearch() {
@@ -406,23 +419,23 @@ class TradeItemPicker extends Flow {
   }
 
   private TradeDiscountMode getDiscountMode() {
-    return documentSums.getDiscountMode();
+    return tds.getDiscountMode();
   }
 
   private void setDiscountMode(TradeDiscountMode discountMode) {
-    documentSums.updateDiscountMode(discountMode);
+    tds.updateDiscountMode(discountMode);
   }
 
   private void setDocumentDiscount(Double documentDiscount) {
-    documentSums.updateDocumentDiscount(documentDiscount);
+    tds.updateDocumentDiscount(documentDiscount);
   }
 
   private TradeVatMode getVatMode() {
-    return documentSums.getVatMode();
+    return tds.getVatMode();
   }
 
   private void setVatMode(TradeVatMode vatMode) {
-    documentSums.updateVatMode(vatMode);
+    tds.updateVatMode(vatMode);
   }
 
   private Double getDefaultVatPercent() {
@@ -506,24 +519,29 @@ class TradeItemPicker extends Flow {
     }
   }
 
-  private static String getColumnStylePrefix(String column) {
+  private String getColumnStylePrefix(String column) {
     String styleName;
 
-    switch (column) {
-      case ALS_ITEM_TYPE_NAME:
-        styleName = "type";
-        break;
+    if (getItemPrice() != null && column.equals(getItemPrice().getPriceColumn())) {
+      styleName = "item-price";
 
-      case ALS_ITEM_GROUP_NAME:
-        styleName = "group";
-        break;
+    } else {
+      switch (column) {
+        case ALS_ITEM_TYPE_NAME:
+          styleName = "type";
+          break;
 
-      case ALS_UNIT_NAME:
-        styleName = "unit";
-        break;
+        case ALS_ITEM_GROUP_NAME:
+          styleName = "group";
+          break;
 
-      default:
-        styleName = column.toLowerCase();
+        case ALS_UNIT_NAME:
+          styleName = "unit";
+          break;
+
+        default:
+          styleName = column.toLowerCase();
+      }
     }
 
     return STYLE_PREFIX + styleName;
@@ -586,6 +604,10 @@ class TradeItemPicker extends Flow {
     return BeeUtils.toStringOrNull(total);
   }
 
+  private String renderTotalQuantity() {
+    return BeeUtils.toString(tds.sumQuantity());
+  }
+
   private Widget renderQty(BeeColumn column, Double qty) {
     InputNumber input = new InputNumber();
 
@@ -645,9 +667,7 @@ class TradeItemPicker extends Flow {
         table.getCellFormatter().addStyleName(r, c,
             STYLE_MAIN_WAREHOUSE + STYLE_HEADER_CELL_SUFFIX);
       }
-
       c++;
-
     }
 
     qtyCol = c;
@@ -662,6 +682,7 @@ class TradeItemPicker extends Flow {
       table.setText(r, c++, Localized.dictionary().discount(),
           STYLE_DISCOUNT + STYLE_HEADER_CELL_SUFFIX);
     }
+
     if (getVatMode() != null) {
       vatCol = c;
       table.setText(r, c++, Localized.dictionary().vat(), STYLE_VAT + STYLE_HEADER_CELL_SUFFIX);
@@ -676,6 +697,7 @@ class TradeItemPicker extends Flow {
     BeeColumn qtyColumn = Data.getColumn(VIEW_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY);
 
     int serviceTagIndex = items.getColumnIndex(COL_ITEM_IS_SERVICE);
+    String text;
 
     r++;
     for (BeeRow item : items) {
@@ -701,45 +723,41 @@ class TradeItemPicker extends Flow {
             table.getCellFormatter().addStyleName(r, c, STYLE_MAIN_WAREHOUSE + STYLE_CELL_SUFFIX);
           }
         }
-
         c++;
       }
 
+      boolean selected = tds.containsItem(id);
+
       Double qty;
-      if (documentSums.containsItem(id)) {
-        qty = documentSums.getQuantity(id);
+      if (selected) {
+        qty = tds.getQuantity(id);
       } else {
         qty = null;
       }
 
       table.setWidget(r, qtyCol, renderQty(qtyColumn, qty), STYLE_QTY + STYLE_CELL_SUFFIX);
 
-      if (BeeUtils.isPositive(qty)) {
-        table.setText(r, priceCol, renderPrice(documentSums.getPrice(id)),
-            STYLE_PRICE + STYLE_CELL_SUFFIX);
+      text = selected ? renderPrice(tds.getPrice(id)) : BeeConst.STRING_EMPTY;
+      table.setText(r, priceCol, text, STYLE_PRICE + STYLE_CELL_SUFFIX);
 
-        if (!BeeConst.isUndef(discountCol)) {
-          Pair<Double, Boolean> discountInfo = documentSums.getDiscountInfo(id);
-          if (discountInfo != null) {
-            table.setText(r, discountCol,
-                renderDiscountInfo(discountInfo.getA(), discountInfo.getB()),
-                STYLE_DISCOUNT + STYLE_CELL_SUFFIX);
-          }
-        }
+      if (!BeeConst.isUndef(discountCol)) {
+        Pair<Double, Boolean> discountInfo = selected ? tds.getDiscountInfo(id) : null;
+        text = (discountInfo == null)
+            ? BeeConst.STRING_EMPTY : renderDiscountInfo(discountInfo.getA(), discountInfo.getB());
 
-        if (!BeeConst.isUndef(vatCol)) {
-          Pair<Double, Boolean> vatInfo = documentSums.getVatInfo(id);
-          if (vatInfo != null) {
-            table.setText(r, vatCol, renderVatInfo(vatInfo.getA(), vatInfo.getB()),
-                STYLE_VAT + STYLE_CELL_SUFFIX);
-          }
-        }
-
-        table.setText(r, totalCol, renderTotal(documentSums.getItemTotal(id)),
-            STYLE_TOTAL + STYLE_CELL_SUFFIX);
-
-        table.getRowFormatter().addStyleName(r, STYLE_SELECTED_ROW);
+        table.setText(r, discountCol, text, STYLE_DISCOUNT + STYLE_CELL_SUFFIX);
       }
+
+      if (!BeeConst.isUndef(vatCol)) {
+        Pair<Double, Boolean> vatInfo = selected ? tds.getVatInfo(id) : null;
+        text = (vatInfo == null)
+            ? BeeConst.STRING_EMPTY : renderVatInfo(vatInfo.getA(), vatInfo.getB());
+
+        table.setText(r, vatCol, text, STYLE_VAT + STYLE_CELL_SUFFIX);
+      }
+
+      text = selected ? renderTotal(tds.getItemTotal(id)) : BeeConst.STRING_EMPTY;
+      table.setText(r, totalCol, text, STYLE_TOTAL + STYLE_CELL_SUFFIX);
 
       DomUtils.setDataIndex(table.getRow(r), id);
 
@@ -748,31 +766,44 @@ class TradeItemPicker extends Flow {
         table.getRowFormatter().addStyleName(r, STYLE_SERVICE_ROW);
       }
 
+      if (selected) {
+        table.getRowFormatter().addStyleName(r, STYLE_SELECTED_ROW);
+      }
+
       r++;
     }
 
-    if (documentSums.hasItems()) {
-      table.setText(r, qtyCol, BeeUtils.toString(documentSums.sumQuantity()),
-          STYLE_QTY + STYLE_FOOTER_CELL_SUFFIX);
-      table.setText(r, priceCol, renderAmount(documentSums.getAmount()),
-          STYLE_PRICE + STYLE_FOOTER_CELL_SUFFIX);
+    table.setText(r, qtyCol, renderTotalQuantity(), STYLE_QTY + STYLE_FOOTER_CELL_SUFFIX);
 
-      if (!BeeConst.isUndef(discountCol)) {
-        table.setText(r, discountCol, renderAmount(documentSums.getDiscount()),
-            STYLE_DISCOUNT + STYLE_FOOTER_CELL_SUFFIX);
-      }
-      if (!BeeConst.isUndef(vatCol)) {
-        table.setText(r, vatCol, renderAmount(documentSums.getVat()),
-            STYLE_VAT + STYLE_FOOTER_CELL_SUFFIX);
-      }
+    text = tds.hasItems() ? renderAmount(tds.getAmount()) : BeeConst.STRING_EMPTY;
+    table.setText(r, priceCol, text, STYLE_PRICE + STYLE_FOOTER_CELL_SUFFIX);
 
-      table.setText(r, totalCol, renderTotal(documentSums.getTotal()),
-          STYLE_TOTAL + STYLE_FOOTER_CELL_SUFFIX);
-
-      table.getRowFormatter().addStyleName(r, STYLE_FOOTER_ROW);
+    if (!BeeConst.isUndef(discountCol)) {
+      text = tds.hasItems() ? renderAmount(tds.getDiscount()) : BeeConst.STRING_EMPTY;
+      table.setText(r, discountCol, text, STYLE_DISCOUNT + STYLE_FOOTER_CELL_SUFFIX);
     }
 
+    if (!BeeConst.isUndef(vatCol)) {
+      text = tds.hasItems() ? renderAmount(tds.getVat()) : BeeConst.STRING_EMPTY;
+      table.setText(r, vatCol, text, STYLE_VAT + STYLE_FOOTER_CELL_SUFFIX);
+    }
+
+    text = tds.hasItems() ? renderTotal(tds.getTotal()) : BeeConst.STRING_EMPTY;
+    table.setText(r, totalCol, text, STYLE_TOTAL + STYLE_FOOTER_CELL_SUFFIX);
+
+    table.getRowFormatter().addStyleName(r, STYLE_FOOTER_ROW);
+
     itemPanel.add(table);
+    adjustContainer();
+  }
+
+  private void adjustContainer() {
+    Scheduler.get().scheduleDeferred(() -> {
+      Popup popup = UiHelper.getParentPopup(TradeItemPicker.this);
+      if (popup != null) {
+        popup.onResize();
+      }
+    });
   }
 
   private ChangeHandler ensureQuantityChangeHandler() {
@@ -787,32 +818,41 @@ class TradeItemPicker extends Flow {
     return quantityChangeHandler;
   }
 
-  private void onQuantityChange(Element source, Double qty) {
+  private void onQuantityChange(Element source, Double quantity) {
     TableRowElement rowElement = DomUtils.getParentRow(source, true);
     long id = DomUtils.getDataIndexLong(rowElement);
 
     if (DataUtils.isId(id)) {
-      if (BeeUtils.isPositive(qty)) {
-        rowElement.addClassName(STYLE_SELECTED_ROW);
-
-        BeeRow item = getRow(id);
-        if (item != null) {
-          ItemPrice ip = getItemPriceForRender(data);
-          Double price = (ip == null) ? null : item.getDouble(getDataIndex(ip.getPriceColumn()));
-
-          Double vat = null;
-          if (getVatMode() != null && item.isTrue(getDataIndex(COL_ITEM_VAT))) {
-            vat = BeeUtils.nvl(item.getDouble(getDataIndex(COL_ITEM_VAT_PERCENT)),
-                getDefaultVatPercent());
+      if (BeeUtils.isPositive(quantity)) {
+        if (tds.containsItem(id)) {
+          if (Objects.equals(quantity, tds.getQuantity(id))) {
+            return;
           }
-          Boolean vatIsPercent = TradeUtils.vatIsPercent(vat);
 
-          documentSums.add(id, qty, price, null, null, vat, vatIsPercent);
+          tds.updateQuantity(id, quantity);
+
+        } else {
+          rowElement.addClassName(STYLE_SELECTED_ROW);
+
+          BeeRow item = getRow(id);
+          if (item != null) {
+            ItemPrice ip = getItemPriceForRender(data);
+            Double price = (ip == null) ? null : item.getDouble(getDataIndex(ip.getPriceColumn()));
+
+            Double vat = null;
+            if (getVatMode() != null && item.isTrue(getDataIndex(COL_ITEM_VAT))) {
+              vat = BeeUtils.nvl(item.getDouble(getDataIndex(COL_ITEM_VAT_PERCENT)),
+                  getDefaultVatPercent());
+            }
+            Boolean vatIsPercent = TradeUtils.vatIsPercent(vat);
+
+            tds.add(id, quantity, price, null, null, vat, vatIsPercent);
+          }
         }
 
       } else {
         rowElement.removeClassName(STYLE_SELECTED_ROW);
-        documentSums.deleteItem(id);
+        tds.deleteItem(id);
       }
 
       refreshSums(id, rowElement);
@@ -820,17 +860,19 @@ class TradeItemPicker extends Flow {
   }
 
   private void refreshSums(long id, TableRowElement rowElement) {
-    Element el;
+    boolean contains = tds.containsItem(id);
+    String text;
 
-    if (documentSums.containsItem(id)) {
-      el = Selectors.getElementByClassName(rowElement, STYLE_PRICE + STYLE_CELL_SUFFIX);
-      if (el != null) {
-        el.setInnerText(renderPrice(documentSums.getPrice(id)));
-      }
+    Element el = findElement(rowElement, STYLE_PRICE + STYLE_CELL_SUFFIX);
+    if (el != null) {
+      text = contains ? renderPrice(tds.getPrice(id)) : BeeConst.STRING_EMPTY;
+      el.setInnerText(text);
+    }
 
-      el = Selectors.getElementByClassName(rowElement, STYLE_DISCOUNT + STYLE_CELL_SUFFIX);
+    if (getDiscountMode() != null) {
+      el = findElement(rowElement, STYLE_DISCOUNT + STYLE_CELL_SUFFIX);
       if (el != null) {
-        Pair<Double, Boolean> discountInfo = documentSums.getDiscountInfo(id);
+        Pair<Double, Boolean> discountInfo = contains ? tds.getDiscountInfo(id) : null;
 
         if (discountInfo == null) {
           DomUtils.clearText(el);
@@ -838,10 +880,12 @@ class TradeItemPicker extends Flow {
           el.setInnerText(renderDiscountInfo(discountInfo.getA(), discountInfo.getB()));
         }
       }
+    }
 
-      el = Selectors.getElementByClassName(rowElement, STYLE_VAT + STYLE_CELL_SUFFIX);
+    if (getVatMode() != null) {
+      el = findElement(rowElement, STYLE_VAT + STYLE_CELL_SUFFIX);
       if (el != null) {
-        Pair<Double, Boolean> vatInfo = documentSums.getVatInfo(id);
+        Pair<Double, Boolean> vatInfo = contains ? tds.getVatInfo(id) : null;
 
         if (vatInfo == null) {
           DomUtils.clearText(el);
@@ -849,33 +893,57 @@ class TradeItemPicker extends Flow {
           el.setInnerText(renderVatInfo(vatInfo.getA(), vatInfo.getB()));
         }
       }
+    }
 
-      el = Selectors.getElementByClassName(rowElement, STYLE_TOTAL + STYLE_CELL_SUFFIX);
-      if (el != null) {
-        el.setInnerText(renderTotal(documentSums.getItemTotal(id)));
-      }
+    el = findElement(rowElement, STYLE_TOTAL + STYLE_CELL_SUFFIX);
+    if (el != null) {
+      text = contains ? renderTotal(tds.getItemTotal(id)) : BeeConst.STRING_EMPTY;
+      el.setInnerText(text);
+    }
 
-    } else {
-      el = Selectors.getElementByClassName(rowElement, STYLE_PRICE + STYLE_CELL_SUFFIX);
-      if (el != null) {
-        DomUtils.clearText(el);
-      }
+    Element tableElement = rowElement.getParentElement();
 
-      el = Selectors.getElementByClassName(rowElement, STYLE_DISCOUNT + STYLE_CELL_SUFFIX);
-      if (el != null) {
-        DomUtils.clearText(el);
-      }
+    el = findElement(tableElement, STYLE_QTY + STYLE_FOOTER_CELL_SUFFIX);
+    if (el != null) {
+      el.setInnerText(renderTotalQuantity());
+    }
 
-      el = Selectors.getElementByClassName(rowElement, STYLE_VAT + STYLE_CELL_SUFFIX);
-      if (el != null) {
-        DomUtils.clearText(el);
-      }
+    el = findElement(tableElement, STYLE_PRICE + STYLE_FOOTER_CELL_SUFFIX);
+    if (el != null) {
+      text = tds.hasItems() ? renderAmount(tds.getAmount()) : BeeConst.STRING_EMPTY;
+      el.setInnerText(text);
+    }
 
-      el = Selectors.getElementByClassName(rowElement, STYLE_TOTAL + STYLE_CELL_SUFFIX);
+    if (getDiscountMode() != null) {
+      el = findElement(tableElement, STYLE_DISCOUNT + STYLE_FOOTER_CELL_SUFFIX);
       if (el != null) {
-        DomUtils.clearText(el);
+        text = tds.hasItems() ? renderAmount(tds.getDiscount()) : BeeConst.STRING_EMPTY;
+        el.setInnerText(text);
       }
     }
+
+    if (getVatMode() != null) {
+      el = findElement(tableElement, STYLE_VAT + STYLE_FOOTER_CELL_SUFFIX);
+      if (el != null) {
+        text = tds.hasItems() ? renderAmount(tds.getVat()) : BeeConst.STRING_EMPTY;
+        el.setInnerText(text);
+      }
+    }
+
+    el = findElement(tableElement, STYLE_TOTAL + STYLE_FOOTER_CELL_SUFFIX);
+    if (el != null) {
+      text = tds.hasItems() ? renderTotal(tds.getTotal()) : BeeConst.STRING_EMPTY;
+      el.setInnerText(text);
+    }
+  }
+
+  private static Element findElement(Element root, String className) {
+    Element el = Selectors.getElementByClassName(root, className);
+    if (el == null) {
+      logger.warning(root.getTagName(), root.getClassName(), "child", className, "not found");
+    }
+
+    return el;
   }
 
   private static Map<Long, String> extractWarehouses(BeeRowSet items) {
