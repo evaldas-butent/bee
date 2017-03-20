@@ -4976,6 +4976,8 @@ public interface Dictionary {
 
   default String saveFilter() {return g("saveFilter");}
 
+  default String saveSelectedItems() {return g("saveSelectedItems");}
+
   default String scheduleDateExclude() {return g("scheduleDateExclude");}
 
   default String scheduleDateInclude() {return g("scheduleDateInclude");}
@@ -5369,8 +5371,6 @@ public interface Dictionary {
   default String taReportTransfer() {return g("taReportTransfer");}
 
   default String taReports() {return g("taReports");}
-
-  default String taSaveSelectedItems() {return g("taSaveSelectedItems");}
 
   default String taTariff() {return g("taTariff");}
 

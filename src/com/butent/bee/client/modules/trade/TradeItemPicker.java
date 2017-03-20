@@ -68,6 +68,10 @@ class TradeItemPicker extends Flow {
   private static final String STYLE_NAME = TradeKeeper.STYLE_PREFIX + "item-picker";
   private static final String STYLE_PREFIX = STYLE_NAME + "-";
 
+  static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
+  static final String STYLE_SAVE = STYLE_PREFIX + "save";
+  static final String STYLE_CLOSE = STYLE_PREFIX + "close";
+
   private static final String STYLE_SEARCH_PREFIX = STYLE_PREFIX + "search-";
   private static final String STYLE_SEARCH_PANEL = STYLE_SEARCH_PREFIX + "panel";
   private static final String STYLE_SEARCH_BOX = STYLE_SEARCH_PREFIX + "box";
@@ -136,6 +140,14 @@ class TradeItemPicker extends Flow {
 
     setDocumentRow(documentRow);
     setDefaultVatPercent(defaultVatPercent);
+  }
+
+  TradeDocumentSums getTds() {
+    return tds;
+  }
+
+  boolean hasSelection() {
+    return tds.hasItems();
   }
 
   void setDocumentRow(IsRow row) {

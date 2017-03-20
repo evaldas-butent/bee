@@ -594,6 +594,10 @@ public class TradeDocumentSums {
     return (item == null) ? null : Pair.of(item.vat, item.vatIsPercent);
   }
 
+  public Collection<Long> getItemIds() {
+    return items.keySet();
+  }
+
   public boolean hasItems() {
     return !items.isEmpty();
   }
