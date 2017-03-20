@@ -78,6 +78,7 @@ public final class OrdersConstants {
   public static final String VIEW_ORDER_SALES_FILTERED = "OrderSalesFiltered";
 
   public static final String FORM_NEW_ORDER_INVOICE = "NewOrderInvoice";
+  public static final String FORM_ORDER_INVOICE = "OrderInvoice";
 
   public static final String GRID_ORDER_ALL_ITEMS = "OrderAllItems";
   public static final String GRID_COMPANY_ORDERS = "CompanyOrders";
@@ -110,6 +111,7 @@ public final class OrdersConstants {
   public static final String COL_INVISIBLE_DISCOUNT = "InvisibleDiscount";
   public static final String COL_SALE_ITEM = "SaleItem";
   public static final String COL_DISCOUNT = "Discount";
+  public static final String COL_ORDER_SALE = "OrderSale";
 
   public static final String PRP_FREE_REMAINDER = "FreeRemainder";
   public static final String PRP_COMPLETED_INVOICES = "CompletedInvoices";

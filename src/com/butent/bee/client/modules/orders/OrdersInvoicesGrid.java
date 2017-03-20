@@ -12,10 +12,13 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
@@ -129,7 +132,7 @@ public class OrdersInvoicesGrid extends InvoicesGrid {
             return;
           }
 
-          DataInfo dataInfo = Data.getDataInfo(getViewName());
+          DataInfo dataInfo = Data.getDataInfo(VIEW_ORDER_CHILD_INVOICES);
           BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
 
           newRow.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER),
@@ -173,5 +176,12 @@ public class OrdersInvoicesGrid extends InvoicesGrid {
     } else {
       super.onClick(event);
     }
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    event.consume();
+    RowEditor.openForm(FORM_ORDER_INVOICE, Data.getDataInfo(VIEW_ORDER_CHILD_INVOICES),
+        Filter.equals(COL_ORDER_SALE, getActiveRowId()), Opener.NEW_TAB);
   }
 }

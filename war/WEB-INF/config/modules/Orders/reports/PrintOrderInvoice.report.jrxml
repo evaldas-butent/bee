@@ -584,7 +584,7 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="15">
-								<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+								<textField isStretchWithOverflow="true" pattern="0.000" isBlankWhenNull="false">
 									<reportElement style="TableDetail" x="0" y="0" width="42" height="15" uuid="cd819e72-7b07-469f-ad78-cfdc0d5e1a87"/>
 									<textElement textAlignment="Left">
 										<font size="8"/>
