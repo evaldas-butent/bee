@@ -59,6 +59,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
@@ -163,7 +164,15 @@ public class ServiceModuleBean implements BeeModule {
       response = createReservationInvoiceItems(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEMS_INFO)) {
-        response = getItemsInfo(reqInfo);
+      response = getItemsInfo(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_REPAIRER_TARIFF)) {
+      Long repairerId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_REPAIRER));
+      if (!DataUtils.isId(repairerId)) {
+        response = ResponseObject.parameterNotFound(reqInfo.getService(), COL_REPAIRER);
+      } else {
+        response = ResponseObject.response(getRepairerTariff(repairerId));
+      }
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -1136,6 +1145,22 @@ public class ServiceModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(columnValues);
+  }
+
+  private Double getRepairerTariff(Long repairerId) {
+    DateValue today = new DateValue(TimeUtils.today());
+
+    SqlSelect tariffQuery = new SqlSelect()
+        .addFields(TBL_MAINTENANCE_TARIFFS, COL_PAYROLL_TARIFF)
+        .addFrom(TBL_MAINTENANCE_TARIFFS)
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_MAINTENANCE_TARIFFS, COL_REPAIRER, repairerId),
+            SqlUtils.or(SqlUtils.isNull(TBL_MAINTENANCE_TARIFFS, COL_DATE_FROM),
+                SqlUtils.lessEqual(TBL_MAINTENANCE_TARIFFS, COL_DATE_FROM, today)),
+            SqlUtils.or(SqlUtils.isNull(TBL_MAINTENANCE_TARIFFS, COL_DATE_TO),
+                SqlUtils.moreEqual(TBL_MAINTENANCE_TARIFFS, COL_DATE_TO, today))))
+        .addOrderDesc(TBL_MAINTENANCE_TARIFFS, sys.getIdName(TBL_MAINTENANCE_TARIFFS));
+
+    return qs.getDouble(tariffQuery);
   }
 
   private BeeRowSet getSettings() {

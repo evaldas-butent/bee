@@ -5230,6 +5230,8 @@ public interface Dictionary {
 
   default String svcNewObject() {return g("svcNewObject");}
 
+  default String svcNewSalary() {return g("svcNewSalary");}
+
   default String svcNewServiceState() {return g("svcNewServiceState");}
 
   default String svcNewServiceType() {return g("svcNewServiceType");}
