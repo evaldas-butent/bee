@@ -5300,6 +5300,8 @@ public interface Dictionary {
 
   default String swift() {return g("swift");}
 
+  default String symptoms() {return g("symptoms");}
+
   default String systemAllUsers() {return g("systemAllUsers");}
 
   default String systemParameters() {return g("systemParameters");}
