@@ -252,15 +252,12 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     IsRow parentRow = getParentRow(presenter.getGridView());
-    if (parentRow == null) {
+    if (!checkParentOnAdd(parentRow)) {
       return false;
     }
 
     TradeDocumentPhase phase = TradeUtils.getDocumentPhase(parentRow);
     OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
-    if (phase == null || operationType == null) {
-      return false;
-    }
 
     ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(parentRow);
 
@@ -285,13 +282,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     final MultiSelector selector;
 
     if (operationType.consumesStock()) {
-      Long warehouseFrom = Data.getLong(VIEW_TRADE_DOCUMENTS, parentRow, COL_TRADE_WAREHOUSE_FROM);
-      if (!DataUtils.isId(warehouseFrom)) {
-        presenter.getGridView().notifyWarning(Localized.dictionary()
-            .fieldRequired(Localized.dictionary().trdWarehouseFrom()));
-        return false;
-      }
-
       caption = BeeUtils.joinItems(Localized.dictionary().trdStock(),
           Localized.dictionary().services());
 
@@ -303,6 +293,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       relation.setChoiceColumns(choiceColumns);
 
       if (phase.modifyStock()) {
+        Long warehouseFrom = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_WAREHOUSE_FROM);
+
         Filter filter = Filter.or(Filter.notNull(COL_ITEM_IS_SERVICE),
             Filter.in(Data.getIdColumn(VIEW_ITEMS), VIEW_TRADE_DOCUMENT_ITEMS, COL_ITEM,
                 Filter.in(Data.getIdColumn(VIEW_TRADE_DOCUMENT_ITEMS),
@@ -964,10 +956,27 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
   }
 
+  private boolean checkParentOnAdd(IsRow parentRow) {
+    OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
+    if (operationType == null || TradeUtils.getDocumentPhase(parentRow) == null) {
+      return false;
+    }
+
+    if (operationType.consumesStock()
+        && !DataUtils.isId(TradeUtils.getDocumentRelation(parentRow, COL_TRADE_WAREHOUSE_FROM))) {
+
+      getGridView().notifyWarning(Localized.dictionary().fieldRequired(
+          Localized.dictionary().trdWarehouseFrom()));
+      return false;
+    }
+
+    return true;
+  }
+
   private void testPicker() {
     IsRow parentRow = getParentRow(getGridView());
 
-    if (DataUtils.hasId(parentRow)) {
+    if (checkParentOnAdd(parentRow)) {
       TradeUtils.getDocumentVatPercent(parentRow, vatPercent -> openPicker(parentRow, vatPercent));
     }
   }
