@@ -6661,6 +6661,12 @@ public interface Dictionary {
 
   default String trdQuantity() {return g("trdQuantity");}
 
+  default String trdQuantityAvailable() {return g("trdQuantityAvailable");}
+
+  default String trdQuantityReserved() {return g("trdQuantityReserved");}
+
+  default String trdQuantityStock() {return g("trdQuantityStock");}
+
   default String trdReceivedDate() {return g("trdReceivedDate");}
 
   default String trdRemainders() {return g("trdRemainders");}

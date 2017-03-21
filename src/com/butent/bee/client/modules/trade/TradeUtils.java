@@ -34,6 +34,7 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -573,6 +574,27 @@ public final class TradeUtils {
     }
 
     return false;
+  }
+
+  static boolean documentPriceIsParentCost(IsRow row) {
+    OperationType operationType = getDocumentOperationType(row);
+
+    if (operationType != null && operationType.consumesStock()) {
+      ItemPrice itemPrice = getDocumentItemPrice(row);
+      return itemPrice == ItemPrice.COST
+          || itemPrice == null && operationType.getDefaultPrice() == ItemPrice.COST;
+
+    } else {
+      return false;
+    }
+  }
+
+  static Pair<Double, Boolean> normalizeDiscountOrVatInfo(Pair<Double, Boolean> info) {
+    if (info != null && BeeUtils.nonZero(info.getA())) {
+      return info;
+    } else {
+      return Pair.empty();
+    }
   }
 
   static double roundPrice(Double price) {

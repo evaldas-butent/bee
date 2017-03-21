@@ -132,6 +132,7 @@ class TradeItemPicker extends Flow {
   private String currencyName;
 
   private final TradeDocumentSums tds = new TradeDocumentSums();
+  private final List<BeeRow> selectedItems = new ArrayList<>();
 
   private Double defaultVatPercent;
 
@@ -152,12 +153,16 @@ class TradeItemPicker extends Flow {
     setDefaultVatPercent(defaultVatPercent);
   }
 
+  List<BeeRow> getSelectedItems() {
+    return selectedItems;
+  }
+
   TradeDocumentSums getTds() {
     return tds;
   }
 
   boolean hasSelection() {
-    return tds.hasItems();
+    return !selectedItems.isEmpty();
   }
 
   void setDocumentRow(IsRow row) {
@@ -662,25 +667,28 @@ class TradeItemPicker extends Flow {
 
     if (BeeUtils.isPositive(stock)) {
       DoubleLabel stockWidget = new DoubleLabel(true);
+      stockWidget.setTitle(Localized.dictionary().trdQuantityStock());
       stockWidget.addStyleName(STYLE_STOCK);
-      stockWidget.setValue(stock);
 
+      stockWidget.setValue(stock);
       panel.add(stockWidget);
     }
 
     if (BeeUtils.isPositive(reserved)) {
       DoubleLabel reserveWidget = new DoubleLabel(true);
+      reserveWidget.setTitle(Localized.dictionary().trdQuantityReserved());
       reserveWidget.addStyleName(STYLE_RESERVED);
-      reserveWidget.setValue(reserved);
 
+      reserveWidget.setValue(reserved);
       panel.add(reserveWidget);
 
       double available = BeeUtils.unbox(stock) - BeeUtils.unbox(reserved);
 
       DoubleLabel availableWidget = new DoubleLabel(true);
+      availableWidget.setTitle(Localized.dictionary().trdQuantityAvailable());
       availableWidget.addStyleName(STYLE_AVAILABLE);
-      availableWidget.setValue(Math.max(available, BeeConst.DOUBLE_ZERO));
 
+      availableWidget.setValue(Math.max(available, BeeConst.DOUBLE_ZERO));
       panel.add(availableWidget);
     }
 
@@ -938,15 +946,32 @@ class TradeItemPicker extends Flow {
             Boolean vatIsPercent = TradeUtils.vatIsPercent(vat);
 
             tds.add(id, quantity, price, null, null, vat, vatIsPercent);
+            selectedItems.add(DataUtils.cloneRow(item));
           }
         }
 
       } else {
         rowElement.removeClassName(STYLE_SELECTED_ROW);
-        tds.deleteItem(id);
+        removeItem(id);
       }
 
       refreshSums(id, rowElement);
+    }
+  }
+
+  private void removeItem(long id) {
+    tds.deleteItem(id);
+
+    int index = BeeConst.UNDEF;
+    for (int i = 0; i < selectedItems.size(); i++) {
+      if (DataUtils.idEquals(selectedItems.get(i), id)) {
+        index = i;
+        break;
+      }
+    }
+
+    if (!BeeConst.isUndef(index)) {
+      selectedItems.remove(index);
     }
   }
 
