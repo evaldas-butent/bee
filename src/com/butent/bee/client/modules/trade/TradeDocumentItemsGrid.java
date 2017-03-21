@@ -982,11 +982,14 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   private void testPicker() {
-    IsRow parentRow = getParentRow(getGridView());
+    getGridView().ensureRelId(docId -> {
+      IsRow parentRow = getParentRow(getGridView());
 
-    if (checkParentOnAdd(parentRow)) {
-      TradeUtils.getDocumentVatPercent(parentRow, vatPercent -> openPicker(parentRow, vatPercent));
-    }
+      if (checkParentOnAdd(parentRow)) {
+        TradeUtils.getDocumentVatPercent(parentRow, vatPercent ->
+            openPicker(parentRow, vatPercent));
+      }
+    });
   }
 
   private void addItems(IsRow parentRow, Collection<BeeRow> selectedItems, TradeDocumentSums tds) {
@@ -1139,7 +1142,5 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
     dialog.setWidget(picker);
     dialog.center();
-
-    dialog.setOnSave(event -> save.click());
   }
 }

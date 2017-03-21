@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -15,12 +16,15 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Storage;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.navigation.SimplePager;
 import com.butent.bee.client.widget.DoubleLabel;
@@ -58,6 +62,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +123,7 @@ class TradeItemPicker extends Flow {
   private static final String SEARCH_BY_STORAGE_PREFIX =
       NameUtils.getClassName(TradeItemPicker.class) + "-by";
 
-  private static final String KEY_AVAILABLE = STYLE_PREFIX + "avail";
+  private static final String KEY_AVAILABLE = "avail";
 
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
   private final Notification notification = new Notification();
@@ -151,6 +156,13 @@ class TradeItemPicker extends Flow {
 
     setDocumentRow(documentRow);
     setDefaultVatPercent(defaultVatPercent);
+
+    itemPanel.addClickHandler(event -> {
+      Element target = EventUtils.getEventTargetElement(event);
+      if (target != null) {
+        onCellClick(target);
+      }
+    });
   }
 
   List<BeeRow> getSelectedItems() {
@@ -331,6 +343,10 @@ class TradeItemPicker extends Flow {
 
     Filter filter = Filter.and(buildParentFilter(), buildSearchFilter(query, searchBy));
 
+    doQuery(filter, searchBy);
+  }
+
+  private void doQuery(Filter filter, Collection<TradeItemSearch> searchBy) {
     addStyleName(STYLE_SEARCH_RUNNING);
 
     Queries.getRowSet(VIEW_ITEM_SELECTION, null, filter, new Queries.RowSetCallback() {
@@ -635,7 +651,9 @@ class TradeItemPicker extends Flow {
     return BeeUtils.toString(tds.sumQuantity());
   }
 
-  private InputNumber renderQty(BeeColumn column, Double qty, Double available) {
+  private InputNumber renderQty(BeeColumn column, Double qty, Double available,
+      boolean needsStock) {
+
     InputNumber input = new InputNumber();
 
     input.setMinValue(BeeConst.STRING_ZERO);
@@ -646,7 +664,7 @@ class TradeItemPicker extends Flow {
       input.setMaxLength(UiHelper.getMaxLength(column));
     }
 
-    if (BeeUtils.isPositive(available)) {
+    if (BeeUtils.isPositive(available) && needsStock) {
       input.setMaxValue(BeeUtils.toString(available));
     }
 
@@ -706,6 +724,8 @@ class TradeItemPicker extends Flow {
     Map<String, Long> warehouseCodes = new TreeMap<>();
     warehouses.forEach((id, code) -> warehouseCodes.put(code, id));
 
+    boolean needsStock = needsStock();
+
     int qtyCol;
     int priceCol;
     int discountCol = BeeConst.UNDEF;
@@ -713,7 +733,7 @@ class TradeItemPicker extends Flow {
     int totalCol;
 
     itemPanel.clear();
-    HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
+    final HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
 
     int r = 0;
     int c = 0;
@@ -790,6 +810,11 @@ class TradeItemPicker extends Flow {
           if (Objects.equals(entry.getValue(), getWarehouse())) {
             table.getCellFormatter().addStyleName(r, c, STYLE_MAIN_WAREHOUSE + STYLE_CELL_SUFFIX);
             available = stock - BeeUtils.unbox(reserved);
+
+            if (BeeUtils.isPositive(available)) {
+              DomUtils.setDataProperty(table.getCellFormatter().getElement(r, c),
+                  KEY_AVAILABLE, available);
+            }
           }
         }
         c++;
@@ -804,8 +829,8 @@ class TradeItemPicker extends Flow {
         qty = null;
       }
 
-      if (selected || isService || BeeUtils.isPositive(available) || !needsStock()) {
-        table.setWidget(r, qtyCol, renderQty(qtyColumn, qty, available),
+      if (selected || isService || BeeUtils.isPositive(available) || !needsStock) {
+        table.setWidget(r, qtyCol, renderQty(qtyColumn, qty, available, needsStock),
             STYLE_QTY + STYLE_CELL_SUFFIX);
       }
 
@@ -866,15 +891,14 @@ class TradeItemPicker extends Flow {
     table.getRowFormatter().addStyleName(r, STYLE_FOOTER_ROW);
 
     itemPanel.add(table);
-    adjustContainer();
-  }
 
-  private void adjustContainer() {
     Scheduler.get().scheduleDeferred(() -> {
       Popup popup = UiHelper.getParentPopup(TradeItemPicker.this);
       if (popup != null) {
         popup.onResize();
       }
+
+      UiHelper.focus(table);
     });
   }
 
@@ -886,8 +910,14 @@ class TradeItemPicker extends Flow {
 
           InputNumber input = (InputNumber) event.getSource();
 
-          if (!UiHelper.moveFocus(input.getParent(), true)) {
-            onQuantityChange(input, input.getNumber());
+          if (validate(input)) {
+            if (!UiHelper.moveFocus(input.getParent(), true)) {
+              onQuantityChange(input, input.getNumber());
+            }
+
+            if (UiHelper.isSave(event.getNativeEvent())) {
+              commit();
+            }
           }
         }
       };
@@ -895,12 +925,26 @@ class TradeItemPicker extends Flow {
     return quantityKeyDownHandler;
   }
 
+  private void commit() {
+    Popup popup = UiHelper.getParentPopup(this);
+
+    if (popup != null) {
+      Element save = Selectors.getElementByClassName(popup, STYLE_SAVE);
+
+      if (save != null) {
+        EventUtils.click(save);
+      }
+    }
+  }
+
   private ChangeHandler ensureQuantityChangeHandler() {
     if (quantityChangeHandler == null) {
       quantityChangeHandler = event -> {
         if (event.getSource() instanceof InputNumber) {
           InputNumber input = (InputNumber) event.getSource();
-          onQuantityChange(input, input.getNumber());
+          if (validate(input)) {
+            onQuantityChange(input, input.getNumber());
+          }
         }
       };
     }
@@ -911,15 +955,30 @@ class TradeItemPicker extends Flow {
     return getDocumentPhase().modifyStock() && getOperationType().consumesStock();
   }
 
+  private boolean validate(InputNumber input) {
+    List<String> errorMessages = input.validate(false);
+    if (BeeUtils.isEmpty(errorMessages)) {
+      return true;
+
+    } else {
+      long id = getRowId(input.getElement());
+
+      if (tds.containsItem(id)) {
+        input.setValue(tds.getQuantity(id));
+      } else {
+        input.clearValue();
+      }
+
+      notification.warning(ArrayUtils.toArray(errorMessages));
+      input.setFocus(true);
+
+      return false;
+    }
+  }
+
   private void onQuantityChange(InputNumber input, Double quantity) {
     TableRowElement rowElement = DomUtils.getParentRow(input.getElement(), true);
     long id = DomUtils.getDataIndexLong(rowElement);
-
-    List<String> errorMessages = input.validate(false);
-    if (!BeeUtils.isEmpty(errorMessages)) {
-      notification.warning(ArrayUtils.toArray(errorMessages));
-      return;
-    }
 
     if (DataUtils.isId(id)) {
       if (BeeUtils.isPositive(quantity)) {
@@ -1093,5 +1152,61 @@ class TradeItemPicker extends Flow {
 
   private int getDataIndex(String column) {
     return (data == null) ? BeeConst.UNDEF : data.getColumnIndex(column);
+  }
+
+  private static long getRowId(Element child) {
+    return DomUtils.getDataIndexLong(DomUtils.getParentRow(child, true));
+  }
+
+  private void onCellClick(Element source) {
+    TableCellElement cell = DomUtils.getParentCell(source, true);
+    if (cell == null) {
+      return;
+    }
+
+    if (cell.hasClassName(STYLE_ID + STYLE_CELL_SUFFIX)) {
+      long id = getRowId(cell);
+      if (DataUtils.isId(id)) {
+        RowEditor.open(VIEW_ITEMS, id, Opener.MODAL);
+      }
+
+    } else if (cell.hasClassName(STYLE_MAIN_WAREHOUSE + STYLE_CELL_SUFFIX)) {
+      maybeSetAvailableQuantity(cell);
+
+    } else if (cell.hasClassName(STYLE_MAIN_WAREHOUSE + STYLE_HEADER_CELL_SUFFIX)) {
+      List<Element> stockCells = Selectors.getElementsWithDataProperty(
+          DomUtils.getParentTable(cell, false), KEY_AVAILABLE);
+
+      if (!BeeUtils.isEmpty(stockCells)) {
+        stockCells.forEach(this::maybeSetAvailableQuantity);
+      }
+
+    } else if (cell.hasClassName(STYLE_QTY + STYLE_HEADER_CELL_SUFFIX)
+        || cell.hasClassName(STYLE_QTY + STYLE_FOOTER_CELL_SUFFIX)
+        || cell.hasClassName(STYLE_TOTAL + STYLE_FOOTER_CELL_SUFFIX)) {
+
+      if (hasSelection()) {
+        doQuery(Filter.idIn(tds.getItemIds()), Collections.emptySet());
+      }
+    }
+  }
+
+  private void maybeSetAvailableQuantity(Element cell) {
+    Double stock = DomUtils.getDataPropertyDouble(cell, KEY_AVAILABLE);
+    long id = getRowId(cell);
+
+    Element inputElement = Selectors.getElementByClassName(DomUtils.getParentRow(cell, true),
+        STYLE_QTY_INPUT);
+    HtmlTable table = UiHelper.getChild(itemPanel, HtmlTable.class);
+    Widget widget = table.getWidgetByElement(inputElement);
+
+    if (BeeUtils.isPositive(stock) && DataUtils.isId(id) && widget instanceof InputNumber) {
+      InputNumber input = (InputNumber) widget;
+
+      if (!Objects.equals(input.getNumber(), stock)) {
+        input.setValue(stock);
+        onQuantityChange(input, stock);
+      }
+    }
   }
 }
