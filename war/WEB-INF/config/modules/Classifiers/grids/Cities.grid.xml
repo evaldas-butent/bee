@@ -6,8 +6,6 @@
   >
   <g:columns>
     <DataColumn name="Name" minWidth="200" visible="true" />
-    <DataColumn name="Name2" />
-    <DataColumn name="Name3" />
 
     <RelColumn name="Country" minWidth="100" renderColumns="CountryName" visible="true">
       <selectorColumn source="Name" />

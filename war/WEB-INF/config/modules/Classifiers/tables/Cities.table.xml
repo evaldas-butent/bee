@@ -6,8 +6,6 @@
   >
   <Fields>
     <String name="Name" precision="60" notNull="true" label="=city" translatable="true" />
-    <String name="Name2" precision="30" label="Miestas EN" />
-    <String name="Name3" precision="30" label="Miestas RU" />
     <Relation name="Country" relation="Countries" notNull="true" label="=country" />
   </Fields>
 

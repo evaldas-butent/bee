@@ -6,8 +6,6 @@
     >
   <g:columns>
     <DataColumn name="Name" minWidth="100" visible="true" />
-    <DataColumn name="Name2" />
-    <DataColumn name="Name3" />
     <DataColumn name="Code" />
     <DataColumn name="EUMember" caption="=countryEUMemberShort" />
 

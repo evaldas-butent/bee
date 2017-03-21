@@ -7,8 +7,6 @@
   <Fields>
     <String name="Name" precision="60" notNull="true" unique="true" translatable="true"
       label="=country" />
-    <String name="Name2" precision="60" label="Šalis EN" />
-    <String name="Name3" precision="60" label="Šalis RU" />
     <String name="Code" precision="10" unique="true" label="=countryCode" />
     <Boolean name="EUMember" label="=countryEUMember" />
   </Fields>
