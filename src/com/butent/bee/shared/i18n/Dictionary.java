@@ -5036,6 +5036,10 @@ public interface Dictionary {
 
   default String serviceJobs() {return g("serviceJobs");}
 
+  default String serviceJobGroups() {return g("serviceJobGroups");}
+
+  default String serviceJobGroupNew() {return g("serviceJobGroupNew");}
+
   default String serviceOrder() {return g("serviceOrder");}
 
   default String serviceOrders() {return g("serviceOrders");}
