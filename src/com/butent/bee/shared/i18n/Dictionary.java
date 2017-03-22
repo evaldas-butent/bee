@@ -5034,11 +5034,11 @@ public interface Dictionary {
 
   default String serviceJob() {return g("serviceJob");}
 
-  default String serviceJobs() {return g("serviceJobs");}
+  default String serviceJobGroupNew() {return g("serviceJobGroupNew");}
 
   default String serviceJobGroups() {return g("serviceJobGroups");}
 
-  default String serviceJobGroupNew() {return g("serviceJobGroupNew");}
+  default String serviceJobs() {return g("serviceJobs");}
 
   default String serviceOrder() {return g("serviceOrder");}
 
@@ -5621,6 +5621,8 @@ public interface Dictionary {
   default String trBriefInvoice() {return g("trBriefInvoice");}
 
   default String trCargoActualPlaces() {return g("trCargoActualPlaces");}
+
+  default String trCargoCosts() {return g("trCargoCosts");}
 
   default String trCargoCreditInvoiceReason() {return g("trCargoCreditInvoiceReason");}
 

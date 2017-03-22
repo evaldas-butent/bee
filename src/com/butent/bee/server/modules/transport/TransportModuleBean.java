@@ -506,23 +506,26 @@ public class TransportModuleBean implements BeeModule {
             default:
               return;
           }
-          SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(new SqlSelect()
+          SimpleRowSet rs = qs.getData(rep.getCargoAmountsQuery(new SqlSelect()
                   .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
                   .addFrom(TBL_ORDER_CARGO)
-                  .setWhere(sys.idInList(TBL_ORDER_CARGO, cargoIds)),
-              prm.getRelation(PRM_CURRENCY), BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))));
+                  .setWhere(sys.idInList(TBL_ORDER_CARGO, cargoIds)), TBL_CARGO_INCOMES,
+              prm.getRelation(PRM_CURRENCY), BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)),
+              true));
 
           for (BeeRow row : rowSet.getRows()) {
             SimpleRow r = rs.getRowByKey(COL_CARGO, BeeUtils.toString(valueSupplier.apply(row)));
 
-            row.setProperty(VAR_INCOME, BeeUtils.toString(BeeUtils.unbox(r.getDouble("CargoIncome"))
-                + BeeUtils.unbox(r.getDouble("ServicesIncome"))));
+            row.setProperty(VAR_INCOME,
+                BeeUtils.toString(BeeUtils.unbox(r.getDouble(COL_TRANSPORTATION))
+                    + BeeUtils.unbox(r.getDouble(COL_SERVICE))));
             row.setProperty(COL_TRANSPORTATION + VAR_INCOME,
-                BeeUtils.toString(BeeUtils.unbox(r.getDouble("CargoIncome"))));
-            row.setProperty(COL_TRADE_VAT, BeeUtils.toString(BeeUtils.unbox(r.getDouble("CargoVat"))
-                + BeeUtils.unbox(r.getDouble("ServicesVat"))));
+                BeeUtils.toString(BeeUtils.unbox(r.getDouble(COL_TRANSPORTATION))));
+            row.setProperty(COL_TRADE_VAT,
+                BeeUtils.toString(BeeUtils.unbox(r.getDouble(COL_TRANSPORTATION + COL_TRADE_VAT))
+                    + BeeUtils.unbox(r.getDouble(COL_SERVICE + COL_TRADE_VAT))));
             row.setProperty(COL_TRANSPORTATION + COL_TRADE_VAT,
-                BeeUtils.toString(BeeUtils.unbox(r.getDouble("CargoVat"))));
+                BeeUtils.toString(BeeUtils.unbox(r.getDouble(COL_TRANSPORTATION + COL_TRADE_VAT))));
           }
         }
       }
@@ -626,7 +629,8 @@ public class TransportModuleBean implements BeeModule {
 
           for (SimpleRow row : rs) {
             amounts.put(row.getLong(COL_TRIP), row.getLong(COL_CARGO),
-                Pair.of(BeeUtils.round(BeeUtils.nvl(row.getValue("TripIncome"), "0"), 2) + " ("
+                Pair.of(BeeUtils.round(BeeUtils.nvl(row.getValue(COL_TRANSPORTATION), "0"), 2)
+                    + " ("
                     + BeeUtils.removeTrailingZeros(BeeUtils.round(row.getValue(COL_TRIP_PERCENT),
                     2)) + "%)", null));
           }
@@ -1655,8 +1659,8 @@ public class TransportModuleBean implements BeeModule {
       cb.asynchronousCall(new ConcurrencyBean.AsynchronousRunnable() {
         @Override
         public void run() {
-          mail.sendMail(accountId, email, null, text.replace("{LOGIN}", login)
-              .replace("{PASSWORD}", password));
+          mail.sendMail(accountId, email, Localized.dictionary().registration(),
+              text.replace("{LOGIN}", login).replace("{PASSWORD}", password));
         }
       });
     }
@@ -3311,10 +3315,10 @@ public class TransportModuleBean implements BeeModule {
       case COL_TRIP_PERCENT:
         keyName = COL_CARGO;
         totalSupplier = value -> BeeUtils.unbox(qs.getDouble(new SqlSelect()
-            .addFields("als", "CargoIncome")
-            .addFrom(rep.getCargoIncomeQuery(new SqlSelect().addConstant(value, keyName),
-                prm.getRelation(PRM_CURRENCY), BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT))),
-                "als")));
+            .addFields("als", COL_TRANSPORTATION)
+            .addFrom(rep.getCargoAmountsQuery(new SqlSelect().addConstant(value, keyName),
+                TBL_CARGO_INCOMES, prm.getRelation(PRM_CURRENCY),
+                BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)), false), "als")));
         break;
       case COL_CARGO_PERCENT:
         keyName = COL_TRIP;

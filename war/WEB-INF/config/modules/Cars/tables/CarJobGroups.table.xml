@@ -5,6 +5,6 @@
        idName="JobGroupID"
 >
   <Fields>
-    <String name="Name" precision="30" notNull="true" label="=name" />
+    <String name="Name" precision="30" unique="true" notNull="true" label="=name" />
   </Fields>
 </Table>
