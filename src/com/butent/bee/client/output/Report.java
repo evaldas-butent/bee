@@ -4,6 +4,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_NOTES;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -38,6 +40,7 @@ import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.report.DateTimeFunction;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -495,6 +498,62 @@ public enum Report implements HasWidgetSupplier {
       return Collections.singletonList(report);
     }
 
+  },
+
+  SERVICE_PAYROLL_REPORT(ModuleAndSub.of(Module.SERVICE), SVC_SERVICE_PAYROLL_REPORT) {
+    @Override
+    public List<ReportItem> getItems() {
+      return Arrays.asList(
+          new ReportTextItem(COL_SERVICE_MAINTENANCE,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_SERVICE_MAINTENANCE)),
+          new ReportTextItem(COL_REPAIRER,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_REPAIRER)),
+          new ReportDateItem(COL_DATE,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_DATE)),
+          new ReportDateTimeItem(COL_PAYROLL_DATE,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_DATE)),
+          new ReportNumericItem(COL_PAYROLL_BASIC_AMOUNT,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_BASIC_AMOUNT))
+              .setPrecision(2),
+          new ReportNumericItem(COL_PAYROLL_TARIFF,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_TARIFF)).setPrecision(2),
+          new ReportNumericItem(COL_PAYROLL_SALARY,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_SALARY)).setPrecision(2),
+          new ReportTextItem(ALS_CURRENCY_NAME,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_CURRENCY)),
+          new ReportBooleanItem(COL_PAYROLL_CONFIRMED,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMED)),
+          new ReportDateTimeItem(COL_PAYROLL_CONFIRMATION_DATE,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMATION_DATE))
+              .setFormat(DateTimeFunction.DATE),
+          new ReportTextItem(COL_PAYROLL_CONFIRMED + COL_USER,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMED + COL_USER)),
+          new ReportTextItem(COL_NOTES,
+              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_NOTES))
+          );
+    }
+
+    @Override
+    public String getReportCaption() {
+      return Localized.dictionary().svcPayrollReport();
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+
+      for (ReportItem item : getItems()) {
+        items.put(item.getExpression(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
+      report.addRowItem(items.get(COL_SERVICE_MAINTENANCE));
+
+      Stream.of(COL_REPAIRER, COL_DATE, COL_PAYROLL_DATE, COL_PAYROLL_BASIC_AMOUNT,
+          COL_PAYROLL_TARIFF, COL_PAYROLL_SALARY, ALS_CURRENCY_NAME, COL_PAYROLL_CONFIRMED,
+          COL_PAYROLL_CONFIRMATION_DATE, COL_PAYROLL_CONFIRMED + COL_USER, COL_NOTES)
+          .forEach(item -> report.addColItem(items.get(item)));
+      return Collections.singletonList(report);
+    }
   };
 
   private static BeeLogger logger = LogUtils.getLogger(Report.class);

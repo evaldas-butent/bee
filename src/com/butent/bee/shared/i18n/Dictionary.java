@@ -5252,6 +5252,8 @@ public interface Dictionary {
 
   default String svcObjects() {return g("svcObjects");}
 
+  default String svcPayrollReport() {return g("svcPayrollReport");}
+
   default String svcPublishTime() {return g("svcPublishTime");}
 
   default String svcRepair() {return g("svcRepair");}
