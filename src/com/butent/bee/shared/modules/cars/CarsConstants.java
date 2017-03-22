@@ -86,7 +86,7 @@ public final class CarsConstants {
   public static final String COL_SERVICE_EVENT = "ServiceEvent";
   public static final String COL_BUNDLE_NAME = "BundleName";
   public static final String COL_VALID_UNTIL = "ValidUntil";
-
+  public static final String COL_BODY_NUMBER = "BodyNumber";
   public static final String COL_SERVICE_ITEM = "ServiceItem";
   public static final String COL_SERVICE_JOB = "ServiceJob";
 

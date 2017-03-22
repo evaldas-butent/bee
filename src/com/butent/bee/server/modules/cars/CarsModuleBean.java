@@ -4,6 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
@@ -49,9 +50,11 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults;
+import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.i18n.DateTimeFormatInfo.DateTimeFormatInfo;
@@ -108,6 +111,20 @@ public class CarsModuleBean implements BeeModule {
   FileStorageBean fs;
   @EJB
   TradeModuleBean trd;
+
+  @Override
+  public List<SearchResult> doSearch(String query) {
+    List<SearchResult> result = new ArrayList<>();
+
+    if (!usr.isDataVisible(VIEW_CARS)) {
+      return result;
+    }
+
+    result.addAll(qs.getSearchResults(VIEW_CARS, Filter.anyContains(Sets.newHashSet(COL_BODY_NUMBER,
+        COL_NUMBER), query)));
+
+    return result;
+  }
 
   @Override
   public ResponseObject doService(String service, RequestInfo reqInfo) {

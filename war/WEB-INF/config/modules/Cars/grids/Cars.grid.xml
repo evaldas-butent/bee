@@ -24,6 +24,7 @@
   <g:columns>
     <RelColumn name="Type" caption="=vehicleType" renderColumns="TypeName" />
     <RelColumn name="Model" renderColumns="ParentModelName ModelName" caption="=vehicleModel" />
+    <DataColumn name="BodyNumber" />
     <DataColumn name="Number" caption="=vehicleNumber" />
     <RelColumn name="Owner" caption="=vehicleOwnerName" />
     <DataColumn name="ProductionDate" caption="=vehicleProductionDateShort" width="80" />
