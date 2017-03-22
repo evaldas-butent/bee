@@ -5728,6 +5728,8 @@ public interface Dictionary {
 
   default String trEmptyKilometersTotal() {return g("trEmptyKilometersTotal");}
 
+  default String trExpedition() {return g("trExpedition");}
+
   default String trExpeditionTrips() {return g("trExpeditionTrips");}
 
   default String trExpeditionType() {return g("trExpeditionType");}
@@ -5855,6 +5857,8 @@ public interface Dictionary {
   default String trMenuSelfService() {return g("trMenuSelfService");}
 
   default String trMenuUnregisteredRequests() {return g("trMenuUnregisteredRequests");}
+
+  default String trMessageTemplates() {return g("trMessageTemplates");}
 
   default String trModifyType() {return g("trModifyType");}
 
