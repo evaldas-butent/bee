@@ -140,6 +140,7 @@ public final class ServiceConstants {
   public static final String COL_MAINTENANCE_DESCRIPTION = "Description";
   public static final String COL_MAINTENANCE_NOTES = "Notes";
   public static final String COL_MAINTENANCE_TYPE = "MaintenanceType";
+  public static final String COL_MAINTENANCE_URGENT = "Urgent";
   public static final String COL_MODEL = "Model";
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_SERIAL_NO = "SerialNo";
