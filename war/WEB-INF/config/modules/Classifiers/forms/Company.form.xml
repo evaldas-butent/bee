@@ -288,6 +288,11 @@
         <ChildGrid name="CompanyOrders" relColumn="Company" />
       </page>
 
+      <page data="Cars" module="Cars" >
+        <text>=cars</text>
+        <ChildGrid name="CompanyCars" relColumn="Owner" />
+      </page>
+
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>
