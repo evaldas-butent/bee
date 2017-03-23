@@ -289,6 +289,8 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     if (order == null) {
       return;
     }
+    copyAction.running();
+
     Filter filter = Filter.equals(COL_SERVICE_ORDER, order.getId());
     DataInfo orderInfo = Data.getDataInfo(getViewName());
     BeeRow orderClone = RowFactory.createEmptyRow(orderInfo, true);
@@ -319,6 +321,7 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
               @Override
               public void run() {
                 if (Objects.equals(data.size(), ++copiedGrids)) {
+                  copyAction.idle();
                   RowEditor.open(getViewName(), newOrder.getId(), Opener.MODAL);
                 }
               }
