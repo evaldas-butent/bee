@@ -171,6 +171,10 @@
           </FlowPanel>
         </FlowPanel>
       </page>
+      <page>
+        <text>=files</text>
+        <ChildGrid name="CarServiceFiles" relColumn="ServiceOrder" />
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>

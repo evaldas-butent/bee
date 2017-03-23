@@ -32,7 +32,6 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
-import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.news.ExtendedUsageQueryProvider;
@@ -654,14 +653,6 @@ public class TransportModuleBean implements BeeModule {
             row.setProperty(COL_CARGO + VAR_INCOME, t.getB());
             row.setProperty(VAR_EXPENSE, t.getC());
           }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void getFileIcons(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_CARGO_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
         }
       }
 

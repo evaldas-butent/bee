@@ -2,10 +2,10 @@
 <View xmlns="http://www.butent.com/view"
       xmlns:xi="http://www.w3.org/2001/XInclude"
 
-      name="CargoFiles" source="CargoFiles" module="Transport.SelfService" caption="=files"
+      name="CarServiceFiles" source="CarServiceFiles" module="Cars" caption="=files"
 >
   <Columns>
-    <SimpleColumn name="Cargo" />
+    <SimpleColumn name="ServiceOrder" />
 
     <xi:include href="../../Administration/views/viewcolumns/Files.viewcolumns.xml" />
   </Columns>

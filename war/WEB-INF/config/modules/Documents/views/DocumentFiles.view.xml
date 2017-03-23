@@ -31,7 +31,4 @@
       </SimpleJoin>
     </SimpleJoin>
   </Columns>
-  <Order>
-    <OrderBy column="File" />
-  </Order>
 </View>

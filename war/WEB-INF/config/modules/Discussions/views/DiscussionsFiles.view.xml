@@ -22,7 +22,4 @@
 
     <SimpleColumn name="Caption" />
   </Columns>
-  <Order>
-    <OrderBy column="File" />
-  </Order>
 </View>

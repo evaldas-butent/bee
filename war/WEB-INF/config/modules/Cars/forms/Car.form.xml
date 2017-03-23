@@ -149,6 +149,10 @@
         <text>=specification</text>
         <xi:include href="widgets/Specification.widget.xml" />
       </page>
+      <page>
+        <text>=files</text>
+        <ChildGrid name="CarFiles" relColumn="Car" />
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>

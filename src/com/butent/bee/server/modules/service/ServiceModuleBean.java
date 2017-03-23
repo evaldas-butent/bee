@@ -36,7 +36,6 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
-import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.orders.OrdersModuleBean;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
@@ -236,10 +235,7 @@ public class ServiceModuleBean implements BeeModule {
       @Subscribe
       @AllowConcurrentEvents
       public void setRowProperties(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_SERVICE_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
-
-        } else if (event.isAfter(VIEW_SERVICE_OBJECTS) && event.hasData()) {
+        if (event.isAfter(VIEW_SERVICE_OBJECTS) && event.hasData()) {
           BeeRowSet rowSet = event.getRowset();
           List<Long> rowIds = rowSet.getRowIds();
 

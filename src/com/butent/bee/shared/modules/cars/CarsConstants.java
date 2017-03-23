@@ -53,6 +53,8 @@ public final class CarsConstants {
   public static final String TBL_SERVICE_SYMPTOMS = "CarServiceSymptoms";
 
   public static final String VIEW_CARS = "Cars";
+  public static final String VIEW_CAR_FILES = "CarFiles";
+  public static final String VIEW_CAR_SERVICE_FILES = "CarServiceFiles";
 
   public static final String COL_BRANCH = "Branch";
   public static final String COL_BRANCH_NAME = "BranchName";
