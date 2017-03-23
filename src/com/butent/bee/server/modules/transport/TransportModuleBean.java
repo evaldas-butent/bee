@@ -53,6 +53,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -620,7 +621,7 @@ public class TransportModuleBean implements BeeModule {
               trips.addUnion(subQuery);
             }
           }
-          Table<Long, Long, Pair<String, String>> amounts = HashBasedTable.create();
+          Table<Long, Long, Triplet<String, String, String>> amounts = HashBasedTable.create();
 
           String crs = rep.getTripIncomes(trips, prm.getRelation(PRM_CURRENCY),
               BeeUtils.unbox(prm.getBoolean(PRM_EXCLUDE_VAT)));
@@ -629,10 +630,10 @@ public class TransportModuleBean implements BeeModule {
 
           for (SimpleRow row : rs) {
             amounts.put(row.getLong(COL_TRIP), row.getLong(COL_CARGO),
-                Pair.of(BeeUtils.round(BeeUtils.nvl(row.getValue(COL_TRANSPORTATION), "0"), 2)
-                    + " ("
-                    + BeeUtils.removeTrailingZeros(BeeUtils.round(row.getValue(COL_TRIP_PERCENT),
-                    2)) + "%)", null));
+                Triplet.of(BeeUtils.round(BeeUtils.nvl(row.getValue(COL_TRANSPORTATION), "0"), 2)
+                        + " ("
+                        + BeeUtils.removeTrailingZeros(BeeUtils.round(row.getValue(COL_TRIP_PERCENT),
+                    2)) + "%)", BeeUtils.round(row.getValue(COL_SERVICE), 2), null));
           }
           crs = rep.getCargoTripPercents(COL_TRIP, trips);
           rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
@@ -640,16 +641,18 @@ public class TransportModuleBean implements BeeModule {
 
           for (SimpleRow row : rs) {
             if (!amounts.contains(row.getLong(COL_TRIP), row.getLong(COL_CARGO))) {
-              amounts.put(row.getLong(COL_TRIP), row.getLong(COL_CARGO), Pair.empty());
+              amounts.put(row.getLong(COL_TRIP), row.getLong(COL_CARGO), Triplet.empty());
             }
             amounts.get(row.getLong(COL_TRIP), row.getLong(COL_CARGO))
-                .setB(BeeUtils.removeTrailingZeros(BeeUtils.round(row.getValue(COL_CARGO_PERCENT),
+                .setC(BeeUtils.removeTrailingZeros(BeeUtils.round(row.getValue(COL_CARGO_PERCENT),
                     2)) + "%");
           }
           for (BeeRow row : rowset.getRows()) {
-            Pair<String, String> p = amounts.get(row.getLong(tripIndex), row.getLong(cargoIndex));
-            row.setProperty(VAR_INCOME, p.getA());
-            row.setProperty(VAR_EXPENSE, p.getB());
+            Triplet<String, String, String> t = amounts.get(row.getLong(tripIndex),
+                row.getLong(cargoIndex));
+            row.setProperty(VAR_INCOME, t.getA());
+            row.setProperty(COL_CARGO + VAR_INCOME, t.getB());
+            row.setProperty(VAR_EXPENSE, t.getC());
           }
         }
       }

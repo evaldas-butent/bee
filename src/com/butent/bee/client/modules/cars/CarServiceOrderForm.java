@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.cars;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -81,7 +80,6 @@ import com.butent.bee.shared.modules.trade.TradeDocument;
 import com.butent.bee.shared.modules.trade.TradeDocumentItem;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -110,12 +108,12 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   private CustomAction createInvoice = new CustomAction(FontAwesome.FILE_TEXT_O,
       clickEvent -> selectServicesAndJobs());
 
+  private CustomAction copyAction = new CustomAction(FontAwesome.COPY, ev -> copyServiceOrder());
+
   Widget customerWarning;
   List<String> customerMessages = new ArrayList<>();
   Widget carWarning;
   List<String> carMessages = new ArrayList<>();
-
-  private FaLabel copyAction;
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
@@ -131,6 +129,20 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
       });
     }
     super.afterCreateEditableWidget(editableWidget, widget);
+  }
+
+  @Override
+  public void afterCreatePresenter(Presenter presenter) {
+    HeaderView hdr = presenter.getHeader();
+
+    if (Data.isViewEditable(TBL_TRADE_DOCUMENTS)) {
+      createInvoice.setTitle(Localized.dictionary().createInvoice());
+      hdr.addCommandItem(createInvoice);
+    }
+    copyAction.setTitle(Localized.dictionary().actionCopy());
+    hdr.addCommandItem(copyAction);
+
+    super.afterCreatePresenter(presenter);
   }
 
   @Override
@@ -187,9 +199,12 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
     refreshStages();
+
     showCustomerWarning();
     showCarWarning();
-    createInvoice.setVisible(!DataUtils.isNewRow(row));
+
+    Stream.of(createInvoice, copyAction).forEach(w -> w.setVisible(!DataUtils.isNewRow(row)));
+
     super.beforeRefresh(form, row);
   }
 
@@ -252,23 +267,6 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   }
 
   @Override
-  public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
-    HeaderView hdr = form.getViewPresenter().getHeader();
-    hdr.clearCommandPanel();
-
-    if (Data.isViewEditable(TBL_TRADE_DOCUMENTS)) {
-      createInvoice.setTitle(Localized.dictionary().createInvoice());
-      hdr.addCommandItem(createInvoice);
-    }
-
-    if (!DataUtils.isNewRow(row)) {
-      hdr.addCommandItem(getCopyAction());
-    }
-
-    return super.onStartEdit(form, row, focusCommand);
-  }
-
-  @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     Global.getParameterRelation(PRM_SERVICE_WAREHOUSE, (id, text) -> {
       if (DataUtils.isId(id)) {
@@ -287,83 +285,66 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
 
   private void copyServiceOrder() {
     IsRow order = getActiveRow();
-    Long orderId = getActiveRowId();
 
     if (order == null) {
       return;
     }
-
-    DataInfo orderInfo = Data.getDataInfo(TBL_SERVICE_ORDERS);
+    Filter filter = Filter.equals(COL_SERVICE_ORDER, order.getId());
+    DataInfo orderInfo = Data.getDataInfo(getViewName());
     BeeRow orderClone = RowFactory.createEmptyRow(orderInfo, true);
 
-    for (String col : orderInfo.getColumnNames(false)) {
-      if (BeeUtils.inList(col, TransportConstants.COL_DATE, TransportConstants.COL_ORDER_NO,
-          COL_STAGE, COL_STAGE_NAME)) {
-        continue;
-      }
+    orderInfo.getColumnNames(false).stream()
+        .filter(col -> !BeeUtils.inList(col, COL_DATE, COL_ORDER_NO, COL_STAGE, COL_STAGE_NAME))
+        .forEach(col -> {
+          int idx = orderInfo.getColumnIndex(col);
 
-      int idx = orderInfo.getColumnIndex(col);
-
-      if (!BeeConst.isUndef(idx)) {
-        orderClone.setValue(idx, order.getString(idx));
-      }
-    }
-
-    Queries.insertRow(DataUtils.createRowSetForInsert(getViewName(), getDataColumns(), orderClone),
-        new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow newOrder) {
-            Map<String, Filter> filters = new HashMap<>();
-            filters.put(TBL_SERVICE_ORDER_ITEMS, Filter.equals(COL_SERVICE_ORDER, orderId));
-            filters.put(TBL_SERVICE_ORDER_JOBS, Filter.equals(COL_SERVICE_ORDER, orderId));
-
-            Queries.getData(filters.keySet(), filters, null, new Queries.DataCallback() {
-              @Override
-              public void onSuccess(Collection<BeeRowSet> result) {
-                Runnable onCloneChildren = new Runnable() {
-                  int copiedGrids;
-
-                  @Override
-                  public void run() {
-                    if (Objects.equals(result.size(), ++copiedGrids)) {
-                      RowEditor.open(getViewName(), newOrder.getId(), Opener.MODAL);
-                    }
-                  }
-                };
-
-                for (BeeRowSet rowSet : result) {
-                  if (!DataUtils.isEmpty(rowSet)) {
-                    BeeRowSet newRowSet = DataUtils.createRowSetForInsert(rowSet);
-                    int serviceOrderIdx = newRowSet.getColumnIndex(COL_SERVICE_ORDER);
-
-                    for (BeeRow row : newRowSet) {
-                      row.setValue(serviceOrderIdx, newOrder.getId());
-                    }
-
-                    Queries.insertRows(newRowSet, new RpcCallback<RowInfoList>() {
-                      @Override
-                      public void onSuccess(RowInfoList result) {
-                        onCloneChildren.run();
-                      }
-                    });
-                  } else {
-                    onCloneChildren.run();
-                  }
-                }
-              }
-            });
+          if (!BeeConst.isUndef(idx)) {
+            orderClone.setValue(idx, order.getString(idx));
           }
         });
-  }
+    Queries.insertRow(DataUtils.createRowSetForInsert(orderInfo.getViewName(),
+        orderInfo.getColumns(), orderClone), new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow newOrder) {
+        Map<String, Filter> filters = new HashMap<>();
+        filters.put(TBL_SERVICE_ORDER_ITEMS, filter);
+        filters.put(TBL_SERVICE_ORDER_JOBS, filter);
 
-  private IdentifiableWidget getCopyAction() {
-    if (copyAction == null) {
-      copyAction = new FaLabel(FontAwesome.COPY);
-      copyAction.setTitle(Localized.dictionary().actionCopy());
-      copyAction.addClickHandler(clickEvent -> copyServiceOrder());
-    }
+        Queries.getData(filters.keySet(), filters, null, new Queries.DataCallback() {
+          @Override
+          public void onSuccess(Collection<BeeRowSet> data) {
+            Runnable onCloneChildren = new Runnable() {
+              int copiedGrids;
 
-    return copyAction;
+              @Override
+              public void run() {
+                if (Objects.equals(data.size(), ++copiedGrids)) {
+                  RowEditor.open(getViewName(), newOrder.getId(), Opener.MODAL);
+                }
+              }
+            };
+            for (BeeRowSet rowSet : data) {
+              if (!DataUtils.isEmpty(rowSet)) {
+                BeeRowSet newRowSet = DataUtils.createRowSetForInsert(rowSet);
+                int serviceOrderIdx = newRowSet.getColumnIndex(COL_SERVICE_ORDER);
+
+                for (BeeRow row : newRowSet) {
+                  row.setValue(serviceOrderIdx, newOrder.getId());
+                }
+                Queries.insertRows(newRowSet, new RpcCallback<RowInfoList>() {
+                  @Override
+                  public void onSuccess(RowInfoList res) {
+                    onCloneChildren.run();
+                  }
+                });
+              } else {
+                onCloneChildren.run();
+              }
+            }
+          }
+        });
+      }
+    });
   }
 
   private void renderInvoiceTable(Collection<BeeRowSet> result,
@@ -654,17 +635,19 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
     Long car = getLongValue(COL_CAR);
 
     if (DataUtils.isId(car)) {
-      Queries.getRowSet(TBL_CAR_RECALLS, null, Filter.and(Filter.equals(COL_VEHICLE, car),
-          Filter.isNull(COL_CHECKED)), new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          result.forEach(beeRow -> carMessages.add(BeeUtils.joinWords(
-              beeRow.getString(result.getColumnIndex(COL_CODE)),
-              beeRow.getString(result.getColumnIndex(CarsConstants.COL_DESCRIPTION)))));
+      Queries.getRowSet(TBL_CAR_RECALLS, Arrays.asList(COL_CODE, CarsConstants.COL_DESCRIPTION),
+          Filter.and(Filter.equals(COL_VEHICLE, car), Filter.isNull(COL_CHECKED)),
+          new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              carMessages.clear();
+              result.forEach(beeRow -> carMessages.add(BeeUtils.joinWords(
+                  beeRow.getString(result.getColumnIndex(COL_CODE)),
+                  beeRow.getString(result.getColumnIndex(CarsConstants.COL_DESCRIPTION)))));
 
-          carWarning.setVisible(!carMessages.isEmpty());
-        }
-      });
+              carWarning.setVisible(!carMessages.isEmpty());
+            }
+          });
     } else {
       carWarning.setVisible(false);
     }
@@ -683,17 +666,19 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
       if (DataUtils.isId(getActiveRowId())) {
         filter = Filter.and(filter, Filter.compareId(Operator.NE, getActiveRowId()));
       }
-      Queries.getRowSet(getViewName(), null, filter, new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          result.forEach(beeRow -> customerMessages.add(BeeUtils.joinWords(
-              beeRow.getDateTime(result.getColumnIndex(COL_ORDER_DATE)),
-              beeRow.getString(result.getColumnIndex(COL_ORDER_NO)),
-              beeRow.getString(result.getColumnIndex(COL_STAGE_NAME)))));
+      Queries.getRowSet(getViewName(), Arrays.asList(COL_ORDER_DATE, COL_ORDER_NO, COL_STAGE_NAME),
+          filter, new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              customerMessages.clear();
+              result.forEach(beeRow -> customerMessages.add(BeeUtils.joinWords(
+                  beeRow.getDateTime(result.getColumnIndex(COL_ORDER_DATE)),
+                  beeRow.getString(result.getColumnIndex(COL_ORDER_NO)),
+                  beeRow.getString(result.getColumnIndex(COL_STAGE_NAME)))));
 
-          customerWarning.setVisible(!customerMessages.isEmpty());
-        }
-      });
+              customerWarning.setVisible(!customerMessages.isEmpty());
+            }
+          });
     } else {
       customerWarning.setVisible(false);
     }
