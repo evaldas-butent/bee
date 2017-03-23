@@ -120,6 +120,7 @@ class TradeItemPicker extends Flow implements HasPaging {
 
   private static final String STYLE_QTY_INPUT = STYLE_QTY + "-input";
 
+  private static final String STYLE_EMPTY = STYLE_PREFIX + "empty";
   private static final String STYLE_PAGER = STYLE_PREFIX + "pager";
 
   private static final int SEARCH_BY_SIZE = 3;
@@ -161,6 +162,7 @@ class TradeItemPicker extends Flow implements HasPaging {
 
   TradeItemPicker(IsRow documentRow, Double defaultVatPercent) {
     super(STYLE_NAME);
+    addStyleName(STYLE_EMPTY);
 
     add(createSearch());
     add(itemPanel);
@@ -803,7 +805,12 @@ class TradeItemPicker extends Flow implements HasPaging {
     int vatCol = BeeConst.UNDEF;
     int totalCol;
 
-    itemPanel.clear();
+    if (itemPanel.isEmpty()) {
+      removeStyleName(STYLE_EMPTY);
+    } else {
+      itemPanel.clear();
+    }
+
     final HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
 
     int r = 0;
@@ -976,18 +983,75 @@ class TradeItemPicker extends Flow implements HasPaging {
   private KeyDownHandler ensureQuantityKeyDownHandler() {
     if (quantityKeyDownHandler == null) {
       quantityKeyDownHandler = event -> {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER
-            && event.getSource() instanceof InputNumber) {
+        if (event.getSource() instanceof InputNumber) {
+          InputNumber input;
 
-          InputNumber input = (InputNumber) event.getSource();
+          if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+            input = (InputNumber) event.getSource();
 
-          if (validate(input)) {
-            if (!UiHelper.moveFocus(input.getParent(), true)) {
-              onQuantityChange(input, input.getNumber());
+            if (validate(input)) {
+              if (!UiHelper.moveFocus(input.getParent(), true)) {
+                onQuantityChange(input, input.getNumber());
+              }
+
+              if (UiHelper.isSave(event.getNativeEvent())) {
+                commit();
+              }
             }
 
-            if (UiHelper.isSave(event.getNativeEvent())) {
-              commit();
+          } else if (getRowCount() > 1) {
+
+            switch (event.getNativeKeyCode()) {
+              case KeyCodes.KEY_UP:
+              case KeyCodes.KEY_DOWN:
+                input = (InputNumber) event.getSource();
+
+                if (validate(input)) {
+                  UiHelper.moveFocus(input.getParent(),
+                      event.getNativeKeyCode() == KeyCodes.KEY_DOWN);
+                }
+                break;
+
+              case KeyCodes.KEY_PAGEUP:
+              case KeyCodes.KEY_PAGEDOWN:
+                input = (InputNumber) event.getSource();
+
+                if (validate(input)) {
+                  boolean forward = event.getNativeKeyCode() == KeyCodes.KEY_PAGEDOWN;
+                  boolean hasModifiers = EventUtils.hasModifierKey(event);
+
+                  onQuantityChange(input, input.getNumber());
+
+                  boolean ok = false;
+
+                  if (getPageSize() > 0 && getPageSize() < getRowCount()) {
+                    if (hasModifiers) {
+                      if (forward) {
+                        ok = pager.goLast();
+                      } else {
+                        ok = pager.goFirst();
+                      }
+
+                    } else {
+                      if (forward) {
+                        ok = pager.goNext();
+                      } else {
+                        ok = pager.goPrevious();
+                      }
+                    }
+                  }
+
+                  if (!ok) {
+                    List<Element> inputElements = Selectors.getElementsByClassName(
+                        itemPanel.getElement(), STYLE_QTY_INPUT);
+
+                    if (BeeUtils.size(inputElements) > 1) {
+                      int index = forward ? inputElements.size() - 1 : 0;
+                      inputElements.get(index).focus();
+                    }
+                  }
+                }
+                break;
             }
           }
         }

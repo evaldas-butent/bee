@@ -150,6 +150,42 @@ public class SimplePager extends AbstractPager {
     return addHandler(handler, ReadyEvent.getType());
   }
 
+  public boolean goFirst() {
+    if (widgetFirst.isEnabled()) {
+      widgetFirst.getCommand().execute();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean goPrevious() {
+    if (widgetPrev.isEnabled()) {
+      widgetPrev.getCommand().execute();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean goNext() {
+    if (widgetNext.isEnabled()) {
+      widgetNext.getCommand().execute();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean goLast() {
+    if (widgetLast.isEnabled()) {
+      widgetLast.getCommand().execute();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   @Override
   public boolean onPrint(Element source, Element target) {
     return !DomUtils.isImageElement(source);

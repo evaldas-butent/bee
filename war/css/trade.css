@@ -404,3 +404,10 @@
 .bee-trade-item-picker-service .bee-trade-item-picker-qty-input {
   color: darkblue;
 }
+
+.bee-trade-item-picker-empty .bee-trade-item-picker-pager {
+  visibility: hidden;
+}
+.bee-trade-item-picker-pager .bee-SimplePager-info {
+  font-style: italic;
+}
