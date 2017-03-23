@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -22,10 +23,12 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.navigation.HasPaging;
 import com.butent.bee.client.view.navigation.SimplePager;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.FaLabel;
@@ -54,6 +57,7 @@ import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeItemSearch;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -69,7 +73,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
-class TradeItemPicker extends Flow {
+class TradeItemPicker extends Flow implements HasPaging {
 
   private static BeeLogger logger = LogUtils.getLogger(TradeItemPicker.class);
 
@@ -146,12 +150,24 @@ class TradeItemPicker extends Flow {
 
   private BeeRowSet data;
 
+  private Filter filter;
+  private final List<TradeItemSearch> filterBy = new ArrayList<>();
+
+  private final SimplePager pager = new SimplePager(999);
+
+  private int pageSize = BeeConst.UNDEF;
+  private int pageStart;
+  private int rowCount = BeeConst.UNDEF;
+
   TradeItemPicker(IsRow documentRow, Double defaultVatPercent) {
     super(STYLE_NAME);
 
     add(createSearch());
     add(itemPanel);
-    add(createPager());
+
+    pager.addStyleName(STYLE_PAGER);
+    add(pager);
+
     add(notification);
 
     setDocumentRow(documentRow);
@@ -159,8 +175,10 @@ class TradeItemPicker extends Flow {
 
     itemPanel.addClickHandler(event -> {
       Element target = EventUtils.getEventTargetElement(event);
-      if (target != null) {
-        onCellClick(target);
+      TableCellElement cell = DomUtils.getParentCell(target, true);
+
+      if (cell != null) {
+        onCellClick(cell);
       }
     });
   }
@@ -217,13 +235,6 @@ class TradeItemPicker extends Flow {
     }
 
     return selector;
-  }
-
-  private Widget createPager() {
-    SimplePager pager = new SimplePager(999);
-    pager.addStyleName(STYLE_PAGER);
-
-    return pager;
   }
 
   private Widget createSearch() {
@@ -341,33 +352,93 @@ class TradeItemPicker extends Flow {
       searchBy.addAll(getDefaultSearchBy(query));
     }
 
-    Filter filter = Filter.and(buildParentFilter(), buildSearchFilter(query, searchBy));
-
-    doQuery(filter, searchBy);
+    doQuery(Filter.and(buildParentFilter(), buildSearchFilter(query, searchBy)), searchBy);
   }
 
-  private void doQuery(Filter filter, Collection<TradeItemSearch> searchBy) {
+  private void doQuery(final Filter where, final Collection<TradeItemSearch> searchBy) {
     addStyleName(STYLE_SEARCH_RUNNING);
 
-    Queries.getRowSet(VIEW_ITEM_SELECTION, null, filter, new Queries.RowSetCallback() {
+    Queries.getRowCount(VIEW_ITEM_SELECTION, where, new Queries.IntCallback() {
       @Override
       public void onFailure(String... reason) {
         removeStyleName(STYLE_SEARCH_RUNNING);
       }
 
       @Override
-      public void onSuccess(BeeRowSet result) {
-        if (DataUtils.isEmpty(result)) {
-          notification.warning(Localized.dictionary().nothingFound());
+      public void onSuccess(Integer count) {
+        if (BeeUtils.isPositive(count)) {
+          int offset;
+          int limit;
+
+          int ps = estimatePageSize();
+
+          if (ps < count) {
+            offset = 0;
+            limit = ps;
+          } else {
+            offset = BeeConst.UNDEF;
+            limit = BeeConst.UNDEF;
+          }
+
+          Queries.getRowSet(VIEW_ITEM_SELECTION, null, where, null, offset, limit,
+              new Queries.RowSetCallback() {
+                @Override
+                public void onFailure(String... reason) {
+                  removeStyleName(STYLE_SEARCH_RUNNING);
+                }
+
+                @Override
+                public void onSuccess(BeeRowSet result) {
+                  if (DataUtils.isEmpty(result)) {
+                    notification.warning(Localized.dictionary().nothingFound());
+
+                  } else {
+                    setFilter(where);
+                    setFilterBy(searchBy);
+
+                    renderItems(result);
+
+                    setRowCount(count, false);
+                    setPageStart(0, false, false, NavigationOrigin.SYSTEM);
+                    setPageSize(ps, false);
+
+                    pager.setDisplay(TradeItemPicker.this);
+                    fireScopeChange(NavigationOrigin.SYSTEM);
+                  }
+
+                  removeStyleName(STYLE_SEARCH_RUNNING);
+                }
+              });
 
         } else {
-          logger.debug(filter, result.getNumberOfRows());
-          renderItems(result, searchBy);
+          removeStyleName(STYLE_SEARCH_RUNNING);
+          notification.warning(Localized.dictionary().nothingFound());
         }
-
-        removeStyleName(STYLE_SEARCH_RUNNING);
       }
     });
+  }
+
+  private void refresh() {
+    addStyleName(STYLE_SEARCH_RUNNING);
+
+    Queries.getRowSet(VIEW_ITEM_SELECTION, null, getFilter(), null, getPageStart(), getPageSize(),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            removeStyleName(STYLE_SEARCH_RUNNING);
+          }
+
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (DataUtils.isEmpty(result)) {
+              notification.warning(Localized.dictionary().nothingFound());
+            } else {
+              renderItems(result);
+            }
+
+            removeStyleName(STYLE_SEARCH_RUNNING);
+          }
+        });
   }
 
   private static Filter buildSearchFilter(String query, List<TradeItemSearch> searchBy) {
@@ -378,12 +449,12 @@ class TradeItemPicker extends Flow {
       return searchBy.get(0).getItemFilter(query);
 
     } else {
-      CompoundFilter filter = Filter.or();
+      CompoundFilter sf = Filter.or();
 
       for (TradeItemSearch by : searchBy) {
-        filter.add(by.getItemFilter(query));
+        sf.add(by.getItemFilter(query));
       }
-      return filter;
+      return sf;
     }
   }
 
@@ -680,7 +751,7 @@ class TradeItemPicker extends Flow {
     return input;
   }
 
-  private Widget renderStock(Double stock, Double reserved) {
+  private static Widget renderStock(Double stock, Double reserved) {
     Flow panel = new Flow(STYLE_STOCK_CONTAINER);
 
     if (BeeUtils.isPositive(stock)) {
@@ -713,11 +784,11 @@ class TradeItemPicker extends Flow {
     return panel;
   }
 
-  private void renderItems(BeeRowSet items, Collection<TradeItemSearch> searchBy) {
+  private void renderItems(BeeRowSet items) {
     setData(items);
 
     ItemPrice ip = getItemPriceForRender(items);
-    List<String> itemColumns = getItemColumnsForRender(items, searchBy, ip);
+    List<String> itemColumns = getItemColumnsForRender(items, getFilterBy(), ip);
 
     Map<Long, String> warehouses = extractWarehouses(items);
 
@@ -1158,12 +1229,7 @@ class TradeItemPicker extends Flow {
     return DomUtils.getDataIndexLong(DomUtils.getParentRow(child, true));
   }
 
-  private void onCellClick(Element source) {
-    TableCellElement cell = DomUtils.getParentCell(source, true);
-    if (cell == null) {
-      return;
-    }
-
+  private void onCellClick(TableCellElement cell) {
     if (cell.hasClassName(STYLE_ID + STYLE_CELL_SUFFIX)) {
       long id = getRowId(cell);
       if (DataUtils.isId(id)) {
@@ -1195,8 +1261,8 @@ class TradeItemPicker extends Flow {
     Double stock = DomUtils.getDataPropertyDouble(cell, KEY_AVAILABLE);
     long id = getRowId(cell);
 
-    Element inputElement = Selectors.getElementByClassName(DomUtils.getParentRow(cell, true),
-        STYLE_QTY_INPUT);
+    TableRowElement rowElement = DomUtils.getParentRow(cell, true);
+    Element inputElement = Selectors.getElementByClassName(rowElement, STYLE_QTY_INPUT);
     HtmlTable table = UiHelper.getChild(itemPanel, HtmlTable.class);
     Widget widget = table.getWidgetByElement(inputElement);
 
@@ -1207,6 +1273,93 @@ class TradeItemPicker extends Flow {
         input.setValue(stock);
         onQuantityChange(input, stock);
       }
+    }
+  }
+
+  @Override
+  public HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler) {
+    return addHandler(handler, ScopeChangeEvent.getType());
+  }
+
+  @Override
+  public int getPageSize() {
+    return pageSize;
+  }
+
+  @Override
+  public int getPageStart() {
+    return pageStart;
+  }
+
+  @Override
+  public int getRowCount() {
+    return rowCount;
+  }
+
+  @Override
+  public void setPageSize(int size, boolean fireScopeChange) {
+    if (size != getPageSize()) {
+      this.pageSize = size;
+
+      if (fireScopeChange) {
+        fireScopeChange(NavigationOrigin.SYSTEM);
+      }
+    }
+  }
+
+  @Override
+  public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest,
+      NavigationOrigin origin) {
+
+    if (start >= 0 && start != getPageStart()) {
+      this.pageStart = start;
+
+      if (fireScopeChange) {
+        fireScopeChange(origin);
+      }
+
+      if (fireDataRequest) {
+        refresh();
+      }
+    }
+  }
+
+  @Override
+  public void setRowCount(int count, boolean fireScopeChange) {
+    if (count >= 0 && count != getRowCount()) {
+      this.rowCount = count;
+
+      if (fireScopeChange) {
+        fireScopeChange(NavigationOrigin.SYSTEM);
+      }
+    }
+  }
+
+  private static int estimatePageSize() {
+    return Math.max(BeeKeeper.getScreen().getHeight() / 60, 1);
+  }
+
+  private void fireScopeChange(NavigationOrigin origin) {
+    fireEvent(new ScopeChangeEvent(getPageStart(), getPageSize(), getRowCount(), origin));
+  }
+
+  private Filter getFilter() {
+    return filter;
+  }
+
+  private void setFilter(Filter filter) {
+    this.filter = filter;
+  }
+
+  private List<TradeItemSearch> getFilterBy() {
+    return filterBy;
+  }
+
+  private void setFilterBy(Collection<TradeItemSearch> by) {
+    filterBy.clear();
+
+    if (!BeeUtils.isEmpty(by)) {
+      filterBy.addAll(by);
     }
   }
 }
