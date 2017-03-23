@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.cars;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -17,11 +18,14 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -37,6 +41,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HasStages;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -55,6 +60,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontStyle;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -62,6 +68,7 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Dictionary;
@@ -74,6 +81,7 @@ import com.butent.bee.shared.modules.trade.TradeDocument;
 import com.butent.bee.shared.modules.trade.TradeDocumentItem;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -107,6 +115,8 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   Widget carWarning;
   List<String> carMessages = new ArrayList<>();
 
+  private FaLabel copyAction;
+
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
     if (Objects.equals(editableWidget.getColumnId(), COL_CAR) && widget instanceof DataSelector) {
@@ -121,15 +131,6 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
       });
     }
     super.afterCreateEditableWidget(editableWidget, widget);
-  }
-
-  @Override
-  public void afterCreatePresenter(Presenter presenter) {
-    if (Data.isViewEditable(TBL_TRADE_DOCUMENTS)) {
-      createInvoice.setTitle(Localized.dictionary().createInvoice());
-      presenter.getHeader().addCommandItem(createInvoice);
-    }
-    super.afterCreatePresenter(presenter);
   }
 
   @Override
@@ -251,6 +252,23 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   }
 
   @Override
+  public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
+    HeaderView hdr = form.getViewPresenter().getHeader();
+    hdr.clearCommandPanel();
+
+    if (Data.isViewEditable(TBL_TRADE_DOCUMENTS)) {
+      createInvoice.setTitle(Localized.dictionary().createInvoice());
+      hdr.addCommandItem(createInvoice);
+    }
+
+    if (!DataUtils.isNewRow(row)) {
+      hdr.addCommandItem(getCopyAction());
+    }
+
+    return super.onStartEdit(form, row, focusCommand);
+  }
+
+  @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     Global.getParameterRelation(PRM_SERVICE_WAREHOUSE, (id, text) -> {
       if (DataUtils.isId(id)) {
@@ -265,6 +283,87 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   @Override
   public void setStages(List<Stage> stages) {
     orderStages = stages;
+  }
+
+  private void copyServiceOrder() {
+    IsRow order = getActiveRow();
+    Long orderId = getActiveRowId();
+
+    if (order == null) {
+      return;
+    }
+
+    DataInfo orderInfo = Data.getDataInfo(TBL_SERVICE_ORDERS);
+    BeeRow orderClone = RowFactory.createEmptyRow(orderInfo, true);
+
+    for (String col : orderInfo.getColumnNames(false)) {
+      if (BeeUtils.inList(col, TransportConstants.COL_DATE, TransportConstants.COL_ORDER_NO,
+          COL_STAGE, COL_STAGE_NAME)) {
+        continue;
+      }
+
+      int idx = orderInfo.getColumnIndex(col);
+
+      if (!BeeConst.isUndef(idx)) {
+        orderClone.setValue(idx, order.getString(idx));
+      }
+    }
+
+    Queries.insertRow(DataUtils.createRowSetForInsert(getViewName(), getDataColumns(), orderClone),
+        new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow newOrder) {
+            Map<String, Filter> filters = new HashMap<>();
+            filters.put(TBL_SERVICE_ORDER_ITEMS, Filter.equals(COL_SERVICE_ORDER, orderId));
+            filters.put(TBL_SERVICE_ORDER_JOBS, Filter.equals(COL_SERVICE_ORDER, orderId));
+
+            Queries.getData(filters.keySet(), filters, null, new Queries.DataCallback() {
+              @Override
+              public void onSuccess(Collection<BeeRowSet> result) {
+                Runnable onCloneChildren = new Runnable() {
+                  int copiedGrids;
+
+                  @Override
+                  public void run() {
+                    if (Objects.equals(result.size(), ++copiedGrids)) {
+                      RowEditor.open(getViewName(), newOrder.getId(), Opener.MODAL);
+                    }
+                  }
+                };
+
+                for (BeeRowSet rowSet : result) {
+                  if (!DataUtils.isEmpty(rowSet)) {
+                    BeeRowSet newRowSet = DataUtils.createRowSetForInsert(rowSet);
+                    int serviceOrderIdx = newRowSet.getColumnIndex(COL_SERVICE_ORDER);
+
+                    for (BeeRow row : newRowSet) {
+                      row.setValue(serviceOrderIdx, newOrder.getId());
+                    }
+
+                    Queries.insertRows(newRowSet, new RpcCallback<RowInfoList>() {
+                      @Override
+                      public void onSuccess(RowInfoList result) {
+                        onCloneChildren.run();
+                      }
+                    });
+                  } else {
+                    onCloneChildren.run();
+                  }
+                }
+              }
+            });
+          }
+        });
+  }
+
+  private IdentifiableWidget getCopyAction() {
+    if (copyAction == null) {
+      copyAction = new FaLabel(FontAwesome.COPY);
+      copyAction.setTitle(Localized.dictionary().actionCopy());
+      copyAction.addClickHandler(clickEvent -> copyServiceOrder());
+    }
+
+    return copyAction;
   }
 
   private void renderInvoiceTable(Collection<BeeRowSet> result,
