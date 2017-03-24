@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -15,6 +16,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Storage;
+import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
@@ -25,6 +27,8 @@ import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
@@ -57,6 +61,7 @@ import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeItemSearch;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -130,6 +135,19 @@ class TradeItemPicker extends Flow implements HasPaging {
 
   private static final String KEY_AVAILABLE = "avail";
 
+  private static final int itemPriceScale = Data.getColumnScale(VIEW_ITEMS, COL_ITEM_PRICE);
+  private static final int costScale = Data.getColumnScale(VIEW_TRADE_ITEM_COST,
+      COL_TRADE_ITEM_COST);
+  private static final int priceScale = Data.getColumnScale(VIEW_TRADE_DOCUMENT_ITEMS,
+      COL_TRADE_ITEM_PRICE);
+
+  private static final NumberFormat itemPriceFormat = Format.getDecimalFormat(2, itemPriceScale);
+  private static final NumberFormat costFormat = Format.getDecimalFormat(2, costScale);
+  private static final NumberFormat priceFormat = Format.getDecimalFormat(2, priceScale);
+
+  private static final NumberFormat amountFormat = Format.getDefaultMoneyFormat();
+  private static final NumberFormat totalFormat = Format.getDefaultMoneyFormat();
+
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
   private final Notification notification = new Notification();
 
@@ -138,6 +156,8 @@ class TradeItemPicker extends Flow implements HasPaging {
   private Long warehouse;
 
   private ItemPrice itemPrice;
+
+  private DateTime date;
   private Long currency;
   private String currencyName;
 
@@ -203,6 +223,8 @@ class TradeItemPicker extends Flow implements HasPaging {
     setWarehouse(TradeUtils.getDocumentRelation(row, COL_TRADE_WAREHOUSE_FROM));
 
     setItemPrice(TradeUtils.getDocumentItemPrice(row));
+
+    setDate(TradeUtils.getDocumentDate(row));
     setCurrency(TradeUtils.getDocumentRelation(row, COL_TRADE_CURRENCY));
     setCurrencyName(TradeUtils.getDocumentString(row, AdministrationConstants.ALS_CURRENCY_NAME));
 
@@ -518,6 +540,14 @@ class TradeItemPicker extends Flow implements HasPaging {
     this.itemPrice = itemPrice;
   }
 
+  private DateTime getDate() {
+    return date;
+  }
+
+  private void setDate(DateTime date) {
+    this.date = date;
+  }
+
   private Long getCurrency() {
     return currency;
   }
@@ -682,8 +712,38 @@ class TradeItemPicker extends Flow implements HasPaging {
     return DataUtils.getString(items, item, column);
   }
 
+  private String renderItemPrice(BeeRowSet items, BeeRow item, ItemPrice ip,
+      boolean isService, String mainWarehouseCode, boolean showStockCost) {
+
+    if (!isService && showStockCost) {
+      Double value = item.getPropertyDouble(keyCostWarehouse(mainWarehouseCode));
+
+      if (BeeUtils.isDouble(value)) {
+        Double cost = Money.maybeExchange(ClientDefaults.getCurrency(), getCurrency(),
+            value, getDate());
+
+        if (BeeUtils.isDouble(cost)) {
+          return costFormat.format(BeeUtils.round(cost, costScale));
+        }
+      }
+    }
+
+    Double value = DataUtils.getDouble(items, item, ip.getPriceColumn());
+
+    if (BeeUtils.isDouble(value)) {
+      Double price = Money.maybeExchange(DataUtils.getLong(items, item, ip.getCurrencyColumn()),
+          getCurrency(), value, getDate());
+
+      if (BeeUtils.isDouble(price)) {
+        return itemPriceFormat.format(BeeUtils.round(price, itemPriceScale));
+      }
+    }
+
+    return null;
+  }
+
   private static String renderPrice(Double price) {
-    return BeeUtils.toStringOrNull(price);
+    return BeeUtils.nonZero(price) ? priceFormat.format(price) : null;
   }
 
   private static String renderDiscountInfo(Double discount, Boolean isPercent) {
@@ -713,11 +773,11 @@ class TradeItemPicker extends Flow implements HasPaging {
   }
 
   private static String renderAmount(Double amount) {
-    return BeeUtils.toStringOrNull(amount);
+    return BeeUtils.nonZero(amount) ? amountFormat.format(amount) : null;
   }
 
   private static String renderTotal(Double total) {
-    return BeeUtils.toStringOrNull(total);
+    return BeeUtils.nonZero(total) ? totalFormat.format(total) : null;
   }
 
   private String renderTotalQuantity() {
@@ -793,11 +853,14 @@ class TradeItemPicker extends Flow implements HasPaging {
     List<String> itemColumns = getItemColumnsForRender(items, getFilterBy(), ip);
 
     Map<Long, String> warehouses = extractWarehouses(items);
+    String mainWarehouseCode = warehouses.get(getWarehouse());
 
     Map<String, Long> warehouseCodes = new TreeMap<>();
     warehouses.forEach((id, code) -> warehouseCodes.put(code, id));
 
     boolean needsStock = needsStock();
+    boolean showStockCost = ip == ItemPrice.COST && getOperationType().consumesStock()
+        && !BeeUtils.isEmpty(mainWarehouseCode);
 
     int qtyCol;
     int priceCol;
@@ -872,8 +935,13 @@ class TradeItemPicker extends Flow implements HasPaging {
       table.setValue(r, c++, id, STYLE_ID + STYLE_CELL_SUFFIX);
 
       for (String itemColumn : itemColumns) {
-        table.setText(r, c++, render(items, item, itemColumn),
-            getColumnStylePrefix(itemColumn, ip) + STYLE_CELL_SUFFIX);
+        if (ip != null && ip.getPriceColumn().equals(itemColumn)) {
+          text = renderItemPrice(items, item, ip, isService, mainWarehouseCode, showStockCost);
+        } else {
+          text = render(items, item, itemColumn);
+        }
+
+        table.setText(r, c++, text, getColumnStylePrefix(itemColumn, ip) + STYLE_CELL_SUFFIX);
       }
 
       double available = BeeConst.DOUBLE_ZERO;

@@ -282,6 +282,7 @@ public final class TradeConstants {
   public static final String PROP_STOCK = "Stock";
   public static final String PROP_RESERVED = "Reserved";
   public static final String PROP_WAREHOUSES = "Warehouses";
+  public static final String PROP_COST = "Cost";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
@@ -331,6 +332,10 @@ public final class TradeConstants {
 
   public static String keyReservedWarehouse(String warehouseCode) {
     return PROP_RESERVED + BeeUtils.trim(warehouseCode);
+  }
+
+  public static String keyCostWarehouse(String warehouseCode) {
+    return PROP_COST + BeeUtils.trim(warehouseCode);
   }
 
   private TradeConstants() {
