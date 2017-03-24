@@ -146,6 +146,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_PRICE_NAME = "PriceName";
   public static final String COL_COMPANY_DISCOUNT_PERCENT = "DiscountPercent";
   public static final String COL_COMPANY_TOLERATED_DAYS = "ToleratedDays";
+  public static final String COL_COMPANY_TYPE_PERSON = "TypePerson";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
