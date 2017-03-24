@@ -214,7 +214,7 @@ public class TransportModuleBean implements BeeModule {
     List<SearchResult> result = new ArrayList<>();
 
     List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
-        Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
+        Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_VEHICLE_BRAND_NAME, COL_MODEL_NAME,
             COL_OWNER_NAME), query));
 
     List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
@@ -630,9 +630,9 @@ public class TransportModuleBean implements BeeModule {
           for (SimpleRow row : rs) {
             amounts.put(row.getLong(COL_TRIP), row.getLong(COL_CARGO),
                 Triplet.of(BeeUtils.round(BeeUtils.nvl(row.getValue(COL_TRANSPORTATION), "0"), 2)
-                        + " ("
-                        + BeeUtils.removeTrailingZeros(BeeUtils.round(row.getValue(COL_TRIP_PERCENT),
-                    2)) + "%)", BeeUtils.round(row.getValue(COL_SERVICE), 2), null));
+                        + " (" + BeeUtils.removeTrailingZeros(
+                    BeeUtils.round(row.getValue(COL_TRIP_PERCENT), 2)) + "%)",
+                    BeeUtils.round(row.getValue(COL_SERVICE), 2), null));
           }
           crs = rep.getCargoTripPercents(COL_TRIP, trips);
           rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));

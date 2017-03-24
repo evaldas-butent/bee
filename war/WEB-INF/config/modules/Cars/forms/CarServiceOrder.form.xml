@@ -54,8 +54,8 @@
           <Label for="Car" style="&lbl;" />
           <FlowPanel>
             <DataSelector source="Car" viewName="Cars" style="&inpw;"
-                          choiceColumns="ParentModelName ModelName BodyNumber CarNumber"
-                          renderColumns="ParentModelName ModelName CarNumber" />
+                          choiceColumns="BrandName ModelName BodyNumber CarNumber"
+                          renderColumns="BrandName ModelName CarNumber" />
             <FlowPanel style="display:inline-block;">
               <FaLabel char="exclamation_circle" name="CarWarning"
                        style="display:none; color:red; margin-left:5px;" />

@@ -426,8 +426,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       @Subscribe
       @AllowConcurrentEvents
       public void getFileIcons(DataEvent.ViewQueryEvent event) {
-        if (event.isAfter(event.getTargetName()) && BeeUtils.isSuffix(event.getTargetName(),
-            "Files")) {
+        if (event.isAfter() && BeeUtils.isSuffix(event.getTargetName(), TBL_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
         }
       }

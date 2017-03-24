@@ -6,17 +6,15 @@
   name="DocumentFiles" viewName="DocumentFiles" caption="=files"
   flexGrow="1"
   >
-  <g:columns>
-    <DataColumn name="Id" caption="ID" format="#" />
+  <xi:include href="../../Administration/grids/columns/Files.columns.xml" />
 
+  <g:columns>
     <DataColumn name="FileDate" required="true" width="128" visible="true" />
     <DataColumn name="FileVersion" />
     <DataColumn name="Description" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
-    
+
     <DataColumn name="Comment" />
   </g:columns>
-
-  <xi:include href="../../Administration/grids/columns/Files.columns.xml" />
 </g:Grid>

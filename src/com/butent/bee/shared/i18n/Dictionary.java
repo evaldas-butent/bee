@@ -4621,27 +4621,53 @@ public interface Dictionary {
 
   default String prjUserHasSameTasks() {return g("prjUserHasSameTasks");}
 
+  default String prmActNumberLength() {return g("prmActNumberLength");}
+
   default String prmAllowDeleteOwnComments() {return g("prmAllowDeleteOwnComments");}
 
   default String prmAutoReservation() {return g("prmAutoReservation");}
+
+  default String prmCargoService() {return g("prmCargoService");}
+
+  default String prmCargoType() {return g("prmCargoType");}
 
   default String prmCheckDebt() {return g("prmCheckDebt");}
 
   default String prmClearReservationsTime() {return g("prmClearReservationsTime");}
 
+  default String prmCompanyName() {return g("prmCompanyName");}
+
+  default String prmCountry() {return g("prmCountry");}
+
   default String prmCreatePrivateTaskFirst() {return g("prmCreatePrivateTaskFirst");}
+
+  default String prmCurrencyRefreshHours() {return g("prmCurrencyRefreshHours");}
+
+  default String prmDefaultInvoicePrefix() {return g("prmDefaultInvoicePrefix");}
 
   default String prmDefaultMaintenanceType() {return g("prmDefaultMaintenanceType");}
 
   default String prmDefaultSaleOperation() {return g("prmDefaultSaleOperation");}
 
+  default String prmDefaultTripPrefix() {return g("prmDefaultTripPrefix");}
+
   default String prmDefaultWarrantyType() {return g("prmDefaultWarrantyType");}
+
+  default String prmDimensions() {return g("prmDimensions");}
 
   default String prmDiscussBirthdays() {return g("prmDiscussBirthdays");}
 
   default String prmDiscussInactiveTimeInDays() {return g("prmDiscussInactiveTimeInDays");}
 
   default String prmDiscussionsAdmin() {return g("prmDiscussionsAdmin");}
+
+  default String prmERPAddress() {return g("prmERPAddress");}
+
+  default String prmERPLogin() {return g("prmERPLogin");}
+
+  default String prmERPPassword() {return g("prmERPPassword");}
+
+  default String prmERPRefreshIntervalInMinutes() {return g("prmERPRefreshIntervalInMinutes");}
 
   default String prmEndOfWorkDay() {return g("prmEndOfWorkDay");}
 
@@ -4653,13 +4679,21 @@ public interface Dictionary {
 
   default String prmForbiddenFilesExtentions() {return g("prmForbiddenFilesExtentions");}
 
+  default String prmImportActItemRegEx() {return g("prmImportActItemRegEx");}
+
   default String prmImportERPItemsTime() {return g("prmImportERPItemsTime");}
 
   default String prmImportERPStocksTime() {return g("prmImportERPStocksTime");}
 
+  default String prmMainCurrency() {return g("prmMainCurrency");}
+
+  default String prmMaintenanceServiceGroup() {return g("prmMaintenanceServiceGroup");}
+
   default String prmManagerDiscount() {return g("prmManagerDiscount");}
 
   default String prmManagerWarehouse() {return g("prmManagerWarehouse");}
+
+  default String prmMessageTemplate() {return g("prmMessageTemplate");}
 
   default String prmNotifyAboutDebts() {return g("prmNotifyAboutDebts");}
 
@@ -4668,6 +4702,8 @@ public interface Dictionary {
   default String prmProjectCommonRate() {return g("prmProjectCommonRate");}
 
   default String prmProjectHourUnit() {return g("prmProjectHourUnit");}
+
+  default String prmReturnedActStatus() {return g("prmReturnedActStatus");}
 
   default String prmRole() {return g("prmRole");}
 
@@ -4679,9 +4715,13 @@ public interface Dictionary {
 
   default String prmSQLMessagesPOSTGRESQL() {return g("prmSQLMessagesPOSTGRESQL");}
 
+  default String prmSelfServiceRole() {return g("prmSelfServiceRole");}
+
   default String prmSendNewslettersCount() {return g("prmSendNewslettersCount");}
 
   default String prmSendNewslettersInterval() {return g("prmSendNewslettersInterval");}
+
+  default String prmServerProperties() {return g("prmServerProperties");}
 
   default String prmServiceManagerWarehouse() {return g("prmServiceManagerWarehouse");}
 
@@ -4689,7 +4729,13 @@ public interface Dictionary {
 
   default String prmServiceWarehouse() {return g("prmServiceWarehouse");}
 
+  default String prmSmsDisplayText() {return g("prmSmsDisplayText");}
+
+  default String prmSmsPassword() {return g("prmSmsPassword");}
+
   default String prmSmsRequestContactInfoFrom() {return g("prmSmsRequestContactInfoFrom");}
+
+  default String prmSmsRequestHeaders() {return g("prmSmsRequestHeaders");}
 
   default String prmSmsRequestServiceAddress() {return g("prmSmsRequestServiceAddress");}
 
@@ -4699,9 +4745,19 @@ public interface Dictionary {
 
   default String prmSmsRequestServiceUserName() {return g("prmSmsRequestServiceUserName");}
 
+  default String prmSmsServiceAddress() {return g("prmSmsServiceAddress");}
+
+  default String prmSmsServiceId() {return g("prmSmsServiceId");}
+
+  default String prmSmsUserName() {return g("prmSmsUserName");}
+
   default String prmStartOfWorkDay() {return g("prmStartOfWorkDay");}
 
   default String prmUrgentRate() {return g("prmUrgentRate");}
+
+  default String prmUrl() {return g("prmUrl");}
+
+  default String prmVATPercent() {return g("prmVATPercent");}
 
   default String productService() {return g("productService");}
 
@@ -6934,6 +6990,10 @@ public interface Dictionary {
   default String vehicleBodyNumber() {return g("vehicleBodyNumber");}
 
   default String vehicleBodyType() {return g("vehicleBodyType");}
+
+  default String vehicleBrand() {return g("vehicleBrand");}
+
+  default String vehicleBrands() {return g("vehicleBrands");}
 
   default String vehicleBrutto() {return g("vehicleBrutto");}
 

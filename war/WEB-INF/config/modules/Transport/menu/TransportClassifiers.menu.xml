@@ -3,7 +3,7 @@
 
        name="TransportClassifiers" label="=settings" parent="Transport" order="20"
        separator="true"
-    >
+>
   <Item name="CargoTypes" label="=trCargoTypes" service="grid" parameters="CargoTypes" />
   <Item name="CargoGroups" label="=trCargoGroups" service="grid" parameters="CargoGroups" />
 
@@ -18,7 +18,10 @@
 
   <Item name="VehicleTypes" label="=trVehicleTypes" service="grid" parameters="VehicleTypes"
         separator="true" />
-  <Item name="ServiceTypes" label="=trServiceTypes" service="grid" parameters="ServiceTypes" />
+  <Item name="VehicleBrands" label="=vehicleBrands" service="grid" parameters="VehicleBrands" />
+  <Item name="VehicleModels" label="=vehicleModels" service="grid" parameters="VehicleModels" />
+  <Item name="ServiceTypes" label="=trServiceTypes" service="grid" parameters="ServiceTypes"
+        separator="true" />
   <Item name="Fueltypes" label="=trFuelTypes" service="grid" parameters="FuelTypes" />
   <Item name="TransportGroups" label="=trTransportGroups" service="grid"
         parameters="TransportGroups" />

@@ -61,7 +61,7 @@
                       style="&inp;" />
         <Label for="Car" />
         <DataSelector source="Car" viewName="Cars" style="&inp;"
-                      renderColumns="ParentModelName ModelName CarNumber" />
+                      renderColumns="BrandName ModelName CarNumber" />
       </row>
 
       <row>

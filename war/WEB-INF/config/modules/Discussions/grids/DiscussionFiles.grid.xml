@@ -6,8 +6,5 @@
   name="DiscussionFiles" viewName="DiscussionsFiles" caption="=files"
   flexGrow="1" disabledActions="add delete audit export"
   >
-  <g:columns>
-    <DataColumn name="Id" caption="ID" format="#" />
-  </g:columns>
   <xi:include href="../../Administration/grids/columns/Files.columns.xml" />
 </g:Grid>

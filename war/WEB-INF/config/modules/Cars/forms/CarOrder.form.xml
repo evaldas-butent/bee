@@ -107,7 +107,7 @@
             <row>
               <Label for="ModelName" style="font-weight:bold;" />
               <TextLabel>
-                <renderToken source="ParentModelName" />
+                <renderToken source="BrandName" />
                 <renderToken source="ModelName" />
               </TextLabel>
             </row>
