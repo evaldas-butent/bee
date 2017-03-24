@@ -25,6 +25,7 @@ import static com.butent.bee.shared.modules.orders.OrdersConstants.COL_ORDER;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.COL_DATES_START_DATE;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_ENDING_DATE;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_MAINTENANCE_NUMBER;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_REPAIRER;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_ITEM;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_MAINTENANCE;
@@ -2273,6 +2274,7 @@ public class ClassifiersModuleBean implements BeeModule {
     SqlSelect objectsSql = new SqlSelect()
         .addField(TBL_ORDERS, sys.getIdName(TBL_ORDERS), COL_ORDER)
         .addEmptyLong(COL_SERVICE_MAINTENANCE)
+        .addEmptyString(COL_MAINTENANCE_NUMBER, 8)
         .addFields(TBL_ORDERS, COL_DATES_START_DATE)
         .addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
         .addFields(VIEW_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
@@ -2291,6 +2293,7 @@ public class ClassifiersModuleBean implements BeeModule {
         .addEmptyLong(COL_ORDER)
         .addField(TBL_SERVICE_MAINTENANCE,
             sys.getIdName(TBL_SERVICE_MAINTENANCE), COL_SERVICE_MAINTENANCE)
+        .addFields(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_NUMBER)
         .addField(TBL_SERVICE_MAINTENANCE, COL_TRADE_DATE, COL_DATES_START_DATE)
         .addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
         .addFields(VIEW_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)

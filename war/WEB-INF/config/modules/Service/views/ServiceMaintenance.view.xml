@@ -5,9 +5,7 @@
   caption="=svcMaintenance" newRowCaption="=svcNewMaintenance"
   editForm="ServiceMaintenance" newRowForm="ServiceMaintenance"
   >
-  <Relation renderColumns="ID" choiceColumns="ID TypeName StateName" />
   <Columns>
-    <IdColumn name="ID"/>
     <SimpleColumn name="Type"/>
     <SimpleJoin joinType="INNER" name="Type">
       <SimpleColumn name="Name" alias="TypeName" />
@@ -76,6 +74,10 @@
     </SimpleJoin>
 
     <SimpleColumn name="WarrantyMaintenance"/>
+    <SimpleJoin joinType="LEFT" name="WarrantyMaintenance">
+      <SimpleColumn name="MaintenanceNumber" alias="WarrantyMaintenanceNumber"/>
+    </SimpleJoin>
+
     <SimpleColumn name="WarrantyValidTo"/>
     <SimpleColumn name="EndingDate"/>
 
@@ -129,6 +131,8 @@
       <SimpleColumn name="Code" alias="WarehouseCode" />
       <SimpleColumn name="Name" alias="WarehouseName" />
     </SimpleJoin>
+
+    <SimpleColumn name="MaintenanceNumber"/>
     </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

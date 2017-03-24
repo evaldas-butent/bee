@@ -51,10 +51,10 @@ public class ServiceCommentWorker {
   @GET
   @Path("comments")
   @Produces(MediaType.APPLICATION_JSON)
-  public String getServiceComments(@QueryParam("id") Long serviceId) {
+  public String getServiceComments(@QueryParam("id") String serviceId) {
     JsonObjectBuilder json = Json.createObjectBuilder();
 
-    if (!DataUtils.isId(serviceId)) {
+    if (BeeUtils.isEmpty(serviceId)) {
       json.add("Bad request", "service id required");
       return json.build().toString();
     }
@@ -62,7 +62,7 @@ public class ServiceCommentWorker {
     try {
       SimpleRow serviceRow = qs.getRow(new SqlSelect()
           .addFields(TBL_SERVICE_MAINTENANCE, sys.getIdName(TBL_SERVICE_MAINTENANCE),
-              COL_MAINTENANCE_DESCRIPTION, COL_EQUIPMENT)
+              COL_MAINTENANCE_NUMBER, COL_MAINTENANCE_DESCRIPTION, COL_EQUIPMENT)
           .addFrom(TBL_SERVICE_MAINTENANCE)
           .addFields(TBL_SERVICE_OBJECTS, COL_MODEL, COL_SERIAL_NO)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_MANUFACTURER_NAME)
@@ -73,7 +73,7 @@ public class ServiceCommentWorker {
               sys.joinTables(TBL_COMPANIES, TBL_SERVICE_OBJECTS, COL_MANUFACTURER))
           .addFromLeft(VIEW_MAINTENANCE_STATES,
               sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_SERVICE_MAINTENANCE, COL_STATE))
-          .setWhere(sys.idEquals(TBL_SERVICE_MAINTENANCE, serviceId))
+          .setWhere(SqlUtils.equals(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_NUMBER, serviceId))
           );
 
       if (serviceRow == null) {
@@ -83,8 +83,7 @@ public class ServiceCommentWorker {
 
       JsonObjectBuilder serviceJson = Json.createObjectBuilder();
 
-      Stream.of(sys.getIdName(TBL_SERVICE_MAINTENANCE), COL_MAINTENANCE_DESCRIPTION, COL_STATE)
-          .forEach(column -> {
+      Stream.of(COL_MAINTENANCE_NUMBER, COL_MAINTENANCE_DESCRIPTION, COL_STATE).forEach(column -> {
         String value = serviceRow.getValue(column);
 
         if (!BeeUtils.isEmpty(value)) {
@@ -121,7 +120,8 @@ public class ServiceCommentWorker {
           .addField(TBL_MAINTENANCE_COMMENTS, COL_EVENT_NOTE, COL_STATE)
           .addFrom(TBL_MAINTENANCE_COMMENTS)
           .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_MAINTENANCE_COMMENTS, COL_SHOW_CUSTOMER),
-              SqlUtils.equals(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE, serviceId)))
+              SqlUtils.equals(TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE,
+                  serviceRow.getLong(sys.getIdName(TBL_SERVICE_MAINTENANCE)))))
           .addOrder(TBL_MAINTENANCE_COMMENTS, sys.getIdName(TBL_MAINTENANCE_COMMENTS
           )));
 

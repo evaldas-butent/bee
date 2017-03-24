@@ -8,6 +8,7 @@
     <SimpleColumn name="ServiceMaintenance" />
     <SimpleJoin name="ServiceMaintenance" joinType="LEFT">
       <SimpleColumn name="EndingDate" />
+      <SimpleColumn name="MaintenanceNumber" />
     </SimpleJoin>
     <SimpleColumn name="Repairer" editable="true" />
     <SimpleJoin name="Repairer" joinType="LEFT">

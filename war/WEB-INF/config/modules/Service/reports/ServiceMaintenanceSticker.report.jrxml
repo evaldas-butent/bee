@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-02-20T11:19:39 -->
+<!-- 2017-03-22T12:20:38 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ServiceMaintenanceSticker" pageWidth="283" pageHeight="167" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="243" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Error" uuid="ffae7aa2-027b-45ee-896c-aa9d9dcfc6c0">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="mm"/>
@@ -13,7 +13,7 @@
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="mm"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="mm"/>
 	<import value="com.butent.bee.shared.utils.BeeUtils"/>
-	<parameter name="ID" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="MaintenanceNumber" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ArticleNo" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="SerialNo" class="java.lang.String" isForPrompting="false"/>
 	<parameter name="ManufacturerName" class="java.lang.String" isForPrompting="false"/>
@@ -41,14 +41,14 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="DejaVu Sans" size="14"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{ID}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{MaintenanceNumber}]]></textFieldExpression>
 			</textField>
 			<componentElement>
 				<reportElement x="120" y="10" width="120" height="30" isRemoveLineWhenBlank="true" uuid="e9449de7-0bec-4c84-af43-fe152c5bfac1">
 					<property name="com.jaspersoft.studio.unit.barWidth" value="mm"/>
 				</reportElement>
 				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false" barHeight="29">
-					<jr:codeExpression><![CDATA[$P{ID}]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA[$P{MaintenanceNumber}]]></jr:codeExpression>
 				</jr:barbecue>
 			</componentElement>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">

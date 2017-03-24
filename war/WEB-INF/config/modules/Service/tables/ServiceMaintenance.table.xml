@@ -23,5 +23,6 @@
     <Relation name="Contact" relation="CompanyPersons" label="=personContact" />
     <Relation name="Department" relation="Departments" label="=department" />
     <Relation name="Warehouse" relation="Warehouses" label="=warehouse" />
+    <String name="MaintenanceNumber" precision="8" label="=number" unique="true" />
   </Fields>
 </Table>

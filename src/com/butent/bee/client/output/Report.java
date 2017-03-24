@@ -503,9 +503,9 @@ public enum Report implements HasWidgetSupplier {
   SERVICE_PAYROLL_REPORT(ModuleAndSub.of(Module.SERVICE), SVC_SERVICE_PAYROLL_REPORT) {
     @Override
     public List<ReportItem> getItems() {
+      Dictionary loc = Localized.dictionary();
       return Arrays.asList(
-          new ReportTextItem(COL_SERVICE_MAINTENANCE,
-              Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_SERVICE_MAINTENANCE)),
+          new ReportTextItem(COL_MAINTENANCE_NUMBER, loc.svcRepair()),
           new ReportTextItem(COL_REPAIRER,
               Data.getColumnLabel(TBL_MAINTENANCE_PAYROLL, COL_REPAIRER)),
           new ReportDateItem(COL_DATE,
@@ -546,7 +546,7 @@ public enum Report implements HasWidgetSupplier {
         items.put(item.getExpression(), item);
       }
       ReportInfo report = new ReportInfo(getReportCaption());
-      report.addRowItem(items.get(COL_SERVICE_MAINTENANCE));
+      report.addRowItem(items.get(COL_MAINTENANCE_NUMBER));
 
       Stream.of(COL_REPAIRER, COL_DATE, COL_PAYROLL_DATE, COL_PAYROLL_BASIC_AMOUNT,
           COL_PAYROLL_TARIFF, COL_PAYROLL_SALARY, ALS_CURRENCY_NAME, COL_PAYROLL_CONFIRMED,

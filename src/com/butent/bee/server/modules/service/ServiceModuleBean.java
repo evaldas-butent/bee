@@ -58,10 +58,10 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateValue;
@@ -379,6 +379,56 @@ public class ServiceModuleBean implements BeeModule {
           qs.insertData(payrollInsertQuery);
           DataChangeEvent.fireRefresh((fireEvent, locality) -> Endpoint.sendToUser(
               usr.getCurrentUserId(), new ModificationMessage(fireEvent)), TBL_MAINTENANCE_PAYROLL);
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void fillServiceMaintenanceCode(DataEvent.ViewModifyEvent event) {
+        if (event.isBefore(TBL_SERVICE_MAINTENANCE) && event instanceof DataEvent.ViewInsertEvent) {
+          IsRow row = ((DataEvent.ViewInsertEvent) event).getRow();
+          List<BeeColumn> cols = ((DataEvent.ViewInsertEvent) event).getColumns();
+          int numberIdx = DataUtils.getColumnIndex(COL_MAINTENANCE_NUMBER, cols);
+
+          if (BeeConst.isUndef(numberIdx)) {
+            cols.add(new BeeColumn(COL_MAINTENANCE_NUMBER));
+            row.addValue(null);
+            numberIdx = row.getNumberOfCells() - 1;
+          } else if (!BeeUtils.isEmpty(row.getString(numberIdx))) {
+            return;
+          }
+
+          int departmentIdx = DataUtils.getColumnIndex(COL_DEPARTMENT, cols);
+          String departmentName = BeeConst.STRING_EMPTY;
+
+          if (!BeeConst.isUndef(departmentIdx) && DataUtils.isId(row.getLong(departmentIdx))) {
+            departmentName = BeeUtils.removeWhiteSpace(qs.getValue(new SqlSelect()
+                .addFields(VIEW_DEPARTMENTS, COL_DEPARTMENT_NAME)
+                .addFrom(VIEW_DEPARTMENTS)
+                .setWhere(sys.idEquals(VIEW_DEPARTMENTS, row.getLong(departmentIdx)))));
+          }
+
+          String codePrefix = BeeUtils.join(BeeConst.STRING_EMPTY, BeeUtils.isEmpty(departmentName)
+                  ?  BeeConst.STRING_EMPTY : departmentName.substring(0, 1),
+              BeeUtils.toString(new JustDate().getYear()).substring(2, 4));
+          String uniqueNumber = null;
+
+          Set<String> uniqueMaintenanceNumbers = qs.getValueSet(new SqlSelect()
+              .addCount(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_NUMBER)
+              .addFrom(TBL_SERVICE_MAINTENANCE)
+              .setWhere(SqlUtils
+                  .startsWith(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_NUMBER, codePrefix)));
+
+          while (BeeUtils.isEmpty(uniqueNumber)) {
+            uniqueNumber = BeeUtils.join(BeeConst.STRING_EMPTY,
+                codePrefix, BeeUtils.toLeadingZeroes(BeeUtils.randomInt(0, 99999), 5));
+
+            if (uniqueMaintenanceNumbers.contains(uniqueNumber)) {
+              logger.debug("Not unique code" + uniqueNumber);
+              uniqueNumber = BeeConst.STRING_EMPTY;
+            }
+          }
+          row.setValue(numberIdx, uniqueNumber);
         }
       }
     });
@@ -1221,6 +1271,7 @@ public class ServiceModuleBean implements BeeModule {
             COL_PAYROLL_DATE, COL_PAYROLL_BASIC_AMOUNT, COL_PAYROLL_TARIFF, COL_PAYROLL_SALARY,
             COL_PAYROLL_CONFIRMED, COL_PAYROLL_CONFIRMATION_DATE, COL_NOTES)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ALS_CURRENCY_NAME)
+        .addFields(TBL_SERVICE_MAINTENANCE, COL_MAINTENANCE_NUMBER)
         .addFrom(TBL_MAINTENANCE_PAYROLL)
         .addFromLeft(TBL_CURRENCIES,
             sys.joinTables(TBL_CURRENCIES, TBL_MAINTENANCE_PAYROLL, COL_CURRENCY))
@@ -1234,7 +1285,9 @@ public class ServiceModuleBean implements BeeModule {
         .addFromLeft(TBL_COMPANY_PERSONS, confirmedCompanyPerson, sys.joinTables(
             TBL_COMPANY_PERSONS, confirmedCompanyPerson, TBL_USERS, COL_COMPANY_PERSON))
         .addFromLeft(TBL_PERSONS, confirmedPerson,
-            sys.joinTables(TBL_PERSONS, confirmedPerson, confirmedCompanyPerson, COL_PERSON));
+            sys.joinTables(TBL_PERSONS, confirmedPerson, confirmedCompanyPerson, COL_PERSON))
+        .addFromInner(TBL_SERVICE_MAINTENANCE, sys.joinTables(TBL_SERVICE_MAINTENANCE,
+            TBL_MAINTENANCE_PAYROLL, COL_SERVICE_MAINTENANCE));
 
     select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(repairerPerson, COL_FIRST_NAME),
         SqlUtils.constant(BeeConst.STRING_EMPTY)), SqlUtils.constant(BeeConst.STRING_SPACE),
@@ -1247,9 +1300,7 @@ public class ServiceModuleBean implements BeeModule {
 
     ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
     HasConditions clause = SqlUtils.and();
-    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_MAINTENANCE_PAYROLL,
-        COL_SERVICE_MAINTENANCE), SqlConstants.SqlDataType.STRING, 20, 0),
-        COL_SERVICE_MAINTENANCE));
+    clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_MAINTENANCE_NUMBER));
     clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_MAINTENANCE_DATE));
     clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_DATE));
     clause.add(report.getCondition(TBL_MAINTENANCE_PAYROLL, COL_PAYROLL_CONFIRMED));

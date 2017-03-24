@@ -12,7 +12,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="ServiceMaintenance" viewName="ServiceMaintenance" caption="=svcMaintenance" showRowId="true"
+  name="ServiceMaintenance" viewName="ServiceMaintenance" caption="=svcMaintenance"
   width="80" widthUnit="vw" height="80" heightUnit="vh"
 >
   <f:properties jasperReports="ServiceMaintenance:=svcDetailedMaintenanceTicket, ServiceMaintenanceTicket:=svcMaintenanceTicket, ServiceMaintenanceSticker:=svcStickers" />
@@ -196,7 +196,8 @@
 
               <FlowPanel name="WarrantyMaintenancePanel" style="&mfld;" for="WarrantyMaintenance">
                 <Label for="WarrantyMaintenance" style="&flbl;" class="bee-required"/>
-                <DataSelector name="WarrantyMaintenance" source="WarrantyMaintenance" choiceColumns="Id"
+                <DataSelector name="WarrantyMaintenance" source="WarrantyMaintenance"
+                              choiceColumns="MaintenanceNumber" renderColumns="WarrantyMaintenanceNumber"
                               filter="WarrantyValidTo > {t}" style="&finp;"/>
               </FlowPanel>
             </FlowPanel>
@@ -265,4 +266,7 @@
       </FlowPanel>
     </center>
   </SplitPanel>
+  <f:rowMessage>
+    <ui:expression>row.MaintenanceNumber</ui:expression>
+  </f:rowMessage>
 </f:Form>

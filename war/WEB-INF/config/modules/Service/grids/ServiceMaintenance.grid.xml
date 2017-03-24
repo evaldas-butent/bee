@@ -6,7 +6,7 @@
         caption="=svcMaintenance"
   >
   <g:columns>
-    <IdColumn name="Id" />
+    <DataColumn name="MaintenanceNumber" />
     <DataColumn name="DepartmentName" visible="true"/>
     <RelColumn name="Type" renderColumns="TypeName" visible="true" />
     <DataColumn name="CompanyName" label="=client" visible="true"/>

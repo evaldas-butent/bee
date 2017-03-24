@@ -12,7 +12,7 @@
       <col index="0" kind="label" />
       <row>
         <Label for="ServiceMaintenance" name="ServiceMaintenanceLabel" />
-        <DataSelector source="ServiceMaintenance" renderColumns="ServiceMaintenance" choiceColumns="ID" filter="EndingDate"/>
+        <DataSelector source="ServiceMaintenance" renderColumns="MaintenanceNumber" choiceColumns="MaintenanceNumber" filter="EndingDate"/>
       </row>
       <row>
         <Label for="Repairer" />

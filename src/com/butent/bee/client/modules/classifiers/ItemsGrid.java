@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.TableCellElement;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_MAINTENANCE_NUMBER;
 import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_MAINTENANCE;
 import static com.butent.bee.shared.modules.service.ServiceConstants.TBL_SERVICE_MAINTENANCE;
 
@@ -237,7 +238,7 @@ class ItemsGrid extends TreeGridInterceptor {
       col = 0;
       row++;
       String order = dataRow.getValue(COL_ORDER);
-      String repair = dataRow.getValue(COL_SERVICE_MAINTENANCE);
+      String repair = dataRow.getValue(COL_MAINTENANCE_NUMBER);
       table.setText(row, col++, order, STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX);
       table.setText(row, col++, repair, STYLE_RES_REPAIR_ID_PREFIX + STYLE_CELL_SUFFIX);
       table.setText(row, col++, Format.renderDate(dataRow.getDateTime(
@@ -251,13 +252,16 @@ class ItemsGrid extends TreeGridInterceptor {
           STYLE_RES_ORDER_WAREHOUSE_PREFIX + STYLE_CELL_SUFFIX);
 
       Pair<String, String> remainderKey = DataUtils.isId(order)
-          ? Pair.of(COL_ORDER, order) : Pair.of(COL_SERVICE_MAINTENANCE, repair);
+          ? Pair.of(COL_ORDER, order) : Pair.of(COL_SERVICE_MAINTENANCE,
+          dataRow.getValue(COL_SERVICE_MAINTENANCE));
 
-      table.setText(row, col++, remainderMap.get(remainderKey).getA(),
-          STYLE_RES_ORDER_REMAINDER_PREFIX + STYLE_CELL_SUFFIX);
-      table.setText(row, col, remainderMap.get(remainderKey).getB(),
-          STYLE_RES_ORDER_INVOICE_QTY_PREFIX + STYLE_CELL_SUFFIX);
-      table.getRowFormatter().addStyleName(row, STYLE_RES_ORDER_INFO);
+      if (remainderMap.get(remainderKey) != null) {
+        table.setText(row, col++, remainderMap.get(remainderKey).getA(),
+            STYLE_RES_ORDER_REMAINDER_PREFIX + STYLE_CELL_SUFFIX);
+        table.setText(row, col, remainderMap.get(remainderKey).getB(),
+            STYLE_RES_ORDER_INVOICE_QTY_PREFIX + STYLE_CELL_SUFFIX);
+        table.getRowFormatter().addStyleName(row, STYLE_RES_ORDER_INFO);
+      }
     }
 
     table.addClickHandler(event -> {
@@ -265,16 +269,18 @@ class ItemsGrid extends TreeGridInterceptor {
       TableCellElement cell = DomUtils.getParentCell(target, true);
 
       if (cell != null) {
-        long id = Long.valueOf(cell.getInnerText());
-        if (DataUtils.isId(id)) {
-          if (cell.hasClassName(STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX)) {
-            RowEditor.openForm(COL_ORDER, Data.getDataInfo(VIEW_ORDERS), Filter.compareId(id),
-                Opener.MODAL, null, new OrderForm());
+        String id = cell.getInnerText();
 
-          } else if (cell.hasClassName(STYLE_RES_REPAIR_ID_PREFIX + STYLE_CELL_SUFFIX)) {
+        if (cell.hasClassName(STYLE_RES_ORDER_ID_PREFIX + STYLE_CELL_SUFFIX)
+            && DataUtils.isId(id)) {
+            RowEditor.openForm(COL_ORDER, Data.getDataInfo(VIEW_ORDERS),
+                Filter.compareId(Long.valueOf(id)), Opener.MODAL, null, new OrderForm());
+
+        } else if (cell.hasClassName(STYLE_RES_REPAIR_ID_PREFIX + STYLE_CELL_SUFFIX)
+            && !BeeUtils.isEmpty(id)) {
             RowEditor.openForm(COL_SERVICE_MAINTENANCE, Data.getDataInfo(TBL_SERVICE_MAINTENANCE),
-                Filter.compareId(id), Opener.MODAL, null, new ServiceMaintenanceForm());
-          }
+                Filter.equals(COL_MAINTENANCE_NUMBER, id), Opener.MODAL, null,
+                new ServiceMaintenanceForm());
         }
       }
     });
