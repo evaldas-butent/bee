@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-01-05T11:44:59 -->
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2017-03-22T16:13:39 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.shared.i18n.Localized"/>
@@ -52,7 +52,7 @@
 			<variableExpression><![CDATA[$V{vatAmount}]]></variableExpression>
 		</variable>
 		<variable name="totalAmount" class="java.lang.Double" calculation="Sum">
-			<variableExpression><![CDATA[$V{amount}]]></variableExpression>
+			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue())]]></variableExpression>
 		</variable>
 		<variable name="totalQuantity" class="java.lang.Double" calculation="Sum">
 			<variableExpression><![CDATA[$F{Quantity}]]></variableExpression>
@@ -525,7 +525,7 @@
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<jr:tableFooter style="TableCell" height="60">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-							<textField>
+							<textField pattern="0.000">
 								<reportElement style="TableDetail" x="0" y="0" width="158" height="12" isRemoveLineWhenBlank="true" uuid="b8e32b3b-d18d-4e84-ab4b-0474ed8e7abe">
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -655,7 +655,6 @@
 									<font size="8" isBold="false"/>
 									<paragraph lineSpacing="Single"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{totalAmount} - $V{totalVatAmount}]]></textFieldExpression>
 							</textField>
 							<textField pattern="0.00">
 								<reportElement style="TableDetail" x="0" y="12" width="54" height="12" uuid="c239e6a0-f3e0-49cf-8d14-f5b6b1847f8c">
