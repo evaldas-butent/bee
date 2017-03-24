@@ -35,6 +35,7 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -456,6 +457,14 @@ public final class TradeUtils {
     }
   }
 
+  static Double getDocumentDiscount(IsRow row) {
+    if (row == null) {
+      return null;
+    } else {
+      return Data.getDouble(VIEW_TRADE_DOCUMENTS, row, COL_TRADE_DOCUMENT_DISCOUNT);
+    }
+  }
+
   static TradeDiscountMode getDocumentDiscountMode(IsRow row) {
     if (row == null) {
       return null;
@@ -496,6 +505,14 @@ public final class TradeUtils {
       return null;
     } else {
       return Data.getLong(VIEW_TRADE_DOCUMENTS, row, colName);
+    }
+  }
+
+  static String getDocumentString(IsRow row, String colName) {
+    if (row == null) {
+      return null;
+    } else {
+      return Data.getString(VIEW_TRADE_DOCUMENTS, row, colName);
     }
   }
 
@@ -569,8 +586,37 @@ public final class TradeUtils {
     return false;
   }
 
+  static boolean documentPriceIsParentCost(IsRow row) {
+    OperationType operationType = getDocumentOperationType(row);
+
+    if (operationType != null && operationType.consumesStock()) {
+      ItemPrice itemPrice = getDocumentItemPrice(row);
+      return itemPrice == ItemPrice.COST
+          || itemPrice == null && operationType.getDefaultPrice() == ItemPrice.COST;
+
+    } else {
+      return false;
+    }
+  }
+
+  static Pair<Double, Boolean> normalizeDiscountOrVatInfo(Pair<Double, Boolean> info) {
+    if (info != null && BeeUtils.nonZero(info.getA())) {
+      return info;
+    } else {
+      return Pair.empty();
+    }
+  }
+
   static double roundPrice(Double price) {
     return Localized.normalizeMoney(price);
+  }
+
+  static Boolean vatIsPercent(Double vat) {
+    if (BeeUtils.isDouble(vat)) {
+      return true;
+    } else {
+      return null;
+    }
   }
 
   private static Multimap<String, Element> getNamedElements(Element element) {

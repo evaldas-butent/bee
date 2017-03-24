@@ -156,6 +156,16 @@ public final class DataUtils {
     return !BeeConst.isUndef(getColumnIndex(columnId, columns));
   }
 
+  public static boolean containsNull(BeeRowSet rowSet, String columnId) {
+    if (!DataUtils.isEmpty(rowSet) && rowSet.containsColumn(columnId)) {
+      int index = rowSet.getColumnIndex(columnId);
+      return rowSet.getRows().stream().anyMatch(row -> row.isNull(index));
+
+    } else {
+      return false;
+    }
+  }
+
   public static BeeRow createEmptyRow(int columnCount) {
     return new BeeRow(NEW_ROW_ID, NEW_ROW_VERSION, new String[Assert.isPositive(columnCount)]);
   }

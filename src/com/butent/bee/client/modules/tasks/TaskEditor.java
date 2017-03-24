@@ -393,14 +393,9 @@ class TaskEditor extends ProductSupportInterceptor {
 
     Flow colPhoto = new Flow();
     colPhoto.addStyleName(STYLE_EVENT_COL + STYLE_PHOTO);
-    String photoUrl;
 
-    Long photo = row.getLong(DataUtils.getColumnIndex(COL_PHOTO, columns));
-
-    photoUrl = DataUtils.isId(photo) ? PhotoRenderer.getUrl(photo)
-        : PhotoRenderer.DEFAULT_PHOTO_IMAGE;
-
-    Image image = new Image(photoUrl);
+    Image image = new Image(PhotoRenderer.getPhotoUrl(DataUtils.getString(columns, row,
+        COL_PHOTO)));
     image.addStyleName(STYLE_EVENT + STYLE_PHOTO);
 
     colPhoto.add(image);
@@ -1977,7 +1972,7 @@ class TaskEditor extends ProductSupportInterceptor {
     for (final FileInfo fileInfo : files) {
       FileUtils.uploadFile(fileInfo, result -> {
         List<String> values = Lists.newArrayList(BeeUtils.toString(taskId),
-            BeeUtils.toString(teId), BeeUtils.toString(result), fileInfo.getCaption());
+            BeeUtils.toString(teId), BeeUtils.toString(result.getId()), result.getCaption());
 
         Queries.insert(VIEW_TASK_FILES, columns, values, null, new RowCallback() {
           @Override

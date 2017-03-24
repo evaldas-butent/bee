@@ -91,6 +91,8 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
         Double newValue = BeeUtils.toDouble(cv.getNewValue());
         Double complQty = null;
 
+        free += addFreeQuantity(qty, row);
+
         if (BeeUtils.isPositive(newValue)) {
           if (qty - compInvc <= free + resRemainder) {
             complQty = qty - compInvc;
@@ -141,6 +143,7 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
         row.setValue(comQtyIdx, free + resRemainder);
         freeMap.put(row.getLong(itemIdx), BeeConst.DOUBLE_ZERO);
       }
+      additionalQtyCalculation(row, comQtyIdx, qty, freeMap, itemIdx);
     }
   }
 
@@ -164,7 +167,7 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
       if (ids.contains(row.getId())) {
         Double comQty = row.getDouble(comQtyIdx);
 
-        if (BeeUtils.isPositive(comQty)) {
+        if (BeeUtils.isPositive(comQty) || validItemForInvoice(row)) {
           rowSet.addRow((BeeRow) row);
 
         } else {
@@ -184,6 +187,25 @@ public class OrderInvoiceBuilder extends AbstractGridInterceptor implements Clic
 
   public ParameterList getRequestArgs() {
     return OrdersKeeper.createSvcArgs(OrdersConstants.SVC_CREATE_INVOICE_ITEMS);
+  }
+
+  public boolean validItemForInvoice(IsRow row) {
+    return false;
+  }
+
+  private Double addFreeQuantity(Double qty, IsRow row) {
+    if (validItemForInvoice(row)) {
+      return qty;
+    }
+    return Double.valueOf(0);
+  }
+
+  private void additionalQtyCalculation(IsRow row, int comQtyIdx, Double qty,
+      Map<Long, Double> freeMap, int itemIdx) {
+    if (validItemForInvoice(row)) {
+      row.setValue(comQtyIdx, qty);
+      freeMap.put(row.getLong(itemIdx), qty);
+    }
   }
 
   private void createInvoice(final BeeRowSet data) {

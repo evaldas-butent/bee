@@ -21,6 +21,7 @@
 
     <Relation name="Sale" relation="Sales" cascade="SET_NULL" label="=trdInvoiceId" />
     <Relation name="Purchase" relation="Purchases" cascade="SET_NULL" label="=trdPurchaseId" />
+    <Relation name="CargoTrip" relation="CargoTrips" cascade="SET_NULL" label="=trip" />
     <Boolean name="ShowAdditionalRoute" label="Maršrutas matomas" />
     <Text name="AdditionalRoute" label="=route" />
     <Numeric name="InsuranceCertificate" precision="1" label="Sertifikatas" />

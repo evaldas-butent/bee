@@ -65,8 +65,9 @@ public final class ClassifierConstants {
 
   public static final String TBL_LOSS_REASONS = "LossReasons";
 
-  public static final String TBL_VEHICLE_MODELS = "VehicleModels";
   public static final String TBL_VEHICLE_TYPES = "VehicleTypes";
+  public static final String TBL_VEHICLE_BRANDS = "VehicleBrands";
+  public static final String TBL_VEHICLE_MODELS = "VehicleModels";
 
   public static final String TBL_RESPONSIBILITIES = "Responsibilities";
 
@@ -86,6 +87,7 @@ public final class ClassifierConstants {
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
   public static final String VIEW_ITEM_REMAINDERS = "ItemRemainders";
   public static final String VIEW_ITEM_SUPPLIERS = "ItemSuppliers";
+  public static final String VIEW_ITEM_MANUFACTURERS = "ItemManufacturers";
 
   public static final String VIEW_COUNTRIES = "Countries";
   public static final String VIEW_CITIES = "Cities";
@@ -164,7 +166,10 @@ public final class ClassifierConstants {
 
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
+  public static final String COL_ITEM_NAME_2 = "Name2";
+  public static final String COL_ITEM_NAME_3 = "Name3";
   public static final String COL_ITEM_ARTICLE = "Article";
+  public static final String COL_ITEM_ARTICLE_2 = "Article2";
   public static final String COL_ITEM_ATTRIBUTE = "Attribute";
   public static final String COL_ITEM_BARCODE = "Barcode";
   public static final String COL_ITEM_IS_SERVICE = "IsService";
@@ -214,7 +219,7 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_COUNTRY_OF_ORIGIN = "CountryOfOrigin";
   public static final String COL_ITEM_ADDITIONAL_UNIT = "AdditionalUnit";
   public static final String COL_ITEM_KPN_CODE = "KPNCode";
-
+  public static final String COL_ITEM_DESCRIPTION = "Description";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
@@ -312,6 +317,8 @@ public final class ClassifierConstants {
   public static final String COL_LOSS_REASON = "LossReason";
   public static final String COL_LOSS_NOTES = "LossNotes";
 
+  public static final String COL_VEHICLE_BRAND = "Brand";
+  public static final String COL_VEHICLE_BRAND_NAME = "BrandName";
   public static final String COL_VEHICLE_MODEL_NAME = "Name";
   public static final String COL_VEHICLE_TYPE_NAME = "Name";
 
@@ -354,6 +361,9 @@ public final class ClassifierConstants {
 
   public static final String ALS_ITEM_TYPES = "ItemTypes";
   public static final String ALS_ITEM_GROUPS = "ItemGroups";
+
+  public static final String ALS_ITEM_SUPPLIER_NAME = "SupplierName";
+  public static final String ALS_ITEM_MANUFACTURER_NAME = "ManufacturerName";
 
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";

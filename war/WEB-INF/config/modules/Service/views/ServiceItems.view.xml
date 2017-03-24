@@ -61,6 +61,7 @@
 
       <SimpleColumn name="PackageUnits" />
       <SimpleColumn name="Attribute" />
+      <SimpleColumn name="IsService" />
     </SimpleJoin>
 
     <SimpleColumn name="ResRemainder" />

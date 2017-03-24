@@ -2,7 +2,6 @@ package com.butent.bee.server.modules.classifiers;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -385,7 +384,7 @@ public class ClassifiersModuleBean implements BeeModule {
       @AllowConcurrentEvents
       public void setItemRemainders(ViewQueryEvent event) {
         if (event.isAfter(VIEW_ITEMS) && usr.isModuleVisible(ModuleAndSub.of(Module.ORDERS))
-            && hasGoods(event.getRowset())) {
+            && DataUtils.containsNull(event.getRowset(), COL_ITEM_IS_SERVICE)) {
 
           Map<Long, IsRow> indexedRows = new HashMap<>();
           BeeRowSet rowSet = event.getRowset();
@@ -418,29 +417,6 @@ public class ClassifiersModuleBean implements BeeModule {
               if (r != null) {
                 r.setProperty(COL_WAREHOUSE_REMAINDER + row.getValue(ALS_WAREHOUSE_CODE),
                     row.getValue(COL_WAREHOUSE_REMAINDER));
-              }
-            }
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
-      public void setItemStock(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_ITEMS)
-            && usr.isModuleVisible(ModuleAndSub.of(Module.TRADE))
-            && usr.isDataVisible(VIEW_TRADE_STOCK)
-            && hasGoods(event.getRowset())) {
-
-          BeeRowSet rowSet = event.getRowset();
-          com.google.common.collect.Table<Long, String, String> stock =
-              getStock(rowSet.getRowIds());
-
-          if (!stock.isEmpty()) {
-            for (BeeRow row : rowSet.getRows()) {
-              if (stock.containsRow(row.getId())) {
-                stock.row(row.getId()).forEach((warehouseCode, quantity) ->
-                    row.setProperty(keyStockWarehouse(warehouseCode), quantity));
               }
             }
           }
@@ -2531,51 +2507,5 @@ public class ClassifiersModuleBean implements BeeModule {
       }
     }
     return reminderTime;
-  }
-
-  private static boolean hasGoods(BeeRowSet rowSet) {
-    if (!DataUtils.isEmpty(rowSet) && rowSet.containsColumn(COL_ITEM_IS_SERVICE)) {
-      int index = rowSet.getColumnIndex(COL_ITEM_IS_SERVICE);
-
-      for (BeeRow row : rowSet) {
-        if (row.isNull(index)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  private com.google.common.collect.Table<Long, String, String> getStock(Collection<Long> items) {
-    com.google.common.collect.Table<Long, String, String> result = HashBasedTable.create();
-
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
-        .addSum(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)
-        .addFrom(TBL_TRADE_STOCK)
-        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
-            TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
-        .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES,
-            TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE))
-        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, items),
-            SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)))
-        .addGroup(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM)
-        .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
-
-    SimpleRowSet data = qs.getData(query);
-
-    if (!DataUtils.isEmpty(data)) {
-      for (SimpleRow row : data) {
-        Double quantity = row.getDouble(COL_STOCK_QUANTITY);
-
-        if (BeeUtils.nonZero(quantity)) {
-          result.put(row.getLong(COL_ITEM), row.getValue(COL_WAREHOUSE_CODE),
-              BeeUtils.toString(quantity));
-        }
-      }
-    }
-
-    return result;
   }
 }

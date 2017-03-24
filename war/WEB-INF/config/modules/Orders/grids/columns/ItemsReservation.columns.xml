@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
            xmlns:ui="http://www.butent.com/ui">
-  <RelColumn name="Item" renderColumns="ItemName"
-             choiceColumns="Name Article" filter="!(IsService)" editPopup="true"
-             visible="true" readOnly="true">
-    <dynStyle>
-      <ui:inline>color: #ff5252; font-weight: bold;</ui:inline>
-      <ui:expression>(row.Quantity - row.CompletedInvoices) &gt; (row.FreeRemainder + row.ResRemainder)</ui:expression>
-    </dynStyle>
-    <footer text="=totalOf" horizontalAlignment="right" />
-  </RelColumn>
-
   <DataColumn name="Article" />
 
   <DataColumn name="Quantity" visible="true" scale="3" >

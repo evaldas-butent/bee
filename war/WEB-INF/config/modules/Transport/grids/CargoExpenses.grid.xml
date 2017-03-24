@@ -45,6 +45,7 @@
     </RelColumn>
     <RelColumn name="Income" newRowEnabled="false" caching="none"
                choiceColumns="ID Date ServiceName Amount CurrencyName" />
+    <RelColumn name="CargoTrip" visible="false" caching="none" />
   </g:columns>
 
   <g:rowEditable>

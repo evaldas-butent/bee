@@ -1,5 +1,8 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_COMPANY;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -10,6 +13,9 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.i18n.Money;
@@ -23,6 +29,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Latch;
@@ -45,7 +52,10 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
@@ -53,12 +63,14 @@ import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -196,6 +208,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
   }
 
+  private static BeeLogger logger = LogUtils.getLogger(TradeDocumentItemsGrid.class);
+
   private static final String STYLE_ITEM_SELECTOR =
       TradeKeeper.STYLE_PREFIX + "document-new-item-selector";
   private static final String STYLE_PRICE_CALCULATION_COMMAND =
@@ -230,6 +244,10 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       button.addStyleName(STYLE_PRICE_CALCULATION_COMMAND);
 
       presenter.getHeader().addCommandItem(button);
+
+      FaLabel test = new FaLabel(FontAwesome.PLUS_SQUARE_O);
+      test.addClickHandler(event -> testPicker());
+      presenter.getHeader().addCommandItem(test);
     }
 
     super.afterCreatePresenter(presenter);
@@ -238,15 +256,12 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     IsRow parentRow = getParentRow(presenter.getGridView());
-    if (parentRow == null) {
+    if (!checkParentOnAdd(parentRow)) {
       return false;
     }
 
     TradeDocumentPhase phase = TradeUtils.getDocumentPhase(parentRow);
     OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
-    if (phase == null || operationType == null) {
-      return false;
-    }
 
     ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(parentRow);
 
@@ -271,13 +286,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     final MultiSelector selector;
 
     if (operationType.consumesStock()) {
-      Long warehouseFrom = Data.getLong(VIEW_TRADE_DOCUMENTS, parentRow, COL_TRADE_WAREHOUSE_FROM);
-      if (!DataUtils.isId(warehouseFrom)) {
-        presenter.getGridView().notifyWarning(Localized.dictionary()
-            .fieldRequired(Localized.dictionary().trdWarehouseFrom()));
-        return false;
-      }
-
       caption = BeeUtils.joinItems(Localized.dictionary().trdStock(),
           Localized.dictionary().services());
 
@@ -289,6 +297,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       relation.setChoiceColumns(choiceColumns);
 
       if (phase.modifyStock()) {
+        Long warehouseFrom = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_WAREHOUSE_FROM);
+
         Filter filter = Filter.or(Filter.notNull(COL_ITEM_IS_SERVICE),
             Filter.in(Data.getIdColumn(VIEW_ITEMS), VIEW_TRADE_DOCUMENT_ITEMS, COL_ITEM,
                 Filter.in(Data.getIdColumn(VIEW_TRADE_DOCUMENT_ITEMS),
@@ -560,10 +570,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
   }
 
-  private static void getStock(List<Long> itemIds, Long warehouse,
-      final Consumer<Map<Long, Pair<Long, Double>>> consumer) {
-
-    List<String> columns = Arrays.asList(COL_ITEM, COL_TRADE_DOCUMENT_ITEM, COL_STOCK_QUANTITY);
+  private static void getStock(Collection<Long> itemIds, Long warehouse,
+      final Consumer<Multimap<Long, IsRow>> consumer) {
 
     Filter filter = Filter.and(
         Filter.equals(COL_STOCK_WAREHOUSE, warehouse),
@@ -572,19 +580,16 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
     Order order = Order.ascending(ALS_STOCK_PRIMARY_DATE, COL_TRADE_DATE);
 
-    Queries.getRowSet(VIEW_TRADE_STOCK, columns, filter, order, new Queries.RowSetCallback() {
+    Queries.getRowSet(VIEW_TRADE_STOCK, null, filter, order, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet rowSet) {
-        Map<Long, Pair<Long, Double>> stock = new HashMap<>();
+        Multimap<Long, IsRow> stock = ArrayListMultimap.create();
 
         if (!DataUtils.isEmpty(rowSet)) {
           int itemIndex = rowSet.getColumnIndex(COL_ITEM);
-          int parentIndex = rowSet.getColumnIndex(COL_TRADE_DOCUMENT_ITEM);
-          int qtyIndex = rowSet.getColumnIndex(COL_STOCK_QUANTITY);
 
           for (IsRow row : rowSet) {
-            stock.putIfAbsent(row.getLong(itemIndex),
-                Pair.of(row.getLong(parentIndex), row.getDouble(qtyIndex)));
+            stock.put(row.getLong(itemIndex), row);
           }
         }
 
@@ -609,10 +614,10 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   private void addItems(IsRow documentRow, List<? extends IsRow> itemRows,
-      boolean stockRequired, Map<Long, Pair<Long, Double>> stock, Double defVatPercent) {
+      boolean stockRequired, Multimap<Long, IsRow> stock, Double defVatPercent) {
 
-    DateTime date = Data.getDateTime(VIEW_TRADE_DOCUMENTS, documentRow, COL_TRADE_DATE);
-    Long currency = Data.getLong(VIEW_TRADE_DOCUMENTS, documentRow, COL_TRADE_CURRENCY);
+    DateTime date = TradeUtils.getDocumentDate(documentRow);
+    Long currency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
 
     ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(documentRow);
     TradeVatMode vatMode = TradeUtils.getDocumentVatMode(documentRow);
@@ -664,18 +669,27 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
         vat = null;
       }
 
-      Boolean vatIsPercent = BeeUtils.isDouble(vat) ? true : null;
+      Boolean vatIsPercent = TradeUtils.vatIsPercent(vat);
 
       Long parent = null;
 
-      if (stockRequired && !BeeUtils.isTrue(row.getBoolean(serviceIndex))) {
-        Pair<Long, Double> pair = (stock == null) ? null : stock.get(row.getId());
-        if (pair == null) {
+      if (stockRequired && !row.isTrue(serviceIndex)) {
+        if (stock == null || !stock.containsKey(row.getId())) {
           continue;
         }
 
-        parent = pair.getA();
-        quantity = BeeUtils.min(quantity, pair.getB());
+        for (IsRow stockRow : stock.get(row.getId())) {
+          Double qty = Data.getDouble(VIEW_TRADE_STOCK, stockRow, COL_STOCK_QUANTITY);
+
+          if (BeeUtils.isMeq(qty, quantity)) {
+            parent = Data.getLong(VIEW_TRADE_STOCK, stockRow, COL_TRADE_DOCUMENT_ITEM);
+            break;
+          }
+        }
+
+        if (parent == null) {
+          continue;
+        }
       }
 
       rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
@@ -753,7 +767,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     final Latch latch = new Latch(rows.size());
     final Holder<Integer> counter = Holder.of(0);
 
-    if (operationType.consumesStock() && ItemPrice.COST == itemPrice) {
+    if (TradeUtils.documentPriceIsParentCost(parentRow)) {
       for (IsRow row : rows) {
         setPriceToParentCost(row, date, currency,
             changed -> afterRecalculatePrice(changed, latch, counter));
@@ -948,5 +962,185 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       getGridView().notifyInfo(
           Localized.dictionary().recalculateTradeItemPriceNotification(counter.get()));
     }
+  }
+
+  private boolean checkParentOnAdd(IsRow parentRow) {
+    OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
+    if (operationType == null || TradeUtils.getDocumentPhase(parentRow) == null) {
+      return false;
+    }
+
+    if (operationType.consumesStock()
+        && !DataUtils.isId(TradeUtils.getDocumentRelation(parentRow, COL_TRADE_WAREHOUSE_FROM))) {
+
+      getGridView().notifyWarning(Localized.dictionary().fieldRequired(
+          Localized.dictionary().trdWarehouseFrom()));
+      return false;
+    }
+
+    return true;
+  }
+
+  private void testPicker() {
+    getGridView().ensureRelId(docId -> {
+      IsRow parentRow = getParentRow(getGridView());
+
+      if (checkParentOnAdd(parentRow)) {
+        TradeUtils.getDocumentVatPercent(parentRow, vatPercent ->
+            openPicker(parentRow, vatPercent));
+      }
+    });
+  }
+
+  private void addItems(IsRow parentRow, Collection<BeeRow> selectedItems, TradeDocumentSums tds) {
+    if (isStockRequired(parentRow)) {
+      Long warehouse = Data.getLong(VIEW_TRADE_DOCUMENTS, parentRow, COL_TRADE_WAREHOUSE_FROM);
+
+      if (DataUtils.isId(warehouse)) {
+        getStock(tds.getItemIds(), warehouse, stock ->
+            addItems(parentRow, selectedItems, tds, true, stock));
+      }
+
+    } else {
+      addItems(parentRow, selectedItems, tds, false, null);
+    }
+  }
+
+  private void addItems(IsRow parentRow, Collection<BeeRow> selectedItems, TradeDocumentSums tds,
+      boolean stockRequired, Multimap<Long, IsRow> stock) {
+
+    DateTime date = TradeUtils.getDocumentDate(parentRow);
+    Long currency = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_CURRENCY);
+
+    int serviceIndex = Data.getColumnIndex(VIEW_ITEM_SELECTION, COL_ITEM_IS_SERVICE);
+    int itemArticleIndex = Data.getColumnIndex(VIEW_ITEM_SELECTION, COL_ITEM_ARTICLE);
+
+    int stockArticleIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_TRADE_ITEM_ARTICLE);
+    int stockQuantityIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_STOCK_QUANTITY);
+    int costIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_TRADE_ITEM_COST);
+    int costCurrencyIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_TRADE_ITEM_COST_CURRENCY);
+    int parentIndex = Data.getColumnIndex(VIEW_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM);
+
+    boolean priceIsParentCost = TradeUtils.documentPriceIsParentCost(parentRow);
+
+    List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
+        Arrays.asList(COL_TRADE_DOCUMENT, COL_ITEM, COL_TRADE_ITEM_ARTICLE,
+            COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+            COL_TRADE_DOCUMENT_ITEM_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT,
+            COL_TRADE_DOCUMENT_ITEM_VAT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT,
+            COL_TRADE_ITEM_PARENT));
+
+    BeeRowSet rowSet = new BeeRowSet(getViewName(), columns);
+
+    for (BeeRow row : selectedItems) {
+      long id = row.getId();
+
+      double quantity = tds.getQuantity(id);
+
+      Double price = tds.getPrice(id);
+      if (BeeUtils.isZero(price)) {
+        price = null;
+      }
+
+      Pair<Double, Boolean> discountInfo =
+          TradeUtils.normalizeDiscountOrVatInfo(tds.getDiscountInfo(id));
+      Pair<Double, Boolean> vatInfo = TradeUtils.normalizeDiscountOrVatInfo(tds.getVatInfo(id));
+
+      if (stockRequired && !row.isTrue(serviceIndex)) {
+        if (stock != null && stock.containsKey(id)) {
+          for (IsRow stockRow : stock.get(id)) {
+            Double stockQuantity = stockRow.getDouble(stockQuantityIndex);
+
+            if (BeeUtils.isPositive(stockQuantity)) {
+              double qty = Math.min(quantity, stockQuantity);
+
+              if (priceIsParentCost) {
+                Double cost = stockRow.getDouble(costIndex);
+                Long costCurrency = stockRow.getLong(costCurrencyIndex);
+
+                if (BeeUtils.nonZero(cost) && costCurrency != null) {
+                  if (Objects.equals(currency, costCurrency)) {
+                    price = cost;
+                  } else {
+                    price = Data.round(getViewName(), COL_TRADE_ITEM_PRICE,
+                        Money.exchange(costCurrency, currency, cost, date));
+                  }
+
+                } else {
+                  price = null;
+                }
+              }
+
+              rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
+                  Queries.asList(parentRow.getId(), id, row.getString(stockArticleIndex),
+                      qty, price, discountInfo.getA(), discountInfo.getB(),
+                      vatInfo.getA(), vatInfo.getB(), stockRow.getLong(parentIndex)));
+
+              quantity -= qty;
+              if (!BeeUtils.isPositive(quantity)) {
+                break;
+              }
+            }
+          }
+        }
+
+      } else {
+        rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
+            Queries.asList(parentRow.getId(), id, row.getString(itemArticleIndex),
+                quantity, price, discountInfo.getA(), discountInfo.getB(),
+                vatInfo.getA(), vatInfo.getB(), null));
+      }
+    }
+
+    Queries.insertRows(rowSet);
+  }
+
+  private void openPicker(final IsRow parentRow, Double defaultVatPercent) {
+    final TradeItemPicker picker = new TradeItemPicker(parentRow, defaultVatPercent);
+
+    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().itemSelection(),
+        TradeItemPicker.STYLE_DIALOG);
+
+    final FaLabel save = new FaLabel(FontAwesome.SAVE);
+    save.addStyleName(TradeItemPicker.STYLE_SAVE);
+
+    save.addClickHandler(event -> {
+      if (picker.hasSelection()) {
+        addItems(parentRow, picker.getSelectedItems(), picker.getTds());
+      }
+      dialog.close();
+    });
+
+    dialog.addAction(Action.SAVE, save);
+
+    FaLabel close = new FaLabel(FontAwesome.CLOSE);
+    close.addStyleName(TradeItemPicker.STYLE_CLOSE);
+
+    close.addClickHandler(event -> {
+      if (picker.hasSelection()) {
+        Global.decide(Localized.dictionary().itemSelection(),
+            Collections.singletonList(Localized.dictionary().saveSelectedItems()),
+            new DecisionCallback() {
+              @Override
+              public void onConfirm() {
+                addItems(parentRow, picker.getSelectedItems(), picker.getTds());
+                dialog.close();
+              }
+
+              @Override
+              public void onDeny() {
+                dialog.close();
+              }
+            }, DialogConstants.DECISION_YES);
+
+      } else {
+        dialog.close();
+      }
+    });
+
+    dialog.addAction(Action.CLOSE, close);
+
+    dialog.setWidget(picker);
+    dialog.center();
   }
 }
