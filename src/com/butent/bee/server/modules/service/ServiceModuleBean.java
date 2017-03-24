@@ -374,7 +374,8 @@ public class ServiceModuleBean implements BeeModule {
               .addConstant(COL_MAINTENANCE_DATE, TimeUtils.today())
               .addConstant(COL_PAYROLL_TARIFF, tariff)
               .addConstant(COL_PAYROLL_BASIC_AMOUNT, basicAmount)
-              .addConstant(COL_PAYROLL_SALARY, ServiceUtils.calculateSalary(tariff, basicAmount));
+              .addConstant(COL_PAYROLL_SALARY, ServiceUtils
+                  .calculateSalary(BeeUtils.unbox(tariff), basicAmount));
           qs.insertData(payrollInsertQuery);
           DataChangeEvent.fireRefresh((fireEvent, locality) -> Endpoint.sendToUser(
               usr.getCurrentUserId(), new ModificationMessage(fireEvent)), TBL_MAINTENANCE_PAYROLL);
