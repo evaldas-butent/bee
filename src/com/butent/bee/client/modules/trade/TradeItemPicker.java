@@ -134,6 +134,7 @@ class TradeItemPicker extends Flow implements HasPaging {
       NameUtils.getClassName(TradeItemPicker.class) + "-by";
 
   private static final String KEY_AVAILABLE = "avail";
+  private static final String KEY_PRICE = "price";
 
   private static final int itemPriceScale = Data.getColumnScale(VIEW_ITEMS, COL_ITEM_PRICE);
   private static final int costScale = Data.getColumnScale(VIEW_TRADE_ITEM_COST,
@@ -179,6 +180,8 @@ class TradeItemPicker extends Flow implements HasPaging {
   private int pageSize = BeeConst.UNDEF;
   private int pageStart;
   private int rowCount = BeeConst.UNDEF;
+
+  private final Map<String, String> priceCalculationOptions = new HashMap<>();
 
   TradeItemPicker(IsRow documentRow, Double defaultVatPercent) {
     super(STYLE_NAME);
@@ -231,6 +234,19 @@ class TradeItemPicker extends Flow implements HasPaging {
     setDiscountMode(TradeUtils.getDocumentDiscountMode(row));
     setDocumentDiscount(TradeUtils.getDocumentDiscount(row));
     setVatMode(TradeUtils.getDocumentVatMode(row));
+
+    if (!priceCalculationOptions.isEmpty()) {
+      priceCalculationOptions.clear();
+    }
+
+    Map<String, String> options = TradeUtils.getDocumentPriceCalculationOptions(row,
+        getDate(), getCurrency(), getOperationType(),
+        TradeUtils.getCompanyForPriceCalculation(row, getOperationType()),
+        TradeUtils.getWarehouseForPriceCalculation(row, getOperationType()));
+
+    if (!BeeUtils.isEmpty(options)) {
+      priceCalculationOptions.putAll(options);
+    }
   }
 
   void setDefaultVatPercent(Double defaultVatPercent) {
@@ -937,6 +953,10 @@ class TradeItemPicker extends Flow implements HasPaging {
       for (String itemColumn : itemColumns) {
         if (ip != null && ip.getPriceColumn().equals(itemColumn)) {
           text = renderItemPrice(items, item, ip, isService, mainWarehouseCode, showStockCost);
+          if (!BeeUtils.isEmpty(text)) {
+            DomUtils.setDataProperty(table.getRow(r), KEY_PRICE, text);
+          }
+
         } else {
           text = render(items, item, itemColumn);
         }
@@ -1197,8 +1217,7 @@ class TradeItemPicker extends Flow implements HasPaging {
 
           BeeRow item = getRow(id);
           if (item != null) {
-            ItemPrice ip = getItemPriceForRender(data);
-            Double price = (ip == null) ? null : item.getDouble(getDataIndex(ip.getPriceColumn()));
+            Double price = DomUtils.getDataPropertyDouble(rowElement, KEY_PRICE);
 
             Double vat = null;
             if (getVatMode() != null && item.isTrue(getDataIndex(COL_ITEM_VAT))) {
