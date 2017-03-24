@@ -18,9 +18,8 @@
       <row>
         <Label for="BodyNumber" />
         <InputText source="BodyNumber" style="&inp1;" />
-        <Label text="=vehicleModel" class="bee-required" />
-        <DataSelector source="Model" class="flexible" newRowForm="NewVehicleModel"
-                      renderColumns="ParentModelName ModelName" filter="parent" />
+        <Label for="Model" />
+        <DataSelector source="Model" />
         <Label for="ManufacturerNumber" />
         <InputText source="ManufacturerNumber" style="&inp1;" />
       </row>
@@ -28,8 +27,8 @@
       <row>
         <Label text="=vehicleNumber" />
         <InputText source="Number" upperCase="true" style="&inp1;" />
-        <Label text="=vehicleType" class="bee-required" />
-        <DataSelector source="Type" renderColumns="TypeName" />
+        <Label for="Type" />
+        <DataSelector source="Type" />
       </row>
 
       <row>
@@ -142,8 +141,16 @@
         <ChildGrid name="CarRecalls" relColumn="Vehicle" />
       </page>
       <page>
+        <text>=serviceOrders</text>
+        <ChildGrid name="CarServiceOrders" relColumn="Car" />
+      </page>
+      <page>
         <text>=specification</text>
         <xi:include href="widgets/Specification.widget.xml" />
+      </page>
+      <page>
+        <text>=files</text>
+        <ChildGrid name="CarFiles" relColumn="Car" />
       </page>
     </TabbedPages>
   </FlowPanel>

@@ -22,24 +22,6 @@
 
     <DataColumn name="MultipleSegments" editInPlace="true" />
 
-    <DataColumn name="TripPercent" horizontalAlignment="right">
-      <style>
-        <headerStyle>
-          <ui:inline>font-weight:bold;</ui:inline>
-        </headerStyle>
-        <bodyStyle>
-          <ui:inline>font-weight:bold;</ui:inline>
-        </bodyStyle>
-      </style>
-      <dynStyle>
-        <ui:inline>color:silver;</ui:inline>
-        <ui:expression>row.TripPercent==null</ui:expression>
-      </dynStyle>
-      <render>
-        <ui:expression>row.Income</ui:expression>
-      </render>
-    </DataColumn>
-
     <CalcColumn name="EstimateKm" type="integer" label="=trEstimateKm" visible="true" >
       <dynStyle>
         <ui:inline>color:red;</ui:inline>
@@ -66,13 +48,33 @@
         <ui:function>
           var estimate = Number(row.EmptyKilometers) + Number(row.LoadedKilometers) + Number(row.UnplannedManagerKm);
           if (estimate > 0) {
-            return parseFloat(row.Income) / estimate;
+          return parseFloat(row.Income) / estimate;
           } else {
-            return 0;
+          return 0;
           }
         </ui:function>
       </render>
     </CalcColumn>
+
+    <DataColumn name="TripPercent" horizontalAlignment="right">
+      <style>
+        <headerStyle>
+          <ui:inline>font-weight:bold;</ui:inline>
+        </headerStyle>
+        <bodyStyle>
+          <ui:inline>font-weight:bold;</ui:inline>
+        </bodyStyle>
+      </style>
+      <dynStyle>
+        <ui:inline>color:silver;</ui:inline>
+        <ui:expression>row.TripPercent==null</ui:expression>
+      </dynStyle>
+      <render>
+        <ui:expression>row.Income</ui:expression>
+      </render>
+    </DataColumn>
+
+    <PropColumn name="CargoIncome" type="decimal" scale="2" caption="=trCargoIncomes" />
 
     <DataColumn name="CargoPercent" horizontalAlignment="right">
       <dynStyle>

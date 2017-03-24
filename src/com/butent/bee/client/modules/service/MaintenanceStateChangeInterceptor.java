@@ -6,6 +6,7 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -16,13 +17,14 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.*;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +138,8 @@ abstract class MaintenanceStateChangeInterceptor extends MaintenanceExpanderForm
               maintenanceValues.put(COL_WARRANTY_VALID_TO,
                   result.getProperty(COL_WARRANTY_VALID_TO));
               maintenanceValues.put(COL_WARRANTY_TYPE, result.getProperty(COL_WARRANTY_TYPE));
+              maintenanceValues.put(COL_MAINTENANCE_URGENT,
+                  result.getProperty(COL_MAINTENANCE_URGENT));
               success.onSuccess(Pair.of(true, maintenanceValues));
             }
           }
@@ -162,29 +166,41 @@ abstract class MaintenanceStateChangeInterceptor extends MaintenanceExpanderForm
         COL_MAINTENANCE_ITEM));
 
     if (DataUtils.isId(itemId)) {
+      String currency = commentRow.getString(Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS,
+          ClassifierConstants.COL_ITEM_CURRENCY));
       List<String> columns = Lists.newArrayList(COL_SERVICE_MAINTENANCE, COL_SERVICE_OBJECT,
-          COL_MAINTENANCE_DATE, COL_MAINTENANCE_ITEM, "Quantity",
+          COL_REPAIRER, COL_MAINTENANCE_ITEM, "Quantity",
           ClassifierConstants.COL_ITEM_PRICE, ClassifierConstants.COL_ITEM_CURRENCY);
-
-      DateTime currentTime = new DateTime(System.currentTimeMillis());
-      currentTime.setSecond(0);
-      currentTime.setMillis(0);
 
       List<String> values = Lists.newArrayList(BeeUtils.toString(serviceMaintenanceRow.getId()),
           serviceMaintenanceRow.getString(Data.getColumnIndex(TBL_SERVICE_MAINTENANCE,
               COL_SERVICE_OBJECT)),
-          BeeUtils.toString(currentTime.getTime()),
+          BeeUtils.toString(BeeKeeper.getUser().getUserData().getCompanyPerson()),
           BeeUtils.toString(itemId), DEFAULT_QUANTITY,
-          commentRow.getString(Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS,
-              ClassifierConstants.COL_ITEM_PRICE)),
-          commentRow.getString(Data.getColumnIndex(TBL_MAINTENANCE_COMMENTS,
-              ClassifierConstants.COL_ITEM_CURRENCY)));
+          BeeUtils.toString(ServiceUtils.calculateServicePrice(commentRow, serviceMaintenanceRow)),
+          BeeUtils.isEmpty(currency) ? BeeUtils.toString(ClientDefaults.getCurrency()) : currency);
 
-      Queries.insert(VIEW_MAINTENANCE, Data.getColumns(VIEW_MAINTENANCE, columns), values, null,
-          new RowCallback() {
+      Queries.getRowSet(ClassifierConstants.TBL_ITEMS,
+          Arrays.asList(ClassifierConstants.COL_ITEM_VAT, ClassifierConstants.COL_ITEM_VAT_PERCENT),
+          Filter.compareId(itemId), new Queries.RowSetCallback() {
             @Override
-            public void onSuccess(BeeRow result) {
-              DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_MAINTENANCE);
+            public void onSuccess(BeeRowSet result) {
+              if (!result.isEmpty()) {
+                columns.add(ClassifierConstants.COL_ITEM_VAT);
+                values.add(result.getRow(0).getString(result
+                    .getColumnIndex(ClassifierConstants.COL_ITEM_VAT_PERCENT)));
+                columns.add(ClassifierConstants.COL_ITEM_VAT_PERCENT);
+                values.add(result.getRow(0).getString(result
+                    .getColumnIndex(ClassifierConstants.COL_ITEM_VAT)));
+              }
+
+              Queries.insert(TBL_SERVICE_ITEMS, Data.getColumns(TBL_SERVICE_ITEMS, columns),
+                  values, null, new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow createdServiceItem) {
+                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_SERVICE_ITEMS);
+                    }
+                  });
             }
           });
     }

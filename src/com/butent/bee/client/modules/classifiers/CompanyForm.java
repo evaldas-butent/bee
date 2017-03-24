@@ -47,6 +47,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeRow;
@@ -60,13 +61,16 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 class CompanyForm extends CustomCompanyForm {
 
@@ -260,6 +264,29 @@ class CompanyForm extends CustomCompanyForm {
       });
     }
     super.afterCreateWidget(name, widget, callback);
+  }
+
+  @Override
+  public void afterInsertRow(IsRow result, boolean forced) {
+    if (BeeUtils.isTrue(result.getBoolean(getDataIndex(COL_COMPANY_TYPE_PERSON)))) {
+      Map<String, String> personInfo = new HashMap<>();
+      personInfo.put(COL_COMPANY, BeeUtils.toString(result.getId()));
+      String contact = result.getString(getDataIndex(COL_COMPANY_NAME));
+
+      if (!BeeUtils.isEmpty(contact)) {
+        String[] arr = contact.split(BeeConst.STRING_SPACE, 2);
+        personInfo.put(COL_FIRST_NAME, ArrayUtils.getQuietly(arr, 0));
+        personInfo.put(COL_LAST_NAME, ArrayUtils.getQuietly(arr, 1));
+      }
+
+      Stream.of(COL_PHONE, COL_MOBILE, COL_FAX, COL_ADDRESS, COL_POST_INDEX, COL_CITY, COL_COUNTRY,
+          COL_WEBSITE, ALS_EMAIL_ID).forEach(column ->
+          personInfo.put(column, result.getString(getDataIndex(column))));
+
+      ClassifierUtils.createCompanyPerson(personInfo, person ->
+          BeeKeeper.getScreen().notifyInfo(Localized.dictionary().newCompanyPersonMessage()));
+    }
+    super.afterInsertRow(result, forced);
   }
 
   @Override

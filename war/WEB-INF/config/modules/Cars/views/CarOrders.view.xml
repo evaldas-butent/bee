@@ -69,8 +69,8 @@
     <SimpleColumn name="Car" />
     <SimpleJoin name="Car" joinType="LEFT">
       <SimpleJoin name="Model" joinType="LEFT">
-        <SimpleJoin name="Parent" joinType="LEFT">
-          <SimpleColumn name="Name" alias="ParentModelName" />
+        <SimpleJoin name="Brand" joinType="LEFT">
+          <SimpleColumn name="BrandName" />
         </SimpleJoin>
         <SimpleColumn name="Name" alias="ModelName" />
       </SimpleJoin>

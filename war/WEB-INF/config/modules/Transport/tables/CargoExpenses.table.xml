@@ -23,5 +23,7 @@
     <Relation name="Income" relation="CargoIncomes" label="=income" />
 
     <Relation name="Creator" relation="Users" label="=trdGenerated" defExpr="CURRENT_USER" />
+
+    <Relation name="CargoTrip" relation="CargoTrips" cascade="SET_NULL" label="=trip" />
   </Fields>
 </Table>

@@ -92,7 +92,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
     if (widget instanceof ChildGrid) {
       switch (name) {
         case TBL_CARGO_INCOMES:
-          ((ChildGrid) widget).setGridInterceptor(new TransportVatGridInterceptor() {
+          ((ChildGrid) widget).setGridInterceptor(new CargoIncomesGrid() {
             @Override
             public boolean previewModify(Set<Long> rowIds) {
               if (super.previewModify(rowIds)) {

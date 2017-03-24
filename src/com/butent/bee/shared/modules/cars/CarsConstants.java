@@ -50,8 +50,11 @@ public final class CarsConstants {
   public static final String TBL_SERVICE_JOB_PROGRESS = "CarJobProgress";
   public static final String TBL_SERVICE_EVENTS = "CarServiceEvents";
   public static final String TBL_SERVICE_INVOICES = "CarServiceInvoices";
+  public static final String TBL_SERVICE_SYMPTOMS = "CarServiceSymptoms";
 
   public static final String VIEW_CARS = "Cars";
+  public static final String VIEW_CAR_FILES = "CarFiles";
+  public static final String VIEW_CAR_SERVICE_FILES = "CarServiceFiles";
 
   public static final String COL_BRANCH = "Branch";
   public static final String COL_BRANCH_NAME = "BranchName";
@@ -85,7 +88,7 @@ public final class CarsConstants {
   public static final String COL_SERVICE_EVENT = "ServiceEvent";
   public static final String COL_BUNDLE_NAME = "BundleName";
   public static final String COL_VALID_UNTIL = "ValidUntil";
-
+  public static final String COL_BODY_NUMBER = "BodyNumber";
   public static final String COL_SERVICE_ITEM = "ServiceItem";
   public static final String COL_SERVICE_JOB = "ServiceJob";
 

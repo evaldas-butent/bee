@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-      name="ItemSelection" caption="=productsServices" source="Items" module="Trade"
-      editForm="Item"
+      name="ItemSelection" caption="=itemSelection" source="Items" module="Trade"
 >
   <Columns>
     <SimpleColumn name="Name" />
@@ -20,60 +19,39 @@
 
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />
-    <SimpleJoin joinType="LEFT" name="Currency">
-      <SimpleColumn name="Name" alias="CurrencyName" />
-    </SimpleJoin>
+
+    <SimpleColumn name="Cost" />
+    <SimpleColumn name="CostCurrency" />
 
     <SimpleColumn name="Price1" />
     <SimpleColumn name="Currency1" />
-    <SimpleJoin joinType="LEFT" name="Currency1">
-      <SimpleColumn name="Name" alias="Currency1Name" />
-    </SimpleJoin>
+
     <SimpleColumn name="Price2" />
     <SimpleColumn name="Currency2" />
-    <SimpleJoin joinType="LEFT" name="Currency2">
-      <SimpleColumn name="Name" alias="Currency2Name" />
-    </SimpleJoin>
+
     <SimpleColumn name="Price3" />
     <SimpleColumn name="Currency3" />
-    <SimpleJoin joinType="LEFT" name="Currency3">
-      <SimpleColumn name="Name" alias="Currency3Name" />
-    </SimpleJoin>
+
     <SimpleColumn name="Price4" />
     <SimpleColumn name="Currency4" />
-    <SimpleJoin joinType="LEFT" name="Currency4">
-      <SimpleColumn name="Name" alias="Currency4Name" />
-    </SimpleJoin>
+
     <SimpleColumn name="Price5" />
     <SimpleColumn name="Currency5" />
-    <SimpleJoin joinType="LEFT" name="Currency5">
-      <SimpleColumn name="Name" alias="Currency5Name" />
-    </SimpleJoin>
+
     <SimpleColumn name="Price6" />
     <SimpleColumn name="Currency6" />
-    <SimpleJoin joinType="LEFT" name="Currency6">
-      <SimpleColumn name="Name" alias="Currency6Name" />
-    </SimpleJoin>
+
     <SimpleColumn name="Price7" />
     <SimpleColumn name="Currency7" />
-    <SimpleJoin joinType="LEFT" name="Currency7">
-      <SimpleColumn name="Name" alias="Currency7Name" />
-    </SimpleJoin>
+
     <SimpleColumn name="Price8" />
     <SimpleColumn name="Currency8" />
-    <SimpleJoin joinType="LEFT" name="Currency8">
-      <SimpleColumn name="Name" alias="Currency8Name" />
-    </SimpleJoin>
+
     <SimpleColumn name="Price9" />
     <SimpleColumn name="Currency9" />
-    <SimpleJoin joinType="LEFT" name="Currency9">
-      <SimpleColumn name="Name" alias="Currency9Name" />
-    </SimpleJoin>
+
     <SimpleColumn name="Price10" />
     <SimpleColumn name="Currency10" />
-    <SimpleJoin joinType="LEFT" name="Currency10">
-      <SimpleColumn name="Name" alias="Currency10Name" />
-    </SimpleJoin>
 
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
@@ -99,18 +77,14 @@
     </SimpleJoin>
 
     <SimpleColumn name="DefaultQuantity" />
+
     <SimpleColumn name="Ordinal" />
 
-    <ExternalJoin joinType="LEFT" source="TradeDocumentItems" name="Item">
-      <ExternalJoin joinType="LEFT" source="TradeStock" name="TradeDocumentItem">
-        <AggregateColumn name="Quantity" aggregate="SUM" alias="Stock" />
-      </ExternalJoin>
-    </ExternalJoin>
+    <SimpleColumn name="Description" />
   </Columns>
 
   <Order>
     <OrderBy column="IsService" nulls="first" />
-    <OrderBy column="Stock" descending="true" nulls="last" />
     <OrderBy column="Ordinal" />
     <OrderBy column="Name" />
     <OrderBy column="Article" />

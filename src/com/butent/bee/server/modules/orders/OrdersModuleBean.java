@@ -322,14 +322,20 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     Long warehouse = reqInfo.getParameterLong(COL_WAREHOUSE);
     boolean remChecked = reqInfo.hasParameter(COL_WAREHOUSE_REMAINDER);
 
+    boolean filterServices = reqInfo.hasParameter(COL_ITEM_IS_SERVICE);
+
     CompoundFilter filter = Filter.and();
-    filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
+    if (filterServices) {
+      filter.add(Filter.notNull(COL_ITEM_IS_SERVICE));
+    } else {
+      filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
+    }
 
     if (!BeeUtils.isEmpty(where)) {
       filter.add(Filter.restore(where));
     }
 
-    if (warehouse != null && !remChecked) {
+    if (warehouse != null && !remChecked && !filterServices) {
       filter.add(Filter.in(sys.getIdName(TBL_ITEMS), VIEW_ITEM_REMAINDERS, COL_ITEM, Filter.and(
           Filter.equals(COL_WAREHOUSE, warehouse), Filter.notNull(COL_WAREHOUSE_REMAINDER))));
     }
