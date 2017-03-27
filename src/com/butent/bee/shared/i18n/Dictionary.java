@@ -3800,6 +3800,8 @@ public interface Dictionary {
 
   default String newCompanyPerson() {return g("newCompanyPerson");}
 
+  default String newCompanyPersonMessage() {return g("newCompanyPersonMessage");}
+
   default String newCompanySize() {return g("newCompanySize");}
 
   default String newContactFamilyMember() {return g("newContactFamilyMember");}
