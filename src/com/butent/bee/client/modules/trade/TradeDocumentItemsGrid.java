@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.trade;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.PRM_COMPANY;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -54,8 +53,6 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
@@ -72,7 +69,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -207,8 +203,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       }
     }
   }
-
-  private static BeeLogger logger = LogUtils.getLogger(TradeDocumentItemsGrid.class);
 
   private static final String STYLE_ITEM_SELECTOR =
       TradeKeeper.STYLE_PREFIX + "document-new-item-selector";
@@ -756,14 +750,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       return;
     }
 
-    Long operation = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_OPERATION);
-    OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
-    if (operation == null || operationType == null) {
-      return;
-    }
-
-    ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(parentRow);
-
     final Latch latch = new Latch(rows.size());
     final Holder<Integer> counter = Holder.of(0);
 
@@ -776,46 +762,26 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       return;
     }
 
-    Long company = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_PAYER);
-    if (company == null) {
-      String colName = operationType.consumesStock() ? COL_TRADE_CUSTOMER : COL_TRADE_SUPPLIER;
-      company = TradeUtils.getDocumentRelation(parentRow, colName);
-
-      if (company == null) {
-        colName = operationType.consumesStock() ? COL_TRADE_SUPPLIER : COL_TRADE_CUSTOMER;
-        company = TradeUtils.getDocumentRelation(parentRow, colName);
-
-        if (company == null) {
-          company = Global.getParameterRelation(PRM_COMPANY);
-
-          if (company == null) {
-            getGridView().notifyWarning("company not specified");
-            return;
-          }
-        }
-      }
+    OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
+    if (operationType == null) {
+      return;
     }
 
-    Long documentWarehouse = TradeUtils.getDocumentRelation(parentRow,
-        operationType.consumesStock() ? COL_TRADE_WAREHOUSE_FROM : COL_TRADE_WAREHOUSE_TO);
+    Long company = TradeUtils.getCompanyForPriceCalculation(parentRow, operationType);
+    if (company == null) {
+      getGridView().notifyWarning("company not specified");
+      return;
+    }
+
+    Map<String, String> options = TradeUtils.getDocumentPriceCalculationOptions(parentRow,
+        date, currency, operationType, company, null);
+    if (BeeUtils.isEmpty(options)) {
+      return;
+    }
+
+    Long documentWarehouse = TradeUtils.getWarehouseForPriceCalculation(parentRow, operationType);
 
     TradeDiscountMode discountMode = TradeUtils.getDocumentDiscountMode(parentRow);
-
-    Map<String, String> options = new HashMap<>();
-
-    options.put(COL_DISCOUNT_COMPANY, BeeUtils.toStringOrNull(company));
-
-    options.put(COL_DISCOUNT_OPERATION, BeeUtils.toStringOrNull(operation));
-    if (operationType.requireOperationForPriceCalculation()) {
-      options.put(Service.VAR_REQUIRED, COL_DISCOUNT_OPERATION);
-    }
-
-    options.put(Service.VAR_TIME, BeeUtils.toString(date.getTime()));
-    options.put(COL_DISCOUNT_CURRENCY, BeeUtils.toStringOrNull(currency));
-
-    if (itemPrice != null) {
-      options.put(COL_DISCOUNT_PRICE_NAME, BeeUtils.toString(itemPrice.ordinal()));
-    }
 
     for (IsRow row : rows) {
       Double quantity = row.getDouble(getDataIndex(COL_TRADE_ITEM_QUANTITY));

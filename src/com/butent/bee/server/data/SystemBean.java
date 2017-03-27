@@ -1607,6 +1607,7 @@ public class SystemBean {
       }
       makeStructureChanges(SqlUtils.dropTable(TBL_VEHICLE_MODELS));
       makeStructureChanges(SqlUtils.renameTable(tmp, TBL_VEHICLE_MODELS));
+      rebuildTable(TBL_VEHICLE_MODELS);
     }
   }
 }
