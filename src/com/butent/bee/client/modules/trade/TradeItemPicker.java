@@ -81,7 +81,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 
-class TradeItemPicker extends Flow implements HasPaging {
+public class TradeItemPicker extends Flow implements HasPaging {
 
   private static BeeLogger logger = LogUtils.getLogger(TradeItemPicker.class);
 
@@ -186,7 +186,7 @@ class TradeItemPicker extends Flow implements HasPaging {
 
   private final Map<String, String> priceCalculationOptions = new HashMap<>();
 
-  TradeItemPicker(IsRow documentRow, Double defaultVatPercent) {
+  private TradeItemPicker() {
     super(STYLE_NAME);
     addStyleName(STYLE_EMPTY);
 
@@ -198,9 +198,6 @@ class TradeItemPicker extends Flow implements HasPaging {
 
     add(notification);
 
-    setDocumentRow(documentRow);
-    setDefaultVatPercent(defaultVatPercent);
-
     itemPanel.addClickHandler(event -> {
       Element target = EventUtils.getEventTargetElement(event);
       TableCellElement cell = DomUtils.getParentCell(target, true);
@@ -211,15 +208,48 @@ class TradeItemPicker extends Flow implements HasPaging {
     });
   }
 
-  List<BeeRow> getSelectedItems() {
+  TradeItemPicker(IsRow documentRow, Double defaultVatPercent) {
+    this();
+
+    setDocumentRow(documentRow);
+    setDefaultVatPercent(defaultVatPercent);
+  }
+
+  public TradeItemPicker(TradeDocumentPhase documentPhase, OperationType operationType,
+      Long warehouse, ItemPrice itemPrice, DateTime date, Long currency, String currencyName,
+      TradeDiscountMode discountMode, Double documentDiscount, TradeVatMode vatMode,
+      Map<String, String> priceCalculationOptions, Double defaultVatPercent) {
+
+    setDocumentPhase(documentPhase);
+    setOperationType(operationType);
+    setWarehouse(warehouse);
+
+    setItemPrice(itemPrice);
+
+    setDate(date);
+    setCurrency(currency);
+    setCurrencyName(currencyName);
+
+    setDiscountMode(discountMode);
+    setDocumentDiscount(documentDiscount);
+    setVatMode(vatMode);
+
+    if (priceCalculationOptions != null) {
+      this.priceCalculationOptions.putAll(priceCalculationOptions);
+    }
+
+    setDefaultVatPercent(defaultVatPercent);
+  }
+
+  public List<BeeRow> getSelectedItems() {
     return selectedItems;
   }
 
-  TradeDocumentSums getTds() {
+  public TradeDocumentSums getTds() {
     return tds;
   }
 
-  boolean hasSelection() {
+  public boolean hasSelection() {
     return !selectedItems.isEmpty();
   }
 
@@ -252,7 +282,7 @@ class TradeItemPicker extends Flow implements HasPaging {
     }
   }
 
-  void setDefaultVatPercent(Double defaultVatPercent) {
+  public void setDefaultVatPercent(Double defaultVatPercent) {
     this.defaultVatPercent = defaultVatPercent;
   }
 

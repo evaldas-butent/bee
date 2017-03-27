@@ -246,11 +246,6 @@
   color: #00e;
 }
 
-.bee-trade-document-new-item-selector td:nth-child(3),
-.bee-trade-document-new-item-selector td:nth-child(5) {
-  text-align: right;
-}
-
 .bee-grid-TradeDocumentItems.bee-GridContainer-no-data .bee-trade-price-calculation,
 .bee-grid-TradeDocumentItems.bee-GridContainer-no-data .bee-trade-cost-calculation,
 .bee-grid-TradeExpenditures.bee-GridContainer-no-data .bee-trade-cost-calculation {
