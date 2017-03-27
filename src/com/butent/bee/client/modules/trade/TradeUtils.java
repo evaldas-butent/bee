@@ -581,16 +581,13 @@ public final class TradeUtils {
   }
 
   static boolean documentPriceIsParentCost(IsRow row) {
-    OperationType operationType = getDocumentOperationType(row);
+    return documentPriceIsParentCost(getDocumentOperationType(row), getDocumentItemPrice(row));
+  }
 
-    if (operationType != null && operationType.consumesStock()) {
-      ItemPrice itemPrice = getDocumentItemPrice(row);
-      return itemPrice == ItemPrice.COST
-          || itemPrice == null && operationType.getDefaultPrice() == ItemPrice.COST;
-
-    } else {
-      return false;
-    }
+  static boolean documentPriceIsParentCost(OperationType operationType, ItemPrice itemPrice) {
+    return operationType != null && operationType.consumesStock()
+        && (itemPrice == ItemPrice.COST
+        || itemPrice == null && operationType.getDefaultPrice() == ItemPrice.COST);
   }
 
   static Long getCompanyForPriceCalculation(IsRow row, OperationType operationType) {

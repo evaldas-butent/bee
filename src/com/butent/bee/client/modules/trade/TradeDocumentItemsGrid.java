@@ -22,6 +22,7 @@ import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
@@ -1067,7 +1068,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     final DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().itemSelection(),
         TradeItemPicker.STYLE_DIALOG);
 
-    final FaLabel save = new FaLabel(FontAwesome.SAVE);
+    FaLabel save = new FaLabel(FontAwesome.SAVE);
     save.addStyleName(TradeItemPicker.STYLE_SAVE);
 
     save.addClickHandler(event -> {
@@ -1088,6 +1089,11 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
             Collections.singletonList(Localized.dictionary().saveSelectedItems()),
             new DecisionCallback() {
               @Override
+              public void onCancel() {
+                UiHelper.focus(picker);
+              }
+
+              @Override
               public void onConfirm() {
                 addItems(parentRow, picker.getSelectedItems(), picker.getTds());
                 dialog.close();
@@ -1107,6 +1113,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     dialog.addAction(Action.CLOSE, close);
 
     dialog.setWidget(picker);
+
+    dialog.focusOnOpen(picker);
     dialog.center();
   }
 }
