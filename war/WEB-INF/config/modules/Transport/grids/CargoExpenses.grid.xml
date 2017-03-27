@@ -37,7 +37,7 @@
                editViewName="CargoPurchaseInvoices" />
 
     <RelColumn name="Income" newRowEnabled="false" visible="false" caching="none" />
-    <RelColumn name="CargoTrip" visible="false" caching="none" />
+    <RelColumn name="Trip" filter="Status&lt;2" />
   </g:columns>
 
   <g:rowEditable>

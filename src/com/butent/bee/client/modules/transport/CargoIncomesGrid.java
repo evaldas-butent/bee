@@ -5,11 +5,10 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CargoIncomesGrid extends ParentRowRefreshGrid {
+public class CargoIncomesGrid extends TransportVatGridInterceptor {
   @Override
   public void afterCreateEditor(String source, Editor editor, boolean embedded) {
     if (BeeUtils.same(source, COL_CARGO_TRIP) && editor instanceof DataSelector) {

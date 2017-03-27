@@ -4095,6 +4095,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     Map<String, Long> companyCodes = getReferences(TBL_COMPANIES, COL_COMPANY_CODE);
     Map<String, Long> companies = getReferences(TBL_COMPANIES, COL_COMPANY_NAME);
 
+    Long brand = qs.getId(TBL_VEHICLE_BRANDS, COL_VEHICLE_BRAND_NAME, "???");
+
     for (SimpleRow row : rs) {
       String type = row.getValue("TIPAS");
 
@@ -4106,7 +4108,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       String model = row.getValue("MODELIS");
 
       if (!models.containsKey(model)) {
+        if (!DataUtils.isId(brand)) {
+          brand = qs.insertData(new SqlInsert(TBL_VEHICLE_BRANDS)
+              .addConstant(COL_VEHICLE_BRAND_NAME, "???"));
+        }
         models.put(model, qs.insertData(new SqlInsert(TBL_VEHICLE_MODELS)
+            .addConstant(COL_VEHICLE_BRAND, brand)
             .addConstant(name, model)));
         md++;
       }

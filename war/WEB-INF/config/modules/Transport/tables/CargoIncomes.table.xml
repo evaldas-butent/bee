@@ -24,6 +24,8 @@
 
     <Relation name="Creator" relation="Users" label="=trdGenerated" defExpr="CURRENT_USER" />
     <Numeric name="InsuranceCertificate" precision="1" label="Sertifikatas" />
+    <Relation name="Trip" relation="Trips" cascade="SET_NULL" label="=trip" />
+
     <Relation name="CargoTrip" relation="CargoTrips" cascade="SET_NULL" label="=trip" />
   </Fields>
 </Table>

@@ -71,16 +71,14 @@ public class TransportReportsBean {
       String source, Long currency, boolean woVat) {
 
     SqlSelect ss = new SqlSelect()
-        .addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP)
+        .addFields(source, COL_CARGO, COL_TRIP)
         .addFrom(source)
-        .addFromInner(TBL_CARGO_TRIPS,
-            SqlUtils.and(sys.joinTables(TBL_CARGO_TRIPS, source, COL_CARGO_TRIP),
-                SqlUtils.in(TBL_CARGO_TRIPS, COL_TRIP, trips),
-                SqlUtils.in(TBL_CARGO_TRIPS, COL_CARGO, cargos)))
+        .setWhere(SqlUtils.and(SqlUtils.in(source, COL_TRIP, trips),
+            SqlUtils.in(source, COL_CARGO, cargos)))
         .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, source, COL_CARGO))
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromInner(TBL_SERVICES, sys.joinTables(TBL_SERVICES, source, COL_SERVICE))
-        .addGroup(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP);
+        .addGroup(source, COL_CARGO, COL_TRIP);
 
     IsExpression amountExpr = SqlUtils.field(source, COL_AMOUNT);
 
@@ -138,7 +136,7 @@ public class TransportReportsBean {
         .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromLeft(source,
             SqlUtils.and(sys.joinTables(TBL_ORDER_CARGO, source, COL_CARGO),
-                allAmounts ? null : SqlUtils.isNull(source, COL_CARGO_TRIP)))
+                allAmounts ? null : SqlUtils.isNull(source, COL_TRIP)))
         .addFromLeft(TBL_SERVICES, sys.joinTables(TBL_SERVICES, source, COL_SERVICE))
         .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO));
 
