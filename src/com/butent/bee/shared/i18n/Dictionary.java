@@ -6354,6 +6354,8 @@ public interface Dictionary {
 
   default String trTonneKilometer() {return g("trTonneKilometer");}
 
+  default String trTotalWithVAT() {return g("trTotalWithVAT");}
+
   default String trTransportGroups() {return g("trTransportGroups");}
 
   default String trTransportation() {return g("trTransportation");}
