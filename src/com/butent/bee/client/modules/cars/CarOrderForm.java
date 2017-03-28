@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.cars.CarsConstants.*;
 import static com.butent.bee.shared.modules.cars.CarsConstants.COL_OBJECT;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.payroll.PayrollConstants.COL_EMPLOYEE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -19,10 +20,12 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.dialog.Modality;
+import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.Stage;
@@ -30,15 +33,21 @@ import com.butent.bee.client.modules.administration.StageUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.classifiers.VehiclesGrid;
 import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.output.ReportUtils;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HasStages;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.Holder;
@@ -54,12 +63,19 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.cars.CarsConstants;
 import com.butent.bee.shared.modules.cars.Option;
 import com.butent.bee.shared.modules.cars.Specification;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.trade.OperationType;
+import com.butent.bee.shared.modules.trade.TradeDiscountMode;
+import com.butent.bee.shared.modules.trade.TradeDocument;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Relation;
@@ -71,12 +87,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class CarOrderForm extends SpecificationForm implements HasStages {
 
   private HasWidgets stageContainer;
   private List<Stage> orderStages;
+
+  private CustomAction createInvoice = new CustomAction(FontAwesome.FILE_TEXT_O,
+      clickEvent -> createCarInvoice());
+
+  @Override
+  public void afterCreatePresenter(Presenter presenter) {
+    HeaderView hdr = presenter.getHeader();
+
+    if (Data.isViewEditable(TBL_TRADE_DOCUMENTS)) {
+      createInvoice.setTitle(Localized.dictionary().createInvoice());
+      hdr.addCommandItem(createInvoice);
+    }
+    super.afterCreatePresenter(presenter);
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -94,6 +126,9 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
     refreshStages();
+
+    createInvoice.setVisible(!DataUtils.isNewRow(row));
+
     super.beforeRefresh(form, row);
   }
 
@@ -422,6 +457,10 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
   }
 
   private void buildCar() {
+    if (hasCar(getActiveRow())) {
+      RowEditor.open(VIEW_CARS, getLongValue(COL_CAR), Opener.NEW_TAB);
+      return;
+    }
     if (!getFormView().isEnabled()) {
       return;
     }
@@ -444,6 +483,104 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
             Queries.update(TBL_CAR_ORDER_ITEMS, Filter.equals(COL_OBJECT, obj), COL_OBJECT,
                 (String) null, null);
           }
+        });
+      }
+    });
+  }
+
+  private void createCarInvoice() {
+    Dictionary d = Localized.dictionary();
+
+    if (!hasCar(getActiveRow())) {
+      getFormView().notifySevere(d.valueRequired() + ":", d.car());
+      return;
+    }
+    HtmlTable table = new HtmlTable();
+    table.setColumnCellClasses(0, StyleUtils.NAME_REQUIRED);
+    table.setColumnCellKind(0, CellKind.LABEL);
+
+    Relation op = Relation.create(TBL_TRADE_OPERATIONS,
+        Collections.singletonList(COL_OPERATION_NAME));
+    op.disableNewRow();
+    op.disableEdit();
+    op.setFilter(Filter.equals(COL_OPERATION_TYPE, OperationType.PURCHASE));
+
+    UnboundSelector operation = UnboundSelector.create(op);
+    Holder<IsRow> opHolder = Holder.absent();
+
+    Relation wh = Relation.create(TBL_WAREHOUSES,
+        Arrays.asList(COL_WAREHOUSE_CODE, COL_WAREHOUSE_NAME));
+    wh.disableNewRow();
+    wh.disableEdit();
+
+    UnboundSelector warehouse = UnboundSelector.create(wh);
+
+    Relation itm = Relation.create(TBL_ITEMS, Arrays.asList(COL_ITEM_NAME, COL_ITEM_ARTICLE));
+    itm.disableNewRow();
+    itm.disableEdit();
+
+    UnboundSelector item = UnboundSelector.create(itm);
+
+    table.setText(0, 0, d.trdOperation());
+    table.setWidget(0, 1, operation);
+
+    table.setText(1, 0, d.trdWarehouseTo());
+    table.setWidget(1, 1, warehouse);
+
+    table.setText(2, 0, d.trAccountingItem());
+    table.setWidget(2, 1, item);
+
+    Queries.getValue(VIEW_CARS, getLongValue(COL_CAR), COL_ITEM, new RpcCallback<String>() {
+      @Override
+      public void onSuccess(String itemId) {
+        if (DataUtils.isId(itemId)) {
+          item.setValue(BeeUtils.toLongOrNull(itemId), false);
+        }
+      }
+    });
+    operation.addSelectorHandler(event -> {
+      if (event.isChanged()) {
+        opHolder.set(event.getRelatedRow());
+
+        if (!DataUtils.isId(warehouse.getValue())) {
+          warehouse.setValue(Data.getLong(event.getRelatedViewName(), opHolder.get(),
+              COL_OPERATION_WAREHOUSE_TO), false);
+        }
+      }
+    });
+    Global.inputWidget(d.createInvoice(), table, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        Optional<UnboundSelector> empty = Stream.of(operation, warehouse, item)
+            .filter(w -> BeeUtils.isEmpty(w.getValue()))
+            .findFirst();
+
+        if (empty.isPresent()) {
+          empty.get().setFocus(true);
+          return d.valueRequired();
+        }
+        return null;
+      }
+
+      @Override
+      public void onSuccess() {
+        TradeDocument doc = new TradeDocument(opHolder.get().getId(), TradeDocumentPhase.PENDING);
+        doc.addItem(BeeUtils.toLongOrNull(item.getValue()), 1.0);
+
+        doc.setDocumentDiscountMode(Data.getEnum(op.getViewName(), opHolder.get(),
+            COL_OPERATION_DISCOUNT_MODE, TradeDiscountMode.class));
+        doc.setDocumentVatMode(Data.getEnum(op.getViewName(), opHolder.get(),
+            COL_OPERATION_VAT_MODE, TradeVatMode.class));
+
+        doc.setDate(TimeUtils.nowSeconds());
+        doc.setCurrency(Global.getParameterRelation(PRM_CURRENCY));
+        doc.setManager(getLongValue(COL_EMPLOYEE));
+        doc.setVehicle(getLongValue(COL_CAR));
+        doc.setWarehouseTo(BeeUtils.toLongOrNull(warehouse.getValue()));
+
+        TradeKeeper.createDocument(doc, tradeId -> {
+          DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), VIEW_TRADE_DOCUMENTS);
+          RowEditor.open(VIEW_TRADE_DOCUMENTS, tradeId, Opener.NEW_TAB);
         });
       }
     });

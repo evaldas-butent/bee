@@ -7,7 +7,6 @@
   <Fields>
     <Relation name="Brand" relation="VehicleBrands" notNull="true" label="=vehicleBrand" />
     <String name="Name" precision="30" notNull="true" label="=vehicleModel" />
-    <Relation name="Item" relation="Items" label="=trAccountingItem" />
   </Fields>
 
   <Constraints>
