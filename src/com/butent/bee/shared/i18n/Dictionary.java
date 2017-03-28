@@ -6639,6 +6639,10 @@ public interface Dictionary {
 
   default String trdInvoices() {return g("trdInvoices");}
 
+  default String trdItemVehicle() {return g("trdItemVehicle");}
+
+  default String trdItemVehicleShort() {return g("trdItemVehicleShort");}
+
   default String trdItemWarehouseFrom() {return g("trdItemWarehouseFrom");}
 
   default String trdItemWarehouseTo() {return g("trdItemWarehouseTo");}
@@ -6796,6 +6800,8 @@ public interface Dictionary {
   default String trdVatPlus() {return g("trdVatPlus");}
 
   default String trdVehicle() {return g("trdVehicle");}
+
+  default String trdVehicleShort() {return g("trdVehicleShort");}
 
   default String trdWarehouseFrom() {return g("trdWarehouseFrom");}
 

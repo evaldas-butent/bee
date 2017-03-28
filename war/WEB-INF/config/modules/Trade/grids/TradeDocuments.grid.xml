@@ -39,6 +39,8 @@
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
                sortBy="ManagerLastName ManagerFirstName" />
+    <RelColumn name="Vehicle" caption="=trdVehicleShort"
+               renderColumns="VehicleBrandName VehicleModelName VehicleNumber VehicleBodyNumber" />
 
     <DataColumn name="DocumentDiscount" />
     <DataColumn name="PriceName" carry="true" />
