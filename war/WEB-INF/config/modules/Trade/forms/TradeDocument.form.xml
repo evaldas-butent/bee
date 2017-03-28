@@ -74,9 +74,6 @@
               <row>
                 <Label for="PriceName" />
                 <ListBox source="PriceName" summarize="true" />
-
-                <Label for="DocumentDiscount" />
-                <InputDecimal source="DocumentDiscount" summarize="true" />
               </row>
 
               <row>
