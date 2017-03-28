@@ -11,23 +11,18 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.DecisionCallback;
-import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Latch;
@@ -50,14 +45,12 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -861,58 +854,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   private void openPicker(final IsRow parentRow, Double defaultVatPercent) {
-    final TradeItemPicker picker = new TradeItemPicker(parentRow, defaultVatPercent);
-
-    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().itemSelection(),
-        TradeItemPicker.STYLE_DIALOG);
-
-    FaLabel save = new FaLabel(FontAwesome.SAVE);
-    save.addStyleName(TradeItemPicker.STYLE_SAVE);
-
-    save.addClickHandler(event -> {
-      if (picker.hasSelection()) {
-        addItems(parentRow, picker.getSelectedItems(), picker.getTds());
-      }
-      dialog.close();
-    });
-
-    dialog.addAction(Action.SAVE, save);
-
-    FaLabel close = new FaLabel(FontAwesome.CLOSE);
-    close.addStyleName(TradeItemPicker.STYLE_CLOSE);
-
-    close.addClickHandler(event -> {
-      if (picker.hasSelection()) {
-        Global.decide(Localized.dictionary().itemSelection(),
-            Collections.singletonList(Localized.dictionary().saveSelectedItems()),
-            new DecisionCallback() {
-              @Override
-              public void onCancel() {
-                UiHelper.focus(picker);
-              }
-
-              @Override
-              public void onConfirm() {
-                addItems(parentRow, picker.getSelectedItems(), picker.getTds());
-                dialog.close();
-              }
-
-              @Override
-              public void onDeny() {
-                dialog.close();
-              }
-            }, DialogConstants.DECISION_YES);
-
-      } else {
-        dialog.close();
-      }
-    });
-
-    dialog.addAction(Action.CLOSE, close);
-
-    dialog.setWidget(picker);
-
-    dialog.focusOnOpen(picker);
-    dialog.center();
+    TradeItemPicker picker = new TradeItemPicker(parentRow, defaultVatPercent);
+    picker.open((selectedItems, tds) -> addItems(parentRow, selectedItems, tds));
   }
 }

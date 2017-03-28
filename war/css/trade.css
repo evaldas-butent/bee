@@ -257,6 +257,13 @@
   visibility: hidden;
 }
 
+.bee-trade-item-picker-new-item,
+.bee-trade-item-picker-new-service {
+  padding: 3px 8px;
+  margin-right: 1em;
+  color: #414142;
+}
+
 .bee-trade-item-picker-search-panel {
   margin: 2ex 1em;
 }
