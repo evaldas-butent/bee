@@ -15,7 +15,7 @@
 
   <DataColumn name="Article" />
 
-  <DataColumn name="Quantity" visible="true" scale="3" >
+  <DataColumn name="Quantity" visible="true" format="0.###" >
     <footer aggregate="sum" />
     <editable>
       <ui:expression>row.Quantity != row.CompletedInvoices</ui:expression>

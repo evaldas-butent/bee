@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2016-11-04T15:51:33 -->
+<!-- 2017-03-28T13:22:59 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Offer" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -755,7 +755,7 @@
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font size="6"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{amount} - $V{vatAmount}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

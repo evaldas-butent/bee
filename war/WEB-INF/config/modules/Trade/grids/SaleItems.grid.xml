@@ -13,7 +13,7 @@
     </RelColumn>
     <DataColumn name="Article" />
 
-    <DataColumn name="Quantity" visible="true">
+    <DataColumn name="Quantity" visible="true" format="0.###">
       <footer aggregate="sum" />
     </DataColumn>
     <DataColumn name="UnitName" flexGrow="0" caption="=unitShort" />

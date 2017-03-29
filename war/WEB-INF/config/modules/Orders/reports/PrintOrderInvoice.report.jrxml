@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-03-22T16:13:39 -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
+<!-- 2017-03-28T14:57:42 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.shared.i18n.Localized"/>
@@ -525,7 +525,7 @@
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<jr:tableFooter style="TableCell" height="60">
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-							<textField pattern="0.000">
+							<textField pattern="0.###">
 								<reportElement style="TableDetail" x="0" y="0" width="158" height="12" isRemoveLineWhenBlank="true" uuid="b8e32b3b-d18d-4e84-ab4b-0474ed8e7abe">
 									<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -584,7 +584,7 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="15">
-								<textField isStretchWithOverflow="true" pattern="0.000" isBlankWhenNull="false">
+								<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
 									<reportElement style="TableDetail" x="0" y="0" width="42" height="15" uuid="cd819e72-7b07-469f-ad78-cfdc0d5e1a87"/>
 									<textElement textAlignment="Left">
 										<font size="8"/>
@@ -622,7 +622,7 @@
 							<printWhenExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0]]></printWhenExpression>
 							<jr:tableFooter height="0" rowSpan="1"/>
 							<jr:columnHeader style="TableCell" height="30" rowSpan="1">
-								<textField pattern="0.00000">
+								<textField isStretchWithOverflow="true" pattern="0.00000">
 									<reportElement style="TableHeader" x="0" y="0" width="49" height="30" uuid="158bea4a-7035-4048-85c1-89d13224a19c">
 										<printWhenExpression><![CDATA[BeeUtils.toInt($P{DiscountCount}) > 0]]></printWhenExpression>
 									</reportElement>
@@ -712,7 +712,7 @@
 								<textElement textAlignment="Right">
 									<font size="8"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{amount} - $V{vatAmount}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

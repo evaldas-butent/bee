@@ -20,7 +20,7 @@
 
     <DataColumn name="Article" />
 
-    <DataColumn name="CompletedQty" scale="3">
+    <DataColumn name="CompletedQty" format="0.###" >
       <editable>
         <ui:expression>cell.value &gt; 0</ui:expression>
       </editable>

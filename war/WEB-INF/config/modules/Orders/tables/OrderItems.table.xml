@@ -5,8 +5,8 @@
     <Relation name="Order" notNull="true" relation="Orders" cascade="DELETE" label="=order" />
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
     <Numeric name="ResRemainder" precision="12" scale="5" label="=ordResRemainder" />
-    <Numeric name="Quantity" precision="12" scale="5" notNull="true" label="=quantity" />
-    <Numeric name="CompletedQty" precision="12" scale="5" label="=quantity" />
+    <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=quantity" />
+    <Numeric name="CompletedQty" precision="12" scale="3" label="=quantity" />
     <Numeric name="Price" precision="15" scale="5" label="=price" />
     <Relation name="Currency" relation="Currencies" notNull="true" label="=currency" defExpr="MAIN_CURRENCY" />
     <Boolean name="VatPlus" label="=vatPlus" />
