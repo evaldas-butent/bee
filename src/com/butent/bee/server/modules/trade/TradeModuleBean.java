@@ -209,6 +209,16 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = new ArrayList<>();
 
+    Filter documentFilter;
+    if (DataUtils.isId(query)) {
+      documentFilter = Filter.or(Filter.compareId(BeeUtils.toLong(query)),
+          Filter.equals(COL_TRADE_NUMBER, query));
+    } else {
+      documentFilter = Filter.equals(COL_TRADE_NUMBER, query);
+    }
+
+    result.addAll(qs.getSearchResults(VIEW_TRADE_DOCUMENTS, documentFilter));
+
     Set<String> columns = Sets.newHashSet(COL_TRADE_NUMBER, COL_TRADE_INVOICE_NO,
         ALS_CUSTOMER_NAME);
     result.addAll(qs.getSearchResults(VIEW_SALES, Filter.anyContains(columns, query)));
