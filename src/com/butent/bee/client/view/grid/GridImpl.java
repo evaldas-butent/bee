@@ -903,8 +903,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     initForms();
 
-    setShowEditPopup(BeeUtils.nvl(gridDescription.getEditPopup(), isChild()));
-    setShowNewRowPopup(BeeUtils.nvl(gridDescription.getNewRowPopup(), isChild()));
+    setShowEditPopup(BeeUtils.nvl(gridDescription.getEditPopup(), hasChildUi()));
+    setShowNewRowPopup(BeeUtils.nvl(gridDescription.getNewRowPopup(), hasChildUi()));
 
     if (!editForms.isEmpty()) {
       if (gridDescription.getEditMessage() != null) {
@@ -1392,6 +1392,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public String getWidgetId() {
     return getId();
+  }
+
+  @Override
+  public boolean hasChildUi() {
+    return UiOption.isChild(uiOptions);
   }
 
   @Override
@@ -3239,7 +3244,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           StyleUtils.clearHeight(popup);
         }
 
-        if (kind == GridFormKind.NEW_ROW && isChild() && isNewRowFormGenerated()) {
+        if (kind == GridFormKind.NEW_ROW && hasChildUi() && isNewRowFormGenerated()) {
           int x = getAbsoluteLeft();
           int y = getAbsoluteTop();
 
