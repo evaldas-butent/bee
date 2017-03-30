@@ -27,12 +27,14 @@ import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.Stage;
 import com.butent.bee.client.modules.administration.StageUtils;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.classifiers.VehiclesGrid;
 import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.modules.trade.TradeDocumentsGrid;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
@@ -119,6 +121,10 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
     }
     if (Objects.equals(name, TBL_STAGES) && widget instanceof HasWidgets) {
       stageContainer = (HasWidgets) widget;
+    }
+    if (Objects.equals(name, VIEW_TRADE_DOCUMENTS) && widget instanceof GridPanel) {
+      ((GridPanel) widget).setGridInterceptor(new TradeDocumentsGrid().setFilterSupplier(() ->
+          Filter.custom(FILTER_CAR_DOCUMENTS, getLongValue(COL_CAR))));
     }
     super.afterCreateWidget(name, widget, callback);
   }
@@ -296,7 +302,9 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
                   Queries.deleteRow(TBL_CONF_OBJECTS, oldObject, new Queries.IntCallback() {
                     @Override
                     public void onSuccess(Integer cnt) {
-                      Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
+                      if (BeeUtils.isPositive(cnt)) {
+                        Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
+                      }
                     }
                   });
                 }
@@ -319,7 +327,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
       }
       price.set(specification.getPrice());
     }
-    Consumer<Integer> consumer = itemCount -> {
+    Runnable runnable = () -> {
       Map<String, String> updates = new HashMap<>();
       updates.put(COL_OBJECT,
           Objects.nonNull(specification) ? BeeUtils.toString(specification.getId()) : null);
@@ -330,20 +338,19 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
 
       commit(getFormView(), updates, updatedRow -> {
         if (DataUtils.isId(oldObject)) {
-          Queries.deleteRow(TBL_CONF_OBJECTS, oldObject,
-              new Queries.IntCallback() {
-                @Override
-                public void onSuccess(Integer cnt) {
-                  Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
-                }
-              });
-        } else if (BeeUtils.isPositive(itemCount)) {
-          Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
+          Queries.deleteRow(TBL_CONF_OBJECTS, oldObject, new Queries.IntCallback() {
+            @Override
+            public void onSuccess(Integer cnt) {
+              if (BeeUtils.isPositive(cnt)) {
+                Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
+              }
+            }
+          });
         }
       });
     };
     if (opts.isEmpty()) {
-      consumer.accept(0);
+      runnable.run();
     } else {
       Queries.getRowSet(TBL_CONF_OPTIONS, Collections.singletonList(COL_ITEM),
           Filter.and(Filter.idIn(opts.keySet()), Filter.notNull(COL_ITEM)),
@@ -369,11 +376,11 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
                 Queries.insertRows(items, new RpcCallback<RowInfoList>() {
                   @Override
                   public void onSuccess(RowInfoList result) {
-                    consumer.accept(result.size());
+                    runnable.run();
                   }
                 });
               } else {
-                consumer.accept(0);
+                runnable.run();
               }
             }
           });
@@ -473,7 +480,6 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
     RowFactory.createRow(info, car, Modality.ENABLED, new RowCallback() {
       @Override
       public void onSuccess(BeeRow newCar) {
-
         Map<String, String> updates = new HashMap<>();
         updates.put(COL_OBJECT, null);
         updates.put(COL_CAR, BeeUtils.toString(newCar.getId()));
@@ -565,7 +571,8 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
       @Override
       public void onSuccess() {
         TradeDocument doc = new TradeDocument(opHolder.get().getId(), TradeDocumentPhase.PENDING);
-        doc.addItem(BeeUtils.toLongOrNull(item.getValue()), 1.0);
+        doc.addItem(BeeUtils.toLongOrNull(item.getValue()), 1.0)
+            .setItemVehicle(getLongValue(COL_CAR));
 
         doc.setDocumentDiscountMode(Data.getEnum(op.getViewName(), opHolder.get(),
             COL_OPERATION_DISCOUNT_MODE, TradeDiscountMode.class));

@@ -148,7 +148,7 @@
       </page>
       <page>
         <text>=trdInvoices</text>
-        <ChildGrid name="TradeDocuments" relColumn="Vehicle" />
+        <GridPanel name="TradeDocuments" child="true" parent="{form}" />
       </page>
       <page>
         <text>=specification</text>

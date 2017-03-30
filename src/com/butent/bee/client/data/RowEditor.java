@@ -442,9 +442,6 @@ public final class RowEditor {
 
                     @Override
                     public void onSuccess(Integer result) {
-                      if (formView.getViewPresenter() != null) {
-                        formView.getViewPresenter().handleAction(Action.CANCEL);
-                      }
                       RowDeleteEvent.fire(BeeKeeper.getBus(), formView.getViewName(), row.getId());
                     }
                   }));

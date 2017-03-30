@@ -33,6 +33,7 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.administration.Stage;
+import com.butent.bee.client.modules.trade.TradeDocumentsGrid;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
@@ -165,8 +166,9 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
           break;
       }
     }
-    if (Objects.equals(name, TBL_SERVICE_INVOICES) && widget instanceof GridPanel) {
-      ((GridPanel) widget).setGridInterceptor(new CarServiceInvoicesGrid());
+    if (Objects.equals(name, VIEW_TRADE_DOCUMENTS) && widget instanceof GridPanel) {
+      ((GridPanel) widget).setGridInterceptor(new TradeDocumentsGrid().setFilterSupplier(() ->
+          Filter.custom(FILTER_CAR_SERVICE_DOCUMENTS, getActiveRowId())));
     }
     if (Objects.equals(name, COL_CUSTOMER + "Warning") && widget instanceof HasClickHandlers) {
       customerWarning = widget.asWidget();
