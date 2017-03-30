@@ -51,6 +51,7 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -199,6 +200,8 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
   private final Map<String, String> priceCalculationOptions = new HashMap<>();
 
+  private State state;
+
   private TradeItemPicker() {
     super(STYLE_NAME);
     addStyleName(STYLE_EMPTY);
@@ -282,10 +285,17 @@ public class TradeItemPicker extends Flow implements HasPaging {
     FaLabel save = new FaLabel(FontAwesome.SAVE, STYLE_SAVE);
 
     save.addClickHandler(event -> {
-      if (hasSelection()) {
-        selectionConsumer.accept(getSelectedItems(), getTds());
+      if (getState() == State.UPDATING) {
+        setSavePending();
+
+      } else if (getState() != State.CLOSING) {
+        setState(State.CLOSING);
+
+        if (hasSelection()) {
+          selectionConsumer.accept(getSelectedItems(), getTds());
+        }
+        dialog.close();
       }
-      dialog.close();
     });
 
     dialog.addAction(Action.SAVE, save);
@@ -323,7 +333,13 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
     dialog.setWidget(this);
 
-    dialog.addOpenHandler(event -> focusSearchBox());
+    dialog.addOpenHandler(event -> {
+      setState(State.OPEN);
+      focusSearchBox();
+    });
+
+    dialog.addCloseHandler(event -> setState(State.CLOSED));
+
     dialog.center();
   }
 
@@ -430,7 +446,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
     searchBox.addKeyDownHandler(event -> {
       if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
         if (UiHelper.isSave(event.getNativeEvent())) {
-          commit();
+          save();
 
         } else {
           String input = searchBox.getValue();
@@ -1230,7 +1246,8 @@ public class TradeItemPicker extends Flow implements HasPaging {
 
             if (validate(input)) {
               if (UiHelper.isSave(event.getNativeEvent())) {
-                onQuantityChange(input, input.getNumber(), b -> commit());
+                setSavePending();
+                onQuantityChange(input);
 
               } else if (isLast(input)) {
                 if (!focusSearchBox()) {
@@ -1251,8 +1268,10 @@ public class TradeItemPicker extends Flow implements HasPaging {
             } else {
               long id = getRowId(input.getElement());
 
-              Double oldValue = tds.getQuantity(id);
-              if (!BeeUtils.isPositive(oldValue)) {
+              Double oldValue;
+              if (tds.containsItem(id)) {
+                oldValue = tds.getQuantity(id);
+              } else {
                 oldValue = null;
               }
 
@@ -1347,7 +1366,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
     }
   }
 
-  private void commit() {
+  private void save() {
     FaLabel save = findAction(STYLE_SAVE);
     if (save != null) {
       save.click();
@@ -1365,13 +1384,6 @@ public class TradeItemPicker extends Flow implements HasPaging {
     }
 
     return null;
-  }
-
-  private void setSaveEnabled(boolean enabled) {
-    FaLabel save = findAction(STYLE_SAVE);
-    if (save != null) {
-      save.setEnabled(enabled);
-    }
   }
 
   private boolean isLast(InputNumber input) {
@@ -1424,8 +1436,17 @@ public class TradeItemPicker extends Flow implements HasPaging {
   }
 
   private void onQuantityChange(InputNumber input) {
-    setSaveEnabled(false);
-    onQuantityChange(input, input.getNumber(), b -> setSaveEnabled(true));
+    final boolean pending = isSavePending();
+    setState(State.UPDATING);
+
+    onQuantityChange(input, input.getNumber(), b -> {
+      boolean commit = pending || isSavePending();
+      setState(State.CHANGED);
+
+      if (commit) {
+        save();
+      }
+    });
   }
 
   private void onQuantityChange(InputNumber input, Double quantity,
@@ -1852,5 +1873,21 @@ public class TradeItemPicker extends Flow implements HasPaging {
     if (!BeeUtils.isEmpty(by)) {
       filterBy.addAll(by);
     }
+  }
+
+  private State getState() {
+    return state;
+  }
+
+  private void setState(State state) {
+    this.state = state;
+  }
+
+  private boolean isSavePending() {
+    return getState() == State.PENDING;
+  }
+
+  private void setSavePending() {
+    setState(State.PENDING);
   }
 }
