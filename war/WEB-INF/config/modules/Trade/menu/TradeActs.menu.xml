@@ -23,4 +23,7 @@
 
   <Item name="TradeActInvoiceBuilder" label="=taInvoiceBuilder" service="form"
         parameters="TradeActInvoiceBuilder" separator="true" />
+
+  <Item name="TradeActParameters" label="=parameters" service="parameters" parameters="Trade.Acts"
+        separator="true" order="300" module="Administration" />
 </Entry>
