@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.transport;
 
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,5 +15,9 @@ public class CustomShipmentRequestForm {
 
     return translations.getOrDefault(Localized.extractLanguage(report), translations.get("en"))
         + "_" + orderNo + ".pdf";
+  }
+
+  public static String createEmailSubject(FileInfo fileInfo) {
+    return fileInfo.getCaption().replace(".pdf", "");
   }
 }
