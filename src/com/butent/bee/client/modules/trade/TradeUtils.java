@@ -654,7 +654,7 @@ public final class TradeUtils {
     return options;
   }
 
-  static Pair<Double, Boolean> normalizeDiscountOrVatInfo(Pair<Double, Boolean> info) {
+  public static Pair<Double, Boolean> normalizeDiscountOrVatInfo(Pair<Double, Boolean> info) {
     if (info != null && BeeUtils.nonZero(info.getA())) {
       return info;
     } else {

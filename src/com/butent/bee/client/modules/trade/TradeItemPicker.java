@@ -235,6 +235,7 @@ public class TradeItemPicker extends Flow implements HasPaging {
       Long warehouse, ItemPrice itemPrice, DateTime date, Long currency, String currencyName,
       TradeDiscountMode discountMode, Double documentDiscount, TradeVatMode vatMode,
       Map<String, String> priceCalculationOptions, Double defaultVatPercent) {
+    this();
 
     setDocumentPhase(documentPhase);
     setOperationType(operationType);
