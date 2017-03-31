@@ -55,7 +55,7 @@ public interface GridView extends DataView,
 
   int estimatePageSize(int containerWidth, int containerHeight);
 
-  void formCancel();
+  void formCancel(boolean focus);
 
   void formConfirm(Consumer<IsRow> consumer);
 

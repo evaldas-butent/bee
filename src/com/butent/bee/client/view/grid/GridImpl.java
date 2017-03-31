@@ -1051,18 +1051,21 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     if (row == null) {
       maybeResizeGrid();
-      getGrid().refocus();
     } else {
       getGrid().insertRow(row, true);
     }
   }
 
   @Override
-  public void formCancel() {
+  public void formCancel(boolean focus) {
     if (isAdding()) {
       finishNewRow(null);
     } else {
       closeEditForm();
+    }
+
+    if (focus) {
+      getGrid().refocus();
     }
   }
 
@@ -1110,6 +1113,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           @Override
           public void onCancel() {
             finishNewRow(null);
+            getGrid().refocus();
 
             if (consumer != null) {
               consumer.accept(newRow);
@@ -1128,6 +1132,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
             }
 
             finishNewRow(null);
+            getGrid().refocus();
 
             if (getGridInterceptor() != null) {
               getGridInterceptor().afterUpdateRow(result);
@@ -1145,6 +1150,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         @Override
         public void onCancel() {
           closeEditForm();
+          getGrid().refocus();
 
           if (consumer != null) {
             consumer.accept(newRow);
@@ -1163,6 +1169,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           }
 
           closeEditForm();
+          getGrid().refocus();
 
           if (getGridInterceptor() != null) {
             getGridInterceptor().afterUpdateRow(result);
@@ -1981,7 +1988,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     maybeResizeGrid();
-    getGrid().refocus();
   }
 
   private void createEditForm() {
@@ -3279,8 +3285,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
 
     } else {
+      ViewHelper.getGrids(form.asWidget()).stream()
+          .filter(childGrid -> childGrid.getActiveForm() != null)
+          .forEach(childGrid -> childGrid.formCancel(false));
+
       if (modal) {
         popup.close();
+
       } else {
         StyleUtils.hideDisplay(containerId);
         showGrid(true);
