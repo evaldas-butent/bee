@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -642,18 +643,20 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
     Dictionary dic = Localized.dictionary();
 
-    messages.add(BeeUtils.join(": ", dic.client(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_NAME))));
-    messages.add(BeeUtils.join(": ", dic.companyCode(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CODE))));
-    messages.add(BeeUtils.join(": ", dic.companyVATCode(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_VAT_CODE))));
-    messages.add(BeeUtils.join(": ", dic.address(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_ADDRESS))));
-    messages.add(BeeUtils.join(": ", dic.postIndex(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_POST_INDEX))));
-    messages.add(BeeUtils.join(": ", dic.trRegistrationContact(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT))));
+    Map<String, String> columnsMap = Maps.newHashMap();
+    columnsMap.put(COL_QUERY_CUSTOMER_NAME, dic.client());
+    columnsMap.put(COL_QUERY_CUSTOMER_CODE, dic.companyCode());
+    columnsMap.put(COL_QUERY_CUSTOMER_VAT_CODE, dic.companyVATCode());
+    columnsMap.put(COL_QUERY_CUSTOMER_ADDRESS, dic.address());
+    columnsMap.put(COL_QUERY_CUSTOMER_POST_INDEX, dic.postIndex());
+    columnsMap.put(COL_QUERY_CUSTOMER_CONTACT, dic.trRegistrationContact());
+
+    columnsMap.forEach((column, label) -> {
+      String value = row.getString(form.getDataIndex(column));
+      if (!BeeUtils.isEmpty(value)) {
+        messages.add(BeeUtils.join(": ", label, value));
+      }
+    });
 
     String email = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_EMAIL));
     String login = email;
@@ -663,8 +666,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
         && !BeeUtils.isEmpty(login)) {
       password = BeeUtils.randomString(6);
 
-      messages.add("Login: " + login);
-      messages.add("Password: " + password);
+      messages.add(BeeUtils.join(": ", dic.loginUserName(), login));
+      messages.add(BeeUtils.join(": ", dic.loginPassword(), password));
     } else {
       password = null;
     }
@@ -941,7 +944,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
               }
               (startup == null ? queue.remove(0) : startup).run();
             };
-            messages.add(0, loc.trNewValues());
+            messages.add(0, loc.trNewValues() + ": ");
           } else {
             onConfirm = onSuccess;
           }
@@ -1055,7 +1058,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
             }
           }
           if (!BeeUtils.isEmpty(messages)) {
-            messages.add(0, loc.errors());
+            messages.add(0, loc.trNewValues() + ": ");
           }
           doRegister(messages);
         }

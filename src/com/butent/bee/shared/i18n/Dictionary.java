@@ -4132,10 +4132,6 @@ public interface Dictionary {
 
   default String packets() {return g("packets");}
 
-  default String pay() {return g("pay");}
-
-  default String pay() {return g("pay");}
-
   default String pallets() {return g("pallets");}
 
   default String parameter() {return g("parameter");}
@@ -4159,6 +4155,8 @@ public interface Dictionary {
   default String passportNo() {return g("passportNo");}
 
   default String password() {return g("password");}
+
+  default String pay() {return g("pay");}
 
   default String payer() {return g("payer");}
 
