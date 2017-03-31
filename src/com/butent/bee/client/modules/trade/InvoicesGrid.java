@@ -120,7 +120,7 @@ public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandle
         payAction.running();
 
         Filter filter = Filter.and(Filter.idIn(ids), Filter.notNull(TransportConstants.COL_AMOUNT),
-            Filter.or(Filter.isNull(TradeConstants.COL_TRADE_PAID), 
+            Filter.or(Filter.isNull(TradeConstants.COL_TRADE_PAID),
                 Filter.compareWithColumn(TransportConstants.COL_AMOUNT, Operator.NE,
                     TradeConstants.COL_TRADE_PAID)));
 
