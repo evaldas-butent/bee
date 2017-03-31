@@ -655,7 +655,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
     messages.add(BeeUtils.join(": ", dic.trRegistrationContact(),
         row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT))));
 
-    String login = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_EMAIL));
+    String email = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_EMAIL));
+    String login = email;
     String password;
 
     if (BeeUtils.unbox(row.getBoolean(form.getDataIndex("Customer" + COL_REGISTRATION_REGISTER)))
@@ -680,6 +681,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
             companyInfo.put(col, row.getString(form.getDataIndex("Customer" + col)));
           }
+          companyInfo.put(ALS_EMAIL_ID, email);
           ClassifierUtils.createCompany(companyInfo, (company) -> {
             Map<String, String> personInfo = new HashMap<>();
             personInfo.put(COL_COMPANY, BeeUtils.toString(company));
@@ -692,7 +694,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
               personInfo.put(COL_LAST_NAME, ArrayUtils.getQuietly(arr, 1));
             }
             personInfo.put(COL_PHONE, row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_PHONE)));
-            personInfo.put(ALS_EMAIL_ID, login);
+            personInfo.put(ALS_EMAIL_ID, email);
             personInfo.put(COL_POSITION,
                 row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT_POSITION)));
 
@@ -709,7 +711,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                 args.addDataItem(COL_COMPANY_PERSON, person);
                 args.addDataItem(COL_USER_LOCALE,
                     row.getInteger(form.getDataIndex(COL_USER_LOCALE)));
-                args.addNotEmptyData(COL_EMAIL, login);
+                args.addNotEmptyData(COL_EMAIL, email);
 
                 BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
                   @Override
