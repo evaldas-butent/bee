@@ -10,8 +10,6 @@
   <Item name="RebuildTradeStock" label="=rebuildTradeStockCaption" service="rebuild_trade_stock"
         separator="true" module="Administration" />
 
-  <Item name="Sales" label="=trdInvoices" service="grid" parameters="Sales" separator="true" />
-
   <Item name="TradeParameters" label="=trdParameters" service="parameters" parameters="Trade"
         separator="true" order="100" module="Administration" />
 </Entry>
