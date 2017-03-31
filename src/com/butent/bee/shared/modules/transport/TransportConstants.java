@@ -84,7 +84,7 @@ public final class TransportConstants {
     LOST {
       @Override
       public String getCaption(Dictionary constants) {
-        return constants.trRequestStatusLost();
+        return constants.trRequestStatusRejected();
       }
     };
 

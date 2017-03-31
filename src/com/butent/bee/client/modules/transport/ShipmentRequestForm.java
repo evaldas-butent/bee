@@ -117,7 +117,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   private Button blockCommand = new Button(loc.ipBlockCommand(), event -> onBlock());
 
-  private Button lostCommand = new Button(loc.trRequestStatusLost(), clickEvent -> onLoss(true));
+  private Button lostCommand = new Button(loc.trRequestStatusRejected(),
+      clickEvent -> onLoss(true));
 
   private static final String NAME_VALUE_LABEL = "ValueLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
