@@ -117,6 +117,13 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
         }
       });
 
+    } else if (BeeUtils.same(name, COL_SERIES) && widget instanceof DataSelector) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isOpened()) {
+          event.getSelector().setAdditionalFilter(getSeriesFilter());
+        }
+      });
+
     } else if (BeeUtils.same(name, COL_TRADE_DOCUMENT_STATUS) && widget instanceof DataSelector) {
       ((DataSelector) widget).addSelectorHandler(event -> {
         if (event.isOpened()) {
@@ -352,6 +359,16 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private TradeDocumentPhase getPhase() {
     return EnumUtils.getEnumByIndex(TradeDocumentPhase.class,
         getIntegerValue(COL_TRADE_DOCUMENT_PHASE));
+  }
+
+  private static Filter getSeriesFilter() {
+    Long userId = BeeKeeper.getUser().getUserId();
+
+    if (DataUtils.isId(userId)) {
+      return Filter.custom(FILTER_USER_TRADE_SERIES, userId);
+    } else {
+      return null;
+    }
   }
 
   private String getShortCaption() {

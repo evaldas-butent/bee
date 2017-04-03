@@ -1155,6 +1155,45 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
     });
 
+    BeeView.registerConditionProvider(FILTER_USER_TRADE_SERIES, (view, args) -> {
+      Long manager;
+
+      if (BeeUtils.isEmpty(args)) {
+        manager = usr.getCurrentUserId();
+      } else {
+        manager = args.stream()
+            .map(BeeUtils::toLongOrNull)
+            .filter(DataUtils::isId)
+            .findFirst().orElse(null);
+      }
+
+      String tblName = view.getSourceAlias();
+
+      if (DataUtils.isId(manager) && TBL_TRADE_SERIES.equals(tblName)) {
+        String idName = view.getSourceIdName();
+
+        SqlSelect query = new SqlSelect().setDistinctMode(true)
+            .addFields(tblName, idName)
+            .addFrom(tblName)
+            .addFromLeft(TBL_SERIES_MANAGERS,
+                SqlUtils.join(tblName, idName, TBL_SERIES_MANAGERS, COL_SERIES))
+            .setWhere(SqlUtils.or(
+                SqlUtils.equals(TBL_SERIES_MANAGERS, COL_SERIES_MANAGER, manager),
+                SqlUtils.isNull(TBL_SERIES_MANAGERS, COL_SERIES_MANAGER)));
+
+        Set<Long> series = qs.getLongSet(query);
+
+        if (BeeUtils.isEmpty(series)) {
+          return SqlUtils.sqlFalse();
+        } else {
+          return SqlUtils.inList(tblName, idName, series);
+        }
+
+      } else {
+        return SqlUtils.sqlTrue();
+      }
+    });
+
     registerStockReservationsProvider(ModuleAndSub.of(getModule()),
         new StockReservationsProvider() {
           @Override

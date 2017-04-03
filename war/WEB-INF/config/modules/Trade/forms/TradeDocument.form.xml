@@ -220,7 +220,9 @@
           <FlowPanel class="&mrcl;" style="&mrst;">
             <FlowPanel style="&mfld; width: 5em;">
               <Label for="Series" style="&flbl;" />
-              <InputText source="Series" upperCase="true" style="&finp;" />
+              <DataSelector name="Series" source="Series" viewName="TradeSeries"
+                            valueSource="SeriesName" caching="none" strict="false" upperCase="true"
+                            style="&finp;" />
             </FlowPanel>
 
             <FlowPanel class="flexible flexBox-horizontal-top">

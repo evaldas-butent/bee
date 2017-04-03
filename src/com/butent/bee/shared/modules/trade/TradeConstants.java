@@ -44,6 +44,7 @@ public final class TradeConstants {
 
   public static final String TBL_TRADE_OPERATIONS = "TradeOperations";
   public static final String TBL_TRADE_SERIES = "TradeSeries";
+  public static final String TBL_SERIES_MANAGERS = "SeriesManagers";
   public static final String TBL_TRADE_STATUSES = "TradeStatuses";
 
   public static final String TBL_TRADE_DOCUMENTS = "TradeDocuments";
@@ -325,6 +326,7 @@ public final class TradeConstants {
   public static final String PRM_PROTECT_TRADE_DOCUMENTS_BEFORE = "ProtectTradeDocumentsBefore";
 
   public static final String FILTER_ITEM_HAS_STOCK = "item_has_stock";
+  public static final String FILTER_USER_TRADE_SERIES = "user_trade_series";
 
   public static final int MAX_STOCK_DEPTH = 1_000;
 
