@@ -321,6 +321,44 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     super.onSourceChange(row, source, value);
   }
 
+  @Override
+  public void onStartNewRow(final FormView form, IsRow oldRow, IsRow newRow) {
+    if (form != null && oldRow != null && newRow != null) {
+      final int index = getDataIndex(COL_SERIES);
+      final String series = BeeUtils.trim(oldRow.getString(index));
+
+      Long userId = BeeKeeper.getUser().getUserId();
+
+      if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(newRow.getString(index))
+          && DataUtils.isId(userId)) {
+
+        Filter filter = Filter.and(
+            Filter.equals(COL_SERIES_MANAGER, userId),
+            Filter.notNull(COL_SERIES_DEFAULT),
+            Filter.in(COL_SERIES, VIEW_TRADE_SERIES, Data.getIdColumn(VIEW_TRADE_SERIES),
+                Filter.equals(COL_SERIES_NAME, series)));
+
+        Queries.getRowCount(VIEW_SERIES_MANAGERS, filter, new Queries.IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            if (BeeUtils.isPositive(result) && form.getActiveRow() != null
+                && BeeUtils.isEmpty(form.getActiveRow().getString(index))) {
+
+              form.getActiveRow().setValue(index, series);
+              if (form.getOldRow() != null) {
+                form.getOldRow().setValue(index, series);
+              }
+
+              form.refreshBySource(COL_SERIES);
+            }
+          }
+        });
+      }
+    }
+
+    super.onStartNewRow(form, oldRow, newRow);
+  }
+
   private Double getDocumentDiscount(IsRow row) {
     return DataUtils.getDoubleQuietly(row, getDataIndex(COL_TRADE_DOCUMENT_DISCOUNT));
   }
