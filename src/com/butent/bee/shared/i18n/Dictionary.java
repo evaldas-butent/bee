@@ -5356,6 +5356,8 @@ public interface Dictionary {
 
   default String svcWarrantyBasis() {return g("svcWarrantyBasis");}
 
+  default String svcWarrantyDuration() {return g("svcWarrantyDuration");}
+
   default String svcWarrantyMaintenance() {return g("svcWarrantyMaintenance");}
 
   default String svcWarrantyType() {return g("svcWarrantyType");}

@@ -31,6 +31,8 @@ import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.orders.OrdersConstants;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.view.ViewHelper;
@@ -139,7 +141,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       FormFactory.WidgetDescriptionCallback callback) {
 
     if (widget instanceof DataSelector && BeeUtils.inList(name, COL_TYPE, COL_SERVICE_OBJECT,
-        COL_WARRANTY_MAINTENANCE, COL_CONTACT)) {
+        COL_WARRANTY_MAINTENANCE, COL_CONTACT, COL_WARRANTY_TYPE)) {
       ((DataSelector) widget).addSelectorHandler(this);
 
     } else if (widget instanceof Flow && BeeUtils.same(name, WIDGET_MAINTENANCE_COMMENTS)) {
@@ -481,6 +483,21 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
               event.getRelatedViewName(), COL_SERVICE_CUSTOMER, ALS_SERVICE_CUSTOMER_NAME,
               ALS_CUSTOMER_TYPE_NAME);
           getFormView().refreshBySource(COL_COMPANY);
+          break;
+
+        case TBL_WARRANTY_TYPES:
+          BeeRow warrantyRow = event.getRelatedRow();
+
+          if (warrantyRow != null) {
+            int duration = BeeUtils.unbox(warrantyRow.getInteger(
+                Data.getColumnIndex(event.getRelatedViewName(), COL_WARRANTY_DURATION)));
+            if (BeeUtils.isPositive(duration)) {
+              DateTime warrantyValidToValue = new DateTime();
+              TimeUtils.add(warrantyValidToValue, TimeUtils.FIELD_DATE, duration);
+              getActiveRow().setValue(getDataIndex(COL_WARRANTY_VALID_TO), warrantyValidToValue);
+              getFormView().refreshBySource(COL_WARRANTY_VALID_TO);
+            }
+          }
           break;
       }
     }

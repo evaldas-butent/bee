@@ -252,12 +252,14 @@
             <FlowPanel name="WarrantyPanel" class="flexBox-horizontal" style="&mrst;width: 32em;" >
               <FlowPanel style="&mfld;" for="WarrantyType">
                 <Label for="WarrantyType" style="&flbl;"/>
-                <DataSelector source="WarrantyType" style="&finp;"/>
+                <DataSelector name="WarrantyType" source="WarrantyType" style="&finp;"
+                              newRowEnabled="true" newRowColumns="Name Duration"/>
               </FlowPanel>
 
               <FlowPanel style="&mfld;" for="WarrantyValidTo" >
                 <Label for="WarrantyValidTo" style="&flbl;"/>
-                <InputDateTime source="WarrantyValidTo" style="&finp;"/>
+                <InputDateTime name="WarrantyValidTo" source="WarrantyValidTo" style="&finp;"
+                               format="DATE_SHORT" />
               </FlowPanel>
             </FlowPanel>
           </FlowPanel>

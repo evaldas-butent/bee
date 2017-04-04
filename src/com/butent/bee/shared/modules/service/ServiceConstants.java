@@ -170,6 +170,7 @@ public final class ServiceConstants {
 
   public static final String COL_WARRANTY_MAINTENANCE = "WarrantyMaintenance";
   public static final String COL_WARRANTY = "Warranty";
+  public static final String COL_WARRANTY_DURATION = "Duration";
   public static final String COL_WARRANTY_TYPE = "WarrantyType";
   public static final String COL_WARRANTY_VALID_TO = "WarrantyValidTo";
 
