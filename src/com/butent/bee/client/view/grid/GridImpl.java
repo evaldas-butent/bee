@@ -2965,7 +2965,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
     }
 
-    if (getGridInterceptor() != null && !getGridInterceptor().onStartNewRow(this, oldRow, newRow)) {
+    if (getGridInterceptor() != null
+        && !getGridInterceptor().onStartNewRow(this, oldRow, newRow, isCopy)) {
       return;
     }
 

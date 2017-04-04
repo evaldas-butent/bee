@@ -52,7 +52,7 @@ public class CargoHandlingGrid extends ParentRowRefreshGrid {
   }
 
   @Override
-  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
     if (gridView.isEmpty()) {
       IsRow parentRow = ViewHelper.getFormRow(gridView);
 
@@ -74,7 +74,7 @@ public class CargoHandlingGrid extends ParentRowRefreshGrid {
         fillValuesByParameters(newRow, parentRow);
       }
     }
-    return super.onStartNewRow(gridView, oldRow, newRow);
+    return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }
 
   private void fillValuesByParameters(IsRow newRow, IsRow parentRow) {
