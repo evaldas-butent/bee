@@ -1214,6 +1214,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public DataInfo getDataInfo() {
+    return dataInfo;
+  }
+
+  @Override
   public List<String> getDynamicColumnGroups() {
     return dynamicColumnGroups;
   }
@@ -2231,10 +2236,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private String getActiveFormContainerId() {
     return activeFormContainerId;
-  }
-
-  private DataInfo getDataInfo() {
-    return dataInfo;
   }
 
   private EditableColumn getEditableColumn(String columnId, boolean warn) {
