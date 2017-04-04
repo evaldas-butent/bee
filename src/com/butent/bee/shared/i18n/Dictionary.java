@@ -2904,6 +2904,12 @@ public interface Dictionary {
 
   default String finBudget() {return g("finBudget");}
 
+  default String finBudgetCopy(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finBudgetCopy"), _m);
+  }
+
   default String finBudgetEntries() {return g("finBudgetEntries");}
 
   default String finBudgetEntry() {return g("finBudgetEntry");}
@@ -6142,11 +6148,11 @@ public interface Dictionary {
 
   default String trRequestCargoWidth() {return g("trRequestCargoWidth");}
 
-  default String trRequestConfirmedMailContentText() {return g("trRequestConfirmedMailContentText");}
-
   default String trRequestCommonTerms() {return g("trRequestCommonTerms");}
 
   default String trRequestConfirmedMailContent() {return g("trRequestConfirmedMailContent");}
+
+  default String trRequestConfirmedMailContentText() {return g("trRequestConfirmedMailContentText");}
 
   default String trRequestCustomer() {return g("trRequestCustomer");}
 
@@ -6192,9 +6198,9 @@ public interface Dictionary {
 
   default String trRequestFreightInsurancePlaceholder() {return g("trRequestFreightInsurancePlaceholder");}
 
-  default String trRequestLostMailContentText() {return g("trRequestLostMailContentText");}
-
   default String trRequestLostMailContent() {return g("trRequestLostMailContent");}
+
+  default String trRequestLostMailContentText() {return g("trRequestLostMailContentText");}
 
   default String trRequestNew() {return g("trRequestNew");}
 
