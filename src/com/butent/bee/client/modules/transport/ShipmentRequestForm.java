@@ -435,10 +435,11 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                     text = BeeUtils.notEmpty(result.getString(0, localizedContent),
                         result.getString(0, COL_TEXT_CONTENT));
                   }
+                  String path = "rest/transport/confirm/" + getActiveRowId();
+
                   sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-                          ? null : text.replace("{CONTRACT_PATH}",
-                      "rest/transport/confirm/" + getActiveRowId()),
-                      Collections.singleton(fileInfo));
+                      ? null : text.replace("[CONTRACT_PATH]", path)
+                      .replace("{CONTRACT_PATH}", path), Collections.singleton(fileInfo));
                 }
               });
         }

@@ -740,8 +740,10 @@ public class TransportModuleBean implements BeeModule {
             cb.asynchronousCall(new ConcurrencyBean.AsynchronousRunnable() {
               @Override
               public void run() {
-                mail.sendMail(accountId, email, null, text.replace("{CONTRACT_ID}",
-                    BeeUtils.toString(event.getRow().getId())));
+                String id = BeeUtils.toString(event.getRow().getId());
+
+                mail.sendMail(accountId, email, null,
+                    text.replace("[CONTRACT_ID]", id).replace("{CONTRACT_ID}", id));
               }
             });
           }
@@ -1658,7 +1660,8 @@ public class TransportModuleBean implements BeeModule {
         @Override
         public void run() {
           mail.sendMail(accountId, email, Localized.dictionary().registration(),
-              text.replace("{LOGIN}", login).replace("{PASSWORD}", password));
+              text.replace("[LOGIN]", login).replace("{LOGIN}", login)
+                  .replace("[PASSWORD]", password).replace("{PASSWORD}", password));
         }
       });
     }
