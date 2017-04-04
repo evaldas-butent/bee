@@ -101,12 +101,8 @@ public final class TransportConstants {
       }
 
       @Override
-      public String getDefaultContent() {
-        return "Follow the link below to confirm or reject the agreement"
-            + " which is attached to this letter<br><br>"
-            + "http://127.0.0.1:8080/Bee/{CONTRACT_PATH}<br><br><br>"
-            + "This message was created automatically by mail delivery software. "
-            + "Thank You for using our services.";
+      public String getDefaultContent(Dictionary dictionary) {
+        return dictionary.trContractMailContentText();
       }
     },
     REGISTRATION_MAIL_CONTENT {
@@ -116,13 +112,8 @@ public final class TransportConstants {
       }
 
       @Override
-      public String getDefaultContent() {
-        return "The login which is given below is to connect to Your user account<br><br>"
-            + "Address: http://127.0.0.1:8080/Bee<br>"
-            + "Login: {LOGIN}<br>"
-            + "Password: {PASSWORD}<br><br>"
-            + "This message was created automatically by mail delivery software. "
-            + "Thank You for using our services.";
+      public String getDefaultContent(Dictionary dictionary) {
+        return dictionary.trRegistrationMailContentText();
       }
     },
     REQUEST_CONFIRMED_MAIL_CONTENT {
@@ -132,10 +123,8 @@ public final class TransportConstants {
       }
 
       @Override
-      public String getDefaultContent() {
-        return "Your order (id:{CONTRACT_ID}) is in progress!<br><br><br>"
-            + "This message was created automatically by mail delivery software. "
-            + "Thank You for using our services.";
+      public String getDefaultContent(Dictionary dictionary) {
+        return dictionary.trRequestConfirmedMailContentText();
       }
     },
     REQUEST_LOST_MAIL_CONTENT {
@@ -145,10 +134,8 @@ public final class TransportConstants {
       }
 
       @Override
-      public String getDefaultContent() {
-        return "Your inquiry (id:{CONTRACT_ID}) is denied.<br><br><br>"
-            + "This message was created automatically by mail delivery software. "
-            + "Thank You for using our services.";
+      public String getDefaultContent(Dictionary dictionary) {
+        return dictionary.trRequestLostMailContentText();
       }
     },
     SUMBMITTED_REQUEST_CONTENT {
@@ -158,8 +145,8 @@ public final class TransportConstants {
       }
 
       @Override
-      public String getDefaultContent() {
-        return "Your request has been received. Will contact You soon!";
+      public String getDefaultContent(Dictionary dictionary) {
+        return dictionary.trRequestSubmittedContentText();
       }
     },
     REQUEST_COMMON_TERMS {
@@ -169,12 +156,12 @@ public final class TransportConstants {
       }
 
       @Override
-      public String getDefaultContent() {
+      public String getDefaultContent(Dictionary dictionary) {
         return "";
       }
     };
 
-    public String getDefaultContent() {
+    public String getDefaultContent(Dictionary dictionary) {
       return null;
     }
   }

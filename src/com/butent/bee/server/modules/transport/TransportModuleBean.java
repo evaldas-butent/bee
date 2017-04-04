@@ -29,6 +29,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
@@ -721,13 +722,14 @@ public class TransportModuleBean implements BeeModule {
             BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
                 Filter.equals(COL_TEXT_CONSTANT, constant));
 
-            String localizedContent = Localized.column(COL_TEXT_CONTENT,
-                EnumUtils.getEnumByIndex(SupportedLocale.class, info.getInteger(0, COL_USER_LOCALE))
-                    .getLanguage());
+            SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
+                info.getInteger(0, COL_USER_LOCALE));
+            String localizedContent = Localized.column(COL_TEXT_CONTENT, locale.getLanguage());
             String text;
 
             if (DataUtils.isEmpty(data)) {
-              text = constant.getDefaultContent();
+              text = constant.getDefaultContent(Localizations.getDictionary(SupportedLocale.parse(
+                  locale.getLanguage())));
             } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
                 data.getColumns()))) {
               text = data.getString(0, COL_TEXT_CONTENT);
@@ -1636,13 +1638,15 @@ public class TransportModuleBean implements BeeModule {
     BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
         Filter.equals(COL_TEXT_CONSTANT, constant));
 
-    String localizedContent = Localized.column(COL_TEXT_CONTENT,
-        EnumUtils.getEnumByIndex(SupportedLocale.class, reqInfo.getParameterInt(COL_USER_LOCALE))
-            .getLanguage());
+    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
+        reqInfo.getParameterInt(COL_USER_LOCALE));
+
+    String localizedContent = Localized.column(COL_TEXT_CONTENT, locale.getLanguage());
     String text;
 
     if (DataUtils.isEmpty(data)) {
-      text = constant.getDefaultContent();
+      text = constant.getDefaultContent(Localizations.getDictionary(SupportedLocale.parse(
+          locale.getLanguage())));
     } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, data.getColumns()))) {
       text = data.getString(0, COL_TEXT_CONTENT);
     } else {
@@ -2805,12 +2809,13 @@ public class TransportModuleBean implements BeeModule {
     BeeRowSet rowSet = qs.getViewData(VIEW_TEXT_CONSTANTS,
         Filter.equals(COL_TEXT_CONSTANT, constant));
 
-    String localizedContent = Localized.column(COL_TEXT_CONTENT,
-        EnumUtils.getEnumByIndex(SupportedLocale.class, userLocale).getLanguage());
+    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class, userLocale);
+    String localizedContent = Localized.column(COL_TEXT_CONTENT, locale.getLanguage());
     String text;
 
     if (DataUtils.isEmpty(rowSet)) {
-      text = constant.getDefaultContent();
+      text = constant.getDefaultContent(Localizations.getDictionary(
+          SupportedLocale.parse(locale.getLanguage())));
     } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, rowSet.getColumns()))) {
       text = rowSet.getString(0, COL_TEXT_CONTENT);
     } else {

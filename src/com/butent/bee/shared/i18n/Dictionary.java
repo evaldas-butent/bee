@@ -5734,6 +5734,8 @@ public interface Dictionary {
 
   default String trContractMailContent() {return g("trContractMailContent");}
 
+  default String trContractMailContentText() {return g("trContractMailContentText");}
+
   default String trContractPrinting() {return g("trContractPrinting");}
 
   default String trCountryNorm() {return g("trCountryNorm");}
@@ -6066,6 +6068,8 @@ public interface Dictionary {
 
   default String trRegistrationMailContent() {return g("trRegistrationMailContent");}
 
+  default String trRegistrationMailContentText() {return g("trRegistrationMailContentText");}
+
   default String trRegistrationMobile() {return g("trRegistrationMobile");}
 
   default String trRegistrationNew() {return g("trRegistrationNew");}
@@ -6136,6 +6140,8 @@ public interface Dictionary {
 
   default String trRequestCargoWidth() {return g("trRequestCargoWidth");}
 
+  default String trRequestConfirmedMailContentText() {return g("trRequestConfirmedMailContentText");}
+
   default String trRequestCommonTerms() {return g("trRequestCommonTerms");}
 
   default String trRequestConfirmedMailContent() {return g("trRequestConfirmedMailContent");}
@@ -6184,6 +6190,8 @@ public interface Dictionary {
 
   default String trRequestFreightInsurancePlaceholder() {return g("trRequestFreightInsurancePlaceholder");}
 
+  default String trRequestLostMailContentText() {return g("trRequestLostMailContentText");}
+
   default String trRequestLostMailContent() {return g("trRequestLostMailContent");}
 
   default String trRequestNew() {return g("trRequestNew");}
@@ -6221,6 +6229,8 @@ public interface Dictionary {
   default String trRequestStatusRejected() {return g("trRequestStatusRejected");}
 
   default String trRequestSubmittedContent() {return g("trRequestSubmittedContent");}
+
+  default String trRequestSubmittedContentText() {return g("trRequestSubmittedContentText");}
 
   default String trRequestTemplate() {return g("trRequestTemplate");}
 

@@ -426,7 +426,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                           getIntegerValue(COL_USER_LOCALE)).getLanguage());
 
                   if (DataUtils.isEmpty(result)) {
-                    text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
+                    text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent(
+                        Localized.dictionary());
                   } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
                       result.getColumns()))) {
                     text = result.getString(0, COL_TEXT_CONTENT);
