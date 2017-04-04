@@ -3,6 +3,7 @@
 
       name="BudgetHeaders" source="BudgetHeaders"
       caption="=finBudgetHeaders" newRowCaption="=finBudgetNew"
+      editForm="SimpleBudget" newRowForm="SimpleBudget"
 >
   <Columns>
     <SimpleColumn name="Ordinal" />
