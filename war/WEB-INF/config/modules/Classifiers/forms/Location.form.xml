@@ -72,6 +72,11 @@
         <SummaryProxy name="Earnings" summarize="true" />
       </page>
 
+      <page module="Documents">
+        <text>=documents</text>
+        <ChildGrid name="AllDocuments" relColumn="Location" summarize="true" />
+      </page>
+
       <page>
         <text>=notes</text>
         <SimplePanel>
