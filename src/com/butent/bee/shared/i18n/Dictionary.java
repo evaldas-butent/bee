@@ -4174,6 +4174,8 @@ public interface Dictionary {
 
   default String payroll() {return g("payroll");}
 
+  default String payrollAbsence() {return g("payrollAbsence");}
+
   default String payrollEarnings() {return g("payrollEarnings");}
 
   default String payrollEarningsForHolidays() {return g("payrollEarningsForHolidays");}
@@ -4181,6 +4183,10 @@ public interface Dictionary {
   default String payrollEarningsTotal() {return g("payrollEarningsTotal");}
 
   default String payrollEarningsWithoutHolidays() {return g("payrollEarningsWithoutHolidays");}
+
+  default String payrollFullTime() {return g("payrollFullTime");}
+
+  default String payrollPartTime() {return g("payrollPartTime");}
 
   default String percent() {return g("percent");}
 

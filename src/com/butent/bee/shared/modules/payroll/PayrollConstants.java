@@ -21,6 +21,45 @@ public final class PayrollConstants {
     }
   }
 
+  /**
+   * Duration types of time card. Time card duration type sets time counting conditions in payroll
+   * accounting. There are some time duration types for accounting can be used depend of
+   * work accounting rules. The usually using types are full-time work, part-time work or
+   * absences from work.
+   */
+  public enum TcDurationType implements HasLocalizedCaption {
+
+    /**
+     * Duration type of Time card to account payroll with full-time (all day) work.
+     */
+    FULL_TIME {
+      @Override
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.payrollFullTime();
+      }
+    },
+    /**
+     * Duration type of Time card to account payroll with specific work time or other part-time
+     * value.
+     */
+    PART_TIME {
+      @Override
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.payrollPartTime();
+      }
+    },
+
+    /**
+     * Duration type of Time card to account payroll with absence from work.
+     */
+    ABSENCE {
+      @Override
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.payrollAbsence();
+      }
+    }
+  }
+
   public enum WorkScheduleKind implements HasLocalizedCaption {
     PLANNED {
       @Override
@@ -216,6 +255,7 @@ public final class PayrollConstants {
   public static void register() {
     EnumUtils.register(ObjectStatus.class);
     EnumUtils.register(WorkScheduleKind.class);
+    EnumUtils.register(TcDurationType.class);
   }
 
   private PayrollConstants() {
