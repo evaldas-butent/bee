@@ -12,5 +12,6 @@
     <String name="IBANcode" precision="30" label="=ibanCode" />
     <Boolean name="Correspondent" label="=correspondent" />
     <Text name="Notes" label="=notes" />
+    <Boolean name="Print" label="=print" />
   </Fields>
 </Table>

@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
@@ -84,6 +85,15 @@ public final class ClassifierUtils {
             break;
           }
         }
+        boolean hasPrintBankAccounts = false;
+        for (BeeRowSet rowSet : result) {
+          if (Objects.equals(rowSet.getViewName(), VIEW_COMPANY_BANK_ACCOUNTS)) {
+            Set<String> distinctPrintValues =
+                rowSet.getDistinctStrings(rowSet.getColumnIndex("Print"));
+            hasPrintBankAccounts = distinctPrintValues.contains(BooleanValue.S_TRUE);
+            break;
+          }
+        }
         for (BeeRowSet rowSet : result) {
           switch (rowSet.getViewName()) {
             case VIEW_COMPANIES:
@@ -109,7 +119,9 @@ public final class ClassifierUtils {
                   childInfo.put(key, new BeeRowSet(rowSet.getViewName(), rowSet.getColumns()));
                 }
                 if (Objects.equals(rowSet.getViewName(), VIEW_COMPANY_BANK_ACCOUNTS)
-                    && !payAccounts.isEmpty() && !payAccounts.contains(row.getId())) {
+                    && ((!payAccounts.isEmpty() && !payAccounts.contains(row.getId()))
+                    || (payAccounts.isEmpty() && hasPrintBankAccounts && !BeeUtils.unbox(
+                        row.getBoolean(rowSet.getColumnIndex("Print")))))) {
                   continue;
                 }
                 childInfo.get(key).addRow(DataUtils.cloneRow(row));

@@ -17,6 +17,7 @@
     <RelColumn name="Currency" />
     <DataColumn name="IBANCode" />
     <DataColumn name="Notes" />
+    <DataColumn name="Print" />
   </g:columns>
   <g:rowStyle>
     <ui:inline>="font-weight: bolder"</ui:inline>

@@ -29,5 +29,6 @@
     <SimpleColumn name="IBANcode" />
     <SimpleColumn name="Correspondent" />
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Print" />
   </Columns>
 </View>
