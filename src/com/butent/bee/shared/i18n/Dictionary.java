@@ -6801,6 +6801,10 @@ public interface Dictionary {
 
   default String trdSeriesManagers() {return g("trdSeriesManagers");}
 
+  default String trdSeriesNumberLength() {return g("trdSeriesNumberLength");}
+
+  default String trdSeriesNumberPrefix() {return g("trdSeriesNumberPrefix");}
+
   default String trdStatusActive() {return g("trdStatusActive");}
 
   default String trdStatuses() {return g("trdStatuses");}
