@@ -18,6 +18,8 @@
     <SimpleColumn name="State"/>
     <SimpleJoin joinType="INNER" name="State">
       <SimpleColumn name="Name" alias="StateName" />
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
     </SimpleJoin>
 
     <SimpleColumn name="Company" alias="Company"/>
