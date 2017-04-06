@@ -7,6 +7,7 @@ import com.google.gwt.event.shared.HasHandlers;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.client.communication.RpcCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
@@ -18,10 +19,13 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -29,6 +33,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.PredefinedFormat;
@@ -36,12 +42,48 @@ import com.butent.bee.shared.time.Grego;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 class WorkScheduleEditor extends AbstractFormInterceptor {
+  private class TimeCardCodeSelectorFilter {
+    private FormView form;
+    private DataSelector tcCodeSelector;
+    private InputTimeOfDay dInput;
+
+    TimeCardCodeSelectorFilter(FormView form, DataSelector timeCardCodeSelector,
+                               InputTimeOfDay durationInput) {
+      this.form = form;
+      this.tcCodeSelector = timeCardCodeSelector;
+      this.dInput = durationInput;
+    }
+
+    Filter getFilter() {
+      CompoundFilter filter = CompoundFilter.and();
+
+      if (form != null) {
+        WorkScheduleKind kind = getWorkScheduleKind(form);
+        switch (kind) {
+          case PLANNED:
+            break;
+          case ACTUAL:
+             filter.add(Filter.notNull(COL_TC_WS_ACTUAL));
+             break;
+        }
+      }
+
+      if (dInput != null && tcCodeSelector != null) {
+        if (BeeUtils.isEmpty(tcCodeSelector.getValue()) && !BeeUtils.isEmpty(dInput
+          .getValue())) {
+          filter.add(Filter.equals(COL_TC_DURATION_TYPE, TcDurationType.PART_TIME));
+        }
+      }
+      return filter;
+    }
+  }
 
   private final GridInterceptor gridInterceptor = new AbstractGridInterceptor() {
     @Override
@@ -93,6 +135,10 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
   private final Runnable dayRefresher;
 
+  private TimeCardCodeSelectorFilter timeCardCodeSelectorFilter;
+  private DataSelector timeCardCodeSelector;
+  private InputTimeOfDay durationInput;
+
   private String calendarId;
 
   WorkScheduleEditor(JustDate date, Set<Integer> holidays, Runnable dayRefresher) {
@@ -108,6 +154,26 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
   }
 
   @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+    switch (editableWidget.getColumnId()) {
+      case COL_TIME_CARD_CODE:
+        if (widget instanceof DataSelector) {
+          timeCardCodeSelector = (DataSelector) widget;
+          timeCardCodeSelector.addEditStopHandler(event -> onTimeCardSelectorEdit());
+        }
+        break;
+      case COL_WORK_SCHEDULE_DURATION:
+        if (widget instanceof  InputTimeOfDay) {
+          durationInput = (InputTimeOfDay) widget;
+          durationInput.addValueChangeHandler(event -> onDurationInputValueChange());
+          durationInput.addEditStopHandler(event -> onDurationInputValueChange());
+        }
+        break;
+    }
+    super.afterCreateEditableWidget(editableWidget, widget);
+  }
+
+  @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
@@ -117,6 +183,12 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     } else if (widget instanceof GridPanel && dayRefresher != null) {
       ((GridPanel) widget).setGridInterceptor(gridInterceptor);
     }
+  }
+
+  @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    initTimeCardCodeSelectorFilter(form);
+    super.afterRefresh(form, row);
   }
 
   @Override
@@ -133,11 +205,22 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     boolean to = event.containsColumn(COL_WORK_SCHEDULE_UNTIL);
 
     boolean du = event.containsColumn(COL_WORK_SCHEDULE_DURATION);
+    WorkScheduleKind kind = getWorkScheduleKind(getFormView());
 
-    boolean ok = tr && !tc && !fr && !to && !du
-        || !tr && tc && !fr && !to && !du
-        || !tr && !tc && fr && (to || du)
-        || !tr && !tc && !fr && !to && du;
+    boolean ok;
+    switch (kind) {
+      case PLANNED:
+        ok = tr && !tc && !fr && !to && !du
+          || !tr && tc && !fr && !to && !du
+          || !tr && !tc && fr && (to || du)
+          || !tr && !tc && !fr && !to && du;
+        break;
+      case ACTUAL:
+        ok = !tr && (tc || du) && !fr && !to;
+        break;
+      default:
+          ok = false;
+    }
 
     if (!ok) {
       event.consume();
@@ -182,6 +265,14 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     }
   }
 
+  private static WorkScheduleKind getWorkScheduleKind(FormView form) {
+    if (form == null) {
+      return null;
+    }
+    return EnumUtils.getEnumByIndex(WorkScheduleKind.class,
+      form.getIntegerValue(COL_WORK_SCHEDULE_KIND));
+  }
+
   private String getCalendarId() {
     return calendarId;
   }
@@ -212,6 +303,39 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     }
 
     return dates;
+  }
+
+  private void onDurationInputValueChange() {
+    if (timeCardCodeSelector != null && timeCardCodeSelectorFilter != null) {
+      timeCardCodeSelector.setAdditionalFilter(timeCardCodeSelectorFilter.getFilter());
+    }
+  }
+
+  private void onTimeCardSelectorEdit() {
+    FormView formView = getFormView();
+    if (durationInput != null && timeCardCodeSelector.getRelatedRow() != null && formView != null) {
+      IsRow selected = timeCardCodeSelector.getRelatedRow();
+      IsRow row = formView.getActiveRow();
+      TcDurationType type = selected.getEnum(
+        timeCardCodeSelector.getOracle().getDataInfo().getColumnIndex(COL_TC_DURATION_TYPE),
+        TcDurationType.class);
+
+      if (type != TcDurationType.PART_TIME) {
+        row.setValue(formView.getDataIndex(COL_WORK_SCHEDULE_DURATION), (String) null);
+        formView.refreshBySource(COL_WORK_SCHEDULE_DURATION);
+      }
+    }
+  }
+
+  private void initTimeCardCodeSelectorFilter(FormView form) {
+    if (timeCardCodeSelectorFilter == null) {
+      timeCardCodeSelectorFilter = new TimeCardCodeSelectorFilter(form, timeCardCodeSelector,
+        durationInput);
+    }
+
+    if (timeCardCodeSelector != null) {
+      timeCardCodeSelector.setAdditionalFilter(timeCardCodeSelectorFilter.getFilter());
+    }
   }
 
   private void renderCalendar(Flow panel) {

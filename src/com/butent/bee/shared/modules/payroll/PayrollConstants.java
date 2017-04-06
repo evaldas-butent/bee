@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.payroll;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -57,6 +58,11 @@ public final class PayrollConstants {
       public String getCaption(Dictionary dictionary) {
         return dictionary.payrollAbsence();
       }
+    };
+
+//    TODO: Re-factory this item. Required detailed technical spec.
+    public static String getDefaultTimeOfDay() {
+      return String.valueOf(BeeConst.CHAR_EIGHT);
     }
   }
 
@@ -100,6 +106,11 @@ public final class PayrollConstants {
       }
 
       @Override
+      public String getEditFormName() {
+        return FORM_ACTUAL_WORK_SCHEDULE_EDITOR;
+      }
+
+      @Override
       public String getClearDataQuestion(Dictionary dictionary) {
         return dictionary.clearTimeSheetQuestion();
       }
@@ -126,6 +137,14 @@ public final class PayrollConstants {
     };
 
     public abstract String getClearDataQuestion(Dictionary dictionary);
+
+    /**
+     * Returns default edit form name for Work schedule editor.
+     * @return name edit form of Work schedule editor.
+     */
+    public String getEditFormName() {
+      return FORM_WORK_SCHEDULE_EDITOR;
+    }
 
     public abstract String getStorageKeyPrefix();
 
@@ -208,6 +227,8 @@ public final class PayrollConstants {
   public static final String COL_TC_WS_ACTUAL = "WsActual";
   public static final String COL_TC_DESCRIPTION = "Description";
 
+  public static final String COL_TC_DURATION_TYPE = "TcDurationType";
+
   public static final String COL_TR_CODE = "TrCode";
   public static final String COL_TR_NAME = "TrName";
   public static final String COL_TR_FROM = "TimeFrom";
@@ -250,6 +271,7 @@ public final class PayrollConstants {
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
   public static final String FORM_TIME_SHEET = "TimeSheet";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
+  public static final String FORM_ACTUAL_WORK_SCHEDULE_EDITOR = "ActualWorkScheduleEditor";
   public static final String FORM_NEW_SUBSTITUTION = "NewSubstitution";
 
   public static void register() {

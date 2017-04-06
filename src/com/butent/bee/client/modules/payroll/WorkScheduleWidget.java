@@ -1135,7 +1135,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     String caption = getPartitionCaption(partIds);
 
-    RowFactory.createRow(FORM_WORK_SCHEDULE_EDITOR, caption, dataInfo, row, Modality.ENABLED,
+    RowFactory.createRow(kind.getEditFormName(), caption, dataInfo, row, Modality.ENABLED,
         contentPanel, wsEditor, null, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
@@ -2577,7 +2577,9 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       BeeRow tcRow = timeCardCodes.getRowById(tcId);
 
       if (tcRow != null) {
+        Flow panel = new Flow(STYLE_SCHEDULE_RANGE);
         DndDiv widget = new DndDiv(STYLE_SCHEDULE_TC);
+        String duration = DataUtils.getString(wsData, item, COL_WORK_SCHEDULE_DURATION);
 
         String tcCode = DataUtils.getString(timeCardCodes, tcRow, COL_TC_CODE);
         if (!BeeUtils.isEmpty(tcCode)) {
@@ -2586,7 +2588,7 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         }
 
         String title = BeeUtils.buildLines(
-            buildTitle(timeCardCodes, tcRow, COL_TC_NAME, COL_TC_DESCRIPTION), note);
+            buildTitle(timeCardCodes, tcRow, COL_TC_NAME, COL_TC_DESCRIPTION), duration, note);
         if (!BeeUtils.isEmpty(title)) {
           widget.setTitle(title);
         }
@@ -2594,6 +2596,35 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         UiHelper.setColor(widget,
             DataUtils.getString(timeCardCodes, tcRow, AdministrationConstants.COL_BACKGROUND),
             DataUtils.getString(timeCardCodes, tcRow, AdministrationConstants.COL_FOREGROUND));
+
+        long millis = 0L;
+
+        switch (tcRow.getEnum(
+          timeCardCodes.getColumnIndex(COL_TC_DURATION_TYPE), TcDurationType.class)
+          ) {
+          case ABSENCE:
+            break;
+          case FULL_TIME:
+            millis =  PayrollUtils.getMillis(null, null,
+              TcDurationType.getDefaultTimeOfDay());
+            break;
+          case PART_TIME:
+           millis =  PayrollUtils.getMillis(null, null, duration);
+           break;
+        }
+
+        if (millis > 0) {
+          DomUtils.setDataProperty(widget.getElement(), KEY_MILLIS, millis);
+        }
+
+        if (!BeeUtils.isEmpty(duration)) {
+          CustomDiv dWidget = new CustomDiv(STYLE_SCHEDULE_DURATION);
+          dWidget.setText(formatDuration(duration));
+          panel.add(widget);
+          panel.add(dWidget);
+
+          return panel;
+        }
 
         return widget;
       }
