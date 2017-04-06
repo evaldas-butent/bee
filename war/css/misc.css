@@ -751,3 +751,20 @@
 .bee-reminder-dialog-not-visible {
   display: none;
 }
+
+.bee-Rights-object-selector {
+  width: 100%;
+}
+
+.bee-Rights-object-selector:hover {
+  cursor: pointer;
+  font-weight: bolder;
+}
+
+.bee-Rights-object-selector-cell{
+}
+
+.bee-GridMenu-addicted .bee-GridMenu-label {
+  width: 250px;
+  text-align: center;
+}
