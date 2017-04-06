@@ -253,7 +253,7 @@ public class TradeExpendituresGrid extends AbstractGridInterceptor {
 
           String series = row.getString(getDataIndex(COL_EXPENDITURE_SERIES));
           if (!BeeUtils.isEmpty(series)) {
-            tdColumns.add(COL_SERIES);
+            tdColumns.add(COL_TRADE_SERIES);
             tdValues.add(series.trim());
           }
 

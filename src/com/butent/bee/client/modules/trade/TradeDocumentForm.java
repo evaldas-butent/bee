@@ -117,7 +117,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
         }
       });
 
-    } else if (BeeUtils.same(name, COL_SERIES) && widget instanceof DataSelector) {
+    } else if (BeeUtils.same(name, COL_TRADE_SERIES) && widget instanceof DataSelector) {
       ((DataSelector) widget).addSelectorHandler(event -> {
         if (event.isOpened()) {
           event.getSelector().setAdditionalFilter(getSeriesFilter());
@@ -324,7 +324,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   @Override
   public void onStartNewRow(final FormView form, IsRow oldRow, IsRow newRow) {
     if (form != null && oldRow != null && newRow != null) {
-      final int index = getDataIndex(COL_SERIES);
+      final int index = getDataIndex(COL_TRADE_SERIES);
       final String series = BeeUtils.trim(oldRow.getString(index));
 
       Long userId = BeeKeeper.getUser().getUserId();
@@ -349,7 +349,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
                 form.getOldRow().setValue(index, series);
               }
 
-              form.refreshBySource(COL_SERIES);
+              form.refreshBySource(COL_TRADE_SERIES);
             }
           }
         });
@@ -417,7 +417,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       s1 = BeeUtils.joinItems(getStringValue(COL_TRADE_DOCUMENT_NUMBER_1),
           getStringValue(COL_TRADE_DOCUMENT_NUMBER_2));
     } else {
-      s1 = BeeUtils.joinWords(getStringValue(COL_SERIES), number);
+      s1 = BeeUtils.joinWords(getStringValue(COL_TRADE_SERIES), number);
     }
 
     return BeeUtils.joinItems(s1, getStringValue(COL_OPERATION_NAME));

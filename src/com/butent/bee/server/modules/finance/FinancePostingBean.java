@@ -112,7 +112,7 @@ public class FinancePostingBean {
       date = docData.getDateTime(rowIndex, COL_TRADE_DATE);
     }
 
-    String series = docData.getString(rowIndex, COL_SERIES);
+    String series = docData.getString(rowIndex, COL_TRADE_SERIES);
     String number = docData.getString(rowIndex, COL_TRADE_NUMBER);
     if (BeeUtils.isEmpty(number)) {
       number = docData.getString(rowIndex, COL_TRADE_DOCUMENT_NUMBER_1);

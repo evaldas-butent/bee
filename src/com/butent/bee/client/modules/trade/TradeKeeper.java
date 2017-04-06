@@ -226,7 +226,8 @@ public final class TradeKeeper implements HandlesAllDataEvents {
         DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_DOCUMENTS);
 
         event.setResult(DataUtils.join(dataInfo, event.getRow(),
-            StringList.of(dataInfo.getIdColumn(), COL_TRADE_DATE, COL_SERIES, COL_TRADE_NUMBER,
+            StringList.of(dataInfo.getIdColumn(), COL_TRADE_DATE,
+                COL_TRADE_SERIES, COL_TRADE_NUMBER,
                 COL_OPERATION_NAME, COL_TRADE_DOCUMENT_PHASE, COL_STATUS_NAME,
                 ALS_SUPPLIER_NAME, ALS_CUSTOMER_NAME,
                 ALS_WAREHOUSE_FROM_CODE, ALS_WAREHOUSE_TO_CODE),

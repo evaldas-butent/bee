@@ -107,15 +107,11 @@ public final class TradeConstants {
   public static final String COL_SALE_PAYER = "Payer";
 
   public static final String COL_TRADE_DATE = "Date";
+  public static final String COL_TRADE_SERIES = "Series";
   public static final String COL_TRADE_NUMBER = "Number";
   public static final String COL_TRADE_OPERATION = "Operation";
-  public static final String COL_TRADE_INVOICE_PREFIX = "InvoicePrefix";
-  public static final String COL_TRADE_SALE_SERIES = "SaleSeries";
-  public static final String COL_TRADE_INVOICE_NO = "InvoiceNo";
   public static final String COL_TRADE_AMOUNT = "Amount";
   public static final String COL_TRADE_CURRENCY = "Currency";
-  public static final String COL_TRADE_PAYMENT_TIME = "PaymentTime";
-  public static final String COL_TRADE_PAID = "Paid";
   public static final String COL_TRADE_WAREHOUSE_FROM = "WarehouseFrom";
   public static final String COL_TRADE_WAREHOUSE_TO = "WarehouseTo";
   public static final String COL_TRADE_SUPPLIER = "Supplier";
@@ -125,11 +121,16 @@ public final class TradeConstants {
   public static final String COL_TRADE_VEHICLE = "Vehicle";
   public static final String COL_TRADE_TERM = "Term";
   public static final String COL_TRADE_NOTES = "Notes";
+
+  public static final String COL_TRADE_INVOICE_PREFIX = "InvoicePrefix";
+  public static final String COL_TRADE_SALE_SERIES = "SaleSeries";
+  public static final String COL_TRADE_INVOICE_NO = "InvoiceNo";
+  public static final String COL_TRADE_PAYMENT_TIME = "PaymentTime";
+  public static final String COL_TRADE_PAID = "Paid";
   public static final String COL_TRADE_EXPORTED = "Exported";
   public static final String COL_TRADE_KIND = "Kind";
   public static final String COL_TRADE_DEBT = "Debt";
   public static final String COL_TRADE_DEBT_COUNT = "DebtCount";
-  public static final String COL_TRADE_CHECK_NO = "CheckNo";
   public static final String COL_TRADE_JOIN = "Join";
 
   public static final String COL_TRADE_BOL_SERIES = "BoLSeries";
