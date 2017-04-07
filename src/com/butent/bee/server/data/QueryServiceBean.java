@@ -419,6 +419,15 @@ public class QueryServiceBean {
     return getSingleValue(query).getDateTime(0, 0);
   }
 
+  public DateTime getDateTimeById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
+
+    return getDateTime(query);
+  }
+
   public DateTime[] getDateTimeColumn(IsQuery query) {
     return getSingleColumn(query).getDateTimeColumn(0);
   }

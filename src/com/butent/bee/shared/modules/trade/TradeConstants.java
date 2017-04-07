@@ -165,6 +165,9 @@ public final class TradeConstants {
 
   public static final String COL_SERIES = "Series";
   public static final String COL_SERIES_NAME = "SeriesName";
+  public static final String COL_SERIES_NUMBER_PREFIX = "NumberPrefix";
+  public static final String COL_SERIES_NUMBER_LENGTH = "NumberLength";
+
   public static final String COL_SERIES_MANAGER = "Manager";
   public static final String COL_SERIES_DEFAULT = "IsDefault";
 
@@ -330,6 +333,7 @@ public final class TradeConstants {
   public static final String FILTER_USER_TRADE_SERIES = "user_trade_series";
 
   public static final int MAX_STOCK_DEPTH = 1_000;
+  public static final int DEFAULT_SERIES_NUMBER_LENGTH = 6;
 
   public static String keyStockWarehouse(String warehouseCode) {
     return PROP_STOCK + BeeUtils.trim(warehouseCode);

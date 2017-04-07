@@ -585,6 +585,18 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
 
                     BeeRow r = BeeRow.restore(response.getResponseAsString());
 
+                    int numberIndex = getDataIndex(COL_TRADE_NUMBER);
+                    String newNumber = r.getString(numberIndex);
+
+                    IsRow oldRow = getFormView().getOldRow();
+
+                    if (!BeeUtils.isEmpty(newNumber) && oldRow != null
+                        && !Objects.equals(newNumber, oldRow.getString(numberIndex))) {
+
+                      oldRow.setValue(numberIndex, newNumber);
+                      getActiveRow().setValue(numberIndex, newNumber);
+                    }
+
                     RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), r, true);
                     DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_STOCK);
 

@@ -7,7 +7,7 @@
   <Fields>
     <String name="SeriesName" precision="10" notNull="true" unique="true" label="=trdSeries" />
 
-    <String name="NumberPrefix" precision="10" label="=trdSeriesNumberPrefix" />
+    <String name="NumberPrefix" precision="20" label="=trdSeriesNumberPrefix" />
     <Integer name="NumberLength" label="=trdSeriesNumberLength" />
 
     <Text name="Notes" label="=notes" />

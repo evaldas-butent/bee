@@ -20,6 +20,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.InsertOrUpdate;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
@@ -71,6 +72,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.NumberValue;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -1092,6 +1094,49 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                   }
                 }
               });
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void fillDocumentNumber(ViewModifyEvent event) {
+        if (event instanceof InsertOrUpdate && event.isBefore(VIEW_TRADE_DOCUMENTS)) {
+          List<BeeColumn> columns = ((InsertOrUpdate) event).getColumns();
+          IsRow row = ((InsertOrUpdate) event).getRow();
+
+          int seriesIndex = DataUtils.getColumnIndex(COL_TRADE_SERIES, columns);
+          int numberIndex = DataUtils.getColumnIndex(COL_TRADE_NUMBER, columns);
+
+          String series = DataUtils.getStringQuietly(row, seriesIndex);
+          String number = DataUtils.getStringQuietly(row, numberIndex);
+
+          if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(number)) {
+            SqlSelect query = new SqlSelect()
+                .addFields(TBL_TRADE_SERIES,
+                    COL_SERIES_NUMBER_PREFIX, COL_SERIES_NUMBER_LENGTH)
+                .addFrom(TBL_TRADE_SERIES)
+                .setWhere(SqlUtils.equals(TBL_TRADE_SERIES, COL_SERIES_NAME, series));
+
+            SimpleRowSet seriesData = qs.getData(query);
+
+            if (!DataUtils.isEmpty(seriesData)) {
+              int dateIndex = DataUtils.getColumnIndex(COL_TRADE_DATE, columns);
+              DateTime date = DataUtils.getDateTimeQuietly(row, dateIndex);
+
+              number = getNextDocumentNumber(row.getId(), date, series,
+                  seriesData.getValue(0, COL_SERIES_NUMBER_PREFIX),
+                  seriesData.getInt(0, COL_SERIES_NUMBER_LENGTH));
+
+              if (!BeeUtils.isEmpty(number)) {
+                if (row.isIndex(numberIndex)) {
+                  row.setValue(numberIndex, number);
+                } else {
+                  BeeColumn col = sys.getView(VIEW_TRADE_DOCUMENTS).getBeeColumn(COL_TRADE_NUMBER);
+                  ((InsertOrUpdate) event).addValue(col, new TextValue(number));
+                }
+              }
             }
           }
         }
@@ -3807,6 +3852,104 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
       if (lastItem != null && BeeUtils.nonZero(totalQuantity)) {
         result.put(lastItem, totalAmount / totalQuantity);
+      }
+    }
+
+    return result;
+  }
+
+  private String getNextDocumentNumber(long id, DateTime date, String series, String prefix,
+      Integer length) {
+
+    String tbl = TBL_TRADE_DOCUMENTS;
+
+    String pfx = parseNumberPrefix(id, date, prefix);
+    int len = BeeUtils.positive(length, DEFAULT_SERIES_NUMBER_LENGTH);
+
+    HasConditions where = SqlUtils.and();
+    where.add(SqlUtils.equals(tbl, COL_TRADE_SERIES, series));
+
+    if (DataUtils.isId(id)) {
+      where.add(SqlUtils.notEqual(tbl, sys.getIdName(tbl), id));
+    }
+
+    if (!BeeUtils.isEmpty(pfx)) {
+      where.add(SqlUtils.startsWith(tbl, COL_TRADE_NUMBER, pfx));
+    }
+
+    IsExpression lengthExpression = SqlUtils.length(tbl, COL_TRADE_NUMBER);
+
+    SqlSelect maxLengthQuery = new SqlSelect()
+        .addMax(lengthExpression, SqlUtils.temporaryName("len"))
+        .addFrom(tbl)
+        .setWhere(where);
+
+    int maxLength = BeeUtils.unbox(qs.getInt(maxLengthQuery));
+    int pfxLength = BeeUtils.length(pfx);
+
+    int max = 0;
+
+    if (maxLength > pfxLength) {
+      for (int i = pfxLength + 1; i <= maxLength; i++) {
+        IsExpression charExpression = SqlUtils.substring(tbl, COL_TRADE_NUMBER, i, 1);
+
+        where.add(SqlUtils.moreEqual(charExpression, BeeConst.STRING_ZERO));
+        where.add(SqlUtils.lessEqual(charExpression, BeeUtils.toString(BeeConst.CHAR_NINE)));
+
+        SqlSelect maxQuery = new SqlSelect()
+            .addMax(tbl, COL_TRADE_NUMBER)
+            .addFrom(tbl)
+            .setWhere(SqlUtils.and(where, SqlUtils.equals(lengthExpression, i)));
+
+        String maxNumber = qs.getValue(maxQuery);
+
+        if (BeeUtils.length(maxNumber) == i) {
+          max = Math.max(max, BeeUtils.toInt(BeeUtils.right(maxNumber, i - pfxLength)));
+        }
+      }
+    }
+
+    return BeeUtils.trim(pfx)
+        + BeeUtils.padLeft(BeeUtils.toString(max + 1), len, BeeConst.CHAR_ZERO);
+  }
+
+  private String parseNumberPrefix(long id, DateTime date, String prefix) {
+    if (BeeUtils.isEmpty(prefix)) {
+      return null;
+    }
+
+    String result = prefix.trim();
+
+    if (prefix.contains(BeeConst.STRING_LEFT_BRACE)
+        && prefix.contains(BeeConst.STRING_RIGHT_BRACE)) {
+
+      DateTime dt;
+
+      if (date == null && DataUtils.isId(id)) {
+        dt = qs.getDateTimeById(TBL_TRADE_DOCUMENTS, id, COL_TRADE_DATE);
+      } else {
+        dt = DateTime.copyOf(date);
+      }
+
+      if (dt != null) {
+        String y = TimeUtils.yearToString(dt.getYear());
+        String y2 = BeeUtils.right(y, 2);
+        String m = TimeUtils.monthToString(dt.getMonth());
+        String d = TimeUtils.dayOfMonthToString(dt.getDom());
+
+        for (String s : new String[] {"y", "y4", "yyyy"}) {
+          result = BeeUtils.replaceSame(result, BeeUtils.embrace(s), y);
+        }
+        for (String s : new String[] {"yy", "y2"}) {
+          result = BeeUtils.replaceSame(result, BeeUtils.embrace(s), y2);
+        }
+
+        for (String s : new String[] {"m", "mm", "m2"}) {
+          result = BeeUtils.replaceSame(result, BeeUtils.embrace(s), m);
+        }
+        for (String s : new String[] {"d", "dd", "d2"}) {
+          result = BeeUtils.replaceSame(result, BeeUtils.embrace(s), d);
+        }
       }
     }
 
