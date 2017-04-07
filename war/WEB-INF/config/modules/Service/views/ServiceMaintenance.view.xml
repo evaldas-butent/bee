@@ -5,6 +5,7 @@
   caption="=svcMaintenance" newRowCaption="=svcNewMaintenance"
   editForm="ServiceMaintenance" newRowForm="ServiceMaintenance"
   >
+  <Relation renderColumns="MaintenanceNumber" choiceColumns="MaintenanceNumber TypeName StateName" />
   <Columns>
     <SimpleColumn name="Type"/>
     <SimpleJoin joinType="INNER" name="Type">

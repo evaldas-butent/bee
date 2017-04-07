@@ -1364,7 +1364,7 @@ public class ServiceModuleBean implements BeeModule {
           .addFields(TBL_PERSONS, COL_FIRST_NAME)
           .addFields(TBL_SERVICE_OBJECTS, COL_MODEL)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_MANUFACTURER_NAME)
-          .addFields(TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT)
+          .addFields(TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT, COL_MAINTENANCE_NUMBER)
           .addFrom(TBL_MAINTENANCE_COMMENTS)
           .addFromInner(TBL_SERVICE_MAINTENANCE, sys.joinTables(TBL_SERVICE_MAINTENANCE,
               TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE))
@@ -1498,11 +1498,11 @@ public class ServiceModuleBean implements BeeModule {
       return ResponseObject.error("No recipient email specified");
     }
 
-    String maintenanceId = commentInfoRow.getValue(COL_SERVICE_MAINTENANCE);
+    String maintenanceNumber = commentInfoRow.getValue(COL_MAINTENANCE_NUMBER);
     String deviceDescription = BeeUtils.joinWords(commentInfoRow.getValue(ALS_MANUFACTURER_NAME),
         commentInfoRow.getValue(COL_MODEL));
 
-    String emailHeader = BeeUtils.joinWords(dic.svcRepair(), maintenanceId, deviceDescription);
+    String emailHeader = BeeUtils.joinWords(dic.svcRepair(), maintenanceNumber, deviceDescription);
 
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8());
@@ -1511,7 +1511,7 @@ public class ServiceModuleBean implements BeeModule {
     doc.getBody().append(panel);
     Tbody fields = tbody().append(
         tr().append(
-            td().text(dic.svcRepair()), td().text(maintenanceId)));
+            td().text(dic.svcRepair()), td().text(maintenanceNumber)));
 
     if (!BeeUtils.isEmpty(deviceDescription)) {
       fields.append(tr().append(
@@ -1546,7 +1546,7 @@ public class ServiceModuleBean implements BeeModule {
     String externalServiceUrl = BeeConst.STRING_EMPTY;
 
     if (!BeeUtils.isEmpty(externalLink)) {
-      externalServiceUrl = BeeUtils.join(BeeConst.STRING_EMPTY, externalLink, maintenanceId);
+      externalServiceUrl = BeeUtils.join(BeeConst.STRING_EMPTY, externalLink, maintenanceNumber);
     }
 
     doc.getBody().append(div().text("<br />"));
@@ -1566,7 +1566,7 @@ public class ServiceModuleBean implements BeeModule {
     doc.getBody().append(div().text("<br />"));
     doc.getBody().append(div().text(signature));
 
-    String subject = BeeUtils.joinWords(dic.svcRepair(), maintenanceId);
+    String subject = BeeUtils.joinWords(dic.svcRepair(), maintenanceNumber);
 
     return mail.sendStyledMail(accountId, recipientEmail, subject, doc.buildLines(), emailHeader);
   }
@@ -1577,17 +1577,17 @@ public class ServiceModuleBean implements BeeModule {
     String phone = commentInfoRow.getValue(COL_PHONE);
     phone = phone.replaceAll("\\D+", "");
 
-    Long maintenanceId = commentInfoRow.getLong(COL_SERVICE_MAINTENANCE);
+    String maintenanceNumber = commentInfoRow.getValue(COL_MAINTENANCE_NUMBER);
     String externalLink = prm.getText(PRM_EXTERNAL_MAINTENANCE_URL);
     String externalServiceUrl = BeeConst.STRING_EMPTY;
 
     if (!BeeUtils.isEmpty(externalLink)) {
-      externalServiceUrl = BeeUtils.join(BeeConst.STRING_EMPTY, externalLink, maintenanceId);
+      externalServiceUrl = BeeUtils.join(BeeConst.STRING_EMPTY, externalLink, maintenanceNumber);
     }
 
     DateTime termValue = commentInfoRow.getDateTime(COL_TERM);
     String message = BeeUtils.joinWords(dic.svcRepair(),
-        maintenanceId + BeeConst.STRING_COLON,
+        BeeUtils.notEmpty(maintenanceNumber, BeeConst.STRING_EMPTY)  + BeeConst.STRING_COLON,
         BeeUtils.notEmpty(commentInfoRow.getValue(COL_COMMENT), ""),
         termValue != null ? BeeUtils.joinWords(dic.svcTerm() + BeeConst.STRING_COLON,
             Formatter.renderDateTime(dtfInfo, termValue)) : "", externalServiceUrl);

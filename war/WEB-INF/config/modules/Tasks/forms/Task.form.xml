@@ -216,7 +216,7 @@
             <Relation viewName="OrderCargo"
                       renderColumns="Description" newRowEnabled="false" editPopup="true" />
             <Relation viewName="ServiceMaintenance"
-                      renderColumns="ID" choiceColumns="ID TypeName StateName"
+                      renderColumns="MaintenanceNumber" choiceColumns="MaintenanceNumber TypeName StateName"
                       newRowEnabled="false" editPopup="true" />
           </Relations>
         </page>

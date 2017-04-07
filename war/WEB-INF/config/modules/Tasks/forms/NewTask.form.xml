@@ -184,7 +184,7 @@
       <Relation viewName="OrderCargo" property="RelOrderCargo"
                 renderColumns="Description" newRowEnabled="false" editPopup="true" />
       <Relation viewName="ServiceMaintenance" property="RelServiceMaintenance"
-                renderColumns="ID" choiceColumns="ID TypeName StateName"
+                renderColumns="MaintenanceNumber" choiceColumns="MaintenanceNumber TypeName StateName"
                 newRowEnabled="false" editPopup="true" />
     </Relations>
   </FlowPanel>
