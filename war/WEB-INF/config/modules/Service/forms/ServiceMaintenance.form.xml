@@ -92,7 +92,7 @@
             <FlowPanel class="&mrcl;" style="&mrst;" for="State">
               <FlowPanel style="&mfld; width: 21em;" >
                 <Label for="State" text="=status" class="bee-required" style="&flbl;"/>
-                <DataSelector name="State" source="State" required="true" choiceColumns="Name" style="&finp;"
+                <DataSelector name="State" source="State" required="true" choiceColumns="Name" renderColumns="StateName" style="&finp;"
                               caching="local" newRowEnabled="false"/>
               </FlowPanel>
             </FlowPanel>
