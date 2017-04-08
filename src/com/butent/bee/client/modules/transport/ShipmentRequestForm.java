@@ -71,7 +71,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -1143,7 +1142,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
               new RowInsertCallback(info.getViewName()) {
                 @Override
                 public void onSuccess(BeeRow result) {
-                  Data.onTableChange(info.getTableName(), DataChangeEvent.RESET_REFRESH);
+                  Data.refreshLocal(info.getTableName());
                   super.onSuccess(result);
                 }
               });

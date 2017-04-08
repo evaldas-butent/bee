@@ -69,10 +69,9 @@ public class TransportReportsBean {
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP)
         .addFrom(source)
-        .addFromInner(TBL_CARGO_TRIPS,
-            SqlUtils.and(sys.joinTables(TBL_CARGO_TRIPS, source, COL_CARGO_TRIP),
-                SqlUtils.in(TBL_CARGO_TRIPS, COL_TRIP, trips),
-                SqlUtils.in(TBL_CARGO_TRIPS, COL_CARGO, cargos)))
+        .addFromInner(TBL_CARGO_TRIPS, sys.joinTables(TBL_CARGO_TRIPS, source, COL_CARGO_TRIP))
+        .addFromInner(trips, "tmp_t", SqlUtils.joinUsing(TBL_CARGO_TRIPS, "tmp_t", COL_TRIP))
+        .addFromInner(cargos, "tmp_c", SqlUtils.joinUsing(TBL_CARGO_TRIPS, "tmp_c", COL_CARGO))
         .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, source, COL_CARGO))
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromInner(TBL_SERVICES, sys.joinTables(TBL_SERVICES, source, COL_SERVICE))

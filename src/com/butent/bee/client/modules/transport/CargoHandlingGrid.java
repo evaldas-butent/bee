@@ -12,10 +12,8 @@ import com.butent.bee.client.view.grid.interceptor.ParentRowRefreshGrid;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -43,7 +41,7 @@ public class CargoHandlingGrid extends ParentRowRefreshGrid {
             break;
         }
         if (!BeeUtils.isEmpty(table)) {
-          Data.onTableChange(table, EnumSet.of(DataChangeEvent.Effect.REFRESH));
+          Data.refreshLocal(table);
         }
       }
       return true;

@@ -303,7 +303,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
                     @Override
                     public void onSuccess(Integer cnt) {
                       if (BeeUtils.isPositive(cnt)) {
-                        Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
+                        Data.refreshLocal(TBL_CAR_ORDER_ITEMS);
                       }
                     }
                   });
@@ -342,7 +342,7 @@ public class CarOrderForm extends SpecificationForm implements HasStages {
             @Override
             public void onSuccess(Integer cnt) {
               if (BeeUtils.isPositive(cnt)) {
-                Data.onViewChange(TBL_CAR_ORDER_ITEMS, DataChangeEvent.RESET_REFRESH);
+                Data.refreshLocal(TBL_CAR_ORDER_ITEMS);
               }
             }
           });

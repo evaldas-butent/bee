@@ -102,7 +102,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -469,8 +468,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             @Override
             public boolean previewModify(Set<Long> rowIds) {
               if (super.previewModify(rowIds)) {
-                Data.onTableChange(TBL_ASSESSMENT_FORWARDERS,
-                    EnumSet.of(DataChangeEvent.Effect.REFRESH));
+                Data.refreshLocal(TBL_ASSESSMENT_FORWARDERS);
                 return true;
               }
               return false;
