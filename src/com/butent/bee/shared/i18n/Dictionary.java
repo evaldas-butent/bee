@@ -6677,6 +6677,8 @@ public interface Dictionary {
 
   default String trdInvoices() {return g("trdInvoices");}
 
+  default String trdItemStock() {return g("trdItemStock");}
+
   default String trdItemVehicle() {return g("trdItemVehicle");}
 
   default String trdItemVehicleShort() {return g("trdItemVehicleShort");}

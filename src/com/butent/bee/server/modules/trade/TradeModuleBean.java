@@ -277,6 +277,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
           reqInfo.getParameterBoolean(VAR_RESERVATIONS));
       response = stock.isEmpty() ? ResponseObject.emptyResponse() : ResponseObject.response(stock);
 
+    } else if (BeeUtils.same(svc, SVC_GET_ITEM_STOCK_BY_WAREHOUSE)) {
+      response = getItemStockByWarehouse(reqInfo);
+
     } else if (BeeUtils.same(svc, SVC_GET_RESERVATIONS_INFO)) {
       response = ResponseObject
           .response(getReservationsInfo(reqInfo.getParameterLong(COL_STOCK_WAREHOUSE),
@@ -3954,5 +3957,60 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     }
 
     return result;
+  }
+
+  private ResponseObject getItemStockByWarehouse(RequestInfo reqInfo) {
+    Long item = reqInfo.getParameterLong(COL_ITEM);
+    if (!DataUtils.isId(item)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), COL_ITEM);
+    }
+
+    List<Triplet<String, Double, Double>> result = new ArrayList<>();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE)
+        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addSum(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)
+        .addFrom(TBL_TRADE_STOCK)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+            TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM))
+        .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES,
+            TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_ITEM, item),
+            SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY)))
+        .addGroup(TBL_TRADE_STOCK, COL_STOCK_WAREHOUSE)
+        .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addOrder(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      Collection<Long> items = Collections.singleton(item);
+
+      for (SimpleRow row : data) {
+        Double stock = row.getDouble(COL_STOCK_QUANTITY);
+
+        if (BeeUtils.nonZero(stock)) {
+          Multimap<Long, ItemQuantities> reservations =
+              getReservations(row.getLong(COL_STOCK_WAREHOUSE), items);
+
+          Double reserved;
+          if (reservations.containsKey(item)) {
+            reserved = reservations.get(item).stream()
+                .mapToDouble(ItemQuantities::getReserved).sum();
+          } else {
+            reserved = null;
+          }
+
+          result.add(Triplet.of(row.getValue(COL_WAREHOUSE_CODE), stock, reserved));
+        }
+      }
+    }
+
+    if (result.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.responseWithSize(result);
+    }
   }
 }

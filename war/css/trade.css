@@ -413,3 +413,28 @@
 .bee-trade-item-picker-pager .bee-SimplePager-info {
   font-style: italic;
 }
+
+.bee-trade-item-stock-table {
+  border-collapse: collapse;
+}
+.bee-trade-item-stock-table td {
+  padding: 2px 5px;
+  border: 1px solid #ddd;
+}
+.bee-trade-item-stock-header {
+  text-align: center;
+  font-weight: bolder;
+}
+.bee-trade-item-stock-available {
+  font-weight: bolder;
+}
+.bee-trade-item-stock-footer {
+  text-align: center;
+  font-weight: bolder;
+  font-size: larger;
+  background-color: whitesmoke;
+}
+.bee-trade-item-stock-footer .bee-trade-item-stock-warehouse {
+  text-align: right;
+  font-size: inherit;
+}

@@ -29,6 +29,7 @@ import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -93,6 +94,43 @@ public final class TradeKeeper implements HandlesAllDataEvents {
         } else {
           callback.onSuccess(response.getResponseAsLong());
         }
+      }
+    });
+  }
+
+  public static void getItemStockByWarehouse(long item,
+      final Consumer<List<Triplet<String, Double, Double>>> consumer) {
+
+    Assert.isTrue(DataUtils.isId(item), SVC_GET_ITEM_STOCK_BY_WAREHOUSE + " item required");
+    Assert.notNull(consumer, SVC_GET_ITEM_STOCK_BY_WAREHOUSE + " consumer required");
+
+    ParameterList parameters = createArgs(SVC_GET_ITEM_STOCK_BY_WAREHOUSE);
+    parameters.addQueryItem(COL_ITEM, item);
+
+    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        List<Triplet<String, Double, Double>> result = new ArrayList<>();
+
+        if (response.hasResponse()) {
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (arr != null) {
+            for (String s : arr) {
+              Triplet<String, String, String> triplet = Triplet.restore(s);
+
+              String warehouse = triplet.getA();
+              Double stock = BeeUtils.toDoubleOrNull(triplet.getB());
+              Double reserved = BeeUtils.toDoubleOrNull(triplet.getC());
+
+              if (!BeeUtils.isEmpty(warehouse) && BeeUtils.isPositive(stock)) {
+                result.add(Triplet.of(warehouse, stock, reserved));
+              }
+            }
+          }
+        }
+
+        consumer.accept(result);
       }
     });
   }

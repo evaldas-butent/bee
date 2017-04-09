@@ -28,6 +28,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HeaderView;
@@ -35,9 +36,12 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -72,6 +76,16 @@ public final class TradeUtils {
 
   private static final String STYLE_COST_CALCULATION_COMMAND =
       TradeKeeper.STYLE_PREFIX + "cost-calculation";
+
+  private static final String STYLE_ITEM_STOCK_PREFIX = TradeKeeper.STYLE_PREFIX + "item-stock-";
+  private static final String STYLE_ITEM_STOCK_TABLE = STYLE_ITEM_STOCK_PREFIX + "table";
+  private static final String STYLE_ITEM_STOCK_HEADER = STYLE_ITEM_STOCK_PREFIX + "header";
+  private static final String STYLE_ITEM_STOCK_BODY = STYLE_ITEM_STOCK_PREFIX + "body";
+  private static final String STYLE_ITEM_STOCK_FOOTER = STYLE_ITEM_STOCK_PREFIX + "footer";
+  private static final String STYLE_ITEM_STOCK_WAREHOUSE = STYLE_ITEM_STOCK_PREFIX + "warehouse";
+  private static final String STYLE_ITEM_STOCK_QUANTITY = STYLE_ITEM_STOCK_PREFIX + "quantity";
+  private static final String STYLE_ITEM_STOCK_RESERVED = STYLE_ITEM_STOCK_PREFIX + "reserved";
+  private static final String STYLE_ITEM_STOCK_AVAILABLE = STYLE_ITEM_STOCK_PREFIX + "available";
 
   private static final String COL_NAME = "Name";
   private static final String COL_ORDINAL = "Ordinal";
@@ -382,6 +396,100 @@ public final class TradeUtils {
     });
   }
 
+  public static Pair<Double, Boolean> normalizeDiscountOrVatInfo(Pair<Double, Boolean> info) {
+    if (info != null && BeeUtils.nonZero(info.getA())) {
+      return info;
+    } else {
+      return Pair.empty();
+    }
+  }
+
+  public static Widget renderItemStockByWarehouse(List<Triplet<String, Double, Double>> data) {
+    if (BeeUtils.isEmpty(data)) {
+      return null;
+    }
+
+    boolean hasReservations = data.stream().anyMatch(e -> BeeUtils.nonZero(e.getC()));
+
+    HtmlTable table = new HtmlTable(STYLE_ITEM_STOCK_TABLE);
+
+    int r = 0;
+    int c = 0;
+
+    table.setText(r, c, Localized.dictionary().warehouse());
+    c++;
+
+    table.setText(r, c, Localized.dictionary().trdQuantityStock());
+    table.setColumnCellClasses(c, StyleUtils.className(TextAlign.RIGHT));
+    c++;
+
+    if (hasReservations) {
+      table.setText(r, c, Localized.dictionary().trdQuantityReserved());
+      table.setColumnCellClasses(c, StyleUtils.className(TextAlign.RIGHT));
+      c++;
+
+      table.setText(r, c, Localized.dictionary().trdQuantityAvailable());
+      table.setColumnCellClasses(c, StyleUtils.className(TextAlign.RIGHT));
+    }
+
+    table.getRowFormatter().addStyleName(r, STYLE_ITEM_STOCK_HEADER);
+    r++;
+
+    double totalStock = BeeConst.DOUBLE_ZERO;
+    double totalReserved = BeeConst.DOUBLE_ZERO;
+    double totalAvailable = BeeConst.DOUBLE_ZERO;
+
+    for (Triplet<String, Double, Double> triplet : data) {
+      c = 0;
+      table.setText(r, c, triplet.getA(), STYLE_ITEM_STOCK_WAREHOUSE);
+      c++;
+
+      Double stock = triplet.getB();
+      if (BeeUtils.isDouble(stock)) {
+        table.setText(r, c, BeeUtils.toString(stock), STYLE_ITEM_STOCK_QUANTITY);
+        totalStock += stock;
+      }
+      c++;
+
+      if (hasReservations) {
+        Double reserved = triplet.getC();
+        if (BeeUtils.isDouble(reserved)) {
+          table.setText(r, c, BeeUtils.toString(reserved), STYLE_ITEM_STOCK_RESERVED);
+          totalReserved += reserved;
+        }
+        c++;
+
+        double available = Math.max(BeeUtils.unbox(stock) - BeeUtils.unbox(reserved),
+            BeeConst.DOUBLE_ZERO);
+        table.setText(r, c, BeeUtils.toString(available), STYLE_ITEM_STOCK_AVAILABLE);
+        totalAvailable += available;
+      }
+
+      table.getRowFormatter().addStyleName(r, STYLE_ITEM_STOCK_BODY);
+      r++;
+    }
+
+    if (data.size() > 1) {
+      c = 0;
+      table.setText(r, c, Localized.dictionary().total(), STYLE_ITEM_STOCK_WAREHOUSE);
+      c++;
+
+      table.setText(r, c, BeeUtils.toString(totalStock), STYLE_ITEM_STOCK_QUANTITY);
+      c++;
+
+      if (hasReservations) {
+        table.setText(r, c, BeeUtils.toString(totalReserved), STYLE_ITEM_STOCK_RESERVED);
+        c++;
+
+        table.setText(r, c, BeeUtils.toString(totalAvailable), STYLE_ITEM_STOCK_AVAILABLE);
+      }
+
+      table.getRowFormatter().addStyleName(r, STYLE_ITEM_STOCK_FOOTER);
+    }
+
+    return table;
+  }
+
   static void configureCostCalculation(final DataView dataView) {
     HeaderView header = ViewHelper.getHeader(dataView);
 
@@ -652,14 +760,6 @@ public final class TradeUtils {
     }
 
     return options;
-  }
-
-  public static Pair<Double, Boolean> normalizeDiscountOrVatInfo(Pair<Double, Boolean> info) {
-    if (info != null && BeeUtils.nonZero(info.getA())) {
-      return info;
-    } else {
-      return Pair.empty();
-    }
   }
 
   static double roundPrice(Double price) {

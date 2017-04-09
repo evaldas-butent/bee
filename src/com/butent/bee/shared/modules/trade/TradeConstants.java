@@ -32,6 +32,7 @@ public final class TradeConstants {
   public static final String SVC_CALCULATE_COST = "CalculateCost";
 
   public static final String SVC_GET_STOCK = "GetStock";
+  public static final String SVC_GET_ITEM_STOCK_BY_WAREHOUSE = "GetItemStockByWarehouse";
   public static final String SVC_GET_RESERVATIONS_INFO = "GetReservationsInfo";
   public static final String SVC_CREATE_DOCUMENT = "CreateDocument";
 
