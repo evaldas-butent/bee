@@ -256,6 +256,9 @@
 .bee-form-TradeDocument .bee-disabled .bee-trade-fin-post {
   visibility: hidden;
 }
+.bee-trade-show-item-stock[disabled] {
+  visibility: hidden;
+}
 
 .bee-trade-item-picker-new-item,
 .bee-trade-item-picker-new-service {

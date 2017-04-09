@@ -2,6 +2,8 @@ package com.butent.bee.client.modules.trade;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -12,11 +14,14 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
@@ -193,6 +198,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
   }
 
+  private static final String STYLE_SHOW_ITEM_STOCK_COMMAND =
+      TradeKeeper.STYLE_PREFIX + "show-item-stock";
   private static final String STYLE_PRICE_CALCULATION_COMMAND =
       TradeKeeper.STYLE_PREFIX + "price-calculation";
 
@@ -217,14 +224,22 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    if (presenter != null && presenter.getHeader() != null
-        && BeeKeeper.getUser().canEditData(getViewName())) {
+    if (presenter != null && presenter.getHeader() != null) {
 
-      Button button = new Button(Localized.dictionary().recalculateTradeItemPriceCaption(),
-          event -> recalculatePrice());
-      button.addStyleName(STYLE_PRICE_CALCULATION_COMMAND);
+      Button stockButton = new Button(Localized.dictionary().trdItemStock(),
+          event -> showItemStock(EventUtils.getEventTargetElement(event)));
+      stockButton.addStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND);
+      stockButton.setEnabled(false);
 
-      presenter.getHeader().addCommandItem(button);
+      presenter.getHeader().addCommandItem(stockButton);
+
+      if (BeeKeeper.getUser().canEditData(getViewName())) {
+        Button priceButton = new Button(Localized.dictionary().recalculateTradeItemPriceCaption(),
+            event -> recalculatePrice());
+        priceButton.addStyleName(STYLE_PRICE_CALCULATION_COMMAND);
+
+        presenter.getHeader().addCommandItem(priceButton);
+      }
     }
 
     super.afterCreatePresenter(presenter);
@@ -281,6 +296,23 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
+  }
+
+  @Override
+  public void onActiveRowChange(ActiveRowChangeEvent event) {
+    HeaderView header = getGridPresenter().getHeader();
+
+    if (header != null) {
+      IsRow row = event.getRowValue();
+
+      boolean enable = row != null
+          && DataUtils.isId(row.getLong(getDataIndex(COL_ITEM)))
+          && !row.isTrue(getDataIndex(COL_ITEM_IS_SERVICE));
+
+      header.enableCommandByStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND, enable);
+    }
+
+    super.onActiveRowChange(event);
   }
 
   @Override
@@ -856,5 +888,27 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   private void openPicker(final IsRow parentRow, Double defaultVatPercent) {
     TradeItemPicker picker = new TradeItemPicker(parentRow, defaultVatPercent);
     picker.open((selectedItems, tds) -> addItems(parentRow, selectedItems, tds));
+  }
+
+  private void showItemStock(final Element target) {
+    final Long item = getLongValue(COL_ITEM);
+
+    if (DataUtils.isId(item)) {
+      TradeKeeper.getItemStockByWarehouse(item, list -> {
+        if (BeeUtils.isEmpty(list)) {
+          getGridView().notifyInfo(Localized.dictionary().noData());
+
+        } else if (Objects.equals(getLongValue(COL_ITEM), item)) {
+          String caption = BeeUtils.joinWords(item,
+              getStringValue(ALS_ITEM_NAME), getStringValue(COL_TRADE_ITEM_ARTICLE));
+
+          Widget widget = TradeUtils.renderItemStockByWarehouse(list);
+
+          if (widget != null) {
+            Global.showModalWidget(caption, widget, target);
+          }
+        }
+      });
+    }
   }
 }
