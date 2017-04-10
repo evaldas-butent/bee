@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.trade;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -13,6 +15,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
@@ -32,6 +35,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -61,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,6 +79,8 @@ public final class TradeKeeper implements HandlesAllDataEvents {
   public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "trade-";
 
   private static final TradeKeeper INSTANCE = new TradeKeeper();
+
+  private static final BiMap<Long, String> warehouses = HashBiMap.create();
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, method);
@@ -194,6 +201,37 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     });
   }
 
+  public static void getWarehouseId(String code, Consumer<Long> callback) {
+    getWarehouseIds(Collections.singleton(code), map -> callback.accept(map.get(code)));
+  }
+
+  public static void getWarehouseIds(Collection<String> codes,
+      Consumer<Map<String, Long>> callback) {
+
+    Assert.notNull(callback, "warehouse ids callback required");
+
+    Map<String, Long> result = new HashMap<>();
+
+    if (BeeUtils.isEmpty(codes)) {
+      callback.accept(result);
+
+    } else if (warehouses.values().containsAll(codes)) {
+      codes.forEach(code -> result.put(code, warehouses.inverse().get(code)));
+      callback.accept(result);
+
+    } else {
+      loadWarehouses(b -> {
+        codes.forEach(code -> {
+          Long id = warehouses.inverse().get(code);
+          if (DataUtils.isId(id)) {
+            result.put(code, id);
+          }
+        });
+        callback.accept(result);
+      });
+    }
+  }
+
   public static void register() {
     GridFactory.registerGridInterceptor(VIEW_PURCHASE_ITEMS, new TradeItemsGrid());
     GridFactory.registerGridInterceptor(VIEW_SALE_ITEMS, new TradeItemsGrid());
@@ -285,6 +323,27 @@ public final class TradeKeeper implements HandlesAllDataEvents {
 
   private static String getDocumentGridSupplierKey(long typeId) {
     return BeeUtils.join(BeeConst.STRING_UNDER, GRID_TRADE_DOCUMENTS, typeId);
+  }
+
+  private static void loadWarehouses(Consumer<Boolean> callback) {
+    Queries.getRowSet(VIEW_WAREHOUSES, Collections.singletonList(COL_WAREHOUSE_CODE),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            callback.accept(false);
+          }
+
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            warehouses.clear();
+
+            if (!DataUtils.isEmpty(result)) {
+              int index = result.getColumnIndex(COL_WAREHOUSE_CODE);
+              result.forEach(row -> warehouses.put(row.getId(), row.getString(index)));
+            }
+            callback.accept(true);
+          }
+        });
   }
 
   private static void onDataEvent(DataEvent event) {

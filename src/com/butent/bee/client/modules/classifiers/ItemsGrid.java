@@ -329,7 +329,7 @@ class ItemsGrid extends TreeGridInterceptor {
           String caption = BeeUtils.joinWords(id,
               getStringValue(COL_ITEM_NAME), getStringValue(COL_ITEM_ARTICLE));
 
-          Widget widget = TradeUtils.renderItemStockByWarehouse(list);
+          Widget widget = TradeUtils.renderItemStockByWarehouse(id, list);
 
           if (widget != null) {
             Global.showModalWidget(caption, widget, stockCommand.getElement());

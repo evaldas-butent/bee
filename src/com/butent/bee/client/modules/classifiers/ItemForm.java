@@ -71,7 +71,7 @@ class ItemForm extends AbstractFormInterceptor {
 
         TradeKeeper.getItemStockByWarehouse(id, list -> {
           if (!BeeUtils.isEmpty(list) && Objects.equals(getActiveRowId(), id)) {
-            Widget widget = TradeUtils.renderItemStockByWarehouse(list);
+            Widget widget = TradeUtils.renderItemStockByWarehouse(id, list);
 
             if (widget != null) {
               panel.clear();

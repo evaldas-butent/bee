@@ -429,6 +429,9 @@
   text-align: center;
   font-weight: bolder;
 }
+.bee-trade-item-stock-body .bee-trade-item-stock-reserved {
+  cursor: pointer;
+}
 .bee-trade-item-stock-available {
   font-weight: bolder;
 }

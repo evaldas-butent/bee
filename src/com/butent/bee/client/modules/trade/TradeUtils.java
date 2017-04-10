@@ -26,6 +26,7 @@ import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.style.StyleUtils;
@@ -34,6 +35,7 @@ import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -90,6 +92,8 @@ public final class TradeUtils {
   private static final String STYLE_ITEM_STOCK_QUANTITY = STYLE_ITEM_STOCK_PREFIX + "quantity";
   private static final String STYLE_ITEM_STOCK_RESERVED = STYLE_ITEM_STOCK_PREFIX + "reserved";
   private static final String STYLE_ITEM_STOCK_AVAILABLE = STYLE_ITEM_STOCK_PREFIX + "available";
+
+  private static final String KEY_WAREHOUSE = "warehouse";
 
   private static final String COL_NAME = "Name";
   private static final String COL_ORDINAL = "Ordinal";
@@ -408,7 +412,9 @@ public final class TradeUtils {
     }
   }
 
-  public static Widget renderItemStockByWarehouse(List<Triplet<String, Double, Double>> data) {
+  public static Widget renderItemStockByWarehouse(long item,
+      List<Triplet<String, Double, Double>> data) {
+
     if (BeeUtils.isEmpty(data)) {
       return null;
     }
@@ -457,8 +463,20 @@ public final class TradeUtils {
 
       if (hasReservations) {
         Double reserved = triplet.getC();
+
         if (BeeUtils.isDouble(reserved)) {
-          table.setText(r, c, BeeUtils.toString(reserved), STYLE_ITEM_STOCK_RESERVED);
+          DoubleLabel label = new DoubleLabel(false);
+          label.setValue(reserved);
+
+          label.addClickHandler(event -> {
+            Element target = EventUtils.getEventTargetElement(event);
+            String code = DomUtils.getDataProperty(DomUtils.getParentRow(target, true),
+                KEY_WAREHOUSE);
+
+            TradeKeeper.getWarehouseId(code, id -> showReservations(id, item, null, target));
+          });
+
+          table.setWidgetAndStyle(r, c, label, STYLE_ITEM_STOCK_RESERVED);
           totalReserved += reserved;
         }
         c++;
@@ -470,6 +488,8 @@ public final class TradeUtils {
       }
 
       table.getRowFormatter().addStyleName(r, STYLE_ITEM_STOCK_BODY);
+      DomUtils.setDataProperty(table.getRow(r), KEY_WAREHOUSE, triplet.getA());
+
       r++;
     }
 
