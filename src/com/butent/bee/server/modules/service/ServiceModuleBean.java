@@ -95,6 +95,7 @@ import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -180,7 +181,8 @@ public class ServiceModuleBean implements BeeModule {
       if (!DataUtils.isId(repairerId)) {
         response = ResponseObject.parameterNotFound(reqInfo.getService(), COL_REPAIRER);
       } else {
-        response = ResponseObject.response(getRepairerTariff(repairerId));
+        Map<Long, Double> tariffs = getRepairerTariff(Collections.singleton(repairerId));
+        response = ResponseObject.response(tariffs.get(repairerId));
       }
 
     } else if (BeeUtils.same(svc, SVC_SERVICE_PAYROLL_REPORT)) {
@@ -346,39 +348,61 @@ public class ServiceModuleBean implements BeeModule {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void createMaintenancePayroll(DataEvent.ViewModifyEvent event) {
-        if (event.isAfter(TBL_SERVICE_ITEMS) && event instanceof DataEvent.ViewInsertEvent) {
-          DataEvent.ViewInsertEvent ev = (DataEvent.ViewInsertEvent) event;
-          BeeRow serviceItemRow = ev.getRow();
-          List<BeeColumn> columns = ev.getColumns();
-          Long repairerId = serviceItemRow.getLong(DataUtils.getColumnIndex(COL_REPAIRER, columns));
-          Double tariff = getRepairerTariff(repairerId);
+      public void createMaintenancePayroll(DataEvent.ViewUpdateEvent event) {
+        if (event.isAfter(TBL_SERVICE_MAINTENANCE) && event instanceof DataEvent.ViewUpdateEvent) {
+          List<BeeColumn> columns = event.getColumns();
 
-          int quantity = BeeUtils.unbox(serviceItemRow
-              .getInteger(DataUtils.getColumnIndex(COL_TRADE_ITEM_QUANTITY, columns)));
-          double cost = BeeUtils.unbox(qs.getDouble(TBL_ITEMS, COL_ITEM_COST,
-              sys.idEquals(TBL_ITEMS, serviceItemRow
-                  .getLong(DataUtils.getColumnIndex(COL_ITEM, columns)))));
+          if (DataUtils.contains(columns, COL_ENDING_DATE) && !BeeUtils.isEmpty(event.getRow()
+              .getString(DataUtils.getColumnIndex(COL_ENDING_DATE, columns)))) {
+            Long maintenanceId = event.getRow().getId();
 
-          Totalizer totalizer = new Totalizer(columns);
-          double total = BeeUtils.unbox(totalizer.getTotal(serviceItemRow));
-          double vat = BeeUtils.unbox(totalizer.getVat(serviceItemRow));
+            Set<Long> calculatedItems = qs.getLongSet(new SqlSelect()
+                .addFields(TBL_ORDER_ITEMS, sys.getIdName(TBL_ORDER_ITEMS))
+                .addFrom(TBL_ORDER_ITEMS)
+                .setWhere(SqlUtils.in(TBL_ORDER_ITEMS, COL_SERVICE_ITEM, TBL_MAINTENANCE_PAYROLL,
+                    COL_SERVICE_ITEM, SqlUtils.equals(TBL_MAINTENANCE_PAYROLL,
+                        COL_SERVICE_MAINTENANCE, maintenanceId))));
 
-          double basicAmount = ServiceUtils.calculateBasicAmount(total - vat, cost, quantity);
+            BeeRowSet itemsRowSet = qs.getViewData(TBL_SERVICE_ITEMS, Filter.and(
+                Filter.equals(COL_SERVICE_MAINTENANCE, maintenanceId),
+                Filter.idNotIn(calculatedItems)));
 
-          SqlInsert payrollInsertQuery = new SqlInsert(TBL_MAINTENANCE_PAYROLL)
-              .addConstant(COL_SERVICE_MAINTENANCE, serviceItemRow
-                  .getValue(DataUtils.getColumnIndex(COL_SERVICE_MAINTENANCE, columns)))
-              .addConstant(COL_REPAIRER, repairerId)
-              .addConstant(COL_CURRENCY, prm.getRelation(PRM_CURRENCY))
-              .addConstant(COL_MAINTENANCE_DATE, TimeUtils.today())
-              .addConstant(COL_PAYROLL_TARIFF, tariff)
-              .addConstant(COL_PAYROLL_BASIC_AMOUNT, basicAmount)
-              .addConstant(COL_PAYROLL_SALARY, ServiceUtils
-                  .calculateSalary(BeeUtils.unbox(tariff), basicAmount));
-          qs.insertData(payrollInsertQuery);
-          DataChangeEvent.fireRefresh((fireEvent, locality) -> Endpoint.sendToUser(
-              usr.getCurrentUserId(), new ModificationMessage(fireEvent)), TBL_MAINTENANCE_PAYROLL);
+            if (!itemsRowSet.isEmpty()) {
+              Map<Long, Double> tariffs = getRepairerTariff(itemsRowSet
+                  .getDistinctLongs(itemsRowSet.getColumnIndex(COL_REPAIRER)));
+
+              itemsRowSet.forEach(itemRow -> {
+                Long repairerId = itemRow.getLong(itemsRowSet.getColumnIndex(COL_REPAIRER));
+                int quantity = BeeUtils.unbox(itemRow.getInteger(itemsRowSet
+                    .getColumnIndex(COL_TRADE_ITEM_QUANTITY)));
+                double cost = BeeUtils.unbox(itemRow.getDouble(itemsRowSet
+                    .getColumnIndex(COL_ITEM + COL_ITEM_COST)));
+
+                Totalizer totalizer = new Totalizer(itemsRowSet.getColumns());
+                double total = BeeUtils.round(BeeUtils.unbox(totalizer.getTotal(itemRow)), 2);
+                double vat = BeeUtils.round(BeeUtils.unbox(totalizer.getVat(itemRow)), 2);
+
+                double basicAmount = ServiceUtils.calculateBasicAmount(total - vat, cost, quantity);
+
+                SqlInsert payrollInsertQuery = new SqlInsert(TBL_MAINTENANCE_PAYROLL)
+                    .addConstant(COL_SERVICE_MAINTENANCE,
+                        itemRow.getValue(itemsRowSet.getColumnIndex(COL_SERVICE_MAINTENANCE)))
+                    .addConstant(COL_REPAIRER, repairerId)
+                    .addConstant(COL_CURRENCY, prm.getRelation(PRM_CURRENCY))
+                    .addConstant(COL_MAINTENANCE_DATE, TimeUtils.today())
+                    .addConstant(COL_PAYROLL_TARIFF, tariffs.get(repairerId))
+                    .addConstant(COL_PAYROLL_BASIC_AMOUNT, basicAmount)
+                    .addConstant(COL_PAYROLL_SALARY, ServiceUtils
+                        .calculateSalary(BeeUtils.unbox(tariffs.get(repairerId)), basicAmount))
+                    .addConstant(COL_SERVICE_ITEM,
+                        itemRow.getLong(itemsRowSet.getColumnIndex(COL_SERVICE_ITEM)));
+                qs.insertData(payrollInsertQuery);
+              });
+              DataChangeEvent.fireRefresh((fireEvent, locality) ->
+                  Endpoint.sendToUser(usr.getCurrentUserId(), new ModificationMessage(fireEvent)),
+                  TBL_MAINTENANCE_PAYROLL);
+            }
+          }
         }
       }
     });
@@ -1194,20 +1218,25 @@ public class ServiceModuleBean implements BeeModule {
     return ResponseObject.response(columnValues);
   }
 
-  private Double getRepairerTariff(Long repairerId) {
+  private Map<Long, Double> getRepairerTariff(Set<Long> repairerId) {
     DateValue today = new DateValue(TimeUtils.today());
+    Map<Long, Double> repairerTariffs = new HashMap<>();
 
-    SqlSelect tariffQuery = new SqlSelect()
-        .addFields(TBL_MAINTENANCE_TARIFFS, COL_PAYROLL_TARIFF)
+    SimpleRowSet tariffRowSet = qs.getData(new SqlSelect()
+        .addFields(TBL_MAINTENANCE_TARIFFS, COL_PAYROLL_TARIFF, COL_REPAIRER)
         .addFrom(TBL_MAINTENANCE_TARIFFS)
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_MAINTENANCE_TARIFFS, COL_REPAIRER, repairerId),
+        .setWhere(SqlUtils.and(SqlUtils.inList(TBL_MAINTENANCE_TARIFFS, COL_REPAIRER, repairerId),
             SqlUtils.or(SqlUtils.isNull(TBL_MAINTENANCE_TARIFFS, COL_DATE_FROM),
                 SqlUtils.lessEqual(TBL_MAINTENANCE_TARIFFS, COL_DATE_FROM, today)),
             SqlUtils.or(SqlUtils.isNull(TBL_MAINTENANCE_TARIFFS, COL_DATE_TO),
                 SqlUtils.moreEqual(TBL_MAINTENANCE_TARIFFS, COL_DATE_TO, today))))
-        .addOrderDesc(TBL_MAINTENANCE_TARIFFS, sys.getIdName(TBL_MAINTENANCE_TARIFFS));
+        .addOrderDesc(TBL_MAINTENANCE_TARIFFS, sys.getIdName(TBL_MAINTENANCE_TARIFFS)));
 
-    return qs.getDouble(tariffQuery);
+    if (!tariffRowSet.isEmpty()) {
+      tariffRowSet.forEach(row ->
+          repairerTariffs.put(row.getLong(COL_REPAIRER), row.getDouble(COL_PAYROLL_TARIFF)));
+    }
+    return repairerTariffs;
   }
 
   private ResponseObject getReportData(RequestInfo reqInfo) {

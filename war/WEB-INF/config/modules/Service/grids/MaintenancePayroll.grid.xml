@@ -30,5 +30,6 @@
     <RelColumn name="ConfirmedUser" renderColumns="ConfirmedUserFirstName ConfirmedUserLastName" visible="true" readOnly="true"/>
     <DataColumn name="ConfirmationDate" format="DATE_TIME_SHORT" visible="true" readOnly="true"/>
     <DataColumn name="Notes" visible="true"  />
+    <DataColumn name="ItemName" readOnly="true" visible="true" label="=productService"/>
   </g:columns>
 </g:Grid>
