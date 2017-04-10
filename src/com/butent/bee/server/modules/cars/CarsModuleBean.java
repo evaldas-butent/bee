@@ -334,12 +334,15 @@ public class CarsModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_SERVICE_ORDERS, COL_DATE, COL_ORDER_NO)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
         .addFields(TBL_SERVICE_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
         .addExpr(xpr, ALS_COMPLETED)
         .addFrom(TBL_SERVICE_ORDER_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SERVICE_ORDER_ITEMS, COL_ITEM))
         .addFromInner(TBL_SERVICE_ORDERS,
             sys.joinTables(TBL_SERVICE_ORDERS, TBL_SERVICE_ORDER_ITEMS, COL_SERVICE_ORDER))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_SERVICE_ORDERS, COL_TRADE_CUSTOMER))
         .addFromLeft(TBL_SERVICE_INVOICES,
             sys.joinTables(TBL_SERVICE_ORDER_ITEMS, TBL_SERVICE_INVOICES, COL_SERVICE_ITEM))
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_SERVICE_ORDER_ITEMS, COL_ITEM, item),
@@ -347,6 +350,7 @@ public class CarsModuleBean implements BeeModule {
             SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
             SqlUtils.positive(TBL_SERVICE_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)))
         .addGroup(TBL_SERVICE_ORDERS, COL_DATE, COL_ORDER_NO)
+        .addGroup(TBL_COMPANIES, COL_COMPANY_NAME)
         .addGroup(TBL_SERVICE_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
         .setHaving(SqlUtils.or(SqlUtils.isNull(xpr),
             SqlUtils.more(TBL_SERVICE_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY, xpr)))
@@ -366,7 +370,7 @@ public class CarsModuleBean implements BeeModule {
 
     qs.getData(query).forEach(row -> {
       String key = BeeUtils.joinItems(Formatter.renderDateTime(dtfInfo, row.getDateTime(COL_DATE)),
-          row.getValue(COL_ORDER_NO));
+          row.getValue(COL_ORDER_NO), row.getValue(COL_COMPANY_NAME));
 
       map.put(key, BeeUtils.unbox(map.get(key))
           + row.getDouble(COL_TRADE_ITEM_QUANTITY) - BeeUtils.unbox(row.getDouble(ALS_COMPLETED)));

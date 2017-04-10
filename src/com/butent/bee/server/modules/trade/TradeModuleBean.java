@@ -3766,9 +3766,13 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE, COL_TRADE_NUMBER)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
         .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY);
 
     addTradeReservationsFrom(query);
+    query.addFromLeft(TBL_COMPANIES,
+        sys.joinTables(TBL_COMPANIES, TBL_TRADE_DOCUMENTS, COL_TRADE_CUSTOMER));
+
     query.setWhere(getTradeReservationsCondition(warehouse, Collections.singleton(item), dateTo));
 
     query.addOrder(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE, COL_TRADE_NUMBER);
@@ -3781,7 +3785,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       data.forEach(row -> {
         String key = BeeUtils.joinItems(
             Formatter.renderDateTime(dtfInfo, row.getDateTime(COL_TRADE_DATE)),
-            row.getValue(COL_TRADE_NUMBER));
+            row.getValue(COL_TRADE_NUMBER),
+            row.getValue(COL_COMPANY_NAME));
 
         info.merge(key, row.getDouble(COL_TRADE_ITEM_QUANTITY), Double::sum);
       });
