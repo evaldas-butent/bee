@@ -410,7 +410,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           String viewName = sys.getViewSource(event.getTargetName());
           List<BeeColumn> cols;
           IsRow row;
-          Long series = null;
+          String series = null;
 
           if (event instanceof ViewInsertEvent) {
             cols = ((ViewInsertEvent) event).getColumns();
@@ -435,7 +435,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
           int seriesIdx = DataUtils.getColumnIndex(seriesCol, cols);
 
           if (!BeeConst.isUndef(seriesIdx)) {
-            series = row.getLong(seriesIdx);
+            series = row.getString(seriesIdx);
           }
           if (DataUtils.isId(series)) {
             int numberIdx = DataUtils.getColumnIndex(numberCol, cols);
@@ -448,7 +448,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
             } else if (!BeeUtils.isEmpty(row.getString(numberIdx))) {
               return;
             }
-            row.setValue(numberIdx, qs.getNextNumber(viewName, numberCol, null, null));
+            row.setValue(numberIdx, qs.getNextNumber(viewName, numberCol, series, seriesCol));
           }
         }
       }
