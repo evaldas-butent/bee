@@ -41,6 +41,8 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.FontStyle;
+import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -54,6 +56,7 @@ import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -486,6 +489,36 @@ public final class TradeUtils {
 
       table.getRowFormatter().addStyleName(r, STYLE_ITEM_STOCK_FOOTER);
     }
+
+    return table;
+  }
+
+  public static Widget renderReservations(Map<ModuleAndSub, Map<String, Double>> info) {
+    if (BeeUtils.isEmpty(info)) {
+      return null;
+    }
+
+    HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
+
+    table.getRowFormatter().addStyleName(0, StyleUtils.className(FontWeight.BOLD));
+    table.getRowFormatter().addStyleName(0, StyleUtils.className(TextAlign.CENTER));
+    table.setText(0, 0, Localized.dictionary().reservation());
+    table.setText(0, 1, Localized.dictionary().quantity());
+    table.setColumnCellClasses(1, StyleUtils.className(TextAlign.RIGHT));
+
+    info.keySet().forEach(mod -> {
+      int r = table.getRowCount();
+      table.getCellFormatter().setColSpan(r, 0, 2);
+      table.getRowFormatter().addStyleName(r, StyleUtils.className(FontStyle.ITALIC));
+      table.setText(r, 0, BeeUtils.joinWords(mod.getModule().getCaption(), mod.hasSubModule()
+          ? BeeUtils.parenthesize(mod.getSubModule().getCaption()) : null));
+
+      info.get(mod).forEach((text, qty) -> {
+        int r2 = table.getRowCount();
+        table.setText(r2, 0, text);
+        table.setText(r2, 1, BeeUtils.toString(qty));
+      });
+    });
 
     return table;
   }
