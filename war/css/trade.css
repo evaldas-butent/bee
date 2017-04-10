@@ -390,6 +390,7 @@
 .bee-trade-item-picker-reserved {
   margin-left: 5px;
   color: crimson;
+  cursor: pointer;
 }
 .bee-trade-item-picker-available {
   margin-left: 8px;

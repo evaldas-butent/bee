@@ -35,6 +35,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputNumber;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -797,6 +798,20 @@ public final class TradeUtils {
 
   static double roundPrice(Double price) {
     return Localized.normalizeMoney(price);
+  }
+
+  static void showReservations(Long warehouse, Long item, String caption, Element target) {
+    if (DataUtils.isId(warehouse) && DataUtils.isId(item)) {
+      TradeKeeper.getReservationsInfo(warehouse, item, null, info -> {
+        Widget widget = renderReservations(info);
+        if (widget == null) {
+          widget = new Label(Localized.dictionary().noData());
+        }
+
+        String cap = BeeUtils.notEmpty(caption, Localized.dictionary().orders());
+        Global.showModalWidget(cap, widget, target);
+      });
+    }
   }
 
   static Boolean vatIsPercent(Double vat) {
