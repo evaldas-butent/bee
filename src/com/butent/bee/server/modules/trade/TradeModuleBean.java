@@ -166,6 +166,8 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   @EJB
   ConcurrencyBean cb;
   @EJB
+  TradeReportsBean rep;
+  @EJB
   TradeActBean act;
   @EJB
   MailModuleBean mail;
@@ -235,66 +237,94 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
   }
 
   @Override
-  public ResponseObject doService(String svc, RequestInfo reqInfo) {
+  public ResponseObject doService(String service, RequestInfo reqInfo) {
     ResponseObject response;
 
-    SubModule subModule = reqInfo.getSubModule();
+    String svc = BeeUtils.trim(service);
 
-    if (subModule == SubModule.ACTS) {
-      response = act.doService(svc, reqInfo);
+    switch (svc) {
+      case SVC_ITEMS_INFO:
+        response = getItemsInfo(reqInfo.getParameter("view_name"),
+            BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
+            reqInfo.getParameter(COL_CURRENCY));
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
-      response = getItemsInfo(reqInfo.getParameter("view_name"),
-          BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
-          reqInfo.getParameter(COL_CURRENCY));
+      case SVC_CREDIT_INFO:
+        response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)));
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_CREDIT_INFO)) {
-      response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)));
+      case SVC_GET_DOCUMENT_DATA:
+        response = getTradeDocumentData(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_GET_DOCUMENT_DATA)) {
-      response = getTradeDocumentData(reqInfo);
+      case SVC_SEND_TO_ERP:
+        response = sendToERP(reqInfo.getParameter(VAR_VIEW_NAME),
+            DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
-      response = sendToERP(reqInfo.getParameter(VAR_VIEW_NAME),
-          DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
-    } else if (BeeUtils.same(svc, SVC_REMIND_DEBTS_EMAIL)) {
-      response = sendDebtsRemindEmail(reqInfo);
-    } else if (BeeUtils.same(svc, SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER)) {
-      response = getDocumentTypeCaptionAndFilter(reqInfo);
+      case SVC_REMIND_DEBTS_EMAIL:
+        response = sendDebtsRemindEmail(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_DOCUMENT_PHASE_TRANSITION)) {
-      response = tryPhaseTransition(reqInfo);
+      case SVC_GET_DOCUMENT_TYPE_CAPTION_AND_FILTER:
+        response = getDocumentTypeCaptionAndFilter(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_REBUILD_STOCK)) {
-      response = rebuildStock();
+      case SVC_DOCUMENT_PHASE_TRANSITION:
+        response = tryPhaseTransition(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_CALCULATE_COST)) {
-      response = calculateCost(reqInfo);
+      case SVC_REBUILD_STOCK:
+        response = rebuildStock();
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_GET_STOCK)) {
-      Multimap<Long, ItemQuantities> stock = getStock(reqInfo.getParameterLong(COL_STOCK_WAREHOUSE),
-          DataUtils.parseIdSet(reqInfo.getParameter(VAR_ITEMS)),
-          reqInfo.getParameterBoolean(VAR_RESERVATIONS));
-      response = stock.isEmpty() ? ResponseObject.emptyResponse() : ResponseObject.response(stock);
+      case SVC_CALCULATE_COST:
+        response = calculateCost(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_GET_ITEM_STOCK_BY_WAREHOUSE)) {
-      response = getItemStockByWarehouse(reqInfo);
+      case SVC_GET_STOCK:
+        Multimap<Long, ItemQuantities> stock =
+            getStock(reqInfo.getParameterLong(COL_STOCK_WAREHOUSE),
+                DataUtils.parseIdSet(reqInfo.getParameter(VAR_ITEMS)),
+                reqInfo.getParameterBoolean(VAR_RESERVATIONS));
 
-    } else if (BeeUtils.same(svc, SVC_GET_RESERVATIONS_INFO)) {
-      response = ResponseObject
-          .response(getReservationsInfo(reqInfo.getParameterLong(COL_STOCK_WAREHOUSE),
-              reqInfo.getParameterLong(COL_ITEM), reqInfo.getParameterDateTime(COL_DATE_TO)));
+        response = stock.isEmpty()
+            ? ResponseObject.emptyResponse() : ResponseObject.response(stock);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_CREATE_DOCUMENT)) {
-      response = createDocument(TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT)));
+      case SVC_GET_ITEM_STOCK_BY_WAREHOUSE:
+        response = getItemStockByWarehouse(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_GET_RELATED_TRADE_ITEMS)) {
-      response = getRelatedTradeItems(reqInfo);
+      case SVC_GET_RESERVATIONS_INFO:
+        response = ResponseObject.response(getReservationsInfo(
+            reqInfo.getParameterLong(COL_STOCK_WAREHOUSE),
+            reqInfo.getParameterLong(COL_ITEM),
+            reqInfo.getParameterDateTime(COL_DATE_TO)));
+        break;
 
-    } else {
-      String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
-      logger.warning(msg);
-      response = ResponseObject.error(msg);
+      case SVC_CREATE_DOCUMENT:
+        response = createDocument(TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT)));
+        break;
+
+      case SVC_GET_RELATED_TRADE_ITEMS:
+        response = getRelatedTradeItems(reqInfo);
+        break;
+
+      case SVC_TRADE_STOCK_REPORT:
+      case SVC_TRADE_MOVEMENT_OF_GOODS_REPORT:
+        response = rep.doService(svc, reqInfo);
+        break;
+
+      default:
+        if (reqInfo.getSubModule() == SubModule.ACTS) {
+          response = act.doService(svc, reqInfo);
+
+        } else {
+          String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
+          logger.warning(msg);
+          response = ResponseObject.error(msg);
+        }
     }
 
     return response;
