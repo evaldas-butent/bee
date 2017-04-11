@@ -2,9 +2,13 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="ItemMovement" viewName="TradeMovement"
-        readOnly="true" autoFlex="true"
+        name="TradeRelatedItems" viewName="TradeMovement"
+        readOnly="true" paging="false"
 >
+  <g:columns>
+    <PropColumn name="Level" type="integer" label="=level" />
+  </g:columns>
+
   <xi:include href="columns/TradeMovementMain.columns.xml" />
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />

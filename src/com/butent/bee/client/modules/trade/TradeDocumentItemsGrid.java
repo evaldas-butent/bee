@@ -16,9 +16,11 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -36,6 +38,7 @@ import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -60,6 +63,7 @@ import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -239,7 +243,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       presenter.getHeader().addCommandItem(stockCommand);
 
       Button relatedDocumentsCommand = new Button(Localized.dictionary().trdRelatedDocuments(),
-          event -> showRelatedDocuments(EventUtils.getEventTargetElement(event)));
+          event -> getRelatedDocuments());
       relatedDocumentsCommand.addStyleName(STYLE_SHOW_RELATED_DOCUMENTS_COMMAND);
       relatedDocumentsCommand.setEnabled(false);
 
@@ -931,7 +935,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
   }
 
-  private void showRelatedDocuments(final Element target) {
+  private void getRelatedDocuments() {
     if (DataUtils.hasId(getActiveRow())) {
       final long id = getActiveRowId();
       Long parent = getLongValue(COL_TRADE_ITEM_PARENT);
@@ -949,7 +953,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
           if (Objects.equals(id, getActiveRowId())) {
             if (response.hasResponse()) {
               BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
-              Global.showModalGrid(Localized.dictionary().trdRelatedDocuments(), rowSet);
+              showRelatedDocuments(rowSet);
 
             } else {
               getGridView().notifyInfo(Localized.dictionary().noData());
@@ -958,5 +962,28 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
         }
       });
     }
+  }
+
+  private void showRelatedDocuments(final BeeRowSet rowSet) {
+    String caption = BeeUtils.joinItems(Localized.dictionary().trdRelatedDocuments(),
+        getActiveRowId(), getStringValue(ALS_ITEM_NAME), getStringValue(COL_TRADE_ITEM_ARTICLE));
+
+    int height = BeeUtils.resize(rowSet.getNumberOfRows(), 1, 12, 20, 80);
+
+    GridInterceptor interceptor = new AbstractGridInterceptor() {
+      @Override
+      public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
+        return rowSet;
+      }
+
+      @Override
+      public GridInterceptor getInstance() {
+        return null;
+      }
+    };
+
+    GridFactory.openGrid(GRID_TRADE_RELATED_ITEMS, interceptor,
+        GridFactory.GridOptions.forCaption(caption),
+        ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT));
   }
 }

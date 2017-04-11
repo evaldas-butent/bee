@@ -3378,6 +3378,8 @@ public interface Dictionary {
 
   default String length() {return g("length");}
 
+  default String level() {return g("level");}
+
   default String limitCurrency() {return g("limitCurrency");}
 
   default String link() {return g("link");}

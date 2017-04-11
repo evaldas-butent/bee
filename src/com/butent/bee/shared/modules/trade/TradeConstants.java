@@ -324,6 +324,7 @@ public final class TradeConstants {
   public static final String GRID_TRADE_EXPENDITURES = "TradeExpenditures";
 
   public static final String GRID_ITEM_MOVEMENT = "ItemMovement";
+  public static final String GRID_TRADE_RELATED_ITEMS = "TradeRelatedItems";
 
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
