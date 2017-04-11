@@ -11,5 +11,5 @@
         separator="true" module="Administration" />
 
   <Item name="TradeParameters" label="=trdParameters" service="parameters" parameters="Trade"
-        separator="true" order="100" module="Administration" />
+        separator="true" order="150" module="Administration" />
 </Entry>

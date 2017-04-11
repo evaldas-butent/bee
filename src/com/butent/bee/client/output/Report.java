@@ -18,6 +18,8 @@ import com.butent.bee.client.modules.trade.acts.TradeActItemsByCompanyReport;
 import com.butent.bee.client.modules.trade.acts.TradeActServicesReport;
 import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
 import com.butent.bee.client.modules.trade.acts.TradeActTransferReport;
+import com.butent.bee.client.modules.trade.reports.TradeMovementOfGoodsReport;
+import com.butent.bee.client.modules.trade.reports.TradeStockReport;
 import com.butent.bee.client.modules.transport.AssessmentQuantityReport;
 import com.butent.bee.client.modules.transport.AssessmentTurnoverReport;
 import com.butent.bee.client.style.StyleUtils;
@@ -84,6 +86,20 @@ public enum Report implements HasWidgetSupplier {
     @Override
     protected ReportInterceptor getInterceptor() {
       return new AssessmentTurnoverReport();
+    }
+  },
+
+  TRADE_STOCK(ModuleAndSub.of(Module.TRADE), "TradeStock", "TradeStockReport") {
+    @Override
+    protected ReportInterceptor getInterceptor() {
+      return new TradeStockReport();
+    }
+  },
+  TRADE_MOVEMENT_OF_GOODS(ModuleAndSub.of(Module.TRADE), "TradeMovementOfGoods",
+      "TradeMovementOfGoodsReport") {
+    @Override
+    protected ReportInterceptor getInterceptor() {
+      return new TradeMovementOfGoodsReport();
     }
   },
 
