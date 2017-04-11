@@ -288,6 +288,9 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
     } else if (BeeUtils.same(svc, SVC_CREATE_DOCUMENT)) {
       response = createDocument(TradeDocument.restore(reqInfo.getParameter(VAR_DOCUMENT)));
 
+    } else if (BeeUtils.same(svc, SVC_GET_RELATED_TRADE_ITEMS)) {
+      response = getRelatedTradeItems(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
       logger.warning(msg);
@@ -4016,6 +4019,83 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
       return ResponseObject.emptyResponse();
     } else {
       return ResponseObject.responseWithSize(result);
+    }
+  }
+
+  private ResponseObject getRelatedTradeItems(RequestInfo reqInfo) {
+    Long id = reqInfo.getParameterLong(Service.VAR_ID);
+    if (!DataUtils.isId(id)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), Service.VAR_ID);
+    }
+
+    Long parent = reqInfo.getParameterLong(COL_TRADE_ITEM_PARENT);
+
+    Multimap<Integer, Long> idsByLevel = HashMultimap.create();
+    int level = 0;
+
+    while (DataUtils.isId(parent)) {
+      level--;
+      idsByLevel.put(level, parent);
+
+      parent = qs.getLongById(TBL_TRADE_DOCUMENT_ITEMS, parent, COL_TRADE_ITEM_PARENT);
+
+      if (parent == null || idsByLevel.containsValue(parent) || level < -MAX_STOCK_DEPTH) {
+        break;
+      }
+    }
+
+    level = 0;
+
+    Set<Long> parents = new HashSet<>();
+    parents.add(id);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS))
+        .addFrom(TBL_TRADE_DOCUMENT_ITEMS);
+
+    while (!parents.isEmpty()) {
+      query.setWhere(SqlUtils.inList(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT, parents));
+      Set<Long> children = qs.getLongSet(query);
+
+      children.removeAll(idsByLevel.values());
+      if (children.isEmpty() || level > MAX_STOCK_DEPTH) {
+        break;
+      }
+
+      level++;
+      idsByLevel.putAll(level, children);
+
+      parents.clear();
+      parents.addAll(children);
+    }
+
+    if (idsByLevel.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    }
+
+    BeeRowSet result = null;
+
+    List<Integer> levels = new ArrayList<>(idsByLevel.keySet());
+    levels.sort(null);
+
+    for (int key : levels) {
+      BeeRowSet rowSet = qs.getViewData(VIEW_TRADE_MOVEMENT, Filter.idIn(idsByLevel.get(key)));
+
+      if (!DataUtils.isEmpty(rowSet)) {
+        rowSet.forEach(row -> row.setProperty(PROP_LEVEL, key));
+
+        if (result == null) {
+          result = rowSet;
+        } else {
+          result.addRows(rowSet.getRows());
+        }
+      }
+    }
+
+    if (DataUtils.isEmpty(result)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
     }
   }
 }

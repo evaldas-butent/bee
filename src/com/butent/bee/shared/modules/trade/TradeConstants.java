@@ -35,6 +35,7 @@ public final class TradeConstants {
   public static final String SVC_GET_ITEM_STOCK_BY_WAREHOUSE = "GetItemStockByWarehouse";
   public static final String SVC_GET_RESERVATIONS_INFO = "GetReservationsInfo";
   public static final String SVC_CREATE_DOCUMENT = "CreateDocument";
+  public static final String SVC_GET_RELATED_TRADE_ITEMS = "GetRelatedTradeItems";
 
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
@@ -291,6 +292,7 @@ public final class TradeConstants {
   public static final String PROP_RESERVED = "Reserved";
   public static final String PROP_WAREHOUSES = "Warehouses";
   public static final String PROP_COST = "Cost";
+  public static final String PROP_LEVEL = "Level";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";

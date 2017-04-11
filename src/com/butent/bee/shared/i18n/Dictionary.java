@@ -6783,6 +6783,8 @@ public interface Dictionary {
 
   default String trdReceivedDate() {return g("trdReceivedDate");}
 
+  default String trdRelatedDocuments() {return g("trdRelatedDocuments");}
+
   default String trdRemainders() {return g("trdRemainders");}
 
   default String trdRemindTemplateFirstParagraph() {return g("trdRemindTemplateFirstParagraph");}

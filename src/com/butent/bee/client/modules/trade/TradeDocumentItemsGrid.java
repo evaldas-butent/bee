@@ -10,6 +10,8 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -33,6 +35,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -200,6 +203,8 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
   private static final String STYLE_SHOW_ITEM_STOCK_COMMAND =
       TradeKeeper.STYLE_PREFIX + "show-item-stock";
+  private static final String STYLE_SHOW_RELATED_DOCUMENTS_COMMAND =
+      TradeKeeper.STYLE_PREFIX + "show-related-documents";
   private static final String STYLE_PRICE_CALCULATION_COMMAND =
       TradeKeeper.STYLE_PREFIX + "price-calculation";
 
@@ -226,19 +231,26 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   public void afterCreatePresenter(GridPresenter presenter) {
     if (presenter != null && presenter.getHeader() != null) {
 
-      Button stockButton = new Button(Localized.dictionary().trdItemStock(),
+      Button stockCommand = new Button(Localized.dictionary().trdItemStock(),
           event -> showItemStock(EventUtils.getEventTargetElement(event)));
-      stockButton.addStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND);
-      stockButton.setEnabled(false);
+      stockCommand.addStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND);
+      stockCommand.setEnabled(false);
 
-      presenter.getHeader().addCommandItem(stockButton);
+      presenter.getHeader().addCommandItem(stockCommand);
+
+      Button relatedDocumentsCommand = new Button(Localized.dictionary().trdRelatedDocuments(),
+          event -> showRelatedDocuments(EventUtils.getEventTargetElement(event)));
+      relatedDocumentsCommand.addStyleName(STYLE_SHOW_RELATED_DOCUMENTS_COMMAND);
+      relatedDocumentsCommand.setEnabled(false);
+
+      presenter.getHeader().addCommandItem(relatedDocumentsCommand);
 
       if (BeeKeeper.getUser().canEditData(getViewName())) {
-        Button priceButton = new Button(Localized.dictionary().recalculateTradeItemPriceCaption(),
+        Button priceCommand = new Button(Localized.dictionary().recalculateTradeItemPriceCaption(),
             event -> recalculatePrice());
-        priceButton.addStyleName(STYLE_PRICE_CALCULATION_COMMAND);
+        priceCommand.addStyleName(STYLE_PRICE_CALCULATION_COMMAND);
 
-        presenter.getHeader().addCommandItem(priceButton);
+        presenter.getHeader().addCommandItem(priceCommand);
       }
     }
 
@@ -304,12 +316,19 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
     if (header != null) {
       IsRow row = event.getRowValue();
+      boolean isService = row != null && row.isTrue(getDataIndex(COL_ITEM_IS_SERVICE));
 
-      boolean enable = row != null
-          && DataUtils.isId(row.getLong(getDataIndex(COL_ITEM)))
-          && !row.isTrue(getDataIndex(COL_ITEM_IS_SERVICE));
+      boolean enable = row != null && !isService
+          && DataUtils.isId(row.getLong(getDataIndex(COL_ITEM)));
 
       header.enableCommandByStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND, enable);
+
+      if (enable) {
+        TradeDocumentPhase phase = TradeUtils.getDocumentPhase(getParentRow(getGridView()));
+        enable = phase != null && phase.modifyStock() && DataUtils.hasId(row);
+      }
+
+      header.enableCommandByStyleName(STYLE_SHOW_RELATED_DOCUMENTS_COMMAND, enable);
     }
 
     super.onActiveRowChange(event);
@@ -906,6 +925,35 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
           if (widget != null) {
             Global.showModalWidget(caption, widget, target);
+          }
+        }
+      });
+    }
+  }
+
+  private void showRelatedDocuments(final Element target) {
+    if (DataUtils.hasId(getActiveRow())) {
+      final long id = getActiveRowId();
+      Long parent = getLongValue(COL_TRADE_ITEM_PARENT);
+
+      ParameterList parameters = TradeKeeper.createArgs(SVC_GET_RELATED_TRADE_ITEMS);
+      parameters.addQueryItem(Service.VAR_ID, id);
+
+      if (DataUtils.isId(parent)) {
+        parameters.addQueryItem(COL_TRADE_ITEM_PARENT, parent);
+      }
+
+      BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (Objects.equals(id, getActiveRowId())) {
+            if (response.hasResponse()) {
+              BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
+              Global.showModalGrid(Localized.dictionary().trdRelatedDocuments(), rowSet);
+
+            } else {
+              getGridView().notifyInfo(Localized.dictionary().noData());
+            }
           }
         }
       });
