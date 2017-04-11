@@ -984,6 +984,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
     GridFactory.openGrid(GRID_TRADE_RELATED_ITEMS, interceptor,
         GridFactory.GridOptions.forCaption(caption),
-        ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT));
+        ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
   }
 }
