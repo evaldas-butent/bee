@@ -330,9 +330,8 @@ public enum Report implements HasWidgetSupplier {
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 
-      report.addRowItem(items.get(OrdersConstants.COL_ORDER_ITEM));
-
       for (String item : new String[] {
+          OrdersConstants.COL_ORDER_ITEM,
           COL_NUMBER,
           TransportConstants.COL_TYPE_NAME,
           OrdersConstants.COL_ORDERS_STATUS,
@@ -347,16 +346,17 @@ public enum Report implements HasWidgetSupplier {
           COL_ITEM_BARCODE,
           ALS_ITEM_TYPE_NAME,
           ALS_ITEM_GROUP_NAME,
-          TradeConstants.COL_TRADE_ITEM_QUANTITY,
-          ALS_UNIT_NAME,
-          COL_ITEM_PRICE,
           OrdersConstants.COL_DISCOUNT,
           OrdersConstants.COL_SUPPLIER_TERM,
           TradeConstants.COL_TRADE_SUPPLIER,
-          TradeConstants.COL_TRADE_ITEM_NOTE
+          TradeConstants.COL_TRADE_ITEM_NOTE,
+          COL_ITEM_PRICE,
+          ALS_UNIT_NAME
       }) {
-        report.addColItem(items.get(item));
+        report.addRowItem(items.get(item));
       }
+
+      report.addColItem(items.get(TradeConstants.COL_TRADE_ITEM_QUANTITY));
 
       return Collections.singletonList(report);
     }

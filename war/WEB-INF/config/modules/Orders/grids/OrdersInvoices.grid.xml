@@ -23,8 +23,8 @@
     </DataColumn>
     <DataColumn name="CheckNo" />
     <DataColumn name="OperationName" />
-    <DataColumn name="CustomerName" />
-    <DataColumn name="PayerName" />
+    <RelColumn name="Customer" />
+    <RelColumn name="Payer" />
     <RelColumn name="Manager" renderColumns= "ManagerFirstName ManagerLastName" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />

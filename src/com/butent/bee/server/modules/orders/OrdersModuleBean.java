@@ -26,6 +26,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlCreate;
@@ -46,6 +47,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
@@ -60,6 +62,7 @@ import com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -179,7 +182,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         break;
 
       case SVC_ORDER_REPORTS:
-        response = getReportData();
+        response = getReportData(reqInfo);
         break;
 
       default:
@@ -460,7 +463,32 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     return getTmplItems(items);
   }
 
-  private ResponseObject getReportData() {
+  private ResponseObject getReportData(RequestInfo reqInfo) {
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+
+    HasConditions clause = SqlUtils.and();
+
+    clause.add(report.getCondition(OrdersConstants.TBL_ORDERS, COL_ORDERS_STATUS));
+    clause.add(report.getCondition(TBL_ORDER_TYPES, TransportConstants.COL_TYPE_NAME));
+    clause.add(report.getCondition(OrdersConstants.TBL_ORDERS, COL_START_DATE));
+    clause.add(report.getCondition(OrdersConstants.TBL_ORDERS, COL_END_DATE));
+    clause.add(report.getCondition(TBL_COMPANIES, COL_COMPANY_NAME));
+    clause.add(report.getCondition(TBL_WAREHOUSES, ClassifierConstants.COL_WAREHOUSE_CODE));
+    clause.add(report.getCondition(TBL_ORDER_SERIES, COL_SERIES_NAME));
+    clause.add(report.getCondition(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME),
+        "' '", SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), COL_TRADE_MANAGER));
+    clause.add(report.getCondition(TBL_ITEMS, COL_ITEM_NAME));
+    clause.add(report.getCondition(TBL_ITEMS, COL_ITEM_ARTICLE));
+    clause.add(report.getCondition(TBL_ITEMS, COL_ITEM_BARCODE));
+    clause.add(report.getCondition(TBL_UNITS, COL_UNIT_NAME));
+    clause.add(report.getCondition(ALS_ITEM_TYPES, COL_CATEGORY_NAME));
+    clause.add(report.getCondition(ALS_ITEM_GROUPS, COL_CATEGORY_NAME));
+    clause.add(report.getCondition("SupplierCompany", COL_COMPANY_NAME));
+    clause.add(report.getCondition(TBL_ORDER_ITEMS, COL_SUPPLIER_TERM));
+    clause.add(report.getCondition(TBL_ORDER_ITEMS, COL_TRADE_ITEM_NOTE));
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_ORDER_ITEMS,
+        sys.getIdName(TBL_ORDER_ITEMS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_ORDER_ITEM));
+
     SqlSelect select = new SqlSelect()
         .addFields(TBL_ORDERS, COL_ORDERS_STATUS, COL_START_DATE, COL_END_DATE, COL_TRADE_NUMBER)
         .addFields(TBL_ORDER_ITEMS, COL_DISCOUNT, COL_ITEM_PRICE, COL_TRADE_ITEM_QUANTITY,
@@ -475,8 +503,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         .addFields(TBL_ORDER_SERIES, COL_SERIES_NAME)
         .addFields(TBL_WAREHOUSES, ClassifierConstants.COL_WAREHOUSE_CODE)
         .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
-        .addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME),
-          SqlUtils.constant(BeeConst.STRING_EMPTY)),
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME),
           SqlUtils.constant(BeeConst.STRING_SPACE),
           SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME),
             SqlUtils.constant(BeeConst.STRING_EMPTY))), TradeConstants.COL_TRADE_MANAGER)
@@ -491,16 +518,15 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         .addFromLeft(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
         .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_TRADE_MANAGER))
         .addFromLeft(TBL_COMPANY_PERSONS, sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS,
-            sys.getIdName(TBL_USERS)))
-        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
-            sys.getIdName(TBL_COMPANY_PERSONS)))
+            COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
         .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
         .addFromLeft(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
         .addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES, sys.joinTables(TBL_ITEM_CATEGORY_TREE,
             ALS_ITEM_TYPES, TBL_ITEMS, COL_TYPE))
         .addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS,
             sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS, TBL_ITEMS, COL_ITEM_GROUP))
-        .setWhere(SqlUtils.isNull(TBL_ORDER_ITEMS, COL_TRADE_ITEM_PARENT));
+        .setWhere(SqlUtils.and(clause, SqlUtils.isNull(TBL_ORDER_ITEMS, COL_TRADE_ITEM_PARENT)));
 
     return ResponseObject.response(qs.getData(select));
   }
@@ -1688,7 +1714,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
         for (BeeRow component : qs.getViewData(rowSet.getViewName(),
             Filter.equals(COL_TRADE_ITEM_PARENT, complectId))) {
-          discount += BeeUtils.unbox(total.getDiscount(component));
+          discount += BeeUtils.round(BeeUtils.unbox(total.getDiscount(component)), 2);
         }
       }
 

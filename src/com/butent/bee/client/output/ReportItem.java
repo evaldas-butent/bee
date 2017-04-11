@@ -73,7 +73,12 @@ public abstract class ReportItem implements BeeSerializable {
           return (int) total + 1;
         case LIST:
           if (total == null) {
-            return new TreeSet<>(Collections.singleton(value));
+            return new TreeSet<Object>(Collections.singleton(value)) {
+              @Override
+              public String toString() {
+                return value.toString();
+              }
+            };
           }
           ((Collection<ReportValue>) total).add(value);
           break;
