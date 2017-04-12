@@ -1340,9 +1340,11 @@ public class ServiceModuleBean implements BeeModule {
           .addFields(TBL_EMAILS, COL_EMAIL)
           .addFields(TBL_CONTACTS, COL_PHONE)
           .addFields(TBL_PERSONS, COL_FIRST_NAME)
-          .addFields(TBL_SERVICE_OBJECTS, COL_MODEL)
+          .addFields(TBL_SERVICE_OBJECTS, COL_MODEL, COL_SERIAL_NO, COL_ARTICLE_NO)
           .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_MANUFACTURER_NAME)
-          .addFields(TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT)
+          .addFields(TBL_SERVICE_MAINTENANCE, COL_DEPARTMENT, COL_EQUIPMENT,
+              COL_MAINTENANCE_DESCRIPTION)
+          .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_CATEGORY_NAME)
           .addFrom(TBL_MAINTENANCE_COMMENTS)
           .addFromInner(TBL_SERVICE_MAINTENANCE, sys.joinTables(TBL_SERVICE_MAINTENANCE,
               TBL_MAINTENANCE_COMMENTS, COL_SERVICE_MAINTENANCE))
@@ -1360,6 +1362,8 @@ public class ServiceModuleBean implements BeeModule {
               sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
           .addFromLeft(VIEW_MAINTENANCE_STATES,
               sys.joinTables(VIEW_MAINTENANCE_STATES, TBL_SERVICE_MAINTENANCE, COL_STATE))
+          .addFromLeft(TBL_SERVICE_TREE,
+              sys.joinTables(TBL_SERVICE_TREE, TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY))
           .setWhere(sys.idEquals(TBL_MAINTENANCE_COMMENTS, commentId)));
 
       if (commentInfoRow != null) {
@@ -1491,6 +1495,10 @@ public class ServiceModuleBean implements BeeModule {
         tr().append(
             td().text(dic.svcRepair()), td().text(maintenanceId)));
 
+    deviceDescription = BeeUtils.joinWords(commentInfoRow.getValue(ALS_CATEGORY_NAME),
+        deviceDescription, commentInfoRow.getValue(COL_SERIAL_NO),
+        commentInfoRow.getValue(COL_ARTICLE_NO));
+
     if (!BeeUtils.isEmpty(deviceDescription)) {
       fields.append(tr().append(
           td().text(dic.svcDevice()), td().text(deviceDescription)));
@@ -1510,6 +1518,25 @@ public class ServiceModuleBean implements BeeModule {
           td().text(dic.svcTerm()), td().text(Formatter.renderDateTime(dtfInfo, termValue))));
     }
 
+    String maintenanceDescription = commentInfoRow.getValue(COL_MAINTENANCE_DESCRIPTION);
+
+    if (!BeeUtils.isEmpty(maintenanceDescription)) {
+      fields.append(tr().append(td().text(dic.svcFaultInfo()), td().text(maintenanceDescription)));
+    }
+
+    List<Long> equipmentIds = DataUtils.parseIdList(commentInfoRow.getValue(COL_EQUIPMENT));
+
+    if (!BeeUtils.isEmpty(equipmentIds)) {
+      Set<String> equipmentValues = qs.getValueSet(new SqlSelect()
+          .addFields(TBL_EQUIPMENT, COL_EQUIPMENT_NAME)
+          .addFrom(TBL_EQUIPMENT)
+          .setWhere(sys.idInList(TBL_EQUIPMENT, equipmentIds)));
+
+      if (!equipmentValues.isEmpty()) {
+        fields.append(tr().append(td().text(dic.svcEquipment()),
+            td().text(BeeUtils.joinItems(equipmentValues))));
+      }
+    }
     List<Element> cells = fields.queryTag(Tags.TD);
     for (Element cell : cells) {
       if (cell.index() == 0) {
