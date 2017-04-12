@@ -115,7 +115,7 @@ public class TradeActStockReport extends ReportInterceptor {
     String h2;
 
     if (start == null || end == null) {
-      h1 = Localized.dictionary().trdRemainders();
+      h1 = Localized.dictionary().taRemainders();
       h2 = Format.renderDateLong(BeeUtils.nvl(start, end));
 
     } else {
@@ -371,7 +371,7 @@ public class TradeActStockReport extends ReportInterceptor {
 
       String fileName;
       if (start == null || end == null) {
-        fileName = Localized.dictionary().trdRemainders();
+        fileName = Localized.dictionary().taRemainders();
       } else {
         fileName = Localized.dictionary().trdMovementOfGoods();
       }

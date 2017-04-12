@@ -3,7 +3,7 @@
 
        name="TradeReports" label="=reports" parent="Trade" order="110" separator="true"
 >
-  <Item name="TradeStockReport" label="=trdStock" service="report" parameters="TradeStock" />
+  <Item name="TradeStockReport" label="=trdReportStock" service="report" parameters="TradeStock" />
   <Item name="TradeMovementOfGoodsReport" label="=trdMovementOfGoods" service="report"
         parameters="TradeMovementOfGoods" />
 </Entry>

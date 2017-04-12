@@ -5460,6 +5460,8 @@ public interface Dictionary {
     return Localized.format(g("taRecalculatedPrices"), _m);
   }
 
+  default String taRemainders() {return g("taRemainders");}
+
   default String taReportItemsByCompany() {return g("taReportItemsByCompany");}
 
   default String taReportServices() {return g("taReportServices");}
@@ -6787,13 +6789,13 @@ public interface Dictionary {
 
   default String trdRelatedDocuments() {return g("trdRelatedDocuments");}
 
-  default String trdRemainders() {return g("trdRemainders");}
-
   default String trdRemindTemplateFirstParagraph() {return g("trdRemindTemplateFirstParagraph");}
 
   default String trdRemindTemplateLastParagraph() {return g("trdRemindTemplateLastParagraph");}
 
   default String trdReminderTemplates() {return g("trdReminderTemplates");}
+
+  default String trdReportStock() {return g("trdReportStock");}
 
   default String trdSaleItems() {return g("trdSaleItems");}
 

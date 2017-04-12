@@ -8,7 +8,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="TradeStockReport" caption="=trdStock"
+  name="TradeStockReport" caption="=trdReportStock"
   >
   <FlowPanel>
     <br/>
