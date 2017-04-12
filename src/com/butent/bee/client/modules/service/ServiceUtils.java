@@ -11,6 +11,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -22,6 +23,8 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -69,6 +72,22 @@ public final class ServiceUtils {
 
   public static double calculateServicePrice(BeeRow commentRow, IsRow serviceMaintenanceRow) {
     return calculateServicePrice(0, commentRow, serviceMaintenanceRow);
+  }
+
+  public static DateTime calculateWarrantyDate(SelectorEvent event) {
+    DateTime warrantyDate = null;
+    BeeRow warrantyRow = event.getRelatedRow();
+
+    if (warrantyRow != null) {
+      int duration = BeeUtils.unbox(warrantyRow.getInteger(
+          Data.getColumnIndex(event.getRelatedViewName(), COL_WARRANTY_DURATION)));
+      if (BeeUtils.isPositive(duration)) {
+        DateTime warrantyValidToValue = new DateTime();
+        TimeUtils.add(warrantyValidToValue, TimeUtils.FIELD_DATE, duration);
+        warrantyDate = warrantyValidToValue;
+      }
+    }
+    return warrantyDate;
   }
 
   public static void checkCanChangeState(Boolean isFinalState,

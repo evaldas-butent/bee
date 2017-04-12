@@ -11,6 +11,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -28,7 +30,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 
-public class MaintenanceCommentForm extends AbstractFormInterceptor {
+public class MaintenanceCommentForm extends AbstractFormInterceptor
+    implements SelectorEvent.Handler {
 
   private static final String WIDGET_LABEL_NAME = "Label";
 
@@ -53,6 +56,7 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor {
       FormFactory.WidgetDescriptionCallback callback) {
     if (BeeUtils.same(name, COL_WARRANTY_TYPE) && widget instanceof UnboundSelector) {
       widgetTypeSelector = (UnboundSelector) widget;
+      widgetTypeSelector.addSelectorHandler(this);
 
     } else if (BeeUtils.same(name, COL_WARRANTY) && widget instanceof InputDateTime) {
       warrantyValidToDate = (InputDateTime) widget;
@@ -119,6 +123,14 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor {
       urgentCheckbox.setVisible(!BeeUtils.isEmpty(serviceMaintenance
           .getString(Data.getColumnIndex(TBL_SERVICE_MAINTENANCE, COL_ENDING_DATE))));
     }
+  }
+
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+   if (event.isChanged() && event.hasRelatedView(TBL_WARRANTY_TYPES)
+       && warrantyValidToDate != null) {
+     warrantyValidToDate.setText(Format.renderDate(ServiceUtils.calculateWarrantyDate(event)));
+   }
   }
 
   @Override
