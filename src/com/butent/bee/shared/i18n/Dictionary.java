@@ -3312,6 +3312,8 @@ public interface Dictionary {
 
   default String itemCategoryTree() {return g("itemCategoryTree");}
 
+  default String itemFilter() {return g("itemFilter");}
+
   default String itemGraphics() {return g("itemGraphics");}
 
   default String itemGroup() {return g("itemGroup");}
@@ -4856,6 +4858,10 @@ public interface Dictionary {
   default String recalls() {return g("recalls");}
 
   default String received() {return g("received");}
+
+  default String receivedDateFrom() {return g("receivedDateFrom");}
+
+  default String receivedDateTo() {return g("receivedDateTo");}
 
   default String recipient() {return g("recipient");}
 
