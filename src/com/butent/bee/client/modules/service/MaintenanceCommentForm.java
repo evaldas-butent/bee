@@ -27,6 +27,8 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 
@@ -119,7 +121,7 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
       ((InputBoolean) customerSentWidget).setEnabled(!(isSendEmail && isSendSms));
     }
 
-    if (serviceMaintenance != null) {
+    if (serviceMaintenance != null && urgentCheckbox != null) {
       urgentCheckbox.setVisible(!BeeUtils.isEmpty(serviceMaintenance
           .getString(Data.getColumnIndex(TBL_SERVICE_MAINTENANCE, COL_ENDING_DATE))));
     }
@@ -138,8 +140,7 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
     super.onStartNewRow(form, oldRow, newRow);
 
     if (serviceMaintenance != null) {
-      newRow.setValue(getDataIndex(COL_SERVICE_MAINTENANCE),
-          serviceMaintenance.getId());
+      newRow.setValue(getDataIndex(COL_SERVICE_MAINTENANCE), serviceMaintenance.getId());
 
       newRow.setValue(getDataIndex(COL_MAINTENANCE_STATE), serviceMaintenance
           .getLong(Data.getColumnIndex(TBL_SERVICE_MAINTENANCE, COL_STATE)));
@@ -149,15 +150,15 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
       form.refreshBySource(COL_EVENT_NOTE);
 
       if (stateProcessRow != null) {
+        DataInfo processInfo = Data.getDataInfo(TBL_STATE_PROCESS);
         newRow.setValue(getDataIndex(COL_STATE_COMMENT), Boolean.TRUE);
 
         setWidgetsVisibility(BeeUtils.isTrue(stateProcessRow
-            .getBoolean(Data.getColumnIndex(TBL_STATE_PROCESS, COL_TERM))),
+                .getBoolean(processInfo.getColumnIndex(COL_TERM))),
             form.getWidgetBySource(COL_TERM),
             form.getWidgetByName(COL_TERM + WIDGET_LABEL_NAME, false));
 
-        Long itemId = stateProcessRow.getLong(Data.getColumnIndex(TBL_STATE_PROCESS,
-            COL_MAINTENANCE_ITEM));
+        Long itemId = stateProcessRow.getLong(processInfo.getColumnIndex(COL_MAINTENANCE_ITEM));
 
         boolean visibleItem = DataUtils.isId(itemId);
         setWidgetsVisibility(DataUtils.isId(itemId),
@@ -168,18 +169,21 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
 
         if (visibleItem) {
           newRow.setValue(getDataIndex(COL_MAINTENANCE_ITEM), BeeUtils.toString(itemId));
-          newRow.setValue(getDataIndex(ALS_MAINTENANCE_ITEM_NAME), stateProcessRow
-              .getString(Data.getColumnIndex(TBL_STATE_PROCESS, ALS_MAINTENANCE_ITEM_NAME)));
+          RelationUtils.updateRow(Data.getDataInfo(getViewName()), COL_ITEM, newRow,
+              processInfo, stateProcessRow, false);
           form.refreshBySource(COL_MAINTENANCE_ITEM);
+
+          newRow.setValue(getDataIndex(COL_ITEM_PRICE),
+              stateProcessRow.getValue(processInfo.getColumnIndex(COL_ITEM_PRICE)));
+          form.refreshBySource(COL_ITEM_PRICE);
         }
 
-        String commentValue = stateProcessRow
-            .getString(Data.getColumnIndex(TBL_STATE_PROCESS, COL_MESSAGE));
+        String commentValue = stateProcessRow.getString(processInfo.getColumnIndex(COL_MESSAGE));
         newRow.setValue(getDataIndex(COL_COMMENT), commentValue);
         form.refreshBySource(COL_COMMENT);
 
         Boolean notifyCustomer = stateProcessRow
-            .getBoolean(Data.getColumnIndex(TBL_STATE_PROCESS, COL_NOTIFY_CUSTOMER));
+            .getBoolean(processInfo.getColumnIndex(COL_NOTIFY_CUSTOMER));
 
         if (BeeUtils.isTrue(notifyCustomer)) {
           newRow.setValue(getDataIndex(COL_CUSTOMER_SENT), notifyCustomer);
@@ -187,7 +191,7 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
         }
 
         Boolean showCustomerValue = stateProcessRow
-            .getBoolean(Data.getColumnIndex(TBL_STATE_PROCESS, COL_SHOW_CUSTOMER));
+            .getBoolean(processInfo.getColumnIndex(COL_SHOW_CUSTOMER));
 
         if (BeeUtils.isTrue(showCustomerValue)) {
           newRow.setValue(getDataIndex(COL_SHOW_CUSTOMER), showCustomerValue);
@@ -195,7 +199,7 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
         }
 
         boolean isWarrantyVisible = BeeUtils.toBoolean(stateProcessRow
-            .getString(Data.getColumnIndex(TBL_STATE_PROCESS, COL_WARRANTY)));
+            .getString(processInfo.getColumnIndex(COL_WARRANTY)));
         setWidgetsVisibility(isWarrantyVisible,
             form.getWidgetByName(COL_WARRANTY + WIDGET_LABEL_NAME, false), warrantyValidToDate);
 
