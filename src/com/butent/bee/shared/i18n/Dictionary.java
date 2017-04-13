@@ -4863,6 +4863,10 @@ public interface Dictionary {
 
   default String receivedDateTo() {return g("receivedDateTo");}
 
+  default String receivedMonth() {return g("receivedMonth");}
+
+  default String receivedYear() {return g("receivedYear");}
+
   default String recipient() {return g("recipient");}
 
   default String recordAddicted() {return g("recordAddicted");}
