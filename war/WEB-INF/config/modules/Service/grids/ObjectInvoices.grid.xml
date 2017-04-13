@@ -7,6 +7,10 @@
   editPopup="true" flexGrow="1"
   >
   <xi:include href="../../Orders/grids/columns/Invoices.columns.xml" />
+  <g:columns>
+    <RelColumn name="ServiceMaintenance" viewName="ServiceMaintenance" renderColumns="ServiceMaintenance" filterSupplier="value"
+               editPopup="true" label="=svcRepair" />
+  </g:columns>
 
   <g:rowStyle>
     <ui:inline>="color: red"</ui:inline>
