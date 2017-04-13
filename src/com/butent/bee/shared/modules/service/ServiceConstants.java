@@ -209,6 +209,7 @@ public final class ServiceConstants {
   public static final String GRID_OBJECT_DEFECTS = "ObjectDefects";
   public static final String GRID_SERVICE_INVOICES = "ServiceInvoices";
   public static final String GRID_SERVICE_MAINTENANCE = "ServiceMaintenance";
+  public static final String GRID_SERVICE_MAINTENANCE_INVOICES = "ServiceMaintenanceInvoices";
 
   public static final String PROP_MAIN_ITEM = "MainItem";
   public static final String PROP_CRITERIA = "Criteria";
