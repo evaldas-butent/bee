@@ -220,6 +220,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_KPN_CODE = "KPNCode";
   public static final String COL_ITEM_DESCRIPTION = "Description";
 
+  public static final String COL_ITEM_MANUFACTURER = "Manufacturer";
+
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
   public static final String COL_TIME_UNIT = "TimeUnit";
