@@ -6657,6 +6657,8 @@ public interface Dictionary {
 
   default String trdDocumentPhases() {return g("trdDocumentPhases");}
 
+  default String trdDocumentSelection() {return g("trdDocumentSelection");}
+
   default String trdDocumentShort() {return g("trdDocumentShort");}
 
   default String trdDocumentTags() {return g("trdDocumentTags");}

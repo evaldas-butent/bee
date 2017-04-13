@@ -630,9 +630,10 @@
       <xs:enumeration value="TradeActTmplServices" />
       <xs:enumeration value="TradeDocumentFiles" />
       <xs:enumeration value="TradeDocumentItems" />
-      <xs:enumeration value="TradeDocuments" />
+      <xs:enumeration value="TradeDocumentSelection" />
       <xs:enumeration value="TradeDocumentTags" />
       <xs:enumeration value="TradeDocumentTypes" />
+      <xs:enumeration value="TradeDocuments" />
       <xs:enumeration value="TradeExpenditures" />
       <xs:enumeration value="TradeItemCost" />
       <xs:enumeration value="TradeMovement" />
