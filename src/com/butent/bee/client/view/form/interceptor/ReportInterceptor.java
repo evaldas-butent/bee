@@ -206,42 +206,44 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     this.initialParameters = initialParameters;
   }
 
-  protected ReportParameters addBooleanValues(ReportParameters parameters, String... names) {
+  protected void addBooleanValues(ReportParameters parameters, String... names) {
     for (String name : names) {
       parameters.add(name, getBoolean(name));
     }
-    return parameters;
   }
 
-  protected ReportParameters addDateTimeValues(ReportParameters parameters, String... names) {
+  protected void addDateTimeValues(ReportParameters parameters, String... names) {
     for (String name : names) {
       parameters.add(name, getDateTime(name));
     }
-    return parameters;
   }
 
-  protected ReportParameters addEditorValues(ReportParameters parameters, List<String> names) {
+  protected void addEditorValues(ReportParameters parameters, List<String> names) {
     for (String name : names) {
       parameters.add(name, getEditorValue(name));
     }
-    return parameters;
   }
 
-  protected ReportParameters addEditorValues(ReportParameters parameters, String... names) {
+  protected void addEditorValues(ReportParameters parameters, String... names) {
     for (String name : names) {
       parameters.add(name, getEditorValue(name));
     }
-    return parameters;
   }
 
-  protected ReportParameters addGroupBy(ReportParameters parameters, List<String> names) {
+  protected void addGroupBy(ReportParameters parameters, List<String> names) {
     for (String name : names) {
       Integer index = getSelectedIndex(name);
       if (BeeUtils.isPositive(index)) {
         parameters.add(name, index);
       }
     }
-    return parameters;
+  }
+
+  protected void addSelectedIndex(ReportParameters parameters, String name, int minValue) {
+    Integer index = getSelectedIndex(name);
+    if (index != null && index >= minValue) {
+      parameters.add(name, index);
+    }
   }
 
   protected boolean checkRange(DateTime start, DateTime end) {
@@ -358,7 +360,18 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     if (widget instanceof ListBox) {
       return ((ListBox) widget).getSelectedIndex();
     } else {
-      widgetNotFound(name);
+      widgetIsNot(name, ListBox.class);
+      return null;
+    }
+  }
+
+  protected String getSelectedItemText(String name) {
+    Widget widget = getFormView().getWidgetByName(name);
+    if (widget instanceof ListBox) {
+      int index = ((ListBox) widget).getSelectedIndex();
+      return (index >= 0) ? ((ListBox) widget).getItemText(index) : null;
+    } else {
+      widgetIsNot(name, ListBox.class);
       return null;
     }
   }

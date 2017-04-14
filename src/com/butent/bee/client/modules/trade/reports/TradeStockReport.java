@@ -4,6 +4,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportParameters;
@@ -13,11 +14,18 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.StringList;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -116,6 +124,8 @@ public class TradeStockReport extends ReportInterceptor {
 
   @Override
   protected void clearFilter() {
+    clearEditors(NAME_DATE, NAME_RECEIVED_FROM, NAME_RECEIVED_TO, NAME_ITEM_FILTER);
+    clearEditors(SELECTOR_NAMES);
   }
 
   @Override
@@ -124,7 +134,38 @@ public class TradeStockReport extends ReportInterceptor {
 
   @Override
   protected String getBookmarkLabel() {
-    return null;
+    List<String> labels = StringList.uniqueCaseSensitive();
+
+    labels.addAll(getCaptions(getDateTime(NAME_DATE),
+        getBoolean(NAME_QUANTITY), getBoolean(NAME_AMOUNT),
+        getItemPrice(), getSelectorLabel(NAME_CURRENCY)));
+
+    SELECTOR_NAMES.forEach(name -> labels.add(getSelectorLabel(name)));
+
+    DateTime rFrom = getDateTime(NAME_RECEIVED_FROM);
+    DateTime rTo = getDateTime(NAME_RECEIVED_TO);
+
+    if (rFrom != null || rTo != null) {
+      labels.add(BeeUtils.joinWords(Localized.dictionary().received(),
+          Format.renderPeriod(rFrom, rTo)));
+    }
+
+    labels.add(getEditorValue(NAME_ITEM_FILTER));
+
+    GROUP_NAMES.stream()
+        .filter(name -> BeeUtils.isPositive(getSelectedIndex(name)))
+        .forEach(name -> labels.add(getSelectedItemText(name)));
+
+    if (getBoolean(NAME_SUMMARY)) {
+      labels.add(Localized.dictionary().summary());
+    }
+
+    if (BeeUtils.isPositive(getSelectedIndex(NAME_COLUMNS))) {
+      labels.add(BeeUtils.joinWords(Localized.dictionary().columns(),
+          getSelectedItemText(NAME_COLUMNS)));
+    }
+
+    return BeeUtils.joinWords(labels);
   }
 
   @Override
@@ -134,12 +175,46 @@ public class TradeStockReport extends ReportInterceptor {
 
   @Override
   protected ReportParameters getReportParameters() {
-    return null;
+    ReportParameters parameters = new ReportParameters();
+
+    addDateTimeValues(parameters, NAME_DATE, NAME_RECEIVED_FROM, NAME_RECEIVED_TO);
+    addBooleanValues(parameters, NAME_QUANTITY, NAME_AMOUNT, NAME_SUMMARY);
+
+    addSelectedIndex(parameters, NAME_PRICE, 0);
+    addSelectedIndex(parameters, NAME_COLUMNS, 1);
+
+    addEditorValues(parameters, NAME_CURRENCY, NAME_ITEM_FILTER);
+    addEditorValues(parameters, SELECTOR_NAMES);
+
+    addGroupBy(parameters, GROUP_NAMES);
+
+    return parameters;
   }
 
   @Override
   protected boolean validateParameters(ReportParameters parameters) {
-    return true;
+    return checkRange(getDateTime(NAME_RECEIVED_FROM), getDateTime(NAME_RECEIVED_TO));
+  }
+
+  private static List<String> getCaptions(DateTime date, boolean qty, boolean amount,
+      ItemPrice itemPrice, String currencyName) {
+
+    List<String> captions = new ArrayList<>();
+
+    captions.add(Localized.dictionary().trdReportStock());
+    if (date != null) {
+      captions.add(Format.renderDateLong(date));
+    }
+
+    if (qty && !amount) {
+      captions.add(Localized.dictionary().quantity());
+
+    } else if (itemPrice != null || !BeeUtils.isEmpty(currencyName)) {
+      String priceName = (itemPrice == null) ? null : itemPrice.getCaption();
+      captions.add(BeeUtils.joinItems(priceName, currencyName));
+    }
+
+    return captions;
   }
 
   private static Filter getDocumentSelectorFilter() {
@@ -155,5 +230,9 @@ public class TradeStockReport extends ReportInterceptor {
 
     return Filter.and(Filter.any(COL_TRADE_DOCUMENT_PHASE, phases),
         Filter.any(COL_OPERATION_TYPE, operationTypes));
+  }
+
+  private ItemPrice getItemPrice() {
+    return EnumUtils.getEnumByIndex(ItemPrice.class, getSelectedIndex(NAME_PRICE));
   }
 }
