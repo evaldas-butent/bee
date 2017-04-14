@@ -1,8 +1,6 @@
 package com.butent.bee.client.view.form.interceptor;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -191,14 +189,8 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
     HeaderView header = form.getViewPresenter().getHeader();
     if (header != null && !header.hasAction(Action.REMOVE_FILTER)) {
-
       Button clearFilter = new Button(Localized.dictionary().clearFilter());
-      clearFilter.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          clearFilter();
-        }
-      });
+      clearFilter.addClickHandler(event -> clearFilter());
 
       header.addCommandItem(clearFilter);
     }
@@ -389,7 +381,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected void loadBoolean(ReportParameters parameters, String name, FormView form) {
+  protected static void loadBoolean(ReportParameters parameters, String name, FormView form) {
     Boolean value = parameters.getBoolean(name);
     if (BeeUtils.isTrue(value)) {
       Widget widget = form.getWidgetByName(name);
@@ -403,7 +395,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected void loadDateTime(ReportParameters parameters, String name, FormView form) {
+  protected static void loadDateTime(ReportParameters parameters, String name, FormView form) {
     DateTime dateTime = parameters.getDateTime(name);
     if (dateTime != null) {
       Widget widget = form.getWidgetByName(name);
@@ -417,7 +409,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected void loadEditor(ReportParameters parameters, String name, FormView form) {
+  protected static void loadEditor(ReportParameters parameters, String name, FormView form) {
     String value = parameters.get(name);
     if (!BeeUtils.isEmpty(value)) {
       Widget widget = form.getWidgetByName(name);
@@ -431,9 +423,9 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected void loadGroup(ReportParameters parameters, String name, FormView form) {
+  protected static void loadList(ReportParameters parameters, String name, FormView form) {
     Integer index = parameters.getInteger(name);
-    if (BeeUtils.isPositive(index)) {
+    if (index != null) {
       Widget widget = form.getWidgetByName(name);
 
       if (widget instanceof ListBox) {
@@ -445,13 +437,15 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected void loadGroupBy(ReportParameters parameters, Collection<String> names, FormView form) {
+  protected static void loadGroupBy(ReportParameters parameters, Collection<String> names,
+      FormView form) {
+
     for (String name : names) {
-      loadGroup(parameters, name, form);
+      loadList(parameters, name, form);
     }
   }
 
-  protected void loadId(ReportParameters parameters, String name, FormView form) {
+  protected static void loadId(ReportParameters parameters, String name, FormView form) {
     Long id = parameters.getLong(name);
     if (DataUtils.isId(id)) {
       Widget widget = form.getWidgetByName(name);
@@ -465,7 +459,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected void loadIds(ReportParameters parameters, String name, FormView form) {
+  protected static void loadIds(ReportParameters parameters, String name, FormView form) {
     String ids = parameters.get(name);
     if (!BeeUtils.isEmpty(ids)) {
       Widget widget = form.getWidgetByName(name);
@@ -478,13 +472,15 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected void loadMulti(ReportParameters parameters, Collection<String> names, FormView form) {
+  protected static void loadMulti(ReportParameters parameters, Collection<String> names,
+      FormView form) {
+
     for (String name : names) {
       loadIds(parameters, name, form);
     }
   }
 
-  protected void loadText(ReportParameters parameters, String name, FormView form) {
+  protected static void loadText(ReportParameters parameters, String name, FormView form) {
     String text = parameters.getText(name);
     if (!BeeUtils.isEmpty(text)) {
       Widget widget = form.getWidgetByName(name);
@@ -566,6 +562,18 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
         BeeKeeper.getStorage().set(storageKey(user, name), index);
       }
+    }
+  }
+
+  protected void storeSelectedIndex(String name, int minValue) {
+    Long user = BeeKeeper.getUser().getUserId();
+    if (DataUtils.isId(user)) {
+      Integer index = getSelectedIndex(name);
+      if (index != null && index < minValue) {
+        index = null;
+      }
+
+      BeeKeeper.getStorage().set(storageKey(user, name), index);
     }
   }
 

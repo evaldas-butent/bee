@@ -4,16 +4,16 @@
     <!ENTITY dt "width: 10em;">
     <!ENTITY flt "width: 24em;">
     <!ENTITY glst "margin-right: 1em;">
-    <!ENTITY gitems "<item>-</item>
-      <item>=itemType</item>
-      <item>=itemGroup</item>
-      <item>=item</item>
-      <item>=article</item>
-      <item>=unit</item>
-      <item>=warehouse</item>
-      <item>=supplier</item>
-      <item>=receivedYear</item>
-      <item>=receivedMonth</item>">
+    <!ENTITY gitems '<item>-</item>
+      <item value="type">=itemType</item>
+      <item value="group">=itemGroup</item>
+      <item value="item">=item</item>
+      <item value="article">=article</item>
+      <item value="unit">=unit</item>
+      <item value="warehouse">=warehouse</item>
+      <item value="supplier">=supplier</item>
+      <item value="year">=receivedYear</item>
+      <item value="month">=receivedMonth</item>'>
     ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
@@ -148,15 +148,15 @@
         </cell>
         <ListBox name="Columns">
           <item>-</item>
-          <item>=warehouse</item>
-          <item>=itemType</item>
-          <item>=itemGroup</item>
-          <item>=item</item>
-          <item>=article</item>
-          <item>=unit</item>
-          <item>=supplier</item>
-          <item>=receivedYear</item>
-          <item>=receivedMonth</item>
+          <item value="warehouse">=warehouse</item>
+          <item value="type">=itemType</item>
+          <item value="group">=itemGroup</item>
+          <item value="item">=item</item>
+          <item value="article">=article</item>
+          <item value="unit">=unit</item>
+          <item value="supplier">=supplier</item>
+          <item value="year">=receivedYear</item>
+          <item value="month">=receivedMonth</item>
         </ListBox>
       </row>
     </Table>
