@@ -313,7 +313,7 @@ public class TradeActStockReport extends ReportInterceptor {
           logger.warning(name, "has no label");
         }
 
-        headers.add(BeeUtils.joinWords(label, getFilterLabel(name)));
+        headers.add(BeeUtils.joinWords(label, getSelectorLabel(name)));
 
         Set<Long> values = DataUtils.parseIdSet(ids);
 
@@ -392,7 +392,7 @@ public class TradeActStockReport extends ReportInterceptor {
     labels.addAll(captions);
 
     for (String name : FILTER_NAMES) {
-      labels.add(getFilterLabel(name));
+      labels.add(getSelectorLabel(name));
     }
 
     for (String groupName : GROUP_NAMES) {

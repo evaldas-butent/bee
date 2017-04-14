@@ -180,7 +180,7 @@ public class TradeActTransferReport extends ReportInterceptor {
 
     if (DataUtils.isId(currency)) {
       params.addDataItem(COL_TA_CURRENCY, currency);
-      currencyName = getFilterLabel(NAME_CURRENCY);
+      currencyName = getSelectorLabel(NAME_CURRENCY);
     } else {
       currencyName = ClientDefaults.getCurrencyName();
     }
@@ -197,7 +197,7 @@ public class TradeActTransferReport extends ReportInterceptor {
           logger.warning(name, "has no label");
         }
 
-        headers.add(BeeUtils.joinWords(label, getFilterLabel(name)));
+        headers.add(BeeUtils.joinWords(label, getSelectorLabel(name)));
       }
     }
 
@@ -237,10 +237,10 @@ public class TradeActTransferReport extends ReportInterceptor {
   protected String getBookmarkLabel() {
     List<String> labels = StringList.of(getReportCaption(),
         Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
-        getFilterLabel(NAME_CURRENCY));
+        getSelectorLabel(NAME_CURRENCY));
 
     for (String name : FILTER_NAMES) {
-      labels.add(getFilterLabel(name));
+      labels.add(getSelectorLabel(name));
     }
 
     for (String groupName : GROUP_NAMES) {

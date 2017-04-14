@@ -44,6 +44,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -263,6 +264,14 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
+  protected void clearEditors(String... names) {
+    Arrays.stream(names).forEach(this::clearEditor);
+  }
+
+  protected void clearEditors(Collection<String> names) {
+    names.forEach(this::clearEditor);
+  }
+
   protected abstract void clearFilter();
 
   protected abstract void doReport();
@@ -314,33 +323,6 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected String getFilterLabel(String name) {
-    Widget widget = getFormView().getWidgetByName(name);
-
-    if (widget instanceof MultiSelector) {
-      MultiSelector selector = (MultiSelector) widget;
-      List<Long> ids = DataUtils.parseIdList(selector.getValue());
-
-      if (ids.isEmpty()) {
-        return null;
-      } else {
-        List<String> labels = new ArrayList<>();
-        for (Long id : ids) {
-          labels.add(selector.getRowLabel(id));
-        }
-
-        return BeeUtils.joinItems(labels);
-      }
-
-    } else if (widget instanceof UnboundSelector) {
-      return ((UnboundSelector) widget).getRenderedValue();
-
-    } else {
-      widgetNotFound(name);
-      return null;
-    }
-  }
-
   protected List<String> getGroupBy(List<String> names, List<String> values) {
     List<String> groupBy = StringList.uniqueCaseInsensitive();
 
@@ -375,6 +357,33 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     Widget widget = getFormView().getWidgetByName(name);
     if (widget instanceof ListBox) {
       return ((ListBox) widget).getSelectedIndex();
+    } else {
+      widgetNotFound(name);
+      return null;
+    }
+  }
+
+  protected String getSelectorLabel(String name) {
+    Widget widget = getFormView().getWidgetByName(name);
+
+    if (widget instanceof MultiSelector) {
+      MultiSelector selector = (MultiSelector) widget;
+      List<Long> ids = DataUtils.parseIdList(selector.getValue());
+
+      if (ids.isEmpty()) {
+        return null;
+      } else {
+        List<String> labels = new ArrayList<>();
+        for (Long id : ids) {
+          labels.add(selector.getRowLabel(id));
+        }
+
+        return BeeUtils.joinItems(labels);
+      }
+
+    } else if (widget instanceof UnboundSelector) {
+      return ((UnboundSelector) widget).getRenderedValue();
+
     } else {
       widgetNotFound(name);
       return null;

@@ -297,7 +297,7 @@ public class CompanyUsageReport extends ReportInterceptor {
         args.add(name);
         args.add(value);
 
-        String label = getFilterLabel(name);
+        String label = getSelectorLabel(name);
         if (!BeeUtils.isEmpty(label)) {
           labels.add(label);
         }
@@ -340,7 +340,7 @@ public class CompanyUsageReport extends ReportInterceptor {
     List<String> selectorLabels = new ArrayList<>();
 
     for (String name : SELECTOR_NAMES) {
-      String label = getFilterLabel(name);
+      String label = getSelectorLabel(name);
       if (!BeeUtils.isEmpty(label)) {
         selectorLabels.add(label);
       }
