@@ -230,7 +230,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected void addGroupBy(ReportParameters parameters, List<String> names) {
+  protected void addGroupByIndex(ReportParameters parameters, List<String> names) {
     for (String name : names) {
       Integer index = getSelectedIndex(name);
       if (BeeUtils.isPositive(index)) {
@@ -239,10 +239,26 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
+  protected void addGroupByValue(ReportParameters parameters, List<String> names) {
+    for (String name : names) {
+      Integer index = getSelectedIndex(name);
+      if (BeeUtils.isPositive(index)) {
+        parameters.add(name, getSelectedItemValue(name));
+      }
+    }
+  }
+
   protected void addSelectedIndex(ReportParameters parameters, String name, int minValue) {
     Integer index = getSelectedIndex(name);
     if (index != null && index >= minValue) {
       parameters.add(name, index);
+    }
+  }
+
+  protected void addSelectedValue(ReportParameters parameters, String name, int minValue) {
+    Integer index = getSelectedIndex(name);
+    if (index != null && index >= minValue) {
+      parameters.add(name, getSelectedItemValue(name));
     }
   }
 
@@ -376,6 +392,17 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
+  protected String getSelectedItemValue(String name) {
+    Widget widget = getFormView().getWidgetByName(name);
+    if (widget instanceof ListBox) {
+      int index = ((ListBox) widget).getSelectedIndex();
+      return (index >= 0) ? ((ListBox) widget).getValue(index) : null;
+    } else {
+      widgetIsNot(name, ListBox.class);
+      return null;
+    }
+  }
+
   protected String getSelectorLabel(String name) {
     Widget widget = getFormView().getWidgetByName(name);
 
@@ -445,7 +472,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected static void loadList(ReportParameters parameters, String name, FormView form) {
+  protected static void loadListByIndex(ReportParameters parameters, String name, FormView form) {
     Integer index = parameters.getInteger(name);
     if (index != null) {
       Widget widget = form.getWidgetByName(name);
@@ -459,11 +486,33 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected static void loadGroupBy(ReportParameters parameters, Collection<String> names,
+  protected static void loadListByValue(ReportParameters parameters, String name, FormView form) {
+    String value = parameters.getText(name);
+    if (!BeeUtils.isEmpty(value)) {
+      Widget widget = form.getWidgetByName(name);
+
+      if (widget instanceof ListBox) {
+        ((ListBox) widget).setValue(value);
+        SummaryChangeEvent.maybeSummarize(widget);
+      } else {
+        widgetIsNot(name, ListBox.class);
+      }
+    }
+  }
+
+  protected static void loadGroupByIndex(ReportParameters parameters, Collection<String> names,
       FormView form) {
 
     for (String name : names) {
-      loadList(parameters, name, form);
+      loadListByIndex(parameters, name, form);
+    }
+  }
+
+  protected static void loadGroupByValue(ReportParameters parameters, Collection<String> names,
+      FormView form) {
+
+    for (String name : names) {
+      loadListByValue(parameters, name, form);
     }
   }
 
@@ -573,7 +622,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected void storeGroupBy(List<String> names) {
+  protected void storeGroupByIndex(List<String> names) {
     Long user = BeeKeeper.getUser().getUserId();
     if (DataUtils.isId(user)) {
       for (String name : names) {
@@ -587,6 +636,18 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
+  protected void storeGroupByValue(List<String> names) {
+    Long user = BeeKeeper.getUser().getUserId();
+    if (DataUtils.isId(user)) {
+      for (String name : names) {
+        Integer index = getSelectedIndex(name);
+        String value = BeeUtils.isPositive(index) ? getSelectedItemValue(name) : null;
+
+        BeeKeeper.getStorage().set(storageKey(user, name), value);
+      }
+    }
+  }
+
   protected void storeSelectedIndex(String name, int minValue) {
     Long user = BeeKeeper.getUser().getUserId();
     if (DataUtils.isId(user)) {
@@ -596,6 +657,16 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       }
 
       BeeKeeper.getStorage().set(storageKey(user, name), index);
+    }
+  }
+
+  protected void storeSelectedValue(String name, int minValue) {
+    Long user = BeeKeeper.getUser().getUserId();
+    if (DataUtils.isId(user)) {
+      Integer index = getSelectedIndex(name);
+      String value = (index != null && index >= minValue) ? getSelectedItemValue(name) : null;
+
+      BeeKeeper.getStorage().set(storageKey(user, name), value);
     }
   }
 

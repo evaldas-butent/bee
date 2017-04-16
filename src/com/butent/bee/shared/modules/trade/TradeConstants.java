@@ -3,6 +3,9 @@ package com.butent.bee.shared.modules.trade;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class TradeConstants {
 
   public static void register() {
@@ -342,6 +345,31 @@ public final class TradeConstants {
   public static final int MAX_STOCK_DEPTH = 1_000;
   public static final int DEFAULT_SERIES_NUMBER_LENGTH = 6;
 
+  public static final String RP_DATE = "Date";
+
+  public static final String RP_SHOW_QUANTITY = "Quantity";
+  public static final String RP_SHOW_AMOUNT = "Amount";
+
+  public static final String RP_ITEM_PRICE = "Price";
+  public static final String RP_CURRENCY = "Currency";
+
+  public static final String RP_RECEIVED_FROM = "ReceivedFrom";
+  public static final String RP_RECEIVED_TO = "ReceivedTo";
+
+  public static final String RP_ITEM_FILTER = "ItemFilter";
+
+  public static final String RP_SUMMARY = "Summary";
+  public static final String RP_COLUMNS = "Columns";
+
+  public static final String RP_WAREHOUSES = "Warehouses";
+  public static final String RP_SUPPLIERS = "Suppliers";
+  public static final String RP_MANUFACTURERS = "Manufacturers";
+  public static final String RP_DOCUMENTS = "Documents";
+  public static final String RP_ITEM_TYPES = "ItemTypes";
+  public static final String RP_ITEM_GROUPS = "ItemGroups";
+  public static final String RP_ITEM_CATEGORIES = "ItemCategories";
+  public static final String RP_ITEMS = "Items";
+
   public static String keyStockWarehouse(String warehouseCode) {
     return PROP_STOCK + BeeUtils.trim(warehouseCode);
   }
@@ -352,6 +380,18 @@ public final class TradeConstants {
 
   public static String keyCostWarehouse(String warehouseCode) {
     return PROP_COST + BeeUtils.trim(warehouseCode);
+  }
+
+  public static String reportGroupName(int index) {
+    return "Group" + BeeUtils.toString(index);
+  }
+
+  public static List<String> reportGroupNames(int count) {
+    List<String> names = new ArrayList<>();
+    for (int i = 0; i < count; i++) {
+      names.add(reportGroupName(i));
+    }
+    return names;
   }
 
   private TradeConstants() {

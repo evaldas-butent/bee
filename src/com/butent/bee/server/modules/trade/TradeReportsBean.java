@@ -2,12 +2,17 @@ package com.butent.bee.server.modules.trade;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -43,7 +48,15 @@ public class TradeReportsBean {
   }
 
   private ResponseObject getStockReport(RequestInfo reqInfo) {
-    return ResponseObject.emptyResponse();
+    if (!reqInfo.hasParameter(Service.VAR_REPORT_PARAMETERS)) {
+      return ResponseObject.parameterNotFound(reqInfo.getLabel(), Service.VAR_REPORT_PARAMETERS);
+    }
+
+    ReportParameters parameters =
+        ReportParameters.restore(reqInfo.getParameter(Service.VAR_REPORT_PARAMETERS));
+
+    Map<String, String> result = new HashMap<>(parameters);
+    return ResponseObject.response(result);
   }
 
   private ResponseObject getMovementOfGoodsReport(RequestInfo reqInfo) {

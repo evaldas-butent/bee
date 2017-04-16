@@ -3,8 +3,6 @@ package com.butent.bee.client.modules.trade.acts;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -119,7 +117,7 @@ public class TradeActTransferReport extends ReportInterceptor {
 
       loadMulti(parameters, FILTER_NAMES, form);
 
-      loadGroupBy(parameters, GROUP_NAMES, form);
+      loadGroupByIndex(parameters, GROUP_NAMES, form);
     }
 
     super.onLoad(form);
@@ -132,7 +130,7 @@ public class TradeActTransferReport extends ReportInterceptor {
 
     storeEditorValues(FILTER_NAMES);
 
-    storeGroupBy(GROUP_NAMES);
+    storeGroupByIndex(GROUP_NAMES);
   }
 
   @Override
@@ -263,7 +261,7 @@ public class TradeActTransferReport extends ReportInterceptor {
     addEditorValues(parameters, NAME_CURRENCY);
 
     addEditorValues(parameters, FILTER_NAMES);
-    addGroupBy(parameters, GROUP_NAMES);
+    addGroupByIndex(parameters, GROUP_NAMES);
 
     return parameters;
   }
@@ -459,25 +457,22 @@ public class TradeActTransferReport extends ReportInterceptor {
       final List<String> serviceClasses = Arrays.asList(getColumnStyle(COL_TA_ITEM),
           getColumnStyle(ALS_ITEM_NAME), getColumnStyle(COL_ITEM_ARTICLE));
 
-      table.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          Element target = EventUtils.getEventTargetElement(event);
+      table.addClickHandler(event -> {
+        Element target = EventUtils.getEventTargetElement(event);
 
-          TableCellElement cell = DomUtils.getParentCell(target, true);
-          TableRowElement row = DomUtils.getParentRow(cell, false);
+        TableCellElement cell = DomUtils.getParentCell(target, true);
+        TableRowElement row = DomUtils.getParentRow(cell, false);
 
-          if (hasAct && StyleUtils.hasAnyClass(cell, actClasses)) {
-            long actId = DomUtils.getDataPropertyLong(row, KEY_ACT);
-            if (DataUtils.isId(actId)) {
-              RowEditor.open(VIEW_TRADE_ACTS, actId, Opener.MODAL);
-            }
+        if (hasAct && StyleUtils.hasAnyClass(cell, actClasses)) {
+          long actId = DomUtils.getDataPropertyLong(row, KEY_ACT);
+          if (DataUtils.isId(actId)) {
+            RowEditor.open(VIEW_TRADE_ACTS, actId, Opener.MODAL);
+          }
 
-          } else if (hasService && StyleUtils.hasAnyClass(cell, serviceClasses)) {
-            long itemId = DomUtils.getDataPropertyLong(row, KEY_SERVICE);
-            if (DataUtils.isId(itemId)) {
-              RowEditor.open(VIEW_ITEMS, itemId, Opener.MODAL);
-            }
+        } else if (hasService && StyleUtils.hasAnyClass(cell, serviceClasses)) {
+          long itemId = DomUtils.getDataPropertyLong(row, KEY_SERVICE);
+          if (DataUtils.isId(itemId)) {
+            RowEditor.open(VIEW_ITEMS, itemId, Opener.MODAL);
           }
         }
       });

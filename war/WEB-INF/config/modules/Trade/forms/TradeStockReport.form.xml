@@ -54,36 +54,36 @@
 
         <row>
           <Label text="=warehouses" style="&c1;" />
-          <MultiSelector name="Warehouse" viewName="Warehouses" renderColumns="Code"
+          <MultiSelector name="Warehouses" viewName="Warehouses" renderColumns="Code"
                          choiceColumns="Code Name" newRowEnabled="false" editPopup="true"
                          style="&flt;" summarize="true" />
 
           <Label text="=itemTypes" />
-          <MultiSelector name="Type" viewName="CategoryTree" renderColumns="Name"
+          <MultiSelector name="ItemTypes" viewName="CategoryTree" renderColumns="Name"
                          choiceColumns="ParentName Name" newRowEnabled="false"
                          style="&flt;" summarize="true" />
         </row>
 
         <row>
           <Label text="=suppliers" style="&c1;" />
-          <MultiSelector name="Supplier" viewName="Companies" renderColumns="Name"
+          <MultiSelector name="Suppliers" viewName="Companies" renderColumns="Name"
                          choiceColumns="Name TypeName" newRowEnabled="false" editPopup="true"
                          style="&flt;" summarize="true" />
 
           <Label text="=itemGroups" />
-          <MultiSelector name="Group" viewName="CategoryTree" renderColumns="Name"
+          <MultiSelector name="ItemGroups" viewName="CategoryTree" renderColumns="Name"
                          choiceColumns="ParentName Name" newRowEnabled="false"
                          style="&flt;" summarize="true" />
         </row>
 
         <row>
           <Label text="=manufacturers" style="&c1;" />
-          <MultiSelector name="Manufacturer" viewName="Companies" renderColumns="Name"
+          <MultiSelector name="Manufacturers" viewName="Companies" renderColumns="Name"
                          choiceColumns="Name TypeName" newRowEnabled="false" editPopup="true"
                          style="&flt;" summarize="true" />
 
           <Label text="=itemCategories" />
-          <MultiSelector name="Category" viewName="CategoryTree" renderColumns="Name"
+          <MultiSelector name="ItemCategories" viewName="CategoryTree" renderColumns="Name"
                          choiceColumns="ParentName Name" newRowEnabled="false"
                          style="&flt;" summarize="true" />
         </row>
@@ -99,14 +99,14 @@
           </FlowPanel>
 
           <Label text="=goods" />
-          <MultiSelector name="Item" viewName="Items" filter="!(IsService)"
+          <MultiSelector name="Items" viewName="Items" filter="!(IsService)"
                          renderColumns="Name Article" newRowEnabled="false" editPopup="true"
                          style="&flt;" summarize="true" />
         </row>
 
         <row>
           <Label text="=documents" style="&c1;" />
-          <MultiSelector name="TradeDocument" viewName="TradeDocumentSelection"
+          <MultiSelector name="Documents" viewName="TradeDocumentSelection"
                          renderColumns="Series Number"
                          choiceColumns="Date Series Number OperationName"
                          searchableColumns="Number" newRowEnabled="false"
