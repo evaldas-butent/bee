@@ -3262,6 +3262,8 @@ public interface Dictionary {
 
   default String invalidDateFormat() {return g("invalidDateFormat");}
 
+  default String invalidFilter() {return g("invalidFilter");}
+
   default String invalidIdValue(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);

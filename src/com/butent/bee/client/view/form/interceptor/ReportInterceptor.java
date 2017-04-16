@@ -8,6 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.grid.GridFactory;
@@ -16,7 +17,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.client.output.ReportParameters;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.HasIndexedWidgets;
@@ -267,6 +268,21 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       getFormView().notifyWarning(Localized.dictionary().invalidRange(),
           Format.renderPeriod(start, end));
       return false;
+    } else {
+      return true;
+    }
+  }
+
+  protected boolean checkFilter(String viewName, String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return true;
+
+    } else if (Data.getDataInfo(viewName).parseFilter(input,
+        BeeKeeper.getUser().getUserId()) == null) {
+
+      getFormView().notifyWarning(Localized.dictionary().invalidFilter(), input);
+      return false;
+
     } else {
       return true;
     }

@@ -44,6 +44,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.report.DateTimeFunction;
 import com.butent.bee.shared.report.ReportInfo;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
