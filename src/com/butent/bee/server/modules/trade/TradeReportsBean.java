@@ -6,6 +6,8 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -13,10 +15,12 @@ import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeReportGroup;
@@ -51,6 +55,10 @@ public class TradeReportsBean {
   QueryServiceBean qs;
   @EJB
   UserServiceBean usr;
+  @EJB
+  ParamHolderBean prm;
+  @EJB
+  AdministrationModuleBean adm;
 
   public ResponseObject doService(String service, RequestInfo reqInfo) {
     ResponseObject response;
@@ -98,6 +106,9 @@ public class TradeReportsBean {
     }
 
     Long currency = parameters.getLong(RP_CURRENCY);
+    if (currency == null && showAmount) {
+      currency = prm.getRelation(AdministrationConstants.PRM_CURRENCY);
+    }
 
     Set<Long> warehouses = parameters.getIds(RP_WAREHOUSES);
     Set<Long> suppliers = parameters.getIds(RP_SUPPLIERS);
@@ -152,13 +163,19 @@ public class TradeReportsBean {
 
     IsCondition itemCondition = parseItemFilter(itemFilter);
 
+    boolean needsCost = showAmount && itemPrice == null;
+
     boolean needsItems = itemTypeCondition != null || itemGroupCondition != null
-        || itemCondition != null;
+        || itemCondition != null || showAmount && itemPrice != null;
 
     String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
     String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
 
     String aliasQuantity = SqlUtils.uniqueName("qty");
+
+    String aliasPrice = SqlUtils.uniqueName("prc");
+    String aliasCurrency = SqlUtils.uniqueName("cur");
+    String aliasAmount = SqlUtils.uniqueName("amn");
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, COL_STOCK_WAREHOUSE);
@@ -167,6 +184,18 @@ public class TradeReportsBean {
       query.addField(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, aliasQuantity);
     } else {
       query.addExpr(zero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), aliasQuantity);
+    }
+
+    if (showAmount) {
+      if (needsCost) {
+        query.addField(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST, aliasPrice);
+        query.addField(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST_CURRENCY, aliasCurrency);
+      } else {
+        query.addField(TBL_ITEMS, itemPrice.getPriceColumn(), aliasPrice);
+        query.addField(TBL_ITEMS, itemPrice.getCurrencyColumn(), aliasCurrency);
+      }
+
+      query.addExpr(zero(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST), aliasAmount);
     }
 
     query.addFrom(TBL_TRADE_STOCK);
@@ -190,6 +219,12 @@ public class TradeReportsBean {
 
     if (needsItems) {
       query.addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, aliasPrimaryDocumentItems, COL_ITEM));
+    }
+
+    if (needsCost) {
+      query.addFromLeft(TBL_TRADE_ITEM_COST,
+          SqlUtils.join(TBL_TRADE_ITEM_COST, COL_TRADE_DOCUMENT_ITEM,
+              TBL_TRADE_STOCK, COL_PRIMARY_DOCUMENT_ITEM));
     }
 
     HasConditions where = SqlUtils.and(stockCondition, primaryDocumentItemCondition,
@@ -230,6 +265,34 @@ public class TradeReportsBean {
       if (qs.isEmpty(tmp)) {
         qs.sqlDropTemp(tmp);
         return ResponseObject.emptyResponse();
+      }
+    }
+
+    if (showAmount) {
+      qs.sqlIndex(tmp, aliasCurrency);
+
+      ResponseObject response = calculateAmount(tmp, aliasQuantity, aliasPrice, aliasCurrency,
+          aliasAmount, date, currency);
+      if (response.hasErrors()) {
+        qs.sqlDropTemp(tmp);
+        return response;
+      }
+
+      if (!showQuantity) {
+        SqlDelete delete = new SqlDelete(tmp)
+            .setWhere(SqlUtils.or(SqlUtils.isNull(tmp, aliasAmount),
+                SqlUtils.equals(tmp, aliasAmount, 0)));
+
+        response = qs.updateDataWithResponse(delete);
+        if (response.hasErrors()) {
+          qs.sqlDropTemp(tmp);
+          return response;
+        }
+
+        if (qs.isEmpty(tmp)) {
+          qs.sqlDropTemp(tmp);
+          return ResponseObject.emptyResponse();
+        }
       }
     }
 
@@ -327,11 +390,15 @@ public class TradeReportsBean {
     }
   }
 
+  private static IsExpression zero(int precision, int scale) {
+    return SqlUtils.cast(SqlUtils.constant(0), SqlConstants.SqlDataType.DECIMAL, precision, scale);
+  }
+
   private IsExpression zero(String tblName, String fldName) {
     int precision = sys.getFieldPrecision(tblName, fldName);
     int scale = sys.getFieldScale(tblName, fldName);
 
-    return SqlUtils.cast(SqlUtils.constant(0), SqlConstants.SqlDataType.DECIMAL, precision, scale);
+    return zero(precision, scale);
   }
 
   private ResponseObject calculateStock(String tbl, String fld, DateTime date) {
@@ -428,6 +495,55 @@ public class TradeReportsBean {
       if (updResponse.hasErrors()) {
         return updResponse;
       }
+    }
+
+    return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject calculateAmount(String tbl, String fldQuantity, String fldPrice,
+      String fldCurrency, String fldAmount, DateTime date, Long currency) {
+
+    if (DataUtils.isId(currency)) {
+      SqlSelect currencyQuery = new SqlSelect().setDistinctMode(true)
+          .addFields(tbl, fldCurrency)
+          .addFrom(tbl)
+          .setWhere(SqlUtils.and(SqlUtils.notNull(tbl, fldCurrency),
+              SqlUtils.notEqual(tbl, fldCurrency, currency)));
+
+      Set<Long> currencies = qs.getLongSet(currencyQuery);
+
+      if (!BeeUtils.isEmpty(currencies)) {
+        long time = (date == null) ? System.currentTimeMillis() : date.getTime();
+        double toRate = adm.getRate(currency, time);
+
+        for (Long from : currencies) {
+          double fromRate = adm.getRate(from, time);
+
+          if (Double.compare(toRate, fromRate) != BeeConst.COMPARE_EQUAL) {
+            double rate = fromRate / toRate;
+
+            SqlUpdate exchange = new SqlUpdate(tbl)
+                .addExpression(fldPrice, SqlUtils.multiply(SqlUtils.field(tbl, fldPrice), rate))
+                .setWhere(SqlUtils.and(SqlUtils.equals(tbl, fldCurrency, from),
+                    SqlUtils.notNull(tbl, fldPrice)));
+
+            ResponseObject response = qs.updateDataWithResponse(exchange);
+            if (response.hasErrors()) {
+              return response;
+            }
+          }
+        }
+      }
+    }
+
+    SqlUpdate update = new SqlUpdate(tbl)
+        .addExpression(fldAmount, SqlUtils.multiply(SqlUtils.field(tbl, fldQuantity),
+            SqlUtils.field(tbl, fldPrice)))
+        .setWhere(SqlUtils.notNull(tbl, fldPrice));
+
+    ResponseObject response = qs.updateDataWithResponse(update);
+    if (response.hasErrors()) {
+      return response;
     }
 
     return ResponseObject.emptyResponse();
