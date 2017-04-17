@@ -27,6 +27,7 @@ public final class ClassifierConstants {
 
   public static final String TBL_ITEM_CATEGORY_TREE = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
+  public static final String TBL_ITEM_MANUFACTURERS = "ItemManufacturers";
 
   public static final String TBL_CONTACTS = "Contacts";
   public static final String TBL_EMAILS = "Emails";

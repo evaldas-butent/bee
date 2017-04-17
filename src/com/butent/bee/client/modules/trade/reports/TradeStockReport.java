@@ -3,13 +3,15 @@ package com.butent.bee.client.modules.trade.reports;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.output.Report;
+import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -28,7 +30,6 @@ import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.StringList;
 
@@ -36,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TradeStockReport extends ReportInterceptor {
@@ -50,6 +50,15 @@ public class TradeStockReport extends ReportInterceptor {
   private static final List<String> GROUP_NAMES = reportGroupNames(4);
 
   private static final String STYLE_PREFIX = TradeKeeper.STYLE_PREFIX + "report-stock-";
+
+  private static final String STYLE_TABLE = STYLE_PREFIX + "table";
+
+  private static final String STYLE_HEADER = STYLE_PREFIX + "header";
+  private static final String STYLE_BODY = STYLE_PREFIX + "body";
+  private static final String STYLE_FOOTER = STYLE_PREFIX + "footer";
+
+  private static final String STYLE_QUANTITY = STYLE_PREFIX + "qty";
+  private static final String STYLE_AMOUNT = STYLE_PREFIX + "amount";
 
   public TradeStockReport() {
   }
@@ -121,7 +130,7 @@ public class TradeStockReport extends ReportInterceptor {
 
   @Override
   protected void doReport() {
-    ReportParameters reportParameters = getReportParameters();
+    final ReportParameters reportParameters = getReportParameters();
 
     if (validateParameters(reportParameters)) {
       ParameterList parameters = TradeKeeper.createArgs(SVC_TRADE_STOCK_REPORT);
@@ -134,11 +143,9 @@ public class TradeStockReport extends ReportInterceptor {
             response.notify(getFormView());
           }
 
-          if (response.hasResponse()) {
-            Map<String, String> map = Codec.deserializeHashMap(response.getResponseAsString());
-            Global.showInfo(map.entrySet().stream()
-                .map(e -> BeeUtils.joinWords(e.getKey(), e.getValue()))
-                .collect(Collectors.toList()));
+          if (response.hasResponse(SimpleRowSet.class)) {
+            renderData(SimpleRowSet.restore(response.getResponseAsString()),
+                reportParameters.getDateTime(RP_DATE));
 
           } else {
             getFormView().notifyWarning(Localized.dictionary().nothingFound());
@@ -251,5 +258,38 @@ public class TradeStockReport extends ReportInterceptor {
 
   private ItemPrice getItemPrice() {
     return EnumUtils.getEnumByIndex(ItemPrice.class, getSelectedIndex(RP_ITEM_PRICE));
+  }
+
+  private void renderData(SimpleRowSet data, DateTime date) {
+    HasIndexedWidgets container = getDataContainer();
+    if (container == null) {
+      return;
+    }
+
+    if (!container.isEmpty()) {
+      container.clear();
+    }
+
+    HtmlTable table = new HtmlTable(STYLE_TABLE);
+    int r = 0;
+
+    for (int j = 0; j < data.getNumberOfColumns(); j++) {
+      String colName = data.getColumnName(j);
+      table.setText(r, j, colName);
+    }
+
+    table.getRowFormatter().addStyleName(r, STYLE_HEADER);
+    r++;
+
+    for (int i = 0; i < data.getNumberOfRows(); i++) {
+      for (int j = 0; j < data.getNumberOfColumns(); j++) {
+        table.setText(r, j, data.getValue(i, j));
+      }
+
+      table.getRowFormatter().addStyleName(r, STYLE_BODY);
+      r++;
+    }
+
+    container.add(table);
   }
 }
