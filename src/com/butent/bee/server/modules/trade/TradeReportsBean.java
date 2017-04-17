@@ -8,11 +8,17 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.modules.trade.OperationType;
+import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeReportGroup;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -25,9 +31,11 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -127,15 +135,15 @@ public class TradeReportsBean {
     String aliasStock = TBL_TRADE_STOCK;
     IsCondition stockCondition = getStockCondition(aliasStock, warehouses);
 
-    String aliasPrimaryDocumentItems = SqlUtils.uniqueName("prdocit");
+    String aliasPrimaryDocumentItems = SqlUtils.uniqueName("pdi");
     IsCondition primaryDocumentItemCondition = getPrimaryDocumentItemCondition(
         aliasPrimaryDocumentItems, items, itemCategories, manufacturers);
 
-    String aliasPrimaryDocuments = SqlUtils.uniqueName("prdocs");
+    String aliasPrimaryDocuments = SqlUtils.uniqueName("pdo");
     IsCondition primaryDocumentCondition =
         getPrimaryDocumentCondition(aliasPrimaryDocuments, suppliers, receivedFrom, receivedTo);
 
-    String aliasDocumentItems = SqlUtils.uniqueName("docitems");
+    String aliasDocumentItems = SqlUtils.uniqueName("dit");
     IsCondition documentItemCondition = getDocumentItemCondition(aliasDocumentItems, documents);
 
     String aliasItems = TBL_ITEMS;
@@ -150,10 +158,18 @@ public class TradeReportsBean {
     String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
     String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
 
+    String aliasQuantity = SqlUtils.uniqueName("qty");
+
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, COL_STOCK_WAREHOUSE,
-            COL_STOCK_QUANTITY)
-        .addFrom(TBL_TRADE_STOCK);
+        .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, COL_STOCK_WAREHOUSE);
+
+    if (date == null) {
+      query.addField(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, aliasQuantity);
+    } else {
+      query.addExpr(zero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), aliasQuantity);
+    }
+
+    query.addFrom(TBL_TRADE_STOCK);
 
     if (primaryDocumentItemCondition != null || primaryDocumentCondition != null || needsItems) {
       query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasPrimaryDocumentItems,
@@ -180,9 +196,46 @@ public class TradeReportsBean {
         primaryDocumentCondition, documentItemCondition, itemTypeCondition, itemGroupCondition,
         itemCondition);
 
+    if (date == null) {
+      where.add(SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY));
+    }
+
     query.setWhere(normalize(where));
 
-    SimpleRowSet data = qs.getData(query);
+    String tmp = qs.sqlCreateTemp(query);
+    if (qs.isEmpty(tmp)) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.emptyResponse();
+    }
+
+    qs.sqlIndex(tmp, COL_TRADE_DOCUMENT_ITEM);
+
+    if (date != null) {
+      ResponseObject response = calculateStock(tmp, aliasQuantity, date);
+      if (response.hasErrors()) {
+        qs.sqlDropTemp(tmp);
+        return response;
+      }
+
+      SqlDelete delete = new SqlDelete(tmp)
+          .setWhere(SqlUtils.or(SqlUtils.isNull(tmp, aliasQuantity),
+              SqlUtils.equals(tmp, aliasQuantity, 0)));
+
+      response = qs.updateDataWithResponse(delete);
+      if (response.hasErrors()) {
+        qs.sqlDropTemp(tmp);
+        return response;
+      }
+
+      if (qs.isEmpty(tmp)) {
+        qs.sqlDropTemp(tmp);
+        return ResponseObject.emptyResponse();
+      }
+    }
+
+    SimpleRowSet data = qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp));
+    qs.sqlDropTemp(tmp);
+
     if (DataUtils.isEmpty(data)) {
       return ResponseObject.emptyResponse();
     }
@@ -272,5 +325,111 @@ public class TradeReportsBean {
       Filter filter = view.parseFilter(input, userId);
       return (filter == null) ? null : view.getCondition(filter);
     }
+  }
+
+  private IsExpression zero(String tblName, String fldName) {
+    int precision = sys.getFieldPrecision(tblName, fldName);
+    int scale = sys.getFieldScale(tblName, fldName);
+
+    return SqlUtils.cast(SqlUtils.constant(0), SqlConstants.SqlDataType.DECIMAL, precision, scale);
+  }
+
+  private ResponseObject calculateStock(String tbl, String fld, DateTime date) {
+    Set<Integer> producerTypes = Arrays.stream(OperationType.values())
+        .filter(OperationType::producesStock)
+        .map(OperationType::ordinal)
+        .collect(Collectors.toSet());
+
+    Set<Integer> consumerTypes = Arrays.stream(OperationType.values())
+        .filter(OperationType::consumesStock)
+        .map(OperationType::ordinal)
+        .collect(Collectors.toSet());
+
+    Set<Integer> stockPhases = Arrays.stream(TradeDocumentPhase.values())
+        .filter(TradeDocumentPhase::modifyStock)
+        .map(TradeDocumentPhase::ordinal)
+        .collect(Collectors.toSet());
+
+    IsCondition dateCondition = (date == null)
+        ? null : SqlUtils.less(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE, date);
+
+    IsCondition producerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+        producerTypes);
+    IsCondition consumerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+        consumerTypes);
+
+    IsCondition phaseCondition = SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE,
+        stockPhases);
+
+    SqlSelect producerQuery = new SqlSelect()
+        .addFields(tbl, COL_TRADE_DOCUMENT_ITEM)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(tbl)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+            tbl, COL_TRADE_DOCUMENT_ITEM))
+        .addFromInner(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+        .addFromInner(TBL_TRADE_OPERATIONS, sys.joinTables(TBL_TRADE_OPERATIONS,
+            TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
+        .setWhere(SqlUtils.and(dateCondition, producerCondition, phaseCondition));
+
+    String producers = qs.sqlCreateTemp(producerQuery);
+
+    if (qs.isEmpty(producers)) {
+      qs.sqlDropTemp(producers);
+
+    } else {
+      qs.sqlIndex(producers, COL_TRADE_DOCUMENT_ITEM);
+
+      SqlUpdate update = new SqlUpdate(tbl)
+          .setFrom(producers, SqlUtils.join(producers, COL_TRADE_DOCUMENT_ITEM,
+              tbl, COL_TRADE_DOCUMENT_ITEM))
+          .addExpression(fld, SqlUtils.field(producers, COL_TRADE_ITEM_QUANTITY));
+
+      ResponseObject updResponse = qs.updateDataWithResponse(update);
+      qs.sqlDropTemp(producers);
+
+      if (updResponse.hasErrors()) {
+        return updResponse;
+      }
+    }
+
+    SqlSelect consumerQuery = new SqlSelect()
+        .addFields(tbl, COL_TRADE_DOCUMENT_ITEM)
+        .addSum(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(tbl)
+        .addFromInner(TBL_TRADE_DOCUMENT_ITEMS, SqlUtils.join(tbl, COL_TRADE_DOCUMENT_ITEM,
+            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT))
+        .addFromInner(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+        .addFromInner(TBL_TRADE_OPERATIONS, sys.joinTables(TBL_TRADE_OPERATIONS,
+            TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
+        .setWhere(SqlUtils.and(dateCondition, consumerCondition, phaseCondition))
+        .addGroup(tbl, COL_TRADE_DOCUMENT_ITEM);
+
+    String consumers = qs.sqlCreateTemp(consumerQuery);
+
+    if (qs.isEmpty(consumers)) {
+      qs.sqlDropTemp(consumers);
+
+    } else {
+      qs.sqlIndex(consumers, COL_TRADE_DOCUMENT_ITEM);
+
+      SqlUpdate update = new SqlUpdate(tbl)
+          .setFrom(consumers, SqlUtils.join(consumers, COL_TRADE_DOCUMENT_ITEM,
+              tbl, COL_TRADE_DOCUMENT_ITEM))
+          .addExpression(fld,
+              SqlUtils.minus(SqlUtils.field(tbl, fld),
+                  SqlUtils.field(consumers, COL_TRADE_ITEM_QUANTITY)));
+
+      ResponseObject updResponse = qs.updateDataWithResponse(update);
+      qs.sqlDropTemp(consumers);
+
+      if (updResponse.hasErrors()) {
+        return updResponse;
+      }
+    }
+
+    return ResponseObject.emptyResponse();
   }
 }
