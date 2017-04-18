@@ -221,7 +221,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
     Integer status = row.getInteger(form.getDataIndex(COL_QUERY_STATUS));
 
-    if (!isSelfService() && !ShipmentRequestStatus.LOST.is(status)) {
+    if (!isSelfService() && !ShipmentRequestStatus.LOST.is(status)
+        && !ShipmentRequestStatus.COMPLETED.is(status)) {
       header.addCommandItem(mailCommand);
 
       if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
@@ -287,7 +288,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
       form.setEnabled(!ShipmentRequestStatus.LOST.is(status)
           && !ShipmentRequestStatus.CONFIRMED.is(status)
-          && (!isSelfService() || ShipmentRequestStatus.NEW.is(status)));
+          && (!isSelfService() || ShipmentRequestStatus.NEW.is(status))
+          && !ShipmentRequestStatus.COMPLETED.is(status));
     }
     styleRequiredField(NAME_VALUE_LABEL,
         row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)) != null);

@@ -37,6 +37,12 @@ public final class TransportConstants {
       public String getCaption(Dictionary constants) {
         return constants.trAssessmentStatusApproved();
       }
+    },
+    COMPLETED {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trOrderStatusCompleted();
+      }
     };
 
     public boolean is(Integer status) {
@@ -85,6 +91,12 @@ public final class TransportConstants {
       @Override
       public String getCaption(Dictionary constants) {
         return constants.trRequestStatusRejected();
+      }
+    },
+    COMPLETED {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trOrderStatusCompleted();
       }
     };
 

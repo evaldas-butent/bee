@@ -780,6 +780,57 @@ public class TransportModuleBean implements BeeModule {
               .setWhere(clause));
         }
       }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void onOrderStatusChange(DataEvent.ViewUpdateEvent event) {
+        if (event.isAfter(VIEW_ORDERS, VIEW_ASSESSMENTS)) {
+          int col = DataUtils.getColumnIndex(event.isAfter(VIEW_ORDERS)
+              ? COL_STATUS : COL_ORDER + COL_STATUS, event.getColumns());
+          Long  orderId;
+
+          if (event.isAfter(VIEW_ORDERS)) {
+            orderId = event.getRow().getId();
+          } else {
+            orderId = qs.getLongById(TBL_ASSESSMENTS, event.getRow().getId(), COL_ORDER);
+          }
+          if (!BeeConst.isUndef(col) && DataUtils.isId(orderId)) {
+            Integer status = event.getRow().getInteger(col);
+            ShipmentRequestStatus shipmentStatus = null;
+            AssessmentStatus assessmentStatus = null;
+
+            if (OrderStatus.COMPLETED.is(status)) {
+              shipmentStatus = ShipmentRequestStatus.COMPLETED;
+              assessmentStatus = AssessmentStatus.COMPLETED;
+
+            } else if (OrderStatus.ACTIVE.is(status)) {
+              shipmentStatus = ShipmentRequestStatus.CONFIRMED;
+              assessmentStatus = AssessmentStatus.APPROVED;
+
+            } else if (OrderStatus.CANCELED.is(status)) {
+              shipmentStatus = ShipmentRequestStatus.REJECTED;
+            }
+            if (shipmentStatus != null) {
+              qs.updateData(new SqlUpdate(TBL_SHIPMENT_REQUESTS)
+                  .addConstant(COL_STATUS, shipmentStatus)
+                  .setWhere(SqlUtils.and(
+                      SqlUtils.notEqual(TBL_SHIPMENT_REQUESTS, COL_STATUS, shipmentStatus),
+                      SqlUtils.in(TBL_SHIPMENT_REQUESTS, COL_CARGO, VIEW_ORDER_CARGO,
+                          sys.getIdName(VIEW_ORDER_CARGO),
+                          SqlUtils.equals(VIEW_ORDER_CARGO, COL_ORDER, orderId)))));
+            }
+            if (assessmentStatus != null) {
+              qs.updateData(new SqlUpdate(VIEW_ASSESSMENTS)
+                  .addConstant(COL_STATUS, assessmentStatus)
+                  .setWhere(SqlUtils.and(
+                      SqlUtils.notEqual(VIEW_ASSESSMENTS, COL_STATUS, assessmentStatus),
+                      SqlUtils.in(VIEW_ASSESSMENTS, COL_CARGO, VIEW_ORDER_CARGO,
+                          sys.getIdName(VIEW_ORDER_CARGO),
+                          SqlUtils.equals(VIEW_ORDER_CARGO, COL_ORDER, orderId)))));
+            }
+          }
+        }
+      }
     });
 
     BeeView.registerConditionProvider(PROP_CARGO_HANDLING, (view, args) -> {
