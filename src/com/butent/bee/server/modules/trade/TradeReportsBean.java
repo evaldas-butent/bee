@@ -37,7 +37,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -135,12 +137,18 @@ public class TradeReportsBean {
       itemFilter = null;
     }
 
-    List<TradeReportGroup> rowGroups = TradeReportGroup.parseList(parameters, 5);
+    List<TradeReportGroup> rowGroups = TradeReportGroup.parseList(parameters, 10);
     boolean summary = parameters.getBoolean(RP_SUMMARY);
 
     TradeReportGroup columnGroup = TradeReportGroup.parse(parameters.getText(RP_COLUMNS));
-    if (columnGroup == null) {
-      columnGroup = TradeReportGroup.WAREHOUSE;
+    if (columnGroup != null && rowGroups.contains(columnGroup)) {
+      rowGroups.remove(columnGroup);
+    }
+
+    Map<TradeReportGroup, String> groupValueAliases = new EnumMap<>(TradeReportGroup.class);
+    rowGroups.forEach(trg -> groupValueAliases.put(trg, SqlUtils.uniqueName("rgr")));
+    if (columnGroup != null) {
+      groupValueAliases.put(columnGroup, SqlUtils.uniqueName("cgr"));
     }
 
     String aliasStock = TBL_TRADE_STOCK;
@@ -166,7 +174,17 @@ public class TradeReportsBean {
     boolean needsCost = showAmount && itemPrice == null;
 
     boolean needsItems = itemTypeCondition != null || itemGroupCondition != null
-        || itemCondition != null || showAmount && itemPrice != null;
+        || itemCondition != null || showAmount && itemPrice != null
+        || TradeReportGroup.needsItem(columnGroup) || TradeReportGroup.needsItem(rowGroups);
+
+    boolean needsPrimaryDocuments = primaryDocumentCondition != null
+        || TradeReportGroup.needsPrimaryDocument(columnGroup)
+        || TradeReportGroup.needsPrimaryDocument(rowGroups);
+
+    boolean needsPrimaryDocumentItems = needsItems || needsPrimaryDocuments
+        || primaryDocumentItemCondition != null
+        || TradeReportGroup.needsPrimaryDocumentItem(columnGroup)
+        || TradeReportGroup.needsPrimaryDocumentItem(rowGroups);
 
     String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
     String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
@@ -178,7 +196,24 @@ public class TradeReportsBean {
     String aliasAmount = SqlUtils.uniqueName("amn");
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM, COL_STOCK_WAREHOUSE);
+        .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM);
+
+    groupValueAliases.forEach((tgr, alias) -> {
+      String source;
+
+      switch (tgr.valueSource()) {
+        case TBL_TRADE_DOCUMENTS:
+          source = aliasPrimaryDocuments;
+          break;
+        case TBL_TRADE_DOCUMENT_ITEMS:
+          source = tgr.primaryDocument() ? aliasPrimaryDocumentItems : aliasDocumentItems;
+          break;
+        default:
+          source = tgr.valueSource();
+      }
+
+      query.addField(source, tgr.valueColumn(), alias);
+    });
 
     if (date == null) {
       query.addField(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, aliasQuantity);
@@ -200,12 +235,12 @@ public class TradeReportsBean {
 
     query.addFrom(TBL_TRADE_STOCK);
 
-    if (primaryDocumentItemCondition != null || primaryDocumentCondition != null || needsItems) {
+    if (needsPrimaryDocumentItems) {
       query.addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, aliasPrimaryDocumentItems,
           SqlUtils.join(aliasPrimaryDocumentItems, documentItemId,
               aliasStock, COL_PRIMARY_DOCUMENT_ITEM));
     }
-    if (primaryDocumentCondition != null) {
+    if (needsPrimaryDocuments) {
       query.addFromLeft(TBL_TRADE_DOCUMENTS, aliasPrimaryDocuments,
           SqlUtils.join(aliasPrimaryDocuments, documentId,
               aliasPrimaryDocumentItems, COL_TRADE_DOCUMENT));
