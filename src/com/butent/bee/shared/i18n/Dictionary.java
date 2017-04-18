@@ -1929,6 +1929,8 @@ public interface Dictionary {
 
   default String duration() {return g("duration");}
 
+  default String dutyOrder() {return g("dutyOrder");}
+
   default String ecAdministration() {return g("ecAdministration");}
 
   default String ecAnalogBinding() {return g("ecAnalogBinding");}
@@ -2590,6 +2592,8 @@ public interface Dictionary {
   default String expeditionShort() {return g("expeditionShort");}
 
   default String expenditures() {return g("expenditures");}
+
+  default String expenditureReport() {return g("expenditureReport");}
 
   default String expenses() {return g("expenses");}
 
@@ -4257,6 +4261,8 @@ public interface Dictionary {
   default String postIndex() {return g("postIndex");}
 
   default String precision() {return g("precision");}
+
+  default String adjustmentDutyOrder() {return g("adjustmentDutyOrder");}
 
   default String presenceAway() {return g("presenceAway");}
 
@@ -6603,6 +6609,8 @@ public interface Dictionary {
   default String transportationCustomers() {return g("transportationCustomers");}
 
   default String transportationNumber() {return g("transportationNumber");}
+
+  default String travelSheet() {return g("travelSheet");}
 
   default String trdAmount() {return g("trdAmount");}
 
