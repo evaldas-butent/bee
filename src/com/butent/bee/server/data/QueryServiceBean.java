@@ -440,6 +440,15 @@ public class QueryServiceBean {
     return getSingleColumn(query).getDecimalColumn(0);
   }
 
+  public Set<Integer> getDistinctInts(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getIntSet(query);
+  }
+
   public Set<Long> getDistinctLongs(String viewName, String column, Filter filter) {
     Assert.notEmpty(column);
 
@@ -468,6 +477,15 @@ public class QueryServiceBean {
         .setWhere(where);
 
     return getLongSet(query);
+  }
+
+  public Set<String> getDistinctValues(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getValueSet(query);
   }
 
   public Double getDouble(IsQuery query) {
@@ -758,9 +776,7 @@ public class QueryServiceBean {
 
     String[] arr = getColumn(query);
     if (arr != null && arr.length > 0) {
-      for (String value : arr) {
-        result.add(value);
-      }
+      Collections.addAll(result, arr);
     }
 
     return result;
