@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
@@ -33,11 +34,14 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -151,6 +155,9 @@ public class TradeReportsBean {
       groupValueAliases.put(columnGroup, SqlUtils.uniqueName("cgr"));
     }
 
+    boolean needsYearMonth = TradeReportGroup.containsType(groupValueAliases.keySet(),
+        ValueType.DATE_TIME);
+
     String aliasStock = TBL_TRADE_STOCK;
     IsCondition stockCondition = getStockCondition(aliasStock, warehouses);
 
@@ -195,6 +202,9 @@ public class TradeReportsBean {
     String aliasCurrency = SqlUtils.uniqueName("cur");
     String aliasAmount = SqlUtils.uniqueName("amn");
 
+    String aliasYear = SqlUtils.uniqueName("year");
+    String aliasMonth = SqlUtils.uniqueName("month");
+
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM);
 
@@ -214,6 +224,11 @@ public class TradeReportsBean {
 
       query.addField(source, tgr.valueColumn(), alias);
     });
+
+    if (needsYearMonth) {
+      query.addEmptyNumeric(aliasYear, 4, 0);
+      query.addEmptyNumeric(aliasMonth, 2, 0);
+    }
 
     if (date == null) {
       query.addField(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, aliasQuantity);
@@ -328,6 +343,27 @@ public class TradeReportsBean {
           qs.sqlDropTemp(tmp);
           return ResponseObject.emptyResponse();
         }
+      }
+    }
+
+    if (needsYearMonth) {
+      String dateAlias = BeeUtils.notEmpty(
+          groupValueAliases.get(TradeReportGroup.YEAR_RECEIVED),
+          groupValueAliases.get(TradeReportGroup.MONTH_RECEIVED));
+
+      qs.setYearMonth(tmp, dateAlias, aliasYear, aliasMonth);
+    }
+
+    if (columnGroup != null) {
+      String valueColumn = groupValueAliases.get(columnGroup);
+      qs.sqlIndex(tmp, valueColumn);
+
+      List<String> pivotValues = new ArrayList<>();
+      if (showQuantity) {
+        pivotValues.add(aliasQuantity);
+      }
+      if (showAmount) {
+        pivotValues.add(aliasAmount);
       }
     }
 
@@ -582,5 +618,48 @@ public class TradeReportsBean {
     }
 
     return ResponseObject.emptyResponse();
+  }
+
+  private Map<String, Object> getGroupLabels(TradeReportGroup group, String tbl, String fld,
+      String aliasYear, String aliasMonth) {
+
+    Map<String, Object> result = new HashMap<>();
+
+    switch (group.getType()) {
+      case DATE_TIME:
+        if (group == TradeReportGroup.YEAR_RECEIVED) {
+          Set<Integer> years = qs.getDistinctInts(tbl, aliasYear,
+              SqlUtils.notNull(tbl, aliasYear));
+          years.forEach(y -> result.put(TimeUtils.yearToString(y), y));
+
+        } else if (group == TradeReportGroup.MONTH_RECEIVED) {
+          Set<Integer> months = qs.getDistinctInts(tbl, aliasMonth,
+              SqlUtils.notNull(tbl, aliasMonth));
+          months.forEach(m -> result.put(TimeUtils.monthToString(m), m));
+        }
+        break;
+
+      case LONG:
+        if (BeeUtils.allNotEmpty(group.labelSource(), group.labelColumn())) {
+          SqlSelect query = new SqlSelect().setDistinctMode(true)
+              .addFields(tbl, fld)
+              .addFields(group.labelSource(), group.labelColumn())
+              .addFrom(tbl)
+              .addFromInner(group.labelSource(), sys.joinTables(group.labelSource(), tbl, fld));
+
+          SimpleRowSet data = qs.getData(query);
+          if (!DataUtils.isEmpty(data)) {
+            data.forEach(row -> result.put(row.getValue(1), row.getLong(0)));
+          }
+        }
+
+        break;
+
+      default:
+        Set<String> values = qs.getDistinctValues(tbl, fld, null);
+        values.forEach(v -> result.put(v, v));
+    }
+
+    return result;
   }
 }

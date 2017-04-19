@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.trade;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -14,6 +15,11 @@ import java.util.Objects;
 public enum TradeReportGroup {
 
   ITEM_TYPE("type") {
+    @Override
+    public ValueType getType() {
+      return ValueType.LONG;
+    }
+
     @Override
     public String valueSource() {
       return TBL_ITEMS;
@@ -42,6 +48,11 @@ public enum TradeReportGroup {
 
   ITEM_GROUP("group") {
     @Override
+    public ValueType getType() {
+      return ValueType.LONG;
+    }
+
+    @Override
     public String valueSource() {
       return TBL_ITEMS;
     }
@@ -68,6 +79,11 @@ public enum TradeReportGroup {
   },
 
   ITEM("item") {
+    @Override
+    public ValueType getType() {
+      return ValueType.LONG;
+    }
+
     @Override
     public String valueSource() {
       return TBL_TRADE_DOCUMENT_ITEMS;
@@ -96,6 +112,11 @@ public enum TradeReportGroup {
 
   ARTICLE("article") {
     @Override
+    public ValueType getType() {
+      return ValueType.TEXT;
+    }
+
+    @Override
     public String valueSource() {
       return TBL_TRADE_DOCUMENT_ITEMS;
     }
@@ -122,6 +143,11 @@ public enum TradeReportGroup {
   },
 
   UNIT("unit") {
+    @Override
+    public ValueType getType() {
+      return ValueType.LONG;
+    }
+
     @Override
     public String valueSource() {
       return TBL_ITEMS;
@@ -150,6 +176,11 @@ public enum TradeReportGroup {
 
   WAREHOUSE("warehouse") {
     @Override
+    public ValueType getType() {
+      return ValueType.LONG;
+    }
+
+    @Override
     public String valueSource() {
       return TBL_TRADE_STOCK;
     }
@@ -176,6 +207,11 @@ public enum TradeReportGroup {
   },
 
   SUPPLIER("supplier") {
+    @Override
+    public ValueType getType() {
+      return ValueType.LONG;
+    }
+
     @Override
     public String valueSource() {
       return TBL_TRADE_DOCUMENTS;
@@ -204,6 +240,11 @@ public enum TradeReportGroup {
 
   YEAR_RECEIVED("year") {
     @Override
+    public ValueType getType() {
+      return ValueType.DATE_TIME;
+    }
+
+    @Override
     public String valueSource() {
       return TBL_TRADE_DOCUMENTS;
     }
@@ -230,6 +271,11 @@ public enum TradeReportGroup {
   },
 
   MONTH_RECEIVED("month") {
+    @Override
+    public ValueType getType() {
+      return ValueType.DATE_TIME;
+    }
+
     @Override
     public String valueSource() {
       return TBL_TRADE_DOCUMENTS;
@@ -333,6 +379,19 @@ public enum TradeReportGroup {
       return false;
     }
   }
+
+  public static boolean containsType(Collection<TradeReportGroup> groups, ValueType type) {
+    if (!BeeUtils.isEmpty(groups) && type != null) {
+      return groups.stream()
+          .filter(Objects::nonNull)
+          .anyMatch(trg -> trg.getType() == type);
+
+    } else {
+      return false;
+    }
+  }
+
+  public abstract ValueType getType();
 
   public abstract String valueSource();
 
