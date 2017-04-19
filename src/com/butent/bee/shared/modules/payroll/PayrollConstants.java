@@ -60,7 +60,7 @@ public final class PayrollConstants {
       }
     };
 
-//    TODO: Re-factory this item. Required detailed technical spec.
+//    TODO: Refactor this item. Required detailed technical spec.
     public static String getDefaultTimeOfDay() {
       return String.valueOf(BeeConst.CHAR_EIGHT);
     }
@@ -140,7 +140,7 @@ public final class PayrollConstants {
 
     /**
      * Returns default edit form name for Work schedule editor.
-     * @return name edit form of Work schedule editor.
+     * @return the edit form name for Work schedule editor.
      */
     public String getEditFormName() {
       return FORM_WORK_SCHEDULE_EDITOR;
@@ -259,6 +259,8 @@ public final class PayrollConstants {
   public static final String ALS_TR_DURATION = "TrDuration";
 
   public static final String ALS_TR_USAGE = "TrUsage";
+
+  public static final String PROP_TC_DURATION = "TcDuration";
 
   public static final String GRID_TIME_CARD_CHANGES = "TimeCardChanges";
 

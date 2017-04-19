@@ -306,6 +306,12 @@ class EmployeeSchedule extends WorkScheduleWidget {
         getTimeCardChangesFilter()));
 
     viewNames.add(VIEW_TIME_CARD_CODES);
+
+    WorkScheduleKind kind = getWorkScheduleKind();
+
+    if (kind != null) {
+      filters.put(VIEW_TIME_CARD_CODES, Filter.notNull(kind.getTccColumnName()));
+    }
     viewNames.add(VIEW_TIME_RANGES);
 
     Queries.getData(viewNames, filters, CachingPolicy.NONE, new Queries.DataCallback() {

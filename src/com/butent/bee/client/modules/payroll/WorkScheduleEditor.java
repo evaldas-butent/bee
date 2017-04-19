@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
 import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
@@ -49,41 +50,6 @@ import java.util.List;
 import java.util.Set;
 
 class WorkScheduleEditor extends AbstractFormInterceptor {
-  private class TimeCardCodeSelectorFilter {
-    private FormView form;
-    private DataSelector tcCodeSelector;
-    private InputTimeOfDay dInput;
-
-    TimeCardCodeSelectorFilter(FormView form, DataSelector timeCardCodeSelector,
-                               InputTimeOfDay durationInput) {
-      this.form = form;
-      this.tcCodeSelector = timeCardCodeSelector;
-      this.dInput = durationInput;
-    }
-
-    Filter getFilter() {
-      CompoundFilter filter = CompoundFilter.and();
-
-      if (form != null) {
-        WorkScheduleKind kind = getWorkScheduleKind(form);
-        switch (kind) {
-          case PLANNED:
-            break;
-          case ACTUAL:
-             filter.add(Filter.notNull(COL_TC_WS_ACTUAL));
-             break;
-        }
-      }
-
-      if (dInput != null && tcCodeSelector != null) {
-        if (BeeUtils.isEmpty(tcCodeSelector.getValue()) && !BeeUtils.isEmpty(dInput
-          .getValue())) {
-          filter.add(Filter.equals(COL_TC_DURATION_TYPE, TcDurationType.PART_TIME));
-        }
-      }
-      return filter;
-    }
-  }
 
   private final GridInterceptor gridInterceptor = new AbstractGridInterceptor() {
     @Override
@@ -135,7 +101,6 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
   private final Runnable dayRefresher;
 
-  private TimeCardCodeSelectorFilter timeCardCodeSelectorFilter;
   private DataSelector timeCardCodeSelector;
   private InputTimeOfDay durationInput;
 
@@ -187,7 +152,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    initTimeCardCodeSelectorFilter(form);
+    initTimeCardCodeSelectorFilter();
     super.afterRefresh(form, row);
   }
 
@@ -273,6 +238,24 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
       form.getIntegerValue(COL_WORK_SCHEDULE_KIND));
   }
 
+  Filter getTimeCardSelectorFilter() {
+    FormView form = getFormView();
+    CompoundFilter filter = CompoundFilter.and();
+
+
+    if (form != null && getWorkScheduleKind(form) != null) {
+      filter.add(Filter.notNull(getWorkScheduleKind(form).getTccColumnName()));
+    }
+
+    if (durationInput != null && timeCardCodeSelector != null) {
+      if (BeeUtils.isEmpty(timeCardCodeSelector.getValue())
+        && !BeeUtils.isEmpty(durationInput.getValue())) {
+        filter.add(Filter.equals(COL_TC_DURATION_TYPE, TcDurationType.PART_TIME));
+      }
+    }
+    return filter;
+  }
+
   private String getCalendarId() {
     return calendarId;
   }
@@ -306,8 +289,8 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
   }
 
   private void onDurationInputValueChange() {
-    if (timeCardCodeSelector != null && timeCardCodeSelectorFilter != null) {
-      timeCardCodeSelector.setAdditionalFilter(timeCardCodeSelectorFilter.getFilter());
+    if (timeCardCodeSelector != null) {
+      timeCardCodeSelector.setAdditionalFilter(getTimeCardSelectorFilter());
     }
   }
 
@@ -316,9 +299,8 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     if (durationInput != null && timeCardCodeSelector.getRelatedRow() != null && formView != null) {
       IsRow selected = timeCardCodeSelector.getRelatedRow();
       IsRow row = formView.getActiveRow();
-      TcDurationType type = selected.getEnum(
-        timeCardCodeSelector.getOracle().getDataInfo().getColumnIndex(COL_TC_DURATION_TYPE),
-        TcDurationType.class);
+      TcDurationType type = Data.getEnum(VIEW_TIME_CARD_CODES,
+        timeCardCodeSelector.getRelatedRow(), COL_TC_DURATION_TYPE, TcDurationType.class);
 
       if (type != TcDurationType.PART_TIME) {
         row.setValue(formView.getDataIndex(COL_WORK_SCHEDULE_DURATION), (String) null);
@@ -327,14 +309,9 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     }
   }
 
-  private void initTimeCardCodeSelectorFilter(FormView form) {
-    if (timeCardCodeSelectorFilter == null) {
-      timeCardCodeSelectorFilter = new TimeCardCodeSelectorFilter(form, timeCardCodeSelector,
-        durationInput);
-    }
-
+  private void initTimeCardCodeSelectorFilter() {
     if (timeCardCodeSelector != null) {
-      timeCardCodeSelector.setAdditionalFilter(timeCardCodeSelectorFilter.getFilter());
+      timeCardCodeSelector.setAdditionalFilter(getTimeCardSelectorFilter());
     }
   }
 

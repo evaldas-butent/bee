@@ -11,7 +11,6 @@ import com.google.common.collect.Table;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -30,7 +29,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.CloseButton;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Modality;
@@ -47,6 +45,9 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.payroll.dialogs.AbstractTimeCodeInput;
+import com.butent.bee.client.modules.payroll.dialogs.TimeSheetCodeInput;
+import com.butent.bee.client.modules.payroll.dialogs.WorkScheduleTimeCodeInput;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
@@ -58,9 +59,9 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -78,7 +79,6 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -219,25 +219,6 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   private static final String STYLE_WH_SUM = STYLE_PREFIX + "wh-sum";
   private static final String STYLE_WD_TOTAL = STYLE_PREFIX + "wd-total";
   private static final String STYLE_WH_TOTAL = STYLE_PREFIX + "wh-total";
-
-  private static final String STYLE_TRC_DIALOG = STYLE_PREFIX + "trc-dialog";
-  private static final String STYLE_TRC_PANEL = STYLE_PREFIX + "trc-panel";
-  private static final String STYLE_TRC_HEADER = STYLE_PREFIX + "trc-header";
-
-  private static final String STYLE_TRC_INPUT_CONTAINER = STYLE_PREFIX + "trc-input-container";
-  private static final String STYLE_TRC_INPUT_LABEL = STYLE_PREFIX + "trc-input-label";
-  private static final String STYLE_TRC_INPUT_WIDGET = STYLE_PREFIX + "trc-input-widget";
-
-  private static final String STYLE_TRC_OPTIONS_CONTAINER = STYLE_PREFIX + "trc-options-container";
-  private static final String STYLE_TRC_OPTIONS_TABLE = STYLE_PREFIX + "trc-options-table";
-
-  private static final String STYLE_TRC_OPTION_WIDGET = STYLE_PREFIX + "trc-option-widget";
-  private static final String STYLE_TRC_OPTION_CODE = STYLE_PREFIX + "trc-option-code";
-  private static final String STYLE_TRC_OPTION_SEPARATOR = STYLE_PREFIX + "trc-option-separator";
-  private static final String STYLE_TRC_OPTION_INFO = STYLE_PREFIX + "trc-option-info";
-
-  private static final String STYLE_TRC_CONTROLS = STYLE_PREFIX + "trc-controls";
-  private static final String STYLE_TRC_CANCEL = STYLE_PREFIX + "trc-cancel";
 
   private static final String STYLE_NEW_SUBSTITUTION_PREFIX = STYLE_PREFIX + "new-substitution-";
 
@@ -647,6 +628,10 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
   protected Filter getTimeCardChangesFilter() {
     return Filter.notNull(kind.getTccColumnName());
+  }
+
+  protected WorkScheduleKind getWorkScheduleKind() {
+    return kind;
   }
 
   protected Filter getWorkScheduleFilter() {
@@ -1370,12 +1355,11 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
   }
 
   private void inputTimeRangeCode(final IdPair partIds, int day, Flow contentPanel) {
-    if (DataUtils.isEmpty(timeRanges)) {
+    if (DataUtils.isEmpty(timeRanges) && DataUtils.isEmpty(timeCardCodes)) {
       return;
     }
 
-    final JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
-
+    JustDate date = new JustDate(activeMonth.getYear(), activeMonth.getMonth(), day);
     Set<Long> usedCodes = new HashSet<>();
 
     List<BeeRow> schedule = filterSchedule(partIds, date);
@@ -1389,132 +1373,28 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
         }
       }
     }
+    String caption = getPartitionCaption(partIds);
+    AbstractTimeCodeInput dialog = null;
 
-    final List<Long> ids = new ArrayList<>();
-    final List<String> codes = new ArrayList<>();
-    List<String> labels = new ArrayList<>();
-
-    int codeIndex = timeRanges.getColumnIndex(COL_TR_CODE);
-    int nameIndex = timeRanges.getColumnIndex(COL_TR_NAME);
-
-    int fromIndex = timeRanges.getColumnIndex(COL_TR_FROM);
-    int untilIndex = timeRanges.getColumnIndex(COL_TR_UNTIL);
-
-    for (BeeRow row : timeRanges) {
-      if (!usedCodes.contains(row.getId())) {
-        ids.add(row.getId());
-        codes.add(row.getString(codeIndex));
-
-        labels.add(BeeUtils.joinWords(row.getString(nameIndex),
-            TimeUtils.renderPeriod(row.getString(fromIndex), row.getString(untilIndex))));
-      }
+    switch (kind) {
+      case ACTUAL:
+        dialog = new TimeSheetCodeInput(caption, timeCardCodes);
+        break;
+      case PLANNED:
+        dialog = new WorkScheduleTimeCodeInput(caption, timeRanges, usedCodes);
+        break;
     }
 
-    if (!ids.isEmpty()) {
-      String caption = getPartitionCaption(partIds);
-      final DialogBox dialog = DialogBox.create(caption, STYLE_TRC_DIALOG);
-
-      Flow panel = new Flow(STYLE_TRC_PANEL);
-
-      Label header = new Label(Format.renderDateFull(date));
-      header.addStyleName(STYLE_TRC_HEADER);
-      panel.add(header);
-
-      Flow inputContainer = new Flow(STYLE_TRC_INPUT_CONTAINER);
-
-      Label inputLabel = new Label(Localized.dictionary().timeRangeCode());
-      inputLabel.addStyleName(STYLE_TRC_INPUT_LABEL);
-      inputContainer.add(inputLabel);
-
-      final InputText inputWidget = new InputText();
-      inputWidget.addStyleName(STYLE_TRC_INPUT_WIDGET);
-
-      inputWidget.setMaxLength(Data.getColumnPrecision(VIEW_TIME_RANGES, COL_TR_CODE));
-      inputWidget.setUpperCase(true);
-
-      inputWidget.addKeyDownHandler(event -> {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          String value = inputWidget.getValue();
-
-          if (!BeeUtils.isEmpty(value)) {
-            long trId = BeeConst.LONG_UNDEF;
-
-            for (int i = 0; i < codes.size(); i++) {
-              if (BeeUtils.same(codes.get(i), value)) {
-                trId = ids.get(i);
-                break;
-              }
-            }
-
-            if (DataUtils.isId(trId)) {
-              event.preventDefault();
-              dialog.close();
-              scheduleTimeRange(partIds, date, trId);
-            }
-          }
-        }
-      });
-
-      inputContainer.add(inputWidget);
-      panel.add(inputContainer);
-
-      int width = BeeKeeper.getScreen().getWidth();
-      int minCols = BeeUtils.resize(width, 300, 1920, 2, 4);
-      int maxCols = Math.max(BeeUtils.resize(width, 300, 1920, 3, 8), minCols + 1);
-
-      int size = codes.size();
-      int cols = UiHelper.getLayoutColumns(size, minCols, maxCols);
-
-      String separator = new Span().addClass(STYLE_TRC_OPTION_SEPARATOR).build();
-
-      HtmlTable options = new HtmlTable(STYLE_TRC_OPTIONS_TABLE);
-
-      for (int i = 0; i < size; i++) {
-        Span code = new Span().addClass(STYLE_TRC_OPTION_CODE).text(codes.get(i));
-        Span info = new Span().addClass(STYLE_TRC_OPTION_INFO).text(labels.get(i));
-        String html = code.build() + separator + info.build();
-
-        Button option = new Button(html);
-        DomUtils.setDataIndex(option.getElement(), ids.get(i));
-
-        option.addClickHandler(event -> {
-          long trId = DomUtils.getDataIndexLong(EventUtils.getSourceElement(event));
-
-          if (DataUtils.isId(trId)) {
-            dialog.close();
-            scheduleTimeRange(partIds, date, trId);
-          }
-        });
-
-        int r = i / cols;
-        int c = i % cols;
-        options.setWidgetAndStyle(r, c, option, STYLE_TRC_OPTION_WIDGET);
-      }
-
-      Flow optionsContainer = new Flow(STYLE_TRC_OPTIONS_CONTAINER);
-      optionsContainer.add(options);
-      panel.add(optionsContainer);
-
-      Button cancel = new CloseButton(Localized.dictionary().cancel());
-      cancel.addStyleName(STYLE_TRC_CANCEL);
-
-      Flow controls = new Flow(STYLE_TRC_CONTROLS);
-      controls.add(cancel);
-      panel.add(controls);
-
-      dialog.setWidget(panel);
-
-      dialog.setAnimationEnabled(true);
-      dialog.setHideOnEscape(true);
-
-      dialog.focusOnOpen(inputWidget);
-
-      if (contentPanel == null) {
-        dialog.center();
-      } else {
-        dialog.showRelativeTo(contentPanel.getElement());
-      }
+    if (dialog == null) {
+      Assert.notImplemented(BeeUtils.joinWords(kind.getCaption(), "form not implemented"));
+      return;
     }
+
+    dialog.setHeaderDate(date);
+    dialog.setContentPanel(contentPanel);
+
+    dialog.setTimeCodeSelectEvent(selection ->  scheduleTimeRange(partIds, date, selection));
+    dialog.show();
   }
 
   private Table<IdPair, Integer, List<BeeRow>> layoutPlannedSchedule(List<IdPair> partIds,
@@ -2598,19 +2478,21 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
             DataUtils.getString(timeCardCodes, tcRow, AdministrationConstants.COL_FOREGROUND));
 
         long millis = 0L;
+        TcDurationType tcDurationType = Data.getEnum(timeCardCodes.getViewName(), tcRow,
+          COL_TC_DURATION_TYPE, TcDurationType.class);
 
-        switch (tcRow.getEnum(
-          timeCardCodes.getColumnIndex(COL_TC_DURATION_TYPE), TcDurationType.class)
-          ) {
-          case ABSENCE:
-            break;
-          case FULL_TIME:
-            millis =  PayrollUtils.getMillis(null, null,
-              TcDurationType.getDefaultTimeOfDay());
-            break;
-          case PART_TIME:
-           millis =  PayrollUtils.getMillis(null, null, duration);
-           break;
+        if (tcDurationType != null) {
+          switch (tcDurationType) {
+            case ABSENCE:
+              break;
+            case FULL_TIME:
+              millis = PayrollUtils.getMillis(null, null,
+                TcDurationType.getDefaultTimeOfDay());
+              break;
+            case PART_TIME:
+              millis = PayrollUtils.getMillis(null, null, duration);
+              break;
+          }
         }
 
         if (millis > 0) {
@@ -2712,15 +2594,20 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     return widget;
   }
 
-  private void scheduleTimeRange(final IdPair partIds, final JustDate date, long trId) {
+  private void scheduleTimeRange(final IdPair partIds, final JustDate date, BeeRow tc) {
     List<String> colNames = Lists.newArrayList(COL_WORK_SCHEDULE_KIND,
-        scheduleParent.getWorkScheduleRelationColumn(),
-        scheduleParent.getWorkSchedulePartitionColumn(),
-        COL_WORK_SCHEDULE_DATE,
-        COL_TIME_RANGE_CODE);
+      scheduleParent.getWorkScheduleRelationColumn(),
+      scheduleParent.getWorkSchedulePartitionColumn(),
+      COL_WORK_SCHEDULE_DATE,
+      COL_TIME_RANGE_CODE,
+      COL_TIME_CARD_CODE,
+      COL_WORK_SCHEDULE_DURATION
+    );
 
     List<String> values = Queries.asList(kind.ordinal(), getRelationId(), partIds.getA(), date,
-        trId);
+      kind == WorkScheduleKind.PLANNED && DataUtils.isId(tc.getId()) ? tc.getId() : null,
+      kind == WorkScheduleKind.ACTUAL && DataUtils.isId(tc.getId()) ? tc.getId() : null,
+      tc.hasPropertyValue(PROP_TC_DURATION) ? tc.getProperty(PROP_TC_DURATION) : null);
 
     if (partIds.hasB()) {
       colNames.add(COL_SUBSTITUTE_FOR);
