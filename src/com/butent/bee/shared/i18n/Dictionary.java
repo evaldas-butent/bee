@@ -5360,6 +5360,8 @@ public interface Dictionary {
 
   default String svcPayrollReport() {return g("svcPayrollReport");}
 
+  default String svcProhibitEdit() {return g("svcProhibitEdit");}
+
   default String svcPublishTime() {return g("svcPublishTime");}
 
   default String svcRepair() {return g("svcRepair");}

@@ -181,6 +181,21 @@ public final class ServiceUtils {
         roleFilter, stateFilter);
   }
 
+  public static void getStateProcessRowSet(IsRow maintenanceRow,
+      Consumer<BeeRowSet> processConsumer) {
+    Long stateId = maintenanceRow.getLong(maintenanceDataInfo
+        .getColumnIndex(AdministrationConstants.COL_STATE));
+    Long maintenanceTypeId = maintenanceRow.getLong(maintenanceDataInfo.getColumnIndex(COL_TYPE));
+
+    Queries.getRowSet(TBL_STATE_PROCESS, null,
+        ServiceUtils.getStateFilter(stateId, maintenanceTypeId), new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            processConsumer.accept(result);
+          }
+        });
+  }
+
   private ServiceUtils() {
   }
 

@@ -68,9 +68,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
@@ -98,6 +100,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
   private InputBoolean searchAllDevices;
   private FlowPanel warrantyMaintenancePanel;
+  private Set<DataSelector> disableEditWidgets = new HashSet<>();
 
   @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
@@ -147,6 +150,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
       if (BeeUtils.same(name, COL_SERVICE_OBJECT)) {
         deviceSelector = (DataSelector) widget;
+      }
+
+      if (BeeUtils.inList(name, COL_SERVICE_OBJECT, COL_CONTACT, COL_COMPANY)) {
+        disableEditWidgets.add((DataSelector) widget);
       }
 
     } else if (widget instanceof Flow && BeeUtils.same(name, WIDGET_MAINTENANCE_COMMENTS)) {
@@ -283,6 +290,17 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       searchAllDevices.setChecked(searchAll);
     }
     updateDeviceFilter();
+
+    if (!DataUtils.isNewRow(getActiveRow())) {
+      ServiceUtils.getStateProcessRowSet(row, processRowSet -> {
+        if (!DataUtils.isEmpty(processRowSet)) {
+          IsRow stateProcessRow = processRowSet.getRow(0);
+          disableEditWidgets.forEach(widget ->
+              widget.setEnabled(!BeeUtils.unbox(stateProcessRow
+                  .getBoolean(processRowSet.getColumnIndex(COL_PROHIBIT_EDIT)))));
+        }
+      });
+    }
   }
 
   @Override
@@ -723,46 +741,40 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   }
 
   private void fillDataByStateProcessSettings(IsRow row, IsRow oldRow, SaveChangesEvent event) {
-    Long stateId = row.getLong(getDataIndex(AdministrationConstants.COL_STATE));
-    Long maintenanceTypeId = row.getLong(getDataIndex(COL_TYPE));
+    ServiceUtils.getStateProcessRowSet(row, processRowSet -> {
+      if (!DataUtils.isEmpty(processRowSet)) {
+        IsRow stateProcessRow = processRowSet.getRow(0);
+        String oldValue;
 
-    Queries.getRowSet(TBL_STATE_PROCESS, null,
-        ServiceUtils.getStateFilter(stateId, maintenanceTypeId), new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        if (!DataUtils.isEmpty(result)) {
-          IsRow stateProcessRow = result.getRow(0);
-          String oldValue;
-
-          if (oldRow != null) {
-            oldValue = oldRow.getString(getDataIndex(COL_ENDING_DATE));
-          } else {
-            oldValue = null;
-          }
-
-          if (BeeUtils.toBoolean(stateProcessRow.getString(result.getColumnIndex(COL_FINITE)))) {
-            Consumer<Boolean> changeStateConsumer = canChangeState -> {
-              if (canChangeState) {
-                Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(),
-                    COL_ENDING_DATE, oldValue, BeeUtils.toString(System.currentTimeMillis()),
-                    ModificationEvent.Kind.UPDATE_ROW);
-              } else {
-                event.consume();
-                getFormView().notifySevere(Localized.dictionary().ordEmptyInvoice());
-              }
-            };
-            ServiceUtils.checkCanChangeState(true, changeStateConsumer, getFormView());
-
-          } else if (!BeeUtils.isEmpty(oldValue)) {
-            Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(), COL_ENDING_DATE,
-                oldValue, null, ModificationEvent.Kind.UPDATE_ROW);
-          }
-
-          createStateChangeComment(row, stateProcessRow);
-
+        if (oldRow != null) {
+          oldValue = oldRow.getString(getDataIndex(COL_ENDING_DATE));
         } else {
-          createStateChangeComment(row, null);
+          oldValue = null;
         }
+
+        if (BeeUtils.toBoolean(stateProcessRow.getString(processRowSet
+            .getColumnIndex(COL_FINITE)))) {
+          Consumer<Boolean> changeStateConsumer = canChangeState -> {
+            if (canChangeState) {
+              Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(),
+                  COL_ENDING_DATE, oldValue, BeeUtils.toString(System.currentTimeMillis()),
+                  ModificationEvent.Kind.UPDATE_ROW);
+            } else {
+              event.consume();
+              getFormView().notifySevere(Localized.dictionary().ordEmptyInvoice());
+            }
+          };
+          ServiceUtils.checkCanChangeState(true, changeStateConsumer, getFormView());
+
+        } else if (!BeeUtils.isEmpty(oldValue)) {
+          Queries.updateAndFire(getViewName(), row.getId(), row.getVersion(), COL_ENDING_DATE,
+              oldValue, null, ModificationEvent.Kind.UPDATE_ROW);
+        }
+
+        createStateChangeComment(row, stateProcessRow);
+
+      } else {
+        createStateChangeComment(row, null);
       }
     });
   }
