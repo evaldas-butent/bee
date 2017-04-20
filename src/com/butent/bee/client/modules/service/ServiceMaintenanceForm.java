@@ -83,6 +83,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
   private static final String WIDGET_MAINTENANCE_COMMENTS = "MaintenanceComments";
   private static final String WIDGET_PANEL_NAME = "Panel";
   private static final String WIDGET_OTHER_INFO = "OtherInfo";
+  private static final String WIDGET_SEARCH_ALL_DEVICES = "SearchingAllDevices";
 
   private static final String STYLE_PROGRESS_CONTAINER =
       BeeConst.CSS_CLASS_PREFIX + "Grid-ProgressContainer";
@@ -90,10 +91,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       BeeConst.CSS_CLASS_PREFIX + "Grid-ProgressBar";
   private static final int REPORT_DATA_CONSUMPTIONS_COUNT = 3;
 
+  private DataSelector deviceSelector;
   private final MaintenanceEventsHandler eventsHandler = new MaintenanceEventsHandler();
   private Flow maintenanceComments;
   private Disclosure otherInfo;
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
+  private InputBoolean searchAllDevices;
   private FlowPanel warrantyMaintenancePanel;
 
   @Override
@@ -139,8 +142,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       FormFactory.WidgetDescriptionCallback callback) {
 
     if (widget instanceof DataSelector && BeeUtils.inList(name, COL_TYPE, COL_SERVICE_OBJECT,
-        COL_WARRANTY_MAINTENANCE, COL_CONTACT, COL_WARRANTY_TYPE)) {
+        COL_WARRANTY_MAINTENANCE, COL_CONTACT, COL_WARRANTY_TYPE, COL_COMPANY)) {
       ((DataSelector) widget).addSelectorHandler(this);
+
+      if (BeeUtils.same(name, COL_SERVICE_OBJECT)) {
+        deviceSelector = (DataSelector) widget;
+      }
 
     } else if (widget instanceof Flow && BeeUtils.same(name, WIDGET_MAINTENANCE_COMMENTS)) {
       maintenanceComments = (Flow) widget;
@@ -223,6 +230,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
     } else if (BeeUtils.same(name, TBL_SERVICE_ITEMS) && widget instanceof ChildGrid) {
       ((ChildGrid) widget).setGridInterceptor(new ServiceItemsGrid());
+
+    } else if (BeeUtils.same(name, WIDGET_SEARCH_ALL_DEVICES) && widget instanceof InputBoolean) {
+      searchAllDevices = (InputBoolean) widget;
+      searchAllDevices.addValueChangeHandler(event -> updateDeviceFilter());
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -265,6 +276,13 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     boolean isMaintenanceActive = BeeUtils.isEmpty(row.getString(getDataIndex(COL_ENDING_DATE)));
     ServiceHelper.setGridEnabled(form, TBL_SERVICE_ITEMS, isMaintenanceActive);
     ServiceHelper.setGridEnabled(form, TBL_MAINTENANCE_PAYROLL, !isMaintenanceActive);
+
+    if (searchAllDevices != null) {
+      boolean searchAll = BeeUtils.unbox(Global
+          .getParameterBoolean(PRM_FILTER_ALL_DEVICES));
+      searchAllDevices.setChecked(searchAll);
+    }
+    updateDeviceFilter();
   }
 
   @Override
@@ -487,6 +505,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
           getActiveRow().setValue(getDataIndex(COL_WARRANTY_VALID_TO),
               ServiceUtils.calculateWarrantyDate(event));
           getFormView().refreshBySource(COL_WARRANTY_VALID_TO);
+          break;
+
+        case VIEW_COMPANIES:
+          updateDeviceFilter();
           break;
       }
     }
@@ -797,6 +819,16 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
     if (addressLabel != null) {
       addressLabel.setStyleName(StyleUtils.NAME_REQUIRED, addressRequired);
+    }
+  }
+
+  private void updateDeviceFilter() {
+    if (deviceSelector != null) {
+      Long maintenanceCompany = getActiveRow().getLong(getDataIndex(COL_COMPANY));
+      boolean searchAll = searchAllDevices != null && searchAllDevices.isChecked();
+      Filter deviceFilter = searchAll || !DataUtils.isId(maintenanceCompany) ? null
+          : Filter.equals(COL_SERVICE_CUSTOMER, maintenanceCompany);
+      deviceSelector.setAdditionalFilter(deviceFilter);
     }
   }
 

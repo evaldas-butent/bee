@@ -66,14 +66,14 @@
             <FlowPanel class="&mrcl;" style="&mrst;">
               <FlowPanel style="&mfld; width: 21em;" for="Company">
                 <Label text="=client" class="bee-svc-panel-title" style="&flbl;"/>
-                <DataSelector source="Company" searchableColumns="Name TypeName Phone Email Address CompanyName"
+                <DataSelector name="Company" source="Company" searchableColumns="Name TypeName Phone Email Address CompanyName"
                               choiceColumns="Name TypeName"
                               renderColumns="CompanyName CompanyTypeName" style="&finp;" tabIndex="30"/>
               </FlowPanel>
             </FlowPanel>
 
             <FlowPanel class="&mrcl;" style="&mrst;">
-              <FlowPanel style="&mfld; width: 21em;" for="ServiceObject">
+              <FlowPanel style="&mfld; width: 31em;" for="ServiceObject">
                 <Label text="=svcDevice" class="bee-required bee-svc-panel-title" style="&flbl;"/>
                 <DataSelector name="ServiceObject" source="ServiceObject" updateMode="row"
                               choiceColumns="SerialNo ArticleNo CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
@@ -82,8 +82,8 @@
               <FlowPanel for="ServiceObject">
                 <FaLabel name="ServiceObjectAdd" char="plus_circle" class="bee-MultiSelector-plus bee-svc-add-button"/>
               </FlowPanel>
-              <FlowPanel style="&mfld; margin-top: 5ex;" for="Urgent">
-                <CheckBox source="Urgent" summarize="true" tabIndex="60"/>
+              <FlowPanel style="&mfld; margin-top: 5ex;" for="ServiceObject">
+                <CheckBox name="SearchingAllDevices" summarize="true" text="=svcSearchingAllDevices"/>
               </FlowPanel>
             </FlowPanel>
           </FlowPanel>
@@ -107,6 +107,9 @@
               <FlowPanel>
                 <FaLabel name="ContactAdd" char="plus_circle" class="bee-MultiSelector-plus bee-svc-add-button"/>
               </FlowPanel>
+            </FlowPanel>
+            <FlowPanel style="&mfld; margin-top: 5.6ex;" for="Urgent">
+              <CheckBox source="Urgent" summarize="true" tabIndex="60"/>
             </FlowPanel>
           </FlowPanel>
         </FlowPanel>

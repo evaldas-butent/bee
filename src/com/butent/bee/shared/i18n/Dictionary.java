@@ -144,6 +144,8 @@ public interface Dictionary {
 
   default String address() {return g("address");}
 
+  default String adjustmentDutyOrder() {return g("adjustmentDutyOrder");}
+
   default String administration() {return g("administration");}
 
   default String adsTopics() {return g("adsTopics");}
@@ -2591,9 +2593,9 @@ public interface Dictionary {
 
   default String expeditionShort() {return g("expeditionShort");}
 
-  default String expenditures() {return g("expenditures");}
-
   default String expenditureReport() {return g("expenditureReport");}
+
+  default String expenditures() {return g("expenditures");}
 
   default String expenses() {return g("expenses");}
 
@@ -4262,8 +4264,6 @@ public interface Dictionary {
 
   default String precision() {return g("precision");}
 
-  default String adjustmentDutyOrder() {return g("adjustmentDutyOrder");}
-
   default String presenceAway() {return g("presenceAway");}
 
   default String presenceChangeTooltip() {return g("presenceChangeTooltip");}
@@ -4704,6 +4704,8 @@ public interface Dictionary {
   default String prmExportERPReservationsTime() {return g("prmExportERPReservationsTime");}
 
   default String prmExternalMaintenanceUrl() {return g("prmExternalMaintenanceUrl");}
+
+  default String prmFilterAllDevices() {return g("prmFilterAllDevices");}
 
   default String prmForbiddenFilesExtentions() {return g("prmForbiddenFilesExtentions");}
 
@@ -5361,6 +5363,8 @@ public interface Dictionary {
   default String svcPublishTime() {return g("svcPublishTime");}
 
   default String svcRepair() {return g("svcRepair");}
+
+  default String svcSearchingAllDevices() {return g("svcSearchingAllDevices");}
 
   default String svcSendEmail() {return g("svcSendEmail");}
 
