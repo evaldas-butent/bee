@@ -222,7 +222,8 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty()
-          && !addictions.containsKey(presenter.getViewName());
+          && !Global.getParameterMap(AdministrationConstants.PRM_RECORD_ADDICTION)
+          .containsKey(presenter.getViewName());
       }
 
       @Override
@@ -243,14 +244,14 @@ public class GridMenu {
     RIGHTS_EDIT(RightsState.EDIT) {
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return BeeKeeper.getUser().isAdministrator() && isEditable(gridDescription)
-          && !addictions.containsKey(gridDescription.getViewName());
+        return BeeKeeper.getUser().isAdministrator() && isEditable(gridDescription);
       }
 
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty()
-          && !addictions.containsKey(presenter.getViewName());
+          && !Global.getParameterMap(AdministrationConstants.PRM_RECORD_ADDICTION)
+          .containsKey(presenter.getViewName());
       }
 
       @Override
@@ -266,14 +267,14 @@ public class GridMenu {
     RIGHTS_DELETE(RightsState.DELETE) {
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return BeeKeeper.getUser().isAdministrator() && isEditable(gridDescription)
-          && !addictions.containsKey(gridDescription.getViewName());
+        return BeeKeeper.getUser().isAdministrator() && isEditable(gridDescription);
       }
 
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty()
-          && !addictions.containsKey(presenter.getViewName());
+          && !Global.getParameterMap(AdministrationConstants.PRM_RECORD_ADDICTION)
+          .containsKey(presenter.getViewName());
       }
 
       @Override
@@ -294,14 +295,14 @@ public class GridMenu {
 
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        return BeeKeeper.getUser().isAdministrator() && isEditable(gridDescription)
-          && !addictions.containsKey(gridDescription.getViewName());
+        return BeeKeeper.getUser().isAdministrator() && isEditable(gridDescription);
       }
 
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().isEmpty()
-          && !addictions.containsKey(presenter.getViewName());
+          && !Global.getParameterMap(AdministrationConstants.PRM_RECORD_ADDICTION)
+          .containsKey(presenter.getViewName());
       }
 
       @Override
@@ -333,21 +334,16 @@ public class GridMenu {
 
       @Override
       boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
-        String view = gridDescription.getViewName();
-        if (addictions.containsKey(view)) {
-          label = BeeUtils.joinWords(Localized.dictionary().recordAddicted(),
-            Data.getViewCaption(Data.getColumnRelation(view, addictions.get(view))).toUpperCase(),
-            RightsHelper.buildAddictionName(addictions, gridDescription.getViewName()));
-        }
-
-        return Data.getDataInfo(gridDescription.getViewName(), false) != null
-          && addictions.containsKey(gridDescription.getViewName());
+        ensureLabel(gridDescription.getViewName());
+        return Data.getDataInfo(gridDescription.getViewName(), false) != null;
       }
 
       @Override
       boolean isVisible(GridPresenter presenter) {
+        ensureLabel(presenter.getViewName());
         return Data.getDataInfo(presenter.getViewName(), false) != null
-          && addictions.containsKey(presenter.getViewName());
+          && Global.getParameterMap(AdministrationConstants.PRM_RECORD_ADDICTION)
+          .containsKey(presenter.getViewName());
       }
 
       @Override
@@ -358,6 +354,20 @@ public class GridMenu {
       @Override
       boolean separatorBefore() {
         return true;
+      }
+
+      void ensureLabel(String viewName) {
+        Map<String, String> addictions = Global.getParameterMap(AdministrationConstants
+          .PRM_RECORD_ADDICTION);
+
+        if (addictions.containsKey(viewName)) {
+          setLabel(BeeUtils.joinWords(Localized.dictionary().recordAddicted(),
+            RightsHelper.buildAddictionName(addictions, viewName)));
+        }
+      }
+
+      void setLabel(String label) {
+        this.label = label;
       }
     };
 
@@ -375,10 +385,7 @@ public class GridMenu {
           && Data.isViewEditable(gridDescription.getViewName());
     }
 
-    Map<String, String> addictions =
-      Global.getParameterMap(AdministrationConstants.PRM_RECORD_ADDICTION);
-
-    private final Action action;
+      private final Action action;
     private final RightsState rightsState;
     private final GridFormKind formKind;
 
