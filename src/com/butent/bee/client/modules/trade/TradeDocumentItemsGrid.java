@@ -2,38 +2,43 @@ package com.butent.bee.client.modules.trade;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.DecisionCallback;
-import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.dialog.ModalGrid;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -51,18 +56,14 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
-import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
-import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -204,8 +205,10 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
   }
 
-  private static final String STYLE_ITEM_SELECTOR =
-      TradeKeeper.STYLE_PREFIX + "document-new-item-selector";
+  private static final String STYLE_SHOW_ITEM_STOCK_COMMAND =
+      TradeKeeper.STYLE_PREFIX + "show-item-stock";
+  private static final String STYLE_SHOW_RELATED_DOCUMENTS_COMMAND =
+      TradeKeeper.STYLE_PREFIX + "show-related-documents";
   private static final String STYLE_PRICE_CALCULATION_COMMAND =
       TradeKeeper.STYLE_PREFIX + "price-calculation";
 
@@ -230,126 +233,44 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    if (presenter != null && presenter.getHeader() != null
-        && BeeKeeper.getUser().canEditData(getViewName())) {
+    if (presenter != null && presenter.getHeader() != null) {
 
-      Button button = new Button(Localized.dictionary().recalculateTradeItemPriceCaption(),
-          event -> recalculatePrice());
-      button.addStyleName(STYLE_PRICE_CALCULATION_COMMAND);
+      Button stockCommand = new Button(Localized.dictionary().trdItemStock(),
+          event -> showItemStock(EventUtils.getEventTargetElement(event)));
+      stockCommand.addStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND);
+      stockCommand.setEnabled(false);
 
-      presenter.getHeader().addCommandItem(button);
+      presenter.getHeader().addCommandItem(stockCommand);
 
-      FaLabel test = new FaLabel(FontAwesome.PLUS_SQUARE_O);
-      test.addClickHandler(event -> testPicker());
-      presenter.getHeader().addCommandItem(test);
+      Button relatedDocumentsCommand = new Button(Localized.dictionary().trdRelatedDocuments(),
+          event -> getRelatedDocuments());
+      relatedDocumentsCommand.addStyleName(STYLE_SHOW_RELATED_DOCUMENTS_COMMAND);
+      relatedDocumentsCommand.setEnabled(false);
+
+      presenter.getHeader().addCommandItem(relatedDocumentsCommand);
+
+      if (BeeKeeper.getUser().canEditData(getViewName())) {
+        Button priceCommand = new Button(Localized.dictionary().recalculateTradeItemPriceCaption(),
+            event -> recalculatePrice());
+        priceCommand.addStyleName(STYLE_PRICE_CALCULATION_COMMAND);
+
+        presenter.getHeader().addCommandItem(priceCommand);
+      }
     }
 
     super.afterCreatePresenter(presenter);
   }
 
   @Override
-  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    IsRow parentRow = getParentRow(presenter.getGridView());
-    if (!checkParentOnAdd(parentRow)) {
-      return false;
-    }
+  public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
+    presenter.getGridView().ensureRelId(docId -> {
+      final IsRow parentRow = getParentRow(presenter.getGridView());
 
-    TradeDocumentPhase phase = TradeUtils.getDocumentPhase(parentRow);
-    OperationType operationType = TradeUtils.getDocumentOperationType(parentRow);
-
-    ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(parentRow);
-
-    Relation relation = Relation.create();
-    relation.setViewName(VIEW_ITEMS);
-
-    relation.disableNewRow();
-    relation.setSelectorClass(STYLE_ITEM_SELECTOR);
-
-    List<String> renderColumns = Arrays.asList(COL_ITEM_NAME, COL_ITEM_ARTICLE);
-
-    List<String> searchableColumns = new ArrayList<>(renderColumns);
-    relation.setSearchableColumns(searchableColumns);
-
-    List<String> choiceColumns = new ArrayList<>(renderColumns);
-    if (itemPrice != null) {
-      choiceColumns.add(itemPrice.getPriceColumn());
-      choiceColumns.add(itemPrice.getCurrencyNameAlias());
-    }
-
-    final String caption;
-    final MultiSelector selector;
-
-    if (operationType.consumesStock()) {
-      caption = BeeUtils.joinItems(Localized.dictionary().trdStock(),
-          Localized.dictionary().services());
-
-      String wfCode = Data.getString(VIEW_TRADE_DOCUMENTS, parentRow, ALS_WAREHOUSE_FROM_CODE);
-      if (!BeeUtils.isEmpty(wfCode)) {
-        choiceColumns.add(keyStockWarehouse(wfCode));
+      if (checkParentOnAdd(parentRow)) {
+        TradeUtils.getDocumentVatPercent(parentRow, vatPercent ->
+            openPicker(parentRow, vatPercent));
       }
-
-      relation.setChoiceColumns(choiceColumns);
-
-      if (phase.modifyStock()) {
-        Long warehouseFrom = TradeUtils.getDocumentRelation(parentRow, COL_TRADE_WAREHOUSE_FROM);
-
-        Filter filter = Filter.or(Filter.notNull(COL_ITEM_IS_SERVICE),
-            Filter.in(Data.getIdColumn(VIEW_ITEMS), VIEW_TRADE_DOCUMENT_ITEMS, COL_ITEM,
-                Filter.in(Data.getIdColumn(VIEW_TRADE_DOCUMENT_ITEMS),
-                    VIEW_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM,
-                    Filter.and(Filter.equals(COL_STOCK_WAREHOUSE, warehouseFrom),
-                        Filter.isPositive(COL_STOCK_QUANTITY)))));
-
-        relation.setFilter(filter);
-        relation.setCaching(Relation.Caching.NONE);
-      }
-
-      selector = MultiSelector.autonomous(relation, renderColumns);
-
-    } else {
-      caption = BeeUtils.joinItems(Localized.dictionary().goods(),
-          Localized.dictionary().services());
-
-      relation.setChoiceColumns(choiceColumns);
-      selector = MultiSelector.autonomous(relation, renderColumns);
-    }
-
-    int width = presenter.getGridView().asWidget().getOffsetWidth();
-    if (width > 300) {
-      StyleUtils.setWidth(selector, width - 50);
-    }
-
-    Global.inputWidget(caption, selector, () -> {
-      final List<Long> itemIds = DataUtils.parseIdList(selector.getValue());
-
-      if (!itemIds.isEmpty()) {
-        presenter.getGridView().ensureRelId(documentId ->
-            Queries.getRowSequence(VIEW_ITEMS, itemIds, itemRows -> {
-              if (BeeUtils.isEmpty(itemRows)) {
-                getGridView().notifyWarning(Localized.dictionary().noData());
-              } else {
-                IsRow documentRow = getParentRow(getGridView());
-
-                if (DataUtils.hasId(documentRow)) {
-                  if (isStockRequired(documentRow)) {
-                    Long warehouse = Data.getLong(VIEW_TRADE_DOCUMENTS, documentRow,
-                        COL_TRADE_WAREHOUSE_FROM);
-
-                    if (DataUtils.isId(warehouse)) {
-                      getStock(itemIds, warehouse, stock ->
-                          TradeUtils.getDocumentVatPercent(documentRow, defVatPercent ->
-                              addItems(documentRow, itemRows, true, stock, defVatPercent)));
-                    }
-
-                  } else {
-                    TradeUtils.getDocumentVatPercent(documentRow, defVatPercent ->
-                        addItems(documentRow, itemRows, false, null, defVatPercent));
-                  }
-                }
-              }
-            }));
-      }
-    }, null, presenter.getHeader().getElement());
+    });
 
     return false;
   }
@@ -391,6 +312,30 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
+  }
+
+  @Override
+  public void onActiveRowChange(ActiveRowChangeEvent event) {
+    HeaderView header = getGridPresenter().getHeader();
+
+    if (header != null) {
+      IsRow row = event.getRowValue();
+      boolean isService = row != null && row.isTrue(getDataIndex(COL_ITEM_IS_SERVICE));
+
+      boolean enable = row != null && !isService
+          && DataUtils.isId(row.getLong(getDataIndex(COL_ITEM)));
+
+      header.enableCommandByStyleName(STYLE_SHOW_ITEM_STOCK_COMMAND, enable);
+
+      if (enable) {
+        TradeDocumentPhase phase = TradeUtils.getDocumentPhase(getParentRow(getGridView()));
+        enable = phase != null && phase.modifyStock() && DataUtils.hasId(row);
+      }
+
+      header.enableCommandByStyleName(STYLE_SHOW_RELATED_DOCUMENTS_COMMAND, enable);
+    }
+
+    super.onActiveRowChange(event);
   }
 
   @Override
@@ -605,93 +550,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     } else {
       return phase.modifyStock() && operationType.consumesStock();
     }
-  }
-
-  private void addItems(IsRow documentRow, List<? extends IsRow> itemRows,
-      boolean stockRequired, Multimap<Long, IsRow> stock, Double defVatPercent) {
-
-    DateTime date = TradeUtils.getDocumentDate(documentRow);
-    Long currency = TradeUtils.getDocumentRelation(documentRow, COL_TRADE_CURRENCY);
-
-    ItemPrice itemPrice = TradeUtils.getDocumentItemPrice(documentRow);
-    TradeVatMode vatMode = TradeUtils.getDocumentVatMode(documentRow);
-
-    int serviceIndex = Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_IS_SERVICE);
-
-    int articleIndex = Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_ARTICLE);
-    int quantityIndex = Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_DEFAULT_QUANTITY);
-
-    int vatIndex = Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_VAT);
-    int vatPercentIndex = Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_VAT_PERCENT);
-
-    int priceIndex;
-    int currencyIndex;
-
-    if (itemPrice == null) {
-      priceIndex = BeeConst.UNDEF;
-      currencyIndex = BeeConst.UNDEF;
-    } else {
-      priceIndex = Data.getColumnIndex(VIEW_ITEMS, itemPrice.getPriceColumn());
-      currencyIndex = Data.getColumnIndex(VIEW_ITEMS, itemPrice.getCurrencyColumn());
-    }
-
-    List<BeeColumn> columns = DataUtils.getColumns(getDataColumns(),
-        Arrays.asList(COL_TRADE_DOCUMENT, COL_ITEM, COL_TRADE_ITEM_ARTICLE,
-            COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-            COL_TRADE_DOCUMENT_ITEM_VAT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT,
-            COL_TRADE_ITEM_PARENT));
-
-    BeeRowSet rowSet = new BeeRowSet(getViewName(), columns);
-
-    for (IsRow row : itemRows) {
-      Double quantity = BeeUtils.nvl(row.getDouble(quantityIndex), BeeConst.DOUBLE_ONE);
-
-      Double price = BeeConst.isUndef(priceIndex) ? null : row.getDouble(priceIndex);
-      if (BeeUtils.nonZero(price)) {
-        Long itemCurrency = BeeConst.isUndef(currencyIndex) ? null : row.getLong(currencyIndex);
-
-        if (Money.canExchange(itemCurrency, currency)) {
-          price = Money.exchange(itemCurrency, currency, price, date);
-          price = Localized.normalizeMoney(price);
-        }
-      }
-
-      Double vat;
-      if (vatMode != null && BeeUtils.isTrue(row.getBoolean(vatIndex))) {
-        vat = BeeUtils.nvl(row.getDouble(vatPercentIndex), defVatPercent);
-      } else {
-        vat = null;
-      }
-
-      Boolean vatIsPercent = TradeUtils.vatIsPercent(vat);
-
-      Long parent = null;
-
-      if (stockRequired && !row.isTrue(serviceIndex)) {
-        if (stock == null || !stock.containsKey(row.getId())) {
-          continue;
-        }
-
-        for (IsRow stockRow : stock.get(row.getId())) {
-          Double qty = Data.getDouble(VIEW_TRADE_STOCK, stockRow, COL_STOCK_QUANTITY);
-
-          if (BeeUtils.isMeq(qty, quantity)) {
-            parent = Data.getLong(VIEW_TRADE_STOCK, stockRow, COL_TRADE_DOCUMENT_ITEM);
-            break;
-          }
-        }
-
-        if (parent == null) {
-          continue;
-        }
-      }
-
-      rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
-          Queries.asList(documentRow.getId(), row.getId(), row.getString(articleIndex),
-              quantity, price, vat, vatIsPercent, parent));
-    }
-
-    Queries.insertRows(rowSet);
   }
 
   private void recalculatePrice() {
@@ -947,17 +805,6 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     return true;
   }
 
-  private void testPicker() {
-    getGridView().ensureRelId(docId -> {
-      IsRow parentRow = getParentRow(getGridView());
-
-      if (checkParentOnAdd(parentRow)) {
-        TradeUtils.getDocumentVatPercent(parentRow, vatPercent ->
-            openPicker(parentRow, vatPercent));
-      }
-    });
-  }
-
   private void addItems(IsRow parentRow, Collection<BeeRow> selectedItems, TradeDocumentSums tds) {
     if (isStockRequired(parentRow)) {
       Long warehouse = Data.getLong(VIEW_TRADE_DOCUMENTS, parentRow, COL_TRADE_WAREHOUSE_FROM);
@@ -1062,51 +909,81 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   private void openPicker(final IsRow parentRow, Double defaultVatPercent) {
-    final TradeItemPicker picker = new TradeItemPicker(parentRow, defaultVatPercent);
+    TradeItemPicker picker = new TradeItemPicker(parentRow, defaultVatPercent);
+    picker.open((selectedItems, tds) -> addItems(parentRow, selectedItems, tds));
+  }
 
-    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().itemSelection(),
-        TradeItemPicker.STYLE_DIALOG);
+  private void showItemStock(final Element target) {
+    final Long item = getLongValue(COL_ITEM);
 
-    final FaLabel save = new FaLabel(FontAwesome.SAVE);
-    save.addStyleName(TradeItemPicker.STYLE_SAVE);
+    if (DataUtils.isId(item)) {
+      TradeKeeper.getItemStockByWarehouse(item, list -> {
+        if (BeeUtils.isEmpty(list)) {
+          getGridView().notifyInfo(Localized.dictionary().noData());
 
-    save.addClickHandler(event -> {
-      if (picker.hasSelection()) {
-        addItems(parentRow, picker.getSelectedItems(), picker.getTds());
+        } else if (Objects.equals(getLongValue(COL_ITEM), item)) {
+          String caption = BeeUtils.joinWords(item,
+              getStringValue(ALS_ITEM_NAME), getStringValue(COL_TRADE_ITEM_ARTICLE));
+
+          Widget widget = TradeUtils.renderItemStockByWarehouse(item, list);
+
+          if (widget != null) {
+            Global.showModalWidget(caption, widget, target);
+          }
+        }
+      });
+    }
+  }
+
+  private void getRelatedDocuments() {
+    if (DataUtils.hasId(getActiveRow())) {
+      final long id = getActiveRowId();
+      Long parent = getLongValue(COL_TRADE_ITEM_PARENT);
+
+      ParameterList parameters = TradeKeeper.createArgs(SVC_GET_RELATED_TRADE_ITEMS);
+      parameters.addQueryItem(Service.VAR_ID, id);
+
+      if (DataUtils.isId(parent)) {
+        parameters.addQueryItem(COL_TRADE_ITEM_PARENT, parent);
       }
-      dialog.close();
-    });
 
-    dialog.addAction(Action.SAVE, save);
+      BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          if (Objects.equals(id, getActiveRowId())) {
+            if (response.hasResponse()) {
+              BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
+              showRelatedDocuments(rowSet);
 
-    FaLabel close = new FaLabel(FontAwesome.CLOSE);
-    close.addStyleName(TradeItemPicker.STYLE_CLOSE);
+            } else {
+              getGridView().notifyInfo(Localized.dictionary().noData());
+            }
+          }
+        }
+      });
+    }
+  }
 
-    close.addClickHandler(event -> {
-      if (picker.hasSelection()) {
-        Global.decide(Localized.dictionary().itemSelection(),
-            Collections.singletonList(Localized.dictionary().saveSelectedItems()),
-            new DecisionCallback() {
-              @Override
-              public void onConfirm() {
-                addItems(parentRow, picker.getSelectedItems(), picker.getTds());
-                dialog.close();
-              }
+  private void showRelatedDocuments(final BeeRowSet rowSet) {
+    String caption = BeeUtils.joinItems(Localized.dictionary().trdRelatedDocuments(),
+        getActiveRowId(), getStringValue(ALS_ITEM_NAME), getStringValue(COL_TRADE_ITEM_ARTICLE));
 
-              @Override
-              public void onDeny() {
-                dialog.close();
-              }
-            }, DialogConstants.DECISION_YES);
+    int height = BeeUtils.resize(rowSet.getNumberOfRows(), 1, 12, 20, 80);
 
-      } else {
-        dialog.close();
+    GridInterceptor interceptor = new AbstractGridInterceptor() {
+      @Override
+      public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
+        return rowSet;
       }
-    });
 
-    dialog.addAction(Action.CLOSE, close);
+      @Override
+      public GridInterceptor getInstance() {
+        return null;
+      }
+    };
 
-    dialog.setWidget(picker);
-    dialog.center();
+    GridFactory.openGrid(GRID_TRADE_RELATED_ITEMS, interceptor,
+        GridFactory.GridOptions.forCaption(caption),
+        ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
   }
 }

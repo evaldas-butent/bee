@@ -158,7 +158,7 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   void onSaveChanges(GridView gridView, SaveChangesEvent event);
 
-  boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);
+  boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy);
 
   void onUnload(GridView gridView);
 

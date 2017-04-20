@@ -46,6 +46,7 @@ import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontWeight;
@@ -93,6 +94,7 @@ import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.DateRange;
@@ -277,7 +279,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
       response = confirmTasks(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_TASK_REPORT)) {
-        response = getReportData();
+        response = getReportData(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
@@ -1931,7 +1933,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return ResponseObject.response(files);
   }
 
-  private ResponseObject getReportData() {
+  private ResponseObject getReportData(RequestInfo reqInfo) {
 
     String ownerPerson = SqlUtils.uniqueName();
     String executorPerson = SqlUtils.uniqueName();
@@ -2004,14 +2006,56 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     addJoinsForUserFirstLastNames(select, TBL_PERSONS, VIEW_TASK_USERS, COL_USER);
 
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+    HasConditions clause = SqlUtils.and();
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_TASKS,
+        sys.getIdName(TBL_TASKS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_TASK));
+    clause.add(report.getCondition(TBL_TASKS, COL_SUMMARY));
+    clause.add(report.getCondition(TBL_TASKS, COL_PRIORITY));
+    clause.add(report.getCondition(TBL_TASKS, COL_STATUS));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_TASK_TYPES, COL_TASK_TYPE_NAME),
+        ALS_TASK_TYPE_NAME));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_TASK_PRODUCTS, COL_PRODUCT_NAME),
+        ALS_TASK_PRODUCT_NAME));
+    clause.add(report.getCondition(SqlUtils.field(VIEW_COMPANIES, COL_COMPANY_NAME),
+        ALS_COMPANY_NAME));
+    clause.add(report.getCondition(TBL_TASKS, COL_START_TIME));
+    clause.add(report.getCondition(TBL_TASKS, COL_FINISH_TIME));
+    clause.add(report.getCondition(TBL_TASKS, COL_EXPECTED_DURATION));
+    clause.add(report.getCondition(SqlUtils.field(ProjectConstants.VIEW_PROJECTS,
+        ProjectConstants.COL_PROJECT_NAME), ProjectConstants.ALS_PROJECT_NAME));
+    clause.add(report.getCondition(SqlUtils.field(ProjectConstants.VIEW_PROJECT_STAGES,
+        ProjectConstants.COL_STAGE_NAME), ProjectConstants.ALS_STAGE_NAME));
+    clause.add(report.getCondition(SqlUtils.field(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME),
+        ALS_DURATION_TYPE_NAME));
+    clause.add(report.getCondition(SqlUtils.field(TBL_EVENT_DURATIONS, COL_DURATION_DATE),
+        COL_DURATION));
+    clause.add(report.getCondition(SqlUtils.concat(
+        SqlUtils.field(ownerPerson, COL_FIRST_NAME), "' '",
+        SqlUtils.nvl(SqlUtils.field(ownerPerson, COL_LAST_NAME), "''")), COL_OWNER));
+    clause.add(report.getCondition(SqlUtils.concat(
+        SqlUtils.field(executorPerson, COL_FIRST_NAME), "' '",
+        SqlUtils.nvl(SqlUtils.field(executorPerson, COL_LAST_NAME), "''")), COL_EXECUTOR));
+    clause.add(report.getCondition(SqlUtils.concat(
+        SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+        SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), COL_USER));
+    select.setWhere(clause);
 
-    SimpleRowSet rqs = qs.getData(select);
+    String tmp = qs.sqlCreateTemp(select);
+    select = new SqlSelect().addFrom(tmp);
 
-    if (rqs.isEmpty()) {
-      return ResponseObject.response(rqs);
+    for (String column : qs.getData(new SqlSelect()
+        .addAllFields(tmp)
+        .addFrom(tmp)
+        .setWhere(SqlUtils.sqlFalse())).getColumnNames()) {
+
+      if (report.requiresField(column)) {
+        select.addFields(tmp, column);
+      }
     }
-
-    return ResponseObject.response(rqs);
+    SimpleRowSet data = qs.getData(select);
+    qs.sqlDropTemp(tmp);
+    return ResponseObject.response(data);
   }
 
   private void addExprForUserFirstLastNames(SqlSelect select, String table, String col) {

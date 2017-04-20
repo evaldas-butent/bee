@@ -15,11 +15,18 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.Storage;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
@@ -30,10 +37,12 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.classifiers.ClassifierKeeper;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.navigation.HasPaging;
 import com.butent.bee.client.view.navigation.SimplePager;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputNumber;
@@ -41,6 +50,8 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -49,6 +60,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -62,6 +74,7 @@ import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.modules.trade.TradeItemSearch;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -77,17 +90,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-class TradeItemPicker extends Flow implements HasPaging {
+public class TradeItemPicker extends Flow implements HasPaging {
 
   private static BeeLogger logger = LogUtils.getLogger(TradeItemPicker.class);
 
   private static final String STYLE_NAME = TradeKeeper.STYLE_PREFIX + "item-picker";
   private static final String STYLE_PREFIX = STYLE_NAME + "-";
 
-  static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
-  static final String STYLE_SAVE = STYLE_PREFIX + "save";
-  static final String STYLE_CLOSE = STYLE_PREFIX + "close";
+  private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
+  private static final String STYLE_NEW_ITEM = STYLE_PREFIX + "new-item";
+  private static final String STYLE_NEW_SERVICE = STYLE_PREFIX + "new-service";
+  private static final String STYLE_SAVE = STYLE_PREFIX + "save";
+  private static final String STYLE_CLOSE = STYLE_PREFIX + "close";
 
   private static final String STYLE_SEARCH_PREFIX = STYLE_PREFIX + "search-";
   private static final String STYLE_SEARCH_PANEL = STYLE_SEARCH_PREFIX + "panel";
@@ -135,6 +152,7 @@ class TradeItemPicker extends Flow implements HasPaging {
 
   private static final String KEY_AVAILABLE = "avail";
   private static final String KEY_PRICE = "price";
+  private static final String KEY_WAREHOUSE = "warehouse";
 
   private static final int itemPriceScale = Data.getColumnScale(VIEW_ITEMS, COL_ITEM_PRICE);
   private static final int costScale = Data.getColumnScale(VIEW_TRADE_ITEM_COST,
@@ -183,7 +201,9 @@ class TradeItemPicker extends Flow implements HasPaging {
 
   private final Map<String, String> priceCalculationOptions = new HashMap<>();
 
-  TradeItemPicker(IsRow documentRow, Double defaultVatPercent) {
+  private State state;
+
+  private TradeItemPicker() {
     super(STYLE_NAME);
     addStyleName(STYLE_EMPTY);
 
@@ -195,9 +215,6 @@ class TradeItemPicker extends Flow implements HasPaging {
 
     add(notification);
 
-    setDocumentRow(documentRow);
-    setDefaultVatPercent(defaultVatPercent);
-
     itemPanel.addClickHandler(event -> {
       Element target = EventUtils.getEventTargetElement(event);
       TableCellElement cell = DomUtils.getParentCell(target, true);
@@ -208,15 +225,135 @@ class TradeItemPicker extends Flow implements HasPaging {
     });
   }
 
-  List<BeeRow> getSelectedItems() {
+  TradeItemPicker(IsRow documentRow, Double defaultVatPercent) {
+    this();
+
+    setDocumentRow(documentRow);
+    setDefaultVatPercent(defaultVatPercent);
+  }
+
+  public TradeItemPicker(TradeDocumentPhase documentPhase, OperationType operationType,
+      Long warehouse, ItemPrice itemPrice, DateTime date, Long currency, String currencyName,
+      TradeDiscountMode discountMode, Double documentDiscount, TradeVatMode vatMode,
+      Map<String, String> priceCalculationOptions, Double defaultVatPercent) {
+    this();
+
+    setDocumentPhase(documentPhase);
+    setOperationType(operationType);
+    setWarehouse(warehouse);
+
+    setItemPrice(itemPrice);
+
+    setDate(date);
+    setCurrency(currency);
+    setCurrencyName(currencyName);
+
+    setDiscountMode(discountMode);
+    setDocumentDiscount(documentDiscount);
+    setVatMode(vatMode);
+
+    if (priceCalculationOptions != null) {
+      this.priceCalculationOptions.putAll(priceCalculationOptions);
+    }
+
+    setDefaultVatPercent(defaultVatPercent);
+  }
+
+  public void open(BiConsumer<Collection<BeeRow>, TradeDocumentSums> selectionConsumer) {
+    if (selectionConsumer == null) {
+      logger.severe(NameUtils.getName(this), "selection consumer is null");
+      return;
+    }
+
+    final DialogBox dialog = DialogBox.withoutCloseBox(Localized.dictionary().itemSelection(),
+        STYLE_DIALOG);
+
+    if (!needsStock()) {
+      Button newItem = new Button(Localized.dictionary().newItem());
+      newItem.addStyleName(STYLE_NEW_ITEM);
+
+      newItem.addClickHandler(event -> createNew(false));
+
+      dialog.addCommand(newItem);
+    }
+
+    Button newService = new Button(Localized.dictionary().newService());
+    newService.addStyleName(STYLE_NEW_SERVICE);
+
+    newService.addClickHandler(event -> createNew(true));
+
+    dialog.addCommand(newService);
+
+    FaLabel save = new FaLabel(FontAwesome.SAVE, STYLE_SAVE);
+
+    save.addClickHandler(event -> {
+      if (getState() == State.UPDATING) {
+        setSavePending();
+
+      } else if (getState() != State.CLOSING) {
+        setState(State.CLOSING);
+
+        if (hasSelection()) {
+          selectionConsumer.accept(getSelectedItems(), getTds());
+        }
+        dialog.close();
+      }
+    });
+
+    dialog.addAction(Action.SAVE, save);
+
+    FaLabel close = new FaLabel(FontAwesome.CLOSE, STYLE_CLOSE);
+
+    close.addClickHandler(event -> {
+      if (hasSelection()) {
+        Global.decide(Localized.dictionary().itemSelection(),
+            Collections.singletonList(Localized.dictionary().saveSelectedItems()),
+            new DecisionCallback() {
+              @Override
+              public void onCancel() {
+                focusSearchBox();
+              }
+
+              @Override
+              public void onConfirm() {
+                selectionConsumer.accept(getSelectedItems(), getTds());
+                dialog.close();
+              }
+
+              @Override
+              public void onDeny() {
+                dialog.close();
+              }
+            }, DialogConstants.DECISION_YES);
+
+      } else {
+        dialog.close();
+      }
+    });
+
+    dialog.addAction(Action.CLOSE, close);
+
+    dialog.setWidget(this);
+
+    dialog.addOpenHandler(event -> {
+      setState(State.OPEN);
+      focusSearchBox();
+    });
+
+    dialog.addCloseHandler(event -> setState(State.CLOSED));
+
+    dialog.center();
+  }
+
+  public List<BeeRow> getSelectedItems() {
     return selectedItems;
   }
 
-  TradeDocumentSums getTds() {
+  public TradeDocumentSums getTds() {
     return tds;
   }
 
-  boolean hasSelection() {
+  public boolean hasSelection() {
     return !selectedItems.isEmpty();
   }
 
@@ -249,8 +386,26 @@ class TradeItemPicker extends Flow implements HasPaging {
     }
   }
 
-  void setDefaultVatPercent(Double defaultVatPercent) {
+  public void setDefaultVatPercent(Double defaultVatPercent) {
     this.defaultVatPercent = defaultVatPercent;
+  }
+
+  private void createNew(boolean isService) {
+    DataInfo dataInfo = Data.getDataInfo(VIEW_ITEMS);
+
+    BeeRow row = RowFactory.createEmptyRow(dataInfo);
+    if (isService) {
+      Data.setValue(VIEW_ITEMS, row, COL_ITEM_IS_SERVICE, isService);
+    }
+
+    RowFactory.createRow(dataInfo, row, Modality.ENABLED, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        if (DataUtils.hasId(result)) {
+          doQuery(Filter.compareId(result.getId()), Collections.emptySet());
+        }
+      }
+    });
   }
 
   private static String searchByStorageKey(int index) {
@@ -292,12 +447,24 @@ class TradeItemPicker extends Flow implements HasPaging {
 
     searchBox.addKeyDownHandler(event -> {
       if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-        String input = searchBox.getValue();
-        if (!BeeUtils.isEmpty(input)) {
-          doSearch(input, searchBySelectors);
+        if (UiHelper.isSave(event.getNativeEvent())) {
+          save();
+
+        } else {
+          String input = searchBox.getValue();
+          if (!BeeUtils.isEmpty(input)) {
+            doSearch(input, searchBySelectors);
+          }
         }
+
+      } else if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+        close();
+
+      } else if (event.getNativeKeyCode() == KeyCodes.KEY_F2) {
+        showSelectedItems();
       }
     });
+
     panel.add(searchBox);
 
     FaLabel searchCommand = new FaLabel(FontAwesome.SEARCH, STYLE_SEARCH_COMMAND);
@@ -382,6 +549,7 @@ class TradeItemPicker extends Flow implements HasPaging {
         }
 
         if (searchBy.isEmpty()) {
+          focusSearchBox();
           notification.severe(ArrayUtils.toArray(errorMessages));
           return;
         }
@@ -452,6 +620,7 @@ class TradeItemPicker extends Flow implements HasPaging {
 
         } else {
           removeStyleName(STYLE_SEARCH_RUNNING);
+          focusSearchBox();
           notification.warning(Localized.dictionary().nothingFound());
         }
       }
@@ -846,6 +1015,17 @@ class TradeItemPicker extends Flow implements HasPaging {
       reserveWidget.setTitle(Localized.dictionary().trdQuantityReserved());
       reserveWidget.addStyleName(STYLE_RESERVED);
 
+      reserveWidget.addClickHandler(event -> {
+        Element target = EventUtils.getEventTargetElement(event);
+        event.stopPropagation();
+
+        Long warehouse = DomUtils.getDataPropertyLong(DomUtils.getParentCell(target, true),
+            KEY_WAREHOUSE);
+        Long item = getRowId(target);
+
+        TradeUtils.showReservations(warehouse, item, null, target);
+      });
+
       reserveWidget.setValue(reserved);
       panel.add(reserveWidget);
 
@@ -875,7 +1055,7 @@ class TradeItemPicker extends Flow implements HasPaging {
     warehouses.forEach((id, code) -> warehouseCodes.put(code, id));
 
     boolean needsStock = needsStock();
-    boolean showStockCost = ip == ItemPrice.COST && getOperationType().consumesStock()
+    boolean showStockCost = TradeUtils.documentPriceIsParentCost(getOperationType(), ip)
         && !BeeUtils.isEmpty(mainWarehouseCode);
 
     int qtyCol;
@@ -972,6 +1152,9 @@ class TradeItemPicker extends Flow implements HasPaging {
         if (BeeUtils.isPositive(stock)) {
           Double reserved = item.getPropertyDouble(keyReservedWarehouse(entry.getKey()));
           table.setWidget(r, c, renderStock(stock, reserved), STYLE_STOCK + STYLE_CELL_SUFFIX);
+
+          DomUtils.setDataProperty(table.getCellFormatter().getElement(r, c),
+              KEY_WAREHOUSE, entry.getValue());
 
           if (Objects.equals(entry.getValue(), getWarehouse())) {
             table.getCellFormatter().addStyleName(r, c, STYLE_MAIN_WAREHOUSE + STYLE_CELL_SUFFIX);
@@ -1078,12 +1261,40 @@ class TradeItemPicker extends Flow implements HasPaging {
             input = (InputNumber) event.getSource();
 
             if (validate(input)) {
-              if (!UiHelper.moveFocus(input.getParent(), true)) {
-                onQuantityChange(input, input.getNumber());
+              if (UiHelper.isSave(event.getNativeEvent())) {
+                setSavePending();
+                onQuantityChange(input);
+
+              } else if (isLast(input)) {
+                if (!focusSearchBox()) {
+                  onQuantityChange(input);
+                }
+
+              } else if (!UiHelper.moveFocus(input.getParent(), true)) {
+                onQuantityChange(input);
+              }
+            }
+
+          } else if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+            input = (InputNumber) event.getSource();
+
+            if (input.isEmpty()) {
+              focusSearchBox();
+
+            } else {
+              long id = getRowId(input.getElement());
+
+              Double oldValue;
+              if (tds.containsItem(id)) {
+                oldValue = tds.getQuantity(id);
+              } else {
+                oldValue = null;
               }
 
-              if (UiHelper.isSave(event.getNativeEvent())) {
-                commit();
+              if (Objects.equals(oldValue, input.getNumber())) {
+                focusSearchBox();
+              } else {
+                input.setValue(oldValue);
               }
             }
 
@@ -1108,7 +1319,7 @@ class TradeItemPicker extends Flow implements HasPaging {
                   boolean forward = event.getNativeKeyCode() == KeyCodes.KEY_PAGEDOWN;
                   boolean hasModifiers = EventUtils.hasModifierKey(event);
 
-                  onQuantityChange(input, input.getNumber());
+                  onQuantityChange(input);
 
                   boolean ok = false;
 
@@ -1148,16 +1359,55 @@ class TradeItemPicker extends Flow implements HasPaging {
     return quantityKeyDownHandler;
   }
 
-  private void commit() {
+  private boolean focusSearchBox() {
+    Widget widget = UiHelper.getChildByStyleName(this, STYLE_SEARCH_BOX);
+
+    if (widget instanceof InputText) {
+      InputText input = (InputText) widget;
+
+      input.setFocus(true);
+      input.selectAll();
+
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+
+  private void close() {
+    FaLabel close = findAction(STYLE_CLOSE);
+    if (close != null) {
+      close.click();
+    }
+  }
+
+  private void save() {
+    FaLabel save = findAction(STYLE_SAVE);
+    if (save != null) {
+      save.click();
+    }
+  }
+
+  private FaLabel findAction(String styleName) {
     Popup popup = UiHelper.getParentPopup(this);
 
     if (popup != null) {
-      Element save = Selectors.getElementByClassName(popup, STYLE_SAVE);
-
-      if (save != null) {
-        EventUtils.click(save);
+      Widget widget = UiHelper.getChildByStyleName(popup, styleName);
+      if (widget instanceof FaLabel) {
+        return (FaLabel) widget;
       }
     }
+
+    return null;
+  }
+
+  private boolean isLast(InputNumber input) {
+    List<Element> inputElements = Selectors.getElementsByClassName(itemPanel.getElement(),
+        STYLE_QTY_INPUT);
+
+    return !BeeUtils.isEmpty(inputElements)
+        && DomUtils.sameId(BeeUtils.getLast(inputElements), input.getElement());
   }
 
   private ChangeHandler ensureQuantityChangeHandler() {
@@ -1165,8 +1415,9 @@ class TradeItemPicker extends Flow implements HasPaging {
       quantityChangeHandler = event -> {
         if (event.getSource() instanceof InputNumber) {
           InputNumber input = (InputNumber) event.getSource();
+
           if (validate(input)) {
-            onQuantityChange(input, input.getNumber());
+            onQuantityChange(input);
           }
         }
       };
@@ -1175,7 +1426,8 @@ class TradeItemPicker extends Flow implements HasPaging {
   }
 
   private boolean needsStock() {
-    return getDocumentPhase().modifyStock() && getOperationType().consumesStock();
+    return getDocumentPhase() != null && getDocumentPhase().modifyStock()
+        && getOperationType() != null && getOperationType().consumesStock();
   }
 
   private boolean validate(InputNumber input) {
@@ -1199,7 +1451,23 @@ class TradeItemPicker extends Flow implements HasPaging {
     }
   }
 
-  private void onQuantityChange(InputNumber input, Double quantity) {
+  private void onQuantityChange(InputNumber input) {
+    final boolean pending = isSavePending();
+    setState(State.UPDATING);
+
+    onQuantityChange(input, input.getNumber(), b -> {
+      boolean commit = pending || isSavePending();
+      setState(State.CHANGED);
+
+      if (commit) {
+        save();
+      }
+    });
+  }
+
+  private void onQuantityChange(InputNumber input, Double quantity,
+      final Consumer<Boolean> callback) {
+
     TableRowElement rowElement = DomUtils.getParentRow(input.getElement(), true);
     long id = DomUtils.getDataIndexLong(rowElement);
 
@@ -1207,10 +1475,12 @@ class TradeItemPicker extends Flow implements HasPaging {
       if (BeeUtils.isPositive(quantity)) {
         if (tds.containsItem(id)) {
           if (Objects.equals(quantity, tds.getQuantity(id))) {
+            callback.accept(true);
             return;
           }
 
           tds.updateQuantity(id, quantity);
+          maybeUpdatePriceAndDiscount(id, quantity, getLong(id, COL_UNIT), rowElement, callback);
 
         } else {
           rowElement.addClassName(STYLE_SELECTED_ROW);
@@ -1228,16 +1498,110 @@ class TradeItemPicker extends Flow implements HasPaging {
 
             tds.add(id, quantity, price, null, null, vat, vatIsPercent);
             selectedItems.add(DataUtils.cloneRow(item));
+
+            maybeUpdatePriceAndDiscount(id, quantity, DataUtils.getLong(data, item, COL_UNIT),
+                rowElement, callback);
+
+          } else {
+            callback.accept(false);
           }
         }
 
       } else {
         rowElement.removeClassName(STYLE_SELECTED_ROW);
         removeItem(id);
+
+        callback.accept(true);
       }
 
-      refreshSums(id, rowElement);
+      refreshSums(id, rowElement, rowElement.getParentElement());
+
+    } else {
+      callback.accept(false);
     }
+  }
+
+  private void maybeUpdatePriceAndDiscount(long id, Double quantity, Long unit,
+      Element rowElement, final Consumer<Boolean> callback) {
+
+    if (!TradeUtils.documentPriceIsParentCost(getOperationType(), getItemPrice())
+        && !priceCalculationOptions.isEmpty()) {
+
+      Map<String, String> options = new HashMap<>(priceCalculationOptions);
+      options.put(Service.VAR_QTY, BeeUtils.toStringOrNull(quantity));
+      options.put(COL_DISCOUNT_UNIT, BeeUtils.toStringOrNull(unit));
+
+      getPriceAndDiscount(id, options, rowElement.getParentElement(), callback);
+
+    } else {
+      callback.accept(true);
+    }
+  }
+
+  private void getPriceAndDiscount(final long id, Map<String, String> options,
+      final Element tableElement, final Consumer<Boolean> callback) {
+
+    ClassifierKeeper.getPriceAndDiscount(id, options, (price, discount) -> {
+      if (tds.containsItem(id)) {
+        Double oldPrice = tds.getPrice(id);
+        if (BeeUtils.isZero(oldPrice)) {
+          oldPrice = null;
+        }
+
+        Pair<Double, Boolean> discountInfo =
+            TradeUtils.normalizeDiscountOrVatInfo(tds.getDiscountInfo(id));
+        Double oldDiscount = discountInfo.getA();
+        boolean oldDiscountIsPercent = BeeUtils.isTrue(discountInfo.getB());
+
+        Double newPrice = oldPrice;
+        Double newDiscount = oldDiscount;
+        boolean newDiscountIsPercent = oldDiscountIsPercent;
+
+        if (BeeUtils.isDouble(price)) {
+          if (BeeUtils.nonZero(price) && BeeUtils.nonZero(discount) && getDiscountMode() == null) {
+            newPrice = TradeUtils.roundPrice(BeeUtils.minusPercent(price, discount));
+            newDiscount = null;
+            newDiscountIsPercent = false;
+          } else {
+            newPrice = price;
+          }
+        }
+
+        if (BeeUtils.isDouble(discount) && getDiscountMode() != null) {
+          if (BeeUtils.isZero(discount)) {
+            newDiscount = null;
+            newDiscountIsPercent = false;
+          } else {
+            newDiscount = discount;
+            newDiscountIsPercent = true;
+          }
+        }
+
+        boolean priceChanged = !Objects.equals(oldPrice, newPrice);
+        boolean discountChanged = !Objects.equals(oldDiscount, newDiscount);
+        boolean discountIsPercentChanged = oldDiscountIsPercent ^ newDiscountIsPercent;
+
+        if (priceChanged) {
+          tds.updatePrice(id, newPrice);
+        }
+        if (discountChanged) {
+          tds.updateDiscount(id, newDiscount);
+        }
+        if (discountIsPercentChanged) {
+          tds.updateDiscountIsPercent(id, newDiscountIsPercent);
+        }
+
+        if (priceChanged || discountChanged || discountIsPercentChanged) {
+          Element rowElement = Selectors.getElementByDataIndex(tableElement, id);
+          refreshSums(id, rowElement, tableElement);
+        }
+
+        callback.accept(true);
+
+      } else {
+        callback.accept(false);
+      }
+    });
   }
 
   private void removeItem(long id) {
@@ -1256,7 +1620,7 @@ class TradeItemPicker extends Flow implements HasPaging {
     }
   }
 
-  private void refreshSums(long id, TableRowElement rowElement) {
+  private void refreshSums(long id, Element rowElement, Element footerContainer) {
     boolean contains = tds.containsItem(id);
     String text;
 
@@ -1298,21 +1662,19 @@ class TradeItemPicker extends Flow implements HasPaging {
       el.setInnerText(text);
     }
 
-    Element tableElement = rowElement.getParentElement();
-
-    el = findElement(tableElement, STYLE_QTY + STYLE_FOOTER_CELL_SUFFIX);
+    el = findElement(footerContainer, STYLE_QTY + STYLE_FOOTER_CELL_SUFFIX);
     if (el != null) {
       el.setInnerText(renderTotalQuantity());
     }
 
-    el = findElement(tableElement, STYLE_PRICE + STYLE_FOOTER_CELL_SUFFIX);
+    el = findElement(footerContainer, STYLE_PRICE + STYLE_FOOTER_CELL_SUFFIX);
     if (el != null) {
       text = tds.hasItems() ? renderAmount(tds.getAmount()) : BeeConst.STRING_EMPTY;
       el.setInnerText(text);
     }
 
     if (getDiscountMode() != null) {
-      el = findElement(tableElement, STYLE_DISCOUNT + STYLE_FOOTER_CELL_SUFFIX);
+      el = findElement(footerContainer, STYLE_DISCOUNT + STYLE_FOOTER_CELL_SUFFIX);
       if (el != null) {
         text = tds.hasItems() ? renderAmount(tds.getDiscount()) : BeeConst.STRING_EMPTY;
         el.setInnerText(text);
@@ -1320,14 +1682,14 @@ class TradeItemPicker extends Flow implements HasPaging {
     }
 
     if (getVatMode() != null) {
-      el = findElement(tableElement, STYLE_VAT + STYLE_FOOTER_CELL_SUFFIX);
+      el = findElement(footerContainer, STYLE_VAT + STYLE_FOOTER_CELL_SUFFIX);
       if (el != null) {
         text = tds.hasItems() ? renderAmount(tds.getVat()) : BeeConst.STRING_EMPTY;
         el.setInnerText(text);
       }
     }
 
-    el = findElement(tableElement, STYLE_TOTAL + STYLE_FOOTER_CELL_SUFFIX);
+    el = findElement(footerContainer, STYLE_TOTAL + STYLE_FOOTER_CELL_SUFFIX);
     if (el != null) {
       text = tds.hasItems() ? renderTotal(tds.getTotal()) : BeeConst.STRING_EMPTY;
       el.setInnerText(text);
@@ -1335,6 +1697,10 @@ class TradeItemPicker extends Flow implements HasPaging {
   }
 
   private static Element findElement(Element root, String className) {
+    if (root == null) {
+      return null;
+    }
+
     Element el = Selectors.getElementByClassName(root, className);
     if (el == null) {
       logger.warning(root.getTagName(), root.getClassName(), "child", className, "not found");
@@ -1343,18 +1709,21 @@ class TradeItemPicker extends Flow implements HasPaging {
     return el;
   }
 
-  private static Map<Long, String> extractWarehouses(BeeRowSet items) {
+  private Map<Long, String> extractWarehouses(BeeRowSet items) {
     Map<Long, String> warehouses = new HashMap<>();
 
-    String serialized = (items == null) ? null : items.getTableProperty(PROP_WAREHOUSES);
-    if (!BeeUtils.isEmpty(serialized)) {
-      Map<String, String> map = Codec.deserializeHashMap(serialized);
+    if (getOperationType() != null && getOperationType().consumesStock()) {
+      String serialized = (items == null) ? null : items.getTableProperty(PROP_WAREHOUSES);
 
-      map.forEach((id, code) -> {
-        if (DataUtils.isId(id) && !BeeUtils.isEmpty(code)) {
-          warehouses.put(BeeUtils.toLong(id), code);
-        }
-      });
+      if (!BeeUtils.isEmpty(serialized)) {
+        Map<String, String> map = Codec.deserializeHashMap(serialized);
+
+        map.forEach((id, code) -> {
+          if (DataUtils.isId(id) && !BeeUtils.isEmpty(code)) {
+            warehouses.put(BeeUtils.toLong(id), code);
+          }
+        });
+      }
     }
 
     return warehouses;
@@ -1370,6 +1739,10 @@ class TradeItemPicker extends Flow implements HasPaging {
     } else {
       return null;
     }
+  }
+
+  private Long getLong(Long id, String column) {
+    return DataUtils.getLongQuietly(getRow(id), getDataIndex(column));
   }
 
   private int getDataIndex(String column) {
@@ -1402,9 +1775,13 @@ class TradeItemPicker extends Flow implements HasPaging {
         || cell.hasClassName(STYLE_QTY + STYLE_FOOTER_CELL_SUFFIX)
         || cell.hasClassName(STYLE_TOTAL + STYLE_FOOTER_CELL_SUFFIX)) {
 
-      if (hasSelection()) {
-        doQuery(Filter.idIn(tds.getItemIds()), Collections.emptySet());
-      }
+      showSelectedItems();
+    }
+  }
+
+  private void showSelectedItems() {
+    if (hasSelection()) {
+      doQuery(Filter.idIn(tds.getItemIds()), Collections.emptySet());
     }
   }
 
@@ -1422,7 +1799,7 @@ class TradeItemPicker extends Flow implements HasPaging {
 
       if (!Objects.equals(input.getNumber(), stock)) {
         input.setValue(stock);
-        onQuantityChange(input, stock);
+        onQuantityChange(input);
       }
     }
   }
@@ -1512,5 +1889,21 @@ class TradeItemPicker extends Flow implements HasPaging {
     if (!BeeUtils.isEmpty(by)) {
       filterBy.addAll(by);
     }
+  }
+
+  private State getState() {
+    return state;
+  }
+
+  private void setState(State state) {
+    this.state = state;
+  }
+
+  private boolean isSavePending() {
+    return getState() == State.PENDING;
+  }
+
+  private void setSavePending() {
+    setState(State.PENDING);
   }
 }

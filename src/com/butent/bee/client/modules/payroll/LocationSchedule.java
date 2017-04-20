@@ -333,6 +333,11 @@ class LocationSchedule extends WorkScheduleWidget {
     filters.put(VIEW_EMPLOYEE_OBJECTS, Filter.equals(COL_PAYROLL_OBJECT, objectId));
 
     viewNames.add(VIEW_TIME_CARD_CODES);
+
+    WorkScheduleKind kind = getWorkScheduleKind();
+    if (kind != null) {
+      filters.put(VIEW_TIME_CARD_CODES, Filter.notNull(kind.getTccColumnName()));
+    }
     viewNames.add(VIEW_TIME_RANGES);
 
     Queries.getData(viewNames, filters, CachingPolicy.NONE, new Queries.DataCallback() {

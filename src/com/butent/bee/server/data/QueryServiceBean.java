@@ -419,6 +419,15 @@ public class QueryServiceBean {
     return getSingleValue(query).getDateTime(0, 0);
   }
 
+  public DateTime getDateTimeById(String tableName, long id, String fieldName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(sys.idEquals(tableName, id));
+
+    return getDateTime(query);
+  }
+
   public DateTime[] getDateTimeColumn(IsQuery query) {
     return getSingleColumn(query).getDateTimeColumn(0);
   }
@@ -429,6 +438,15 @@ public class QueryServiceBean {
 
   public BigDecimal[] getDecimalColumn(IsQuery query) {
     return getSingleColumn(query).getDecimalColumn(0);
+  }
+
+  public Set<Integer> getDistinctInts(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getIntSet(query);
   }
 
   public Set<Long> getDistinctLongs(String viewName, String column, Filter filter) {
@@ -459,6 +477,15 @@ public class QueryServiceBean {
         .setWhere(where);
 
     return getLongSet(query);
+  }
+
+  public Set<String> getDistinctValues(String tableName, String fieldName, IsCondition where) {
+    SqlSelect query = new SqlSelect().setDistinctMode(true)
+        .addFields(tableName, fieldName)
+        .addFrom(tableName)
+        .setWhere(where);
+
+    return getValueSet(query);
   }
 
   public Double getDouble(IsQuery query) {
@@ -749,9 +776,7 @@ public class QueryServiceBean {
 
     String[] arr = getColumn(query);
     if (arr != null && arr.length > 0) {
-      for (String value : arr) {
-        result.add(value);
-      }
+      Collections.addAll(result, arr);
     }
 
     return result;

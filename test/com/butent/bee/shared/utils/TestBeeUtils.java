@@ -170,4 +170,24 @@ public class TestBeeUtils {
     assertEquals("0.3", BeeUtils.toString(0.1 + 0.2));
     assertEquals("3.14159265358979", BeeUtils.toString(Math.PI));
   }
+
+  @Test
+  public void testReplace() {
+    assertEquals("text", BeeUtils.replace("test", 2, 3, 'x'));
+    assertEquals("texst", BeeUtils.replace("test", 2, 3, "xs"));
+    assertEquals("text", BeeUtils.replace("test", "s", "x"));
+    assertEquals("test", BeeUtils.replace("test", "a", "x"));
+
+    assertEquals("text text", BeeUtils.replace("test test", "s", "x", 2, true));
+    assertEquals("text test", BeeUtils.replace("test test", "s", "x", 1, true));
+
+    assertEquals(null, BeeUtils.replace(null, "a", "x", 2, true));
+    assertEquals("test", BeeUtils.replace("test", null, "x", 2, true));
+    assertEquals("tet", BeeUtils.replace("test", "s", null, 2, true));
+    assertEquals("test", BeeUtils.replace("test", "s", "x", 0, true));
+    assertEquals(null, BeeUtils.replace(null, null, null, 0, true));
+
+    assertEquals("text text", BeeUtils.replaceSame("teSt teSt", "s", "x"));
+    assertEquals("text test", BeeUtils.replace("teSt test", "s", "x", 1, false));
+  }
 }

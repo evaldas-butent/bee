@@ -3,6 +3,9 @@ package com.butent.bee.shared.modules.trade;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class TradeConstants {
 
   public static void register() {
@@ -32,8 +35,13 @@ public final class TradeConstants {
   public static final String SVC_CALCULATE_COST = "CalculateCost";
 
   public static final String SVC_GET_STOCK = "GetStock";
+  public static final String SVC_GET_ITEM_STOCK_BY_WAREHOUSE = "GetItemStockByWarehouse";
   public static final String SVC_GET_RESERVATIONS_INFO = "GetReservationsInfo";
   public static final String SVC_CREATE_DOCUMENT = "CreateDocument";
+  public static final String SVC_GET_RELATED_TRADE_ITEMS = "GetRelatedTradeItems";
+
+  public static final String SVC_TRADE_STOCK_REPORT = "GetTradeStockReport";
+  public static final String SVC_TRADE_MOVEMENT_OF_GOODS_REPORT = "GetTradeMovementOfGoodsReport";
 
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
@@ -44,6 +52,7 @@ public final class TradeConstants {
 
   public static final String TBL_TRADE_OPERATIONS = "TradeOperations";
   public static final String TBL_TRADE_SERIES = "TradeSeries";
+  public static final String TBL_SERIES_MANAGERS = "SeriesManagers";
   public static final String TBL_TRADE_STATUSES = "TradeStatuses";
 
   public static final String TBL_TRADE_DOCUMENTS = "TradeDocuments";
@@ -106,28 +115,30 @@ public final class TradeConstants {
   public static final String COL_SALE_PAYER = "Payer";
 
   public static final String COL_TRADE_DATE = "Date";
+  public static final String COL_TRADE_SERIES = "Series";
   public static final String COL_TRADE_NUMBER = "Number";
   public static final String COL_TRADE_OPERATION = "Operation";
-  public static final String COL_TRADE_INVOICE_PREFIX = "InvoicePrefix";
-  public static final String COL_TRADE_SALE_SERIES = "SaleSeries";
-  public static final String COL_TRADE_INVOICE_NO = "InvoiceNo";
   public static final String COL_TRADE_AMOUNT = "Amount";
   public static final String COL_TRADE_CURRENCY = "Currency";
-  public static final String COL_TRADE_PAYMENT_TIME = "PaymentTime";
-  public static final String COL_TRADE_PAID = "Paid";
   public static final String COL_TRADE_WAREHOUSE_FROM = "WarehouseFrom";
   public static final String COL_TRADE_WAREHOUSE_TO = "WarehouseTo";
   public static final String COL_TRADE_SUPPLIER = "Supplier";
   public static final String COL_TRADE_CUSTOMER = "Customer";
   public static final String COL_TRADE_PAYER = "Payer";
   public static final String COL_TRADE_MANAGER = "Manager";
+  public static final String COL_TRADE_VEHICLE = "Vehicle";
   public static final String COL_TRADE_TERM = "Term";
   public static final String COL_TRADE_NOTES = "Notes";
+
+  public static final String COL_TRADE_INVOICE_PREFIX = "InvoicePrefix";
+  public static final String COL_TRADE_SALE_SERIES = "SaleSeries";
+  public static final String COL_TRADE_INVOICE_NO = "InvoiceNo";
+  public static final String COL_TRADE_PAYMENT_TIME = "PaymentTime";
+  public static final String COL_TRADE_PAID = "Paid";
   public static final String COL_TRADE_EXPORTED = "Exported";
   public static final String COL_TRADE_KIND = "Kind";
   public static final String COL_TRADE_DEBT = "Debt";
   public static final String COL_TRADE_DEBT_COUNT = "DebtCount";
-  public static final String COL_TRADE_CHECK_NO = "CheckNo";
   public static final String COL_TRADE_JOIN = "Join";
 
   public static final String COL_TRADE_BOL_SERIES = "BoLSeries";
@@ -158,9 +169,13 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_WAREHOUSE_FROM = "ItemWarehouseFrom";
   public static final String COL_TRADE_ITEM_WAREHOUSE_TO = "ItemWarehouseTo";
   public static final String COL_TRADE_ITEM_EMPLOYEE = "Employee";
+  public static final String COL_TRADE_ITEM_VEHICLE = "ItemVehicle";
 
   public static final String COL_SERIES = "Series";
   public static final String COL_SERIES_NAME = "SeriesName";
+  public static final String COL_SERIES_NUMBER_PREFIX = "NumberPrefix";
+  public static final String COL_SERIES_NUMBER_LENGTH = "NumberLength";
+
   public static final String COL_SERIES_MANAGER = "Manager";
   public static final String COL_SERIES_DEFAULT = "IsDefault";
 
@@ -283,6 +298,7 @@ public final class TradeConstants {
   public static final String PROP_RESERVED = "Reserved";
   public static final String PROP_WAREHOUSES = "Warehouses";
   public static final String PROP_COST = "Cost";
+  public static final String PROP_LEVEL = "Level";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
@@ -314,6 +330,7 @@ public final class TradeConstants {
   public static final String GRID_TRADE_EXPENDITURES = "TradeExpenditures";
 
   public static final String GRID_ITEM_MOVEMENT = "ItemMovement";
+  public static final String GRID_TRADE_RELATED_ITEMS = "TradeRelatedItems";
 
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
@@ -323,8 +340,35 @@ public final class TradeConstants {
   public static final String PRM_PROTECT_TRADE_DOCUMENTS_BEFORE = "ProtectTradeDocumentsBefore";
 
   public static final String FILTER_ITEM_HAS_STOCK = "item_has_stock";
+  public static final String FILTER_USER_TRADE_SERIES = "user_trade_series";
 
   public static final int MAX_STOCK_DEPTH = 1_000;
+  public static final int DEFAULT_SERIES_NUMBER_LENGTH = 6;
+
+  public static final String RP_DATE = "Date";
+
+  public static final String RP_SHOW_QUANTITY = "Quantity";
+  public static final String RP_SHOW_AMOUNT = "Amount";
+
+  public static final String RP_ITEM_PRICE = "Price";
+  public static final String RP_CURRENCY = "Currency";
+
+  public static final String RP_RECEIVED_FROM = "ReceivedFrom";
+  public static final String RP_RECEIVED_TO = "ReceivedTo";
+
+  public static final String RP_ITEM_FILTER = "ItemFilter";
+
+  public static final String RP_SUMMARY = "Summary";
+  public static final String RP_COLUMNS = "Columns";
+
+  public static final String RP_WAREHOUSES = "Warehouses";
+  public static final String RP_SUPPLIERS = "Suppliers";
+  public static final String RP_MANUFACTURERS = "Manufacturers";
+  public static final String RP_DOCUMENTS = "Documents";
+  public static final String RP_ITEM_TYPES = "ItemTypes";
+  public static final String RP_ITEM_GROUPS = "ItemGroups";
+  public static final String RP_ITEM_CATEGORIES = "ItemCategories";
+  public static final String RP_ITEMS = "Items";
 
   public static String keyStockWarehouse(String warehouseCode) {
     return PROP_STOCK + BeeUtils.trim(warehouseCode);
@@ -336,6 +380,18 @@ public final class TradeConstants {
 
   public static String keyCostWarehouse(String warehouseCode) {
     return PROP_COST + BeeUtils.trim(warehouseCode);
+  }
+
+  public static String reportGroupName(int index) {
+    return "Group" + BeeUtils.toString(index);
+  }
+
+  public static List<String> reportGroupNames(int count) {
+    List<String> names = new ArrayList<>();
+    for (int i = 0; i < count; i++) {
+      names.add(reportGroupName(i));
+    }
+    return names;
   }
 
   private TradeConstants() {

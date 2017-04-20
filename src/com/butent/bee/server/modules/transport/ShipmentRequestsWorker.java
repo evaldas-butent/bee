@@ -10,6 +10,7 @@ import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.rest.CrudWorker;
 import com.butent.bee.server.rest.RestResponse;
 import com.butent.bee.server.rest.annotations.Trusted;
@@ -194,7 +195,8 @@ public class ShipmentRequestsWorker {
     String text;
 
     if (DataUtils.isEmpty(rowSet)) {
-      text = constant.getDefaultContent();
+      text = constant.getDefaultContent(Localizations.getDictionary(SupportedLocale.parse(
+          CrudWorker.getValue(data, COL_USER_LOCALE))));
     } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, rowSet.getColumns()))) {
       text = rowSet.getString(0, COL_TEXT_CONTENT);
     } else {

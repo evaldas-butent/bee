@@ -139,7 +139,7 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
       FormFactory.WidgetDescriptionCallback callback) {
 
     if (widget instanceof DataSelector && BeeUtils.inList(name, COL_TYPE, COL_SERVICE_OBJECT,
-        COL_WARRANTY_MAINTENANCE, COL_CONTACT)) {
+        COL_WARRANTY_MAINTENANCE, COL_CONTACT, COL_WARRANTY_TYPE)) {
       ((DataSelector) widget).addSelectorHandler(this);
 
     } else if (widget instanceof Flow && BeeUtils.same(name, WIDGET_MAINTENANCE_COMMENTS)) {
@@ -481,6 +481,12 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
               event.getRelatedViewName(), COL_SERVICE_CUSTOMER, ALS_SERVICE_CUSTOMER_NAME,
               ALS_CUSTOMER_TYPE_NAME);
           getFormView().refreshBySource(COL_COMPANY);
+          break;
+
+        case TBL_WARRANTY_TYPES:
+          getActiveRow().setValue(getDataIndex(COL_WARRANTY_VALID_TO),
+              ServiceUtils.calculateWarrantyDate(event));
+          getFormView().refreshBySource(COL_WARRANTY_VALID_TO);
           break;
       }
     }

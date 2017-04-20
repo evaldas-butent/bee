@@ -149,7 +149,7 @@
       </page>
       <page>
         <text>=trdInvoices</text>
-        <GridPanel name="CarServiceInvoices" child="true" parent="{form}" />
+        <GridPanel name="TradeDocuments" child="true" parent="{form}" />
       </page>
       <page>
         <text>=notes</text>

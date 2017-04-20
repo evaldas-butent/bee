@@ -29,6 +29,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
@@ -721,13 +722,14 @@ public class TransportModuleBean implements BeeModule {
             BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
                 Filter.equals(COL_TEXT_CONSTANT, constant));
 
-            String localizedContent = Localized.column(COL_TEXT_CONTENT,
-                EnumUtils.getEnumByIndex(SupportedLocale.class, info.getInteger(0, COL_USER_LOCALE))
-                    .getLanguage());
+            SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
+                info.getInteger(0, COL_USER_LOCALE));
+            String localizedContent = Localized.column(COL_TEXT_CONTENT, locale.getLanguage());
             String text;
 
             if (DataUtils.isEmpty(data)) {
-              text = constant.getDefaultContent();
+              text = constant.getDefaultContent(Localizations.getDictionary(SupportedLocale.parse(
+                  locale.getLanguage())));
             } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
                 data.getColumns()))) {
               text = data.getString(0, COL_TEXT_CONTENT);
@@ -738,8 +740,10 @@ public class TransportModuleBean implements BeeModule {
             cb.asynchronousCall(new ConcurrencyBean.AsynchronousRunnable() {
               @Override
               public void run() {
-                mail.sendMail(accountId, email, null, text.replace("{CONTRACT_ID}",
-                    BeeUtils.toString(event.getRow().getId())));
+                String id = BeeUtils.toString(event.getRow().getId());
+
+                mail.sendMail(accountId, email, null,
+                    text.replace("[CONTRACT_ID]", id).replace("{CONTRACT_ID}", id));
               }
             });
           }
@@ -774,6 +778,57 @@ public class TransportModuleBean implements BeeModule {
                   .addFromInner(tblFrom, sys.joinTables(tblFrom, tbl, joinFrom))
                   .setWhere(clause))
               .setWhere(clause));
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void onOrderStatusChange(DataEvent.ViewUpdateEvent event) {
+        if (event.isAfter(VIEW_ORDERS, VIEW_ASSESSMENTS)) {
+          int col = DataUtils.getColumnIndex(event.isAfter(VIEW_ORDERS)
+              ? COL_STATUS : COL_ORDER + COL_STATUS, event.getColumns());
+          Long  orderId;
+
+          if (event.isAfter(VIEW_ORDERS)) {
+            orderId = event.getRow().getId();
+          } else {
+            orderId = qs.getLongById(TBL_ASSESSMENTS, event.getRow().getId(), COL_ORDER);
+          }
+          if (!BeeConst.isUndef(col) && DataUtils.isId(orderId)) {
+            Integer status = event.getRow().getInteger(col);
+            ShipmentRequestStatus shipmentStatus = null;
+            AssessmentStatus assessmentStatus = null;
+
+            if (OrderStatus.COMPLETED.is(status)) {
+              shipmentStatus = ShipmentRequestStatus.COMPLETED;
+              assessmentStatus = AssessmentStatus.COMPLETED;
+
+            } else if (OrderStatus.ACTIVE.is(status)) {
+              shipmentStatus = ShipmentRequestStatus.CONFIRMED;
+              assessmentStatus = AssessmentStatus.APPROVED;
+
+            } else if (OrderStatus.CANCELED.is(status)) {
+              shipmentStatus = ShipmentRequestStatus.REJECTED;
+            }
+            if (shipmentStatus != null) {
+              qs.updateData(new SqlUpdate(TBL_SHIPMENT_REQUESTS)
+                  .addConstant(COL_STATUS, shipmentStatus)
+                  .setWhere(SqlUtils.and(
+                      SqlUtils.notEqual(TBL_SHIPMENT_REQUESTS, COL_STATUS, shipmentStatus),
+                      SqlUtils.in(TBL_SHIPMENT_REQUESTS, COL_CARGO, VIEW_ORDER_CARGO,
+                          sys.getIdName(VIEW_ORDER_CARGO),
+                          SqlUtils.equals(VIEW_ORDER_CARGO, COL_ORDER, orderId)))));
+            }
+            if (assessmentStatus != null) {
+              qs.updateData(new SqlUpdate(VIEW_ASSESSMENTS)
+                  .addConstant(COL_STATUS, assessmentStatus)
+                  .setWhere(SqlUtils.and(
+                      SqlUtils.notEqual(VIEW_ASSESSMENTS, COL_STATUS, assessmentStatus),
+                      SqlUtils.in(VIEW_ASSESSMENTS, COL_CARGO, VIEW_ORDER_CARGO,
+                          sys.getIdName(VIEW_ORDER_CARGO),
+                          SqlUtils.equals(VIEW_ORDER_CARGO, COL_ORDER, orderId)))));
+            }
+          }
         }
       }
     });
@@ -1636,13 +1691,15 @@ public class TransportModuleBean implements BeeModule {
     BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
         Filter.equals(COL_TEXT_CONSTANT, constant));
 
-    String localizedContent = Localized.column(COL_TEXT_CONTENT,
-        EnumUtils.getEnumByIndex(SupportedLocale.class, reqInfo.getParameterInt(COL_USER_LOCALE))
-            .getLanguage());
+    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
+        reqInfo.getParameterInt(COL_USER_LOCALE));
+
+    String localizedContent = Localized.column(COL_TEXT_CONTENT, locale.getLanguage());
     String text;
 
     if (DataUtils.isEmpty(data)) {
-      text = constant.getDefaultContent();
+      text = constant.getDefaultContent(Localizations.getDictionary(SupportedLocale.parse(
+          locale.getLanguage())));
     } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, data.getColumns()))) {
       text = data.getString(0, COL_TEXT_CONTENT);
     } else {
@@ -1654,7 +1711,8 @@ public class TransportModuleBean implements BeeModule {
         @Override
         public void run() {
           mail.sendMail(accountId, email, Localized.dictionary().registration(),
-              text.replace("{LOGIN}", login).replace("{PASSWORD}", password));
+              text.replace("[LOGIN]", login).replace("{LOGIN}", login)
+                  .replace("[PASSWORD]", password).replace("{PASSWORD}", password));
         }
       });
     }
@@ -2805,12 +2863,13 @@ public class TransportModuleBean implements BeeModule {
     BeeRowSet rowSet = qs.getViewData(VIEW_TEXT_CONSTANTS,
         Filter.equals(COL_TEXT_CONSTANT, constant));
 
-    String localizedContent = Localized.column(COL_TEXT_CONTENT,
-        EnumUtils.getEnumByIndex(SupportedLocale.class, userLocale).getLanguage());
+    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class, userLocale);
+    String localizedContent = Localized.column(COL_TEXT_CONTENT, locale.getLanguage());
     String text;
 
     if (DataUtils.isEmpty(rowSet)) {
-      text = constant.getDefaultContent();
+      text = constant.getDefaultContent(Localizations.getDictionary(
+          SupportedLocale.parse(locale.getLanguage())));
     } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, rowSet.getColumns()))) {
       text = rowSet.getString(0, COL_TEXT_CONTENT);
     } else {

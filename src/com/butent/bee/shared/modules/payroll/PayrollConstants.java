@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.payroll;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -18,6 +19,50 @@ public final class PayrollConstants {
       public String getCaption(Dictionary dictionary) {
         return dictionary.objectStatusActive();
       }
+    }
+  }
+
+  /**
+   * Duration types of time card. Time card duration type sets time counting conditions in payroll
+   * accounting. There are some time duration types for accounting can be used depend of
+   * work accounting rules. The usually using types are full-time work, part-time work or
+   * absences from work.
+   */
+  public enum TcDurationType implements HasLocalizedCaption {
+
+    /**
+     * Duration type of Time card to account payroll with full-time (all day) work.
+     */
+    FULL_TIME {
+      @Override
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.payrollFullTime();
+      }
+    },
+    /**
+     * Duration type of Time card to account payroll with specific work time or other part-time
+     * value.
+     */
+    PART_TIME {
+      @Override
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.payrollPartTime();
+      }
+    },
+
+    /**
+     * Duration type of Time card to account payroll with absence from work.
+     */
+    ABSENCE {
+      @Override
+      public String getCaption(Dictionary dictionary) {
+        return dictionary.payrollAbsence();
+      }
+    };
+
+//    TODO: Refactor this item. Required detailed technical spec.
+    public static String getDefaultTimeOfDay() {
+      return String.valueOf(BeeConst.CHAR_EIGHT);
     }
   }
 
@@ -61,6 +106,11 @@ public final class PayrollConstants {
       }
 
       @Override
+      public String getEditFormName() {
+        return FORM_ACTUAL_WORK_SCHEDULE_EDITOR;
+      }
+
+      @Override
       public String getClearDataQuestion(Dictionary dictionary) {
         return dictionary.clearTimeSheetQuestion();
       }
@@ -87,6 +137,14 @@ public final class PayrollConstants {
     };
 
     public abstract String getClearDataQuestion(Dictionary dictionary);
+
+    /**
+     * Returns default edit form name for Work schedule editor.
+     * @return the edit form name for Work schedule editor.
+     */
+    public String getEditFormName() {
+      return FORM_WORK_SCHEDULE_EDITOR;
+    }
 
     public abstract String getStorageKeyPrefix();
 
@@ -169,6 +227,8 @@ public final class PayrollConstants {
   public static final String COL_TC_WS_ACTUAL = "WsActual";
   public static final String COL_TC_DESCRIPTION = "Description";
 
+  public static final String COL_TC_DURATION_TYPE = "TcDurationType";
+
   public static final String COL_TR_CODE = "TrCode";
   public static final String COL_TR_NAME = "TrName";
   public static final String COL_TR_FROM = "TimeFrom";
@@ -200,6 +260,8 @@ public final class PayrollConstants {
 
   public static final String ALS_TR_USAGE = "TrUsage";
 
+  public static final String PROP_TC_DURATION = "TcDuration";
+
   public static final String GRID_TIME_CARD_CHANGES = "TimeCardChanges";
 
   public static final String GRID_TIME_CARD_CODES = "TimeCardCodes";
@@ -211,11 +273,13 @@ public final class PayrollConstants {
   public static final String FORM_WORK_SCHEDULE = "WorkSchedule";
   public static final String FORM_TIME_SHEET = "TimeSheet";
   public static final String FORM_WORK_SCHEDULE_EDITOR = "WorkScheduleEditor";
+  public static final String FORM_ACTUAL_WORK_SCHEDULE_EDITOR = "ActualWorkScheduleEditor";
   public static final String FORM_NEW_SUBSTITUTION = "NewSubstitution";
 
   public static void register() {
     EnumUtils.register(ObjectStatus.class);
     EnumUtils.register(WorkScheduleKind.class);
+    EnumUtils.register(TcDurationType.class);
   }
 
   private PayrollConstants() {

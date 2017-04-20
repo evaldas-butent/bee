@@ -102,6 +102,7 @@
     <SimpleJoin name="TimeCardCode" joinType="LEFT">
       <SimpleColumn name="TcCode" />
       <SimpleColumn name="TcName" />
+      <SimpleColumn name="TcDurationType" />
     
       <SimpleColumn name="Background" alias="TcBackground" />
       <SimpleColumn name="Foreground" alias="TcForeground" />

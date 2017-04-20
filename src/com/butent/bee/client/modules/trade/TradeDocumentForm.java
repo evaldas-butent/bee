@@ -117,6 +117,13 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
         }
       });
 
+    } else if (BeeUtils.same(name, COL_TRADE_SERIES) && widget instanceof DataSelector) {
+      ((DataSelector) widget).addSelectorHandler(event -> {
+        if (event.isOpened()) {
+          event.getSelector().setAdditionalFilter(getSeriesFilter());
+        }
+      });
+
     } else if (BeeUtils.same(name, COL_TRADE_DOCUMENT_STATUS) && widget instanceof DataSelector) {
       ((DataSelector) widget).addSelectorHandler(event -> {
         if (event.isOpened()) {
@@ -314,6 +321,44 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     super.onSourceChange(row, source, value);
   }
 
+  @Override
+  public void onStartNewRow(final FormView form, IsRow oldRow, IsRow newRow) {
+    if (form != null && oldRow != null && newRow != null) {
+      final int index = getDataIndex(COL_TRADE_SERIES);
+      final String series = BeeUtils.trim(oldRow.getString(index));
+
+      Long userId = BeeKeeper.getUser().getUserId();
+
+      if (!BeeUtils.isEmpty(series) && BeeUtils.isEmpty(newRow.getString(index))
+          && DataUtils.isId(userId)) {
+
+        Filter filter = Filter.and(
+            Filter.equals(COL_SERIES_MANAGER, userId),
+            Filter.notNull(COL_SERIES_DEFAULT),
+            Filter.in(COL_SERIES, VIEW_TRADE_SERIES, Data.getIdColumn(VIEW_TRADE_SERIES),
+                Filter.equals(COL_SERIES_NAME, series)));
+
+        Queries.getRowCount(VIEW_SERIES_MANAGERS, filter, new Queries.IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            if (BeeUtils.isPositive(result) && form.getActiveRow() != null
+                && BeeUtils.isEmpty(form.getActiveRow().getString(index))) {
+
+              form.getActiveRow().setValue(index, series);
+              if (form.getOldRow() != null) {
+                form.getOldRow().setValue(index, series);
+              }
+
+              form.refreshBySource(COL_TRADE_SERIES);
+            }
+          }
+        });
+      }
+    }
+
+    super.onStartNewRow(form, oldRow, newRow);
+  }
+
   private Double getDocumentDiscount(IsRow row) {
     return DataUtils.getDoubleQuietly(row, getDataIndex(COL_TRADE_DOCUMENT_DISCOUNT));
   }
@@ -354,6 +399,16 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
         getIntegerValue(COL_TRADE_DOCUMENT_PHASE));
   }
 
+  private static Filter getSeriesFilter() {
+    Long userId = BeeKeeper.getUser().getUserId();
+
+    if (DataUtils.isId(userId)) {
+      return Filter.custom(FILTER_USER_TRADE_SERIES, userId);
+    } else {
+      return null;
+    }
+  }
+
   private String getShortCaption() {
     String number = getStringValue(COL_TRADE_NUMBER);
 
@@ -362,7 +417,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
       s1 = BeeUtils.joinItems(getStringValue(COL_TRADE_DOCUMENT_NUMBER_1),
           getStringValue(COL_TRADE_DOCUMENT_NUMBER_2));
     } else {
-      s1 = BeeUtils.joinWords(getStringValue(COL_SERIES), number);
+      s1 = BeeUtils.joinWords(getStringValue(COL_TRADE_SERIES), number);
     }
 
     return BeeUtils.joinItems(s1, getStringValue(COL_OPERATION_NAME));
@@ -529,6 +584,18 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
                       response)) {
 
                     BeeRow r = BeeRow.restore(response.getResponseAsString());
+
+                    int numberIndex = getDataIndex(COL_TRADE_NUMBER);
+                    String newNumber = r.getString(numberIndex);
+
+                    IsRow oldRow = getFormView().getOldRow();
+
+                    if (!BeeUtils.isEmpty(newNumber) && oldRow != null
+                        && !Objects.equals(newNumber, oldRow.getString(numberIndex))) {
+
+                      oldRow.setValue(numberIndex, newNumber);
+                      getActiveRow().setValue(numberIndex, newNumber);
+                    }
 
                     RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), r, true);
                     DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_STOCK);

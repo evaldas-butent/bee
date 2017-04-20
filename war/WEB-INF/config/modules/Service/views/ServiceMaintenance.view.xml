@@ -17,6 +17,24 @@
     <SimpleColumn name="State"/>
     <SimpleJoin joinType="INNER" name="State">
       <SimpleColumn name="Name" alias="StateName" />
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Company" alias="Company"/>
+    <SimpleJoin joinType="LEFT" name="Company">
+      <SimpleColumn name="Name" alias="CompanyName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CompanyTypeName" />
+        <SimpleColumn name="TypePerson" />
+      </SimpleJoin>
+      <SimpleColumn name="Code" alias="CompanyCode" />
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Address" alias="CompanyAddress"/>
+        <SimpleJoin name="City" joinType="LEFT">
+          <SimpleColumn name="Name" alias="CompanyCityName" />
+        </SimpleJoin>
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="ServiceObject"/>
@@ -81,22 +99,6 @@
 
     <SimpleColumn name="WarrantyValidTo"/>
     <SimpleColumn name="EndingDate"/>
-
-    <SimpleColumn name="Company" alias="Company"/>
-    <SimpleJoin joinType="LEFT" name="Company">
-      <SimpleColumn name="Name" alias="CompanyName" />
-      <SimpleJoin joinType="LEFT" name="CompanyType">
-        <SimpleColumn name="Name" alias="CompanyTypeName" />
-        <SimpleColumn name="TypePerson" />
-      </SimpleJoin>
-      <SimpleColumn name="Code" alias="CompanyCode" />
-      <SimpleJoin name="Contact" joinType="LEFT">
-        <SimpleColumn name="Address" alias="CompanyAddress"/>
-        <SimpleJoin name="City" joinType="LEFT">
-          <SimpleColumn name="Name" alias="CompanyCityName" />
-        </SimpleJoin>
-      </SimpleJoin>
-    </SimpleJoin>
 
     <SimpleColumn name="Contact"/>
     <SimpleJoin joinType="LEFT" name="Contact">

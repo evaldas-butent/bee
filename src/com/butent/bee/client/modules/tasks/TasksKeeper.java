@@ -264,7 +264,7 @@ public final class TasksKeeper {
 
 
         if (BeeUtils.unbox(row.getBoolean(privateTaskIdx))
-            && row.getProperty(COL_PRIVATE_TASK) != COL_PRIVATE_TASK) {
+            && !BeeUtils.same(row.getProperty(COL_PRIVATE_TASK), COL_PRIVATE_TASK)) {
 
           event.consume();
 

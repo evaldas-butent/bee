@@ -246,11 +246,6 @@
   color: #00e;
 }
 
-.bee-trade-document-new-item-selector td:nth-child(3),
-.bee-trade-document-new-item-selector td:nth-child(5) {
-  text-align: right;
-}
-
 .bee-grid-TradeDocumentItems.bee-GridContainer-no-data .bee-trade-price-calculation,
 .bee-grid-TradeDocumentItems.bee-GridContainer-no-data .bee-trade-cost-calculation,
 .bee-grid-TradeExpenditures.bee-GridContainer-no-data .bee-trade-cost-calculation {
@@ -260,6 +255,17 @@
 .bee-form-TradeDocument .bee-disabled .bee-trade-cost-calculation,
 .bee-form-TradeDocument .bee-disabled .bee-trade-fin-post {
   visibility: hidden;
+}
+.bee-trade-show-item-stock[disabled],
+.bee-trade-show-related-documents[disabled] {
+  visibility: hidden;
+}
+
+.bee-trade-item-picker-new-item,
+.bee-trade-item-picker-new-service {
+  padding: 3px 8px;
+  margin-right: 1em;
+  color: #414142;
 }
 
 .bee-trade-item-picker-search-panel {
@@ -385,6 +391,7 @@
 .bee-trade-item-picker-reserved {
   margin-left: 5px;
   color: crimson;
+  cursor: pointer;
 }
 .bee-trade-item-picker-available {
   margin-left: 8px;
@@ -410,4 +417,32 @@
 }
 .bee-trade-item-picker-pager .bee-SimplePager-info {
   font-style: italic;
+}
+
+.bee-trade-item-stock-table {
+  border-collapse: collapse;
+}
+.bee-trade-item-stock-table td {
+  padding: 2px 5px;
+  border: 1px solid #ddd;
+}
+.bee-trade-item-stock-header {
+  text-align: center;
+  font-weight: bolder;
+}
+.bee-trade-item-stock-body .bee-trade-item-stock-reserved {
+  cursor: pointer;
+}
+.bee-trade-item-stock-available {
+  font-weight: bolder;
+}
+.bee-trade-item-stock-footer {
+  text-align: center;
+  font-weight: bolder;
+  font-size: larger;
+  background-color: whitesmoke;
+}
+.bee-trade-item-stock-footer .bee-trade-item-stock-warehouse {
+  text-align: right;
+  font-size: inherit;
 }

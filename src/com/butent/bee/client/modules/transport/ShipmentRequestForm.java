@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -70,7 +71,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -116,7 +116,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
   private Button blockCommand = new Button(loc.ipBlockCommand(), event -> onBlock());
 
-  private Button lostCommand = new Button(loc.trRequestStatusLost(), clickEvent -> onLoss(true));
+  private Button lostCommand = new Button(loc.trRequestStatusRejected(),
+      clickEvent -> onLoss(true));
 
   private static final String NAME_VALUE_LABEL = "ValueLabel";
   private static final String NAME_INCOTERMS = "Incoterms";
@@ -220,7 +221,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
     Integer status = row.getInteger(form.getDataIndex(COL_QUERY_STATUS));
 
-    if (!isSelfService() && !ShipmentRequestStatus.LOST.is(status)) {
+    if (!isSelfService() && !ShipmentRequestStatus.LOST.is(status)
+        && !ShipmentRequestStatus.COMPLETED.is(status)) {
       header.addCommandItem(mailCommand);
 
       if (!ShipmentRequestStatus.CONFIRMED.is(status)) {
@@ -286,7 +288,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
       form.setEnabled(!ShipmentRequestStatus.LOST.is(status)
           && !ShipmentRequestStatus.CONFIRMED.is(status)
-          && (!isSelfService() || ShipmentRequestStatus.NEW.is(status)));
+          && (!isSelfService() || ShipmentRequestStatus.NEW.is(status))
+          && !ShipmentRequestStatus.COMPLETED.is(status));
     }
     styleRequiredField(NAME_VALUE_LABEL,
         row.getString(getDataIndex(COL_QUERY_FREIGHT_INSURANCE)) != null);
@@ -424,7 +427,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                           getIntegerValue(COL_USER_LOCALE)).getLanguage());
 
                   if (DataUtils.isEmpty(result)) {
-                    text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent();
+                    text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent(
+                        Localized.dictionary());
                   } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
                       result.getColumns()))) {
                     text = result.getString(0, COL_TEXT_CONTENT);
@@ -432,10 +436,11 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                     text = BeeUtils.notEmpty(result.getString(0, localizedContent),
                         result.getString(0, COL_TEXT_CONTENT));
                   }
+                  String path = "rest/transport/confirm/" + getActiveRowId();
+
                   sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-                          ? null : text.replace("{CONTRACT_PATH}",
-                      "rest/transport/confirm/" + getActiveRowId()),
-                      Collections.singleton(fileInfo));
+                      ? null : text.replace("[CONTRACT_PATH]", path)
+                      .replace("{CONTRACT_PATH}", path), Collections.singleton(fileInfo));
                 }
               });
         }
@@ -642,28 +647,31 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
     Dictionary dic = Localized.dictionary();
 
-    messages.add(BeeUtils.join(": ", dic.client(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_NAME))));
-    messages.add(BeeUtils.join(": ", dic.companyCode(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CODE))));
-    messages.add(BeeUtils.join(": ", dic.companyVATCode(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_VAT_CODE))));
-    messages.add(BeeUtils.join(": ", dic.address(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_ADDRESS))));
-    messages.add(BeeUtils.join(": ", dic.postIndex(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_POST_INDEX))));
-    messages.add(BeeUtils.join(": ", dic.trRegistrationContact(),
-        row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT))));
+    Map<String, String> columnsMap = Maps.newHashMap();
+    columnsMap.put(COL_QUERY_CUSTOMER_NAME, dic.client());
+    columnsMap.put(COL_QUERY_CUSTOMER_CODE, dic.companyCode());
+    columnsMap.put(COL_QUERY_CUSTOMER_VAT_CODE, dic.companyVATCode());
+    columnsMap.put(COL_QUERY_CUSTOMER_ADDRESS, dic.address());
+    columnsMap.put(COL_QUERY_CUSTOMER_POST_INDEX, dic.postIndex());
+    columnsMap.put(COL_QUERY_CUSTOMER_CONTACT, dic.trRegistrationContact());
 
-    String login = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_EMAIL));
+    columnsMap.forEach((column, label) -> {
+      String value = row.getString(form.getDataIndex(column));
+      if (!BeeUtils.isEmpty(value)) {
+        messages.add(BeeUtils.join(": ", label, value));
+      }
+    });
+
+    String email = row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_EMAIL));
+    String login = email;
     String password;
 
     if (BeeUtils.unbox(row.getBoolean(form.getDataIndex("Customer" + COL_REGISTRATION_REGISTER)))
         && !BeeUtils.isEmpty(login)) {
       password = BeeUtils.randomString(6);
 
-      messages.add("Login: " + login);
-      messages.add("Password: " + password);
+      messages.add(BeeUtils.join(": ", dic.loginUserName(), login));
+      messages.add(BeeUtils.join(": ", dic.loginPassword(), password));
     } else {
       password = null;
     }
@@ -680,6 +688,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
 
             companyInfo.put(col, row.getString(form.getDataIndex("Customer" + col)));
           }
+          companyInfo.put(ALS_EMAIL_ID, email);
           ClassifierUtils.createCompany(companyInfo, (company) -> {
             Map<String, String> personInfo = new HashMap<>();
             personInfo.put(COL_COMPANY, BeeUtils.toString(company));
@@ -692,7 +701,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
               personInfo.put(COL_LAST_NAME, ArrayUtils.getQuietly(arr, 1));
             }
             personInfo.put(COL_PHONE, row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_PHONE)));
-            personInfo.put(ALS_EMAIL_ID, login);
+            personInfo.put(ALS_EMAIL_ID, email);
             personInfo.put(COL_POSITION,
                 row.getString(form.getDataIndex(COL_QUERY_CUSTOMER_CONTACT_POSITION)));
 
@@ -709,7 +718,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
                 args.addDataItem(COL_COMPANY_PERSON, person);
                 args.addDataItem(COL_USER_LOCALE,
                     row.getInteger(form.getDataIndex(COL_USER_LOCALE)));
-                args.addNotEmptyData(COL_EMAIL, login);
+                args.addNotEmptyData(COL_EMAIL, email);
 
                 BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
                   @Override
@@ -939,7 +948,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
               }
               (startup == null ? queue.remove(0) : startup).run();
             };
-            messages.add(0, loc.trNewValues());
+            messages.add(0, loc.trNewValues() + ": ");
           } else {
             onConfirm = onSuccess;
           }
@@ -1053,7 +1062,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
             }
           }
           if (!BeeUtils.isEmpty(messages)) {
-            messages.add(0, loc.errors());
+            messages.add(0, loc.trNewValues() + ": ");
           }
           doRegister(messages);
         }
@@ -1135,7 +1144,7 @@ class ShipmentRequestForm extends PrintFormInterceptor {
               new RowInsertCallback(info.getViewName()) {
                 @Override
                 public void onSuccess(BeeRow result) {
-                  Data.onTableChange(info.getTableName(), DataChangeEvent.RESET_REFRESH);
+                  Data.refreshLocal(info.getTableName());
                   super.onSuccess(result);
                 }
               });
