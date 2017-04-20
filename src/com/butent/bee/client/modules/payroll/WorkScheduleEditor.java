@@ -13,6 +13,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
@@ -24,6 +25,7 @@ import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputTimeOfDay;
@@ -76,6 +78,18 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     @Override
     public String getCaption() {
       return Format.renderDateFull(date);
+    }
+
+    @Override
+    public void beforeRender(GridView gridView, RenderingEvent event) {
+
+      if (getWorkScheduleKind(WorkScheduleEditor.this.getFormView()) == WorkScheduleKind.ACTUAL) {
+        gridView.getGrid().removeColumn(COL_TIME_RANGE_CODE);
+        gridView.getGrid().removeColumn("TimeFrom");
+        gridView.getGrid().removeColumn("TimeUntil");
+      }
+
+      super.beforeRender(gridView, event);
     }
 
     @Override
@@ -297,7 +311,6 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
   private void onTimeCardSelectorEdit() {
     FormView formView = getFormView();
     if (durationInput != null && timeCardCodeSelector.getRelatedRow() != null && formView != null) {
-      IsRow selected = timeCardCodeSelector.getRelatedRow();
       IsRow row = formView.getActiveRow();
       TcDurationType type = Data.getEnum(VIEW_TIME_CARD_CODES,
         timeCardCodeSelector.getRelatedRow(), COL_TC_DURATION_TYPE, TcDurationType.class);
