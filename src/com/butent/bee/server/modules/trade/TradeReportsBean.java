@@ -156,8 +156,8 @@ public class TradeReportsBean {
       groupValueAliases.put(columnGroup, SqlUtils.uniqueName("cgr"));
     }
 
-    boolean needsYearMonth = TradeReportGroup.containsType(groupValueAliases.keySet(),
-        ValueType.DATE_TIME);
+    boolean needsYear = groupValueAliases.containsKey(TradeReportGroup.YEAR_RECEIVED);
+    boolean needsMonth = groupValueAliases.containsKey(TradeReportGroup.MONTH_RECEIVED);
 
     String aliasStock = TBL_TRADE_STOCK;
     IsCondition stockCondition = getStockCondition(aliasStock, warehouses);
@@ -232,9 +232,9 @@ public class TradeReportsBean {
       query.addField(source, tgr.valueColumn(), alias);
     });
 
-    if (needsYearMonth) {
+    if (needsYear || needsMonth) {
       query.addEmptyNumeric(aliasYear, 4, 0);
-      query.addEmptyNumeric(aliasMonth, 2, 0);
+      query.addEmptyNumeric(aliasMonth, 6, 0);
     }
 
     if (date == null) {
@@ -353,17 +353,30 @@ public class TradeReportsBean {
       }
     }
 
-    if (needsYearMonth) {
+    if (needsYear || needsMonth) {
       String dateAlias = BeeUtils.notEmpty(
           groupValueAliases.get(TradeReportGroup.YEAR_RECEIVED),
           groupValueAliases.get(TradeReportGroup.MONTH_RECEIVED));
 
       qs.setYearMonth(tmp, dateAlias, aliasYear, aliasMonth);
 
-      if (groupValueAliases.containsKey(TradeReportGroup.YEAR_RECEIVED)) {
+      if (needsYear) {
         groupValueAliases.put(TradeReportGroup.YEAR_RECEIVED, aliasYear);
+
+      } else {
+        SqlUpdate update = new SqlUpdate(tmp)
+            .addExpression(aliasMonth,
+                SqlUtils.plus(SqlUtils.multiply(SqlUtils.field(tmp, aliasYear), 100),
+                    SqlUtils.field(tmp, aliasMonth)));
+
+        ResponseObject response = qs.updateDataWithResponse(update);
+        if (response.hasErrors()) {
+          qs.sqlDropTemp(tmp);
+          return response;
+        }
       }
-      if (groupValueAliases.containsKey(TradeReportGroup.MONTH_RECEIVED)) {
+
+      if (needsMonth) {
         groupValueAliases.put(TradeReportGroup.MONTH_RECEIVED, aliasMonth);
       }
     }
@@ -372,7 +385,7 @@ public class TradeReportsBean {
       String valueColumn = groupValueAliases.get(columnGroup);
       qs.sqlIndex(tmp, valueColumn);
 
-      Map<String, Object> labelToValue = getGroupLabels(columnGroup, tmp, valueColumn);
+      Map<String, Object> labelToValue = getGroupLabels(columnGroup, tmp, valueColumn, needsYear);
 
       boolean hasEmptyValue = qs.sqlExists(tmp, SqlUtils.isNull(tmp, valueColumn));
 
@@ -649,7 +662,9 @@ public class TradeReportsBean {
     return ResponseObject.emptyResponse();
   }
 
-  private Map<String, Object> getGroupLabels(TradeReportGroup group, String tbl, String fld) {
+  private Map<String, Object> getGroupLabels(TradeReportGroup group, String tbl, String fld,
+      boolean hasYear) {
+
     Map<String, Object> result = new HashMap<>();
 
     switch (group.getType()) {
@@ -660,7 +675,10 @@ public class TradeReportsBean {
 
         } else if (group == TradeReportGroup.MONTH_RECEIVED) {
           Set<Integer> months = qs.getDistinctInts(tbl, fld, SqlUtils.notNull(tbl, fld));
-          months.forEach(m -> result.put(TimeUtils.monthToString(m), m));
+          months.forEach(m -> {
+            String label = hasYear ? TimeUtils.monthToString(m) : Integer.toString(m);
+            result.put(label, m);
+          });
         }
         break;
 
