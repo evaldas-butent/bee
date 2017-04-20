@@ -47,7 +47,7 @@ public class TradeStockReport extends ReportInterceptor {
       RP_WAREHOUSES, RP_SUPPLIERS, RP_MANUFACTURERS, RP_DOCUMENTS,
       RP_ITEM_TYPES, RP_ITEM_GROUPS, RP_ITEM_CATEGORIES, RP_ITEMS);
 
-  private static final List<String> GROUP_NAMES = reportGroupNames(4);
+  private static final List<String> GROUP_NAMES = reportGroupNames(5);
 
   private static final String STYLE_PREFIX = TradeKeeper.STYLE_PREFIX + "report-stock-";
 

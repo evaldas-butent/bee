@@ -136,6 +136,9 @@
         <ListBox name="Group3" style="&glst;">
           &gitems;
         </ListBox>
+        <ListBox name="Group4" style="&glst;">
+          &gitems;
+        </ListBox>
 
         <cell style="padding-left: 1em; vertical-align: top;">
           <CheckBox name="Summary" text="=summary" />

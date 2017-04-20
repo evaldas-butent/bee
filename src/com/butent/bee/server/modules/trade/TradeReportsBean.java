@@ -37,6 +37,7 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NullOrdering;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -144,6 +145,11 @@ public class TradeReportsBean {
     }
 
     List<TradeReportGroup> rowGroups = TradeReportGroup.parseList(parameters, 10);
+    if (rowGroups.isEmpty()) {
+      rowGroups.add(TradeReportGroup.WAREHOUSE);
+      rowGroups.add(TradeReportGroup.ITEM);
+    }
+
     boolean summary = parameters.getBoolean(RP_SUMMARY);
 
     TradeReportGroup columnGroup = TradeReportGroup.parse(parameters.getText(RP_COLUMNS));
@@ -212,6 +218,14 @@ public class TradeReportsBean {
 
     int amountPrecision = sys.getFieldPrecision(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
     int amountScale = sys.getFieldScale(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
+
+    List<String> columnGroupLabels = new ArrayList<>();
+
+    List<String> rowGroupValueColumns = new ArrayList<>();
+    List<String> rowGroupLabelColumns = new ArrayList<>();
+
+    List<String> quantityColumns = new ArrayList<>();
+    List<String> amountColumns = new ArrayList<>();
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM);
@@ -382,11 +396,22 @@ public class TradeReportsBean {
       }
     }
 
-    if (columnGroup != null) {
+    if (columnGroup == null) {
+      if (showQuantity) {
+        quantityColumns.add(aliasQuantity);
+      }
+      if (showAmount) {
+        amountColumns.add(aliasAmount);
+      }
+
+    } else {
       String valueColumn = groupValueAliases.get(columnGroup);
       qs.sqlIndex(tmp, valueColumn);
 
       Map<String, Object> labelToValue = getGroupLabels(columnGroup, tmp, valueColumn, needsYear);
+
+      columnGroupLabels.addAll(labelToValue.keySet());
+      columnGroupLabels.sort(null);
 
       boolean hasEmptyValue = qs.sqlExists(tmp, SqlUtils.isNull(tmp, valueColumn));
 
@@ -397,6 +422,15 @@ public class TradeReportsBean {
         column.setScale(quantityScale);
 
         pivotColumns.add(column);
+
+        if (hasEmptyValue) {
+          quantityColumns.add(aliasForEmptyValue(aliasQuantity));
+        }
+        if (!columnGroupLabels.isEmpty()) {
+          for (int i = 0; i < columnGroupLabels.size(); i++) {
+            quantityColumns.add(aliasForGroupValue(aliasQuantity, i));
+          }
+        }
       }
 
       if (showAmount) {
@@ -405,6 +439,15 @@ public class TradeReportsBean {
         column.setScale(amountScale);
 
         pivotColumns.add(column);
+
+        if (hasEmptyValue) {
+          amountColumns.add(aliasForEmptyValue(aliasAmount));
+        }
+        if (!columnGroupLabels.isEmpty()) {
+          for (int i = 0; i < columnGroupLabels.size(); i++) {
+            amountColumns.add(aliasForGroupValue(aliasAmount, i));
+          }
+        }
       }
 
       ResponseObject response = pivot(tmp, valueColumn, labelToValue, hasEmptyValue, pivotColumns);
@@ -428,9 +471,33 @@ public class TradeReportsBean {
         return response;
       }
       tmp = response.getResponseAsString();
+
+      for (TradeReportGroup group : rowGroups) {
+        rowGroupValueColumns.add(groupValueAliases.get(group));
+        rowGroupLabelColumns.add(group.getLabelAlias());
+      }
     }
 
-    SimpleRowSet data = qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp));
+    SqlSelect select = new SqlSelect().addFrom(tmp);
+
+    if (!rowGroups.isEmpty()) {
+      select.addFields(tmp, rowGroupValueColumns).addFields(tmp, rowGroupLabelColumns)
+          .addSum(tmp, quantityColumns).addSum(tmp, amountColumns)
+          .addGroup(tmp, rowGroupValueColumns).addGroup(tmp, rowGroupLabelColumns);
+
+      for (int i = 0; i < rowGroups.size(); i++) {
+        select.addOrder(tmp, rowGroupLabelColumns.get(i), NullOrdering.NULLS_FIRST);
+        select.addOrder(tmp, rowGroupValueColumns.get(i), NullOrdering.NULLS_FIRST);
+      }
+
+    } else if (summary) {
+      select.addSum(tmp, quantityColumns).addSum(tmp, amountColumns);
+
+    } else {
+      select.addFields(tmp, quantityColumns).addFields(tmp, amountColumns);
+    }
+
+    SimpleRowSet data = qs.getData(select);
     qs.sqlDropTemp(tmp);
 
     if (DataUtils.isEmpty(data)) {
