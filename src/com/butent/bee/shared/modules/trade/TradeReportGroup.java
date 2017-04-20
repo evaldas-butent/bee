@@ -391,6 +391,18 @@ public enum TradeReportGroup {
     }
   }
 
+  public String getCode() {
+    return code;
+  }
+
+  public String getValueAlias() {
+    return getCode() + "_value";
+  }
+
+  public String getLabelAlias() {
+    return getCode() + "_label";
+  }
+
   public abstract ValueType getType();
 
   public abstract String valueSource();

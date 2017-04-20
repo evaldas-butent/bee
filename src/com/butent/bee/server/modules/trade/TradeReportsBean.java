@@ -16,6 +16,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
@@ -42,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -150,13 +152,13 @@ public class TradeReportsBean {
     }
 
     Map<TradeReportGroup, String> groupValueAliases = new EnumMap<>(TradeReportGroup.class);
-    rowGroups.forEach(trg -> groupValueAliases.put(trg, SqlUtils.uniqueName("rgr")));
+    rowGroups.forEach(trg -> groupValueAliases.put(trg, trg.getValueAlias()));
     if (columnGroup != null) {
-      groupValueAliases.put(columnGroup, SqlUtils.uniqueName("cgr"));
+      groupValueAliases.put(columnGroup, columnGroup.getValueAlias());
     }
 
-    boolean needsYearMonth = TradeReportGroup.containsType(groupValueAliases.keySet(),
-        ValueType.DATE_TIME);
+    boolean needsYear = groupValueAliases.containsKey(TradeReportGroup.YEAR_RECEIVED);
+    boolean needsMonth = groupValueAliases.containsKey(TradeReportGroup.MONTH_RECEIVED);
 
     String aliasStock = TBL_TRADE_STOCK;
     IsCondition stockCondition = getStockCondition(aliasStock, warehouses);
@@ -196,14 +198,20 @@ public class TradeReportsBean {
     String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
     String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
 
-    String aliasQuantity = SqlUtils.uniqueName("qty");
+    String aliasQuantity = COL_STOCK_QUANTITY;
 
-    String aliasPrice = SqlUtils.uniqueName("prc");
-    String aliasCurrency = SqlUtils.uniqueName("cur");
-    String aliasAmount = SqlUtils.uniqueName("amn");
+    String aliasPrice = COL_TRADE_ITEM_PRICE;
+    String aliasCurrency = COL_TRADE_CURRENCY;
+    String aliasAmount = COL_TRADE_AMOUNT;
 
-    String aliasYear = SqlUtils.uniqueName("year");
-    String aliasMonth = SqlUtils.uniqueName("month");
+    String aliasYear = BeeConst.YEAR;
+    String aliasMonth = BeeConst.MONTH;
+
+    int quantityPrecision = sys.getFieldPrecision(TBL_TRADE_STOCK, COL_STOCK_QUANTITY);
+    int quantityScale = sys.getFieldScale(TBL_TRADE_STOCK, COL_STOCK_QUANTITY);
+
+    int amountPrecision = sys.getFieldPrecision(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
+    int amountScale = sys.getFieldScale(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM);
@@ -225,15 +233,15 @@ public class TradeReportsBean {
       query.addField(source, tgr.valueColumn(), alias);
     });
 
-    if (needsYearMonth) {
+    if (needsYear || needsMonth) {
       query.addEmptyNumeric(aliasYear, 4, 0);
-      query.addEmptyNumeric(aliasMonth, 2, 0);
+      query.addEmptyNumeric(aliasMonth, 6, 0);
     }
 
     if (date == null) {
       query.addField(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, aliasQuantity);
     } else {
-      query.addExpr(zero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY), aliasQuantity);
+      query.addExpr(zero(quantityPrecision, quantityScale), aliasQuantity);
     }
 
     if (showAmount) {
@@ -245,7 +253,7 @@ public class TradeReportsBean {
         query.addField(TBL_ITEMS, itemPrice.getCurrencyColumn(), aliasCurrency);
       }
 
-      query.addExpr(zero(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST), aliasAmount);
+      query.addExpr(zero(amountPrecision, amountScale), aliasAmount);
     }
 
     query.addFrom(TBL_TRADE_STOCK);
@@ -346,25 +354,80 @@ public class TradeReportsBean {
       }
     }
 
-    if (needsYearMonth) {
+    if (needsYear || needsMonth) {
       String dateAlias = BeeUtils.notEmpty(
           groupValueAliases.get(TradeReportGroup.YEAR_RECEIVED),
           groupValueAliases.get(TradeReportGroup.MONTH_RECEIVED));
 
       qs.setYearMonth(tmp, dateAlias, aliasYear, aliasMonth);
+
+      if (needsYear) {
+        groupValueAliases.put(TradeReportGroup.YEAR_RECEIVED, aliasYear);
+
+      } else {
+        SqlUpdate update = new SqlUpdate(tmp)
+            .addExpression(aliasMonth,
+                SqlUtils.plus(SqlUtils.multiply(SqlUtils.field(tmp, aliasYear), 100),
+                    SqlUtils.field(tmp, aliasMonth)));
+
+        ResponseObject response = qs.updateDataWithResponse(update);
+        if (response.hasErrors()) {
+          qs.sqlDropTemp(tmp);
+          return response;
+        }
+      }
+
+      if (needsMonth) {
+        groupValueAliases.put(TradeReportGroup.MONTH_RECEIVED, aliasMonth);
+      }
     }
 
     if (columnGroup != null) {
       String valueColumn = groupValueAliases.get(columnGroup);
       qs.sqlIndex(tmp, valueColumn);
 
-      List<String> pivotValues = new ArrayList<>();
+      Map<String, Object> labelToValue = getGroupLabels(columnGroup, tmp, valueColumn, needsYear);
+
+      boolean hasEmptyValue = qs.sqlExists(tmp, SqlUtils.isNull(tmp, valueColumn));
+
+      List<BeeColumn> pivotColumns = new ArrayList<>();
       if (showQuantity) {
-        pivotValues.add(aliasQuantity);
+        BeeColumn column = new BeeColumn(ValueType.DECIMAL, aliasQuantity);
+        column.setPrecision(quantityPrecision);
+        column.setScale(quantityScale);
+
+        pivotColumns.add(column);
       }
+
       if (showAmount) {
-        pivotValues.add(aliasAmount);
+        BeeColumn column = new BeeColumn(ValueType.DECIMAL, aliasAmount);
+        column.setPrecision(amountPrecision);
+        column.setScale(amountScale);
+
+        pivotColumns.add(column);
       }
+
+      ResponseObject response = pivot(tmp, valueColumn, labelToValue, hasEmptyValue, pivotColumns);
+      qs.sqlDropTemp(tmp);
+
+      if (response.hasErrors()) {
+        return response;
+      }
+      tmp = response.getResponseAsString();
+    }
+
+    if (!rowGroups.isEmpty()) {
+      for (TradeReportGroup group : rowGroups) {
+        qs.sqlIndex(tmp, groupValueAliases.get(group));
+      }
+
+      ResponseObject response = addRowGroupLabels(tmp, rowGroups, groupValueAliases, needsYear);
+      qs.sqlDropTemp(tmp);
+
+      if (response.hasErrors()) {
+        return response;
+      }
+      tmp = response.getResponseAsString();
     }
 
     SimpleRowSet data = qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp));
@@ -463,13 +526,6 @@ public class TradeReportsBean {
 
   private static IsExpression zero(int precision, int scale) {
     return SqlUtils.cast(SqlUtils.constant(0), SqlConstants.SqlDataType.DECIMAL, precision, scale);
-  }
-
-  private IsExpression zero(String tblName, String fldName) {
-    int precision = sys.getFieldPrecision(tblName, fldName);
-    int scale = sys.getFieldScale(tblName, fldName);
-
-    return zero(precision, scale);
   }
 
   private ResponseObject calculateStock(String tbl, String fld, DateTime date) {
@@ -621,21 +677,22 @@ public class TradeReportsBean {
   }
 
   private Map<String, Object> getGroupLabels(TradeReportGroup group, String tbl, String fld,
-      String aliasYear, String aliasMonth) {
+      boolean hasYear) {
 
     Map<String, Object> result = new HashMap<>();
 
     switch (group.getType()) {
       case DATE_TIME:
         if (group == TradeReportGroup.YEAR_RECEIVED) {
-          Set<Integer> years = qs.getDistinctInts(tbl, aliasYear,
-              SqlUtils.notNull(tbl, aliasYear));
+          Set<Integer> years = qs.getDistinctInts(tbl, fld, SqlUtils.notNull(tbl, fld));
           years.forEach(y -> result.put(TimeUtils.yearToString(y), y));
 
         } else if (group == TradeReportGroup.MONTH_RECEIVED) {
-          Set<Integer> months = qs.getDistinctInts(tbl, aliasMonth,
-              SqlUtils.notNull(tbl, aliasMonth));
-          months.forEach(m -> result.put(TimeUtils.monthToString(m), m));
+          Set<Integer> months = qs.getDistinctInts(tbl, fld, SqlUtils.notNull(tbl, fld));
+          months.forEach(m -> {
+            String label = hasYear ? TimeUtils.monthToString(m) : Integer.toString(m);
+            result.put(label, m);
+          });
         }
         break;
 
@@ -652,14 +709,145 @@ public class TradeReportsBean {
             data.forEach(row -> result.put(row.getValue(1), row.getLong(0)));
           }
         }
-
         break;
 
       default:
-        Set<String> values = qs.getDistinctValues(tbl, fld, null);
+        Set<String> values = qs.getDistinctValues(tbl, fld, SqlUtils.notNull(tbl, fld));
         values.forEach(v -> result.put(v, v));
     }
 
     return result;
+  }
+
+  private ResponseObject pivot(String tbl, String fld,
+      Map<String, Object> labelToValue, boolean hasEmptyValue, List<BeeColumn> pivotColumns) {
+
+    List<String> labels = new ArrayList<>(labelToValue.keySet());
+    labels.sort(null);
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(tbl)
+        .addFrom(tbl);
+
+    if (hasEmptyValue) {
+      pivotColumns.forEach(column -> query.addEmptyNumeric(aliasForEmptyValue(column.getId()),
+          column.getPrecision(), column.getScale()));
+    }
+
+    if (!labels.isEmpty()) {
+      for (int i = 0; i < labels.size(); i++) {
+        for (BeeColumn column : pivotColumns) {
+          query.addEmptyNumeric(aliasForGroupValue(column.getId(), i),
+              column.getPrecision(), column.getScale());
+        }
+      }
+    }
+
+    String tmp = qs.sqlCreateTemp(query);
+
+    if (hasEmptyValue) {
+      SqlUpdate update = new SqlUpdate(tmp);
+
+      pivotColumns.forEach(column -> update.addExpression(aliasForEmptyValue(column.getId()),
+          SqlUtils.field(tmp, column.getId())));
+
+      update.setWhere(SqlUtils.isNull(tmp, fld));
+
+      ResponseObject response = qs.updateDataWithResponse(update);
+      if (response.hasErrors()) {
+        qs.sqlDropTemp(tmp);
+        return response;
+      }
+    }
+
+    if (!labels.isEmpty()) {
+      for (int i = 0; i < labels.size(); i++) {
+        SqlUpdate update = new SqlUpdate(tmp);
+
+        for (BeeColumn column : pivotColumns) {
+          update.addExpression(aliasForGroupValue(column.getId(), i),
+              SqlUtils.field(tmp, column.getId()));
+        }
+
+        update.setWhere(SqlUtils.equals(tmp, fld, labelToValue.get(labels.get(i))));
+
+        ResponseObject response = qs.updateDataWithResponse(update);
+        if (response.hasErrors()) {
+          qs.sqlDropTemp(tmp);
+          return response;
+        }
+      }
+    }
+
+    return ResponseObject.response(tmp);
+  }
+
+  private static String aliasForEmptyValue(String prefix) {
+    return prefix + "_0";
+  }
+
+  private static String aliasForGroupValue(String prefix, int index) {
+    return prefix + "_" + Integer.toString(index + 1);
+  }
+
+  private ResponseObject addRowGroupLabels(String tbl, Collection<TradeReportGroup> groups,
+      Map<TradeReportGroup, String> valueColumns, boolean hasYear) {
+
+    Map<TradeReportGroup, Map<String, Object>> groupLabels = new LinkedHashMap<>();
+
+    groups.forEach(group -> groupLabels.put(group,
+        getGroupLabels(group, tbl, valueColumns.get(group), hasYear)));
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(tbl)
+        .addFrom(tbl);
+
+    for (TradeReportGroup group : groups) {
+      Map<String, Object> labels = groupLabels.get(group);
+
+      int precision;
+      if (BeeUtils.isEmpty(labels)) {
+        precision = 1;
+      } else {
+        precision = labels.keySet().stream().mapToInt(String::length).max().getAsInt();
+      }
+
+      query.addEmptyString(group.getLabelAlias(), precision);
+    }
+
+    String tmp = qs.sqlCreateTemp(query);
+
+    for (TradeReportGroup group : groups) {
+      String valueColumn = valueColumns.get(group);
+      String labelColumn = group.getLabelAlias();
+
+      Map<String, Object> labels = groupLabels.get(group);
+
+      if (group.getType() == ValueType.TEXT) {
+        SqlUpdate update = new SqlUpdate(tmp)
+            .addExpression(labelColumn, SqlUtils.field(tmp, valueColumn));
+
+        ResponseObject response = qs.updateDataWithResponse(update);
+        if (response.hasErrors()) {
+          qs.sqlDropTemp(tmp);
+          return response;
+        }
+
+      } else if (!BeeUtils.isEmpty(labels)) {
+        for (Map.Entry<String, Object> entry : labels.entrySet()) {
+          SqlUpdate update = new SqlUpdate(tmp)
+              .addConstant(labelColumn, entry.getKey())
+              .setWhere(SqlUtils.equals(tmp, valueColumn, entry.getValue()));
+
+          ResponseObject response = qs.updateDataWithResponse(update);
+          if (response.hasErrors()) {
+            qs.sqlDropTemp(tmp);
+            return response;
+          }
+        }
+      }
+    }
+
+    return ResponseObject.response(tmp);
   }
 }

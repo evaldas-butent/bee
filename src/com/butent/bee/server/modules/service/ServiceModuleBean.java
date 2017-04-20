@@ -215,7 +215,9 @@ public class ServiceModuleBean implements BeeModule {
         BeeParameter.createText(module, PRM_SMS_REQUEST_CONTACT_INFO_FROM, false, VIEW_DEPARTMENTS),
         BeeParameter.createRelation(module, PRM_SERVICE_MANAGER_WAREHOUSE, true, VIEW_WAREHOUSES,
             COL_WAREHOUSE_CODE),
-        BeeParameter.createRelation(module, PRM_ROLE, true, TBL_ROLES, COL_ROLE_NAME)
+        BeeParameter.createRelation(module, PRM_ROLE, true, TBL_ROLES, COL_ROLE_NAME),
+        BeeParameter.createBoolean(module, PRM_FILTER_ALL_DEVICES),
+        BeeParameter.createNumber(module, PRM_CLIENT_CHANGING_SETTING, false, 4)
     );
 
     return params;
@@ -1703,6 +1705,7 @@ public class ServiceModuleBean implements BeeModule {
       return ResponseObject.error(reqInfo.getService(), "parameters not found");
     }
 
+    boolean createUpdateComment = !DataUtils.isId(maintenanceId);
     IsCondition latestMaintenanceCondition = null;
 
     if (DataUtils.isId(objectId)) {
@@ -1745,8 +1748,9 @@ public class ServiceModuleBean implements BeeModule {
       String objectCompany = maintenanceRow.getValue(COL_SERVICE_CUSTOMER);
       String objectContact = maintenanceRow.getValue(ALS_CONTACT_PERSON);
 
-      if (!BeeUtils.same(maintenanceCompany, objectCompany)
-              || !BeeUtils.same(maintenanceContact, objectContact)) {
+      if ((!BeeUtils.same(maintenanceCompany, objectCompany)
+              || !BeeUtils.same(maintenanceContact, objectContact))
+          && !BeeUtils.isEmpty(objectCompany) && !BeeUtils.isEmpty(objectContact)) {
         SqlUpdate update = null;
         Long responseResult = null;
 
@@ -1779,6 +1783,14 @@ public class ServiceModuleBean implements BeeModule {
 
           if (response.hasErrors()) {
             return response;
+          } else if (!BeeUtils.same(maintenanceCompany, objectCompany)
+              && createUpdateComment && DataUtils.isId(maintenanceId)) {
+            qs.insertData(new SqlInsert(TBL_MAINTENANCE_COMMENTS)
+                .addConstant(COL_SERVICE_MAINTENANCE, maintenanceId)
+                .addConstant(COL_PUBLISHER, usr.getCurrentUserId())
+                .addConstant(COL_PUBLISH_TIME, TimeUtils.nowMinutes())
+                .addConstant(COL_EVENT_NOTE,
+                    usr.getDictionary(usr.getCurrentUserId()).svcChangedClient()));
           }
 
           return ResponseObject.response(responseResult);

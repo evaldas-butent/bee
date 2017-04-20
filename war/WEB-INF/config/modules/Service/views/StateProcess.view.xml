@@ -31,6 +31,7 @@
     <SimpleColumn name="Term" />
     <SimpleColumn name="Warranty" />
     <SimpleColumn name="DaysActive" />
+    <SimpleColumn name="ProhibitEdit" />
   </Columns>
   <Order>
     <OrderBy column="Role" />

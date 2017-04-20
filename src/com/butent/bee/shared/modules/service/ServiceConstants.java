@@ -23,8 +23,10 @@ public final class ServiceConstants {
     public static final ServiceCompanyKind DETAULT = CUSTOMER;
   }
 
+  public static final String PRM_CLIENT_CHANGING_SETTING = "ClientChangingSetting";
   public static final String PRM_DEFAULT_MAINTENANCE_TYPE = "DefaultMaintenanceType";
   public static final String PRM_DEFAULT_WARRANTY_TYPE = "DefaultWarrantyType";
+  public static final String PRM_FILTER_ALL_DEVICES = "FilterAllDevices";
   public static final String PRM_URGENT_RATE = "UrgentRate";
   public static final String PRM_SERVICE_MANAGER_WAREHOUSE = "ServiceManagerWarehouse";
   public static final String PRM_SMS_REQUEST_SERVICE_ADDRESS = "SmsRequestServiceAddress";
@@ -108,6 +110,7 @@ public final class ServiceConstants {
   public static final String COL_MAINTENANCE_STATE = "MaintenanceState";
   public static final String COL_MESSAGE = "Message";
   public static final String COL_NOTIFY_CUSTOMER = "NotifyCustomer";
+  public static final String COL_PROHIBIT_EDIT = "ProhibitEdit";
   public static final String COL_REPAIRER = "Repairer";
   public static final String COL_SHOW_CUSTOMER = "ShowCustomer";
   public static final String COL_SEND_EMAIL = "SentEmail";
