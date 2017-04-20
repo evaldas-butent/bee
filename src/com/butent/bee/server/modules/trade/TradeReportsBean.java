@@ -152,9 +152,9 @@ public class TradeReportsBean {
     }
 
     Map<TradeReportGroup, String> groupValueAliases = new EnumMap<>(TradeReportGroup.class);
-    rowGroups.forEach(trg -> groupValueAliases.put(trg, SqlUtils.uniqueName("rgr")));
+    rowGroups.forEach(trg -> groupValueAliases.put(trg, trg.getValueAlias()));
     if (columnGroup != null) {
-      groupValueAliases.put(columnGroup, SqlUtils.uniqueName("cgr"));
+      groupValueAliases.put(columnGroup, columnGroup.getValueAlias());
     }
 
     boolean needsYear = groupValueAliases.containsKey(TradeReportGroup.YEAR_RECEIVED);
@@ -198,14 +198,14 @@ public class TradeReportsBean {
     String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
     String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
 
-    String aliasQuantity = SqlUtils.uniqueName("qty");
+    String aliasQuantity = COL_STOCK_QUANTITY;
 
-    String aliasPrice = SqlUtils.uniqueName("prc");
-    String aliasCurrency = SqlUtils.uniqueName("cur");
-    String aliasAmount = SqlUtils.uniqueName("amn");
+    String aliasPrice = COL_TRADE_ITEM_PRICE;
+    String aliasCurrency = COL_TRADE_CURRENCY;
+    String aliasAmount = COL_TRADE_AMOUNT;
 
-    String aliasYear = SqlUtils.uniqueName("year");
-    String aliasMonth = SqlUtils.uniqueName("month");
+    String aliasYear = BeeConst.YEAR;
+    String aliasMonth = BeeConst.MONTH;
 
     int quantityPrecision = sys.getFieldPrecision(TBL_TRADE_STOCK, COL_STOCK_QUANTITY);
     int quantityScale = sys.getFieldScale(TBL_TRADE_STOCK, COL_STOCK_QUANTITY);
@@ -790,10 +790,6 @@ public class TradeReportsBean {
     return prefix + "_" + Integer.toString(index + 1);
   }
 
-  private static String aliasForGroupLabel(TradeReportGroup group) {
-    return group.getCode() + "_label";
-  }
-
   private ResponseObject addRowGroupLabels(String tbl, Collection<TradeReportGroup> groups,
       Map<TradeReportGroup, String> valueColumns, boolean hasYear) {
 
@@ -816,14 +812,14 @@ public class TradeReportsBean {
         precision = labels.keySet().stream().mapToInt(String::length).max().getAsInt();
       }
 
-      query.addEmptyString(aliasForGroupLabel(group), precision);
+      query.addEmptyString(group.getLabelAlias(), precision);
     }
 
     String tmp = qs.sqlCreateTemp(query);
 
     for (TradeReportGroup group : groups) {
       String valueColumn = valueColumns.get(group);
-      String labelColumn = aliasForGroupLabel(group);
+      String labelColumn = group.getLabelAlias();
 
       Map<String, Object> labels = groupLabels.get(group);
 
