@@ -8,7 +8,7 @@
   >
   <xi:include href="../../Orders/grids/columns/Invoices.columns.xml" />
   <g:columns>
-    <RelColumn name="ServiceMaintenance" viewName="ServiceMaintenance" renderColumns="ServiceMaintenance" filterSupplier="value"
+    <RelColumn name="ServiceMaintenance" viewName="ServiceMaintenance" renderColumns="MaintenanceNumber" filterSupplier="value"
                editPopup="true" label="=svcRepair" />
   </g:columns>
 

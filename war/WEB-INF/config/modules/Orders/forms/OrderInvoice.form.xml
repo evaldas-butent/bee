@@ -25,16 +25,16 @@
         <Label for="CheckNo" />
         <InputText source="CheckNo" />
 
-        <Label for="ServiceMaintenance" data="ServiceMaintenance" text="=svcRepair" >
+        <Label for="MaintenanceNumber" data="ServiceMaintenance" text="=svcRepair" >
           <dynStyle>
             <ui:inline>display:none;</ui:inline>
-            <ui:expression>!row.ServiceMaintenance</ui:expression>
+            <ui:expression>!row.MaintenanceNumber</ui:expression>
           </dynStyle>
         </Label>
-        <InputText source="ServiceMaintenance" contentEditable="false" >
+        <InputText source="MaintenanceNumber" contentEditable="false" >
           <dynStyle>
             <ui:inline>display:none;</ui:inline>
-            <ui:expression>!row.ServiceMaintenance</ui:expression>
+            <ui:expression>!row.MaintenanceNumber</ui:expression>
           </dynStyle>
         </InputText>
       </row>
