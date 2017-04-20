@@ -391,6 +391,10 @@ public enum TradeReportGroup {
     }
   }
 
+  public String getCode() {
+    return code;
+  }
+
   public abstract ValueType getType();
 
   public abstract String valueSource();

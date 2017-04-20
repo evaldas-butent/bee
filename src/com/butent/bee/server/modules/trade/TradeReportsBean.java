@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -412,7 +413,20 @@ public class TradeReportsBean {
       if (response.hasErrors()) {
         return response;
       }
+      tmp = response.getResponseAsString();
+    }
 
+    if (!rowGroups.isEmpty()) {
+      for (TradeReportGroup group : rowGroups) {
+        qs.sqlIndex(tmp, groupValueAliases.get(group));
+      }
+
+      ResponseObject response = addRowGroupLabels(tmp, rowGroups, groupValueAliases, needsYear);
+      qs.sqlDropTemp(tmp);
+
+      if (response.hasErrors()) {
+        return response;
+      }
       tmp = response.getResponseAsString();
     }
 
@@ -741,6 +755,7 @@ public class TradeReportsBean {
 
       ResponseObject response = qs.updateDataWithResponse(update);
       if (response.hasErrors()) {
+        qs.sqlDropTemp(tmp);
         return response;
       }
     }
@@ -758,6 +773,7 @@ public class TradeReportsBean {
 
         ResponseObject response = qs.updateDataWithResponse(update);
         if (response.hasErrors()) {
+          qs.sqlDropTemp(tmp);
           return response;
         }
       }
@@ -772,5 +788,70 @@ public class TradeReportsBean {
 
   private static String aliasForGroupValue(String prefix, int index) {
     return prefix + "_" + Integer.toString(index + 1);
+  }
+
+  private static String aliasForGroupLabel(TradeReportGroup group) {
+    return group.getCode() + "_label";
+  }
+
+  private ResponseObject addRowGroupLabels(String tbl, Collection<TradeReportGroup> groups,
+      Map<TradeReportGroup, String> valueColumns, boolean hasYear) {
+
+    Map<TradeReportGroup, Map<String, Object>> groupLabels = new LinkedHashMap<>();
+
+    groups.forEach(group -> groupLabels.put(group,
+        getGroupLabels(group, tbl, valueColumns.get(group), hasYear)));
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(tbl)
+        .addFrom(tbl);
+
+    for (TradeReportGroup group : groups) {
+      Map<String, Object> labels = groupLabels.get(group);
+
+      int precision;
+      if (BeeUtils.isEmpty(labels)) {
+        precision = 1;
+      } else {
+        precision = labels.keySet().stream().mapToInt(String::length).max().getAsInt();
+      }
+
+      query.addEmptyString(aliasForGroupLabel(group), precision);
+    }
+
+    String tmp = qs.sqlCreateTemp(query);
+
+    for (TradeReportGroup group : groups) {
+      String valueColumn = valueColumns.get(group);
+      String labelColumn = aliasForGroupLabel(group);
+
+      Map<String, Object> labels = groupLabels.get(group);
+
+      if (group.getType() == ValueType.TEXT) {
+        SqlUpdate update = new SqlUpdate(tmp)
+            .addExpression(labelColumn, SqlUtils.field(tmp, valueColumn));
+
+        ResponseObject response = qs.updateDataWithResponse(update);
+        if (response.hasErrors()) {
+          qs.sqlDropTemp(tmp);
+          return response;
+        }
+
+      } else if (!BeeUtils.isEmpty(labels)) {
+        for (Map.Entry<String, Object> entry : labels.entrySet()) {
+          SqlUpdate update = new SqlUpdate(tmp)
+              .addConstant(labelColumn, entry.getKey())
+              .setWhere(SqlUtils.equals(tmp, valueColumn, entry.getValue()));
+
+          ResponseObject response = qs.updateDataWithResponse(update);
+          if (response.hasErrors()) {
+            qs.sqlDropTemp(tmp);
+            return response;
+          }
+        }
+      }
+    }
+
+    return ResponseObject.response(tmp);
   }
 }
