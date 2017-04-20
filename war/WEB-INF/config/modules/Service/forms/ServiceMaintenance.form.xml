@@ -77,7 +77,7 @@
                 <Label text="=svcDevice" class="bee-required bee-svc-panel-title" style="&flbl;"/>
                 <DataSelector name="ServiceObject" source="ServiceObject" updateMode="row"
                               choiceColumns="SerialNo ArticleNo CategoryName ManufacturerName Model CustomerName ContactPersonFirstName ContactPersonLastName ContactPersonPhone"
-                              style="&finp;" tabIndex="50"/>
+                              renderColumns="Model CategoryName ArticleNo" style="&finp;" tabIndex="50"/>
               </FlowPanel>
               <FlowPanel for="ServiceObject">
                 <FaLabel name="ServiceObjectAdd" char="plus_circle" class="bee-MultiSelector-plus bee-svc-add-button"/>

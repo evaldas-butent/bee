@@ -4663,6 +4663,8 @@ public interface Dictionary {
 
   default String prmClearReservationsTime() {return g("prmClearReservationsTime");}
 
+  default String prmClientChangingSetting() {return g("prmClientChangingSetting");}
+
   default String prmCompanyName() {return g("prmCompanyName");}
 
   default String prmCountry() {return g("prmCountry");}
@@ -5243,6 +5245,10 @@ public interface Dictionary {
   default String svcCalendarPixelsPerInfo() {return g("svcCalendarPixelsPerInfo");}
 
   default String svcCalendarSeparateObjects() {return g("svcCalendarSeparateObjects");}
+
+  default String svcChangedClient() {return g("svcChangedClient");}
+
+  default String svcChangingClient() {return g("svcChangingClient");}
 
   default String svcComment() {return g("svcComment");}
 

@@ -58,6 +58,7 @@
       <SimpleColumn name="Model" />
       <SimpleColumn name="SerialNo" />
       <SimpleColumn name="ArticleNo" />
+      <SimpleColumn name="Customer" />
     </SimpleJoin>
 
     <SimpleColumn name="Date"/>

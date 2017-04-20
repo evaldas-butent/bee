@@ -23,6 +23,7 @@ public final class ServiceConstants {
     public static final ServiceCompanyKind DETAULT = CUSTOMER;
   }
 
+  public static final String PRM_CLIENT_CHANGING_SETTING = "ClientChangingSetting";
   public static final String PRM_DEFAULT_MAINTENANCE_TYPE = "DefaultMaintenanceType";
   public static final String PRM_DEFAULT_WARRANTY_TYPE = "DefaultWarrantyType";
   public static final String PRM_FILTER_ALL_DEVICES = "FilterAllDevices";

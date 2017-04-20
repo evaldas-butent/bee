@@ -20,7 +20,7 @@
       <FlowPanel class="&mrcl;" style="&mrst;" for="ContactPerson">
         <FlowPanel style="&mfld;width: 20em;">
           <Label text="=contact" style="&flbl;" />
-          <DataSelector source="ContactPerson" options="Customer"
+          <DataSelector name="ContactPerson" source="ContactPerson" options="Customer"
                         choiceColumns="FirstName LastName Phone Email Address CompanyName"
                         renderColumns="ContactFirstName ContactLastName"
                         style="&finp;"/>
