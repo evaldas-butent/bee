@@ -719,24 +719,8 @@ public class TransportModuleBean implements BeeModule {
               return;
             }
 
-            BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
-                Filter.equals(COL_TEXT_CONSTANT, constant));
+            String text = getTextConstant(constant, info.getInteger(0, COL_USER_LOCALE));
 
-            SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
-                info.getInteger(0, COL_USER_LOCALE));
-            String localizedContent = Localized.column(COL_TEXT_CONTENT, locale.getLanguage());
-            String text;
-
-            if (DataUtils.isEmpty(data)) {
-              text = constant.getDefaultContent(Localizations.getDictionary(SupportedLocale.parse(
-                  locale.getLanguage())));
-            } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
-                data.getColumns()))) {
-              text = data.getString(0, COL_TEXT_CONTENT);
-            } else {
-              text = BeeUtils.notEmpty(data.getString(0, localizedContent),
-                  data.getString(0, COL_TEXT_CONTENT));
-            }
             cb.asynchronousCall(new ConcurrencyBean.AsynchronousRunnable() {
               @Override
               public void run() {
@@ -798,10 +782,12 @@ public class TransportModuleBean implements BeeModule {
             Integer status = event.getRow().getInteger(col);
             ShipmentRequestStatus shipmentStatus = null;
             AssessmentStatus assessmentStatus = null;
+            TextConstant textConstant = null;
 
             if (OrderStatus.COMPLETED.is(status)) {
               shipmentStatus = ShipmentRequestStatus.COMPLETED;
               assessmentStatus = AssessmentStatus.COMPLETED;
+              textConstant = TextConstant.COMPLETED_ORDER_EMAIL_CONTENT;
 
             } else if (OrderStatus.ACTIVE.is(status)) {
               shipmentStatus = ShipmentRequestStatus.CONFIRMED;
@@ -827,6 +813,43 @@ public class TransportModuleBean implements BeeModule {
                       SqlUtils.in(VIEW_ASSESSMENTS, COL_CARGO, VIEW_ORDER_CARGO,
                           sys.getIdName(VIEW_ORDER_CARGO),
                           SqlUtils.equals(VIEW_ORDER_CARGO, COL_ORDER, orderId)))));
+            }
+            if (textConstant != null) {
+              SqlSelect emailSql = new SqlSelect()
+                  .addFields(TBL_EMAILS, COL_EMAIL)
+                  .addFrom(TBL_EMAILS)
+                  .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL));
+
+              String email = qs.getValue(emailSql.copyOf()
+                  .addFromLeft(VIEW_COMPANIES,
+                      sys.joinTables(TBL_CONTACTS, VIEW_COMPANIES, COL_CONTACT))
+                  .addFromLeft(VIEW_ORDERS,
+                      sys.joinTables(VIEW_COMPANIES, VIEW_ORDERS, COL_CUSTOMER))
+                  .setWhere(sys.idEquals(VIEW_ORDERS, orderId)));
+
+              if (BeeUtils.isEmpty(email)) {
+                email = qs.getValue(emailSql.copyOf()
+                    .addFromLeft(VIEW_COMPANY_PERSONS,
+                        sys.joinTables(TBL_CONTACTS, VIEW_COMPANY_PERSONS, COL_CONTACT))
+                    .addFromLeft(VIEW_ORDERS, sys.joinTables(VIEW_COMPANY_PERSONS, VIEW_ORDERS,
+                        COL_CUSTOMER + COL_PERSON))
+                    .setWhere(sys.idEquals(VIEW_ORDERS, orderId)));
+              }
+              if (BeeUtils.isEmpty(email)) {
+                return;
+              }
+              Long accountId = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+
+              if (!DataUtils.isId(accountId)) {
+                logger.warning("Default mail account not found");
+                return;
+              }
+              String text = getTextConstant(textConstant, usr.getSupportedLocale().ordinal());
+
+              if (BeeUtils.isEmpty(text)) {
+                return;
+              }
+              mail.sendMail(accountId, email, null, text);
             }
           }
         }
@@ -1686,26 +1709,9 @@ public class TransportModuleBean implements BeeModule {
         .addConstant(COL_USER, user)
         .addConstant(COL_ROLE, role));
 
-    TextConstant constant = TextConstant.REGISTRATION_MAIL_CONTENT;
-
-    BeeRowSet data = qs.getViewData(VIEW_TEXT_CONSTANTS,
-        Filter.equals(COL_TEXT_CONSTANT, constant));
-
-    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class,
+    String text = getTextConstant(TextConstant.REGISTRATION_MAIL_CONTENT,
         reqInfo.getParameterInt(COL_USER_LOCALE));
 
-    String localizedContent = Localized.column(COL_TEXT_CONTENT, locale.getLanguage());
-    String text;
-
-    if (DataUtils.isEmpty(data)) {
-      text = constant.getDefaultContent(Localizations.getDictionary(SupportedLocale.parse(
-          locale.getLanguage())));
-    } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, data.getColumns()))) {
-      text = data.getString(0, COL_TEXT_CONTENT);
-    } else {
-      text = BeeUtils.notEmpty(data.getString(0, localizedContent),
-          data.getString(0, COL_TEXT_CONTENT));
-    }
     if (!BeeUtils.isEmpty(text)) {
       cb.asynchronousCall(new ConcurrencyBean.AsynchronousRunnable() {
         @Override
@@ -2859,7 +2865,7 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(getTextConstant(constant, userLocale));
   }
 
-  private String getTextConstant(TextConstant constant, Integer userLocale) {
+  public String getTextConstant(TextConstant constant, Integer userLocale) {
     BeeRowSet rowSet = qs.getViewData(VIEW_TEXT_CONSTANTS,
         Filter.equals(COL_TEXT_CONSTANT, constant));
 

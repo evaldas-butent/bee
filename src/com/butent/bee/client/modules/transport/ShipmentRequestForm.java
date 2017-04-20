@@ -89,7 +89,6 @@ import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -416,33 +415,21 @@ class ShipmentRequestForm extends PrintFormInterceptor {
       callback = new ReportUtils.ReportCallback() {
         @Override
         public void accept(FileInfo fileInfo) {
-          Queries.getRowSet(VIEW_TEXT_CONSTANTS, null,
-              Filter.equals(COL_TEXT_CONSTANT, TextConstant.CONTRACT_MAIL_CONTENT),
-              new Queries.RowSetCallback() {
-                @Override
-                public void onSuccess(BeeRowSet result) {
-                  String text;
-                  String localizedContent = Localized.column(COL_TEXT_CONTENT,
-                      EnumUtils.getEnumByIndex(SupportedLocale.class,
-                          getIntegerValue(COL_USER_LOCALE)).getLanguage());
+          ParameterList args = TransportHandler.createArgs(SVC_GET_TEXT_CONSTANT);
+          args.addDataItem(COL_TEXT_CONSTANT, TextConstant.CONTRACT_MAIL_CONTENT.ordinal());
+          args.addDataItem(COL_USER_LOCALE, getIntegerValue(COL_USER_LOCALE));
 
-                  if (DataUtils.isEmpty(result)) {
-                    text = TextConstant.CONTRACT_MAIL_CONTENT.getDefaultContent(
-                        Localized.dictionary());
-                  } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent,
-                      result.getColumns()))) {
-                    text = result.getString(0, COL_TEXT_CONTENT);
-                  } else {
-                    text = BeeUtils.notEmpty(result.getString(0, localizedContent),
-                        result.getString(0, COL_TEXT_CONTENT));
-                  }
-                  String path = "rest/transport/confirm/" + getActiveRowId();
+          BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              String text = (String) response.getResponse();
+              String path = "rest/transport/confirm/" + getActiveRowId();
 
-                  sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
-                      ? null : text.replace("[CONTRACT_PATH]", path)
-                      .replace("{CONTRACT_PATH}", path), Collections.singleton(fileInfo));
-                }
-              });
+              sendMail(ShipmentRequestStatus.CONTRACT_SENT, null, BeeUtils.isEmpty(text)
+                  ? null : text.replace("[CONTRACT_PATH]", path)
+                  .replace("{CONTRACT_PATH}", path), Collections.singleton(fileInfo));
+            }
+          });
         }
 
         @Override

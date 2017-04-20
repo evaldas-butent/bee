@@ -10,14 +10,12 @@ import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.rest.CrudWorker;
 import com.butent.bee.server.rest.RestResponse;
 import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -26,7 +24,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.html.builder.Document;
@@ -77,6 +74,8 @@ public class ShipmentRequestsWorker {
   DataEditorBean deb;
   @EJB
   UserServiceBean usr;
+  @EJB
+  TransportModuleBean trp;
 
   @GET
   @Path("confirm/{id:\\d+}")
@@ -184,25 +183,8 @@ public class ShipmentRequestsWorker {
         (event, locality) -> Endpoint.sendToAll(new ModificationMessage(event)),
         VIEW_SHIPMENT_REQUESTS);
 
-    TextConstant constant = TextConstant.SUMBMITTED_REQUEST_CONTENT;
-
-    BeeRowSet rowSet =
-        qs.getViewData(VIEW_TEXT_CONSTANTS, Filter.equals(COL_TEXT_CONSTANT, constant));
-
-    String localizedContent = Localized.column(COL_TEXT_CONTENT,
-        CrudWorker.getValue(data, COL_USER_LOCALE));
-
-    String text;
-
-    if (DataUtils.isEmpty(rowSet)) {
-      text = constant.getDefaultContent(Localizations.getDictionary(SupportedLocale.parse(
-          CrudWorker.getValue(data, COL_USER_LOCALE))));
-    } else if (BeeConst.isUndef(DataUtils.getColumnIndex(localizedContent, rowSet.getColumns()))) {
-      text = rowSet.getString(0, COL_TEXT_CONTENT);
-    } else {
-      text = BeeUtils.notEmpty(rowSet.getString(0, localizedContent),
-          rowSet.getString(0, COL_TEXT_CONTENT));
-    }
+    String text = trp.getTextConstant(TextConstant.SUMBMITTED_REQUEST_CONTENT,
+        BeeUtils.toInt(CrudWorker.getValue(data, COL_USER_LOCALE)));
 
     return RestResponse.ok(text);
   }

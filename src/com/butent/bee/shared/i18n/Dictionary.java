@@ -5784,6 +5784,8 @@ public interface Dictionary {
 
   default String trComment() {return g("trComment");}
 
+  default String trCompletedOrderEmailContent() {return g("trCompletedOrderEmailContent");}
+
   default String trConfirmCreateNewOrder() {return g("trConfirmCreateNewOrder");}
 
   default String trConfirmProforma() {return g("trConfirmProforma");}
