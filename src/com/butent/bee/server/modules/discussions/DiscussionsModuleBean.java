@@ -1135,7 +1135,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SimpleRowSet rs = qs.getData(select);
 
-    String count = maxComments.getValueByKey(ALS_LAST_COMMET, rs.getRow(0).getValue(COL_DISCUSSION), PROP_COMMENT_COUNT);
+    String count = maxComments.getValueByKey(ALS_LAST_COMMET, rs.getRow(0).getValue(COL_DISCUSSION),
+        PROP_COMMENT_COUNT);
     for (SimpleRow row : rs) {
       row.setValue(PROP_COMMENT_COUNT, maxComments.getValueByKey(COL_DISCUSSION,
           row.getValue(COL_DISCUSSION), PROP_COMMENT_COUNT));
