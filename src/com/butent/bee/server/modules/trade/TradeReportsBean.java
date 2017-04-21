@@ -37,6 +37,7 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NullOrdering;
 
 import java.util.ArrayList;
@@ -145,17 +146,29 @@ public class TradeReportsBean {
     }
 
     List<TradeReportGroup> rowGroups = TradeReportGroup.parseList(parameters, 10);
+    TradeReportGroup columnGroup = TradeReportGroup.parse(parameters.getText(RP_COLUMNS));
+
     if (rowGroups.isEmpty()) {
-      rowGroups.add(TradeReportGroup.WAREHOUSE);
-      rowGroups.add(TradeReportGroup.ITEM);
+      if (!TradeReportGroup.WAREHOUSE.equals(columnGroup)) {
+        rowGroups.add(TradeReportGroup.WAREHOUSE);
+      }
+
+      if (!TradeReportGroup.ITEM.equals(columnGroup)) {
+        rowGroups.add(TradeReportGroup.ITEM);
+      }
+      if (!EnumUtils.in(columnGroup, TradeReportGroup.ITEM, TradeReportGroup.ARTICLE)) {
+        rowGroups.add(TradeReportGroup.ARTICLE);
+      }
+
+      if (showQuantity && !TradeReportGroup.UNIT.equals(columnGroup)) {
+        rowGroups.add(TradeReportGroup.UNIT);
+      }
+
+    } else if (columnGroup != null && rowGroups.contains(columnGroup)) {
+      rowGroups.remove(columnGroup);
     }
 
     boolean summary = parameters.getBoolean(RP_SUMMARY);
-
-    TradeReportGroup columnGroup = TradeReportGroup.parse(parameters.getText(RP_COLUMNS));
-    if (columnGroup != null && rowGroups.contains(columnGroup)) {
-      rowGroups.remove(columnGroup);
-    }
 
     Map<TradeReportGroup, String> groupValueAliases = new EnumMap<>(TradeReportGroup.class);
     rowGroups.forEach(trg -> groupValueAliases.put(trg, trg.getValueAlias()));
@@ -480,7 +493,10 @@ public class TradeReportsBean {
 
     SqlSelect select = new SqlSelect().addFrom(tmp);
 
-    if (!rowGroups.isEmpty()) {
+    if (rowGroups.isEmpty()) {
+      select.addSum(tmp, quantityColumns).addSum(tmp, amountColumns);
+
+    } else {
       select.addFields(tmp, rowGroupValueColumns).addFields(tmp, rowGroupLabelColumns)
           .addSum(tmp, quantityColumns).addSum(tmp, amountColumns)
           .addGroup(tmp, rowGroupValueColumns).addGroup(tmp, rowGroupLabelColumns);
@@ -490,11 +506,9 @@ public class TradeReportsBean {
         select.addOrder(tmp, rowGroupValueColumns.get(i), NullOrdering.NULLS_FIRST);
       }
 
-    } else if (summary) {
-      select.addSum(tmp, quantityColumns).addSum(tmp, amountColumns);
-
-    } else {
-      select.addFields(tmp, quantityColumns).addFields(tmp, amountColumns);
+      if (showAmount && !summary) {
+        select.addFields(tmp, aliasPrice).addGroup(tmp, aliasPrice).addOrder(tmp, aliasPrice);
+      }
     }
 
     SimpleRowSet data = qs.getData(select);
