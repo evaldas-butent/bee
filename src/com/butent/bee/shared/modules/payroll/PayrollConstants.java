@@ -184,6 +184,7 @@ public final class PayrollConstants {
 
   public static final String VIEW_TIME_CARD_CODES = "TimeCardCodes";
   public static final String VIEW_TIME_RANGES = "TimeRanges";
+  public static final String VIEW_WORK_SCHEDULE_LOCKS = "WorkScheduleLocks";
 
   public static final String COL_TAB_NUMBER = "TabNumber";
   public static final String COL_SALARY = "Salary";
@@ -200,6 +201,7 @@ public final class PayrollConstants {
   public static final String COL_EMPLOYEE_OBJECT_UNTIL = "DateUntil";
   public static final String COL_EMPLOYEE_OBJECT_FUND = "Fund";
   public static final String COL_EMPLOYEE_OBJECT_NOTE = "Note";
+  public static final String COL_WOKR_SCHEDULE_LOCK = "Lock";
 
   public static final String COL_SUBSTITUTE_FOR = "SubstituteFor";
   public static final String COL_WAGE = "Wage";

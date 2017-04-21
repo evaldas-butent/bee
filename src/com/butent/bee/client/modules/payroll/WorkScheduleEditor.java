@@ -18,6 +18,7 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -44,16 +45,35 @@ import com.butent.bee.shared.i18n.PredefinedFormat;
 import com.butent.bee.shared.time.Grego;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 class WorkScheduleEditor extends AbstractFormInterceptor {
 
   private final GridInterceptor gridInterceptor = new AbstractGridInterceptor() {
+
+    @Override
+    public DeleteMode beforeDeleteRow(GridPresenter presenter, IsRow row) {
+
+      Long employee = row.getLong(getGridView().getDataIndex(COL_EMPLOYEE));
+      YearMonth day = YearMonth.of(row.getDate(getGridView().getDataIndex(COL_WORK_SCHEDULE_DATE)));
+
+      for (int i = 0; i < lockData.getNumberOfRows(); i++) {
+        YearMonth lock = new YearMonth(lockData.getDate(i, COL_WOKR_SCHEDULE_LOCK));
+        if (Objects.equals(employee, lockData.getLong(i, COL_EMPLOYEE)) && lock.equals(day)) {
+          getGridView().notifySevere(Localized.dictionary().rowIsReadOnly());
+          return DeleteMode.CANCEL;
+        }
+      }
+      return super.beforeDeleteRow(presenter, row);
+    }
+
     @Override
     public void afterDeleteRow(long rowId) {
       dayRefresher.run();
@@ -94,7 +114,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
     @Override
     public GridInterceptor getInstance() {
-      return null;
+      return this;
     }
   };
 
@@ -114,13 +134,15 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
   private final Set<Integer> holidays;
 
   private final Runnable dayRefresher;
+  private final BeeRowSet lockData;
 
   private DataSelector timeCardCodeSelector;
   private InputTimeOfDay durationInput;
 
   private String calendarId;
 
-  WorkScheduleEditor(JustDate date, Set<Integer> holidays, Runnable dayRefresher) {
+  WorkScheduleEditor(JustDate date, Set<Integer> holidays, Runnable dayRefresher,
+                     BeeRowSet lockData) {
     this.date = date;
 
     if (holidays == null) {
@@ -130,6 +152,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
     }
 
     this.dayRefresher = dayRefresher;
+    this.lockData = lockData;
   }
 
   @Override
@@ -172,7 +195,7 @@ class WorkScheduleEditor extends AbstractFormInterceptor {
 
   @Override
   public FormInterceptor getInstance() {
-    return new WorkScheduleEditor(date, holidays, dayRefresher);
+    return new WorkScheduleEditor(date, holidays, dayRefresher, lockData);
   }
 
   @Override
