@@ -9,8 +9,10 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeKeeper;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.modules.trade.TradeReportGroup;
@@ -40,6 +42,7 @@ import com.butent.bee.shared.utils.StringList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,9 +65,17 @@ public class TradeStockReport extends ReportInterceptor {
   private static final String STYLE_BODY = STYLE_PREFIX + "body";
   private static final String STYLE_FOOTER = STYLE_PREFIX + "footer";
 
+  private static final String STYLE_COLUMN_EMPTY_LABEL = STYLE_PREFIX + "column-empty-label";
+  private static final String STYLE_COLUMN_LABEL = STYLE_PREFIX + "column-label";
+
   private static final String STYLE_PRICE = STYLE_PREFIX + "price";
   private static final String STYLE_QUANTITY = STYLE_PREFIX + "qty";
   private static final String STYLE_AMOUNT = STYLE_PREFIX + "amount";
+
+  private static final String STYLE_QUANTITY_ROW = STYLE_PREFIX + "qty-row";
+  private static final String STYLE_AMOUNT_ROW = STYLE_PREFIX + "amount-row";
+
+  private static final String STYLE_TOTAL = STYLE_PREFIX + "total";
 
   public TradeStockReport() {
   }
@@ -226,6 +237,21 @@ public class TradeStockReport extends ReportInterceptor {
         && checkFilter(ClassifierConstants.VIEW_ITEMS, getEditorValue(RP_ITEM_FILTER));
   }
 
+  private static String formatAmount(Double amount) {
+    return BeeUtils.nonZero(amount)
+        ? TradeUtils.getAmountFormat().format(amount) : BeeConst.STRING_EMPTY;
+  }
+
+  private static String formatPrice(Double price) {
+    return BeeUtils.nonZero(price)
+        ? TradeUtils.getCostFormat().format(price) : BeeConst.STRING_EMPTY;
+  }
+
+  private static String formatQuantity(Double quantity) {
+    return BeeUtils.nonZero(quantity)
+        ? TradeUtils.getQuantityFormat().format(quantity) : BeeConst.STRING_EMPTY;
+  }
+
   private static List<String> getCaptions(DateTime date, boolean qty, boolean amount,
       ItemPrice itemPrice, String currencyName) {
 
@@ -281,11 +307,8 @@ public class TradeStockReport extends ReportInterceptor {
     List<TradeReportGroup> rowGroups = EnumUtils.parseIndexList(TradeReportGroup.class,
         data.get(RP_ROW_GROUPS));
 
-    List<String> rowGroupValueColumns = new ArrayList<>();
     List<String> rowGroupLabelColumns = new ArrayList<>();
-
     if (!rowGroups.isEmpty()) {
-      rowGroupValueColumns.addAll(NameUtils.toList(data.get(RP_ROW_GROUP_VALUE_COLUMNS)));
       rowGroupLabelColumns.addAll(NameUtils.toList(data.get(RP_ROW_GROUP_LABEL_COLUMNS)));
     }
 
@@ -319,6 +342,12 @@ public class TradeStockReport extends ReportInterceptor {
       container.clear();
     }
 
+    Map<String, Double> totals = new HashMap<>();
+    quantityColumns.forEach(column -> totals.put(column, BeeConst.DOUBLE_ZERO));
+    amountColumns.forEach(column -> totals.put(column, BeeConst.DOUBLE_ZERO));
+
+    Map<String, Integer> columnIndexes = new HashMap<>();
+
     HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
     int c = 0;
@@ -338,19 +367,35 @@ public class TradeStockReport extends ReportInterceptor {
 
     if (columnGroup == null) {
       if (hasQuantity) {
-        table.setText(r, c++, Localized.dictionary().quantity(), STYLE_QUANTITY);
+        columnIndexes.put(quantityColumns.get(0), c);
+        table.setText(r, c, Localized.dictionary().quantity(), STYLE_QUANTITY);
+        c++;
       }
+
       if (hasAmount) {
-        table.setText(r, c++, Localized.dictionary().amount(), STYLE_AMOUNT);
+        columnIndexes.put(amountColumns.get(0), c);
+        table.setText(r, c, Localized.dictionary().amount(), STYLE_AMOUNT);
       }
 
     } else {
+      if (hasQuantity) {
+        for (int i = 0; i < quantityColumns.size(); i++) {
+          columnIndexes.put(quantityColumns.get(i), c + i);
+        }
+      }
+
+      if (hasAmount) {
+        for (int i = 0; i < amountColumns.size(); i++) {
+          columnIndexes.put(amountColumns.get(i), c + i);
+        }
+      }
+
       if (hasEmptyColumnGroupValue) {
-        table.setText(r, c++, BeeUtils.bracket(columnGroup.getCaption()));
+        table.setText(r, c++, BeeUtils.bracket(columnGroup.getCaption()), STYLE_COLUMN_EMPTY_LABEL);
       }
 
       for (String value : columnGroupValues) {
-        table.setText(r, c++, value);
+        table.setText(r, c++, value, STYLE_COLUMN_LABEL);
       }
     }
 
@@ -360,44 +405,108 @@ public class TradeStockReport extends ReportInterceptor {
     for (SimpleRowSet.SimpleRow row : rowSet) {
       c = 0;
 
-      if (!rowGroupLabelColumns.isEmpty()) {
-        for (String column : rowGroupLabelColumns) {
-          table.setText(r, c++, row.getValue(column));
+      if (!rowGroups.isEmpty()) {
+        for (int i = 0; i < rowGroups.size(); i++) {
+          String column = BeeUtils.getQuietly(rowGroupLabelColumns, i);
+          String text = (column == null) ? null : row.getValue(column);
+
+          table.setText(r, c++, text, STYLE_PREFIX + rowGroups.get(i).getStyleSuffix());
         }
       }
 
       if (hasPrice) {
-        table.setText(r, c++, row.getValue(priceColumn), STYLE_PRICE);
+        table.setText(r, c++, formatPrice(row.getDouble(priceColumn)), STYLE_PRICE);
       }
 
       if (columnGroup == null) {
         if (hasQuantity) {
-          table.setText(r, c++, row.getValue(quantityColumns.get(0)), STYLE_QUANTITY);
+          table.setText(r, c++, formatQuantity(row.getDouble(quantityColumns.get(0))),
+              STYLE_QUANTITY);
         }
         if (hasAmount) {
-          table.setText(r, c++, row.getValue(amountColumns.get(0)), STYLE_AMOUNT);
+          table.setText(r, c, formatAmount(row.getDouble(amountColumns.get(0))), STYLE_AMOUNT);
         }
 
       } else if (hasQuantity && hasAmount) {
-        for (int i = 0; i < quantityColumns.size() && i < amountColumns.size(); i++) {
-          String text = BeeUtils.buildLines(row.getValue(quantityColumns.get(i)),
-              row.getValue(amountColumns.get(i)));
-          table.setText(r, c++, text);
+        for (int i = 0; i < quantityColumns.size(); i++) {
+          table.setText(r, c + i, formatQuantity(row.getDouble(quantityColumns.get(i))),
+              STYLE_QUANTITY);
         }
+
+        table.getRowFormatter().addStyleName(r, STYLE_QUANTITY_ROW);
+        table.getRowFormatter().addStyleName(r, STYLE_BODY);
+        r++;
+
+        for (int i = 0; i < amountColumns.size(); i++) {
+          table.setText(r, c + i, formatAmount(row.getDouble(amountColumns.get(i))), STYLE_AMOUNT);
+        }
+
+        table.getRowFormatter().addStyleName(r, STYLE_AMOUNT_ROW);
 
       } else if (hasQuantity) {
         for (String column : quantityColumns) {
-          table.setText(r, c++, row.getValue(column), STYLE_QUANTITY);
+          table.setText(r, c++, formatQuantity(row.getDouble(column)), STYLE_QUANTITY);
         }
 
       } else if (hasAmount) {
         for (String column : amountColumns) {
-          table.setText(r, c++, row.getValue(column), STYLE_AMOUNT);
+          table.setText(r, c++, formatAmount(row.getDouble(column)), STYLE_AMOUNT);
         }
       }
 
       table.getRowFormatter().addStyleName(r, STYLE_BODY);
       r++;
+
+      if (hasQuantity) {
+        quantityColumns.forEach(column -> {
+          Double value = row.getDouble(column);
+          if (BeeUtils.nonZero(value)) {
+            totals.merge(column, value, Double::sum);
+          }
+        });
+      }
+
+      if (hasAmount) {
+        amountColumns.forEach(column -> {
+          Double value = row.getDouble(column);
+          if (BeeUtils.nonZero(value)) {
+            totals.merge(column, value, Double::sum);
+          }
+        });
+      }
+    }
+
+    if (rowSet.getNumberOfRows() > 1) {
+      int minIndex = columnIndexes.values().stream().mapToInt(i -> i).min().getAsInt();
+      if (minIndex > 0) {
+        table.setText(r, minIndex - 1, Localized.dictionary().total(), STYLE_TOTAL);
+      }
+
+      if (hasQuantity) {
+        for (String column : quantityColumns) {
+          table.setText(r, columnIndexes.get(column), formatQuantity(totals.get(column)),
+              STYLE_QUANTITY);
+        }
+      }
+
+      if (columnGroup != null && hasQuantity && hasAmount) {
+        table.getRowFormatter().addStyleName(r, STYLE_QUANTITY_ROW);
+        table.getRowFormatter().addStyleName(r, STYLE_FOOTER);
+        r++;
+      }
+
+      if (hasAmount) {
+        for (String column : amountColumns) {
+          table.setText(r, columnIndexes.get(column), formatAmount(totals.get(column)),
+              STYLE_AMOUNT);
+        }
+
+        if (columnGroup != null && hasQuantity) {
+          table.getRowFormatter().addStyleName(r, STYLE_AMOUNT_ROW);
+        }
+      }
+
+      table.getRowFormatter().addStyleName(r, STYLE_FOOTER);
     }
 
     container.add(table);

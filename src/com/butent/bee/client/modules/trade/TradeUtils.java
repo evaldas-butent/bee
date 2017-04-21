@@ -28,6 +28,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.XmlUtils;
@@ -102,6 +103,10 @@ public final class TradeUtils {
   private static final String COL_RATE_VAT = COL_CURRENCY_RATE + COL_TRADE_VAT;
   private static final String COL_RATE_TOTAL = COL_CURRENCY_RATE + COL_TOTAL;
   private static final String COL_RATE_CURRENCY = COL_CURRENCY_RATE + COL_CURRENCY;
+
+  private static NumberFormat quantityFormat;
+  private static NumberFormat costFormat;
+  private static NumberFormat amountFormat;
 
   public static void amountEntry(IsRow row, String viewName) {
     Totalizer totalizer = new Totalizer(Data.getColumns(viewName));
@@ -542,6 +547,29 @@ public final class TradeUtils {
     });
 
     return table;
+  }
+
+  public static NumberFormat getQuantityFormat() {
+    if (quantityFormat == null) {
+      Integer scale = Data.getColumnScale(VIEW_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY);
+      quantityFormat = Format.getDecimalFormat(0, BeeUtils.unbox(scale));
+    }
+    return quantityFormat;
+  }
+
+  public static NumberFormat getCostFormat() {
+    if (costFormat == null) {
+      Integer scale = Data.getColumnScale(VIEW_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
+      costFormat = Format.getDecimalFormat(2, BeeUtils.unbox(scale));
+    }
+    return costFormat;
+  }
+
+  public static NumberFormat getAmountFormat() {
+    if (amountFormat == null) {
+      amountFormat = Format.getDefaultMoneyFormat();
+    }
+    return amountFormat;
   }
 
   static void configureCostCalculation(final DataView dataView) {
