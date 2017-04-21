@@ -58,7 +58,7 @@
                 label="=discussLastComment" visible="false" />
 
     <PropColumn name="LastCommentData" type="string" cellType="html"
-                caption="=discussLastComment" label="=discussLastComment" width="180"
+                caption="=discussLastCommentator" label="=discussLastCommentator" width="180"
                 sortBy="LastCommentPublishTime">
     </PropColumn>
 
