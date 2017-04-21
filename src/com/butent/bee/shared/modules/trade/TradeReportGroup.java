@@ -4,7 +4,9 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.report.ReportParameters;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -12,9 +14,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-public enum TradeReportGroup {
+public enum TradeReportGroup implements HasLocalizedCaption {
 
   ITEM_TYPE("type") {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.itemType();
+    }
+
     @Override
     public ValueType getType() {
       return ValueType.LONG;
@@ -48,6 +55,11 @@ public enum TradeReportGroup {
 
   ITEM_GROUP("group") {
     @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.itemGroup();
+    }
+
+    @Override
     public ValueType getType() {
       return ValueType.LONG;
     }
@@ -79,6 +91,11 @@ public enum TradeReportGroup {
   },
 
   ITEM("item") {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.item();
+    }
+
     @Override
     public ValueType getType() {
       return ValueType.LONG;
@@ -112,6 +129,11 @@ public enum TradeReportGroup {
 
   ARTICLE("article") {
     @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.article();
+    }
+
+    @Override
     public ValueType getType() {
       return ValueType.TEXT;
     }
@@ -143,6 +165,11 @@ public enum TradeReportGroup {
   },
 
   UNIT("unit") {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.unitShort();
+    }
+
     @Override
     public ValueType getType() {
       return ValueType.LONG;
@@ -176,6 +203,11 @@ public enum TradeReportGroup {
 
   WAREHOUSE("warehouse") {
     @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.warehouse();
+    }
+
+    @Override
     public ValueType getType() {
       return ValueType.LONG;
     }
@@ -207,6 +239,11 @@ public enum TradeReportGroup {
   },
 
   SUPPLIER("supplier") {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.supplier();
+    }
+
     @Override
     public ValueType getType() {
       return ValueType.LONG;
@@ -240,6 +277,11 @@ public enum TradeReportGroup {
 
   YEAR_RECEIVED("year") {
     @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.receivedYear();
+    }
+
+    @Override
     public ValueType getType() {
       return ValueType.DATE_TIME;
     }
@@ -271,6 +313,11 @@ public enum TradeReportGroup {
   },
 
   MONTH_RECEIVED("month") {
+    @Override
+    public String getCaption(Dictionary dictionary) {
+      return dictionary.receivedMonth();
+    }
+
     @Override
     public ValueType getType() {
       return ValueType.DATE_TIME;
@@ -401,6 +448,10 @@ public enum TradeReportGroup {
 
   public String getLabelAlias() {
     return getCode() + "_label";
+  }
+
+  public String getStyleSuffix() {
+    return getCode();
   }
 
   public abstract ValueType getType();

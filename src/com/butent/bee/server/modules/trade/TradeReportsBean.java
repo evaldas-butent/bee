@@ -38,6 +38,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.NullOrdering;
 
 import java.util.ArrayList;
@@ -108,16 +109,21 @@ public class TradeReportsBean {
     if (!showQuantity && !showAmount) {
       showQuantity = true;
       showAmount = true;
+
+      parameters.add(RP_SHOW_QUANTITY, showQuantity);
+      parameters.add(RP_SHOW_AMOUNT, showAmount);
     }
 
     ItemPrice itemPrice = parameters.getEnum(RP_ITEM_PRICE, ItemPrice.class);
     if (itemPrice == ItemPrice.COST) {
       itemPrice = null;
+      parameters.remove(RP_ITEM_PRICE);
     }
 
     Long currency = parameters.getLong(RP_CURRENCY);
     if (currency == null && showAmount) {
       currency = prm.getRelation(AdministrationConstants.PRM_CURRENCY);
+      parameters.add(RP_CURRENCY, currency);
     }
 
     Set<Long> warehouses = parameters.getIds(RP_WAREHOUSES);
@@ -137,19 +143,28 @@ public class TradeReportsBean {
 
     if (!items.isEmpty()) {
       manufacturers.clear();
+      parameters.remove(RP_MANUFACTURERS);
 
       itemTypes.clear();
+      parameters.remove(RP_ITEM_TYPES);
+
       itemGroups.clear();
+      parameters.remove(RP_ITEM_GROUPS);
+
       itemCategories.clear();
+      parameters.remove(RP_ITEM_CATEGORIES);
 
       itemFilter = null;
+      parameters.remove(RP_ITEM_FILTER);
     }
 
     List<TradeReportGroup> rowGroups = TradeReportGroup.parseList(parameters, 10);
     TradeReportGroup columnGroup = TradeReportGroup.parse(parameters.getText(RP_COLUMNS));
 
     if (rowGroups.isEmpty()) {
-      if (!TradeReportGroup.WAREHOUSE.equals(columnGroup)) {
+      if (columnGroup == null) {
+        columnGroup = TradeReportGroup.WAREHOUSE;
+      } else if (!TradeReportGroup.WAREHOUSE.equals(columnGroup)) {
         rowGroups.add(TradeReportGroup.WAREHOUSE);
       }
 
@@ -491,6 +506,8 @@ public class TradeReportsBean {
       }
     }
 
+    boolean showPrice = rowGroups.contains(TradeReportGroup.ITEM) && showAmount && !summary;
+
     SqlSelect select = new SqlSelect().addFrom(tmp);
 
     if (rowGroups.isEmpty()) {
@@ -506,7 +523,7 @@ public class TradeReportsBean {
         select.addOrder(tmp, rowGroupValueColumns.get(i), NullOrdering.NULLS_FIRST);
       }
 
-      if (showAmount && !summary) {
+      if (showPrice) {
         select.addFields(tmp, aliasPrice).addGroup(tmp, aliasPrice).addOrder(tmp, aliasPrice);
       }
     }
@@ -518,7 +535,37 @@ public class TradeReportsBean {
       return ResponseObject.emptyResponse();
     }
 
-    return ResponseObject.response(data);
+    Map<String, String> result = new HashMap<>();
+    result.put(Service.VAR_REPORT_PARAMETERS, parameters.serialize());
+    result.put(Service.VAR_DATA, data.serialize());
+
+    if (!rowGroups.isEmpty()) {
+      result.put(RP_ROW_GROUPS, EnumUtils.joinIndexes(rowGroups));
+
+      result.put(RP_ROW_GROUP_VALUE_COLUMNS, NameUtils.join(rowGroupValueColumns));
+      result.put(RP_ROW_GROUP_LABEL_COLUMNS, NameUtils.join(rowGroupLabelColumns));
+    }
+
+    if (columnGroup != null) {
+      result.put(RP_COLUMN_GROUPS, BeeUtils.toString(columnGroup.ordinal()));
+
+      if (!columnGroupLabels.isEmpty()) {
+        result.put(RP_COLUMN_GROUP_LABELS, NameUtils.join(columnGroupLabels));
+      }
+    }
+
+    if (!quantityColumns.isEmpty()) {
+      result.put(RP_QUANTITY_COLUMNS, NameUtils.join(quantityColumns));
+    }
+    if (!amountColumns.isEmpty()) {
+      result.put(RP_AMOUNT_COLUMNS, NameUtils.join(amountColumns));
+    }
+
+    if (showPrice) {
+      result.put(RP_PRICE_COLUMN, aliasPrice);
+    }
+
+    return ResponseObject.response(result);
   }
 
   private ResponseObject doMovementOfGoodsReport(RequestInfo reqInfo) {
@@ -864,7 +911,7 @@ public class TradeReportsBean {
   }
 
   private static String aliasForEmptyValue(String prefix) {
-    return prefix + "_0";
+    return prefix + EMPTY_VALUE_SUFFIX;
   }
 
   private static String aliasForGroupValue(String prefix, int index) {

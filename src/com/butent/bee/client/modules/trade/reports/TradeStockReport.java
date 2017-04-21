@@ -11,7 +11,9 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.modules.trade.TradeReportGroup;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -30,13 +32,16 @@ import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TradeStockReport extends ReportInterceptor {
@@ -57,6 +62,7 @@ public class TradeStockReport extends ReportInterceptor {
   private static final String STYLE_BODY = STYLE_PREFIX + "body";
   private static final String STYLE_FOOTER = STYLE_PREFIX + "footer";
 
+  private static final String STYLE_PRICE = STYLE_PREFIX + "price";
   private static final String STYLE_QUANTITY = STYLE_PREFIX + "qty";
   private static final String STYLE_AMOUNT = STYLE_PREFIX + "amount";
 
@@ -130,7 +136,7 @@ public class TradeStockReport extends ReportInterceptor {
 
   @Override
   protected void doReport() {
-    final ReportParameters reportParameters = getReportParameters();
+    ReportParameters reportParameters = getReportParameters();
 
     if (validateParameters(reportParameters)) {
       ParameterList parameters = TradeKeeper.createArgs(SVC_TRADE_STOCK_REPORT);
@@ -143,9 +149,9 @@ public class TradeStockReport extends ReportInterceptor {
             response.notify(getFormView());
           }
 
-          if (response.hasResponse(SimpleRowSet.class)) {
-            renderData(SimpleRowSet.restore(response.getResponseAsString()),
-                reportParameters.getDateTime(RP_DATE));
+          if (response.hasResponse()) {
+            Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
+            render(data);
 
           } else {
             getFormView().notifyWarning(Localized.dictionary().nothingFound());
@@ -260,7 +266,50 @@ public class TradeStockReport extends ReportInterceptor {
     return EnumUtils.getEnumByIndex(ItemPrice.class, getSelectedIndex(RP_ITEM_PRICE));
   }
 
-  private void renderData(SimpleRowSet data, DateTime date) {
+  private void render(Map<String, String> data) {
+    SimpleRowSet rowSet = SimpleRowSet.restore(data.get(Service.VAR_DATA));
+    if (DataUtils.isEmpty(rowSet)) {
+      String message = Localized.dictionary().keyNotFound(Service.VAR_DATA);
+
+      logger.severe(message);
+      getFormView().notifySevere(message);
+      return;
+    }
+
+    ReportParameters parameters = ReportParameters.restore(data.get(Service.VAR_REPORT_PARAMETERS));
+
+    List<TradeReportGroup> rowGroups = EnumUtils.parseIndexList(TradeReportGroup.class,
+        data.get(RP_ROW_GROUPS));
+
+    List<String> rowGroupValueColumns = new ArrayList<>();
+    List<String> rowGroupLabelColumns = new ArrayList<>();
+
+    if (!rowGroups.isEmpty()) {
+      rowGroupValueColumns.addAll(NameUtils.toList(data.get(RP_ROW_GROUP_VALUE_COLUMNS)));
+      rowGroupLabelColumns.addAll(NameUtils.toList(data.get(RP_ROW_GROUP_LABEL_COLUMNS)));
+    }
+
+    TradeReportGroup columnGroup = EnumUtils.getEnumByIndex(TradeReportGroup.class,
+        data.get(RP_COLUMN_GROUPS));
+
+    List<String> columnGroupValues = new ArrayList<>();
+    if (columnGroup != null) {
+      columnGroupValues.addAll(NameUtils.toList(data.get(RP_COLUMN_GROUP_LABELS)));
+    }
+
+    List<String> quantityColumns = NameUtils.toList(data.get(RP_QUANTITY_COLUMNS));
+    List<String> amountColumns = NameUtils.toList(data.get(RP_AMOUNT_COLUMNS));
+
+    boolean hasQuantity = !quantityColumns.isEmpty();
+    boolean hasAmount = !amountColumns.isEmpty();
+
+    String priceColumn = data.get(RP_PRICE_COLUMN);
+    boolean hasPrice = !BeeUtils.isEmpty(priceColumn);
+
+    boolean hasEmptyColumnGroupValue = columnGroup != null
+        && (quantityColumns.stream().anyMatch(s -> s.endsWith(EMPTY_VALUE_SUFFIX))
+        || amountColumns.stream().anyMatch(s -> s.endsWith(EMPTY_VALUE_SUFFIX)));
+
     HasIndexedWidgets container = getDataContainer();
     if (container == null) {
       return;
@@ -272,18 +321,79 @@ public class TradeStockReport extends ReportInterceptor {
 
     HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
+    int c = 0;
 
-    for (int j = 0; j < data.getNumberOfColumns(); j++) {
-      String colName = data.getColumnName(j);
-      table.setText(r, j, colName);
+    if (!rowGroups.isEmpty()) {
+      for (TradeReportGroup group : rowGroups) {
+        table.setText(r, c++, group.getCaption(), STYLE_PREFIX + group.getStyleSuffix());
+      }
+    }
+
+    if (hasPrice) {
+      ItemPrice itemPrice = parameters.getEnum(RP_ITEM_PRICE, ItemPrice.class);
+      String text = (itemPrice == null) ? Localized.dictionary().cost() : itemPrice.getCaption();
+
+      table.setText(r, c++, text, STYLE_PRICE);
+    }
+
+    if (columnGroup == null) {
+      if (hasQuantity) {
+        table.setText(r, c++, Localized.dictionary().quantity(), STYLE_QUANTITY);
+      }
+      if (hasAmount) {
+        table.setText(r, c++, Localized.dictionary().amount(), STYLE_AMOUNT);
+      }
+
+    } else {
+      if (hasEmptyColumnGroupValue) {
+        table.setText(r, c++, BeeUtils.bracket(columnGroup.getCaption()));
+      }
+
+      for (String value : columnGroupValues) {
+        table.setText(r, c++, value);
+      }
     }
 
     table.getRowFormatter().addStyleName(r, STYLE_HEADER);
     r++;
 
-    for (int i = 0; i < data.getNumberOfRows(); i++) {
-      for (int j = 0; j < data.getNumberOfColumns(); j++) {
-        table.setText(r, j, data.getValue(i, j));
+    for (SimpleRowSet.SimpleRow row : rowSet) {
+      c = 0;
+
+      if (!rowGroupLabelColumns.isEmpty()) {
+        for (String column : rowGroupLabelColumns) {
+          table.setText(r, c++, row.getValue(column));
+        }
+      }
+
+      if (hasPrice) {
+        table.setText(r, c++, row.getValue(priceColumn), STYLE_PRICE);
+      }
+
+      if (columnGroup == null) {
+        if (hasQuantity) {
+          table.setText(r, c++, row.getValue(quantityColumns.get(0)), STYLE_QUANTITY);
+        }
+        if (hasAmount) {
+          table.setText(r, c++, row.getValue(amountColumns.get(0)), STYLE_AMOUNT);
+        }
+
+      } else if (hasQuantity && hasAmount) {
+        for (int i = 0; i < quantityColumns.size() && i < amountColumns.size(); i++) {
+          String text = BeeUtils.buildLines(row.getValue(quantityColumns.get(i)),
+              row.getValue(amountColumns.get(i)));
+          table.setText(r, c++, text);
+        }
+
+      } else if (hasQuantity) {
+        for (String column : quantityColumns) {
+          table.setText(r, c++, row.getValue(column), STYLE_QUANTITY);
+        }
+
+      } else if (hasAmount) {
+        for (String column : amountColumns) {
+          table.setText(r, c++, row.getValue(column), STYLE_AMOUNT);
+        }
       }
 
       table.getRowFormatter().addStyleName(r, STYLE_BODY);

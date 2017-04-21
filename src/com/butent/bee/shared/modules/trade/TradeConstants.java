@@ -345,6 +345,8 @@ public final class TradeConstants {
   public static final int MAX_STOCK_DEPTH = 1_000;
   public static final int DEFAULT_SERIES_NUMBER_LENGTH = 6;
 
+  public static final String EMPTY_VALUE_SUFFIX = "_0";
+
   public static final String RP_DATE = "Date";
 
   public static final String RP_SHOW_QUANTITY = "Quantity";
@@ -369,6 +371,17 @@ public final class TradeConstants {
   public static final String RP_ITEM_GROUPS = "ItemGroups";
   public static final String RP_ITEM_CATEGORIES = "ItemCategories";
   public static final String RP_ITEMS = "Items";
+
+  public static final String RP_ROW_GROUPS = "RowGroups";
+  public static final String RP_ROW_GROUP_VALUE_COLUMNS = "RowGroupValueColums";
+  public static final String RP_ROW_GROUP_LABEL_COLUMNS = "RowGroupLabelColums";
+
+  public static final String RP_COLUMN_GROUPS = "ColumnGroups";
+  public static final String RP_COLUMN_GROUP_LABELS = "ColumnGroupLabels";
+
+  public static final String RP_QUANTITY_COLUMNS = "QuantityColumns";
+  public static final String RP_AMOUNT_COLUMNS = "AmountColumns";
+  public static final String RP_PRICE_COLUMN = "PriceColumn";
 
   public static String keyStockWarehouse(String warehouseCode) {
     return PROP_STOCK + BeeUtils.trim(warehouseCode);
