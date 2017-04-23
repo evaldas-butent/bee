@@ -237,21 +237,6 @@ public class TradeStockReport extends ReportInterceptor {
         && checkFilter(ClassifierConstants.VIEW_ITEMS, getEditorValue(RP_ITEM_FILTER));
   }
 
-  private static String formatAmount(Double amount) {
-    return BeeUtils.nonZero(amount)
-        ? TradeUtils.getAmountFormat().format(amount) : BeeConst.STRING_EMPTY;
-  }
-
-  private static String formatPrice(Double price) {
-    return BeeUtils.nonZero(price)
-        ? TradeUtils.getCostFormat().format(price) : BeeConst.STRING_EMPTY;
-  }
-
-  private static String formatQuantity(Double quantity) {
-    return BeeUtils.nonZero(quantity)
-        ? TradeUtils.getQuantityFormat().format(quantity) : BeeConst.STRING_EMPTY;
-  }
-
   private static List<String> getCaptions(DateTime date, boolean qty, boolean amount,
       ItemPrice itemPrice, String currencyName) {
 
@@ -395,7 +380,7 @@ public class TradeStockReport extends ReportInterceptor {
       }
 
       for (String value : columnGroupValues) {
-        table.setText(r, c++, value, STYLE_COLUMN_LABEL);
+        table.setText(r, c++, TradeUtils.formatGroupLabel(columnGroup, value), STYLE_COLUMN_LABEL);
       }
     }
 
@@ -407,29 +392,33 @@ public class TradeStockReport extends ReportInterceptor {
 
       if (!rowGroups.isEmpty()) {
         for (int i = 0; i < rowGroups.size(); i++) {
-          String column = BeeUtils.getQuietly(rowGroupLabelColumns, i);
-          String text = (column == null) ? null : row.getValue(column);
+          TradeReportGroup group = rowGroups.get(i);
 
-          table.setText(r, c++, text, STYLE_PREFIX + rowGroups.get(i).getStyleSuffix());
+          String column = BeeUtils.getQuietly(rowGroupLabelColumns, i);
+          String label = (column == null) ? null : row.getValue(column);
+
+          table.setText(r, c++, TradeUtils.formatGroupLabel(group, label),
+              STYLE_PREFIX + group.getStyleSuffix());
         }
       }
 
       if (hasPrice) {
-        table.setText(r, c++, formatPrice(row.getDouble(priceColumn)), STYLE_PRICE);
+        table.setText(r, c++, TradeUtils.formatCost(row.getDouble(priceColumn)), STYLE_PRICE);
       }
 
       if (columnGroup == null) {
         if (hasQuantity) {
-          table.setText(r, c++, formatQuantity(row.getDouble(quantityColumns.get(0))),
+          table.setText(r, c++, TradeUtils.formatQuantity(row.getDouble(quantityColumns.get(0))),
               STYLE_QUANTITY);
         }
         if (hasAmount) {
-          table.setText(r, c, formatAmount(row.getDouble(amountColumns.get(0))), STYLE_AMOUNT);
+          table.setText(r, c, TradeUtils.formatAmount(row.getDouble(amountColumns.get(0))),
+              STYLE_AMOUNT);
         }
 
       } else if (hasQuantity && hasAmount) {
         for (int i = 0; i < quantityColumns.size(); i++) {
-          table.setText(r, c + i, formatQuantity(row.getDouble(quantityColumns.get(i))),
+          table.setText(r, c + i, TradeUtils.formatQuantity(row.getDouble(quantityColumns.get(i))),
               STYLE_QUANTITY);
         }
 
@@ -438,19 +427,20 @@ public class TradeStockReport extends ReportInterceptor {
         r++;
 
         for (int i = 0; i < amountColumns.size(); i++) {
-          table.setText(r, c + i, formatAmount(row.getDouble(amountColumns.get(i))), STYLE_AMOUNT);
+          table.setText(r, c + i, TradeUtils.formatAmount(row.getDouble(amountColumns.get(i))),
+              STYLE_AMOUNT);
         }
 
         table.getRowFormatter().addStyleName(r, STYLE_AMOUNT_ROW);
 
       } else if (hasQuantity) {
         for (String column : quantityColumns) {
-          table.setText(r, c++, formatQuantity(row.getDouble(column)), STYLE_QUANTITY);
+          table.setText(r, c++, TradeUtils.formatQuantity(row.getDouble(column)), STYLE_QUANTITY);
         }
 
       } else if (hasAmount) {
         for (String column : amountColumns) {
-          table.setText(r, c++, formatAmount(row.getDouble(column)), STYLE_AMOUNT);
+          table.setText(r, c++, TradeUtils.formatAmount(row.getDouble(column)), STYLE_AMOUNT);
         }
       }
 
@@ -484,7 +474,7 @@ public class TradeStockReport extends ReportInterceptor {
 
       if (hasQuantity) {
         for (String column : quantityColumns) {
-          table.setText(r, columnIndexes.get(column), formatQuantity(totals.get(column)),
+          table.setText(r, columnIndexes.get(column), TradeUtils.formatQuantity(totals.get(column)),
               STYLE_QUANTITY);
         }
       }
@@ -497,7 +487,7 @@ public class TradeStockReport extends ReportInterceptor {
 
       if (hasAmount) {
         for (String column : amountColumns) {
-          table.setText(r, columnIndexes.get(column), formatAmount(totals.get(column)),
+          table.setText(r, columnIndexes.get(column), TradeUtils.formatAmount(totals.get(column)),
               STYLE_AMOUNT);
         }
 
