@@ -75,6 +75,7 @@ public class TradeStockReport extends ReportInterceptor {
   private static final String STYLE_QUANTITY_ROW = STYLE_PREFIX + "qty-row";
   private static final String STYLE_AMOUNT_ROW = STYLE_PREFIX + "amount-row";
 
+  private static final String STYLE_ROW_TOTAL = STYLE_PREFIX + "row-total";
   private static final String STYLE_TOTAL = STYLE_PREFIX + "total";
 
   public TradeStockReport() {
@@ -318,6 +319,9 @@ public class TradeStockReport extends ReportInterceptor {
         && (quantityColumns.stream().anyMatch(s -> s.endsWith(EMPTY_VALUE_SUFFIX))
         || amountColumns.stream().anyMatch(s -> s.endsWith(EMPTY_VALUE_SUFFIX)));
 
+    boolean needsRowTotals = columnGroup != null
+        && (quantityColumns.size() > 1 || amountColumns.size() > 1);
+
     HasIndexedWidgets container = getDataContainer();
     if (container == null) {
       return;
@@ -331,7 +335,14 @@ public class TradeStockReport extends ReportInterceptor {
     quantityColumns.forEach(column -> totals.put(column, BeeConst.DOUBLE_ZERO));
     amountColumns.forEach(column -> totals.put(column, BeeConst.DOUBLE_ZERO));
 
+    double totalQuantity = BeeConst.DOUBLE_ZERO;
+    double totalAmount = BeeConst.DOUBLE_ZERO;
+
+    double rowQuantity;
+    double rowAmount;
+
     Map<String, Integer> columnIndexes = new HashMap<>();
+    int rowTotalColumnIndex = BeeConst.UNDEF;
 
     HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
@@ -382,6 +393,11 @@ public class TradeStockReport extends ReportInterceptor {
       for (String value : columnGroupValues) {
         table.setText(r, c++, TradeUtils.formatGroupLabel(columnGroup, value), STYLE_COLUMN_LABEL);
       }
+
+      if (needsRowTotals) {
+        table.setText(r, c, Localized.dictionary().total(), STYLE_ROW_TOTAL);
+        rowTotalColumnIndex = c;
+      }
     }
 
     table.getRowFormatter().addStyleName(r, STYLE_HEADER);
@@ -406,6 +422,9 @@ public class TradeStockReport extends ReportInterceptor {
         table.setText(r, c++, TradeUtils.formatCost(row.getDouble(priceColumn)), STYLE_PRICE);
       }
 
+      rowQuantity = BeeConst.DOUBLE_ZERO;
+      rowAmount = BeeConst.DOUBLE_ZERO;
+
       if (columnGroup == null) {
         if (hasQuantity) {
           table.setText(r, c++, TradeUtils.formatQuantity(row.getDouble(quantityColumns.get(0))),
@@ -418,8 +437,17 @@ public class TradeStockReport extends ReportInterceptor {
 
       } else if (hasQuantity && hasAmount) {
         for (int i = 0; i < quantityColumns.size(); i++) {
-          table.setText(r, c + i, TradeUtils.formatQuantity(row.getDouble(quantityColumns.get(i))),
-              STYLE_QUANTITY);
+          Double qty = row.getDouble(quantityColumns.get(i));
+          table.setText(r, c + i, TradeUtils.formatQuantity(qty), STYLE_QUANTITY);
+
+          rowQuantity += BeeUtils.unbox(qty);
+        }
+
+        if (needsRowTotals) {
+          table.setText(r, c + quantityColumns.size(), TradeUtils.formatQuantity(rowQuantity),
+              STYLE_QUANTITY, STYLE_ROW_TOTAL);
+
+          totalQuantity += rowQuantity;
         }
 
         table.getRowFormatter().addStyleName(r, STYLE_QUANTITY_ROW);
@@ -427,20 +455,47 @@ public class TradeStockReport extends ReportInterceptor {
         r++;
 
         for (int i = 0; i < amountColumns.size(); i++) {
-          table.setText(r, c + i, TradeUtils.formatAmount(row.getDouble(amountColumns.get(i))),
-              STYLE_AMOUNT);
+          Double amount = row.getDouble(amountColumns.get(i));
+          table.setText(r, c + i, TradeUtils.formatAmount(amount), STYLE_AMOUNT);
+
+          rowAmount += BeeUtils.unbox(amount);
+        }
+
+        if (needsRowTotals) {
+          table.setText(r, c + amountColumns.size(), TradeUtils.formatAmount(rowAmount),
+              STYLE_AMOUNT, STYLE_ROW_TOTAL);
+
+          totalAmount += rowAmount;
         }
 
         table.getRowFormatter().addStyleName(r, STYLE_AMOUNT_ROW);
 
       } else if (hasQuantity) {
         for (String column : quantityColumns) {
-          table.setText(r, c++, TradeUtils.formatQuantity(row.getDouble(column)), STYLE_QUANTITY);
+          Double qty = row.getDouble(column);
+          table.setText(r, c++, TradeUtils.formatQuantity(qty), STYLE_QUANTITY);
+
+          rowQuantity += BeeUtils.unbox(qty);
+        }
+
+        if (needsRowTotals) {
+          table.setText(r, c, TradeUtils.formatQuantity(rowQuantity),
+              STYLE_QUANTITY, STYLE_ROW_TOTAL);
+
+          totalQuantity += rowQuantity;
         }
 
       } else if (hasAmount) {
         for (String column : amountColumns) {
-          table.setText(r, c++, TradeUtils.formatAmount(row.getDouble(column)), STYLE_AMOUNT);
+          Double amount = row.getDouble(column);
+          table.setText(r, c++, TradeUtils.formatAmount(amount), STYLE_AMOUNT);
+
+          rowAmount += BeeUtils.unbox(amount);
+        }
+
+        if (needsRowTotals) {
+          table.setText(r, c, TradeUtils.formatAmount(rowAmount), STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          totalAmount += rowAmount;
         }
       }
 
@@ -469,13 +524,18 @@ public class TradeStockReport extends ReportInterceptor {
     if (rowSet.getNumberOfRows() > 1) {
       int minIndex = columnIndexes.values().stream().mapToInt(i -> i).min().getAsInt();
       if (minIndex > 0) {
-        table.setText(r, minIndex - 1, Localized.dictionary().total(), STYLE_TOTAL);
+        table.setText(r, minIndex - 1, Localized.dictionary().totalOf(), STYLE_TOTAL);
       }
 
       if (hasQuantity) {
         for (String column : quantityColumns) {
           table.setText(r, columnIndexes.get(column), TradeUtils.formatQuantity(totals.get(column)),
               STYLE_QUANTITY);
+        }
+
+        if (needsRowTotals) {
+          table.setText(r, rowTotalColumnIndex, TradeUtils.formatQuantity(totalQuantity),
+              STYLE_QUANTITY, STYLE_ROW_TOTAL);
         }
       }
 
@@ -489,6 +549,11 @@ public class TradeStockReport extends ReportInterceptor {
         for (String column : amountColumns) {
           table.setText(r, columnIndexes.get(column), TradeUtils.formatAmount(totals.get(column)),
               STYLE_AMOUNT);
+        }
+
+        if (needsRowTotals) {
+          table.setText(r, rowTotalColumnIndex, TradeUtils.formatAmount(totalAmount),
+              STYLE_AMOUNT, STYLE_ROW_TOTAL);
         }
 
         if (columnGroup != null && hasQuantity) {

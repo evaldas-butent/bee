@@ -466,6 +466,7 @@
 }
 
 .bee-trade-report-stock-header,
+.bee-trade-report-stock-row-total,
 .bee-trade-report-stock-footer {
   font-weight: bolder;
 }
@@ -475,6 +476,10 @@
 
 .bee-trade-report-stock-amount-row {
   font-style: italic;
+}
+
+.bee-trade-report-stock-footer .bee-trade-report-stock-row-total {
+  font-size: larger;
 }
 
 .bee-trade-report-stock-header td {
