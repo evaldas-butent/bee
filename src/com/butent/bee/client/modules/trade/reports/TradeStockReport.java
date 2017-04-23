@@ -1,17 +1,25 @@
 package com.butent.bee.client.modules.trade.reports;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.event.dom.client.HasClickHandlers;
+
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -78,6 +86,11 @@ public class TradeStockReport extends ReportInterceptor {
   private static final String STYLE_ROW_TOTAL = STYLE_PREFIX + "row-total";
   private static final String STYLE_TOTAL = STYLE_PREFIX + "total";
 
+  private static final String STYLE_EDITABLE = STYLE_PREFIX + "editable";
+
+  private static final String KEY_GROUP = "group";
+  private static final String KEY_ID = "id";
+
   public TradeStockReport() {
   }
 
@@ -135,6 +148,16 @@ public class TradeStockReport extends ReportInterceptor {
 
     if (RP_DOCUMENTS.equals(name) && widget instanceof DataSelector) {
       ((DataSelector) widget).setAdditionalFilter(getDocumentSelectorFilter());
+
+    } else if (NAME_DATA_CONTAINER.equals(name) && widget instanceof HasClickHandlers) {
+      ((HasClickHandlers) widget).addClickHandler(event -> {
+        Element target = EventUtils.getEventTargetElement(event);
+        TableCellElement cell = DomUtils.getParentCell(target, true);
+
+        if (cell != null) {
+          onCellClick(cell);
+        }
+      });
     }
 
     super.afterCreateWidget(name, widget, callback);
@@ -294,16 +317,22 @@ public class TradeStockReport extends ReportInterceptor {
         data.get(RP_ROW_GROUPS));
 
     List<String> rowGroupLabelColumns = new ArrayList<>();
+    List<String> rowGroupValueColumns = new ArrayList<>();
+
     if (!rowGroups.isEmpty()) {
       rowGroupLabelColumns.addAll(NameUtils.toList(data.get(RP_ROW_GROUP_LABEL_COLUMNS)));
+      rowGroupValueColumns.addAll(NameUtils.toList(data.get(RP_ROW_GROUP_VALUE_COLUMNS)));
     }
 
     TradeReportGroup columnGroup = EnumUtils.getEnumByIndex(TradeReportGroup.class,
         data.get(RP_COLUMN_GROUPS));
 
+    List<String> columnGroupLabels = new ArrayList<>();
     List<String> columnGroupValues = new ArrayList<>();
+
     if (columnGroup != null) {
-      columnGroupValues.addAll(NameUtils.toList(data.get(RP_COLUMN_GROUP_LABELS)));
+      columnGroupLabels.addAll(Codec.deserializeList(data.get(RP_COLUMN_GROUP_LABELS)));
+      columnGroupValues.addAll(Codec.deserializeList(data.get(RP_COLUMN_GROUP_VALUES)));
     }
 
     List<String> quantityColumns = NameUtils.toList(data.get(RP_QUANTITY_COLUMNS));
@@ -390,8 +419,18 @@ public class TradeStockReport extends ReportInterceptor {
         table.setText(r, c++, BeeUtils.bracket(columnGroup.getCaption()), STYLE_COLUMN_EMPTY_LABEL);
       }
 
-      for (String value : columnGroupValues) {
-        table.setText(r, c++, TradeUtils.formatGroupLabel(columnGroup, value), STYLE_COLUMN_LABEL);
+      for (int i = 0; i < columnGroupLabels.size(); i++) {
+        table.setText(r, c, TradeUtils.formatGroupLabel(columnGroup, columnGroupLabels.get(i)),
+            STYLE_COLUMN_LABEL);
+
+        if (columnGroup.isEditable() && BeeUtils.isIndex(columnGroupValues, i)) {
+          TableCellElement cell = table.getCellFormatter().getElement(r, c);
+          String value = columnGroupValues.get(i);
+
+          maybeMakeEditable(cell, columnGroup, value);
+        }
+
+        c++;
       }
 
       if (needsRowTotals) {
@@ -413,8 +452,19 @@ public class TradeStockReport extends ReportInterceptor {
           String column = BeeUtils.getQuietly(rowGroupLabelColumns, i);
           String label = (column == null) ? null : row.getValue(column);
 
-          table.setText(r, c++, TradeUtils.formatGroupLabel(group, label),
+          table.setText(r, c, TradeUtils.formatGroupLabel(group, label),
               STYLE_PREFIX + group.getStyleSuffix());
+
+          if (!BeeUtils.isEmpty(label) && group.isEditable()
+              && BeeUtils.isIndex(rowGroupValueColumns, i)) {
+
+            TableCellElement cell = table.getCellFormatter().getElement(r, c);
+            String value = row.getValue(rowGroupValueColumns.get(i));
+
+            maybeMakeEditable(cell, group, value);
+          }
+
+          c++;
         }
       }
 
@@ -565,5 +615,30 @@ public class TradeStockReport extends ReportInterceptor {
     }
 
     container.add(table);
+  }
+
+  private static void maybeMakeEditable(Element cell, TradeReportGroup group, String value) {
+    if (DataUtils.isId(value)) {
+      DomUtils.setDataProperty(cell, KEY_GROUP, group.ordinal());
+      DomUtils.setDataProperty(cell, KEY_ID, value);
+
+      cell.addClassName(STYLE_EDITABLE);
+
+    } else if (!BeeUtils.isEmpty(value)) {
+      cell.setTitle(value);
+    }
+  }
+
+  private static void onCellClick(Element cell) {
+    if (cell.hasClassName(STYLE_EDITABLE)) {
+      TradeReportGroup group = EnumUtils.getEnumByIndex(TradeReportGroup.class,
+          DomUtils.getDataProperty(cell, KEY_GROUP));
+
+      Long id = DomUtils.getDataPropertyLong(cell, KEY_ID);
+
+      if (group != null && DataUtils.isId(id)) {
+        RowEditor.open(group.editViewName(), id, Opener.MODAL);
+      }
+    }
   }
 }

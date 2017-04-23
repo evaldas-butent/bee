@@ -58,9 +58,9 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   protected static final String QUANTITY_PATTERN = "#,###";
   protected static final String AMOUNT_PATTERN = "#,##0.00";
 
-  private static BeeLogger logger = LogUtils.getLogger(ReportInterceptor.class);
+  protected static final String NAME_DATA_CONTAINER = "DataContainer";
 
-  private static final String NAME_DATA_CONTAINER = "DataContainer";
+  private static BeeLogger logger = LogUtils.getLogger(ReportInterceptor.class);
 
   private static final NumberFormat percentFormat = Format.getNumberFormat(PERCENT_PATTERN);
   private static final NumberFormat quantityFormat = Format.getNumberFormat(QUANTITY_PATTERN);

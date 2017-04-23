@@ -1,5 +1,8 @@
 package com.butent.bee.server.modules.trade;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -37,6 +40,7 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.NullOrdering;
@@ -246,6 +250,7 @@ public class TradeReportsBean {
     int amountScale = sys.getFieldScale(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
 
     List<String> columnGroupLabels = new ArrayList<>();
+    List<String> columnGroupValues = new ArrayList<>();
 
     List<String> rowGroupValueColumns = new ArrayList<>();
     List<String> rowGroupLabelColumns = new ArrayList<>();
@@ -434,10 +439,19 @@ public class TradeReportsBean {
       String valueColumn = groupValueAliases.get(columnGroup);
       qs.sqlIndex(tmp, valueColumn);
 
-      Map<String, Object> labelToValue = getGroupLabels(columnGroup, tmp, valueColumn, needsYear);
+      Multimap<String, Object> labelToValue = getGroupLabels(columnGroup, tmp, valueColumn,
+          needsYear);
 
-      columnGroupLabels.addAll(labelToValue.keySet());
-      columnGroupLabels.sort(null);
+      if (!labelToValue.isEmpty()) {
+        columnGroupLabels.addAll(labelToValue.keySet());
+        columnGroupLabels.sort(null);
+
+        if (columnGroup.isEditable()) {
+          for (String label : columnGroupLabels) {
+            columnGroupValues.add(BeeUtils.joinItems(labelToValue.get(label)));
+          }
+        }
+      }
 
       boolean hasEmptyValue = qs.sqlExists(tmp, SqlUtils.isNull(tmp, valueColumn));
 
@@ -548,7 +562,10 @@ public class TradeReportsBean {
       result.put(RP_COLUMN_GROUPS, BeeUtils.toString(columnGroup.ordinal()));
 
       if (!columnGroupLabels.isEmpty()) {
-        result.put(RP_COLUMN_GROUP_LABELS, NameUtils.join(columnGroupLabels));
+        result.put(RP_COLUMN_GROUP_LABELS, Codec.beeSerialize(columnGroupLabels));
+      }
+      if (!columnGroupValues.isEmpty()) {
+        result.put(RP_COLUMN_GROUP_VALUES, Codec.beeSerialize(columnGroupValues));
       }
     }
 
@@ -802,10 +819,10 @@ public class TradeReportsBean {
     return ResponseObject.emptyResponse();
   }
 
-  private Map<String, Object> getGroupLabels(TradeReportGroup group, String tbl, String fld,
+  private Multimap<String, Object> getGroupLabels(TradeReportGroup group, String tbl, String fld,
       boolean hasYear) {
 
-    Map<String, Object> result = new HashMap<>();
+    Multimap<String, Object> result = ArrayListMultimap.create();
 
     switch (group.getType()) {
       case DATE_TIME:
@@ -846,7 +863,7 @@ public class TradeReportsBean {
   }
 
   private ResponseObject pivot(String tbl, String fld,
-      Map<String, Object> labelToValue, boolean hasEmptyValue, List<BeeColumn> pivotColumns) {
+      Multimap<String, Object> labelToValue, boolean hasEmptyValue, List<BeeColumn> pivotColumns) {
 
     List<String> labels = new ArrayList<>(labelToValue.keySet());
     labels.sort(null);
@@ -895,7 +912,7 @@ public class TradeReportsBean {
               SqlUtils.field(tmp, column.getId()));
         }
 
-        update.setWhere(SqlUtils.equals(tmp, fld, labelToValue.get(labels.get(i))));
+        update.setWhere(SqlUtils.inList(tmp, fld, labelToValue.get(labels.get(i))));
 
         ResponseObject response = qs.updateDataWithResponse(update);
         if (response.hasErrors()) {
@@ -919,7 +936,7 @@ public class TradeReportsBean {
   private ResponseObject addRowGroupLabels(String tbl, Collection<TradeReportGroup> groups,
       Map<TradeReportGroup, String> valueColumns, boolean hasYear) {
 
-    Map<TradeReportGroup, Map<String, Object>> groupLabels = new LinkedHashMap<>();
+    Map<TradeReportGroup, Multimap<String, Object>> groupLabels = new LinkedHashMap<>();
 
     groups.forEach(group -> groupLabels.put(group,
         getGroupLabels(group, tbl, valueColumns.get(group), hasYear)));
@@ -929,10 +946,10 @@ public class TradeReportsBean {
         .addFrom(tbl);
 
     for (TradeReportGroup group : groups) {
-      Map<String, Object> labels = groupLabels.get(group);
+      Multimap<String, Object> labels = groupLabels.get(group);
 
       int precision;
-      if (BeeUtils.isEmpty(labels)) {
+      if (labels.isEmpty()) {
         precision = 1;
       } else {
         precision = labels.keySet().stream().mapToInt(String::length).max().getAsInt();
@@ -947,7 +964,7 @@ public class TradeReportsBean {
       String valueColumn = valueColumns.get(group);
       String labelColumn = group.getLabelAlias();
 
-      Map<String, Object> labels = groupLabels.get(group);
+      Multimap<String, Object> labels = groupLabels.get(group);
 
       if (group.getType() == ValueType.TEXT) {
         SqlUpdate update = new SqlUpdate(tmp)
@@ -959,11 +976,11 @@ public class TradeReportsBean {
           return response;
         }
 
-      } else if (!BeeUtils.isEmpty(labels)) {
-        for (Map.Entry<String, Object> entry : labels.entrySet()) {
+      } else if (!labels.isEmpty()) {
+        for (String label : labels.keySet()) {
           SqlUpdate update = new SqlUpdate(tmp)
-              .addConstant(labelColumn, entry.getKey())
-              .setWhere(SqlUtils.equals(tmp, valueColumn, entry.getValue()));
+              .addConstant(labelColumn, label)
+              .setWhere(SqlUtils.inList(tmp, valueColumn, labels.get(label)));
 
           ResponseObject response = qs.updateDataWithResponse(update);
           if (response.hasErrors()) {

@@ -51,6 +51,11 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     public String labelColumn() {
       return COL_CATEGORY_NAME;
     }
+
+    @Override
+    public String editViewName() {
+      return null;
+    }
   },
 
   ITEM_GROUP("group") {
@@ -87,6 +92,11 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     @Override
     public String labelColumn() {
       return COL_CATEGORY_NAME;
+    }
+
+    @Override
+    public String editViewName() {
+      return null;
     }
   },
 
@@ -125,6 +135,11 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     public String labelColumn() {
       return COL_ITEM_NAME;
     }
+
+    @Override
+    public String editViewName() {
+      return VIEW_ITEMS;
+    }
   },
 
   ARTICLE("article") {
@@ -160,6 +175,11 @@ public enum TradeReportGroup implements HasLocalizedCaption {
 
     @Override
     public String labelColumn() {
+      return null;
+    }
+
+    @Override
+    public String editViewName() {
       return null;
     }
   },
@@ -199,6 +219,11 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     public String labelColumn() {
       return COL_UNIT_NAME;
     }
+
+    @Override
+    public String editViewName() {
+      return null;
+    }
   },
 
   WAREHOUSE("warehouse") {
@@ -235,6 +260,11 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     @Override
     public String labelColumn() {
       return COL_WAREHOUSE_CODE;
+    }
+
+    @Override
+    public String editViewName() {
+      return VIEW_WAREHOUSES;
     }
   },
 
@@ -273,6 +303,11 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     public String labelColumn() {
       return COL_COMPANY_NAME;
     }
+
+    @Override
+    public String editViewName() {
+      return VIEW_COMPANIES;
+    }
   },
 
   YEAR_RECEIVED("year") {
@@ -310,6 +345,11 @@ public enum TradeReportGroup implements HasLocalizedCaption {
     public String labelColumn() {
       return null;
     }
+
+    @Override
+    public String editViewName() {
+      return null;
+    }
   },
 
   MONTH_RECEIVED("month") {
@@ -345,6 +385,11 @@ public enum TradeReportGroup implements HasLocalizedCaption {
 
     @Override
     public String labelColumn() {
+      return null;
+    }
+
+    @Override
+    public String editViewName() {
       return null;
     }
   };
@@ -465,6 +510,12 @@ public enum TradeReportGroup implements HasLocalizedCaption {
   public abstract String labelSource();
 
   public abstract String labelColumn();
+
+  public abstract String editViewName();
+
+  public boolean isEditable() {
+    return !BeeUtils.isEmpty(editViewName());
+  }
 
   public boolean needsItem() {
     return TBL_ITEMS.equals(valueSource());

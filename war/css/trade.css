@@ -491,3 +491,10 @@
 .bee-trade-report-stock-amount {
   text-align: right;
 }
+
+.bee-trade-report-stock-editable {
+  cursor: pointer;
+}
+.bee-trade-report-stock-editable:hover {
+  color: #00e;
+}

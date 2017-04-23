@@ -378,6 +378,7 @@ public final class TradeConstants {
 
   public static final String RP_COLUMN_GROUPS = "ColumnGroups";
   public static final String RP_COLUMN_GROUP_LABELS = "ColumnGroupLabels";
+  public static final String RP_COLUMN_GROUP_VALUES = "ColumnGroupValues";
 
   public static final String RP_QUANTITY_COLUMNS = "QuantityColumns";
   public static final String RP_AMOUNT_COLUMNS = "AmountColumns";
