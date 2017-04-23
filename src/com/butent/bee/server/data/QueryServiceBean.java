@@ -24,6 +24,7 @@ import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -811,8 +812,9 @@ public class QueryServiceBean {
       query.setOffset(offset);
     }
     if (!usr.isAdministrator()) {
-      String tableName = view.getSourceName();
-      String tableAlias = view.getSourceAlias();
+      Pair<String, String> sourcePair = getDependencies(viewName, query);
+      String tableName = sourcePair.getA();
+      String tableAlias = sourcePair.getB();
 
       sys.filterVisibleState(query, tableName, tableAlias);
 
@@ -879,7 +881,8 @@ public class QueryServiceBean {
     SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter);
 
     if (!usr.isAdministrator()) {
-      sys.filterVisibleState(query, view.getSourceName(), view.getSourceAlias());
+      Pair<String, String> sourcePair = getDependencies(viewName, query);
+      sys.filterVisibleState(query, sourcePair.getA(), sourcePair.getB());
     }
     ViewDataProvider provider = viewDataProviders.get(viewName);
 
@@ -1345,6 +1348,44 @@ public class QueryServiceBean {
         }
       }
     }
+  }
+
+  private Pair<String, String> getDependencies(String viewName, SqlSelect query) {
+    BeeView vw = sys.getView(viewName);
+    String tableName = vw.getSourceName();
+    String tableAlias = vw.getSourceAlias();
+
+    List<Pair<String, String>> decoded = new ArrayList<>();
+    Map<String, String> dependency = prm.getMap(AdministrationConstants.PRM_RECORD_DEPENDENCY);
+    String rel = dependency.get(viewName);
+
+    while (Objects.nonNull(vw) && vw.hasColumn(rel)) {
+      String col = rel;
+      int idx = decoded.size();
+      do {
+        decoded.add(idx, Pair.of(vw.getColumnField(col), vw.getColumnRelation(col)));
+
+        if (decoded.size() == 1) {
+          tableAlias = vw.getColumnSource(col);
+          col = null;
+        } else {
+          col = vw.getColumnParent(col);
+        }
+      } while (!BeeUtils.isEmpty(col));
+
+      String relTable = vw.getColumnRelation(rel);
+      rel = dependency.get(relTable);
+      vw = sys.getView(relTable);
+    }
+    if (!BeeUtils.isEmpty(decoded)) {
+      for (Pair<String, String> pair : decoded) {
+        tableName = pair.getB();
+        tableAlias = BeeTable.joinTable(tableAlias, pair.getA(), tableName,
+            sys.getIdName(tableName), BeeUtils.join(BeeConst.STRING_UNDER, tableName, tableAlias),
+            query, null);
+      }
+    }
+    return Pair.of(tableName, tableAlias);
   }
 
   private SimpleRowSet getSingleColumn(IsQuery query) {

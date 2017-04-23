@@ -4881,15 +4881,15 @@ public interface Dictionary {
 
   default String recipient() {return g("recipient");}
 
-  default String recordAddicted() {return g("recordAddicted");}
+  default String recordDependency() {return g("recordDependency");}
 
-  default String recordAddiction() {return g("recordAddiction");}
-
-  default String recordAddictionNew(Object p0) {
+  default String recordDependencyNew(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
-    return Localized.format(g("recordAddictionNew"), _m);
+    return Localized.format(g("recordDependencyNew"), _m);
   }
+
+  default String recordDependent() {return g("recordDependent");}
 
   default String recordIsInUse(Object p0) {
     Map<String, Object> _m = new HashMap<>();
@@ -4897,7 +4897,7 @@ public interface Dictionary {
     return Localized.format(g("recordIsInUse"), _m);
   }
 
-  default String recordsAddiction() {return g("recordsAddiction");}
+  default String recordsDependency() {return g("recordsDependency");}
 
   default String ref() {return g("ref");}
 

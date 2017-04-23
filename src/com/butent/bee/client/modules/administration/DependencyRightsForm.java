@@ -31,23 +31,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AddictionRightsForm extends AbstractFormInterceptor {
+public class DependencyRightsForm extends AbstractFormInterceptor {
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Rights-";
   private static final String STYLE_SUFFIX_CELL = "-cell";
   private static final String STYLE_OBJECT_SELECTOR = STYLE_PREFIX + "object-selector";
   private static final String STYLE_OBJECT_SELECTOR_CELL = STYLE_OBJECT_SELECTOR
-    + STYLE_SUFFIX_CELL;
+      + STYLE_SUFFIX_CELL;
 
-  private final Map<String, String> addictions = new HashMap<>();
+  private final Map<String, String> dependency = new HashMap<>();
 
   private RightsTable table;
   private List<RightsObject> rightsObjects;
 
   @Override
   public void afterCreate(FormView form) {
-    HasWidgets rightsWidget = form.getRootWidget() instanceof  HasWidgets
-      ? (HasWidgets) form.getRootWidget()
-      : null;
+    HasWidgets rightsWidget = form.getRootWidget() instanceof HasWidgets
+        ? (HasWidgets) form.getRootWidget()
+        : null;
 
     if (rightsWidget == null) {
       super.afterCreate(form);
@@ -60,27 +60,27 @@ public class AddictionRightsForm extends AbstractFormInterceptor {
       form.notifyInfo(Localized.dictionary().noData());
       return;
     }
-    addictions.clear();
-    Global.getParameterMap(AdministrationConstants.PRM_RECORD_ADDICTION)
-      .forEach((object, addiction) -> {
-        if (BeeUtils.same(addiction, object)) {
-          LogUtils.getRootLogger().warning(AdministrationConstants.PRM_RECORD_ADDICTION,
-            "values {", object, addiction, "} are malicious loop and it will be removed.");
-          return;
-        }
-        addictions.put(object, addiction);
-      });
+    dependency.clear();
+    Global.getParameterMap(AdministrationConstants.PRM_RECORD_DEPENDENCY)
+        .forEach((object, dependence) -> {
+          if (BeeUtils.same(dependence, object)) {
+            LogUtils.getRootLogger().warning(AdministrationConstants.PRM_RECORD_DEPENDENCY,
+                "values {", object, dependence, "} are malicious loop and it will be removed.");
+            return;
+          }
+          dependency.put(object, dependence);
+        });
 
     ensureTable();
     populateTable();
     rightsWidget.add(table);
 
-   super.afterCreate(form);
+    super.afterCreate(form);
   }
 
   @Override
   public FormInterceptor getInstance() {
-    return new AddictionRightsForm();
+    return new DependencyRightsForm();
   }
 
   private static boolean hasObjectRelatedField(String objectName) {
@@ -97,19 +97,19 @@ public class AddictionRightsForm extends AbstractFormInterceptor {
   }
 
   private void createSelector(int row, int col, RightsObject object) {
-    Label selector = addictions.containsKey(object.getName())
-      ? new Label(RightsHelper.buildAddictionName(addictions, object.getName()))
-      : new FaLabel(FontAwesome.LINK);
+    Label selector = dependency.containsKey(object.getName())
+        ? new Label(RightsHelper.buildDependencyName(dependency, object.getName()))
+        : new FaLabel(FontAwesome.LINK);
 
     selector.setStyleName(STYLE_OBJECT_SELECTOR);
-    selector.setTitle(addictions.containsKey(object.getName())
-      ? Localized.dictionary().actionChange()
-      : Localized.dictionary().actionAdd());
-    selector.addClickHandler(event ->  renderRelations(selector, object.getName(),
-      value -> onSelectorChange(col - 1, value, object)));
+    selector.setTitle(dependency.containsKey(object.getName())
+        ? Localized.dictionary().actionChange()
+        : Localized.dictionary().actionAdd());
+    selector.addClickHandler(event -> renderRelations(selector, object.getName(),
+        value -> onSelectorChange(col - 1, value, object)));
 
     table.setWidget(row, col, selector,
-      STYLE_OBJECT_SELECTOR_CELL);
+        STYLE_OBJECT_SELECTOR_CELL);
     table.getCellFormatter().addStyleName(row, col, RightsTable.STYLE_MSO_CELL);
   }
 
@@ -128,17 +128,17 @@ public class AddictionRightsForm extends AbstractFormInterceptor {
 
   private void onModuleSelected(ModuleAndSub moduleAndSub) {
     renderSelection(RightsTable.MODULE_COL + 1,
-      RightsHelper.filterByModule(rightsObjects, moduleAndSub));
+        RightsHelper.filterByModule(rightsObjects, moduleAndSub));
   }
 
   private void onSelectorChange(int col, String value, RightsObject object) {
     if (BeeUtils.isEmpty(value)) {
-      addictions.remove(object.getName());
+      dependency.remove(object.getName());
     } else {
-      addictions.put(object.getName(), value);
+      dependency.put(object.getName(), value);
     }
-    Global.setParameter(AdministrationConstants.PRM_RECORD_ADDICTION,
-      Codec.beeSerialize(addictions), false);
+    Global.setParameter(AdministrationConstants.PRM_RECORD_DEPENDENCY,
+        Codec.beeSerialize(dependency), false);
     renderSelection(col, RightsHelper.filterByModule(rightsObjects, object.getModuleAndSub()));
   }
 
@@ -167,28 +167,27 @@ public class AddictionRightsForm extends AbstractFormInterceptor {
     String colLabel = "Label";
     String colColumn = "Column";
     String caption = BeeUtils.joinWords(Localized.dictionary().actionChange(), label.getText(),
-      Localized.dictionary().to().toLowerCase());
+        Localized.dictionary().to().toLowerCase());
     SimpleRowSet options = new SimpleRowSet(new String[] {colLabel, colColumn});
 
     view.getColumns().forEach(column -> {
 
       if (!column.isForeign() && view.hasRelation(column.getId())
-        && !BeeUtils.same(column.getId(), addictions.get(objectName))) {
+          && !BeeUtils.same(column.getId(), dependency.get(objectName))) {
         String relation = view.getRelation(column.getId());
 
         if (Data.getDataInfo(relation, false) == null) {
           return;
         }
 
-        if (RightsHelper.isMaliciousAddictionLoop(addictions, objectName, relation)) {
+        if (RightsHelper.isMaliciousDependencyLoop(dependency, objectName, relation)) {
           return;
         }
         String viewCaption = BeeUtils.parenthesize(Data.getViewCaption(relation));
-        String addiction =
-          BeeUtils.join(" → ",
+        String dependence = BeeUtils.join(" → ",
             BeeUtils.joinWords(Localized.getLabel(column), viewCaption),
-            RightsHelper.buildAddictionName(addictions, relation));
-        options.addRow(new String[] {addiction, column.getId()});
+            RightsHelper.buildDependencyName(dependency, relation));
+        options.addRow(new String[] {dependence, column.getId()});
       }
     });
 
@@ -196,13 +195,13 @@ public class AddictionRightsForm extends AbstractFormInterceptor {
       getFormView().notifyWarning(Localized.dictionary().actionCanNotBeExecuted());
       return;
     } else if (label instanceof FaLabel) {
-      caption =  Localized.dictionary().recordAddictionNew(Data.getViewCaption(objectName));
+      caption = Localized.dictionary().recordDependencyNew(Data.getViewCaption(objectName));
     } else {
       options.addRow(new String[] {Localized.dictionary().actionRemove(), BeeConst.STRING_EMPTY});
     }
 
     Global.choice(caption, null, Arrays.asList(options
-      .getColumn(colLabel)), choseId -> {
+        .getColumn(colLabel)), choseId -> {
 
       if (selected == null) {
         return;
@@ -223,7 +222,7 @@ public class AddictionRightsForm extends AbstractFormInterceptor {
       createSelector(row, col + 1, object);
       row++;
     }
-    table.setText(table.getValueStartRow() - 1, col + 1, Localized.dictionary().recordAddicted(),
-      RightsTable.STYLE_MSO_CELL);
+    table.setText(table.getValueStartRow() - 1, col + 1, Localized.dictionary().recordDependent(),
+        RightsTable.STYLE_MSO_CELL);
   }
 }
