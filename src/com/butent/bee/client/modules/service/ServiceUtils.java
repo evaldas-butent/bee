@@ -302,16 +302,15 @@ public final class ServiceUtils {
           break;
 
         case 6:
-          setClientValuesForRevert(formView.getActiveRow());
-          setObjectValuesForRevert(formView.getActiveRow());
+          updateClientAndContact(event, formView, false);
           break;
 
         case 5:
         default:
-          updateClientAndContact(event, formView, true);
+          updateClientAndContact(event, formView, !BeeUtils.same(repairCompanyId, objectCompanyId));
       }
     } else {
-      updateClientAndContact(event, formView, true);
+      updateClientAndContact(event, formView, !BeeUtils.same(repairCompanyId, objectCompanyId));
     }
   }
 
@@ -376,7 +375,16 @@ public final class ServiceUtils {
             event.getRelatedViewName(), COL_SERVICE_CUSTOMER, ALS_SERVICE_CUSTOMER_NAME,
             ALS_CUSTOMER_TYPE_NAME);
         formView.refreshBySource(COL_COMPANY);
+      }
 
+      Number clientChangingPrm = Global.getParameterNumber(PRM_CLIENT_CHANGING_SETTING);
+      Long maintenanceContactId = formView.getActiveRow()
+          .getLong(maintenanceDataInfo.getColumnIndex(COL_CONTACT));
+
+      if (clientChangingPrm == null
+          || (BeeUtils.inList(clientChangingPrm.intValue(), 1, 2, 3, 6)
+              && !DataUtils.isId(maintenanceContactId))
+          || BeeUtils.inList(clientChangingPrm.intValue(), 4, 5)) {
         fillContactValues(formView.getActiveRow(), event.getRelatedRow());
         formView.refreshBySource(COL_CONTACT);
         formView.refreshBySource(ALS_CONTACT_PHONE);
@@ -384,7 +392,7 @@ public final class ServiceUtils {
         formView.refreshBySource(ALS_CONTACT_ADDRESS);
       }
 
-      ServiceUtils.fillContractorAndManufacturerValues(formView.getActiveRow(),
+      fillContractorAndManufacturerValues(formView.getActiveRow(),
           event.getRelatedRow());
       formView.refreshBySource(ALS_MANUFACTURER_NAME);
       formView.refreshBySource(ALS_SERVICE_CONTRACTOR_NAME);
