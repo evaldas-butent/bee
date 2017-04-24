@@ -20,8 +20,8 @@
 
         name="TradeStockReport" caption="=trdReportStock"
 >
-  <FlowPanel>
-    <HorizontalPanel style="margin-top: 1vh; margin-bottom: 1vh;">
+  <FlowPanel class="flexBox-vertical">
+    <HorizontalPanel style="margin-top: 1vh;">
       <cell kind="label">
         <Label text="=date" style="&c1;" />
       </cell>
@@ -44,11 +44,15 @@
       </cell>
       <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name"
                        newRowEnabled="false" editEnabled="false" style="width: 5em;" />
+
+      <cell style="padding-left: 1em; vertical-align: top;">
+        <CheckBox name="Summary" text="=summary" />
+      </cell>
     </HorizontalPanel>
 
-    <Disclosure open="true">
+    <Disclosure open="false">
       <Label text="=filters" />
-      <Table kind="custom" style="margin-top: 1vh;">
+      <Table kind="custom" style="margin-top: 5px;">
         <col index="0" kind="label" />
         <col index="2" kind="label" />
 
@@ -118,7 +122,9 @@
       </Table>
     </Disclosure>
 
-    <Table kind="controls" style="margin-top: 2vh;">
+    <hr />
+
+    <Table kind="custom">
       <row>
         <cell kind="label">
           <Label text="=groupBy" style="&c1;" />
@@ -139,10 +145,6 @@
         <ListBox name="Group4" style="&glst;">
           &gitems;
         </ListBox>
-
-        <cell style="padding-left: 1em; vertical-align: top;">
-          <CheckBox name="Summary" text="=summary" />
-        </cell>
       </row>
 
       <row>
@@ -164,6 +166,7 @@
       </row>
     </Table>
 
-    <FlowPanel name="DataContainer" style="margin-top: 1vh;" />
+    <FlowPanel name="DataContainer" class="flexible"
+               style="margin-top: 1vh; margin-left: 1em; min-height: 100px; overflow: auto;" />
   </FlowPanel>
 </f:Form>
