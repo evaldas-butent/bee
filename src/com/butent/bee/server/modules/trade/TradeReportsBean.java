@@ -1,5 +1,8 @@
 package com.butent.bee.server.modules.trade;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -37,6 +40,10 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.NullOrdering;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,16 +113,21 @@ public class TradeReportsBean {
     if (!showQuantity && !showAmount) {
       showQuantity = true;
       showAmount = true;
+
+      parameters.add(RP_SHOW_QUANTITY, showQuantity);
+      parameters.add(RP_SHOW_AMOUNT, showAmount);
     }
 
     ItemPrice itemPrice = parameters.getEnum(RP_ITEM_PRICE, ItemPrice.class);
     if (itemPrice == ItemPrice.COST) {
       itemPrice = null;
+      parameters.remove(RP_ITEM_PRICE);
     }
 
     Long currency = parameters.getLong(RP_CURRENCY);
     if (currency == null && showAmount) {
       currency = prm.getRelation(AdministrationConstants.PRM_CURRENCY);
+      parameters.add(RP_CURRENCY, currency);
     }
 
     Set<Long> warehouses = parameters.getIds(RP_WAREHOUSES);
@@ -135,21 +147,45 @@ public class TradeReportsBean {
 
     if (!items.isEmpty()) {
       manufacturers.clear();
+      parameters.remove(RP_MANUFACTURERS);
 
       itemTypes.clear();
+      parameters.remove(RP_ITEM_TYPES);
+
       itemGroups.clear();
+      parameters.remove(RP_ITEM_GROUPS);
+
       itemCategories.clear();
+      parameters.remove(RP_ITEM_CATEGORIES);
 
       itemFilter = null;
+      parameters.remove(RP_ITEM_FILTER);
     }
 
     List<TradeReportGroup> rowGroups = TradeReportGroup.parseList(parameters, 10);
-    boolean summary = parameters.getBoolean(RP_SUMMARY);
-
     TradeReportGroup columnGroup = TradeReportGroup.parse(parameters.getText(RP_COLUMNS));
-    if (columnGroup != null && rowGroups.contains(columnGroup)) {
+
+    if (rowGroups.isEmpty()) {
+      if (!TradeReportGroup.WAREHOUSE.equals(columnGroup)) {
+        rowGroups.add(TradeReportGroup.WAREHOUSE);
+      }
+
+      if (!TradeReportGroup.ITEM.equals(columnGroup)) {
+        rowGroups.add(TradeReportGroup.ITEM);
+      }
+      if (!EnumUtils.in(columnGroup, TradeReportGroup.ITEM, TradeReportGroup.ARTICLE)) {
+        rowGroups.add(TradeReportGroup.ARTICLE);
+      }
+
+      if (showQuantity && !TradeReportGroup.UNIT.equals(columnGroup)) {
+        rowGroups.add(TradeReportGroup.UNIT);
+      }
+
+    } else if (columnGroup != null && rowGroups.contains(columnGroup)) {
       rowGroups.remove(columnGroup);
     }
+
+    boolean summary = parameters.getBoolean(RP_SUMMARY);
 
     Map<TradeReportGroup, String> groupValueAliases = new EnumMap<>(TradeReportGroup.class);
     rowGroups.forEach(trg -> groupValueAliases.put(trg, trg.getValueAlias()));
@@ -212,6 +248,15 @@ public class TradeReportsBean {
 
     int amountPrecision = sys.getFieldPrecision(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
     int amountScale = sys.getFieldScale(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
+
+    List<String> columnGroupLabels = new ArrayList<>();
+    List<String> columnGroupValues = new ArrayList<>();
+
+    List<String> rowGroupValueColumns = new ArrayList<>();
+    List<String> rowGroupLabelColumns = new ArrayList<>();
+
+    List<String> quantityColumns = new ArrayList<>();
+    List<String> amountColumns = new ArrayList<>();
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_STOCK, COL_TRADE_DOCUMENT_ITEM);
@@ -382,11 +427,31 @@ public class TradeReportsBean {
       }
     }
 
-    if (columnGroup != null) {
+    if (columnGroup == null) {
+      if (showQuantity) {
+        quantityColumns.add(aliasQuantity);
+      }
+      if (showAmount) {
+        amountColumns.add(aliasAmount);
+      }
+
+    } else {
       String valueColumn = groupValueAliases.get(columnGroup);
       qs.sqlIndex(tmp, valueColumn);
 
-      Map<String, Object> labelToValue = getGroupLabels(columnGroup, tmp, valueColumn, needsYear);
+      Multimap<String, Object> labelToValue = getGroupLabels(columnGroup, tmp, valueColumn,
+          needsYear);
+
+      if (!labelToValue.isEmpty()) {
+        columnGroupLabels.addAll(labelToValue.keySet());
+        columnGroupLabels.sort(null);
+
+        if (columnGroup.isEditable()) {
+          for (String label : columnGroupLabels) {
+            columnGroupValues.add(BeeUtils.joinItems(labelToValue.get(label)));
+          }
+        }
+      }
 
       boolean hasEmptyValue = qs.sqlExists(tmp, SqlUtils.isNull(tmp, valueColumn));
 
@@ -397,6 +462,15 @@ public class TradeReportsBean {
         column.setScale(quantityScale);
 
         pivotColumns.add(column);
+
+        if (hasEmptyValue) {
+          quantityColumns.add(aliasForEmptyValue(aliasQuantity));
+        }
+        if (!columnGroupLabels.isEmpty()) {
+          for (int i = 0; i < columnGroupLabels.size(); i++) {
+            quantityColumns.add(aliasForGroupValue(aliasQuantity, i));
+          }
+        }
       }
 
       if (showAmount) {
@@ -405,6 +479,15 @@ public class TradeReportsBean {
         column.setScale(amountScale);
 
         pivotColumns.add(column);
+
+        if (hasEmptyValue) {
+          amountColumns.add(aliasForEmptyValue(aliasAmount));
+        }
+        if (!columnGroupLabels.isEmpty()) {
+          for (int i = 0; i < columnGroupLabels.size(); i++) {
+            amountColumns.add(aliasForGroupValue(aliasAmount, i));
+          }
+        }
       }
 
       ResponseObject response = pivot(tmp, valueColumn, labelToValue, hasEmptyValue, pivotColumns);
@@ -428,16 +511,76 @@ public class TradeReportsBean {
         return response;
       }
       tmp = response.getResponseAsString();
+
+      for (TradeReportGroup group : rowGroups) {
+        rowGroupValueColumns.add(groupValueAliases.get(group));
+        rowGroupLabelColumns.add(group.getLabelAlias());
+      }
     }
 
-    SimpleRowSet data = qs.getData(new SqlSelect().addAllFields(tmp).addFrom(tmp));
+    boolean showPrice = rowGroups.contains(TradeReportGroup.ITEM) && showAmount && !summary;
+
+    SqlSelect select = new SqlSelect().addFrom(tmp);
+
+    if (rowGroups.isEmpty()) {
+      select.addSum(tmp, quantityColumns).addSum(tmp, amountColumns);
+
+    } else {
+      select.addFields(tmp, rowGroupValueColumns).addFields(tmp, rowGroupLabelColumns)
+          .addSum(tmp, quantityColumns).addSum(tmp, amountColumns)
+          .addGroup(tmp, rowGroupValueColumns).addGroup(tmp, rowGroupLabelColumns);
+
+      for (int i = 0; i < rowGroups.size(); i++) {
+        select.addOrder(tmp, rowGroupLabelColumns.get(i), NullOrdering.NULLS_FIRST);
+        select.addOrder(tmp, rowGroupValueColumns.get(i), NullOrdering.NULLS_FIRST);
+      }
+
+      if (showPrice) {
+        select.addFields(tmp, aliasPrice).addGroup(tmp, aliasPrice).addOrder(tmp, aliasPrice);
+      }
+    }
+
+    SimpleRowSet data = qs.getData(select);
     qs.sqlDropTemp(tmp);
 
     if (DataUtils.isEmpty(data)) {
       return ResponseObject.emptyResponse();
     }
 
-    return ResponseObject.response(data);
+    Map<String, String> result = new HashMap<>();
+    result.put(Service.VAR_REPORT_PARAMETERS, parameters.serialize());
+    result.put(Service.VAR_DATA, data.serialize());
+
+    if (!rowGroups.isEmpty()) {
+      result.put(RP_ROW_GROUPS, EnumUtils.joinIndexes(rowGroups));
+
+      result.put(RP_ROW_GROUP_VALUE_COLUMNS, NameUtils.join(rowGroupValueColumns));
+      result.put(RP_ROW_GROUP_LABEL_COLUMNS, NameUtils.join(rowGroupLabelColumns));
+    }
+
+    if (columnGroup != null) {
+      result.put(RP_COLUMN_GROUPS, BeeUtils.toString(columnGroup.ordinal()));
+
+      if (!columnGroupLabels.isEmpty()) {
+        result.put(RP_COLUMN_GROUP_LABELS, Codec.beeSerialize(columnGroupLabels));
+      }
+      if (!columnGroupValues.isEmpty()) {
+        result.put(RP_COLUMN_GROUP_VALUES, Codec.beeSerialize(columnGroupValues));
+      }
+    }
+
+    if (!quantityColumns.isEmpty()) {
+      result.put(RP_QUANTITY_COLUMNS, NameUtils.join(quantityColumns));
+    }
+    if (!amountColumns.isEmpty()) {
+      result.put(RP_AMOUNT_COLUMNS, NameUtils.join(amountColumns));
+    }
+
+    if (showPrice) {
+      result.put(RP_PRICE_COLUMN, aliasPrice);
+    }
+
+    return ResponseObject.response(result);
   }
 
   private ResponseObject doMovementOfGoodsReport(RequestInfo reqInfo) {
@@ -676,10 +819,10 @@ public class TradeReportsBean {
     return ResponseObject.emptyResponse();
   }
 
-  private Map<String, Object> getGroupLabels(TradeReportGroup group, String tbl, String fld,
+  private Multimap<String, Object> getGroupLabels(TradeReportGroup group, String tbl, String fld,
       boolean hasYear) {
 
-    Map<String, Object> result = new HashMap<>();
+    Multimap<String, Object> result = ArrayListMultimap.create();
 
     switch (group.getType()) {
       case DATE_TIME:
@@ -720,7 +863,7 @@ public class TradeReportsBean {
   }
 
   private ResponseObject pivot(String tbl, String fld,
-      Map<String, Object> labelToValue, boolean hasEmptyValue, List<BeeColumn> pivotColumns) {
+      Multimap<String, Object> labelToValue, boolean hasEmptyValue, List<BeeColumn> pivotColumns) {
 
     List<String> labels = new ArrayList<>(labelToValue.keySet());
     labels.sort(null);
@@ -769,7 +912,7 @@ public class TradeReportsBean {
               SqlUtils.field(tmp, column.getId()));
         }
 
-        update.setWhere(SqlUtils.equals(tmp, fld, labelToValue.get(labels.get(i))));
+        update.setWhere(SqlUtils.inList(tmp, fld, labelToValue.get(labels.get(i))));
 
         ResponseObject response = qs.updateDataWithResponse(update);
         if (response.hasErrors()) {
@@ -783,7 +926,7 @@ public class TradeReportsBean {
   }
 
   private static String aliasForEmptyValue(String prefix) {
-    return prefix + "_0";
+    return prefix + EMPTY_VALUE_SUFFIX;
   }
 
   private static String aliasForGroupValue(String prefix, int index) {
@@ -793,7 +936,7 @@ public class TradeReportsBean {
   private ResponseObject addRowGroupLabels(String tbl, Collection<TradeReportGroup> groups,
       Map<TradeReportGroup, String> valueColumns, boolean hasYear) {
 
-    Map<TradeReportGroup, Map<String, Object>> groupLabels = new LinkedHashMap<>();
+    Map<TradeReportGroup, Multimap<String, Object>> groupLabels = new LinkedHashMap<>();
 
     groups.forEach(group -> groupLabels.put(group,
         getGroupLabels(group, tbl, valueColumns.get(group), hasYear)));
@@ -803,10 +946,10 @@ public class TradeReportsBean {
         .addFrom(tbl);
 
     for (TradeReportGroup group : groups) {
-      Map<String, Object> labels = groupLabels.get(group);
+      Multimap<String, Object> labels = groupLabels.get(group);
 
       int precision;
-      if (BeeUtils.isEmpty(labels)) {
+      if (labels.isEmpty()) {
         precision = 1;
       } else {
         precision = labels.keySet().stream().mapToInt(String::length).max().getAsInt();
@@ -821,7 +964,7 @@ public class TradeReportsBean {
       String valueColumn = valueColumns.get(group);
       String labelColumn = group.getLabelAlias();
 
-      Map<String, Object> labels = groupLabels.get(group);
+      Multimap<String, Object> labels = groupLabels.get(group);
 
       if (group.getType() == ValueType.TEXT) {
         SqlUpdate update = new SqlUpdate(tmp)
@@ -833,11 +976,11 @@ public class TradeReportsBean {
           return response;
         }
 
-      } else if (!BeeUtils.isEmpty(labels)) {
-        for (Map.Entry<String, Object> entry : labels.entrySet()) {
+      } else if (!labels.isEmpty()) {
+        for (String label : labels.keySet()) {
           SqlUpdate update = new SqlUpdate(tmp)
-              .addConstant(labelColumn, entry.getKey())
-              .setWhere(SqlUtils.equals(tmp, valueColumn, entry.getValue()));
+              .addConstant(labelColumn, label)
+              .setWhere(SqlUtils.inList(tmp, valueColumn, labels.get(label)));
 
           ResponseObject response = qs.updateDataWithResponse(update);
           if (response.hasErrors()) {

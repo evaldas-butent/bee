@@ -171,6 +171,17 @@ public final class TransportConstants {
       public String getDefaultContent(Dictionary dictionary) {
         return "";
       }
+    },
+    COMPLETED_ORDER_EMAIL_CONTENT {
+      @Override
+      public String getCaption(Dictionary constants) {
+        return constants.trCompletedOrderEmailContent();
+      }
+
+      @Override
+      public String getDefaultContent(Dictionary dictionary) {
+        return "";
+      }
     };
 
     public String getDefaultContent(Dictionary dictionary) {

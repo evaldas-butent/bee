@@ -28,6 +28,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.XmlUtils;
@@ -58,11 +59,13 @@ import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeReportGroup;
 import com.butent.bee.shared.modules.trade.TradeVatMode;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -102,6 +105,10 @@ public final class TradeUtils {
   private static final String COL_RATE_VAT = COL_CURRENCY_RATE + COL_TRADE_VAT;
   private static final String COL_RATE_TOTAL = COL_CURRENCY_RATE + COL_TOTAL;
   private static final String COL_RATE_CURRENCY = COL_CURRENCY_RATE + COL_CURRENCY;
+
+  private static NumberFormat quantityFormat;
+  private static NumberFormat costFormat;
+  private static NumberFormat amountFormat;
 
   public static void amountEntry(IsRow row, String viewName) {
     Totalizer totalizer = new Totalizer(Data.getColumns(viewName));
@@ -148,6 +155,44 @@ public final class TradeUtils {
       Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues,
           null, new RowUpdateCallback(viewName));
     });
+  }
+
+  public static String formatAmount(Double amount) {
+    return BeeUtils.nonZero(amount) ? getAmountFormat().format(amount) : BeeConst.STRING_EMPTY;
+  }
+
+  public static String formatCost(Double cost) {
+    return BeeUtils.nonZero(cost) ? getCostFormat().format(cost) : BeeConst.STRING_EMPTY;
+  }
+
+  public static String formatQuantity(Double qty) {
+    return BeeUtils.nonZero(qty) ? getQuantityFormat().format(qty) : BeeConst.STRING_EMPTY;
+  }
+
+  public static String formatGroupLabel(TradeReportGroup group, String label) {
+    if (BeeUtils.isEmpty(label)) {
+      return BeeConst.STRING_EMPTY;
+
+    } else if (group == TradeReportGroup.MONTH_RECEIVED && BeeUtils.isDigit(label)) {
+      int value = BeeUtils.toInt(label);
+
+      if (TimeUtils.isMonth(value)) {
+        return Format.renderMonthFullStandalone(value);
+
+      } else {
+        int year = value / 100;
+        int month = value % 100;
+
+        if (TimeUtils.isYear(year) && TimeUtils.isMonth(month)) {
+          return Format.renderYearMonth(YearMonth.of(year, month));
+        } else {
+          return label;
+        }
+      }
+
+    } else {
+      return label;
+    }
   }
 
   public static void getDocumentItems(String viewName, long tradeId, String currencyName,
@@ -888,6 +933,30 @@ public final class TradeUtils {
       return false;
     }
   }
+
+  private static NumberFormat getQuantityFormat() {
+    if (quantityFormat == null) {
+      Integer scale = Data.getColumnScale(VIEW_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY);
+      quantityFormat = Format.getDecimalFormat(0, BeeUtils.unbox(scale));
+    }
+    return quantityFormat;
+  }
+
+  private static NumberFormat getCostFormat() {
+    if (costFormat == null) {
+      Integer scale = Data.getColumnScale(VIEW_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
+      costFormat = Format.getDecimalFormat(2, BeeUtils.unbox(scale));
+    }
+    return costFormat;
+  }
+
+  private static NumberFormat getAmountFormat() {
+    if (amountFormat == null) {
+      amountFormat = Format.getDefaultMoneyFormat();
+    }
+    return amountFormat;
+  }
+
 
   private TradeUtils() {
   }

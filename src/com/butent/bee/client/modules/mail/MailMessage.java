@@ -113,9 +113,14 @@ public class MailMessage extends AbstractFormInterceptor {
               @Override
               public void execute() {
                 if (++counter == 2) {
-                  if (!BeeUtils.same(viewName, TransportConstants.TBL_ASSESSMENTS)) {
+                  if (!BeeUtils.inList(viewName, TransportConstants.TBL_ASSESSMENTS, VIEW_TASKS)) {
                     FileCollector.pushFiles(attachments);
                   }
+
+                  if (BeeUtils.same(viewName, VIEW_TASKS)) {
+                    row.setProperty(PROP_FILES, Codec.beeSerialize(attachments));
+                  }
+
                   RowFactory.createRelatedRow(formName, row, selector, null);
                 }
               }

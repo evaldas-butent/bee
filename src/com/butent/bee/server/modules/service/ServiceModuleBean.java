@@ -1750,16 +1750,15 @@ public class ServiceModuleBean implements BeeModule {
 
       if ((!BeeUtils.same(maintenanceCompany, objectCompany)
               || !BeeUtils.same(maintenanceContact, objectContact))
-          && !BeeUtils.isEmpty(objectCompany) && !BeeUtils.isEmpty(objectContact)) {
+          && (!DataUtils.isId(objectId) || !BeeUtils.isEmpty(objectCompany)
+          || !BeeUtils.isEmpty(objectContact))) {
         SqlUpdate update = null;
         Long responseResult = null;
 
         if (DataUtils.isId(maintenanceId)) {
           update = new SqlUpdate(TBL_SERVICE_OBJECTS)
-                  .addConstant(COL_SERVICE_CUSTOMER,
-                          maintenanceRow.getValue(COL_COMPANY))
-                  .addConstant(ALS_CONTACT_PERSON,
-                          maintenanceRow.getValue(COL_CONTACT))
+                  .addConstant(COL_SERVICE_CUSTOMER, maintenanceCompany)
+                  .addConstant(ALS_CONTACT_PERSON, maintenanceContact)
                   .setWhere(sys.idEquals(TBL_SERVICE_OBJECTS,
                           maintenanceRow.getLong(COL_SERVICE_OBJECT)));
           responseResult = maintenanceRow.getLong(COL_SERVICE_OBJECT);
@@ -1769,16 +1768,19 @@ public class ServiceModuleBean implements BeeModule {
 
           if (maintenanceRow.getValue(COL_ENDING_DATE) == null && DataUtils.isId(maintenanceId)) {
             update = new SqlUpdate(TBL_SERVICE_MAINTENANCE)
-                    .addConstant(COL_COMPANY,
-                            maintenanceRow.getValue(COL_SERVICE_CUSTOMER))
-                    .addConstant(COL_CONTACT,
-                            maintenanceRow.getValue(ALS_CONTACT_PERSON))
                     .setWhere(sys.idEquals(TBL_SERVICE_MAINTENANCE, maintenanceId));
+
+            if (DataUtils.isId(objectCompany)) {
+              update.addConstant(COL_COMPANY, objectCompany);
+            }
+            if (DataUtils.isId(objectContact)) {
+              update.addConstant(COL_CONTACT, objectContact);
+            }
             responseResult = maintenanceId;
           }
         }
 
-        if (update != null) {
+        if (update != null && !update.isEmpty()) {
           ResponseObject response = qs.updateDataWithResponse(update);
 
           if (response.hasErrors()) {

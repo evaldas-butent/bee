@@ -907,10 +907,6 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
     ParameterList params = ServiceKeeper.createArgs(SVC_UPDATE_SERVICE_MAINTENANCE_OBJECT);
     params.addDataItem(COL_SERVICE_MAINTENANCE, maintenanceId);
 
-    if (DataUtils.isId(objectId)) {
-      params.addDataItem(COL_SERVICE_OBJECT, objectId);
-    }
-
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {

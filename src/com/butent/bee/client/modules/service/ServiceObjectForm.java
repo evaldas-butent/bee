@@ -374,7 +374,9 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
 
     } else if (event.isChanged()
         && BeeUtils.same(event.getRelatedViewName(), VIEW_COMPANY_PERSONS)) {
-      if (event.getRelatedRow() != null) {
+      Long objectCustomerId = getActiveRow().getLong(getDataIndex(COL_SERVICE_CUSTOMER));
+
+      if (event.getRelatedRow() != null && !DataUtils.isId(objectCustomerId)) {
         Long company = event.getRelatedRow().getLong(Data
             .getColumnIndex(event.getRelatedViewName(), COL_COMPANY));
 
@@ -382,7 +384,7 @@ public class ServiceObjectForm extends MaintenanceExpanderForm implements ClickH
           getActiveRow().setValue(getDataIndex(COL_SERVICE_CUSTOMER), company);
           RelationUtils.updateRow(Data.getDataInfo(getViewName()), COL_SERVICE_CUSTOMER,
               getActiveRow(), Data.getDataInfo(event.getRelatedViewName()),
-              event.getRelatedRow(), true);
+              event.getRelatedRow(), false);
           getFormView().refreshBySource(COL_SERVICE_CUSTOMER);
         }
       }

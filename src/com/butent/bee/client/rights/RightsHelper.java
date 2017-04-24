@@ -23,16 +23,16 @@ import java.util.Objects;
 public final class RightsHelper {
 
   private static final Comparator<RightsObject> dataComparator = (o1, o2) -> ComparisonChain.start()
-    .compare(o1.getModuleAndSub(), o2.getModuleAndSub())
-    .compare(o1.getCaption(), o2.getCaption(), Collator.CASE_INSENSITIVE_NULLS_FIRST)
-    .compare(o1.getName(), o2.getName())
-    .result();
+      .compare(o1.getModuleAndSub(), o2.getModuleAndSub())
+      .compare(o1.getCaption(), o2.getCaption(), Collator.CASE_INSENSITIVE_NULLS_FIRST)
+      .compare(o1.getName(), o2.getName())
+      .result();
 
   private RightsHelper() {
 
   }
 
-  public static String buildAddictionName(Map<String, String> table, String objectName) {
+  public static String buildDependencyName(Map<String, String> table, String objectName) {
     StringBuilder builder = new StringBuilder();
 
     if (!table.containsKey(objectName)) {
@@ -51,20 +51,20 @@ public final class RightsHelper {
       return builder.toString();
     }
 
-    if (isMaliciousAddictionLoop(table, objectName, view.getRelation(column.getId()))) {
+    if (isMaliciousDependencyLoop(table, objectName, view.getRelation(column.getId()))) {
       return builder.toString();
     }
 
     builder.append(BeeUtils.join(" → ",
-      BeeUtils.joinWords(Localized.getLabel(column),
-        BeeUtils.parenthesize(Data.getViewCaption(view.getRelation(column.getId())))),
-      buildAddictionName(table, view.getRelation(column.getId()))));
+        BeeUtils.joinWords(Localized.getLabel(column),
+            BeeUtils.parenthesize(Data.getViewCaption(view.getRelation(column.getId())))),
+        buildDependencyName(table, view.getRelation(column.getId()))));
 
     return builder.toString();
   }
 
   public static List<RightsObject> filterByModule(List<RightsObject> objects,
-                                                  ModuleAndSub moduleAndSub) {
+      ModuleAndSub moduleAndSub) {
     List<RightsObject> result = new ArrayList<>();
 
     for (RightsObject object : objects) {
@@ -136,23 +136,23 @@ public final class RightsHelper {
   /*
 * Floyd's Cycle-Finding Algorithm
 */
-  public static boolean isMaliciousAddictionLoop(Map<String, String> table, String view,
-                                           String addiction) {
+  public static boolean isMaliciousDependencyLoop(Map<String, String> table, String view,
+      String dependency) {
     Assert.notEmpty(view);
-    Assert.notEmpty(addiction);
+    Assert.notEmpty(dependency);
 
     String tortoise = view;
     String hare = view;
 
     while (!BeeUtils.isEmpty(hare)) {
-      hare = BeeUtils.same(hare, view) ? addiction : Data.getColumnRelation(hare, table.get(hare));
+      hare = BeeUtils.same(hare, view) ? dependency : Data.getColumnRelation(hare, table.get(hare));
 
       if (BeeUtils.isEmpty(hare)) {
         return false;
       }
-      hare = BeeUtils.same(hare, view) ? addiction : Data.getColumnRelation(hare, table.get(hare));
-      tortoise = BeeUtils.same(tortoise, view) ? addiction
-        : Data.getColumnRelation(tortoise, table.get(tortoise));
+      hare = BeeUtils.same(hare, view) ? dependency : Data.getColumnRelation(hare, table.get(hare));
+      tortoise = BeeUtils.same(tortoise, view)
+          ? dependency : Data.getColumnRelation(tortoise, table.get(tortoise));
 
       if (BeeUtils.same(hare, tortoise)) {
         return true;
