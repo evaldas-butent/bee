@@ -17,12 +17,19 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.modules.trade.TradeUtils;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XRow;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.modules.trade.TradeReportGroup;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.ui.FormFactory;
@@ -90,6 +97,8 @@ public class TradeStockReport extends ReportInterceptor {
 
   private static final String KEY_GROUP = "group";
   private static final String KEY_ID = "id";
+
+  private final XSheet sheet = new XSheet();
 
   public TradeStockReport() {
   }
@@ -174,6 +183,8 @@ public class TradeStockReport extends ReportInterceptor {
     ReportParameters reportParameters = getReportParameters();
 
     if (validateParameters(reportParameters)) {
+      final List<String> headers = getLabels(false);
+
       ParameterList parameters = TradeKeeper.createArgs(SVC_TRADE_STOCK_REPORT);
       parameters.addDataItem(Service.VAR_REPORT_PARAMETERS, reportParameters.serialize());
 
@@ -188,6 +199,9 @@ public class TradeStockReport extends ReportInterceptor {
             Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
             render(data);
 
+            sheet.addHeaders(headers);
+            sheet.autoSizeAll();
+
           } else {
             getFormView().notifyWarning(Localized.dictionary().nothingFound());
           }
@@ -197,38 +211,16 @@ public class TradeStockReport extends ReportInterceptor {
   }
 
   @Override
+  protected void export() {
+    if (!sheet.isEmpty()) {
+      String fileName = Localized.dictionary().trdStock();
+      Exporter.maybeExport(sheet, fileName);
+    }
+  }
+
+  @Override
   protected String getBookmarkLabel() {
-    List<String> labels = StringList.uniqueCaseSensitive();
-
-    labels.addAll(getCaptions(getDateTime(RP_DATE),
-        getBoolean(RP_SHOW_QUANTITY), getBoolean(RP_SHOW_AMOUNT),
-        getItemPrice(), getSelectorLabel(RP_CURRENCY)));
-
-    SELECTOR_NAMES.forEach(name -> labels.add(getSelectorLabel(name)));
-
-    DateTime rFrom = getDateTime(RP_RECEIVED_FROM);
-    DateTime rTo = getDateTime(RP_RECEIVED_TO);
-
-    if (rFrom != null || rTo != null) {
-      labels.add(BeeUtils.joinWords(Localized.dictionary().received(),
-          Format.renderPeriod(rFrom, rTo)));
-    }
-
-    labels.add(getEditorValue(RP_ITEM_FILTER));
-
-    GROUP_NAMES.stream()
-        .filter(name -> BeeUtils.isPositive(getSelectedIndex(name)))
-        .forEach(name -> labels.add(getSelectedItemText(name)));
-
-    if (getBoolean(RP_SUMMARY)) {
-      labels.add(Localized.dictionary().summary());
-    }
-
-    if (BeeUtils.isPositive(getSelectedIndex(RP_COLUMNS))) {
-      labels.add(BeeUtils.joinWords(Localized.dictionary().columns(),
-          getSelectedItemText(RP_COLUMNS)));
-    }
-
+    List<String> labels = getLabels(true);
     return BeeUtils.joinWords(labels);
   }
 
@@ -280,6 +272,43 @@ public class TradeStockReport extends ReportInterceptor {
     }
 
     return captions;
+  }
+
+  private List<String> getLabels(boolean addGrouping) {
+    List<String> labels = StringList.uniqueCaseSensitive();
+
+    labels.addAll(getCaptions(getDateTime(RP_DATE),
+        getBoolean(RP_SHOW_QUANTITY), getBoolean(RP_SHOW_AMOUNT),
+        getItemPrice(), getSelectorLabel(RP_CURRENCY)));
+
+    SELECTOR_NAMES.forEach(name -> labels.add(getSelectorLabel(name)));
+
+    DateTime rFrom = getDateTime(RP_RECEIVED_FROM);
+    DateTime rTo = getDateTime(RP_RECEIVED_TO);
+
+    if (rFrom != null || rTo != null) {
+      labels.add(BeeUtils.joinWords(Localized.dictionary().received(),
+          Format.renderPeriod(rFrom, rTo)));
+    }
+
+    labels.add(getEditorValue(RP_ITEM_FILTER));
+
+    if (addGrouping) {
+      GROUP_NAMES.stream()
+          .filter(name -> BeeUtils.isPositive(getSelectedIndex(name)))
+          .forEach(name -> labels.add(getSelectedItemText(name)));
+
+      if (getBoolean(RP_SUMMARY)) {
+        labels.add(Localized.dictionary().summary());
+      }
+
+      if (BeeUtils.isPositive(getSelectedIndex(RP_COLUMNS))) {
+        labels.add(BeeUtils.joinWords(Localized.dictionary().columns(),
+            getSelectedItemText(RP_COLUMNS)));
+      }
+    }
+
+    return labels;
   }
 
   private static Filter getDocumentSelectorFilter() {
@@ -360,6 +389,8 @@ public class TradeStockReport extends ReportInterceptor {
       container.clear();
     }
 
+    sheet.clear();
+
     Map<String, Double> totals = new HashMap<>();
     quantityColumns.forEach(column -> totals.put(column, BeeConst.DOUBLE_ZERO));
     amountColumns.forEach(column -> totals.put(column, BeeConst.DOUBLE_ZERO));
@@ -373,33 +404,62 @@ public class TradeStockReport extends ReportInterceptor {
     Map<String, Integer> columnIndexes = new HashMap<>();
     int rowTotalColumnIndex = BeeConst.UNDEF;
 
+    int boldRef = sheet.registerFont(XFont.bold());
+
     HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
     int c = 0;
 
+    XRow xr = new XRow(r);
+
+    XStyle xs = XStyle.center();
+    xs.setColor(Colors.LIGHTGRAY);
+    xs.setFontRef(boldRef);
+
+    int headerStyleRef = sheet.registerStyle(xs);
+
+    String text;
+
     if (!rowGroups.isEmpty()) {
       for (TradeReportGroup group : rowGroups) {
-        table.setText(r, c++, group.getCaption(), STYLE_PREFIX + group.getStyleSuffix());
+        text = group.getCaption();
+
+        table.setText(r, c, text, STYLE_PREFIX + group.getStyleSuffix());
+        xr.add(new XCell(c, text, headerStyleRef));
+
+        c++;
       }
     }
 
     if (hasPrice) {
       ItemPrice itemPrice = parameters.getEnum(RP_ITEM_PRICE, ItemPrice.class);
-      String text = (itemPrice == null) ? Localized.dictionary().cost() : itemPrice.getCaption();
+      text = (itemPrice == null) ? Localized.dictionary().cost() : itemPrice.getCaption();
 
-      table.setText(r, c++, text, STYLE_PRICE);
+      table.setText(r, c, text, STYLE_PRICE);
+      xr.add(new XCell(c, text, headerStyleRef));
+
+      c++;
     }
 
     if (columnGroup == null) {
       if (hasQuantity) {
         columnIndexes.put(quantityColumns.get(0), c);
-        table.setText(r, c, Localized.dictionary().quantity(), STYLE_QUANTITY);
+
+        text = Localized.dictionary().quantity();
+
+        table.setText(r, c, text, STYLE_QUANTITY);
+        xr.add(new XCell(c, text, headerStyleRef));
+
         c++;
       }
 
       if (hasAmount) {
         columnIndexes.put(amountColumns.get(0), c);
-        table.setText(r, c, Localized.dictionary().amount(), STYLE_AMOUNT);
+
+        text = Localized.dictionary().amount();
+
+        table.setText(r, c, text, STYLE_AMOUNT);
+        xr.add(new XCell(c, text, headerStyleRef));
       }
 
     } else {
@@ -416,12 +476,19 @@ public class TradeStockReport extends ReportInterceptor {
       }
 
       if (hasEmptyColumnGroupValue) {
-        table.setText(r, c++, BeeUtils.bracket(columnGroup.getCaption()), STYLE_COLUMN_EMPTY_LABEL);
+        text = BeeUtils.bracket(columnGroup.getCaption());
+
+        table.setText(r, c, text, STYLE_COLUMN_EMPTY_LABEL);
+        xr.add(new XCell(c, text, headerStyleRef));
+
+        c++;
       }
 
       for (int i = 0; i < columnGroupLabels.size(); i++) {
-        table.setText(r, c, TradeUtils.formatGroupLabel(columnGroup, columnGroupLabels.get(i)),
-            STYLE_COLUMN_LABEL);
+        text = TradeUtils.formatGroupLabel(columnGroup, columnGroupLabels.get(i));
+
+        table.setText(r, c, text, STYLE_COLUMN_LABEL);
+        xr.add(new XCell(c, text, headerStyleRef));
 
         if (columnGroup.isEditable() && BeeUtils.isIndex(columnGroupValues, i)) {
           TableCellElement cell = table.getCellFormatter().getElement(r, c);
@@ -434,15 +501,26 @@ public class TradeStockReport extends ReportInterceptor {
       }
 
       if (needsRowTotals) {
-        table.setText(r, c, Localized.dictionary().total(), STYLE_ROW_TOTAL);
         rowTotalColumnIndex = c;
+
+        text = Localized.dictionary().total();
+
+        table.setText(r, c, text, STYLE_ROW_TOTAL);
+        xr.add(new XCell(c, text, headerStyleRef));
       }
     }
 
     table.getRowFormatter().addStyleName(r, STYLE_HEADER);
+    sheet.add(xr);
+
     r++;
 
+    xs = XStyle.right();
+    int numberStyleRef = sheet.registerStyle(xs);
+
     for (SimpleRowSet.SimpleRow row : rowSet) {
+      xr = new XRow(r);
+
       c = 0;
 
       if (!rowGroups.isEmpty()) {
@@ -452,8 +530,12 @@ public class TradeStockReport extends ReportInterceptor {
           String column = BeeUtils.getQuietly(rowGroupLabelColumns, i);
           String label = (column == null) ? null : row.getValue(column);
 
-          table.setText(r, c, TradeUtils.formatGroupLabel(group, label),
-              STYLE_PREFIX + group.getStyleSuffix());
+          text = TradeUtils.formatGroupLabel(group, label);
+
+          table.setText(r, c, text, STYLE_PREFIX + group.getStyleSuffix());
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, text));
+          }
 
           if (!BeeUtils.isEmpty(label) && group.isEditable()
               && BeeUtils.isIndex(rowGroupValueColumns, i)) {
@@ -469,7 +551,15 @@ public class TradeStockReport extends ReportInterceptor {
       }
 
       if (hasPrice) {
-        table.setText(r, c++, TradeUtils.formatCost(row.getDouble(priceColumn)), STYLE_PRICE);
+        Double value = row.getDouble(priceColumn);
+        text = TradeUtils.formatCost(value);
+
+        table.setText(r, c, text, STYLE_PRICE);
+        if (!BeeUtils.isEmpty(text)) {
+          xr.add(new XCell(c, value, numberStyleRef));
+        }
+
+        c++;
       }
 
       rowQuantity = BeeConst.DOUBLE_ZERO;
@@ -477,43 +567,80 @@ public class TradeStockReport extends ReportInterceptor {
 
       if (columnGroup == null) {
         if (hasQuantity) {
-          table.setText(r, c++, TradeUtils.formatQuantity(row.getDouble(quantityColumns.get(0))),
-              STYLE_QUANTITY);
+          Double qty = row.getDouble(quantityColumns.get(0));
+          text = TradeUtils.formatQuantity(qty);
+
+          table.setText(r, c, text, STYLE_QUANTITY);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, qty, numberStyleRef));
+          }
+
+          c++;
         }
+
         if (hasAmount) {
-          table.setText(r, c, TradeUtils.formatAmount(row.getDouble(amountColumns.get(0))),
-              STYLE_AMOUNT);
+          Double amount = row.getDouble(amountColumns.get(0));
+          text = TradeUtils.formatAmount(amount);
+
+          table.setText(r, c, text, STYLE_AMOUNT);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, Localized.normalizeMoney(amount), numberStyleRef));
+          }
         }
 
       } else if (hasQuantity && hasAmount) {
         for (int i = 0; i < quantityColumns.size(); i++) {
           Double qty = row.getDouble(quantityColumns.get(i));
-          table.setText(r, c + i, TradeUtils.formatQuantity(qty), STYLE_QUANTITY);
+          text = TradeUtils.formatQuantity(qty);
+
+          table.setText(r, c + i, text, STYLE_QUANTITY);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c + i, qty, numberStyleRef));
+          }
 
           rowQuantity += BeeUtils.unbox(qty);
         }
 
         if (needsRowTotals) {
-          table.setText(r, c + quantityColumns.size(), TradeUtils.formatQuantity(rowQuantity),
-              STYLE_QUANTITY, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatQuantity(rowQuantity);
+          int j = c + quantityColumns.size();
+
+          table.setText(r, j, text, STYLE_QUANTITY, STYLE_ROW_TOTAL);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(j, rowQuantity, numberStyleRef));
+          }
 
           totalQuantity += rowQuantity;
         }
 
         table.getRowFormatter().addStyleName(r, STYLE_QUANTITY_ROW);
         table.getRowFormatter().addStyleName(r, STYLE_BODY);
+        sheet.add(xr);
+
         r++;
+
+        xr = new XRow(r);
 
         for (int i = 0; i < amountColumns.size(); i++) {
           Double amount = row.getDouble(amountColumns.get(i));
-          table.setText(r, c + i, TradeUtils.formatAmount(amount), STYLE_AMOUNT);
+          text = TradeUtils.formatAmount(amount);
+
+          table.setText(r, c + i, text, STYLE_AMOUNT);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c + i, Localized.normalizeMoney(amount), numberStyleRef));
+          }
 
           rowAmount += BeeUtils.unbox(amount);
         }
 
         if (needsRowTotals) {
-          table.setText(r, c + amountColumns.size(), TradeUtils.formatAmount(rowAmount),
-              STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatAmount(rowAmount);
+          int j = c + amountColumns.size();
+
+          table.setText(r, j, text, STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(j, Localized.normalizeMoney(rowAmount), numberStyleRef));
+          }
 
           totalAmount += rowAmount;
         }
@@ -523,14 +650,24 @@ public class TradeStockReport extends ReportInterceptor {
       } else if (hasQuantity) {
         for (String column : quantityColumns) {
           Double qty = row.getDouble(column);
-          table.setText(r, c++, TradeUtils.formatQuantity(qty), STYLE_QUANTITY);
+          text = TradeUtils.formatQuantity(qty);
+
+          table.setText(r, c, text, STYLE_QUANTITY);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, qty, numberStyleRef));
+          }
 
           rowQuantity += BeeUtils.unbox(qty);
+          c++;
         }
 
         if (needsRowTotals) {
-          table.setText(r, c, TradeUtils.formatQuantity(rowQuantity),
-              STYLE_QUANTITY, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatQuantity(rowQuantity);
+
+          table.setText(r, c, text, STYLE_QUANTITY, STYLE_ROW_TOTAL);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, rowQuantity, numberStyleRef));
+          }
 
           totalQuantity += rowQuantity;
         }
@@ -538,18 +675,32 @@ public class TradeStockReport extends ReportInterceptor {
       } else if (hasAmount) {
         for (String column : amountColumns) {
           Double amount = row.getDouble(column);
-          table.setText(r, c++, TradeUtils.formatAmount(amount), STYLE_AMOUNT);
+          text = TradeUtils.formatAmount(amount);
+
+          table.setText(r, c, text, STYLE_AMOUNT);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, Localized.normalizeMoney(amount), numberStyleRef));
+          }
 
           rowAmount += BeeUtils.unbox(amount);
+          c++;
         }
 
         if (needsRowTotals) {
-          table.setText(r, c, TradeUtils.formatAmount(rowAmount), STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatAmount(rowAmount);
+
+          table.setText(r, c, text, STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, Localized.normalizeMoney(rowAmount), numberStyleRef));
+          }
+
           totalAmount += rowAmount;
         }
       }
 
       table.getRowFormatter().addStyleName(r, STYLE_BODY);
+      sheet.add(xr);
+
       r++;
 
       if (hasQuantity) {
@@ -572,38 +723,74 @@ public class TradeStockReport extends ReportInterceptor {
     }
 
     if (rowSet.getNumberOfRows() > 1) {
+      xr = new XRow(r);
+
+      xs = XStyle.right();
+      xs.setColor(Colors.LIGHTGRAY);
+      xs.setFontRef(boldRef);
+
+      int footerStyleRef = sheet.registerStyle(xs);
+
       int minIndex = columnIndexes.values().stream().mapToInt(i -> i).min().getAsInt();
       if (minIndex > 0) {
-        table.setText(r, minIndex - 1, Localized.dictionary().totalOf(), STYLE_TOTAL);
+        text = Localized.dictionary().totalOf();
+
+        table.setText(r, minIndex - 1, text, STYLE_TOTAL);
+        xr.add(new XCell(minIndex - 1, text, footerStyleRef));
       }
 
       if (hasQuantity) {
         for (String column : quantityColumns) {
-          table.setText(r, columnIndexes.get(column), TradeUtils.formatQuantity(totals.get(column)),
-              STYLE_QUANTITY);
+          Double qty = totals.get(column);
+          text = TradeUtils.formatQuantity(qty);
+          int j = columnIndexes.get(column);
+
+          table.setText(r, j, text, STYLE_QUANTITY);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(j, qty, footerStyleRef));
+          }
         }
 
         if (needsRowTotals) {
-          table.setText(r, rowTotalColumnIndex, TradeUtils.formatQuantity(totalQuantity),
-              STYLE_QUANTITY, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatQuantity(totalQuantity);
+
+          table.setText(r, rowTotalColumnIndex, text, STYLE_QUANTITY, STYLE_ROW_TOTAL);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(rowTotalColumnIndex, totalQuantity, footerStyleRef));
+          }
         }
       }
 
       if (columnGroup != null && hasQuantity && hasAmount) {
         table.getRowFormatter().addStyleName(r, STYLE_QUANTITY_ROW);
         table.getRowFormatter().addStyleName(r, STYLE_FOOTER);
+        sheet.add(xr);
+
         r++;
+
+        xr = new XRow(r);
       }
 
       if (hasAmount) {
         for (String column : amountColumns) {
-          table.setText(r, columnIndexes.get(column), TradeUtils.formatAmount(totals.get(column)),
-              STYLE_AMOUNT);
+          Double amount = totals.get(column);
+          text = TradeUtils.formatAmount(amount);
+          int j = columnIndexes.get(column);
+
+          table.setText(r, j, text, STYLE_AMOUNT);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(j, Localized.normalizeMoney(amount), footerStyleRef));
+          }
         }
 
         if (needsRowTotals) {
-          table.setText(r, rowTotalColumnIndex, TradeUtils.formatAmount(totalAmount),
-              STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatAmount(totalAmount);
+
+          table.setText(r, rowTotalColumnIndex, text, STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(rowTotalColumnIndex, Localized.normalizeMoney(totalAmount),
+                footerStyleRef));
+          }
         }
 
         if (columnGroup != null && hasQuantity) {
@@ -612,6 +799,7 @@ public class TradeStockReport extends ReportInterceptor {
       }
 
       table.getRowFormatter().addStyleName(r, STYLE_FOOTER);
+      sheet.add(xr);
     }
 
     container.add(table);
