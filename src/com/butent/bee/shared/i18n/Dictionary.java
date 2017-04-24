@@ -1729,6 +1729,8 @@ public interface Dictionary {
 
   default String discussLastComment() {return g("discussLastComment");}
 
+  default String discussLastCommentator() {return g("discussLastCommentator");}
+
   default String discussMailNewAnnouncementSubject() {return g("discussMailNewAnnouncementSubject");}
 
   default String discussMailNewAnnouncements() {return g("discussMailNewAnnouncements");}
@@ -3163,6 +3165,8 @@ public interface Dictionary {
   default String from() {return g("from");}
 
   default String full() {return g("full");}
+
+  default String generateReport() {return g("generateReport");}
 
   default String goods() {return g("goods");}
 
@@ -5600,6 +5604,8 @@ public interface Dictionary {
   default String timeRanges() {return g("timeRanges");}
 
   default String timeSheet() {return g("timeSheet");}
+
+  default String timeSheetLock() {return g("timeSheetLock");}
 
   default String timeZone() {return g("timeZone");}
 

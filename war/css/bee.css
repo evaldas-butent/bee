@@ -3227,6 +3227,10 @@
   background-color: red;
 }
 
+.bee-Header-commandPanel .bee-Button.bee-report-generate {
+  margin-right: 1em;
+}
+
 .bee-info-table {
   border-collapse: collapse;
 }
