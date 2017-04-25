@@ -163,7 +163,7 @@ public class TradeReportsBean {
     }
 
     List<TradeReportGroup> rowGroups = TradeReportGroup.parseList(parameters, 10);
-    TradeReportGroup columnGroup = TradeReportGroup.parse(parameters.getText(RP_COLUMNS));
+    TradeReportGroup columnGroup = TradeReportGroup.parse(parameters.getText(RP_STOCK_COLUMNS));
 
     if (rowGroups.isEmpty()) {
       if (!TradeReportGroup.WAREHOUSE.equals(columnGroup)) {

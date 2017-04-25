@@ -348,6 +348,8 @@ public final class TradeConstants {
   public static final String EMPTY_VALUE_SUFFIX = "_0";
 
   public static final String RP_DATE = "Date";
+  public static final String RP_START_DATE = "StartDate";
+  public static final String RP_END_DATE = "EndDate";
 
   public static final String RP_SHOW_QUANTITY = "Quantity";
   public static final String RP_SHOW_AMOUNT = "Amount";
@@ -361,7 +363,8 @@ public final class TradeConstants {
   public static final String RP_ITEM_FILTER = "ItemFilter";
 
   public static final String RP_SUMMARY = "Summary";
-  public static final String RP_COLUMNS = "Columns";
+  public static final String RP_STOCK_COLUMNS = "StockColumns";
+  public static final String RP_MOVEMENT_COLUMNS = "MovementColumns";
 
   public static final String RP_WAREHOUSES = "Warehouses";
   public static final String RP_SUPPLIERS = "Suppliers";

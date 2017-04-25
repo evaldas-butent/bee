@@ -303,6 +303,15 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
+  protected boolean checkRequired(String label, DateTime date) {
+    if (date == null) {
+      getFormView().notifyWarning(label, Localized.dictionary().valueRequired());
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   protected void clearEditor(String name) {
     Widget widget = getFormView().getWidgetByName(name);
     if (widget instanceof Editor) {

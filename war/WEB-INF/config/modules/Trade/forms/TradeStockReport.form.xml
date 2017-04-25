@@ -151,7 +151,7 @@
         <cell kind="label">
           <Label text="=columns" style="&c1;" />
         </cell>
-        <ListBox name="Columns">
+        <ListBox name="StockColumns">
           <item>-</item>
           <item value="warehouse">=warehouse</item>
           <item value="type">=itemType</item>
