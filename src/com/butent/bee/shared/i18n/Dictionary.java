@@ -6837,6 +6837,10 @@ public interface Dictionary {
 
   default String trdReminderTemplates() {return g("trdReminderTemplates");}
 
+  default String trdReportColumnsMovement() {return g("trdReportColumnsMovement");}
+
+  default String trdReportColumnsStock() {return g("trdReportColumnsStock");}
+
   default String trdReportStock() {return g("trdReportStock");}
 
   default String trdSaleItems() {return g("trdSaleItems");}

@@ -447,6 +447,10 @@
   font-size: inherit;
 }
 
+.bee-trade-report-stock-table {
+  border-collapse: collapse;
+}
+
 .bee-trade-report-stock-header {
   background-color: #4caf50;
   color: white;

@@ -44,10 +44,6 @@
       </cell>
       <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name"
                        newRowEnabled="false" editEnabled="false" style="width: 5em;" />
-
-      <cell style="padding-left: 1em; vertical-align: top;">
-        <CheckBox name="Summary" text="=summary" />
-      </cell>
     </HorizontalPanel>
 
     <Disclosure open="false">
@@ -145,6 +141,10 @@
         <ListBox name="Group4" style="&glst;">
           &gitems;
         </ListBox>
+
+        <cell style="padding-left: 1em; vertical-align: top;">
+          <CheckBox name="Summary" text="=summary" />
+        </cell>
       </row>
 
       <row>
