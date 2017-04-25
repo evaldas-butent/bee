@@ -10,6 +10,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -287,6 +288,30 @@ public final class ButentWS {
 
     try {
       answer = process("Import_rezervations", sb.toString());
+    } catch (Exception e) {
+      throw BeeException.error(e);
+    }
+    answer = getNode(answer).getTextContent();
+
+    return answer;
+  }
+
+  public String importItemQuantities(SimpleRowSet rs) throws BeeException {
+
+    StringBuilder sb = new StringBuilder("<a>");
+    for (SimpleRow row : rs) {
+      sb.append("<b>");
+      sb.append(XmlUtils.tag("sandelis", row.getValue(COL_WAREHOUSE_CODE)));
+      sb.append(XmlUtils.tag("preke", row.getValue(COL_ITEM_EXTERNAL_CODE)));
+      sb.append(XmlUtils.tag("kiekis", row.getValue(TradeConstants.COL_TRADE_ITEM_QUANTITY)));
+      sb.append("</b>");
+    }
+    sb.append("</a>");
+
+    String answer;
+
+    try {
+      answer = process("ImpOrdQty", sb.toString());
     } catch (Exception e) {
       throw BeeException.error(e);
     }

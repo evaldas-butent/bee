@@ -133,6 +133,7 @@ public final class OrdersConstants {
   public static final String PRM_UPDATE_ITEMS_PRICES = "UpdateItemsPrices";
   public static final String PRM_IMPORT_ERP_ITEMS_TIME = "ImportERPItemsTime";
   public static final String PRM_IMPORT_ERP_STOCKS_TIME = "ImportERPStocksTime";
+  public static final String PRM_EXPORT_ERP_QUANTITIES_TIME = "ExportERPQuantitiesTime";
   public static final String PRM_EXPORT_ERP_RESERVATIONS_TIME = "ExportERPReservationsTime";
   public static final String PRM_DEFAULT_SALE_OPERATION = "DefaultSaleOperation";
   public static final String PRM_CLEAR_RESERVATIONS_TIME = "ClearReservationsTime";

@@ -305,6 +305,9 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     if (ConcurrencyBean.isParameterTimer(timer, PRM_IMPORT_ERP_STOCKS_TIME)) {
       getERPStocks(null);
     }
+    if (ConcurrencyBean.isParameterTimer(timer, PRM_EXPORT_ERP_QUANTITIES_TIME)) {
+      exportQuantities();
+    }
     if (ConcurrencyBean.isParameterTimer(timer, PRM_EXPORT_ERP_RESERVATIONS_TIME)) {
       exportReservations();
     }
@@ -322,6 +325,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createNumber(module, PRM_CLEAR_RESERVATIONS_TIME),
         BeeParameter.createNumber(module, PRM_IMPORT_ERP_ITEMS_TIME),
         BeeParameter.createNumber(module, PRM_IMPORT_ERP_STOCKS_TIME),
+        BeeParameter.createNumber(module, PRM_EXPORT_ERP_QUANTITIES_TIME),
         BeeParameter.createNumber(module, PRM_EXPORT_ERP_RESERVATIONS_TIME),
         BeeParameter.createRelation(module, PRM_DEFAULT_SALE_OPERATION, true,
             VIEW_TRADE_OPERATIONS, COL_OPERATION_NAME),
@@ -356,6 +360,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     cb.createIntervalTimer(this.getClass(), PRM_CLEAR_RESERVATIONS_TIME);
     cb.createIntervalTimer(this.getClass(), PRM_IMPORT_ERP_ITEMS_TIME);
     cb.createIntervalTimer(this.getClass(), PRM_IMPORT_ERP_STOCKS_TIME);
+    cb.createIntervalTimer(this.getClass(), PRM_EXPORT_ERP_QUANTITIES_TIME);
     cb.createIntervalTimer(this.getClass(), PRM_EXPORT_ERP_RESERVATIONS_TIME);
     cb.createIntervalTimer(this.getClass(), PRM_IMPORT_ERP_INV_CHANGES_TIME);
 
@@ -736,15 +741,13 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
     Double hours = prm.getDouble(PRM_CLEAR_RESERVATIONS_TIME);
 
-    SqlSelect select =
-        new SqlSelect()
-            .addFields(TBL_ORDERS, COL_DATES_START_DATE, sys.getIdName(TBL_ORDERS))
-            .addFrom(TBL_ORDERS)
-            .addFromLeft(TBL_ORDER_ITEMS,
-                sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
-            .setWhere(
-                SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS, OrdersStatus.APPROVED
-                    .ordinal()), SqlUtils.positive(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)));
+    SqlSelect select = new SqlSelect()
+        .addFields(TBL_ORDERS, COL_DATES_START_DATE, sys.getIdName(TBL_ORDERS))
+        .addFrom(TBL_ORDERS)
+        .addFromLeft(TBL_ORDER_ITEMS, sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+            OrdersStatus.APPROVED.ordinal()), SqlUtils.positive(TBL_ORDER_ITEMS,
+            COL_RESERVED_REMAINDER)));
 
     SimpleRowSet rowSet = qs.getData(select);
 
@@ -754,13 +757,61 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       if (TimeUtils.nowMillis().getTime() > orderTime.getTime() + hours
           * TimeUtils.MILLIS_PER_HOUR) {
 
-        SqlUpdate update =
-            new SqlUpdate(TBL_ORDER_ITEMS)
-                .addConstant(COL_RESERVED_REMAINDER, null)
-                .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER, row.getLong(sys
-                    .getIdName(TBL_ORDERS))));
+        SqlUpdate update = new SqlUpdate(TBL_ORDER_ITEMS)
+            .addConstant(COL_RESERVED_REMAINDER, null)
+            .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER,
+                row.getLong(sys.getIdName(TBL_ORDERS))));
 
         qs.updateData(update);
+      }
+    }
+  }
+
+  private void exportQuantities() {
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+    SqlSelect select = new SqlSelect()
+        .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addSum(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addGroup(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+        .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addFrom(TBL_ORDER_ITEMS)
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+        .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
+        .addFromLeft(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+            OrdersStatus.APPROVED.ordinal()), SqlUtils.notNull(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)));
+
+    Table<Integer, String, Double> tableMap = HashBasedTable.create();
+
+    for (SimpleRow row : getReservations()) {
+      tableMap.put(row.getInt(COL_ITEM_EXTERNAL_CODE), row.getValue(COL_WAREHOUSE_CODE),
+          BeeUtils.unbox(row.getDouble(ALS_TOTAL_AMOUNT)));
+    }
+
+    SimpleRowSet orderItems = qs.getData(select);
+
+    for (SimpleRow orderItem : orderItems) {
+      Integer externalCode = orderItem.getInt(COL_ITEM_EXTERNAL_CODE);
+      String warehouseCode = orderItem.getValue(COL_WAREHOUSE_CODE);
+
+      if (tableMap.contains(externalCode, warehouseCode)) {
+        Double orderItemQty = orderItem.getDouble(COL_TRADE_ITEM_QUANTITY);
+        orderItem.setValue(COL_TRADE_ITEM_QUANTITY,
+            BeeUtils.toString(orderItemQty - tableMap.get(externalCode, warehouseCode)));
+      }
+    }
+
+    if (orderItems.getNumberOfRows() > 0) {
+      try {
+        ButentWS.connect(remoteAddress, remoteLogin, remotePassword)
+            .importItemQuantities(orderItems);
+      } catch (BeeException e) {
+        logger.error(e);
+        sys.eventEnd(sys.eventStart(PRM_EXPORT_ERP_QUANTITIES_TIME), "ERROR", e.getMessage());
       }
     }
   }
@@ -770,46 +821,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    SqlSelect select =
-        new SqlSelect()
-            .addFields(ALS_RESERVATIONS, COL_ITEM_EXTERNAL_CODE, COL_WAREHOUSE_CODE)
-            .addSum(ALS_RESERVATIONS, COL_RESERVED_REMAINDER, ALS_TOTAL_AMOUNT)
-            .addGroup(ALS_RESERVATIONS, COL_ITEM_EXTERNAL_CODE)
-            .addGroup(ALS_RESERVATIONS, COL_WAREHOUSE_CODE)
-            .addFrom(new SqlSelect()
-                    .setUnionAllMode(true)
-                    .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
-                    .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
-                    .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
-                    .addFrom(TBL_ORDER_ITEMS)
-                    .addFromLeft(TBL_ITEMS,
-                        sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
-                    .addFromLeft(TBL_ORDERS,
-                        sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
-                    .addFromLeft(TBL_WAREHOUSES,
-                        sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
-                    .setWhere(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
-                        OrdersStatus.APPROVED.ordinal())).addUnion(
-                    new SqlSelect()
-                        .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
-                        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
-                        .addField(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY,
-                            COL_RESERVED_REMAINDER)
-                        .addFrom(VIEW_ORDER_CHILD_INVOICES)
-                        .addFromLeft(TBL_ORDER_ITEMS, sys.joinTables(TBL_ORDER_ITEMS,
-                            VIEW_ORDER_CHILD_INVOICES, COL_ORDER_ITEM))
-                        .addFromLeft(TBL_ORDERS,
-                            sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
-                        .addFromLeft(TBL_WAREHOUSES,
-                            sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
-                        .addFromLeft(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS,
-                            VIEW_ORDER_CHILD_INVOICES, COL_SALE_ITEM))
-                        .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
-                        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
-                        .setWhere(SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED))),
-                ALS_RESERVATIONS);
-
-    SimpleRowSet rs = qs.getData(select);
+    SimpleRowSet rs = getReservations();
 
     if (rs.getNumberOfRows() > 0) {
       try {
@@ -1336,6 +1348,44 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     } else {
       return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
     }
+  }
+
+  private SimpleRowSet getReservations() {
+    SqlSelect select = new SqlSelect()
+        .addFields(ALS_RESERVATIONS, COL_ITEM_EXTERNAL_CODE, COL_WAREHOUSE_CODE)
+        .addSum(ALS_RESERVATIONS, COL_RESERVED_REMAINDER, ALS_TOTAL_AMOUNT)
+        .addGroup(ALS_RESERVATIONS, COL_ITEM_EXTERNAL_CODE)
+        .addGroup(ALS_RESERVATIONS, COL_WAREHOUSE_CODE)
+        .addFrom(new SqlSelect()
+                .setUnionAllMode(true)
+                .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+                .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+                .addFields(TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER)
+                .addFrom(TBL_ORDER_ITEMS)
+                .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_ORDER_ITEMS, COL_ITEM))
+                .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS, COL_ORDER))
+                .addFromLeft(TBL_WAREHOUSES,
+                    sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
+                .setWhere(SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+                    OrdersStatus.APPROVED.ordinal())).addUnion(new SqlSelect()
+                    .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+                    .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+                    .addField(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_RESERVED_REMAINDER)
+                    .addFrom(VIEW_ORDER_CHILD_INVOICES)
+                    .addFromLeft(TBL_ORDER_ITEMS, sys.joinTables(TBL_ORDER_ITEMS,
+                        VIEW_ORDER_CHILD_INVOICES, COL_ORDER_ITEM))
+                    .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_ITEMS,
+                        COL_ORDER))
+                    .addFromLeft(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS,
+                        COL_WAREHOUSE))
+                    .addFromLeft(TBL_SALE_ITEMS, sys.joinTables(TBL_SALE_ITEMS,
+                        VIEW_ORDER_CHILD_INVOICES, COL_SALE_ITEM))
+                    .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
+                    .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SALE_ITEMS, COL_ITEM))
+                    .setWhere(SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED))),
+            ALS_RESERVATIONS);
+
+    return qs.getData(select);
   }
 
   private ResponseObject getTemplateItems(RequestInfo reqInfo) {
