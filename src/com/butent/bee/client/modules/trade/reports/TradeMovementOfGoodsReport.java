@@ -2,17 +2,22 @@ package com.butent.bee.client.modules.trade.reports;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.output.Report;
+import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 public class TradeMovementOfGoodsReport extends TradeStockReport {
 
@@ -109,5 +114,36 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
   @Override
   protected String getExportFileName() {
     return Localized.dictionary().trdMovement();
+  }
+
+  @Override
+  protected void render(Map<String, String> data) {
+    SimpleRowSet rowSet = SimpleRowSet.restore(data.get(Service.VAR_DATA));
+
+    HasIndexedWidgets container = getDataContainer();
+    if (!container.isEmpty()) {
+      container.clear();
+    }
+
+    HtmlTable table = new HtmlTable();
+    int r = 0;
+
+    for (int c = 0; c < rowSet.getNumberOfColumns(); c++) {
+      table.setText(r, c, rowSet.getColumnName(c));
+    }
+    r++;
+
+    for (SimpleRowSet.SimpleRow row : rowSet) {
+      for (int c = 0; c < rowSet.getNumberOfColumns(); c++) {
+        String text = row.getValue(c);
+        if (text != null) {
+          table.setText(r, c, BeeUtils.removeTrailingZeros(text));
+        }
+      }
+
+      r++;
+    }
+
+    container.add(table);
   }
 }

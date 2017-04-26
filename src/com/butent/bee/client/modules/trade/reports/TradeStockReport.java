@@ -362,7 +362,7 @@ public class TradeStockReport extends ReportInterceptor {
     return EnumUtils.getEnumByIndex(ItemPrice.class, getSelectedIndex(RP_ITEM_PRICE));
   }
 
-  private void render(Map<String, String> data) {
+  protected void render(Map<String, String> data) {
     SimpleRowSet rowSet = SimpleRowSet.restore(data.get(Service.VAR_DATA));
     if (DataUtils.isEmpty(rowSet)) {
       String message = Localized.dictionary().keyNotFound(Service.VAR_DATA);
@@ -386,14 +386,14 @@ public class TradeStockReport extends ReportInterceptor {
     }
 
     TradeReportGroup columnGroup = EnumUtils.getEnumByIndex(TradeReportGroup.class,
-        data.get(RP_COLUMN_GROUPS));
+        data.get(RP_STOCK_COLUMN_GROUPS));
 
     List<String> columnGroupLabels = new ArrayList<>();
     List<String> columnGroupValues = new ArrayList<>();
 
     if (columnGroup != null) {
-      columnGroupLabels.addAll(Codec.deserializeList(data.get(RP_COLUMN_GROUP_LABELS)));
-      columnGroupValues.addAll(Codec.deserializeList(data.get(RP_COLUMN_GROUP_VALUES)));
+      columnGroupLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_LABELS)));
+      columnGroupValues.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_VALUES)));
     }
 
     List<String> quantityColumns = NameUtils.toList(data.get(RP_QUANTITY_COLUMNS));

@@ -28,6 +28,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeMovementColumn;
 import com.butent.bee.shared.modules.trade.TradeMovementGroup;
 import com.butent.bee.shared.modules.trade.TradeReportGroup;
 import com.butent.bee.shared.report.ReportParameters;
@@ -278,8 +279,11 @@ public class TradeReportsBean {
     int amountPrecision = sys.getFieldPrecision(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
     int amountScale = sys.getFieldScale(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
 
-    List<String> columnGroupLabels = new ArrayList<>();
-    List<String> columnGroupValues = new ArrayList<>();
+    List<String> stockColumnGroupLabels = new ArrayList<>();
+    List<String> stockColumnGroupValues = new ArrayList<>();
+
+    List<TradeMovementColumn> movementInColumns = new ArrayList<>();
+    List<TradeMovementColumn> movementOutColumns = new ArrayList<>();
 
     List<String> rowGroupValueColumns = new ArrayList<>();
     List<String> rowGroupLabelColumns = new ArrayList<>();
@@ -511,12 +515,12 @@ public class TradeReportsBean {
           needsYear);
 
       if (!labelToValue.isEmpty()) {
-        columnGroupLabels.addAll(labelToValue.keySet());
-        columnGroupLabels.sort(null);
+        stockColumnGroupLabels.addAll(labelToValue.keySet());
+        stockColumnGroupLabels.sort(null);
 
         if (stockGroup.isEditable()) {
-          for (String label : columnGroupLabels) {
-            columnGroupValues.add(BeeUtils.joinItems(labelToValue.get(label)));
+          for (String label : stockColumnGroupLabels) {
+            stockColumnGroupValues.add(BeeUtils.joinItems(labelToValue.get(label)));
           }
         }
       }
@@ -537,8 +541,8 @@ public class TradeReportsBean {
             quantityColumns.add(aliasForEmptyValue(aliasEndQuantity));
           }
 
-          if (!columnGroupLabels.isEmpty()) {
-            for (int i = 0; i < columnGroupLabels.size(); i++) {
+          if (!stockColumnGroupLabels.isEmpty()) {
+            for (int i = 0; i < stockColumnGroupLabels.size(); i++) {
               quantityColumns.add(aliasForGroupValue(aliasStartQuantity, i));
               quantityColumns.add(aliasForGroupValue(aliasEndQuantity, i));
             }
@@ -552,8 +556,8 @@ public class TradeReportsBean {
             quantityColumns.add(aliasForEmptyValue(aliasQuantity));
           }
 
-          if (!columnGroupLabels.isEmpty()) {
-            for (int i = 0; i < columnGroupLabels.size(); i++) {
+          if (!stockColumnGroupLabels.isEmpty()) {
+            for (int i = 0; i < stockColumnGroupLabels.size(); i++) {
               quantityColumns.add(aliasForGroupValue(aliasQuantity, i));
             }
           }
@@ -572,8 +576,8 @@ public class TradeReportsBean {
             amountColumns.add(aliasForEmptyValue(aliasEndAmount));
           }
 
-          if (!columnGroupLabels.isEmpty()) {
-            for (int i = 0; i < columnGroupLabels.size(); i++) {
+          if (!stockColumnGroupLabels.isEmpty()) {
+            for (int i = 0; i < stockColumnGroupLabels.size(); i++) {
               amountColumns.add(aliasForGroupValue(aliasStartAmount, i));
               amountColumns.add(aliasForGroupValue(aliasEndAmount, i));
             }
@@ -587,8 +591,8 @@ public class TradeReportsBean {
             amountColumns.add(aliasForEmptyValue(aliasAmount));
           }
 
-          if (!columnGroupLabels.isEmpty()) {
-            for (int i = 0; i < columnGroupLabels.size(); i++) {
+          if (!stockColumnGroupLabels.isEmpty()) {
+            for (int i = 0; i < stockColumnGroupLabels.size(); i++) {
               amountColumns.add(aliasForGroupValue(aliasAmount, i));
             }
           }
@@ -601,7 +605,9 @@ public class TradeReportsBean {
       if (response.hasErrors()) {
         return response;
       }
+
       tmp = response.getResponseAsString();
+      qs.sqlIndex(tmp, COL_TRADE_DOCUMENT_ITEM);
     }
 
     if (!rowGroups.isEmpty()) {
@@ -615,11 +621,20 @@ public class TradeReportsBean {
       if (response.hasErrors()) {
         return response;
       }
+
       tmp = response.getResponseAsString();
+      qs.sqlIndex(tmp, COL_TRADE_DOCUMENT_ITEM);
 
       for (TradeReportGroup group : rowGroups) {
         rowGroupValueColumns.add(groupValueAliases.get(group));
         rowGroupLabelColumns.add(group.getLabelAlias());
+      }
+    }
+
+    if (movement) {
+      ResponseObject response = addMovement(tmp, movementGroups);
+      if (response.hasErrors()) {
+        return response;
       }
     }
 
@@ -664,13 +679,26 @@ public class TradeReportsBean {
     }
 
     if (stockGroup != null) {
-      result.put(RP_COLUMN_GROUPS, BeeUtils.toString(stockGroup.ordinal()));
+      result.put(RP_STOCK_COLUMN_GROUPS, BeeUtils.toString(stockGroup.ordinal()));
 
-      if (!columnGroupLabels.isEmpty()) {
-        result.put(RP_COLUMN_GROUP_LABELS, Codec.beeSerialize(columnGroupLabels));
+      if (!stockColumnGroupLabels.isEmpty()) {
+        result.put(RP_STOCK_COLUMN_GROUP_LABELS, Codec.beeSerialize(stockColumnGroupLabels));
       }
-      if (!columnGroupValues.isEmpty()) {
-        result.put(RP_COLUMN_GROUP_VALUES, Codec.beeSerialize(columnGroupValues));
+      if (!stockColumnGroupValues.isEmpty()) {
+        result.put(RP_STOCK_COLUMN_GROUP_VALUES, Codec.beeSerialize(stockColumnGroupValues));
+      }
+    }
+
+    if (movement) {
+      if (!movementGroups.isEmpty()) {
+        result.put(RP_MOVEMENT_COLUMN_GROUPS, EnumUtils.joinIndexes(movementGroups));
+      }
+
+      if (!movementInColumns.isEmpty()) {
+        result.put(RP_MOVEMENT_IN_COLUMNS, Codec.beeSerialize(movementInColumns));
+      }
+      if (!movementOutColumns.isEmpty()) {
+        result.put(RP_MOVEMENT_OUT_COLUMNS, Codec.beeSerialize(movementOutColumns));
       }
     }
 
@@ -868,6 +896,10 @@ public class TradeReportsBean {
       }
     }
 
+    return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject addMovement(String tbl, List<TradeMovementGroup> movementGroups) {
     return ResponseObject.emptyResponse();
   }
 
