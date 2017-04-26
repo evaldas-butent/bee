@@ -71,8 +71,8 @@
           <item>-</item>
           <item value="operation_type">=trdOperationType</item>
           <item value="operation">=trdOperation</item>
-          <item value="operation_type_warehouse">=trdOperationType+, +=warehouse</item>
-          <item value="operation_warehouse">=trdOperation+, +=warehouse</item>
+          <item value="operation_type,warehouse">=trdOperationType+, +=warehouse</item>
+          <item value="operation,warehouse">=trdOperation+, +=warehouse</item>
         </ListBox>
       </row>
     </Table>

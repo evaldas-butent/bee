@@ -198,8 +198,6 @@ public class TradeStockReport extends ReportInterceptor {
     ReportParameters reportParameters = getReportParameters();
 
     if (validateParameters(reportParameters)) {
-      final List<String> headers = getLabels(false);
-
       ParameterList parameters = TradeKeeper.createArgs(getService());
       parameters.addDataItem(Service.VAR_REPORT_PARAMETERS, reportParameters.serialize());
 
@@ -214,7 +212,7 @@ public class TradeStockReport extends ReportInterceptor {
             Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
             render(data);
 
-            sheet.addHeaders(headers);
+            sheet.addHeaders(getLabels(false));
             sheet.autoSizeAll();
 
           } else {
