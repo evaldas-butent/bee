@@ -18,9 +18,11 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,8 +42,10 @@ public class TimeSheetCodeInput extends AbstractTimeCodeInput {
   void onInputContainerCreate(Flow inputContainer) {
     Label inputLabel = new Label(Localized.dictionary().timeCardCode());
     Label durationLabel = new Label(Localized.dictionary().duration());
-    inputCode = UnboundSelector.create(VIEW_TIME_CARD_CODES,
-      Collections.singletonList(COL_TC_CODE));
+    Relation rel = Relation.create(VIEW_TIME_CARD_CODES, Collections.singletonList(COL_TC_CODE));
+    rel.setChoiceColumns(Arrays.asList(COL_TC_CODE, COL_TC_NAME));
+
+    inputCode = UnboundSelector.create(rel);
     inputDuration = new InputTimeOfDay();
 
     inputLabel.addStyleName(STYLE_TRC_INPUT_LABEL);
