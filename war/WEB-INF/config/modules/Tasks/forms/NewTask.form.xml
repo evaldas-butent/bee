@@ -46,6 +46,11 @@
       <col index="0" cellStyle="&col1;" />
 
       <row>
+        <Label />
+        <CheckBox name="NotScheduledTask" text="=crmTasksNotScheduledTask"/>
+      </row>
+
+      <row>
         <Label name="ExecutorsLabel" text="=crmTaskExecutors" />
         <MultiSelector name="Executors" viewName="Users" property="Executors" renderColumns="FirstName LastName"
           editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskExecutors" />
@@ -155,7 +160,6 @@
         <Label />
         <CheckBox name="Mail" text="=mailNotify" />
         <CheckBox source="PrivateTask" />
-        <CheckBox name="NotScheduledTask" text="=crmTasksNotScheduledTask"/>
       </row>
     </Table>
 
