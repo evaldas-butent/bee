@@ -137,6 +137,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         }
         return true;
       });
+
+    } else if (BeeUtils.same(editableWidget.getColumnId(), COL_REPAIRER)
+        && widget instanceof DataSelector) {
+      ServiceHelper.setRepairerFilter(widget);
     }
     super.afterCreateEditableWidget(editableWidget, widget);
   }
