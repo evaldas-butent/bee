@@ -215,6 +215,8 @@ public class MaintenanceCommentForm extends AbstractFormInterceptor
           widgetTypeSelector.setValue(Global.getParameterRelation(PRM_DEFAULT_WARRANTY_TYPE), true);
         }
       } else {
+        newRow.setValue(getDataIndex(COL_SHOW_CUSTOMER), Boolean.TRUE);
+        form.refreshBySource(COL_SHOW_CUSTOMER);
         updateTermVisibility(form, newRow);
       }
     }
