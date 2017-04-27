@@ -190,6 +190,7 @@ public final class TradeConstants {
   public static final String COL_OPERATION_WAREHOUSE_TO = "WarehouseTo";
   public static final String COL_OPERATION_DEFAULT = "IsDefault";
   public static final String COL_OPERATION_CASH_REGISTER_NO = "CashRegisterNo";
+  public static final String COL_OPERATION_ORDINAL = "Ordinal";
 
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
@@ -345,10 +346,14 @@ public final class TradeConstants {
   public static final int MAX_STOCK_DEPTH = 1_000;
   public static final int DEFAULT_SERIES_NUMBER_LENGTH = 6;
 
-  public static final String EMPTY_VALUE_SUFFIX = "_0";
-
   public static final String PREFIX_START_STOCK = "Start_";
+  public static final String PREFIX_MOVEMENT_IN = "In_";
+  public static final String PREFIX_MOVEMENT_OUT = "Out_";
   public static final String PREFIX_END_STOCK = "End_";
+
+  public static final String EMPTY_VALUE_SUFFIX = "_0";
+  public static final String SUFFIX_QUANTITY = "_qty";
+  public static final String SUFFIX_AMOUNT = "_amt";
 
   public static final String RP_DATE = "Date";
   public static final String RP_START_DATE = "StartDate";

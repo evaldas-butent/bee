@@ -5,10 +5,13 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-public class TradeMovementColumn implements BeeSerializable {
+import java.util.List;
+import java.util.stream.Collectors;
+
+public final class TradeMovementColumn implements BeeSerializable {
 
   private enum Serial {
-    LABEL, OPERATION_TYPE, OPERATION, OPERATION_NAME, OPERATION_ORDINAL,
+    LABEL, OPERATION_TYPE, OPERATION, OPERATION_NAME,
     WAREHOUSE_FROM, WAREHOUSE_FROM_CODE, WAREHOUSE_TO, WAREHOUSE_TO_CODE
   }
 
@@ -18,13 +21,18 @@ public class TradeMovementColumn implements BeeSerializable {
     return tmc;
   }
 
+  public static List<TradeMovementColumn> restoreList(String input) {
+    return Codec.deserializeList(input).stream()
+        .map(TradeMovementColumn::restore)
+        .collect(Collectors.toList());
+  }
+
   private String label;
 
   private OperationType operationType;
 
   private Long operation;
   private String operationName;
-  private Integer operationOrdinal;
 
   private Long warehouseFrom;
   private String warehouseFromCode;
@@ -32,7 +40,11 @@ public class TradeMovementColumn implements BeeSerializable {
   private Long warehouseTo;
   private String warehouseToCode;
 
-  public TradeMovementColumn() {
+  private TradeMovementColumn() {
+  }
+
+  public TradeMovementColumn(String label) {
+    this.label = label;
   }
 
   @Override
@@ -59,9 +71,6 @@ public class TradeMovementColumn implements BeeSerializable {
             break;
           case OPERATION_NAME:
             setOperationName(value);
-            break;
-          case OPERATION_ORDINAL:
-            setOperationOrdinal(BeeUtils.toIntOrNull(value));
             break;
 
           case WAREHOUSE_FROM:
@@ -103,9 +112,6 @@ public class TradeMovementColumn implements BeeSerializable {
           break;
         case OPERATION_NAME:
           arr[i++] = getOperationName();
-          break;
-        case OPERATION_ORDINAL:
-          arr[i++] = getOperationOrdinal();
           break;
 
         case WAREHOUSE_FROM:
@@ -157,14 +163,6 @@ public class TradeMovementColumn implements BeeSerializable {
 
   public void setOperationName(String operationName) {
     this.operationName = operationName;
-  }
-
-  public Integer getOperationOrdinal() {
-    return operationOrdinal;
-  }
-
-  public void setOperationOrdinal(Integer operationOrdinal) {
-    this.operationOrdinal = operationOrdinal;
   }
 
   public Long getWarehouseFrom() {
