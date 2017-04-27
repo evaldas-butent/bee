@@ -40,9 +40,9 @@
 
     <SimpleColumn name="ServiceObject"/>
     <SimpleJoin name="ServiceObject" joinType="INNER">
-      <SimpleColumn name="Manufacturer" />
-      <SimpleJoin joinType="LEFT" name="Manufacturer">
-        <SimpleColumn name="Name" alias="ManufacturerName" />
+      <SimpleColumn name="ServiceManufacturer" />
+      <SimpleJoin joinType="LEFT" name="ServiceManufacturer">
+        <SimpleColumn name="ManufacturerName" />
       </SimpleJoin>
 
       <SimpleColumn name="Contractor" />

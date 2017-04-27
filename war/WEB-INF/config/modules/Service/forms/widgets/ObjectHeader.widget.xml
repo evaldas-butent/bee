@@ -77,9 +77,9 @@
           <InputText source="Model" style="&finp;" />
         </FlowPanel>
 
-        <FlowPanel style="&mfld; width: 20em;" for="Manufacturer">
-          <Label for="Manufacturer" style="&flbl;" />
-          <DataSelector source="Manufacturer" viewName="Companies" renderColumns="ManufacturerName"
+        <FlowPanel style="&mfld; width: 20em;" for="ServiceManufacturer">
+          <Label for="ServiceManufacturer" style="&flbl;" />
+          <DataSelector source="ServiceManufacturer" renderColumns="ManufacturerName" choiceColumns="ManufacturerName" filter="Visible"
                         style="&finp;"/>
         </FlowPanel>
 
