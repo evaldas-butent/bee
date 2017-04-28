@@ -162,6 +162,7 @@ public final class PayrollConstants {
   public static final String SVC_GET_SCHEDULE_OVERLAP = "getScheduleOverlap";
   public static final String SVC_GET_SCHEDULED_MONTHS = "getScheduledMonths";
   public static final String SVC_GET_EARNINGS = "getEarnings";
+  public static final String SVC_PAYROLL_FUND_REPORT = "PayrollFundReport";
 
   public static final String TBL_EMPLOYEES = "Employees";
   public static final String TBL_LOCATIONS = "Locations";
@@ -249,6 +250,8 @@ public final class PayrollConstants {
 
   public static final String ALS_LOCATION_MANAGER_FIRST_NAME = "ManagerFirstName";
   public static final String ALS_LOCATION_MANAGER_LAST_NAME = "ManagerLastName";
+
+  public static final String ALS_REPORT_TIME_PERIOD = "ReportTimePeriod";
 
   public static final String ALS_TC_BACKGROUND = "TcBackground";
   public static final String ALS_TC_FOREGROUND = "TcForeground";

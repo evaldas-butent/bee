@@ -3,8 +3,9 @@ package com.butent.bee.client.output;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_NAME;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_NOTES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_TYPE_NAME;
+import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -36,11 +37,13 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectPriority;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.*;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.report.DateTimeFunction;
 import com.butent.bee.shared.report.ReportInfo;
@@ -48,6 +51,8 @@ import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -570,6 +575,92 @@ public enum Report implements HasWidgetSupplier {
           COL_PAYROLL_CONFIRMATION_DATE, COL_PAYROLL_CONFIRMED + COL_USER, COL_NOTES)
           .forEach(item -> report.addColItem(items.get(item)));
       return Collections.singletonList(report);
+    }
+  },
+
+  PAYROLL_FUND_REPORT(ModuleAndSub.of(Module.PAYROLL), SVC_PAYROLL_FUND_REPORT) {
+    @Override
+    public List<ReportItem> getItems() {
+      Dictionary dict = Localized.dictionary();
+      return Arrays.asList(
+        new ReportDateItem(ALS_REPORT_TIME_PERIOD, dict.period()),
+
+        new ReportTextItem(COL_OSF_AMOUNT,
+          Data.getColumnLabel(TBL_OBJECT_SALARY_FUND, COL_OSF_AMOUNT)),
+
+        new ReportNumericItem(TradeConstants.COL_TRADE_PAID, dict.trdPaid()).setPrecision(2),
+
+        new ReportTextItem(COL_CURRENCY, dict.currency()),
+
+        new ReportTextItem(TradeConstants.COL_TRADE_DEBT, dict.trdItemStock()),
+
+        new ReportTextItem(COL_LOCATION_NAME, dict.object()),
+
+        new ReportEnumItem(COL_LOCATION_STATUS,
+          Data.getColumnLabel(VIEW_LOCATIONS, COL_LOCATION_STATUS), ObjectStatus.class),
+
+        new ReportTextItem(COL_COMPANY_CODE, dict.companyCode()),
+
+        new ReportTextItem(COL_COMPANY_NAME, dict.companyName()),
+
+        new ReportTextItem(ALS_COMPANY_TYPE_NAME, dict.companyStatusName()),
+
+        new ReportTextItem(COL_FIRST_NAME, dict.firstName()),
+
+        new ReportTextItem(COL_LAST_NAME, dict.lastName()),
+
+        new ReportTextItem(ALS_LOCATION_MANAGER_FIRST_NAME, BeeUtils.joinWords(dict.manager(),
+          dict.firstName())),
+
+        new ReportTextItem(ALS_LOCATION_MANAGER_LAST_NAME, BeeUtils.joinWords(dict.manager(),
+          dict.lastName())),
+
+        new ReportTextItem(FinanceConstants.ALS_EMPLOYEE_FIRST_NAME,
+          BeeUtils.joinWords(dict.employee(), dict.firstName())),
+
+        new ReportTextItem(FinanceConstants.ALS_EMPLOYEE_LAST_NAME,
+          BeeUtils.joinWords(dict.employee(), dict.lastName()))
+      );
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Dictionary dict = Localized.dictionary();
+      ReportInfo report = new ReportInfo(getReportCaption());
+
+      Map<String, ReportItem> items = new HashMap<>();
+
+      for (ReportItem item : getItems()) {
+        items.put(item.getExpression(), item);
+      }
+
+      ReportExpressionItem period = new ReportExpressionItem(dict.period());
+      period.append(null, new ReportDateItem(ALS_REPORT_TIME_PERIOD,
+        dict.year()).setFormat(DateTimeFunction.YEAR));
+      period.append(null, new ReportDateItem(ALS_REPORT_TIME_PERIOD,
+        dict.month()).setFormat(DateTimeFunction.MONTH));
+
+      report.addRowItem(period);
+      report.addRowItem(items.get(COL_LOCATION_NAME));
+      report.addRowItem(items.get(COL_OSF_AMOUNT));
+      report.addRowItem(items.get(COL_CURRENCY));
+
+      report.addColItem(items.get(TradeConstants.COL_TRADE_PAID));
+      report.addRowItem(items.get(TradeConstants.COL_TRADE_DEBT));
+
+      report.getFilterItems().add(new ReportDateItem(COL_DATE_FROM, dict.dateFrom()).setFilter(
+        BeeUtils.toString(new YearMonth(new JustDate()).previousMonth().getDate().getDays())
+      ));
+
+      report.getFilterItems().add(new ReportDateItem(COL_DATE_TO, dict.dateTo()).setFilter(
+        BeeUtils.toString(new YearMonth(new JustDate()).getDate().getDays())
+      ));
+      return Collections.singletonList(report);
+    }
+
+    @Override
+    public String getReportCaption() {
+      return Localized.dictionary().payrollFundReport();
     }
   };
 

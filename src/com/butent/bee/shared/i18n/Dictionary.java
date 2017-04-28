@@ -4202,6 +4202,8 @@ public interface Dictionary {
 
   default String payrollFullTime() {return g("payrollFullTime");}
 
+  default String payrollFundReport() {return g("payrollFundReport");}
+
   default String payrollPartTime() {return g("payrollPartTime");}
 
   default String percent() {return g("percent");}
