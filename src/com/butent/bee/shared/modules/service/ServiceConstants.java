@@ -140,8 +140,7 @@ public final class ServiceConstants {
   public static final String COL_STATE_COMMENT = "StateComment";
   public static final String COL_STATE_NAME = "Name";
 
-  public static final String COL_MANUFACTURER = "Manufacturer";
-  public static final String COL_MAINTENANCE_CREATOR = "Creator";
+  public static final String COL_MANUFACTURER = "ServiceManufacturer";
   public static final String COL_MAINTENANCE_DATE = "Date";
   public static final String COL_MAINTENANCE_ITEM = "Item";
   public static final String COL_MAINTENANCE_INVOICE = "Invoice";

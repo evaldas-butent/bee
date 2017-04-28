@@ -17,22 +17,27 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.modules.trade.TradeUtils;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.client.ui.Opener;
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.modules.trade.TradeReportGroup;
-import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XRow;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -40,6 +45,8 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeReportGroup;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -65,31 +72,31 @@ public class TradeStockReport extends ReportInterceptor {
 
   private static final List<String> GROUP_NAMES = reportGroupNames(5);
 
-  private static final String STYLE_PREFIX = TradeKeeper.STYLE_PREFIX + "report-stock-";
-
-  private static final String STYLE_TABLE = STYLE_PREFIX + "table";
-
-  private static final String STYLE_HEADER = STYLE_PREFIX + "header";
-  private static final String STYLE_BODY = STYLE_PREFIX + "body";
-  private static final String STYLE_FOOTER = STYLE_PREFIX + "footer";
-
-  private static final String STYLE_COLUMN_EMPTY_LABEL = STYLE_PREFIX + "column-empty-label";
-  private static final String STYLE_COLUMN_LABEL = STYLE_PREFIX + "column-label";
-
-  private static final String STYLE_PRICE = STYLE_PREFIX + "price";
-  private static final String STYLE_QUANTITY = STYLE_PREFIX + "qty";
-  private static final String STYLE_AMOUNT = STYLE_PREFIX + "amount";
-
-  private static final String STYLE_QUANTITY_ROW = STYLE_PREFIX + "qty-row";
-  private static final String STYLE_AMOUNT_ROW = STYLE_PREFIX + "amount-row";
-
-  private static final String STYLE_ROW_TOTAL = STYLE_PREFIX + "row-total";
-  private static final String STYLE_TOTAL = STYLE_PREFIX + "total";
-
-  private static final String STYLE_EDITABLE = STYLE_PREFIX + "editable";
-
   private static final String KEY_GROUP = "group";
   private static final String KEY_ID = "id";
+
+  private final String styleTable = stylePrefix() + "table";
+
+  private final String styleHeader = stylePrefix() + "header";
+  private final String styleBody = stylePrefix() + "body";
+  private final String styleFooter = stylePrefix() + "footer";
+
+  private final String styleColumnEmptyLabel = stylePrefix() + "column-empty-label";
+  private final String styleColumnLabel = stylePrefix() + "column-label";
+
+  private final String stylePrice = stylePrefix() + "price";
+  private final String styleQuantity = stylePrefix() + "qty";
+  private final String styleAmount = stylePrefix() + "amount";
+
+  private final String styleQuantityRow = stylePrefix() + "qty-row";
+  private final String styleAmountRow = stylePrefix() + "amount-row";
+
+  private final String styleRowTotal = stylePrefix() + "row-total";
+  private final String styleTotal = stylePrefix() + "total";
+
+  private final String styleEditable = stylePrefix() + "editable";
+
+  private final XSheet sheet = new XSheet();
 
   public TradeStockReport() {
   }
@@ -100,36 +107,44 @@ public class TradeStockReport extends ReportInterceptor {
 
     if (parameters != null) {
       loadDateTime(parameters, RP_DATE, form);
-
-      loadBoolean(parameters, RP_SHOW_QUANTITY, form);
-      loadBoolean(parameters, RP_SHOW_AMOUNT, form);
-
-      loadListByIndex(parameters, RP_ITEM_PRICE, form);
-      loadId(parameters, RP_CURRENCY, form);
-
-      loadMulti(parameters, SELECTOR_NAMES, form);
-
-      loadDateTime(parameters, RP_RECEIVED_FROM, form);
-      loadDateTime(parameters, RP_RECEIVED_TO, form);
-
-      loadText(parameters, RP_ITEM_FILTER, form);
-
-      loadGroupByValue(parameters, GROUP_NAMES, form);
-      loadBoolean(parameters, RP_SUMMARY, form);
-
-      loadListByValue(parameters, RP_COLUMNS, form);
+      commonLoad(parameters, form);
     }
 
     super.onLoad(form);
   }
 
+  protected static void commonLoad(ReportParameters parameters, FormView form) {
+    loadBoolean(parameters, RP_SHOW_QUANTITY, form);
+    loadBoolean(parameters, RP_SHOW_AMOUNT, form);
+
+    loadListByIndex(parameters, RP_ITEM_PRICE, form);
+    loadId(parameters, RP_CURRENCY, form);
+
+    loadMulti(parameters, SELECTOR_NAMES, form);
+
+    loadDateTime(parameters, RP_RECEIVED_FROM, form);
+    loadDateTime(parameters, RP_RECEIVED_TO, form);
+
+    loadText(parameters, RP_ITEM_FILTER, form);
+
+    loadGroupByValue(parameters, GROUP_NAMES, form);
+    loadBoolean(parameters, RP_SUMMARY, form);
+
+    loadListByValue(parameters, RP_STOCK_COLUMNS, form);
+  }
+
   @Override
   public void onUnload(FormView form) {
-    storeDateTimeValues(RP_DATE, RP_RECEIVED_FROM, RP_RECEIVED_TO);
+    storeDateTimeValues(RP_DATE);
+    commonStore();
+  }
+
+  protected void commonStore() {
+    storeDateTimeValues(RP_RECEIVED_FROM, RP_RECEIVED_TO);
     storeBooleanValues(RP_SHOW_QUANTITY, RP_SHOW_AMOUNT, RP_SUMMARY);
 
     storeSelectedIndex(RP_ITEM_PRICE, 0);
-    storeSelectedValue(RP_COLUMNS, 1);
+    storeSelectedValue(RP_STOCK_COLUMNS, 1);
 
     storeEditorValues(RP_CURRENCY, RP_ITEM_FILTER);
     storeEditorValues(SELECTOR_NAMES);
@@ -165,8 +180,17 @@ public class TradeStockReport extends ReportInterceptor {
 
   @Override
   protected void clearFilter() {
-    clearEditors(RP_DATE, RP_RECEIVED_FROM, RP_RECEIVED_TO, RP_ITEM_FILTER);
+    clearEditors(RP_DATE);
+    commonClearFilter();
+  }
+
+  protected void commonClearFilter() {
+    clearEditors(RP_RECEIVED_FROM, RP_RECEIVED_TO, RP_ITEM_FILTER);
     clearEditors(SELECTOR_NAMES);
+  }
+
+  protected String getService() {
+    return SVC_TRADE_STOCK_REPORT;
   }
 
   @Override
@@ -174,7 +198,7 @@ public class TradeStockReport extends ReportInterceptor {
     ReportParameters reportParameters = getReportParameters();
 
     if (validateParameters(reportParameters)) {
-      ParameterList parameters = TradeKeeper.createArgs(SVC_TRADE_STOCK_REPORT);
+      ParameterList parameters = TradeKeeper.createArgs(getService());
       parameters.addDataItem(Service.VAR_REPORT_PARAMETERS, reportParameters.serialize());
 
       BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
@@ -188,6 +212,9 @@ public class TradeStockReport extends ReportInterceptor {
             Map<String, String> data = Codec.deserializeHashMap(response.getResponseAsString());
             render(data);
 
+            sheet.addHeaders(getLabels(false));
+            sheet.autoSizeAll();
+
           } else {
             getFormView().notifyWarning(Localized.dictionary().nothingFound());
           }
@@ -197,10 +224,92 @@ public class TradeStockReport extends ReportInterceptor {
   }
 
   @Override
+  protected void export() {
+    if (!sheet.isEmpty()) {
+      Exporter.maybeExport(sheet, getExportFileName());
+    }
+  }
+
+  protected String getExportFileName() {
+    return Localized.dictionary().trdStock();
+  }
+
+  @Override
   protected String getBookmarkLabel() {
+    List<String> labels = getLabels(true);
+    return BeeUtils.joinWords(labels);
+  }
+
+  @Override
+  protected Report getReport() {
+    return Report.TRADE_STOCK;
+  }
+
+  @Override
+  protected ReportParameters getReportParameters() {
+    ReportParameters parameters = new ReportParameters();
+
+    addDateTimeValues(parameters, RP_DATE);
+    addCommonParameters(parameters);
+
+    return parameters;
+  }
+
+  protected void addCommonParameters(ReportParameters parameters) {
+    addDateTimeValues(parameters, RP_RECEIVED_FROM, RP_RECEIVED_TO);
+    addBooleanValues(parameters, RP_SHOW_QUANTITY, RP_SHOW_AMOUNT, RP_SUMMARY);
+
+    addSelectedIndex(parameters, RP_ITEM_PRICE, 0);
+    addSelectedValue(parameters, RP_STOCK_COLUMNS, 1);
+
+    addEditorValues(parameters, RP_CURRENCY, RP_ITEM_FILTER);
+    addEditorValues(parameters, SELECTOR_NAMES);
+
+    addGroupByValue(parameters, GROUP_NAMES);
+  }
+
+  protected String stylePrefix() {
+    return TradeKeeper.STYLE_PREFIX + "report-stock-";
+  }
+
+  @Override
+  protected boolean validateParameters(ReportParameters parameters) {
+    DateTime receivedFrom = parameters.getDateTime(RP_RECEIVED_FROM);
+    DateTime receivedTo = parameters.getDateTime(RP_RECEIVED_TO);
+
+    return checkRange(receivedFrom, receivedTo)
+        && checkFilter(ClassifierConstants.VIEW_ITEMS, parameters.getText(RP_ITEM_FILTER));
+  }
+
+  protected String getDateCaption() {
+    return Format.renderDateLong(getDateTime(RP_DATE));
+  }
+
+  private List<String> getCaptions(String dateCaption, boolean qty, boolean amount,
+      ItemPrice itemPrice, String currencyName) {
+
+    List<String> captions = new ArrayList<>();
+
+    captions.add(getReportCaption());
+    if (!BeeUtils.isEmpty(dateCaption)) {
+      captions.add(dateCaption);
+    }
+
+    if (qty && !amount) {
+      captions.add(Localized.dictionary().quantity());
+
+    } else if (itemPrice != null || !BeeUtils.isEmpty(currencyName)) {
+      String priceName = (itemPrice == null) ? null : itemPrice.getCaption();
+      captions.add(BeeUtils.joinItems(priceName, currencyName));
+    }
+
+    return captions;
+  }
+
+  protected List<String> getLabels(boolean addGrouping) {
     List<String> labels = StringList.uniqueCaseSensitive();
 
-    labels.addAll(getCaptions(getDateTime(RP_DATE),
+    labels.addAll(getCaptions(getDateCaption(),
         getBoolean(RP_SHOW_QUANTITY), getBoolean(RP_SHOW_AMOUNT),
         getItemPrice(), getSelectorLabel(RP_CURRENCY)));
 
@@ -216,70 +325,22 @@ public class TradeStockReport extends ReportInterceptor {
 
     labels.add(getEditorValue(RP_ITEM_FILTER));
 
-    GROUP_NAMES.stream()
-        .filter(name -> BeeUtils.isPositive(getSelectedIndex(name)))
-        .forEach(name -> labels.add(getSelectedItemText(name)));
+    if (addGrouping) {
+      GROUP_NAMES.stream()
+          .filter(name -> BeeUtils.isPositive(getSelectedIndex(name)))
+          .forEach(name -> labels.add(getSelectedItemText(name)));
 
-    if (getBoolean(RP_SUMMARY)) {
-      labels.add(Localized.dictionary().summary());
+      if (getBoolean(RP_SUMMARY)) {
+        labels.add(Localized.dictionary().summary());
+      }
+
+      if (BeeUtils.isPositive(getSelectedIndex(RP_STOCK_COLUMNS))) {
+        labels.add(BeeUtils.joinWords(Localized.dictionary().trdReportColumnsStock(),
+            getSelectedItemText(RP_STOCK_COLUMNS)));
+      }
     }
 
-    if (BeeUtils.isPositive(getSelectedIndex(RP_COLUMNS))) {
-      labels.add(BeeUtils.joinWords(Localized.dictionary().columns(),
-          getSelectedItemText(RP_COLUMNS)));
-    }
-
-    return BeeUtils.joinWords(labels);
-  }
-
-  @Override
-  protected Report getReport() {
-    return Report.TRADE_STOCK;
-  }
-
-  @Override
-  protected ReportParameters getReportParameters() {
-    ReportParameters parameters = new ReportParameters();
-
-    addDateTimeValues(parameters, RP_DATE, RP_RECEIVED_FROM, RP_RECEIVED_TO);
-    addBooleanValues(parameters, RP_SHOW_QUANTITY, RP_SHOW_AMOUNT, RP_SUMMARY);
-
-    addSelectedIndex(parameters, RP_ITEM_PRICE, 0);
-    addSelectedValue(parameters, RP_COLUMNS, 1);
-
-    addEditorValues(parameters, RP_CURRENCY, RP_ITEM_FILTER);
-    addEditorValues(parameters, SELECTOR_NAMES);
-
-    addGroupByValue(parameters, GROUP_NAMES);
-
-    return parameters;
-  }
-
-  @Override
-  protected boolean validateParameters(ReportParameters parameters) {
-    return checkRange(getDateTime(RP_RECEIVED_FROM), getDateTime(RP_RECEIVED_TO))
-        && checkFilter(ClassifierConstants.VIEW_ITEMS, getEditorValue(RP_ITEM_FILTER));
-  }
-
-  private static List<String> getCaptions(DateTime date, boolean qty, boolean amount,
-      ItemPrice itemPrice, String currencyName) {
-
-    List<String> captions = new ArrayList<>();
-
-    captions.add(Localized.dictionary().trdReportStock());
-    if (date != null) {
-      captions.add(Format.renderDateLong(date));
-    }
-
-    if (qty && !amount) {
-      captions.add(Localized.dictionary().quantity());
-
-    } else if (itemPrice != null || !BeeUtils.isEmpty(currencyName)) {
-      String priceName = (itemPrice == null) ? null : itemPrice.getCaption();
-      captions.add(BeeUtils.joinItems(priceName, currencyName));
-    }
-
-    return captions;
+    return labels;
   }
 
   private static Filter getDocumentSelectorFilter() {
@@ -301,7 +362,7 @@ public class TradeStockReport extends ReportInterceptor {
     return EnumUtils.getEnumByIndex(ItemPrice.class, getSelectedIndex(RP_ITEM_PRICE));
   }
 
-  private void render(Map<String, String> data) {
+  protected void render(Map<String, String> data) {
     SimpleRowSet rowSet = SimpleRowSet.restore(data.get(Service.VAR_DATA));
     if (DataUtils.isEmpty(rowSet)) {
       String message = Localized.dictionary().keyNotFound(Service.VAR_DATA);
@@ -325,14 +386,14 @@ public class TradeStockReport extends ReportInterceptor {
     }
 
     TradeReportGroup columnGroup = EnumUtils.getEnumByIndex(TradeReportGroup.class,
-        data.get(RP_COLUMN_GROUPS));
+        data.get(RP_STOCK_COLUMN_GROUPS));
 
     List<String> columnGroupLabels = new ArrayList<>();
     List<String> columnGroupValues = new ArrayList<>();
 
     if (columnGroup != null) {
-      columnGroupLabels.addAll(Codec.deserializeList(data.get(RP_COLUMN_GROUP_LABELS)));
-      columnGroupValues.addAll(Codec.deserializeList(data.get(RP_COLUMN_GROUP_VALUES)));
+      columnGroupLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_LABELS)));
+      columnGroupValues.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_VALUES)));
     }
 
     List<String> quantityColumns = NameUtils.toList(data.get(RP_QUANTITY_COLUMNS));
@@ -360,6 +421,8 @@ public class TradeStockReport extends ReportInterceptor {
       container.clear();
     }
 
+    sheet.clear();
+
     Map<String, Double> totals = new HashMap<>();
     quantityColumns.forEach(column -> totals.put(column, BeeConst.DOUBLE_ZERO));
     amountColumns.forEach(column -> totals.put(column, BeeConst.DOUBLE_ZERO));
@@ -373,33 +436,62 @@ public class TradeStockReport extends ReportInterceptor {
     Map<String, Integer> columnIndexes = new HashMap<>();
     int rowTotalColumnIndex = BeeConst.UNDEF;
 
-    HtmlTable table = new HtmlTable(STYLE_TABLE);
+    int boldRef = sheet.registerFont(XFont.bold());
+
+    HtmlTable table = new HtmlTable(styleTable);
     int r = 0;
     int c = 0;
 
+    XRow xr = new XRow(r);
+
+    XStyle xs = XStyle.center();
+    xs.setColor(Colors.LIGHTGRAY);
+    xs.setFontRef(boldRef);
+
+    int headerStyleRef = sheet.registerStyle(xs);
+
+    String text;
+
     if (!rowGroups.isEmpty()) {
       for (TradeReportGroup group : rowGroups) {
-        table.setText(r, c++, group.getCaption(), STYLE_PREFIX + group.getStyleSuffix());
+        text = group.getCaption();
+
+        table.setText(r, c, text, stylePrefix() + group.getStyleSuffix());
+        xr.add(new XCell(c, text, headerStyleRef));
+
+        c++;
       }
     }
 
     if (hasPrice) {
       ItemPrice itemPrice = parameters.getEnum(RP_ITEM_PRICE, ItemPrice.class);
-      String text = (itemPrice == null) ? Localized.dictionary().cost() : itemPrice.getCaption();
+      text = (itemPrice == null) ? Localized.dictionary().cost() : itemPrice.getCaption();
 
-      table.setText(r, c++, text, STYLE_PRICE);
+      table.setText(r, c, text, stylePrice);
+      xr.add(new XCell(c, text, headerStyleRef));
+
+      c++;
     }
 
     if (columnGroup == null) {
       if (hasQuantity) {
         columnIndexes.put(quantityColumns.get(0), c);
-        table.setText(r, c, Localized.dictionary().quantity(), STYLE_QUANTITY);
+
+        text = Localized.dictionary().quantity();
+
+        table.setText(r, c, text, styleQuantity);
+        xr.add(new XCell(c, text, headerStyleRef));
+
         c++;
       }
 
       if (hasAmount) {
         columnIndexes.put(amountColumns.get(0), c);
-        table.setText(r, c, Localized.dictionary().amount(), STYLE_AMOUNT);
+
+        text = Localized.dictionary().amount();
+
+        table.setText(r, c, text, styleAmount);
+        xr.add(new XCell(c, text, headerStyleRef));
       }
 
     } else {
@@ -416,12 +508,19 @@ public class TradeStockReport extends ReportInterceptor {
       }
 
       if (hasEmptyColumnGroupValue) {
-        table.setText(r, c++, BeeUtils.bracket(columnGroup.getCaption()), STYLE_COLUMN_EMPTY_LABEL);
+        text = BeeUtils.bracket(columnGroup.getCaption());
+
+        table.setText(r, c, text, styleColumnEmptyLabel);
+        xr.add(new XCell(c, text, headerStyleRef));
+
+        c++;
       }
 
       for (int i = 0; i < columnGroupLabels.size(); i++) {
-        table.setText(r, c, TradeUtils.formatGroupLabel(columnGroup, columnGroupLabels.get(i)),
-            STYLE_COLUMN_LABEL);
+        text = TradeUtils.formatGroupLabel(columnGroup, columnGroupLabels.get(i));
+
+        table.setText(r, c, text, styleColumnLabel);
+        xr.add(new XCell(c, text, headerStyleRef));
 
         if (columnGroup.isEditable() && BeeUtils.isIndex(columnGroupValues, i)) {
           TableCellElement cell = table.getCellFormatter().getElement(r, c);
@@ -434,15 +533,26 @@ public class TradeStockReport extends ReportInterceptor {
       }
 
       if (needsRowTotals) {
-        table.setText(r, c, Localized.dictionary().total(), STYLE_ROW_TOTAL);
         rowTotalColumnIndex = c;
+
+        text = Localized.dictionary().total();
+
+        table.setText(r, c, text, styleRowTotal);
+        xr.add(new XCell(c, text, headerStyleRef));
       }
     }
 
-    table.getRowFormatter().addStyleName(r, STYLE_HEADER);
+    table.getRowFormatter().addStyleName(r, styleHeader);
+    sheet.add(xr);
+
     r++;
 
+    xs = XStyle.right();
+    int numberStyleRef = sheet.registerStyle(xs);
+
     for (SimpleRowSet.SimpleRow row : rowSet) {
+      xr = new XRow(r);
+
       c = 0;
 
       if (!rowGroups.isEmpty()) {
@@ -452,8 +562,12 @@ public class TradeStockReport extends ReportInterceptor {
           String column = BeeUtils.getQuietly(rowGroupLabelColumns, i);
           String label = (column == null) ? null : row.getValue(column);
 
-          table.setText(r, c, TradeUtils.formatGroupLabel(group, label),
-              STYLE_PREFIX + group.getStyleSuffix());
+          text = TradeUtils.formatGroupLabel(group, label);
+
+          table.setText(r, c, text, stylePrefix() + group.getStyleSuffix());
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, text));
+          }
 
           if (!BeeUtils.isEmpty(label) && group.isEditable()
               && BeeUtils.isIndex(rowGroupValueColumns, i)) {
@@ -469,7 +583,15 @@ public class TradeStockReport extends ReportInterceptor {
       }
 
       if (hasPrice) {
-        table.setText(r, c++, TradeUtils.formatCost(row.getDouble(priceColumn)), STYLE_PRICE);
+        Double value = row.getDouble(priceColumn);
+        text = TradeUtils.formatCost(value);
+
+        table.setText(r, c, text, stylePrice);
+        if (!BeeUtils.isEmpty(text)) {
+          xr.add(new XCell(c, value, numberStyleRef));
+        }
+
+        c++;
       }
 
       rowQuantity = BeeConst.DOUBLE_ZERO;
@@ -477,60 +599,107 @@ public class TradeStockReport extends ReportInterceptor {
 
       if (columnGroup == null) {
         if (hasQuantity) {
-          table.setText(r, c++, TradeUtils.formatQuantity(row.getDouble(quantityColumns.get(0))),
-              STYLE_QUANTITY);
+          Double qty = row.getDouble(quantityColumns.get(0));
+          text = TradeUtils.formatQuantity(qty);
+
+          table.setText(r, c, text, styleQuantity);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, qty, numberStyleRef));
+          }
+
+          c++;
         }
+
         if (hasAmount) {
-          table.setText(r, c, TradeUtils.formatAmount(row.getDouble(amountColumns.get(0))),
-              STYLE_AMOUNT);
+          Double amount = row.getDouble(amountColumns.get(0));
+          text = TradeUtils.formatAmount(amount);
+
+          table.setText(r, c, text, styleAmount);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, Localized.normalizeMoney(amount), numberStyleRef));
+          }
         }
 
       } else if (hasQuantity && hasAmount) {
         for (int i = 0; i < quantityColumns.size(); i++) {
           Double qty = row.getDouble(quantityColumns.get(i));
-          table.setText(r, c + i, TradeUtils.formatQuantity(qty), STYLE_QUANTITY);
+          text = TradeUtils.formatQuantity(qty);
+
+          table.setText(r, c + i, text, styleQuantity);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c + i, qty, numberStyleRef));
+          }
 
           rowQuantity += BeeUtils.unbox(qty);
         }
 
         if (needsRowTotals) {
-          table.setText(r, c + quantityColumns.size(), TradeUtils.formatQuantity(rowQuantity),
-              STYLE_QUANTITY, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatQuantity(rowQuantity);
+          int j = c + quantityColumns.size();
+
+          table.setText(r, j, text, styleQuantity, styleRowTotal);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(j, rowQuantity, numberStyleRef));
+          }
 
           totalQuantity += rowQuantity;
         }
 
-        table.getRowFormatter().addStyleName(r, STYLE_QUANTITY_ROW);
-        table.getRowFormatter().addStyleName(r, STYLE_BODY);
+        table.getRowFormatter().addStyleName(r, styleQuantityRow);
+        table.getRowFormatter().addStyleName(r, styleBody);
+        sheet.add(xr);
+
         r++;
+
+        xr = new XRow(r);
 
         for (int i = 0; i < amountColumns.size(); i++) {
           Double amount = row.getDouble(amountColumns.get(i));
-          table.setText(r, c + i, TradeUtils.formatAmount(amount), STYLE_AMOUNT);
+          text = TradeUtils.formatAmount(amount);
+
+          table.setText(r, c + i, text, styleAmount);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c + i, Localized.normalizeMoney(amount), numberStyleRef));
+          }
 
           rowAmount += BeeUtils.unbox(amount);
         }
 
         if (needsRowTotals) {
-          table.setText(r, c + amountColumns.size(), TradeUtils.formatAmount(rowAmount),
-              STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatAmount(rowAmount);
+          int j = c + amountColumns.size();
+
+          table.setText(r, j, text, styleAmount, styleRowTotal);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(j, Localized.normalizeMoney(rowAmount), numberStyleRef));
+          }
 
           totalAmount += rowAmount;
         }
 
-        table.getRowFormatter().addStyleName(r, STYLE_AMOUNT_ROW);
+        table.getRowFormatter().addStyleName(r, styleAmountRow);
 
       } else if (hasQuantity) {
         for (String column : quantityColumns) {
           Double qty = row.getDouble(column);
-          table.setText(r, c++, TradeUtils.formatQuantity(qty), STYLE_QUANTITY);
+          text = TradeUtils.formatQuantity(qty);
+
+          table.setText(r, c, text, styleQuantity);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, qty, numberStyleRef));
+          }
 
           rowQuantity += BeeUtils.unbox(qty);
+          c++;
         }
 
         if (needsRowTotals) {
-          table.setText(r, c, TradeUtils.formatQuantity(rowQuantity),
-              STYLE_QUANTITY, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatQuantity(rowQuantity);
+
+          table.setText(r, c, text, styleQuantity, styleRowTotal);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, rowQuantity, numberStyleRef));
+          }
 
           totalQuantity += rowQuantity;
         }
@@ -538,18 +707,32 @@ public class TradeStockReport extends ReportInterceptor {
       } else if (hasAmount) {
         for (String column : amountColumns) {
           Double amount = row.getDouble(column);
-          table.setText(r, c++, TradeUtils.formatAmount(amount), STYLE_AMOUNT);
+          text = TradeUtils.formatAmount(amount);
+
+          table.setText(r, c, text, styleAmount);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, Localized.normalizeMoney(amount), numberStyleRef));
+          }
 
           rowAmount += BeeUtils.unbox(amount);
+          c++;
         }
 
         if (needsRowTotals) {
-          table.setText(r, c, TradeUtils.formatAmount(rowAmount), STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatAmount(rowAmount);
+
+          table.setText(r, c, text, styleAmount, styleRowTotal);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(c, Localized.normalizeMoney(rowAmount), numberStyleRef));
+          }
+
           totalAmount += rowAmount;
         }
       }
 
-      table.getRowFormatter().addStyleName(r, STYLE_BODY);
+      table.getRowFormatter().addStyleName(r, styleBody);
+      sheet.add(xr);
+
       r++;
 
       if (hasQuantity) {
@@ -572,65 +755,102 @@ public class TradeStockReport extends ReportInterceptor {
     }
 
     if (rowSet.getNumberOfRows() > 1) {
+      xr = new XRow(r);
+
+      xs = XStyle.right();
+      xs.setColor(Colors.LIGHTGRAY);
+      xs.setFontRef(boldRef);
+
+      int footerStyleRef = sheet.registerStyle(xs);
+
       int minIndex = columnIndexes.values().stream().mapToInt(i -> i).min().getAsInt();
       if (minIndex > 0) {
-        table.setText(r, minIndex - 1, Localized.dictionary().totalOf(), STYLE_TOTAL);
+        text = Localized.dictionary().totalOf();
+
+        table.setText(r, minIndex - 1, text, styleTotal);
+        xr.add(new XCell(minIndex - 1, text, footerStyleRef));
       }
 
       if (hasQuantity) {
         for (String column : quantityColumns) {
-          table.setText(r, columnIndexes.get(column), TradeUtils.formatQuantity(totals.get(column)),
-              STYLE_QUANTITY);
+          Double qty = totals.get(column);
+          text = TradeUtils.formatQuantity(qty);
+          int j = columnIndexes.get(column);
+
+          table.setText(r, j, text, styleQuantity);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(j, qty, footerStyleRef));
+          }
         }
 
         if (needsRowTotals) {
-          table.setText(r, rowTotalColumnIndex, TradeUtils.formatQuantity(totalQuantity),
-              STYLE_QUANTITY, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatQuantity(totalQuantity);
+
+          table.setText(r, rowTotalColumnIndex, text, styleQuantity, styleRowTotal);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(rowTotalColumnIndex, totalQuantity, footerStyleRef));
+          }
         }
       }
 
       if (columnGroup != null && hasQuantity && hasAmount) {
-        table.getRowFormatter().addStyleName(r, STYLE_QUANTITY_ROW);
-        table.getRowFormatter().addStyleName(r, STYLE_FOOTER);
+        table.getRowFormatter().addStyleName(r, styleQuantityRow);
+        table.getRowFormatter().addStyleName(r, styleFooter);
+        sheet.add(xr);
+
         r++;
+
+        xr = new XRow(r);
       }
 
       if (hasAmount) {
         for (String column : amountColumns) {
-          table.setText(r, columnIndexes.get(column), TradeUtils.formatAmount(totals.get(column)),
-              STYLE_AMOUNT);
+          Double amount = totals.get(column);
+          text = TradeUtils.formatAmount(amount);
+          int j = columnIndexes.get(column);
+
+          table.setText(r, j, text, styleAmount);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(j, Localized.normalizeMoney(amount), footerStyleRef));
+          }
         }
 
         if (needsRowTotals) {
-          table.setText(r, rowTotalColumnIndex, TradeUtils.formatAmount(totalAmount),
-              STYLE_AMOUNT, STYLE_ROW_TOTAL);
+          text = TradeUtils.formatAmount(totalAmount);
+
+          table.setText(r, rowTotalColumnIndex, text, styleAmount, styleRowTotal);
+          if (!BeeUtils.isEmpty(text)) {
+            xr.add(new XCell(rowTotalColumnIndex, Localized.normalizeMoney(totalAmount),
+                footerStyleRef));
+          }
         }
 
         if (columnGroup != null && hasQuantity) {
-          table.getRowFormatter().addStyleName(r, STYLE_AMOUNT_ROW);
+          table.getRowFormatter().addStyleName(r, styleAmountRow);
         }
       }
 
-      table.getRowFormatter().addStyleName(r, STYLE_FOOTER);
+      table.getRowFormatter().addStyleName(r, styleFooter);
+      sheet.add(xr);
     }
 
     container.add(table);
   }
 
-  private static void maybeMakeEditable(Element cell, TradeReportGroup group, String value) {
+  private void maybeMakeEditable(Element cell, TradeReportGroup group, String value) {
     if (DataUtils.isId(value)) {
       DomUtils.setDataProperty(cell, KEY_GROUP, group.ordinal());
       DomUtils.setDataProperty(cell, KEY_ID, value);
 
-      cell.addClassName(STYLE_EDITABLE);
+      cell.addClassName(styleEditable);
 
     } else if (!BeeUtils.isEmpty(value)) {
       cell.setTitle(value);
     }
   }
 
-  private static void onCellClick(Element cell) {
-    if (cell.hasClassName(STYLE_EDITABLE)) {
+  private void onCellClick(Element cell) {
+    if (cell.hasClassName(styleEditable)) {
       TradeReportGroup group = EnumUtils.getEnumByIndex(TradeReportGroup.class,
           DomUtils.getDataProperty(cell, KEY_GROUP));
 

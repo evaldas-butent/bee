@@ -28,6 +28,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
+import com.butent.bee.shared.modules.trade.TradeMovementColumn;
+import com.butent.bee.shared.modules.trade.TradeMovementGroup;
 import com.butent.bee.shared.modules.trade.TradeReportGroup;
 import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -46,7 +48,6 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.NullOrdering;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -54,7 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -81,11 +82,11 @@ public class TradeReportsBean {
     String svc = BeeUtils.trim(service);
     switch (svc) {
       case SVC_TRADE_STOCK_REPORT:
-        response = doStockReport(reqInfo);
+        response = doStockReport(reqInfo, false);
         break;
 
       case SVC_TRADE_MOVEMENT_OF_GOODS_REPORT:
-        response = doMovementOfGoodsReport(reqInfo);
+        response = doStockReport(reqInfo, true);
         break;
 
       default:
@@ -97,7 +98,7 @@ public class TradeReportsBean {
     return response;
   }
 
-  private ResponseObject doStockReport(RequestInfo reqInfo) {
+  private ResponseObject doStockReport(RequestInfo reqInfo, boolean movement) {
     if (!reqInfo.hasParameter(Service.VAR_REPORT_PARAMETERS)) {
       return ResponseObject.parameterNotFound(reqInfo.getLabel(), Service.VAR_REPORT_PARAMETERS);
     }
@@ -105,7 +106,23 @@ public class TradeReportsBean {
     ReportParameters parameters =
         ReportParameters.restore(reqInfo.getParameter(Service.VAR_REPORT_PARAMETERS));
 
-    DateTime date = parameters.getDateTime(RP_DATE);
+    DateTime startDate = null;
+    DateTime endDate;
+
+    if (movement) {
+      startDate = parameters.getDateTime(RP_START_DATE);
+      endDate = parameters.getDateTime(RP_END_DATE);
+
+      if (startDate == null) {
+        return ResponseObject.parameterNotFound(reqInfo.getLabel(), RP_START_DATE);
+      }
+      if (endDate == null) {
+        return ResponseObject.parameterNotFound(reqInfo.getLabel(), RP_END_DATE);
+      }
+
+    } else {
+      endDate = parameters.getDateTime(RP_DATE);
+    }
 
     boolean showQuantity = parameters.getBoolean(RP_SHOW_QUANTITY);
     boolean showAmount = parameters.getBoolean(RP_SHOW_AMOUNT);
@@ -163,34 +180,41 @@ public class TradeReportsBean {
     }
 
     List<TradeReportGroup> rowGroups = TradeReportGroup.parseList(parameters, 10);
-    TradeReportGroup columnGroup = TradeReportGroup.parse(parameters.getText(RP_COLUMNS));
+    TradeReportGroup stockGroup = TradeReportGroup.parse(parameters.getText(RP_STOCK_COLUMNS));
+
+    List<TradeMovementGroup> movementGroups;
+    if (movement) {
+      movementGroups = TradeMovementGroup.parseList(parameters.getText(RP_MOVEMENT_COLUMNS));
+    } else {
+      movementGroups = new ArrayList<>();
+    }
 
     if (rowGroups.isEmpty()) {
-      if (!TradeReportGroup.WAREHOUSE.equals(columnGroup)) {
+      if (!TradeReportGroup.WAREHOUSE.equals(stockGroup)) {
         rowGroups.add(TradeReportGroup.WAREHOUSE);
       }
 
-      if (!TradeReportGroup.ITEM.equals(columnGroup)) {
+      if (!TradeReportGroup.ITEM.equals(stockGroup)) {
         rowGroups.add(TradeReportGroup.ITEM);
       }
-      if (!EnumUtils.in(columnGroup, TradeReportGroup.ITEM, TradeReportGroup.ARTICLE)) {
+      if (!EnumUtils.in(stockGroup, TradeReportGroup.ITEM, TradeReportGroup.ARTICLE)) {
         rowGroups.add(TradeReportGroup.ARTICLE);
       }
 
-      if (showQuantity && !TradeReportGroup.UNIT.equals(columnGroup)) {
+      if (showQuantity && !TradeReportGroup.UNIT.equals(stockGroup)) {
         rowGroups.add(TradeReportGroup.UNIT);
       }
 
-    } else if (columnGroup != null && rowGroups.contains(columnGroup)) {
-      rowGroups.remove(columnGroup);
+    } else if (stockGroup != null && rowGroups.contains(stockGroup)) {
+      rowGroups.remove(stockGroup);
     }
 
     boolean summary = parameters.getBoolean(RP_SUMMARY);
 
     Map<TradeReportGroup, String> groupValueAliases = new EnumMap<>(TradeReportGroup.class);
     rowGroups.forEach(trg -> groupValueAliases.put(trg, trg.getValueAlias()));
-    if (columnGroup != null) {
-      groupValueAliases.put(columnGroup, columnGroup.getValueAlias());
+    if (stockGroup != null) {
+      groupValueAliases.put(stockGroup, stockGroup.getValueAlias());
     }
 
     boolean needsYear = groupValueAliases.containsKey(TradeReportGroup.YEAR_RECEIVED);
@@ -220,25 +244,30 @@ public class TradeReportsBean {
 
     boolean needsItems = itemTypeCondition != null || itemGroupCondition != null
         || itemCondition != null || showAmount && itemPrice != null
-        || TradeReportGroup.needsItem(columnGroup) || TradeReportGroup.needsItem(rowGroups);
+        || TradeReportGroup.needsItem(stockGroup) || TradeReportGroup.needsItem(rowGroups);
 
     boolean needsPrimaryDocuments = primaryDocumentCondition != null
-        || TradeReportGroup.needsPrimaryDocument(columnGroup)
+        || TradeReportGroup.needsPrimaryDocument(stockGroup)
         || TradeReportGroup.needsPrimaryDocument(rowGroups);
 
     boolean needsPrimaryDocumentItems = needsItems || needsPrimaryDocuments
         || primaryDocumentItemCondition != null
-        || TradeReportGroup.needsPrimaryDocumentItem(columnGroup)
+        || TradeReportGroup.needsPrimaryDocumentItem(stockGroup)
         || TradeReportGroup.needsPrimaryDocumentItem(rowGroups);
 
     String documentItemId = sys.getIdName(TBL_TRADE_DOCUMENT_ITEMS);
     String documentId = sys.getIdName(TBL_TRADE_DOCUMENTS);
 
     String aliasQuantity = COL_STOCK_QUANTITY;
+    String aliasStartQuantity = PREFIX_START_STOCK + aliasQuantity;
+    String aliasEndQuantity = PREFIX_END_STOCK + aliasQuantity;
 
     String aliasPrice = COL_TRADE_ITEM_PRICE;
     String aliasCurrency = COL_TRADE_CURRENCY;
+
     String aliasAmount = COL_TRADE_AMOUNT;
+    String aliasStartAmount = PREFIX_START_STOCK + aliasAmount;
+    String aliasEndAmount = PREFIX_END_STOCK + aliasAmount;
 
     String aliasYear = BeeConst.YEAR;
     String aliasMonth = BeeConst.MONTH;
@@ -249,8 +278,11 @@ public class TradeReportsBean {
     int amountPrecision = sys.getFieldPrecision(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
     int amountScale = sys.getFieldScale(TBL_TRADE_ITEM_COST, COL_TRADE_ITEM_COST);
 
-    List<String> columnGroupLabels = new ArrayList<>();
-    List<String> columnGroupValues = new ArrayList<>();
+    List<String> stockColumnGroupLabels = new ArrayList<>();
+    List<String> stockColumnGroupValues = new ArrayList<>();
+
+    List<TradeMovementColumn> movementInColumns = new ArrayList<>();
+    List<TradeMovementColumn> movementOutColumns = new ArrayList<>();
 
     List<String> rowGroupValueColumns = new ArrayList<>();
     List<String> rowGroupLabelColumns = new ArrayList<>();
@@ -283,7 +315,11 @@ public class TradeReportsBean {
       query.addEmptyNumeric(aliasMonth, 6, 0);
     }
 
-    if (date == null) {
+    if (movement) {
+      query.addExpr(zero(quantityPrecision, quantityScale), aliasStartQuantity);
+      query.addExpr(zero(quantityPrecision, quantityScale), aliasEndQuantity);
+
+    } else if (endDate == null) {
       query.addField(TBL_TRADE_STOCK, COL_STOCK_QUANTITY, aliasQuantity);
     } else {
       query.addExpr(zero(quantityPrecision, quantityScale), aliasQuantity);
@@ -298,7 +334,12 @@ public class TradeReportsBean {
         query.addField(TBL_ITEMS, itemPrice.getCurrencyColumn(), aliasCurrency);
       }
 
-      query.addExpr(zero(amountPrecision, amountScale), aliasAmount);
+      if (movement) {
+        query.addExpr(zero(amountPrecision, amountScale), aliasStartAmount);
+        query.addExpr(zero(amountPrecision, amountScale), aliasEndAmount);
+      } else {
+        query.addExpr(zero(amountPrecision, amountScale), aliasAmount);
+      }
     }
 
     query.addFrom(TBL_TRADE_STOCK);
@@ -334,7 +375,7 @@ public class TradeReportsBean {
         primaryDocumentCondition, documentItemCondition, itemTypeCondition, itemGroupCondition,
         itemCondition);
 
-    if (date == null) {
+    if (endDate == null && !movement) {
       where.add(SqlUtils.nonZero(TBL_TRADE_STOCK, COL_STOCK_QUANTITY));
     }
 
@@ -348,8 +389,19 @@ public class TradeReportsBean {
 
     qs.sqlIndex(tmp, COL_TRADE_DOCUMENT_ITEM);
 
-    if (date != null) {
-      ResponseObject response = calculateStock(tmp, aliasQuantity, date);
+    if (movement) {
+      ResponseObject response = calculateStock(tmp, aliasStartQuantity, startDate);
+      if (!response.hasErrors()) {
+        response = calculateStock(tmp, aliasEndQuantity, endDate);
+      }
+
+      if (response.hasErrors()) {
+        qs.sqlDropTemp(tmp);
+        return response;
+      }
+
+    } else if (endDate != null) {
+      ResponseObject response = calculateStock(tmp, aliasQuantity, endDate);
       if (response.hasErrors()) {
         qs.sqlDropTemp(tmp);
         return response;
@@ -374,28 +426,36 @@ public class TradeReportsBean {
     if (showAmount) {
       qs.sqlIndex(tmp, aliasCurrency);
 
-      ResponseObject response = calculateAmount(tmp, aliasQuantity, aliasPrice, aliasCurrency,
-          aliasAmount, date, currency);
-      if (response.hasErrors()) {
-        qs.sqlDropTemp(tmp);
-        return response;
-      }
+      ResponseObject response = maybeExchange(tmp, aliasPrice, aliasCurrency, endDate, currency);
 
-      if (!showQuantity) {
+      if (!showQuantity && !response.hasErrors()) {
         SqlDelete delete = new SqlDelete(tmp)
-            .setWhere(SqlUtils.or(SqlUtils.isNull(tmp, aliasAmount),
-                SqlUtils.equals(tmp, aliasAmount, 0)));
+            .setWhere(SqlUtils.or(SqlUtils.isNull(tmp, aliasPrice),
+                SqlUtils.equals(tmp, aliasPrice, 0)));
 
         response = qs.updateDataWithResponse(delete);
-        if (response.hasErrors()) {
-          qs.sqlDropTemp(tmp);
-          return response;
-        }
 
-        if (qs.isEmpty(tmp)) {
+        if (!response.hasErrors() && qs.isEmpty(tmp)) {
           qs.sqlDropTemp(tmp);
           return ResponseObject.emptyResponse();
         }
+      }
+
+      if (!response.hasErrors()) {
+        if (movement) {
+          response = calculateAmount(tmp, aliasStartQuantity, aliasPrice, aliasStartAmount);
+          if (!response.hasErrors()) {
+            response = calculateAmount(tmp, aliasEndQuantity, aliasPrice, aliasEndAmount);
+          }
+
+        } else {
+          response = calculateAmount(tmp, aliasQuantity, aliasPrice, aliasAmount);
+        }
+      }
+
+      if (response.hasErrors()) {
+        qs.sqlDropTemp(tmp);
+        return response;
       }
     }
 
@@ -427,28 +487,39 @@ public class TradeReportsBean {
       }
     }
 
-    if (columnGroup == null) {
+    if (stockGroup == null) {
       if (showQuantity) {
-        quantityColumns.add(aliasQuantity);
+        if (movement) {
+          quantityColumns.add(aliasStartQuantity);
+          quantityColumns.add(aliasEndQuantity);
+        } else {
+          quantityColumns.add(aliasQuantity);
+        }
       }
+
       if (showAmount) {
-        amountColumns.add(aliasAmount);
+        if (movement) {
+          amountColumns.add(aliasStartAmount);
+          amountColumns.add(aliasEndAmount);
+        } else {
+          amountColumns.add(aliasAmount);
+        }
       }
 
     } else {
-      String valueColumn = groupValueAliases.get(columnGroup);
+      String valueColumn = groupValueAliases.get(stockGroup);
       qs.sqlIndex(tmp, valueColumn);
 
-      Multimap<String, Object> labelToValue = getGroupLabels(columnGroup, tmp, valueColumn,
+      Multimap<String, Object> labelToValue = getGroupLabels(stockGroup, tmp, valueColumn,
           needsYear);
 
       if (!labelToValue.isEmpty()) {
-        columnGroupLabels.addAll(labelToValue.keySet());
-        columnGroupLabels.sort(null);
+        stockColumnGroupLabels.addAll(labelToValue.keySet());
+        stockColumnGroupLabels.sort(null);
 
-        if (columnGroup.isEditable()) {
-          for (String label : columnGroupLabels) {
-            columnGroupValues.add(BeeUtils.joinItems(labelToValue.get(label)));
+        if (stockGroup.isEditable()) {
+          for (String label : stockColumnGroupLabels) {
+            stockColumnGroupValues.add(BeeUtils.joinItems(labelToValue.get(label)));
           }
         }
       }
@@ -456,36 +527,73 @@ public class TradeReportsBean {
       boolean hasEmptyValue = qs.sqlExists(tmp, SqlUtils.isNull(tmp, valueColumn));
 
       List<BeeColumn> pivotColumns = new ArrayList<>();
+
       if (showQuantity) {
-        BeeColumn column = new BeeColumn(ValueType.DECIMAL, aliasQuantity);
-        column.setPrecision(quantityPrecision);
-        column.setScale(quantityScale);
+        if (movement) {
+          pivotColumns.add(new BeeColumn(ValueType.DECIMAL, aliasStartQuantity,
+              quantityPrecision, quantityScale));
+          pivotColumns.add(new BeeColumn(ValueType.DECIMAL, aliasEndQuantity,
+              quantityPrecision, quantityScale));
 
-        pivotColumns.add(column);
+          if (hasEmptyValue) {
+            quantityColumns.add(aliasForEmptyValue(aliasStartQuantity));
+            quantityColumns.add(aliasForEmptyValue(aliasEndQuantity));
+          }
 
-        if (hasEmptyValue) {
-          quantityColumns.add(aliasForEmptyValue(aliasQuantity));
-        }
-        if (!columnGroupLabels.isEmpty()) {
-          for (int i = 0; i < columnGroupLabels.size(); i++) {
-            quantityColumns.add(aliasForGroupValue(aliasQuantity, i));
+          if (!stockColumnGroupLabels.isEmpty()) {
+            for (int i = 0; i < stockColumnGroupLabels.size(); i++) {
+              quantityColumns.add(aliasForGroupValue(aliasStartQuantity, i));
+              quantityColumns.add(aliasForGroupValue(aliasEndQuantity, i));
+            }
+          }
+
+        } else {
+          pivotColumns.add(new BeeColumn(ValueType.DECIMAL, aliasQuantity,
+              quantityPrecision, quantityScale));
+
+          if (hasEmptyValue) {
+            quantityColumns.add(aliasForEmptyValue(aliasQuantity));
+          }
+
+          if (!stockColumnGroupLabels.isEmpty()) {
+            for (int i = 0; i < stockColumnGroupLabels.size(); i++) {
+              quantityColumns.add(aliasForGroupValue(aliasQuantity, i));
+            }
           }
         }
       }
 
       if (showAmount) {
-        BeeColumn column = new BeeColumn(ValueType.DECIMAL, aliasAmount);
-        column.setPrecision(amountPrecision);
-        column.setScale(amountScale);
+        if (movement) {
+          pivotColumns.add(new BeeColumn(ValueType.DECIMAL, aliasStartAmount,
+              amountPrecision, amountScale));
+          pivotColumns.add(new BeeColumn(ValueType.DECIMAL, aliasEndAmount,
+              amountPrecision, amountScale));
 
-        pivotColumns.add(column);
+          if (hasEmptyValue) {
+            amountColumns.add(aliasForEmptyValue(aliasStartAmount));
+            amountColumns.add(aliasForEmptyValue(aliasEndAmount));
+          }
 
-        if (hasEmptyValue) {
-          amountColumns.add(aliasForEmptyValue(aliasAmount));
-        }
-        if (!columnGroupLabels.isEmpty()) {
-          for (int i = 0; i < columnGroupLabels.size(); i++) {
-            amountColumns.add(aliasForGroupValue(aliasAmount, i));
+          if (!stockColumnGroupLabels.isEmpty()) {
+            for (int i = 0; i < stockColumnGroupLabels.size(); i++) {
+              amountColumns.add(aliasForGroupValue(aliasStartAmount, i));
+              amountColumns.add(aliasForGroupValue(aliasEndAmount, i));
+            }
+          }
+
+        } else {
+          pivotColumns.add(new BeeColumn(ValueType.DECIMAL, aliasAmount,
+              amountPrecision, amountScale));
+
+          if (hasEmptyValue) {
+            amountColumns.add(aliasForEmptyValue(aliasAmount));
+          }
+
+          if (!stockColumnGroupLabels.isEmpty()) {
+            for (int i = 0; i < stockColumnGroupLabels.size(); i++) {
+              amountColumns.add(aliasForGroupValue(aliasAmount, i));
+            }
           }
         }
       }
@@ -496,7 +604,9 @@ public class TradeReportsBean {
       if (response.hasErrors()) {
         return response;
       }
+
       tmp = response.getResponseAsString();
+      qs.sqlIndex(tmp, COL_TRADE_DOCUMENT_ITEM);
     }
 
     if (!rowGroups.isEmpty()) {
@@ -510,11 +620,52 @@ public class TradeReportsBean {
       if (response.hasErrors()) {
         return response;
       }
+
       tmp = response.getResponseAsString();
+      qs.sqlIndex(tmp, COL_TRADE_DOCUMENT_ITEM);
 
       for (TradeReportGroup group : rowGroups) {
         rowGroupValueColumns.add(groupValueAliases.get(group));
         rowGroupLabelColumns.add(group.getLabelAlias());
+      }
+    }
+
+    if (movement) {
+      ResponseObject response = addMovement(tmp, startDate, endDate, movementGroups,
+          showQuantity, quantityPrecision, quantityScale,
+          showAmount, amountPrecision, amountScale, aliasPrice);
+
+      if (response.hasErrors()) {
+        qs.sqlDropTemp(tmp);
+        return response;
+      }
+
+      if (response.hasResponse()) {
+        Map<String, String> map = response.getResponseAsStringMap();
+
+        if (map.containsKey(Service.VAR_TABLE)) {
+          qs.sqlDropTemp(tmp);
+          tmp = map.get(Service.VAR_TABLE);
+        }
+
+        String value = map.get(RP_MOVEMENT_IN_COLUMNS);
+        if (!BeeUtils.isEmpty(value)) {
+          movementInColumns.addAll(TradeMovementColumn.restoreList(value));
+        }
+
+        value = map.get(RP_MOVEMENT_OUT_COLUMNS);
+        if (!BeeUtils.isEmpty(value)) {
+          movementOutColumns.addAll(TradeMovementColumn.restoreList(value));
+        }
+
+        if (showQuantity) {
+          movementInColumns.forEach(c -> quantityColumns.add(c.getLabel() + SUFFIX_QUANTITY));
+          movementOutColumns.forEach(c -> quantityColumns.add(c.getLabel() + SUFFIX_QUANTITY));
+        }
+        if (showAmount) {
+          movementInColumns.forEach(c -> amountColumns.add(c.getLabel() + SUFFIX_AMOUNT));
+          movementOutColumns.forEach(c -> amountColumns.add(c.getLabel() + SUFFIX_AMOUNT));
+        }
       }
     }
 
@@ -558,14 +709,27 @@ public class TradeReportsBean {
       result.put(RP_ROW_GROUP_LABEL_COLUMNS, NameUtils.join(rowGroupLabelColumns));
     }
 
-    if (columnGroup != null) {
-      result.put(RP_COLUMN_GROUPS, BeeUtils.toString(columnGroup.ordinal()));
+    if (stockGroup != null) {
+      result.put(RP_STOCK_COLUMN_GROUPS, BeeUtils.toString(stockGroup.ordinal()));
 
-      if (!columnGroupLabels.isEmpty()) {
-        result.put(RP_COLUMN_GROUP_LABELS, Codec.beeSerialize(columnGroupLabels));
+      if (!stockColumnGroupLabels.isEmpty()) {
+        result.put(RP_STOCK_COLUMN_GROUP_LABELS, Codec.beeSerialize(stockColumnGroupLabels));
       }
-      if (!columnGroupValues.isEmpty()) {
-        result.put(RP_COLUMN_GROUP_VALUES, Codec.beeSerialize(columnGroupValues));
+      if (!stockColumnGroupValues.isEmpty()) {
+        result.put(RP_STOCK_COLUMN_GROUP_VALUES, Codec.beeSerialize(stockColumnGroupValues));
+      }
+    }
+
+    if (movement) {
+      if (!movementGroups.isEmpty()) {
+        result.put(RP_MOVEMENT_COLUMN_GROUPS, EnumUtils.joinIndexes(movementGroups));
+      }
+
+      if (!movementInColumns.isEmpty()) {
+        result.put(RP_MOVEMENT_IN_COLUMNS, Codec.beeSerialize(movementInColumns));
+      }
+      if (!movementOutColumns.isEmpty()) {
+        result.put(RP_MOVEMENT_OUT_COLUMNS, Codec.beeSerialize(movementOutColumns));
       }
     }
 
@@ -581,10 +745,6 @@ public class TradeReportsBean {
     }
 
     return ResponseObject.response(result);
-  }
-
-  private ResponseObject doMovementOfGoodsReport(RequestInfo reqInfo) {
-    return ResponseObject.emptyResponse();
   }
 
   private static IsCondition getItemTypeCondition(String alias, Collection<Long> itemTypes) {
@@ -672,31 +832,16 @@ public class TradeReportsBean {
   }
 
   private ResponseObject calculateStock(String tbl, String fld, DateTime date) {
-    Set<Integer> producerTypes = Arrays.stream(OperationType.values())
-        .filter(OperationType::producesStock)
-        .map(OperationType::ordinal)
-        .collect(Collectors.toSet());
-
-    Set<Integer> consumerTypes = Arrays.stream(OperationType.values())
-        .filter(OperationType::consumesStock)
-        .map(OperationType::ordinal)
-        .collect(Collectors.toSet());
-
-    Set<Integer> stockPhases = Arrays.stream(TradeDocumentPhase.values())
-        .filter(TradeDocumentPhase::modifyStock)
-        .map(TradeDocumentPhase::ordinal)
-        .collect(Collectors.toSet());
-
     IsCondition dateCondition = (date == null)
         ? null : SqlUtils.less(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE, date);
 
     IsCondition producerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
-        producerTypes);
+        OperationType.getStockProducers());
     IsCondition consumerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
-        consumerTypes);
+        OperationType.getStockConsumers());
 
     IsCondition phaseCondition = SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE,
-        stockPhases);
+        TradeDocumentPhase.getStockPhases());
 
     SqlSelect producerQuery = new SqlSelect()
         .addFields(tbl, COL_TRADE_DOCUMENT_ITEM)
@@ -770,8 +915,323 @@ public class TradeReportsBean {
     return ResponseObject.emptyResponse();
   }
 
-  private ResponseObject calculateAmount(String tbl, String fldQuantity, String fldPrice,
-      String fldCurrency, String fldAmount, DateTime date, Long currency) {
+  private ResponseObject addMovement(String tbl, DateTime startDate, DateTime endDate,
+      List<TradeMovementGroup> movementGroups,
+      boolean showQuantity, int quantityPrecision, int quantityScale,
+      boolean showAmount, int amountPrecision, int amountScale, String fldPrice) {
+
+    IsCondition dateCondition = SqlUtils.and(
+        SqlUtils.moreEqual(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE, startDate),
+        SqlUtils.less(TBL_TRADE_DOCUMENTS, COL_TRADE_DATE, endDate));
+
+    IsCondition producerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+        OperationType.getStockProducers());
+    IsCondition consumerCondition = SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE,
+        OperationType.getStockConsumers());
+
+    IsCondition phaseCondition = SqlUtils.inList(TBL_TRADE_DOCUMENTS, COL_TRADE_DOCUMENT_PHASE,
+        TradeDocumentPhase.getStockPhases());
+
+    SqlSelect producerQuery = new SqlSelect()
+        .addFields(tbl, COL_TRADE_DOCUMENT_ITEM)
+        .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(tbl)
+        .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS,
+            tbl, COL_TRADE_DOCUMENT_ITEM))
+        .addFromLeft(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+        .addFromLeft(TBL_TRADE_OPERATIONS, sys.joinTables(TBL_TRADE_OPERATIONS,
+            TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
+        .setWhere(SqlUtils.and(dateCondition, producerCondition, phaseCondition));
+
+    SqlSelect consumerQuery = new SqlSelect()
+        .addFields(tbl, COL_TRADE_DOCUMENT_ITEM)
+        .addSum(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(tbl)
+        .addFromLeft(TBL_TRADE_DOCUMENT_ITEMS, SqlUtils.join(tbl, COL_TRADE_DOCUMENT_ITEM,
+            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT))
+        .addFromLeft(TBL_TRADE_DOCUMENTS, sys.joinTables(TBL_TRADE_DOCUMENTS,
+            TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT))
+        .addFromLeft(TBL_TRADE_OPERATIONS, sys.joinTables(TBL_TRADE_OPERATIONS,
+            TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION))
+        .setWhere(SqlUtils.and(dateCondition, consumerCondition, phaseCondition,
+            SqlUtils.notNull(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT)))
+        .addGroup(tbl, COL_TRADE_DOCUMENT_ITEM);
+
+    for (TradeMovementGroup group : movementGroups) {
+      switch (group) {
+        case OPERATION_TYPE:
+          producerQuery.addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE);
+
+          consumerQuery.addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE);
+          consumerQuery.addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_TYPE);
+          break;
+
+        case OPERATION:
+          producerQuery.addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION);
+
+          consumerQuery.addFields(TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION);
+          consumerQuery.addGroup(TBL_TRADE_DOCUMENTS, COL_TRADE_OPERATION);
+          break;
+
+        case WAREHOUSE:
+          String aliasStockFrom = SqlUtils.uniqueName("from");
+          String aliasStockTo = SqlUtils.uniqueName("to");
+
+          producerQuery.addField(aliasStockFrom, COL_STOCK_WAREHOUSE, COL_TRADE_WAREHOUSE_FROM);
+          producerQuery.addFromLeft(TBL_TRADE_STOCK, aliasStockFrom,
+              SqlUtils.join(aliasStockFrom, COL_TRADE_DOCUMENT_ITEM,
+                  TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT));
+
+          producerQuery.addField(aliasStockTo, COL_STOCK_WAREHOUSE, COL_TRADE_WAREHOUSE_TO);
+          producerQuery.addFromLeft(TBL_TRADE_STOCK, aliasStockTo,
+              SqlUtils.join(aliasStockTo, COL_TRADE_DOCUMENT_ITEM, tbl, COL_TRADE_DOCUMENT_ITEM));
+
+          consumerQuery.addField(aliasStockFrom, COL_STOCK_WAREHOUSE, COL_TRADE_WAREHOUSE_FROM);
+          consumerQuery.addFromLeft(TBL_TRADE_STOCK, aliasStockFrom,
+              SqlUtils.join(aliasStockFrom, COL_TRADE_DOCUMENT_ITEM,
+                  TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT));
+          consumerQuery.addGroup(aliasStockFrom, COL_STOCK_WAREHOUSE);
+
+          consumerQuery.addField(aliasStockTo, COL_STOCK_WAREHOUSE, COL_TRADE_WAREHOUSE_TO);
+          consumerQuery.addFromLeft(TBL_TRADE_STOCK, aliasStockTo,
+              SqlUtils.join(aliasStockTo, COL_TRADE_DOCUMENT_ITEM, tbl, COL_TRADE_DOCUMENT_ITEM));
+          consumerQuery.addGroup(aliasStockTo, COL_STOCK_WAREHOUSE);
+          break;
+      }
+    }
+
+    String producers = qs.sqlCreateTemp(producerQuery);
+    String consumers = qs.sqlCreateTemp(consumerQuery);
+
+    List<TradeMovementColumn> inColumns = new ArrayList<>();
+    List<TradeMovementColumn> outColumns = new ArrayList<>();
+
+    if (!qs.isEmpty(producers)) {
+      inColumns.addAll(getMovementColumns(producers, PREFIX_MOVEMENT_IN, movementGroups));
+    }
+    if (!qs.isEmpty(consumers)) {
+      outColumns.addAll(getMovementColumns(consumers, PREFIX_MOVEMENT_OUT, movementGroups));
+    }
+
+    if (inColumns.isEmpty() && outColumns.isEmpty()) {
+      qs.sqlDropTemp(producers);
+      qs.sqlDropTemp(consumers);
+
+      return ResponseObject.emptyResponse();
+    }
+
+    SqlSelect query = new SqlSelect().addAllFields(tbl).addFrom(tbl);
+
+    Stream.concat(inColumns.stream(), outColumns.stream()).forEach(column -> {
+      if (showQuantity) {
+        query.addExpr(zero(quantityPrecision, quantityScale), column.getLabel() + SUFFIX_QUANTITY);
+      }
+      if (showAmount) {
+        query.addExpr(zero(amountPrecision, amountScale), column.getLabel() + SUFFIX_AMOUNT);
+      }
+    });
+
+    String tmp = qs.sqlCreateTemp(query);
+    qs.sqlIndex(tmp, COL_TRADE_DOCUMENT_ITEM);
+
+    if (!inColumns.isEmpty()) {
+      indexMovement(producers, movementGroups);
+
+      ResponseObject response = updateMovement(tmp, producers, inColumns, movementGroups,
+          showQuantity, showAmount, fldPrice);
+
+      if (response.hasErrors()) {
+        qs.sqlDropTemp(producers);
+        qs.sqlDropTemp(consumers);
+
+        qs.sqlDropTemp(tmp);
+        return response;
+      }
+    }
+
+    if (!outColumns.isEmpty()) {
+      indexMovement(consumers, movementGroups);
+
+      ResponseObject response = updateMovement(tmp, consumers, outColumns, movementGroups,
+          showQuantity, showAmount, fldPrice);
+
+      if (response.hasErrors()) {
+        qs.sqlDropTemp(producers);
+        qs.sqlDropTemp(consumers);
+
+        qs.sqlDropTemp(tmp);
+        return response;
+      }
+    }
+
+    qs.sqlDropTemp(producers);
+    qs.sqlDropTemp(consumers);
+
+    Map<String, String> result = new HashMap<>();
+    result.put(Service.VAR_TABLE, tmp);
+
+    if (!inColumns.isEmpty()) {
+      result.put(RP_MOVEMENT_IN_COLUMNS, Codec.beeSerialize(inColumns));
+    }
+    if (!outColumns.isEmpty()) {
+      result.put(RP_MOVEMENT_OUT_COLUMNS, Codec.beeSerialize(outColumns));
+    }
+
+    return ResponseObject.response(result);
+  }
+
+  private ResponseObject updateMovement(String dst, String src, List<TradeMovementColumn> columns,
+      List<TradeMovementGroup> groups, boolean updateQuantity, boolean updateAmount,
+      String fldPrice) {
+
+    IsCondition join = SqlUtils.join(src, COL_TRADE_DOCUMENT_ITEM, dst, COL_TRADE_DOCUMENT_ITEM);
+
+    for (TradeMovementColumn column : columns) {
+      HasConditions where = SqlUtils.and();
+
+      if (column.getOperationType() != null) {
+        where.add(SqlUtils.equals(src, COL_OPERATION_TYPE, column.getOperationType()));
+      }
+      if (DataUtils.isId(column.getOperation())) {
+        where.add(SqlUtils.equals(src, COL_TRADE_OPERATION, column.getOperation()));
+      }
+
+      if (groups.contains(TradeMovementGroup.WAREHOUSE)) {
+        where.add(SqlUtils.equals(src, COL_TRADE_WAREHOUSE_FROM, column.getWarehouseFrom()));
+        where.add(SqlUtils.equals(src, COL_TRADE_WAREHOUSE_TO, column.getWarehouseTo()));
+      }
+
+      if (updateQuantity) {
+        SqlUpdate update = new SqlUpdate(dst)
+            .setFrom(src, join)
+            .setWhere(where)
+            .addExpression(column.getLabel() + SUFFIX_QUANTITY,
+                SqlUtils.field(src, COL_TRADE_ITEM_QUANTITY));
+
+        ResponseObject response = qs.updateDataWithResponse(update);
+        if (response.hasErrors()) {
+          return response;
+        }
+      }
+
+      if (updateAmount) {
+        SqlUpdate update = new SqlUpdate(dst)
+            .setFrom(src, join)
+            .setWhere(SqlUtils.and(where, SqlUtils.nonZero(dst, fldPrice)))
+            .addExpression(column.getLabel() + SUFFIX_AMOUNT,
+                SqlUtils.multiply(SqlUtils.field(src, COL_TRADE_ITEM_QUANTITY),
+                    SqlUtils.field(dst, fldPrice)));
+
+        ResponseObject response = qs.updateDataWithResponse(update);
+        if (response.hasErrors()) {
+          return response;
+        }
+      }
+    }
+
+    return ResponseObject.emptyResponse();
+  }
+
+  private void indexMovement(String tbl, List<TradeMovementGroup> groups) {
+    qs.sqlIndex(tbl, COL_TRADE_DOCUMENT_ITEM);
+
+    for (TradeMovementGroup group : groups) {
+      switch (group) {
+        case OPERATION_TYPE:
+          qs.sqlIndex(tbl, COL_OPERATION_TYPE);
+          break;
+
+        case OPERATION:
+          qs.sqlIndex(tbl, COL_TRADE_OPERATION);
+          break;
+
+        case WAREHOUSE:
+          qs.sqlIndex(tbl, COL_TRADE_WAREHOUSE_FROM);
+          qs.sqlIndex(tbl, COL_TRADE_WAREHOUSE_TO);
+          break;
+      }
+    }
+  }
+
+  private List<TradeMovementColumn> getMovementColumns(String src, String prefix,
+      List<TradeMovementGroup> groups) {
+
+    List<TradeMovementColumn> columns = new ArrayList<>();
+
+    if (groups.isEmpty()) {
+      columns.add(new TradeMovementColumn(prefix + BeeConst.STRING_ZERO));
+
+    } else {
+      SqlSelect query = new SqlSelect().setDistinctMode(true).addFrom(src);
+
+      for (TradeMovementGroup group : groups) {
+        switch (group) {
+          case OPERATION_TYPE:
+            query.addFields(src, COL_OPERATION_TYPE)
+                .addOrder(src, COL_OPERATION_TYPE);
+            break;
+
+          case OPERATION:
+            query.addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_ORDINAL, COL_OPERATION_NAME)
+                .addFields(src, COL_TRADE_OPERATION)
+                .addFromLeft(TBL_TRADE_OPERATIONS, sys.joinTables(TBL_TRADE_OPERATIONS,
+                    src, COL_TRADE_OPERATION))
+                .addOrder(TBL_TRADE_OPERATIONS, COL_OPERATION_ORDINAL, COL_OPERATION_NAME);
+            break;
+
+          case WAREHOUSE:
+            String aliasFrom = SqlUtils.uniqueName("from");
+            String aliasTo = SqlUtils.uniqueName("to");
+
+            String idName = sys.getIdName(TBL_WAREHOUSES);
+
+            query.addField(aliasFrom, COL_WAREHOUSE_CODE, ALS_WAREHOUSE_FROM_CODE)
+                .addField(aliasTo, COL_WAREHOUSE_CODE, ALS_WAREHOUSE_TO_CODE)
+                .addFields(src, COL_TRADE_WAREHOUSE_FROM, COL_TRADE_WAREHOUSE_TO)
+                .addFromLeft(TBL_WAREHOUSES, aliasFrom,
+                    SqlUtils.join(aliasFrom, idName, src, COL_TRADE_WAREHOUSE_FROM))
+                .addFromLeft(TBL_WAREHOUSES, aliasTo,
+                    SqlUtils.join(aliasTo, idName, src, COL_TRADE_WAREHOUSE_TO))
+                .addOrder(aliasFrom, COL_WAREHOUSE_CODE)
+                .addOrder(aliasTo, COL_WAREHOUSE_CODE);
+            break;
+        }
+      }
+
+      SimpleRowSet data = qs.getData(query);
+
+      int index = 1;
+      for (SimpleRowSet.SimpleRow row : data) {
+        TradeMovementColumn column = new TradeMovementColumn(prefix + Integer.toString(index));
+
+        if (groups.contains(TradeMovementGroup.OPERATION_TYPE)) {
+          column.setOperationType(row.getEnum(COL_OPERATION_TYPE, OperationType.class));
+        }
+
+        if (groups.contains(TradeMovementGroup.OPERATION)) {
+          column.setOperation(row.getLong(COL_TRADE_OPERATION));
+          column.setOperationName(row.getValue(COL_OPERATION_NAME));
+        }
+
+        if (groups.contains(TradeMovementGroup.WAREHOUSE)) {
+          column.setWarehouseFrom(row.getLong(COL_TRADE_WAREHOUSE_FROM));
+          column.setWarehouseFromCode(row.getValue(ALS_WAREHOUSE_FROM_CODE));
+
+          column.setWarehouseTo(row.getLong(COL_TRADE_WAREHOUSE_TO));
+          column.setWarehouseToCode(row.getValue(ALS_WAREHOUSE_TO_CODE));
+        }
+
+        columns.add(column);
+        index++;
+      }
+    }
+
+    return columns;
+  }
+
+  private ResponseObject maybeExchange(String tbl, String fldPrice, String fldCurrency,
+      DateTime date, Long currency) {
 
     if (DataUtils.isId(currency)) {
       SqlSelect currencyQuery = new SqlSelect().setDistinctMode(true)
@@ -806,10 +1266,16 @@ public class TradeReportsBean {
       }
     }
 
+    return ResponseObject.emptyResponse();
+  }
+
+  private ResponseObject calculateAmount(String tbl, String fldQuantity, String fldPrice,
+      String fldAmount) {
+
     SqlUpdate update = new SqlUpdate(tbl)
         .addExpression(fldAmount, SqlUtils.multiply(SqlUtils.field(tbl, fldQuantity),
             SqlUtils.field(tbl, fldPrice)))
-        .setWhere(SqlUtils.notNull(tbl, fldPrice));
+        .setWhere(SqlUtils.notNull(tbl, fldQuantity, fldPrice));
 
     ResponseObject response = qs.updateDataWithResponse(update);
     if (response.hasErrors()) {

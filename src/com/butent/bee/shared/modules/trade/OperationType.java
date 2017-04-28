@@ -5,6 +5,10 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.finance.TradeAccounts;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 public enum OperationType implements HasLocalizedCaption {
   PURCHASE(false, true, true, true) {
     @Override
@@ -264,6 +268,30 @@ public enum OperationType implements HasLocalizedCaption {
       return ItemPrice.COST;
     }
   };
+
+  public static Collection<OperationType> getStockProducers() {
+    Set<OperationType> producers = new HashSet<>();
+
+    for (OperationType type : values()) {
+      if (type.producesStock()) {
+        producers.add(type);
+      }
+    }
+
+    return producers;
+  }
+
+  public static Collection<OperationType> getStockConsumers() {
+    Set<OperationType> consumers = new HashSet<>();
+
+    for (OperationType type : values()) {
+      if (type.consumesStock()) {
+        consumers.add(type);
+      }
+    }
+
+    return consumers;
+  }
 
   private final boolean consumesStock;
   private final boolean producesStock;

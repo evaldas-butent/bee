@@ -129,7 +129,7 @@
                   <Label for="Model" />
                   <TextLabel source="Model"/>
                 </row>
-                <row for="Manufacturer" data="ServiceObjects">
+                <row for="ServiceManufacturer" data="ServiceObjects">
                   <Label text="=tcdBrand" />
                   <TextLabel source="ManufacturerName"/>
                 </row>

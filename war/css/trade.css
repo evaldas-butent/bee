@@ -447,10 +447,21 @@
   font-size: inherit;
 }
 
+.bee-trade-report-stock-table {
+  border-collapse: collapse;
+}
+
+.bee-trade-report-stock-header {
+  background-color: #4caf50;
+  color: white;
+}
 .bee-trade-report-stock-body:nth-child(odd) {
   background-color: #f5f5f5;
 }
 .bee-trade-report-stock-body:nth-child(even) {
+  background-color: white;
+}
+.bee-trade-report-stock-footer {
   background-color: #ebebeb;
 }
 
@@ -463,6 +474,9 @@
   padding: 3px 5px;
   border: 1px solid #ddd;
   white-space: nowrap;
+}
+.bee-trade-report-stock-table .bee-trade-report-stock-qty-row td {
+  border-bottom-color: transparent;
 }
 
 .bee-trade-report-stock-header,

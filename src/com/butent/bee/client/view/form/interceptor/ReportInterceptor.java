@@ -68,6 +68,11 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
   private static final String STORAGE_KEY_SEPARATOR = "-";
 
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "report-";
+
+  private static final String STYLE_COMMAND_GENERATE = STYLE_PREFIX + "generate";
+  private static final String STYLE_COMMAND_CLEAR_FILTER = STYLE_PREFIX + "clear-filter";
+
   protected static void drillDown(String gridName, String caption, Filter filter) {
     GridOptions gridOptions = GridOptions.forCaptionAndFilter(caption, filter);
     PresenterCallback presenterCallback = ModalGrid.opener(80, CssUnit.PCT, 60, CssUnit.PCT);
@@ -190,11 +195,21 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
 
     HeaderView header = form.getViewPresenter().getHeader();
-    if (header != null && !header.hasAction(Action.REMOVE_FILTER)) {
-      Button clearFilter = new Button(Localized.dictionary().clearFilter());
-      clearFilter.addClickHandler(event -> clearFilter());
 
-      header.addCommandItem(clearFilter);
+    if (header != null && !header.hasCommands()) {
+      Button generate = new Button(Localized.dictionary().generateReport());
+      generate.addStyleName(STYLE_COMMAND_GENERATE);
+
+      generate.addClickHandler(event -> doReport());
+      header.addCommandItem(generate);
+
+      if (!header.hasAction(Action.REMOVE_FILTER)) {
+        Button clearFilter = new Button(Localized.dictionary().clearFilter());
+        clearFilter.addStyleName(STYLE_COMMAND_CLEAR_FILTER);
+
+        clearFilter.addClickHandler(event -> clearFilter());
+        header.addCommandItem(clearFilter);
+      }
     }
   }
 
@@ -283,6 +298,15 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       getFormView().notifyWarning(Localized.dictionary().invalidFilter(), input);
       return false;
 
+    } else {
+      return true;
+    }
+  }
+
+  protected boolean checkRequired(String label, DateTime date) {
+    if (date == null) {
+      getFormView().notifyWarning(label, Localized.dictionary().valueRequired());
+      return false;
     } else {
       return true;
     }

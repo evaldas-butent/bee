@@ -137,6 +137,10 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
         }
         return true;
       });
+
+    } else if (BeeUtils.same(editableWidget.getColumnId(), COL_REPAIRER)
+        && widget instanceof DataSelector) {
+      ServiceHelper.setRepairerFilter(widget);
     }
     super.afterCreateEditableWidget(editableWidget, widget);
   }
@@ -460,31 +464,35 @@ public class ServiceMaintenanceForm extends MaintenanceStateChangeInterceptor
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (event.isNewRow() && event.hasRelatedView(VIEW_COMPANY_PERSONS)
-        && BeeUtils.isTrue(getActiveRow().getBoolean(getDataIndex(COL_ADDRESS_REQUIRED)))) {
+    if (event.isNewRow() && BeeUtils.in(event.getRelatedViewName(), VIEW_COMPANY_PERSONS,
+        VIEW_SERVICE_OBJECTS)) {
       final String defValue = event.getDefValue();
       event.setDefValue(null);
 
       event.setOnOpenNewRow(formView -> {
-        Widget widget = formView.getWidgetBySource(COL_ADDRESS);
+        if (event.hasRelatedView(VIEW_COMPANY_PERSONS)
+            && BeeUtils.isTrue(getActiveRow().getBoolean(getDataIndex(COL_ADDRESS_REQUIRED)))) {
+          Widget widget = formView.getWidgetBySource(COL_ADDRESS);
 
-        if (widget instanceof InputText) {
-          formView.getWidgetByName(COL_ADDRESS).addStyleName(StyleUtils.NAME_REQUIRED);
+          if (widget instanceof InputText) {
+            formView.getWidgetByName(COL_ADDRESS).addStyleName(StyleUtils.NAME_REQUIRED);
 
-          formView.addCellValidationHandler(COL_ADDRESS, validationEvent -> {
+            formView.addCellValidationHandler(COL_ADDRESS, validationEvent -> {
 
-            if (BeeUtils.isEmpty(validationEvent.getNewValue())) {
-              formView.notifySevere(Localized.dictionary()
-                  .fieldRequired(Localized.dictionary().address()));
-              return false;
-            }
-            return true;
-          });
+              if (BeeUtils.isEmpty(validationEvent.getNewValue())) {
+                formView.notifySevere(Localized.dictionary()
+                    .fieldRequired(Localized.dictionary().address()));
+                return false;
+              }
+              return true;
+            });
+          }
         }
-        Widget personWidget = formView.getWidgetBySource(COL_PERSON);
+        Widget selectorWidget = formView.getWidgetBySource(event
+            .hasRelatedView(VIEW_COMPANY_PERSONS) ? COL_PERSON : COL_CATEGORY);
 
-        if (personWidget instanceof DataSelector) {
-          final DataSelector personSelector = (DataSelector) personWidget;
+        if (selectorWidget instanceof DataSelector) {
+          final DataSelector personSelector = (DataSelector) selectorWidget;
 
           Scheduler.get().scheduleDeferred(() -> {
             personSelector.setFocus(true);

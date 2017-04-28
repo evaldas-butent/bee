@@ -1729,6 +1729,8 @@ public interface Dictionary {
 
   default String discussLastComment() {return g("discussLastComment");}
 
+  default String discussLastCommentator() {return g("discussLastCommentator");}
+
   default String discussMailNewAnnouncementSubject() {return g("discussMailNewAnnouncementSubject");}
 
   default String discussMailNewAnnouncements() {return g("discussMailNewAnnouncements");}
@@ -3163,6 +3165,8 @@ public interface Dictionary {
   default String from() {return g("from");}
 
   default String full() {return g("full");}
+
+  default String generateReport() {return g("generateReport");}
 
   default String goods() {return g("goods");}
 
@@ -5601,6 +5605,8 @@ public interface Dictionary {
 
   default String timeSheet() {return g("timeSheet");}
 
+  default String timeSheetLock() {return g("timeSheetLock");}
+
   default String timeZone() {return g("timeZone");}
 
   default String timeZoneName() {return g("timeZoneName");}
@@ -6830,6 +6836,10 @@ public interface Dictionary {
   default String trdRemindTemplateLastParagraph() {return g("trdRemindTemplateLastParagraph");}
 
   default String trdReminderTemplates() {return g("trdReminderTemplates");}
+
+  default String trdReportColumnsMovement() {return g("trdReportColumnsMovement");}
+
+  default String trdReportColumnsStock() {return g("trdReportColumnsStock");}
 
   default String trdReportStock() {return g("trdReportStock");}
 
