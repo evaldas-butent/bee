@@ -6841,6 +6841,10 @@ public interface Dictionary {
 
   default String trdReportColumnsStock() {return g("trdReportColumnsStock");}
 
+  default String trdReportMovementIn() {return g("trdReportMovementIn");}
+
+  default String trdReportMovementOut() {return g("trdReportMovementOut");}
+
   default String trdReportStock() {return g("trdReportStock");}
 
   default String trdSaleItems() {return g("trdSaleItems");}

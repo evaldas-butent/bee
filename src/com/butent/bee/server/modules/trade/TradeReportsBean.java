@@ -659,12 +659,12 @@ public class TradeReportsBean {
         }
 
         if (showQuantity) {
-          movementInColumns.forEach(c -> quantityColumns.add(c.getLabel() + SUFFIX_QUANTITY));
-          movementOutColumns.forEach(c -> quantityColumns.add(c.getLabel() + SUFFIX_QUANTITY));
+          movementInColumns.forEach(c -> quantityColumns.add(c.getQuantityColumn()));
+          movementOutColumns.forEach(c -> quantityColumns.add(c.getQuantityColumn()));
         }
         if (showAmount) {
-          movementInColumns.forEach(c -> amountColumns.add(c.getLabel() + SUFFIX_AMOUNT));
-          movementOutColumns.forEach(c -> amountColumns.add(c.getLabel() + SUFFIX_AMOUNT));
+          movementInColumns.forEach(c -> amountColumns.add(c.getAmountColumn()));
+          movementOutColumns.forEach(c -> amountColumns.add(c.getAmountColumn()));
         }
       }
     }
@@ -1025,10 +1025,10 @@ public class TradeReportsBean {
 
     Stream.concat(inColumns.stream(), outColumns.stream()).forEach(column -> {
       if (showQuantity) {
-        query.addExpr(zero(quantityPrecision, quantityScale), column.getLabel() + SUFFIX_QUANTITY);
+        query.addExpr(zero(quantityPrecision, quantityScale), column.getQuantityColumn());
       }
       if (showAmount) {
-        query.addExpr(zero(amountPrecision, amountScale), column.getLabel() + SUFFIX_AMOUNT);
+        query.addExpr(zero(amountPrecision, amountScale), column.getAmountColumn());
       }
     });
 
@@ -1106,7 +1106,7 @@ public class TradeReportsBean {
         SqlUpdate update = new SqlUpdate(dst)
             .setFrom(src, join)
             .setWhere(where)
-            .addExpression(column.getLabel() + SUFFIX_QUANTITY,
+            .addExpression(column.getQuantityColumn(),
                 SqlUtils.field(src, COL_TRADE_ITEM_QUANTITY));
 
         ResponseObject response = qs.updateDataWithResponse(update);
@@ -1119,7 +1119,7 @@ public class TradeReportsBean {
         SqlUpdate update = new SqlUpdate(dst)
             .setFrom(src, join)
             .setWhere(SqlUtils.and(where, SqlUtils.nonZero(dst, fldPrice)))
-            .addExpression(column.getLabel() + SUFFIX_AMOUNT,
+            .addExpression(column.getAmountColumn(),
                 SqlUtils.multiply(SqlUtils.field(src, COL_TRADE_ITEM_QUANTITY),
                     SqlUtils.field(dst, fldPrice)));
 

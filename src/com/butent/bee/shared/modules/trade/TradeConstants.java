@@ -352,8 +352,6 @@ public final class TradeConstants {
   public static final String PREFIX_END_STOCK = "End_";
 
   public static final String EMPTY_VALUE_SUFFIX = "_0";
-  public static final String SUFFIX_QUANTITY = "_qty";
-  public static final String SUFFIX_AMOUNT = "_amt";
 
   public static final String RP_DATE = "Date";
   public static final String RP_START_DATE = "StartDate";
