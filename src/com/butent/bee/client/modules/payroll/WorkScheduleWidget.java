@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.collect.TreeBasedTable;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
@@ -1068,36 +1069,77 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
     int relIndex = rowSet.getColumnIndex(scheduleParent.getEmployeeObjectRelationColumn());
     int partIndex = rowSet.getColumnIndex(scheduleParent.getEmployeeObjectPartitionColumn());
     int substIndex = rowSet.getColumnIndex(COL_SUBSTITUTE_FOR);
-
     int dateIndex = rowSet.getColumnIndex(COL_WORK_SCHEDULE_DATE);
 
-    Set<Integer> copyIndexes = new HashSet<>();
-    copyIndexes.add(dateIndex);
-
-    copyIndexes.add(rowSet.getColumnIndex(COL_TIME_RANGE_CODE));
-    copyIndexes.add(rowSet.getColumnIndex(COL_TIME_CARD_CODE));
-
-    copyIndexes.add(rowSet.getColumnIndex(COL_WORK_SCHEDULE_FROM));
-    copyIndexes.add(rowSet.getColumnIndex(COL_WORK_SCHEDULE_UNTIL));
-    copyIndexes.add(rowSet.getColumnIndex(COL_WORK_SCHEDULE_DURATION));
 
     for (IdPair pair : selection.keySet()) {
+      if (DataUtils.isId(getWorkScheduleLockId(activeMonth, pair.getA()))) {
+        continue;
+      }
+
+      Table<String, Long, Long> times = TreeBasedTable.create();
+
       for (BeeRow oldRow : selection.get(pair)) {
         if (!containsSchedule(pair, oldRow.getDate(dateIndex))) {
+          String date = DataUtils.getString(rowSet, oldRow, COL_WORK_SCHEDULE_DATE);
+
+          if (BeeUtils.isTrue(DataUtils.getBoolean(rowSet, oldRow, COL_TC_WS_ACTUAL))) {
+            Long tcId = DataUtils.getLong(rowSet, oldRow, COL_TIME_CARD_CODE);
+            long duration = BeeUtils.unbox(times.get(date, tcId))
+              + PayrollUtils.getMillis(null, null,
+              DataUtils.getString(rowSet, oldRow, COL_WORK_SCHEDULE_DURATION));
+
+            times.put(date, tcId, duration);
+
+          } else if (!BeeUtils.isEmpty(DataUtils.getString(rowSet, oldRow,
+            COL_WORK_SCHEDULE_DURATION))) {
+
+            long duration = BeeUtils.unbox(times.get(date, BeeConst.LONG_UNDEF))
+              + PayrollUtils.getMillis(null, null, DataUtils.getString(rowSet, oldRow,
+              COL_WORK_SCHEDULE_DURATION));
+
+            times.put(date, BeeConst.LONG_UNDEF, duration);
+          } else if (!BeeUtils.isEmpty(DataUtils.getString(rowSet,
+            oldRow, COL_WORK_SCHEDULE_FROM)) && !BeeUtils.isEmpty(DataUtils.getString(rowSet,
+            oldRow, COL_WORK_SCHEDULE_UNTIL))) {
+
+            long duration = BeeUtils.unbox(times.get(date, BeeConst.LONG_UNDEF))
+              + PayrollUtils.getMillis(DataUtils.getString(rowSet, oldRow, COL_WORK_SCHEDULE_FROM),
+              DataUtils.getString(rowSet, oldRow, COL_WORK_SCHEDULE_UNTIL), null);
+
+            times.put(date, BeeConst.LONG_UNDEF, duration);
+          } else if (DataUtils.isId(DataUtils.getLong(rowSet, oldRow, COL_TIME_RANGE_CODE))) {
+            Long duration = BeeUtils.unbox(times.get(date, BeeConst
+              .LONG_UNDEF)) + PayrollUtils.getMillis(DataUtils.getString(rowSet,
+              oldRow, ALS_TR_FROM), DataUtils.getString(rowSet, oldRow, ALS_TR_UNTIL),
+              DataUtils.getString(rowSet, oldRow, ALS_TR_DURATION));
+
+            times.put(date, BeeConst.LONG_UNDEF, duration);
+          }
+        }
+      }
+
+      for (String date : times.rowKeySet()) {
+        times.row(date).forEach((id, duration) -> {
           BeeRow newRow = DataUtils.createEmptyRow(rowSet.getNumberOfColumns());
 
           newRow.setValue(kindIndex, kind.ordinal());
-
           newRow.setValue(relIndex, getRelationId());
           newRow.setValue(partIndex, pair.getA());
           newRow.setValue(substIndex, pair.getB());
 
-          for (int index : copyIndexes) {
-            newRow.setValue(index, oldRow.getString(index));
+          DataUtils.setValue(rowSet, newRow, COL_WORK_SCHEDULE_DATE, date);
+
+          if (DataUtils.isId(id)) {
+            DataUtils.setValue(rowSet, newRow, COL_TIME_CARD_CODE, BeeUtils.toString(id));
           }
 
+          if (BeeUtils.isPositive(duration)) {
+            DataUtils.setValue(rowSet, newRow, COL_WORK_SCHEDULE_DURATION,
+              TimeUtils.renderTime(duration, false));
+          }
           rowSet.addRow(newRow);
-        }
+        });
       }
     }
 
@@ -2011,6 +2053,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
 
     r = calendarStartRow;
     for (IdPair pair : partIds) {
+      if (DataUtils.isId(getWorkScheduleLockId(activeMonth, pair.getA()))) {
+        continue;
+      }
+
+      r = calendarStartRow + partIds.indexOf(pair);
+
       Flow rowLabel = new Flow();
 
       Label nameWidget = new Label(getPartitionCaption(pair.getA()));
@@ -2046,11 +2094,12 @@ abstract class WorkScheduleWidget extends Flow implements HasSummaryChangeHandle
       if (pair.hasB()) {
         DomUtils.setDataProperty(rowElement, KEY_SUBST, pair.getB());
       }
-
-      r++;
     }
 
     for (IdPair pair : layout.rowKeySet()) {
+      if (DataUtils.isId(getWorkScheduleLockId(activeMonth, pair.getA()))) {
+        continue;
+      }
       r = calendarStartRow + partIds.indexOf(pair);
 
       List<Integer> days = new ArrayList<>(layout.row(pair).keySet());
