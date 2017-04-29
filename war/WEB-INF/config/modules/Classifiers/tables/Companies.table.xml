@@ -60,5 +60,6 @@
     <Text name="Notes" label="=notes" />
 
     <Text name="AverageMileage" label="=averageMileage" />
+    <Relation name="Operation" relation="TradeOperations" label="=trdOperation" />
   </Fields>
 </Table>

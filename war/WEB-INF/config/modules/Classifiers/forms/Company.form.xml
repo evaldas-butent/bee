@@ -256,6 +256,10 @@
                 <InputArea source="AverageMileage"/>
               </cell>
             </row>
+            <row>
+              <Label style="&lbl;" for="Operation" />
+              <DataSelector source="Operation"/>
+            </row>
           </Table>
         </FlowPanel>
       </page>

@@ -142,6 +142,11 @@
     <SimpleColumn name="Notes" />
 
     <SimpleColumn name="AverageMileage" />
+
+    <SimpleColumn name="Operation" />
+    <SimpleJoin name="Operation" joinType="LEFT" >
+      <SimpleColumn name="OperationName" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Name" />
