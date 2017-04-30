@@ -689,6 +689,21 @@ public class TradeReportsBean {
       if (showPrice) {
         select.addFields(tmp, aliasPrice).addGroup(tmp, aliasPrice).addOrder(tmp, aliasPrice);
       }
+
+      if (movement) {
+        HasConditions having = SqlUtils.or();
+
+        for (String column : quantityColumns) {
+          having.add(SqlUtils.nonZero(SqlUtils.aggregate(SqlConstants.SqlFunction.SUM,
+              SqlUtils.field(tmp, column))));
+        }
+        for (String column : amountColumns) {
+          having.add(SqlUtils.nonZero(SqlUtils.aggregate(SqlConstants.SqlFunction.SUM,
+              SqlUtils.field(tmp, column))));
+        }
+
+        select.setHaving(having);
+      }
     }
 
     SimpleRowSet data = qs.getData(select);
@@ -989,13 +1004,12 @@ public class TradeReportsBean {
 
           consumerQuery.addField(aliasStockFrom, COL_STOCK_WAREHOUSE, COL_TRADE_WAREHOUSE_FROM);
           consumerQuery.addFromLeft(TBL_TRADE_STOCK, aliasStockFrom,
-              SqlUtils.join(aliasStockFrom, COL_TRADE_DOCUMENT_ITEM,
-                  TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_PARENT));
+              SqlUtils.join(aliasStockFrom, COL_TRADE_DOCUMENT_ITEM, tbl, COL_TRADE_DOCUMENT_ITEM));
           consumerQuery.addGroup(aliasStockFrom, COL_STOCK_WAREHOUSE);
 
           consumerQuery.addField(aliasStockTo, COL_STOCK_WAREHOUSE, COL_TRADE_WAREHOUSE_TO);
           consumerQuery.addFromLeft(TBL_TRADE_STOCK, aliasStockTo,
-              SqlUtils.join(aliasStockTo, COL_TRADE_DOCUMENT_ITEM, tbl, COL_TRADE_DOCUMENT_ITEM));
+              sys.joinTables(TBL_TRADE_DOCUMENT_ITEMS, aliasStockTo, COL_TRADE_DOCUMENT_ITEM));
           consumerQuery.addGroup(aliasStockTo, COL_STOCK_WAREHOUSE);
           break;
       }
