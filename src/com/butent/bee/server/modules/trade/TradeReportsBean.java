@@ -281,6 +281,12 @@ public class TradeReportsBean {
     List<String> stockColumnGroupLabels = new ArrayList<>();
     List<String> stockColumnGroupValues = new ArrayList<>();
 
+    List<String> stockStartLabels = new ArrayList<>();
+    List<String> stockStartValues = new ArrayList<>();
+
+    List<String> stockEndLabels = new ArrayList<>();
+    List<String> stockEndValues = new ArrayList<>();
+
     List<TradeMovementColumn> movementInColumns = new ArrayList<>();
     List<TradeMovementColumn> movementOutColumns = new ArrayList<>();
 
@@ -669,6 +675,83 @@ public class TradeReportsBean {
       }
     }
 
+    if (movement) {
+      List<String> qcs = new ArrayList<>(quantityColumns);
+      List<String> acs = new ArrayList<>(amountColumns);
+
+      int size = Math.max(qcs.size(), acs.size());
+
+      quantityColumns.clear();
+      amountColumns.clear();
+
+      int startIndex = -1;
+      int endIndex = -1;
+
+      boolean ok;
+
+      for (int i = 0; i < size; i++) {
+        String qc = showQuantity ? qcs.get(i) : null;
+        String ac = showAmount ? acs.get(i) : null;
+
+        String column = showQuantity ? qc : ac;
+
+        boolean start = column.startsWith(PREFIX_START_STOCK);
+        boolean end = !start && column.startsWith(PREFIX_END_STOCK);
+
+        if (start || end) {
+          ok = qs.sqlExists(tmp, SqlUtils.nonZero(tmp, column));
+
+          if (!stockColumnGroupLabels.isEmpty() && !column.endsWith(EMPTY_VALUE_SUFFIX)) {
+            if (start) {
+              startIndex++;
+
+              if (ok) {
+                if (BeeUtils.isIndex(stockColumnGroupLabels, startIndex)) {
+                  stockStartLabels.add(stockColumnGroupLabels.get(startIndex));
+                }
+                if (BeeUtils.isIndex(stockColumnGroupValues, startIndex)) {
+                  stockStartValues.add(stockColumnGroupValues.get(startIndex));
+                }
+              }
+
+            } else if (end) {
+              endIndex++;
+
+              if (ok) {
+                if (BeeUtils.isIndex(stockColumnGroupLabels, endIndex)) {
+                  stockEndLabels.add(stockColumnGroupLabels.get(endIndex));
+                }
+                if (BeeUtils.isIndex(stockColumnGroupValues, endIndex)) {
+                  stockEndValues.add(stockColumnGroupValues.get(endIndex));
+                }
+              }
+            }
+          }
+
+        } else {
+          ok = true;
+        }
+
+        if (ok) {
+          if (showQuantity) {
+            quantityColumns.add(qc);
+          }
+          if (showAmount) {
+            amountColumns.add(ac);
+          }
+        }
+      }
+
+      if (showQuantity && quantityColumns.isEmpty() || showAmount && amountColumns.isEmpty()) {
+        qs.sqlDropTemp(tmp);
+        return ResponseObject.emptyResponse();
+      }
+
+    } else if (stockGroup != null) {
+      stockEndLabels.addAll(stockColumnGroupLabels);
+      stockEndValues.addAll(stockColumnGroupValues);
+    }
+
     boolean showPrice = rowGroups.contains(TradeReportGroup.ITEM) && showAmount && !summary;
 
     SqlSelect select = new SqlSelect().addFrom(tmp);
@@ -693,11 +776,7 @@ public class TradeReportsBean {
       if (movement) {
         HasConditions having = SqlUtils.or();
 
-        for (String column : quantityColumns) {
-          having.add(SqlUtils.nonZero(SqlUtils.aggregate(SqlConstants.SqlFunction.SUM,
-              SqlUtils.field(tmp, column))));
-        }
-        for (String column : amountColumns) {
+        for (String column : showQuantity ? quantityColumns : amountColumns) {
           having.add(SqlUtils.nonZero(SqlUtils.aggregate(SqlConstants.SqlFunction.SUM,
               SqlUtils.field(tmp, column))));
         }
@@ -727,11 +806,18 @@ public class TradeReportsBean {
     if (stockGroup != null) {
       result.put(RP_STOCK_COLUMN_GROUPS, BeeUtils.toString(stockGroup.ordinal()));
 
-      if (!stockColumnGroupLabels.isEmpty()) {
-        result.put(RP_STOCK_COLUMN_GROUP_LABELS, Codec.beeSerialize(stockColumnGroupLabels));
+      if (!stockStartLabels.isEmpty()) {
+        result.put(RP_STOCK_START_COLUMN_LABELS, Codec.beeSerialize(stockStartLabels));
       }
-      if (!stockColumnGroupValues.isEmpty()) {
-        result.put(RP_STOCK_COLUMN_GROUP_VALUES, Codec.beeSerialize(stockColumnGroupValues));
+      if (!stockStartValues.isEmpty()) {
+        result.put(RP_STOCK_START_COLUMN_VALUES, Codec.beeSerialize(stockStartValues));
+      }
+
+      if (!stockEndLabels.isEmpty()) {
+        result.put(RP_STOCK_END_COLUMN_LABELS, Codec.beeSerialize(stockEndLabels));
+      }
+      if (!stockEndValues.isEmpty()) {
+        result.put(RP_STOCK_END_COLUMN_VALUES, Codec.beeSerialize(stockEndValues));
       }
     }
 

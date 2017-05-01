@@ -452,8 +452,8 @@ public class TradeStockReport extends ReportInterceptor {
     List<String> columnGroupValues = new ArrayList<>();
 
     if (columnGroup != null) {
-      columnGroupLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_LABELS)));
-      columnGroupValues.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_VALUES)));
+      columnGroupLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_END_COLUMN_LABELS)));
+      columnGroupValues.addAll(Codec.deserializeList(data.get(RP_STOCK_END_COLUMN_VALUES)));
     }
 
     List<String> quantityColumns = NameUtils.toList(data.get(RP_QUANTITY_COLUMNS));

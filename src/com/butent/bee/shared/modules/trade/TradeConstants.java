@@ -386,8 +386,10 @@ public final class TradeConstants {
   public static final String RP_ROW_GROUP_LABEL_COLUMNS = "RowGroupLabelColums";
 
   public static final String RP_STOCK_COLUMN_GROUPS = "StockColumnGroups";
-  public static final String RP_STOCK_COLUMN_GROUP_LABELS = "StockColumnGroupLabels";
-  public static final String RP_STOCK_COLUMN_GROUP_VALUES = "StockColumnGroupValues";
+  public static final String RP_STOCK_START_COLUMN_LABELS = "StockStartColumnLabels";
+  public static final String RP_STOCK_END_COLUMN_LABELS = "StockEndColumnLabels";
+  public static final String RP_STOCK_START_COLUMN_VALUES = "StockStartColumnValues";
+  public static final String RP_STOCK_END_COLUMN_VALUES = "StockEndColumnValues";
 
   public static final String RP_MOVEMENT_COLUMN_GROUPS = "MovementColumnGroups";
   public static final String RP_MOVEMENT_IN_COLUMNS = "MovementInColumns";

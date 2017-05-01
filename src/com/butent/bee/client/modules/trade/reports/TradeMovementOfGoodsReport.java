@@ -166,12 +166,18 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
     TradeReportGroup stockGroup = EnumUtils.getEnumByIndex(TradeReportGroup.class,
         data.get(RP_STOCK_COLUMN_GROUPS));
 
-    List<String> stockGroupLabels = new ArrayList<>();
-    List<String> stockGroupValues = new ArrayList<>();
+    List<String> stockStartLabels = new ArrayList<>();
+    List<String> stockStartValues = new ArrayList<>();
+
+    List<String> stockEndLabels = new ArrayList<>();
+    List<String> stockEndValues = new ArrayList<>();
 
     if (stockGroup != null) {
-      stockGroupLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_LABELS)));
-      stockGroupValues.addAll(Codec.deserializeList(data.get(RP_STOCK_COLUMN_GROUP_VALUES)));
+      stockStartLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_START_COLUMN_LABELS)));
+      stockStartValues.addAll(Codec.deserializeList(data.get(RP_STOCK_START_COLUMN_VALUES)));
+
+      stockEndLabels.addAll(Codec.deserializeList(data.get(RP_STOCK_END_COLUMN_LABELS)));
+      stockEndValues.addAll(Codec.deserializeList(data.get(RP_STOCK_END_COLUMN_VALUES)));
     }
 
     List<TradeMovementGroup> movementGroups = EnumUtils.parseIndexList(TradeMovementGroup.class,
@@ -346,15 +352,15 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
           c++;
         }
 
-        for (int i = 0; i < stockGroupLabels.size(); i++) {
-          text = TradeUtils.formatGroupLabel(stockGroup, stockGroupLabels.get(i));
+        for (int i = 0; i < stockStartLabels.size(); i++) {
+          text = TradeUtils.formatGroupLabel(stockGroup, stockStartLabels.get(i));
 
           table.setText(r, c, text, styleStart, styleColumnLabel());
           xr.add(new XCell(c, text, headerStyleRef));
 
-          if (stockGroup.isEditable() && BeeUtils.isIndex(stockGroupValues, i)) {
+          if (stockGroup.isEditable() && BeeUtils.isIndex(stockStartValues, i)) {
             TableCellElement cell = table.getCellFormatter().getElement(r, c);
-            String value = stockGroupValues.get(i);
+            String value = stockStartValues.get(i);
 
             maybeMakeEditable(cell, stockGroup, value);
           }
@@ -463,15 +469,15 @@ public class TradeMovementOfGoodsReport extends TradeStockReport {
           c++;
         }
 
-        for (int i = 0; i < stockGroupLabels.size(); i++) {
-          text = TradeUtils.formatGroupLabel(stockGroup, stockGroupLabels.get(i));
+        for (int i = 0; i < stockEndLabels.size(); i++) {
+          text = TradeUtils.formatGroupLabel(stockGroup, stockEndLabels.get(i));
 
           table.setText(r, c, text, styleEnd, styleColumnLabel());
           xr.add(new XCell(c, text, headerStyleRef));
 
-          if (stockGroup.isEditable() && BeeUtils.isIndex(stockGroupValues, i)) {
+          if (stockGroup.isEditable() && BeeUtils.isIndex(stockEndValues, i)) {
             TableCellElement cell = table.getCellFormatter().getElement(r, c);
-            String value = stockGroupValues.get(i);
+            String value = stockEndValues.get(i);
 
             maybeMakeEditable(cell, stockGroup, value);
           }
