@@ -566,7 +566,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               final FormView pForm = ViewHelper.getForm(getGridView().asWidget());
               IsRow formRow = pForm.getActiveRow();
 
-              double cargoValue = BeeUtils.unbox(formRow.getDouble(pForm.getDataIndex(COL_CARGO_VALUE)));
+              double cargoValue =
+                  BeeUtils.unbox(formRow.getDouble(pForm.getDataIndex(COL_CARGO_VALUE)));
 
               if (!BeeUtils.isPositive(cargoValue)) {
                 LogUtils.getRootLogger().warning("Assessments.CargoValue", "is empty");
@@ -581,8 +582,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                   gridRow.getValue(grid.getDataIndex(COL_SERVICE)));
               expenseRow.setValue(expensesView.getColumnIndex(COL_AMOUNT), expenseSum);
 
-              Long currency = BeeUtils.nvl(formRow.getLong(pForm.getDataIndex(COL_CARGO_VALUE_CURRENCY)),
-                  gridRow.getLong(grid.getDataIndex(COL_CURRENCY)));
+              Long currency =
+                  BeeUtils.nvl(formRow.getLong(pForm.getDataIndex(COL_CARGO_VALUE_CURRENCY)),
+                      gridRow.getLong(grid.getDataIndex(COL_CURRENCY)));
 
               expenseRow.setValue(expensesView.getColumnIndex(COL_CURRENCY), currency);
               expenseRow.setValue(expensesView.getColumnIndex(COL_DATE),
@@ -628,10 +630,11 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         case TBL_ASSESSMENT_FORWARDERS:
           ((ChildGrid) widget).setGridInterceptor(new AssessmentForwardersGrid() {
             @Override
-            public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+            public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow,
+                boolean copy) {
               newRow.setValue(gridView.getDataIndex("CargoDescription"),
                   form.getStringValue("Description"));
-              return super.onStartNewRow(gridView, oldRow, newRow);
+              return super.onStartNewRow(gridView, oldRow, newRow, copy);
             }
           });
           break;
