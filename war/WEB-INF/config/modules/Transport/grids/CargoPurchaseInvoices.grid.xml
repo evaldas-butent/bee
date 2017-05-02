@@ -56,8 +56,6 @@
 
     <DataColumn name="Exported" />
 
-    <DataColumn name="NewNumber" />
-
     <CalcColumn name="Order" type="string" caption="=orderNumber" maxWidth="300">
       <render>
         <ui:function>

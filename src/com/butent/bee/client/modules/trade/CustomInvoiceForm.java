@@ -14,7 +14,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.i18n.Localized;
@@ -22,7 +21,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Objects;
 
-public abstract class CustomInvoiceForm extends PrintFormInterceptor {
+public abstract class CustomInvoiceForm extends InvoiceERPForm {
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
