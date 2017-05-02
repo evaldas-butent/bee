@@ -359,6 +359,10 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     super.onStartNewRow(form, oldRow, newRow);
   }
 
+  double getTotal() {
+    return tdSums.getTotal();
+  }
+
   private Double getDocumentDiscount(IsRow row) {
     return DataUtils.getDoubleQuietly(row, getDataIndex(COL_TRADE_DOCUMENT_DISCOUNT));
   }

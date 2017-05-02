@@ -237,6 +237,9 @@ public final class TradeConstants {
 
   public static final String COL_TRADE_PAYMENT_TYPE_ACCOUNT = "PaymentTypeAccount";
 
+  public static final String COL_TRADE_PAYMENT_TERM_DATE = "PaymentDate";
+  public static final String COL_TRADE_PAYMENT_TERM_AMOUNT = "PaymentAmount";
+
   public static final String COL_EXPENDITURE_TYPE_NAME = "ExpenditureTypeName";
   public static final String COL_EXPENDITURE_TYPE_DEBIT = "Debit";
   public static final String COL_EXPENDITURE_TYPE_CREDIT = "Credit";
@@ -318,11 +321,10 @@ public final class TradeConstants {
   public static final String GRID_DEBT_REPORTS = "DebtReports";
   public static final String GRID_SALES = "Sales";
 
-  public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
-
   public static final String GRID_TRADE_DOCUMENTS = "TradeDocuments";
   public static final String GRID_TRADE_DOCUMENT_ITEMS = "TradeDocumentItems";
   public static final String GRID_TRADE_PAYMENTS = "TradePayments";
+  public static final String GRID_TRADE_PAYMENT_TERMS = "TradePaymentTerms";
   public static final String GRID_TRADE_DOCUMENT_FILES = "TradeDocumentFiles";
 
   public static final String GRID_TRADE_STOCK = "TradeStock";
@@ -335,6 +337,7 @@ public final class TradeConstants {
 
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
   public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
+  public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
 
   public static final String FORM_TRADE_DOCUMENT = "TradeDocument";
 
