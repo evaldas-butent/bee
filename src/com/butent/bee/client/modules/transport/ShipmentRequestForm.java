@@ -454,8 +454,8 @@ class ShipmentRequestForm extends PrintFormInterceptor {
               sendMail(ShipmentRequestStatus.CONTRACT_SENT, emailSubject, BeeUtils.isEmpty(text)
                   ? null : text.replace("[CONTRACT_PATH]", path)
                   .replace("{CONTRACT_PATH}", path), Collections.singleton(fileInfo));
-                }
-              });
+            }
+          });
         }
 
         @Override

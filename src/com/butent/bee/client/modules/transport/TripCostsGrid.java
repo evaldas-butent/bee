@@ -164,7 +164,7 @@ public class TripCostsGrid extends TransportVatGridInterceptor
 
   @Override
   public boolean initDescription(GridDescription gridDescription) {
-    if(hideFooter) {
+    if (hideFooter) {
       for (ColumnDescription column : gridDescription.getColumns()) {
         if (BeeUtils.inListSame(column.getId(), COL_COSTS_ITEM, "Total", "Ratio")) {
           column.setFooterDescription(null);
@@ -244,7 +244,7 @@ public class TripCostsGrid extends TransportVatGridInterceptor
   }
 
   @Override
-  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
     FormView tripForm = ViewHelper.getForm(gridView);
     JustDate date = TimeUtils.today();
 
@@ -252,7 +252,7 @@ public class TripCostsGrid extends TransportVatGridInterceptor
       date = BeeUtils.nvl(tripForm.getDateValue(COL_TRIP_DATE_TO), date);
     }
     newRow.setValue(gridView.getDataIndex(COL_DATE), date);
-    return super.onStartNewRow(gridView, oldRow, newRow);
+    return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }
 
   public static void assignTrip(Long tripId, String... cargos) {

@@ -48,7 +48,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 

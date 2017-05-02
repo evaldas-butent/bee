@@ -489,9 +489,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_VEHICLES);
     cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_EMPLOYEES);
 
-    CustomTransportModuleBean customTrp = com.butent.bee.server.Invocation
-        .locateRemoteBean(CustomTransportModuleBean.class);
-    customTrp.init();
+    com.butent.bee.server.Invocation.locateRemoteBean(CustomTransportModuleBean.class).init();
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
@@ -946,56 +944,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       @Subscribe
       @AllowConcurrentEvents
-      public void convertToMainCurrency(ViewQueryEvent event) {
-        if (event.isAfter(VIEW_SELF_SERVICE_INVOICES)) {
-          BeeRowSet rowSet = event.getRowset();
-          Long mainCurrency = prm.getRelation(PRM_CURRENCY);
-          Map<Long, Double> amountMap = new HashMap<>();
-          Map<Long, Double> paidMap = new HashMap<>();
-
-          if (rowSet.isEmpty() || !DataUtils.isId(mainCurrency)) {
-            return;
-          }
-
-          SqlSelect query = new SqlSelect()
-              .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
-              .addFrom(TBL_SALES)
-              .setWhere(sys.idInList(TBL_SALES, rowSet.getRowIds()));
-
-          IsExpression amountExch = ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_SALES,
-              COL_AMOUNT), SqlUtils.field(TBL_SALES, COL_TRADE_CURRENCY), SqlUtils.field(TBL_SALES,
-              COL_DATE), SqlUtils.constant(mainCurrency));
-          query.addExpr(amountExch, COL_AMOUNT);
-
-          IsExpression paidExch = ExchangeUtils.exchangeFieldTo(query, SqlUtils.field(TBL_SALES,
-              COL_TRADE_PAID), SqlUtils.field(TBL_SALES, COL_TRADE_CURRENCY),
-              SqlUtils.field(TBL_SALES, COL_DATE), SqlUtils.constant(mainCurrency));
-          query.addExpr(paidExch, COL_TRADE_PAID);
-
-          SimpleRowSet set = qs.getData(query);
-          for (SimpleRow row : set) {
-            amountMap.put(row.getLong(COL_SALE), row.getDouble(COL_AMOUNT));
-            if (BeeUtils.isPositive(row.getDouble(COL_TRADE_PAID))) {
-              paidMap.put(row.getLong(COL_SALE), row.getDouble(COL_TRADE_PAID));
-            }
-          }
-
-          for (BeeRow row : rowSet) {
-            row.setProperty(PROP_AMOUNT_IN_EUR, amountMap.get(row.getId()));
-            if (paidMap.containsKey(row.getId())) {
-              row.setProperty(PROP_PAID_IN_EUR, paidMap.get(row.getId()));
-            }
-          }
-        }
-      }
-
-      @Subscribe
-      @AllowConcurrentEvents
       public void onOrderStatusChange(DataEvent.ViewUpdateEvent event) {
         if (event.isAfter(VIEW_ORDERS, VIEW_ASSESSMENTS)) {
           int col = DataUtils.getColumnIndex(event.isAfter(VIEW_ORDERS)
               ? COL_STATUS : COL_ORDER + COL_STATUS, event.getColumns());
-          Long  orderId;
+          Long orderId;
 
           if (event.isAfter(VIEW_ORDERS)) {
             orderId = event.getRow().getId();

@@ -34,12 +34,10 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -135,7 +133,7 @@ public abstract class InvoiceBuilder extends AbstractGridInterceptor
       }
 
       filters.put(NameUtils.getClassName(this.getClass()),
-          Filter.and(Filter.isNull(getRelationColumn()),  getParentFilter()));
+          Filter.and(Filter.isNull(getRelationColumn()), getParentFilter()));
     }
     return filters;
   }
