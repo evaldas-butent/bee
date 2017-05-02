@@ -147,7 +147,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
         double paid = tdSums.getPaid();
 
         refreshSum(NAME_PAID, paid);
-        refreshSum(NAME_DEBT, tdSums.getTotal() - paid);
+        refreshDebt(tdSums.getTotal(), paid);
       });
 
       ((ChildGrid) widget).setGridInterceptor(tpGrid);
@@ -664,6 +664,14 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     }
   }
 
+  private void clearSum(String name) {
+    Widget widget = getFormView().getWidgetByName(name);
+
+    if (widget instanceof DecimalLabel) {
+      ((DecimalLabel) widget).setValue(null);
+    }
+  }
+
   private void refreshSum(String name, double value) {
     Widget widget = getFormView().getWidgetByName(name);
 
@@ -687,7 +695,20 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
     refreshSum(NAME_TOTAL, total);
 
     refreshSum(NAME_PAID, paid);
-    refreshSum(NAME_DEBT, total - paid);
+    refreshDebt(total, paid);
+  }
+
+  private void refreshDebt(double total, double paid) {
+    if (BeeUtils.isPositive(paid) || showDebt()) {
+      refreshSum(NAME_DEBT, total - paid);
+    } else {
+      clearSum(NAME_DEBT);
+    }
+  }
+
+  private boolean showDebt() {
+    OperationType operationType = getOperationType();
+    return operationType != null && operationType.hasDebt();
   }
 
   private static void saveSplitLayout(Split split) {
