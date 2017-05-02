@@ -354,11 +354,11 @@ class TasksGrid extends AbstractGridInterceptor implements RowUpdateEvent.Handle
   }
 
   @Override
-  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
     if (TaskType.NOT_SCHEDULED.equals(type)) {
       newRow.setValue(gridView.getDataIndex(COL_STATUS), TaskStatus.NOT_SCHEDULED.ordinal());
     }
-    return super.onStartNewRow(gridView, oldRow, newRow);
+    return super.onStartNewRow(gridView, oldRow, newRow, copy);
   }
 
   @Override

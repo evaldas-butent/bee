@@ -23,6 +23,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.Invocation;
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -333,12 +334,15 @@ public class CarsModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_SERVICE_ORDERS, COL_DATE, COL_ORDER_NO)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
         .addFields(TBL_SERVICE_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
         .addExpr(xpr, ALS_COMPLETED)
         .addFrom(TBL_SERVICE_ORDER_ITEMS)
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_SERVICE_ORDER_ITEMS, COL_ITEM))
         .addFromInner(TBL_SERVICE_ORDERS,
             sys.joinTables(TBL_SERVICE_ORDERS, TBL_SERVICE_ORDER_ITEMS, COL_SERVICE_ORDER))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_SERVICE_ORDERS, COL_TRADE_CUSTOMER))
         .addFromLeft(TBL_SERVICE_INVOICES,
             sys.joinTables(TBL_SERVICE_ORDER_ITEMS, TBL_SERVICE_INVOICES, COL_SERVICE_ITEM))
         .setWhere(SqlUtils.and(SqlUtils.equals(TBL_SERVICE_ORDER_ITEMS, COL_ITEM, item),
@@ -346,6 +350,7 @@ public class CarsModuleBean implements BeeModule {
             SqlUtils.isNull(TBL_ITEMS, COL_ITEM_IS_SERVICE),
             SqlUtils.positive(TBL_SERVICE_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)))
         .addGroup(TBL_SERVICE_ORDERS, COL_DATE, COL_ORDER_NO)
+        .addGroup(TBL_COMPANIES, COL_COMPANY_NAME)
         .addGroup(TBL_SERVICE_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
         .setHaving(SqlUtils.or(SqlUtils.isNull(xpr),
             SqlUtils.more(TBL_SERVICE_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY, xpr)))
@@ -365,7 +370,7 @@ public class CarsModuleBean implements BeeModule {
 
     qs.getData(query).forEach(row -> {
       String key = BeeUtils.joinItems(Formatter.renderDateTime(dtfInfo, row.getDateTime(COL_DATE)),
-          row.getValue(COL_ORDER_NO));
+          row.getValue(COL_ORDER_NO), row.getValue(COL_COMPANY_NAME));
 
       map.put(key, BeeUtils.unbox(map.get(key))
           + row.getDouble(COL_TRADE_ITEM_QUANTITY) - BeeUtils.unbox(row.getDouble(ALS_COMPLETED)));
@@ -375,6 +380,54 @@ public class CarsModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    BeeView.registerConditionProvider(FILTER_CAR_DOCUMENTS, (view, args) -> {
+      IsCondition clause;
+      Long car = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 0));
+
+      if (DataUtils.isId(car)) {
+        SqlSelect query = new SqlSelect().setUnionAllMode(false)
+            .addFields(TBL_TRADE_DOCUMENTS, sys.getIdName(TBL_TRADE_DOCUMENTS))
+            .addFrom(TBL_TRADE_DOCUMENTS)
+            .setWhere(SqlUtils.equals(TBL_TRADE_DOCUMENTS, COL_TRADE_VEHICLE, car))
+            .addUnion(new SqlSelect().setDistinctMode(true)
+                .addFields(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_DOCUMENT)
+                .addFrom(TBL_TRADE_DOCUMENT_ITEMS)
+                .setWhere(SqlUtils.equals(TBL_TRADE_DOCUMENT_ITEMS, COL_TRADE_ITEM_VEHICLE, car)));
+
+        clause = SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
+      } else {
+        clause = SqlUtils.sqlFalse();
+      }
+      return clause;
+    });
+
+    BeeView.registerConditionProvider(FILTER_CAR_SERVICE_DOCUMENTS, (view, args) -> {
+      IsCondition clause;
+      Long serviceId = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 0));
+
+      if (DataUtils.isId(serviceId)) {
+        SqlSelect query = new SqlSelect().setUnionAllMode(false)
+            .addFields(TBL_SERVICE_INVOICES, COL_TRADE_DOCUMENT)
+            .addFrom(TBL_SERVICE_INVOICES)
+            .addFromInner(TBL_SERVICE_ORDER_ITEMS,
+                SqlUtils.and(sys.joinTables(TBL_SERVICE_ORDER_ITEMS, TBL_SERVICE_INVOICES,
+                    COL_SERVICE_ITEM), SqlUtils.equals(TBL_SERVICE_ORDER_ITEMS, COL_SERVICE_ORDER,
+                    serviceId)))
+            .addUnion(new SqlSelect().setDistinctMode(true)
+                .addFields(TBL_SERVICE_INVOICES, COL_TRADE_DOCUMENT)
+                .addFrom(TBL_SERVICE_INVOICES)
+                .addFromInner(TBL_SERVICE_ORDER_JOBS,
+                    SqlUtils.and(sys.joinTables(TBL_SERVICE_ORDER_JOBS, TBL_SERVICE_INVOICES,
+                        COL_SERVICE_JOB), SqlUtils.equals(TBL_SERVICE_ORDER_JOBS, COL_SERVICE_ORDER,
+                        serviceId))));
+
+        clause = SqlUtils.in(view.getSourceAlias(), view.getSourceIdName(), query);
+      } else {
+        clause = SqlUtils.sqlFalse();
+      }
+      return clause;
+    });
+
     TradeModuleBean.registerStockReservationsProvider(ModuleAndSub.of(getModule(),
         SubModule.SERVICE), new StockReservationsProvider() {
 

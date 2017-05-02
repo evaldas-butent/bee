@@ -85,6 +85,10 @@ public class InvoiceForm extends CustomInvoiceForm implements SelectorEvent.Hand
   }
 
   @Override
+  public void getERPStocks(Long id) {
+  }
+
+  @Override
   public FormInterceptor getInstance() {
     return new InvoiceForm(mainItem);
   }

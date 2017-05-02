@@ -335,6 +335,12 @@ public final class Data {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
   }
 
+  public static void refreshLocal(String viewOrTableName) {
+    DataInfo info = getDataInfo(viewOrTableName, false);
+    DATA_INFO_PROVIDER.getViewNames(Objects.isNull(info) ? viewOrTableName : info.getTableName())
+        .forEach(view -> DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(), view));
+  }
+
   public static Double round(String viewName, String colName, Double value) {
     if (BeeUtils.nonZero(value)) {
       Integer scale = getColumnScale(viewName, colName);

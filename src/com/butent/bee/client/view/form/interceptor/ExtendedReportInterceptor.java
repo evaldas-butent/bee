@@ -27,7 +27,7 @@ import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.client.output.ReportNumericItem;
-import com.butent.bee.client.output.ReportParameters;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.output.ReportResultItem;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.output.ReportValue;

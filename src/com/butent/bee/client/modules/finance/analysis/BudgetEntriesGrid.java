@@ -11,6 +11,7 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.modules.finance.Dimensions;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -88,5 +89,58 @@ public class BudgetEntriesGrid extends AbstractGridInterceptor {
     }
 
     super.beforeRender(gridView, event);
+  }
+
+  @Override
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow, boolean copy) {
+    if (gridView != null && oldRow != null && newRow != null) {
+      if (copy && gridView.getGrid().isColumnVisible(COL_BUDGET_ENTRY_ORDINAL)) {
+        int index = gridView.getDataIndex(COL_BUDGET_ENTRY_ORDINAL);
+        Integer ordinal = oldRow.getInteger(index);
+
+        if (BeeUtils.isPositive(ordinal)) {
+          newRow.setValue(index, ordinal + 10);
+        }
+      }
+
+      if (!copy) {
+        copyRelation(gridView, oldRow, newRow, COL_BUDGET_ENTRY_INDICATOR);
+        copyRelation(gridView, oldRow, newRow, COL_BUDGET_ENTRY_TYPE);
+
+        for (int dimension = 1; dimension <= Dimensions.getObserved(); dimension++) {
+          copyRelation(gridView, oldRow, newRow, Dimensions.getRelationColumn(dimension));
+        }
+
+        copyRelation(gridView, oldRow, newRow, COL_BUDGET_ENTRY_EMPLOYEE);
+
+        copyValue(gridView, oldRow, newRow, COL_BUDGET_ENTRY_TURNOVER_OR_BALANCE);
+        copyValue(gridView, oldRow, newRow, COL_BUDGET_ENTRY_YEAR);
+      }
+    }
+
+    return super.onStartNewRow(gridView, oldRow, newRow, copy);
+  }
+
+  private static void copyRelation(GridView gridView, IsRow oldRow, IsRow newRow, String columnId) {
+    if (gridView.getGrid().isColumnVisible(columnId)) {
+      int index = gridView.getDataIndex(columnId);
+      Long value = oldRow.getLong(index);
+
+      if (DataUtils.isId(value)) {
+        newRow.setValue(index, value);
+        RelationUtils.setRelatedValues(gridView.getDataInfo(), columnId, newRow, oldRow);
+      }
+    }
+  }
+
+  private static void copyValue(GridView gridView, IsRow oldRow, IsRow newRow, String columnId) {
+    if (gridView.getGrid().isColumnVisible(columnId)) {
+      int index = gridView.getDataIndex(columnId);
+      String value = oldRow.getString(index);
+
+      if (!BeeUtils.isEmpty(value)) {
+        newRow.setValue(index, value);
+      }
+    }
   }
 }

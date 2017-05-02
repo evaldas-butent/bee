@@ -35,5 +35,7 @@
     <RelColumn name="CarGearbox" visible="false" />
     <RelColumn name="CarPlaceCode" visible="false" />
     <RelColumn name="CarEmissionStandard" visible="false" />
+
+    <RelColumn name="Item" visible="false" />
   </g:columns>
 </g:Grid>

@@ -249,7 +249,7 @@ class CompanyForm extends CustomCompanyForm {
                   new RowCallback() {
                     @Override
                     public void onSuccess(BeeRow result) {
-                      Data.onViewChange(viewName, DataChangeEvent.RESET_REFRESH);
+                      Data.refreshLocal(viewName);
                     }
                   });
             }

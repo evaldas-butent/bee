@@ -29,6 +29,8 @@
         <InputText source="Number" upperCase="true" style="&inp1;" />
         <Label for="Type" />
         <DataSelector source="Type" />
+        <Label for="Item" />
+        <DataSelector source="Item" style="&inp1;" />
       </row>
 
       <row>
@@ -143,6 +145,10 @@
       <page>
         <text>=serviceOrders</text>
         <ChildGrid name="CarServiceOrders" relColumn="Car" />
+      </page>
+      <page>
+        <text>=trdInvoices</text>
+        <GridPanel name="TradeDocuments" child="true" parent="{form}" />
       </page>
       <page>
         <text>=specification</text>

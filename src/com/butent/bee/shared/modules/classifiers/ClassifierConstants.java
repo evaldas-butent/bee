@@ -27,6 +27,7 @@ public final class ClassifierConstants {
 
   public static final String TBL_ITEM_CATEGORY_TREE = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
+  public static final String TBL_ITEM_MANUFACTURERS = "ItemManufacturers";
 
   public static final String TBL_CONTACTS = "Contacts";
   public static final String TBL_EMAILS = "Emails";
@@ -223,6 +224,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_ADDITIONAL_UNIT = "AdditionalUnit";
   public static final String COL_ITEM_KPN_CODE = "KPNCode";
   public static final String COL_ITEM_DESCRIPTION = "Description";
+
+  public static final String COL_ITEM_MANUFACTURER = "Manufacturer";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";

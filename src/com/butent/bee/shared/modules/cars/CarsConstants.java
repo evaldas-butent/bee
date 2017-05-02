@@ -109,6 +109,9 @@ public final class CarsConstants {
   public static final String FORM_CAR_SERVICE_ORDER = "CarServiceOrder";
   public static final String FORM_CAR_SERVICE_EVENT = "CarServiceEvent";
 
+  public static final String FILTER_CAR_DOCUMENTS = "filter_car_trade_documents";
+  public static final String FILTER_CAR_SERVICE_DOCUMENTS = "filter_car_service_trade_documents";
+
   public static final String VAR_PRICE_DEFAULT = "PriceDefault";
   public static final String VAR_PRICE_OPTIONAL = "PriceOptional";
   public static final String VAR_REL_REQUIRED = "RelRequired";

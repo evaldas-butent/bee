@@ -3,15 +3,20 @@ package com.butent.bee.server.modules.payroll;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.collect.TreeBasedTable;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
 
+import com.butent.bee.client.output.ReportDateItem;
+import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -36,10 +41,13 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.finance.FinanceConstants;
 import com.butent.bee.shared.modules.payroll.Earnings;
 import com.butent.bee.shared.modules.payroll.PayrollConstants.WorkScheduleKind;
 import com.butent.bee.shared.modules.payroll.PayrollUtils;
 import com.butent.bee.shared.modules.payroll.WorkScheduleSummary;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
@@ -79,6 +87,8 @@ public class PayrollModuleBean implements BeeModule {
   AdministrationModuleBean adm;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  UserServiceBean usr;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -120,6 +130,9 @@ public class PayrollModuleBean implements BeeModule {
         response = getEarnings(reqInfo);
         break;
 
+      case SVC_PAYROLL_FUND_REPORT:
+        response = getTimeSheetPayrollReportData(reqInfo);
+        break;
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -864,6 +877,335 @@ public class PayrollModuleBean implements BeeModule {
 
       return ResponseObject.response(sb.toString());
     }
+  }
+
+  private ResponseObject getTimeSheetPayrollReportData(RequestInfo reqInfo) {
+    ResponseObject resp;
+    Long currency = reqInfo.getParameterLong(COL_CURRENCY);
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+
+    if (!DataUtils.isId(currency)) {
+      currency = prm.getRelation(PRM_CURRENCY);
+    }
+
+    YearMonth filterFrom = null;
+    YearMonth filterTo = null;
+
+    for (ReportItem item : report.getFilterItems()) {
+      if (item instanceof ReportDateItem) {
+        ReportDateItem dtItem = (ReportDateItem) item;
+
+        if (BeeUtils.same(dtItem.getExpression(), COL_DATE_FROM) && dtItem.getFilter() != null) {
+          filterFrom = new YearMonth(new JustDate(BeeUtils.toInt(dtItem.getFilter())));
+        } else if (BeeUtils.same(dtItem.getExpression(), COL_DATE_TO)
+          && dtItem.getFilter() != null) {
+          filterTo = new YearMonth(new JustDate(BeeUtils.toInt(dtItem.getFilter())));
+        }
+      }
+    }
+
+    if (filterFrom == null || filterTo == null || filterFrom.compareTo(filterTo) > 0) {
+      return ResponseObject.error(usr.getDictionary().invalidPeriod(filterFrom, filterTo));
+    }
+
+
+    String currencyName = qs.getValue(new SqlSelect().addFields(TBL_CURRENCIES, COL_CURRENCY_NAME)
+      .addFrom(TBL_CURRENCIES).setWhere(sys.idEquals(TBL_CURRENCIES, currency)));
+
+    String tblMangerPerson = SqlUtils.uniqueName();
+    String tblManagerCompanyPerson = SqlUtils.uniqueName();
+    String[] reportTableHeader = new String[]{
+      ALS_REPORT_TIME_PERIOD, COL_OSF_AMOUNT, TradeConstants.COL_TRADE_PAID, COL_CURRENCY,
+      TradeConstants.COL_TRADE_DEBT, COL_LOCATION_NAME, COL_LOCATION_STATUS, COL_COMPANY_CODE,
+      COL_COMPANY_NAME, ALS_COMPANY_TYPE_NAME, COL_FIRST_NAME, COL_LAST_NAME,
+      ALS_LOCATION_MANAGER_FIRST_NAME, ALS_LOCATION_MANAGER_LAST_NAME,
+      FinanceConstants.ALS_EMPLOYEE_FIRST_NAME, FinanceConstants.ALS_EMPLOYEE_LAST_NAME,
+    };
+
+    TreeBasedTable<YearMonth, Long, Double> fundAmounts = TreeBasedTable.create();
+    TreeBasedTable<YearMonth, String, Double> employeeAmounts = TreeBasedTable.create();
+    TreeBasedTable<YearMonth, Long, Double> fundDebt = TreeBasedTable.create();
+    TreeBasedTable<YearMonth, Long, Double> objectAmounts = TreeBasedTable.create();
+    Multimap<YearMonth, Long> relObjects = HashMultimap.create();
+    Multimap<YearMonth, Long> relEmployees = HashMultimap.create();
+    Multimap<Long, Long> objectEmployees = HashMultimap.create();
+    Multimap<Long, Long> employeeObjects = HashMultimap.create();
+
+    SqlSelect objectFunds = new SqlSelect()
+      .addAllFields(TBL_OBJECT_SALARY_FUND)
+      .addFields(TBL_LOCATIONS, COL_LOCATION_NAME, COL_LOCATION_STATUS)
+      .addFields(TBL_COMPANIES, COL_COMPANY_CODE, COL_COMPANY_NAME)
+      .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE_NAME)
+      .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
+      .addField(tblMangerPerson, COL_FIRST_NAME, ALS_LOCATION_MANAGER_FIRST_NAME)
+      .addField(tblMangerPerson, COL_LAST_NAME, ALS_LOCATION_MANAGER_LAST_NAME)
+      .addFrom(TBL_OBJECT_SALARY_FUND)
+      .addFromLeft(TBL_LOCATIONS, sys.joinTables(TBL_LOCATIONS, TBL_OBJECT_SALARY_FUND,
+        COL_OBJECT))
+      .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_LOCATIONS, COL_COMPANY))
+      .addFromLeft(TBL_COMPANY_TYPES, sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES,
+        COL_COMPANY_TYPE))
+      .addFromLeft(TBL_COMPANY_PERSONS, sys.joinTables(TBL_COMPANY_PERSONS, TBL_LOCATIONS,
+        COL_COMPANY_PERSON))
+      .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+      .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_LOCATIONS, COL_LOCATION_MANAGER))
+      .addFromLeft(TBL_COMPANY_PERSONS, tblManagerCompanyPerson,
+        sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+      .addFromLeft(TBL_PERSONS, tblMangerPerson, sys.joinTables(TBL_PERSONS,
+        tblManagerCompanyPerson, COL_PERSON))
+      .setWhere(
+        SqlUtils.and(
+          SqlUtils.notNull(TBL_OBJECT_SALARY_FUND, COL_OSF_YEAR_FROM),
+          SqlUtils.notNull(TBL_OBJECT_SALARY_FUND, COL_OSF_MONTH_FROM),
+          SqlUtils.notNull(TBL_OBJECT_SALARY_FUND, COL_OSF_YEAR_UNTIL),
+          SqlUtils.notNull(TBL_OBJECT_SALARY_FUND, COL_OSF_MONTH_UNTIL),
+          SqlUtils.and(
+            SqlUtils.or(
+              SqlUtils.more(TBL_OBJECT_SALARY_FUND, COL_OSF_YEAR_FROM, filterFrom.getYear()),
+              SqlUtils.and(
+                SqlUtils.equals(TBL_OBJECT_SALARY_FUND, COL_OSF_YEAR_FROM, filterFrom.getYear()),
+                SqlUtils.moreEqual(TBL_OBJECT_SALARY_FUND, COL_OSF_MONTH_FROM,
+                  filterFrom.getMonth())
+              )
+            ),
+            SqlUtils.or(
+              SqlUtils.less(TBL_OBJECT_SALARY_FUND, COL_OSF_YEAR_UNTIL, filterTo.getYear()),
+              SqlUtils.and(
+                SqlUtils.equals(TBL_OBJECT_SALARY_FUND, COL_OSF_YEAR_UNTIL, filterTo.getYear()),
+                SqlUtils.lessEqual(TBL_OBJECT_SALARY_FUND, COL_OSF_MONTH_UNTIL,
+                  filterTo.getMonth())
+              )
+            )
+          )
+        )
+      )
+      .addOrder(TBL_OBJECT_SALARY_FUND, COL_OSF_YEAR_FROM, COL_OSF_MONTH_FROM);
+
+
+    SqlSelect employeeObjectsQuery = new SqlSelect()
+      .addAllFields(TBL_EMPLOYEE_OBJECTS)
+      .addField(TBL_PERSONS, COL_FIRST_NAME, FinanceConstants.ALS_EMPLOYEE_FIRST_NAME)
+      .addField(TBL_PERSONS, COL_LAST_NAME, FinanceConstants.ALS_EMPLOYEE_LAST_NAME)
+      .addFrom(TBL_EMPLOYEE_OBJECTS)
+      .addFromLeft(TBL_EMPLOYEES, sys.joinTables(TBL_EMPLOYEES, TBL_EMPLOYEE_OBJECTS, COL_EMPLOYEE))
+      .addFromLeft(TBL_COMPANY_PERSONS, sys.joinTables(TBL_COMPANY_PERSONS, TBL_EMPLOYEES,
+        COL_COMPANY_PERSON))
+      .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+      .addOrder(TBL_EMPLOYEE_OBJECTS, COL_DATE_FROM);
+
+
+    SimpleRowSet objectFundData = qs.getData(objectFunds);
+
+    if (DataUtils.isEmpty(objectFundData)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    employeeObjectsQuery.setWhere(SqlUtils.inList(TBL_EMPLOYEE_OBJECTS, COL_OBJECT,
+      (Object[]) objectFundData.getColumn(COL_OBJECT)));
+
+    SimpleRowSet employeeObjectData = qs.getData(employeeObjectsQuery);
+    SimpleRowSet reportData = new SimpleRowSet(reportTableHeader);
+    YearMonth minDate = null;
+    YearMonth maxDate = null;
+    Map<Long, YearMonth> minObjectDates = new HashMap<>();
+    Map<Long, YearMonth> maxObjectDates = new HashMap<>();
+
+    for (SimpleRow row : objectFundData) {
+      Long objectId = row.getLong(COL_OBJECT);
+
+      if (!DataUtils.isId(objectId)) {
+        continue;
+      }
+
+      Range<YearMonth> fundRange =
+        Range.closedOpen(
+          new YearMonth(row.getInt(COL_OSF_YEAR_FROM), row.getInt(COL_OSF_MONTH_FROM)),
+          new YearMonth(row.getInt(COL_OSF_YEAR_UNTIL), row.getInt(COL_OSF_MONTH_UNTIL))
+        );
+
+      if (minDate == null) {
+        minDate = fundRange.lowerEndpoint();
+        maxDate = fundRange.upperEndpoint();
+      } else if (maxDate.compareTo(fundRange.upperEndpoint()) < 0) {
+        maxDate = fundRange.upperEndpoint();
+      }
+
+      YearMonth minObjectDate = minObjectDates.get(objectId);
+      YearMonth maxObjectDate = maxObjectDates.get(objectId);
+
+      if (minObjectDate == null) {
+        minObjectDates.put(objectId, fundRange.lowerEndpoint());
+        maxObjectDates.put(objectId, fundRange.upperEndpoint());
+      } else if (maxObjectDate.compareTo(fundRange.upperEndpoint()) < 0) {
+        maxObjectDates.put(objectId, fundRange.upperEndpoint());
+      }
+
+      for (YearMonth startFoundRange = fundRange.lowerEndpoint();
+           fundRange.contains(startFoundRange);
+           startFoundRange = startFoundRange.nextMonth()) {
+        double fundAmount = BeeUtils.unbox(fundAmounts.get(startFoundRange, objectId));
+        double newAmount = BeeUtils.unbox(
+          adm.maybeExchange(row.getLong(COL_CURRENCY), currency, row.getDouble(COL_OSF_AMOUNT),
+            startFoundRange.getDate().getDateTime()));
+
+        relObjects.put(startFoundRange, objectId);
+        fundAmounts.put(startFoundRange, objectId, fundAmount + newAmount);
+      }
+    }
+
+    for (SimpleRow row : employeeObjectData) {
+      Long objectId = row.getLong(COL_OBJECT);
+      Long employeeId = row.getLong(COL_EMPLOYEE);
+
+      if (!DataUtils.isId(objectId) || !DataUtils.isId(employeeId)) {
+        continue;
+      }
+
+      String amountKey = BeeUtils.joinItems(objectId, employeeId);
+      objectEmployees.put(objectId, employeeId);
+      employeeObjects.put(employeeId, objectId);
+
+      YearMonth employeeWorkFrom = row.getDate(COL_EMPLOYEE_OBJECT_FROM) == null
+        ? minObjectDates.get(objectId) : new YearMonth(row.getDate(COL_EMPLOYEE_OBJECT_FROM));
+      YearMonth employeeWorkTo = row.getDate(COL_EMPLOYEE_OBJECT_UNTIL) == null
+        ? maxObjectDates.get(objectId) : new YearMonth(row.getDate(COL_EMPLOYEE_OBJECT_UNTIL));
+
+      if (employeeWorkFrom.compareTo(employeeWorkTo) > 0) {
+       employeeWorkTo = employeeWorkFrom;
+      }
+
+      Range<YearMonth> workRange = Range.closedOpen(employeeWorkFrom, employeeWorkTo);
+
+      if (minDate.compareTo(workRange.lowerEndpoint()) > 0) {
+        minDate = workRange.lowerEndpoint();
+      }
+
+      if (maxDate.compareTo(workRange.upperEndpoint()) < 0) {
+        maxDate = workRange.upperEndpoint();
+      }
+
+      for (YearMonth startWork = workRange.lowerEndpoint(); workRange.contains(startWork);
+           startWork = startWork.nextMonth()) {
+
+        double salary = BeeUtils.unbox(employeeAmounts.get(startWork, amountKey));
+        double newSalary = BeeUtils.unbox(
+          adm.maybeExchange(row.getLong(COL_CURRENCY), currency,
+            row.getDouble(COL_EMPLOYEE_OBJECT_FUND), startWork.getDate().getDateTime()));
+        double objectAmount = BeeUtils.unbox(objectAmounts.get(startWork, objectId));
+
+        employeeAmounts.put(startWork, amountKey, salary + newSalary);
+        objectAmounts.put(startWork, objectId, objectAmount + newSalary);
+
+        if (!relObjects.containsKey(startWork)) {
+          relEmployees.put(startWork, employeeId);
+        }
+      }
+    }
+
+    Range<YearMonth> reportRange = Range.closedOpen(filterFrom, filterTo);
+
+    for (YearMonth reportDate = reportRange.lowerEndpoint(); reportRange.contains(reportDate);
+         reportDate = reportDate.nextMonth()) {
+
+      Collection<Long> employees = relEmployees.get(reportDate);
+      Collection<Long> objects = relObjects.get(reportDate);
+
+
+      for (Long objectOrEmployee : BeeUtils.isEmpty(employees) ? objects : employees) {
+        Collection<Long> dependencies = BeeUtils.isEmpty(employees)
+          ? objectEmployees.get(objectOrEmployee) : employeeObjects.get(objectOrEmployee);
+
+        for (Long employeeOrObject : dependencies) {
+          Long objectId = BeeUtils.isEmpty(employees) ? objectOrEmployee : employeeOrObject;
+          Long employeeId = BeeUtils.isEmpty(employees) ? employeeOrObject : objectOrEmployee;
+
+          if (!DataUtils.isId(objectId) || !DataUtils.isId(employeeId)) {
+            continue;
+          }
+
+          String amountKey = BeeUtils.joinItems(objectId, employeeId);
+
+          SimpleRow reportRow = reportData.addEmptyRow();
+          reportRow.setValue(ALS_REPORT_TIME_PERIOD,
+            BeeUtils.toString(reportDate.getDate().getTime()));
+          reportRow.setValue(COL_OSF_AMOUNT,
+            BeeUtils.toString(BeeUtils.unbox(fundAmounts.get(reportDate, objectId))));
+
+          reportRow.setValue(COL_CURRENCY, currencyName);
+
+          reportRow.setValue(TradeConstants.COL_TRADE_PAID,
+            BeeUtils.toString(BeeUtils.unbox(employeeAmounts.get(reportDate, amountKey))));
+
+          Double debt = BeeUtils.nvl(fundDebt.get(reportDate, objectId), fundDebt.get(reportDate
+              .previousMonth(), objectId),
+            fundAmounts.get(reportDate, objectId));
+          Double totalPaid = BeeUtils.unbox(objectAmounts.get(reportDate, objectId));
+
+          if (debt != null && fundAmounts.get(reportDate, objectId) != null
+            && fundDebt.get(reportDate, objectId) == null) {
+            fundDebt.put(reportDate, objectId, debt - totalPaid);
+            reportRow.setValue(TradeConstants.COL_TRADE_DEBT,
+              BeeUtils.toString(BeeUtils.unbox(fundDebt.get(reportDate, objectId))));
+          } else if (debt != null && fundDebt.get(reportDate, objectId) != null
+            && fundAmounts.get(reportDate, objectId) != null) {
+            reportRow.setValue(TradeConstants.COL_TRADE_DEBT,
+              BeeUtils.toString(BeeUtils.unbox(fundDebt.get(reportDate, objectId))));
+          } else {
+            reportRow.setValue(TradeConstants.COL_TRADE_DEBT,
+              BeeUtils.toString(-totalPaid));
+          }
+          reportRow.setValue(COL_LOCATION_NAME, objectFundData.getValueByKey(COL_OBJECT,
+            BeeUtils.toString(objectId), COL_LOCATION_NAME));
+          reportRow.setValue(COL_LOCATION_STATUS,
+            objectFundData.getValueByKey(COL_OBJECT, BeeUtils.toString(objectId),
+              COL_LOCATION_STATUS));
+
+          reportRow.setValue(COL_COMPANY_CODE,
+            objectFundData.getValueByKey(COL_OBJECT, BeeUtils.toString(objectId),
+              COL_COMPANY_CODE));
+
+          reportRow.setValue(COL_COMPANY_NAME,
+            objectFundData.getValueByKey(COL_OBJECT, BeeUtils.toString(objectId),
+              COL_COMPANY_NAME));
+
+          reportRow.setValue(ALS_COMPANY_TYPE_NAME,
+            objectFundData.getValueByKey(COL_OBJECT, BeeUtils.toString(objectId),
+              ALS_COMPANY_TYPE_NAME));
+
+          reportRow.setValue(COL_FIRST_NAME,
+            objectFundData.getValueByKey(COL_OBJECT, BeeUtils.toString(objectId),
+              COL_FIRST_NAME));
+
+          reportRow.setValue(COL_LAST_NAME,
+            objectFundData.getValueByKey(COL_OBJECT, BeeUtils.toString(objectId),
+              COL_LAST_NAME));
+
+          reportRow.setValue(ALS_LOCATION_MANAGER_FIRST_NAME,
+            objectFundData.getValueByKey(COL_OBJECT, BeeUtils.toString(objectId),
+              ALS_LOCATION_MANAGER_FIRST_NAME));
+
+          reportRow.setValue(ALS_LOCATION_MANAGER_LAST_NAME,
+            objectFundData.getValueByKey(COL_OBJECT, BeeUtils.toString(objectId),
+              ALS_LOCATION_MANAGER_LAST_NAME));
+
+          reportRow.setValue(FinanceConstants.ALS_EMPLOYEE_FIRST_NAME, employeeObjectData
+            .getValueByKey(COL_EMPLOYEE,
+              BeeUtils.toString(employeeId),
+              FinanceConstants.ALS_EMPLOYEE_FIRST_NAME));
+
+          reportRow.setValue(FinanceConstants.ALS_EMPLOYEE_LAST_NAME, employeeObjectData
+            .getValueByKey(COL_EMPLOYEE,
+              BeeUtils.toString(employeeId),
+              FinanceConstants.ALS_EMPLOYEE_LAST_NAME));
+
+          logger.debug("Create report row", reportRow.getDate(ALS_REPORT_TIME_PERIOD).toString(),
+            objectId, employeeId, reportRow.getValues());
+        }
+      }
+    }
+
+    resp = ResponseObject.response(reportData);
+    return resp;
   }
 
   private boolean overlaps(long objId, long emplId, JustDate date, WorkScheduleKind kind) {

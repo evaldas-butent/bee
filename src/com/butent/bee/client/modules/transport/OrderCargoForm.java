@@ -41,7 +41,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
-import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -96,7 +95,7 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
             @Override
             public boolean previewModify(Set<Long> rowIds) {
               if (super.previewModify(rowIds)) {
-                Data.onTableChange(TBL_CARGO_TRIPS, EnumSet.of(DataChangeEvent.Effect.REFRESH));
+                Data.refreshLocal(TBL_CARGO_TRIPS);
                 return true;
               }
               return false;
