@@ -80,6 +80,11 @@ public interface HasCustomProperties {
     return other != null && BeeUtils.sameEntries(getProperties(), other.getProperties());
   }
 
+  default void setNonZero(String key, Double value) {
+    String s = BeeUtils.nonZero(value) ? BeeUtils.toString(value) : null;
+    setProperty(key, s);
+  }
+
   void setProperties(CustomProperties properties);
 
   default void setProperty(String key, Double value) {

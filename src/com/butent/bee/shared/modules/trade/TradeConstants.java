@@ -76,8 +76,6 @@ public final class TradeConstants {
   public static final String VIEW_DEBTS = "Debts";
   public static final String VIEW_DEBT_REPORTS = "DebtReports";
   public static final String VIEW_DEBT_REMINDER_TEMPLATE = "DebtReminderTemplates";
-  public static final String VIEW_PURCHASE_OPERATIONS = "PurchaseOperations";
-  public static final String VIEW_SALE_OPERATIONS = "SaleOperations";
 
   public static final String VIEW_PURCHASES = "Purchases";
   public static final String VIEW_PURCHASE_ITEMS = "PurchaseItems";
@@ -194,7 +192,6 @@ public final class TradeConstants {
 
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
-  public static final String COL_TEMPLATE_NAME = "Name";
   public static final String COL_TEMPLATE_SUBJECT = "Subject";
   public static final String COL_TEMPLATE_FIRST_PARAGRAPH = "FirstParagraph";
   public static final String COL_TEMPLATE_LAST_PARAGRAPH = "LastParagraph";
@@ -276,13 +273,6 @@ public final class TradeConstants {
   public static final String ALS_STATUS_BACKGROUND = "StatusBackground";
   public static final String ALS_STATUS_FOREGROUND = "StatusForeground";
 
-  public static final String ALS_OVERDUE_COUNT = "OverdueCount";
-  public static final String ALS_OVERDUE_SUM = "OverdueSum";
-  public static final String ALS_SALES_COUNT = "SalesCount";
-  public static final String ALS_SALES_SUM = "SalesSum";
-  public static final String ALS_TRADE_STATUS_NAME = "TradeStatusName";
-  public static final String ALS_TRADE_STATUS = "TradeStatus";
-
   public static final String ALS_EXPENDITURE_TYPE_SUPPLIER = "TypeSupplier";
 
   public static final String ALS_WAREHOUSE_FROM_CODE = "WarehouseFromCode";
@@ -297,12 +287,21 @@ public final class TradeConstants {
   public static final String ALS_PARENT_COST_CURRENCY = "ParentCostCurrency";
 
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
-  public static final String PROP_OVERALL_TOTAL = "OveralTotal";
+
   public static final String PROP_STOCK = "Stock";
   public static final String PROP_RESERVED = "Reserved";
   public static final String PROP_WAREHOUSES = "Warehouses";
   public static final String PROP_COST = "Cost";
   public static final String PROP_LEVEL = "Level";
+
+  public static final String PROP_TD_AMOUNT = "TdAmount";
+  public static final String PROP_TD_DISCOUNT = "TdDiscount";
+  public static final String PROP_TD_WITHOUT_VAT = "TdWithoutVat";
+  public static final String PROP_TD_VAT = "TdVat";
+  public static final String PROP_TD_TOTAL = "TdTotal";
+
+  public static final String PROP_TD_PAID = "TdPaid";
+  public static final String PROP_TD_DEBT = "TdDebt";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
@@ -336,7 +335,6 @@ public final class TradeConstants {
   public static final String GRID_TRADE_RELATED_ITEMS = "TradeRelatedItems";
 
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
-  public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
   public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
 
   public static final String FORM_TRADE_DOCUMENT = "TradeDocument";

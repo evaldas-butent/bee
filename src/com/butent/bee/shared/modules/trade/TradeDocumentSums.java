@@ -190,16 +190,18 @@ public class TradeDocumentSums {
     return BeeUtils.isTrue(value);
   }
 
-  public static TradeDocumentSums of(BeeRowSet docData, BeeRowSet itemData) {
+  public static TradeDocumentSums of(BeeRowSet docData, int docRowIndex,
+      BeeRowSet itemData, BeeRowSet paymentData) {
+
     if (DataUtils.isEmpty(docData)) {
       return null;
     }
 
     TradeDocumentSums tds = new TradeDocumentSums(
-        docData.getEnum(0, COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class),
-        docData.getEnum(0, COL_TRADE_DOCUMENT_DISCOUNT_MODE, TradeDiscountMode.class));
+        docData.getEnum(docRowIndex, COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class),
+        docData.getEnum(docRowIndex, COL_TRADE_DOCUMENT_DISCOUNT_MODE, TradeDiscountMode.class));
 
-    tds.updateDocumentDiscount(docData.getDouble(0, COL_TRADE_DOCUMENT_DISCOUNT));
+    tds.updateDocumentDiscount(docData.getDouble(docRowIndex, COL_TRADE_DOCUMENT_DISCOUNT));
 
     if (!DataUtils.isEmpty(itemData)) {
       int qtyIndex = itemData.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
@@ -215,6 +217,14 @@ public class TradeDocumentSums {
         tds.add(row.getId(), row.getDouble(qtyIndex), row.getDouble(priceIndex),
             row.getDouble(discountIndex), row.getBoolean(dipIndex),
             row.getDouble(vatIndex), row.getBoolean(vipIndex));
+      }
+    }
+
+    if (!DataUtils.isEmpty(paymentData)) {
+      int amountIndex = paymentData.getColumnIndex(COL_TRADE_PAYMENT_AMOUNT);
+
+      for (BeeRow row : paymentData) {
+        tds.addPayment(row.getId(), row.getDouble(amountIndex));
       }
     }
 

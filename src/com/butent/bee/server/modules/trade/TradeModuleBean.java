@@ -126,6 +126,7 @@ import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -1172,6 +1173,57 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
                   BeeColumn col = sys.getView(VIEW_TRADE_DOCUMENTS).getBeeColumn(COL_TRADE_NUMBER);
                   ((InsertOrUpdate) event).addValue(col, new TextValue(number));
                 }
+              }
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setTradeDocumentSums(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_TRADE_DOCUMENTS) && !DataUtils.isEmpty(event.getRowset())) {
+          BeeRowSet docData = event.getRowset();
+
+          List<String> itemColumns = Arrays.asList(COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+              COL_TRADE_DOCUMENT_ITEM_DISCOUNT, COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT,
+              COL_TRADE_DOCUMENT_ITEM_VAT, COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
+
+          List<String> paymentColumns = Collections.singletonList(COL_TRADE_PAYMENT_AMOUNT);
+
+          int operationTypeIndex = docData.getColumnIndex(COL_OPERATION_TYPE);
+
+          for (int index = 0; index < docData.getNumberOfRows(); index++) {
+            BeeRow docRow = docData.getRow(index);
+            long docId = docRow.getId();
+
+            BeeRowSet itemData = qs.getViewData(VIEW_TRADE_DOCUMENT_ITEMS,
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, itemColumns);
+            BeeRowSet paymentData = qs.getViewData(VIEW_TRADE_PAYMENTS,
+                Filter.equals(COL_TRADE_DOCUMENT, docId), null, paymentColumns);
+
+            TradeDocumentSums tds = TradeDocumentSums.of(docData, index, itemData, paymentData);
+
+            if (tds != null) {
+              double vat = tds.getVat();
+              double total = tds.getTotal();
+              double paid = tds.getPaid();
+
+              docRow.setNonZero(PROP_TD_AMOUNT, tds.getAmount());
+              docRow.setNonZero(PROP_TD_DISCOUNT, tds.getDiscount());
+              docRow.setNonZero(PROP_TD_WITHOUT_VAT, total - vat);
+              docRow.setNonZero(PROP_TD_VAT, vat);
+              docRow.setNonZero(PROP_TD_TOTAL, total);
+
+              boolean ok = BeeUtils.isPositive(paid);
+              if (!ok) {
+                OperationType opType = docRow.getEnum(operationTypeIndex, OperationType.class);
+                ok = opType != null && opType.hasDebt();
+              }
+
+              if (ok) {
+                docRow.setNonZero(PROP_TD_PAID, paid);
+                docRow.setNonZero(PROP_TD_DEBT, total - paid);
               }
             }
           }

@@ -192,7 +192,7 @@ public class FinancePostingBean {
     int parentCostIndex = docLines.getColumnIndex(ALS_PARENT_COST);
     int parentCostCurrencyIndex = docLines.getColumnIndex(ALS_PARENT_COST_CURRENCY);
 
-    TradeDocumentSums tdSums = TradeDocumentSums.of(docData, docLines);
+    TradeDocumentSums tdSums = TradeDocumentSums.of(docData, 0, docLines, null);
     double docTotal = tdSums.getTotal();
 
     Map<Long, Long> itemCategoryTree = getItemCategoryTree();
