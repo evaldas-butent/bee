@@ -81,26 +81,11 @@
             <row>
               <cell colSpan="3" style="text-align:center;">
                 <FlowPanel>
-                  <Label name="Car" text="=newCar" class="bee-InternalLink">
-                    <dynStyle>
-                      <ui:inline>display:none</ui:inline>
-                      <ui:expression>row.Car</ui:expression>
-                    </dynStyle>
-                    <dynStyle>
-                      <ui:inline>display:inline</ui:inline>
-                      <ui:expression>!row.Car</ui:expression>
-                    </dynStyle>
-                  </Label>
-                  <Label text="=car">
-                    <dynStyle>
-                      <ui:inline>display:none</ui:inline>
-                      <ui:expression>!row.Car</ui:expression>
-                    </dynStyle>
-                    <dynStyle>
-                      <ui:inline>display:inline</ui:inline>
-                      <ui:expression>row.Car</ui:expression>
-                    </dynStyle>
-                  </Label>
+                  <TextLabel name="Car" class="bee-InternalLink">
+                    <render>
+                      <ui:expression>$wnd.Bee_maybeTranslate(row.Car ? "=car" : "=newCar")</ui:expression>
+                    </render>
+                  </TextLabel>
                 </FlowPanel>
               </cell>
             </row>
@@ -125,6 +110,10 @@
       <page>
         <text>=ecOrderItems</text>
         <ChildGrid name="CarOrderItems" relColumn="Order" />
+      </page>
+      <page>
+        <text>=trdInvoices</text>
+        <GridPanel name="TradeDocuments" child="true" parent="{form}" />
       </page>
       <page>
         <text>=notes</text>

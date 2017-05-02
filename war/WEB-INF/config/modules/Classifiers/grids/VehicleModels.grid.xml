@@ -6,6 +6,5 @@
   <g:columns>
     <RelColumn name="Brand" />
     <DataColumn name="Name" />
-    <RelColumn name="Item" />
   </g:columns>
 </g:Grid>

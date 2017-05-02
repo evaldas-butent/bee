@@ -147,12 +147,16 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
         params.put(column.getId(), value);
       }
     }
-    if (Objects.nonNull(getActiveRow()) && !BeeUtils.isEmpty(getActiveRow().getProperties())) {
-      getActiveRow().getProperties().forEach((key, value) -> {
-        if (!BeeUtils.isEmpty(value)) {
-          params.put(key, value);
-        }
-      });
+    if (Objects.nonNull(getActiveRow())) {
+      params.put("ID", BeeUtils.toString(getActiveRowId()));
+
+      if (!BeeUtils.isEmpty(getActiveRow().getProperties())) {
+        getActiveRow().getProperties().forEach((key, value) -> {
+          if (!BeeUtils.isEmpty(value)) {
+            params.put(key, value);
+          }
+        });
+      }
     }
     parametersConsumer.accept(params);
   }

@@ -33,7 +33,9 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.administration.Stage;
+import com.butent.bee.client.modules.trade.TradeDocumentsGrid;
 import com.butent.bee.client.modules.trade.TradeKeeper;
+import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory;
@@ -165,8 +167,9 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
           break;
       }
     }
-    if (Objects.equals(name, TBL_SERVICE_INVOICES) && widget instanceof GridPanel) {
-      ((GridPanel) widget).setGridInterceptor(new CarServiceInvoicesGrid());
+    if (Objects.equals(name, VIEW_TRADE_DOCUMENTS) && widget instanceof GridPanel) {
+      ((GridPanel) widget).setGridInterceptor(new TradeDocumentsGrid().setFilterSupplier(() ->
+          Filter.custom(FILTER_CAR_SERVICE_DOCUMENTS, getActiveRowId())));
     }
     if (Objects.equals(name, COL_CUSTOMER + "Warning") && widget instanceof HasClickHandlers) {
       customerWarning = widget.asWidget();
@@ -688,29 +691,12 @@ public class CarServiceOrderForm extends PrintFormInterceptor implements HasStag
   }
 
   private static void showReservations(String cap, Map<ModuleAndSub, Map<String, Double>> info) {
-    HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
+    Widget widget = TradeUtils.renderReservations(info);
 
-    table.getRowFormatter().addStyleName(0, StyleUtils.className(FontWeight.BOLD));
-    table.getRowFormatter().addStyleName(0, StyleUtils.className(TextAlign.CENTER));
-    table.setText(0, 0, Localized.dictionary().reservation());
-    table.setText(0, 1, Localized.dictionary().quantity());
-    table.setColumnCellClasses(1, StyleUtils.className(TextAlign.RIGHT));
-
-    if (!BeeUtils.isEmpty(info)) {
-      info.keySet().forEach(mod -> {
-        int r = table.getRowCount();
-        table.getCellFormatter().setColSpan(r, 0, 2);
-        table.getRowFormatter().addStyleName(r, StyleUtils.className(FontStyle.ITALIC));
-        table.setText(r, 0, BeeUtils.joinWords(mod.getModule().getCaption(), mod.hasSubModule()
-            ? BeeUtils.parenthesize(mod.getSubModule().getCaption()) : null));
-
-        info.get(mod).forEach((text, qty) -> {
-          int r2 = table.getRowCount();
-          table.setText(r2, 0, text);
-          table.setText(r2, 1, BeeUtils.toString(qty));
-        });
-      });
+    if (widget == null) {
+      Global.showInfo(cap);
+    } else {
+      Global.showModalWidget(cap, widget);
     }
-    Global.showModalWidget(cap, table);
   }
 }

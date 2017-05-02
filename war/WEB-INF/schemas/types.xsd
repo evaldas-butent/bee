@@ -303,7 +303,6 @@
       <xs:enumeration value="Cars" />
       <xs:enumeration value="CarServiceEvents" />
       <xs:enumeration value="CarServiceFiles" />
-      <xs:enumeration value="CarServiceInvoices" />
       <xs:enumeration value="CarServiceItems" />
       <xs:enumeration value="CarServiceJobs" />
       <xs:enumeration value="CarServiceOrders" />
@@ -649,14 +648,16 @@
       <xs:enumeration value="TradeActTmplServices" />
       <xs:enumeration value="TradeDocumentFiles" />
       <xs:enumeration value="TradeDocumentItems" />
-      <xs:enumeration value="TradeDocuments" />
+      <xs:enumeration value="TradeDocumentSelection" />
       <xs:enumeration value="TradeDocumentTags" />
       <xs:enumeration value="TradeDocumentTypes" />
+      <xs:enumeration value="TradeDocuments" />
       <xs:enumeration value="TradeExpenditures" />
       <xs:enumeration value="TradeItemCost" />
       <xs:enumeration value="TradeMovement" />
       <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />
+      <xs:enumeration value="TradePaymentTerms" />
       <xs:enumeration value="TradePayments" />
       <xs:enumeration value="TradeSeries" />
       <xs:enumeration value="TradeStatuses" />
@@ -706,6 +707,7 @@
       <xs:enumeration value="Warehouses" />
       <xs:enumeration value="WarrantyTypes" />
       <xs:enumeration value="WorkSchedule" />
+      <xs:enumeration value="WorkScheduleLocks" />
       <xs:enumeration value="Workspaces" />
 
       <!-- samples -->

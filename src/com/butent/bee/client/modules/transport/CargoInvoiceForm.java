@@ -153,7 +153,7 @@ public class CargoInvoiceForm extends CustomCargoInvoiceForm implements ClickHan
                       null, new RowInsertCallback(info.getViewName()) {
                         @Override
                         public void onSuccess(BeeRow result) {
-                          Data.onTableChange(info.getTableName(), DataChangeEvent.RESET_REFRESH);
+                          Data.refreshLocal(info.getTableName());
                           super.onSuccess(result);
                         }
                       });

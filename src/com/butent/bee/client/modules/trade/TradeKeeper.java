@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.trade;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -11,10 +13,13 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.ColorStyleProvider;
@@ -27,8 +32,10 @@ import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Triplet;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -39,6 +46,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
@@ -51,11 +59,13 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -69,6 +79,8 @@ public final class TradeKeeper implements HandlesAllDataEvents {
   public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "trade-";
 
   private static final TradeKeeper INSTANCE = new TradeKeeper();
+
+  private static final BiMap<Long, String> warehouses = HashBiMap.create();
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, method);
@@ -89,6 +101,43 @@ public final class TradeKeeper implements HandlesAllDataEvents {
         } else {
           callback.onSuccess(response.getResponseAsLong());
         }
+      }
+    });
+  }
+
+  public static void getItemStockByWarehouse(long item,
+      final Consumer<List<Triplet<String, Double, Double>>> consumer) {
+
+    Assert.isTrue(DataUtils.isId(item), SVC_GET_ITEM_STOCK_BY_WAREHOUSE + " item required");
+    Assert.notNull(consumer, SVC_GET_ITEM_STOCK_BY_WAREHOUSE + " consumer required");
+
+    ParameterList parameters = createArgs(SVC_GET_ITEM_STOCK_BY_WAREHOUSE);
+    parameters.addQueryItem(COL_ITEM, item);
+
+    BeeKeeper.getRpc().makeRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        List<Triplet<String, Double, Double>> result = new ArrayList<>();
+
+        if (response.hasResponse()) {
+          String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
+          if (arr != null) {
+            for (String s : arr) {
+              Triplet<String, String, String> triplet = Triplet.restore(s);
+
+              String warehouse = triplet.getA();
+              Double stock = BeeUtils.toDoubleOrNull(triplet.getB());
+              Double reserved = BeeUtils.toDoubleOrNull(triplet.getC());
+
+              if (!BeeUtils.isEmpty(warehouse) && BeeUtils.isPositive(stock)) {
+                result.add(Triplet.of(warehouse, stock, reserved));
+              }
+            }
+          }
+        }
+
+        consumer.accept(result);
       }
     });
   }
@@ -152,6 +201,37 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     });
   }
 
+  public static void getWarehouseId(String code, Consumer<Long> callback) {
+    getWarehouseIds(Collections.singleton(code), map -> callback.accept(map.get(code)));
+  }
+
+  public static void getWarehouseIds(Collection<String> codes,
+      Consumer<Map<String, Long>> callback) {
+
+    Assert.notNull(callback, "warehouse ids callback required");
+
+    Map<String, Long> result = new HashMap<>();
+
+    if (BeeUtils.isEmpty(codes)) {
+      callback.accept(result);
+
+    } else if (warehouses.values().containsAll(codes)) {
+      codes.forEach(code -> result.put(code, warehouses.inverse().get(code)));
+      callback.accept(result);
+
+    } else {
+      loadWarehouses(b -> {
+        codes.forEach(code -> {
+          Long id = warehouses.inverse().get(code);
+          if (DataUtils.isId(id)) {
+            result.put(code, id);
+          }
+        });
+        callback.accept(result);
+      });
+    }
+  }
+
   public static void register() {
     GridFactory.registerGridInterceptor(VIEW_PURCHASE_ITEMS, new TradeItemsGrid());
     GridFactory.registerGridInterceptor(VIEW_SALE_ITEMS, new TradeItemsGrid());
@@ -166,7 +246,9 @@ public final class TradeKeeper implements HandlesAllDataEvents {
         new FileGridInterceptor(COL_SALE, COL_FILE, COL_FILE_CAPTION, ALS_FILE_NAME));
 
     GridFactory.registerGridInterceptor(GRID_TRADE_STOCK, new TradeStockGrid());
+
     GridFactory.registerGridInterceptor(GRID_TRADE_EXPENDITURES, new TradeExpendituresGrid());
+    GridFactory.registerGridInterceptor(GRID_TRADE_PAYMENT_TERMS, new TradePaymentTermsGrid());
 
     FormFactory.registerFormInterceptor(FORM_SALES_INVOICE, new SalesInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_TRADE_DOCUMENT, new TradeDocumentForm());
@@ -201,13 +283,14 @@ public final class TradeKeeper implements HandlesAllDataEvents {
         ColorStyleProvider.create(VIEW_TRADE_DOCUMENTS,
             ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
 
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_ITEM_MOVEMENT, COL_TRADE_OPERATION,
-        ColorStyleProvider.create(VIEW_TRADE_MOVEMENT,
-            ALS_OPERATION_BACKGROUND, ALS_OPERATION_FOREGROUND));
-    ConditionalStyle.registerGridColumnStyleProvider(GRID_ITEM_MOVEMENT,
-        COL_TRADE_DOCUMENT_STATUS,
-        ColorStyleProvider.create(VIEW_TRADE_MOVEMENT,
-            ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
+    List<String> gridNames = StringList.of(GRID_ITEM_MOVEMENT, GRID_TRADE_RELATED_ITEMS);
+
+    ConditionalStyle.registerGridColumnColorProvider(gridNames,
+        Collections.singleton(COL_TRADE_OPERATION),
+        VIEW_TRADE_MOVEMENT, ALS_OPERATION_BACKGROUND, ALS_OPERATION_FOREGROUND);
+    ConditionalStyle.registerGridColumnColorProvider(gridNames,
+        Collections.singleton(COL_TRADE_DOCUMENT_STATUS),
+        VIEW_TRADE_MOVEMENT, ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND);
 
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_EXPENDITURES,
         COL_EXPENDITURE_TYPE, ColorStyleProvider.createDefault(VIEW_TRADE_EXPENDITURES));
@@ -216,6 +299,20 @@ public final class TradeKeeper implements HandlesAllDataEvents {
     BeeKeeper.getBus().registerDataHandler(INSTANCE, false);
 
     MenuService.REBUILD_TRADE_STOCK.setHandler(p -> rebuildStock());
+
+    BeeKeeper.getBus().registerRowTransformHandler(event -> {
+      if (event.hasView(VIEW_TRADE_DOCUMENTS)) {
+        DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_DOCUMENTS);
+
+        event.setResult(DataUtils.join(dataInfo, event.getRow(),
+            StringList.of(dataInfo.getIdColumn(), COL_TRADE_DATE,
+                COL_TRADE_SERIES, COL_TRADE_NUMBER,
+                COL_OPERATION_NAME, COL_TRADE_DOCUMENT_PHASE, COL_STATUS_NAME,
+                ALS_SUPPLIER_NAME, ALS_CUSTOMER_NAME,
+                ALS_WAREHOUSE_FROM_CODE, ALS_WAREHOUSE_TO_CODE),
+            BeeConst.STRING_SPACE, Format.getDateRenderer(), Format.getDateTimeRenderer()));
+      }
+    });
 
     if (ModuleAndSub.of(Module.TRADE, SubModule.ACTS).isEnabled()) {
       TradeActKeeper.register();
@@ -229,6 +326,27 @@ public final class TradeKeeper implements HandlesAllDataEvents {
 
   private static String getDocumentGridSupplierKey(long typeId) {
     return BeeUtils.join(BeeConst.STRING_UNDER, GRID_TRADE_DOCUMENTS, typeId);
+  }
+
+  private static void loadWarehouses(Consumer<Boolean> callback) {
+    Queries.getRowSet(VIEW_WAREHOUSES, Collections.singletonList(COL_WAREHOUSE_CODE),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            callback.accept(false);
+          }
+
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            warehouses.clear();
+
+            if (!DataUtils.isEmpty(result)) {
+              int index = result.getColumnIndex(COL_WAREHOUSE_CODE);
+              result.forEach(row -> warehouses.put(row.getId(), row.getString(index)));
+            }
+            callback.accept(true);
+          }
+        });
   }
 
   private static void onDataEvent(DataEvent event) {

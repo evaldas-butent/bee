@@ -6,7 +6,8 @@
         xmlns:f="http://www.butent.com/form"
         xmlns:ui="http://www.butent.com/ui"
 
-        name="CarServiceEvent" viewName="CarServiceEvents" caption="=calAppointment">
+        name="CarServiceEvent" viewName="CarServiceEvents" caption="=calAppointment"
+        enabledActions="delete">
 
   <FlowPanel class="flexBox-vertical">
     <Table kind="controls" style="margin-top: 1ex; margin-bottom: 2ex;">

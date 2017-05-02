@@ -245,7 +245,7 @@
         </FlowPanel>
       </page>
 
-      <page module="Trade Orders">
+      <page module="Trade Orders Service">
         <text>=discounts</text>
         <FlowPanel class="flexBox-vertical">
           <HorizontalPanel style="margin-bottom: 1em;">

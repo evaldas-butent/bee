@@ -2426,9 +2426,14 @@ public enum FormWidget {
       }
 
     } else if (BeeUtils.same(childTag, HasItems.TAG_ITEM) && parent instanceof HasItems) {
-      String item = XmlUtils.getText(child);
-      if (!BeeUtils.isEmpty(item)) {
-        ((HasItems) parent).addItem(Localized.maybeTranslate(item));
+      String text = Localized.maybeTranslate(XmlUtils.getText(child));
+      if (!BeeUtils.isEmpty(text)) {
+        if (parent instanceof ListBox && child.hasAttribute(UiConstants.ATTR_VALUE)) {
+          String value = child.getAttribute(UiConstants.ATTR_VALUE);
+          ((ListBox) parent).addItem(text, value);
+        } else {
+          ((HasItems) parent).addItem(text);
+        }
       }
 
     } else if (this == HEADER_CONTENT_FOOTER) {

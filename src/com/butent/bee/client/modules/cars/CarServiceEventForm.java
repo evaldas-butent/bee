@@ -65,6 +65,11 @@ public class CarServiceEventForm extends AbstractFormInterceptor implements Clic
     SelectorEvent.Handler {
 
   @Override
+  public void afterDeleteRow(long rowId) {
+    Data.refreshLocal(TBL_SERVICE_JOB_PROGRESS);
+  }
+
+  @Override
   public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
     if (Objects.equals(editableWidget.getColumnId(), COL_CAR) && widget instanceof DataSelector) {
       ((DataSelector) widget).addSelectorHandler(this);
