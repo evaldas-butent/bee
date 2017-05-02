@@ -3892,6 +3892,8 @@ public interface Dictionary {
 
   default String newPayment() {return g("newPayment");}
 
+  default String newPaymentTerm() {return g("newPaymentTerm");}
+
   default String newPerson() {return g("newPerson");}
 
   default String newPersonCompany() {return g("newPersonCompany");}
@@ -6798,6 +6800,10 @@ public interface Dictionary {
   default String trdPayer() {return g("trdPayer");}
 
   default String trdPayment() {return g("trdPayment");}
+
+  default String trdPaymentTerms() {return g("trdPaymentTerms");}
+
+  default String trdPaymentTermsShort() {return g("trdPaymentTermsShort");}
 
   default String trdPaymentTime() {return g("trdPaymentTime");}
 
