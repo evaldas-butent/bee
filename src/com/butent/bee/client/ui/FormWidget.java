@@ -66,7 +66,7 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.SummaryProxy;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.ColorStyleProvider;
