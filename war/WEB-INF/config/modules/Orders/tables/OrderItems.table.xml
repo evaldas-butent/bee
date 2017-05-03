@@ -10,7 +10,7 @@
     <Numeric name="Price" precision="15" scale="5" label="=price" />
     <Relation name="Currency" relation="Currencies" notNull="true" label="=currency" defExpr="MAIN_CURRENCY" />
     <Boolean name="VatPlus" label="=vatPlus" />
-    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Numeric name="Vat" precision="12" scale="5" label="=vat" />
     <Boolean name="VatPercent" label="=vatPercent" />
     <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
     <Numeric name="InvisibleDiscount" precision="7" scale="3" label="=discountPercent" />

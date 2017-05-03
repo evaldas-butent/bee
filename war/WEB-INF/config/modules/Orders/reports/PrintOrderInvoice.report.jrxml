@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-03-28T14:57:42 -->
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2017-04-26T15:03:20 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.shared.i18n.Localized"/>
@@ -608,12 +608,12 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="15">
-								<textField isStretchWithOverflow="true" pattern="0.00000" isBlankWhenNull="true">
+								<textField isStretchWithOverflow="true" pattern="0.000000" isBlankWhenNull="true">
 									<reportElement key="" style="TableDetail" x="0" y="0" width="67" height="15" uuid="0b8c96a6-e6d9-4d4a-8d29-c3040f87fd6f"/>
 									<textElement textAlignment="Right">
 										<font size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round(($V{amount} - $V{vatAmount}) / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[($V{amount} - $V{vatAmount}) / $F{Quantity}.doubleValue()]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -633,12 +633,12 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="15">
-								<textField isStretchWithOverflow="true" pattern="0.00000" isBlankWhenNull="true">
+								<textField isStretchWithOverflow="true" pattern="0.000000" isBlankWhenNull="true">
 									<reportElement style="TableDetail" x="0" y="0" width="49" height="15" uuid="9469ba7a-13a1-41f2-9f30-93b829af0c56"/>
 									<textElement textAlignment="Right" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="8"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$V{amount} / $F{Quantity}.doubleValue()]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -664,7 +664,7 @@
 									<font size="8" isBold="false"/>
 									<paragraph lineSpacing="Single"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{totalAmount} - $V{totalVatAmount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{totalAmount} - BeeUtils.round($V{totalVatAmount}, BeeUtils.toInt("2"))]]></textFieldExpression>
 							</textField>
 							<textField pattern="0.00">
 								<reportElement style="TableDetail" x="0" y="24" width="54" height="12" uuid="71c03171-bd8b-486f-9757-486c2eb62f9d">

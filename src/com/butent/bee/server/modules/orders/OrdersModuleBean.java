@@ -1714,12 +1714,12 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
 
         for (BeeRow component : qs.getViewData(rowSet.getViewName(),
             Filter.equals(COL_TRADE_ITEM_PARENT, complectId))) {
-          discount += BeeUtils.round(BeeUtils.unbox(total.getDiscount(component)), 2);
+          discount += BeeUtils.unbox(total.getDiscount(component));
         }
       }
 
       if (BeeUtils.isPositive(discount)) {
-        row.setProperty(PRP_DISCOUNT_VALUE, BeeUtils.round(discount, 2));
+        row.setProperty(PRP_DISCOUNT_VALUE, discount);
       }
     }
   }

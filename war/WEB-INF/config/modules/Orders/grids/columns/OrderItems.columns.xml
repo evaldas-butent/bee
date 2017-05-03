@@ -86,7 +86,7 @@
     </editable>
   </DataColumn>
 
-  <PropColumn name="DiscountValue" type="double" format="0.00" caption="=discount" >
+  <PropColumn name="DiscountValue" type="double" caption="=discount" format="0.00" >
     <footer aggregate="sum" format="0.00" />
   </PropColumn>
 
@@ -96,8 +96,8 @@
     </editable>
   </DataColumn>
 
-  <DataColumn name="Vat" carry="true" flexGrow="0">
-    <footer evaluator="vat" />
+  <DataColumn name="Vat" carry="true" flexGrow="0" format="0.00" >
+    <footer evaluator="vat" format="0.00" />
     <editable>
       <ui:expression>row.ItemComponent &lt; 1</ui:expression>
     </editable>

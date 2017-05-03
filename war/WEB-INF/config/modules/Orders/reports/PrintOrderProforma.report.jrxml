@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
-<!-- 2017-03-28T10:17:32 -->
+<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
+<!-- 2017-04-26T15:04:09 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="2c4a0e3c-3ba9-49b2-9219-bd545f315154">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="com.butent.bee.shared.i18n.Localized"/>
@@ -44,7 +44,7 @@
 			<variableExpression><![CDATA[$V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue()) == null ? 0.00 : $V{totalizer}.getVat($P{SaleItemsDataSet}.getRowValue())]]></variableExpression>
 		</variable>
 		<variable name="amount" class="java.lang.Double">
-			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue()) - BeeUtils.unbox($V{vatAmount})]]></variableExpression>
+			<variableExpression><![CDATA[$V{totalizer}.getTotal($P{SaleItemsDataSet}.getRowValue())]]></variableExpression>
 		</variable>
 		<variable name="totalVatAmount" class="java.lang.Double" calculation="Sum">
 			<variableExpression><![CDATA[$V{vatAmount}]]></variableExpression>
@@ -597,12 +597,12 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="15">
-								<textField isStretchWithOverflow="true" pattern="0.00000" isBlankWhenNull="true">
+								<textField isStretchWithOverflow="true" pattern="0.000000" isBlankWhenNull="true">
 									<reportElement key="" style="TableDetail" x="0" y="0" width="60" height="15" uuid="f8566693-1078-4f60-88bb-353791284e75"/>
 									<textElement textAlignment="Right">
 										<font fontName="DejaVu Sans" size="6"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$V{amount} / $F{Quantity}.doubleValue()]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -618,12 +618,12 @@
 								</textField>
 							</jr:columnHeader>
 							<jr:detailCell style="TableCell" height="15">
-								<textField pattern="0.00000">
+								<textField pattern="0.000000">
 									<reportElement style="TableDetail" x="0" y="0" width="70" height="15" uuid="39ce1846-3d25-43a7-89c7-260e12ebd269"/>
 									<textElement textAlignment="Right" verticalAlignment="Middle">
 										<font fontName="DejaVu Sans" size="6"/>
 									</textElement>
-									<textFieldExpression><![CDATA[BeeUtils.round($V{amount} / $F{Quantity}.doubleValue() + $V{vatAmount} / $F{Quantity}.doubleValue(), 5)]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$V{amount} / $F{Quantity}.doubleValue() + $V{vatAmount} / $F{Quantity}.doubleValue()]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -637,7 +637,7 @@
 								<textElement textAlignment="Right">
 									<font size="6"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{totalAmount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{totalAmount} - BeeUtils.round($V{totalVatAmount}, BeeUtils.toInt("2"))]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true" pattern="0.00">
 								<reportElement style="TableDetail" x="0" y="10" width="63" height="7" uuid="80eb7560-abd5-45dc-963a-9f21351aee12"/>
@@ -651,7 +651,7 @@
 								<textElement textAlignment="Right">
 									<font size="6" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{totalAmount} + $V{totalVatAmount}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{totalAmount}]]></textFieldExpression>
 							</textField>
 							<textField pattern="0.00">
 								<reportElement style="TableDetail" x="0" y="24" width="63" height="7" uuid="fe925f6c-88e2-4740-a0ff-85dd56f08645">
@@ -678,7 +678,7 @@
 								<textElement textAlignment="Right">
 									<font size="6"/>
 								</textElement>
-								<textFieldExpression><![CDATA[BeeUtils.round($V{amount} + $V{vatAmount} , 5)]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{amount}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

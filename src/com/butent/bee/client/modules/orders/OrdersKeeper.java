@@ -198,8 +198,7 @@ public final class OrdersKeeper {
 
                 Queries.update(viewName, Filter.compareId(row.getId()),
                     Arrays.asList(COL_TRADE_ITEM_PRICE, COL_TRADE_VAT),
-                    Arrays.asList(BeeUtils.toString(price), BeeUtils.toString(BeeUtils.round(vat,
-                        2))),
+                    Arrays.asList(BeeUtils.toString(price), BeeUtils.toString(vat)),
                     new Queries.IntCallback() {
                       @Override
                       public void onSuccess(Integer result) {

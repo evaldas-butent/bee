@@ -23,7 +23,7 @@
     </DataColumn>
 
     <DataColumn name="Discount" flexGrow="0">
-      <footer evaluator="discount" scale="2" />
+      <footer evaluator="discount" format="0.00" />
     </DataColumn>
 
     <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" />
