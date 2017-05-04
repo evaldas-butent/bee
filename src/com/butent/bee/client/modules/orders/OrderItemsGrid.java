@@ -11,6 +11,8 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -40,10 +42,12 @@ import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.CustomAction;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -53,6 +57,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -76,20 +81,28 @@ import java.util.Objects;
 
 public class OrderItemsGrid extends AbstractGridInterceptor implements SelectionHandler<BeeRowSet> {
 
-  Long orderForm;
+  private IsRow orderForm;
   private OrderItemsPicker picker;
   private Flow invoice = new Flow();
   private Double managerDiscount;
+  private CustomAction clearRes = new CustomAction(FontAwesome.BAN, event -> clearReservations());
+  private CustomAction reserve = new CustomAction(FontAwesome.REGISTERED,
+      event -> setReservations());
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
+
     FaLabel reCalculate = new FaLabel(FontAwesome.CALCULATOR);
     reCalculate.addStyleName(BeeConst.CSS_CLASS_PREFIX + "reCalculate");
     reCalculate.setTitle(Localized.dictionary().taRecalculatePrices());
-
     reCalculate.addClickHandler(event -> recalculatePrices());
 
+    clearRes.setTitle(Localized.dictionary().ordClearReservations());
+    reserve.setTitle(Localized.dictionary().ordReserveItems());
+
+    presenter.getHeader().addCommandItem(reserve);
+    presenter.getHeader().addCommandItem(clearRes);
     presenter.getHeader().addCommandItem(reCalculate);
     presenter.getHeader().addCommandItem(invoice);
 
@@ -444,16 +457,17 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
 
   @Override
   public void onParentRow(ParentRowEvent event) {
-    orderForm = event.getRowId();
-
+    orderForm = event.getRow();
     invoice.clear();
 
-    if (DataUtils.isId(orderForm)) {
-
+    if (DataUtils.isId(orderForm.getId())) {
       int index = Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS);
-      if (Objects.equals(event.getRow().getInteger(index), OrdersStatus.APPROVED.ordinal())
-          || Objects.equals(event.getRow().getInteger(index), OrdersStatus.FINISH.ordinal())) {
-        invoice.add(new InvoiceCreator(VIEW_ORDER_SALES, Filter.equals(COL_ORDER, orderForm)));
+      Integer status = orderForm.getInteger(index);
+
+      if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())
+          || Objects.equals(status, OrdersStatus.FINISH.ordinal())) {
+        invoice.add(new InvoiceCreator(VIEW_ORDER_SALES, Filter.equals(COL_ORDER,
+            orderForm.getId())));
       }
     }
 
@@ -710,10 +724,9 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
               Pair<Double, Double> pair = input.get(row.getLong(itemIndex));
 
               if (pair != null) {
-                double price =
-                    BeeUtils.unbox(pair.getA())
-                        + BeeUtils.unbox(row.getDouble(unpackingIdx))
-                        / BeeUtils.unbox(row.getDouble(qtyIndex));
+                double price = BeeUtils.unbox(pair.getA())
+                    + BeeUtils.unbox(row.getDouble(unpackingIdx))
+                    / BeeUtils.unbox(row.getDouble(qtyIndex));
                 Double percent = pair.getB();
                 if (BeeUtils.isPositive(price)) {
                   row.setValue(priceIndex,
@@ -866,6 +879,27 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
     return true;
   }
 
+  private void clearReservations() {
+    if (clearRes == null || !DataUtils.isId(orderForm.getId())) {
+      return;
+    }
+
+    Filter filter = Filter.and(Filter.equals(COL_ORDER, orderForm.getId()),
+        Filter.or(Filter.isNull(COL_RESERVED_REMAINDER),
+            Filter.isPositive(COL_RESERVED_REMAINDER)));
+
+    clearRes.running();
+
+    Queries.update(VIEW_ORDER_ITEMS, filter, COL_RESERVED_REMAINDER, new IntegerValue(0),
+        new IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            clearRes.idle();
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_ITEMS);
+          }
+        });
+  }
+
   private boolean maybeInsertSupplier(BeeRow item, int attributeIdx, int pckgUnitsIdx,
       Double qty, JustDate dateTo) {
     String attribute = item.getString(attributeIdx);
@@ -888,5 +922,33 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
       }
     }
     return false;
+  }
+
+  private void setReservations() {
+
+    if (clearRes == null || !DataUtils.isId(orderForm.getId())) {
+      return;
+    }
+
+    Long warehouse = orderForm.getLong(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE));
+    Integer status = orderForm.getInteger(Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS));
+
+    if (DataUtils.isId(warehouse) && Objects.equals(status, OrdersStatus.APPROVED.ordinal())) {
+      reserve.running();
+
+      ParameterList params = OrdersKeeper.createSvcArgs(SVC_FILL_RESERVED_REMAINDERS);
+      params.addDataItem(COL_ORDER, orderForm.getId());
+      params.addDataItem(COL_WAREHOUSE, warehouse);
+
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          reserve.idle();
+          if (!response.hasErrors()) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_ITEMS);
+          }
+        }
+      });
+    }
   }
 }

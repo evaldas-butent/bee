@@ -105,6 +105,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
   private static final String STYLE_REMAINDER_PREFIX = STYLE_PREFIX + "remainder-";
   private static final String STYLE_FREE_PREFIX = STYLE_PREFIX + "free-";
   private static final String STYLE_RESERVED_PREFIX = STYLE_PREFIX + "reserved-";
+  private static final String STYLE_ORD_QUANTITY_PREFIX = STYLE_PREFIX + "ord-quantity-";
   private static final String STYLE_PRICE_WRAPPER = STYLE_PRICE_PREFIX + "wrapper";
   private static final String STYLE_PRICE_VALUE = STYLE_PRICE_PREFIX + "value";
   private static final String STYLE_PRICE_CURRENCY = STYLE_PRICE_PREFIX + "currency";
@@ -130,9 +131,6 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
   private static final List<String> SEARCH_COLUMNS = Lists.newArrayList(COL_ITEM_NAME,
       COL_ITEM_ARTICLE, COL_ITEM_TYPE, COL_ITEM_GROUP, COL_CATEGORY);
-
-  private static final List<ItemPrice> PRICE_COLUMNS = Lists.newArrayList(ItemPrice.SALE,
-      ItemPrice.PRICE_1, ItemPrice.PRICE_2, ItemPrice.PRICE_3, ItemPrice.PRICE_4);
 
   private static Filter buildFilter(String by, String query) {
     Filter filter = null;
@@ -282,6 +280,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     Flow panel = new Flow(STYLE_SEARCH_PANEL);
 
     cb = new CheckBox(Localized.dictionary().withoutRemainder());
+    cb.setChecked(true);
     panel.add(cb);
 
     final InputText searchBox = new InputText();
@@ -614,7 +613,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     table.setText(r, c++, Localized.dictionary().article(),
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
-    for (ItemPrice ip : PRICE_COLUMNS) {
+    for (ItemPrice ip : ItemPrice.values()) {
       table.setText(r, c, ip.getCaption(),
           (ip == itemPrice) ? STYLE_SELECTED_PRICE_HEADER_CELL : STYLE_PRICE_HEADER_CELL);
 
@@ -637,6 +636,9 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
           STYLE_RESERVED_PREFIX + STYLE_HEADER_CELL_SUFFIX);
     }
 
+    table.setText(r, c++, Localized.dictionary().ordQuantity(),
+        STYLE_ORD_QUANTITY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
     table.setText(r, c++, Localized.dictionary().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
@@ -653,7 +655,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     EnumMap<ItemPrice, Integer> priceIndexes = new EnumMap<>(ItemPrice.class);
     EnumMap<ItemPrice, Integer> currencyIndexes = new EnumMap<>(ItemPrice.class);
 
-    for (ItemPrice ip : PRICE_COLUMNS) {
+    for (ItemPrice ip : ItemPrice.values()) {
       priceIndexes.put(ip, items.getColumnIndex(ip.getPriceColumn()));
       currencyIndexes.put(ip, items.getColumnIndex(ip.getCurrencyNameAlias()));
     }
@@ -696,7 +698,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
       ItemPrice defPrice = selectedPrices.containsKey(item.getId())
           ? selectedPrices.get(item.getId()) : itemPrice;
 
-      for (ItemPrice ip : PRICE_COLUMNS) {
+      for (ItemPrice ip : ItemPrice.values()) {
         String html = renderPrice(item, priceIndexes.get(ip), currencyIndexes.get(ip));
 
         if (html == null) {
@@ -731,19 +733,21 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
       if (isOrder) {
 
-        Double rem =
-            item.getDouble(DataUtils.getColumnIndex(COL_WAREHOUSE_REMAINDER, items.getColumns()));
+        Double rem = item.getDouble(DataUtils.getColumnIndex(COL_WAREHOUSE_REMAINDER,
+            items.getColumns()));
 
         table.setText(r, c++, rem.toString(), STYLE_REMAINDER_PREFIX + STYLE_CELL_SUFFIX);
-
         table.setText(r, c++, item.getDouble(items.getNumberOfColumns() - 2).toString(),
             STYLE_FREE_PREFIX + STYLE_CELL_SUFFIX);
-
         table.setText(r, c++, item.getDouble(items.getNumberOfColumns() - 1).toString(),
             STYLE_RESERVED_PREFIX + STYLE_CELL_SUFFIX);
-        item.setProperty(OrdersConstants.PRP_FREE_REMAINDER, item.getDouble(
-            items.getNumberOfColumns() - 2).toString());
+
+        item.setProperty(OrdersConstants.PRP_FREE_REMAINDER,
+            item.getDouble(items.getNumberOfColumns() - 2).toString());
       }
+
+      table.setText(r, c++, BeeUtils.nvl(item.getProperty(OrdersConstants.PRP_ORD_QTY), ""),
+          STYLE_ORD_QUANTITY_PREFIX + STYLE_CELL_SUFFIX);
 
       Double qty = quantities.get(item.getId());
       table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
@@ -798,6 +802,15 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
     }
 
     input.addChangeHandler(ensureQuantityChangeHandler());
+    input.addKeyDownHandler(event -> {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_HOME
+          || event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+        Widget searchBox = UiHelper.getChildByStyleName(ItemsPicker.this, STYLE_SEARCH_BOX);
+        if (searchBox instanceof Editor) {
+          ((Editor) searchBox).setFocus(true);
+        }
+      }
+    });
 
     return input;
   }

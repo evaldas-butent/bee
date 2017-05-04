@@ -98,7 +98,9 @@
     <DataColumn name="VatPercent" width="20" sortable="false"
       caption="%" format="%" carry="true" />
 
-    <PropColumn name="AmountWoVAT" type="double" label="=trdAmountWoVat" scale="2" format="0.00"/>
+    <PropColumn name="AmountWoVAT" type="double" label="=trdAmountWoVat" >
+      <footer aggregate="sum" />
+    </PropColumn>
 
     <CalcColumn name="Total" type="decimal" caption="=trdAmount"
       scale="2">

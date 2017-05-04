@@ -399,7 +399,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
               double total = BeeUtils.unbox(totalizer.getTotal(row));
               double vat = BeeUtils.unbox(totalizer.getVat(row));
 
-              row.setProperty(PRP_AMOUNT_WO_VAT, total - vat);
+              row.setProperty(PRP_AMOUNT_WO_VAT, BeeUtils.round(total - vat, 2));
             }
           }
         }
@@ -519,6 +519,7 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
     Long warehouse = reqInfo.getParameterLong(COL_WAREHOUSE);
     boolean remChecked = reqInfo.hasParameter(COL_WAREHOUSE_REMAINDER);
+    Long order = reqInfo.getParameterLong(COL_ORDER);
 
     CompoundFilter filter = Filter.and();
     filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
@@ -560,6 +561,20 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
     items.addColumn(ValueType.NUMBER, PRP_FREE_REMAINDER);
     items.addColumn(ValueType.NUMBER, COL_RESERVED_REMAINDER);
 
+    SqlSelect qry = new SqlSelect()
+        .addFields(TBL_ORDER_ITEMS, COL_ITEM)
+        .addSum(TBL_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_ORDER_ITEMS)
+        .setWhere(SqlUtils.equals(TBL_ORDER_ITEMS, COL_ORDER, order))
+        .addGroup(TBL_ORDER_ITEMS, COL_ITEM);
+
+    Map<Long, Double> totalQty = new HashMap<>();
+    if (DataUtils.isId(order)) {
+      for (SimpleRow row : qs.getData(qry)) {
+        totalQty.put(row.getLong(COL_ITEM), row.getDouble(COL_TRADE_ITEM_QUANTITY));
+      }
+    }
+
     for (BeeRow row : items) {
       Long itemId = row.getId();
 
@@ -587,6 +602,10 @@ public class OrdersModuleBean implements BeeModule, HasTimerService {
       row.setValue(row.getNumberOfCells() - 3, wrhReminder);
       row.setValue(row.getNumberOfCells() - 2, free);
       row.setValue(row.getNumberOfCells() - 1, wrhReminder - free);
+
+      if (totalQty.containsKey(itemId)) {
+        row.setProperty(PRP_ORD_QTY, totalQty.get(itemId));
+      }
     }
 
     return ResponseObject.response(items);

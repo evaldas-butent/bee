@@ -4063,6 +4063,8 @@ public interface Dictionary {
 
   default String ordCanceled() {return g("ordCanceled");}
 
+  default String ordClearReservations() {return g("ordClearReservations");}
+
   default String ordCompleted() {return g("ordCompleted");}
 
   default String ordCreditLimitEmpty() {return g("ordCreditLimitEmpty");}
@@ -4094,6 +4096,10 @@ public interface Dictionary {
   default String ordPrepare() {return g("ordPrepare");}
 
   default String ordPrepared() {return g("ordPrepared");}
+
+  default String ordReserveItems() {return g("ordReserveItems");}
+
+  default String ordQuantity() {return g("ordQuantity");}
 
   default String ordQtyIsTooBig() {return g("ordQtyIsTooBig");}
 
