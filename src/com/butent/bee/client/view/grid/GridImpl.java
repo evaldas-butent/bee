@@ -1505,7 +1505,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public void onDataReceived(DataReceivedEvent event) {
     if (getGridInterceptor() != null && event != null) {
-      getGridInterceptor().onDataReceived(event.getRows());
+      getGridInterceptor().onDataReceived(event);
     }
   }
 

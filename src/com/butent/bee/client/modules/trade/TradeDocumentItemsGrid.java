@@ -12,6 +12,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -19,6 +20,7 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
+import com.butent.bee.client.event.logical.DataReceivedEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Money;
@@ -48,6 +50,7 @@ import com.butent.bee.shared.data.HasRowValue;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -56,12 +59,14 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
 import com.butent.bee.shared.modules.trade.TradeDocumentPhase;
 import com.butent.bee.shared.modules.trade.TradeDocumentSums;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -213,7 +218,9 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       TradeKeeper.STYLE_PREFIX + "price-calculation";
 
   private Supplier<TradeDocumentSums> tdsSupplier;
-  private Runnable tdsListener;
+  private Consumer<Boolean> tdsListener;
+
+  private boolean refreshing;
 
   TradeDocumentItemsGrid() {
   }
@@ -222,7 +229,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     this.tdsSupplier = tdsSupplier;
   }
 
-  void setTdsListener(Runnable tdsListener) {
+  void setTdsListener(Consumer<Boolean> tdsListener) {
     this.tdsListener = tdsListener;
   }
 
@@ -259,6 +266,15 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     }
 
     super.afterCreatePresenter(presenter);
+  }
+
+  @Override
+  public boolean beforeAction(Action action, GridPresenter presenter) {
+    if (Action.REFRESH == action) {
+      setRefreshing(true);
+    }
+
+    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -339,13 +355,13 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public void onDataReceived(List<? extends IsRow> rows) {
-    if (tdsSupplier != null) {
+  public void onDataReceived(DataReceivedEvent event) {
+    if (tdsSupplier != null && event != null) {
       if (getGridPresenter() != null && getGridPresenter().getUserFilter() == null) {
         tdsSupplier.get().clearItems();
       }
 
-      if (!BeeUtils.isEmpty(rows)) {
+      if (!BeeUtils.isEmpty(event.getRows())) {
         int qtyIndex = getQuantityIndex();
         int priceIndex = getPriceIndex();
 
@@ -355,19 +371,25 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
         int vatIndex = getVatIndex();
         int vipIndex = getVatIsPercentIndex();
 
-        for (IsRow row : rows) {
+        for (IsRow row : event.getRows()) {
           tdsSupplier.get().add(row.getId(), row.getDouble(qtyIndex), row.getDouble(priceIndex),
               row.getDouble(discountIndex), row.getBoolean(dipIndex),
               row.getDouble(vatIndex), row.getBoolean(vipIndex));
         }
       }
 
-      fireTdsChange();
+      boolean update = event.isInsert();
+      if (isRefreshing()) {
+        setRefreshing(false);
+        update = true;
+      }
+
+      fireTdsChange(update);
     }
 
     TradeUtils.configureCostCalculation(getGridView());
 
-    super.onDataReceived(rows);
+    super.onDataReceived(event);
   }
 
   @Override
@@ -407,7 +429,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       }
 
       if (fire) {
-        fireTdsChange();
+        fireTdsChange(true);
       }
     }
 
@@ -427,7 +449,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       }
 
       if (fire) {
-        fireTdsChange();
+        fireTdsChange(true);
       }
     }
 
@@ -438,7 +460,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
   public boolean previewRowDelete(RowDeleteEvent event) {
     if (tdsSupplier != null && tdsSupplier.get().containsItem(event.getRowId())) {
       tdsSupplier.get().deleteItem(event.getRowId());
-      fireTdsChange();
+      fireTdsChange(true);
     }
 
     return super.previewRowDelete(event);
@@ -464,16 +486,16 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
           row.getBoolean(getVatIsPercentIndex()));
 
       if (fire) {
-        fireTdsChange();
+        fireTdsChange(true);
       }
     }
 
     return super.previewRowUpdate(event);
   }
 
-  private void fireTdsChange() {
+  private void fireTdsChange(boolean update) {
     if (tdsListener != null) {
-      tdsListener.run();
+      tdsListener.accept(update);
     }
   }
 
@@ -905,7 +927,14 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       }
     }
 
-    Queries.insertRows(rowSet);
+    Queries.insertRows(rowSet, new RpcCallback<RowInfoList>() {
+      @Override
+      public void onSuccess(RowInfoList result) {
+        if (!BeeUtils.isEmpty(result)) {
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
+        }
+      }
+    });
   }
 
   private void openPicker(final IsRow parentRow, Double defaultVatPercent) {
@@ -985,5 +1014,13 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
     GridFactory.openGrid(GRID_TRADE_RELATED_ITEMS, interceptor,
         GridFactory.GridOptions.forCaption(caption),
         ModalGrid.opener(75, CssUnit.PCT, height, CssUnit.PCT, false));
+  }
+
+  private boolean isRefreshing() {
+    return refreshing;
+  }
+
+  private void setRefreshing(boolean refreshing) {
+    this.refreshing = refreshing;
   }
 }
