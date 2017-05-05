@@ -1,5 +1,6 @@
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Objects;
@@ -11,6 +12,7 @@ import java.util.Objects;
 public interface HasCustomProperties {
 
   char USER_SEPARATOR = '¦';
+  int MAX_DECIMALS = 8;
 
   static String extractPropertyNameFromUserPropertyName(String key) {
     return BeeUtils.getPrefix(key, USER_SEPARATOR);
@@ -81,14 +83,23 @@ public interface HasCustomProperties {
   }
 
   default void setNonZero(String key, Double value) {
-    String s = BeeUtils.nonZero(value) ? BeeUtils.toString(value) : null;
-    setProperty(key, s);
+    setNonZero(key, value, MAX_DECIMALS);
+  }
+
+  default void setNonZero(String key, Double value, int maxDec) {
+    String s = BeeUtils.nonZero(value) ? BeeUtils.toString(value, maxDec) : null;
+
+    if (s == null || BeeConst.STRING_ZERO.equals(s)) {
+      removeProperty(key);
+    } else {
+      setProperty(key, s);
+    }
   }
 
   void setProperties(CustomProperties properties);
 
   default void setProperty(String key, Double value) {
-    String s = BeeUtils.isDouble(value) ? BeeUtils.toString(value) : null;
+    String s = BeeUtils.isDouble(value) ? BeeUtils.toString(value, MAX_DECIMALS) : null;
     setProperty(key, s);
   }
 
