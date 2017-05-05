@@ -7,6 +7,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -204,20 +205,7 @@ public class TradeDocumentSums {
     tds.updateDocumentDiscount(docData.getDouble(docRowIndex, COL_TRADE_DOCUMENT_DISCOUNT));
 
     if (!DataUtils.isEmpty(itemData)) {
-      int qtyIndex = itemData.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
-      int priceIndex = itemData.getColumnIndex(COL_TRADE_ITEM_PRICE);
-
-      int discountIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
-      int dipIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT);
-
-      int vatIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT);
-      int vipIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
-
-      for (BeeRow row : itemData) {
-        tds.add(row.getId(), row.getDouble(qtyIndex), row.getDouble(priceIndex),
-            row.getDouble(discountIndex), row.getBoolean(dipIndex),
-            row.getDouble(vatIndex), row.getBoolean(vipIndex));
-      }
+      tds.addItems(itemData);
     }
 
     if (!DataUtils.isEmpty(paymentData)) {
@@ -289,6 +277,34 @@ public class TradeDocumentSums {
 
     items.put(id, item);
     return this;
+  }
+
+  public void addItems(BeeRowSet rowSet) {
+    if (!DataUtils.isEmpty(rowSet)) {
+      int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+      int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
+
+      int discountIndex = rowSet.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
+      int dipIndex = rowSet.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT);
+
+      int vatIndex = rowSet.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT);
+      int vipIndex = rowSet.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
+
+      addItems(rowSet.getRows(), qtyIndex, priceIndex,
+          discountIndex, dipIndex, vatIndex, vipIndex);
+    }
+  }
+
+  public void addItems(List<? extends IsRow> rows, int qtyIndex, int priceIndex,
+      int discountIndex, int dipIndex, int vatIndex, int vipIndex) {
+
+    if (rows != null) {
+      for (IsRow row : rows) {
+        add(row.getId(), row.getDouble(qtyIndex), row.getDouble(priceIndex),
+            row.getDouble(discountIndex), row.getBoolean(dipIndex),
+            row.getDouble(vatIndex), row.getBoolean(vipIndex));
+      }
+    }
   }
 
   public void addPayment(long id, Double amount) {
