@@ -679,7 +679,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   private void refreshSum(String name, double value, IsRow row) {
     Widget widget = getFormView().getWidgetByName(name);
     if (widget instanceof DecimalLabel) {
-      ((DecimalLabel) widget).setValue(BeeUtils.toDecimalOrNull(value));
+      ((DecimalLabel) widget).setValue(BeeUtils.toDecimalOrNull(Localized.normalizeMoney(value)));
     }
 
     if (row != null) {
@@ -715,7 +715,7 @@ public class TradeDocumentForm extends AbstractFormInterceptor {
   }
 
   private void refreshDebt(double total, double paid, IsRow row) {
-    if (BeeUtils.isPositive(paid) || showDebt()) {
+    if (Localized.isMoney(total - paid) && (BeeUtils.isPositive(paid) || showDebt())) {
       refreshSum(PROP_TD_DEBT, total - paid, row);
     } else {
       clearSum(PROP_TD_DEBT, row);
