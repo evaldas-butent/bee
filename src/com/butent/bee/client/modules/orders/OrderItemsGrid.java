@@ -70,6 +70,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -652,6 +653,8 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
         COL_TRADE_VAT_PERC));
     TradeVatMode vatMode = Data.getEnum(VIEW_ORDERS, parentRow, COL_OPERATION_VAT_MODE,
         TradeVatMode.class);
+    ItemPrice operationPrice = Data.getEnum(VIEW_ORDERS, parentRow, COL_ITEM_PRICE,
+        ItemPrice.class);
 
     for (BeeRow item : items) {
       Double qty = BeeUtils.toDouble(item.getProperty(PRP_QUANTITY));
@@ -697,6 +700,16 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
             row.setValue(vatPlusIdx, true);
           }
         }
+
+        if (operationPrice != null) {
+          Double price = item.getDouble(items.getColumnIndex(operationPrice.getPriceColumn()));
+          if (BeeUtils.isDouble(price)) {
+            row.setValue(priceIndex, Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
+          }
+
+          priceNames.put(item.getId(), operationPrice);
+        }
+
         rowSet.addRow(row);
       }
     }

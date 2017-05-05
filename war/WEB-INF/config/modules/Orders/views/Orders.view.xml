@@ -27,6 +27,7 @@
       <SimpleColumn name="CashRegisterNo" />
       <SimpleColumn name="OperationVatMode" />
       <SimpleColumn name="VatPercent" />
+      <SimpleColumn name="Price" />
     </SimpleJoin>
 
     <SimpleColumn name="Object" />

@@ -88,7 +88,7 @@
       </dynStyle>
     </PropColumn>
 
-    <CalcColumn name="FreeRemainder" type="double" format="0.000" label="=ordFreeRemainder"
+    <CalcColumn name="FreeRemainder" type="double" format="0.###" label="=ordFreeRemainder"
                 module="Orders">
       <render>
         <ui:expression>(row.WarehouseRemainder ? row.WarehouseRemainder : 0 )
@@ -97,7 +97,7 @@
       </render>
     </CalcColumn>
 
-    <PropColumn name="Remainder" type="string" dynamic="true" module="Orders" />
+    <PropColumn name="Remainder" type="double" dynamic="true" module="Orders" format="0.###" />
     <PropColumn name="Stock" type="double" dynamic="true" module="Trade" />
   </g:columns>
 
