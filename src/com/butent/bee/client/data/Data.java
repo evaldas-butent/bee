@@ -326,8 +326,8 @@ public final class Data {
 
   public static void onTableChange(String tableName, EnumSet<DataChangeEvent.Effect> effects) {
     Collection<String> viewNames = DATA_INFO_PROVIDER.getViewNames(tableName);
-    for (String viewName : viewNames) {
-      DataChangeEvent.fire(BeeKeeper.getBus(), viewName, effects);
+    if (!viewNames.isEmpty()) {
+      DataChangeEvent.fire(BeeKeeper.getBus(), viewNames, effects);
     }
   }
 

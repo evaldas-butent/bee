@@ -12,8 +12,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.DataChangeCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
@@ -50,7 +50,6 @@ import com.butent.bee.shared.data.HasRowValue;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
-import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -59,7 +58,6 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DecimalValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.OperationType;
 import com.butent.bee.shared.modules.trade.TradeDiscountMode;
@@ -927,14 +925,7 @@ public class TradeDocumentItemsGrid extends AbstractGridInterceptor {
       }
     }
 
-    Queries.insertRows(rowSet, new RpcCallback<RowInfoList>() {
-      @Override
-      public void onSuccess(RowInfoList result) {
-        if (!BeeUtils.isEmpty(result)) {
-          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
-        }
-      }
-    });
+    Queries.insertRows(rowSet, new DataChangeCallback(getViewName(), parentRow.getId()));
   }
 
   private void openPicker(final IsRow parentRow, Double defaultVatPercent) {
