@@ -989,6 +989,8 @@ public interface Dictionary {
 
   default String crmDeleted() {return g("crmDeleted");}
 
+  default String crmDurationDate() {return g("crmDurationDate");}
+
   default String crmDurationType() {return g("crmDurationType");}
 
   default String crmEnterComment() {return g("crmEnterComment");}

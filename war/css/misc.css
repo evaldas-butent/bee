@@ -399,6 +399,8 @@
 .bee-rep-report-global td:first-child div:before {
   font-family: FontAwesome;
   content: "\f0ac";
+  margin-right: 5px;
+  color: blue;
 }
 
 .bee-EventsBoard-content {

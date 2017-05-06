@@ -13,12 +13,14 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -27,7 +29,6 @@ import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.client.output.ReportNumericItem;
-import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.output.ReportResultItem;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.output.ReportValue;
@@ -36,6 +37,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomSpan;
@@ -51,7 +53,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
@@ -61,10 +63,10 @@ import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.report.ReportFunction;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.report.ReportInfoItem;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -186,10 +188,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
   private static final String NAME_REPORT_CONTAINER = "ReportContainer";
   private static final String NAME_LAYOUT_CONTAINER = "LayoutContainer";
+  private static final String NAME_PARAMS_CONTAINER = "ParamsContainer";
   private static final String NAME_FILTER_CONTAINER = "FilterContainer";
-
-  private static final String NAME_CURRENCY = COL_CURRENCY;
-  private static final String NAME_VAT = TradeConstants.COL_TRADE_VAT;
 
   private static final String STYLE_PREFIX = "bee-rep";
 
@@ -265,7 +265,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       case SAVE:
         if (activeReport != null && !activeReport.isEmpty()) {
           InputText cap = new InputText();
-          cap.setText(activeReport.getCaption());
+          cap.setText(getBookmarkLabel());
           InputBoolean global = new InputBoolean(Localized.dictionary().mailPublic());
           global.setChecked(activeReport.isGlobal());
 
@@ -331,6 +331,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
   @Override
   public void onLoad(FormView form) {
+    renderParams();
     ReportParameters parameters = readParameters();
     ReportInfo rep = null;
 
@@ -340,8 +341,13 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       if (!BeeUtils.isEmpty(data)) {
         rep = ReportInfo.restore(data);
       }
-      loadId(parameters, NAME_CURRENCY, form);
-      loadBoolean(parameters, NAME_VAT, form);
+      getParams().forEach((name, editor) -> {
+        if (editor instanceof UnboundSelector) {
+          ((UnboundSelector) editor).setValue(parameters.getLong(name), false);
+        } else {
+          editor.setValue(parameters.getText(name));
+        }
+      });
     }
     getReports(rep);
     super.onLoad(form);
@@ -349,8 +355,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
   @Override
   public void onUnload(FormView form) {
-    storeEditorValues(NAME_CURRENCY);
-    storeBooleanValues(NAME_VAT);
+    getParams().forEach((name, editor) -> storeValue(name, editor.getValue()));
   }
 
   @Override
@@ -371,14 +376,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     ParameterList params = BeeKeeper.getRpc()
         .createParameters(getReport().getModuleAndSub().getModule(), getReport().getReportName());
 
-    String currency = getEditorValue(NAME_CURRENCY);
-
-    if (DataUtils.isId(currency)) {
-      params.addDataItem(COL_CURRENCY, currency);
-    }
-    if (getBoolean(NAME_VAT)) {
-      params.addDataItem(TradeConstants.COL_TRADE_VAT, "1");
-    }
+    getParams().forEach((name, editor) -> params.addNotEmptyData(name, editor.getValue()));
     params.addDataItem(Service.VAR_DATA, Codec.beeSerialize(activeReport));
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
@@ -396,7 +394,10 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
   @Override
   protected String getBookmarkLabel() {
-    return null;
+    if (activeReport == null) {
+      return null;
+    }
+    return activeReport.getCaption();
   }
 
   @Override
@@ -410,12 +411,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       return null;
     }
     ReportParameters parameters = new ReportParameters();
-
     parameters.add(COL_RS_REPORT, activeReport.serialize());
-
-    addEditorValues(parameters, NAME_CURRENCY);
-    addBooleanValues(parameters, NAME_VAT);
-
+    getParams().forEach((name, editor) -> parameters.add(name, editor.getValue()));
     return parameters;
   }
 
@@ -425,7 +422,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       XSheet sheet = getSheet((HtmlTable) getDataContainer().getWidget(0));
 
       if (!sheet.isEmpty()) {
-        Exporter.maybeExport(sheet, getReportCaption());
+        Exporter.maybeExport(sheet, getBookmarkLabel());
       }
     }
   }
@@ -536,6 +533,17 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     }
   }
 
+  private Map<String, Editor> getParams() {
+    Map<String, Editor> params = new HashMap<>();
+    HasWidgets container = (HasWidgets) getFormView().getWidgetByName(NAME_PARAMS_CONTAINER);
+
+    if (container != null) {
+      container.forEach(widget ->
+          params.put(DomUtils.getDataKey(widget.getElement()), (Editor) widget));
+    }
+    return params;
+  }
+
   private void getReports(ReportInfo initialReport) {
     reports.clear();
 
@@ -626,7 +634,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
               }
               xs = xs.merge(sheet.getStyle(styleMap.get(style)));
             }
-            if (BeeUtils.same(style, ReportItem.STYLE_NUM)) {
+            if (BeeUtils.same(style, ReportItem.STYLE_NUM) && BeeUtils.isDouble(text)) {
               value = new NumberValue(BeeUtils.toDoubleOrNull(text));
             }
           }
@@ -657,7 +665,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     List<ReportInfoItem> rowItems = activeReport.getRowItems();
     List<ReportInfoItem> colItems = activeReport.getColItems();
 
-    for (final SimpleRow row : rowSet) {
+    for (SimpleRow row : rowSet) {
       boolean ok = true;
 
       for (ReportItem filterItem : activeReport.getFilterItems()) {
@@ -976,6 +984,39 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     getDataContainer().add(table);
   }
 
+  private void renderFilters() {
+    HasWidgets container = (HasWidgets) getFormView().getWidgetByName(NAME_FILTER_CONTAINER);
+
+    if (container == null) {
+      return;
+    }
+    container.clear();
+
+    if (activeReport != null) {
+      final List<ReportItem> filterItems = activeReport.getFilterItems();
+      HtmlTable table = new HtmlTable();
+      table.setColumnCellClasses(0, STYLE_FILTER_CAPTION);
+      table.setColumnCellStyles(1, "width:100%;");
+      int c = 0;
+
+      for (ReportItem item : filterItems) {
+        final int idx = c;
+        table.setText(idx, 0, item.getCaption());
+        table.setWidget(idx, 1, item.getFilterWidget());
+
+        CustomDiv remove = new CustomDiv(STYLE_REMOVE);
+        remove.setText(String.valueOf(BeeConst.CHAR_TIMES));
+        remove.addClickHandler(event -> {
+          filterItems.remove(idx);
+          renderFilters();
+        });
+        table.setWidget(idx, 2, remove);
+        c++;
+      }
+      container.add(table);
+    }
+  }
+
   private void renderLayout() {
     HasWidgets container = (HasWidgets) getFormView().getWidgetByName(NAME_LAYOUT_CONTAINER);
 
@@ -1228,52 +1269,31 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     }
   }
 
-  private void renderFilters() {
-    HasWidgets container = (HasWidgets) getFormView().getWidgetByName(NAME_FILTER_CONTAINER);
+  private void renderParams() {
+    HasWidgets container = (HasWidgets) getFormView().getWidgetByName(NAME_PARAMS_CONTAINER);
 
     if (container == null) {
       return;
     }
     container.clear();
-
-    if (activeReport != null) {
-      final List<ReportItem> filterItems = activeReport.getFilterItems();
-      HtmlTable table = new HtmlTable();
-      table.setColumnCellClasses(0, STYLE_FILTER_CAPTION);
-      table.setColumnCellStyles(1, "width:100%;");
-      int c = 0;
-
-      for (ReportItem item : filterItems) {
-        final int idx = c;
-        table.setText(idx, 0, item.getCaption());
-        table.setWidget(idx, 1, item.getFilterWidget());
-
-        CustomDiv remove = new CustomDiv(STYLE_REMOVE);
-        remove.setText(String.valueOf(BeeConst.CHAR_TIMES));
-        remove.addClickHandler(event -> {
-          filterItems.remove(idx);
-          renderFilters();
-        });
-        table.setWidget(idx, 2, remove);
-        c++;
-      }
-      container.add(table);
-    }
+    getReport().getReportParams().forEach((name, editor) -> {
+      DomUtils.setDataKey(editor.getElement(), name);
+      container.add(editor.asWidget());
+    });
   }
 
   private void saveReport(ReportInfo rep) {
     if (DataUtils.isId(rep.getId())) {
-      Queries.update(VIEW_REPORT_SETTINGS, rep.getId(), COL_RS_PARAMETERS,
-          TextValue.of(rep.serialize()));
+      Queries.update(VIEW_REPORT_SETTINGS, Filter.compareId(rep.getId()),
+          Arrays.asList(COL_RS_PARAMETERS, COL_RS_USER),
+          Queries.asList(rep.serialize(), rep.isGlobal() ? null : BeeKeeper.getUser().getUserId()),
+          null);
 
-      if (rep.isGlobal()) {
-        Queries.update(VIEW_REPORT_SETTINGS, rep.getId(), COL_RS_USER, LongValue.getNullValue());
-      }
       activateReport(rep);
     } else {
       Queries.insert(VIEW_REPORT_SETTINGS, Data.getColumns(VIEW_REPORT_SETTINGS,
           Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_PARAMETERS)),
-          Arrays.asList(rep.isGlobal() ? null : BeeUtils.toString(BeeKeeper.getUser().getUserId()),
+          Queries.asList(rep.isGlobal() ? null : BeeKeeper.getUser().getUserId(),
               getReport().getReportName(), rep.serialize()), null,
           new RowCallback() {
             @Override

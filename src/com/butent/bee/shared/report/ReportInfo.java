@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 public class ReportInfo implements BeeSerializable {
 
@@ -52,7 +53,7 @@ public class ReportInfo implements BeeSerializable {
   private ReportInfo() {
   }
 
-  public void addColItem(ReportItem colItem) {
+  public int addColItem(ReportItem colItem) {
     colItems.add(new ReportInfoItem(colItem));
     int idx = colItems.size() - 1;
 
@@ -64,10 +65,12 @@ public class ReportInfo implements BeeSerializable {
     } else {
       setFunction(idx, ReportFunction.LIST);
     }
+    return idx;
   }
 
-  public void addRowItem(ReportItem rowItem) {
+  public int addRowItem(ReportItem rowItem) {
     rowItems.add(new ReportInfoItem(rowItem));
+    return rowItems.size() - 1;
   }
 
   @Override
@@ -232,36 +235,38 @@ public class ReportInfo implements BeeSerializable {
 
               if (value != null) {
                 Long dt;
+                DateTimeFunction format = ((ReportDateItem) filterItem).getFormat();
 
-                switch (((ReportDateItem) filterItem).getFormat()) {
-                  case DATE:
-                    dt = new JustDate(value.intValue()).getTime();
-                    break;
+                switch (format) {
                   case DATETIME:
                     dt = value;
                     break;
+                  case DATE:
                   case YEAR:
+                    Function<Integer, JustDate> dateSupplier = format == DateTimeFunction.DATE
+                        ? JustDate::new : TimeUtils::startOfYear;
+
                     switch (op) {
                       case EQ:
                         and.add(SqlUtils.compare(expr, Operator.GE,
-                            SqlUtils.constant(TimeUtils.startOfYear(value.intValue()).getTime())));
+                            SqlUtils.constant(dateSupplier.apply(value.intValue()).getTime())));
 
-                        dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
+                        dt = dateSupplier.apply(value.intValue() + 1).getTime();
                         op = Operator.LT;
                         break;
                       case GE:
-                        dt = TimeUtils.startOfYear(value.intValue()).getTime();
+                        dt = dateSupplier.apply(value.intValue()).getTime();
                         break;
                       case GT:
-                        dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
+                        dt = dateSupplier.apply(value.intValue() + 1).getTime();
                         op = Operator.GE;
                         break;
                       case LE:
-                        dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
+                        dt = dateSupplier.apply(value.intValue() + 1).getTime();
                         op = Operator.LT;
                         break;
                       case LT:
-                        dt = TimeUtils.startOfYear(value.intValue()).getTime();
+                        dt = dateSupplier.apply(value.intValue()).getTime();
                         break;
                       default:
                         continue;

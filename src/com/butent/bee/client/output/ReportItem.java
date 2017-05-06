@@ -73,7 +73,13 @@ public abstract class ReportItem implements BeeSerializable {
           return (int) total + 1;
         case LIST:
           if (total == null) {
-            return new TreeSet<>(Collections.singleton(value));
+            return new TreeSet(Collections.singleton(value)) {
+              @Override
+              public String toString() {
+                String s = super.toString();
+                return BeeUtils.isDelimited(s, '[', ']') ? s.substring(1, s.length() - 1) : s;
+              }
+            };
           }
           ((Collection<ReportValue>) total).add(value);
           break;
@@ -201,12 +207,6 @@ public abstract class ReportItem implements BeeSerializable {
 
   public abstract ReportValue evaluate(SimpleRow row);
 
-  /**
-   * @param rowGroup
-   * @param rowValues
-   * @param colGroup
-   * @param resultHolder
-   */
   public ReportValue evaluate(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
       ResultHolder resultHolder) {
     Assert.unsupported();

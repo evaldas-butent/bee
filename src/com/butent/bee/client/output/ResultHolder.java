@@ -11,7 +11,6 @@ import com.butent.bee.shared.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,9 +153,9 @@ public final class ResultHolder {
   }
 
   private static void sort(List<ReportValue> result, final Map<ReportValue, Object> items,
-      final boolean descending) {
+      boolean descending) {
 
-    Collections.sort(result, (value1, value2) -> {
+    result.sort((value1, value2) -> {
       Object item1;
       Object item2;
 
