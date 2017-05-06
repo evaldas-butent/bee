@@ -493,10 +493,11 @@ public enum Report implements HasWidgetSupplier {
               Data.getColumnLabel(VIEW_TASKS, ProjectConstants.COL_PROJECT)),
           new ReportTextItem(ProjectConstants.ALS_STAGE_NAME,
               Data.getColumnLabel(VIEW_TASKS, ProjectConstants.COL_PROJECT_STAGE)),
-          new ReportTextItem(COL_COMMENT, Data.getColumnLabel(VIEW_TASK_EVENTS, COL_COMMENT)),
           new ReportEnumItem(TaskConstants.COL_EVENT,
               Data.getColumnLabel(VIEW_TASK_EVENTS, TaskConstants.COL_EVENT), TaskEvent.class),
+          new ReportTextItem(COL_PUBLISHER, loc.crmTaskPublisher()),
           new ReportTextItem(COL_EVENT_NOTE, Data.getColumnLabel(VIEW_TASK_EVENTS, COL_EVENT_NOTE)),
+          new ReportTextItem(COL_COMMENT, Data.getColumnLabel(VIEW_TASK_EVENTS, COL_COMMENT)),
           new ReportTextItem(ALS_DURATION_TYPE_NAME,
               Data.getColumnLabel(TBL_EVENT_DURATIONS, COL_DURATION_TYPE)),
           new ReportDateTimeItem(COL_DURATION_DATE,
@@ -521,7 +522,7 @@ public enum Report implements HasWidgetSupplier {
 
       Stream.of(COL_TASK, COL_SUMMARY, COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME,
           COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, TaskConstants.COL_STATUS,
-          ALS_TASK_TYPE_NAME, TaskConstants.COL_OWNER, ALS_COMPANY_NAME,
+          ALS_TASK_TYPE_NAME, TaskConstants.COL_OWNER, COL_EXECUTOR, ALS_COMPANY_NAME,
           ALS_TASK_PRODUCT_NAME, ProjectConstants.ALS_PROJECT_NAME,
           ProjectConstants.ALS_STAGE_NAME)
           .forEach(item -> tasks.addRowItem(items.get(item)));
@@ -541,12 +542,12 @@ public enum Report implements HasWidgetSupplier {
           COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES)
           .forEach(item -> taskDurations.addRowItem(items.get(item)));
 
-      taskDurations.setRowGrouping(items.get(COL_EXECUTOR));
+      taskDurations.setRowGrouping(items.get(COL_PUBLISHER));
       taskDurations.addColItem(items.get(COL_DURATION));
       taskDurations.setColGrouping(items.get(ALS_DURATION_TYPE_NAME));
 
       ReportInfo hoursByExecutors = new ReportInfo(Localized.dictionary().hoursByExecutors());
-      hoursByExecutors.addRowItem(items.get(COL_EXECUTOR));
+      hoursByExecutors.addRowItem(items.get(COL_PUBLISHER));
       hoursByExecutors.addColItem(items.get(COL_DURATION));
       hoursByExecutors.setColGrouping(items.get(ALS_DURATION_TYPE_NAME));
       hoursByExecutors.getColItems().forEach(item -> item.setRelation(taskDurations.getCaption()));

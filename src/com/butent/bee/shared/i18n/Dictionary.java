@@ -1327,6 +1327,8 @@ public interface Dictionary {
 
   default String crmTaskProducts() {return g("crmTaskProducts");}
 
+  default String crmTaskPublisher() {return g("crmTaskPublisher");}
+
   default String crmTaskPublishTime() {return g("crmTaskPublishTime");}
 
   default String crmTaskReminder() {return g("crmTaskReminder");}

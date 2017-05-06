@@ -1807,19 +1807,19 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
   private ResponseObject getReportData(RequestInfo reqInfo) {
     ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
 
-    String ownerPerson = SqlUtils.uniqueName();
-    String executorPerson = SqlUtils.uniqueName();
-    String publisherPerson = SqlUtils.uniqueName();
-
     Function<String, IsExpression> firstLastNameJoiner = alias ->
         SqlUtils.concat(SqlUtils.field(alias, COL_FIRST_NAME),
             SqlUtils.sqlIf(SqlUtils.isNull(alias, COL_LAST_NAME), BeeConst.STRING_EMPTY,
                 SqlUtils.concat(SqlUtils.constant(BeeConst.STRING_SPACE),
                     SqlUtils.field(alias, COL_LAST_NAME))));
 
+    String ownerPerson = SqlUtils.uniqueName();
+    String executorPerson = SqlUtils.uniqueName();
+    String publisherPerson = SqlUtils.uniqueName();
+
     IsExpression owner = firstLastNameJoiner.apply(ownerPerson);
-    IsExpression executor = SqlUtils.sqlIf(SqlUtils.isNull(TBL_TASK_EVENTS, COL_PUBLISHER),
-        firstLastNameJoiner.apply(executorPerson), firstLastNameJoiner.apply(publisherPerson));
+    IsExpression executor = firstLastNameJoiner.apply(executorPerson);
+    IsExpression publisher = firstLastNameJoiner.apply(publisherPerson);
 
     HasConditions clause = SqlUtils.and();
     clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_TASKS,
@@ -1831,6 +1831,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     clause.add(report.getCondition(owner, COL_OWNER));
     clause.add(report.getCondition(executor, COL_EXECUTOR));
+    clause.add(report.getCondition(publisher, COL_PUBLISHER));
 
     clause.add(report.getCondition(SqlUtils.field(VIEW_TASK_TYPES, COL_TASK_TYPE_NAME),
         ALS_TASK_TYPE_NAME));
@@ -1857,6 +1858,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
         .addExpr(owner, COL_OWNER)
         .addExpr(executor, COL_EXECUTOR)
+        .addExpr(publisher, COL_PUBLISHER)
 
         .addField(VIEW_TASK_TYPES, COL_TASK_TYPE_NAME, ALS_TASK_TYPE_NAME)
         .addField(VIEW_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
