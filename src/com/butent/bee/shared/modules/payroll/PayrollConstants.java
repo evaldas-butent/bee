@@ -281,6 +281,16 @@ public final class PayrollConstants {
   public static final String FORM_ACTUAL_WORK_SCHEDULE_EDITOR = "ActualWorkScheduleEditor";
   public static final String FORM_NEW_SUBSTITUTION = "NewSubstitution";
 
+  public static final String PRM_ERP_SYNC_PAYROLL_DATA = "ERPSyncPayrollData";
+  public static final String PRM_ERP_SYNC_PAYROLL_DELTA_HOURS = "ERPSyncPayrollDeltaHours";
+  public static final String PRM_ERP_SYNC_EMPLOYEES = "ERPSyncEmployees";
+  public static final String PRM_ERP_SYNC_LOCATIONS = "ERPSyncLocations";
+  public static final String PRM_ERP_SYNC_TIME_CARDS = "ERPSyncTimeCards";
+
+
+  public static final String SFX_HOURS = "Hours";
+  public static final String SFX_TIME = "Time";
+
   public static void register() {
     EnumUtils.register(ObjectStatus.class);
     EnumUtils.register(WorkScheduleKind.class);
