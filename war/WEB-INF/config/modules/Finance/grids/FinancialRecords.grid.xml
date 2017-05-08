@@ -11,6 +11,8 @@
   <xi:include href="columns/FinancialRecordsTradeDocument.columns.xml" />
   <xi:include href="columns/FinancialRecordsTradePayment.columns.xml" />
 
+  <xi:include href="columns/FinancialRecordsPrepayment.columns.xml" />
+
   <xi:include href="columns/Employee.columns.xml" />
   <xi:include href="../../Administration/grids/columns/ExtraDimensions.columns.xml" />
 

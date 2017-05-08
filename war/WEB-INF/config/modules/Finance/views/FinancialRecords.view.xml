@@ -57,11 +57,14 @@
     <SimpleColumn name="TradeDocument" />
     <SimpleColumn name="TradePayment" />
 
+    <SimpleColumn name="PrepaymentKind" />
+    <SimpleColumn name="PrepaymentParent" />
+
     <xi:include href="viewcolumns/Employee.viewcolumns.xml" />
     <xi:include href="../../Administration/views/viewcolumns/ExtraDimensions.viewcolumns.xml" />
   </Columns>
 
   <Order>
-    <OrderBy column="Date" descending="true" />
+    <OrderBy column="Date" />
   </Order>
 </View>

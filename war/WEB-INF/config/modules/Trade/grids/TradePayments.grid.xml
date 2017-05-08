@@ -5,6 +5,7 @@
         caption="=trdPayments" newRowCaption="=newPayment"
 >
   <g:columns>
+    <IdColumn name="Id" visible="false" />
     <DataColumn name="PaymentDate" visible="true" />
 
     <DataColumn name="PaymentAmount" minWidth="80" visible="true">
@@ -20,6 +21,6 @@
     </DataColumn>
     <DataColumn name="PaymentNumber" minWidth="80" />
 
-    <IdColumn name="Id" visible="false" />
+    <DataColumn name="PrepaymentParent" caption="=prepaymentParentShort" visible="false" />
   </g:columns>
 </g:Grid>

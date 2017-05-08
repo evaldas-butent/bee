@@ -369,6 +369,8 @@ public final class FinanceConstants {
     EnumUtils.register(IndicatorKind.class);
     EnumUtils.register(IndicatorSource.class);
     EnumUtils.register(TurnoverOrBalance.class);
+
+    EnumUtils.register(PrepaymentKind.class);
   }
 
   private FinanceConstants() {
