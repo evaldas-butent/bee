@@ -38,6 +38,7 @@ public final class FinanceConstants {
   public static final String TBL_ANALYSIS_RESULTS = "AnalysisResults";
 
   public static final String VIEW_FINANCIAL_RECORDS = "FinancialRecords";
+  public static final String VIEW_FINANCE_PREPAYMENTS = "FinancePrepayments";
 
   public static final String VIEW_FINANCE_CONFIGURATION = "FinanceConfiguration";
   public static final String VIEW_FINANCE_CONTENTS = "FinanceContents";

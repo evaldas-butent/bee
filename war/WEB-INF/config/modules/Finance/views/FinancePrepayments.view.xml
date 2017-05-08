@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view" xmlns:xi="http://www.w3.org/2001/XInclude"
 
-      name="FinancialRecords" source="FinancialRecords"
-      caption="=financialRecords" newRowCaption="=newFinancialRecord"
+      name="FinancePrepayments" source="FinancialRecords"
+      caption="=prepayments" newRowCaption="=newPrepayment"
 >
   <Columns>
     <xi:include href="viewcolumns/FinancialRecordsMain.viewcolumns.xml" />

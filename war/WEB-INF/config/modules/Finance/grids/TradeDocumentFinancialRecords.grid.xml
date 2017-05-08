@@ -6,6 +6,7 @@
         order="Date"
 >
   <xi:include href="columns/FinancialRecordsMain.columns.xml" />
+  <xi:include href="columns/FinancialRecordsQuantity.columns.xml" />
 
   <xi:include href="columns/FinancialRecordsTradePayment.columns.xml" />
 

@@ -3904,6 +3904,8 @@ public interface Dictionary {
 
   default String newPersonPosition() {return g("newPersonPosition");}
 
+  default String newPrepayment() {return g("newPrepayment");}
+
   default String newProjectCreated(Object p0) {
     Map<String, Object> _m = new HashMap<>();
     _m.put("{0}", p0);
@@ -4293,6 +4295,8 @@ public interface Dictionary {
   default String prepaymentSuppliers() {return g("prepaymentSuppliers");}
 
   default String prepaymentSuppliersShort() {return g("prepaymentSuppliersShort");}
+
+  default String prepayments() {return g("prepayments");}
 
   default String presenceAway() {return g("presenceAway");}
 
