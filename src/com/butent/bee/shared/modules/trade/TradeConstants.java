@@ -231,6 +231,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_PAYMENT_ACCOUNT = "PaymentAccount";
   public static final String COL_TRADE_PAYMENT_SERIES = "PaymentSeries";
   public static final String COL_TRADE_PAYMENT_NUMBER = "PaymentNumber";
+  public static final String COL_TRADE_PREPAYMENT_PARENT = "PrepaymentParent";
 
   public static final String COL_TRADE_PAYMENT_TYPE_ACCOUNT = "PaymentTypeAccount";
 

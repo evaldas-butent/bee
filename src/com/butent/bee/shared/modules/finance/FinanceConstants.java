@@ -76,6 +76,8 @@ public final class FinanceConstants {
   public static final String COL_FIN_QUANTITY = "Quantity";
   public static final String COL_FIN_TRADE_DOCUMENT = "TradeDocument";
   public static final String COL_FIN_TRADE_PAYMENT = "TradePayment";
+  public static final String COL_FIN_PREPAYMENT_KIND = "PrepaymentKind";
+  public static final String COL_FIN_PREPAYMENT_PARENT = "PrepaymentParent";
   public static final String COL_FIN_EMPLOYEE = "Employee";
 
   public static final String COL_DEFAULT_JOURNAL = "DefaultJournal";
