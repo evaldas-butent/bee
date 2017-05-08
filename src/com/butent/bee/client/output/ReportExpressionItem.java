@@ -11,6 +11,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -49,12 +50,12 @@ public class ReportExpressionItem extends ReportItem {
   }
 
   @Override
-  public ReportValue evaluate(SimpleRow row) {
-    List<ReportValue> values = new ArrayList<>();
+  public ResultValue evaluate(SimpleRow row) {
+    List<ResultValue> values = new ArrayList<>();
     StringBuilder display = new StringBuilder();
 
     for (Pair<String, ReportItem> pair : expression) {
-      ReportValue val = pair.getB().evaluate(row);
+      ResultValue val = pair.getB().evaluate(row);
       values.add(val);
       String text = val.toString();
 
@@ -65,7 +66,7 @@ public class ReportExpressionItem extends ReportItem {
         display.append(text);
       }
     }
-    return ReportValue.of(values.toArray(new ReportValue[0])).setDisplay(display.toString());
+    return ResultValue.of(values.toArray(new ResultValue[0])).setDisplay(display.toString());
   }
 
   @Override

@@ -1400,9 +1400,7 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
         }
       }
     }
-
-    resp = ResponseObject.response(reportData);
-    return resp;
+    return ResponseObject.response(report.getResult(reportData));
   }
 
   private void importTimeCards(Long companyId, SimpleRowSet erpTimeCards, StringBuilder log) {

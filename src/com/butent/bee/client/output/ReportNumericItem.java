@@ -7,6 +7,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ReportFunction;
+import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -27,7 +28,7 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public Object calculate(Object total, ReportValue value, ReportFunction function) {
+  public Object calculate(Object total, ResultValue value, ReportFunction function) {
     BigDecimal val = BeeUtils.toDecimalOrNull(value.getValue());
 
     if (val != null) {
@@ -64,8 +65,8 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public ReportValue evaluate(SimpleRow row) {
-    return ReportValue.of(BeeUtils.round(row.getValue(getExpression()), getPrecision()));
+  public ResultValue evaluate(SimpleRow row) {
+    return ResultValue.of(BeeUtils.round(row.getValue(getExpression()), getPrecision()));
   }
 
   @Override

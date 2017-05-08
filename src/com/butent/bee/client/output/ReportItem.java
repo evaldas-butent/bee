@@ -18,6 +18,8 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ReportFunction;
+import com.butent.bee.shared.report.ResultValue;
+import com.butent.bee.shared.report.ResultHolder;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -63,7 +65,7 @@ public abstract class ReportItem implements BeeSerializable {
   }
 
   @SuppressWarnings("unchecked")
-  public Object calculate(Object total, ReportValue value, ReportFunction function) {
+  public Object calculate(Object total, ResultValue value, ReportFunction function) {
     if (!BeeUtils.isEmpty(value.toString())) {
       switch (function) {
         case COUNT:
@@ -81,15 +83,15 @@ public abstract class ReportItem implements BeeSerializable {
               }
             };
           }
-          ((Collection<ReportValue>) total).add(value);
+          ((Collection<ResultValue>) total).add(value);
           break;
         case MAX:
-          if (total == null || value.compareTo((ReportValue) total) == BeeConst.COMPARE_MORE) {
+          if (total == null || value.compareTo((ResultValue) total) == BeeConst.COMPARE_MORE) {
             return value;
           }
           break;
         case MIN:
-          if (total == null || value.compareTo((ReportValue) total) == BeeConst.COMPARE_LESS) {
+          if (total == null || value.compareTo((ResultValue) total) == BeeConst.COMPARE_LESS) {
             return value;
           }
           break;
@@ -205,9 +207,9 @@ public abstract class ReportItem implements BeeSerializable {
     return Objects.equals(getExpression(), ((ReportItem) obj).getExpression());
   }
 
-  public abstract ReportValue evaluate(SimpleRow row);
+  public abstract ResultValue evaluate(SimpleRow row);
 
-  public ReportValue evaluate(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
+  public ResultValue evaluate(ResultValue rowGroup, ResultValue[] rowValues, ResultValue colGroup,
       ResultHolder resultHolder) {
     Assert.unsupported();
     return null;

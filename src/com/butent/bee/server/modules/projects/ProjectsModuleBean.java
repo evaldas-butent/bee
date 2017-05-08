@@ -6,7 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TIMER_REMIND_PROJECT_DATES;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
@@ -56,9 +56,10 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.DateTime;
@@ -153,7 +154,7 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
         response = getTimeUnits();
         break;
       case SVC_PROJECT_REPORT:
-        response = getReportData();
+        response = getReportData(reqInfo);
         break;
       case SVC_CREATE_INVOICE_ITEMS:
         response = createInvoiceItems(reqInfo);
@@ -950,7 +951,7 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
     return result;
   }
 
-  private ResponseObject getReportData() {
+  private ResponseObject getReportData(RequestInfo reqInfo) {
     SqlSelect select = new SqlSelect();
     select.addField(TaskConstants.TBL_TASKS, sys.getIdName(TaskConstants.TBL_TASKS),
         TaskConstants.COL_TASK);
@@ -1015,8 +1016,10 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
 
     SimpleRowSet rqs = qs.getData(select);
 
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+
     if (rqs.isEmpty()) {
-      return ResponseObject.response(rqs);
+      return ResponseObject.response(report.getResult(rqs));
     }
 
     List<String> colTaskData = Lists.newArrayList(rqs.getColumn(TaskConstants.COL_TASK));
@@ -1024,7 +1027,7 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
         DataUtils.parseIdList(BeeUtils.join(BeeConst.STRING_COMMA, colTaskData));
 
     if (taskIds.isEmpty()) {
-      return ResponseObject.response(rqs);
+      return ResponseObject.response(report.getResult(rqs));
     }
 
     SimpleRowSet timesData = tasksBean.getTaskActualTimesAndExpenses(taskIds);
@@ -1069,8 +1072,7 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
           BeeConst.STRING_MINUS, endDate));
       rqs.setValue(i, ALS_PROFIT, BeeUtils.toString(profit));
     }
-
-    return ResponseObject.response(rqs);
+    return ResponseObject.response(report.getResult(rqs));
   }
 
   private SimpleRowSet getTasksActualTimesAndExpenses(List<Long> ids, String viewName) {

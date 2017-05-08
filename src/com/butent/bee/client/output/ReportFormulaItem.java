@@ -11,6 +11,8 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.report.ResultValue;
+import com.butent.bee.shared.report.ResultHolder;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -54,12 +56,12 @@ public class ReportFormulaItem extends ReportNumericItem {
   }
 
   @Override
-  public ReportValue evaluate(SimpleRowSet.SimpleRow row) {
+  public ResultValue evaluate(SimpleRowSet.SimpleRow row) {
     return evaluate(item -> item.evaluate(row));
   }
 
   @Override
-  public ReportValue evaluate(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
+  public ResultValue evaluate(ResultValue rowGroup, ResultValue[] rowValues, ResultValue colGroup,
       ResultHolder resultHolder) {
     return evaluate(item -> item.evaluate(rowGroup, rowValues, colGroup, resultHolder));
   }
@@ -165,7 +167,7 @@ public class ReportFormulaItem extends ReportNumericItem {
     return this;
   }
 
-  private ReportValue evaluate(Function<ReportItem, ReportValue> evaluator) {
+  private ResultValue evaluate(Function<ReportItem, ResultValue> evaluator) {
     List<BigDecimal> values = new ArrayList<>();
     BigDecimal previous = null;
 
@@ -190,7 +192,7 @@ public class ReportFormulaItem extends ReportNumericItem {
             break;
           case BeeConst.STRING_SLASH:
             if (BeeUtils.isZero(value.doubleValue())) {
-              return ReportValue.empty();
+              return ResultValue.empty();
             }
             previous = previous.divide(value, new MathContext(5));
             break;
@@ -206,9 +208,9 @@ public class ReportFormulaItem extends ReportNumericItem {
       result = result.add(value);
     }
     if (BeeUtils.isZero(result.doubleValue())) {
-      return ReportValue.empty();
+      return ResultValue.empty();
     }
-    return ReportValue.of(result.setScale(getPrecision(), RoundingMode.HALF_UP).toPlainString());
+    return ResultValue.of(result.setScale(getPrecision(), RoundingMode.HALF_UP).toPlainString());
   }
 
   private void render(Flow container, List<ReportItem> reportItems) {

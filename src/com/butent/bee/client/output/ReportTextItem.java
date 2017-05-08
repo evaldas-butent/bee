@@ -15,6 +15,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -85,8 +86,8 @@ public class ReportTextItem extends ReportItem {
   }
 
   @Override
-  public ReportValue evaluate(SimpleRow row) {
-    return ReportValue.of(row.getValue(getExpression()));
+  public ResultValue evaluate(SimpleRow row) {
+    return ResultValue.of(row.getValue(getExpression()));
   }
 
   @Override

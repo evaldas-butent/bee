@@ -8,13 +8,17 @@ import com.butent.bee.client.output.ReportEnumItem;
 import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.client.output.ReportNumericItem;
 import com.butent.bee.client.output.ReportTextItem;
+import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -23,6 +27,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -293,6 +298,82 @@ public class ReportInfo implements BeeSerializable {
     return id;
   }
 
+  public ResultHolder getResult(SimpleRowSet rowSet) {
+    ResultHolder result = new ResultHolder();
+
+    List<ReportInfoItem> rowInfoItems = getRowItems();
+    List<ReportInfoItem> colInfoItems = getColItems();
+
+    for (SimpleRowSet.SimpleRow row : rowSet) {
+      boolean ok = true;
+
+      for (ReportItem filterItem : getFilterItems()) {
+        if (!filterItem.validate(row)) {
+          ok = false;
+          break;
+        }
+      }
+      if (!ok) {
+        continue;
+      }
+      ResultValue rowGroup;
+      ResultValue colGroup;
+
+      if (getRowGrouping() != null) {
+        rowGroup = getRowGrouping().getItem().evaluate(row);
+      } else {
+        rowGroup = ResultValue.empty();
+      }
+      if (getColGrouping() != null) {
+        colGroup = getColGrouping().getItem().evaluate(row);
+      } else {
+        colGroup = ResultValue.empty();
+      }
+      ResultValue[] details = new ResultValue[rowInfoItems.size()];
+
+      for (int i = 0; i < rowInfoItems.size(); i++) {
+        details[i] = rowInfoItems.get(i).getItem().evaluate(row);
+      }
+      for (ReportInfoItem colItem : colInfoItems) {
+        if (!colItem.getItem().isResultItem()) {
+          result.addValues(rowGroup, details, colGroup, colItem, colItem.getItem().evaluate(row));
+        }
+      }
+    }
+    // CALC RESULTS
+    for (ReportInfoItem colItem : colInfoItems) {
+      if (colItem.getItem().isResultItem()) {
+        for (ResultValue rowGroup : result.getRowGroups(null)) {
+          for (ResultValue[] rowValues : result.getRows(rowGroup, null)) {
+            for (ResultValue colGroup : result.getColGroups()) {
+              result.addValues(rowGroup, rowValues, colGroup, colItem,
+                  colItem.getItem().evaluate(rowGroup, rowValues, colGroup, result));
+            }
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  @GwtIncompatible
+  public ResponseObject getResultResponse(QueryServiceBean qs, String tmp, IsCondition... clauses) {
+    SqlSelect resultQuery = new SqlSelect()
+        .addFrom(tmp)
+        .setWhere(SqlUtils.and(clauses));
+
+    Arrays.stream(qs.getData(new SqlSelect()
+        .addAllFields(tmp)
+        .addFrom(tmp)
+        .setWhere(SqlUtils.sqlFalse())).getColumnNames())
+        .filter(this::requiresField)
+        .forEach(s -> resultQuery.addFields(tmp, s));
+
+    ResultHolder result = getResult(qs.getData(resultQuery));
+    qs.sqlDropTemp(tmp);
+    return ResponseObject.response(result);
+  }
+
   public ReportInfoItem getRowGrouping() {
     return rowGrouping;
   }
@@ -354,9 +435,7 @@ public class ReportInfo implements BeeSerializable {
   }
 
   public static ReportInfo restore(String data) {
-    ReportInfo reportInfo = new ReportInfo();
-    reportInfo.deserialize(Assert.notEmpty(data));
-    return reportInfo;
+    return BeeSerializable.restore(data, ReportInfo::new);
   }
 
   @Override

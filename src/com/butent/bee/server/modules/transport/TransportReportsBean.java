@@ -24,7 +24,6 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.time.TimeUtils;
@@ -469,22 +468,7 @@ public class TransportReportsBean {
 
     qs.sqlDropTemp(trips);
 
-    query = new SqlSelect()
-        .addFrom(tmp)
-        .setWhere(report.getCondition(tmp, COL_DRIVER));
-
-    for (String column : qs.getData(new SqlSelect()
-        .addAllFields(tmp)
-        .addFrom(tmp)
-        .setWhere(SqlUtils.sqlFalse())).getColumnNames()) {
-
-      if (report.requiresField(column)) {
-        query.addFields(tmp, column);
-      }
-    }
-    SimpleRowSet data = qs.getData(query);
-    qs.sqlDropTemp(tmp);
-    return ResponseObject.response(data);
+    return report.getResultResponse(qs, tmp, report.getCondition(tmp, COL_DRIVER));
   }
 
   /**
@@ -1458,22 +1442,7 @@ public class TransportReportsBean {
       qs.sqlDropTemp(tripIncomes);
       qs.sqlDropTemp(cargoExpenses);
     }
-    query = new SqlSelect()
-        .addFrom(tmp)
-        .setWhere(report.getCondition(tmp, COL_TRIP_ROUTE));
-
-    for (String column : qs.getData(new SqlSelect()
-        .addAllFields(tmp)
-        .addFrom(tmp)
-        .setWhere(SqlUtils.sqlFalse())).getColumnNames()) {
-
-      if (report.requiresField(column)) {
-        query.addFields(tmp, column);
-      }
-    }
-    SimpleRowSet data = qs.getData(query);
-    qs.sqlDropTemp(tmp);
-    return ResponseObject.response(data);
+    return report.getResultResponse(qs, tmp, report.getCondition(tmp, COL_TRIP_ROUTE));
   }
 
   /**

@@ -5041,6 +5041,18 @@ public interface Dictionary {
 
   default String result() {return g("result");}
 
+  default String resultLevelCell() {return g("resultLevelCell");}
+
+  default String resultLevelCol() {return g("resultLevelCol");}
+
+  default String resultLevelGroup() {return g("resultLevelGroup");}
+
+  default String resultLevelGroupCol() {return g("resultLevelGroupCol");}
+
+  default String resultLevelRow() {return g("resultLevelRow");}
+
+  default String resultLevelTotal() {return g("resultLevelTotal");}
+
   default String results() {return g("results");}
 
   default String rightStateCreate() {return g("rightStateCreate");}

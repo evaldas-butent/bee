@@ -111,7 +111,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1898,18 +1897,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     joinPersons(select, publisherPerson, TBL_TASK_EVENTS, COL_PUBLISHER);
 
     String tmp = qs.sqlCreateTemp(select);
-    SqlSelect query = new SqlSelect().addFrom(tmp);
 
-    Arrays.stream(qs.getData(new SqlSelect()
-        .addAllFields(tmp)
-        .addFrom(tmp)
-        .setWhere(SqlUtils.sqlFalse())).getColumnNames())
-        .filter(report::requiresField)
-        .forEach(s -> query.addFields(tmp, s));
-
-    SimpleRowSet data = qs.getData(query);
-    qs.sqlDropTemp(tmp);
-    return ResponseObject.response(data);
+    return report.getResultResponse(qs, tmp);
   }
 
   private ResponseObject getSchedulingData(RequestInfo reqInfo) {

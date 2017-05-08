@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.report.ReportFunction;
+import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.time.TimeUtils;
 
 public class ReportTimeDurationItem extends ReportNumericItem {
@@ -13,7 +14,7 @@ public class ReportTimeDurationItem extends ReportNumericItem {
   }
 
   @Override
-  public Object calculate(Object total, ReportValue value, ReportFunction function) {
+  public Object calculate(Object total, ResultValue value, ReportFunction function) {
     Long val = TimeUtils.parseTime(value.getValue());
 
     if (val != null && val > 0) {
@@ -38,8 +39,8 @@ public class ReportTimeDurationItem extends ReportNumericItem {
   }
 
   @Override
-  public ReportValue evaluate(SimpleRowSet.SimpleRow row) {
-    return ReportValue.of(row.getValue(getExpression()));
+  public ResultValue evaluate(SimpleRowSet.SimpleRow row) {
+    return ResultValue.of(row.getValue(getExpression()));
   }
 
   @Override

@@ -803,10 +803,9 @@ public enum Report implements HasWidgetSupplier {
     return null;
   }
 
-  public void showModal(ReportInfo reportInfo) {
+  public void showModal(ReportParameters parameters) {
     ReportInterceptor interceptor = getInterceptor();
-    interceptor.setInitialParameters(new ReportParameters(Collections.singletonMap(COL_RS_REPORT,
-        reportInfo.serialize())));
+    interceptor.setInitialParameters(parameters);
 
     FormFactory.getFormDescription(getFormName(),
         description -> FormFactory.openForm(description, interceptor, presenter -> {

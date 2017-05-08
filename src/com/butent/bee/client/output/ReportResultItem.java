@@ -7,6 +7,8 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.report.ResultHolder;
+import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -41,13 +43,13 @@ public class ReportResultItem extends ReportNumericItem {
   }
 
   @Override
-  public ReportValue evaluate(SimpleRowSet.SimpleRow row) {
+  public ResultValue evaluate(SimpleRowSet.SimpleRow row) {
     Assert.unsupported();
     return null;
   }
 
   @Override
-  public ReportValue evaluate(ReportValue rowGroup, ReportValue[] rowValues, ReportValue colGroup,
+  public ResultValue evaluate(ResultValue rowGroup, ResultValue[] rowValues, ResultValue colGroup,
       ResultHolder resultHolder) {
 
     Object value = null;
@@ -72,7 +74,7 @@ public class ReportResultItem extends ReportNumericItem {
         value = resultHolder.getTotal(getExpression());
         break;
     }
-    return value != null ? ReportValue.of(value.toString()) : ReportValue.empty();
+    return value != null ? ResultValue.of(value.toString()) : ResultValue.empty();
   }
 
   public ResultHolder.ResultLevel getLevel() {
@@ -110,7 +112,7 @@ public class ReportResultItem extends ReportNumericItem {
       levelWidget = new ListBox();
 
       for (ResultHolder.ResultLevel lvl : ResultHolder.ResultLevel.values()) {
-        levelWidget.addItem(lvl.name());
+        levelWidget.addItem(lvl.getCaption(), lvl.name());
       }
     }
     levelWidget.setValue(getLevel().name());

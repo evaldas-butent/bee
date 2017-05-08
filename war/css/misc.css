@@ -245,6 +245,9 @@
 .bee-rep-drill-off:before {
   color: silver;
 }
+.bee-rep-drill-on:before {
+  color: red;
+}
 .bee-rep-sort, .bee-rep-sort-asc, .bee-rep-sort-desc {
   cursor: pointer;
   font-family: FontAwesome;
@@ -256,11 +259,11 @@
 }
 .bee-rep-sort-asc:before {
   content: "\f0de";
-  color: black;
+  color: red;
 }
 .bee-rep-sort-desc:before {
   content: "\f0dd";
-  color: black;
+  color: red;
 }
 .bee-rep-cgroup {
   text-align: center;
