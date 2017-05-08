@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column"
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+        name="TaskOrderItems" viewName="TaskOrderItems"
+>
+  <g:columns>
+
+    <RelColumn name="Item" filter="IsService" />
+    <DataColumn name="Description" />
+    <DataColumn name="Quantity" />
+    <DataColumn name="Price" >
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </DataColumn>
+
+    <CalcColumn name="Total" type="decimal" caption="=trdAmount"
+                scale="2">
+      <style>
+        <bodyStyle>
+          <ui:font>bold</ui:font>
+        </bodyStyle>
+      </style>
+      <renderer type="total" />
+      <footer aggregate="sum" />
+    </CalcColumn>
+  </g:columns>
+</g:Grid>

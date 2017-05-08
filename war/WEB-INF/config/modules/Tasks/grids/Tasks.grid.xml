@@ -13,6 +13,7 @@
 
   <g:columns>
     <IdColumn name="Id" />
+    <DataColumn name="OrderNo" />
   </g:columns>
 
   <xi:include href="columns/Task.columns.xml" />

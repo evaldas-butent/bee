@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+       name="TaskOrders"
+       idName="TaskOrderID"
+>
+  <Fields>
+    <String name="OrderNo" precision="25" defExpr="NEXT_NUMBER" label="=orderNumber" />
+
+    <String name="Model" precision="10" label="Maketas" />
+    <String name="ModelNote" precision="100" label="Pastaba" />
+    <String name="PrintFormat" precision="15" label="Spaudos formatas" />
+    <String name="OtherPrintFormat" precision="10" />
+    <Integer name="ArcNumber" label="Skaičius lanke" />
+    <Integer name="PageNumber" label="Psl. skaičius" />
+    <Integer name="Tin" label="Skardos" />
+
+    <Relation name="Supplier" relation="Companies" label="Tiekėjas" />
+    <Numeric name="Price" precision="7" scale="2" label="Kaina" />
+    <String name="PressSeries" precision="10" label="Serija" />
+    <String name="PressNumber" precision="10" label="Numeris" />
+    <Date name="PressDate" label="Data" />
+    <String name="SupplierNote" precision="100" label="Pastaba" />
+    <Integer name="PaperEnvelope" label="Popierius / vokai" />
+    <String name="PaperEnvelopeNote" precision="100" label="Pastaba" />
+    <Integer name="Color1" label="Spalvingumas" />
+    <Integer name="Color2" label="Spalvingumas" />
+    <String name="ColorNote" precision="100" label="Pastaba" />
+    <String name="Offset" precision="10" label="Ofsetinis lakas" />
+    <Boolean name="UV" label="UV lakas" />
+    <String name="Laminate1" precision="10" label="Laminavimas" />
+    <String name="Laminate2" precision="10" label="Laminavimas" />
+    <Relation name="Printed" relation="CompanyPersons" label="Spaudė" />
+    <String name="ProductFormat" precision="200" label="Gaminio formatas" />
+    <Integer name="NumberOfRuns" label="Prabėgimų sk." />
+    <Integer name="Quantity" label="Kiekis" />
+    <Integer name="Counter" label="Skaitliukas" />
+    <Integer name="Waster" label="Brokas" />
+    <Integer name="Good" label="Geri" />
+    <Text name="Note" label="Pastaba" />
+
+    <Relation name="DecorationSupplier" relation="Companies" label="Tiekėjas" />
+    <Numeric name="DecorationPrice" precision="7" scale="2" label="Kaina" />
+    <String name="DecorationSupplierNote" precision="100" label="Pastaba" />
+    <Relation name="Made" relation="CompanyPersons" label="Atliko" />
+    <String name="Cut" precision="25" label="Kirpti" />
+    <String name="Stitching" precision="10" label="Segimas" />
+    <String name="OtherStitching" precision="10" />
+    <String name="Spiral" precision="10" label="Spiralės" />
+    <Integer name="OtherSpiral" />
+    <String name="Holes" precision="10" label="Skylės" />
+    <Integer name="OtherHoles" />
+    <String name="Punching" precision="10" label="Štancavimas" />
+    <Integer name="Bending" label="Lenkimas / bigas" />
+    <Integer name="Selection" label="Parink. / perfor." />
+    <String name="Glue" precision="30" label="Klijavimas" />
+    <String name="GlueNote" precision="100" label="Pastaba" />
+    <String name="Series" precision="3" label="Serija" />
+    <Integer name="From" label="Nr. nuo" />
+    <Integer name="To" label="Nr. iki" />
+    <Relation name="Packed" relation="CompanyPersons" label="Numeravo/pakavo" />
+    <String name="MarkOnPack" precision="200" label="Žymė ant pakuotės" />
+    <String name="Packing" precision="10" label="Pakavimas" />
+    <String name="OtherPacking" precision="10" />
+    <String name="Total" precision="15" label="Viso:" />
+
+    <String name="PriceSeries" precision="10" label="Serija" />
+    <String name="Number" precision="10" label="Numeris" />
+    <Date name="Date" label="Data" />
+    <String name="Transportation" precision="10" label="Transportavimas" />
+    <Integer name="PackageQty" label="Pakuočių kiekis" />
+    <Numeric name="Weight" precision="7" scale="3" label="Svoris" />
+  </Fields>
+</Table>

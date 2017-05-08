@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+    <!ENTITY inline "display: inline-block;">
+
+    <!ENTITY tbl "border-collapse: collapse;">
+    <!ENTITY cell "padding-bottom: 2px;">
+    <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
+    <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
+
+    <!ENTITY inp2 "width: 160px;">
+    <!ENTITY inp2x "width: 500px;">
+    <!ENTITY inp2y "width: 500px;">
+    <!ENTITY inp3 "width: 70px;margin-left: -75px">
+
+    <!ENTITY dateStyle "&inline; min-width: 90px; max-width: 90px;">
+    <!ENTITY timeStyle "&inline; min-width: 60px; max-width: 60px; width: 60px; margin-left: 10px;">
+    <!ENTITY timeStep "30">
+    ]>
+<f:Form xmlns="http://www.butent.com/widget"
+        xmlns:f="http://www.butent.com/form"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+
+        name="NewTaskOrder" viewName="Tasks" caption="=newOrder" width="700" height="700">
+
+  <FlowPanel style="padding: 10px 2px 2px 10px;">
+
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+      <col index="0" cellStyle="&col1;" />
+      <col index="2" cellStyle="&col1;" />
+
+      <row>
+        <Label for="Summary" />
+        <cell colSpan="3">
+          <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true"
+                     maxLength="70" />
+        </cell>
+
+      </row>
+
+      <row>
+        <Label text="=files" style="&col1; margin-top: 4px;" />
+        <FlowPanel class="flexBox-horizontal-top" data="TaskFiles">
+          <FileCollector name="Files" editableColumns="name" />
+        </FlowPanel>
+
+        <Label for="OrderNo" />
+        <InputText source="OrderNo" style="width: 100%;" />
+      </row>
+    </Table>
+
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+    <col index="0" cellStyle="&col1;" />
+      <row>
+        <Label name="ExecutorsLabel" text="=crmTaskExecutors" />
+        <MultiSelector name="Executors" viewName="Users" property="Executors" renderColumns="FirstName LastName"
+                       editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskExecutors" />
+      </row>
+
+      <row>
+        <Label text="=crmTaskObservers" />
+        <MultiSelector name="Observers" viewName="Users" property="Observers" renderColumns="FirstName LastName"
+                       editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;" label="=crmTaskObservers" />
+      </row>
+
+      <row>
+        <Label for="Company" />
+        <DataSelector source="Company" editPopup="true" newRowEnabled="true" choiceColumns="Name TypeName"
+                      renderColumns="CompanyName CompanyTypeName" style="&inp2x;" />
+      </row>
+
+      <row>
+        <Label for="Contact" />
+        <DataSelector source="Contact" editPopup="true" newRowEnabled="true" style="&inp2x;"
+                      renderColumns="ContactFirstName ContactLastName"
+                      choiceColumns="FirstName LastName CompanyName" options="Company" />
+      </row>
+    </Table>
+
+    <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+    <col index="0" cellStyle="&col1;" />
+    <col index="2" cellStyle="&col3;" />
+
+      <row>
+        <Label for="StartTime" name="StartTimeLabel" />
+        <FlowPanel>
+          <InputDate name="Start_Date" style="&dateStyle;" />
+          <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
+        </FlowPanel>
+
+        <Label name="EndDateLabel" text="=endingDate" />
+        <FlowPanel>
+          <InputDate name="End_Date" style="&dateStyle;" />
+          <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
+        </FlowPanel>
+      </row>
+    </Table>
+
+    <Disclosure open="false" style="margin-top: 2ex;" >
+      <Label text="PAGRINDINĖ INFORMACIJA" />
+
+      <FlowPanel>
+        <Table kind="controls" style="&tbl;" cellStyle="&cell;">
+          <col index="0" cellStyle="&col1;" />
+
+          <row>
+            <Label text="=crmTaskExecutorGroups" />
+            <MultiSelector name="UserGroupSettings" viewName="UserGroupSettings" property="ExecutorGroups"
+                           renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
+                           filter="Owner {u} or Visibility 1">
+            </MultiSelector>
+          </row>
+
+          <row>
+            <Label text="=crmTaskObserverGroups" />
+            <MultiSelector name="ObserverGroups" viewName="UserGroupSettings" property="ObserverGroups"
+                           renderColumns="Name" editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
+                           filter="Owner {u} or Visibility 1" />
+          </row>
+
+          <row module="Projects" data="Projects">
+            <Label text="=project" name="ProjectLabel" />
+            <DataSelector source="Project" renderColumns="ProjectName" style="&inp2x;" disablable="true"
+                          editPopup="false" />
+          </row>
+          <row module="Projects" data="ProjectStages">
+            <Label text="=prjStage" name="ProjectStageLabel" />
+            <DataSelector source="ProjectStage" renderColumns="StageName" style="&inp2x;" />
+          </row>
+        </Table>
+
+        <Table kind="controls" style="&tbl;" cellStyle="&cell;" >
+          <col index="0" cellStyle="&col1;" />
+
+          <row>
+            <Label for="Priority" />
+            <Radio source="Priority" />
+          </row>
+
+          <row>
+            <Label text="=crmTaskTemplate" data="TaskTemplates" />
+            <UnboundSelector viewName="TaskTemplates" choiceColumns="Name" newRowEnabled="false"
+                             style="&inp2x;" data="TaskTemplates" />
+          </row>
+
+          <row>
+            <Label for="Type" />
+            <DataSelector source="Type" name="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2x;"
+                          disablable="true" />
+          </row>
+
+          <row>
+            <Label for="Product" name="Product" />
+            <DataSelector source="Product" renderColumns="ProductName" newRowEnabled="true" style="&inp2x;" filter="Visible" />
+          </row>
+        </Table>
+
+        <Table kind="controls" style="&tbl; margin-top: 20px;" cellStyle="&cell;">
+          <col index="0" cellStyle="&col1;" />
+          <col index="2" cellStyle="&col3;" />
+
+          <row>
+            <Label for="ExpectedDuration" />
+            <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 90px;" />
+            <Label for="ExpectedExpenses" />
+            <FlowPanel>
+              <InputDecimal source="ExpectedExpenses" style="&dateStyle;" disablable="true" scale="2"/>
+              <DataSelector source="Currency" for="ExpectedExpenses" newRowEnabled="false" editEnabled="false"
+                            style="&timeStyle;" readOnly="true" />
+            </FlowPanel>
+          </row>
+
+          <row>
+            <Label />
+            <CheckBox name="Mail" text="=mailNotify" />
+            <CheckBox source="PrivateTask" />
+            <CheckBox name="NotScheduledTask" text="=crmTasksNotScheduledTask"/>
+          </row>
+        </Table>
+      </FlowPanel>
+    </Disclosure>
+
+    <Disclosure open="false" style="margin-top: 2ex;" >
+      <Label text="SUSIJUSI SU" data="Relations" />
+
+      <Relations name="Relations" relColumn="Task" inline="true" disablable="false"
+                 defaultRelations="Companies Persons Documents Appointments Discussions
+                       Projects Tasks Requests Messages" style="width: 628px">
+        <Relation viewName="Companies" property="RelCompanies" renderColumns="Name TypeName"
+                  newRowEnabled="false" editPopup="true"/>
+        <Relation viewName="Persons" property="RelPersons" renderColumns="FirstName LastName"
+                  newRowEnabled="false"
+                  editPopup="true"/>
+        <Relation viewName="Documents" property="RelDocuments"
+                  renderColumns="Name Number RegistrationNumber DocumentDate"
+                  newRowEnabled="false" editPopup="true"/>
+        <Relation viewName="Discussions" property="RelDiscussions" renderColumns="Subject"
+                  newRowEnabled="false" editPopup="true"/>
+        <Relation viewName="ServiceObjects" property="RelServiceObjects" renderColumns="Model CategoryName ArticleNo"
+                  newRowEnabled="false" editPopup="true"
+                  choiceColumns="Model CategoryName ArticleNo"/>
+        <Relation viewName="Tasks" property="RelTasks"
+                  renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
+                  newRowEnabled="false" editPopup="true" style="&inp2x;"
+                  choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"/>
+        <Relation viewName="OrderCargo" property="RelOrderCargo"
+                  renderColumns="Description" newRowEnabled="false" editPopup="true" />
+        <Relation viewName="ServiceMaintenance" property="RelServiceMaintenance"
+                  renderColumns="ID" choiceColumns="ID TypeName StateName"
+                  newRowEnabled="false" editPopup="true" />
+      </Relations>
+    </Disclosure>
+
+    <xi:include href="widgets/TaskOrder.widget.xml" />
+  </FlowPanel>
+</f:Form>

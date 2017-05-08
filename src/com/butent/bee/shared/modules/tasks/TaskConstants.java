@@ -803,6 +803,7 @@ public final class TaskConstants {
   public static final String VIEW_TASK_DURATIONS = "TaskDurations";
   public static final String VIEW_TASK_DURATION_TYPES = "TaskDurationTypes";
   public static final String VIEW_TASK_PRODUCTS = "TaskProducts";
+  public static final String VIEW_TASK_ORDER_ITEMS = "TaskOrderItems";
 
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
   public static final String VIEW_TASK_TYPES = "TaskTypes";
@@ -837,6 +838,8 @@ public final class TaskConstants {
   public static final String COL_ID = "Id";
 
   public static final String COL_TASK = "Task";
+
+  public static final String COL_TASK_ORDER = "TaskOrder";
 
   public static final String COL_TASK_TEMPLATE_NAME = "Name";
   public static final String COL_TASK_TYPE_NAME = "Name";
@@ -1021,7 +1024,9 @@ public final class TaskConstants {
 
   public static final String FORM_NEW_REQUEST_COMMENT = "NewRequestComment";
   public static final String FORM_NEW_TASK = "NewTask";
+  public static final String FORM_NEW_TASK_ORDER = "NewTaskOrder";
   public static final String FORM_TASK = "Task";
+  public static final String FORM_TASK_ORDER = "TaskOrder";
   public static final String FORM_TASK_PREVIEW = "TaskPreview";
 
   public static final String FORM_RECURRING_TASK = "RecurringTask";

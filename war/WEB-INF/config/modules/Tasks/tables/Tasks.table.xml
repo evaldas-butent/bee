@@ -42,5 +42,7 @@
     <Boolean name="PrivateTask" label="=crmTaskPrivate" />
 
     <Relation name="Product" relation="TaskProducts" label="=crmTaskProduct" />
+
+    <Relation name="TaskOrder" relation="TaskOrders" editable="true" />
   </Fields>
 </Table>

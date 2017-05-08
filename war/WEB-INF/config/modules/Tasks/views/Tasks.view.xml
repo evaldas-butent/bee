@@ -105,7 +105,11 @@
       <HiddenColumn name="Event"/>
       <AggregateColumn name="PublishTime" alias="LastBreakEvent" aggregate="MAX" />
     </ExternalJoin>
-    
+
+    <SimpleColumn name="TaskOrder" />
+    <SimpleJoin name="TaskOrder" joinType="LEFT">
+      <xi:include href="viewcolumns/TaskOrder.viewcolumns.xml" />
+    </SimpleJoin>
   </Columns>
 
   <Order>

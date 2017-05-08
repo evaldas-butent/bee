@@ -729,7 +729,8 @@ class TaskEditor extends ProductSupportInterceptor {
     if (action == Action.SAVE) {
       return !maybeNotifyEmptyProduct(msg -> getFormView().notifySevere(msg));
     }
-    return true;
+
+    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -1056,6 +1057,23 @@ class TaskEditor extends ProductSupportInterceptor {
           sendRequest(prm, TaskEvent.EDIT);
         }
       });
+    }
+  }
+
+  @Override
+  protected void getReportData(Consumer<BeeRowSet[]> dataConsumer) {
+    if (!Data.isNull(VIEW_TASKS, getActiveRow(), COL_TASK_ORDER)) {
+      Queries.getRowSet(VIEW_TASK_ORDER_ITEMS, null, Filter.equals(COL_TASK, getActiveRowId()),
+          new RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              if (result.getNumberOfRows() > 0) {
+                dataConsumer.accept(new BeeRowSet[] {result});
+              } else {
+                TaskEditor.super.getReportData(dataConsumer);
+              }
+            }
+          });
     }
   }
 
@@ -2042,7 +2060,7 @@ class TaskEditor extends ProductSupportInterceptor {
   }
 
   private void setCommentsLayout() {
-    if (isDefaultLayout) {
+    /*if (isDefaultLayout) {
       if (taskWidget != null) {
         int height = BeeUtils.max(getFormView().getWidgetByName("TaskContainer").getElement()
           .getScrollHeight(), 660);
@@ -2057,7 +2075,7 @@ class TaskEditor extends ProductSupportInterceptor {
       split.addWest(taskWidget, size == null ? 660 : size);
       StyleUtils.autoHeight(taskWidget.getElement());
       split.updateCenter(taskEventsWidget);
-    }
+    }*/
   }
 
   private void setPrmEndOfWorkDay(Long prmEndOfWorkDay) {
