@@ -337,7 +337,7 @@
       </page>
 
       <page module="Orders" data="Orders" predicate="!row.IsService">
-        <text>=orders</text>
+        <text>=trdStock</text>
         <FlowPanel class="flexBox-vertical">
           <Table kind="controls" style="margin-top: 1ex; margin-bottom: 2em;">
             <col index="0" kind="label" />
@@ -367,11 +367,6 @@
 
           <ChildGrid name="ItemRemainders" relColumn="Item" class="flexible" />
         </FlowPanel>
-      </page>
-
-      <page module="Trade" predicate="!row.IsService &amp;&amp; rowId > 0">
-        <text>=trdStock</text>
-        <ChildGrid name="ItemStock" relColumn="Item" />
       </page>
 
       <page module="Trade" predicate="rowId > 0">

@@ -11,8 +11,7 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -47,7 +46,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -59,6 +57,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
@@ -70,11 +69,11 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -938,30 +937,53 @@ public class OrderItemsGrid extends AbstractGridInterceptor implements Selection
   }
 
   private void setReservations() {
-
-    if (clearRes == null || !DataUtils.isId(orderForm.getId())) {
+    if (reserve == null || !DataUtils.isId(orderForm.getId())) {
       return;
     }
 
-    Long warehouse = orderForm.getLong(Data.getColumnIndex(VIEW_ORDERS, COL_WAREHOUSE));
     Integer status = orderForm.getInteger(Data.getColumnIndex(VIEW_ORDERS, COL_ORDERS_STATUS));
 
-    if (DataUtils.isId(warehouse) && Objects.equals(status, OrdersStatus.APPROVED.ordinal())) {
+    if (Objects.equals(status, OrdersStatus.APPROVED.ordinal())) {
       reserve.running();
 
-      ParameterList params = OrdersKeeper.createSvcArgs(SVC_FILL_RESERVED_REMAINDERS);
-      params.addDataItem(COL_ORDER, orderForm.getId());
-      params.addDataItem(COL_WAREHOUSE, warehouse);
+      int qtyIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_TRADE_ITEM_QUANTITY);
+      int remainderIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+      int itemIdx = Data.getColumnIndex(VIEW_ORDER_ITEMS, COL_ITEM);
 
-      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          reserve.idle();
-          if (!response.hasErrors()) {
+      BeeRowSet rowSet = new BeeRowSet(getViewName(),
+          Collections.singletonList(Data.getColumn(getViewName(), COL_RESERVED_REMAINDER)));
+      Map<Long, Double> freeMap = new HashMap<>();
+
+      for (IsRow row : getGridView().getRowData()) {
+        freeMap.put(row.getLong(itemIdx), Double.valueOf(row.getProperty(PRP_FREE_REMAINDER)));
+      }
+
+      for (IsRow row : getGridView().getRowData()) {
+        Double qty = row.getDouble(qtyIdx);
+        Double free = freeMap.get(row.getLong(itemIdx));
+        Double invoices = row.getPropertyDouble(PRP_COMPLETED_INVOICES);
+        double remainder = BeeUtils.unbox(row.getDouble(remainderIdx));
+
+        if (qty - invoices <= free + remainder) {
+          rowSet.addRow(row.getId(), row.getVersion(),
+              Collections.singletonList(BeeUtils.toString(qty - invoices)));
+          freeMap.put(row.getLong(itemIdx), free - qty + remainder);
+        } else {
+          rowSet.addRow(row.getId(), row.getVersion(),
+              Collections.singletonList(BeeUtils.toString(free + remainder)));
+          freeMap.put(row.getLong(itemIdx), BeeConst.DOUBLE_ZERO);
+        }
+      }
+
+      if (!DataUtils.isEmpty(rowSet)) {
+        Queries.updateRows(rowSet, new RpcCallback<RowInfoList>() {
+          @Override
+          public void onSuccess(RowInfoList result) {
+            reserve.idle();
             DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_ORDER_ITEMS);
           }
-        }
-      });
+        });
+      }
     }
   }
 }

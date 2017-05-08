@@ -191,7 +191,8 @@ public class ItemPricePicker extends AbstractCellRenderer {
         price = null;
       }
 
-      if (!BeeKeeper.getUser().isAdministrator()) {
+      if (!BeeKeeper.getUser().canEditColumn(VIEW_ORDER_ITEMS,
+          TradeConstants.COL_TRADE_ITEM_PRICE)) {
         select.disabled();
       }
       select.appendChild(option);

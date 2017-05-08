@@ -121,10 +121,6 @@
 
     <SimpleColumn name="Group" />
     <SimpleJoin joinType="LEFT" name="Group">
-      <SimpleColumn name="Parent" alias="ParentGroup" />
-      <SimpleJoin name="Parent" joinType="LEFT">
-        <SimpleColumn name="Name" alias="ParentGroupName" />
-      </SimpleJoin>
       <SimpleColumn name="Name" alias="ItemGroupName" />
     </SimpleJoin>
 
@@ -152,7 +148,6 @@
     <OrderBy column="Ordinal" />
     <OrderBy column="ParentTypeName" />
     <OrderBy column="ItemTypeName" />
-    <OrderBy column="ParentGroupName" />
     <OrderBy column="ItemGroupName" />
     <OrderBy column="Name" />
     <OrderBy column="Article" />

@@ -18,6 +18,7 @@ import com.google.zxing.common.ByteMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.modules.calendar.CalendarHelper;
 
@@ -381,18 +382,36 @@ public class ClassifiersModuleBean implements BeeModule {
           BeeRowSet rowSet = event.getRowset();
           List<Long> ids = rowSet.getRowIds();
 
-          Map<Long, Double> resRemainders =
-              getRemainders(ids, TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER);
-          Map<Long, Double> wrhRemainders =
-              getRemainders(ids, VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER);
+          com.google.common.collect.Table<Long, String, Double> resRemainders = getRemainders(ids,
+              TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+          com.google.common.collect.Table<Long, String, Double> invRemainders = getRemainders(ids,
+              TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY);
+          com.google.common.collect.Table<Long, String, Double> wrhRemainders = getRemainders(ids,
+              VIEW_ITEM_REMAINDERS, COL_WAREHOUSE_REMAINDER);
 
           for (BeeRow row : rowSet.getRows()) {
+            double wrhQty = 0;
+            double resQty = 0;
+            double invQty = 0;
+
             Long id = row.getId();
 
             if (DataUtils.isId(id)) {
               indexedRows.put(id, row);
-              row.setProperty(COL_RESERVED_REMAINDER, resRemainders.get(id));
-              row.setProperty(PROP_WAREHOUSE_REMAINDER, wrhRemainders.get(id));
+
+              for (Double value : resRemainders.row(id).values()) {
+                resQty += BeeUtils.unbox(value);
+              }
+
+              for (Double value : invRemainders.row(id).values()) {
+                invQty += BeeUtils.unbox(value);
+              }
+              row.setProperty(COL_RESERVED_REMAINDER, resQty + invQty);
+
+              for (Double value : wrhRemainders.row(id).values()) {
+                wrhQty += BeeUtils.unbox(value);
+              }
+              row.setProperty(PROP_WAREHOUSE_REMAINDER, wrhQty);
             }
           }
           if (!indexedRows.isEmpty()) {
@@ -403,11 +422,22 @@ public class ClassifiersModuleBean implements BeeModule {
                 COL_ITEM, indexedRows.keySet())));
 
             for (SimpleRow row : qs.getData(query)) {
-              IsRow r = indexedRows.get(row.getLong(COL_ITEM));
+              Long item = row.getLong(COL_ITEM);
+              String wrhCode = row.getValue(ALS_WAREHOUSE_CODE);
+              IsRow r = indexedRows.get(item);
 
               if (r != null) {
-                r.setProperty(COL_WAREHOUSE_REMAINDER + row.getValue(ALS_WAREHOUSE_CODE),
-                    row.getValue(COL_WAREHOUSE_REMAINDER));
+                double resQty = 0;
+
+                for (com.google.common.collect.Table<Long, String, Double> table
+                    : Arrays.asList(resRemainders, invRemainders)) {
+                  if (table.contains(item, wrhCode)) {
+                    resQty += BeeUtils.unbox(table.get(item, wrhCode));
+                  }
+                }
+
+                r.setProperty(COL_WAREHOUSE_REMAINDER + wrhCode, BeeUtils.toString(BeeUtils.unbox(
+                    row.getDouble(COL_WAREHOUSE_REMAINDER)) - resQty));
               }
             }
           }
@@ -433,6 +463,41 @@ public class ClassifiersModuleBean implements BeeModule {
                     row.setProperty(keyStockWarehouse(warehouseCode), quantity));
               }
             }
+          }
+        }
+      }
+
+      @Subscribe
+      @AllowConcurrentEvents
+      public void setWarehouseRemainders(ViewQueryEvent event) {
+        if (event.isAfter(VIEW_ITEM_REMAINDERS)) {
+
+          BeeRowSet rowSet = event.getRowset();
+
+          if (DataUtils.isEmpty(rowSet)) {
+            return;
+          }
+
+          int warehouseIdx = rowSet.getColumnIndex(ALS_WAREHOUSE_CODE);
+          Long item = rowSet.getRow(0).getLong(rowSet.getColumnIndex(COL_ITEM));
+
+          com.google.common.collect.Table<Long, String, Double> resRemainders = getRemainders(
+              Collections.singletonList(item), TBL_ORDER_ITEMS, COL_RESERVED_REMAINDER);
+          com.google.common.collect.Table<Long, String, Double> invRemainders = getRemainders(
+              Collections.singletonList(item), TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY);
+
+          for (BeeRow row : rowSet) {
+            String wrhCode = row.getString(warehouseIdx);
+            double resQty = 0;
+
+            for (com.google.common.collect.Table<Long, String, Double> table
+                : Arrays.asList(resRemainders, invRemainders)) {
+              if (table.contains(item, wrhCode)) {
+                resQty += BeeUtils.unbox(table.get(item, wrhCode));
+              }
+            }
+
+            row.setProperty(COL_RESERVED_REMAINDER, resQty);
           }
         }
       }
@@ -2110,52 +2175,47 @@ public class ClassifiersModuleBean implements BeeModule {
     return userSettings;
   }
 
-  private Map<Long, Double> getRemainders(List<Long> ids, String source, String field) {
+  private com.google.common.collect.Table<Long, String, Double> getRemainders(List<Long> ids,
+      String source, String field) {
+    com.google.common.collect.Table<Long, String, Double> result = HashBasedTable.create();
 
-    Map<Long, Double> remainders = new HashMap<>();
-    Map<Long, Double> invoices = new HashMap<>();
+    SqlSelect query = new SqlSelect()
+        .addFields(source, COL_ITEM)
+        .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
+        .addSum(source, field)
+        .addFrom(source)
+        .setWhere(SqlUtils.and(SqlUtils.inList(source, COL_ITEM, ids),
+            SqlUtils.nonZero(source, field)))
+        .addGroup(source, COL_ITEM)
+        .addGroup(TBL_WAREHOUSES, COL_WAREHOUSE_CODE);
 
-    if (!BeeUtils.isEmpty(ids)) {
-      SqlSelect select = new SqlSelect()
-          .addFields(source, COL_ITEM)
-          .addSum(source, field)
-          .addFrom(source)
-          .setWhere(SqlUtils.inList(source, COL_ITEM, ids))
-          .addGroup(source, COL_ITEM);
+    if (Objects.equals(source, TBL_ORDER_ITEMS)) {
+      query.addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, source, COL_ORDER))
+          .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, TBL_ORDERS, COL_WAREHOUSE))
+          .setWhere(SqlUtils.and(query.getWhere(), SqlUtils.equals(TBL_ORDERS, COL_ORDERS_STATUS,
+              OrdersStatus.APPROVED.ordinal())));
+    } else if (Objects.equals(source, TBL_SALE_ITEMS)) {
+      query.addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, source, COL_SALE))
+          .addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, TBL_SALES,
+              COL_OPERATION_WAREHOUSE_FROM))
+          .setWhere(SqlUtils.and(query.getWhere(), SqlUtils.isNull(TBL_SALES, COL_TRADE_EXPORTED)));
+    } else {
+      query.addFromInner(TBL_WAREHOUSES, sys.joinTables(TBL_WAREHOUSES, source, COL_WAREHOUSE));
+    }
 
-      if (Objects.equals(source, TBL_ORDER_ITEMS)) {
-        SqlSelect slcInvoices =
-            new SqlSelect()
-                .addFields(TBL_SALE_ITEMS, COL_ITEM)
-                .addSum(TBL_SALE_ITEMS, COL_TRADE_ITEM_QUANTITY)
-                .addFrom(TBL_SALE_ITEMS)
-                .addFromLeft(TBL_SALES, sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE))
-                .setWhere(
-                    SqlUtils.and(SqlUtils.inList(TBL_SALE_ITEMS, COL_ITEM, ids), SqlUtils.isNull(
-                        TBL_SALES, COL_TRADE_EXPORTED)))
-                .addGroup(TBL_SALE_ITEMS, COL_ITEM);
+    SimpleRowSet data = qs.getData(query);
 
-        for (SimpleRow row : qs.getData(slcInvoices)) {
-          invoices.put(row.getLong(COL_ITEM), BeeUtils
-              .unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY)));
-        }
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        Double quantity = row.getDouble(field);
 
-        for (SimpleRow row : qs.getData(select)) {
-          if (invoices.containsKey(row.getLong(COL_ITEM))) {
-            remainders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field))
-                + BeeUtils.unbox(invoices.get(row.getLong(COL_ITEM))));
-          } else {
-            remainders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
-          }
-        }
-      } else {
-        for (SimpleRow row : qs.getData(select)) {
-          remainders.put(row.getLong(COL_ITEM), BeeUtils.unbox(row.getDouble(field)));
+        if (BeeUtils.nonZero(quantity)) {
+          result.put(row.getLong(COL_ITEM), row.getValue(COL_WAREHOUSE_CODE), quantity);
         }
       }
     }
 
-    return remainders;
+    return result;
   }
 
   @Schedule(hour = "*/1", persistent = false)

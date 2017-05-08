@@ -153,8 +153,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
               condition(ALS_ITEM_TYPE_NAME, query));
           break;
         case COL_ITEM_GROUP:
-          filter = Filter.or(condition(ALS_PARENT_GROUP_NAME, query),
-              condition(ALS_ITEM_GROUP_NAME, query));
+          filter = condition(ALS_ITEM_GROUP_NAME, query);
           break;
 
         case COL_CATEGORY:
@@ -646,8 +645,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
     List<Integer> typeIndexes = Lists.newArrayList(items.getColumnIndex(ALS_PARENT_TYPE_NAME),
         items.getColumnIndex(ALS_ITEM_TYPE_NAME));
-    List<Integer> groupIndexes = Lists.newArrayList(items.getColumnIndex(ALS_PARENT_GROUP_NAME),
-        items.getColumnIndex(ALS_ITEM_GROUP_NAME));
+    int groupIndex = items.getColumnIndex(ALS_ITEM_GROUP_NAME);
 
     int nameIndex = items.getColumnIndex(COL_ITEM_NAME);
     int articleIndex = items.getColumnIndex(COL_ITEM_ARTICLE);
@@ -672,8 +670,7 @@ public abstract class ItemsPicker extends Flow implements HasSelectionHandlers<B
 
       table.setText(r, c++, DataUtils.join(items.getColumns(), item, typeIndexes,
           BeeConst.STRING_EOL), STYLE_TYPE_PREFIX + STYLE_CELL_SUFFIX);
-      table.setText(r, c++, DataUtils.join(items.getColumns(), item, groupIndexes,
-          BeeConst.STRING_EOL), STYLE_GROUP_PREFIX + STYLE_CELL_SUFFIX);
+      table.setText(r, c++, item.getString(groupIndex), STYLE_GROUP_PREFIX + STYLE_CELL_SUFFIX);
 
       if (isOrder) {
         int notMnfctIdx = items.getColumnIndex(COL_ITEM_NOT_MANUFACTURED);
