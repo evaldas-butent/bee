@@ -1327,9 +1327,9 @@ public interface Dictionary {
 
   default String crmTaskProducts() {return g("crmTaskProducts");}
 
-  default String crmTaskPublisher() {return g("crmTaskPublisher");}
-
   default String crmTaskPublishTime() {return g("crmTaskPublishTime");}
+
+  default String crmTaskPublisher() {return g("crmTaskPublisher");}
 
   default String crmTaskReminder() {return g("crmTaskReminder");}
 
@@ -4276,6 +4276,24 @@ public interface Dictionary {
 
   default String precision() {return g("precision");}
 
+  default String prepayment() {return g("prepayment");}
+
+  default String prepaymentCustomers() {return g("prepaymentCustomers");}
+
+  default String prepaymentCustomersShort() {return g("prepaymentCustomersShort");}
+
+  default String prepaymentKind() {return g("prepaymentKind");}
+
+  default String prepaymentKindShort() {return g("prepaymentKindShort");}
+
+  default String prepaymentParent() {return g("prepaymentParent");}
+
+  default String prepaymentParentShort() {return g("prepaymentParentShort");}
+
+  default String prepaymentSuppliers() {return g("prepaymentSuppliers");}
+
+  default String prepaymentSuppliersShort() {return g("prepaymentSuppliersShort");}
+
   default String presenceAway() {return g("presenceAway");}
 
   default String presenceChangeTooltip() {return g("presenceChangeTooltip");}
@@ -4710,6 +4728,18 @@ public interface Dictionary {
   default String prmERPPassword() {return g("prmERPPassword");}
 
   default String prmERPRefreshIntervalInMinutes() {return g("prmERPRefreshIntervalInMinutes");}
+
+  default String prmERPSyncEmployees() {return g("prmERPSyncEmployees");}
+
+  default String prmERPSyncLocations() {return g("prmERPSyncLocations");}
+
+  default String prmERPSyncPayrollDataHours() {return g("prmERPSyncPayrollDataHours");}
+
+  default String prmERPSyncPayrollDataTime() {return g("prmERPSyncPayrollDataTime");}
+
+  default String prmERPSyncPayrollDeltaHours() {return g("prmERPSyncPayrollDeltaHours");}
+
+  default String prmERPSyncTimeCards() {return g("prmERPSyncTimeCards");}
 
   default String prmEndOfWorkDay() {return g("prmEndOfWorkDay");}
 
