@@ -278,6 +278,8 @@ public final class FinanceConstants {
   public static final String ALS_EMPLOYEE_FIRST_NAME = "EmployeeFirstName";
   public static final String ALS_EMPLOYEE_LAST_NAME = "EmployeeLastName";
 
+  public static final String PROP_PREPAYMENT_USED = "PrepaymentUsed";
+
   public static final String GRID_FINANCIAL_RECORDS = "FinancialRecords";
   public static final String GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS =
       "TradeDocumentFinancialRecords";

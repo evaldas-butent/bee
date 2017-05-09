@@ -7,6 +7,8 @@
         caption="=prepaymentCustomers" filter="PrepaymentKind = 0"
 >
   <xi:include href="columns/FinancialRecordsMain.columns.xml" />
+  <xi:include href="columns/PrepaymentInfo.columns.xml" />
+
   <xi:include href="columns/FinancialRecordsHiddenQuantity.columns.xml" />
 
   <xi:include href="columns/HiddenEmployee.columns.xml" />

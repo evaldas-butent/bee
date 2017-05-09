@@ -4280,6 +4280,8 @@ public interface Dictionary {
 
   default String prepayment() {return g("prepayment");}
 
+  default String prepaymentBalance() {return g("prepaymentBalance");}
+
   default String prepaymentCustomers() {return g("prepaymentCustomers");}
 
   default String prepaymentCustomersShort() {return g("prepaymentCustomersShort");}
@@ -4295,6 +4297,8 @@ public interface Dictionary {
   default String prepaymentSuppliers() {return g("prepaymentSuppliers");}
 
   default String prepaymentSuppliersShort() {return g("prepaymentSuppliersShort");}
+
+  default String prepaymentUsed() {return g("prepaymentUsed");}
 
   default String prepayments() {return g("prepayments");}
 
