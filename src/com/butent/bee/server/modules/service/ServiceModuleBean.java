@@ -396,8 +396,8 @@ public class ServiceModuleBean implements BeeModule {
                 qs.insertData(payrollInsertQuery);
               });
               DataChangeEvent.fireRefresh((fireEvent, locality) ->
-                      Endpoint.sendToUser(usr.getCurrentUserId(), new ModificationMessage(fireEvent)),
-                  TBL_MAINTENANCE_PAYROLL);
+                      Endpoint.sendToUser(usr.getCurrentUserId(),
+                          new ModificationMessage(fireEvent)), TBL_MAINTENANCE_PAYROLL);
             }
           }
         }
