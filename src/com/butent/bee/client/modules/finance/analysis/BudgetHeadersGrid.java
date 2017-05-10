@@ -8,10 +8,8 @@ import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.css.CssUnit;
@@ -80,7 +78,7 @@ public class BudgetHeadersGrid extends AbstractGridInterceptor {
     int ordinalIndex = getDataIndex(COL_BUDGET_HEADER_ORDINAL);
     Integer ordinal = oldRow.getInteger(ordinalIndex);
     if (BeeUtils.isPositive(ordinal)) {
-      headerRow.setValue(ordinalIndex, ordinal + 10);
+      headerRow.setValue(ordinalIndex, ordinal + 1);
     }
 
     BeeRowSet rowSet = DataUtils.createRowSetForInsert(getViewName(),
@@ -90,10 +88,14 @@ public class BudgetHeadersGrid extends AbstractGridInterceptor {
       @Override
       public void onSuccess(BeeRow newHeader) {
         if (DataUtils.hasId(newHeader)) {
-          RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), newHeader, null);
-
           Queries.getRowSet(VIEW_BUDGET_ENTRIES, null,
               Filter.equals(COL_BUDGET_HEADER, oldRow.getId()), new Queries.RowSetCallback() {
+                @Override
+                public void onFailure(String... reason) {
+                  afterCopy(newHeader);
+                  super.onFailure(reason);
+                }
+
                 @Override
                 public void onSuccess(BeeRowSet oldEntries) {
                   if (DataUtils.isEmpty(oldEntries)) {
@@ -108,6 +110,12 @@ public class BudgetHeadersGrid extends AbstractGridInterceptor {
                     Queries.insertRows(DataUtils.createRowSetForInsert(oldEntries),
                         new RpcCallback<RowInfoList>() {
                           @Override
+                          public void onFailure(String... reason) {
+                            afterCopy(newHeader);
+                            super.onFailure(reason);
+                          }
+
+                          @Override
                           public void onSuccess(RowInfoList riList) {
                             afterCopy(newHeader);
                           }
@@ -120,11 +128,8 @@ public class BudgetHeadersGrid extends AbstractGridInterceptor {
     });
   }
 
-  private void afterCopy(IsRow newRow) {
-    if (getGridPresenter() != null) {
-      getGridPresenter().refresh(false, false);
-    }
-
-    RowEditor.open(getViewName(), newRow, Opener.MODAL);
+  private void afterCopy(BeeRow newRow) {
+    getGridView().getGrid().insertRow(newRow, true);
+    RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), newRow, getGridView().getId());
   }
 }

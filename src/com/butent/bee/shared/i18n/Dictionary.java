@@ -2804,6 +2804,12 @@ public interface Dictionary {
 
   default String finAnalysisColumns() {return g("finAnalysisColumns");}
 
+  default String finAnalysisCopy(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("finAnalysisCopy"), _m);
+  }
+
   default String finAnalysisFilterExtra() {return g("finAnalysisFilterExtra");}
 
   default String finAnalysisFilterInclude() {return g("finAnalysisFilterInclude");}

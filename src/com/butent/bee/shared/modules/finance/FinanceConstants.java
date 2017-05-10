@@ -306,6 +306,7 @@ public final class FinanceConstants {
   public static final String GRID_BUDGET_HEADERS = "BudgetHeaders";
   public static final String GRID_BUDGET_ENTRIES = "BudgetEntries";
 
+  public static final String GRID_ANALYSIS_HEADERS = "AnalysisHeaders";
   public static final String GRID_ANALYSIS_COLUMNS = "AnalysisColumns";
   public static final String GRID_ANALYSIS_ROWS = "AnalysisRows";
   public static final String GRID_ANALYSIS_RESULTS = "AnalysisResults";
