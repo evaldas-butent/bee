@@ -4304,6 +4304,12 @@ public interface Dictionary {
 
   default String prepaymentSuppliersShort() {return g("prepaymentSuppliersShort");}
 
+  default String prepaymentUse(Object p0) {
+    Map<String, Object> _m = new HashMap<>();
+    _m.put("{0}", p0);
+    return Localized.format(g("prepaymentUse"), _m);
+  }
+
   default String prepaymentUsed() {return g("prepaymentUsed");}
 
   default String prepayments() {return g("prepayments");}

@@ -4,15 +4,18 @@ import static com.butent.bee.shared.modules.finance.FinanceConstants.*;
 
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.finance.PrepaymentKind;
 
 import java.util.List;
@@ -68,6 +71,9 @@ class PrepaymentGrid extends FinanceGrid {
   }
 
   private static void showUsage(long id) {
-    LogUtils.getRootLogger().debug("usage", id);
+    GridFactory.GridOptions gridOptions = GridFactory.GridOptions.forCaptionAndFilter(
+        Localized.dictionary().prepaymentUse(id), Filter.equals(COL_FIN_PREPAYMENT_PARENT, id));
+
+    GridFactory.openGrid(GRID_PREPAYMENT_USE, null, gridOptions, PresenterCallback.SHOW_IN_NEW_TAB);
   }
 }
