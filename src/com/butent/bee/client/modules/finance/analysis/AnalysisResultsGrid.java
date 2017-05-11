@@ -47,8 +47,7 @@ public class AnalysisResultsGrid extends AbstractGridInterceptor {
 
     if ("Open".equals(columnName)) {
       column.getCell().addClickHandler(event -> {
-        IsRow row = (event.getSource() instanceof AbstractCell)
-            ? ((AbstractCell<?>) event.getSource()).getEventRow() : null;
+        IsRow row = AbstractCell.getEventRow(event);
 
         if (DataUtils.hasId(row)) {
           open(row.getId());

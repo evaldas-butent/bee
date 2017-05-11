@@ -311,6 +311,9 @@ public final class FinanceConstants {
   public static final String GRID_ANALYSIS_ROWS = "AnalysisRows";
   public static final String GRID_ANALYSIS_RESULTS = "AnalysisResults";
 
+  public static final String GRID_PREPAYMENT_SUPPLIERS = "PrepaymentSuppliers";
+  public static final String GRID_PREPAYMENT_CUSTOMERS = "PrepaymentCustomers";
+
   public static final String FORM_FINANCE_DEFAULT_ACCOUNTS = "FinanceDefaultAccounts";
   public static final String FORM_FINANCE_POSTING_PRECEDENCE = "FinancePostingPrecedence";
 

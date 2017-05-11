@@ -32,6 +32,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.rights.Module;
 
@@ -97,6 +98,11 @@ public final class FinanceKeeper {
     GridFactory.registerGridInterceptor(GRID_FINANCIAL_RECORDS, new FinancialRecordsGrid());
     GridFactory.registerGridInterceptor(GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
         new TradeDocumentFinancialRecordsGrid());
+
+    GridFactory.registerGridInterceptor(GRID_PREPAYMENT_SUPPLIERS,
+        new PrepaymentGrid(PrepaymentKind.SUPPLIERS));
+    GridFactory.registerGridInterceptor(GRID_PREPAYMENT_CUSTOMERS,
+        new PrepaymentGrid(PrepaymentKind.CUSTOMERS));
 
     GridFactory.registerGridInterceptor(ClassifierConstants.GRID_CHART_OF_ACCOUNTS,
         new ChartOfAccountsGrid());

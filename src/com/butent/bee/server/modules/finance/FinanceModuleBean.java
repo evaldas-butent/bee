@@ -123,7 +123,8 @@ public class FinanceModuleBean implements BeeModule {
                 BeeRow target = event.getRowset().getRowById(id);
 
                 if (target != null) {
-                  target.setNonZero(PROP_PREPAYMENT_USED, used);
+                  target.setProperty(PROP_PREPAYMENT_USED, used);
+                  target.setRemovable(false);
                 }
               }
             }
