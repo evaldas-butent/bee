@@ -11,6 +11,8 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_CONTACT_FIRST_NAME;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_CONTACT_LAST_NAME;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.orders.OrdersConstants.*;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.COL_INCOME_ITEM;
@@ -27,6 +29,7 @@ import com.butent.bee.server.data.DataEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
@@ -127,18 +130,25 @@ public class ServiceModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   OrdersModuleBean ord;
+  @EJB
+  SearchBean src;
 
   @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = new ArrayList<>();
     Set<String> columns = Sets.newHashSet(ALS_SERVICE_CATEGORY_NAME, COL_SERVICE_ADDRESS,
-        ALS_SERVICE_CUSTOMER_NAME, ALS_SERVICE_CONTRACTOR_NAME);
+        ALS_SERVICE_CUSTOMER_NAME, ALS_SERVICE_CONTRACTOR_NAME, COL_MODEL, COL_ARTICLE_NO,
+        COL_SERIAL_NO);
 
     result.addAll(qs.getSearchResults(VIEW_SERVICE_OBJECTS, Filter.anyContains(columns, query)));
 
     result.addAll(qs.getSearchResults(VIEW_SERVICE_FILES,
         Filter.anyContains(Sets.newHashSet(AdministrationConstants.COL_FILE_CAPTION,
             AdministrationConstants.ALS_FILE_NAME), query)));
+
+    result.addAll(qs.getSearchResults(TBL_SERVICE_MAINTENANCE,
+        src.buildSearchFilter(TBL_SERVICE_MAINTENANCE, Sets.newHashSet(DataUtils.ID_TAG,
+            ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME), query)));
 
     return result;
   }
