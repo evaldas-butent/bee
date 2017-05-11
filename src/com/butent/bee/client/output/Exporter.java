@@ -2,6 +2,7 @@ package com.butent.bee.client.output;
 
 import com.google.common.base.Strings;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Timer;
@@ -20,6 +21,7 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -66,6 +68,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -251,14 +254,19 @@ public final class Exporter {
 
   private static final int MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE = 5_000;
 
-  public static void addCaption(XSheet sheet, String caption, int rowIndex, int columnCount) {
+  public static void addCaption(XSheet sheet, String caption, TextAlign textAlign,
+      int rowIndex, int columnCount) {
+
     Assert.notNull(sheet);
     Assert.notEmpty(caption);
 
     XFont font = XFont.bold();
     font.setFactor(CAPTION_HEIGHT_FACTOR);
 
-    XStyle style = XStyle.center();
+    XStyle style = new XStyle();
+    if (textAlign != null) {
+      style.setTextAlign(textAlign);
+    }
     style.setFontRef(sheet.registerFont(font));
 
     XCell cell = new XCell(0, caption, sheet.registerStyle(style));
@@ -427,7 +435,7 @@ public final class Exporter {
       }
       rowIndex++;
 
-      addCaption(sheet, caption, rowIndex++, columnCount);
+      addCaption(sheet, caption, TextAlign.CENTER, rowIndex++, columnCount);
     }
 
     Filter filter = presenter.getDataProvider().getUserFilter();
@@ -502,7 +510,7 @@ public final class Exporter {
       }
 
       if (proceed && grid.hasFooters()) {
-        row = createFooterRow(rowIndex++);
+        row = createFooterRow(rowIndex);
 
         style = XStyle.background(Colors.LIGHTGRAY);
         style.setFontRef(sheet.registerFont(XFont.bold()));
@@ -628,6 +636,128 @@ public final class Exporter {
       };
 
       runner.scheduleRepeating(60);
+    }
+  }
+
+  public static void export(String caption, List<String> headers, HtmlTable table,
+      Map<String, ValueType> typesByStyle, Map<String, TextAlign> alignByStyle,
+      String fileName) {
+
+    Assert.notNull(table);
+    Assert.isTrue(validateFileName(fileName));
+
+    int rowCount = table.getRowCount();
+    int columnCount = table.getColumnCount();
+
+    if (rowCount <= 0 || columnCount <= 0) {
+      String message = Localized.dictionary().noData();
+      logger.warning(message);
+      BeeKeeper.getScreen().notifyWarning(message);
+      return;
+    }
+
+    XSheet sheet = new XSheet();
+
+    int rowIndex = 0;
+
+    XRow row;
+    XCell cell;
+    XFont font;
+    XStyle style;
+
+    Integer styleRef;
+
+    if (!BeeUtils.isEmpty(caption)) {
+      addCaption(sheet, caption, null, rowIndex, columnCount);
+      rowIndex += 2;
+    }
+
+    if (!BeeUtils.isEmpty(headers)) {
+      font = new XFont();
+      font.setFactor(PARENT_LABEL_HEIGHT_FACTOR);
+
+      style = XStyle.center();
+      style.setFontRef(sheet.registerFont(font));
+      styleRef = sheet.registerStyle(style);
+
+      for (String header : headers) {
+        cell = new XCell(0, header, styleRef);
+        if (columnCount > 1) {
+          cell.setColSpan(columnCount);
+        }
+
+        row = new XRow(rowIndex++);
+        row.setHeightFactor(PARENT_LABEL_HEIGHT_FACTOR);
+
+        row.add(cell);
+        sheet.add(row);
+      }
+
+      rowIndex++;
+    }
+
+    Map<String, Integer> styleRefs = new HashMap<>();
+
+    if (!BeeUtils.isEmpty(alignByStyle)) {
+      Map<TextAlign, Integer> refs = new EnumMap<>(TextAlign.class);
+
+      alignByStyle.values().stream().distinct().forEach(textAlign -> {
+        XStyle xs = new XStyle();
+        xs.setTextAlign(textAlign);
+
+        refs.put(textAlign, sheet.registerStyle(xs));
+      });
+
+      alignByStyle.forEach((k, v) -> styleRefs.put(k, refs.get(v)));
+    }
+
+    ExportController controller = openController(fileName);
+    controller.setInputSize(rowCount);
+
+    boolean proceed = true;
+
+    for (int i = 0; i < rowCount; i++) {
+      row = new XRow(rowIndex++);
+
+      List<TableCellElement> cellElements = table.getRowCells(i);
+
+      int j = 0;
+      for (TableCellElement cellElement : cellElements) {
+        String text = cellElement.getInnerText();
+        int colSpan = cellElement.getColSpan();
+
+        if (!BeeUtils.isEmpty(text)) {
+          cell = new XCell(j, text);
+          if (colSpan > 1) {
+            cell.setColSpan(colSpan);
+          }
+
+          for (Map.Entry<String, Integer> entry : styleRefs.entrySet()) {
+            if (cellElement.hasClassName(entry.getKey())) {
+              cell.setStyleRef(entry.getValue());
+              break;
+            }
+          }
+
+          row.add(cell);
+        }
+
+        j += Math.max(colSpan, 1);
+      }
+
+      sheet.add(row);
+
+      controller.updateInput(i + 1);
+      proceed = controller.isShowing();
+
+      if (!proceed) {
+        break;
+      }
+    }
+
+    if (proceed) {
+      autosizeNoPictures(sheet, columnCount);
+      export(sheet, fileName, controller);
     }
   }
 

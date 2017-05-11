@@ -78,6 +78,7 @@ public class AnalysisResultsGrid extends AbstractGridInterceptor {
 
           } else {
             Set<Action> enabledActions = new HashSet<>();
+            enabledActions.add(Action.EXPORT);
             enabledActions.add(Action.PRINT);
 
             AnalysisResults analysisResults = AnalysisResults.restore(results);

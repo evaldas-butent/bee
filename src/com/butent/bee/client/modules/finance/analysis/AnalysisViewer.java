@@ -21,9 +21,11 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.finance.FinanceKeeper;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -31,8 +33,10 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -233,6 +237,10 @@ class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printab
         BeeKeeper.getScreen().closeWidget(this);
         break;
 
+      case EXPORT:
+        onExport();
+        break;
+
       case PRINT:
         Printer.print(this);
         break;
@@ -267,11 +275,9 @@ class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printab
   }
 
   private void onSave() {
-    List<String> labels = results.getHeaderLabels(formatRange(results.getHeaderRange()), false)
-        .stream()
-        .map(AnalysisLabel::getText).collect(Collectors.toList());
-
+    List<String> labels = getHeaderLabels();
     String caption = BeeUtils.isEmpty(labels) ? getCaption() : BeeUtils.joinItems(labels);
+
     int maxLength = Data.getColumnPrecision(VIEW_ANALYSIS_RESULTS, COL_ANALYSIS_RESULT_CAPTION);
 
     Global.inputString(Localized.dictionary().actionSave(),
@@ -1074,5 +1080,40 @@ class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printab
         target.getStyle().setColor(fg);
       }
     }
+  }
+
+  private void onExport() {
+    final HtmlTable table = getTable();
+
+    if (table != null && !table.isEmpty()) {
+      final String caption = getCaption();
+
+      Exporter.confirm(caption, new Exporter.FileNameCallback() {
+        @Override
+        public void onSuccess(String fileName) {
+          Map<String, ValueType> typesByStyle = new HashMap<>();
+          typesByStyle.put(STYLE_VALUE, ValueType.NUMBER);
+
+          Map<String, TextAlign> alignByStyle = new HashMap<>();
+          alignByStyle.put(STYLE_LABEL, TextAlign.CENTER);
+          alignByStyle.put(STYLE_SPLIT, TextAlign.CENTER);
+          alignByStyle.put(STYLE_TYPE, TextAlign.CENTER);
+          alignByStyle.put(STYLE_VALUE, TextAlign.RIGHT);
+
+          Exporter.export(caption, getHeaderLabels(), table, typesByStyle, alignByStyle, fileName);
+        }
+      });
+    }
+  }
+
+  private HtmlTable getTable() {
+    Widget widget = UiHelper.getChildByStyleName(this, STYLE_TABLE);
+    return (widget instanceof HtmlTable) ? (HtmlTable) widget : null;
+  }
+
+  private List<String> getHeaderLabels() {
+    return results.getHeaderLabels(formatRange(results.getHeaderRange()), false)
+        .stream()
+        .map(AnalysisLabel::getText).collect(Collectors.toList());
   }
 }
