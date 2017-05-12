@@ -33,10 +33,10 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -1091,16 +1091,17 @@ class AnalysisViewer extends Flow implements HasCaption, HandlesActions, Printab
       Exporter.confirm(caption, new Exporter.FileNameCallback() {
         @Override
         public void onSuccess(String fileName) {
-          Map<String, ValueType> typesByStyle = new HashMap<>();
-          typesByStyle.put(STYLE_VALUE, ValueType.NUMBER);
+          Map<String, ValueType> types = new HashMap<>();
+          types.put(STYLE_VALUE, ValueType.NUMBER);
 
-          Map<String, TextAlign> alignByStyle = new HashMap<>();
-          alignByStyle.put(STYLE_LABEL, TextAlign.CENTER);
-          alignByStyle.put(STYLE_SPLIT, TextAlign.CENTER);
-          alignByStyle.put(STYLE_TYPE, TextAlign.CENTER);
-          alignByStyle.put(STYLE_VALUE, TextAlign.RIGHT);
+          Map<String, XStyle> styles = new HashMap<>();
+          styles.put(STYLE_LABEL, XStyle.center());
+          styles.put(STYLE_SPLIT, XStyle.center());
+          styles.put(STYLE_TYPE, XStyle.center());
 
-          Exporter.export(caption, getHeaderLabels(), table, typesByStyle, alignByStyle, fileName);
+          styles.put(STYLE_VALUE, XStyle.right());
+
+          Exporter.export(caption, getHeaderLabels(), table, types, styles, null, fileName);
         }
       });
     }

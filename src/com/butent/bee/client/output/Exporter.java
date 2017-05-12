@@ -2,6 +2,7 @@ package com.butent.bee.client.output;
 
 import com.google.common.base.Strings;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
@@ -22,9 +23,11 @@ import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.Duration;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.grid.CellGrid;
@@ -56,6 +59,7 @@ import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.export.XWorkbook;
+import com.butent.bee.shared.i18n.DateOrdering;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.FileNameUtils;
@@ -68,10 +72,12 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import elemental.xml.XMLHttpRequest;
@@ -640,8 +646,8 @@ public final class Exporter {
   }
 
   public static void export(String caption, List<String> headers, HtmlTable table,
-      Map<String, ValueType> typesByStyle, Map<String, TextAlign> alignByStyle,
-      String fileName) {
+      Map<String, ValueType> types, Map<String, XStyle> styles,
+      Map<String, XFont> fonts, String fileName) {
 
     Assert.notNull(table);
     Assert.isTrue(validateFileName(fileName));
@@ -697,19 +703,16 @@ public final class Exporter {
     }
 
     Map<String, Integer> styleRefs = new HashMap<>();
-
-    if (!BeeUtils.isEmpty(alignByStyle)) {
-      Map<TextAlign, Integer> refs = new EnumMap<>(TextAlign.class);
-
-      alignByStyle.values().stream().distinct().forEach(textAlign -> {
-        XStyle xs = new XStyle();
-        xs.setTextAlign(textAlign);
-
-        refs.put(textAlign, sheet.registerStyle(xs));
-      });
-
-      alignByStyle.forEach((k, v) -> styleRefs.put(k, refs.get(v)));
+    if (!BeeUtils.isEmpty(styles)) {
+      styles.forEach((k, v) -> styleRefs.put(k, sheet.registerStyle(v)));
     }
+
+    Map<String, Integer> fontRefs = new HashMap<>();
+    if (!BeeUtils.isEmpty(fonts)) {
+      fonts.forEach((k, v) -> fontRefs.put(k, sheet.registerFont(v)));
+    }
+
+    DateOrdering dateOrdering = Format.getDefaultDateOrdering();
 
     ExportController controller = openController(fileName);
     controller.setInputSize(rowCount);
@@ -727,15 +730,36 @@ public final class Exporter {
         int colSpan = cellElement.getColSpan();
 
         if (!BeeUtils.isEmpty(text)) {
-          cell = new XCell(j, text);
+          Collection<String> styleNames = getStyleNames(cellElement);
+
+          ValueType type = null;
+          if (!BeeUtils.isEmpty(types) && !styleNames.isEmpty()) {
+            for (String styleName : styleNames) {
+              type = types.get(styleName);
+              if (type != null) {
+                break;
+              }
+            }
+          }
+
+          if (type == null) {
+            type = ValueType.TEXT;
+          }
+
+          Value value = Value.parseValue(type, text, true, dateOrdering);
+          cell = new XCell(j, value);
+
           if (colSpan > 1) {
             cell.setColSpan(colSpan);
           }
 
-          for (Map.Entry<String, Integer> entry : styleRefs.entrySet()) {
-            if (cellElement.hasClassName(entry.getKey())) {
-              cell.setStyleRef(entry.getValue());
-              break;
+          if (!styleRefs.isEmpty() && !styleNames.isEmpty()) {
+            for (String styleName : styleNames) {
+              styleRef = styleRefs.get(styleName);
+              if (styleRef != null) {
+                cell.setStyleRef(styleRef);
+                break;
+              }
             }
           }
 
@@ -919,6 +943,17 @@ public final class Exporter {
     }
 
     sheet.add(row);
+  }
+
+  private static Collection<String> getStyleNames(TableCellElement cellElement) {
+    Set<String> styleNames = new HashSet<>(StyleUtils.getClassNames(cellElement));
+
+    Element childElement = cellElement.getFirstChildElement();
+    if (childElement != null) {
+      styleNames.addAll(StyleUtils.getClassNames(childElement));
+    }
+
+    return styleNames;
   }
 
   private static int getInputStep(int rowCount) {
