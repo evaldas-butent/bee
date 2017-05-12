@@ -766,8 +766,10 @@ public class TransportReportsBean {
         ALS_VEHICLE_NUMBER));
     tripClause.add(report.getCondition(SqlUtils.field(trailers, COL_VEHICLE_NUMBER),
         ALS_TRAILER_NUMBER));
-    tripClause.add(report.getCondition(firstLastNameJoiner.apply(managerPerson), COL_TRADE_MANAGER));
-    tripClause.add(report.getCondition(firstLastNameJoiner.apply(driverPersonTblAls), COL_MAIN_DRIVER));
+    tripClause.add(report.getCondition(firstLastNameJoiner.apply(managerPerson),
+        COL_TRADE_MANAGER));
+    tripClause.add(report.getCondition(firstLastNameJoiner.apply(driverPersonTblAls),
+        COL_MAIN_DRIVER));
 
     costsClause.add(report.getCondition(SqlUtils.field(TBL_ITEMS, COL_ITEM_NAME), COL_ITEM));
     costsClause.add(report.getCondition(SqlUtils.field(TBL_COUNTRIES, COL_COUNTRY_NAME),
