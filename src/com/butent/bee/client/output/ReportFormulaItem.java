@@ -11,8 +11,8 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.report.ResultHolder;
+import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -161,8 +161,7 @@ public class ReportFormulaItem extends ReportNumericItem {
   private ReportFormulaItem addItem(List<Pair<String, ReportItem>> list, String op,
       ReportItem item) {
     if (item != null) {
-      list.add(Pair.of(BeeUtils.notEmpty(op, BeeConst.STRING_PLUS),
-          ReportItem.restore(item.serialize())));
+      list.add(Pair.of(BeeUtils.notEmpty(op, BeeConst.STRING_PLUS), item.copy()));
     }
     return this;
   }

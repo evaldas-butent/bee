@@ -4,9 +4,11 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ReportFunction;
+import com.butent.bee.shared.report.ResultCalculator;
 import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -15,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Objects;
 
 public class ReportNumericItem extends ReportItem {
 
@@ -27,6 +30,7 @@ public class ReportNumericItem extends ReportItem {
     super(expression, caption);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Object calculate(Object total, ResultValue value, ReportFunction function) {
     BigDecimal val = BeeUtils.toDecimalOrNull(value.getValue());
@@ -34,20 +38,41 @@ public class ReportNumericItem extends ReportItem {
     if (val != null) {
       switch (function) {
         case MAX:
-          if (total == null) {
-            return val;
-          }
-          return val.max((BigDecimal) total);
         case MIN:
-          if (total == null) {
-            return val;
-          }
-          return val.min((BigDecimal) total);
         case SUM:
+          ResultCalculator<BigDecimal> calculator;
+
           if (total == null) {
-            return val;
+            calculator = new ResultCalculator<BigDecimal>() {
+              @Override
+              public ResultCalculator calculate(ReportFunction fnc, BigDecimal val) {
+                BigDecimal res = getResult();
+
+                switch (fnc) {
+                  case MAX:
+                    if (Objects.isNull(res) || res.compareTo(val) == BeeConst.COMPARE_LESS) {
+                      setResult(val);
+                    }
+                    break;
+                  case MIN:
+                    if (Objects.isNull(res) || res.compareTo(val) == BeeConst.COMPARE_MORE) {
+                      setResult(val);
+                    }
+                    break;
+                  case SUM:
+                    setResult(Objects.isNull(res) ? val : res.add(val));
+                    break;
+                  default:
+                    Assert.unsupported();
+                    break;
+                }
+                return this;
+              }
+            };
+          } else {
+            calculator = (ResultCalculator<BigDecimal>) total;
           }
-          return val.add((BigDecimal) total);
+          return calculator.calculate(function, val);
         default:
           return super.calculate(total, value, function);
       }

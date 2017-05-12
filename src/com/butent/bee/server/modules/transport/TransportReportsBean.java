@@ -509,8 +509,7 @@ public class TransportReportsBean {
       amountExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_COSTS);
     }
     IsExpression currencyExpr = SqlUtils.field(TBL_TRIP_COSTS, COL_CURRENCY);
-    IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_DATE),
-        SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE));
+    IsExpression dateExpr = SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_DATE);
 
     IsExpression xpr;
 
@@ -563,8 +562,7 @@ public class TransportReportsBean {
       amountExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_FUEL_COSTS);
     }
     currencyExpr = SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_CURRENCY);
-    dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE),
-        SqlUtils.field(tmpCosts, "TripDate"));
+    dateExpr = SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE);
 
     if (DataUtils.isId(currency)) {
       xpr = ExchangeUtils.exchangeFieldTo(ss, amountExpr, currencyExpr, dateExpr,

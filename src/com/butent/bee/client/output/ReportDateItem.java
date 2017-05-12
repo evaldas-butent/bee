@@ -255,7 +255,7 @@ public class ReportDateItem extends ReportItem {
 
     switch (getFormat()) {
       case DATE:
-        value = BeeUtils.padLeft(BeeUtils.toString(val), 10, BeeConst.CHAR_ZERO);
+        value = BeeUtils.padLeft(BeeUtils.toString(val), 10, BeeConst.CHAR_SPACE);
         display = date.toString();
         break;
       case DAY:
@@ -268,7 +268,7 @@ public class ReportDateItem extends ReportItem {
         value = BeeUtils.toString(val);
         break;
       case YEAR:
-        value = BeeUtils.padLeft(BeeUtils.toString(val), 5, BeeConst.CHAR_ZERO);
+        value = BeeUtils.padLeft(BeeUtils.toString(val), 5, BeeConst.CHAR_SPACE);
         display = BeeUtils.toString(val);
         break;
       default:

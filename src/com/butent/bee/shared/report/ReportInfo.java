@@ -334,25 +334,17 @@ public class ReportInfo implements BeeSerializable {
       for (int i = 0; i < rowInfoItems.size(); i++) {
         details[i] = rowInfoItems.get(i).getItem().evaluate(row);
       }
-      for (ReportInfoItem colItem : colInfoItems) {
-        if (!colItem.getItem().isResultItem()) {
-          result.addValues(rowGroup, details, colGroup, colItem, colItem.getItem().evaluate(row));
-        }
-      }
+      colInfoItems.stream().filter(colItem -> !colItem.getItem().isResultItem())
+          .forEach(colItem -> result.addValues(rowGroup, details, colGroup, colItem,
+              colItem.getItem().evaluate(row)));
     }
     // CALC RESULTS
-    for (ReportInfoItem colItem : colInfoItems) {
-      if (colItem.getItem().isResultItem()) {
-        for (ResultValue rowGroup : result.getRowGroups(null)) {
-          for (ResultValue[] rowValues : result.getRows(rowGroup, null)) {
-            for (ResultValue colGroup : result.getColGroups()) {
-              result.addValues(rowGroup, rowValues, colGroup, colItem,
-                  colItem.getItem().evaluate(rowGroup, rowValues, colGroup, result));
-            }
-          }
-        }
-      }
-    }
+    colInfoItems.stream().filter(colItem -> colItem.getItem().isResultItem())
+        .forEach(colItem -> result.getRowGroups(null)
+            .forEach(rowGroup -> result.getRows(rowGroup, null)
+                .forEach(rowValues -> result.getColGroups()
+                    .forEach(colGroup -> result.addValues(rowGroup, rowValues, colGroup, colItem,
+                        colItem.getItem().evaluate(rowGroup, rowValues, colGroup, result))))));
     return result;
   }
 

@@ -18,8 +18,9 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ReportFunction;
-import com.butent.bee.shared.report.ResultValue;
+import com.butent.bee.shared.report.ResultCalculator;
 import com.butent.bee.shared.report.ResultHolder;
+import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -69,10 +70,20 @@ public abstract class ReportItem implements BeeSerializable {
     if (!BeeUtils.isEmpty(value.toString())) {
       switch (function) {
         case COUNT:
+          ResultCalculator<Integer> calculator;
+
           if (total == null) {
-            return 1;
+            calculator = new ResultCalculator<Integer>() {
+              @Override
+              public ResultCalculator calculate(ReportFunction fnc, Integer val) {
+                setResult(BeeUtils.unbox(getResult()) + val);
+                return this;
+              }
+            };
+          } else {
+            calculator = (ResultCalculator<Integer>) total;
           }
-          return (int) total + 1;
+          return calculator.calculate(function, 1);
         case LIST:
           if (total == null) {
             return new TreeSet(Collections.singleton(value)) {

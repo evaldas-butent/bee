@@ -66,7 +66,7 @@ public final class ResultHolder implements BeeSerializable {
       public String getCaption(Dictionary constants) {
         return constants.resultLevelTotal();
       }
-    };
+    }
   }
 
   private final Multimap<ResultValue, ResultValue> rowGroups = TreeMultimap.create();

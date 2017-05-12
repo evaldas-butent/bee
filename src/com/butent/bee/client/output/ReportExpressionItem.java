@@ -145,8 +145,7 @@ public class ReportExpressionItem extends ReportItem {
   private ReportExpressionItem addItem(List<Pair<String, ReportItem>> list, String sep,
       ReportItem item) {
     if (item != null) {
-      list.add(Pair.of(encodeSpaces(BeeUtils.nvl(sep, BeeConst.STRING_SPACE)),
-          ReportItem.restore(item.serialize())));
+      list.add(Pair.of(encodeSpaces(BeeUtils.nvl(sep, BeeConst.STRING_SPACE)), item.copy()));
     }
     return this;
   }
