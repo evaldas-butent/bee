@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.data.QueryServiceBean;
@@ -20,6 +20,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -32,6 +33,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -732,6 +734,184 @@ public class TransportReportsBean {
 
     return tmpCosts;
   }
+
+  public ResponseObject getTripCostsReport(RequestInfo reqInfo) {
+
+    ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
+    Long currency = reqInfo.getParameterLong(COL_CURRENCY);
+    boolean woVat = BeeUtils.toBoolean(reqInfo.getParameter(COL_TRADE_VAT));
+
+    Function<String, IsExpression> firstLastNameJoiner = alias ->
+        SqlUtils.concat(SqlUtils.field(alias, COL_FIRST_NAME),
+            SqlUtils.sqlIf(SqlUtils.isNull(alias, COL_LAST_NAME), BeeConst.STRING_EMPTY,
+                SqlUtils.concat(SqlUtils.constant(BeeConst.STRING_SPACE),
+                    SqlUtils.field(alias, COL_LAST_NAME))));
+
+    HasConditions tripClause = SqlUtils.and();
+    HasConditions costsClause = SqlUtils.and();
+    HasConditions fuelClause = SqlUtils.and();
+
+    String trailers = SqlUtils.uniqueName();
+    String managerPerson = SqlUtils.uniqueName();
+    String managerCompanyPerson = SqlUtils.uniqueName();
+    String driverCompPersonTblAls = SqlUtils.uniqueName();
+    String driverPersonTblAls = SqlUtils.uniqueName();
+
+    tripClause.add(report.getCondition(TBL_TRIPS, COL_TRIP_NO));
+    tripClause.add(report.getCondition(TBL_TRIPS, COL_TRIP_DATE_FROM));
+    tripClause.add(report.getCondition(TBL_TRIPS, COL_TRIP_DATE_TO));
+    tripClause.add(report.getCondition(TBL_TRIPS, COL_TRIP_STATUS));
+    tripClause.add(report.getCondition(TBL_TRIPS, COL_NOTES));
+    tripClause.add(report.getCondition(SqlUtils.field(TBL_VEHICLES, COL_VEHICLE_NUMBER),
+        ALS_VEHICLE_NUMBER));
+    tripClause.add(report.getCondition(SqlUtils.field(trailers, COL_VEHICLE_NUMBER),
+        ALS_TRAILER_NUMBER));
+    tripClause.add(report.getCondition(firstLastNameJoiner.apply(managerPerson), COL_TRADE_MANAGER));
+    tripClause.add(report.getCondition(firstLastNameJoiner.apply(driverPersonTblAls), COL_MAIN_DRIVER));
+
+    costsClause.add(report.getCondition(SqlUtils.field(TBL_ITEMS, COL_ITEM_NAME), COL_ITEM));
+    costsClause.add(report.getCondition(SqlUtils.field(TBL_COUNTRIES, COL_COUNTRY_NAME),
+        ALS_COUNTRY_NAME));
+    costsClause.add(report.getCondition(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME),
+        COL_TRADE_SUPPLIER));
+    costsClause.add(report.getCondition(TBL_PAYMENT_TYPES, COL_PAYMENT_NAME));
+    costsClause.add(report.getCondition(TBL_TRIP_COSTS, COL_NOTE));
+    costsClause.add(report.getCondition(TBL_TRIP_COSTS, COL_NUMBER));
+    costsClause.add(report.getCondition(firstLastNameJoiner.apply(TBL_PERSONS), COL_DRIVER));
+
+    fuelClause.add(report.getCondition(SqlUtils.field(TBL_FUEL_TYPES, COL_ITEM_NAME), COL_ITEM));
+    fuelClause.add(report.getCondition(SqlUtils.field(TBL_COUNTRIES, COL_COUNTRY_NAME),
+        ALS_COUNTRY_NAME));
+    fuelClause.add(report.getCondition(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME),
+        COL_TRADE_SUPPLIER));
+    fuelClause.add(report.getCondition(TBL_PAYMENT_TYPES, COL_PAYMENT_NAME));
+    fuelClause.add(report.getCondition(TBL_TRIP_FUEL_COSTS, COL_NOTE));
+    fuelClause.add(report.getCondition(TBL_TRIP_FUEL_COSTS, COL_NUMBER));
+
+    SqlSelect selectTrips = new SqlSelect()
+        .addFields(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP_NO, COL_DATE_FROM, COL_DATE_TO,
+            COL_STATUS, COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE,
+            COL_FUEL_AFTER, COL_NOTES)
+        .addField(TBL_VEHICLES, COL_NUMBER, ALS_VEHICLE_NUMBER)
+        .addField(trailers, COL_NUMBER, ALS_TRAILER_NUMBER)
+        .addExpr(firstLastNameJoiner.apply(managerPerson), COL_TRADE_MANAGER)
+        .addExpr(firstLastNameJoiner.apply(driverPersonTblAls), COL_MAIN_DRIVER)
+        .addFrom(TBL_TRIPS)
+        .addFromLeft(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, TBL_TRIPS, COL_VEHICLE))
+        .addFromLeft(TBL_VEHICLES, trailers, sys.joinTables(TBL_VEHICLES, trailers, TBL_TRIPS,
+            COL_TRAILER))
+        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_TRIPS, COL_TRADE_MANAGER))
+        .addFromLeft(TBL_COMPANY_PERSONS, managerCompanyPerson, sys.joinTables(TBL_COMPANY_PERSONS,
+            managerCompanyPerson, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, managerPerson, sys.joinTables(TBL_PERSONS, managerPerson,
+            managerCompanyPerson, COL_PERSON))
+        .addFromLeft(TBL_TRIP_DRIVERS, sys.joinTables(TBL_TRIP_DRIVERS, TBL_TRIPS, COL_MAIN_DRIVER))
+        .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
+        .addFromLeft(TBL_COMPANY_PERSONS, driverCompPersonTblAls, sys.joinTables(
+            TBL_COMPANY_PERSONS, driverCompPersonTblAls, TBL_DRIVERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, driverPersonTblAls, sys.joinTables(TBL_PERSONS,
+            driverPersonTblAls, driverCompPersonTblAls, COL_PERSON))
+        .setWhere(tripClause);
+
+    String tmpTrips = qs.sqlCreateTemp(selectTrips);
+
+    SqlSelect selectTripCosts = new SqlSelect()
+        .addExpr(SqlUtils.field(TBL_ITEMS, COL_ITEM_NAME), COL_ITEM)
+        .addFields(TBL_TRIP_COSTS, COL_TRIP, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE, COL_NUMBER,
+            COL_NOTE)
+        .addExpr(SqlUtils.field(TBL_COUNTRIES, COL_COUNTRY_NAME), ALS_COUNTRY_NAME)
+        .addExpr(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), COL_TRADE_SUPPLIER)
+        .addFields(TBL_PAYMENT_TYPES, COL_PAYMENT_NAME)
+        .addExpr(firstLastNameJoiner.apply(TBL_PERSONS), COL_DRIVER)
+        .addFields(tmpTrips, COL_TRIP_NO, COL_DATE_FROM, COL_DATE_TO, COL_STATUS,
+            COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE, COL_FUEL_AFTER,
+            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER)
+        .addFrom(TBL_TRIP_COSTS)
+        .setWhere(costsClause)
+        .addFromLeft(tmpTrips, SqlUtils.join(tmpTrips, sys.getIdName(TBL_TRIPS),
+            TBL_TRIP_COSTS, COL_TRIP))
+        .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_COSTS, COL_TRIP))
+        .addFromLeft(TBL_ITEMS, sys.joinTables(TBL_ITEMS, TBL_TRIP_COSTS, COL_ITEM))
+        .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_TRIP_COSTS, COL_COUNTRY))
+        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_TRIP_COSTS,
+            COL_TRADE_SUPPLIER))
+        .addFromLeft(TBL_PAYMENT_TYPES, sys.joinTables(TBL_PAYMENT_TYPES, TBL_TRIP_COSTS,
+            COL_PAYMENT_TYPE))
+        .addFromLeft(TBL_TRIP_DRIVERS, sys.joinTables(TBL_TRIP_DRIVERS, TBL_TRIP_COSTS, COL_DRIVER))
+        .addFromLeft(TBL_DRIVERS, sys.joinTables(TBL_DRIVERS, TBL_TRIP_DRIVERS, COL_DRIVER))
+        .addFromLeft(TBL_COMPANY_PERSONS, sys.joinTables(TBL_COMPANY_PERSONS, TBL_DRIVERS,
+            COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
+
+    SqlSelect selectFuelCosts = new SqlSelect()
+        .addExpr(SqlUtils.field(TBL_FUEL_TYPES, COL_ITEM_NAME), COL_ITEM)
+        .addFields(TBL_TRIP_FUEL_COSTS, COL_TRIP, COL_TRADE_ITEM_QUANTITY, COL_ITEM_PRICE,
+            COL_NUMBER, COL_NOTE)
+        .addExpr(SqlUtils.field(TBL_COUNTRIES, COL_COUNTRY_NAME), ALS_COUNTRY_NAME)
+        .addExpr(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME), COL_TRADE_SUPPLIER)
+        .addFields(TBL_PAYMENT_TYPES, COL_PAYMENT_NAME)
+        .addExpr(SqlUtils.constant(BeeConst.STRING_EMPTY), COL_DRIVER)
+        .addFields(tmpTrips, COL_TRIP_NO, COL_DATE_FROM, COL_DATE_TO, COL_STATUS,
+            COL_SPEEDOMETER_BEFORE, COL_SPEEDOMETER_AFTER, COL_FUEL_BEFORE, COL_FUEL_AFTER,
+            COL_NOTES, COL_TRADE_MANAGER, COL_MAIN_DRIVER)
+        .addFrom(TBL_TRIP_FUEL_COSTS)
+        .addFromLeft(tmpTrips, SqlUtils.join(tmpTrips, sys.getIdName(TBL_TRIPS),
+            TBL_TRIP_FUEL_COSTS, COL_TRIP))
+        .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, TBL_TRIP_FUEL_COSTS, COL_TRIP))
+        .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_TRIP_FUEL_COSTS,
+            COL_COUNTRY))
+        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_TRIP_FUEL_COSTS,
+            COL_TRADE_SUPPLIER))
+        .addFromLeft(TBL_PAYMENT_TYPES, sys.joinTables(TBL_PAYMENT_TYPES, TBL_TRIP_FUEL_COSTS,
+            COL_PAYMENT_TYPE))
+        .addFromLeft(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, TBL_TRIPS, COL_VEHICLE))
+        .addFromLeft(TBL_FUEL_TYPES, sys.joinTables(TBL_FUEL_TYPES, TBL_VEHICLES, COL_FUEL))
+        .setWhere(fuelClause);
+
+    IsExpression fuelTotalExpr;
+    IsExpression costsTotalExpr;
+
+    if (woVat) {
+      costsTotalExpr = TradeModuleBean.getWithoutVatExpression(TBL_TRIP_COSTS);
+      fuelTotalExpr = TradeModuleBean.getWithoutVatExpression(TBL_TRIP_FUEL_COSTS);
+    } else {
+      costsTotalExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_COSTS);
+      fuelTotalExpr = TradeModuleBean.getTotalExpression(TBL_TRIP_FUEL_COSTS);
+    }
+
+    if (DataUtils.isId(currency)) {
+      costsTotalExpr = ExchangeUtils.exchangeFieldTo(selectTripCosts, costsTotalExpr,
+          SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_CURRENCY),
+          SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_DATE),
+          SqlUtils.constant(currency));
+
+      fuelTotalExpr = ExchangeUtils.exchangeFieldTo(selectFuelCosts, fuelTotalExpr,
+          SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_CURRENCY),
+          SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE),
+          SqlUtils.constant(currency));
+    } else {
+      costsTotalExpr = ExchangeUtils.exchangeField(selectTripCosts, costsTotalExpr,
+          SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_CURRENCY),
+          SqlUtils.field(TBL_TRIP_COSTS, COL_COSTS_DATE));
+
+      fuelTotalExpr = ExchangeUtils.exchangeField(selectFuelCosts, fuelTotalExpr,
+          SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_CURRENCY),
+          SqlUtils.field(TBL_TRIP_FUEL_COSTS, COL_COSTS_DATE));
+    }
+
+    selectTripCosts.addExpr(costsTotalExpr, VAR_TOTAL);
+    selectFuelCosts.addExpr(fuelTotalExpr, VAR_TOTAL);
+
+    SqlSelect selectCosts = selectTripCosts
+        .setUnionAllMode(true)
+        .addUnion(selectFuelCosts);
+
+    String tmp = qs.sqlCreateTemp(selectCosts);
+    qs.sqlDropTemp(tmpTrips);
+
+    return report.getResultResponse(qs, tmp);
+  }
+
 
   /**
    * Returns Temporary table name with calculated trip percents and incomes by each cargo.

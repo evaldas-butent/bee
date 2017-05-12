@@ -11,6 +11,7 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_COMMENT;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_EVENT_NOTE;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -379,6 +380,88 @@ public enum Report implements HasWidgetSupplier {
           .multiply(items.get(COL_COSTS_PRICE)).setPrecision(2));
 
       return Collections.singletonList(report);
+    }
+  },
+
+  TRANSPORT_TRIP_COSTS_REPORT(ModuleAndSub.of(Module.TRANSPORT), SVC_TRIP_COSTS_REPORT) {
+    @Override
+    public List<ReportItem> getItems() {
+      Dictionary loc = Localized.dictionary();
+
+      return Arrays.asList(
+          new ReportTextItem(COL_TRIP_NO, loc.trTripNo()),
+          new ReportDateItem(COL_DATE_FROM, loc.trTripDateFrom()),
+          new ReportDateItem(COL_DATE_TO, loc.trTripDateTo()),
+          new ReportTextItem(ALS_VEHICLE_NUMBER, loc.trTruck()),
+          new ReportTextItem(ALS_TRAILER_NUMBER, loc.trailer()),
+          new ReportEnumItem(TaskConstants.COL_STATUS, loc.status(), TripStatus.class),
+          new ReportTextItem(TradeConstants.COL_TRADE_MANAGER, loc.manager()),
+          new ReportTextItem(COL_MAIN_DRIVER, loc.trdDriver()),
+          new ReportNumericItem(COL_SPEEDOMETER_BEFORE, loc.trSpeedometerFrom()),
+          new ReportNumericItem(COL_SPEEDOMETER_AFTER, loc.trSpeedometerAfter()),
+          new ReportNumericItem(COL_FUEL_BEFORE, loc.trFuelBalanceBefore()).setPrecision(3),
+          new ReportNumericItem(COL_FUEL_AFTER, loc.trFuelBalanceAfter()).setPrecision(3),
+          new ReportTextItem(COL_NOTES, loc.note()),
+          new ReportTextItem(COL_ITEM, loc.productService()),
+          new ReportNumericItem(TradeConstants.COL_TRADE_ITEM_QUANTITY,
+              loc.quantity()).setPrecision(2),
+          new ReportNumericItem(COL_ITEM_PRICE, loc.price()).setPrecision(2),
+          new ReportNumericItem(VAR_TOTAL, loc.printDocumentAmount())
+              .setPrecision(2),
+          new ReportTextItem(COL_NUMBER, loc.number()),
+          new ReportTextItem(TradeConstants.COL_TRADE_SUPPLIER, loc.supplier()),
+          new ReportTextItem(ALS_COUNTRY_NAME, loc.country()),
+          new ReportTextItem(COL_NOTE, loc.note()),
+          new ReportTextItem(COL_PAYMENT_NAME, loc.paymentType()),
+          new ReportTextItem(COL_DRIVER, loc.trdDriver()));
+    }
+
+    @Override
+    public String getReportCaption() {
+      return Localized.dictionary().trImportCosts();
+    }
+
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+      for (ReportItem item : getItems()) {
+        items.put(item.getExpression(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
+
+      for (String item : new String[] {
+          COL_DATE_FROM,
+          COL_DATE_TO,
+          COL_SPEEDOMETER_BEFORE,
+          COL_SPEEDOMETER_AFTER,
+          COL_FUEL_BEFORE,
+          COL_FUEL_AFTER,
+          COL_ITEM,
+          COL_NUMBER,
+          TradeConstants.COL_TRADE_SUPPLIER,
+          ALS_COUNTRY_NAME,
+          COL_NOTE,
+          COL_PAYMENT_NAME,
+          COL_DRIVER,
+          COL_ITEM_PRICE
+      }) {
+        report.addRowItem(items.get(item));
+      }
+
+      for (String item : new String[] {
+          TradeConstants.COL_TRADE_ITEM_QUANTITY, VAR_TOTAL
+      }) {
+        report.addColItem(items.get(item));
+      }
+      return Collections.singletonList(report);
+    }
+
+    @Override
+    public LinkedHashMap<String, Editor> getReportParams() {
+      LinkedHashMap<String, Editor> params = new LinkedHashMap<>();
+      params.put(COL_CURRENCY, getCurrencyEditor());
+      params.put(COL_TRADE_VAT, getWoVatEditor());
+      return params;
     }
   },
 
