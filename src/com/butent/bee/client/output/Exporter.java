@@ -67,6 +67,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -77,6 +78,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -702,16 +704,6 @@ public final class Exporter {
       rowIndex++;
     }
 
-    Map<String, Integer> styleRefs = new HashMap<>();
-    if (!BeeUtils.isEmpty(styles)) {
-      styles.forEach((k, v) -> styleRefs.put(k, sheet.registerStyle(v)));
-    }
-
-    Map<String, Integer> fontRefs = new HashMap<>();
-    if (!BeeUtils.isEmpty(fonts)) {
-      fonts.forEach((k, v) -> fontRefs.put(k, sheet.registerFont(v)));
-    }
-
     DateOrdering dateOrdering = Format.getDefaultDateOrdering();
 
     ExportController controller = openController(fileName);
@@ -753,14 +745,12 @@ public final class Exporter {
             cell.setColSpan(colSpan);
           }
 
-          if (!styleRefs.isEmpty() && !styleNames.isEmpty()) {
-            for (String styleName : styleNames) {
-              styleRef = styleRefs.get(styleName);
-              if (styleRef != null) {
-                cell.setStyleRef(styleRef);
-                break;
-              }
-            }
+          String bg = getBg(cellElement);
+          String fg = getFg(cellElement);
+
+          styleRef = getStyleRef(sheet, styleNames, bg, fg, styles, fonts);
+          if (styleRef != null) {
+            cell.setStyleRef(styleRef);
           }
 
           row.add(cell);
@@ -945,15 +935,30 @@ public final class Exporter {
     sheet.add(row);
   }
 
-  private static Collection<String> getStyleNames(TableCellElement cellElement) {
-    Set<String> styleNames = new HashSet<>(StyleUtils.getClassNames(cellElement));
+  private static String getBg(TableCellElement cellElement) {
+    String bg = cellElement.getStyle().getBackgroundColor();
 
-    Element childElement = cellElement.getFirstChildElement();
-    if (childElement != null) {
-      styleNames.addAll(StyleUtils.getClassNames(childElement));
+    if (BeeUtils.isEmpty(bg)) {
+      Element childElement = cellElement.getFirstChildElement();
+      if (childElement != null) {
+        bg = childElement.getStyle().getBackgroundColor();
+      }
     }
 
-    return styleNames;
+    return BeeUtils.isEmpty(bg) ? null : Color.normalize(bg);
+  }
+
+  private static String getFg(TableCellElement cellElement) {
+    String fg = cellElement.getStyle().getColor();
+
+    if (BeeUtils.isEmpty(fg)) {
+      Element childElement = cellElement.getFirstChildElement();
+      if (childElement != null) {
+        fg = childElement.getStyle().getColor();
+      }
+    }
+
+    return BeeUtils.isEmpty(fg) ? null : Color.normalize(fg);
   }
 
   private static int getInputStep(int rowCount) {
@@ -972,6 +977,78 @@ public final class Exporter {
       return height / 20d;
     } else {
       return null;
+    }
+  }
+
+  private static Collection<String> getStyleNames(TableCellElement cellElement) {
+    Set<String> styleNames = new HashSet<>(StyleUtils.getClassNames(cellElement));
+
+    Element childElement = cellElement.getFirstChildElement();
+    if (childElement != null) {
+      styleNames.addAll(StyleUtils.getClassNames(childElement));
+    }
+
+    return styleNames;
+  }
+
+  private static Integer getStyleRef(XSheet sheet, Collection<String> styleNames,
+      String bg, String fg, Map<String, XStyle> styles, Map<String, XFont> fonts) {
+
+    XStyle style = null;
+    XFont font = null;
+
+    if (!BeeUtils.isEmpty(styleNames)) {
+      if (!BeeUtils.isEmpty(styles)) {
+        Optional<String> os = styles.keySet().stream().filter(styleNames::contains).findFirst();
+        if (os.isPresent()) {
+          style = styles.get(os.get());
+        }
+      }
+
+      if (!BeeUtils.isEmpty(fonts)) {
+        Optional<String> os = fonts.keySet().stream().filter(styleNames::contains).findFirst();
+        if (os.isPresent()) {
+          font = fonts.get(os.get());
+        }
+      }
+    }
+
+    if (!BeeUtils.isEmpty(bg)) {
+      if (style == null) {
+        style = new XStyle();
+      } else {
+        style = style.copy();
+      }
+
+      style.setColor(bg);
+    }
+
+    if (!BeeUtils.isEmpty(fg)) {
+      if (font == null) {
+        font = new XFont();
+      } else {
+        font = font.copy();
+      }
+
+      font.setColor(fg);
+    }
+
+    if (font != null) {
+      int fontRef = sheet.registerFont(font);
+
+      if (style == null) {
+        style = new XStyle();
+      } else {
+        style = style.copy();
+      }
+
+      style.setFontRef(fontRef);
+    }
+
+    if (style == null) {
+      return null;
+    } else {
+      return sheet.registerStyle(style);
     }
   }
 
