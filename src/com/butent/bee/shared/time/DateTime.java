@@ -542,8 +542,12 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    */
   @Override
   public String toString() {
-    return dateToString(getYear(), getMonth(), getDom()) + TimeUtils.DATE_TIME_SEPARATOR
-        + (hasTimePart() ? toTimeString() : "");
+    if (hasTimePart()) {
+      return dateToString(getYear(), getMonth(), getDom()) + TimeUtils.DATE_TIME_SEPARATOR
+          + toTimeString();
+    } else {
+      return dateToString(getYear(), getMonth(), getDom());
+    }
   }
 
   @Override
