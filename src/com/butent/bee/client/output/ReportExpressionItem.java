@@ -157,13 +157,8 @@ public class ReportExpressionItem extends ReportItem {
   private void render(Flow container, List<ReportItem> reportItems) {
     Runnable refresh = () -> render(container, reportItems);
     container.clear();
-    List<ReportItem> choiceItems = new ArrayList<>();
+    List<ReportItem> choiceItems = new ArrayList<>(reportItems);
 
-    for (ReportItem item : reportItems) {
-      if (!(item instanceof ReportNumericItem)) {
-        choiceItems.add(item);
-      }
-    }
     for (int i = 0; i < temporaryExpression.size(); i++) {
       Pair<String, ReportItem> pair = temporaryExpression.get(i);
 

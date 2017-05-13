@@ -30,7 +30,8 @@ public class ReportResultItem extends ReportNumericItem {
   }
 
   public ReportResultItem(ReportItem item) {
-    super(item.getName(), BeeUtils.embrace(item.getCaption()));
+    super(item.getName(), BeeUtils.embrace(BeeUtils.notEmpty(item.getCaption(),
+        item.getFormatedCaption())));
   }
 
   @Override

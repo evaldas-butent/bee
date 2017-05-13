@@ -25,7 +25,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -35,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public abstract class ReportItem implements BeeSerializable {
 
@@ -117,22 +117,23 @@ public abstract class ReportItem implements BeeSerializable {
   public static void chooseItem(List<ReportItem> items, Boolean numeric,
       Consumer<ReportItem> consumer) {
 
-    final List<String> options = new ArrayList<>();
+    List<String> options = items.stream().map(ReportItem::getCaption).collect(Collectors.toList());
 
-    boolean other = numeric == null || !numeric;
+    boolean text = numeric == null || !numeric;
     boolean number = numeric == null || numeric;
 
-    for (ReportItem item : items) {
-      options.add(item.getCaption());
-    }
-    if (other) {
+    String formulaCap = Localized.dictionary().formula() + "...";
+    String constantCap = Localized.dictionary().constant() + "...";
+
+    if (text) {
       options.add(Localized.dictionary().expression() + "...");
+      options.add(constantCap);
     }
     if (number) {
-      options.add(Localized.dictionary().formula() + "...");
+      options.add(formulaCap);
 
-      if (!other) {
-        options.add(Localized.dictionary().constant() + "...");
+      if (!text) {
+        options.add(constantCap);
       }
     }
     Global.choice(null, null, options, value -> {
@@ -141,10 +142,10 @@ public abstract class ReportItem implements BeeSerializable {
       } else {
         final ReportItem item;
 
-        if (options.get(value).equals(Localized.dictionary().formula() + "...")) {
+        if (options.get(value).equals(formulaCap)) {
           item = new ReportFormulaItem(null);
-        } else if (options.get(value).equals(Localized.dictionary().constant() + "...")) {
-          item = new ReportConstantItem(null, null);
+        } else if (options.get(value).equals(constantCap)) {
+          item = text ? new ReportTextConstantItem(null, null) : new ReportConstantItem(null, null);
         } else {
           item = new ReportExpressionItem(null);
         }
@@ -362,8 +363,14 @@ public abstract class ReportItem implements BeeSerializable {
     } else if (NameUtils.getClassName(ReportNumericItem.class).equals(clazz)) {
       item = new ReportNumericItem(expression, caption);
 
+    } else if (NameUtils.getClassName(ReportTimeDurationItem.class).equals(clazz)) {
+      item = new ReportTimeDurationItem(expression, caption);
+
     } else if (NameUtils.getClassName(ReportTextItem.class).equals(clazz)) {
       item = new ReportTextItem(expression, caption);
+
+    } else if (NameUtils.getClassName(ReportTextConstantItem.class).equals(clazz)) {
+      item = new ReportTextConstantItem(expression, caption);
 
     } else if (NameUtils.getClassName(ReportExpressionItem.class).equals(clazz)) {
       item = new ReportExpressionItem(caption);
@@ -376,9 +383,6 @@ public abstract class ReportItem implements BeeSerializable {
 
     } else if (NameUtils.getClassName(ReportResultItem.class).equals(clazz)) {
       item = new ReportResultItem(expression, caption);
-
-    } else if (NameUtils.getClassName(ReportTimeDurationItem.class).equals(clazz)) {
-      item = new ReportTimeDurationItem(expression, caption);
 
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);

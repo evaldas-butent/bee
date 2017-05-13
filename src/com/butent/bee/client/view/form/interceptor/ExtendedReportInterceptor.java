@@ -29,6 +29,7 @@ import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.client.output.ReportNumericItem;
 import com.butent.bee.client.output.ReportResultItem;
+import com.butent.bee.client.output.ReportTimeDurationItem;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -84,6 +85,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class ExtendedReportInterceptor extends ReportInterceptor {
 
@@ -1009,13 +1011,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       Runnable refresh = this::renderLayout;
       HtmlTable table = new HtmlTable(STYLE_PREFIX);
 
-      List<ReportItem> infoItems = new ArrayList<>();
+      List<ReportItem> infoItems = getReport().getItems();
 
-      for (ReportItem item : getReport().getItems()) {
-        if (!(item instanceof ReportNumericItem)) {
-          infoItems.add(item);
-        }
-      }
       // ROWS
       int rCnt = 0;
       int rIdx = 1;
@@ -1048,14 +1045,15 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       int cCnt = 0;
       List<ReportItem> calcItems = new ArrayList<>(getReport().getItems());
 
-      for (ReportInfoItem info : activeReport.getColItems()) {
-        ReportItem item = info.getItem();
+      calcItems.addAll(activeReport.getColItems().stream()
+          .filter(infoItem -> !Objects.equals(infoItem.getFunction(), ReportFunction.LIST))
+          .map(ReportInfoItem::getItem)
+          .filter(item -> !item.isResultItem())
+          .filter(item -> item instanceof ReportNumericItem)
+          .filter(item -> !(item instanceof ReportTimeDurationItem))
+          .map(ReportResultItem::new)
+          .collect(Collectors.toList()));
 
-        if (item instanceof ReportNumericItem && !item.isResultItem()
-            && !Objects.equals(info.getFunction(), ReportFunction.LIST)) {
-          calcItems.add(new ReportResultItem(item));
-        }
-      }
       for (ReportInfoItem infoItem : activeReport.getColItems()) {
         ReportItem item = infoItem.getItem();
         int idx = cCnt;

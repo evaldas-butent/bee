@@ -2,10 +2,9 @@ package com.butent.bee.client.output;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.widget.InputNumber;
-import com.butent.bee.client.widget.InputSpinner;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ResultHolder;
 import com.butent.bee.shared.report.ResultValue;
@@ -14,21 +13,17 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Objects;
 
-public class ReportConstantItem extends ReportNumericItem {
+public class ReportTextConstantItem extends ReportTextItem {
 
-  private InputNumber expressionWidget;
+  private InputText expressionWidget;
 
-  public ReportConstantItem(Number constant, String caption) {
+  public ReportTextConstantItem(String constant, String caption) {
     super(BeeUtils.randomString(10), caption);
-    setExpression(constant != null ? constant.toString() : BeeConst.STRING_ZERO);
+    setExpression(constant != null ? constant : BeeConst.STRING_SPACE);
   }
 
   @Override
-  public void deserialize(String data) {
-  }
-
-  @Override
-  public ResultValue evaluate(SimpleRow row) {
+  public ResultValue evaluate(SimpleRowSet.SimpleRow row) {
     return ResultValue.of(getExpression());
   }
 
@@ -56,10 +51,15 @@ public class ReportConstantItem extends ReportNumericItem {
   @Override
   public Widget getExpressionWidget(List<ReportItem> reportItems) {
     if (expressionWidget == null) {
-      expressionWidget = new InputNumber();
+      expressionWidget = new InputText();
     }
     expressionWidget.setValue(getExpression());
     return expressionWidget;
+  }
+
+  @Override
+  public Widget getFilterWidget() {
+    return null;
   }
 
   @Override
@@ -68,21 +68,13 @@ public class ReportConstantItem extends ReportNumericItem {
   }
 
   @Override
-  public InputSpinner getOptionsWidget() {
+  public Widget getOptionsWidget() {
     return null;
   }
 
   @Override
   public String saveOptions() {
-    if (BeeUtils.isEmpty(expressionWidget.getValue())) {
-      return Localized.dictionary().valueRequired();
-    }
     setExpression(expressionWidget.getValue());
     return null;
-  }
-
-  @Override
-  public String serialize() {
-    return serialize(null);
   }
 }
