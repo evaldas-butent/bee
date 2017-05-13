@@ -25,6 +25,7 @@ import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
@@ -1898,7 +1899,8 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
 
     String tmp = qs.sqlCreateTemp(select);
 
-    return report.getResultResponse(qs, tmp);
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)));
   }
 
   private ResponseObject getSchedulingData(RequestInfo reqInfo) {

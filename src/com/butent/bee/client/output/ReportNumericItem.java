@@ -6,6 +6,7 @@ import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ReportFunction;
 import com.butent.bee.shared.report.ResultCalculator;
@@ -90,7 +91,7 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public ResultValue evaluate(SimpleRow row) {
+  public ResultValue evaluate(SimpleRow row, Dictionary dictionary) {
     return ResultValue.of(BeeUtils.round(row.getValue(getExpression()), getPrecision()));
   }
 

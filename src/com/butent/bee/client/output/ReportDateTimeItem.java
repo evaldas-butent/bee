@@ -5,6 +5,7 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.report.DateTimeFunction;
 import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.time.DateTime;
@@ -22,7 +23,7 @@ public class ReportDateTimeItem extends ReportDateItem {
   }
 
   @Override
-  public ResultValue evaluate(SimpleRow row) {
+  public ResultValue evaluate(SimpleRow row, Dictionary dictionary) {
     ResultValue value;
     DateTime date = row.getDateTime(getExpression());
 

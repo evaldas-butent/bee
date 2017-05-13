@@ -10,6 +10,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -50,12 +51,12 @@ public class ReportExpressionItem extends ReportItem {
   }
 
   @Override
-  public ResultValue evaluate(SimpleRow row) {
+  public ResultValue evaluate(SimpleRow row, Dictionary dictionary) {
     List<ResultValue> values = new ArrayList<>();
     StringBuilder display = new StringBuilder();
 
     for (Pair<String, ReportItem> pair : expression) {
-      ResultValue val = pair.getB().evaluate(row);
+      ResultValue val = pair.getB().evaluate(row, dictionary);
       values.add(val);
       String text = val.toString();
 

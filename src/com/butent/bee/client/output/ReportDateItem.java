@@ -16,6 +16,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.DateTimeFunction;
 import com.butent.bee.shared.report.ResultValue;
@@ -90,7 +91,7 @@ public class ReportDateItem extends ReportItem {
   }
 
   @Override
-  public ResultValue evaluate(SimpleRow row) {
+  public ResultValue evaluate(SimpleRow row, Dictionary dictionary) {
     ResultValue value;
     JustDate date = row.getDate(getExpression());
 

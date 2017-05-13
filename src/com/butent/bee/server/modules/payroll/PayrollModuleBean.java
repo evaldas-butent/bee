@@ -21,6 +21,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
@@ -1400,7 +1401,8 @@ public class PayrollModuleBean implements BeeModule, ConcurrencyBean.HasTimerSer
         }
       }
     }
-    return ResponseObject.response(report.getResult(reportData));
+    return ResponseObject.response(report.getResult(reportData,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE))));
   }
 
   private void importTimeCards(Long companyId, SimpleRowSet erpTimeCards, StringBuilder log) {

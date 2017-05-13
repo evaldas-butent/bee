@@ -33,6 +33,7 @@ import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
@@ -406,8 +407,8 @@ public class ServiceModuleBean implements BeeModule {
                 qs.insertData(payrollInsertQuery);
               });
               DataChangeEvent.fireRefresh((fireEvent, locality) ->
-                      Endpoint.sendToUser(usr.getCurrentUserId(),
-                          new ModificationMessage(fireEvent)), TBL_MAINTENANCE_PAYROLL);
+                  Endpoint.sendToUser(usr.getCurrentUserId(),
+                      new ModificationMessage(fireEvent)), TBL_MAINTENANCE_PAYROLL);
             }
           }
         }
@@ -1309,7 +1310,8 @@ public class ServiceModuleBean implements BeeModule {
     if (!clause.isEmpty()) {
       select.setWhere(clause);
     }
-    return ResponseObject.response(report.getResult(qs.getData(select)));
+    return ResponseObject.response(report.getResult(qs.getData(select),
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE))));
   }
 
   private BeeRowSet getSettings() {

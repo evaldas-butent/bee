@@ -16,6 +16,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ReportFunction;
 import com.butent.bee.shared.report.ResultCalculator;
@@ -219,7 +220,7 @@ public abstract class ReportItem implements BeeSerializable {
     return Objects.equals(getExpression(), ((ReportItem) obj).getExpression());
   }
 
-  public abstract ResultValue evaluate(SimpleRow row);
+  public abstract ResultValue evaluate(SimpleRow row, Dictionary dictionary);
 
   public ResultValue evaluate(ResultValue rowGroup, ResultValue[] rowValues, ResultValue colGroup,
       ResultHolder resultHolder) {

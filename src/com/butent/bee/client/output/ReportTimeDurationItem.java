@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.report.ReportFunction;
 import com.butent.bee.shared.report.ResultCalculator;
 import com.butent.bee.shared.report.ResultValue;
@@ -75,7 +76,7 @@ public class ReportTimeDurationItem extends ReportNumericItem {
   }
 
   @Override
-  public ResultValue evaluate(SimpleRowSet.SimpleRow row) {
+  public ResultValue evaluate(SimpleRowSet.SimpleRow row, Dictionary dictionary) {
     ResultValue value;
     String time = row.getValue(getExpression());
     Long val = TimeUtils.parseTime(time);

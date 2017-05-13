@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.VAR_LOCALE;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TIMER_REMIND_PROJECT_DATES;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
@@ -19,6 +20,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
@@ -1019,7 +1021,8 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
     ReportInfo report = ReportInfo.restore(reqInfo.getParameter(Service.VAR_DATA));
 
     if (rqs.isEmpty()) {
-      return ResponseObject.response(report.getResult(rqs));
+      return ResponseObject.response(report.getResult(rqs,
+          Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE))));
     }
 
     List<String> colTaskData = Lists.newArrayList(rqs.getColumn(TaskConstants.COL_TASK));
@@ -1027,7 +1030,8 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
         DataUtils.parseIdList(BeeUtils.join(BeeConst.STRING_COMMA, colTaskData));
 
     if (taskIds.isEmpty()) {
-      return ResponseObject.response(report.getResult(rqs));
+      return ResponseObject.response(report.getResult(rqs,
+          Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE))));
     }
 
     SimpleRowSet timesData = tasksBean.getTaskActualTimesAndExpenses(taskIds);
@@ -1072,7 +1076,8 @@ public class ProjectsModuleBean extends TimerBuilder implements BeeModule {
           BeeConst.STRING_MINUS, endDate));
       rqs.setValue(i, ALS_PROFIT, BeeUtils.toString(profit));
     }
-    return ResponseObject.response(report.getResult(rqs));
+    return ResponseObject.response(report.getResult(rqs,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE))));
   }
 
   private SimpleRowSet getTasksActualTimesAndExpenses(List<Long> ids, String viewName) {

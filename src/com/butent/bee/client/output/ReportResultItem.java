@@ -6,6 +6,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ResultHolder;
 import com.butent.bee.shared.report.ResultValue;
@@ -44,7 +45,7 @@ public class ReportResultItem extends ReportNumericItem {
   }
 
   @Override
-  public ResultValue evaluate(SimpleRowSet.SimpleRow row) {
+  public ResultValue evaluate(SimpleRowSet.SimpleRow row, Dictionary dictionary) {
     Assert.unsupported();
     return null;
   }

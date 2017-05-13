@@ -6,8 +6,8 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.report.ResultHolder;
 import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -28,14 +28,8 @@ public class ReportConstantItem extends ReportNumericItem {
   }
 
   @Override
-  public ResultValue evaluate(SimpleRow row) {
+  public ResultValue evaluate(SimpleRow row, Dictionary dictionary) {
     return ResultValue.of(getExpression());
-  }
-
-  @Override
-  public ResultValue evaluate(ResultValue rowGroup, ResultValue[] rowValues, ResultValue colGroup,
-      ResultHolder resultHolder) {
-    return evaluate(null);
   }
 
   @Override

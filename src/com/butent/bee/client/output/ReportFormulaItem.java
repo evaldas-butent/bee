@@ -10,6 +10,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.report.ResultHolder;
 import com.butent.bee.shared.report.ResultValue;
@@ -57,8 +58,8 @@ public class ReportFormulaItem extends ReportNumericItem {
   }
 
   @Override
-  public ResultValue evaluate(SimpleRowSet.SimpleRow row) {
-    return evaluate(item -> item.evaluate(row));
+  public ResultValue evaluate(SimpleRowSet.SimpleRow row, Dictionary dictionary) {
+    return evaluate(item -> item.evaluate(row, dictionary));
   }
 
   @Override

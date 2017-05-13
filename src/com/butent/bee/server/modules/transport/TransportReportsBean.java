@@ -10,6 +10,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
@@ -470,7 +471,9 @@ public class TransportReportsBean {
 
     qs.sqlDropTemp(trips);
 
-    return report.getResultResponse(qs, tmp, report.getCondition(tmp, COL_DRIVER));
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)),
+        report.getCondition(tmp, COL_DRIVER));
   }
 
   /**
@@ -909,9 +912,9 @@ public class TransportReportsBean {
     String tmp = qs.sqlCreateTemp(selectCosts);
     qs.sqlDropTemp(tmpTrips);
 
-    return report.getResultResponse(qs, tmp);
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)));
   }
-
 
   /**
    * Returns Temporary table name with calculated trip percents and incomes by each cargo.
@@ -1622,7 +1625,9 @@ public class TransportReportsBean {
       qs.sqlDropTemp(tripIncomes);
       qs.sqlDropTemp(cargoExpenses);
     }
-    return report.getResultResponse(qs, tmp, report.getCondition(tmp, COL_TRIP_ROUTE));
+    return report.getResultResponse(qs, tmp,
+        Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)),
+        report.getCondition(tmp, COL_TRIP_ROUTE));
   }
 
   /**

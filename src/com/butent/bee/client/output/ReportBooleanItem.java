@@ -39,14 +39,14 @@ public class ReportBooleanItem extends ReportItem {
   }
 
   @Override
-  public ResultValue evaluate(SimpleRow row) {
+  public ResultValue evaluate(SimpleRow row, Dictionary dictionary) {
     String display;
     boolean on = BeeUtils.unbox(row.getBoolean(getExpression()));
 
     if (on) {
-      display = Localized.dictionary().yes();
+      display = dictionary.yes();
     } else {
-      display = Localized.dictionary().no();
+      display = dictionary.no();
     }
     return ResultValue.of(Boolean.toString(on)).setDisplay(display);
   }

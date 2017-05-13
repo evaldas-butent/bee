@@ -363,6 +363,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
     getParams().forEach((name, editor) -> params.addNotEmptyData(name, editor.getValue()));
     params.addDataItem(Service.VAR_DATA, Codec.beeSerialize(activeReport));
+    params.addDataItem(VAR_LOCALE, Localized.dictionary().languageTag());
 
     ReportInfo reportInfo = ReportInfo.restore(params.getParameter(Service.VAR_DATA));
     Holder<Integer> rpcId = Holder.absent();
@@ -383,7 +384,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             result = BeeSerializable.restore(content, ResultHolder::new);
 
           } else if (response.hasResponse(SimpleRowSet.class)) {
-            result = reportInfo.getResult(SimpleRowSet.restore(content));
+            result = reportInfo.getResult(SimpleRowSet.restore(content), Localized.dictionary());
 
           } else {
             result = new ResultHolder();

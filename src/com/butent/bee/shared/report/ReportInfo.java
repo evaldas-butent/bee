@@ -20,6 +20,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -298,46 +299,36 @@ public class ReportInfo implements BeeSerializable {
     return id;
   }
 
-  public ResultHolder getResult(SimpleRowSet rowSet) {
+  public ResultHolder getResult(SimpleRowSet rowSet, Dictionary dictionary) {
     ResultHolder result = new ResultHolder();
 
     List<ReportInfoItem> rowInfoItems = getRowItems();
     List<ReportInfoItem> colInfoItems = getColItems();
 
-    for (SimpleRowSet.SimpleRow row : rowSet) {
-      boolean ok = true;
+    rowSet.forEach(row -> {
+      if (getFilterItems().stream().allMatch(filterItem -> filterItem.validate(row))) {
+        ResultValue rowGroup;
+        ResultValue colGroup;
 
-      for (ReportItem filterItem : getFilterItems()) {
-        if (!filterItem.validate(row)) {
-          ok = false;
-          break;
+        if (getRowGrouping() != null) {
+          rowGroup = getRowGrouping().getItem().evaluate(row, dictionary);
+        } else {
+          rowGroup = ResultValue.empty();
         }
-      }
-      if (!ok) {
-        continue;
-      }
-      ResultValue rowGroup;
-      ResultValue colGroup;
+        if (getColGrouping() != null) {
+          colGroup = getColGrouping().getItem().evaluate(row, dictionary);
+        } else {
+          colGroup = ResultValue.empty();
+        }
+        ResultValue[] details = rowInfoItems.stream()
+            .map(infoItem -> infoItem.getItem().evaluate(row, dictionary))
+            .toArray(ResultValue[]::new);
 
-      if (getRowGrouping() != null) {
-        rowGroup = getRowGrouping().getItem().evaluate(row);
-      } else {
-        rowGroup = ResultValue.empty();
+        colInfoItems.stream().filter(colItem -> !colItem.getItem().isResultItem())
+            .forEach(colItem -> result.addValues(rowGroup, details, colGroup, colItem,
+                colItem.getItem().evaluate(row, dictionary)));
       }
-      if (getColGrouping() != null) {
-        colGroup = getColGrouping().getItem().evaluate(row);
-      } else {
-        colGroup = ResultValue.empty();
-      }
-      ResultValue[] details = new ResultValue[rowInfoItems.size()];
-
-      for (int i = 0; i < rowInfoItems.size(); i++) {
-        details[i] = rowInfoItems.get(i).getItem().evaluate(row);
-      }
-      colInfoItems.stream().filter(colItem -> !colItem.getItem().isResultItem())
-          .forEach(colItem -> result.addValues(rowGroup, details, colGroup, colItem,
-              colItem.getItem().evaluate(row)));
-    }
+    });
     // CALC RESULTS
     colInfoItems.stream().filter(colItem -> colItem.getItem().isResultItem())
         .forEach(colItem -> result.getRowGroups(null)
@@ -349,7 +340,8 @@ public class ReportInfo implements BeeSerializable {
   }
 
   @GwtIncompatible
-  public ResponseObject getResultResponse(QueryServiceBean qs, String tmp, IsCondition... clauses) {
+  public ResponseObject getResultResponse(QueryServiceBean qs, String tmp, Dictionary dictionary,
+      IsCondition... clauses) {
     SqlSelect resultQuery = new SqlSelect()
         .addFrom(tmp)
         .setWhere(SqlUtils.and(clauses));
@@ -361,7 +353,7 @@ public class ReportInfo implements BeeSerializable {
         .filter(this::requiresField)
         .forEach(s -> resultQuery.addFields(tmp, s));
 
-    ResultHolder result = getResult(qs.getData(resultQuery));
+    ResultHolder result = getResult(qs.getData(resultQuery), dictionary);
     qs.sqlDropTemp(tmp);
     return ResponseObject.response(result);
   }
