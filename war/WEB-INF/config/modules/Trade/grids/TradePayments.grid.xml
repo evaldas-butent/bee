@@ -12,9 +12,10 @@
       <footer aggregate="sum" />
     </DataColumn>
 
-    <RelColumn name="PaymentType" renderColumns="PaymentName" newRowEnabled="false" />
     <RelColumn name="PaymentAccount" renderColumns="AccountCode"
                choiceColumns="AccountCode AccountName" newRowEnabled="false" />
+    <RelColumn name="PaymentType" renderColumns="PaymentName" filter="PaymentTypeAccount"
+               newRowEnabled="false" />
 
     <DataColumn name="PaymentSeries">
       <editor type="string" upperCase="true" />

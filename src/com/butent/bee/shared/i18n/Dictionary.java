@@ -4196,7 +4196,11 @@ public interface Dictionary {
 
   default String payer() {return g("payer");}
 
+  default String paymentCustomers() {return g("paymentCustomers");}
+
   default String paymentDueDate() {return g("paymentDueDate");}
+
+  default String paymentSuppliers() {return g("paymentSuppliers");}
 
   default String paymentType() {return g("paymentType");}
 
@@ -6946,6 +6950,8 @@ public interface Dictionary {
   default String trdSupplier() {return g("trdSupplier");}
 
   default String trdTerm() {return g("trdTerm");}
+
+  default String trdTermTo() {return g("trdTermTo");}
 
   default String trdTotal() {return g("trdTotal");}
 

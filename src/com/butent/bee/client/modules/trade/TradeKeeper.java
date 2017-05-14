@@ -50,6 +50,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.trade.DebtKind;
 import com.butent.bee.shared.modules.trade.ItemQuantities;
 import com.butent.bee.shared.modules.trade.TradeDocument;
 import com.butent.bee.shared.rights.Module;
@@ -252,6 +253,11 @@ public final class TradeKeeper implements HandlesAllDataEvents {
 
     FormFactory.registerFormInterceptor(FORM_SALES_INVOICE, new SalesInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_TRADE_DOCUMENT, new TradeDocumentForm());
+
+    FormFactory.registerFormInterceptor(FORM_PAYMENT_SUPPLIERS,
+        new PaymentForm(DebtKind.PAYABLE));
+    FormFactory.registerFormInterceptor(FORM_PAYMENT_CUSTOMERS,
+        new PaymentForm(DebtKind.RECEIVABLE));
 
     ColorStyleProvider csp = ColorStyleProvider.createDefault(VIEW_TRADE_OPERATIONS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_BACKGROUND, csp);
