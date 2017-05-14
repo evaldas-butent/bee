@@ -3,22 +3,17 @@ package com.butent.bee.server.rest;
 import static com.butent.bee.server.rest.CrudWorker.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
-import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.modules.administration.FileStorageBean;
-import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -36,12 +31,8 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @Path("/")
 @Produces(RestResponse.JSON_TYPE)
@@ -54,16 +45,13 @@ public class Worker {
   SystemBean sys;
   @EJB
   UserServiceBean usr;
-  @EJB
-  FileStorageBean fs;
 
   @GET
   @Path("companytypes")
   public RestResponse getCompanyTypes(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
     long time = System.currentTimeMillis();
 
-    return RestResponse
-        .ok(rsToMap(getRowSet(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, lastSynced)))
+    return RestResponse.ok(rsToMap(getRowSet(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, lastSynced)))
         .setLastSync(time);
   }
 
@@ -86,25 +74,6 @@ public class Worker {
   }
 
   @GET
-  @Path("{api}.pdf")
-  @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  @Trusted
-  public Response getApi(@PathParam("api") String name) {
-    String content = qs.getValue(new SqlSelect()
-        .addFields(TBL_DOCUMENT_DATA, COL_DOCUMENT_CONTENT)
-        .addFrom(TBL_DOCUMENTS)
-        .addFromInner(TBL_DOCUMENT_DATA,
-            sys.joinTables(TBL_DOCUMENT_DATA, TBL_DOCUMENTS, COL_DOCUMENT_DATA))
-        .setWhere(SqlUtils.equals(TBL_DOCUMENTS, COL_DOCUMENT_NAME, name)));
-
-    if (BeeUtils.isEmpty(content)) {
-      throw new NotFoundException();
-    }
-    return Invocation.locateRemoteBean(FileServiceApplication.class)
-        .getFile(fs.createPdf(content), name + ".pdf");
-  }
-
-  @GET
   @Path("durationtypes")
   public RestResponse getDurationTypes(@HeaderParam(RestResponse.LAST_SYNC_TIME) Long lastSynced) {
     long time = System.currentTimeMillis();
@@ -120,25 +89,6 @@ public class Worker {
 
     return RestResponse.ok(rsToMap(getRowSet(TBL_TASK_TYPES, COL_TASK_TYPE_NAME, lastSynced)))
         .setLastSync(time);
-  }
-
-  @GET
-  @Path("endpoint")
-  @Produces(MediaType.TEXT_PLAIN)
-  @Trusted(secret = "B-NOVO")
-  public String getPath(@HeaderParam("licence") String licence) {
-    String endpoint = null;
-
-    if (!BeeUtils.isEmpty(licence)) {
-      endpoint = qs.getValue(new SqlSelect()
-          .addFields(TBL_COMPANY_LICENCES, COL_LICENCE_ENDPOINT)
-          .addFrom(TBL_COMPANY_LICENCES)
-          .setWhere(SqlUtils.equals(TBL_COMPANY_LICENCES, COL_LICENCE, licence)));
-    }
-    if (BeeUtils.isEmpty(endpoint)) {
-      throw new NotFoundException(licence);
-    }
-    return endpoint;
   }
 
   @GET

@@ -1,20 +1,24 @@
-package com.butent.bee.server.modules.tasks;
+package com.butent.bee.server.rest;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
+
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.rest.annotations.Trusted;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
-import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.FiresModificationEvents;
-import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -30,14 +34,22 @@ import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("/")
 @Stateless
-public class RestfulTaskBuilder {
+public class CustomWorker {
 
-  final BeeLogger logger = LogUtils.getLogger(RestfulTaskBuilder.class);
+  final BeeLogger logger = LogUtils.getLogger(CustomWorker.class);
+
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -46,6 +58,46 @@ public class RestfulTaskBuilder {
   ParamHolderBean prm;
   @EJB
   DataEditorBean deb;
+  @EJB
+  FileStorageBean fs;
+
+  @GET
+  @Path("{api}.pdf")
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  @Trusted
+  public Response getApi(@PathParam("api") String name) {
+    String content = qs.getValue(new SqlSelect()
+        .addFields(TBL_DOCUMENT_DATA, COL_DOCUMENT_CONTENT)
+        .addFrom(TBL_DOCUMENTS)
+        .addFromInner(TBL_DOCUMENT_DATA,
+            sys.joinTables(TBL_DOCUMENT_DATA, TBL_DOCUMENTS, COL_DOCUMENT_DATA))
+        .setWhere(SqlUtils.equals(TBL_DOCUMENTS, COL_DOCUMENT_NAME, name)));
+
+    if (BeeUtils.isEmpty(content)) {
+      throw new NotFoundException();
+    }
+    return Invocation.locateRemoteBean(FileServiceApplication.class)
+        .getFile(fs.createPdf(content).getHash(), name + ".pdf");
+  }
+
+  @GET
+  @Path("endpoint")
+  @Produces(MediaType.TEXT_PLAIN)
+  @Trusted(secret = "B-NOVO")
+  public String getPath(@HeaderParam("licence") String licence) {
+    String endpoint = null;
+
+    if (!BeeUtils.isEmpty(licence)) {
+      endpoint = qs.getValue(new SqlSelect()
+          .addFields(TBL_COMPANY_LICENCES, COL_LICENCE_ENDPOINT)
+          .addFrom(TBL_COMPANY_LICENCES)
+          .setWhere(SqlUtils.equals(TBL_COMPANY_LICENCES, COL_LICENCE, licence)));
+    }
+    if (BeeUtils.isEmpty(endpoint)) {
+      throw new NotFoundException(licence);
+    }
+    return endpoint;
+  }
 
   @POST
   @Path("request")
@@ -60,28 +112,22 @@ public class RestfulTaskBuilder {
                                                        * "NEŽINOMAS" value
                                                        */
     }
-
     if (!BeeUtils.isEmpty(companyCode)) {
-      companyId = qs.getId(ClassifierConstants.TBL_COMPANIES, ClassifierConstants
-          .COL_COMPANY_CODE, companyCode);
+      companyId = qs.getId(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_CODE,
+          companyCode);
     }
-
     if (!DataUtils.isId(companyId) && !BeeUtils.isEmpty(companyName)) {
-
-      companyId = qs.getId(ClassifierConstants.TBL_COMPANIES, ClassifierConstants
-          .COL_COMPANY_NAME, companyName);
+      companyId = qs.getId(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME,
+          companyName);
     }
-
     if (!DataUtils.isId(companyId)) {
       logger.warning("Rest company ", companyName, companyCode, "not found");
       companyId = prm.getRelation(AdministrationConstants.PRM_COMPANY);
 
     }
-
     if (!DataUtils.isId(companyId)) {
       return "Rest Unknown request";
     }
-
     DataInfo reqDataInfo = sys.getDataInfo(TaskConstants.VIEW_REQUESTS);
 
     BeeRow row = DataUtils.createEmptyRow(reqDataInfo.getColumns().size());
@@ -94,13 +140,11 @@ public class RestfulTaskBuilder {
     if (DataUtils.isId(type)) {
       row.setValue(reqDataInfo.getColumnIndex(TaskConstants.COL_REQUEST_TYPE), type);
     }
-
     Long form = prm.getRelation(TaskConstants.PRM_DEFAULT_REST_REQUEST_FORM);
 
     if (DataUtils.isId(form)) {
-      row.setValue(reqDataInfo.getColumnIndex(TaskConstants.COL_REQUEST_FORM), form);
+      row.setValue(reqDataInfo.getColumnIndex("RequestForm"), form);
     }
-
     BeeRowSet reqRowSet = DataUtils.createRowSetForInsert(TaskConstants.VIEW_REQUESTS,
         reqDataInfo.getColumns(), row);
 
@@ -109,7 +153,6 @@ public class RestfulTaskBuilder {
     if (!resp.hasResponse()) {
       return BeeUtils.joinWords("Rest internal error", resp.getErrors());
     }
-
     fireNotify();
 
     logger.info("Rest data commited", resp.getResponse());
@@ -118,25 +161,20 @@ public class RestfulTaskBuilder {
   }
 
   private void fireNotify() {
+    FiresModificationEvents commando = (event, locality) -> {
+      SqlSelect usrSel = new SqlSelect().setDistinctMode(true)
+          .addFields(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_USER)
+          .addFrom(NewsConstants.TBL_USER_FEEDS)
+          .setWhere(SqlUtils.or(SqlUtils
+              .equals(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_FEED,
+                  Feed.REQUESTS_ALL.name()), SqlUtils
+              .equals(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_FEED,
+                  Feed.REQUESTS_ASSIGNED.name())));
 
-    FiresModificationEvents commando = new FiresModificationEvents() {
-      @Override
-      public void fireModificationEvent(ModificationEvent<?> event, Locality locality) {
-        SqlSelect usrSel = new SqlSelect().setDistinctMode(true)
-            .addFields(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_USER)
-            .addFrom(NewsConstants.TBL_USER_FEEDS)
-            .setWhere(SqlUtils.or(SqlUtils
-                .equals(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_FEED,
-                    Feed.REQUESTS_ALL.name()), SqlUtils
-                .equals(NewsConstants.TBL_USER_FEEDS, NewsConstants.COL_UF_FEED,
-                    Feed.REQUESTS_ASSIGNED.name())));
-
-        for (Long user : qs.getLongColumn(usrSel)) {
-          Endpoint.sendToUser(user, new ModificationMessage(event));
-        }
+      for (Long user : qs.getLongColumn(usrSel)) {
+        Endpoint.sendToUser(user, new ModificationMessage(event));
       }
     };
-
     DataChangeEvent.fireRefresh(commando, TaskConstants.VIEW_REQUESTS);
   }
 }

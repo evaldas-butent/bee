@@ -11,6 +11,6 @@
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />
     <Boolean name="ProductRequired" label="=crmTaskProductRequired" />
-    <Relation name="TaskType" notNull="false" relation="TaskTypes" label="=crmTaskType" />
+    <Relation name="TaskType" notNull="true" relation="TaskTypes" label="=crmTaskType" />
   </Fields>
 </Table>

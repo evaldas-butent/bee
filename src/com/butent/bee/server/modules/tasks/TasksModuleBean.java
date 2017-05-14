@@ -295,12 +295,10 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
             DocumentConstants.COL_DOCUMENT_TEMPLATE_NAME),
         BeeParameter.createRelation(module, PRM_DEFAULT_DBA_DOCUMENT_TYPE,
             DocumentConstants.VIEW_DOCUMENT_TYPES, DocumentConstants.COL_DOCUMENT_TYPE_NAME),
-        BeeParameter.createBoolean(module, PRM_CREATE_PRIVATE_TASK_FIRST, true, null),
-        BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_FORM, VIEW_REQUEST_FORMS,
-            COL_REQUEST_FROM_NAME),
-        BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_TYPE, VIEW_REQUEST_TYPES,
-            COL_REQUEST_TYPE_NAME)
-        );
+        BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_FORM, "RequestForms", "Name"),
+        BeeParameter.createRelation(module, PRM_DEFAULT_REST_REQUEST_TYPE, "RequestTypes", "Name"),
+        BeeParameter.createBoolean(module, PRM_CREATE_PRIVATE_TASK_FIRST, true, null));
+
     return params;
   }
 
