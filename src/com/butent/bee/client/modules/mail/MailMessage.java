@@ -26,6 +26,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -37,6 +38,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.presenter.Presenter;
@@ -112,9 +114,14 @@ public class MailMessage extends AbstractFormInterceptor {
               @Override
               public void execute() {
                 if (++counter == 2) {
-                  if (!BeeUtils.same(viewName, TransportConstants.TBL_ASSESSMENTS)) {
+                  if (!BeeUtils.inList(viewName, TransportConstants.TBL_ASSESSMENTS, VIEW_TASKS)) {
                     FileCollector.pushFiles(attachments);
                   }
+
+                  if (BeeUtils.same(viewName, VIEW_TASKS)) {
+                    row.setProperty(PROP_FILES, Codec.beeSerialize(attachments));
+                  }
+
                   RowFactory.createRelatedRow(formName, row, selector, null);
                 }
               }
@@ -349,10 +356,10 @@ public class MailMessage extends AbstractFormInterceptor {
                   break;
 
                 case ATTACHMENTS:
-                  Map<Long, String> files = new HashMap<>();
+                  Map<String, String> files = new HashMap<>();
 
                   for (FileInfo fileInfo : attachments) {
-                    files.put(fileInfo.getId(),
+                    files.put(fileInfo.getHash(),
                         BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
                   }
                   BrowsingContext.open(FileUtils.getUrl(Localized.dictionary().mailAttachments()
@@ -591,6 +598,7 @@ public class MailMessage extends AbstractFormInterceptor {
           Long fileSize = attachment.getLong(AdministrationConstants.COL_FILE_SIZE);
 
           FileInfo fileInfo = new FileInfo(attachment.getLong(AdministrationConstants.COL_FILE),
+              attachment.getValue(AdministrationConstants.COL_FILE_HASH),
               attachment.getValue(AdministrationConstants.COL_FILE_NAME), fileSize,
               attachment.getValue(AdministrationConstants.COL_FILE_TYPE));
 
@@ -672,7 +680,7 @@ public class MailMessage extends AbstractFormInterceptor {
     Widget widget = widgets.get(DATE);
 
     if (widget != null && widget instanceof DateTimeLabel) {
-      return ((DateTimeLabel) widget).getValue().toString();
+      return Format.renderDateTime(((DateTimeLabel) widget).getValue());
     }
     return null;
   }

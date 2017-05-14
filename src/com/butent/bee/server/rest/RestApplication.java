@@ -26,6 +26,7 @@ public class RestApplication extends Application {
 
     classes.add(RestfulTaskBuilder.class);
     classes.add(ShipmentRequestsWorker.class);
+    classes.add(ServiceCommentWorker.class);
 
     return classes;
   }

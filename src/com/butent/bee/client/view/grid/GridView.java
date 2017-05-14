@@ -21,6 +21,7 @@ import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ModificationPreviewer;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -55,11 +56,13 @@ public interface GridView extends DataView,
 
   int estimatePageSize(int containerWidth, int containerHeight);
 
-  void formCancel();
+  void formCancel(boolean focus);
 
   void formConfirm(Consumer<IsRow> consumer);
 
   FormView getActiveForm();
+
+  DataInfo getDataInfo();
 
   List<String> getDynamicColumnGroups();
 
@@ -86,6 +89,8 @@ public interface GridView extends DataView,
   String getRelColumn();
 
   Collection<RowInfo> getSelectedRows(SelectedRows mode);
+
+  boolean hasChildUi();
 
   void initData(int rowCount, BeeRowSet rowSet);
 

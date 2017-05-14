@@ -3,8 +3,6 @@ package com.butent.bee.client.modules.transport;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -19,7 +17,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.client.output.ReportParameters;
+import com.butent.bee.shared.report.ReportParameters;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -49,7 +47,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
@@ -207,7 +204,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       } else {
         label = Localized.dictionary().department();
       }
-      headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_DEPARTMENTS)));
+      headers.add(BeeUtils.joinWords(label, getSelectorLabel(NAME_DEPARTMENTS)));
     }
 
     String managers = getEditorValue(NAME_MANAGERS);
@@ -219,7 +216,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       } else {
         label = Localized.dictionary().manager();
       }
-      headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_MANAGERS)));
+      headers.add(BeeUtils.joinWords(label, getSelectorLabel(NAME_MANAGERS)));
     }
 
     List<String> groupBy = new ArrayList<>();
@@ -284,7 +281,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
   protected String getBookmarkLabel() {
     List<String> labels = Lists.newArrayList(getReportCaption(),
         Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
-        getFilterLabel(NAME_DEPARTMENTS), getFilterLabel(NAME_MANAGERS));
+        getSelectorLabel(NAME_DEPARTMENTS), getSelectorLabel(NAME_MANAGERS));
 
     for (String groupName : NAME_GROUP_BY) {
       if (BeeUtils.isPositive(getSelectedIndex(groupName))) {
@@ -767,23 +764,20 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       sheet.add(xr);
     }
 
-    table.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        TableCellElement cellElement =
-            DomUtils.getParentCell(EventUtils.getEventTargetElement(event), true);
-        TableRowElement rowElement = DomUtils.getParentRow(cellElement, false);
+    table.addClickHandler(event -> {
+      TableCellElement cellElement =
+          DomUtils.getParentCell(EventUtils.getEventTargetElement(event), true);
+      TableRowElement rowElement = DomUtils.getParentRow(cellElement, false);
 
-        if (cellElement != null
-            && !BeeUtils.isEmpty(cellElement.getInnerText())
-            && (cellElement.hasClassName(STYLE_QUANTITY) || cellElement.hasClassName(STYLE_PERCENT))
-            && rowElement != null && rowElement.hasClassName(STYLE_DETAILS)) {
+      if (cellElement != null
+          && !BeeUtils.isEmpty(cellElement.getInnerText())
+          && (cellElement.hasClassName(STYLE_QUANTITY) || cellElement.hasClassName(STYLE_PERCENT))
+          && rowElement != null && rowElement.hasClassName(STYLE_DETAILS)) {
 
-          int dataIndex = DomUtils.getDataIndexInt(rowElement);
+        int dataIndex = DomUtils.getDataIndexInt(rowElement);
 
-          if (!BeeConst.isUndef(dataIndex)) {
-            showDetails(data.getRow(dataIndex), cellElement);
-          }
+        if (!BeeConst.isUndef(dataIndex)) {
+          showDetails(data.getRow(dataIndex), cellElement);
         }
       }
     });
@@ -807,11 +801,11 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       Integer month = BeeUtils.unbox(dataRow.getInt(BeeConst.MONTH));
 
       if (TimeUtils.isYear(year) && TimeUtils.isMonth(month)) {
-        if (start == null && end == null) {
-          captions.add(BeeUtils.joinWords(year, Format.renderMonthFullStandalone(month)));
-        }
-
         YearMonth ym = new YearMonth(year, month);
+
+        if (start == null && end == null) {
+          captions.add(Format.renderYearMonth(ym));
+        }
 
         start = BeeUtils.max(start, ym.getDate().getDateTime());
         end = BeeUtils.min(end, TimeUtils.startOfNextMonth(ym).getDateTime());
@@ -826,7 +820,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     }
 
     if (captions.isEmpty() && (start != null || end != null)) {
-      captions.add(TimeUtils.renderPeriod(start, end));
+      captions.add(Format.renderPeriod(start, end));
     }
 
     if (ArrayUtils.contains(colNames, ClassifierConstants.COL_COMPANY_PERSON)) {
@@ -842,7 +836,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       if (!BeeUtils.isEmpty(managers)) {
         filter.add(Filter.any(ClassifierConstants.COL_COMPANY_PERSON,
             DataUtils.parseIdSet(managers)));
-        captions.add(getFilterLabel(NAME_MANAGERS));
+        captions.add(getSelectorLabel(NAME_MANAGERS));
       }
     }
 
@@ -858,7 +852,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       if (!BeeUtils.isEmpty(departments)) {
         filter.add(Filter.any(AdministrationConstants.COL_DEPARTMENT,
             DataUtils.parseIdSet(departments)));
-        captions.add(getFilterLabel(NAME_DEPARTMENTS));
+        captions.add(getSelectorLabel(NAME_DEPARTMENTS));
       }
     }
 

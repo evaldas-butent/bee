@@ -45,6 +45,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -200,10 +201,9 @@ final class ServiceCalendar extends TimeBoard {
     if (range == null) {
       return BeeConst.STRING_EMPTY;
     } else if (Objects.equals(range.lowerEndpoint(), range.upperEndpoint())) {
-      return TimeUtils.render(range.lowerEndpoint());
+      return Format.renderDate(range.lowerEndpoint());
     } else {
-      return BeeUtils.join(TimeUtils.PERIOD_SEPARATOR,
-          range.lowerEndpoint(), range.upperEndpoint());
+      return Format.renderPeriod(range.lowerEndpoint(), range.upperEndpoint());
     }
   }
 
@@ -535,12 +535,7 @@ final class ServiceCalendar extends TimeBoard {
     StyleUtils.setLeft(companyMover, getCompanyWidth() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
     StyleUtils.setHeight(companyMover, height);
 
-    companyMover.addMoveHandler(new MoveEvent.Handler() {
-      @Override
-      public void onMove(MoveEvent event) {
-        onCompanyResize(event);
-      }
-    });
+    companyMover.addMoveHandler(this::onCompanyResize);
 
     panel.add(companyMover);
 
@@ -549,12 +544,7 @@ final class ServiceCalendar extends TimeBoard {
       StyleUtils.setLeft(infoMover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
       StyleUtils.setHeight(infoMover, height);
 
-      infoMover.addMoveHandler(new MoveEvent.Handler() {
-        @Override
-        public void onMove(MoveEvent event) {
-          onInfoResize(event);
-        }
-      });
+      infoMover.addMoveHandler(this::onInfoResize);
 
       panel.add(infoMover);
     }
@@ -629,7 +619,7 @@ final class ServiceCalendar extends TimeBoard {
     return false;
   }
 
-  private IdentifiableWidget createCompanyWidget(ServiceCompanyWrapper company) {
+  private static IdentifiableWidget createCompanyWidget(ServiceCompanyWrapper company) {
     Flow panel = new Flow(STYLE_COMPANY_PANEL);
 
     CustomDiv label = new CustomDiv(STYLE_COMPANY_LABEL);
@@ -666,7 +656,7 @@ final class ServiceCalendar extends TimeBoard {
     return panel;
   }
 
-  private IdentifiableWidget createInfoWidget(ServiceObjectWrapper object) {
+  private static IdentifiableWidget createInfoWidget(ServiceObjectWrapper object) {
     Flow panel = new Flow(STYLE_INFO_PANEL);
 
     CustomDiv label = new CustomDiv(STYLE_INFO_LABEL);
@@ -745,7 +735,7 @@ final class ServiceCalendar extends TimeBoard {
     XSheet sheet = new XSheet();
     int rowIndex = 1;
 
-    Exporter.addCaption(sheet, getCaption(), rowIndex++, cc);
+    Exporter.addCaption(sheet, getCaption(), TextAlign.CENTER, rowIndex++, cc);
 
     if (!BeeUtils.isEmpty(filterLabels)) {
       for (String label : filterLabels) {
@@ -768,8 +758,8 @@ final class ServiceCalendar extends TimeBoard {
     if (groupColumns == 1) {
       row.add(new XCell(colIndex++, exportPeriod(range), headerStyleRef));
     } else {
-      row.add(new XCell(colIndex++, TimeUtils.render(range.lowerEndpoint()), headerStyleRef));
-      row.add(new XCell(colIndex++, TimeUtils.render(range.upperEndpoint()), headerStyleRef));
+      row.add(new XCell(colIndex++, Format.renderDate(range.lowerEndpoint()), headerStyleRef));
+      row.add(new XCell(colIndex++, Format.renderDate(range.upperEndpoint()), headerStyleRef));
     }
 
     exportMonthLabels(range, row, colIndex, headerStyleRef);
@@ -868,12 +858,7 @@ final class ServiceCalendar extends TimeBoard {
     Exporter.confirm(getCaption(), new Exporter.FileNameCallback() {
       @Override
       public void onSuccess(final String value) {
-        getFilterLabels(new Consumer<List<String>>() {
-          @Override
-          public void accept(List<String> input) {
-            doExport(value, input);
-          }
-        });
+        getFilterLabels(input -> doExport(value, input));
       }
     });
   }

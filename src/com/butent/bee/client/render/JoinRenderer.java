@@ -1,5 +1,6 @@
 package com.butent.bee.client.render;
 
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
@@ -8,11 +9,13 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 public class JoinRenderer extends AbstractCellRenderer implements HasItems {
 
@@ -23,6 +26,9 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
   private final List<CellSource> sources = new ArrayList<>();
 
   private final String separator;
+
+  private final Function<HasDateValue, String> dateRenderer;
+  private final Function<HasDateValue, String> dateTimeRenderer;
 
   public JoinRenderer(List<BeeColumn> dataColumns, String sep, List<String> items) {
     super(null);
@@ -35,6 +41,9 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     } else {
       this.separator = DEFAULT_SEPARATOR;
     }
+
+    this.dateRenderer = Format.getDateRenderer();
+    this.dateTimeRenderer = Format.getDateTimeRenderer();
 
     if (!BeeUtils.isEmpty(items)) {
       addItems(items);
@@ -102,7 +111,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
 
     StringBuilder sb = new StringBuilder();
     for (CellSource source : sources) {
-      String value = source.render(row);
+      String value = source.render(row, dateRenderer, dateTimeRenderer);
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(separator);

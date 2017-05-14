@@ -24,6 +24,16 @@
 
     <SimpleColumn name="Phase" />
 
+    <SimpleColumn name="Owner" />
+    <SimpleJoin name="Owner" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="OwnerFirstName" />
+          <SimpleColumn name="LastName" alias="OwnerLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+
     <SimpleColumn name="Status" />
     <SimpleJoin joinType="LEFT" name="Status">
       <SimpleColumn name="StatusName" />
@@ -90,6 +100,20 @@
       </SimpleJoin>
 
       <SimpleColumn name="TabNumber" alias="ManagerTabNumber" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Vehicle" />
+    <SimpleJoin name="Vehicle" joinType="LEFT">
+      <SimpleColumn name="Number" alias="VehicleNumber" />
+      <SimpleColumn name="BodyNumber" alias="VehicleBodyNumber" />
+
+      <SimpleColumn name="Model" alias="VehicleModel" />
+      <SimpleJoin name="Model" joinType="LEFT">
+        <SimpleJoin name="Brand" joinType="LEFT">
+          <SimpleColumn name="BrandName" alias="VehicleBrandName" />
+        </SimpleJoin>
+        <SimpleColumn name="Name" alias="VehicleModelName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="DocumentDiscount" />

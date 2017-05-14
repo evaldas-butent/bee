@@ -520,23 +520,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
-  public void testReplace() {
-    assertEquals("text", BeeUtils.replace("test", 2, 3, 'x'));
-    assertEquals("texst", BeeUtils.replace("test", 2, 3, "xs"));
-    assertEquals("text", BeeUtils.replace("test", "s", "x"));
-    assertEquals("test", BeeUtils.replace("test", "a", "x"));
-
-    assertEquals("text text", BeeUtils.replace("test test", "s", "x", 2));
-    assertEquals("text test", BeeUtils.replace("test test", "s", "x", 1));
-
-    assertEquals(null, BeeUtils.replace(null, "a", "x", 2));
-    assertEquals("test", BeeUtils.replace("test", null, "x", 2));
-    assertEquals("tet", BeeUtils.replace("test", "s", null, 2));
-    assertEquals("test", BeeUtils.replace("test", "s", "x", 0));
-    assertEquals(null, BeeUtils.replace(null, null, null, 0));
-  }
-
-  @Test
   public void testReplaceStr() {
     String source = "Dear Customer,\nThank you fo using products of our company...";
     String dest = "Dear Customer,<br/>\nThank you fo using products of our company...";

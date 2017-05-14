@@ -1,0 +1,64 @@
+#/opt/wildfly/bin/jboss-cli.sh -c controller=127.0.0.1:9990 --file=jboss_config.txt
+
+# REPLACE
+#<periodic-rotating-file-handler...>
+#    ...
+#    <suffix value=".yyyy-MM-dd"/>
+#    ...
+#</periodic-rotating-file-handler>
+# TO
+#<size-rotating-file-handler...>
+#    ...
+#    <rotate-size value="100M"/>
+#    <max-backup-index value="50"/>
+#    ...
+#</size-rotating-file-handler>
+
+#=====HTTPS====== (if we have a certificate, then create keystore bnovo.jks and uncomment following lines):
+#/core-service=management/security-realm=SSLRealm:add()
+#/core-service=management/security-realm=SSLRealm/server-identity=ssl/:add(keystore-path=bnovo.jks, keystore-relative-to=jboss.server.config.dir, keystore-password=changeit, alias=bnovo)
+#/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=security-realm, value=SSLRealm)
+#/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=max-post-size, value=104857600)
+
+module add --name=org.postgres --resources=/opt/postgresql.jar --dependencies=javax.api,javax.transaction.api
+/subsystem=datasources/jdbc-driver=postgres:add(driver-name="postgres",driver-module-name="org.postgres",driver-class-name=org.postgresql.Driver)
+data-source add \
+  --jndi-name=java:/jdbc/BeeDS \
+  --name=PostgrePool \
+  --connection-url=jdbc:postgresql://127.0.0.1/bnovodb \
+  --driver-name=postgres \
+  --user-name=bnovo \
+  --password=no_password \
+  --max-pool-size=95 \
+  --blocking-timeout-wait-millis=60000 \
+  --check-valid-connection-sql="SELECT 1" \
+  --background-validation=true \
+  --background-validation-millis=30000
+
+/subsystem=security/security-domain=Bee:add(cache-type="default")
+/subsystem=security/security-domain=Bee/authentication=classic:add()
+/subsystem=security/security-domain=Bee/authentication=classic/login-module=Database:add( \
+    code="Database", \
+    flag="required", \
+    module-options=[ \
+        ("dsJndiName"=>"java:/jdbc/BeeDS"), \
+        ("principalsQuery"=>"SELECT ?"), \
+        ("rolesQuery"=>"SELECT ?, 'Roles'") \
+    ])
+
+/subsystem=ee/managed-executor-service=default:write-attribute(name=hung-task-threshold,value=3600000)
+/subsystem=ee/managed-executor-service=default:write-attribute(name=core-threads,value=90)
+/subsystem=ee/managed-executor-service=default:write-attribute(name=max-threads,value=90)
+/subsystem=ee/managed-executor-service=default:write-attribute(name=queue-length,value=2147483647)
+
+/subsystem=ejb3:write-attribute(name=default-singleton-bean-access-timeout,value=60000)
+/subsystem=transactions:write-attribute(name=default-timeout,value=1800)
+/subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=max-post-size,value=104857600)
+
+# RESPONSE GZIP COMPRESSION
+/subsystem=undertow/configuration=filter/response-header=Vary-header:add(header-name=Vary,header-value=Accept-Encoding)
+/subsystem=undertow/configuration=filter/gzip=gzipFilter:add()
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=Vary-header:add()
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=gzipFilter:add(predicate="exists('%{o,Content-Type}') and regex(pattern='(?:text/plain|text/css|text/html|text/xml|application/javascript|application/json)(;.*)?', value=%{o,Content-Type}, full-match=true)")
+
+reload

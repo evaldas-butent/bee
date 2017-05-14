@@ -119,6 +119,16 @@ public final class DomUtils {
     }
   }
 
+  public static void clearHtml(Element elem) {
+    Assert.notNull(elem);
+    elem.setInnerHTML(null);
+  }
+
+  public static void clearText(Element elem) {
+    Assert.notNull(elem);
+    elem.setInnerText(null);
+  }
+
   public static int countDescendants(Element parent) {
     return getChildren(parent).getLength();
   }
@@ -579,6 +589,10 @@ public final class DomUtils {
   public static String getDataProperty(Element elem, String key) {
     return (elem == null || BeeUtils.isEmpty(key)) ? null
         : elem.getAttribute(Attributes.DATA_PREFIX + key.trim());
+  }
+
+  public static Double getDataPropertyDouble(Element elem, String key) {
+    return BeeUtils.toDoubleOrNull(getDataProperty(elem, key));
   }
 
   public static Integer getDataPropertyInt(Element elem, String key) {

@@ -14,9 +14,11 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.finance.analysis.AnalysisColumnsGrid;
+import com.butent.bee.client.modules.finance.analysis.AnalysisHeadersGrid;
 import com.butent.bee.client.modules.finance.analysis.AnalysisResultsGrid;
 import com.butent.bee.client.modules.finance.analysis.AnalysisRowsGrid;
 import com.butent.bee.client.modules.finance.analysis.BudgetEntriesGrid;
+import com.butent.bee.client.modules.finance.analysis.BudgetHeadersGrid;
 import com.butent.bee.client.modules.finance.analysis.FinancialIndicatorsGrid;
 import com.butent.bee.client.modules.finance.analysis.SimpleAnalysisForm;
 import com.butent.bee.client.modules.finance.analysis.SimpleBudgetForm;
@@ -30,6 +32,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.finance.Dimensions;
+import com.butent.bee.shared.modules.finance.PrepaymentKind;
 import com.butent.bee.shared.modules.finance.analysis.IndicatorKind;
 import com.butent.bee.shared.rights.Module;
 
@@ -96,6 +99,11 @@ public final class FinanceKeeper {
     GridFactory.registerGridInterceptor(GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
         new TradeDocumentFinancialRecordsGrid());
 
+    GridFactory.registerGridInterceptor(GRID_PREPAYMENT_SUPPLIERS,
+        new PrepaymentGrid(PrepaymentKind.SUPPLIERS));
+    GridFactory.registerGridInterceptor(GRID_PREPAYMENT_CUSTOMERS,
+        new PrepaymentGrid(PrepaymentKind.CUSTOMERS));
+
     GridFactory.registerGridInterceptor(ClassifierConstants.GRID_CHART_OF_ACCOUNTS,
         new ChartOfAccountsGrid());
 
@@ -142,8 +150,10 @@ public final class FinanceKeeper {
             Collections.singletonList(COL_ACCOUNT_CODE),
             Arrays.asList(COL_ACCOUNT_CODE, COL_ACCOUNT_NAME)));
 
+    GridFactory.registerGridInterceptor(GRID_BUDGET_HEADERS, new BudgetHeadersGrid());
     GridFactory.registerGridInterceptor(GRID_BUDGET_ENTRIES, new BudgetEntriesGrid());
 
+    GridFactory.registerGridInterceptor(GRID_ANALYSIS_HEADERS, new AnalysisHeadersGrid());
     GridFactory.registerGridInterceptor(GRID_ANALYSIS_COLUMNS, new AnalysisColumnsGrid());
     GridFactory.registerGridInterceptor(GRID_ANALYSIS_ROWS, new AnalysisRowsGrid());
     GridFactory.registerGridInterceptor(GRID_ANALYSIS_RESULTS, new AnalysisResultsGrid());

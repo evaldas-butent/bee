@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class ClassifierKeeper {
@@ -58,12 +60,14 @@ public final class ClassifierKeeper {
       if (event.hasView(VIEW_COMPANIES)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_COMPANIES), event.getRow(),
             Lists.newArrayList(COL_COMPANY_NAME, COL_COMPANY_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
-                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE,
+            Format.getDateRenderer(), Format.getDateTimeRenderer()));
 
       } else if (event.hasView(VIEW_PERSONS)) {
         event.setResult(DataUtils.join(Data.getDataInfo(VIEW_PERSONS), event.getRow(),
             Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE, COL_EMAIL_ADDRESS,
-                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE));
+                COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), BeeConst.STRING_SPACE,
+            Format.getDateRenderer(), Format.getDateTimeRenderer()));
       }
     }
   }
@@ -95,6 +99,44 @@ public final class ClassifierKeeper {
     } else {
       consumer.accept(BeeConst.EMPTY_IMMUTABLE_INT_SET);
     }
+  }
+
+  public static void getPriceAndDiscount(Long item, Map<String, String> options,
+      BiConsumer<Double, Double> consumer) {
+
+    Assert.notEmpty(options);
+    Assert.notNull(item);
+    Assert.notNull(consumer);
+
+    ParameterList params = createArgs(SVC_GET_PRICE_AND_DISCOUNT);
+
+    for (Map.Entry<String, String> entry : options.entrySet()) {
+      if (BeeUtils.allNotEmpty(entry.getKey(), entry.getValue())) {
+        params.addQueryItem(entry.getKey(), entry.getValue());
+      }
+    }
+
+    params.addQueryItem(COL_DISCOUNT_ITEM, item);
+
+    if (Global.getExplain() > 0) {
+      params.addQueryItem(Service.VAR_EXPLAIN, Global.getExplain());
+    }
+
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Double price = null;
+        Double percent = null;
+
+        if (response.hasResponse()) {
+          Pair<String, String> pair = Pair.restore(response.getResponseAsString());
+          price = BeeUtils.toDoubleOrNull(pair.getA());
+          percent = BeeUtils.toDoubleOrNull(pair.getB());
+        }
+
+        consumer.accept(price, percent);
+      }
+    });
   }
 
   public static void getPricesAndDiscounts(Map<String, Long> options,

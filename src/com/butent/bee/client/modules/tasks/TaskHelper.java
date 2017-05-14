@@ -10,7 +10,8 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
@@ -84,7 +85,8 @@ final class TaskHelper {
     }
 
     if (event != TaskEvent.CREATE_SCHEDULED) {
-      notes = TaskUtils.getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow);
+      notes = TaskUtils.getUpdateNotes(Data.getDataInfo(viewName), oldRow, newRow,
+          Format.getDateRenderer(), Format.getDateTimeRenderer());
     }
 
     if (form.isEnabled() && event != TaskEvent.CREATE_SCHEDULED) {
@@ -162,7 +164,7 @@ final class TaskHelper {
       return oldRelations;
     }
 
-    relations.getOldRowChildren(true).forEach(relation -> {
+    relations.getOldRowChildren().forEach(relation -> {
       String relViewName = Data.getColumnRelation(relation.getRepository(),
         relation.getChildColumn());
       oldRelations.put(relViewName, relation.getChildrenIds());

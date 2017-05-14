@@ -32,6 +32,8 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
 
   void clearCommandPanel();
 
+  boolean enableCommandByStyleName(String styleName, boolean enable);
+
   int getHeight();
 
   String getRowMessage();
@@ -61,6 +63,8 @@ public interface HeaderView extends View, IndexedPanel, Printable, HasClickHandl
   void setMessage(int index, String message, String styleName);
 
   void showAction(Action action, boolean visible);
+
+  void showReadOnly(boolean readOnly);
 
   void showRowId(IsRow row);
 

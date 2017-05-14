@@ -29,7 +29,7 @@ import com.butent.bee.client.dialog.Modality;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.modules.mail.Relations;
+import com.butent.bee.client.composite.Relations;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -348,7 +348,6 @@ public class DocumentForm extends DocumentDataForm {
 
                 case DATE:
                   JustDate date = Data.getDate(viewName, row, column.getId());
-
                   if (date != null) {
                     val = Format.renderDate(date);
                   }
@@ -356,9 +355,8 @@ public class DocumentForm extends DocumentDataForm {
 
                 case DATE_TIME:
                   DateTime time = Data.getDateTime(viewName, row, column.getId());
-
                   if (time != null) {
-                    val = time.toCompactString();
+                    val = Format.renderDateTime(time);
                   }
                   break;
 

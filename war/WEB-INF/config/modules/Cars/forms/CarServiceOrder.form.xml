@@ -24,6 +24,9 @@
         <row>
           <Label for="OrderNo" visible="true" style="&lbl;" />
           <InputText source="OrderNo" style="&inpw;" />
+
+          <Label for="Warehouse" style="&lbl;" class="bee-required" />
+          <DataSelector source="Warehouse" required="true" />
         </row>
 
         <row>
@@ -44,14 +47,15 @@
         </row>
         <row>
           <Label for="CustomerPerson" style="&lbl;" />
-          <DataSelector source="CustomerPerson" newRowEnabled="false" style="&inpw;"
+          <DataSelector source="CustomerPerson" style="&inpw;"
                         renderColumns="ContactFirstName ContactLastName"
                         choiceColumns="FirstName LastName CompanyName" options="Customer" />
 
           <Label for="Car" style="&lbl;" />
           <FlowPanel>
             <DataSelector source="Car" viewName="Cars" style="&inpw;"
-                          renderColumns="ParentModelName ModelName CarNumber" />
+                          choiceColumns="BrandName ModelName BodyNumber CarNumber"
+                          renderColumns="BrandName ModelName CarNumber" />
             <FlowPanel style="display:inline-block;">
               <FaLabel char="exclamation_circle" name="CarWarning"
                        style="display:none; color:red; margin-left:5px;" />
@@ -144,8 +148,32 @@
         <ChildGrid name="CarServiceEvents" relColumn="ServiceOrder" />
       </page>
       <page>
+        <text>=trdInvoices</text>
+        <GridPanel name="TradeDocuments" child="true" parent="{form}" />
+      </page>
+      <page>
         <text>=notes</text>
-        <InputArea source="Notes" class="occupy-1" summarize="true" />
+        <FlowPanel class="flexBox-vertical">
+          <HorizontalPanel style="width:100%;">
+            <Label text="=symptoms" data="CarSymptoms" />
+            <cell style="width:100%;">
+              <ChildSelector property="CarServiceSymptoms" name="CarServiceSymptoms"
+                             viewName="CarSymptoms"
+                             childTable="CarServiceSymptoms" targetRelColumn="ServiceOrder"
+                             sourceRelColumn="Symptom" renderColumns="SymptomName Code"
+                             style="width: 100%;" summarize="true" />
+            </cell>
+          </HorizontalPanel>
+
+          <Label for="Notes" />
+          <FlowPanel style="position:relative;" class="flexible">
+            <InputArea source="Notes" class="occupy-1" summarize="true" />
+          </FlowPanel>
+        </FlowPanel>
+      </page>
+      <page>
+        <text>=files</text>
+        <ChildGrid name="CarServiceFiles" relColumn="ServiceOrder" />
       </page>
     </TabbedPages>
   </FlowPanel>

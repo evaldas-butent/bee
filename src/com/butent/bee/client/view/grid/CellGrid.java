@@ -1663,7 +1663,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     setRowCount(rc + 1, true);
-    fireEvent(new DataReceivedEvent(getRowData()));
+    fireEvent(new DataReceivedEvent(getRowData(), true));
 
     if (rc <= ps || ps <= 0) {
       estimateColumnWidths(getRowData(), nr, nr + 1, true);

@@ -3,9 +3,11 @@ package com.butent.bee.shared.modules.trade;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -189,31 +191,28 @@ public class TradeDocumentSums {
     return BeeUtils.isTrue(value);
   }
 
-  public static TradeDocumentSums of(BeeRowSet docData, BeeRowSet itemData) {
+  public static TradeDocumentSums of(BeeRowSet docData, int docRowIndex,
+      BeeRowSet itemData, BeeRowSet paymentData) {
+
     if (DataUtils.isEmpty(docData)) {
       return null;
     }
 
     TradeDocumentSums tds = new TradeDocumentSums(
-        docData.getEnum(0, COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class),
-        docData.getEnum(0, COL_TRADE_DOCUMENT_DISCOUNT_MODE, TradeDiscountMode.class));
+        docData.getEnum(docRowIndex, COL_TRADE_DOCUMENT_VAT_MODE, TradeVatMode.class),
+        docData.getEnum(docRowIndex, COL_TRADE_DOCUMENT_DISCOUNT_MODE, TradeDiscountMode.class));
 
-    tds.updateDocumentDiscount(docData.getDouble(0, COL_TRADE_DOCUMENT_DISCOUNT));
+    tds.updateDocumentDiscount(docData.getDouble(docRowIndex, COL_TRADE_DOCUMENT_DISCOUNT));
 
     if (!DataUtils.isEmpty(itemData)) {
-      int qtyIndex = itemData.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
-      int priceIndex = itemData.getColumnIndex(COL_TRADE_ITEM_PRICE);
+      tds.addItems(itemData);
+    }
 
-      int discountIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
-      int dipIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT);
+    if (!DataUtils.isEmpty(paymentData)) {
+      int amountIndex = paymentData.getColumnIndex(COL_TRADE_PAYMENT_AMOUNT);
 
-      int vatIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT);
-      int vipIndex = itemData.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
-
-      for (BeeRow row : itemData) {
-        tds.add(row.getId(), row.getDouble(qtyIndex), row.getDouble(priceIndex),
-            row.getDouble(discountIndex), row.getBoolean(dipIndex),
-            row.getDouble(vatIndex), row.getBoolean(vipIndex));
+      for (BeeRow row : paymentData) {
+        tds.addPayment(row.getId(), row.getDouble(amountIndex));
       }
     }
 
@@ -278,6 +277,34 @@ public class TradeDocumentSums {
 
     items.put(id, item);
     return this;
+  }
+
+  public void addItems(BeeRowSet rowSet) {
+    if (!DataUtils.isEmpty(rowSet)) {
+      int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+      int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
+
+      int discountIndex = rowSet.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT);
+      int dipIndex = rowSet.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_DISCOUNT_IS_PERCENT);
+
+      int vatIndex = rowSet.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT);
+      int vipIndex = rowSet.getColumnIndex(COL_TRADE_DOCUMENT_ITEM_VAT_IS_PERCENT);
+
+      addItems(rowSet.getRows(), qtyIndex, priceIndex,
+          discountIndex, dipIndex, vatIndex, vipIndex);
+    }
+  }
+
+  public void addItems(List<? extends IsRow> rows, int qtyIndex, int priceIndex,
+      int discountIndex, int dipIndex, int vatIndex, int vipIndex) {
+
+    if (rows != null) {
+      for (IsRow row : rows) {
+        add(row.getId(), row.getDouble(qtyIndex), row.getDouble(priceIndex),
+            row.getDouble(discountIndex), row.getBoolean(dipIndex),
+            row.getDouble(vatIndex), row.getBoolean(vipIndex));
+      }
+    }
   }
 
   public void addPayment(long id, Double amount) {
@@ -553,6 +580,11 @@ public class TradeDocumentSums {
     return total;
   }
 
+  public double getPrice(Long id) {
+    Item item = getItem(id);
+    return (item == null) ? BeeConst.DOUBLE_ZERO : item.price;
+  }
+
   public double getPriceWithoutVat(Long id) {
     Item item = getItem(id);
 
@@ -573,6 +605,33 @@ public class TradeDocumentSums {
     }
   }
 
+  public double getQuantity(Long id) {
+    Item item = getItem(id);
+    return (item == null) ? BeeConst.DOUBLE_ZERO : item.quantity;
+  }
+
+  public Pair<Double, Boolean> getDiscountInfo(Long id) {
+    Item item = getItem(id);
+    return (item == null) ? null : Pair.of(item.discount, item.discountIsPercent);
+  }
+
+  public Pair<Double, Boolean> getVatInfo(Long id) {
+    Item item = getItem(id);
+    return (item == null) ? null : Pair.of(item.vat, item.vatIsPercent);
+  }
+
+  public Collection<Long> getItemIds() {
+    return items.keySet();
+  }
+
+  public boolean hasItems() {
+    return !items.isEmpty();
+  }
+
+  public boolean hasPayments() {
+    return !payments.isEmpty();
+  }
+
   public void setAmountScale(int amountScale) {
     this.amountScale = amountScale;
   }
@@ -591,6 +650,14 @@ public class TradeDocumentSums {
 
   public void setDocumentScale(int documentScale) {
     this.documentScale = documentScale;
+  }
+
+  public double sumQuantity() {
+    if (items.isEmpty()) {
+      return BeeConst.DOUBLE_ZERO;
+    } else {
+      return items.values().stream().mapToDouble(item -> item.quantity).sum();
+    }
   }
 
   public boolean updateDocumentId(Long id) {

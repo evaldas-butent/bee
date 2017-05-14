@@ -5,7 +5,7 @@
         name="CarServiceItems" viewName="CarServiceItems" autoFlex="true"
 >
   <g:columns>
-    <RelColumn name="Item" renderColumns="ItemName" flexGrow="2" visible="true">
+    <RelColumn name="Item" renderColumns="ItemName" flexGrow="2" visible="true" readOnly="true">
       <dynStyle>
         <ui:inline>color:blue;</ui:inline>
         <ui:expression>row.IsService</ui:expression>
@@ -17,11 +17,32 @@
     <DataColumn name="Quantity" scale="0" visible="true" />
     <DataColumn name="UnitName" label="=unitShort" />
 
+    <DataColumn name="Completed" scale="0" label="=ordCompleted">
+      <style>
+        <bodyStyle>
+          <ui:inline>color:green;</ui:inline>
+        </bodyStyle>
+      </style>
+    </DataColumn>
+
+    <CalcColumn name="Uncompleted" type="double" scale="0" label="=ordUncompleted">
+      <style>
+        <bodyStyle>
+          <ui:inline>color:red;</ui:inline>
+        </bodyStyle>
+      </style>
+      <render>
+        <ui:expression>row.Quantity>row.Completed ? row.Quantity-row.Completed : ""</ui:expression>
+      </render>
+    </CalcColumn>
+
+    <DataColumn name="Reserve" />
+
     <DataColumn name="Price" scale="2" />
-    <DataColumn name="Discount" scale="0" carry="true">
+    <DataColumn name="Discount" scale="0">
       <editor type="number" percentageTag="DiscountIsPercent" />
     </DataColumn>
-    <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" carry="true" />
+    <DataColumn name="DiscountIsPercent" width="20" sortable="false" format="%" />
 
     <DataColumn name="Vat" scale="0" carry="true">
       <editor type="number" percentageTag="VatIsPercent" />
@@ -37,4 +58,7 @@
       <renderer type="total" />
     </CalcColumn>
   </g:columns>
+  <g:rowEditable>
+    <ui:expression>!row.Completed</ui:expression>
+  </g:rowEditable>
 </g:Grid>

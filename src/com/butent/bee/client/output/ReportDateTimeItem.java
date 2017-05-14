@@ -5,7 +5,9 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Dictionary;
 import com.butent.bee.shared.report.DateTimeFunction;
+import com.butent.bee.shared.report.ResultValue;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -21,8 +23,8 @@ public class ReportDateTimeItem extends ReportDateItem {
   }
 
   @Override
-  public ReportValue evaluate(SimpleRow row) {
-    ReportValue value;
+  public ResultValue evaluate(SimpleRow row, Dictionary dictionary) {
+    ResultValue value;
     DateTime date = row.getDateTime(getExpression());
 
     if (date != null) {
@@ -30,19 +32,19 @@ public class ReportDateTimeItem extends ReportDateItem {
 
       switch (getFormat()) {
         case DATETIME:
-          value = ReportValue.of(BeeUtils.padLeft(val, 15, BeeConst.CHAR_ZERO))
-              .setDisplay(date.toCompactString());
+          value = ResultValue.of(BeeUtils.padLeft(val, 15, BeeConst.CHAR_SPACE))
+              .setDisplay(date.toString());
           break;
         case HOUR:
         case MINUTE:
-          value = ReportValue.of(BeeUtils.padLeft(val, 2, BeeConst.CHAR_ZERO));
+          value = ResultValue.of(BeeUtils.padLeft(val, 2, BeeConst.CHAR_SPACE));
           break;
         default:
           value = evaluate(date.getDate());
           break;
       }
     } else {
-      value = ReportValue.empty();
+      value = ResultValue.empty();
     }
     return value;
   }

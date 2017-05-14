@@ -18,6 +18,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
@@ -65,6 +66,9 @@ public class Bee implements EntryPoint, ClosingHandler {
   public static void exit() {
     setState(State.UNLOADING);
 
+    if (Endpoint.isOpen()) {
+      BeeKeeper.getStorage().remove(getLastWorkspaceKey());
+    }
     final String workspace = BeeKeeper.getScreen().serialize();
 
     ClientLogManager.close();
@@ -108,12 +112,20 @@ public class Bee implements EntryPoint, ClosingHandler {
     return !(getState() == State.UNLOADING || getState() == State.CLOSED);
   }
 
+  public static  void saveWorkspace() {
+    if (BeeKeeper.getUser().workspaceContinue() && getState() == State.INITIALIZED) {
+      BeeKeeper.getStorage().set(getLastWorkspaceKey(), BeeKeeper.getScreen().serialize());
+    }
+  }
+
   private static void initWorkspace() {
     List<String> spaces = new ArrayList<>();
     JSONObject onStartup = Settings.getOnStartup();
 
     if (BeeKeeper.getUser().workspaceContinue()) {
-      String workspace = BeeKeeper.getUser().getLastWorkspace();
+      String workspace = BeeKeeper.getStorage().hasItem(getLastWorkspaceKey())
+        ? BeeKeeper.getStorage().get(getLastWorkspaceKey())
+        : BeeKeeper.getUser().getLastWorkspace();
 
       if (!BeeUtils.isEmpty(workspace) && !BeeConst.EMPTY.equals(workspace)) {
         if (Workspace.isForced(onStartup)) {
@@ -329,11 +341,11 @@ public class Bee implements EntryPoint, ClosingHandler {
     List<Property> info = PropertyUtils.createProperties("State", getState());
 
     if (getEntryTime() > 0) {
-      info.add(new Property("Entry Time", TimeUtils.renderDateTime(getEntryTime(), true)));
+      info.add(new Property("Entry Time", Format.renderDateTime(getEntryTime())));
     }
 
     if (getReadyTime() > 0) {
-      info.add(new Property("Ready Time", TimeUtils.renderDateTime(getReadyTime(), true)));
+      info.add(new Property("Ready Time", Format.renderDateTime(getReadyTime())));
       info.add(new Property("Ready Seconds", TimeUtils.toSeconds(getReadyTime() - getEntryTime())));
     }
 
@@ -381,6 +393,10 @@ public class Bee implements EntryPoint, ClosingHandler {
   @Override
   public void onWindowClosing(ClosingEvent event) {
     event.setMessage("Don't leave me this way");
+  }
+
+  private static String getLastWorkspaceKey() {
+    return Storage.getUserKey(COL_LAST_WORKSPACE, null);
   }
 
   private void onLogin() {

@@ -818,7 +818,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         for (Integer idx : ss.get(svc.id())) {
           Range<DateTime> r = svc.ranges.get(idx);
-          String period = TimeUtils.renderPeriod(r.lowerEndpoint(), r.upperEndpoint());
+          String period = Format.renderPeriod(r.lowerEndpoint(), r.upperEndpoint());
           notes.add(BeeUtils.joinItems(itemName, period, objectInfo));
         }
       }
@@ -1062,7 +1062,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     } else if (TimeUtils.isMeq(start, end)) {
       Collections.addAll(messages, Localized.dictionary().invalidRange(),
-          TimeUtils.renderPeriod(start, end));
+          TimeUtils.renderPeriod(Format.renderDate(start), Format.renderDate(end)));
     }
 
     if (messages.isEmpty()) {
@@ -1320,9 +1320,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       table.setText(r, c++, act.row.getString(nameIndex),
           STYLE_ACT_NAME_PREFIX + STYLE_CELL_SUFFIX);
 
-      table.setText(r, c++, TimeUtils.renderCompact(act.row.getDateTime(dateIndex)),
+      table.setText(r, c++, Format.renderDateTime(act.row.getDateTime(dateIndex)),
           STYLE_ACT_DATE_PREFIX + STYLE_CELL_SUFFIX);
-      table.setText(r, c++, TimeUtils.renderCompact(act.row.getDateTime(untilIndex)),
+      table.setText(r, c++, Format.renderDateTime(act.row.getDateTime(untilIndex)),
           STYLE_ACT_UNTIL_PREFIX + STYLE_CELL_SUFFIX);
 
       table.setText(r, c++, act.row.getString(seriesNameIndex),
@@ -1498,9 +1498,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         table.setText(r, c++, BeeUtils.toString(actId),
             STYLE_SVC_ACT_PREFIX + STYLE_CELL_SUFFIX);
 
-        table.setText(r, c++, TimeUtils.renderDate(svc.dateFrom(idx)),
+        table.setText(r, c++, Format.renderDate(svc.dateFrom(idx)),
             STYLE_SVC_FROM_PREFIX + STYLE_CELL_SUFFIX);
-        table.setText(r, c++, TimeUtils.renderDate(svc.dateTo(idx)),
+        table.setText(r, c++, Format.renderDate(svc.dateTo(idx)),
             STYLE_SVC_TO_PREFIX + STYLE_CELL_SUFFIX);
 
         table.setText(r, c++, svc.row.getString(itemIndex),
@@ -1525,7 +1525,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             STYLE_SVC_CURRENCY_PREFIX + STYLE_CELL_SUFFIX);
 
         if (svc.timeUnit == null) {
-          table.setText(r, c++, TimeUtils.renderDate(svc.dateFrom(idx)),
+          table.setText(r, c++, Format.renderDate(svc.dateFrom(idx)),
               STYLE_SVC_FACTOR_PREFIX + STYLE_CELL_SUFFIX);
         } else {
           table.setWidget(r, c++, createFactorWidget(svc.factors.get(idx)),

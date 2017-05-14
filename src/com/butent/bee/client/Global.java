@@ -27,6 +27,7 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.output.Printer;
@@ -58,6 +59,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -244,6 +246,12 @@ public final class Global {
         ? parameter.getBoolean(BeeKeeper.getUser().getUserId()) : parameter.getBoolean());
   }
 
+  public static JustDate getParameterDate(String prm) {
+    BeeParameter parameter = parameters.get(prm);
+    return Objects.isNull(parameter) ? null : (parameter.supportsUsers()
+        ? parameter.getDate(BeeKeeper.getUser().getUserId()) : parameter.getDate());
+  }
+
   public static Map<String, String> getParameterMap(String prm) {
     BeeParameter parameter = parameters.get(prm);
     return Objects.isNull(parameter) ? new HashMap<>() : (parameter.supportsUsers()
@@ -422,7 +430,8 @@ public final class Global {
 
     int r = 0;
     for (int i = 0; i < c; i++) {
-      String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
+      String label = BeeUtils.notEmpty(Localized.maybeTranslate(data.getColumnLabel(i)),
+          data.getColumnId(i));
       table.setHtml(r, i, label);
 
       TableCellElement cell = table.getCellFormatter().getElement(r, i);
@@ -439,13 +448,14 @@ public final class Global {
       for (int i = 0; i < c; i++) {
         if (!row.isNull(i)) {
           ValueType type = data.getColumnType(i);
-          String value = DataUtils.render(data.getColumn(i), row, i);
+          String value = DataUtils.render(data.getColumn(i), row, i,
+              Format.getDateRenderer(), Format.getDateTimeRenderer());
 
           if (type == ValueType.LONG) {
             Long x = row.getLong(i);
             if (x != null && maybeTime.contains(x)) {
               type = ValueType.DATE_TIME;
-              value = new DateTime(x).toCompactString();
+              value = Format.renderDateTime(x);
             }
           }
 

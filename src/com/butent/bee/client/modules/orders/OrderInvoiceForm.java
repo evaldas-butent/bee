@@ -8,28 +8,30 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.COL_CUS
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.mail.NewMailMessage;
+import com.butent.bee.client.modules.trade.InvoiceERPForm;
 import com.butent.bee.client.output.ReportUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.IdFilter;
-import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
@@ -42,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class OrderInvoiceForm extends PrintFormInterceptor {
+public class OrderInvoiceForm extends InvoiceERPForm {
 
   private Button confirmAction;
   private DataSelector series;
@@ -82,20 +84,28 @@ public class OrderInvoiceForm extends PrintFormInterceptor {
                   .fieldRequired(Localized.dictionary().trdInvoicePrefix()));
               return;
             }
+            Data.setValue(getViewName(), getActiveRow(), COL_SALE_PROFORMA, (Boolean) null);
+            BeeRowSet updated = DataUtils.getUpdated(getViewName(), getFormView().getDataColumns(),
+              form.getOldRow(), getActiveRow(), null);
 
-            Queries.update(getViewName(), IdFilter.compareId(getActiveRowId()),
-                COL_SALE_PROFORMA, BooleanValue.getNullValue(), new IntCallback() {
-                  @Override
-                  public void onSuccess(Integer result) {
-                    if (BeeUtils.isPositive(result)) {
-                      Data.onViewChange(getViewName(), DataChangeEvent.CANCEL_RESET_REFRESH);
-                    }
-                  }
-                });
+            Queries.updateRow(updated, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                Data.onViewChange(getViewName(), DataChangeEvent.CANCEL_RESET_REFRESH);
+              }
+            });
           }));
       header.addCommandItem(confirmAction);
     }
     confirmAction.setVisible(proforma && form.isEnabled());
+  }
+
+  @Override
+  public void getERPStocks(final Long id) {
+    ParameterList params = OrdersKeeper.createSvcArgs(SVC_GET_ERP_STOCKS);
+    params.addDataItem(Service.VAR_DATA, DataUtils.buildIdList(id));
+
+    BeeKeeper.getRpc().makeRequest(params);
   }
 
   @Override

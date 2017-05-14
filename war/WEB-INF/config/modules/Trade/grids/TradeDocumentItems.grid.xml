@@ -60,7 +60,7 @@
 
     <CalcColumn name="PriceWithVat" type="decimal" caption="=priceWithVat" scale="2"
                 visible="false" />
-    <CalcColumn name="Total" type="decimal" caption="=total" scale="2">
+    <CalcColumn name="Total" type="decimal" caption="=total" scale="2" minWidth="60">
       <style>
         <bodyStyle>
           <ui:font>bold</ui:font>
@@ -84,6 +84,9 @@
 
     <RelColumn name="Employee" renderColumns="EmployeeFirstName EmployeeLastName"
                sortBy="EmployeeLastName EmployeeFirstName" newRowEnabled="false" visible="false" />
+    <RelColumn name="ItemVehicle" caption="=trdItemVehicleShort"
+               renderColumns="ItemVehicleBrandName ItemVehicleModelName ItemVehicleNumber ItemVehicleBodyNumber"
+               newRowEnabled="false" visible="false" />
   </g:columns>
 
   <xi:include href="../../Administration/grids/columns/HiddenDimensions.columns.xml" />
