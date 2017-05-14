@@ -3,6 +3,7 @@ package com.butent.bee.client.output;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_DEPARTMENT;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.ALS_COMPANY_TYPE_NAME;
 import static com.butent.bee.shared.modules.payroll.PayrollConstants.*;
@@ -10,8 +11,7 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_COMMENT;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.COL_EVENT_NOTE;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -579,6 +579,8 @@ public enum Report implements HasWidgetSupplier {
           new ReportEnumItem(TaskConstants.COL_EVENT,
               Data.getColumnLabel(VIEW_TASK_EVENTS, TaskConstants.COL_EVENT), TaskEvent.class),
           new ReportTextItem(COL_PUBLISHER, loc.crmTaskPublisher()),
+          new ReportTextItem(COL_PUBLISHER + COL_DEPARTMENT,
+              loc.department() + BeeUtils.parenthesize(loc.crmTaskPublisher())),
           new ReportTextItem(COL_EVENT_NOTE, Data.getColumnLabel(VIEW_TASK_EVENTS, COL_EVENT_NOTE)),
           new ReportTextItem(COL_COMMENT, Data.getColumnLabel(VIEW_TASK_EVENTS, COL_COMMENT)),
           new ReportTextItem(ALS_DURATION_TYPE_NAME,
@@ -632,6 +634,7 @@ public enum Report implements HasWidgetSupplier {
       ReportInfo hoursByExecutors = new ReportInfo(Localized.dictionary().hoursByExecutors());
       hoursByExecutors.addRowItem(items.get(COL_PUBLISHER));
       hoursByExecutors.addColItem(items.get(COL_DURATION));
+      hoursByExecutors.setRowGrouping(items.get(COL_PUBLISHER + COL_DEPARTMENT));
       hoursByExecutors.setColGrouping(items.get(ALS_DURATION_TYPE_NAME));
       hoursByExecutors.getColItems().forEach(item -> item.setRelation(taskDurations.getCaption()));
 

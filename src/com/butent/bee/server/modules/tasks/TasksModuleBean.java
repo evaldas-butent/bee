@@ -1873,8 +1873,6 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         .addField(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, ALS_DURATION_TYPE_NAME)
         .addFields(TBL_EVENT_DURATIONS, COL_DURATION_DATE, COL_DURATION)
 
-        .addEmptyBoolean(VAR_TASK_DELAYED)
-
         .addFrom(TBL_TASKS)
         .addFromLeft(VIEW_TASK_TYPES, sys.joinTables(VIEW_TASK_TYPES, TBL_TASKS, COL_TASK_TYPE))
 
@@ -1890,14 +1888,26 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         .addFromLeft(TBL_EVENT_DURATIONS, sys.joinTables(TBL_EVENT_DURATIONS, VIEW_TASK_EVENTS,
             COL_EVENT_DURATION))
         .addFromLeft(TBL_DURATION_TYPES, sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS,
-            COL_DURATION_TYPE))
-        .setWhere(clause);
+            COL_DURATION_TYPE));
 
     joinPersons(select, ownerPerson, TBL_TASKS, COL_OWNER);
     joinPersons(select, executorPerson, TBL_TASKS, COL_EXECUTOR);
-    joinPersons(select, publisherPerson, TBL_TASK_EVENTS, COL_PUBLISHER);
+    String usrAlias = joinPersons(select, publisherPerson, TBL_TASK_EVENTS, COL_PUBLISHER);
 
-    String tmp = qs.sqlCreateTemp(select);
+    if (report.requiresField(COL_PUBLISHER + COL_DEPARTMENT)) {
+      select.addFields(TBL_DEPARTMENTS, COL_PUBLISHER + COL_DEPARTMENT)
+          .addFromLeft(new SqlSelect()
+                  .addMax(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME, COL_PUBLISHER + COL_DEPARTMENT)
+                  .addFields(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON)
+                  .addFrom(TBL_DEPARTMENT_EMPLOYEES)
+                  .addFromInner(TBL_DEPARTMENTS,
+                      sys.joinTables(TBL_DEPARTMENTS, TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT))
+                  .addGroup(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON), TBL_DEPARTMENTS,
+              SqlUtils.joinUsing(usrAlias, TBL_DEPARTMENTS, COL_COMPANY_PERSON));
+
+      clause.add(report.getCondition(TBL_DEPARTMENTS, COL_PUBLISHER + COL_DEPARTMENT));
+    }
+    String tmp = qs.sqlCreateTemp(select.setWhere(clause));
 
     return report.getResultResponse(qs, tmp,
         Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)));
@@ -2045,7 +2055,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
     return Lists.newArrayList(qs.getLongColumn(query));
   }
 
-  private void joinPersons(SqlSelect select, String persons, String tbl, String fld) {
+  private String joinPersons(SqlSelect select, String persons, String tbl, String fld) {
     String users = SqlUtils.uniqueName();
     String companyPersons = SqlUtils.uniqueName();
 
@@ -2055,6 +2065,7 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
             companyPersons, users, COL_COMPANY_PERSON))
         .addFromLeft(TBL_PERSONS, persons, sys.joinTables(TBL_PERSONS, persons, companyPersons,
             COL_PERSON));
+    return users;
   }
 
   private ResponseObject mailNewTask(Long senderAccountId, long taskId,
