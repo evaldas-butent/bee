@@ -569,7 +569,12 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(ALS_TASK_TYPE_NAME, Data.getColumnLabel(VIEW_TASKS, COL_TASK_TYPE)),
           new ReportTextItem(TaskConstants.COL_OWNER,
               Data.getColumnLabel(VIEW_TASKS, TaskConstants.COL_OWNER)),
+          new ReportTextItem(TaskConstants.COL_OWNER + COL_DEPARTMENT,
+              Data.getColumnLabel(VIEW_TASKS, TaskConstants.COL_OWNER)
+                  + BeeUtils.parenthesize(loc.department())),
           new ReportTextItem(COL_EXECUTOR, Data.getColumnLabel(VIEW_TASKS, COL_EXECUTOR)),
+          new ReportTextItem(COL_EXECUTOR + COL_DEPARTMENT, Data.getColumnLabel(VIEW_TASKS,
+              COL_EXECUTOR) + BeeUtils.parenthesize(loc.department())),
           new ReportTextItem(ALS_COMPANY_NAME, Data.getColumnLabel(VIEW_TASKS, COL_COMPANY)),
           new ReportTextItem(ALS_TASK_PRODUCT_NAME, Data.getColumnLabel(VIEW_TASKS, COL_PRODUCT)),
           new ReportTextItem(ProjectConstants.ALS_PROJECT_NAME,
@@ -580,7 +585,7 @@ public enum Report implements HasWidgetSupplier {
               Data.getColumnLabel(VIEW_TASK_EVENTS, TaskConstants.COL_EVENT), TaskEvent.class),
           new ReportTextItem(COL_PUBLISHER, loc.crmTaskPublisher()),
           new ReportTextItem(COL_PUBLISHER + COL_DEPARTMENT,
-              loc.department() + BeeUtils.parenthesize(loc.crmTaskPublisher())),
+              loc.crmTaskPublisher() + BeeUtils.parenthesize(loc.department())),
           new ReportTextItem(COL_EVENT_NOTE, Data.getColumnLabel(VIEW_TASK_EVENTS, COL_EVENT_NOTE)),
           new ReportTextItem(COL_COMMENT, Data.getColumnLabel(VIEW_TASK_EVENTS, COL_COMMENT)),
           new ReportTextItem(ALS_DURATION_TYPE_NAME,
@@ -607,8 +612,8 @@ public enum Report implements HasWidgetSupplier {
 
       Stream.of(COL_TASK, COL_SUMMARY, COL_PRIORITY, COL_START_TIME, COL_FINISH_TIME,
           COL_EXPECTED_DURATION, COL_EXPECTED_EXPENSES, TaskConstants.COL_STATUS,
-          ALS_TASK_TYPE_NAME, TaskConstants.COL_OWNER, COL_EXECUTOR, ALS_COMPANY_NAME,
-          ALS_TASK_PRODUCT_NAME, ProjectConstants.ALS_PROJECT_NAME,
+          ALS_TASK_TYPE_NAME, TaskConstants.COL_OWNER, COL_EXECUTOR, COL_EXECUTOR + COL_DEPARTMENT,
+          ALS_COMPANY_NAME, ALS_TASK_PRODUCT_NAME, ProjectConstants.ALS_PROJECT_NAME,
           ProjectConstants.ALS_STAGE_NAME)
           .forEach(item -> tasks.addRowItem(items.get(item)));
 
