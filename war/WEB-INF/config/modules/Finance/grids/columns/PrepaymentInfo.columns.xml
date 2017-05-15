@@ -16,7 +16,7 @@
       </bodyStyle>
     </style>
     <render>
-      <ui:expression>row.Amount - (row.PrepaymentUsed || 0)</ui:expression>
+      <ui:expression>row.Amount - (+row.PrepaymentUsed || 0)</ui:expression>
     </render>
   </CalcColumn>
 </g:columns>

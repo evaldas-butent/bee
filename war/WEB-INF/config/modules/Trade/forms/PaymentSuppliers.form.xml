@@ -10,15 +10,16 @@
         name="PaymentSuppliers" caption="=paymentSuppliers"
 >
   <FlowPanel class="flexBox-vertical">
-    <Table kind="controls" style="margin-top: 1vh;">
+    <Table kind="controls" style="margin-top: 1vh; margin-bottom: 2vh;">
       <col index="0" kind="label" />
       <col index="2" kind="label" />
       <col index="4" kind="label" />
       <col index="6" kind="label" />
+      <col index="8" kind="label" />
 
       <row>
         <Label text="=supplier" class="bee-required" />
-        <cell colSpan="3">
+        <cell colSpan="5">
           <UnboundSelector name="Payer" viewName="Companies" renderColumns="Name TypeName"
                            searchableColumns="Name" newRowEnabled="false" required="true"
                            style="width: 100%;" />
@@ -61,5 +62,25 @@
         <InputText name="Number" maxLength="50" style="&w2;" />
       </row>
     </Table>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>=trdAccountsPayable</text>
+        <GridPanel name="Payable" gridName="TradeDocuments" />
+      </page>
+      <page>
+        <text>=prepaymentGiven</text>
+        <GridPanel name="Paid" gridName="PrepaymentSuppliers" />
+      </page>
+
+      <page>
+        <text>=trdAccountsReceivable</text>
+        <GridPanel name="Receivable" gridName="TradeDocuments" />
+      </page>
+      <page>
+        <text>=prepaymentReceived</text>
+        <GridPanel name="Received" gridName="PrepaymentCustomers" />
+      </page>
+    </TabbedPages>
   </FlowPanel>
 </f:Form>
