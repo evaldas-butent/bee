@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.tasks;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -1892,24 +1893,44 @@ public class TasksModuleBean extends TimerBuilder implements BeeModule {
         .addFromLeft(TBL_DURATION_TYPES, sys.joinTables(TBL_DURATION_TYPES, TBL_EVENT_DURATIONS,
             COL_DURATION_TYPE));
 
-    joinPersons(select, ownerPerson, TBL_TASKS, COL_OWNER);
-    joinPersons(select, executorPerson, TBL_TASKS, COL_EXECUTOR);
-    String usrAlias = joinPersons(select, publisherPerson, TBL_TASK_EVENTS, COL_PUBLISHER);
+    String ownerAlias = joinPersons(select, ownerPerson, TBL_TASKS, COL_OWNER);
+    String executorAlias = joinPersons(select, executorPerson, TBL_TASKS, COL_EXECUTOR);
+    String publisherAlias = joinPersons(select, publisherPerson, TBL_TASK_EVENTS, COL_PUBLISHER);
 
-    if (report.requiresField(COL_PUBLISHER + COL_DEPARTMENT)) {
-      select.addFields(TBL_DEPARTMENTS, COL_PUBLISHER + COL_DEPARTMENT)
-          .addFromLeft(new SqlSelect()
-                  .addMax(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME, COL_PUBLISHER + COL_DEPARTMENT)
-                  .addFields(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON)
-                  .addFrom(TBL_DEPARTMENT_EMPLOYEES)
-                  .addFromInner(TBL_DEPARTMENTS,
-                      sys.joinTables(TBL_DEPARTMENTS, TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT))
-                  .addGroup(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON), TBL_DEPARTMENTS,
-              SqlUtils.joinUsing(usrAlias, TBL_DEPARTMENTS, COL_COMPANY_PERSON));
+    String ownerDepartment = COL_OWNER + COL_DEPARTMENT;
+    String executorDepartment = COL_EXECUTOR + COL_DEPARTMENT;
+    String publisherDepartment = COL_PUBLISHER + COL_DEPARTMENT;
+    String depts;
 
-      clause.add(report.getCondition(TBL_DEPARTMENTS, COL_PUBLISHER + COL_DEPARTMENT));
+    if (report.requiresField(ownerDepartment) || report.requiresField(executorDepartment)
+        || report.requiresField(publisherDepartment)) {
+
+      depts = qs.sqlCreateTemp(new SqlSelect()
+          .addMax(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME)
+          .addFields(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON)
+          .addFrom(TBL_DEPARTMENT_EMPLOYEES)
+          .addFromInner(TBL_DEPARTMENTS,
+              sys.joinTables(TBL_DEPARTMENTS, TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT))
+          .addGroup(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON));
+
+      ImmutableMap.of(ownerDepartment, ownerAlias, executorDepartment, executorAlias,
+          publisherDepartment, publisherAlias).forEach((deptName, usrAlias) -> {
+
+        if (report.requiresField(deptName)) {
+          String als = SqlUtils.uniqueName();
+
+          select.addField(als, COL_DEPARTMENT_NAME, deptName)
+              .addFromLeft(depts, als, SqlUtils.joinUsing(usrAlias, als, COL_COMPANY_PERSON));
+
+          clause.add(report.getCondition(SqlUtils.field(als, COL_DEPARTMENT_NAME), deptName));
+        }
+      });
+    } else {
+      depts = null;
     }
     String tmp = qs.sqlCreateTemp(select.setWhere(clause));
+
+    qs.sqlDropTemp(depts);
 
     return report.getResultResponse(qs, tmp,
         Localizations.getDictionary(reqInfo.getParameter(VAR_LOCALE)));

@@ -35,7 +35,6 @@ import com.butent.bee.shared.testutils.TestTimeOfDayValue;
 import com.butent.bee.shared.testutils.TestTimeUtils;
 import com.butent.bee.shared.testutils.TestValueType;
 import com.butent.bee.shared.testutils.TestWildcards;
-import com.butent.bee.shared.testutils.TestWildcardsPattern;
 import com.butent.bee.shared.utils.TestBeeUtils;
 import com.butent.bee.shared.utils.TestCodec;
 import com.butent.bee.shared.utils.TestIntRangeSet;
@@ -53,7 +52,7 @@ import org.junit.runners.Suite.SuiteClasses;
     TestIsExpression.class, TestIsCondition.class,
     TestSqlCreate.class, TestSqlUtilsIsQuery.class, TestSqlInsert.class,
     TestSqlUpdate.class, TestSqlDelete.class, TestSqlSelect.class,
-    TestHasFrom.class, TestWildcardsPattern.class, TestWildcards.class,
+    TestHasFrom.class, TestWildcards.class,
     TestDateTime.class, TestJustDate.class, TestPair.class, TestBeeConst.class,
     TestResource.class, TestIntValue.class,
     TestLongValue.class, TestListSequence.class, TestValueType.class,

@@ -1519,6 +1519,8 @@ public interface Dictionary {
 
   default String debt() {return g("debt");}
 
+  default String debts() {return g("debts");}
+
   default String decline() {return g("decline");}
 
   default String defaultBankAccount() {return g("defaultBankAccount");}
@@ -4296,6 +4298,8 @@ public interface Dictionary {
 
   default String prepaymentCustomersShort() {return g("prepaymentCustomersShort");}
 
+  default String prepaymentGiven() {return g("prepaymentGiven");}
+
   default String prepaymentKind() {return g("prepaymentKind");}
 
   default String prepaymentKindShort() {return g("prepaymentKindShort");}
@@ -4303,6 +4307,8 @@ public interface Dictionary {
   default String prepaymentParent() {return g("prepaymentParent");}
 
   default String prepaymentParentShort() {return g("prepaymentParentShort");}
+
+  default String prepaymentReceived() {return g("prepaymentReceived");}
 
   default String prepaymentSuppliers() {return g("prepaymentSuppliers");}
 
@@ -6705,6 +6711,10 @@ public interface Dictionary {
   default String transportationNumber() {return g("transportationNumber");}
 
   default String travelSheet() {return g("travelSheet");}
+
+  default String trdAccountsPayable() {return g("trdAccountsPayable");}
+
+  default String trdAccountsReceivable() {return g("trdAccountsReceivable");}
 
   default String trdAmount() {return g("trdAmount");}
 
