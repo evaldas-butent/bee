@@ -2040,7 +2040,7 @@ public class TradeModuleBean implements BeeModule, ConcurrencyBean.HasTimerServi
             item.getValue(COL_TRADE_ITEM_QUANTITY));
 
         wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));
-        wsItem.setDiscount(item.getValue(COL_TRADE_DISCOUNT));
+        wsItem.setDiscount(item.getValue(COL_TRADE_DISCOUNT), true);
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
         wsItem.setArticle(item.getValue(COL_TRADE_ITEM_ARTICLE));
