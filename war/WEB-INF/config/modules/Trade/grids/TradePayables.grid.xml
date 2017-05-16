@@ -3,7 +3,7 @@
         xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
 
         name="TradePayables" viewName="TradeDocuments"
-        disabledActions="add delete filter" editShowId="true"
+        disabledActions="add delete filter rights"
 >
   <g:columns>
     <IdColumn name="Id" />

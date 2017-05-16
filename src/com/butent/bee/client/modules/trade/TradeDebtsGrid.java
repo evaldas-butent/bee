@@ -3,10 +3,14 @@ package com.butent.bee.client.modules.trade;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.trade.DebtKind;
 import com.butent.bee.shared.ui.Action;
@@ -31,6 +35,16 @@ class TradeDebtsGrid extends AbstractGridInterceptor {
   @Override
   public Map<String, Filter> getInitialParentFilters(Collection<UiOption> uiOptions) {
     return Provider.createDefaultParentFilters(buildFilter(null));
+  }
+
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    event.consume();
+
+    IsRow row = event.getRowValue();
+    if (row != null) {
+      RowEditor.open(getViewName(), row, Opener.NEW_TAB);
+    }
   }
 
   void onCompanyChange(Long company) {

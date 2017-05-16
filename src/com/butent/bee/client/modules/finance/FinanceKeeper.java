@@ -53,8 +53,9 @@ public final class FinanceKeeper {
     MenuService.FINANCE_POSTING_PRECEDENCE.setHandler(parameters ->
         openConfiguration(FORM_FINANCE_POSTING_PRECEDENCE));
 
-    List<String> gridNames = ImmutableList.of(GRID_FINANCIAL_RECORDS,
-        GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS);
+    List<String> gridNames = ImmutableList.of(
+        GRID_FINANCIAL_RECORDS, GRID_TRADE_DOCUMENT_FINANCIAL_RECORDS,
+        GRID_PREPAYMENT_SUPPLIERS, GRID_PREPAYMENT_CUSTOMERS);
     String viewName = VIEW_FINANCIAL_RECORDS;
 
     ConditionalStyle.registerGridColumnColorProvider(gridNames,
